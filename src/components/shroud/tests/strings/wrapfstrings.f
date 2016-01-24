@@ -21,6 +21,14 @@ module strings_mod
             type(C_PTR) rv
         end function str_get_name1
         
+        subroutine str_get_name1_bufferify(SH_F_rv, LSH_F_rv) &
+                bind(C, name="STR_get_name1_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: LSH_F_rv
+        end subroutine str_get_name1_bufferify
+        
         function str_get_name2() &
                 result(rv) &
                 bind(C, name="STR_get_name2")
@@ -29,7 +37,15 @@ module strings_mod
             type(C_PTR) rv
         end function str_get_name2
         
-        pure function str_get_name() &
+        subroutine str_get_name2_bufferify(SH_F_rv, LSH_F_rv) &
+                bind(C, name="STR_get_name2_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: LSH_F_rv
+        end subroutine str_get_name2_bufferify
+        
+        function str_get_name() &
                 result(rv) &
                 bind(C, name="STR_get_name")
             use iso_c_binding
@@ -82,8 +98,8 @@ module strings_mod
 
 contains
     
-    ! const string & getName1()+pure
-    ! function_index=0
+    ! const string_result_fstr & getName1()+pure
+    ! function_index=6
     !>
     !! \brief return a string as character(*)
     !!
@@ -98,6 +114,7 @@ contains
     end function get_name1
     
     ! const string & getName2()
+    ! string_to_buffer_and_len
     ! function_index=1
     !>
     !! \brief return string with fixed size (len=30)
@@ -108,13 +125,15 @@ contains
         implicit none
         character(kind=C_CHAR, len=30) :: rv
         ! splicer begin get_name2
-        rv = fstr(str_get_name2())
+        call str_get_name2_bufferify(  &
+            rv,  &
+            len(rv, kind=C_INT))
         ! splicer end get_name2
     end function get_name2
     
-    ! void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
+    ! void getName(string_result_as_arg & output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=6
+    ! function_index=9
     !>
     !! \brief return a string as argument
     !!
@@ -130,9 +149,9 @@ contains
         ! splicer end get_name
     end subroutine get_name
     
-    ! void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
-    ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=8
+    ! void acceptStringConstReference(const std::string & arg1+intent(in))
+    ! string_to_buffer_and_len
+    ! function_index=3
     !>
     !! \brief Accept a const string reference
     !!
@@ -151,9 +170,9 @@ contains
         ! splicer end accept_string_const_reference
     end subroutine accept_string_const_reference
     
-    ! void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
-    ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=10
+    ! void acceptStringReference(std::string & arg1+intent(inout))
+    ! string_to_buffer_and_len
+    ! function_index=4
     !>
     !! \brief Accept a string reference
     !!

@@ -31,10 +31,6 @@ contains
     call set_case_name("test_functions")
 
     str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-    call get_name(str)
-    call assert_true( str == "dog")
- 
-    str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
     str = get_name1()
     call assert_true( str == "dog")
 
@@ -42,6 +38,10 @@ contains
     str = get_name2()
     call assert_true( str == "dog")
 
+    str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    call get_name(str)
+    call assert_true( str == "dog")
+ 
     call accept_string_const_reference("cat")
 !    call assert_true( rv_char == "dog")
 

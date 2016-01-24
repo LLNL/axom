@@ -471,7 +471,6 @@
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)"
         }, 
         "string": {
@@ -494,7 +493,6 @@
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)"
         }, 
         "string_result_as_arg": {
@@ -512,6 +510,28 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "shroudrt.hpp", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)"
+        }, 
+        "string_result_fstr": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_intent_in": [
+                "std::string {cpp_var}({c_var});"
+            ], 
+            "c_intent_in_trim": [
+                "std::string {cpp_var}({c_var}, {c_var_trim});"
+            ], 
+            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_header": "<string>", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {

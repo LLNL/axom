@@ -27,6 +27,27 @@ return rv.c_str();
 // splicer end function.get_name1
 }
 
+// void getName1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+// function_index=5
+/**
+ * \brief return a string as character(*)
+ *
+ */
+void STR_get_name1_bufferify(char * SH_F_rv, int LSH_F_rv)
+{
+// splicer begin function.get_name1_bufferify
+const std::string & rv = getName1();
+// check for error
+if (rv.empty()) {
+    std::memset(SH_F_rv, ' ', LSH_F_rv);
+    return;
+}
+
+asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+return;
+// splicer end function.get_name1_bufferify
+}
+
 // const string & getName2()
 // function_index=1
 /**
@@ -46,7 +67,28 @@ return rv.c_str();
 // splicer end function.get_name2
 }
 
-// const string & getName()+pure
+// void getName2(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))
+// function_index=7
+/**
+ * \brief return string with fixed size (len=30)
+ *
+ */
+void STR_get_name2_bufferify(char * SH_F_rv, int LSH_F_rv)
+{
+// splicer begin function.get_name2_bufferify
+const std::string & rv = getName2();
+// check for error
+if (rv.empty()) {
+    std::memset(SH_F_rv, ' ', LSH_F_rv);
+    return;
+}
+
+asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+return;
+// splicer end function.get_name2_bufferify
+}
+
+// const string & getName()
 // function_index=2
 /**
  * \brief return a string as argument
@@ -65,8 +107,8 @@ return rv.c_str();
 // splicer end function.get_name
 }
 
-// void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
-// function_index=5
+// void getName(string_result_as_arg & output+intent(out)+len(Loutput))
+// function_index=8
 /**
  * \brief return a string as argument
  *
@@ -105,7 +147,7 @@ return;
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
-// function_index=7
+// function_index=10
 /**
  * \brief Accept a const string reference
  *
@@ -142,7 +184,7 @@ return;
 }
 
 // void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
-// function_index=9
+// function_index=11
 /**
  * \brief Accept a string reference
  *

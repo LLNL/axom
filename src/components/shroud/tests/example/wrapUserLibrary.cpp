@@ -12,7 +12,7 @@ namespace example {
 namespace nested {
 
 // void local_function1()
-// function_index=40
+// function_index=41
 void AA_local_function1()
 {
 // splicer begin function.local_function1
@@ -22,7 +22,7 @@ return;
 }
 
 // bool isNameValid(const std::string & name+intent(in))
-// function_index=41
+// function_index=42
 bool AA_is_name_valid(const char * name)
 {
 // splicer begin function.is_name_valid
@@ -31,7 +31,7 @@ return name != NULL;
 }
 
 // bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))
-// function_index=48
+// function_index=49
 bool AA_is_name_valid_bufferify(const char * name, int Lname)
 {
 // splicer begin function.is_name_valid_bufferify
@@ -40,7 +40,7 @@ return name != NULL;
 }
 
 // bool isInitialized()
-// function_index=42
+// function_index=43
 bool AA_is_initialized()
 {
 // splicer begin function.is_initialized
@@ -50,7 +50,7 @@ return rv;
 }
 
 // void test_names(const std::string & name+intent(in))
-// function_index=43
+// function_index=44
 void AA_test_names(const char * name)
 {
 // splicer begin function.test_names
@@ -72,7 +72,7 @@ return;
 }
 
 // void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
-// function_index=44
+// function_index=45
 void AA_test_names_flag(const char * name, int flag)
 {
 // splicer begin function.test_names_flag
@@ -83,7 +83,7 @@ return;
 }
 
 // void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)
-// function_index=52
+// function_index=51
 void AA_test_names_flag_bufferify(const char * name, int Lname, int flag)
 {
 // splicer begin function.test_names_flag_bufferify
@@ -94,7 +94,7 @@ return;
 }
 
 // void testoptional()
-// function_index=46
+// function_index=47
 void AA_testoptional_0()
 {
 // splicer begin function.testoptional_0
@@ -104,7 +104,7 @@ return;
 }
 
 // void testoptional(int i+default(1)+intent(in)+value)
-// function_index=47
+// function_index=48
 void AA_testoptional_1(int i)
 {
 // splicer begin function.testoptional_1
@@ -114,7 +114,7 @@ return;
 }
 
 // void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
-// function_index=45
+// function_index=46
 void AA_testoptional_2(int i, long j)
 {
 // splicer begin function.testoptional_2

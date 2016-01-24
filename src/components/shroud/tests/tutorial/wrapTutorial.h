@@ -28,7 +28,7 @@ bool TUT_function3(bool arg);
 
 const char * TUT_function4a(const char * arg1, const char * arg2);
 
-const char * TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2);
+void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int LSH_F_rv);
 
 void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput);
 
@@ -77,6 +77,8 @@ int TUT_typefunc(int arg);
 int TUT_enumfunc(int arg);
 
 const char * TUT_last_function_called();
+
+void TUT_last_function_called_bufferify(char * SH_F_rv, int LSH_F_rv);
 
 #ifdef __cplusplus
 }

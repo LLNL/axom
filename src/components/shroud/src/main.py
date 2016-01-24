@@ -247,7 +247,7 @@ class Schema(object):
 ##                f_args = 'trim({var}) // C_NULL_CHAR',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
-                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+#                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({var})',
                 base = 'string',
@@ -271,6 +271,13 @@ class Schema(object):
 #                    'type(C_PTR) :: {F_result}'],
 #                f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})',
 #                f_post_call   = 'call FccCopyPtr({result_arg}, len({result_arg}), {F_result})',
+                ))
+        def_types[tmp.name] = tmp
+
+        # pure fortran string
+        tmp = def_types['string'].clone_as('string_result_fstr')
+        tmp.update(dict(
+                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 ))
         def_types[tmp.name] = tmp
 
@@ -649,6 +656,7 @@ class GenFunctions(object):
         except KeyError:
             # wrapped classes have not been added yet.  Only care about string here.
             result_typedef = None
+        is_pure = node['attrs'].get('pure', False)
         attrs = result['attrs']
         is_ptr = (attrs.get('ptr', False) or
                   attrs.get('reference', False))
@@ -668,18 +676,19 @@ class GenFunctions(object):
         result_as_arg = ''  # only applies to string functions
         if result_typedef.base == 'string':
             result_as_arg = options.get('F_string_result_as_arg', '')
+            result_name = result_as_arg or 'SH_F_rv'
             has_string_result = True
-        if True:  # else
+        else:
             for arg in node['args']:
                 argtype = arg['type']
                 if self.typedef[argtype].base == 'string':
                     has_string_arg = True
                     break
-        if not ((has_string_result and result_as_arg) or has_string_arg):
+        if not (has_string_result or has_string_arg):
             return
 
-        options = node['options']
-        options.wrap_fortran = False
+#        options = node['options']
+#        options.wrap_fortran = False
         # Preserve wrap_c.  This keep a version which accepts char * arguments.
 
         # Create a new C function and change arguments to add len_trim attribute
@@ -710,14 +719,14 @@ class GenFunctions(object):
                 if intent in ['out', 'inout']:
                     arg['attrs']['len'] = 'N' + arg['name']
 
-        if result_as_arg:
+        if has_string_result:
             # Add additional argument to hold result
             result_as_string = copy.deepcopy(result)
-            result_as_string['name'] = result_as_arg
+            result_as_string['name'] = result_name
             result_as_string['type'] = result_typedef.name + '_result_as_arg'
             attrs = result_as_string['attrs']
             attrs['const'] = False
-            attrs['len'] = 'L' + result_as_arg
+            attrs['len'] = 'L' + result_name
             attrs['intent'] = 'out'
             attrs['_is_result'] = True
             if not is_ptr:
@@ -727,7 +736,6 @@ class GenFunctions(object):
 
             # convert to subroutine
             C_new['_subprogram'] = 'subroutine'
-            result = copy.deepcopy(result)
             result = C_new['result']
             result['type'] = 'void'
             attrs = result['attrs']
@@ -735,21 +743,46 @@ class GenFunctions(object):
             attrs['ptr'] = False
             attrs['reference'] = False
 
-        # Create Fortran function without bufferify function_suffix but
-        # with len attributes on string arguments.
-        F_new = util.copy_function_node(C_new)
-        ordered_functions.append(F_new)
-        self.append_function_index(F_new)
+        if is_pure:
+            # Return a character(*) function
+            # Create a fortran function with a different result type
+            # so fstr will be called on result.
+            F_new = util.copy_function_node(node)
+            ordered_functions.append(F_new)
+            self.append_function_index(F_new)
 
-        # Fortran function should wrap the new C function
-        F_new['_PTR_F_C_index'] = C_new['_function_index']
-        options = F_new['options']
-        options.wrap_c       = False
-        options.wrap_fortran = True
-        options.wrap_python = False
-        # Do not add '_bufferify'
-        F_new['fmt'].function_suffix = node['fmt'].function_suffix
-            
+            F_new['result']['type'] = 'string_result_fstr'
+            F_new['_PTR_F_C_index'] = node['_function_index']
+            options = F_new['options']
+            options.wrap_c       = False
+            options.wrap_fortran = True
+            options.wrap_python = False
+
+            # Do not wrap original function (Has a different result type)
+            node['options'].wrap_fortran = False
+
+        elif result_as_arg:
+            # Create Fortran function without bufferify function_suffix but
+            # with len attributes on string arguments.
+            F_new = util.copy_function_node(C_new)
+            ordered_functions.append(F_new)
+            self.append_function_index(F_new)
+
+            # Fortran function should wrap the new C function
+            F_new['_PTR_F_C_index'] = C_new['_function_index']
+            options = F_new['options']
+            options.wrap_c       = False
+            options.wrap_fortran = True
+            options.wrap_python = False
+            # Do not add '_bufferify'
+            F_new['fmt'].function_suffix = node['fmt'].function_suffix
+
+            # Do not wrap original function (does not have result argumument)
+            node['options'].wrap_fortran = False
+        else:
+            # Fortran function may call C subroutine if string result
+            node['_PTR_F_C_index'] = C_new['_function_index']
+
     def check_class_dependencies(self, node):
         """
         Check used_types and find which header and module files

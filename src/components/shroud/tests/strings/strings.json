@@ -40,13 +40,12 @@
             "fmt": {
                 "C_name": "STR_get_name1", 
                 "F_C_name": "str_get_name1", 
-                "F_name_generic": "get_name1", 
-                "F_name_impl": "get_name1", 
-                "F_name_method": "get_name1", 
                 "method_name": "getName1", 
                 "underscore_name": "get_name1"
             }, 
-            "options": {}, 
+            "options": {
+                "wrap_fortran": false
+            }, 
             "result": {
                 "attrs": {
                     "const": true, 
@@ -58,6 +57,88 @@
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
+            "_PTR_C_CPP_index": 0, 
+            "_decl": "void getName1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 5, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "LSH_F_rv", 
+                        "reference": true
+                    }, 
+                    "name": "SH_F_rv", 
+                    "type": "string_result_as_arg"
+                }
+            ], 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const string& getName1()  +pure", 
+            "doxygen": {
+                "brief": "return a string as character(*)"
+            }, 
+            "fmt": {
+                "C_name": "STR_get_name1_bufferify", 
+                "F_C_name": "str_get_name1_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "getName1", 
+                "type": "void"
+            }
+        }, 
+        {
+            "C_error_pattern": "C_invalid_name", 
+            "_PTR_F_C_index": 0, 
+            "_decl": "const string_result_fstr & getName1()+pure", 
+            "_function_index": 6, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const string& getName1()  +pure", 
+            "doxygen": {
+                "brief": "return a string as character(*)"
+            }, 
+            "fmt": {
+                "F_name_generic": "get_name1", 
+                "F_name_impl": "get_name1", 
+                "F_name_method": "get_name1"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "getName1", 
+                "type": "string_result_fstr"
+            }
+        }, 
+        {
+            "C_error_pattern": "C_invalid_name", 
+            "_PTR_F_C_index": 7, 
             "_decl": "const string & getName2()", 
             "_function_index": 1, 
             "_subprogram": "function", 
@@ -89,14 +170,59 @@
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
-            "_decl": "const string & getName()+pure", 
+            "_PTR_C_CPP_index": 1, 
+            "_decl": "void getName2(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 7, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "LSH_F_rv", 
+                        "reference": true
+                    }, 
+                    "name": "SH_F_rv", 
+                    "type": "string_result_as_arg"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "const string& getName2+len=30()", 
+            "doxygen": {
+                "brief": "return string with fixed size (len=30)"
+            }, 
+            "fmt": {
+                "C_name": "STR_get_name2_bufferify", 
+                "F_C_name": "str_get_name2_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "len": 30, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "getName2", 
+                "type": "void"
+            }
+        }, 
+        {
+            "C_error_pattern": "C_invalid_name", 
+            "_decl": "const string & getName()", 
             "_function_index": 2, 
             "_subprogram": "function", 
             "args": [], 
-            "attrs": {
-                "pure": true
-            }, 
-            "decl": "const string& getName()  +pure", 
+            "attrs": {}, 
+            "decl": "const string& getName()", 
             "doxygen": {
                 "brief": "return a string as argument"
             }, 
@@ -122,9 +248,9 @@
         {
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 2, 
-            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure", 
+            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 5, 
+            "_function_index": 8, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -140,10 +266,8 @@
                     "type": "string_result_as_arg"
                 }
             ], 
-            "attrs": {
-                "pure": true
-            }, 
-            "decl": "const string& getName()  +pure", 
+            "attrs": {}, 
+            "decl": "const string& getName()", 
             "doxygen": {
                 "brief": "return a string as argument"
             }, 
@@ -170,10 +294,10 @@
         {
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 2, 
-            "_PTR_F_C_index": 5, 
-            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure", 
+            "_PTR_F_C_index": 8, 
+            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 6, 
+            "_function_index": 9, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -189,10 +313,8 @@
                     "type": "string_result_as_arg"
                 }
             ], 
-            "attrs": {
-                "pure": true
-            }, 
-            "decl": "const string& getName()  +pure", 
+            "attrs": {}, 
+            "decl": "const string& getName()", 
             "doxygen": {
                 "brief": "return a string as argument"
             }, 
@@ -218,6 +340,7 @@
             }
         }, 
         {
+            "_PTR_F_C_index": 10, 
             "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in))", 
             "_function_index": 3, 
             "_subprogram": "subroutine", 
@@ -242,12 +365,13 @@
             "fmt": {
                 "C_name": "STR_accept_string_const_reference", 
                 "F_C_name": "str_accept_string_const_reference", 
+                "F_name_generic": "accept_string_const_reference", 
+                "F_name_impl": "accept_string_const_reference", 
+                "F_name_method": "accept_string_const_reference", 
                 "method_name": "acceptStringConstReference", 
                 "underscore_name": "accept_string_const_reference"
             }, 
-            "options": {
-                "wrap_fortran": false
-            }, 
+            "options": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "acceptStringConstReference", 
@@ -258,7 +382,7 @@
             "_PTR_C_CPP_index": 3, 
             "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 7, 
+            "_function_index": 10, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -297,50 +421,7 @@
             }
         }, 
         {
-            "_PTR_C_CPP_index": 3, 
-            "_PTR_F_C_index": 7, 
-            "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))", 
-            "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 8, 
-            "_generated": "string_to_buffer_and_len", 
-            "_subprogram": "subroutine", 
-            "args": [
-                {
-                    "attrs": {
-                        "const": true, 
-                        "intent": "in", 
-                        "len_trim": "Larg1", 
-                        "reference": true, 
-                        "value": false
-                    }, 
-                    "name": "arg1", 
-                    "type": "std::string"
-                }
-            ], 
-            "attrs": {}, 
-            "decl": "void acceptStringConstReference(const std::string & arg1)", 
-            "doxygen": {
-                "brief": "Accept a const string reference", 
-                "description": "Save contents of arg1.\narg1 is assumed to be intent(IN) since it is const\nWill copy in.\n"
-            }, 
-            "fmt": {
-                "F_name_generic": "accept_string_const_reference", 
-                "F_name_impl": "accept_string_const_reference", 
-                "F_name_method": "accept_string_const_reference", 
-                "function_suffix": ""
-            }, 
-            "options": {
-                "wrap_c": false, 
-                "wrap_fortran": true, 
-                "wrap_python": false
-            }, 
-            "result": {
-                "attrs": {}, 
-                "name": "acceptStringConstReference", 
-                "type": "void"
-            }
-        }, 
-        {
+            "_PTR_F_C_index": 11, 
             "_decl": "void acceptStringReference(std::string & arg1+intent(inout))", 
             "_function_index": 4, 
             "_subprogram": "subroutine", 
@@ -364,12 +445,13 @@
             "fmt": {
                 "C_name": "STR_accept_string_reference", 
                 "F_C_name": "str_accept_string_reference", 
+                "F_name_generic": "accept_string_reference", 
+                "F_name_impl": "accept_string_reference", 
+                "F_name_method": "accept_string_reference", 
                 "method_name": "acceptStringReference", 
                 "underscore_name": "accept_string_reference"
             }, 
-            "options": {
-                "wrap_fortran": false
-            }, 
+            "options": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "acceptStringReference", 
@@ -380,7 +462,7 @@
             "_PTR_C_CPP_index": 4, 
             "_decl": "void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 9, 
+            "_function_index": 11, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -410,50 +492,6 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
-                "wrap_python": false
-            }, 
-            "result": {
-                "attrs": {}, 
-                "name": "acceptStringReference", 
-                "type": "void"
-            }
-        }, 
-        {
-            "_PTR_C_CPP_index": 4, 
-            "_PTR_F_C_index": 9, 
-            "_decl": "void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))", 
-            "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 10, 
-            "_generated": "string_to_buffer_and_len", 
-            "_subprogram": "subroutine", 
-            "args": [
-                {
-                    "attrs": {
-                        "intent": "inout", 
-                        "len": "Narg1", 
-                        "len_trim": "Larg1", 
-                        "reference": true, 
-                        "value": false
-                    }, 
-                    "name": "arg1", 
-                    "type": "std::string"
-                }
-            ], 
-            "attrs": {}, 
-            "decl": "void acceptStringReference(std::string & arg1)", 
-            "doxygen": {
-                "brief": "Accept a string reference", 
-                "description": "Append \"dog\" to the end of arg1.\narg1 is assumed to be intent(INOUT)\nMust copy in and copy out.\n"
-            }, 
-            "fmt": {
-                "F_name_generic": "accept_string_reference", 
-                "F_name_impl": "accept_string_reference", 
-                "F_name_method": "accept_string_reference", 
-                "function_suffix": ""
-            }, 
-            "options": {
-                "wrap_c": false, 
-                "wrap_fortran": true, 
                 "wrap_python": false
             }, 
             "result": {
@@ -665,7 +703,6 @@
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)"
         }, 
         "string": {
@@ -688,7 +725,6 @@
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)"
         }, 
         "string_result_as_arg": {
@@ -706,6 +742,28 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "shroudrt.hpp", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)"
+        }, 
+        "string_result_fstr": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_intent_in": [
+                "std::string {cpp_var}({c_var});"
+            ], 
+            "c_intent_in_trim": [
+                "std::string {cpp_var}({c_var}, {c_var_trim});"
+            ], 
+            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_header": "<string>", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {

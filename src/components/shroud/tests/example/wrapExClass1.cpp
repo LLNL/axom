@@ -93,6 +93,18 @@ return rv.c_str();
 // splicer end class.ExClass1.method.get_name
 }
 
+// void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+// function_index=14
+void AA_exclass1_get_name_bufferify(AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv)
+{
+ExClass1 *selfobj = static_cast<ExClass1 *>(static_cast<void *>(self));
+// splicer begin class.ExClass1.method.get_name_bufferify
+const std::string & rv = selfobj->getName();
+asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+return;
+// splicer end class.ExClass1.method.get_name_bufferify
+}
+
 // int GetNameLength() const
 // function_index=4
 /**
@@ -118,6 +130,18 @@ return rv.c_str();
 // splicer end class.ExClass1.method.get_name_error_check
 }
 
+// void getNameErrorCheck(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+// function_index=15
+void AA_exclass1_get_name_error_check_bufferify(AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv)
+{
+ExClass1 *selfobj = static_cast<ExClass1 *>(static_cast<void *>(self));
+// splicer begin class.ExClass1.method.get_name_error_check_bufferify
+const std::string & rv = selfobj->getNameErrorCheck();
+asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+return;
+// splicer end class.ExClass1.method.get_name_error_check_bufferify
+}
+
 // const string & getNameArg() const
 // function_index=6
 const char * AA_exclass1_get_name_arg(const AA_exclass1 * self)
@@ -130,7 +154,7 @@ return rv.c_str();
 }
 
 // void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
-// function_index=15
+// function_index=16
 void AA_exclass1_get_name_arg_bufferify(AA_exclass1 * self, char * name, int Lname)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(static_cast<void *>(self));

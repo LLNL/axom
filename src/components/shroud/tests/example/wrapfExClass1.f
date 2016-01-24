@@ -105,6 +105,15 @@ module exclass1_mod
             type(C_PTR) rv
         end function aa_exclass1_get_name
         
+        subroutine aa_exclass1_get_name_bufferify(self, SH_F_rv, LSH_F_rv) &
+                bind(C, name="AA_exclass1_get_name_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: LSH_F_rv
+        end subroutine aa_exclass1_get_name_bufferify
+        
         pure function aa_exclass1_get_name_length(self) &
                 result(rv) &
                 bind(C, name="AA_exclass1_get_name_length")
@@ -122,6 +131,15 @@ module exclass1_mod
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) rv
         end function aa_exclass1_get_name_error_check
+        
+        subroutine aa_exclass1_get_name_error_check_bufferify(self, SH_F_rv, LSH_F_rv) &
+                bind(C, name="AA_exclass1_get_name_error_check_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: LSH_F_rv
+        end subroutine aa_exclass1_get_name_error_check_bufferify
         
         pure function aa_exclass1_get_name_arg(self) &
                 result(rv) &
@@ -202,9 +220,9 @@ module exclass1_mod
 
 contains
     
-    ! ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor
-    ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=14
+    ! ExClass1 * new(const string * name+intent(in))+constructor
+    ! string_to_buffer_and_len
+    ! function_index=0
     !>
     !! \brief constructor
     !!
@@ -256,6 +274,7 @@ contains
     end function exclass1_increment_count
     
     ! const string & getName() const
+    ! string_to_buffer_and_len
     ! function_index=3
     function exclass1_get_name(obj) result(rv)
         use iso_c_binding
@@ -263,7 +282,10 @@ contains
         class(exclass1) :: obj
         character(kind=C_CHAR, len=aa_exclass1_get_name_length(obj%voidptr)) :: rv
         ! splicer begin class.ExClass1.method.get_name
-        rv = fstr(aa_exclass1_get_name(obj%voidptr))
+        call aa_exclass1_get_name_bufferify(  &
+            obj%voidptr,  &
+            rv,  &
+            len(rv, kind=C_INT))
         ! splicer end class.ExClass1.method.get_name
     end function exclass1_get_name
     
@@ -284,20 +306,27 @@ contains
     end function exclass1_get_name_length
     
     ! const string & getNameErrorCheck() const
+    ! string_to_buffer_and_len
     ! function_index=5
     function exclass1_get_name_error_check(obj) result(rv)
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        character(kind=C_CHAR, len=strlen_ptr(aa_exclass1_get_name_error_check(obj%voidptr))) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(aa_exclass1_get_name_error_check_bufferify(  &
+            obj%voidptr,  &
+            rv,  &
+            len(rv, kind=C_INT)))) :: rv
         ! splicer begin class.ExClass1.method.get_name_error_check
-        rv = fstr(aa_exclass1_get_name_error_check(obj%voidptr))
+        call aa_exclass1_get_name_error_check_bufferify(  &
+            obj%voidptr,  &
+            rv,  &
+            len(rv, kind=C_INT))
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
     
     ! void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=16
+    ! function_index=17
     subroutine exclass1_get_name_arg(obj, name)
         use iso_c_binding
         implicit none

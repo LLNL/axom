@@ -20,7 +20,11 @@ extern "C" {
 
 const char * STR_get_name1();
 
+void STR_get_name1_bufferify(char * SH_F_rv, int LSH_F_rv);
+
 const char * STR_get_name2();
+
+void STR_get_name2_bufferify(char * SH_F_rv, int LSH_F_rv);
 
 const char * STR_get_name();
 

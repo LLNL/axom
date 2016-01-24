@@ -513,10 +513,12 @@ class Wrapf(util.WrapperMixin):
         result = node['result']
         result_type = result['type']
         subprogram = node['_subprogram']
+        c_subprogram = C_node['_subprogram']
 
         if node.get('return_this', False):
             result_type = 'void'
             subprogram = 'subroutine'
+            c_subprogram = 'subroutine'
 
         result_typedef = self.typedef[result_type]
         is_ctor  = node['attrs'].get('constructor', False)
@@ -570,8 +572,9 @@ class Wrapf(util.WrapperMixin):
                     f_arg = False
                     result_arg = c_arg
                     fmt.result_arg = result_as_arg   # c_arg['name']
-                    #                fmt.var = 'rv'
-                    #                fmt.tmp_var = 'tmp_rv'
+                    # XXX
+                    fmt.var = 'rv'
+                    fmt.tmp_var = 'tmp_rv'
 
             if f_arg:
                 f_index += 1
@@ -672,7 +675,7 @@ class Wrapf(util.WrapperMixin):
             if is_ctor:
                 line1 = wformat('{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})', fmt)
                 self.append_method_arguments(F_code, line1)
-            elif subprogram == 'function':
+            elif c_subprogram == 'function':
                 f_return_code = result_typedef.f_return_code
                 if f_return_code is None:
                     f_return_code='{F_result} = {F_C_name}({F_arg_c_call_tab})'

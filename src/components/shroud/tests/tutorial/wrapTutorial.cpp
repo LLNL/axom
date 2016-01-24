@@ -61,15 +61,16 @@ return rv.c_str();
 // splicer end function.function4a
 }
 
-// const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure
+// void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
 // function_index=32
-const char * TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2)
+void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.function4a_bufferify
 std::string SH_arg1(arg1, Larg1);
 std::string SH_arg2(arg2, Larg2);
 const std::string & rv = Function4a(SH_arg1, SH_arg2);
-return rv.c_str();
+asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+return;
 // splicer end function.function4a_bufferify
 }
 
@@ -220,7 +221,7 @@ return;
 }
 
 // void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)
-// function_index=38
+// function_index=37
 void TUT_function10_1_bufferify(const char * name, int Lname, double arg2)
 {
 // splicer begin function.function10_1_bufferify
@@ -318,6 +319,17 @@ const char * TUT_last_function_called()
 const std::string & rv = LastFunctionCalled();
 return rv.c_str();
 // splicer end function.last_function_called
+}
+
+// void LastFunctionCalled(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+// function_index=38
+void TUT_last_function_called_bufferify(char * SH_F_rv, int LSH_F_rv)
+{
+// splicer begin function.last_function_called_bufferify
+const std::string & rv = LastFunctionCalled();
+asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+return;
+// splicer end function.last_function_called_bufferify
 }
 
 // splicer begin additional_functions

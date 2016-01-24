@@ -7,6 +7,7 @@
 #include "wrapExClass2.h"
 #include <string>
 #include "ExClass2.hpp"
+#include "shroudrt.hpp"
 #include "sidre/SidreWrapperHelpers.hpp"
 
 extern "C" {
@@ -14,7 +15,7 @@ namespace example {
 namespace nested {
 
 // ExClass2 * ExClass2(const string * name+intent(in))+constructor
-// function_index=17
+// function_index=18
 AA_exclass2 * AA_exclass2_ex_class2(const char * name)
 {
 
@@ -26,7 +27,7 @@ return static_cast<AA_exclass2 *>(static_cast<void *>(rv));
 }
 
 // ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor
-// function_index=34
+// function_index=35
 AA_exclass2 * AA_exclass2_ex_class2_bufferify(const char * name, int Lname)
 {
 
@@ -38,7 +39,7 @@ return static_cast<AA_exclass2 *>(static_cast<void *>(rv));
 }
 
 // void delete()+destructor
-// function_index=18
+// function_index=19
 void AA_exclass2_delete(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
@@ -48,7 +49,7 @@ delete selfobj;
 }
 
 // const string & getName() const
-// function_index=19
+// function_index=20
 const char * AA_exclass2_get_name(const AA_exclass2 * self)
 {
 const ExClass2 *selfobj = static_cast<const ExClass2 *>(static_cast<const void *>(self));
@@ -58,8 +59,20 @@ return rv.c_str();
 // splicer end class.ExClass2.method.get_name
 }
 
+// void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+// function_index=36
+void AA_exclass2_get_name_bufferify(AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv)
+{
+ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
+// splicer begin class.ExClass2.method.get_name_bufferify
+const std::string & rv = selfobj->getName();
+asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+return;
+// splicer end class.ExClass2.method.get_name_bufferify
+}
+
 // const int GetNameLength()
-// function_index=20
+// function_index=21
 /**
  * \brief helper function for Fortran
  *
@@ -73,7 +86,7 @@ return selfobj->getName().length();
 }
 
 // ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
-// function_index=21
+// function_index=22
 AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, const AA_exclass1 * in)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
@@ -84,7 +97,7 @@ return static_cast<AA_exclass1 *>(static_cast<void *>(rv));
 }
 
 // void * declare(TypeID type+intent(in)+value)
-// function_index=27
+// function_index=28
 void AA_exclass2_declare_0(AA_exclass2 * self, int type)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
@@ -95,7 +108,7 @@ return;
 }
 
 // void * declare(TypeID type+intent(in)+value, SidreLength len+default(1)+intent(in)+value)
-// function_index=22
+// function_index=23
 void AA_exclass2_declare_1(AA_exclass2 * self, int type, ATK_SidreLength len)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
@@ -106,7 +119,7 @@ return;
 }
 
 // void destroyall()
-// function_index=23
+// function_index=24
 void AA_exclass2_destroyall(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
@@ -117,7 +130,7 @@ return;
 }
 
 // TypeID getTypeID() const
-// function_index=24
+// function_index=25
 int AA_exclass2_get_type_id(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
@@ -128,7 +141,7 @@ return rv;
 }
 
 // void setValue(int value+intent(in)+value)
-// function_index=28
+// function_index=29
 void AA_exclass2_set_value_int(AA_exclass2 * self, int value)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
@@ -139,7 +152,7 @@ return;
 }
 
 // void setValue(long value+intent(in)+value)
-// function_index=29
+// function_index=30
 void AA_exclass2_set_value_long(AA_exclass2 * self, long value)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
@@ -150,7 +163,7 @@ return;
 }
 
 // void setValue(float value+intent(in)+value)
-// function_index=30
+// function_index=31
 void AA_exclass2_set_value_float(AA_exclass2 * self, float value)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
@@ -161,7 +174,7 @@ return;
 }
 
 // void setValue(double value+intent(in)+value)
-// function_index=31
+// function_index=32
 void AA_exclass2_set_value_double(AA_exclass2 * self, double value)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
@@ -172,7 +185,7 @@ return;
 }
 
 // int getValue()
-// function_index=32
+// function_index=33
 int AA_exclass2_get_value_int(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
@@ -183,7 +196,7 @@ return rv;
 }
 
 // double getValue()
-// function_index=33
+// function_index=34
 double AA_exclass2_get_value_double(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));

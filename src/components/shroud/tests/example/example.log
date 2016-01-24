@@ -8,8 +8,10 @@ C method ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+construc
 C method void delete()+destructor
 C method int incrementCount(int incr+intent(in)+value)
 C method const string & getName() const
+C method void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C method int GetNameLength() const
 C method const string & getNameErrorCheck() const
+C method void getNameErrorCheck(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C method const string & getNameArg() const
 C method void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
 C method ExClass2 * getRoot()
@@ -25,6 +27,7 @@ C method ExClass2 * ExClass2(const string * name+intent(in))+constructor
 C method ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor
 C method void delete()+destructor
 C method const string & getName() const
+C method void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C method const int GetNameLength()
 C method ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
 C method void * declare(TypeID type+intent(in)+value)
@@ -54,14 +57,15 @@ Close wrapUserLibrary.h
 Close wrapUserLibrary.cpp
 Close shroudrt.hpp
 class ExClass1
-C-interface method ExClass1 * new(const string * name+intent(in))+constructor
+C-interface, Fortran method ExClass1 * new(const string * name+intent(in))+constructor
 C-interface method ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor
-Fortran method ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor
 C-interface, Fortran method void delete()+destructor
 C-interface, Fortran method int incrementCount(int incr+intent(in)+value)
 C-interface, Fortran method const string & getName() const
+C-interface method void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C-interface, Fortran method int GetNameLength() const
 C-interface, Fortran method const string & getNameErrorCheck() const
+C-interface method void getNameErrorCheck(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C-interface method const string & getNameArg() const
 C-interface method void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
 Fortran method void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
@@ -73,11 +77,11 @@ C-interface, Fortran method bool hasAddr(bool in+intent(in)+value)
 C-interface, Fortran method void SplicerSpecial()
 Close wrapfExClass1.f
 class ExClass2
-C-interface method ExClass2 * ExClass2(const string * name+intent(in))+constructor
+C-interface, Fortran method ExClass2 * ExClass2(const string * name+intent(in))+constructor
 C-interface method ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor
-Fortran method ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor
 C-interface, Fortran method void delete()+destructor
 C-interface, Fortran method const string & getName() const
+C-interface method void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C-interface, Fortran method const int GetNameLength()
 C-interface, Fortran method ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
 C-interface method void * declare(TypeID type+intent(in)+value)
@@ -96,16 +100,13 @@ C-interface, Fortran method int getValue()
 C-interface, Fortran method double getValue()
 Close wrapfExClass2.f
 C-interface, Fortran function void local_function1()
-C-interface function bool isNameValid(const std::string & name+intent(in))
+C-interface, Fortran function bool isNameValid(const std::string & name+intent(in))
 C-interface function bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))
-Fortran function bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))
 C-interface, Fortran function bool isInitialized()
-C-interface function void test_names(const std::string & name+intent(in))
+C-interface, Fortran function void test_names(const std::string & name+intent(in))
 C-interface function void test_names(const std::string & name+intent(in)+len_trim(Lname))
-Fortran function void test_names(const std::string & name+intent(in)+len_trim(Lname))
-C-interface function void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
+C-interface, Fortran function void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
 C-interface function void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)
-Fortran function void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)
 C-interface, Fortran function void testoptional()
 C-interface, Fortran function void testoptional(int i+default(1)+intent(in)+value)
 C-interface, Fortran function void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
