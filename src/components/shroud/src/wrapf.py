@@ -571,9 +571,6 @@ class Wrapf(util.WrapperMixin):
             arg_type = arg['type']
             arg_typedef = self.typedef[arg_type]
 
-            if arg_type == 'string_result_as_arg':
-                fmt.result_arg = arg['name']
-
             if arg_typedef.f_argsdecl:
                 need_wrapper = True
                 for argdecl in arg_typedef.f_argsdecl:

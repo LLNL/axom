@@ -9,7 +9,7 @@ Close wrapClass1.h
 Close wrapClass1.cpp
 C function void Function1()
 C function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
-C function void Sum(int len+intent(in)+value, int * values+intent(in)+dimension((*)), int * result+intent(out))
+C function void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))
 C function bool Function3(bool arg+intent(in)+value)
 C function const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
 C function const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure
@@ -46,13 +46,13 @@ C-interface, Fortran method void delete()+destructor
 C-interface, Fortran method void Method1()
 C-interface, Fortran function void Function1()
 C-interface, Fortran function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
-C-interface, Fortran function void Sum(int len+intent(in)+value, int * values+intent(in)+dimension((*)), int * result+intent(out))
+C-interface, Fortran function void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))
 C-interface, Fortran function bool Function3(bool arg+intent(in)+value)
 C-interface function const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
 C-interface function const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure
 Fortran function const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure
 C-interface function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))
-Fortran function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+len(Loutput)+intent(out))
+Fortran function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))
 C-interface, Fortran function double Function5()
 C-interface, Fortran function double Function5(double arg1+default(3.1415)+intent(in)+value)
 C-interface, Fortran function double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
@@ -89,7 +89,7 @@ Python method void Method1()
 Close pyClass1type.cpp
 Python function void Function1()
 Python function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
-Python function void Sum(int len+intent(in)+value, int * values+intent(in)+dimension((*)), int * result+intent(out))
+Python function void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))
 Python function bool Function3(bool arg+intent(in)+value)
 Python function const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
 Python function const std::string Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))

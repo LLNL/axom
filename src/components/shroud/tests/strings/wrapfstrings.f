@@ -151,7 +151,7 @@ contains
         ! splicer end accept_string_const_reference
     end subroutine accept_string_const_reference
     
-    ! void acceptStringReference(std::string & arg1+intent(inout)+len_trim(Larg1)+len(Narg1))
+    ! void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=10
     !>

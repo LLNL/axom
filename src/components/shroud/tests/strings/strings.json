@@ -377,7 +377,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 4, 
-            "_decl": "void acceptStringReference(std::string & arg1+len(Narg1)+len_trim(Larg1)+intent(inout))", 
+            "_decl": "void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 9, 
             "_generated": "string_to_buffer_and_len", 
@@ -420,7 +420,7 @@
         {
             "_PTR_C_CPP_index": 4, 
             "_PTR_F_C_index": 9, 
-            "_decl": "void acceptStringReference(std::string & arg1+intent(inout)+len_trim(Larg1)+len(Narg1))", 
+            "_decl": "void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 10, 
             "_generated": "string_to_buffer_and_len", 

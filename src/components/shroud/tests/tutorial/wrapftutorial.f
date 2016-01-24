@@ -451,7 +451,7 @@ contains
         ! splicer end function4a
     end function function4a
     
-    ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+len(Loutput)+intent(out))
+    ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=35
     subroutine function4b(arg1, arg2, output)

@@ -795,12 +795,17 @@ class GenFunctions(object):
 
     _skip_annotations = [ 'const', 'ptr', 'reference' ]
     def gen_annotations_decl(self, attrs, decl):
-        """Append annotations from attrs onto decl.
+        """Append annotations from attrs onto decl in sorted order.
         Skip some that are already handled.
         """
-        for key, value in attrs.items():
+        keys = attrs.keys()
+        keys.sort()
+        for key in keys:
+            if key[0] == '_':  # internal attribute
+                continue
             if key in self._skip_annotations:
                 continue
+            value = attrs[key]
             if value is True:
                 decl.append('+' + key)
             elif value is False:

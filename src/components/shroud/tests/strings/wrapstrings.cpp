@@ -141,7 +141,7 @@ return;
 // splicer end function.accept_string_reference
 }
 
-// void acceptStringReference(std::string & arg1+len(Narg1)+len_trim(Larg1)+intent(inout))
+// void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
 // function_index=9
 /**
  * \brief Accept a string reference

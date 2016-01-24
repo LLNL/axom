@@ -204,7 +204,7 @@
             }
         }, 
         {
-            "_decl": "void Sum(int len+intent(in)+value, int * values+intent(in)+dimension((*)), int * result+intent(out))", 
+            "_decl": "void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))", 
             "_function_index": 5, 
             "_subprogram": "subroutine", 
             "args": [
@@ -560,7 +560,7 @@
         {
             "_PTR_C_CPP_index": 8, 
             "_PTR_F_C_index": 34, 
-            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+len(Loutput)+intent(out))", 
+            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 35, 
             "_generated": "string_to_buffer_and_len", 

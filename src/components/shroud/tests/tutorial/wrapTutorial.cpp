@@ -29,7 +29,7 @@ return rv;
 // splicer end function.function2
 }
 
-// void Sum(int len+intent(in)+value, int * values+intent(in)+dimension((*)), int * result+intent(out))
+// void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))
 // function_index=5
 void TUT_sum(int len, int * values, int * result)
 {
