@@ -35,6 +35,16 @@ contains
     str = get_char1()
     call assert_true( str == "bird")
 
+    ! character(30) function
+    str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    str = get_char2()
+    call assert_true( str == "bird")
+
+    ! string_result_as_arg
+    str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    call get_char3(str)
+    call assert_true( str == "bird")
+ 
 !--------------------------------------------------
 
     ! character(*) function

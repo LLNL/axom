@@ -13,36 +13,36 @@ functions:
 - decl: const char * getChar1()  +pure
 #  C_error_pattern: C_invalid_name
   doxygen:
-    brief: return a string as character(*)
+    brief: return a 'const char *' as character(*)
 
-#- decl: const char * getChar2+len=30()
-#  C_error_pattern: C_invalid_name
-#  doxygen:
-#    brief: return string with fixed size (len=30)
+- decl: const char * getChar2+len=30()
+#  C_error_pattern: C_char_invalid_name
+  doxygen:
+    brief: return 'const char *' with fixed size (len=30)
 
-#- decl: const char * getChar3() # +pure
-#  C_error_pattern: C_invalid_name
-#  doxygen:
-#    brief: return a string as argument
-#  options:
-#    F_string_result_as_arg: output
+- decl: const char * getChar3() # +pure
+#  C_error_pattern: C_char_invalid_name
+  doxygen:
+    brief: return a 'const char *' as argument
+  options:
+    F_string_result_as_arg: output
 
 ########################################
 
 - decl: const string& getString1()  +pure
 #  C_error_pattern: C_invalid_name
   doxygen:
-    brief: return a string as character(*)
+    brief: return a 'const string&' as character(*)
 
 - decl: const string& getString2+len=30()
   C_error_pattern: C_invalid_name
   doxygen:
-    brief: return string with fixed size (len=30)
+    brief: return 'const string&' with fixed size (len=30)
 
 - decl: const string& getString3() # +pure
   C_error_pattern: C_invalid_name
   doxygen:
-    brief: return a string as argument
+    brief: return a 'const string&' as argument
   options:
     F_string_result_as_arg: output
 

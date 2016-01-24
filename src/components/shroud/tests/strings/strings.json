@@ -34,7 +34,7 @@
             }, 
             "decl": "const char * getChar1()  +pure", 
             "doxygen": {
-                "brief": "return a string as character(*)"
+                "brief": "return a 'const char *' as character(*)"
             }, 
             "fmt": {
                 "C_name": "STR_get_char1", 
@@ -58,7 +58,7 @@
             "_PTR_C_CPP_index": 0, 
             "_decl": "void getChar1(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 6, 
+            "_function_index": 8, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -79,7 +79,7 @@
             }, 
             "decl": "const char * getChar1()  +pure", 
             "doxygen": {
-                "brief": "return a string as character(*)"
+                "brief": "return a 'const char *' as character(*)"
             }, 
             "fmt": {
                 "C_name": "STR_get_char1_bufferify", 
@@ -104,7 +104,7 @@
         {
             "_PTR_F_C_index": 0, 
             "_decl": "const string_result_fstr * getChar1()+pure", 
-            "_function_index": 7, 
+            "_function_index": 9, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {
@@ -112,7 +112,7 @@
             }, 
             "decl": "const char * getChar1()  +pure", 
             "doxygen": {
-                "brief": "return a string as character(*)"
+                "brief": "return a 'const char *' as character(*)"
             }, 
             "fmt": {
                 "F_name_generic": "get_char1", 
@@ -134,8 +134,206 @@
             }
         }, 
         {
-            "_decl": "const string & getString1()+pure", 
+            "_PTR_F_C_index": 10, 
+            "_decl": "const char * getChar2()", 
             "_function_index": 1, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "const char * getChar2+len=30()", 
+            "doxygen": {
+                "brief": "return 'const char *' with fixed size (len=30)"
+            }, 
+            "fmt": {
+                "C_name": "STR_get_char2", 
+                "F_C_name": "str_get_char2", 
+                "F_name_generic": "get_char2", 
+                "F_name_impl": "get_char2", 
+                "F_name_method": "get_char2", 
+                "method_name": "getChar2", 
+                "underscore_name": "get_char2"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "len": 30, 
+                    "ptr": true
+                }, 
+                "name": "getChar2", 
+                "type": "char"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 1, 
+            "_decl": "void getChar2(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 10, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "LSH_F_rv", 
+                        "ptr": true
+                    }, 
+                    "name": "SH_F_rv", 
+                    "type": "char_result_as_arg"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "const char * getChar2+len=30()", 
+            "doxygen": {
+                "brief": "return 'const char *' with fixed size (len=30)"
+            }, 
+            "fmt": {
+                "C_name": "STR_get_char2_bufferify", 
+                "F_C_name": "str_get_char2_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "len": 30, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "getChar2", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "const char * getChar3()", 
+            "_function_index": 2, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "const char * getChar3()", 
+            "doxygen": {
+                "brief": "return a 'const char *' as argument"
+            }, 
+            "fmt": {
+                "C_name": "STR_get_char3", 
+                "F_C_name": "str_get_char3", 
+                "method_name": "getChar3", 
+                "underscore_name": "get_char3"
+            }, 
+            "options": {
+                "F_string_result_as_arg": "output", 
+                "wrap_fortran": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "ptr": true
+                }, 
+                "name": "getChar3", 
+                "type": "char"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 2, 
+            "_decl": "void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 11, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "Loutput", 
+                        "ptr": true
+                    }, 
+                    "name": "output", 
+                    "type": "char_result_as_arg"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "const char * getChar3()", 
+            "doxygen": {
+                "brief": "return a 'const char *' as argument"
+            }, 
+            "fmt": {
+                "C_name": "STR_get_char3_bufferify", 
+                "F_C_name": "str_get_char3_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "getChar3", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 2, 
+            "_PTR_F_C_index": 11, 
+            "_decl": "void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 12, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "Loutput", 
+                        "ptr": true
+                    }, 
+                    "name": "output", 
+                    "type": "char_result_as_arg"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "const char * getChar3()", 
+            "doxygen": {
+                "brief": "return a 'const char *' as argument"
+            }, 
+            "fmt": {
+                "F_name_generic": "get_char3", 
+                "F_name_impl": "get_char3", 
+                "F_name_method": "get_char3", 
+                "function_suffix": ""
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "getChar3", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "const string & getString1()+pure", 
+            "_function_index": 3, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {
@@ -143,7 +341,7 @@
             }, 
             "decl": "const string& getString1()  +pure", 
             "doxygen": {
-                "brief": "return a string as character(*)"
+                "brief": "return a 'const string&' as character(*)"
             }, 
             "fmt": {
                 "C_name": "STR_get_string1", 
@@ -164,10 +362,10 @@
             }
         }, 
         {
-            "_PTR_C_CPP_index": 1, 
+            "_PTR_C_CPP_index": 3, 
             "_decl": "void getString1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 8, 
+            "_function_index": 13, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -188,7 +386,7 @@
             }, 
             "decl": "const string& getString1()  +pure", 
             "doxygen": {
-                "brief": "return a string as character(*)"
+                "brief": "return a 'const string&' as character(*)"
             }, 
             "fmt": {
                 "C_name": "STR_get_string1_bufferify", 
@@ -211,9 +409,9 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 1, 
+            "_PTR_F_C_index": 3, 
             "_decl": "const string_result_fstr & getString1()+pure", 
-            "_function_index": 9, 
+            "_function_index": 14, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {
@@ -221,7 +419,7 @@
             }, 
             "decl": "const string& getString1()  +pure", 
             "doxygen": {
-                "brief": "return a string as character(*)"
+                "brief": "return a 'const string&' as character(*)"
             }, 
             "fmt": {
                 "F_name_generic": "get_string1", 
@@ -244,15 +442,15 @@
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
-            "_PTR_F_C_index": 10, 
+            "_PTR_F_C_index": 15, 
             "_decl": "const string & getString2()", 
-            "_function_index": 2, 
+            "_function_index": 4, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
             "decl": "const string& getString2+len=30()", 
             "doxygen": {
-                "brief": "return string with fixed size (len=30)"
+                "brief": "return 'const string&' with fixed size (len=30)"
             }, 
             "fmt": {
                 "C_name": "STR_get_string2", 
@@ -276,10 +474,10 @@
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
-            "_PTR_C_CPP_index": 2, 
+            "_PTR_C_CPP_index": 4, 
             "_decl": "void getString2(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 10, 
+            "_function_index": 15, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -298,7 +496,7 @@
             "attrs": {}, 
             "decl": "const string& getString2+len=30()", 
             "doxygen": {
-                "brief": "return string with fixed size (len=30)"
+                "brief": "return 'const string&' with fixed size (len=30)"
             }, 
             "fmt": {
                 "C_name": "STR_get_string2_bufferify", 
@@ -324,13 +522,13 @@
         {
             "C_error_pattern": "C_invalid_name", 
             "_decl": "const string & getString3()", 
-            "_function_index": 3, 
+            "_function_index": 5, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
             "decl": "const string& getString3()", 
             "doxygen": {
-                "brief": "return a string as argument"
+                "brief": "return a 'const string&' as argument"
             }, 
             "fmt": {
                 "C_name": "STR_get_string3", 
@@ -353,10 +551,10 @@
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
-            "_PTR_C_CPP_index": 3, 
+            "_PTR_C_CPP_index": 5, 
             "_decl": "void getString3(string_result_as_arg & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 11, 
+            "_function_index": 16, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -375,7 +573,7 @@
             "attrs": {}, 
             "decl": "const string& getString3()", 
             "doxygen": {
-                "brief": "return a string as argument"
+                "brief": "return a 'const string&' as argument"
             }, 
             "fmt": {
                 "C_name": "STR_get_string3_bufferify", 
@@ -399,11 +597,11 @@
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
-            "_PTR_C_CPP_index": 3, 
-            "_PTR_F_C_index": 11, 
+            "_PTR_C_CPP_index": 5, 
+            "_PTR_F_C_index": 16, 
             "_decl": "void getString3(string_result_as_arg & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 12, 
+            "_function_index": 17, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -422,7 +620,7 @@
             "attrs": {}, 
             "decl": "const string& getString3()", 
             "doxygen": {
-                "brief": "return a string as argument"
+                "brief": "return a 'const string&' as argument"
             }, 
             "fmt": {
                 "F_name_generic": "get_string3", 
@@ -446,9 +644,9 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 13, 
+            "_PTR_F_C_index": 18, 
             "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in))", 
-            "_function_index": 4, 
+            "_function_index": 6, 
             "_subprogram": "subroutine", 
             "args": [
                 {
@@ -485,10 +683,10 @@
             }
         }, 
         {
-            "_PTR_C_CPP_index": 4, 
+            "_PTR_C_CPP_index": 6, 
             "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 13, 
+            "_function_index": 18, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -527,9 +725,9 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 14, 
+            "_PTR_F_C_index": 19, 
             "_decl": "void acceptStringReference(std::string & arg1+intent(inout))", 
-            "_function_index": 5, 
+            "_function_index": 7, 
             "_subprogram": "subroutine", 
             "args": [
                 {
@@ -565,10 +763,10 @@
             }
         }, 
         {
-            "_PTR_C_CPP_index": 5, 
+            "_PTR_C_CPP_index": 7, 
             "_decl": "void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 14, 
+            "_function_index": 19, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [

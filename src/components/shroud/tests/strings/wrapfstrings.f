@@ -29,6 +29,38 @@ module strings_mod
             integer(C_INT), value, intent(IN) :: LSH_F_rv
         end subroutine str_get_char1_bufferify
         
+        function str_get_char2() &
+                result(rv) &
+                bind(C, name="STR_get_char2")
+            use iso_c_binding
+            implicit none
+            type(C_PTR) rv
+        end function str_get_char2
+        
+        subroutine str_get_char2_bufferify(SH_F_rv, LSH_F_rv) &
+                bind(C, name="STR_get_char2_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: LSH_F_rv
+        end subroutine str_get_char2_bufferify
+        
+        function str_get_char3() &
+                result(rv) &
+                bind(C, name="STR_get_char3")
+            use iso_c_binding
+            implicit none
+            type(C_PTR) rv
+        end function str_get_char3
+        
+        subroutine str_get_char3_bufferify(output, Loutput) &
+                bind(C, name="STR_get_char3_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: output(*)
+            integer(C_INT), value, intent(IN) :: Loutput
+        end subroutine str_get_char3_bufferify
+        
         pure function str_get_string1() &
                 result(rv) &
                 bind(C, name="STR_get_string1")
@@ -115,9 +147,9 @@ module strings_mod
 contains
     
     ! const string_result_fstr * getChar1()+pure
-    ! function_index=7
+    ! function_index=9
     !>
-    !! \brief return a string as character(*)
+    !! \brief return a 'const char *' as character(*)
     !!
     !<
     function get_char1() result(rv)
@@ -129,10 +161,46 @@ contains
         ! splicer end get_char1
     end function get_char1
     
-    ! const string_result_fstr & getString1()+pure
-    ! function_index=9
+    ! const char * getChar2()
+    ! string_to_buffer_and_len
+    ! function_index=1
     !>
-    !! \brief return a string as character(*)
+    !! \brief return 'const char *' with fixed size (len=30)
+    !!
+    !<
+    function get_char2() result(rv)
+        use iso_c_binding
+        implicit none
+        character(kind=C_CHAR, len=30) :: rv
+        ! splicer begin get_char2
+        call str_get_char2_bufferify(  &
+            rv,  &
+            len(rv, kind=C_INT))
+        ! splicer end get_char2
+    end function get_char2
+    
+    ! void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))
+    ! string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=12
+    !>
+    !! \brief return a 'const char *' as argument
+    !!
+    !<
+    subroutine get_char3(output)
+        use iso_c_binding
+        implicit none
+        character(*), intent(OUT) :: output
+        ! splicer begin get_char3
+        call str_get_char3_bufferify(  &
+            output,  &
+            len(output, kind=C_INT))
+        ! splicer end get_char3
+    end subroutine get_char3
+    
+    ! const string_result_fstr & getString1()+pure
+    ! function_index=14
+    !>
+    !! \brief return a 'const string&' as character(*)
     !!
     !<
     function get_string1() result(rv)
@@ -146,9 +214,9 @@ contains
     
     ! const string & getString2()
     ! string_to_buffer_and_len
-    ! function_index=2
+    ! function_index=4
     !>
-    !! \brief return string with fixed size (len=30)
+    !! \brief return 'const string&' with fixed size (len=30)
     !!
     !<
     function get_string2() result(rv)
@@ -164,9 +232,9 @@ contains
     
     ! void getString3(string_result_as_arg & output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=12
+    ! function_index=17
     !>
-    !! \brief return a string as argument
+    !! \brief return a 'const string&' as argument
     !!
     !<
     subroutine get_string3(output)
@@ -182,7 +250,7 @@ contains
     
     ! void acceptStringConstReference(const std::string & arg1+intent(in))
     ! string_to_buffer_and_len
-    ! function_index=4
+    ! function_index=6
     !>
     !! \brief Accept a const string reference
     !!
@@ -203,7 +271,7 @@ contains
     
     ! void acceptStringReference(std::string & arg1+intent(inout))
     ! string_to_buffer_and_len
-    ! function_index=5
+    ! function_index=7
     !>
     !! \brief Accept a string reference
     !!

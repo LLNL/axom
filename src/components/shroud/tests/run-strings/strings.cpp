@@ -17,6 +17,16 @@ const char * getChar1()
     return static_char;
 }
 
+const char * getChar2()
+{
+    return static_char;
+}
+
+const char * getChar3()
+{
+    return static_char;
+}
+
 //----------------------------------------
 
 const std::string& getString1()

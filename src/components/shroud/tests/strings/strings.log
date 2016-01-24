@@ -1,6 +1,10 @@
 Read yaml strings.yaml
 C function const char * getChar1()+pure
 C function void getChar1(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+C function const char * getChar2()
+C function void getChar2(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))
+C function const char * getChar3()
+C function void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))
 C function const string & getString1()+pure
 C function void getString1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
 C function const string & getString2()
@@ -17,6 +21,11 @@ Close shroudrt.hpp
 C-interface function const char * getChar1()+pure
 C-interface function void getChar1(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))+pure
 Fortran function const string_result_fstr * getChar1()+pure
+C-interface, Fortran function const char * getChar2()
+C-interface function void getChar2(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))
+C-interface function const char * getChar3()
+C-interface function void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))
+Fortran function void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))
 C-interface function const string & getString1()+pure
 C-interface function void getString1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
 Fortran function const string_result_fstr & getString1()+pure

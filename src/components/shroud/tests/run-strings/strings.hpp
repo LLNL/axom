@@ -8,8 +8,8 @@
 #include <string>
 
 const char * getChar1();
-//const char * getChar2();
-//const char * getChar3();
+const char * getChar2();
+const char * getChar3();
 
 const std::string& getString1();
 const std::string& getString2();

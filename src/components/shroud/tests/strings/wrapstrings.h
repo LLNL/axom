@@ -22,6 +22,14 @@ const char * STR_get_char1();
 
 void STR_get_char1_bufferify(char * SH_F_rv, int LSH_F_rv);
 
+const char * STR_get_char2();
+
+void STR_get_char2_bufferify(char * SH_F_rv, int LSH_F_rv);
+
+const char * STR_get_char3();
+
+void STR_get_char3_bufferify(char * output, int Loutput);
+
 const char * STR_get_string1();
 
 void STR_get_string1_bufferify(char * SH_F_rv, int LSH_F_rv);
