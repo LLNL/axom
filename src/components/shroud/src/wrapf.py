@@ -41,9 +41,6 @@ from __future__ import print_function
 
 import util
 from util import wformat, append_format
-import itertools
-
-zip_longest = itertools.izip_longest
 
 class Wrapf(util.WrapperMixin):
     """Generate Fortran bindings.
@@ -552,41 +549,52 @@ class Wrapf(util.WrapperMixin):
                         'class({F_derived_name}) :: {F_this}',
                         fmt))
 
+        #
+        # Fortran and C arguments may have different types (fortran generic)
+        #
         result_arg = None  # indicate which argument contains function result, usually none
         fmt.result_arg = 'UUU_result_arg'
         optional = []
-        for arg, arg_call in zip_longest(node['args'], C_node['args']):
-            if arg_call is None:
-                # more arguments to wrapper than C function, assume result
-                result_arg = arg
-                fmt.result_arg = arg['name']
-
-            attrs = arg['attrs']
-
-            fmt.var = arg['name']
+        f_args = node['args']
+        f_index = -1       # index into f_args
+        for c_index, c_arg in enumerate(C_node['args']):
+            fmt.var = c_arg['name']
             fmt.tmp_var = 'tmp_' + fmt.var
-            arg_f_names.append(fmt.var)
-            arg_f_decl.append(self._f_decl(arg))
 
-            arg_type = arg['type']
-            arg_typedef = self.typedef[arg_type]
+            f_arg = True   # assume C and Fortran arguments match
+            c_attrs = c_arg['attrs']
+            if c_attrs.get('_is_result', False):
+                result_as_arg = options.F_string_result_as_arg
+                if not result_as_arg:
+                    # passing Fortran function result variable down to C
+                    f_arg = False
+                    result_arg = c_arg
+                    fmt.result_arg = result_as_arg   # c_arg['name']
+                    #                fmt.var = 'rv'
+                    #                fmt.tmp_var = 'tmp_rv'
 
-            if arg_typedef.f_argsdecl:
-                need_wrapper = True
-                for argdecl in arg_typedef.f_argsdecl:
-                    append_format(arg_f_decl, argdecl, fmt)
-            if arg_typedef.f_pre_call:
-                need_wrapper = True
-                append_format(optional, arg_typedef.f_pre_call, fmt)
-            if arg_typedef.f_use_tmp:
-                fmt.var = fmt.tmp_var
+            if f_arg:
+                f_index += 1
+                f_arg = f_args[f_index]
+                arg_f_names.append(fmt.var)
+                arg_f_decl.append(self._f_decl(f_arg))
 
-            # Then C function arguments
-            # match to corresponding C argument -- must have same number of args.
-            # may have different types, like generic
+                arg_type = f_arg['type']
+                arg_typedef = self.typedef[arg_type]
+
+                if arg_typedef.f_argsdecl:
+                    need_wrapper = True
+                    for argdecl in arg_typedef.f_argsdecl:
+                        append_format(arg_f_decl, argdecl, fmt)
+                if arg_typedef.f_pre_call:
+                    need_wrapper = True
+                    append_format(optional, arg_typedef.f_pre_call, fmt)
+                if arg_typedef.f_use_tmp:
+                    fmt.var = fmt.tmp_var
+
+            # Now C function arguments
+            # May have different types, like generic
             # or different attributes, like adding +len to string args
-#            c_arg = c_args[i]
-            c_arg = arg_call  # XXXX shortcut
             arg_typedef = self.typedef[c_arg['type']]
 
             # Attributes   None=skip, True=use default, else use value
@@ -595,7 +603,7 @@ class Wrapf(util.WrapperMixin):
             if arg_typedef.f_args:
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_args, fmt)
-            elif c_arg['type'] != arg['type']:
+            elif f_arg and c_arg['type'] != f_arg['type']:
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_cast, fmt)
             else:
