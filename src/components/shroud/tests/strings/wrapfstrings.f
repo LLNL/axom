@@ -13,53 +13,53 @@ module strings_mod
     
     interface
         
-        pure function str_get_name1() &
+        pure function str_get_string1() &
                 result(rv) &
-                bind(C, name="STR_get_name1")
+                bind(C, name="STR_get_string1")
             use iso_c_binding
             implicit none
             type(C_PTR) rv
-        end function str_get_name1
+        end function str_get_string1
         
-        subroutine str_get_name1_bufferify(SH_F_rv, LSH_F_rv) &
-                bind(C, name="STR_get_name1_bufferify")
+        subroutine str_get_string1_bufferify(SH_F_rv, LSH_F_rv) &
+                bind(C, name="STR_get_string1_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
             integer(C_INT), value, intent(IN) :: LSH_F_rv
-        end subroutine str_get_name1_bufferify
+        end subroutine str_get_string1_bufferify
         
-        function str_get_name2() &
+        function str_get_string2() &
                 result(rv) &
-                bind(C, name="STR_get_name2")
+                bind(C, name="STR_get_string2")
             use iso_c_binding
             implicit none
             type(C_PTR) rv
-        end function str_get_name2
+        end function str_get_string2
         
-        subroutine str_get_name2_bufferify(SH_F_rv, LSH_F_rv) &
-                bind(C, name="STR_get_name2_bufferify")
+        subroutine str_get_string2_bufferify(SH_F_rv, LSH_F_rv) &
+                bind(C, name="STR_get_string2_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
             integer(C_INT), value, intent(IN) :: LSH_F_rv
-        end subroutine str_get_name2_bufferify
+        end subroutine str_get_string2_bufferify
         
-        function str_get_name() &
+        function str_get_string3() &
                 result(rv) &
-                bind(C, name="STR_get_name")
+                bind(C, name="STR_get_string3")
             use iso_c_binding
             implicit none
             type(C_PTR) rv
-        end function str_get_name
+        end function str_get_string3
         
-        subroutine str_get_name_bufferify(output, Loutput) &
-                bind(C, name="STR_get_name_bufferify")
+        subroutine str_get_string3_bufferify(output, Loutput) &
+                bind(C, name="STR_get_string3_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: output(*)
             integer(C_INT), value, intent(IN) :: Loutput
-        end subroutine str_get_name_bufferify
+        end subroutine str_get_string3_bufferify
         
         subroutine str_accept_string_const_reference(arg1) &
                 bind(C, name="STR_accept_string_const_reference")
@@ -98,56 +98,56 @@ module strings_mod
 
 contains
     
-    ! const string_result_fstr & getName1()+pure
+    ! const string_result_fstr & getString1()+pure
     ! function_index=6
     !>
     !! \brief return a string as character(*)
     !!
     !<
-    function get_name1() result(rv)
+    function get_string1() result(rv)
         use iso_c_binding
         implicit none
-        character(kind=C_CHAR, len=strlen_ptr(str_get_name1())) :: rv
-        ! splicer begin get_name1
-        rv = fstr(str_get_name1())
-        ! splicer end get_name1
-    end function get_name1
+        character(kind=C_CHAR, len=strlen_ptr(str_get_string1())) :: rv
+        ! splicer begin get_string1
+        rv = fstr(str_get_string1())
+        ! splicer end get_string1
+    end function get_string1
     
-    ! const string & getName2()
+    ! const string & getString2()
     ! string_to_buffer_and_len
     ! function_index=1
     !>
     !! \brief return string with fixed size (len=30)
     !!
     !<
-    function get_name2() result(rv)
+    function get_string2() result(rv)
         use iso_c_binding
         implicit none
         character(kind=C_CHAR, len=30) :: rv
-        ! splicer begin get_name2
-        call str_get_name2_bufferify(  &
+        ! splicer begin get_string2
+        call str_get_string2_bufferify(  &
             rv,  &
             len(rv, kind=C_INT))
-        ! splicer end get_name2
-    end function get_name2
+        ! splicer end get_string2
+    end function get_string2
     
-    ! void getName(string_result_as_arg & output+intent(out)+len(Loutput))
+    ! void getString3(string_result_as_arg & output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=9
     !>
     !! \brief return a string as argument
     !!
     !<
-    subroutine get_name(output)
+    subroutine get_string3(output)
         use iso_c_binding
         implicit none
         character(*), intent(OUT) :: output
-        ! splicer begin get_name
-        call str_get_name_bufferify(  &
+        ! splicer begin get_string3
+        call str_get_string3_bufferify(  &
             output,  &
             len(output, kind=C_INT))
-        ! splicer end get_name
-    end subroutine get_name
+        ! splicer end get_string3
+    end subroutine get_string3
     
     ! void acceptStringConstReference(const std::string & arg1+intent(in))
     ! string_to_buffer_and_len

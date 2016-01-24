@@ -8,75 +8,64 @@
 
 extern "C" {
 
-// const string & getName1()+pure
+// const string & getString1()+pure
 // function_index=0
 /**
  * \brief return a string as character(*)
  *
  */
-const char * STR_get_name1()
+const char * STR_get_string1()
 {
-// splicer begin function.get_name1
-const std::string & rv = getName1();
-// check for error
-if (rv.empty()) {
-    return NULL;
-}
-
+// splicer begin function.get_string1
+const std::string & rv = getString1();
 return rv.c_str();
-// splicer end function.get_name1
+// splicer end function.get_string1
 }
 
-// void getName1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+// void getString1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
 // function_index=5
 /**
  * \brief return a string as character(*)
  *
  */
-void STR_get_name1_bufferify(char * SH_F_rv, int LSH_F_rv)
+void STR_get_string1_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
-// splicer begin function.get_name1_bufferify
-const std::string & rv = getName1();
-// check for error
-if (rv.empty()) {
-    std::memset(SH_F_rv, ' ', LSH_F_rv);
-    return;
-}
-
+// splicer begin function.get_string1_bufferify
+const std::string & rv = getString1();
 asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
 return;
-// splicer end function.get_name1_bufferify
+// splicer end function.get_string1_bufferify
 }
 
-// const string & getName2()
+// const string & getString2()
 // function_index=1
 /**
  * \brief return string with fixed size (len=30)
  *
  */
-const char * STR_get_name2()
+const char * STR_get_string2()
 {
-// splicer begin function.get_name2
-const std::string & rv = getName2();
+// splicer begin function.get_string2
+const std::string & rv = getString2();
 // check for error
 if (rv.empty()) {
     return NULL;
 }
 
 return rv.c_str();
-// splicer end function.get_name2
+// splicer end function.get_string2
 }
 
-// void getName2(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))
+// void getString2(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))
 // function_index=7
 /**
  * \brief return string with fixed size (len=30)
  *
  */
-void STR_get_name2_bufferify(char * SH_F_rv, int LSH_F_rv)
+void STR_get_string2_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
-// splicer begin function.get_name2_bufferify
-const std::string & rv = getName2();
+// splicer begin function.get_string2_bufferify
+const std::string & rv = getString2();
 // check for error
 if (rv.empty()) {
     std::memset(SH_F_rv, ' ', LSH_F_rv);
@@ -85,38 +74,38 @@ if (rv.empty()) {
 
 asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
 return;
-// splicer end function.get_name2_bufferify
+// splicer end function.get_string2_bufferify
 }
 
-// const string & getName()
+// const string & getString3()
 // function_index=2
 /**
  * \brief return a string as argument
  *
  */
-const char * STR_get_name()
+const char * STR_get_string3()
 {
-// splicer begin function.get_name
-const std::string & rv = getName();
+// splicer begin function.get_string3
+const std::string & rv = getString3();
 // check for error
 if (rv.empty()) {
     return NULL;
 }
 
 return rv.c_str();
-// splicer end function.get_name
+// splicer end function.get_string3
 }
 
-// void getName(string_result_as_arg & output+intent(out)+len(Loutput))
+// void getString3(string_result_as_arg & output+intent(out)+len(Loutput))
 // function_index=8
 /**
  * \brief return a string as argument
  *
  */
-void STR_get_name_bufferify(char * output, int Loutput)
+void STR_get_string3_bufferify(char * output, int Loutput)
 {
-// splicer begin function.get_name_bufferify
-const std::string & rv = getName();
+// splicer begin function.get_string3_bufferify
+const std::string & rv = getString3();
 // check for error
 if (rv.empty()) {
     std::memset(output, ' ', Loutput);
@@ -125,7 +114,7 @@ if (rv.empty()) {
 
 asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
 return;
-// splicer end function.get_name_bufferify
+// splicer end function.get_string3_bufferify
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in))

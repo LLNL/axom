@@ -25,23 +25,22 @@
     }, 
     "functions": [
         {
-            "C_error_pattern": "C_invalid_name", 
-            "_decl": "const string & getName1()+pure", 
+            "_decl": "const string & getString1()+pure", 
             "_function_index": 0, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {
                 "pure": true
             }, 
-            "decl": "const string& getName1()  +pure", 
+            "decl": "const string& getString1()  +pure", 
             "doxygen": {
                 "brief": "return a string as character(*)"
             }, 
             "fmt": {
-                "C_name": "STR_get_name1", 
-                "F_C_name": "str_get_name1", 
-                "method_name": "getName1", 
-                "underscore_name": "get_name1"
+                "C_name": "STR_get_string1", 
+                "F_C_name": "str_get_string1", 
+                "method_name": "getString1", 
+                "underscore_name": "get_string1"
             }, 
             "options": {
                 "wrap_fortran": false
@@ -51,14 +50,13 @@
                     "const": true, 
                     "reference": true
                 }, 
-                "name": "getName1", 
+                "name": "getString1", 
                 "type": "string"
             }
         }, 
         {
-            "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 0, 
-            "_decl": "void getName1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
+            "_decl": "void getString1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 5, 
             "_generated": "string_to_buffer_and_len", 
@@ -79,13 +77,13 @@
             "attrs": {
                 "pure": true
             }, 
-            "decl": "const string& getName1()  +pure", 
+            "decl": "const string& getString1()  +pure", 
             "doxygen": {
                 "brief": "return a string as character(*)"
             }, 
             "fmt": {
-                "C_name": "STR_get_name1_bufferify", 
-                "F_C_name": "str_get_name1_bufferify", 
+                "C_name": "STR_get_string1_bufferify", 
+                "F_C_name": "str_get_string1_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -99,28 +97,27 @@
                     "ptr": false, 
                     "reference": false
                 }, 
-                "name": "getName1", 
+                "name": "getString1", 
                 "type": "void"
             }
         }, 
         {
-            "C_error_pattern": "C_invalid_name", 
             "_PTR_F_C_index": 0, 
-            "_decl": "const string_result_fstr & getName1()+pure", 
+            "_decl": "const string_result_fstr & getString1()+pure", 
             "_function_index": 6, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {
                 "pure": true
             }, 
-            "decl": "const string& getName1()  +pure", 
+            "decl": "const string& getString1()  +pure", 
             "doxygen": {
                 "brief": "return a string as character(*)"
             }, 
             "fmt": {
-                "F_name_generic": "get_name1", 
-                "F_name_impl": "get_name1", 
-                "F_name_method": "get_name1"
+                "F_name_generic": "get_string1", 
+                "F_name_impl": "get_string1", 
+                "F_name_method": "get_string1"
             }, 
             "options": {
                 "wrap_c": false, 
@@ -132,30 +129,30 @@
                     "const": true, 
                     "reference": true
                 }, 
-                "name": "getName1", 
+                "name": "getString1", 
                 "type": "string_result_fstr"
             }
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
             "_PTR_F_C_index": 7, 
-            "_decl": "const string & getName2()", 
+            "_decl": "const string & getString2()", 
             "_function_index": 1, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
-            "decl": "const string& getName2+len=30()", 
+            "decl": "const string& getString2+len=30()", 
             "doxygen": {
                 "brief": "return string with fixed size (len=30)"
             }, 
             "fmt": {
-                "C_name": "STR_get_name2", 
-                "F_C_name": "str_get_name2", 
-                "F_name_generic": "get_name2", 
-                "F_name_impl": "get_name2", 
-                "F_name_method": "get_name2", 
-                "method_name": "getName2", 
-                "underscore_name": "get_name2"
+                "C_name": "STR_get_string2", 
+                "F_C_name": "str_get_string2", 
+                "F_name_generic": "get_string2", 
+                "F_name_impl": "get_string2", 
+                "F_name_method": "get_string2", 
+                "method_name": "getString2", 
+                "underscore_name": "get_string2"
             }, 
             "options": {}, 
             "result": {
@@ -164,14 +161,14 @@
                     "len": 30, 
                     "reference": true
                 }, 
-                "name": "getName2", 
+                "name": "getString2", 
                 "type": "string"
             }
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 1, 
-            "_decl": "void getName2(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))", 
+            "_decl": "void getString2(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 7, 
             "_generated": "string_to_buffer_and_len", 
@@ -190,13 +187,13 @@
                 }
             ], 
             "attrs": {}, 
-            "decl": "const string& getName2+len=30()", 
+            "decl": "const string& getString2+len=30()", 
             "doxygen": {
                 "brief": "return string with fixed size (len=30)"
             }, 
             "fmt": {
-                "C_name": "STR_get_name2_bufferify", 
-                "F_C_name": "str_get_name2_bufferify", 
+                "C_name": "STR_get_string2_bufferify", 
+                "F_C_name": "str_get_string2_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -211,26 +208,26 @@
                     "ptr": false, 
                     "reference": false
                 }, 
-                "name": "getName2", 
+                "name": "getString2", 
                 "type": "void"
             }
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
-            "_decl": "const string & getName()", 
+            "_decl": "const string & getString3()", 
             "_function_index": 2, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
-            "decl": "const string& getName()", 
+            "decl": "const string& getString3()", 
             "doxygen": {
                 "brief": "return a string as argument"
             }, 
             "fmt": {
-                "C_name": "STR_get_name", 
-                "F_C_name": "str_get_name", 
-                "method_name": "getName", 
-                "underscore_name": "get_name"
+                "C_name": "STR_get_string3", 
+                "F_C_name": "str_get_string3", 
+                "method_name": "getString3", 
+                "underscore_name": "get_string3"
             }, 
             "options": {
                 "F_string_result_as_arg": "output", 
@@ -241,14 +238,14 @@
                     "const": true, 
                     "reference": true
                 }, 
-                "name": "getName", 
+                "name": "getString3", 
                 "type": "string"
             }
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 2, 
-            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))", 
+            "_decl": "void getString3(string_result_as_arg & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 8, 
             "_generated": "string_to_buffer_and_len", 
@@ -267,13 +264,13 @@
                 }
             ], 
             "attrs": {}, 
-            "decl": "const string& getName()", 
+            "decl": "const string& getString3()", 
             "doxygen": {
                 "brief": "return a string as argument"
             }, 
             "fmt": {
-                "C_name": "STR_get_name_bufferify", 
-                "F_C_name": "str_get_name_bufferify", 
+                "C_name": "STR_get_string3_bufferify", 
+                "F_C_name": "str_get_string3_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -287,7 +284,7 @@
                     "ptr": false, 
                     "reference": false
                 }, 
-                "name": "getName", 
+                "name": "getString3", 
                 "type": "void"
             }
         }, 
@@ -295,7 +292,7 @@
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 2, 
             "_PTR_F_C_index": 8, 
-            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))", 
+            "_decl": "void getString3(string_result_as_arg & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 9, 
             "_generated": "string_to_buffer_and_len", 
@@ -314,14 +311,14 @@
                 }
             ], 
             "attrs": {}, 
-            "decl": "const string& getName()", 
+            "decl": "const string& getString3()", 
             "doxygen": {
                 "brief": "return a string as argument"
             }, 
             "fmt": {
-                "F_name_generic": "get_name", 
-                "F_name_impl": "get_name", 
-                "F_name_method": "get_name", 
+                "F_name_generic": "get_string3", 
+                "F_name_impl": "get_string3", 
+                "F_name_method": "get_string3", 
                 "function_suffix": ""
             }, 
             "options": {
@@ -335,7 +332,7 @@
                     "ptr": false, 
                     "reference": false
                 }, 
-                "name": "getName", 
+                "name": "getString3", 
                 "type": "void"
             }
         }, 

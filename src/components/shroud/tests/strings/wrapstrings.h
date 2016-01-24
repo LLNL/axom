@@ -18,17 +18,17 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
-const char * STR_get_name1();
+const char * STR_get_string1();
 
-void STR_get_name1_bufferify(char * SH_F_rv, int LSH_F_rv);
+void STR_get_string1_bufferify(char * SH_F_rv, int LSH_F_rv);
 
-const char * STR_get_name2();
+const char * STR_get_string2();
 
-void STR_get_name2_bufferify(char * SH_F_rv, int LSH_F_rv);
+void STR_get_string2_bufferify(char * SH_F_rv, int LSH_F_rv);
 
-const char * STR_get_name();
+const char * STR_get_string3();
 
-void STR_get_name_bufferify(char * output, int Loutput);
+void STR_get_string3_bufferify(char * output, int Loutput);
 
 void STR_accept_string_const_reference(const char * arg1);
 
