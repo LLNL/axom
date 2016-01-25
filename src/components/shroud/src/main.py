@@ -256,12 +256,13 @@ class Schema(object):
                             ],
                         ),
                     intent_out = dict(
-#                    pre_call = [
-#                       'char * {cpp_var} = new char [{c_var_len} + 1];',
-#                       ],
+                        pre_call = [
+                            'int {c_var_len} = strlen({c_var});',
+                            'char * {cpp_var} = new char [{c_var_len} + 1];',
+                            ],
                         post_call = [
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
-#                    'delete [] {cpp_var};',
+                            'delete [] {cpp_var};',
                             ],
                         ),
                     result = dict(
@@ -301,6 +302,9 @@ class Schema(object):
                             ],
                     ),
                     intent_out = dict(
+                        pre_call = [
+                            'int {c_var_len} = strlen({c_var});',
+                            ],
                         post_call = [
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             ],

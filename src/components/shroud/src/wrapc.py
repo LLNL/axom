@@ -305,8 +305,8 @@ class Wrapc(util.WrapperMixin):
 
 #
 #    c_var     - argument to C function  (wrapper function)
-#    c_var_len -
-#    c_var_num - 
+#    c_var_len - variable with trimmed length of c_var
+#    c_var_num - variable with length of c_var
 #    cpp_var   - argument to C++ function  (wrapped function)
 #
 #
@@ -317,8 +317,8 @@ class Wrapc(util.WrapperMixin):
             c_statements = arg_typedef.c_statements
             fmt.var = arg['name']
             fmt.c_var = arg['name']
-            fmt.c_var_len = '0'  # XXXX
-            fmt.c_var_num = '0'  # XXXX
+            fmt.c_var_len = 'L' + fmt.c_var
+            fmt.c_var_num = 'N' + fmt.c_var
             fmt.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
 
             if c_attrs.get('_is_result', False):
@@ -365,7 +365,7 @@ class Wrapc(util.WrapperMixin):
                 else:
                     cmd_list = c_statements.get(intent,{}).get('pre_call',[])
                 if cmd_list:
-                    fmt.cpp_var = 'SH_' + fmt.cpp_var
+                    fmt.cpp_var = 'SH_' + fmt.c_var
                     for cmd in cmd_list:
                         append_format(pre_call, cmd, fmt)
 

@@ -253,8 +253,9 @@ void STR_accept_string_reference(char * arg1)
 {
 // splicer begin function.accept_string_reference
 std::string SH_arg1(arg1);
+int Larg1 = strlen(arg1);
 acceptStringReference(SH_arg1);
-asctoolkit::shroud::FccCopy(arg1, 0, SH_arg1.c_str());
+asctoolkit::shroud::FccCopy(arg1, Larg1, SH_arg1.c_str());
 return;
 // splicer end function.accept_string_reference
 }
