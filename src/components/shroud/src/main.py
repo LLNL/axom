@@ -238,26 +238,33 @@ class Schema(object):
 
                 c_type   = 'char',    # XXX - char *
 
-                c_pre_intent_in = [
-                    'int {c_var_len} = strlen({c_var});',
-                    'char * {cpp_var} = new char [{c_var_len} + 1];',
-                    'std::strncpy({cpp_var}, {var}, {c_var_len});',
-                    '{cpp_var}[{c_var_len}] = \'\\0\';'
-                    ],
-                c_pre_intent_in_trim = [
-                    'char * {cpp_var} = new char [{c_var_len} + 1];',
-                    'std::strncpy({cpp_var}, {var}, {c_var_len});',
-                    '{cpp_var}[{c_var_len}] = \'\\0\';'
-                    ],
-                c_post_intent_in = [ 'delete [] {cpp_var};' ],
-
-#                c_pre_intent_out = [
-#                    'char * {cpp_var} = new char [{c_var_len} + 1];',
-#                    ],
-                c_post_intent_out = [
-                    'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                c_statements = dict(
+                    intent_in = dict(
+                        pre_call = [
+                            'int {c_var_len} = strlen({c_var});',
+                            'char * {cpp_var} = new char [{c_var_len} + 1];',
+                            'std::strncpy({cpp_var}, {var}, {c_var_len});',
+                            '{cpp_var}[{c_var_len}] = \'\\0\';'
+                            ],
+                        pre_call_trim = [
+                            'char * {cpp_var} = new char [{c_var_len} + 1];',
+                            'std::strncpy({cpp_var}, {var}, {c_var_len});',
+                            '{cpp_var}[{c_var_len}] = \'\\0\';'
+                            ],
+                        post_call = [
+                            'delete [] {cpp_var};'
+                            ],
+                        ),
+                    intent_out = dict(
+#                    pre_call = [
+#                       'char * {cpp_var} = new char [{c_var_len} + 1];',
+#                       ],
+                        post_call = [
+                            'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
 #                    'delete [] {cpp_var};',
-                    ],
+                            ],
+                        ),
+                    ),
                 c_to_cpp  = '{cpp_var}',                                  
 
                 c_fortran  = 'character(kind=C_CHAR)',
@@ -278,12 +285,26 @@ class Schema(object):
                 cpp_to_c = '{var}.c_str()',  # . or ->
 
                 c_type   = 'char',    # XXX - char *
-                c_pre_intent_in = ['std::string {cpp_var}({c_var});'],
-                c_pre_intent_in_trim = ['std::string {cpp_var}({c_var}, {c_var_trim});'],
-#                c_post_intent_in = [ 'delete {cpp_var};' ],
-                c_post_intent_out = [
-                    'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
-                    ],
+
+                c_statements = dict(
+                    intent_in = dict(
+                        pre_call = [
+                            'std::string {cpp_var}({c_var});'
+                            ],
+                        pre_call_trim = [
+                            'std::string {cpp_var}({c_var}, {c_var_trim});'
+                            ],
+#                       post_call = [
+#                           'delete {cpp_var};'
+#                       ],
+                    ),
+                    intent_out = dict(
+                        post_call = [
+                            'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            ],
+                        ),
+                    ),
+
                 c_to_cpp  = '{cpp_var}',                                  
 
                 c_fortran  = 'character(kind=C_CHAR)',

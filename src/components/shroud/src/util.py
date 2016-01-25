@@ -276,14 +276,7 @@ class Typedef(object):
         c_fortran=None,       # Expression to convert from C to Fortran
         c_argdecl=None,       # List of argument declarations for C wrapper, None=match declaration
                               # used with string_from_buffer
-#        c_pre_call = None,    # Statement to execute before call
-#        c_post_call = None,   # Statement to execute after call
-        c_pre_intent_in=None,  # Code to add for intent(IN) (create string from pointer)
-        c_pre_intent_in_trim=None,  # Code to add for intent(IN) with len_trim attribute 
-                                # (create string from pointer and length)
-        c_post_intent_in=None,  # Code to execute after call for intent(IN)
-        c_pre_intent_out = None,  # Code to add after call when intent(OUT) or intent(INOUT).
-        c_post_intent_out = None,  # Code to add after call when intent(OUT) or intent(INOUT).
+        c_statements={},
         c_return_code=None,
 
         f_c_args=None,        # List of argument names to F_C routine
