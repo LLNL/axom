@@ -463,10 +463,45 @@ TEST( quest_boundingBox, bb_shift)
 
 }
 
+//------------------------------------------------------------------------------
+TEST( quest_boundingBox, bb_longest_dimension )
+{
+  typedef quest::Point<double,2> PointType;
+  typedef quest::BoundingBox<double,2> BoxType;
 
+  BoxType bbox( PointType::zero(), PointType::make_point(5.0,10.0) );
+  int longest_dimension = bbox.getLongestDimension();
+  EXPECT_EQ( 1, longest_dimension );
+}
 
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
+//------------------------------------------------------------------------------
+TEST( quest_boundingBox, bb_bisect )
+{
+  typedef quest::Point<double,2> PointType;
+  typedef quest::BoundingBox<double,2> BoxType;
+
+  BoxType bbox( PointType::zero(), PointType::ones() );
+
+  // Bisect along x
+  BoxType right_x;
+  BoxType left_x;
+  bbox.bisect( right_x, left_x, 0 );
+  EXPECT_EQ( bbox.getMin(), right_x.getMin() );
+  EXPECT_EQ( PointType::make_point(0.5,1.0), right_x.getMax() );
+  EXPECT_EQ( PointType::make_point(0.5,0.0), left_x.getMin() );
+  EXPECT_EQ( bbox.getMax(), left_x.getMax() );
+
+  // Bisect along y
+  BoxType bottom;
+  BoxType top;
+  bbox.bisect( bottom, top, 1 );
+  EXPECT_EQ( bbox.getMin(), bottom.getMin() );
+  EXPECT_EQ( PointType::make_point(1.0,0.5), bottom.getMax() );
+  EXPECT_EQ( PointType::make_point(0.0,0.5), top.getMin() );
+  EXPECT_EQ( bbox.getMax(), top.getMax() );
+}
+
+//------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 

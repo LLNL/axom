@@ -84,6 +84,9 @@ public:
 
     /*! \brief The underlying Vector type of the bounding box */
     typedef Vector<CoordType, DIM> VectorType;
+
+    /*! \brief The corresponding BoxType */
+    typedef BoundingBox<CoordType,DIM> BoxType;
 public:
 
   /*!
@@ -134,16 +137,32 @@ public:
    * \brief Destructor.
    *****************************************************************************
    */
-   ~BoundingBox() {}
+  ~BoundingBox() {}
 
 
-   /*!
-    *****************************************************************************
-    * \brief Resets the bounds to those of the default constructor
-    * \note This invalidates the bounding box (i.e. isValid() will be false)
-    *****************************************************************************
-    */
-   void clear();
+  /*!
+   *****************************************************************************
+   * \brief Resets the bounds to those of the default constructor
+   * \note This invalidates the bounding box (i.e. isValid() will be false)
+   *****************************************************************************
+   */
+  void clear();
+
+  /*!
+   *****************************************************************************
+   * \brief Sets the min point for this bounding box instance.
+   * \param [in] newMin the new min point.
+   *****************************************************************************
+   */
+  void setMin( const PointType& newMin ) { m_min = newMin; };
+
+  /*!
+   *****************************************************************************
+   * \brief Sets the max point for this bounding box instance.
+   * \param [in] newMax the new max point.
+   *****************************************************************************
+   */
+  void setMax( const PointType& newMax ) { m_max = newMax; };
 
   /*!
    *****************************************************************************
@@ -188,7 +207,23 @@ public:
   template<typename OtherType>
   void addBox(const BoundingBox<OtherType,DIM>& bbox);
 
+  /*!
+   *****************************************************************************
+   * \brief Returns the dimension of the ambient space for this bounding box.
+   * \return d the dimension of this bounding box instance.
+   * \post d >= 2.
+   *****************************************************************************
+   */
+  int dimension() const { return DIM; };
 
+  /*!
+   *****************************************************************************
+   * \brief Finds the longest dimension of the bounding box
+   * \return idx the index of the longest dimension.
+   * \post idx >= 0 < DIM
+   *****************************************************************************
+   */
+  int getLongestDimension() const;
 
   /*!
    *****************************************************************************
@@ -222,7 +257,6 @@ public:
    *****************************************************************************
    */
   void shift(const VectorType& displacement);
-
 
   /*!
    *****************************************************************************
@@ -265,6 +299,18 @@ public:
    *****************************************************************************
    */
   bool isValid() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Subdivides this bounding box instance into two sub-boxes by
+   *  splitting along the given dimension. If a dimension is not provided, this
+   *  method will split the bounding box along the longest dimension.
+   * \param [in/out] right the right sub-box.
+   * \param [in/out] left  the left sub-box.
+   * \param [in] dimension optionally the dimension at which to sp
+   *****************************************************************************
+   */
+  void bisect( BoxType& right, BoxType& left, int dimension=-1);
 
   /*!
    *****************************************************************************
@@ -356,8 +402,8 @@ template<typename OtherCoordType>
 void BoundingBox<CoordType, DIM>::addPoint(
         const Point<OtherCoordType,DIM>& pt)
 {
-    for (int dim=0; dim < DIM; ++dim )
-    {
+    for (int dim=0; dim < DIM; ++dim ) {
+
         CoordType coord = static_cast<CoordType>(pt[dim]);
 
         if ( coord < m_min[dim] ) {
@@ -379,6 +425,26 @@ void BoundingBox<CoordType, DIM>::addBox(
     addPoint(bbox.getMax());
 }
 
+//------------------------------------------------------------------------------
+template< typename CoordType, int DIM >
+int BoundingBox<CoordType,DIM>::getLongestDimension() const
+{
+  SLIC_ASSERT( this->isValid() );
+
+  int maxDim = 0;
+  CoordType max = std::numeric_limits< CoordType >::min();
+  for ( int i=0; i < DIM; ++i ) {
+
+     CoordType dx = m_max[ i ] - m_min[ i ];
+     if ( dx > max ) {
+        max    = dx;
+        maxDim = i;
+     }
+
+  } // END for all dimensions
+
+  return maxDim;
+}
 
 //------------------------------------------------------------------------------
 template<typename CoordType, int DIM>
@@ -434,7 +500,6 @@ void BoundingBox<CoordType, DIM>::clear()
     m_max = PointType( std::numeric_limits< CoordType>::min() );
 }
 
-
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
 std::ostream& BoundingBox< T, DIM >::print(std::ostream& os) const
@@ -443,6 +508,36 @@ std::ostream& BoundingBox< T, DIM >::print(std::ostream& os) const
     return os;
 }
 
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+void BoundingBox< T,DIM >::bisect( BoxType& right, BoxType& left, int dim )
+{
+   SLIC_ASSERT( this->isValid() );
+
+   if ( dim < 0 ) {
+
+      dim = this->getLongestDimension();
+
+   }
+   SLIC_ASSERT( dim >=0 && dim < DIM );
+
+   // calculate mid along the given dimension
+   T mid = 0.5*( m_max[dim] + m_min[dim] );
+
+   // update right
+   right.setMin( this->getMin() );
+   PointType new_right_max = this->getMax();
+   new_right_max[ dim ]    = mid;
+   right.setMax( new_right_max );
+   SLIC_ASSERT( right.isValid() );
+
+   // update left
+   left.setMax( this->getMax() );
+   PointType new_left_min = this->getMin();
+   new_left_min[ dim ] = mid;
+   left.setMin( new_left_min );
+   SLIC_ASSERT( left.isValid() );
+}
 
 //------------------------------------------------------------------------------
 /// Free functions implementing comparison and arithmetic operators
@@ -455,7 +550,6 @@ bool operator==(const BoundingBox<T, DIM>& lhs, const BoundingBox<T, DIM>& rhs)
 }
 
 //------------------------------------------------------------------------------
-
 template<typename T, int DIM>
 bool operator!=(const BoundingBox<T, DIM>& lhs, const BoundingBox<T, DIM>& rhs)
 {
