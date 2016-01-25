@@ -9,9 +9,10 @@
 #-------------------------------------------------------------------------------
 
 set(quest_tests
-    quest_mesh_extent.cpp
     quest_boundingBox.cpp
+    quest_bucket_tree.cpp
     quest_intersection.cpp
+    quest_mesh_extent.cpp
     quest_morton.cpp
     quest_numeric_array.cpp
     quest_octree.cpp

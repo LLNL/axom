@@ -12,6 +12,7 @@ set( quest_headers
    
     ## Geometry Headers
     geom/BoundingBox.hpp
+    geom/BucketTree.hpp
     geom/Determinants.hpp
     geom/HyperSphere.hpp
     geom/Intersection.hpp
