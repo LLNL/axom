@@ -42,18 +42,21 @@ template<typename T, int DIM> class BoundingBox;
  * \brief Equality comparison operator for bounding boxes.
  * Two bounding boxes are equal when they have the same bounds
  */
-template<typename T, int DIM> bool operator==(const BoundingBox<T, DIM> & lhs, const BoundingBox<T, DIM>& rhs);
+template<typename T, int DIM>
+bool operator==(const BoundingBox<T, DIM> & lhs,const BoundingBox<T, DIM>& rhs);
 
 /*!
  * \brief Inequality comparison operator for bounding boxes.
  * Two bounding boxes are unequal when they have different bounds
  */
-template<typename T, int DIM> bool operator!=(const BoundingBox<T, DIM> & lhs, const BoundingBox<T, DIM>& rhs);
+template<typename T, int DIM>
+bool operator!=(const BoundingBox<T, DIM> & lhs,const BoundingBox<T, DIM>& rhs);
 
 /*!
  * \brief Overloaded output operator for bounding boxes
  */
-template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const BoundingBox<T,DIM> & pt);
+template<typename T, int DIM>
+std::ostream& operator<<(std::ostream & os, const BoundingBox<T,DIM> & pt);
 
 
 
@@ -203,11 +206,11 @@ public:
    *****************************************************************************
    * \brief Scales the bounding box towards its center by a given amount.
    * \param [in] scaleFactor the multiplicative factor by which to scale
-   * This function checks to ensure that the bounding box is valid after inflation.
+   * \note Checks to ensure that the bounding box is valid after inflation.
    * \note If scaleFactor is less than 1, the bounding box will shrink.
    * \note If scaleFactor is 0, the bounding box will shrink to its midpoint
    * \note The sign of the shrinkFactor has no effect since we are shrinking
-   *       towards the center, and we fix the bounds after shrinking
+   *  towards the center, and we fix the bounds after shrinking
    *****************************************************************************
    */
   void scale(double scaleFactor);
@@ -246,24 +249,22 @@ public:
    * \param [in] otherBB the bounding box that we are checking
    * \return status true if bb is inside the box, else false.
    * \note We are allowing the other bounding box to have a different coordinate
-   *       type.  This should work as long as the two CoordTypes are comperable
-   *       with operator<().
+   *  type. This should work as long as the two CoordTypes are comparable with
+   *  operator<().
    *****************************************************************************
    */
   template<typename OtherType>
   bool contains( const BoundingBox<OtherType, DIM>& otherBB) const;
 
-
   /*!
    *****************************************************************************
    * \brief Checks that we have a valid bounding box.
-   * A bounding box is valid when its extent in each dimension
-   * (max coordinate minus min coordinate) is greater than or equal to zero
+   * \note A bounding box is valid when the length of each dimension is greater
+   *  than or equal to zero.
    * \return status true if point inside the box, else false.
    *****************************************************************************
    */
   bool isValid() const;
-
 
   /*!
    *****************************************************************************
@@ -296,173 +297,178 @@ private:
 //------------------------------------------------------------------------------
 //  BoundingBox implementation
 //------------------------------------------------------------------------------
-namespace quest{
+namespace quest {
 
 
-    //------------------------------------------------------------------------------
-    template<typename CoordType, int DIM>
-    BoundingBox<CoordType, DIM>& BoundingBox<CoordType, DIM>::operator=(const BoundingBox& rhs )
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+BoundingBox<CoordType, DIM>&
+BoundingBox<CoordType, DIM>::operator=(const BoundingBox& rhs )
+{
+
+  if ( this != &rhs ) {
+    m_min = rhs.m_min;
+    m_max = rhs.m_max;
+  }
+
+  return *this;
+}
+
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+template<typename OtherCoordType>
+bool BoundingBox<CoordType, DIM>::contains(
+        const Point<OtherCoordType,DIM>& otherPt) const
+{
+    for(int dim = 0; dim < DIM; ++dim)
     {
-
-      if ( this != &rhs ) {
-        m_min = rhs.m_min;
-        m_max = rhs.m_max;
-      }
-
-      return *this;
+        if( otherPt[dim] < m_min[dim] || otherPt[dim] >  m_max[dim])
+            return false;
     }
+    return true;
+}
 
-    //------------------------------------------------------------------------------
-    template<typename CoordType, int DIM>
-    template<typename OtherCoordType>
-    bool BoundingBox<CoordType, DIM>::contains(const Point<OtherCoordType,DIM>& otherPt) const
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+template<typename OtherCoordType>
+bool BoundingBox<CoordType, DIM>::contains(
+        const BoundingBox<OtherCoordType,DIM>& otherBB) const
+{
+    return this->contains(otherBB.getMin()) && this->contains(otherBB.getMax());
+}
+
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+bool BoundingBox<CoordType, DIM>::isValid() const
+{
+  for(int dim = 0; dim < DIM; ++dim)
+  {
+      if( m_min[dim] >  m_max[dim])
+          return false;
+  }
+  return true;
+
+}
+
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+template<typename OtherCoordType>
+void BoundingBox<CoordType, DIM>::addPoint(
+        const Point<OtherCoordType,DIM>& pt)
+{
+    for (int dim=0; dim < DIM; ++dim )
     {
-        for(int dim = 0; dim < DIM; ++dim)
-        {
-            if( otherPt[dim] < m_min[dim] || otherPt[dim] >  m_max[dim])
-                return false;
+        CoordType coord = static_cast<CoordType>(pt[dim]);
+
+        if ( coord < m_min[dim] ) {
+            m_min[dim] = coord;
         }
-        return true;
-    }
-
-    //------------------------------------------------------------------------------
-    template<typename CoordType, int DIM>
-    template<typename OtherCoordType>
-    bool BoundingBox<CoordType, DIM>::contains(const BoundingBox<OtherCoordType,DIM>& otherBB) const
-    {
-        return this->contains(otherBB.getMin()) && this->contains(otherBB.getMax());
-    }
-
-    //------------------------------------------------------------------------------
-    template<typename CoordType, int DIM>
-    bool BoundingBox<CoordType, DIM>::isValid() const
-    {
-      for(int dim = 0; dim < DIM; ++dim)
-      {
-          if( m_min[dim] >  m_max[dim])
-              return false;
-      }
-      return true;
-
-    }
-
-    //------------------------------------------------------------------------------
-    template<typename CoordType, int DIM>
-    template<typename OtherCoordType>
-    void BoundingBox<CoordType, DIM>::addPoint (const Point<OtherCoordType,DIM>& pt)
-    {
-        for (int dim=0; dim < DIM; ++dim )
-        {
-            CoordType coord = static_cast<CoordType>(pt[dim]);
-
-            if ( coord < m_min[dim] ) {
-                m_min[dim] = coord;
-            }
-            if ( coord > m_max[dim] ) {
-                m_max[dim] = coord;
-            }
-        }
-    }
-
-    //------------------------------------------------------------------------------
-    template<typename CoordType, int DIM>
-    template<typename OtherCoordType>
-    void BoundingBox<CoordType, DIM>::addBox (const BoundingBox<OtherCoordType,DIM>& bbox)
-    {
-        addPoint(bbox.getMin());
-        addPoint(bbox.getMax());
-    }
-
-
-    //------------------------------------------------------------------------------
-    template<typename CoordType, int DIM>
-    void BoundingBox<CoordType, DIM>::expand(CoordType expansionAmount)
-    {
-        for (int dim=0; dim < DIM; ++dim ) {
-            m_min[dim] -= expansionAmount;
-            m_max[dim] += expansionAmount;
-        }
-
-        checkAndFixBounds();
-    }
-
-
-    //------------------------------------------------------------------------------
-    template<typename CoordType, int DIM>
-    void BoundingBox<CoordType, DIM>::scale(double scaleFactor)
-    {
-        const PointType midpoint = PointType::midpoint(getMin(), getMax());
-        const VectorType r = scaleFactor * 0.5 * range();
-
-        m_min = PointType( midpoint.array() - r.array());
-        m_max = PointType( midpoint.array() + r.array());
-
-        checkAndFixBounds();
-    }
-
-
-    //------------------------------------------------------------------------------
-    template<typename CoordType, int DIM>
-    void BoundingBox<CoordType, DIM>::shift(const VectorType& displacement)
-    {
-        m_min.array() += displacement.array();
-        m_max.array() += displacement.array();
-    }
-
-    //------------------------------------------------------------------------------
-    template<typename CoordType, int DIM>
-    void BoundingBox<CoordType, DIM>::checkAndFixBounds ()
-    {
-        for (int dim=0; dim < DIM; ++dim ) {
-            if ( m_min[dim] > m_max[dim] ) {
-                std::swap( m_min[dim], m_max[dim] );
-            }
+        if ( coord > m_max[dim] ) {
+            m_max[dim] = coord;
         }
     }
+}
 
-    //------------------------------------------------------------------------------
-    template<typename CoordType, int DIM>
-    void BoundingBox<CoordType, DIM>::clear()
-    {
-        m_min = PointType( std::numeric_limits< CoordType>::max() );
-        m_max = PointType( std::numeric_limits< CoordType>::min() );
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+template<typename OtherCoordType>
+void BoundingBox<CoordType, DIM>::addBox(
+        const BoundingBox<OtherCoordType,DIM>& bbox)
+{
+    addPoint(bbox.getMin());
+    addPoint(bbox.getMax());
+}
+
+
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+void BoundingBox<CoordType, DIM>::expand(CoordType expansionAmount)
+{
+    for (int dim=0; dim < DIM; ++dim ) {
+        m_min[dim] -= expansionAmount;
+        m_max[dim] += expansionAmount;
     }
 
+    checkAndFixBounds();
+}
 
-    //------------------------------------------------------------------------------
-    template < typename T, int DIM >
-    std::ostream& BoundingBox< T, DIM >::print(std::ostream& os) const
-    {
-        os <<"{ min:"<<m_min <<"; max:"<< m_max <<"; range:"<< range() << " }";
-        return os;
+
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+void BoundingBox<CoordType, DIM>::scale(double scaleFactor)
+{
+    const PointType midpoint = PointType::midpoint(getMin(), getMax());
+    const VectorType r = scaleFactor * 0.5 * range();
+
+    m_min = PointType( midpoint.array() - r.array());
+    m_max = PointType( midpoint.array() + r.array());
+
+    checkAndFixBounds();
+}
+
+
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+void BoundingBox<CoordType, DIM>::shift(const VectorType& displacement)
+{
+    m_min.array() += displacement.array();
+    m_max.array() += displacement.array();
+}
+
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+void BoundingBox<CoordType, DIM>::checkAndFixBounds ()
+{
+    for (int dim=0; dim < DIM; ++dim ) {
+        if ( m_min[dim] > m_max[dim] ) {
+            std::swap( m_min[dim], m_max[dim] );
+        }
     }
+}
+
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+void BoundingBox<CoordType, DIM>::clear()
+{
+    m_min = PointType( std::numeric_limits< CoordType>::max() );
+    m_max = PointType( std::numeric_limits< CoordType>::min() );
+}
 
 
-    //------------------------------------------------------------------------------
-    /// Free functions implementing comparison and arithmetic operators
-    //------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+std::ostream& BoundingBox< T, DIM >::print(std::ostream& os) const
+{
+    os <<"{ min:"<<m_min <<"; max:"<< m_max <<"; range:"<< range() << " }";
+    return os;
+}
 
-    template<typename T, int DIM>
-    bool operator==(const BoundingBox<T, DIM>& lhs, const BoundingBox<T, DIM>& rhs)
-    {
-        return lhs.getMin() == rhs.getMin() && lhs.getMax() == rhs.getMax();
-    }
 
-    //------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+/// Free functions implementing comparison and arithmetic operators
+//------------------------------------------------------------------------------
 
-    template<typename T, int DIM>
-    bool operator!=(const BoundingBox<T, DIM>& lhs, const BoundingBox<T, DIM>& rhs)
-    {
-        return !(lhs == rhs);
-    }
+template<typename T, int DIM>
+bool operator==(const BoundingBox<T, DIM>& lhs, const BoundingBox<T, DIM>& rhs)
+{
+    return lhs.getMin() == rhs.getMin() && lhs.getMax() == rhs.getMax();
+}
 
-    //------------------------------------------------------------------------------
-    template<typename T, int DIM>
-    std::ostream& operator<<(std::ostream & os, const BoundingBox<T,DIM> & bb)
-    {
-        bb.print(os);
-        return os;
-    }
+//------------------------------------------------------------------------------
+
+template<typename T, int DIM>
+bool operator!=(const BoundingBox<T, DIM>& lhs, const BoundingBox<T, DIM>& rhs)
+{
+    return !(lhs == rhs);
+}
+
+//------------------------------------------------------------------------------
+template<typename T, int DIM>
+std::ostream& operator<<(std::ostream & os, const BoundingBox<T,DIM> & bb)
+{
+    bb.print(os);
+    return os;
+}
 
 
 } // end namespace quest
