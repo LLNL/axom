@@ -329,7 +329,24 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
-            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+            "c_post_intent_in": [
+                "delete [] {cpp_var};"
+            ], 
+            "c_post_intent_out": [
+                "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+            ], 
+            "c_pre_intent_in": [
+                "int {c_var_len} = strlen({c_var});", 
+                "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                "std::strncpy({cpp_var}, {var}, {c_var_len});", 
+                "{cpp_var}[{c_var_len}] = '\\0';"
+            ], 
+            "c_pre_intent_in_trim": [
+                "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                "std::strncpy({cpp_var}, {var}, {c_var_len});", 
+                "{cpp_var}[{c_var_len}] = '\\0';"
+            ], 
+            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_type": "char", 
             "f_module": {
@@ -342,7 +359,24 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
-            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+            "c_post_intent_in": [
+                "delete [] {cpp_var};"
+            ], 
+            "c_post_intent_out": [
+                "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+            ], 
+            "c_pre_intent_in": [
+                "int {c_var_len} = strlen({c_var});", 
+                "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                "std::strncpy({cpp_var}, {var}, {c_var_len});", 
+                "{cpp_var}[{c_var_len}] = '\\0';"
+            ], 
+            "c_pre_intent_in_trim": [
+                "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                "std::strncpy({cpp_var}, {var}, {c_var_len});", 
+                "{cpp_var}[{c_var_len}] = '\\0';"
+            ], 
+            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_type": "char", 
             "f_module": {
@@ -482,13 +516,15 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
-            "c_intent_in": [
+            "c_post_intent_out": [
+                "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+            ], 
+            "c_pre_intent_in": [
                 "std::string {cpp_var}({c_var});"
             ], 
-            "c_intent_in_trim": [
+            "c_pre_intent_in_trim": [
                 "std::string {cpp_var}({c_var}, {c_var_trim});"
             ], 
-            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
@@ -504,13 +540,15 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
-            "c_intent_in": [
+            "c_post_intent_out": [
+                "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+            ], 
+            "c_pre_intent_in": [
                 "std::string {cpp_var}({c_var});"
             ], 
-            "c_intent_in_trim": [
+            "c_pre_intent_in_trim": [
                 "std::string {cpp_var}({c_var}, {c_var_trim});"
             ], 
-            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
@@ -526,13 +564,15 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
-            "c_intent_in": [
+            "c_post_intent_out": [
+                "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+            ], 
+            "c_pre_intent_in": [
                 "std::string {cpp_var}({c_var});"
             ], 
-            "c_intent_in_trim": [
+            "c_pre_intent_in_trim": [
                 "std::string {cpp_var}({c_var}, {c_var_trim});"
             ], 
-            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "shroudrt.hpp", 
@@ -548,13 +588,15 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
-            "c_intent_in": [
+            "c_post_intent_out": [
+                "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+            ], 
+            "c_pre_intent_in": [
                 "std::string {cpp_var}({c_var});"
             ], 
-            "c_intent_in_trim": [
+            "c_pre_intent_in_trim": [
                 "std::string {cpp_var}({c_var}, {c_var_trim});"
             ], 
-            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 

@@ -238,17 +238,27 @@ class Schema(object):
 
                 c_type   = 'char',    # XXX - char *
 
-                # c_intent_in_pre = [
-                #       'char * {cpp_var} = new char [{c_var_len} + 1];',
-                #       'std::strncpy({cpp_var}, {var}, {c_var_len});',
-                #       '{cpp_var}[{lc_var_len}] = '\0';'
-                #       ],
-                # c_intent_in_post = [ 'delete [] {cpp_var};' ],
+                c_pre_intent_in = [
+                    'int {c_var_len} = strlen({c_var});',
+                    'char * {cpp_var} = new char [{c_var_len} + 1];',
+                    'std::strncpy({cpp_var}, {var}, {c_var_len});',
+                    '{cpp_var}[{c_var_len}] = \'\\0\';'
+                    ],
+                c_pre_intent_in_trim = [
+                    'char * {cpp_var} = new char [{c_var_len} + 1];',
+                    'std::strncpy({cpp_var}, {var}, {c_var_len});',
+                    '{cpp_var}[{c_var_len}] = \'\\0\';'
+                    ],
+                c_post_intent_in = [ 'delete [] {cpp_var};' ],
 
-#                c_intent_in = ['std::string {cpp_var}({c_var});'],
-#                c_intent_in_trim = ['std::string {cpp_var}({c_var}, {c_var_trim});'],
-                c_intent_out = 'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
-#                c_to_cpp  = '{cpp_var}',                                  
+#                c_pre_intent_out = [
+#                    'char * {cpp_var} = new char [{c_var_len} + 1];',
+#                    ],
+                c_post_intent_out = [
+                    'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+#                    'delete [] {cpp_var};',
+                    ],
+                c_to_cpp  = '{cpp_var}',                                  
 
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
@@ -268,9 +278,12 @@ class Schema(object):
                 cpp_to_c = '{var}.c_str()',  # . or ->
 
                 c_type   = 'char',    # XXX - char *
-                c_intent_in = ['std::string {cpp_var}({c_var});'],
-                c_intent_in_trim = ['std::string {cpp_var}({c_var}, {c_var_trim});'],
-                c_intent_out = 'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                c_pre_intent_in = ['std::string {cpp_var}({c_var});'],
+                c_pre_intent_in_trim = ['std::string {cpp_var}({c_var}, {c_var_trim});'],
+#                c_post_intent_in = [ 'delete {cpp_var};' ],
+                c_post_intent_out = [
+                    'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                    ],
                 c_to_cpp  = '{cpp_var}',                                  
 
                 c_fortran  = 'character(kind=C_CHAR)',
