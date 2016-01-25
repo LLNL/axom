@@ -243,12 +243,12 @@ class Schema(object):
                         pre_call = [
                             'int {c_var_len} = strlen({c_var});',
                             'char * {cpp_var} = new char [{c_var_len} + 1];',
-                            'std::strncpy({cpp_var}, {var}, {c_var_len});',
+                            'std::strncpy({cpp_var}, {c_var}, {c_var_len});',
                             '{cpp_var}[{c_var_len}] = \'\\0\';'
                             ],
                         pre_call_trim = [
                             'char * {cpp_var} = new char [{c_var_len} + 1];',
-                            'std::strncpy({cpp_var}, {var}, {c_var_len});',
+                            'std::strncpy({cpp_var}, {c_var}, {c_var_len});',
                             '{cpp_var}[{c_var_len}] = \'\\0\';'
                             ],
                         post_call = [
@@ -264,8 +264,13 @@ class Schema(object):
 #                    'delete [] {cpp_var};',
                             ],
                         ),
+                    result = dict(
+                        post_call = [
+                            'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            ],
+                        ),
                     ),
-                c_to_cpp  = '{cpp_var}',                                  
+                c_to_cpp  = '{cpp_var}',
 
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
@@ -294,11 +299,13 @@ class Schema(object):
                         pre_call_trim = [
                             'std::string {cpp_var}({c_var}, {c_var_trim});'
                             ],
-#                       post_call = [
-#                           'delete {cpp_var};'
-#                       ],
                     ),
                     intent_out = dict(
+                        post_call = [
+                            'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            ],
+                        ),
+                    result = dict(
                         post_call = [
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             ],

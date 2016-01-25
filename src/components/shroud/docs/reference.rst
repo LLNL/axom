@@ -429,32 +429,28 @@ c_argdecl
     Used with string_from_buffer .
     Defaults to *None*.
 
-c_intent_in
+c_statements
 
-    Code to add for argument with intent(IN).
-    Can be used to convert types or copy-in semantics.
-    For example, ``char *`` to ``std::string``.
+    A nested dictionary of code template to add.
+    The first layer is *intent_in*, *intent_out*, and *result*.
+    The second layer is *pre_call*, *pre_call_trim*, *post_call*.
+    The entries are a list of templates.
 
-c_intent_in_trim
+    intent_in
 
-    Code to add for argument with intent(IN) and len_trim attribute 
-    For example, ``char *, int`` into ``std::string``
+        Code to add for argument with intent(IN).
+        Can be used to convert types or copy-in semantics.
+        For example, ``char *`` to ``std::string``.
 
-c_intent_out
+    intent_in_trim
 
-    Code to add after call when ``intent(OUT)`` or ``intent(INOUT)``.
-    Used to implement copy-out semantics.
+        Code to add for argument with intent(IN) and len_trim attribute 
+        For example, ``char *, int`` into ``std::string``
 
-c_pre_call
+    intent_out
 
-    Statement to execute before call.
-
-c_post_call
-
-    Statement to execute after call.
-    Can be use to cleanup after *c_pre_call*
-    or to coerce the return value.
-    Defaults to *None*.
+        Code to add after call when ``intent(OUT)`` or ``intent(INOUT)``.
+        Used to implement copy-out semantics.
 
 c_return_code
 

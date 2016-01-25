@@ -873,16 +873,21 @@
                     "pre_call": [
                         "int {c_var_len} = strlen({c_var});", 
                         "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {var}, {c_var_len});", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
                         "{cpp_var}[{c_var_len}] = '\\0';"
                     ], 
                     "pre_call_trim": [
                         "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {var}, {c_var_len});", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
                         "{cpp_var}[{c_var_len}] = '\\0';"
                     ]
                 }, 
                 "intent_out": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -909,16 +914,21 @@
                     "pre_call": [
                         "int {c_var_len} = strlen({c_var});", 
                         "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {var}, {c_var_len});", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
                         "{cpp_var}[{c_var_len}] = '\\0';"
                     ], 
                     "pre_call_trim": [
                         "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {var}, {c_var_len});", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
                         "{cpp_var}[{c_var_len}] = '\\0';"
                     ]
                 }, 
                 "intent_out": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -1077,6 +1087,11 @@
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
+                }, 
+                "result": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
                 }
             }, 
             "c_to_cpp": "{cpp_var}", 
@@ -1104,6 +1119,11 @@
                     ]
                 }, 
                 "intent_out": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -1137,6 +1157,11 @@
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
+                }, 
+                "result": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
                 }
             }, 
             "c_to_cpp": "{cpp_var}", 
@@ -1164,6 +1189,11 @@
                     ]
                 }, 
                 "intent_out": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
