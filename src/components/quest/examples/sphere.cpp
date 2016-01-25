@@ -28,8 +28,10 @@
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"
+#include "common/TaskTimer.hpp"
 
 #include "quest/BoundingBox.hpp"
+#include "quest/BucketTree.hpp"
 #include "quest/Field.hpp"
 #include "quest/FieldData.hpp"
 #include "quest/FieldVariable.hpp"
@@ -37,16 +39,18 @@
 #include "quest/Mesh.hpp"
 #include "quest/Orientation.hpp"
 #include "quest/Point.hpp"
-#include "quest/Vector.hpp"
 #include "quest/STLReader.hpp"
 #include "quest/SquaredDistance.hpp"
 #include "quest/Triangle.hpp"
 #include "quest/UniformMesh.hpp"
 #include "quest/UnstructuredMesh.hpp"
+#include "quest/Vector.hpp"
 #include "quest/fuzzy_compare.hpp"
+#include "quest/SignedDistance.hpp"
 
+
+#include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
 
 #include "slam/Utilities.hpp"
 
@@ -223,7 +227,8 @@ SpatialBoundingBox compute_bounds( meshtk::Mesh* mesh)
 
 
 //------------------------------------------------------------------------------
-quest::BoundingBox<double,3> getCellBoundingBox( int cellIdx,meshtk::Mesh* surface_mesh )
+quest::BoundingBox<double,3> getCellBoundingBox(
+        int cellIdx,meshtk::Mesh* surface_mesh )
 {
    // Sanity checks
    SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
@@ -231,22 +236,73 @@ quest::BoundingBox<double,3> getCellBoundingBox( int cellIdx,meshtk::Mesh* surfa
 
    using namespace quest;
 
-   int const DIM = 3;
+   int cell[3];
+   surface_mesh->getMeshCell( cellIdx, cell );
 
-   Point<int,DIM> cell;
-   surface_mesh->getMeshCell( cellIdx, cell.data() );
-
-   BoundingBox<double,DIM> bb;
-   Point<double,DIM> pt;
+   BoundingBox< double,3 > bb;
+   Point< double,3 > pt;
 
    for ( int i=0; i < 3; ++i ) {
       surface_mesh->getMeshNode( cell[i], pt.data() );
       bb.addPoint( pt );
-
    } // END for all cell nodes
 
    return bb;
 }
+
+//------------------------------------------------------------------------------
+void computeUsingBucketTree( meshtk::Mesh* surface_mesh,
+                             meshtk::UniformMesh* umesh )
+{
+  // Sanity Checks
+  SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
+  SLIC_ASSERT( umesh != ATK_NULLPTR );
+
+  quest::SignedDistance< 3 > signedDistance( surface_mesh, 25, 32 );
+
+  const int nnodes = umesh->getNumberOfNodes();
+  meshtk::FieldData* PD = umesh->getNodeFieldData();
+  SLIC_ASSERT( PD != ATK_NULLPTR );
+
+  PD->addField( new meshtk::FieldVariable< double >("phi",nnodes) );
+  double* phi = PD->getField( "phi" )->getDoublePtr();
+  SLIC_ASSERT( phi != ATK_NULLPTR );
+
+  for ( int inode=0; inode < nnodes; ++inode ) {
+
+      quest::Point< double,3 > pt;
+      umesh->getMeshNode( inode, pt.data() );
+
+      phi[ inode ] = signedDistance.computeDistance( pt );
+
+  } // END for all nodes
+
+#ifdef ATK_DEBUG
+  // write the bucket tree to a file
+  const quest::BucketTree< int, 3>* btree = signedDistance.getBucketTree();
+  SLIC_ASSERT( btree != ATK_NULLPTR );
+
+  btree->writeLegacyVtkFile( "bucket-tree.vtk" );
+
+  // mark bucket IDs on surface mesh
+  const int ncells = surface_mesh->getMeshNumberOfCells();
+  meshtk::FieldData* CD = surface_mesh->getCellFieldData();
+  CD->addField( new meshtk::FieldVariable<int>( "BucketID", ncells ) );
+  int* bidx = CD->getField( "BucketID" )->getIntPtr();
+  SLIC_ASSERT( bidx != ATK_NULLPTR );
+
+  const int numObjects = btree->getNumberOfObjects();
+  for ( int i=0; i < numObjects; ++i ) {
+
+     const int idx = btree->getObjectBucketIndex( i );
+     bidx[ i ] = idx;
+
+  } // END for all objects
+
+  write_vtk( surface_mesh, "partitioned_surface_mesh.vtk" );
+#endif
+}
+
 
 //------------------------------------------------------------------------------
 void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
@@ -259,8 +315,8 @@ void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
    meshtk::FieldData* PD = umesh->getNodeFieldData();
    SLIC_ASSERT( PD != ATK_NULLPTR );
 
-   PD->addField( new meshtk::FieldVariable<double>("phi",nnodes) );
-   double* phi = PD->getField( "phi" )->getDoublePtr();
+   PD->addField( new meshtk::FieldVariable<double>("n2_phi",nnodes) );
+   double* phi = PD->getField( "n2_phi" )->getDoublePtr();
    SLIC_ASSERT( phi != ATK_NULLPTR );
 
 
@@ -295,7 +351,7 @@ void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
           const double sqDist = quest::squared_distance( Q, T );
           if ( sqDist < unsignedMinDistSQ)  {
 
-              bool negSide = quest::orientation( Q, T ) == quest::ON_NEGATIVE_SIDE;
+              bool negSide = quest::orientation(Q,T) == quest::ON_NEGATIVE_SIDE;
               sign = negSide? -1: 1;
               unsignedMinDistSQ = sqDist;
 
@@ -374,22 +430,36 @@ void l2norm( meshtk::UniformMesh* umesh )
 int main( int argc, char** argv )
 {
   // STEP 0: Initialize SLIC Environment
-  slic::UnitTestLogger logger;  // create & initialize logger
+  slic::initialize();
+  slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
+
+  // Create a more verbose message for this application (only level and message)
+  std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
+  slic::GenericOutputStream* defaultStream =
+          new slic::GenericOutputStream(&std::cout);
+  slic::GenericOutputStream* compactStream =
+          new slic::GenericOutputStream(&std::cout, slicFormatStr);
+  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Fatal) ;
+  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Error);
+  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Warning);
+  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Info);
+  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Debug);
 
   bool hasInputArgs = argc > 1;
 
   // STEP 1: get file from user or use default
   std::string stlFile;
-  if(hasInputArgs)
-  {
-      stlFile = std::string( argv[1] );
-  }
-  else
-  {
-      const std::string defaultFileName = "sphere.stl";
-      const std::string defaultDir = "src/components/quest/data/";
+  if ( hasInputArgs ) {
 
-      stlFile = asctoolkit::utilities::filesystem::joinPath(defaultDir, defaultFileName);
+    stlFile = std::string( argv[1] );
+
+  }
+  else {
+
+    const std::string defaultFileName = "sphere.stl";
+    const std::string defaultDir = "src/components/quest/data/";
+
+    stlFile = utilities::filesystem::joinPath(defaultDir, defaultFileName);
   }
 
   stlFile = asctoolkit::slam::util::findFileInAncestorDirs(stlFile);
@@ -421,8 +491,7 @@ int main( int argc, char** argv )
   // Add inflation factor
   std::cout << "Inflate by N: \n";
   double f = 2.;
-  if(hasInputArgs)
-  {
+  if(hasInputArgs) {
       std::cin >> f;
   }
   meshBounds.expand(f);
@@ -452,21 +521,45 @@ int main( int argc, char** argv )
   ext[5] = gridRes[2];
 
   // STEP 8: Construct uniform mesh
-  meshtk::UniformMesh* umesh = new meshtk::UniformMesh(3,meshBounds.getMin().data(),h.data(),ext);
+  meshtk::UniformMesh* umesh =
+          new meshtk::UniformMesh(3,meshBounds.getMin().data(),h.data(),ext);
 
-  // STEP 9: Flag boundary cells on uniform mesh
-  //  flag_boundary( surface_mesh, umesh );
+  utilities::TaskTimer timer;
+
+  // STEP 9: Run the n^2 algorithm.
+  SLIC_INFO( "Running n^2 algorithm..." );
+  timer.start();
   n2(surface_mesh,umesh);
+  timer.stop();
+  double n2time = timer.elapsed();
+  SLIC_INFO( "N^2 algorithm run in " << n2time << "s " );
+
+  // STEP 10: Run the BucketTree algorithm
+  SLIC_INFO( "Running BucketTree algorithm..." );
+  timer.reset();
+  timer.start();
+  computeUsingBucketTree(surface_mesh,umesh);
+  timer.stop();
+  double btreetime = timer.elapsed();
+  SLIC_INFO( "BucketTree algorithm run in " << btreetime << "s " );
+  SLIC_INFO( "Speedup with respect to n^2 algorithm: " << (n2time/btreetime) );
+
+  // STEP 11: compute expected phi and error
+  SLIC_INFO( "Compute expected phi & error...." );
   expected_phi( umesh );
   l2norm( umesh );
+  SLIC_INFO( "done." );
+
   write_vtk( umesh, "uniform_mesh.vtk" );
 
-  // STEP 10: clean up
+  // STEP 12: clean up
   delete surface_mesh;
   surface_mesh = ATK_NULLPTR;
 
   delete umesh;
   umesh = ATK_NULLPTR;
 
+  // STEP 13: Finalize SLIC environment
+  slic::finalize();
   return 0;
 }

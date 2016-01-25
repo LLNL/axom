@@ -26,22 +26,23 @@
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"
+#include "common/TaskTimer.hpp"
 
 #include "quest/BoundingBox.hpp"
+#include "quest/BucketTree.hpp"
 #include "quest/Field.hpp"
 #include "quest/FieldData.hpp"
 #include "quest/FieldVariable.hpp"
 #include "quest/Mesh.hpp"
 #include "quest/Point.hpp"
 #include "quest/STLReader.hpp"
-#include "quest/SquaredDistance.hpp"
 #include "quest/Triangle.hpp"
 #include "quest/UniformMesh.hpp"
 #include "quest/UnstructuredMesh.hpp"
-#include "quest/Point.hpp"
+#include "quest/SignedDistance.hpp"
 
+#include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
 
 #include "slam/Utilities.hpp"
 
@@ -55,8 +56,6 @@
 using namespace asctoolkit;
 
 typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
-typedef quest::BoundingBox<double,3>                        GeometricBoundingBox;
-typedef quest::Vector<double,3>                             SpaceVector;
 
 //------------------------------------------------------------------------------
 void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
@@ -154,8 +153,6 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
           }
       }
 
-
-
   }
 
   // STEP 5: Write Point Data
@@ -192,15 +189,14 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
 }
 
 //------------------------------------------------------------------------------
-GeometricBoundingBox compute_bounds( meshtk::Mesh* mesh)
+quest::BoundingBox< double,3 > compute_bounds( meshtk::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
    using namespace quest;
 
-   int const DIM = 3;
-   BoundingBox<double, DIM> meshBB;
-   Point3D pt;
+   quest::BoundingBox< double,3 > meshBB;
+   quest::Point< double,3 > pt;
 
    for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i )
    {
@@ -213,223 +209,101 @@ GeometricBoundingBox compute_bounds( meshtk::Mesh* mesh)
    return meshBB;
 }
 
-//------------------------------------------------------------------------------
-void flag_boundary( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
-{
-   /* Sanity checks */
-   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
-   SLIC_ASSERT( umesh != ATK_NULLPTR );
-
-   // STEP 0: Create field variable on uniform mesh
-   const int umesh_ncells = umesh->getMeshNumberOfCells();
-   meshtk::FieldData* CD = umesh->getCellFieldData();
-   CD->addField( new meshtk::FieldVariable< int >("tag", umesh_ncells) );
-
-   int* bndry = CD->getField( "tag" )->getIntPtr();
-   SLIC_ASSERT( bndry != ATK_NULLPTR );
-   for ( int i=0; i < umesh_ncells; ++i ) {
-       bndry[ i ] = 0;
-   }
-
-   // STEP 1: get uniform mesh origin & spacing
-   typedef quest::Point3D Point3D;
-   Point3D origin;
-   umesh->getOrigin( origin.data() );
-
-   Point3D h;
-   umesh->getSpacing( h.data() );
-
-   // STEP 2: tag boundary elements
-   typedef quest::BoundingBox<int, 3> GridBounds;
-   typedef GridBounds::PointType GridPt;
-   GridBounds globalGridBounds;
-   const int ncells = surface_mesh->getMeshNumberOfCells();
-   for ( int i=0; i < ncells; ++i )
-   {
-      GridPt cellids;
-      surface_mesh->getMeshCell( i, cellids.data() );
-
-      GridBounds ijkBounds;
-
-      // find sub-extent that encapsulates the surface element
-      for ( int cn=0; cn < 3; ++cn ) {
-
-          const int nodeIdx = cellids[ cn ];
-
-          Point3D pnt;
-          surface_mesh->getMeshNode( nodeIdx, pnt.data() );
-
-          const quest::Vector3D delta(origin, pnt);
-          const GridPt gridPt = GridPt::make_point( std::floor( delta[0] / h[0])
-                                                  , std::floor( delta[1] / h[1])
-                                                  , std::floor( delta[2] / h[2]));
-
-          ijkBounds.addPoint( gridPt );
-          globalGridBounds.addPoint( gridPt );
-
-      } // END for all cell nodes;
-
-      // flag all elements within the sub-extend as boundary elements
-      const GridPt& ijkmin = ijkBounds.getMin();
-      const GridPt& ijkmax = ijkBounds.getMax();
-
-      // std::cout <<"\nGrid bounding box: " << ijkBounds << std::endl;
-
-      for ( int ii=ijkmin[0]; ii <= ijkmax[0]; ++ii ) {
-         for ( int jj=ijkmin[1]; jj <= ijkmax[1]; ++jj ) {
-            for ( int kk=ijkmin[2]; kk <= ijkmax[2]; ++kk ) {
-
-                const int idx = umesh->getCellLinearIndex( ii, jj, kk );
-                ++bndry[ idx ];
-            } // END for all kk
-         } // END for all jj
-      } // END for all ii
-
-   } // END for all surface elements
-
-
-   SLIC_INFO("Overall grid bounds: " << globalGridBounds );
-}
 
 //------------------------------------------------------------------------------
-quest::BoundingBox<double,3> getCellBoundingBox( int cellIdx,meshtk::Mesh* surface_mesh )
+void distance_field( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
 {
-   // Sanity checks
-   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
-   SLIC_ASSERT( cellIdx >= 0 && cellIdx < surface_mesh->getMeshNumberOfCells());
+  SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
+  SLIC_ASSERT( umesh != ATK_NULLPTR );
 
-   int cell[3];
-   surface_mesh->getMeshCell( cellIdx, cell );
+  quest::SignedDistance< 3 > signedDistance( surface_mesh, 25, 10 );
 
-   quest::BoundingBox<double,3> bb;
+#ifdef ATK_DEBUG
+  // write the bucket tree to a file
+  const quest::BucketTree< int, 3>* btree = signedDistance.getBucketTree();
+  SLIC_ASSERT( btree != ATK_NULLPTR );
 
-   for ( int i=0; i < 3; ++i ) {
+  btree->writeLegacyVtkFile( "bucket-tree.vtk" );
 
-      double pnt[3];
-      surface_mesh->getMeshNode( cell[i], pnt );
+  // mark bucket IDs on surface mesh
+  const int ncells = surface_mesh->getMeshNumberOfCells();
+  meshtk::FieldData* CD = surface_mesh->getCellFieldData();
+  CD->addField( new meshtk::FieldVariable<int>( "BucketID", ncells ) );
+  int* bidx = CD->getField( "BucketID" )->getIntPtr();
+  SLIC_ASSERT( bidx != ATK_NULLPTR );
 
-      bb.addPoint( quest::Point<double,3>(pnt) );
+  const int numObjects = btree->getNumberOfObjects();
+  for ( int i=0; i < numObjects; ++i ) {
 
-   } // END for all cell nodes
+     const int idx = btree->getObjectBucketIndex( i );
+     bidx[ i ] = idx;
 
+  } // END for all objects
 
-
-   return bb;
-}
-
-//------------------------------------------------------------------------------
-void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
-{
-   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
-   SLIC_ASSERT( umesh != ATK_NULLPTR );
-
-   // STEP 0: compute bounding boxes for each surface element O(n)
-   const int ncells = surface_mesh->getMeshNumberOfCells();
-   std::vector< quest::BoundingBox<double,3> > cell_boxes( ncells );
-
-   std::cout << "Computing bounding boxes....";
-   std::cout.flush();
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+  write_vtk( surface_mesh, "partitioned_surface_mesh.vtk" );
 #endif
-   for ( int i=0; i < ncells; ++i ) {
 
-       cell_boxes[ i ] = getCellBoundingBox( i, surface_mesh );
-   }
-   std::cout << "[DONE]" << std::endl;
+  const int nnodes = umesh->getNumberOfNodes();
+  meshtk::FieldData* PD = umesh->getNodeFieldData();
+  SLIC_ASSERT( PD != ATK_NULLPTR );
 
-   // STEP 1: Setup node-centered signed distance field on uniform mesh
-   const int nnodes = umesh->getNumberOfNodes();
-   meshtk::FieldData* PD = umesh->getNodeFieldData();
-   SLIC_ASSERT( PD != ATK_NULLPTR );
+  PD->addField( new meshtk::FieldVariable< double >("phi",nnodes) );
+  double* phi = PD->getField( "phi" )->getDoublePtr();
+  SLIC_ASSERT( phi != ATK_NULLPTR );
 
-   PD->addField( new meshtk::FieldVariable<double>("phi",nnodes) );
-   double* phi = PD->getField( "phi" )->getDoublePtr();
-   SLIC_ASSERT( phi != ATK_NULLPTR );
+  for ( int inode=0; inode < nnodes; ++inode ) {
 
+      quest::Point< double,3 > pt;
+      umesh->getMeshNode( inode, pt.data() );
 
-   // STEP 2: loop over uniform mesh nodes and compute distance field
-   std::cout << "Calculating distance field...";
-   std::cout.flush();
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static)
-#endif
-   for ( int i=0; i < nnodes; ++i ) {
+      phi[ inode ] = signedDistance.computeDistance( pt );
 
-      // get target node
-      double pnt[3];
-      umesh->getNode( i, pnt );
-      quest::Point< double, 3 > Q =
-              quest::Point< double,3 >::make_point(pnt[0],pnt[1],pnt[2]);
-
-      int cellIdx              = -1;
-      double cell_box_distance = std::numeric_limits< double >::max();
-
-      // bounding-box filter
-      const int ncells = surface_mesh->getMeshNumberOfCells();
-      for (int j=0; j < ncells; ++j ) {
-
-          const double dist = quest::squared_distance( Q, cell_boxes[j] );
-          if ( std::abs(dist) < cell_box_distance ) {
-              cellIdx = j;
-              cell_box_distance = std::abs(dist);
-          }
-      } // END for all cells on the surface mesh
-
-      // compute exact distance to the cell
-      SLIC_ASSERT( cellIdx >= 0 && cellIdx < ncells );
-      int closest_cell[3];
-      surface_mesh->getMeshCell( cellIdx, closest_cell );
-
-      double a[3];
-      double b[3];
-      double c[3];
-      surface_mesh->getMeshNode( closest_cell[0], a );
-      surface_mesh->getMeshNode( closest_cell[1], b );
-      surface_mesh->getMeshNode( closest_cell[2], c );
-      quest::Point< double, 3 > A =
-              quest::Point< double,3 >::make_point( a[0], a[1], a[2] );
-      quest::Point< double,3 > B =
-              quest::Point< double,3 >::make_point( b[0], b[1], b[2] );
-      quest::Point< double,3 > C =
-              quest::Point< double,3 >::make_point( c[0], c[1], c[2] );
-
-      quest::Triangle< double,3 > T( A,B,C );
-
-      phi[ i ] = quest::squared_distance( Q, T );
-   } // END for all nodes on the uniform mesh
-   std::cout << "[DONE]" << std::endl;
+  } // END for all nodes
 
 }
+
 //------------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
   // STEP 0: Initialize SLIC Environment
-  slic::UnitTestLogger logger;  // create & initialize logger
+  slic::initialize();
+  slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
 
+  // Create a more verbose message for this application (only level and message)
+  std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
+  slic::GenericOutputStream* defaultStream =
+          new slic::GenericOutputStream(&std::cout);
+  slic::GenericOutputStream* compactStream =
+          new slic::GenericOutputStream(&std::cout, slicFormatStr);
+  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Fatal) ;
+  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Error);
+  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Warning);
+  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Info);
+  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Debug);
 
   bool hasInputArgs = argc > 1;
 
   // STEP 1: get file from user or use default
   std::string stlFile;
-  if(hasInputArgs)
-  {
-      stlFile = std::string( argv[1] );
-  }
-  else
-  {
-      const std::string defaultFileName = "plane_simp.stl";
-      const std::string defaultDir = "src/components/quest/data";
+  if( hasInputArgs ) {
 
-      stlFile = asctoolkit::utilities::filesystem::joinPath(defaultDir, defaultFileName);
-  }
+    stlFile = std::string( argv[1] );
 
+  }
+  else {
+
+    const std::string defaultFileName = "plane_simp.stl";
+    const std::string defaultDir = "src/components/quest/data/";
+
+    stlFile =
+       asctoolkit::utilities::filesystem::joinPath(defaultDir, defaultFileName);
+
+  }
   stlFile = asctoolkit::slam::util::findFileInAncestorDirs(stlFile);
-  SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( stlFile));
+  SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists(stlFile));
 
   // STEP 2: read file
   SLIC_INFO( "Reading file: " << stlFile << "...");
-
   quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( stlFile );
   reader->read();
@@ -438,8 +312,7 @@ int main( int argc, char** argv )
   // STEP 3: get surface mesh
   meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
   reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
-  // dump mesh info
-  SLIC_DEBUG("Mesh has "
+  SLIC_INFO("Mesh has "
           << surface_mesh->getMeshNumberOfNodes() << " nodes and "
           << surface_mesh->getMeshNumberOfCells() << " cells.");
 
@@ -451,27 +324,28 @@ int main( int argc, char** argv )
   write_vtk( surface_mesh, "surface_mesh.vtk" );
 
   // STEP 6: compute bounds
-  GeometricBoundingBox meshBB = compute_bounds( surface_mesh);
+  quest::BoundingBox< double,3 > meshBB = compute_bounds( surface_mesh);
   SLIC_INFO("Mesh bounding box: " << meshBB );
 
   // STEP 7: get dimensions from user
   int nx, ny, nz;
-  if(hasInputArgs)
-  {
-      std::cout << "Enter Nx Ny Nz: \n";
-      std::cin >> nx >> ny >> nz;
-  }
-  else
-  {
-      nx = ny = nz = 32;
+  if ( hasInputArgs ) {
+
+    std::cout << "Enter Nx Ny Nz:";
+    std::cin >> nx >> ny >> nz;
+
+  } else {
+
+    nx = ny = nz = 32;
+
   }
 
-  SpaceVector h;
-  const SpaceVector& bbDiff = meshBB.range();
+  double h[3];
+  const quest::Vector< double,3 >& bbDiff = meshBB.range();
   h[0] = bbDiff[0] / nx;
   h[1] = bbDiff[1] / ny;
   h[2] = bbDiff[2] / nz;
-  SLIC_INFO("grid cell size: " << h);
+  SLIC_INFO("grid cell size:(" << h[0] << "," << h[1] << "," << h[2] << ")\n" );
 
   int node_ext[6];
   node_ext[0] = 0;
@@ -482,15 +356,28 @@ int main( int argc, char** argv )
   node_ext[5] = nz;
 
   // STEP 8: Construct uniform mesh
-  meshtk::UniformMesh* umesh = new meshtk::UniformMesh(3, meshBB.getMin().data(),h.data(),node_ext);
+  meshtk::UniformMesh* umesh =
+          new meshtk::UniformMesh(3, meshBB.getMin().data(), h, node_ext);
 
-  // STEP 9: Flag boundary cells on uniform mesh
-  flag_boundary( surface_mesh, umesh );
+  // STEP 9: Compute the distance field on the uniform mesh
+  SLIC_INFO( "computing distance field..." );
+  utilities::TaskTimer timer;
+  timer.start();
+  distance_field( surface_mesh, umesh );
+  timer.stop();
+  SLIC_INFO( "Time to compute distance field: " << timer.elapsed() );
+
+  // STEP 10: write the uniform mesh
   write_vtk( umesh, "uniform_mesh.vtk" );
 
-  // STEP 10: clean up
+  // STEP 11: clean up
   delete surface_mesh;
   surface_mesh = ATK_NULLPTR;
 
+  delete umesh;
+  umesh = ATK_NULLPTR;
+
+  // STEP 12: Finalize SLIC environment
+  slic::finalize();
   return 0;
 }
