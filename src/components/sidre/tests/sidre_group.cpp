@@ -23,8 +23,6 @@ using asctoolkit::sidre::InvalidIndex;
 using asctoolkit::sidre::nameIsValid;
 using asctoolkit::sidre::indexIsValid;
 using asctoolkit::sidre::DataType;
-using asctoolkit::slic::setAbortOnError;
-using asctoolkit::slic::setAbortOnAssert;
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -235,8 +233,6 @@ TEST(sidre_group,get_group_name_index)
 //------------------------------------------------------------------------------
 TEST(sidre_group,create_destroy_has_view)
 {
-  setAbortOnAssert(false);
-
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
   DataGroup * group = root->createGroup("parent");
@@ -320,7 +316,6 @@ TEST(sidre_group,group_name_collisions)
 
   // attempt to create duplicate group name
 
-  setAbortOnAssert(false);
   DataGroup * badGroup = ds->getRoot()->createGroup("fields");
   EXPECT_TRUE( badGroup == ATK_NULLPTR );
 

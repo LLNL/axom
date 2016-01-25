@@ -34,20 +34,20 @@ namespace utilities
 void processAbort()
 {
 #ifndef USE_MPI
-  exit( -1 );
+  exit( EXIT_FAILURE );
 #else
   int mpi = 0;
   MPI_Initialized( &mpi );
   if ( mpi )
   {
 
-    MPI_Abort( MPI_COMM_WORLD, -1 );
+    MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
 
   }
   else
   {
 
-    exit( -1 );
+    exit( EXIT_FAILURE );
 
   }
 #endif
