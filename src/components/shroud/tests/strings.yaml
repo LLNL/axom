@@ -13,12 +13,12 @@ functions:
 ########################################
 # char * argument
 
-#- decl: void passCharPtr(char * dest+intent(out), const char *src)
-#  doxygen:
-#    brief: strcpy like behavior
-#    description: |
-#      dest is marked intent(OUT) to override the intent(INOUT) default
-#      This avoid a copy-in on dest.
+- decl: void passCharPtr(char * dest+intent(out), const char *src)
+  doxygen:
+    brief: strcpy like behavior
+    description: |
+      dest is marked intent(OUT) to override the intent(INOUT) default
+      This avoid a copy-in on dest.
 
 ########################################
 

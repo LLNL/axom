@@ -257,8 +257,7 @@ class Schema(object):
                         ),
                     intent_out = dict(
                         pre_call = [
-                            'int {c_var_len} = strlen({c_var});',
-                            'char * {cpp_var} = new char [{c_var_len} + 1];',
+                            'char * {cpp_var} = new char [{c_var_num} + 1];',
                             ],
                         post_call = [
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
@@ -302,9 +301,6 @@ class Schema(object):
                             ],
                     ),
                     intent_out = dict(
-                        pre_call = [
-                            'int {c_var_len} = strlen({c_var});',
-                            ],
                         post_call = [
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             ],
@@ -762,7 +758,11 @@ class GenFunctions(object):
                 argtype = arg['type']
                 if self.typedef[argtype].base == 'string':
                     has_string_arg = True
-                    break
+                    # Force len attribute when intent is OUT
+                    # so the wrapper will know how much space can be written to.
+                    intent = arg['attrs']['intent']
+                    if intent in ['out', 'inout']:
+                        arg['attrs']['len'] = 'N' + arg['name']
         if not (has_string_result or has_string_arg):
             return
 

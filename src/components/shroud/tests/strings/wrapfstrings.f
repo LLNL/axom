@@ -13,6 +13,25 @@ module strings_mod
     
     interface
         
+        subroutine str_pass_char_ptr(dest, Ndest, src) &
+                bind(C, name="STR_pass_char_ptr")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: dest(*)
+            integer(C_INT), value, intent(IN) :: Ndest
+            character(kind=C_CHAR), intent(IN) :: src(*)
+        end subroutine str_pass_char_ptr
+        
+        subroutine str_pass_char_ptr_bufferify(dest, Ndest, src, Lsrc) &
+                bind(C, name="STR_pass_char_ptr_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: dest(*)
+            integer(C_INT), value, intent(IN) :: Ndest
+            character(kind=C_CHAR), intent(IN) :: src(*)
+            integer(C_INT), value, intent(IN) :: Lsrc
+        end subroutine str_pass_char_ptr_bufferify
+        
         pure function str_get_char1() &
                 result(rv) &
                 bind(C, name="STR_get_char1")
@@ -124,11 +143,12 @@ module strings_mod
             integer(C_INT), value, intent(IN) :: Larg1
         end subroutine str_accept_string_const_reference_bufferify
         
-        subroutine str_accept_string_reference(arg1) &
+        subroutine str_accept_string_reference(arg1, Narg1) &
                 bind(C, name="STR_accept_string_reference")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(INOUT) :: arg1(*)
+            integer(C_INT), value, intent(IN) :: Narg1
         end subroutine str_accept_string_reference
         
         subroutine str_accept_string_reference_bufferify(arg1, Larg1, Narg1) &
@@ -146,8 +166,31 @@ module strings_mod
 
 contains
     
+    ! void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
+    ! string_to_buffer_and_len
+    ! function_index=0
+    !>
+    !! \brief strcpy like behavior
+    !!
+    !! dest is marked intent(OUT) to override the intent(INOUT) default
+    !! This avoid a copy-in on dest.
+    !<
+    subroutine pass_char_ptr(dest, src)
+        use iso_c_binding
+        implicit none
+        character(*), intent(OUT) :: dest
+        character(*), intent(IN) :: src
+        ! splicer begin pass_char_ptr
+        call str_pass_char_ptr_bufferify(  &
+            dest,  &
+            len(dest, kind=C_INT),  &
+            src,  &
+            len_trim(src, kind=C_INT))
+        ! splicer end pass_char_ptr
+    end subroutine pass_char_ptr
+    
     ! const string_result_fstr * getChar1()+pure
-    ! function_index=9
+    ! function_index=11
     !>
     !! \brief return a 'const char *' as character(*)
     !!
@@ -163,7 +206,7 @@ contains
     
     ! const char * getChar2()
     ! string_to_buffer_and_len
-    ! function_index=1
+    ! function_index=2
     !>
     !! \brief return 'const char *' with fixed size (len=30)
     !!
@@ -181,7 +224,7 @@ contains
     
     ! void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=12
+    ! function_index=14
     !>
     !! \brief return a 'const char *' as argument
     !!
@@ -198,7 +241,7 @@ contains
     end subroutine get_char3
     
     ! const string_result_fstr & getString1()+pure
-    ! function_index=14
+    ! function_index=16
     !>
     !! \brief return a 'const string&' as character(*)
     !!
@@ -214,7 +257,7 @@ contains
     
     ! const string & getString2()
     ! string_to_buffer_and_len
-    ! function_index=4
+    ! function_index=5
     !>
     !! \brief return 'const string&' with fixed size (len=30)
     !!
@@ -232,7 +275,7 @@ contains
     
     ! void getString3(string_result_as_arg & output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=17
+    ! function_index=19
     !>
     !! \brief return a 'const string&' as argument
     !!
@@ -250,7 +293,7 @@ contains
     
     ! void acceptStringConstReference(const std::string & arg1+intent(in))
     ! string_to_buffer_and_len
-    ! function_index=6
+    ! function_index=7
     !>
     !! \brief Accept a const string reference
     !!
@@ -269,9 +312,9 @@ contains
         ! splicer end accept_string_const_reference
     end subroutine accept_string_const_reference
     
-    ! void acceptStringReference(std::string & arg1+intent(inout))
+    ! void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))
     ! string_to_buffer_and_len
-    ! function_index=7
+    ! function_index=8
     !>
     !! \brief Accept a string reference
     !!

@@ -26,7 +26,13 @@ or a std::string instance.
 Character Arguments
 ^^^^^^^^^^^^^^^^^^^
 
-blah
+
+When an argument has intent *out*, then *len* attribute is added.
+This allows the wrapper routine to know how much space as available for the output string.
+
+When the argument has intent *in*, then the *len_trim* attribute is added to the *bufferify*
+wrapper only.  The non-bufferify version will use ``strlen`` to compute the length of data.
+
 
 Character Function
 ^^^^^^^^^^^^^^^^^^

@@ -8,8 +8,55 @@
 
 extern "C" {
 
-// const char * getChar1()+pure
+// void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
 // function_index=0
+/**
+ * \brief strcpy like behavior
+ *
+ * dest is marked intent(OUT) to override the intent(INOUT) default
+ * This avoid a copy-in on dest.
+ */
+void STR_pass_char_ptr(char * dest, int Ndest, const char * src)
+{
+// splicer begin function.pass_char_ptr
+char * SH_dest = new char [Ndest + 1];
+int Lsrc = strlen(src);
+char * SH_src = new char [Lsrc + 1];
+std::strncpy(SH_src, src, Lsrc);
+SH_src[Lsrc] = '\0';
+passCharPtr(SH_dest, SH_src);
+asctoolkit::shroud::FccCopy(dest, Ndest, SH_dest);
+delete [] SH_dest;
+delete [] SH_src;
+return;
+// splicer end function.pass_char_ptr
+}
+
+// void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in)+len_trim(Lsrc))
+// function_index=9
+/**
+ * \brief strcpy like behavior
+ *
+ * dest is marked intent(OUT) to override the intent(INOUT) default
+ * This avoid a copy-in on dest.
+ */
+void STR_pass_char_ptr_bufferify(char * dest, int Ndest, const char * src, int Lsrc)
+{
+// splicer begin function.pass_char_ptr_bufferify
+char * SH_dest = new char [Ndest + 1];
+char * SH_src = new char [Lsrc + 1];
+std::strncpy(SH_src, src, Lsrc);
+SH_src[Lsrc] = '\0';
+passCharPtr(SH_dest, SH_src);
+asctoolkit::shroud::FccCopy(dest, Ndest, SH_dest);
+delete [] SH_dest;
+delete [] SH_src;
+return;
+// splicer end function.pass_char_ptr_bufferify
+}
+
+// const char * getChar1()+pure
+// function_index=1
 /**
  * \brief return a 'const char *' as character(*)
  *
@@ -23,7 +70,7 @@ return rv;
 }
 
 // void getChar1(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))+pure
-// function_index=8
+// function_index=10
 /**
  * \brief return a 'const char *' as character(*)
  *
@@ -38,7 +85,7 @@ return;
 }
 
 // const char * getChar2()
-// function_index=1
+// function_index=2
 /**
  * \brief return 'const char *' with fixed size (len=30)
  *
@@ -52,7 +99,7 @@ return rv;
 }
 
 // void getChar2(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))
-// function_index=10
+// function_index=12
 /**
  * \brief return 'const char *' with fixed size (len=30)
  *
@@ -67,7 +114,7 @@ return;
 }
 
 // const char * getChar3()
-// function_index=2
+// function_index=3
 /**
  * \brief return a 'const char *' as argument
  *
@@ -81,7 +128,7 @@ return rv;
 }
 
 // void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))
-// function_index=11
+// function_index=13
 /**
  * \brief return a 'const char *' as argument
  *
@@ -96,7 +143,7 @@ return;
 }
 
 // const string & getString1()+pure
-// function_index=3
+// function_index=4
 /**
  * \brief return a 'const string&' as character(*)
  *
@@ -110,7 +157,7 @@ return rv.c_str();
 }
 
 // void getString1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
-// function_index=13
+// function_index=15
 /**
  * \brief return a 'const string&' as character(*)
  *
@@ -125,7 +172,7 @@ return;
 }
 
 // const string & getString2()
-// function_index=4
+// function_index=5
 /**
  * \brief return 'const string&' with fixed size (len=30)
  *
@@ -144,7 +191,7 @@ return rv.c_str();
 }
 
 // void getString2(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))
-// function_index=15
+// function_index=17
 /**
  * \brief return 'const string&' with fixed size (len=30)
  *
@@ -165,7 +212,7 @@ return;
 }
 
 // const string & getString3()
-// function_index=5
+// function_index=6
 /**
  * \brief return a 'const string&' as argument
  *
@@ -184,7 +231,7 @@ return rv.c_str();
 }
 
 // void getString3(string_result_as_arg & output+intent(out)+len(Loutput))
-// function_index=16
+// function_index=18
 /**
  * \brief return a 'const string&' as argument
  *
@@ -205,7 +252,7 @@ return;
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in))
-// function_index=6
+// function_index=7
 /**
  * \brief Accept a const string reference
  *
@@ -223,7 +270,7 @@ return;
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
-// function_index=18
+// function_index=20
 /**
  * \brief Accept a const string reference
  *
@@ -240,8 +287,8 @@ return;
 // splicer end function.accept_string_const_reference_bufferify
 }
 
-// void acceptStringReference(std::string & arg1+intent(inout))
-// function_index=7
+// void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))
+// function_index=8
 /**
  * \brief Accept a string reference
  *
@@ -249,19 +296,18 @@ return;
  * arg1 is assumed to be intent(INOUT)
  * Must copy in and copy out.
  */
-void STR_accept_string_reference(char * arg1)
+void STR_accept_string_reference(char * arg1, int Narg1)
 {
 // splicer begin function.accept_string_reference
 std::string SH_arg1(arg1);
-int Larg1 = strlen(arg1);
 acceptStringReference(SH_arg1);
-asctoolkit::shroud::FccCopy(arg1, Larg1, SH_arg1.c_str());
+asctoolkit::shroud::FccCopy(arg1, Narg1, SH_arg1.c_str());
 return;
 // splicer end function.accept_string_reference
 }
 
 // void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
-// function_index=19
+// function_index=21
 /**
  * \brief Accept a string reference
  *

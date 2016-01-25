@@ -12,7 +12,7 @@ program tester
 
   call init_fruit
 
-!  call test_charargs
+  call test_charargs
   call test_functions
 
   call fruit_summary
@@ -25,18 +25,18 @@ program tester
 
 contains
 
-!  subroutine test_charargs
-!
-!    character(30) str
-!
-!    call set_case_name("test_charargs")
-!
-!    ! character(*) function
-!    str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-!    call pass_char_ptr(dest=str, src="bird")
-!    call assert_true( str == "bird")
-!
-!  end subroutine test_charargs
+  subroutine test_charargs
+
+    character(30) str
+
+    call set_case_name("test_charargs")
+
+    ! character(*) function
+    str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    call pass_char_ptr(dest=str, src="bird")
+    call assert_true( str == "bird")
+
+  end subroutine test_charargs
 
 
   subroutine test_functions

@@ -18,6 +18,10 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
+void STR_pass_char_ptr(char * dest, int Ndest, const char * src);
+
+void STR_pass_char_ptr_bufferify(char * dest, int Ndest, const char * src, int Lsrc);
+
 const char * STR_get_char1();
 
 void STR_get_char1_bufferify(char * SH_F_rv, int LSH_F_rv);
@@ -46,7 +50,7 @@ void STR_accept_string_const_reference(const char * arg1);
 
 void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1);
 
-void STR_accept_string_reference(char * arg1);
+void STR_accept_string_reference(char * arg1, int Narg1);
 
 void STR_accept_string_reference_bufferify(char * arg1, int Larg1, int Narg1);
 
