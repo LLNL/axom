@@ -116,6 +116,10 @@ class Schema(object):
             C_name_method_template = '{C_prefix}{lower_class}_{underscore_name}{function_suffix}',
             C_name_function_template = '{C_prefix}{underscore_name}{function_suffix}',
 
+            # Fortran's names for C functions
+            F_C_name_method_template = 'C_{lower_class}_{underscore_name}{function_suffix}',
+            F_C_name_function_template = 'C_{underscore_name}{function_suffix}',
+
             F_name_impl_method_template = '{lower_class}_{underscore_name}{function_suffix}',
             F_name_impl_function_template ='{underscore_name}{function_suffix}',
 
@@ -1210,10 +1214,11 @@ class Namify(object):
         else:
             util.eval_template(node, 'C_name', '_function')
 
-        if 'F_C_name' in node:
-            fmt_func.F_C_name = node['F_C_name']
+        if cls:
+            util.eval_template(node, 'F_C_name', '_method')
         else:
-            fmt_func.F_C_name = fmt_func.C_name.lower()
+            util.eval_template(node, 'F_C_name', '_function')
+        fmt_func.F_C_name = fmt_func.F_C_name.lower()
 
         if 'C_this' in options:
             fmt_func.C_this = options.C_this

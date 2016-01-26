@@ -22,104 +22,104 @@ module slic_mod
     
     interface
         
-        subroutine initialize() &
+        subroutine slic_initialize() &
                 bind(C, name="SLIC_initialize")
             use iso_c_binding
             implicit none
-        end subroutine initialize
+        end subroutine slic_initialize
         
-        function slic_is_initialized() &
+        function c_is_initialized() &
                 result(rv) &
                 bind(C, name="SLIC_is_initialized")
             use iso_c_binding
             implicit none
             logical(C_BOOL) :: rv
-        end function slic_is_initialized
+        end function c_is_initialized
         
-        subroutine finalize() &
+        subroutine slic_finalize() &
                 bind(C, name="SLIC_finalize")
             use iso_c_binding
             implicit none
-        end subroutine finalize
+        end subroutine slic_finalize
         
-        subroutine slic_set_abort_on_assert(willAbort) &
+        subroutine c_set_abort_on_assert(willAbort) &
                 bind(C, name="SLIC_set_abort_on_assert")
             use iso_c_binding
             implicit none
             logical(C_BOOL), value, intent(IN) :: willAbort
-        end subroutine slic_set_abort_on_assert
+        end subroutine c_set_abort_on_assert
         
-        function slic_get_abort_on_assert() &
+        function c_get_abort_on_assert() &
                 result(rv) &
                 bind(C, name="SLIC_get_abort_on_assert")
             use iso_c_binding
             implicit none
             logical(C_BOOL) :: rv
-        end function slic_get_abort_on_assert
+        end function c_get_abort_on_assert
         
-        subroutine slic_set_abort_on_error(willAbort) &
+        subroutine c_set_abort_on_error(willAbort) &
                 bind(C, name="SLIC_set_abort_on_error")
             use iso_c_binding
             implicit none
             logical(C_BOOL), value, intent(IN) :: willAbort
-        end subroutine slic_set_abort_on_error
+        end subroutine c_set_abort_on_error
         
-        function slic_get_abort_on_error() &
+        function c_get_abort_on_error() &
                 result(rv) &
                 bind(C, name="SLIC_get_abort_on_error")
             use iso_c_binding
             implicit none
             logical(C_BOOL) :: rv
-        end function slic_get_abort_on_error
+        end function c_get_abort_on_error
         
-        subroutine slic_create_logger(name, imask) &
+        subroutine c_create_logger(name, imask) &
                 bind(C, name="SLIC_create_logger")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             character(kind=C_CHAR), value, intent(IN) :: imask
-        end subroutine slic_create_logger
+        end subroutine c_create_logger
         
-        subroutine slic_create_logger_bufferify(name, Lname, imask) &
+        subroutine c_create_logger_bufferify(name, Lname, imask) &
                 bind(C, name="SLIC_create_logger_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             character(kind=C_CHAR), value, intent(IN) :: imask
-        end subroutine slic_create_logger_bufferify
+        end subroutine c_create_logger_bufferify
         
-        subroutine slic_activate_logger(name) &
+        subroutine c_activate_logger(name) &
                 bind(C, name="SLIC_activate_logger")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
-        end subroutine slic_activate_logger
+        end subroutine c_activate_logger
         
-        subroutine slic_activate_logger_bufferify(name, Lname) &
+        subroutine c_activate_logger_bufferify(name, Lname) &
                 bind(C, name="SLIC_activate_logger_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine slic_activate_logger_bufferify
+        end subroutine c_activate_logger_bufferify
         
-        subroutine slic_get_active_logger_name_bufferify(name, Lname) &
+        subroutine c_get_active_logger_name_bufferify(name, Lname) &
                 bind(C, name="SLIC_get_active_logger_name_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine slic_get_active_logger_name_bufferify
+        end subroutine c_get_active_logger_name_bufferify
         
-        subroutine set_logging_msg_level(level) &
+        subroutine slic_set_logging_msg_level(level) &
                 bind(C, name="SLIC_set_logging_msg_level")
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: level
-        end subroutine set_logging_msg_level
+        end subroutine slic_set_logging_msg_level
         
-        subroutine slic_log_message(level, message, fileName, line, filter) &
+        subroutine c_log_message(level, message, fileName, line, filter) &
                 bind(C, name="SLIC_log_message")
             use iso_c_binding
             implicit none
@@ -128,9 +128,9 @@ module slic_mod
             character(kind=C_CHAR), intent(IN) :: fileName(*)
             integer(C_INT), value, intent(IN) :: line
             logical(C_BOOL), value, intent(IN) :: filter
-        end subroutine slic_log_message
+        end subroutine c_log_message
         
-        subroutine slic_log_message_bufferify(level, message, Lmessage, fileName, LfileName, line, filter) &
+        subroutine c_log_message_bufferify(level, message, Lmessage, fileName, LfileName, line, filter) &
                 bind(C, name="SLIC_log_message_bufferify")
             use iso_c_binding
             implicit none
@@ -141,7 +141,7 @@ module slic_mod
             integer(C_INT), value, intent(IN) :: LfileName
             integer(C_INT), value, intent(IN) :: line
             logical(C_BOOL), value, intent(IN) :: filter
-        end subroutine slic_log_message_bufferify
+        end subroutine c_log_message_bufferify
         
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
@@ -149,91 +149,91 @@ module slic_mod
 
 contains
     
-    function is_initialized() result(rv)
+    function slic_is_initialized() result(rv)
         use iso_c_binding
         implicit none
         logical :: rv
         ! splicer begin is_initialized
-        rv = slic_is_initialized()
+        rv = c_is_initialized()
         ! splicer end is_initialized
-    end function is_initialized
+    end function slic_is_initialized
     
-    subroutine set_abort_on_assert(willAbort)
+    subroutine slic_set_abort_on_assert(willAbort)
         use iso_c_binding
         implicit none
         logical, value, intent(IN) :: willAbort
         logical(C_BOOL) tmp_willAbort
         tmp_willAbort = willAbort  ! coerce to C_BOOL
         ! splicer begin set_abort_on_assert
-        call slic_set_abort_on_assert(tmp_willAbort)
+        call c_set_abort_on_assert(tmp_willAbort)
         ! splicer end set_abort_on_assert
-    end subroutine set_abort_on_assert
+    end subroutine slic_set_abort_on_assert
     
-    function get_abort_on_assert() result(rv)
+    function slic_get_abort_on_assert() result(rv)
         use iso_c_binding
         implicit none
         logical :: rv
         ! splicer begin get_abort_on_assert
-        rv = slic_get_abort_on_assert()
+        rv = c_get_abort_on_assert()
         ! splicer end get_abort_on_assert
-    end function get_abort_on_assert
+    end function slic_get_abort_on_assert
     
-    subroutine set_abort_on_error(willAbort)
+    subroutine slic_set_abort_on_error(willAbort)
         use iso_c_binding
         implicit none
         logical, value, intent(IN) :: willAbort
         logical(C_BOOL) tmp_willAbort
         tmp_willAbort = willAbort  ! coerce to C_BOOL
         ! splicer begin set_abort_on_error
-        call slic_set_abort_on_error(tmp_willAbort)
+        call c_set_abort_on_error(tmp_willAbort)
         ! splicer end set_abort_on_error
-    end subroutine set_abort_on_error
+    end subroutine slic_set_abort_on_error
     
-    function get_abort_on_error() result(rv)
+    function slic_get_abort_on_error() result(rv)
         use iso_c_binding
         implicit none
         logical :: rv
         ! splicer begin get_abort_on_error
-        rv = slic_get_abort_on_error()
+        rv = c_get_abort_on_error()
         ! splicer end get_abort_on_error
-    end function get_abort_on_error
+    end function slic_get_abort_on_error
     
-    subroutine create_logger(name, imask)
+    subroutine slic_create_logger(name, imask)
         use iso_c_binding
         implicit none
         character(*), intent(IN) :: name
         character, value, intent(IN) :: imask
         ! splicer begin create_logger
-        call slic_create_logger_bufferify(  &
+        call c_create_logger_bufferify(  &
             name,  &
             len_trim(name, kind=C_INT),  &
             imask)
         ! splicer end create_logger
-    end subroutine create_logger
+    end subroutine slic_create_logger
     
-    subroutine activate_logger(name)
+    subroutine slic_activate_logger(name)
         use iso_c_binding
         implicit none
         character(*), intent(IN) :: name
         ! splicer begin activate_logger
-        call slic_activate_logger_bufferify(  &
+        call c_activate_logger_bufferify(  &
             name,  &
             len_trim(name, kind=C_INT))
         ! splicer end activate_logger
-    end subroutine activate_logger
+    end subroutine slic_activate_logger
     
-    subroutine get_active_logger_name(name)
+    subroutine slic_get_active_logger_name(name)
         use iso_c_binding
         implicit none
         character(*), intent(OUT) :: name
         ! splicer begin get_active_logger_name
-        call slic_get_active_logger_name_bufferify(  &
+        call c_get_active_logger_name_bufferify(  &
             name,  &
             len(name, kind=C_INT))
         ! splicer end get_active_logger_name
-    end subroutine get_active_logger_name
+    end subroutine slic_get_active_logger_name
     
-    subroutine log_message(level, message, fileName, line, filter)
+    subroutine slic_log_message(level, message, fileName, line, filter)
         use iso_c_binding
         implicit none
         integer(C_INT), value, intent(IN) :: level
@@ -244,7 +244,7 @@ contains
         logical(C_BOOL) tmp_filter
         tmp_filter = filter  ! coerce to C_BOOL
         ! splicer begin log_message
-        call slic_log_message_bufferify(  &
+        call c_log_message_bufferify(  &
             level,  &
             message,  &
             len_trim(message, kind=C_INT),  &
@@ -253,7 +253,7 @@ contains
             line,  &
             tmp_filter)
         ! splicer end log_message
-    end subroutine log_message
+    end subroutine slic_log_message
     
     ! splicer begin additional_functions
     ! splicer end additional_functions

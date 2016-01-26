@@ -70,7 +70,7 @@
                     }, 
                     "fmt": {
                         "C_name": "AA_exclass1_new", 
-                        "F_C_name": "aa_exclass1_new", 
+                        "F_C_name": "c_exclass1_new", 
                         "F_name_generic": "new", 
                         "F_name_impl": "exclass1_new", 
                         "F_name_method": "new", 
@@ -117,7 +117,7 @@
                     }, 
                     "fmt": {
                         "C_name": "AA_exclass1_new_bufferify", 
-                        "F_C_name": "aa_exclass1_new_bufferify", 
+                        "F_C_name": "c_exclass1_new_bufferify", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -147,7 +147,7 @@
                     }, 
                     "fmt": {
                         "C_name": "AA_exclass1_delete", 
-                        "F_C_name": "aa_exclass1_delete", 
+                        "F_C_name": "c_exclass1_delete", 
                         "F_name_generic": "delete", 
                         "F_name_impl": "exclass1_delete", 
                         "F_name_method": "delete", 
@@ -180,7 +180,7 @@
                     "decl": "int incrementCount(int incr)", 
                     "fmt": {
                         "C_name": "AA_exclass1_increment_count", 
-                        "F_C_name": "aa_exclass1_increment_count", 
+                        "F_C_name": "c_exclass1_increment_count", 
                         "F_name_generic": "increment_count", 
                         "F_name_impl": "exclass1_increment_count", 
                         "F_name_method": "increment_count", 
@@ -209,7 +209,7 @@
                     "decl": "const string& getName() const", 
                     "fmt": {
                         "C_name": "AA_exclass1_get_name", 
-                        "F_C_name": "aa_exclass1_get_name", 
+                        "F_C_name": "c_exclass1_get_name", 
                         "F_name_generic": "get_name", 
                         "F_name_impl": "exclass1_get_name", 
                         "F_name_method": "get_name", 
@@ -256,7 +256,7 @@
                     "decl": "const string& getName() const", 
                     "fmt": {
                         "C_name": "AA_exclass1_get_name_bufferify", 
-                        "F_C_name": "aa_exclass1_get_name_bufferify", 
+                        "F_C_name": "c_exclass1_get_name_bufferify", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -289,7 +289,7 @@
                     }, 
                     "fmt": {
                         "C_name": "AA_exclass1_get_name_length", 
-                        "F_C_name": "aa_exclass1_get_name_length", 
+                        "F_C_name": "c_exclass1_get_name_length", 
                         "F_name_generic": "get_name_length", 
                         "F_name_impl": "exclass1_get_name_length", 
                         "F_name_method": "get_name_length", 
@@ -319,7 +319,7 @@
                     "decl": "const string& getNameErrorCheck() const", 
                     "fmt": {
                         "C_name": "AA_exclass1_get_name_error_check", 
-                        "F_C_name": "aa_exclass1_get_name_error_check", 
+                        "F_C_name": "c_exclass1_get_name_error_check", 
                         "F_name_generic": "get_name_error_check", 
                         "F_name_impl": "exclass1_get_name_error_check", 
                         "F_name_method": "get_name_error_check", 
@@ -363,7 +363,7 @@
                     "decl": "const string& getNameErrorCheck() const", 
                     "fmt": {
                         "C_name": "AA_exclass1_get_name_error_check_bufferify", 
-                        "F_C_name": "aa_exclass1_get_name_error_check_bufferify", 
+                        "F_C_name": "c_exclass1_get_name_error_check_bufferify", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -392,7 +392,7 @@
                     "decl": "const string& getNameArg() const", 
                     "fmt": {
                         "C_name": "AA_exclass1_get_name_arg", 
-                        "F_C_name": "aa_exclass1_get_name_arg", 
+                        "F_C_name": "c_exclass1_get_name_arg", 
                         "PY_name_impl": "PP_exclass1_get_name_arg", 
                         "method_name": "getNameArg", 
                         "underscore_name": "get_name_arg"
@@ -436,7 +436,7 @@
                     "decl": "const string& getNameArg() const", 
                     "fmt": {
                         "C_name": "AA_exclass1_get_name_arg_bufferify", 
-                        "F_C_name": "aa_exclass1_get_name_arg_bufferify", 
+                        "F_C_name": "c_exclass1_get_name_arg_bufferify", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -509,7 +509,7 @@
                     "decl": "ExClass2 *getRoot()", 
                     "fmt": {
                         "C_name": "AA_exclass1_get_root", 
-                        "F_C_name": "aa_exclass1_get_root", 
+                        "F_C_name": "c_exclass1_get_root", 
                         "F_name_generic": "get_root", 
                         "F_name_impl": "exclass1_get_root", 
                         "F_name_method": "get_root", 
@@ -549,7 +549,7 @@
                     "decl": "int  getValue(int value)", 
                     "fmt": {
                         "C_name": "AA_exclass1_get_value_from_int", 
-                        "F_C_name": "aa_exclass1_get_value_from_int", 
+                        "F_C_name": "c_exclass1_get_value_from_int", 
                         "F_name_generic": "get_value", 
                         "F_name_impl": "exclass1_get_value_from_int", 
                         "F_name_method": "get_value_from_int", 
@@ -589,7 +589,7 @@
                     "decl": "long getValue(long value)", 
                     "fmt": {
                         "C_name": "AA_exclass1_get_value_1", 
-                        "F_C_name": "aa_exclass1_get_value_1", 
+                        "F_C_name": "c_exclass1_get_value_1", 
                         "F_name_generic": "get_value", 
                         "F_name_impl": "exclass1_get_value_1", 
                         "F_name_method": "get_value_1", 
@@ -614,7 +614,7 @@
                     "decl": "void *getAddr()", 
                     "fmt": {
                         "C_name": "AA_exclass1_get_addr", 
-                        "F_C_name": "aa_exclass1_get_addr", 
+                        "F_C_name": "c_exclass1_get_addr", 
                         "F_name_generic": "get_addr", 
                         "F_name_impl": "exclass1_get_addr", 
                         "F_name_method": "get_addr", 
@@ -649,7 +649,7 @@
                     "decl": "bool hasAddr(bool in)", 
                     "fmt": {
                         "C_name": "AA_exclass1_has_addr", 
-                        "F_C_name": "aa_exclass1_has_addr", 
+                        "F_C_name": "c_exclass1_has_addr", 
                         "F_name_generic": "has_addr", 
                         "F_name_impl": "exclass1_has_addr", 
                         "F_name_method": "has_addr", 
@@ -673,7 +673,7 @@
                     "decl": "void SplicerSpecial", 
                     "fmt": {
                         "C_name": "AA_exclass1_splicer_special", 
-                        "F_C_name": "aa_exclass1_splicer_special", 
+                        "F_C_name": "c_exclass1_splicer_special", 
                         "F_name_generic": "splicer_special", 
                         "F_name_impl": "exclass1_splicer_special", 
                         "F_name_method": "splicer_special", 
@@ -767,7 +767,7 @@
                     "decl": "ExClass2 *ExClass2 (const string *name) +constructor", 
                     "fmt": {
                         "C_name": "AA_exclass2_ex_class2", 
-                        "F_C_name": "aa_exclass2_ex_class2", 
+                        "F_C_name": "c_exclass2_ex_class2", 
                         "F_name_generic": "ex_class2", 
                         "F_name_impl": "exclass2_ex_class2", 
                         "F_name_method": "ex_class2", 
@@ -809,7 +809,7 @@
                     "decl": "ExClass2 *ExClass2 (const string *name) +constructor", 
                     "fmt": {
                         "C_name": "AA_exclass2_ex_class2_bufferify", 
-                        "F_C_name": "aa_exclass2_ex_class2_bufferify", 
+                        "F_C_name": "c_exclass2_ex_class2_bufferify", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -836,7 +836,7 @@
                     "decl": "void delete() +destructor", 
                     "fmt": {
                         "C_name": "AA_exclass2_delete", 
-                        "F_C_name": "aa_exclass2_delete", 
+                        "F_C_name": "c_exclass2_delete", 
                         "F_name_generic": "delete", 
                         "F_name_impl": "exclass2_delete", 
                         "F_name_method": "delete", 
@@ -863,7 +863,7 @@
                     "decl": "const string& getName const", 
                     "fmt": {
                         "C_name": "AA_exclass2_get_name", 
-                        "F_C_name": "aa_exclass2_get_name", 
+                        "F_C_name": "c_exclass2_get_name", 
                         "F_name_generic": "get_name", 
                         "F_name_impl": "exclass2_get_name", 
                         "F_name_method": "get_name", 
@@ -908,7 +908,7 @@
                     "decl": "const string& getName const", 
                     "fmt": {
                         "C_name": "AA_exclass2_get_name_bufferify", 
-                        "F_C_name": "aa_exclass2_get_name_bufferify", 
+                        "F_C_name": "c_exclass2_get_name_bufferify", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -938,7 +938,7 @@
                     }, 
                     "fmt": {
                         "C_name": "AA_exclass2_get_name_length", 
-                        "F_C_name": "aa_exclass2_get_name_length", 
+                        "F_C_name": "c_exclass2_get_name_length", 
                         "F_name_generic": "get_name_length", 
                         "F_name_impl": "exclass2_get_name_length", 
                         "F_name_method": "get_name_length", 
@@ -977,7 +977,7 @@
                     "decl": "ExClass1 *get_class1(const ExClass1 *in)", 
                     "fmt": {
                         "C_name": "AA_exclass2_get_class1", 
-                        "F_C_name": "aa_exclass2_get_class1", 
+                        "F_C_name": "c_exclass2_get_class1", 
                         "F_name_generic": "get_class1", 
                         "F_name_impl": "exclass2_get_class1", 
                         "F_name_method": "get_class1", 
@@ -1014,7 +1014,7 @@
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "C_name": "AA_exclass2_declare_0", 
-                        "F_C_name": "aa_exclass2_declare_0", 
+                        "F_C_name": "c_exclass2_declare_0", 
                         "function_suffix": "_0"
                     }, 
                     "fortran_generic": {
@@ -1151,7 +1151,7 @@
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "C_name": "AA_exclass2_declare_1", 
-                        "F_C_name": "aa_exclass2_declare_1", 
+                        "F_C_name": "c_exclass2_declare_1", 
                         "PY_name_impl": "PP_exclass2_declare_1", 
                         "function_suffix": "_1", 
                         "method_name": "declare", 
@@ -1296,7 +1296,7 @@
                     "decl": "void destroyall()", 
                     "fmt": {
                         "C_name": "AA_exclass2_destroyall", 
-                        "F_C_name": "aa_exclass2_destroyall", 
+                        "F_C_name": "c_exclass2_destroyall", 
                         "F_name_generic": "destroyall", 
                         "F_name_impl": "exclass2_destroyall", 
                         "F_name_method": "destroyall", 
@@ -1322,7 +1322,7 @@
                     "decl": "TypeID getTypeID() const", 
                     "fmt": {
                         "C_name": "AA_exclass2_get_type_id", 
-                        "F_C_name": "aa_exclass2_get_type_id", 
+                        "F_C_name": "c_exclass2_get_type_id", 
                         "F_name_generic": "get_type_id", 
                         "F_name_impl": "exclass2_get_type_id", 
                         "F_name_method": "get_type_id", 
@@ -1398,7 +1398,7 @@
                     "fmt": {
                         "CPP_template": "<int>", 
                         "C_name": "AA_exclass2_set_value_int", 
-                        "F_C_name": "aa_exclass2_set_value_int", 
+                        "F_C_name": "c_exclass2_set_value_int", 
                         "F_name_generic": "set_value", 
                         "F_name_impl": "exclass2_set_value_int", 
                         "F_name_method": "set_value_int", 
@@ -1436,7 +1436,7 @@
                     "fmt": {
                         "CPP_template": "<long>", 
                         "C_name": "AA_exclass2_set_value_long", 
-                        "F_C_name": "aa_exclass2_set_value_long", 
+                        "F_C_name": "c_exclass2_set_value_long", 
                         "F_name_generic": "set_value", 
                         "F_name_impl": "exclass2_set_value_long", 
                         "F_name_method": "set_value_long", 
@@ -1474,7 +1474,7 @@
                     "fmt": {
                         "CPP_template": "<float>", 
                         "C_name": "AA_exclass2_set_value_float", 
-                        "F_C_name": "aa_exclass2_set_value_float", 
+                        "F_C_name": "c_exclass2_set_value_float", 
                         "F_name_generic": "set_value", 
                         "F_name_impl": "exclass2_set_value_float", 
                         "F_name_method": "set_value_float", 
@@ -1512,7 +1512,7 @@
                     "fmt": {
                         "CPP_template": "<double>", 
                         "C_name": "AA_exclass2_set_value_double", 
-                        "F_C_name": "aa_exclass2_set_value_double", 
+                        "F_C_name": "c_exclass2_set_value_double", 
                         "F_name_generic": "set_value", 
                         "F_name_impl": "exclass2_set_value_double", 
                         "F_name_method": "set_value_double", 
@@ -1571,7 +1571,7 @@
                         "CPP_return_templated": true, 
                         "CPP_template": "<int>", 
                         "C_name": "AA_exclass2_get_value_int", 
-                        "F_C_name": "aa_exclass2_get_value_int", 
+                        "F_C_name": "c_exclass2_get_value_int", 
                         "F_name_generic": "get_value", 
                         "F_name_impl": "exclass2_get_value_int", 
                         "F_name_method": "get_value_int", 
@@ -1601,7 +1601,7 @@
                         "CPP_return_templated": true, 
                         "CPP_template": "<double>", 
                         "C_name": "AA_exclass2_get_value_double", 
-                        "F_C_name": "aa_exclass2_get_value_double", 
+                        "F_C_name": "c_exclass2_get_value_double", 
                         "F_name_generic": "get_value", 
                         "F_name_impl": "exclass2_get_value_double", 
                         "F_name_method": "get_value_double", 
@@ -1726,7 +1726,7 @@
             "decl": "bool isNameValid(const std::string& name)", 
             "fmt": {
                 "C_name": "AA_is_name_valid", 
-                "F_C_name": "aa_is_name_valid", 
+                "F_C_name": "c_is_name_valid", 
                 "F_name_generic": "is_name_valid", 
                 "F_name_impl": "is_name_valid", 
                 "F_name_method": "is_name_valid", 
@@ -1768,7 +1768,7 @@
             "decl": "bool isNameValid(const std::string& name)", 
             "fmt": {
                 "C_name": "AA_is_name_valid_bufferify", 
-                "F_C_name": "aa_is_name_valid_bufferify", 
+                "F_C_name": "c_is_name_valid_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -1791,7 +1791,7 @@
             "decl": "bool isInitialized()", 
             "fmt": {
                 "C_name": "AA_is_initialized", 
-                "F_C_name": "aa_is_initialized", 
+                "F_C_name": "c_is_initialized", 
                 "F_name_generic": "is_initialized", 
                 "F_name_impl": "is_initialized", 
                 "F_name_method": "is_initialized", 
@@ -1832,7 +1832,7 @@
             "decl": "void test_names(const std::string &name)", 
             "fmt": {
                 "C_name": "AA_test_names", 
-                "F_C_name": "aa_test_names", 
+                "F_C_name": "c_test_names", 
                 "F_name_generic": "test_names", 
                 "F_name_impl": "test_names", 
                 "F_name_method": "test_names", 
@@ -1878,7 +1878,7 @@
             "decl": "void test_names(const std::string &name)", 
             "fmt": {
                 "C_name": "AA_test_names_bufferify", 
-                "F_C_name": "aa_test_names_bufferify", 
+                "F_C_name": "c_test_names_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "function_suffix": "", 
@@ -1927,7 +1927,7 @@
             "decl": "void test_names(const std::string &name, int flag)", 
             "fmt": {
                 "C_name": "AA_test_names_flag", 
-                "F_C_name": "aa_test_names_flag", 
+                "F_C_name": "c_test_names_flag", 
                 "F_name_generic": "test_names", 
                 "F_name_impl": "test_names_flag", 
                 "F_name_method": "test_names_flag", 
@@ -1981,7 +1981,7 @@
             "decl": "void test_names(const std::string &name, int flag)", 
             "fmt": {
                 "C_name": "AA_test_names_flag_bufferify", 
-                "F_C_name": "aa_test_names_flag_bufferify", 
+                "F_C_name": "c_test_names_flag_bufferify", 
                 "function_suffix": "_flag_bufferify"
             }, 
             "function_suffix": "_flag", 
@@ -2007,7 +2007,7 @@
             "decl": "void testoptional(int i = 1, long j=2)", 
             "fmt": {
                 "C_name": "AA_testoptional_0", 
-                "F_C_name": "aa_testoptional_0", 
+                "F_C_name": "c_testoptional_0", 
                 "F_name_generic": "testoptional", 
                 "F_name_impl": "testoptional_0", 
                 "F_name_method": "testoptional_0", 
@@ -2045,7 +2045,7 @@
             "decl": "void testoptional(int i = 1, long j=2)", 
             "fmt": {
                 "C_name": "AA_testoptional_1", 
-                "F_C_name": "aa_testoptional_1", 
+                "F_C_name": "c_testoptional_1", 
                 "F_name_generic": "testoptional", 
                 "F_name_impl": "testoptional_1", 
                 "F_name_method": "testoptional_1", 
@@ -2100,7 +2100,7 @@
             "decl": "void testoptional(int i = 1, long j=2)", 
             "fmt": {
                 "C_name": "AA_testoptional_2", 
-                "F_C_name": "aa_testoptional_2", 
+                "F_C_name": "c_testoptional_2", 
                 "F_name_generic": "testoptional", 
                 "F_name_impl": "testoptional_2", 
                 "F_name_method": "testoptional_2", 
@@ -2125,6 +2125,8 @@
         "C_name_function_template": "{C_prefix}{underscore_name}{function_suffix}", 
         "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
         "C_prefix": "AA_", 
+        "F_C_name_function_template": "C_{underscore_name}{function_suffix}", 
+        "F_C_name_method_template": "C_{lower_class}_{underscore_name}{function_suffix}", 
         "F_force_wrapper": false, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
         "F_impl_filename_library_template": "wrapf{lower_library}.f", 

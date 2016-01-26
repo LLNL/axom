@@ -94,7 +94,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_pass_char_ptr", 
-                "F_C_name": "str_pass_char_ptr", 
+                "F_C_name": "c_pass_char_ptr", 
                 "F_name_generic": "pass_char_ptr", 
                 "F_name_impl": "pass_char_ptr", 
                 "F_name_method": "pass_char_ptr", 
@@ -146,7 +146,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_pass_char_ptr_bufferify", 
-                "F_C_name": "str_pass_char_ptr_bufferify", 
+                "F_C_name": "c_pass_char_ptr_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -174,7 +174,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_char1", 
-                "F_C_name": "str_get_char1", 
+                "F_C_name": "c_get_char1", 
                 "method_name": "getChar1", 
                 "underscore_name": "get_char1"
             }, 
@@ -219,7 +219,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_char1_bufferify", 
-                "F_C_name": "str_get_char1_bufferify", 
+                "F_C_name": "c_get_char1_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -282,7 +282,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_char2", 
-                "F_C_name": "str_get_char2", 
+                "F_C_name": "c_get_char2", 
                 "F_name_generic": "get_char2", 
                 "F_name_impl": "get_char2", 
                 "F_name_method": "get_char2", 
@@ -327,7 +327,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_char2_bufferify", 
-                "F_C_name": "str_get_char2_bufferify", 
+                "F_C_name": "c_get_char2_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -358,7 +358,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_char3", 
-                "F_C_name": "str_get_char3", 
+                "F_C_name": "c_get_char3", 
                 "method_name": "getChar3", 
                 "underscore_name": "get_char3"
             }, 
@@ -402,7 +402,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_char3_bufferify", 
-                "F_C_name": "str_get_char3_bufferify", 
+                "F_C_name": "c_get_char3_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -481,7 +481,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_string1", 
-                "F_C_name": "str_get_string1", 
+                "F_C_name": "c_get_string1", 
                 "method_name": "getString1", 
                 "underscore_name": "get_string1"
             }, 
@@ -526,7 +526,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_string1_bufferify", 
-                "F_C_name": "str_get_string1_bufferify", 
+                "F_C_name": "c_get_string1_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -590,7 +590,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_string2", 
-                "F_C_name": "str_get_string2", 
+                "F_C_name": "c_get_string2", 
                 "F_name_generic": "get_string2", 
                 "F_name_impl": "get_string2", 
                 "F_name_method": "get_string2", 
@@ -636,7 +636,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_string2_bufferify", 
-                "F_C_name": "str_get_string2_bufferify", 
+                "F_C_name": "c_get_string2_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -668,7 +668,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_string3", 
-                "F_C_name": "str_get_string3", 
+                "F_C_name": "c_get_string3", 
                 "method_name": "getString3", 
                 "underscore_name": "get_string3"
             }, 
@@ -713,7 +713,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_get_string3_bufferify", 
-                "F_C_name": "str_get_string3_bufferify", 
+                "F_C_name": "c_get_string3_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -804,7 +804,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_accept_string_const_reference", 
-                "F_C_name": "str_accept_string_const_reference", 
+                "F_C_name": "c_accept_string_const_reference", 
                 "F_name_generic": "accept_string_const_reference", 
                 "F_name_impl": "accept_string_const_reference", 
                 "F_name_method": "accept_string_const_reference", 
@@ -846,7 +846,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_accept_string_const_reference_bufferify", 
-                "F_C_name": "str_accept_string_const_reference_bufferify", 
+                "F_C_name": "c_accept_string_const_reference_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -885,7 +885,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_accept_string_reference", 
-                "F_C_name": "str_accept_string_reference", 
+                "F_C_name": "c_accept_string_reference", 
                 "F_name_generic": "accept_string_reference", 
                 "F_name_impl": "accept_string_reference", 
                 "F_name_method": "accept_string_reference", 
@@ -927,7 +927,7 @@
             }, 
             "fmt": {
                 "C_name": "STR_accept_string_reference_bufferify", 
-                "F_C_name": "str_accept_string_reference_bufferify", 
+                "F_C_name": "c_accept_string_reference_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -949,6 +949,8 @@
         "C_impl_filename_library_template": "wrap{library}.cpp", 
         "C_name_function_template": "{C_prefix}{underscore_name}{function_suffix}", 
         "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "F_C_name_function_template": "C_{underscore_name}{function_suffix}", 
+        "F_C_name_method_template": "C_{lower_class}_{underscore_name}{function_suffix}", 
         "F_force_wrapper": false, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
         "F_impl_filename_library_template": "wrapf{lower_library}.f", 

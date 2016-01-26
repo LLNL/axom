@@ -207,6 +207,14 @@ F_C_name
 
     Defaults to C_name.lower() - tut_class1_method1
 
+F_C_name_method_template
+
+    C_{lower_class}_{underscore_name}{function_suffix}
+
+F_C_name_function_template
+
+    C_{underscore_name}{function_suffix}
+
 F_name_generic_template
 
     Defaults to '{underscore_name'} - method1

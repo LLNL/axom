@@ -37,7 +37,7 @@
                     "decl": "Class1 *new()  +constructor", 
                     "fmt": {
                         "C_name": "TUT_class1_new", 
-                        "F_C_name": "tut_class1_new", 
+                        "F_C_name": "c_class1_new", 
                         "F_name_generic": "new", 
                         "F_name_impl": "class1_new", 
                         "F_name_method": "new", 
@@ -64,7 +64,7 @@
                     "decl": "void delete()  +destructor", 
                     "fmt": {
                         "C_name": "TUT_class1_delete", 
-                        "F_C_name": "tut_class1_delete", 
+                        "F_C_name": "c_class1_delete", 
                         "F_name_generic": "delete", 
                         "F_name_impl": "class1_delete", 
                         "F_name_method": "delete", 
@@ -88,7 +88,7 @@
                     "decl": "void Method1()", 
                     "fmt": {
                         "C_name": "TUT_class1_method1", 
-                        "F_C_name": "tut_class1_method1", 
+                        "F_C_name": "c_class1_method1", 
                         "F_name_generic": "method1", 
                         "F_name_impl": "class1_method1", 
                         "F_name_method": "method1", 
@@ -273,7 +273,7 @@
             "decl": "bool Function3(bool arg)", 
             "fmt": {
                 "C_name": "TUT_function3", 
-                "F_C_name": "tut_function3", 
+                "F_C_name": "c_function3", 
                 "F_name_generic": "function3", 
                 "F_name_impl": "function3", 
                 "F_name_method": "function3", 
@@ -319,7 +319,7 @@
             "decl": "const std::string& Function4a+len(30)( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4a", 
-                "F_C_name": "tut_function4a", 
+                "F_C_name": "c_function4a", 
                 "F_name_generic": "function4a", 
                 "F_name_impl": "function4a", 
                 "F_name_method": "function4a", 
@@ -384,7 +384,7 @@
             "decl": "const std::string& Function4a+len(30)( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4a_bufferify", 
-                "F_C_name": "tut_function4a_bufferify", 
+                "F_C_name": "c_function4a_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -496,7 +496,7 @@
             "decl": "const std::string Function4b( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4b_bufferify", 
-                "F_C_name": "tut_function4b_bufferify", 
+                "F_C_name": "c_function4b_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -597,7 +597,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_function5", 
-                "F_C_name": "tut_function5", 
+                "F_C_name": "c_function5", 
                 "F_name_generic": "function5", 
                 "F_name_impl": "function5", 
                 "F_name_method": "function5", 
@@ -640,7 +640,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_function5_arg1", 
-                "F_C_name": "tut_function5_arg1", 
+                "F_C_name": "c_function5_arg1", 
                 "F_name_generic": "function5", 
                 "F_name_impl": "function5_arg1", 
                 "F_name_method": "function5_arg1", 
@@ -700,7 +700,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_function5_arg1_arg2", 
-                "F_C_name": "tut_function5_arg1_arg2", 
+                "F_C_name": "c_function5_arg1_arg2", 
                 "F_name_generic": "function5", 
                 "F_name_impl": "function5_arg1_arg2", 
                 "F_name_method": "function5_arg1_arg2", 
@@ -742,7 +742,7 @@
             "decl": "void Function6(const std::string& name)", 
             "fmt": {
                 "C_name": "TUT_function6_from_name", 
-                "F_C_name": "tut_function6_from_name", 
+                "F_C_name": "c_function6_from_name", 
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_name", 
                 "F_name_method": "function6_from_name", 
@@ -788,7 +788,7 @@
             "decl": "void Function6(const std::string& name)", 
             "fmt": {
                 "C_name": "TUT_function6_from_name_bufferify", 
-                "F_C_name": "tut_function6_from_name_bufferify", 
+                "F_C_name": "c_function6_from_name_bufferify", 
                 "function_suffix": "_from_name_bufferify"
             }, 
             "function_suffix": "_from_name", 
@@ -826,7 +826,7 @@
             "decl": "void Function6(int indx)", 
             "fmt": {
                 "C_name": "TUT_function6_from_index", 
-                "F_C_name": "tut_function6_from_index", 
+                "F_C_name": "c_function6_from_index", 
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_index", 
                 "F_name_method": "function6_from_index", 
@@ -902,7 +902,7 @@
             "fmt": {
                 "CPP_template": "<int>", 
                 "C_name": "TUT_function7_int", 
-                "F_C_name": "tut_function7_int", 
+                "F_C_name": "c_function7_int", 
                 "F_name_generic": "function7", 
                 "F_name_impl": "function7_int", 
                 "F_name_method": "function7_int", 
@@ -940,7 +940,7 @@
             "fmt": {
                 "CPP_template": "<double>", 
                 "C_name": "TUT_function7_double", 
-                "F_C_name": "tut_function7_double", 
+                "F_C_name": "c_function7_double", 
                 "F_name_generic": "function7", 
                 "F_name_impl": "function7_double", 
                 "F_name_method": "function7_double", 
@@ -999,7 +999,7 @@
                 "CPP_return_templated": true, 
                 "CPP_template": "<int>", 
                 "C_name": "TUT_function8_int", 
-                "F_C_name": "tut_function8_int", 
+                "F_C_name": "c_function8_int", 
                 "F_name_generic": "function8", 
                 "F_name_impl": "function8_int", 
                 "F_name_method": "function8_int", 
@@ -1029,7 +1029,7 @@
                 "CPP_return_templated": true, 
                 "CPP_template": "<double>", 
                 "C_name": "TUT_function8_double", 
-                "F_C_name": "tut_function8_double", 
+                "F_C_name": "c_function8_double", 
                 "F_name_generic": "function8", 
                 "F_name_impl": "function8_double", 
                 "F_name_method": "function8_double", 
@@ -1065,7 +1065,7 @@
             "decl": "void Function9(double arg)", 
             "fmt": {
                 "C_name": "TUT_function9", 
-                "F_C_name": "tut_function9", 
+                "F_C_name": "c_function9", 
                 "PY_name_impl": "PY_function9", 
                 "method_name": "Function9", 
                 "underscore_name": "function9"
@@ -1171,7 +1171,7 @@
             "decl": "void Function10()", 
             "fmt": {
                 "C_name": "TUT_function10_0", 
-                "F_C_name": "tut_function10_0", 
+                "F_C_name": "c_function10_0", 
                 "F_name_generic": "function10", 
                 "F_name_impl": "function10_0", 
                 "F_name_method": "function10_0", 
@@ -1221,7 +1221,7 @@
             "decl": "void Function10(const std::string &name, double arg2)", 
             "fmt": {
                 "C_name": "TUT_function10_1", 
-                "F_C_name": "tut_function10_1", 
+                "F_C_name": "c_function10_1", 
                 "PY_name_impl": "PY_function10_1", 
                 "function_suffix": "_1", 
                 "method_name": "Function10", 
@@ -1380,7 +1380,7 @@
             "decl": "void Function10(const std::string &name, double arg2)", 
             "fmt": {
                 "C_name": "TUT_function10_1_bufferify", 
-                "F_C_name": "tut_function10_1_bufferify", 
+                "F_C_name": "c_function10_1_bufferify", 
                 "function_suffix": "_1_bufferify"
             }, 
             "fortran_generic": {
@@ -1429,7 +1429,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_overload1_num", 
-                "F_C_name": "tut_overload1_num", 
+                "F_C_name": "c_overload1_num", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_num", 
                 "F_name_method": "overload1_num", 
@@ -1484,7 +1484,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_overload1_num_offset", 
-                "F_C_name": "tut_overload1_num_offset", 
+                "F_C_name": "c_overload1_num_offset", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_num_offset", 
                 "F_name_method": "overload1_num_offset", 
@@ -1556,7 +1556,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_overload1_num_offset_stride", 
-                "F_C_name": "tut_overload1_num_offset_stride", 
+                "F_C_name": "c_overload1_num_offset_stride", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_num_offset_stride", 
                 "F_name_method": "overload1_num_offset_stride", 
@@ -1604,7 +1604,7 @@
             "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
             "fmt": {
                 "C_name": "TUT_overload1_3", 
-                "F_C_name": "tut_overload1_3", 
+                "F_C_name": "c_overload1_3", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_3", 
                 "F_name_method": "overload1_3", 
@@ -1662,7 +1662,7 @@
             "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
             "fmt": {
                 "C_name": "TUT_overload1_4", 
-                "F_C_name": "tut_overload1_4", 
+                "F_C_name": "c_overload1_4", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_4", 
                 "F_name_method": "overload1_4", 
@@ -1737,7 +1737,7 @@
             "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
             "fmt": {
                 "C_name": "TUT_overload1_5", 
-                "F_C_name": "tut_overload1_5", 
+                "F_C_name": "c_overload1_5", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_5", 
                 "F_name_method": "overload1_5", 
@@ -1830,7 +1830,7 @@
             "decl": "const std::string& LastFunctionCalled() +pure", 
             "fmt": {
                 "C_name": "TUT_last_function_called", 
-                "F_C_name": "tut_last_function_called", 
+                "F_C_name": "c_last_function_called", 
                 "PY_name_impl": "PY_last_function_called", 
                 "method_name": "LastFunctionCalled", 
                 "underscore_name": "last_function_called"
@@ -1873,7 +1873,7 @@
             "decl": "const std::string& LastFunctionCalled() +pure", 
             "fmt": {
                 "C_name": "TUT_last_function_called_bufferify", 
-                "F_C_name": "tut_last_function_called_bufferify", 
+                "F_C_name": "c_last_function_called_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -1928,6 +1928,8 @@
         "C_impl_filename_library_template": "wrap{library}.cpp", 
         "C_name_function_template": "{C_prefix}{underscore_name}{function_suffix}", 
         "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "F_C_name_function_template": "C_{underscore_name}{function_suffix}", 
+        "F_C_name_method_template": "C_{lower_class}_{underscore_name}{function_suffix}", 
         "F_force_wrapper": false, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
         "F_impl_filename_library_template": "wrapf{lower_library}.f", 

@@ -25,6 +25,9 @@ options:
   # Fortran as a subroutine with an additional character argument
   # for the result.
   F_string_result_as_arg: name
+
+  # Change the default template for Fortran names to include the library name.
+  F_name_impl_function_template: "{lower_library}_{underscore_name}{function_suffix}"
   
 ######################################################################
 
@@ -41,11 +44,8 @@ types:
 
 functions:
   -  decl: void initialize()
-#     F_name_impl: slic_initialize
   -  decl: bool isInitialized()
-#     F_name_impl: slic_is_initialized
   -  decl: void finalize()
-#     F_name_impl: slic_finalize
 
   -  decl: void setAbortOnAssert( bool willAbort )
   -  decl: bool getAbortOnAssert()

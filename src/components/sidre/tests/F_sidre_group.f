@@ -287,7 +287,7 @@ contains
 
     call set_case_name("create_destroy_has_view")
 
-    call set_abort_on_assert(.false.)
+    call slic_set_abort_on_assert(.false.)
 
     ds = datastore_new()
     root = ds%get_root()
@@ -375,7 +375,7 @@ contains
 
     ! attempt to create duplicate group name
 
-    call set_abort_on_assert(.false.)
+    call slic_set_abort_on_assert(.false.)
     badGroup = root%create_group("fields")
     call assert_false( c_associated(badgroup%get_instance()) )
 
