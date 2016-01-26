@@ -209,8 +209,7 @@ public:
    */
   IndexType getViewIndex(const std::string& name) const
   {
-    SLIC_CHECK_MSG( !name.empty(), "Group " << this->getName() << " can't get index for view with empty name.");
-    SLIC_CHECK_MSG( hasView(name), "Group " << this->getName() << " does not have view with name " << name);
+    SLIC_CHECK_MSG( !name.empty() && hasView(name), "Group " << this->getName() << " does not have view with name '" << name << "'");
 
     return m_view_coll.getItemIndex(name);
   }
@@ -222,7 +221,6 @@ public:
    */
   const std::string& getViewName(IndexType idx) const
   {
-    SLIC_CHECK_MSG( idx != InvalidIndex, "Group " << this->getName() << " can't get view name with invalid index.");
     SLIC_CHECK_MSG( hasView(idx), "Group " << this->getName() << " does not have view with index " << idx);
 
     return m_view_coll.getItemName(idx);
@@ -239,8 +237,7 @@ public:
    */
   DataView * getView( const std::string& name )
   {
-    SLIC_CHECK_MSG( !name.empty(), "Group " << this->getName() << " can't retrieve view with empty name.");
-    SLIC_CHECK_MSG( hasView(name), "Group " << this->getName() << " does not have view with name " << name);
+    SLIC_CHECK_MSG( !name.empty() && hasView(name), "Group " << this->getName() << " can't retrieve view with name '" << name << "'");
 
     return m_view_coll.getItem(name);
   }
@@ -250,8 +247,7 @@ public:
    */
   const DataView * getView( const std::string& name ) const
   {
-    SLIC_CHECK_MSG( !name.empty(), "Group " << this->getName() << " can't retrieve view with empty name.");
-    SLIC_CHECK_MSG( hasView(name), "Group " << this->getName() << " does not have view with name " << name);
+    SLIC_CHECK_MSG( !name.empty() && hasView(name), "Group " << this->getName() << " can't retrieve view with name '" << name << "'");
 
     return m_view_coll.getItem(name);
   }
@@ -261,7 +257,6 @@ public:
    */
   DataView * getView( IndexType idx )
   {
-    SLIC_CHECK_MSG( idx != InvalidIndex, "Group " << this->getName() << " can't get view with invalid index.");
     SLIC_CHECK_MSG( hasView(idx), "Group " << this->getName() << " does not have view with index " << idx);
 
     return m_view_coll.getItem(idx);
@@ -272,7 +267,6 @@ public:
    */
   const DataView * getView( IndexType idx ) const
   {
-    SLIC_CHECK_MSG( idx != InvalidIndex, "Group " << this->getName() << " can't get view with invalid index.");
     SLIC_CHECK_MSG( hasView(idx), "Group " << this->getName() << " does not have view with index " << idx);
 
     return m_view_coll.getItem(idx);
@@ -578,8 +572,7 @@ public:
    */
   IndexType getGroupIndex(const std::string& name) const
   {
-    SLIC_CHECK_MSG( !name.empty(), "Group " << this->getName() << " can't get index for group with empty name.");
-    SLIC_CHECK_MSG( hasGroup(name), "Group " << this->getName() << " does not have group with name " << name);
+    SLIC_CHECK_MSG( !name.empty() && hasGroup(name), "Group " << this->getName() << " does not have group with name '" << name << "'");
 
     return m_group_coll.getItemIndex(name);
   }
@@ -591,8 +584,7 @@ public:
    */
   const std::string& getGroupName(IndexType idx) const
   {
-    SLIC_CHECK_MSG( idx != InvalidIndex, "Group " << this->getName() << " can't get name for group with invalid index.");
-    SLIC_CHECK_MSG( hasGroup(idx), "Group " << this->getName() << " does not have group with indexx " << idx);
+    SLIC_CHECK_MSG( hasGroup(idx), "Group " << this->getName() << " does not have group with index " << idx);
 
     return m_group_coll.getItemName(idx);
   }
@@ -608,8 +600,7 @@ public:
    */
   DataGroup * getGroup( const std::string& name )
   {
-    SLIC_CHECK_MSG( !name.empty(), "Group " << this->getName() << " can't get group with empty name.");
-    SLIC_CHECK_MSG( hasGroup(name), "Group " << this->getName() << " does not have group with name " << name);
+    SLIC_CHECK_MSG( !name.empty() && hasGroup(name), "Group " << this->getName() << " does not have group with name '" << name << "'");
 
     return m_group_coll.getItem(name);
   }
@@ -619,8 +610,7 @@ public:
    */
   DataGroup const * getGroup( const std::string& name ) const
   {
-    SLIC_CHECK_MSG( !name.empty(), "Group " << this->getName() << " can't get group with empty name.");
-    SLIC_CHECK_MSG( hasGroup(name), "Group " << this->getName() << " does not have group with name " << name);
+    SLIC_CHECK_MSG( !name.empty() && hasGroup(name), "Group " << this->getName() << " does not have group with name '" << name << "'");
 
     return m_group_coll.getItem(name);
   }
@@ -630,7 +620,6 @@ public:
    */
   DataGroup * getGroup( IndexType idx )
   {
-    SLIC_CHECK_MSG( idx != InvalidIndex, "Group " << this->getName() << " can't get group with invalid index.");
     SLIC_CHECK_MSG( hasGroup(idx), "Group " << this->getName() << " does not have group with index " << idx);
 
     return m_group_coll.getItem(idx);
@@ -641,7 +630,6 @@ public:
    */
   const DataGroup * getGroup( IndexType idx ) const
   {
-    SLIC_CHECK_MSG( idx != InvalidIndex, "Group " << this->getName() << " can't get group with invalid index.");
     SLIC_CHECK_MSG( hasGroup(idx), "Group " << this->getName() << " does not have group with index " << idx);
 
     return m_group_coll.getItem(idx);

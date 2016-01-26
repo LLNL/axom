@@ -20,7 +20,7 @@
 
 #include "common/Utilities.hpp"
 
-#include <cstdlib>
+#include <cstdlib> // for exit, EXIT_SUCCESS, EXIT_FAILURE
 
 #ifdef USE_MPI
 #include <mpi.h>

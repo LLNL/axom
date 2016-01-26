@@ -81,7 +81,7 @@ Logger::~Logger()
 void Logger::setLoggingMsgLevel( message::Level level )
 {
   for ( int i=0; i < message::Num_Levels; ++i ) {
-    m_isEnabled[ i ] = (i<= level) ? true:false;
+    m_isEnabled[ i ] = (i<= level) ? true : false;
   }
 
 }

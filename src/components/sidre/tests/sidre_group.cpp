@@ -326,6 +326,7 @@ TEST(sidre_group,group_name_collisions)
   delete ds;
 }
 //------------------------------------------------------------------------------
+#if 0
 TEST(sidre_group,view_copy_move)
 {
   DataStore * ds = new DataStore();
@@ -369,8 +370,9 @@ TEST(sidre_group,view_copy_move)
 
   delete ds;
 }
-
+#endif
 //------------------------------------------------------------------------------
+#if 0
 TEST(sidre_group,groups_move_copy)
 {
   DataStore * ds = new DataStore();
@@ -406,7 +408,7 @@ TEST(sidre_group,groups_move_copy)
 
   delete ds;
 }
-
+#endif
 //------------------------------------------------------------------------------
 TEST(sidre_group,create_destroy_view_and_buffer2)
 {
