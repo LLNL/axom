@@ -20,12 +20,8 @@
  * \author K. Weiss (modified to use the asc toolkit mesh API)
  */
 
-#include <iostream>
 #include <fstream>
 #include <sstream>
-#include <list>
-#include <set>
-#include <vector>
 #include <cmath>
 #include <cstdlib>
 
@@ -179,7 +175,7 @@ namespace slamUnstructuredHex {
       vtkMesh >> numNodes;
       vtkMesh >> junk;
 
-      std::cout << "\tNumber of nodes = " << numNodes << "\n";
+      SLIC_INFO("\t** Number of nodes = " << numNodes);
 
       // Create the set of Nodes
       mesh->nodes = HexMesh::NodeSet(numNodes);
@@ -211,7 +207,7 @@ namespace slamUnstructuredHex {
           ,  "Error in reading mesh!\n" << "  numZones = " << numZones << "\n"
                                         << "  numZones*" << (HexMesh::NODES_PER_ZONE) << " = " << numZones * (HexMesh::NODES_PER_ZONE) << "\n"
                                         << "  numNodeZoneIndices = " << numNodeZoneIndices << "\n" );
-      std::cout << "\tNumber of zones = "  << numZones << "\n";
+      SLIC_INFO("\t** Number of zones = " << numZones);
 
       // Create the set of Zones
       mesh->zones = HexMesh::ZoneSet(numZones);
@@ -343,7 +339,7 @@ namespace slamUnstructuredHex {
     SLIC_ASSERT_MSG(  mesh->relationNodeZone.isValid(), "Error creating (static) relation from nodes to zones!\n");
     SLIC_ASSERT_MSG(  count == numZonesOfNode,          "Error creating zones of Node list!\n");
 
-    std::cout << "\n\tnumZonesOfNode = " << numZonesOfNode << "\n";
+    SLIC_INFO("\t** numZonesOfNode = " << numZonesOfNode);
   }
 
   void computeZoneBarycenters(HexMesh* mesh)
@@ -420,7 +416,7 @@ namespace slamUnstructuredHex {
     }
 
     DataType err = std::sqrt( errSqSum / mesh->numNodes() );
-    std::cout << "\n\tThe L2-ish error in the node average radius was " << err << std::endl;
+    SLIC_INFO("\t** The L2-ish error in the node average radius was " << err);
 
     return err;
   }
@@ -450,7 +446,7 @@ int main()
               << "ball_" << fileResolutions[res] << ".vtk";
     std::string meshName = filePath.str();
 
-    std::cout << "\n** Loading mesh file '" << meshName << "' and generating zone-> node relation...\n";
+    SLIC_INFO("Loading mesh file '" << meshName << "' and generating zone-> node relation");
 
     HexMesh hexMesh;
     readHexMesh( meshName, &hexMesh );
@@ -458,19 +454,18 @@ int main()
     //--------------------------------------------------------------
 
     // Now build the node to zone relation
-    std::cout << "\n** Generating node->zone relation...";
+    SLIC_INFO("\tGenerating node->zone relation");
     generateNodeZoneRelation( &hexMesh );
 
     //--------------------------------------------------------------
     // Now that we have the mesh in memory, we can start to do things with it.
 //for(int i=0; i<1000; ++i) {
-    std::cout << "\n** Computing zone barycenters using zone->node relation...";
+    SLIC_INFO("\tComputing zone barycenters using zone->node relation");
     computeZoneBarycenters(&hexMesh);
 
-    std::cout << "\n** Generating a zone-centered radius field...";
+    SLIC_INFO("\tGenerating a zone-centered radius field");
     createZoneRadiusField(&hexMesh);
 
-    std::cout << "\n** Computing node-based errors using node->zone relation...";
     DataType errVal = computeNodalErrors(&hexMesh);
 
     // Some error checking based on precomputed values
@@ -480,7 +475,7 @@ int main()
       << "\n\tactual: "   << errVal
       << "\n\tdiff: "     << (errVal - expectedResults[res]));
 //}
-    std::cout << "\ndone." << std::endl;
+    SLIC_INFO("\tdone.\n");
   }
 
   //--------------------------------------------------------------

@@ -45,8 +45,8 @@
 #include "quest/UnstructuredMesh.hpp"
 #include "quest/fuzzy_compare.hpp"
 
-#include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
+#include "slic/UnitTestLogger.hpp"
 
 #include "slam/Utilities.hpp"
 
@@ -265,8 +265,7 @@ void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
 
 
    // STEP 2: loop over uniform mesh nodes and compute distance field
-   std::cout << "Calculating distance field...";
-   std::cout.flush();
+   SLIC_INFO("Calculating distance field...");
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
@@ -307,8 +306,7 @@ void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
       phi[i] = sign * std::sqrt( unsignedMinDistSQ );
 
    } // END for all nodes on the uniform mesh
-   std::cout << "[DONE]" << std::endl;
-
+   SLIC_INFO("done." );
 }
 
 //------------------------------------------------------------------------------
@@ -329,8 +327,7 @@ void expected_phi(meshtk::UniformMesh* umesh)
    SLIC_ASSERT( phi != ATK_NULLPTR );
 
    // STEP 2: loop over uniform mesh nodes and compute distance field
-   std::cout << "Calculating analytic distance field...";
-   std::cout.flush();
+   SLIC_INFO( "Calculating analytic distance field...");
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
@@ -342,7 +339,7 @@ void expected_phi(meshtk::UniformMesh* umesh)
        phi[ i ]  = sphere.getSignedDistance( pnt );
    }
 
-   std::cout << "[DONE]" << std::endl;
+   SLIC_INFO("done.");
 }
 
 //------------------------------------------------------------------------------
@@ -377,9 +374,7 @@ void l2norm( meshtk::UniformMesh* umesh )
 int main( int argc, char** argv )
 {
   // STEP 0: Initialize SLIC Environment
-  slic::initialize();
-  slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
-  slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout) );
+  slic::UnitTestLogger logger;  // create & initialize logger
 
   bool hasInputArgs = argc > 1;
 
@@ -401,13 +396,11 @@ int main( int argc, char** argv )
   SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( stlFile));
 
   // STEP 2: read file
-  std::cout << "Reading file: " << stlFile << "...";
-  std::cout.flush();
+  SLIC_INFO("Reading file: " << stlFile << "...");
   quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( stlFile );
   reader->read();
-  std::cout << "[DONE]\n";
-  std::cout.flush();
+  SLIC_INFO("done");
 
   // STEP 3: get surface mesh
   meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
@@ -423,34 +416,32 @@ int main( int argc, char** argv )
   // STEP 6: compute bounds
   SpatialBoundingBox meshBounds = compute_bounds( surface_mesh);
 
-  std::cout << "Mesh bounding  box: " << meshBounds << "\n";
+  SLIC_INFO("Mesh bounding  box: " << meshBounds << "\n");
 
   // Add inflation factor
-  std::cout << "Inflate by N: ";
+  std::cout << "Inflate by N: \n";
   double f = 2.;
   if(hasInputArgs)
   {
       std::cin >> f;
   }
-  std::cout << f << "\n";
   meshBounds.expand(f);
-  std::cout << "Bounding  box after inflating: " << meshBounds << "\n";
+  SLIC_INFO("Bounding  box after inflating by " << f <<": " << meshBounds );
 
   // STEP 7: get dimensions from user
-  std::cout << "Enter Nx Ny Nz: ";
+  std::cout << "Enter Nx Ny Nz: \n";
   GridPoint gridRes(16);
   if(hasInputArgs)
   {
       std::cin >> gridRes[0] >> gridRes[1] >> gridRes[2];
   }
-  std::cout<<"\nDistance field grid is: " << gridRes << std::endl;
+  SLIC_INFO("Distance field grid is: " << gridRes);
 
 
   SpaceVector h( meshBounds.getMin(), meshBounds.getMax());
   for(int i=0; i<DIM; ++i)
       h[i] /= gridRes[i];
-  std::cout << "h: " << h << std::endl;
-  std::cout.flush();
+  SLIC_DEBUG("h: " << h );
 
   int ext[6];
   ext[0] = 0;
@@ -477,7 +468,5 @@ int main( int argc, char** argv )
   delete umesh;
   umesh = ATK_NULLPTR;
 
-  // STEP 11: Finalize SLIC environment
-  slic::finalize();
   return 0;
 }
