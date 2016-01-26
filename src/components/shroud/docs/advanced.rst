@@ -37,7 +37,70 @@ wrapper only.  The non-bufferify version will use ``strlen`` to compute the leng
 Character Function
 ^^^^^^^^^^^^^^^^^^
 
-blah
+.. This stuff was moved here from the tutorial and should be cleaned up
+
+This attribute marks the routine as Fortran ``pure`` meaning there are
+no side effects.  This is necessary because the function will be
+called twice.  Once to compute the length of the result and once to
+return the result.
+
+The length of result variable ``rv`` is computed by calling the
+function.  Once the result is declared, ``tut_function4a`` is called
+which returns a ``type(C_PTR)``.  This result is dereferenced by
+``fstr`` and copied into ``rv``.
+
+
+.. XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+It is possible to avoid calling the C++ function twice by passing in
+another argument to hold the result.  It would be up to the caller to
+ensure it is long enough.  This is done by setting the option
+**F_string_result_as_arg** to true.  Like all options, it may also be
+set in the global **options** and it will apply to all functions::
+
+.. update code examples from current output
+
+    - decl: const std::string& Function4b(
+        const std::string& arg1,
+        const std::string& arg2)
+      options:
+        F_string_result_as_arg: output
+
+The generated Fortran wrapper::
+
+    subroutine function4b(arg1, arg2, output)
+        use iso_c_binding
+        implicit none
+        character(*), intent(IN) :: arg1
+        character(*), intent(IN) :: arg2
+        character(*), intent(OUT) :: output
+        type(C_PTR) :: rv
+        rv = tut_function4b_bufferify(  &
+            arg1,  &
+            len_trim(arg1),  &
+            arg2,  &
+            len_trim(arg2),
+            output,  &
+            len(output))
+    end subroutine function4b
+
+The generated C wrapper::
+
+    void TUT_function4b_bufferify(const char * arg1, int Larg1,
+                                  const char * arg2, int Larg2,
+                                  char * output, int Loutput) {
+        const std::string rv = Function4b(std::string(arg1, Larg1),
+                                          std::string(arg2, Larg2));
+        asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
+        return;
+    }
+
+
+ ``FccCopy`` will copy the result into ``output`` and blank fill.
+
+
+.. char **
+
 
 complex
 -------

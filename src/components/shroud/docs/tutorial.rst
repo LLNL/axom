@@ -48,29 +48,19 @@ To help control the scope of C names, all externals default to adding
 a three letter prefix.  It defaults to the first three letters of the
 **library** but may be changed by setting the option **C_prefix**.
 
-The Fortran wrapper consists of two parts.  First is an interface
-which allows Fortran to call the C routine::
+The Fortran wrapper creates an interface which allows the C wrapper to be
+called directly by Fortran::
 
     interface
-        subroutine tut_function1() &
+        subroutine function1() &
                 bind(C, name="TUT_function1")
             use iso_c_binding
             implicit none
-        end subroutine tut_function1
+        end subroutine function1
     end interface
 
-The other part is a Fortran wrapper::
-
-    subroutine function1()
-        use iso_c_binding
-        implicit none
-        call tut_function1()
-    end subroutine function1
-
-In this case the wrapper is trivial since Fortran can call the C
-routine directly.  However, it provides a place to customize the API
-to coerce arguments and return values as well as other features which
-will be demonstrated.
+In other cases a Fortran wrapper will also be created which will 
+do some type conversion before or after calling the C wrapper.
 
 The C++ code to call the function::
 
@@ -110,31 +100,20 @@ Add the declaration to the YAML file::
 
 The arguments are added to the interface for the C routine using the
 ``value`` attribute.  They use the ``intent(IN)`` attribute since they
-are pass-by-value and cannot return a value::
+are pass-by-value and cannot return a value.
+The C wrapper can be called directly by Fortran using the interface::
 
-        function tut_function2(arg1, arg2) result(rv) &
+     interface
+        function function2(arg1, arg2) result(rv) &
                 bind(C, name="TUT_function2")
             use iso_c_binding
             implicit none
             real(C_DOUBLE), value, intent(IN) :: arg1
             integer(C_INT), value, intent(IN) :: arg2
             real(C_DOUBLE) :: rv
-        end function tut_function2
+        end function function2
+     end interface
 
-The Fortran wrapper calls the C interface directly::
-
-    function function2(arg1, arg2) result(rv)
-        use iso_c_binding
-        implicit none
-        real(C_DOUBLE), value, intent(IN) :: arg1
-        integer(C_INT), value, intent(IN) :: arg2
-        real(C_DOUBLE) :: rv
-        rv = tut_function2(  &
-            arg1,  &
-            arg2)
-    end function function2
-
-.. note :: add intent to wrapper
 
 Pointer arguments
 -----------------
@@ -170,28 +149,16 @@ In the ``BIND(C)`` interface only *len* uses the ``value`` attribute.
 Without the attribute Fortran defaults to pass-by-reference i.e.
 passes a pointer::
 
-        subroutine tut_sum(len, values, result) &
+    interface
+        subroutine sum(len, values, result) &
                 bind(C, name="TUT_sum")
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: len
             integer(C_INT), intent(IN) :: values(*)
             integer(C_INT), intent(OUT) :: result
-        end subroutine tut_sum
-
-The Fortran routine just calls the interface::
-
-    subroutine sum(len, values, result)
-        use iso_c_binding
-        implicit none
-        integer(C_INT), value, intent(IN) :: len
-        integer(C_INT), intent(IN) :: values(*)
-        integer(C_INT), intent(OUT) :: result
-        call tut_sum(  &
-            len,  &
-            values,  &
-            result)
-    end subroutine sum
+        end subroutine sum
+    end interface
 
 .. note:: Multiply pointered arguments ( ``char **`` ) do not 
           map to Fortran directly and require ``type(C_PTR)``.
@@ -199,9 +166,9 @@ The Fortran routine just calls the interface::
 Logical
 ^^^^^^^
 
-Logical variable require a conversion since they are not directly
+Logical variables require a conversion since they are not directly
 compatible with C.  In addition, how ``.true.`` and ``.false.`` are
-represented internally is compiler dependent.  So compilers use 0 for
+represented internally is compiler dependent.  Some compilers use 0 for
 ``.false.`` while other use -1.
 
 A simple C++ function which accepts and returns a boolean argument::
@@ -216,15 +183,19 @@ Added to the YAML file as before::
     functions:
     - decl: bool Function3(bool arg)
 
-The Fortran interface and wrapper::
 
-        function tut_function3(arg) result(rv) &
+In this case a Fortran wrapper is created in addition to the interface.
+The wrapper convert the logical's value before calling the C wrapper::
+
+     interface
+        function c_function3(arg) result(rv) &
                 bind(C, name="TUT_function3")
             use iso_c_binding
             implicit none
             logical(C_BOOL), value, intent(IN) :: arg
             logical(C_BOOL) :: rv
-        end function tut_function3
+        end function c_function3
+    end interface
 
     function function3(arg) result(rv)
         use iso_c_binding
@@ -233,16 +204,13 @@ The Fortran interface and wrapper::
         logical :: rv
         logical(C_BOOL) tmp_arg
         tmp_arg = arg  ! coerce to C_BOOL
-        rv = tut_function3(tmp_arg)
+        rv = c_function3(tmp_arg)
     end function function3
 
-The wrapper routine uses the library function ``logicaltobool`` and
-``booltological`` to use the compiler to convert between the different
-kinds of logical types.  This is the first example of the wrapper
-doing work to create a more idiomatic Fortran API.  It is possible to
-call ``TUT_function3`` directly from Fortran, but the wrapper does the
-type conversion necessary to make it easier to work within an existing
-Fortran application.
+The wrapper routine uses the compiler to coerce type using an assignment.
+It is possible to call ``c_function3`` directly from Fortran, but the
+wrapper does the type conversion necessary to make it easier to work
+within an existing Fortran application.
 
 
 Character
@@ -251,7 +219,7 @@ Character
 .. XXX document len annotation
 
 Character variables have significant differences between C and
-Fortran.  The Fortran interoperabilty with C feature treat a
+Fortran.  The Fortran interoperabilty with C feature treats a
 ``character`` variable of default kind as an array of
 ``character(kind=C_CHAR,len=1)``.  The wrapper then deals with the C
 convention of ``NULL`` termination with Fortran's blank filled.
@@ -269,141 +237,85 @@ C++ routine::
 YAML changes::
 
     functions
-    - decl: const std::string& Function4a(
+    - decl: const std::string& Function4a+len(30)(
         const std::string& arg1,
-        const std::string& arg2 ) +pure
+        const std::string& arg2 )
 
-This is the C++ prototype with the addition of a **+pure**.  This
-attribute marks the routine as Fortran ``pure`` meaning there are no
-side effects.  This is necessary because the function will be called
-twice.  Once to compute the length of the result and once to return
-the result.
+This is the C++ prototype with the addition of **+len(30)**.
+This attribute defines the declared length of the returned string.
 
-Attributes also may be added by assign new fields in **attrs**::
+Attributes may be added by assign new fields in **attrs**::
 
     - decl: const std::string& Function4a(
         const std::string& arg1,
         const std::string& arg2 )
       result:
         attrs:
-          pure: true
+          len: 30
 
-The C wrapper converts the ``std::string`` into a ``char *`` which
-Fortran can deal with by assigning it to a ``type(C_PTR)``::
+The C wrapper uses ``char *`` for ``std::string`` arguments which
+Fortran can deal with by treating it as a ``type(C_PTR)``.
+The argument is then passed to the ``std::string`` constructor.
+This function can be called by C with ``NULL`` terminated strings::
 
     const char * TUT_function4a(const char * arg1, const char * arg2)
     {
-        const std::string & rv = Function4a(arg1, arg2);
+        std::string SH_arg1(arg1);
+        std::string SH_arg2(arg2);
+        const std::string & rv = Function4a(SH_arg1, SH_arg2);
         return rv.c_str();
     }
 
-In addition, a separate function is create which accepts the address
+In addition, a separate function is created which accepts the address
 and length of each string argument.  No trailing ``NULL`` is required.
 This avoids copying the string in Fortran which would be necessary to
-append the trailing ``C_NULL_CHAR``::
+append the trailing ``C_NULL_CHAR``.
+The return value is added as another argument::
 
     const char * TUT_function4a_bufferify(
         const char * arg1, int Larg1,
-        const char * arg2, int Larg2)
+        const char * arg2, int Larg2,
+        char * SH_F_rv, int LSH_F_rv)
     {
-        const std::string & rv = Function4a(
-            std::string(arg1, Larg1),
-            std::string(arg2, Larg2));
-        return rv.c_str();
+        std::string SH_arg1(arg1, Larg1);
+        std::string SH_arg2(arg2, Larg2);
+        const std::string & rv = Function4a(SH_arg1, SH_arg2);
+        asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+        return rv;
     }
 
-.. note :: If the string is allocated by the C++ function,
-  Fortran will have to release the string at some point or 
-  memory will leak.
+The resulting string is copied into the result argument and blank
+filled by FccCopy.  This copy is done in the C wrapper so that when a
+``std::string`` instance is returned, the value can be copied to the
+result argument before the resulting string is deleted when the
+function returns.
 
-The generated Fortran interface is::
-
-        pure function tut_function4a(arg1, arg2) result(rv) &
-                bind(C, name="TUT_function4a")
-            use iso_c_binding
-            implicit none
-            character(kind=C_CHAR), intent(IN) :: arg1(*)
-            character(kind=C_CHAR), intent(IN) :: arg2(*)
-            type(C_PTR) rv
-        end function tut_function4a
-
-And the Fortran wrapper::
+The Fortran wrapper::
 
     function function4a(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
-        character(kind=C_CHAR, len=strlen_ptr( &
-            tut_function4a_bufferify( &
-              arg1, len_trim(arg1), &
-              arg2, len_trim(arg2)))) :: rv
-        rv = fstr(tut_function4a_bufferify(  &
-            arg1,  &
-            len_trim(arg1),  &
-            arg2,  &
-            len_trim(arg2)))
+        character(kind=C_CHAR, len=(30)) :: rv
+        call c_function4a_bufferify(  &
+            arg1, len_trim(arg1),  &
+            arg2, len_trim(arg2),  &
+            rv, len(rv)))
     end function function4a
 
 For each input character argument, two arguments are passed down
 to the C wrapper: the address of the string and the trimmed length.
 This allows the C wrapper to create the std::string directly from the
 argument.
-The length of result variable ``rv`` is computed by calling the
-function.  Once the result is declared, ``tut_function4a`` is called
-which returns a ``type(C_PTR)``.  This result is dereferenced by
-``fstr`` and copied into ``rv``.
+The address of the result variable and its declared length are also passed
+to the C wrapper.
 
-It is possible to avoid calling the C++ function twice by passing in
-another argument to hold the result.  It would be up to the caller to
-ensure it is long enough.  This is done by setting the option
-**F_string_result_as_arg** to true.  Like all options, it may also be
-set in the global **options** and it will apply to all functions::
+The function is called as::
 
-    - decl: const std::string& Function4b(
-        const std::string& arg1,
-        const std::string& arg2)
-      options:
-        F_string_result_as_arg: output
-
-The generated Fortran wrapper::
-
-    subroutine function4b(arg1, arg2, output)
-        use iso_c_binding
-        implicit none
-        character(*), intent(IN) :: arg1
-        character(*), intent(IN) :: arg2
-        character(*), intent(OUT) :: output
-        type(C_PTR) :: rv
-        rv = tut_function4b_bufferify(  &
-            arg1,  &
-            len_trim(arg1),  &
-            arg2,  &
-            len_trim(arg2),
-            output,  &
-            len(output))
-    end subroutine function4b
-
-The generated C wrapper::
-
-    void TUT_function4b_bufferify(const char * arg1, int Larg1,
-                                  const char * arg2, int Larg2,
-                                  char * output, int Loutput) {
-        const std::string rv = Function4b(std::string(arg1, Larg1),
-                                          std::string(arg2, Larg2));
-        asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
-        return;
-    }
-
-
- ``FccCopy`` will copy the result into ``output`` and blank fill.
-
-The different styles are use as::
-
-  character(30) rv4a, rv4b
+  character(30) rv4a
 
   rv4a = function4a("bird", "dog")
-  call function4b("bird", "dog", rv4b)
 
 
 
@@ -463,7 +375,7 @@ Fortran wrapper::
         use iso_c_binding
         implicit none
         real(C_DOUBLE) :: rv
-        rv = tut_function5()
+        rv = c_function5()
     end function function5
     
     function function5_arg1(arg1) result(rv)
@@ -471,7 +383,7 @@ Fortran wrapper::
         implicit none
         real(C_DOUBLE), value, intent(IN) :: arg1
         real(C_DOUBLE) :: rv
-        rv = tut_function5_arg1(arg1)
+        rv = c_function5_arg1(arg1)
     end function function5_arg1
     
     function function5_arg1_arg2(arg1, arg2) result(rv)
@@ -482,7 +394,7 @@ Fortran wrapper::
         logical(C_BOOL) tmp_arg2
         real(C_DOUBLE) :: rv
         tmp_arg2 = arg2  ! coerce to C_BOOL
-        rv = tut_function5_arg1_arg2(arg1, tmp_arg2)
+        rv = c_function5_arg1_arg2(arg1, tmp_arg2)
     end function function5_arg1_arg2
 
 Fortran usage::
@@ -706,14 +618,14 @@ block.  Each wrapper will coerce the argument to the correct type::
         use iso_c_binding
         implicit none
         real(C_FLOAT), value, intent(IN) :: arg
-        call tut_function9(real(arg, C_DOUBLE))
+        call c_function9(real(arg, C_DOUBLE))
     end subroutine function9_float
     
     subroutine function9_double(arg)
         use iso_c_binding
         implicit none
         real(C_DOUBLE), value, intent(IN) :: arg
-        call tut_function9(arg)
+        call c_function9(arg)
     end subroutine function9_double
 
 It may now be used with single or double precision arguments::
@@ -891,13 +803,13 @@ And the subroutines::
     function class1_new() result(rv)
         implicit none
         type(class1) :: rv
-        rv%voidptr = tut_class1_new()
+        rv%voidptr = c_class1_new()
     end function class1_new
     
     subroutine class1_method1(obj)
         implicit none
         class(class1) :: obj
-        call tut_class1_method1(obj%voidptr)
+        call c_class1_method1(obj%voidptr)
     end subroutine class1_method1
 
 

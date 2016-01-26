@@ -34,7 +34,7 @@ functions:
 # +pure
 #  result:
 #    attrs:
-#      pure: true
+#      len: 30
 - decl: const std::string Function4b(
     const std::string& arg1,
     const std::string& arg2 )
