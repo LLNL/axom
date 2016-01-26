@@ -337,11 +337,7 @@ class Wrapc(util.WrapperMixin):
                 if c_attrs['intent'] in [ 'inout', 'out']:
                     slist.append('intent_out')
 
-            if arg_typedef.c_argdecl:
-                for argdecl in arg_typedef.c_argdecl:
-                    append_format(proto_list, argdecl, fmt)
-            else:
-                proto_list.append(self._c_decl('c_type', arg))
+            proto_list.append(self._c_decl('c_type', arg))
 
             len_trim = arg['attrs'].get('len_trim', False)
             if len_trim:

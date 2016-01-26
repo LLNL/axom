@@ -274,8 +274,6 @@ class Typedef(object):
         c_header=None,        # Name of C header file required for type
         c_to_cpp='{var}',     # Expression to convert from C to C++
         c_fortran=None,       # Expression to convert from C to Fortran
-        c_argdecl=None,       # List of argument declarations for C wrapper, None=match declaration
-                              # used with string_from_buffer
         c_statements={},
         c_return_code=None,
 

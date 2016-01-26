@@ -423,12 +423,6 @@ c_fortran
     Expression to convert from C to Fortran.
     Defaults to *None*.
 
-c_argdecl
-
-    List of argument declarations for C wrapper, *None*=match declaration.
-    Used with string_from_buffer .
-    Defaults to *None*.
-
 c_statements
 
     A nested dictionary of code template to add.
