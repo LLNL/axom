@@ -19,7 +19,6 @@
 #include "TinyHydroTypes.hpp"
 
 #include <string>
-#include <stdio.h>
 
 namespace tinyHydro {
 

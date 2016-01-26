@@ -10,7 +10,6 @@
 
 
 #include <algorithm>
-#include <stdio.h>
 #include <string.h>
 
 #include "HydroC.hpp"
@@ -30,7 +29,7 @@ namespace tinyHydro {
         , cycle(0), dtZone(-1), time(0.0)
         , Cq(1.0), Cl(1.0), cfl(0.7)
   {
-    printf("using HydroC\n");
+    SLIC_INFO("using HydroC");
 
     SLIC_ASSERT(state.nParts > 0);
     SLIC_ASSERT(mesh.numZones() > 0);
@@ -363,7 +362,7 @@ namespace tinyHydro {
 //----------------------------------------------
   void Hydro::step(double dt)
   {
-    printf("cycle %d  time = %f  dt = %f\n", cycle, time, dt);
+    SLIC_INFO("cycle " << cycle << " time = " << time << " dt = " << dt);
     // printf("Hydro::step blago 1\n");
 
     // ----------------------------------
@@ -499,7 +498,7 @@ namespace tinyHydro {
       bcVelocity[3] = VectorXY(xVel, yVel);
       break;
     default:
-      printf("ERROR, bad value specified for BC\n");
+      SLIC_DEBUG("ERROR, bad value specified for BC\n");
       break;
     }
   }
