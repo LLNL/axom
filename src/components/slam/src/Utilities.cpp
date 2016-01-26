@@ -20,35 +20,35 @@ namespace util {
 
   std::string findFileInAncestorDirs(const std::string& fileName, int numAncestors)
   {
-      using namespace asctoolkit::utilities::filesystem;
+    using namespace asctoolkit::utilities::filesystem;
 
-      bool fileFound = pathExists( fileName);
-      std::string ancestorFileName = fileName;
+    bool fileFound = pathExists( fileName);
+    std::string ancestorFileName = fileName;
 
-      std::string ancestorPath = "..";
+    std::string ancestorPath = "..";
 
-      // File not found -- try to find path by walking up tree
-      for(int i=0; !fileFound && i< numAncestors; ++i)
+    // File not found -- try to find path by walking up tree
+    for(int i = 0; !fileFound && i< numAncestors; ++i)
+    {
+      ancestorFileName = joinPath(ancestorPath, fileName);
+      fileFound = pathExists( ancestorFileName );
+
+      if( !fileFound )
       {
-        ancestorFileName = joinPath(ancestorPath, fileName);
-        fileFound = pathExists( ancestorFileName );
-
-        if( !fileFound )
-        {
-          ancestorPath = "../" + ancestorPath;
-        }
+        ancestorPath = "../" + ancestorPath;
       }
+    }
 
-      if(!fileFound)
-      {
-          SLIC_WARNING( "Could not find file: '"  << fileName
-                      << "' (also tried several ancestor directories')"
-                      << "\nThe current working directory is: '"<< getCWD() << "'");
+    if(!fileFound)
+    {
+      SLIC_WARNING( "Could not find file: '"  << fileName
+                                              << "' (also tried several ancestor directories')"
+                                              << "\nThe current working directory is: '" << getCWD() << "'");
 
-          ancestorFileName = fileName;
-      }
+      ancestorFileName = fileName;
+    }
 
-      return ancestorFileName;
+    return ancestorFileName;
   }
 
 

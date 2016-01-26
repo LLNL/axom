@@ -64,22 +64,22 @@ namespace slamUnstructuredHex {
     Point(const DataType& x, const DataType& y, const DataType& z) : m_x(x), m_y(y), m_z(z){}
     Point() : m_x(DataType()), m_y(DataType()), m_z(DataType()){}
 
-    DataType                                radius() const { return std::sqrt( m_x * m_x + m_y * m_y + m_z * m_z); }
-    Point& operator                         +=(const Point& pt){ m_x += pt.m_x; m_y += pt.m_y; m_z += pt.m_z; return *this; }
-    Point& operator                         *=(const DataType& sc){ m_x *= sc; m_y *= sc; m_z *= sc; return *this; }
+    DataType        radius() const { return std::sqrt( m_x * m_x + m_y * m_y + m_z * m_z); }
+    Point& operator +=(const Point& pt){ m_x += pt.m_x; m_y += pt.m_y; m_z += pt.m_z; return *this; }
+    Point& operator *=(const DataType& sc){ m_x *= sc; m_y *= sc; m_z *= sc; return *this; }
 
     template<typename T>
     Point& operator /=(const T& sc){ return operator*=( 1. / sc); }
 
     DataType m_x, m_y, m_z;
   };
-  Point operator                            +(const Point& pt1, const Point& pt2)  { Point pt(pt1); pt += pt2;      return pt; }
+  Point operator    +(const Point& pt1, const Point& pt2)  { Point pt(pt1); pt += pt2;      return pt; }
 
-  Point operator                            *(const Point& pt1, const DataType& sc){ Point pt(pt1); pt *= sc;       return pt; }
-  Point operator                            *(const DataType& sc,const Point& pt1) { Point pt(pt1); pt *= sc;       return pt; }
+  Point operator    *(const Point& pt1, const DataType& sc){ Point pt(pt1); pt *= sc;       return pt; }
+  Point operator    *(const DataType& sc,const Point& pt1) { Point pt(pt1); pt *= sc;       return pt; }
 
   template<typename T>
-  Point operator                            /(const Point& pt1, const T& sc){ Point pt(pt1); pt *= (1. / sc);  return pt; }
+  Point operator    /(const Point& pt1, const T& sc){ Point pt(pt1); pt *= (1. / sc);  return pt; }
 
 
   struct HexMesh
@@ -150,12 +150,12 @@ namespace slamUnstructuredHex {
     {
       if(!vtkMesh)
       {
-          using namespace asctoolkit::slam::util;
-          std::string ancesFile = findFileInAncestorDirs( fileName);
-          SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( ancesFile));
+        using namespace asctoolkit::slam::util;
+        std::string ancesFile = findFileInAncestorDirs( fileName);
+        SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( ancesFile));
 
-          SLIC_INFO("Opening file " << ancesFile);
-          vtkMesh.open( ancesFile.c_str() );
+        SLIC_INFO("Opening file " << ancesFile);
+        vtkMesh.open( ancesFile.c_str() );
       }
 
     }
@@ -245,8 +245,8 @@ namespace slamUnstructuredHex {
         vtkMesh >> nodeCount;
 
         SLIC_ASSERT_MSG( nodeCount == HexMesh::NODES_PER_ZONE
-            , "Unsupported mesh type with zone = " << *zIt << ", nodeCount = " << nodeCount
-            << " (expected " << HexMesh::NODES_PER_ZONE << ")");
+            , "Unsupported mesh type with zone = "  << *zIt << ", nodeCount = " << nodeCount
+                                                    << " (expected " << HexMesh::NODES_PER_ZONE << ")");
 
         for( IndexType n = 0; n < (HexMesh::NODES_PER_ZONE); ++n )
         {
@@ -475,10 +475,10 @@ int main()
 
     // Some error checking based on precomputed values
     SLIC_ASSERT_MSG(
-            asctoolkit::utilities::compareReals(errVal, expectedResults[res]), "Error differed from expected value."
-        << "\n\texpected: " << expectedResults[res]
-        << "\n\tactual: "   << errVal
-        << "\n\tdiff: "     << (errVal - expectedResults[res]));
+      asctoolkit::utilities::compareReals(errVal, expectedResults[res]), "Error differed from expected value."
+      << "\n\texpected: " << expectedResults[res]
+      << "\n\tactual: "   << errVal
+      << "\n\tdiff: "     << (errVal - expectedResults[res]));
 //}
     std::cout << "\ndone." << std::endl;
   }

@@ -275,16 +275,16 @@ namespace slam {
      */
     bool                isValidIndex(PositionType pos) const
     {
-        return pos >= 0 && pos < size();
+      return pos >= 0 && pos < size();
     }
 
   private:
 
-    inline void         verifyPosition(PositionType pos)       const
+    inline void verifyPosition(PositionType pos)       const
     {
       verifyPositionImpl(pos);
     }
-    inline void         verifyPositionImpl(PositionType pos)       const
+    inline void verifyPositionImpl(PositionType pos)       const
     {
       SLIC_ASSERT_MSG( isValidIndex(pos)
           , "SLAM::OrderedSet -- requested out-of-range element at position "
