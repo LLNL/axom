@@ -117,8 +117,9 @@ class Schema(object):
             C_name_function_template = '{C_prefix}{underscore_name}{function_suffix}',
 
             # Fortran's names for C functions
-            F_C_name_method_template = 'C_{lower_class}_{underscore_name}{function_suffix}',
-            F_C_name_function_template = 'C_{underscore_name}{function_suffix}',
+            F_C_prefix = 'c_',
+            F_C_name_method_template = '{F_C_prefix}{lower_class}_{underscore_name}{function_suffix}',
+            F_C_name_function_template = '{F_C_prefix}{underscore_name}{function_suffix}',
 
             F_name_impl_method_template = '{lower_class}_{underscore_name}{function_suffix}',
             F_name_impl_function_template ='{underscore_name}{function_suffix}',
@@ -150,6 +151,7 @@ class Schema(object):
         fmt_library.function_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
+        fmt_library.F_C_prefix    = def_options['F_C_prefix']
         fmt_library.rv            = 'rv'  # return value
         util.eval_template(node, 'C_header_filename', '_library')
         util.eval_template(node, 'C_impl_filename', '_library')

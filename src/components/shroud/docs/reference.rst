@@ -109,6 +109,11 @@ cpp_header
 
   C++ header file name.
 
+F_C_prefix
+
+  Prefix added to name of generated Fortran interface for C routines.
+  Defaults to **c_**.
+
 F_string_result_as_arg
 
   The name of the output argument.
