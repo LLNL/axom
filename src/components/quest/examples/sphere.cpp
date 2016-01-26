@@ -27,6 +27,8 @@
 // ATK Toolkit includes
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
+#include "common/FileUtilities.hpp"
+
 #include "quest/BoundingBox.hpp"
 #include "quest/Field.hpp"
 #include "quest/FieldData.hpp"
@@ -42,8 +44,12 @@
 #include "quest/UniformMesh.hpp"
 #include "quest/UnstructuredMesh.hpp"
 #include "quest/fuzzy_compare.hpp"
+
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
+
+#include "slam/Utilities.hpp"
+
 
 // C/C++ includes
 #include <algorithm>
@@ -368,15 +374,31 @@ void l2norm( meshtk::UniformMesh* umesh )
 }
 
 //------------------------------------------------------------------------------
-int main( int ATK_NOT_USED(argc), char** argv )
+int main( int argc, char** argv )
 {
   // STEP 0: Initialize SLIC Environment
   slic::initialize();
   slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
   slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout) );
 
+  bool hasInputArgs = argc > 1;
+
   // STEP 1: get file from user or use default
-  std::string stlFile = std::string( argv[1] ) ;
+  std::string stlFile;
+  if(hasInputArgs)
+  {
+      stlFile = std::string( argv[1] );
+  }
+  else
+  {
+      const std::string defaultFileName = "sphere.stl";
+      const std::string defaultDir = "src/components/quest/data/";
+
+      stlFile = asctoolkit::utilities::filesystem::joinPath(defaultDir, defaultFileName);
+  }
+
+  stlFile = asctoolkit::slam::util::findFileInAncestorDirs(stlFile);
+  SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( stlFile));
 
   // STEP 2: read file
   std::cout << "Reading file: " << stlFile << "...";
@@ -403,17 +425,26 @@ int main( int ATK_NOT_USED(argc), char** argv )
 
   std::cout << "Mesh bounding  box: " << meshBounds << "\n";
 
-  double f;
+  // Add inflation factor
   std::cout << "Inflate by N: ";
-  std::cin >> f;
-
+  double f = 2.;
+  if(hasInputArgs)
+  {
+      std::cin >> f;
+  }
+  std::cout << f << "\n";
   meshBounds.expand(f);
   std::cout << "Bounding  box after inflating: " << meshBounds << "\n";
 
   // STEP 7: get dimensions from user
-  GridPoint gridRes;
   std::cout << "Enter Nx Ny Nz: ";
-  std::cin >> gridRes[0] >> gridRes[1] >> gridRes[2];
+  GridPoint gridRes(16);
+  if(hasInputArgs)
+  {
+      std::cin >> gridRes[0] >> gridRes[1] >> gridRes[2];
+  }
+  std::cout<<"\nDistance field grid is: " << gridRes << std::endl;
+
 
   SpaceVector h( meshBounds.getMin(), meshBounds.getMax());
   for(int i=0; i<DIM; ++i)
