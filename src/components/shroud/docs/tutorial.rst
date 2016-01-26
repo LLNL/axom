@@ -209,7 +209,7 @@ The wrapper convert the logical's value before calling the C wrapper::
 
 The wrapper routine uses the compiler to coerce type using an assignment.
 It is possible to call ``c_function3`` directly from Fortran, but the
-wrapper does the type conversion necessary to make it easier to work
+wrapper does the type conversion necessary to make it easier to use
 within an existing Fortran application.
 
 
