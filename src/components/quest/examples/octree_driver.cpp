@@ -19,6 +19,7 @@
 // ATK Toolkit includes
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
+#include "common/FileUtilities.hpp"
 
 #include "quest/BoundingBox.hpp"
 #include "quest/Mesh.hpp"
@@ -34,8 +35,7 @@
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
 
-#include "slam/FileUtilities.hpp"
-
+#include "slam/Utilities.hpp"
 
 // C/C++ includes
 #include <algorithm>
@@ -218,19 +218,21 @@ int main( int argc, char** argv )
   bool hasInputArgs = argc > 1;
 
   // STEP 1: get file from user or use default
-  std::string inputFile;
+  std::string stlFile;
   if(hasInputArgs)
   {
-      inputFile = std::string( argv[1] );
+      stlFile = std::string( argv[1] );
   }
   else
   {
       const std::string defaultFileName = "plane_simp.stl";
       const std::string defaultDir = "src/components/quest/data/";
-      inputFile = defaultDir + defaultFileName;
-  }
-  std::string stlFile = asctoolkit::slam::util::findFileRecursive(inputFile);
 
+      stlFile = asctoolkit::utilities::filesystem::joinPath(defaultDir, defaultFileName);
+  }
+
+  stlFile = asctoolkit::slam::util::findFileInAncestorDirs(stlFile);
+  SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( stlFile));
 
   // STEP 2: read file
   std::cout << "Reading file: " << stlFile << "...";

@@ -247,7 +247,7 @@ namespace slamShocktube {
     // define the subsets
     ShockTubeMesh::PositionType numElems = mesh->elems.size();
 
-    // constuct the element subsets using the named-parameter idiom
+    // construct the element subsets using the named-parameter idiom
     typedef ShockTubeMesh::ElemSubset::SetBuilder ElemSubsetBuilder;
     mesh->inFlowElems    = ElemSubsetBuilder().range(0,1)
         . parent( &mesh->elems);
