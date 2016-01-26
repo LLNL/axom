@@ -41,6 +41,10 @@ void SLIC_set_abort_on_error(bool willAbort);
 
 bool SLIC_get_abort_on_error();
 
+void SLIC_create_logger(const char * name, char imask);
+
+void SLIC_create_logger_bufferify(const char * name, int Lname, char imask);
+
 void SLIC_activate_logger(const char * name);
 
 void SLIC_activate_logger_bufferify(const char * name, int Lname);

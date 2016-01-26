@@ -72,6 +72,23 @@ module slic_mod
             logical(C_BOOL) :: rv
         end function slic_get_abort_on_error
         
+        subroutine slic_create_logger(name, imask) &
+                bind(C, name="SLIC_create_logger")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            character(kind=C_CHAR), value, intent(IN) :: imask
+        end subroutine slic_create_logger
+        
+        subroutine slic_create_logger_bufferify(name, Lname, imask) &
+                bind(C, name="SLIC_create_logger_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            character(kind=C_CHAR), value, intent(IN) :: imask
+        end subroutine slic_create_logger_bufferify
+        
         subroutine slic_activate_logger(name) &
                 bind(C, name="SLIC_activate_logger")
             use iso_c_binding
@@ -180,6 +197,19 @@ contains
         rv = slic_get_abort_on_error()
         ! splicer end get_abort_on_error
     end function get_abort_on_error
+    
+    subroutine create_logger(name, imask)
+        use iso_c_binding
+        implicit none
+        character(*), intent(IN) :: name
+        character, value, intent(IN) :: imask
+        ! splicer begin create_logger
+        call slic_create_logger_bufferify(  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            imask)
+        ! splicer end create_logger
+    end subroutine create_logger
     
     subroutine activate_logger(name)
         use iso_c_binding

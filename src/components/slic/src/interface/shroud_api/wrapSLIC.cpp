@@ -75,6 +75,24 @@ return rv;
 // splicer end function.get_abort_on_error
 }
 
+void SLIC_create_logger(const char * name, char imask)
+{
+// splicer begin function.create_logger
+std::string SH_name(name);
+createLogger(SH_name, imask);
+return;
+// splicer end function.create_logger
+}
+
+void SLIC_create_logger_bufferify(const char * name, int Lname, char imask)
+{
+// splicer begin function.create_logger_bufferify
+std::string SH_name(name, Lname);
+createLogger(SH_name, imask);
+return;
+// splicer end function.create_logger_bufferify
+}
+
 void SLIC_activate_logger(const char * name)
 {
 // splicer begin function.activate_logger

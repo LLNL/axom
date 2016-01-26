@@ -51,7 +51,7 @@ functions:
   -  decl: bool getAbortOnAssert()
   -  decl: void setAbortOnError( bool willAbort )
   -  decl: bool getAbortOnError()
-#  -  decl: void createLogger( const std::string& name, char imask )
+  -  decl: void createLogger( const std::string& name, char imask )
   -  decl: void activateLogger( const std::string& name )
   -  decl: std::string getActiveLoggerName()
   -  decl: void setLoggingMsgLevel( Level level )
