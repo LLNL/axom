@@ -22,8 +22,22 @@ return;
 // splicer end function.pass_char
 }
 
-// void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
+// char_scalar returnChar()
 // function_index=1
+/**
+ * \brief return a char argument (non-pointer)
+ *
+ */
+char STR_return_char()
+{
+// splicer begin function.return_char
+char rv = returnChar();
+return rv;
+// splicer end function.return_char
+}
+
+// void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
+// function_index=2
 /**
  * \brief strcpy like behavior
  *
@@ -47,7 +61,7 @@ return;
 }
 
 // void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in)+len_trim(Lsrc))
-// function_index=10
+// function_index=11
 /**
  * \brief strcpy like behavior
  *
@@ -70,7 +84,7 @@ return;
 }
 
 // const char * getChar1()+pure
-// function_index=2
+// function_index=3
 /**
  * \brief return a 'const char *' as character(*)
  *
@@ -84,7 +98,7 @@ return rv;
 }
 
 // void getChar1(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))+pure
-// function_index=11
+// function_index=12
 /**
  * \brief return a 'const char *' as character(*)
  *
@@ -99,7 +113,7 @@ return;
 }
 
 // const char * getChar2()
-// function_index=3
+// function_index=4
 /**
  * \brief return 'const char *' with fixed size (len=30)
  *
@@ -113,7 +127,7 @@ return rv;
 }
 
 // void getChar2(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))
-// function_index=13
+// function_index=14
 /**
  * \brief return 'const char *' with fixed size (len=30)
  *
@@ -128,7 +142,7 @@ return;
 }
 
 // const char * getChar3()
-// function_index=4
+// function_index=5
 /**
  * \brief return a 'const char *' as argument
  *
@@ -142,7 +156,7 @@ return rv;
 }
 
 // void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))
-// function_index=14
+// function_index=15
 /**
  * \brief return a 'const char *' as argument
  *
@@ -157,7 +171,7 @@ return;
 }
 
 // const string & getString1()+pure
-// function_index=5
+// function_index=6
 /**
  * \brief return a 'const string&' as character(*)
  *
@@ -171,7 +185,7 @@ return rv.c_str();
 }
 
 // void getString1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
-// function_index=16
+// function_index=17
 /**
  * \brief return a 'const string&' as character(*)
  *
@@ -186,7 +200,7 @@ return;
 }
 
 // const string & getString2()
-// function_index=6
+// function_index=7
 /**
  * \brief return 'const string&' with fixed size (len=30)
  *
@@ -205,7 +219,7 @@ return rv.c_str();
 }
 
 // void getString2(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))
-// function_index=18
+// function_index=19
 /**
  * \brief return 'const string&' with fixed size (len=30)
  *
@@ -226,7 +240,7 @@ return;
 }
 
 // const string & getString3()
-// function_index=7
+// function_index=8
 /**
  * \brief return a 'const string&' as argument
  *
@@ -245,7 +259,7 @@ return rv.c_str();
 }
 
 // void getString3(string_result_as_arg & output+intent(out)+len(Loutput))
-// function_index=19
+// function_index=20
 /**
  * \brief return a 'const string&' as argument
  *
@@ -266,7 +280,7 @@ return;
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in))
-// function_index=8
+// function_index=9
 /**
  * \brief Accept a const string reference
  *
@@ -284,7 +298,7 @@ return;
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
-// function_index=21
+// function_index=22
 /**
  * \brief Accept a const string reference
  *
@@ -302,7 +316,7 @@ return;
 }
 
 // void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))
-// function_index=9
+// function_index=10
 /**
  * \brief Accept a string reference
  *
@@ -321,7 +335,7 @@ return;
 }
 
 // void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
-// function_index=22
+// function_index=23
 /**
  * \brief Accept a string reference
  *

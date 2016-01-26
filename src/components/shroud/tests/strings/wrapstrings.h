@@ -20,6 +20,8 @@ extern "C" {
 
 void STR_pass_char(char status);
 
+char STR_return_char();
+
 void STR_pass_char_ptr(char * dest, int Ndest, const char * src);
 
 void STR_pass_char_ptr_bufferify(char * dest, int Ndest, const char * src, int Lsrc);

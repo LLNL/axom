@@ -28,6 +28,7 @@ contains
   subroutine test_charargs
 
     character(30) str
+    character ch
 
     call set_case_name("test_charargs")
 
@@ -37,6 +38,9 @@ contains
     str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
     call pass_char_ptr(dest=str, src="bird")
     call assert_true( str == "bird")
+
+    ch = return_char()
+    call assert_true( ch == "w")
 
   end subroutine test_charargs
 

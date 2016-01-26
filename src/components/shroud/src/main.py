@@ -765,7 +765,9 @@ class GenFunctions(object):
         attrs = result['attrs']
         result_is_ptr = (attrs.get('ptr', False) or
                          attrs.get('reference', False))
-        if result_typedef and result_typedef.base == 'string' and not result_is_ptr:
+        if result_typedef and result_typedef.base == 'string' and \
+                result_type != 'char' and \
+                not result_is_ptr:
             options.wrap_c = False
 #            options.wrap_fortran = False
             self.config.log.write("Skipping %s, unable to create C wrapper for function returning std::string instance (must return a pointer or reference). \n" % ( result['name']) )
@@ -797,10 +799,12 @@ class GenFunctions(object):
         result_as_arg = ''  # only applies to string functions
         is_pure = node['attrs'].get('pure', False)
         if result_typedef.base == 'string':
-            attrs = result['attrs']
-            has_string_result = True
-            result_as_arg = options.get('F_string_result_as_arg', '')
-            result_name = result_as_arg or 'SH_F_rv'
+            if result_type == 'char' and not result_is_ptr:
+                result['type'] = 'char_scalar'
+            else:
+                has_string_result = True
+                result_as_arg = options.get('F_string_result_as_arg', '')
+                result_name = result_as_arg or 'SH_F_rv'
 
         if not (has_string_result or has_string_arg):
             return

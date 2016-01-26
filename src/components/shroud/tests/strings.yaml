@@ -14,6 +14,10 @@ functions:
   doxygen:
     brief: pass a single char argument as a scalar.
 
+- decl: char returnChar()
+  doxygen:
+    brief: return a char argument (non-pointer)
+
 ########################################
 # char * argument
 
