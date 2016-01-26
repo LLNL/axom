@@ -226,18 +226,17 @@ convention of ``NULL`` termination with Fortran's blank filled.
 
 C++ routine::
 
-    const std::string& Function4a(
+    const std::string Function4a(
         const std::string& arg1,
         const std::string& arg2)
     {
-        global_str = arg1 + arg2;
-        return global_str;
+        return arg1 + arg2;
     }
 
-YAML changes::
+YAML input::
 
     functions
-    - decl: const std::string& Function4a+len(30)(
+    - decl: const std::string Function4a+len(30)(
         const std::string& arg1,
         const std::string& arg2 )
 
@@ -246,7 +245,7 @@ This attribute defines the declared length of the returned string.
 
 Attributes may be added by assign new fields in **attrs**::
 
-    - decl: const std::string& Function4a(
+    - decl: const std::string Function4a(
         const std::string& arg1,
         const std::string& arg2 )
       result:
@@ -254,41 +253,31 @@ Attributes may be added by assign new fields in **attrs**::
           len: 30
 
 The C wrapper uses ``char *`` for ``std::string`` arguments which
-Fortran can deal with by treating it as a ``type(C_PTR)``.
-The argument is then passed to the ``std::string`` constructor.
-This function can be called by C with ``NULL`` terminated strings::
-
-    const char * TUT_function4a(const char * arg1, const char * arg2)
-    {
-        std::string SH_arg1(arg1);
-        std::string SH_arg2(arg2);
-        const std::string & rv = Function4a(SH_arg1, SH_arg2);
-        return rv.c_str();
-    }
-
-In addition, a separate function is created which accepts the address
-and length of each string argument.  No trailing ``NULL`` is required.
+Fortran declares as ``character``.
+The argument is passed to the ``std::string`` constructor.
+In addition the length of the data in each string is computed using ``len_trim``
+and passed down.
+No trailing ``NULL`` is required.
 This avoids copying the string in Fortran which would be necessary to
 append the trailing ``C_NULL_CHAR``.
-The return value is added as another argument::
+The return value is added as another argument along with its declared length
+computed using ``len``::
 
-    const char * TUT_function4a_bufferify(
+    void TUT_function4a_bufferify(
         const char * arg1, int Larg1,
         const char * arg2, int Larg2,
         char * SH_F_rv, int LSH_F_rv)
     {
         std::string SH_arg1(arg1, Larg1);
         std::string SH_arg2(arg2, Larg2);
-        const std::string & rv = Function4a(SH_arg1, SH_arg2);
+        const std::string rv = Function4a(SH_arg1, SH_arg2);
         asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
         return rv;
     }
 
-The resulting string is copied into the result argument and blank
-filled by FccCopy.  This copy is done in the C wrapper so that when a
-``std::string`` instance is returned, the value can be copied to the
-result argument before the resulting string is deleted when the
-function returns.
+Before the C wrapper returns ``rv`` will be deleted.
+The contents of the ``std::string`` are copied into the result argument and blank
+filled by FccCopy.
 
 The Fortran wrapper::
 
@@ -304,20 +293,14 @@ The Fortran wrapper::
             rv, len(rv)))
     end function function4a
 
-For each input character argument, two arguments are passed down
-to the C wrapper: the address of the string and the trimmed length.
-This allows the C wrapper to create the std::string directly from the
-argument.
-The address of the result variable and its declared length are also passed
-to the C wrapper.
-
 The function is called as::
 
   character(30) rv4a
 
   rv4a = function4a("bird", "dog")
 
-
+.. note :: This function is just for demonstartion purposes.
+           Any reasonable person would just use the concatenation operator in Fortran.
 
 Default Value Arguments
 ------------------------

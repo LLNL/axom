@@ -60,6 +60,11 @@ set in the global **options** and it will apply to all functions::
 
 .. update code examples from current output
 
+
+
+
+
+
     - decl: const std::string& Function4b(
         const std::string& arg1,
         const std::string& arg2)

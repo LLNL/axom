@@ -35,16 +35,16 @@ bool Function3(bool arg)
     return ! arg;
 }
 
-const std::string& Function4a(const std::string& arg1, const std::string& arg2)
+const std::string Function4a(const std::string& arg1, const std::string& arg2)
 {
     last_function_called = "Function4a";
-    global_str = arg1 + arg2;
-    return global_str;
+    return arg1 + arg2;
 }
-const std::string Function4b(const std::string& arg1, const std::string& arg2)
+const std::string& Function4b(const std::string& arg1, const std::string& arg2)
 {
     last_function_called = "Function4b";
-    return arg1 + arg2;
+    return global_str = arg1 + arg2;
+    return global_str;
 }
 
 double Function5(double arg1, bool arg2)

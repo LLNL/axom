@@ -102,16 +102,6 @@ module tutorial_mod
             logical(C_BOOL) :: rv
         end function c_function3
         
-        function c_function4a(arg1, arg2) &
-                result(rv) &
-                bind(C, name="TUT_function4a")
-            use iso_c_binding
-            implicit none
-            character(kind=C_CHAR), intent(IN) :: arg1(*)
-            character(kind=C_CHAR), intent(IN) :: arg2(*)
-            type(C_PTR) rv
-        end function c_function4a
-        
         subroutine c_function4a_bufferify(arg1, Larg1, arg2, Larg2, SH_F_rv, LSH_F_rv) &
                 bind(C, name="TUT_function4a_bufferify")
             use iso_c_binding
@@ -123,6 +113,16 @@ module tutorial_mod
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
             integer(C_INT), value, intent(IN) :: LSH_F_rv
         end subroutine c_function4a_bufferify
+        
+        function c_function4b(arg1, arg2) &
+                result(rv) &
+                bind(C, name="TUT_function4b")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: arg1(*)
+            character(kind=C_CHAR), intent(IN) :: arg2(*)
+            type(C_PTR) rv
+        end function c_function4b
         
         subroutine c_function4b_bufferify(arg1, Larg1, arg2, Larg2, output, Loutput) &
                 bind(C, name="TUT_function4b_bufferify")
@@ -455,7 +455,7 @@ contains
         ! splicer end function3
     end function function3
     
-    ! const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
+    ! const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
     ! string_to_buffer_and_len
     ! function_index=7
     function function4a(arg1, arg2) result(rv)
@@ -475,7 +475,7 @@ contains
         ! splicer end function4a
     end function function4a
     
-    ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))
+    ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=34
     subroutine function4b(arg1, arg2, output)

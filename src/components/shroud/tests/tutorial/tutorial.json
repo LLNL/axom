@@ -291,7 +291,7 @@
         }, 
         {
             "_PTR_F_C_index": 32, 
-            "_decl": "const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
+            "_decl": "const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
             "_function_index": 7, 
             "_subprogram": "function", 
             "args": [
@@ -317,10 +317,8 @@
                 }
             ], 
             "attrs": {}, 
-            "decl": "const std::string& Function4a+len(30)( const std::string& arg1, const std::string& arg2 )", 
+            "decl": "const std::string Function4a+len(30)( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
-                "C_name": "TUT_function4a", 
-                "F_C_name": "c_function4a", 
                 "F_name_generic": "function4a", 
                 "F_name_impl": "function4a", 
                 "F_name_method": "function4a", 
@@ -328,12 +326,13 @@
                 "method_name": "Function4a", 
                 "underscore_name": "function4a"
             }, 
-            "options": {}, 
+            "options": {
+                "wrap_c": false
+            }, 
             "result": {
                 "attrs": {
                     "const": true, 
-                    "len": "(30)", 
-                    "reference": true
+                    "len": "(30)"
                 }, 
                 "name": "Function4a", 
                 "type": "std::string"
@@ -341,7 +340,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 7, 
-            "_decl": "void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))", 
+            "_decl": "void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 32, 
             "_generated": "string_to_buffer_and_len", 
@@ -375,14 +374,15 @@
                         "const": false, 
                         "intent": "out", 
                         "len": "LSH_F_rv", 
-                        "reference": true
+                        "ptr": true, 
+                        "reference": false
                     }, 
                     "name": "SH_F_rv", 
                     "type": "string_result_as_arg"
                 }
             ], 
             "attrs": {}, 
-            "decl": "const std::string& Function4a+len(30)( const std::string& arg1, const std::string& arg2 )", 
+            "decl": "const std::string Function4a+len(30)( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4a_bufferify", 
                 "F_C_name": "c_function4a_bufferify", 
@@ -405,7 +405,7 @@
             }
         }, 
         {
-            "_decl": "const std::string Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
+            "_decl": "const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
             "_function_index": 8, 
             "_subprogram": "function", 
             "args": [
@@ -431,20 +431,22 @@
                 }
             ], 
             "attrs": {}, 
-            "decl": "const std::string Function4b( const std::string& arg1, const std::string& arg2 )", 
+            "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
+                "C_name": "TUT_function4b", 
+                "F_C_name": "c_function4b", 
                 "PY_name_impl": "PY_function4b", 
                 "method_name": "Function4b", 
                 "underscore_name": "function4b"
             }, 
             "options": {
                 "F_string_result_as_arg": "output", 
-                "wrap_c": false, 
                 "wrap_fortran": false
             }, 
             "result": {
                 "attrs": {
-                    "const": true
+                    "const": true, 
+                    "reference": true
                 }, 
                 "name": "Function4b", 
                 "type": "std::string"
@@ -452,7 +454,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 8, 
-            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))", 
+            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 33, 
             "_generated": "string_to_buffer_and_len", 
@@ -486,15 +488,14 @@
                         "const": false, 
                         "intent": "out", 
                         "len": "Loutput", 
-                        "ptr": true, 
-                        "reference": false
+                        "reference": true
                     }, 
                     "name": "output", 
                     "type": "string_result_as_arg"
                 }
             ], 
             "attrs": {}, 
-            "decl": "const std::string Function4b( const std::string& arg1, const std::string& arg2 )", 
+            "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4b_bufferify", 
                 "F_C_name": "c_function4b_bufferify", 
@@ -518,7 +519,7 @@
         {
             "_PTR_C_CPP_index": 8, 
             "_PTR_F_C_index": 33, 
-            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))", 
+            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 34, 
             "_generated": "string_to_buffer_and_len", 
@@ -552,15 +553,14 @@
                         "const": false, 
                         "intent": "out", 
                         "len": "Loutput", 
-                        "ptr": true, 
-                        "reference": false
+                        "reference": true
                     }, 
                     "name": "output", 
                     "type": "string_result_as_arg"
                 }
             ], 
             "attrs": {}, 
-            "decl": "const std::string Function4b( const std::string& arg1, const std::string& arg2 )", 
+            "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "F_name_generic": "function4b", 
                 "F_name_impl": "function4b", 

@@ -762,14 +762,13 @@ class GenFunctions(object):
         except KeyError:
             # wrapped classes have not been added yet.  Only care about string here.
             result_typedef = None
-        is_pure = node['attrs'].get('pure', False)
         attrs = result['attrs']
-        is_ptr = (attrs.get('ptr', False) or
-                  attrs.get('reference', False))
-        if result_typedef and result_typedef.base == 'string' and not is_ptr:
+        result_is_ptr = (attrs.get('ptr', False) or
+                         attrs.get('reference', False))
+        if result_typedef and result_typedef.base == 'string' and not result_is_ptr:
             options.wrap_c = False
 #            options.wrap_fortran = False
-            self.config.log.write("Skipping %s, unable to wrap function returning std::string instance (must return a pointer or reference). \n" % ( result['name']) )
+            self.config.log.write("Skipping %s, unable to create C wrapper for function returning std::string instance (must return a pointer or reference). \n" % ( result['name']) )
 
         if options.wrap_fortran is False:
             return
@@ -778,28 +777,31 @@ class GenFunctions(object):
 
         # Is result or any argument a string?
         has_string_arg = False
+        for arg in node['args']:
+            argtype = arg['type']
+            if self.typedef[argtype].base == 'string':
+                attrs = arg['attrs']
+                is_ptr = (attrs.get('ptr', False) or
+                          attrs.get('reference', False))
+                if is_ptr:
+                    has_string_arg = True
+                    # Force len attribute when intent is OUT
+                    # so the wrapper will know how much space can be written to.
+                    intent = attrs['intent']
+                    if intent in ['out', 'inout']:
+                        attrs['len'] = 'N' + arg['name']
+                else:
+                    arg['type'] = 'char_scalar'
+
         has_string_result = False
         result_as_arg = ''  # only applies to string functions
+        is_pure = node['attrs'].get('pure', False)
         if result_typedef.base == 'string':
+            attrs = result['attrs']
+            has_string_result = True
             result_as_arg = options.get('F_string_result_as_arg', '')
             result_name = result_as_arg or 'SH_F_rv'
-            has_string_result = True
-        else:
-            for arg in node['args']:
-                argtype = arg['type']
-                if self.typedef[argtype].base == 'string':
-                    attrs = arg['attrs']
-                    is_ptr = (attrs.get('ptr', False) or
-                              attrs.get('reference', False))
-                    if is_ptr:
-                        has_string_arg = True
-                        # Force len attribute when intent is OUT
-                        # so the wrapper will know how much space can be written to.
-                        intent = attrs['intent']
-                        if intent in ['out', 'inout']:
-                            attrs['len'] = 'N' + arg['name']
-                    else:
-                        arg['type'] = 'char_scalar'
+
         if not (has_string_result or has_string_arg):
             return
 
@@ -845,7 +847,7 @@ class GenFunctions(object):
             attrs['len'] = 'L' + result_name
             attrs['intent'] = 'out'
             attrs['_is_result'] = True
-            if not is_ptr:
+            if not result_is_ptr:
                 attrs['ptr'] = True
                 attrs['reference'] = False
             C_new['args'].append(result_as_string)
