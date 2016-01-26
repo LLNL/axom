@@ -21,6 +21,8 @@ module name_module
     contains
         procedure :: type_method1 => names_method1
         procedure :: method2 => names_method2
+        procedure :: get_instance => names_get_instance
+        procedure :: set_instance => names_set_instance
         ! splicer begin class.Names.type_bound_procedure_part
         ! splicer end class.Names.type_bound_procedure_part
     end type names
@@ -77,6 +79,22 @@ contains
         call xxx_tes_names_method2(obj%voidptr)
         ! splicer end class.Names.method.method2
     end subroutine names_method2
+    
+    function names_get_instance(obj) result (voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(names), intent(IN) :: obj
+        type(C_PTR) :: voidptr
+        voidptr = obj%voidptr
+    end function names_get_instance
+    
+    subroutine names_set_instance(obj, voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(names), intent(INOUT) :: obj
+        type(C_PTR), intent(IN) :: voidptr
+        obj%voidptr = voidptr
+    end subroutine names_set_instance
     
     ! splicer begin class.Names.additional_functions
     ! splicer end class.Names.additional_functions

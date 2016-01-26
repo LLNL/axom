@@ -70,6 +70,8 @@ module sidre_mod
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_num_buffers => datastore_get_num_buffers
         procedure :: print => datastore_print
+        procedure :: get_instance => datastore_get_instance
+        procedure :: set_instance => datastore_set_instance
         ! splicer begin class.DataStore.type_bound_procedure_part
         ! splicer end class.DataStore.type_bound_procedure_part
     end type datastore
@@ -119,6 +121,8 @@ module sidre_mod
         procedure :: print => datagroup_print
         procedure :: save => datagroup_save
         procedure :: load => datagroup_load
+        procedure :: get_instance => datagroup_get_instance
+        procedure :: set_instance => datagroup_set_instance
         generic :: create_view => &
             ! splicer begin class.DataGroup.generic.create_view
             ! splicer end class.DataGroup.generic.create_view
@@ -208,6 +212,8 @@ module sidre_mod
         procedure :: get_num_elements => databuffer_get_num_elements
         procedure :: get_total_bytes => databuffer_get_total_bytes
         procedure :: print => databuffer_print
+        procedure :: get_instance => databuffer_get_instance
+        procedure :: set_instance => databuffer_set_instance
         generic :: allocate => &
             ! splicer begin class.DataBuffer.generic.allocate
             ! splicer end class.DataBuffer.generic.allocate
@@ -273,6 +279,8 @@ module sidre_mod
         procedure :: get_num_dimensions => dataview_get_num_dimensions
         procedure :: get_shape => dataview_get_shape
         procedure :: print => dataview_print
+        procedure :: get_instance => dataview_get_instance
+        procedure :: set_instance => dataview_set_instance
         generic :: allocate => &
             ! splicer begin class.DataView.generic.allocate
             ! splicer end class.DataView.generic.allocate
@@ -1526,6 +1534,22 @@ contains
         ! splicer end class.DataStore.method.print
     end subroutine datastore_print
     
+    function datastore_get_instance(obj) result (voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(datastore), intent(IN) :: obj
+        type(C_PTR) :: voidptr
+        voidptr = obj%voidptr
+    end function datastore_get_instance
+    
+    subroutine datastore_set_instance(obj, voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(datastore), intent(INOUT) :: obj
+        type(C_PTR), intent(IN) :: voidptr
+        obj%voidptr = voidptr
+    end subroutine datastore_set_instance
+    
     ! splicer begin class.DataStore.additional_functions
     ! splicer end class.DataStore.additional_functions
     
@@ -2029,6 +2053,22 @@ contains
             len_trim(protocol, kind=C_INT))
         ! splicer end class.DataGroup.method.load
     end subroutine datagroup_load
+    
+    function datagroup_get_instance(obj) result (voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(datagroup), intent(IN) :: obj
+        type(C_PTR) :: voidptr
+        voidptr = obj%voidptr
+    end function datagroup_get_instance
+    
+    subroutine datagroup_set_instance(obj, voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(datagroup), intent(INOUT) :: obj
+        type(C_PTR), intent(IN) :: voidptr
+        obj%voidptr = voidptr
+    end subroutine datagroup_set_instance
     
     ! splicer begin class.DataGroup.additional_functions
     
@@ -2565,6 +2605,22 @@ contains
         ! splicer end class.DataBuffer.method.print
     end subroutine databuffer_print
     
+    function databuffer_get_instance(obj) result (voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(databuffer), intent(IN) :: obj
+        type(C_PTR) :: voidptr
+        voidptr = obj%voidptr
+    end function databuffer_get_instance
+    
+    subroutine databuffer_set_instance(obj, voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(databuffer), intent(INOUT) :: obj
+        type(C_PTR), intent(IN) :: voidptr
+        obj%voidptr = voidptr
+    end subroutine databuffer_set_instance
+    
     ! splicer begin class.DataBuffer.additional_functions
     ! splicer end class.DataBuffer.additional_functions
     
@@ -3003,6 +3059,22 @@ contains
         call sidre_dataview_print(obj%voidptr)
         ! splicer end class.DataView.method.print
     end subroutine dataview_print
+    
+    function dataview_get_instance(obj) result (voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(dataview), intent(IN) :: obj
+        type(C_PTR) :: voidptr
+        voidptr = obj%voidptr
+    end function dataview_get_instance
+    
+    subroutine dataview_set_instance(obj, voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(dataview), intent(INOUT) :: obj
+        type(C_PTR), intent(IN) :: voidptr
+        obj%voidptr = voidptr
+    end subroutine dataview_set_instance
     
     ! splicer begin class.DataView.additional_functions
     

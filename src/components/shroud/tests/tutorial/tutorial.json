@@ -1937,6 +1937,8 @@
         "F_name_generic_template": "{underscore_name}", 
         "F_name_impl_function_template": "{underscore_name}{function_suffix}", 
         "F_name_impl_method_template": "{lower_class}_{underscore_name}{function_suffix}", 
+        "F_name_instance_get": "get_instance", 
+        "F_name_instance_set": "set_instance", 
         "F_name_method_template": "{underscore_name}{function_suffix}", 
         "F_string_len_trim": true, 
         "PY_PyObject_template": "{PY_prefix}{cpp_class}", 

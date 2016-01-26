@@ -39,6 +39,7 @@ module exclass1_mod
         procedure :: get_addr => exclass1_get_addr
         procedure :: has_addr => exclass1_has_addr
         procedure :: splicer_special => exclass1_splicer_special
+        procedure :: yadda => exclass1_yadda
         generic :: get_value => &
             ! splicer begin class.ExClass1.generic.get_value
             ! splicer end class.ExClass1.generic.get_value
@@ -421,6 +422,14 @@ contains
         blah blah blah
         ! splicer end class.ExClass1.method.splicer_special
     end subroutine exclass1_splicer_special
+    
+    function exclass1_yadda(obj) result (voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(exclass1), intent(IN) :: obj
+        type(C_PTR) :: voidptr
+        voidptr = obj%voidptr
+    end function exclass1_yadda
     
     ! splicer begin class.ExClass1.additional_functions
     ! splicer end class.ExClass1.additional_functions

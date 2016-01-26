@@ -245,10 +245,10 @@ class Wrapf(util.WrapperMixin):
         for method in node['methods']:
             self.wrap_function(node, method)
         self._pop_splicer('method')
+        self.write_object_get_set(node, fmt_class)
         self.impl.append('')
         self._create_splicer('additional_functions', self.impl)
         self._pop_splicer(fmt_class.cpp_class)
-
 
         # type declaration
         self.f_type_decl.append('')
@@ -299,6 +299,58 @@ class Wrapf(util.WrapperMixin):
         self.overload_compare(fmt_class, '.ne.', fmt_class.lower_class + '_ne',
                               wformat('.not. c_associated(a%{F_derived_member}, b%{F_derived_member})', fmt_class))
 #        self.overload_compare(fmt_class, '/=', fmt_class.lower_class + '_ne', None)
+
+    def write_object_get_set(self, node, fmt_class):
+        """Write get and set methods for instance pointer.
+
+        node = class dictionary
+        """
+        options = node['options']
+        impl = self.impl
+        fmt = util.Options(fmt_class)
+
+        fmt.F_instance_ptr = wformat('{F_this}%{F_derived_member}', fmt)
+
+        # get
+        fmt.underscore_name = options['F_name_instance_get']
+        if fmt.underscore_name:
+            fmt.underscore_name = options['F_name_instance_get']
+            fmt.F_name_method = wformat(options['F_name_method_template'], fmt)
+            fmt.F_name_impl = wformat(options['F_name_impl_method_template'], fmt)
+
+            self.type_bound_part.append('procedure :: %s => %s' % (
+                    fmt.F_name_method, fmt.F_name_impl))
+
+            impl.append('')
+            append_format(impl, 'function {F_name_impl}({F_this}) result ({F_derived_member})', fmt)
+            impl.append(1)
+            impl.append('use iso_c_binding, only: C_PTR')
+            impl.append('implicit none')
+            append_format(impl, 'class({F_derived_name}), intent(IN) :: {F_this}', fmt)
+            append_format(impl, 'type(C_PTR) :: {F_derived_member}', fmt)
+            append_format(impl, '{F_derived_member} = {F_instance_ptr}', fmt)
+            impl.append(-1)
+            append_format(impl, 'end function {F_name_impl}', fmt)
+        
+        # set
+        fmt.underscore_name = options['F_name_instance_set']
+        if fmt.underscore_name:
+            fmt.F_name_method = wformat(options['F_name_method_template'], fmt)
+            fmt.F_name_impl = wformat(options['F_name_impl_method_template'], fmt)
+
+            self.type_bound_part.append('procedure :: %s => %s' % (
+                    fmt.F_name_method, fmt.F_name_impl))
+
+            impl.append('')
+            append_format(impl, 'subroutine {F_name_impl}({F_this}, {F_derived_member})', fmt)
+            impl.append(1)
+            impl.append('use iso_c_binding, only: C_PTR')
+            impl.append('implicit none')
+            append_format(impl, 'class({F_derived_name}), intent(INOUT) :: {F_this}', fmt)
+            append_format(impl, 'type(C_PTR), intent(IN) :: {F_derived_member}', fmt)
+            append_format(impl, '{F_instance_ptr} = {F_derived_member}', fmt)
+            impl.append(-1)
+            append_format(impl, 'end subroutine {F_name_impl}', fmt)
         
     def overload_compare(self, fmt_class, operator, procedure, predicate):
         """ Overload .eq. and .eq.

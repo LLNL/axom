@@ -721,7 +721,17 @@ F_name_generic
 ..    method1
     Defaults to option *F_name_generic_template*.
 
+F_name_instance_get
 
+    Name of method to get ``type(C_PTR)`` instance pointer from wrapped class.
+    Defaults to *get_instance*.
+    If the name is blank, no function is generated.
+
+F_name_instance_set
+
+    Name of method to set ``type(C_PTR)`` instance pointer in wrapped class.
+    Defaults to *set_instance*.
+    If the name is blank, no function is generated.
 
 Annotations
 -----------

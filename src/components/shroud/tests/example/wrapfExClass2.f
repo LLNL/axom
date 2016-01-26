@@ -41,6 +41,7 @@ module exclass2_mod
         procedure :: set_value_double => exclass2_set_value_double
         procedure :: get_value_int => exclass2_get_value_int
         procedure :: get_value_double => exclass2_get_value_double
+        procedure :: yadda => exclass2_yadda
         generic :: declare => &
             ! splicer begin class.ExClass2.generic.declare
             ! splicer end class.ExClass2.generic.declare
@@ -468,6 +469,14 @@ contains
         rv = aa_exclass2_get_value_double(obj%voidptr)
         ! splicer end class.ExClass2.method.get_value_double
     end function exclass2_get_value_double
+    
+    function exclass2_yadda(obj) result (voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(exclass2), intent(IN) :: obj
+        type(C_PTR) :: voidptr
+        voidptr = obj%voidptr
+    end function exclass2_yadda
     
     ! splicer begin class.ExClass2.additional_functions
     ! splicer end class.ExClass2.additional_functions

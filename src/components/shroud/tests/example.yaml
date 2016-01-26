@@ -23,6 +23,11 @@ options:
 
   PY_prefix: PP_
 
+  # do not create get/set instance routines
+  F_name_instance_get: yadda
+  F_name_instance_set:
+  
+
 types:
   other:
     cpp_type: junk

@@ -128,6 +128,9 @@ class Schema(object):
             F_module_name_class_template = '{lower_class}_mod',
             F_impl_filename_class_template = 'wrapf{cpp_class}.f',
 
+            F_name_instance_get = 'get_instance',
+            F_name_instance_set = 'set_instance',
+
             )
         wrapp.add_templates(def_options)
 

@@ -26,6 +26,8 @@ module tutorial_mod
     contains
         procedure :: delete => class1_delete
         procedure :: method1 => class1_method1
+        procedure :: get_instance => class1_get_instance
+        procedure :: set_instance => class1_set_instance
         ! splicer begin class.Class1.type_bound_procedure_part
         ! splicer end class.Class1.type_bound_procedure_part
     end type class1
@@ -419,6 +421,22 @@ contains
         call tut_class1_method1(obj%voidptr)
         ! splicer end class.Class1.method.method1
     end subroutine class1_method1
+    
+    function class1_get_instance(obj) result (voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(class1), intent(IN) :: obj
+        type(C_PTR) :: voidptr
+        voidptr = obj%voidptr
+    end function class1_get_instance
+    
+    subroutine class1_set_instance(obj, voidptr)
+        use iso_c_binding, only: C_PTR
+        implicit none
+        class(class1), intent(INOUT) :: obj
+        type(C_PTR), intent(IN) :: voidptr
+        obj%voidptr = voidptr
+    end subroutine class1_set_instance
     
     ! splicer begin class.Class1.additional_functions
     ! splicer end class.Class1.additional_functions
