@@ -34,7 +34,6 @@ namespace asctoolkit
 namespace sidre
 {
 
-
 ////////////////////////////////////////////////////////////////////////
 //
 //  Methods for manipulating DataView objects in DataGroup
@@ -54,20 +53,19 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
                                              TypeID type,
                                              SidreLength num_elems )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT(num_elems >= 0);
 
-  if ( name.empty() || hasView(name) || num_elems < 0 )
+  DataView * view = ATK_NULLPTR;
+
+  SLIC_CHECK(num_elems >= 0);
+  if ( num_elems >= 0 )
   {
-    return ATK_NULLPTR;
+    DataView * view = createViewAndBuffer(name);
+    if ( view != ATK_NULLPTR )
+    {
+      view = view->allocate(type, num_elems);
+    }
   }
-  else
-  {
-    DataView * const view = createViewAndBuffer(name);
-    view->allocate(type, num_elems);
-    return view;
-  }
+  return view;
 }
 
 /*
@@ -82,8 +80,8 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 DataView * DataGroup::createViewAndAllocate( const std::string& name,
                                              const DataType& dtype)
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  SLIC_CHECK( !name.empty() );
+  SLIC_CHECK_MSG( hasView(name) == false, "name == " << name );
 
   if ( name.empty() || hasView(name) )
   {
