@@ -20,7 +20,7 @@ module tutorial_mod
     ! splicer end class.Class1.module_top
     
     type class1
-        type(C_PTR) voidptr
+        type(C_PTR), private :: voidptr
         ! splicer begin class.Class1.component_part
         ! splicer end class.Class1.component_part
     contains

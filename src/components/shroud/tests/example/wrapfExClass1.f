@@ -21,7 +21,7 @@ module exclass1_mod
     ! splicer end class.ExClass1.module_top
     
     type exclass1
-        type(C_PTR) voidptr
+        type(C_PTR), private :: voidptr
         ! splicer begin class.ExClass1.component_part
           component part 1a
           component part 1b

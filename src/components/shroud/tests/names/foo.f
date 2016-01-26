@@ -15,7 +15,7 @@ module name_module
     ! splicer end class.Names.module_top
     
     type names
-        type(C_PTR) voidptr
+        type(C_PTR), private :: voidptr
         ! splicer begin class.Names.component_part
         ! splicer end class.Names.component_part
     contains

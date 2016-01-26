@@ -258,7 +258,7 @@ class Wrapf(util.WrapperMixin):
                 '',
                 wformat('type {F_derived_name}', fmt_class),
                 1,
-                wformat('type(C_PTR) {F_derived_member}', fmt_class),
+                wformat('type(C_PTR), private :: {F_derived_member}', fmt_class),
                 ])
         self._create_splicer('component_part', self.f_type_decl)
         self.f_type_decl.extend([

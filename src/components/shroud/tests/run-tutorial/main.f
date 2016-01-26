@@ -109,13 +109,13 @@ contains
     call set_case_name("test_class1")
 
     obj = class1_new()
-    call assert_true(c_associated(obj%voidptr), "class1_new")
+    call assert_true(c_associated(obj%get_instance()), "class1_new")
 
     call obj%method1()
     call assert_true(.true.)
 
     call obj%delete()
-    call assert_true(.not. c_associated(obj%voidptr), "class1_delete")
+    call assert_true(.not. c_associated(obj%get_instance()), "class1_delete")
   end subroutine test_class1
 
 end program tester

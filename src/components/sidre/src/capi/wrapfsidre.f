@@ -59,7 +59,7 @@ module sidre_mod
     ! splicer end class.DataStore.module_top
     
     type datastore
-        type(C_PTR) voidptr
+        type(C_PTR), private :: voidptr
         ! splicer begin class.DataStore.component_part
         ! splicer end class.DataStore.component_part
     contains
@@ -80,7 +80,7 @@ module sidre_mod
     ! splicer end class.DataGroup.module_top
     
     type datagroup
-        type(C_PTR) voidptr
+        type(C_PTR), private :: voidptr
         ! splicer begin class.DataGroup.component_part
         ! splicer end class.DataGroup.component_part
     contains
@@ -192,7 +192,7 @@ module sidre_mod
     ! splicer end class.DataBuffer.module_top
     
     type databuffer
-        type(C_PTR) voidptr
+        type(C_PTR), private :: voidptr
         ! splicer begin class.DataBuffer.component_part
         ! splicer end class.DataBuffer.component_part
     contains
@@ -238,7 +238,7 @@ module sidre_mod
     ! splicer end class.DataView.module_top
     
     type dataview
-        type(C_PTR) voidptr
+        type(C_PTR), private :: voidptr
         ! splicer begin class.DataView.component_part
         ! splicer end class.DataView.component_part
     contains
