@@ -7,4 +7,3 @@ build-*
 install-*
 *.orig
 *.uncrustify
-*.pyc

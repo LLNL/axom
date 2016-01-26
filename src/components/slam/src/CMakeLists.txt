@@ -8,7 +8,6 @@ INCLUDE_DIRECTORIES(
 set(slam_headers
     # Utility files
     Utilities.hpp
-    FileUtilities.hpp
     FieldRegistry.hpp
     ModularInt.hpp
     
@@ -51,6 +50,9 @@ set(slam_sources
     DynamicVariableRelation.cpp
     
     # SRM Map sources
+    
+    # Other sources
+    Utilities.cpp
     )
 
 
