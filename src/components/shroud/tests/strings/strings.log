@@ -1,4 +1,5 @@
 Read yaml strings.yaml
+C function void passChar(char_scalar status+intent(in)+value)
 C function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
 C function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in)+len_trim(Lsrc))
 C function const char * getChar1()+pure
@@ -20,6 +21,7 @@ C function void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1
 Close wrapstrings.h
 Close wrapstrings.cpp
 Close shroudrt.hpp
+C-interface, Fortran function void passChar(char_scalar status+intent(in)+value)
 C-interface, Fortran function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
 C-interface function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in)+len_trim(Lsrc))
 C-interface function const char * getChar1()+pure

@@ -18,6 +18,13 @@ void passCharPtr(char * dest, const char *src)
     std::strcpy(dest, src);
 }
 
+void passChar(char status)
+{
+    if (status == 'w') {
+	global_str = "w";
+    }
+}
+
 //----------------------------------------
 
 const char * getChar1()

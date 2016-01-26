@@ -230,6 +230,7 @@ class Schema(object):
                 PY_PyTypeObject = 'PyBool_Type',
                 PY_post_parse = '{var} = PyObject_IsTrue({var_obj});',
                 ),
+
             # implies null terminated string
             char = util.Typedef('char',
                 cpp_type = 'char',
@@ -281,6 +282,27 @@ class Schema(object):
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({var})',
                 base = 'string',
+                ),
+
+            # char scalar
+            char_scalar = util.Typedef('char_scalar',
+                cpp_type = 'char',
+#                cpp_header = '<string>',
+#                cpp_to_c = '{var}.c_str()',  # . or ->
+
+                c_type   = 'char',    # XXX - char *
+
+                c_to_cpp  = '{cpp_var}',
+
+                c_fortran  = 'character(kind=C_CHAR)',
+                f_type     = 'character',
+##                f_args = 'trim({var}) // C_NULL_CHAR',
+#                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
+                f_module = dict(iso_c_binding=None),
+#                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+                PY_format = 's',
+                PY_ctor = 'PyString_FromString({var})',
+##                base = 'string',
                 ),
 
             # C++ std::string
@@ -757,12 +779,18 @@ class GenFunctions(object):
             for arg in node['args']:
                 argtype = arg['type']
                 if self.typedef[argtype].base == 'string':
-                    has_string_arg = True
-                    # Force len attribute when intent is OUT
-                    # so the wrapper will know how much space can be written to.
-                    intent = arg['attrs']['intent']
-                    if intent in ['out', 'inout']:
-                        arg['attrs']['len'] = 'N' + arg['name']
+                    attrs = arg['attrs']
+                    is_ptr = (attrs.get('ptr', False) or
+                              attrs.get('reference', False))
+                    if is_ptr:
+                        has_string_arg = True
+                        # Force len attribute when intent is OUT
+                        # so the wrapper will know how much space can be written to.
+                        intent = attrs['intent']
+                        if intent in ['out', 'inout']:
+                            attrs['len'] = 'N' + arg['name']
+                    else:
+                        arg['type'] = 'char_scalar'
         if not (has_string_result or has_string_arg):
             return
 

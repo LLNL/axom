@@ -31,6 +31,8 @@ contains
 
     call set_case_name("test_charargs")
 
+    call pass_char("w")
+
     ! character(*) function
     str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
     call pass_char_ptr(dest=str, src="bird")

@@ -8,6 +8,7 @@
 #include <string>
 
 void passCharPtr(char * dest, const char *src);
+void passChar(char status);
 
 const char * getChar1();
 const char * getChar2();

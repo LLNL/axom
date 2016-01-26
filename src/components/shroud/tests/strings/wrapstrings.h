@@ -18,6 +18,8 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
+void STR_pass_char(char status);
+
 void STR_pass_char_ptr(char * dest, int Ndest, const char * src);
 
 void STR_pass_char_ptr_bufferify(char * dest, int Ndest, const char * src, int Lsrc);

@@ -10,6 +10,10 @@ options:
 
 functions:
 
+- decl: void passChar(char status)
+  doxygen:
+    brief: pass a single char argument as a scalar.
+
 ########################################
 # char * argument
 

@@ -13,6 +13,13 @@ module strings_mod
     
     interface
         
+        subroutine pass_char(status) &
+                bind(C, name="STR_pass_char")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), value, intent(IN) :: status
+        end subroutine pass_char
+        
         subroutine str_pass_char_ptr(dest, Ndest, src) &
                 bind(C, name="STR_pass_char_ptr")
             use iso_c_binding
@@ -168,7 +175,7 @@ contains
     
     ! void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
     ! string_to_buffer_and_len
-    ! function_index=0
+    ! function_index=1
     !>
     !! \brief strcpy like behavior
     !!
@@ -190,7 +197,7 @@ contains
     end subroutine pass_char_ptr
     
     ! const string_result_fstr * getChar1()+pure
-    ! function_index=11
+    ! function_index=12
     !>
     !! \brief return a 'const char *' as character(*)
     !!
@@ -206,7 +213,7 @@ contains
     
     ! const char * getChar2()
     ! string_to_buffer_and_len
-    ! function_index=2
+    ! function_index=3
     !>
     !! \brief return 'const char *' with fixed size (len=30)
     !!
@@ -224,7 +231,7 @@ contains
     
     ! void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=14
+    ! function_index=15
     !>
     !! \brief return a 'const char *' as argument
     !!
@@ -241,7 +248,7 @@ contains
     end subroutine get_char3
     
     ! const string_result_fstr & getString1()+pure
-    ! function_index=16
+    ! function_index=17
     !>
     !! \brief return a 'const string&' as character(*)
     !!
@@ -257,7 +264,7 @@ contains
     
     ! const string & getString2()
     ! string_to_buffer_and_len
-    ! function_index=5
+    ! function_index=6
     !>
     !! \brief return 'const string&' with fixed size (len=30)
     !!
@@ -275,7 +282,7 @@ contains
     
     ! void getString3(string_result_as_arg & output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=19
+    ! function_index=20
     !>
     !! \brief return a 'const string&' as argument
     !!
@@ -293,7 +300,7 @@ contains
     
     ! void acceptStringConstReference(const std::string & arg1+intent(in))
     ! string_to_buffer_and_len
-    ! function_index=7
+    ! function_index=8
     !>
     !! \brief Accept a const string reference
     !!
@@ -314,7 +321,7 @@ contains
     
     ! void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))
     ! string_to_buffer_and_len
-    ! function_index=8
+    ! function_index=9
     !>
     !! \brief Accept a string reference
     !!

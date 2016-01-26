@@ -414,6 +414,18 @@
             }, 
             "f_type": "character(*)"
         }, 
+        "char_scalar": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_type": "char", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character"
+        }, 
         "double": {
             "PY_format": "d", 
             "c_fortran": "real(C_DOUBLE)", 
