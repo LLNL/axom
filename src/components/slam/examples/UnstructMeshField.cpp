@@ -146,7 +146,7 @@ namespace slamUnstructuredHex {
   {
   public:
     // uses RAII to open/close the file
-    SimpleVTKHeshMeshReader(const std::string & fileName) : vtkMesh( fileName)
+    SimpleVTKHeshMeshReader(const std::string & fileName) : vtkMesh( fileName.c_str() )
     {
       if(!vtkMesh)
       {
