@@ -174,7 +174,7 @@ class Schema(object):
                 c_type    = 'int',
                 cpp_type  = 'int',
                 f_kind    = 'C_INT',
-                f_cast    = 'int({var}, C_INT)',
+                f_cast    = 'int({f_var}, C_INT)',
                 c_fortran = 'integer(C_INT)',
                 f_type    = 'integer(C_INT)',
                 f_module  = dict(iso_c_binding=['C_INT']),
@@ -184,7 +184,7 @@ class Schema(object):
                 c_type    = 'long',
                 cpp_type  = 'long',
                 f_kind    = 'C_LONG',
-                f_cast    = 'int({var}, C_LONG)',
+                f_cast    = 'int({f_var}, C_LONG)',
                 c_fortran = 'integer(C_LONG)',
                 f_type    = 'integer(C_LONG)',
                 f_module  = dict(iso_c_binding=['C_LONG']),
@@ -195,7 +195,7 @@ class Schema(object):
                 cpp_type  = 'size_t',
                 c_header  = 'stdlib.h',
                 f_kind    = 'C_SIZE_T',
-                f_cast    = 'int({var}, C_SIZE_T)',
+                f_cast    = 'int({f_var}, C_SIZE_T)',
                 c_fortran = 'integer(C_SIZE_T)',
                 f_type    = 'integer(C_SIZE_T)',
                 f_module  = dict(iso_c_binding=['C_SIZE_T']),
@@ -206,7 +206,7 @@ class Schema(object):
                 c_type    = 'float',
                 cpp_type  = 'float',
                 f_kind    = 'C_FLOAT',
-                f_cast    = 'real({var}, C_FLOAT)',
+                f_cast    = 'real({f_var}, C_FLOAT)',
                 c_fortran = 'real(C_FLOAT)',
                 f_type    = 'real(C_FLOAT)',
                 f_module  = dict(iso_c_binding=['C_FLOAT']),
@@ -216,7 +216,7 @@ class Schema(object):
                 c_type    = 'double',
                 cpp_type  = 'double',
                 f_kind    = 'C_DOUBLE',
-                f_cast    = 'real({var}, C_DOUBLE)',
+                f_cast    = 'real({f_var}, C_DOUBLE)',
                 c_fortran = 'real(C_DOUBLE)',
                 f_type    = 'real(C_DOUBLE)',
                 f_module  = dict(iso_c_binding=['C_DOUBLE']),
@@ -230,9 +230,20 @@ class Schema(object):
                 c_fortran = 'logical(C_BOOL)',
 
                 f_type    = 'logical',
-                f_use_tmp  = True,
-                f_argsdecl = ['logical(C_BOOL) {tmp_var}'],
-                f_pre_call = '{tmp_var} = {var}  ! coerce to C_BOOL',
+                f_statements = dict(
+                    intent_in = dict(
+                        declare = [
+                            'logical(C_BOOL) {c_var}',
+                            ],
+                        pre_call = [
+                            '{c_var} = {f_var}  ! coerce to C_BOOL',
+                            ],
+                        ),
+                    result = dict(
+                        # The wrapper is needed to convert bool to logical
+                        need_wrapper = True,
+                        ),
+                    ),
 
 #XXX            PY_format = 'p',  # Python 3.3 or greater
                 PY_ctor   = 'PyBool_FromLong({rv})',
@@ -1052,7 +1063,7 @@ class VerifyAttrs(object):
                 c_fortran = 'type(C_PTR)',
                 f_type = 'type(%s)' % unname,
                 f_derived_type = unname,
-                f_args = '{var}%{F_derived_member}',
+                f_args = '{c_var}%{F_derived_member}',
                 # XXX module name may not conflict with type name
                 f_module = {fmt_class.F_module_name:[unname]},
 

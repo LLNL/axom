@@ -473,7 +473,7 @@ class Wrapf(util.WrapperMixin):
             # default argument's intent
             # XXX look at const, ptr
             arg_typedef = self.typedef[arg['type']]
-            fmt.var = arg['name']
+            fmt.c_var = arg['name']
             attrs = arg['attrs']
 
             # argument names
@@ -578,7 +578,7 @@ class Wrapf(util.WrapperMixin):
         is_const = result['attrs'].get('const', False)
 
         # this catches stuff like a bool to logical conversion which requires the wrapper
-        if result_typedef.f_argsdecl:
+        if result_typedef.f_statements.get('result',{}).get('need_wrapper', False):
             need_wrapper = True
 
         fmt.F_instance_ptr = wformat('{F_this}%{F_derived_member}', fmt)
@@ -606,14 +606,19 @@ class Wrapf(util.WrapperMixin):
         #
         # Fortran and C arguments may have different types (fortran generic)
         #
+        # f_var - argument to Fortran function (wrapper function)
+        # c_var - argument to C function (wrapped function)
+        #
+        # May be one more argument to C function than Fortran function (the result)
+        #
         result_arg = None  # indicate which argument contains function result, usually none
         fmt.result_arg = 'UUU_result_arg'
-        optional = []
+        pre_call = []
         f_args = node['args']
         f_index = -1       # index into f_args
         for c_index, c_arg in enumerate(C_node['args']):
-            fmt.var = c_arg['name']
-            fmt.tmp_var = 'tmp_' + fmt.var
+            fmt.f_var = c_arg['name']
+            fmt.c_var = fmt.f_var
 
             f_arg = True   # assume C and Fortran arguments match
             c_attrs = c_arg['attrs']
@@ -624,28 +629,32 @@ class Wrapf(util.WrapperMixin):
                     f_arg = False
                     result_arg = c_arg
                     fmt.result_arg = result_as_arg   # c_arg['name']
-                    # XXX
-                    fmt.var = 'rv'
-                    fmt.tmp_var = 'tmp_rv'
+                    fmt.c_var = fmt.F_result
+                    fmt.f_var = fmt.F_result
 
             if f_arg:
                 f_index += 1
                 f_arg = f_args[f_index]
-                arg_f_names.append(fmt.var)
+                arg_f_names.append(fmt.f_var)
                 arg_f_decl.append(self._f_decl(f_arg))
 
                 arg_type = f_arg['type']
                 arg_typedef = self.typedef[arg_type]
 
-                if arg_typedef.f_argsdecl:
-                    need_wrapper = True
-                    for argdecl in arg_typedef.f_argsdecl:
-                        append_format(arg_f_decl, argdecl, fmt)
-                if arg_typedef.f_pre_call:
-                    need_wrapper = True
-                    append_format(optional, arg_typedef.f_pre_call, fmt)
-                if arg_typedef.f_use_tmp:
-                    fmt.var = fmt.tmp_var
+                f_statements = arg_typedef.f_statements
+                for intent in ['intent_in']:
+                    cmd_list = f_statements.get(intent,{}).get('declare',[])
+                    if cmd_list:
+                        need_wrapper = True
+                        fmt.c_var = 'tmp_' + fmt.f_var  # SH_
+                        for cmd in cmd_list:
+                            append_format(arg_f_decl, cmd, fmt)
+
+                    cmd_list = f_statements.get(intent,{}).get('pre_call',[])
+                    if cmd_list:
+                        need_wrapper = True
+                        for cmd in cmd_list:
+                            append_format(pre_call, cmd, fmt)
 
             # Now C function arguments
             # May have different types, like generic
@@ -662,16 +671,16 @@ class Wrapf(util.WrapperMixin):
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_cast, fmt)
             else:
-                append_format(arg_c_call, '{var}', fmt)
+                append_format(arg_c_call, '{c_var}', fmt)
 
             len_trim = c_arg['attrs'].get('len_trim', None)
             if len_trim:
                 need_wrapper = True
-                append_format(arg_c_call, 'len_trim({var}, kind=C_INT)', fmt)
+                append_format(arg_c_call, 'len_trim({f_var}, kind=C_INT)', fmt)
             len_arg = c_arg['attrs'].get('len', None)
             if len_arg:
                 need_wrapper = True
-                append_format(arg_c_call, 'len({var}, kind=C_INT)', fmt)
+                append_format(arg_c_call, 'len({f_var}, kind=C_INT)', fmt)
 
         fmt.F_arg_c_call = ', '.join(arg_c_call)
         fmt.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call) # use tabs to insert continuations
@@ -739,10 +748,10 @@ class Wrapf(util.WrapperMixin):
                 line1 = wformat('call {F_C_name}({F_arg_c_call_tab})', fmt)
                 self.append_method_arguments(F_code, line1)
 
-            if result_typedef.f_post_call:
-                need_wrapper = True
-                # adjust return value or cleanup
-                append_format(F_code, result_typedef.f_post_call, fmt)
+#            if result_typedef.f_post_call:
+#                need_wrapper = True
+#                # adjust return value or cleanup
+#                append_format(F_code, result_typedef.f_post_call, fmt)
             if is_dtor:
                 F_code.append(wformat('{F_this}%{F_derived_member} = C_NULL_PTR', fmt))
 
@@ -761,7 +770,7 @@ class Wrapf(util.WrapperMixin):
             impl.extend(arg_f_use)
             impl.append('implicit none')
             impl.extend(arg_f_decl)
-            impl.extend(optional)
+            impl.extend(pre_call)
             self._create_splicer(sname, impl, F_code)
             impl.append(-1)
             impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt))

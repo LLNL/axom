@@ -441,7 +441,7 @@ c_statements
     A nested dictionary of code template to add.
     The first layer is *intent_in*, *intent_out*, and *result*.
     The second layer is *pre_call*, *pre_call_trim*, *post_call*.
-    The entries are a list of templates.
+    The entries are a list of format strings.
 
     intent_in
 
@@ -497,12 +497,6 @@ f_args
     ``trim({var}) // C_NULL_CHAR``.
     Defaults to *None*  i.e. pass argument unchanged.
 
-f_argsdecl
-
-    A list of declarations needed by *f_args*, *f_pre_call* or
-    *f_post_call*.
-    Defaults to *None* i.e. no additional declarations.
-
 f_module
 
     Fortran modules needed for type  (dictionary).
@@ -528,26 +522,31 @@ f_cast
     This expression converts *var* to a ``integer(C_INT)``.
     Defaults to *{var}*  i.e. no conversion.
 
-f_use_tmp
+f_statement
 
-    If *true*, pass {tmp_var} to C routine instead of {var}.
-    This can be used with *f_pre_call* to convert Fortran values
-    to values.  For example, to cast or map values.
-    Defaults to *False*.
+    A nested dictionary of code template to add.
+    The first layer is *intent_in*, *intent_out*, and *result*.
+    The second layer is *declare*, *pre_call*, and *post_call*
+    The entries are a list of format strings.
 
-f_pre_call
+    declare
 
-    Statement to execute before call, often to coerce types
-    when *f_cast* cannot be used.  If this involves the temporary
-    variable then *f_use_tmp* should be set to *True*.
-    Defaults to *None*.
+        A list of declarations needed by *pre_call* or *f_post_call*.
 
-f_post_call
+    pre_call
 
-    Statement to execute after call.
-    Can be use to cleanup after *f_pre_call*
-    or to coerce the return value.
-    Defaults to *None*.
+        Statement to execute before call, often to coerce types
+        when *f_cast* cannot be used.
+
+    post_call
+
+        Statement to execute after call.
+        Can be use to cleanup after *f_pre_call*
+        or to coerce the return value.
+
+    need_wrapper
+
+        If true, the fortran wrapper will always be created.
 
 ..  XXX - maybe later.  For not in wrapping routines
 ..         f_attr_len_trim = None,

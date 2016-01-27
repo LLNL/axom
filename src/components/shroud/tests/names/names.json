@@ -304,7 +304,7 @@
             "c_type": "TES_names", 
             "cpp_to_c": "static_cast<{C_const}TES_names *>(static_cast<{C_const}void *>({cpp_var}))", 
             "cpp_type": "Names", 
-            "f_args": "{var}%{F_derived_member}", 
+            "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "names", 
             "f_module": {
                 "name_module": [
@@ -322,13 +322,21 @@
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
-            "f_argsdecl": [
-                "logical(C_BOOL) {tmp_var}"
-            ], 
             "f_kind": "C_BOOL", 
-            "f_pre_call": "{tmp_var} = {var}  ! coerce to C_BOOL", 
-            "f_type": "logical", 
-            "f_use_tmp": true
+            "f_statements": {
+                "intent_in": {
+                    "declare": [
+                        "logical(C_BOOL) {c_var}"
+                    ], 
+                    "pre_call": [
+                        "{c_var} = {f_var}  ! coerce to C_BOOL"
+                    ]
+                }, 
+                "result": {
+                    "need_wrapper": true
+                }
+            }, 
+            "f_type": "logical"
         }, 
         "char": {
             "PY_ctor": "PyString_FromString({var})", 
@@ -437,7 +445,7 @@
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
             "cpp_type": "double", 
-            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_cast": "real({f_var}, C_DOUBLE)", 
             "f_kind": "C_DOUBLE", 
             "f_module": {
                 "iso_c_binding": [
@@ -451,7 +459,7 @@
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
             "cpp_type": "float", 
-            "f_cast": "real({var}, C_FLOAT)", 
+            "f_cast": "real({f_var}, C_FLOAT)", 
             "f_kind": "C_FLOAT", 
             "f_module": {
                 "iso_c_binding": [
@@ -465,7 +473,7 @@
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
-            "f_cast": "int({var}, C_INT)", 
+            "f_cast": "int({f_var}, C_INT)", 
             "f_kind": "C_INT", 
             "f_module": {
                 "iso_c_binding": [
@@ -479,7 +487,7 @@
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
-            "f_cast": "int({var}, C_INT)", 
+            "f_cast": "int({f_var}, C_INT)", 
             "f_kind": "C_INT", 
             "f_module": {
                 "iso_c_binding": [
@@ -493,7 +501,7 @@
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
-            "f_cast": "int({var}, C_LONG)", 
+            "f_cast": "int({f_var}, C_LONG)", 
             "f_kind": "C_LONG", 
             "f_module": {
                 "iso_c_binding": [
@@ -507,7 +515,7 @@
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
-            "f_cast": "int({var}, C_LONG)", 
+            "f_cast": "int({f_var}, C_LONG)", 
             "f_kind": "C_LONG", 
             "f_module": {
                 "iso_c_binding": [
@@ -521,7 +529,7 @@
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
             "cpp_type": "double", 
-            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_cast": "real({f_var}, C_DOUBLE)", 
             "f_kind": "C_DOUBLE", 
             "f_module": {
                 "iso_c_binding": [
@@ -535,7 +543,7 @@
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
             "cpp_type": "float", 
-            "f_cast": "real({var}, C_FLOAT)", 
+            "f_cast": "real({f_var}, C_FLOAT)", 
             "f_kind": "C_FLOAT", 
             "f_module": {
                 "iso_c_binding": [
@@ -550,7 +558,7 @@
             "c_header": "stdlib.h", 
             "c_type": "size_t", 
             "cpp_type": "size_t", 
-            "f_cast": "int({var}, C_SIZE_T)", 
+            "f_cast": "int({f_var}, C_SIZE_T)", 
             "f_kind": "C_SIZE_T", 
             "f_module": {
                 "iso_c_binding": [

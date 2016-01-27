@@ -288,15 +288,7 @@ class Typedef(object):
         f_kind = None,        # Fortran kind of type
         f_cast = '{var}',     # Expression to convert to type
                               # e.g. intrinsics such as int and real
-        f_use_tmp = False,    # Pass {tmp_var} to C routine instead of {var}
-        f_argsdecl = None,    # List of declarations need by argument.
-        f_pre_call = None,    # Statement to execute before call, often to coerce types
-        f_post_call = None,   # Statement to execute after call - cleanup, coerce result
-
-# XXX - maybe later.  For not in wrapping routines
-#        f_attr_len_trim = None,
-#        f_attr_len = None,
-#        f_attr_size = None,
+        f_statements={},
 
         result_as_arg = None, # override fields when result should be treated as an argument
 
