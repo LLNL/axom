@@ -868,7 +868,6 @@ DataView * DataGroup::createViewAndBuffer( const std::string& name )
     // Create and attach buffer
     DataBuffer * buff = this->getDataStore()->createBuffer();
     view->attachBuffer( buff );
-    attachView(view);
   }
   return view;
 
