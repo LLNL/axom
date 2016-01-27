@@ -1977,9 +1977,9 @@
             "PY_to_object": "PP_Class1_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}Class1{ptr}>(static_cast<{C_const}void *>({var}))", 
+            "c_to_cpp": "static_cast<{C_const}Class1{ptr}>(static_cast<{C_const}void *>({c_var}))", 
             "c_type": "TUT_class1", 
-            "cpp_to_c": "static_cast<{C_const}TUT_class1 *>(static_cast<{C_const}void *>({var}))", 
+            "cpp_to_c": "static_cast<{C_const}TUT_class1 *>(static_cast<{C_const}void *>({cpp_var}))", 
             "cpp_type": "Class1", 
             "f_args": "{var}%{F_derived_member}", 
             "f_derived_type": "class1", 
@@ -1995,9 +1995,9 @@
         "EnumTypeID": {
             "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
-            "c_to_cpp": "static_cast<EnumTypeID>({var})", 
+            "c_to_cpp": "static_cast<EnumTypeID>({c_var})", 
             "c_type": "int", 
-            "cpp_to_c": "static_cast<int>({var})", 
+            "cpp_to_c": "static_cast<int>({cpp_var})", 
             "cpp_type": "EnumTypeID", 
             "f_cast": "int({var}, C_INT)", 
             "f_kind": "C_INT", 
@@ -2296,7 +2296,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
@@ -2331,7 +2331,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
@@ -2366,7 +2366,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "shroudrt.hpp", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
@@ -2401,7 +2401,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null

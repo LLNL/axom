@@ -307,7 +307,9 @@ class Wrapc(util.WrapperMixin):
 #    c_var     - argument to C function  (wrapper function)
 #    c_var_len - variable with trimmed length of c_var
 #    c_var_num - variable with length of c_var
-#    cpp_var   - argument to C++ function  (wrapped function)
+#    cpp_var   - argument to C++ function  (wrapped function).
+#                Usually same as c_var but may be a new local variable
+#                or the funtion result variable.
 #
 #
 #
@@ -315,7 +317,6 @@ class Wrapc(util.WrapperMixin):
             c_attrs = arg['attrs']
             arg_typedef = self.typedef[arg['type']]
             c_statements = arg_typedef.c_statements
-            fmt.var = arg['name']
             fmt.c_var = arg['name']
             fmt.c_var_len = 'L' + fmt.c_var
             fmt.c_var_num = 'N' + fmt.c_var
@@ -349,7 +350,7 @@ class Wrapc(util.WrapperMixin):
                 fmt.c_var_len = len_arg
                 append_format(proto_list, 'int {c_var_len}', fmt)
 #            else:
-#                fmt.c_var_len = 'NNNN' + fmt.var
+#                fmt.c_var_len = 'NNNN' + fmt.c_var
 
             # Add any code needed for intent(IN).
             # Usually to convert types. For example, convert char * to std::string
@@ -370,7 +371,6 @@ class Wrapc(util.WrapperMixin):
                     # pick up c_str() from cpp_to_c
                     if intent == 'result':
                         fmt.cpp_var = 'rv'
-                    fmt.var = fmt.cpp_var
                     fmt.cpp_val = wformat(arg_typedef.cpp_to_c, fmt)
 #                    append_format(post_call, '// c_var={c_var}  cpp_var={cpp_var}  cpp_val={cpp_val}', fmt)
                     for cmd in cmd_list:
@@ -394,7 +394,7 @@ class Wrapc(util.WrapperMixin):
 
         fmt.C_prototype = options.get('C_prototype', ', '.join(proto_list))
 
-        fmt.var = 'rv'
+        fmt.cpp_var = 'rv'
         if node.get('return_this', False):
             fmt.C_return_type = 'void'
         else:
@@ -445,7 +445,7 @@ class Wrapc(util.WrapperMixin):
                         node.get('_error_pattern_suffix', '')
                     if C_error_pattern in self.patterns:
                         lfmt = util.Options(fmt)
-                        lfmt.var = fmt.rv
+#                        lfmt.var = fmt.rv
                         C_code.append('// check for error')
                         append_format(C_code, self.patterns[C_error_pattern], lfmt)
 

@@ -463,10 +463,12 @@ return 1;""", fmt)
             append_format(PY_code, 'return (PyObject *) {rv_obj};', lfmt)
         elif result_typedef.PY_ctor:
             fmt.var = fmt.rv
+            fmt.cpp_var = fmt.rv
             fmt.var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
             append_format(PY_code, 'return ' + result_typedef.PY_ctor + ';', fmt)
         else:
             fmt.var = 'rv'
+            fmt.cpp_var = 'rv'
             format = [ result_typedef.PY_format ]
             addrargs = [ ]
             if result_typedef.PY_to_object:

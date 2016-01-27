@@ -2161,7 +2161,7 @@
         "wrap_python": true
     }, 
     "patterns": {
-        "C_invalid_name": "if (! isNameValid({var})) {{\n    return NULL;\n}}\n", 
+        "C_invalid_name": "if (! isNameValid({cpp_var})) {{\n    return NULL;\n}}\n", 
         "PY_invalid_name": "if (! isNameValid({var})) {{\n    PyErr_SetString(PyExc_KeyError, \"{var}\");\n    return NULL;\n}}\n"
     }, 
     "splicer": {
@@ -2184,9 +2184,9 @@
             "PY_to_object": "PP_ExClass1_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}ExClass1{ptr}>(static_cast<{C_const}void *>({var}))", 
+            "c_to_cpp": "static_cast<{C_const}ExClass1{ptr}>(static_cast<{C_const}void *>({c_var}))", 
             "c_type": "AA_exclass1", 
-            "cpp_to_c": "static_cast<{C_const}AA_exclass1 *>(static_cast<{C_const}void *>({var}))", 
+            "cpp_to_c": "static_cast<{C_const}AA_exclass1 *>(static_cast<{C_const}void *>({cpp_var}))", 
             "cpp_type": "ExClass1", 
             "f_args": "{var}%{F_derived_member}", 
             "f_derived_type": "exclass1", 
@@ -2207,9 +2207,9 @@
             "PY_to_object": "PP_ExClass2_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}ExClass2{ptr}>(static_cast<{C_const}void *>({var}))", 
+            "c_to_cpp": "static_cast<{C_const}ExClass2{ptr}>(static_cast<{C_const}void *>({c_var}))", 
             "c_type": "AA_exclass2", 
-            "cpp_to_c": "static_cast<{C_const}AA_exclass2 *>(static_cast<{C_const}void *>({var}))", 
+            "cpp_to_c": "static_cast<{C_const}AA_exclass2 *>(static_cast<{C_const}void *>({cpp_var}))", 
             "cpp_type": "ExClass2", 
             "f_args": "{var}%{F_derived_member}", 
             "f_derived_type": "exclass2", 
@@ -2241,7 +2241,7 @@
         "TypeID": {
             "c_fortran": "integer(C_INT)", 
             "c_header": "sidre/SidreTypes.h", 
-            "c_to_cpp": "getTypeID({var})", 
+            "c_to_cpp": "getTypeID({c_var})", 
             "c_type": "int", 
             "cpp_header": "sidre/SidreWrapperHelpers.hpp", 
             "cpp_type": "TypeID", 
@@ -2527,7 +2527,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
@@ -2562,7 +2562,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
@@ -2597,7 +2597,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "shroudrt.hpp", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
@@ -2632,7 +2632,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null

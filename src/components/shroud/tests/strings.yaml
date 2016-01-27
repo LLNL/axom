@@ -97,12 +97,12 @@ functions:
 
 patterns:
     C_invalid_name: >
-        if ({var}.empty()) {{
+        if ({cpp_var}.empty()) {{
             return NULL;
         }}
     # return a blank field string if an error occurs
     C_invalid_name_as_buffer: >
-        if ({var}.empty()) {{
+        if ({cpp_var}.empty()) {{
             std::memset({f_string}, ' ', {f_string_len});
             return;
         }}

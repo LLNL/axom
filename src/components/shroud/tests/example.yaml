@@ -33,7 +33,7 @@ types:
     cpp_type: junk
 
 #  string:
-#    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : NULL"
+#    cpp_to_c : "isNameValid({cpp_var}) ? {cpp_var}.c_str() : NULL"
 
   SidreLength:
     typedef  : long
@@ -54,8 +54,8 @@ types:
     cpp_header : sidre/SidreWrapperHelpers.hpp
     c_type   : int
     cpp_type: TypeID
-#    cpp_to_c : static_cast<int>({var})
-    c_to_cpp :  getTypeID({var})
+#    cpp_to_c : static_cast<int>({cpp_var})
+    c_to_cpp :  getTypeID({c_var})
     c_fortran: integer(C_INT)
     f_type   : integer(C_INT)
     f_module :
@@ -239,7 +239,7 @@ functions:
 ######################################################################
 patterns:
     C_invalid_name: >
-        if (! isNameValid({var})) {{
+        if (! isNameValid({cpp_var})) {{
             return NULL;
         }}
     PY_invalid_name: >

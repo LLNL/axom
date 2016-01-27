@@ -36,8 +36,8 @@ types:
     # enum
     typedef  : int
     cpp_type : message::Level
-    c_to_cpp : static_cast<message::Level>({var})
-    cpp_to_c : static_cast<int>({var})
+    c_to_cpp : static_cast<message::Level>({c_var})
+    cpp_to_c : static_cast<int>({cpp_var})
 
 
 ######################################################################

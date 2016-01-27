@@ -244,7 +244,7 @@ class Schema(object):
             char = util.Typedef('char',
                 cpp_type = 'char',
 #                cpp_header = '<string>',
-#                cpp_to_c = '{var}.c_str()',  # . or ->
+#                cpp_to_c = '{cpp_var}.c_str()',  # . or ->
 
                 c_type   = 'char',    # XXX - char *
 
@@ -297,7 +297,7 @@ class Schema(object):
             char_scalar = util.Typedef('char_scalar',
                 cpp_type = 'char',
 #                cpp_header = '<string>',
-#                cpp_to_c = '{var}.c_str()',  # . or ->
+#                cpp_to_c = '{cpp_var}.c_str()',  # . or ->
 
                 c_type   = 'char',    # XXX - char *
 
@@ -318,7 +318,7 @@ class Schema(object):
             string = util.Typedef('string',
                 cpp_type = 'std::string',
                 cpp_header = '<string>',
-                cpp_to_c = '{var}.c_str()',  # . or ->
+                cpp_to_c = '{cpp_var}.c_str()',  # . or ->
 
                 c_type   = 'char',    # XXX - char *
 
@@ -1045,10 +1045,10 @@ class VerifyAttrs(object):
             self.typedef[name] = util.Typedef(
                 name,
                 cpp_type = name,
-                cpp_to_c = 'static_cast<{C_const}%s *>(static_cast<{C_const}void *>({var}))' % cname,
+                cpp_to_c = 'static_cast<{C_const}%s *>(static_cast<{C_const}void *>({cpp_var}))' % cname,
                 c_type = cname,
                 # opaque pointer -> void pointer -> class instance pointer
-                c_to_cpp = 'static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({var}))' % name,
+                c_to_cpp = 'static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({c_var}))' % name,
                 c_fortran = 'type(C_PTR)',
                 f_type = 'type(%s)' % unname,
                 f_derived_type = unname,

@@ -266,13 +266,13 @@ class Typedef(object):
         typedef=None,         # Initialize from existing type
 
         cpp_type=None,        # Name of type in C++
-        cpp_to_c='{var}',     # Expression to convert from C++ to C
+        cpp_to_c='{cpp_var}', # Expression to convert from C++ to C
         cpp_header=None,      # Name of C++ header file required for implementation
                               # For example, if cpp_to_c was a function
 
         c_type=None,          # Name of type in C
         c_header=None,        # Name of C header file required for type
-        c_to_cpp='{var}',     # Expression to convert from C to C++
+        c_to_cpp='{c_var}',   # Expression to convert from C to C++
         c_fortran=None,       # Expression to convert from C to Fortran
         c_statements={},
         c_return_code=None,

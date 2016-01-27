@@ -49,9 +49,9 @@ types:
     c_header : sidre/SidreTypes.h
     cpp_header : sidre/SidreTypes.hpp
     cpp_type : TypeID
-    c_to_cpp : getTypeID({var})
-#    c_to_cpp : static_cast<TypeID>({var})
-    cpp_to_c : static_cast<int>({var})
+    c_to_cpp : getTypeID({c_var})
+#    c_to_cpp : static_cast<TypeID>({c_var})
+    cpp_to_c : static_cast<int>({cpp_var})
 
 
 # XXX
@@ -345,12 +345,12 @@ functions:
 ######################################################################
 patterns:
     C_invalid_name: >
-        if (! nameIsValid({var})) {{
+        if (! nameIsValid({cpp_var})) {{
             return SIDRE_InvalidName;
         }}
     # return a blank field string if an error occurs
     C_invalid_name_as_buffer: >
-        if (! nameIsValid({var})) {{
+        if (! nameIsValid({cpp_var})) {{
             std::memset({f_string}, ' ', {f_string_len});
             return;
         }}

@@ -1010,8 +1010,8 @@
         "wrap_python": false
     }, 
     "patterns": {
-        "C_invalid_name": "if ({var}.empty()) {{\n    return NULL;\n}}\n", 
-        "C_invalid_name_as_buffer": "if ({var}.empty()) {{\n    std::memset({f_string}, ' ', {f_string_len});\n    return;\n}}\n"
+        "C_invalid_name": "if ({cpp_var}.empty()) {{\n    return NULL;\n}}\n", 
+        "C_invalid_name_as_buffer": "if ({cpp_var}.empty()) {{\n    std::memset({f_string}, ' ', {f_string_len});\n    return;\n}}\n"
     }, 
     "types": {
         "bool": {
@@ -1286,7 +1286,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
@@ -1321,7 +1321,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
@@ -1356,7 +1356,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "shroudrt.hpp", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
@@ -1391,7 +1391,7 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
