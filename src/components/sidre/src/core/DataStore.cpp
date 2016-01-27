@@ -52,8 +52,7 @@ void DataStoreConduitErrorHandler( const std::string& message,
                                    const std::string& fileName,
                                    int line )
 {
-  slic::logErrorMessage( message, fileName, line,
-                         asctoolkit::slic::getAbortOnError() );
+  slic::logErrorMessage( message, fileName, line );
 }
 
 /*
