@@ -6,6 +6,7 @@ set(common_headers
     CommonTypes.hpp
     FileUtilities.hpp
     Utilities.hpp
+    cstdint_wrapper.hpp
     )
 
 #
