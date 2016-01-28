@@ -10,6 +10,10 @@
 
 #include "gtest/gtest.h"
 
+#include <limits>
+
+#include "common/CommonTypes.hpp"
+
 #include "sidre/sidre.hpp"
 #include "sidre/SidreTypes.h"
 #include "sidre/SidreTypes.hpp"
@@ -17,10 +21,65 @@
 using asctoolkit::sidre::DataType;
 using asctoolkit::sidre::TypeID;
 using asctoolkit::sidre::getTypeID;
+
+namespace
+{
+
+/**
+ * \brief Tests the equivalence of two integral types
+ * \see These test complement the ones in common/tests/common_test.cpp
+ */
+template<typename CommonType, typename SidreType>
+void testTypesForEquality()
+{
+  // check if both are integral types
+  bool com_is_int = std::numeric_limits<CommonType>::is_integer;
+  bool sid_is_int = std::numeric_limits<SidreType>::is_integer;
+  EXPECT_EQ(com_is_int, sid_is_int);
+
+  // check if both are signed (or both are unsigned)
+  bool com_is_signed = std::numeric_limits<CommonType>::is_signed;
+  bool sid_is_signed = std::numeric_limits<SidreType>::is_signed;
+  EXPECT_EQ( com_is_signed, sid_is_signed);
+
+  // check that both have same number of bytes
+  EXPECT_EQ(sizeof(CommonType), sizeof(SidreType) );
+
+  // check that both have same number of digits
+  EXPECT_EQ(std::numeric_limits<CommonType>::digits
+            , std::numeric_limits<SidreType>::digits);
+
+}
+
+}
+
+//------------------------------------------------------------------------------
+// This test verifies the equivalence of the fixed-width types
+// defined in the common and sidre toolkit components
+//------------------------------------------------------------------------------
+TEST(sidre_types,compare_common_types)
+{
+  namespace com = asctoolkit::common;
+  namespace sid = asctoolkit::sidre::detail;
+
+  testTypesForEquality<com::int8, sid::sidre_int8>();
+  testTypesForEquality<com::uint8, sid::sidre_uint8>();
+
+  testTypesForEquality<com::int16,sid::sidre_int16>();
+  testTypesForEquality<com::uint16,sid::sidre_uint16>();
+
+  testTypesForEquality<com::int32,sid::sidre_int32>();
+  testTypesForEquality<com::uint32,sid::sidre_uint32>();
+
+  #ifndef ATK_NO_INT64_T
+  testTypesForEquality<com::int64,sid::sidre_int64>();
+  testTypesForEquality<com::uint64,sid::sidre_uint64>();
+  #endif
+}
+
 //------------------------------------------------------------------------------
 // This test verifies that the Conduit, Sidre C++ and C use the same types.
 //------------------------------------------------------------------------------
-
 TEST(sidre_types,get_sidre_type)
 {
   EXPECT_EQ(SIDRE_EMPTY_ID,     CONDUIT_EMPTY_T);

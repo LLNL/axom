@@ -42,36 +42,6 @@ module slic_mod
             implicit none
         end subroutine slic_finalize
         
-        subroutine c_set_abort_on_assert(willAbort) &
-                bind(C, name="SLIC_set_abort_on_assert")
-            use iso_c_binding
-            implicit none
-            logical(C_BOOL), value, intent(IN) :: willAbort
-        end subroutine c_set_abort_on_assert
-        
-        function c_get_abort_on_assert() &
-                result(rv) &
-                bind(C, name="SLIC_get_abort_on_assert")
-            use iso_c_binding
-            implicit none
-            logical(C_BOOL) :: rv
-        end function c_get_abort_on_assert
-        
-        subroutine c_set_abort_on_error(willAbort) &
-                bind(C, name="SLIC_set_abort_on_error")
-            use iso_c_binding
-            implicit none
-            logical(C_BOOL), value, intent(IN) :: willAbort
-        end subroutine c_set_abort_on_error
-        
-        function c_get_abort_on_error() &
-                result(rv) &
-                bind(C, name="SLIC_get_abort_on_error")
-            use iso_c_binding
-            implicit none
-            logical(C_BOOL) :: rv
-        end function c_get_abort_on_error
-        
         subroutine c_create_logger(name, imask) &
                 bind(C, name="SLIC_create_logger")
             use iso_c_binding
@@ -157,46 +127,6 @@ contains
         rv = c_is_initialized()
         ! splicer end is_initialized
     end function slic_is_initialized
-    
-    subroutine slic_set_abort_on_assert(willAbort)
-        use iso_c_binding
-        implicit none
-        logical, value, intent(IN) :: willAbort
-        logical(C_BOOL) tmp_willAbort
-        tmp_willAbort = willAbort  ! coerce to C_BOOL
-        ! splicer begin set_abort_on_assert
-        call c_set_abort_on_assert(tmp_willAbort)
-        ! splicer end set_abort_on_assert
-    end subroutine slic_set_abort_on_assert
-    
-    function slic_get_abort_on_assert() result(rv)
-        use iso_c_binding
-        implicit none
-        logical :: rv
-        ! splicer begin get_abort_on_assert
-        rv = c_get_abort_on_assert()
-        ! splicer end get_abort_on_assert
-    end function slic_get_abort_on_assert
-    
-    subroutine slic_set_abort_on_error(willAbort)
-        use iso_c_binding
-        implicit none
-        logical, value, intent(IN) :: willAbort
-        logical(C_BOOL) tmp_willAbort
-        tmp_willAbort = willAbort  ! coerce to C_BOOL
-        ! splicer begin set_abort_on_error
-        call c_set_abort_on_error(tmp_willAbort)
-        ! splicer end set_abort_on_error
-    end subroutine slic_set_abort_on_error
-    
-    function slic_get_abort_on_error() result(rv)
-        use iso_c_binding
-        implicit none
-        logical :: rv
-        ! splicer begin get_abort_on_error
-        rv = c_get_abort_on_error()
-        ! splicer end get_abort_on_error
-    end function slic_get_abort_on_error
     
     subroutine slic_create_logger(name, imask)
         use iso_c_binding

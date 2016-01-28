@@ -206,7 +206,6 @@ void Logger::flushStreams()
 
     unsigned nstreams = m_logStreams[ level ].size();
     for ( unsigned istream=0; istream < nstreams; ++istream ) {
-
       m_logStreams[ level ][ istream ]->flush( );
 
     } // END for all streams

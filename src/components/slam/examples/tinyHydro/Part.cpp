@@ -10,8 +10,12 @@
 
 
 #include "Part.hpp"
-#include <stdio.h>
-#include <string.h>
+
+#include <sstream>
+#include <string>
+#include <cstring>
+
+#include "slic/slic.hpp"
 
 namespace tinyHydro {
 
@@ -20,12 +24,12 @@ namespace tinyHydro {
   Part::Part(const int * zoneList, int nzones, double gamma)
       : gamma(gamma)
   {
-    printf("in Part c'tor\n");
+    SLIC_DEBUG("in Part c'tor");
 
     zones            = ZoneSubset(nzones);
     // UGLY HACK to allocate a data buffer, copy in the data and set as the zonal indirection field data... must improve!
     std::vector<int>& ptr = DataRegistry::setRegistry.addNamelessField( &zones).data();
-    memcpy(&ptr[0], zoneList, sizeof(int) * nzones);
+    std::memcpy(&ptr[0], zoneList, sizeof(int) * nzones);
     zones.data()     = &ptr;
 
     density          = ZonalScalarField(&zones);
@@ -36,7 +40,7 @@ namespace tinyHydro {
   Part::Part(const std::vector<int>& zoneList, double gamma)
       : gamma(gamma)
   {
-    printf("in Part c'tor\n");
+    SLIC_DEBUG("in Part c'tor");
 
     /// UGLY hack to place zoneList data in the field registry and set the data of zones to this...
 //   zones = ZoneSubset::SetBuilder()
@@ -46,7 +50,7 @@ namespace tinyHydro {
 
     zones            = ZoneSubset( zoneList.size() );
     std::vector<int>& ptr = DataRegistry::setRegistry.addNamelessField( &zones).data();
-    memcpy(&ptr[0], &zoneList[0], sizeof(int) * zones.size());
+    std::memcpy(&ptr[0], &zoneList[0], sizeof(int) * zones.size());
     zones.data()     = &zoneList;
 
     density          = ZonalScalarField(&zones);
@@ -64,7 +68,7 @@ namespace tinyHydro {
     zones           = ZoneSubset(arg.zones.size());
     // UGLY HACK
     std::vector<int>& ptr = DataRegistry::setRegistry.addNamelessField( &zones).data();
-    memcpy(&ptr[0], &arg.zones[0], sizeof(int) * zones.size());
+    std::memcpy(&ptr[0], &arg.zones[0], sizeof(int) * zones.size());
     zones.data()    = &ptr;
 
     // copy field data
@@ -89,7 +93,7 @@ namespace tinyHydro {
     zones            = ZoneSubset(rhs.zones.size());
     // UGLY HACK
     std::vector<int>& ptr = DataRegistry::setRegistry.addNamelessField( &zones).data();
-    memcpy(&ptr[0], &rhs.zones[0], sizeof(int) * zones.size());
+    std::memcpy(&ptr[0], &rhs.zones[0], sizeof(int) * zones.size());
     zones.data()     = &ptr;
 
     // copy field data
@@ -140,14 +144,15 @@ namespace tinyHydro {
 
   void Part::dumpPart()
   {
-    printf( "\nPart has %i zones", numZones() );
+    SLIC_INFO("Part has " << numZones() << " zones" );
 
-    printf( "\n\nzones");
+    std::stringstream zoneStr;
+    zoneStr << "\nZones:";
     for(int i = 0; i< numZones(); ++i)
     {
-      printf("\n\t Zone %i -- idx %i",i, zones[i]);
+      zoneStr << "\n\t Zone " << i << " -- idx " << zones[i];
     }
-    printf("\n\n--\n\n");
+    SLIC_INFO( zoneStr.str() );
   }
 
 } // end namespace tinyHydro

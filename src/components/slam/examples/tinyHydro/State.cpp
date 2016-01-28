@@ -9,7 +9,7 @@
  */
 
 
-#include <stdio.h>
+#include <sstream>
 
 #include "State.hpp"
 
@@ -27,7 +27,7 @@ namespace tinyHydro {
         , nParts(0)
         , maxNParts(100)
   {
-    printf("in State c'tor\n");
+    SLIC_DEBUG("\tin State c'tor");
     parts = new Part[maxNParts];
 
     velocity = NodalVectorField( &mesh->nodes);
@@ -48,7 +48,7 @@ namespace tinyHydro {
 // addPart
   void State::addPart(Part * partPtr)
   {
-    printf("in State::addPart \n");
+    SLIC_DEBUG("\tin State::addPart");
     SLIC_ASSERT_MSG( nParts < maxNParts
         , "tried to add more than " << maxNParts << " parts, limit is hard-wired allowed, craaashing!");
 
@@ -159,27 +159,27 @@ namespace tinyHydro {
 
   void State::dumpState()
   {
-    printf( "\nState has %i parts", nParts);
+    SLIC_INFO(  "\nState has " << nParts << " parts");
 
-    printf( "\n\nParts");
+    SLIC_INFO(  "\nParts");
     for(int i = 0; i< nParts; ++i)
     {
       parts[i].dumpPart();
     }
 
-    printf("\n\nVelocities");
+    std::stringstream velStr;
+    velStr << "\nVelocities";
     for(int i = 0; i< mesh->numNodes(); ++i)
     {
       VectorXY v = velocity[i];
       VectorXY p = position[i];
-      printf("\n\t Node %i -- pos (%g,%g) -- vel (%g,%g) "
-          , i
-          , p.x, p.y
-          , v.x, v.y
-      );
+      velStr  << "\n\t "
+              << "Node " << i
+              << "-- pos (" << p.x << ", " << p.y << ") "
+              << "-- vel (" << v.x << ", " << v.y << ") ";
     }
 
-    printf("\n\n--\n\n");
+    SLIC_INFO( velStr.str() << "\n----\n");
 
   }
 

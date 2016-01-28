@@ -40,8 +40,8 @@
 #include "quest/UnstructuredMesh.hpp"
 #include "quest/Point.hpp"
 
-#include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
+#include "slic/UnitTestLogger.hpp"
 
 #include "slam/Utilities.hpp"
 
@@ -405,19 +405,8 @@ void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
 int main( int argc, char** argv )
 {
   // STEP 0: Initialize SLIC Environment
-  slic::initialize();
-  slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
+  slic::UnitTestLogger logger;  // create & initialize logger
 
-  // Create a more verbose message for this application (only level and message)
-  std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
-  slic::GenericOutputStream* defaultStream = new slic::GenericOutputStream(&std::cout);
-  slic::GenericOutputStream* compactStream = new slic::GenericOutputStream(&std::cout, slicFormatStr);
-
-  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Fatal) ;
-  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Error);
-  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Warning);
-  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Info);
-  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Debug);
 
   bool hasInputArgs = argc > 1;
 
@@ -465,13 +454,11 @@ int main( int argc, char** argv )
   GeometricBoundingBox meshBB = compute_bounds( surface_mesh);
   SLIC_INFO("Mesh bounding box: " << meshBB );
 
-
-
   // STEP 7: get dimensions from user
   int nx, ny, nz;
   if(hasInputArgs)
   {
-      std::cout << "Enter Nx Ny Nz:";
+      std::cout << "Enter Nx Ny Nz: \n";
       std::cin >> nx >> ny >> nz;
   }
   else
@@ -505,7 +492,5 @@ int main( int argc, char** argv )
   delete surface_mesh;
   surface_mesh = ATK_NULLPTR;
 
-  // STEP 11: Finalize SLIC environment
-  slic::finalize();
   return 0;
 }
