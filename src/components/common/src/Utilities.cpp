@@ -26,32 +26,26 @@
 #include <mpi.h>
 #endif
 
-namespace asctoolkit
-{
-namespace utilities
-{
+namespace asctoolkit {
+namespace utilities {
 
-void processAbort()
-{
+  void processAbort()
+  {
 #ifndef USE_MPI
-  exit( EXIT_FAILURE );
-#else
-  int mpi = 0;
-  MPI_Initialized( &mpi );
-  if ( mpi )
-  {
-
-    MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
-
-  }
-  else
-  {
-
     exit( EXIT_FAILURE );
-
-  }
+#else
+    int mpi = 0;
+    MPI_Initialized( &mpi );
+    if ( mpi )
+    {
+      MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+    }
+    else
+    {
+      exit( EXIT_FAILURE );
+    }
 #endif
-}
+  }
 
-}
-}
+}   // end namespace utilities
+}   // end namespace asctoolkit
