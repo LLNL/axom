@@ -22,16 +22,16 @@ module userlibrary_mod
             implicit none
         end subroutine local_function1
         
-        function aa_is_name_valid(name) &
+        function c_is_name_valid(name) &
                 result(rv) &
                 bind(C, name="AA_is_name_valid")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: rv
-        end function aa_is_name_valid
+        end function c_is_name_valid
         
-        function aa_is_name_valid_bufferify(name, Lname) &
+        function c_is_name_valid_bufferify(name, Lname) &
                 result(rv) &
                 bind(C, name="AA_is_name_valid_bufferify")
             use iso_c_binding
@@ -39,68 +39,68 @@ module userlibrary_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             logical(C_BOOL) :: rv
-        end function aa_is_name_valid_bufferify
+        end function c_is_name_valid_bufferify
         
-        function aa_is_initialized() &
+        function c_is_initialized() &
                 result(rv) &
                 bind(C, name="AA_is_initialized")
             use iso_c_binding
             implicit none
             logical(C_BOOL) :: rv
-        end function aa_is_initialized
+        end function c_is_initialized
         
-        subroutine aa_test_names(name) &
+        subroutine c_test_names(name) &
                 bind(C, name="AA_test_names")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
-        end subroutine aa_test_names
+        end subroutine c_test_names
         
-        subroutine aa_test_names_bufferify(name, Lname) &
+        subroutine c_test_names_bufferify(name, Lname) &
                 bind(C, name="AA_test_names_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine aa_test_names_bufferify
+        end subroutine c_test_names_bufferify
         
-        subroutine aa_test_names_flag(name, flag) &
+        subroutine c_test_names_flag(name, flag) &
                 bind(C, name="AA_test_names_flag")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: flag
-        end subroutine aa_test_names_flag
+        end subroutine c_test_names_flag
         
-        subroutine aa_test_names_flag_bufferify(name, Lname, flag) &
+        subroutine c_test_names_flag_bufferify(name, Lname, flag) &
                 bind(C, name="AA_test_names_flag_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             integer(C_INT), value, intent(IN) :: flag
-        end subroutine aa_test_names_flag_bufferify
+        end subroutine c_test_names_flag_bufferify
         
-        subroutine aa_testoptional_0() &
+        subroutine c_testoptional_0() &
                 bind(C, name="AA_testoptional_0")
             use iso_c_binding
             implicit none
-        end subroutine aa_testoptional_0
+        end subroutine c_testoptional_0
         
-        subroutine aa_testoptional_1(i) &
+        subroutine c_testoptional_1(i) &
                 bind(C, name="AA_testoptional_1")
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: i
-        end subroutine aa_testoptional_1
+        end subroutine c_testoptional_1
         
-        subroutine aa_testoptional_2(i, j) &
+        subroutine c_testoptional_2(i, j) &
                 bind(C, name="AA_testoptional_2")
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: i
             integer(C_LONG), value, intent(IN) :: j
-        end subroutine aa_testoptional_2
+        end subroutine c_testoptional_2
         
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
@@ -121,7 +121,7 @@ contains
     
     ! bool isNameValid(const std::string & name+intent(in))
     ! string_to_buffer_and_len
-    ! function_index=37
+    ! function_index=42
     function is_name_valid(name) result(rv)
         use iso_c_binding
         implicit none
@@ -133,78 +133,78 @@ contains
     end function is_name_valid
     
     ! bool isInitialized()
-    ! function_index=38
+    ! function_index=43
     function is_initialized() result(rv)
         use iso_c_binding
         implicit none
         logical :: rv
         ! splicer begin is_initialized
-        rv = aa_is_initialized()
+        rv = c_is_initialized()
         ! splicer end is_initialized
     end function is_initialized
     
     ! void test_names(const std::string & name+intent(in))
     ! string_to_buffer_and_len
-    ! function_index=39
+    ! function_index=44
     subroutine test_names(name)
         use iso_c_binding
         implicit none
         character(*), intent(IN) :: name
         ! splicer begin test_names
-        call aa_test_names_bufferify(  &
+        call c_test_names_bufferify(  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end test_names
     end subroutine test_names
     
     ! void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
     ! string_to_buffer_and_len
-    ! function_index=40
+    ! function_index=45
     subroutine test_names_flag(name, flag)
         use iso_c_binding
         implicit none
         character(*), intent(IN) :: name
         integer(C_INT), value, intent(IN) :: flag
         ! splicer begin test_names_flag
-        call aa_test_names_flag_bufferify(  &
+        call c_test_names_flag_bufferify(  &
             name,  &
-            len_trim(name),  &
+            len_trim(name, kind=C_INT),  &
             flag)
         ! splicer end test_names_flag
     end subroutine test_names_flag
     
     ! void testoptional()
     ! has_default_arg
-    ! function_index=42
+    ! function_index=47
     subroutine testoptional_0()
         use iso_c_binding
         implicit none
         ! splicer begin testoptional_0
-        call aa_testoptional_0()
+        call c_testoptional_0()
         ! splicer end testoptional_0
     end subroutine testoptional_0
     
     ! void testoptional(int i+default(1)+intent(in)+value)
     ! has_default_arg
-    ! function_index=43
+    ! function_index=48
     subroutine testoptional_1(i)
         use iso_c_binding
         implicit none
         integer(C_INT), value, intent(IN) :: i
         ! splicer begin testoptional_1
-        call aa_testoptional_1(i)
+        call c_testoptional_1(i)
         ! splicer end testoptional_1
     end subroutine testoptional_1
     
     ! void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
-    ! function_index=41
+    ! function_index=46
     subroutine testoptional_2(i, j)
         use iso_c_binding
         implicit none
         integer(C_INT), value, intent(IN) :: i
         integer(C_LONG), value, intent(IN) :: j
         ! splicer begin testoptional_2
-        call aa_testoptional_2(  &
+        call c_testoptional_2(  &
             i,  &
             j)
         ! splicer end testoptional_2

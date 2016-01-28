@@ -33,6 +33,23 @@ Trilonos wraps C++ with C, then the Fortran over the C.  Described in the book S
 
 Directory packages/ForTrilinos/src/skeleton has a basic template which must be edited to create a wrapper for a class.
 
+
+Exascale Programming: Adapting What We Have Can (and Must) Work
+
+    In 2009 and 2010, the C++ based Trilinos project developed Fortran
+    interface capabilities, called ForTrilinos. As an object-oriented (OO)
+    collection of libraries, we assumed that the OO features of Fortran
+    2003 would provide us with natural mappings of Trilinos classes into
+    Fortran equivalents. Over the two-year span of the ForTrilinos effort,
+    we discovered that compiler support for 2003 features was very
+    immature. ForTrilinos developers quickly came to know the handful of
+    compiler developers who worked on these features and, despite close
+    collaboration with them to complete and stabilize the implementation
+    of Fortran 2003 features (in 2010), ForTrilinos stalled and is no
+    longer developed.
+
+http://www.hpcwire.com/2016/01/14/24151/
+
 MPICH
 -----
 

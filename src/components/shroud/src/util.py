@@ -178,6 +178,11 @@ class WrapperMixin(object):
 #####
 
     def write_output_file(self, fname, directory, output):
+        """
+        fname  - file name
+        directory - output directory
+        output - list of lines to write
+        """
         fp = open(os.path.join(directory, fname), 'w')
         fp.write('%s %s\n' % (self.comment, fname))
         fp.write(self.comment + ' This is generated code, do not edit\n')
@@ -189,10 +194,14 @@ class WrapperMixin(object):
         print("Wrote", fname)
 
     def write_copyright(self, fp):
+        """
+        Write the copyright from the input YAML file.
+        """
         for line in self.tree.get('copyright', []):
             if line:
                 fp.write(self.comment + ' ' + line + '\n')
             else:
+                # convert None to blank line
                 fp.write(self.comment + '\n')
 
     def write_lines(self, fp, lines):
@@ -265,8 +274,8 @@ class Typedef(object):
         c_header=None,        # Name of C header file required for type
         c_to_cpp='{var}',     # Expression to convert from C to C++
         c_fortran=None,       # Expression to convert from C to Fortran
-        c_argdecl=None,       # List of argument declarations for C wrapper, None=match declaration
-                              # used with string_from_buffer 
+        c_statements={},
+        c_return_code=None,
 
         f_c_args=None,        # List of argument names to F_C routine
         f_c_argdecl=None,     # List of declarations to F_C routine

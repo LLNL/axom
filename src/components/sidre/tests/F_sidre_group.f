@@ -38,7 +38,7 @@ contains
     call assert_true(name == "test" )
 
     group2 = root%get_group("foo")
-    call assert_false( c_associated(group2%voidptr) )
+    call assert_false( c_associated( group2%get_instance()) )
     
     call ds%delete()
   end subroutine get_name
@@ -104,7 +104,7 @@ contains
 
     ! check error condition
     errgrp = parent%get_group("non-existant group")
-    call assert_false( c_associated(errgrp%voidptr) )
+    call assert_false( c_associated(errgrp%get_instance()) )
 
     call ds%delete()
   end subroutine get_group
@@ -130,7 +130,7 @@ contains
 
     ! check error condition
     view2 = parent%get_view("non-existant view")
-    call assert_false( c_associated(view2%voidptr) )
+    call assert_false( c_associated(view2%get_instance()) )
 
     call ds%delete()
   end subroutine get_view
@@ -298,7 +298,7 @@ contains
     call assert_true( group%has_view("view") )
     ! try creating view again, should be a no-op.
     view1 = group%create_view("view")
-    call assert_false( c_associated(view1%voidptr) )
+    call assert_false( c_associated(view1%get_instance()) )
 
     call group%destroy_view("view")
 
@@ -309,19 +309,19 @@ contains
 
     ! error condition check - try again with duplicate name, should be a no-op
 !XXX    view1 = group%create_view_and_allocate( "viewWithLength1", SIDRE_FLOAT64_ID, 50 )
-!XXX    call assert_true( c_associated(view1%voidptr) )
+!XXX    call assert_true( c_associated(view1%get_instance()) )
     call group%destroy_view_and_data("viewWithLength1")
     call assert_false( group%has_view("viewWithLength1"), &
          'group%has_view("viewWithLength1"' )
 
     view1 = group%create_view_and_allocate( "viewWithLengthBadLen", SIDRE_FLOAT64_ID, -1 )
-    call assert_false( c_associated(view1%voidptr), 'c_associated(view1%voidptr)' )
+    call assert_false( c_associated(view1%get_instance()), 'c_associated(view1%get_instance())' )
 
     ! try api call that specifies data type in another way
     view1 = group%create_view_and_allocate( "viewWithLength2", SIDRE_FLOAT64_ID, 50 )
     view2 = group%create_view_and_allocate( "viewWithLength2", SIDRE_FLOAT64_ID, 50 )
-    call assert_false( c_associated(view2%voidptr), &
-         'c_associated(view2%voidptr)')
+    call assert_false( c_associated(view2%get_instance()), &
+         'c_associated(view2%get_instance())')
     ! destroy this view using index
     call group%destroy_view_and_data( group%get_first_valid_view_index() )
 
@@ -374,12 +374,12 @@ contains
     ! attempt to create duplicate group name
 
     badGroup = root%create_group("fields")
-    call assert_false( c_associated(badgroup%voidptr) )
+    call assert_false( c_associated(badgroup%get_instance()) )
 
     ! check error condition
     ! attempt to create duplicate view name.
     view = flds%create_view("a")
-    call assert_false( c_associated(view%voidptr))
+    call assert_false( c_associated(view%get_instance()))
 
     call ds%delete()
   end subroutine group_name_collisions

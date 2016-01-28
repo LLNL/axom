@@ -66,7 +66,8 @@ file(COPY ${tmp_file}
         WORLD_READ WORLD_EXECUTE)
 file(REMOVE ${tmp_file})
 
-add_test(NAME shroud
+add_test(
+    NAME shroud
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/do-test
 )
 
@@ -74,6 +75,7 @@ if(ENABLE_FORTRAN)
     # Build runtime library
     add_subdirectory(runtime)
     add_subdirectory(tests/run-tutorial)
+    add_subdirectory(tests/run-strings)
 endif()
 
 ################################

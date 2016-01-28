@@ -3,6 +3,17 @@
 """
 generate language bindings
 """
+
+#
+# Annotate the YAML tree with additional internal fields
+#  _decl            - generated declaration.  Includes computed attributes
+#  _function_index  - sequence number function, used in lieu of a pointer
+#  _generated       - who generated this function
+#  _PTR_F_C_index   - Used by fortran wrapper to find index of C function to call
+#  _PTR_C_CPP_index - Used by C wrapper to find index of C++ function to call
+#  _subprogram      - subroutine or function
+#
+#
 from __future__ import print_function
 
 import argparse
@@ -105,6 +116,11 @@ class Schema(object):
             C_name_method_template = '{C_prefix}{lower_class}_{underscore_name}{function_suffix}',
             C_name_function_template = '{C_prefix}{underscore_name}{function_suffix}',
 
+            # Fortran's names for C functions
+            F_C_prefix = 'c_',
+            F_C_name_method_template = '{F_C_prefix}{lower_class}_{underscore_name}{function_suffix}',
+            F_C_name_function_template = '{F_C_prefix}{underscore_name}{function_suffix}',
+
             F_name_impl_method_template = '{lower_class}_{underscore_name}{function_suffix}',
             F_name_impl_function_template ='{underscore_name}{function_suffix}',
 
@@ -116,6 +132,9 @@ class Schema(object):
 
             F_module_name_class_template = '{lower_class}_mod',
             F_impl_filename_class_template = 'wrapf{cpp_class}.f',
+
+            F_name_instance_get = 'get_instance',
+            F_name_instance_set = 'set_instance',
 
             )
         wrapp.add_templates(def_options)
@@ -132,6 +151,7 @@ class Schema(object):
         fmt_library.function_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
+        fmt_library.F_C_prefix    = def_options['F_C_prefix']
         fmt_library.rv            = 'rv'  # return value
         util.eval_template(node, 'C_header_filename', '_library')
         util.eval_template(node, 'C_impl_filename', '_library')
@@ -219,37 +239,120 @@ class Schema(object):
                 PY_PyTypeObject = 'PyBool_Type',
                 PY_post_parse = '{var} = PyObject_IsTrue({var_obj});',
                 ),
+
             # implies null terminated string
-            string = util.Typedef('string',
+            char = util.Typedef('char',
+                cpp_type = 'char',
+#                cpp_header = '<string>',
+#                cpp_to_c = '{var}.c_str()',  # . or ->
+
                 c_type   = 'char',    # XXX - char *
-                cpp_type = 'std::string',
-                cpp_to_c = '{var}.c_str()',  # . or ->
+
+                c_statements = dict(
+                    intent_in = dict(
+                        pre_call = [
+                            'int {c_var_len} = strlen({c_var});',
+                            'char * {cpp_var} = new char [{c_var_len} + 1];',
+                            'std::strncpy({cpp_var}, {c_var}, {c_var_len});',
+                            '{cpp_var}[{c_var_len}] = \'\\0\';'
+                            ],
+                        pre_call_trim = [
+                            'char * {cpp_var} = new char [{c_var_len} + 1];',
+                            'std::strncpy({cpp_var}, {c_var}, {c_var_len});',
+                            '{cpp_var}[{c_var_len}] = \'\\0\';'
+                            ],
+                        post_call = [
+                            'delete [] {cpp_var};'
+                            ],
+                        ),
+                    intent_out = dict(
+                        pre_call = [
+                            'char * {cpp_var} = new char [{c_var_num} + 1];',
+                            ],
+                        post_call = [
+                            'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            'delete [] {cpp_var};',
+                            ],
+                        ),
+                    result = dict(
+                        post_call = [
+                            'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            ],
+                        ),
+                    ),
+                c_to_cpp  = '{cpp_var}',
+
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
-                f_args = 'trim({var}) // C_NULL_CHAR',
+##                f_args = 'trim({var}) // C_NULL_CHAR',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
-                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+#                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({var})',
                 base = 'string',
                 ),
-            # create std::string from buffer and length
-            string_from_buffer = util.Typedef('string_from_buffer',
+
+            # char scalar
+            char_scalar = util.Typedef('char_scalar',
+                cpp_type = 'char',
+#                cpp_header = '<string>',
+#                cpp_to_c = '{var}.c_str()',  # . or ->
+
                 c_type   = 'char',    # XXX - char *
-                c_argdecl = ['const char *{var}', 'int len_{var}'],
-                c_to_cpp = 'std::string({var}, len_{var})',
-                cpp_type = 'std::string',
-                cpp_to_c = '{var}.c_str()',  # . or ->
+
+                c_to_cpp  = '{cpp_var}',
+
                 c_fortran  = 'character(kind=C_CHAR)',
-                f_c_args   = [ '{var}', 'len_{var}'],
-                f_c_argdecl = [ 'type(C_PTR), intent(IN), value :: {var}',
-                                'integer(C_INT), intent(IN), value :: len_{var}' ],
-                f_type     = 'character(*)',
-                f_args = '{var}, len_trim({var})',
+                f_type     = 'character',
+##                f_args = 'trim({var}) // C_NULL_CHAR',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
-                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+#                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+                PY_format = 's',
+                PY_ctor = 'PyString_FromString({var})',
+##                base = 'string',
+                ),
+
+            # C++ std::string
+            string = util.Typedef('string',
+                cpp_type = 'std::string',
+                cpp_header = '<string>',
+                cpp_to_c = '{var}.c_str()',  # . or ->
+
+                c_type   = 'char',    # XXX - char *
+
+                c_statements = dict(
+                    intent_in = dict(
+                        pre_call = [
+                            'std::string {cpp_var}({c_var});'
+                            ],
+                        pre_call_trim = [
+                            'std::string {cpp_var}({c_var}, {c_var_trim});'
+                            ],
+                    ),
+                    intent_out = dict(
+                        post_call = [
+                            'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            ],
+                        ),
+                    result = dict(
+                        post_call = [
+                            'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            ],
+                        ),
+                    ),
+
+                c_to_cpp  = '{cpp_var}',                                  
+
+                c_fortran  = 'character(kind=C_CHAR)',
+                f_type     = 'character(*)',
+##                f_args = 'trim({var}) // C_NULL_CHAR',
+#                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
+                f_module = dict(iso_c_binding=None),
+#                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+                PY_format = 's',
+                PY_ctor = 'PyString_FromString({var})',
                 base = 'string',
                 ),
             )
@@ -262,16 +365,27 @@ class Schema(object):
         def_types['real(C_DOUBLE)']  = def_types['double']
 
         # result_as_arg
+        tmp = def_types['char'].clone_as('char_result_as_arg')
+        def_types[tmp.name] = tmp
+
         tmp = def_types['string'].clone_as('string_result_as_arg')
         tmp.update(dict(
-                f_argsdecl    = [
-                    'character(*), intent(OUT) :: {result_arg}',
-                    'type(C_PTR) :: {F_result}'],
-                f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})',
-                f_post_call   = 'call FccCopyPtr({result_arg}, len({result_arg}), {F_result})',
+                cpp_header = 'shroudrt.hpp',
+#                c_post_call   = 'asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});',
+#                f_argsdecl    = [
+#                    'character(*), intent(OUT) :: {result_arg}',
+#                    'type(C_PTR) :: {F_result}'],
+#                f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})',
+#                f_post_call   = 'call FccCopyPtr({result_arg}, len({result_arg}), {F_result})',
                 ))
         def_types[tmp.name] = tmp
 
+        # pure fortran string
+        tmp = def_types['string'].clone_as('string_result_fstr')
+        tmp.update(dict(
+                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+                ))
+        def_types[tmp.name] = tmp
 
         types_dict = node.get('types', None)
         if types_dict is not None:
@@ -600,13 +714,13 @@ class GenFunctions(object):
                 min_args += 1
                 continue
             new = util.copy_function_node(node)
+            self.append_function_index(new)
             new['_generated'] = 'has_default_arg'
             del new['args'][i:]  # remove trailing arguments
 #            try:
             del new['_has_default_arg']
 #            except:
 #                pass
-            self.append_function_index(new)
             options = new['options']
             options.wrap_c = True
             options.wrap_fortran = True
@@ -636,44 +750,160 @@ class GenFunctions(object):
         a buffer and length.
         """
         options = node['options']
+
+        # If a C++ function returns a std::string instance, the default wrapper
+        # will not compile since the wrapper will be declared as char.
+        # It will also want to return the c_str of a stack variable.
+        # Warn and turn off the wrapper.
+        result = node['result']
+        result_type = result['type']
+        try:
+            result_typedef = self.typedef[result_type]
+        except KeyError:
+            # wrapped classes have not been added yet.  Only care about string here.
+            result_typedef = None
+        attrs = result['attrs']
+        result_is_ptr = (attrs.get('ptr', False) or
+                         attrs.get('reference', False))
+        if result_typedef and result_typedef.base == 'string' and \
+                result_type != 'char' and \
+                not result_is_ptr:
+            options.wrap_c = False
+#            options.wrap_fortran = False
+            self.config.log.write("Skipping %s, unable to create C wrapper for function returning std::string instance (must return a pointer or reference). \n" % ( result['name']) )
+
         if options.wrap_fortran is False:
             return
         if options.F_string_len_trim is False:
             return
 
-        has_strings = False
+        # Is result or any argument a string?
+        has_string_arg = False
         for arg in node['args']:
             argtype = arg['type']
             if self.typedef[argtype].base == 'string':
-                has_strings = True
-                break
-        if has_strings is False:
+                attrs = arg['attrs']
+                is_ptr = (attrs.get('ptr', False) or
+                          attrs.get('reference', False))
+                if is_ptr:
+                    has_string_arg = True
+                    # Force len attribute when intent is OUT
+                    # so the wrapper will know how much space can be written to.
+                    intent = attrs['intent']
+                    if intent in ['out', 'inout']:
+                        attrs['len'] = 'N' + arg['name']
+                else:
+                    arg['type'] = 'char_scalar'
+
+        has_string_result = False
+        result_as_arg = ''  # only applies to string functions
+        is_pure = node['attrs'].get('pure', False)
+        if result_typedef.base == 'string':
+            if result_type == 'char' and not result_is_ptr:
+                result['type'] = 'char_scalar'
+            else:
+                has_string_result = True
+                result_as_arg = options.get('F_string_result_as_arg', '')
+                result_name = result_as_arg or 'SH_F_rv'
+
+        if not (has_string_result or has_string_arg):
             return
 
-        new = util.copy_function_node(node)
-        ordered_functions.append(new)
-        self.append_function_index(new)
+#        options = node['options']
+#        options.wrap_fortran = False
+        # Preserve wrap_c.  This keep a version which accepts char * arguments.
 
-        new['_generated'] = 'string_to_buffer_and_len'
-        fmt = new['fmt']
+        # Create a new C function and change arguments to add len_trim attribute
+        C_new = util.copy_function_node(node)
+        ordered_functions.append(C_new)
+        self.append_function_index(C_new)
+
+        C_new['_generated'] = 'string_to_buffer_and_len'
+        C_new['_error_pattern_suffix'] = '_as_buffer'
+        fmt = C_new['fmt']
         fmt.function_suffix = fmt.function_suffix + '_bufferify'
 
-        options = new['options']
+        options = C_new['options']
         options.wrap_c = True
         options.wrap_fortran = False
         options.wrap_python = False
-
-        options = node['options']
-        #        options.wrap_fortran = False
-#        # Current Fortran function should use this new C function
-        node['_PTR_F_C_index'] = new['_function_index']
+        C_new['_PTR_C_CPP_index'] = node['_function_index']
 
         newargs = []
-        for arg in new['args']:
+        for arg in C_new['args']:
             argtype = arg['type']
             if self.typedef[argtype].base == 'string':
-                # Add len_trim attribute
-                arg['attrs']['len_trim'] = True
+                # strings passed in need len_trim
+                # strings returned need len
+                intent = arg['attrs']['intent']
+                if intent in ['in', 'inout']:
+                    arg['attrs']['len_trim'] = 'L' + arg['name']
+                if intent in ['out', 'inout']:
+                    arg['attrs']['len'] = 'N' + arg['name']
+
+        if has_string_result:
+            # Add additional argument to hold result
+            result_as_string = copy.deepcopy(result)
+            result_as_string['name'] = result_name
+            result_as_string['type'] = result_typedef.name + '_result_as_arg'
+            attrs = result_as_string['attrs']
+            attrs['const'] = False
+            attrs['len'] = 'L' + result_name
+            attrs['intent'] = 'out'
+            attrs['_is_result'] = True
+            if not result_is_ptr:
+                attrs['ptr'] = True
+                attrs['reference'] = False
+            C_new['args'].append(result_as_string)
+
+            # convert to subroutine
+            C_new['_subprogram'] = 'subroutine'
+            result = C_new['result']
+            result['type'] = 'void'
+            attrs = result['attrs']
+            attrs['const'] = False
+            attrs['ptr'] = False
+            attrs['reference'] = False
+
+        if is_pure:
+            # Return a character(*) function
+            # Create a fortran function with a different result type
+            # so fstr will be called on result.
+            F_new = util.copy_function_node(node)
+            ordered_functions.append(F_new)
+            self.append_function_index(F_new)
+
+            F_new['result']['type'] = 'string_result_fstr'
+            F_new['_PTR_F_C_index'] = node['_function_index']
+            options = F_new['options']
+            options.wrap_c       = False
+            options.wrap_fortran = True
+            options.wrap_python = False
+
+            # Do not wrap original function (Has a different result type)
+            node['options'].wrap_fortran = False
+
+        elif result_as_arg:
+            # Create Fortran function without bufferify function_suffix but
+            # with len attributes on string arguments.
+            F_new = util.copy_function_node(C_new)
+            ordered_functions.append(F_new)
+            self.append_function_index(F_new)
+
+            # Fortran function should wrap the new C function
+            F_new['_PTR_F_C_index'] = C_new['_function_index']
+            options = F_new['options']
+            options.wrap_c       = False
+            options.wrap_fortran = True
+            options.wrap_python = False
+            # Do not add '_bufferify'
+            F_new['fmt'].function_suffix = node['fmt'].function_suffix
+
+            # Do not wrap original function (does not have result argumument)
+            node['options'].wrap_fortran = False
+        else:
+            # Fortran function may call C subroutine if string result
+            node['_PTR_F_C_index'] = C_new['_function_index']
 
     def check_class_dependencies(self, node):
         """
@@ -722,12 +952,17 @@ class GenFunctions(object):
 
     _skip_annotations = [ 'const', 'ptr', 'reference' ]
     def gen_annotations_decl(self, attrs, decl):
-        """Append annotations from attrs onto decl.
+        """Append annotations from attrs onto decl in sorted order.
         Skip some that are already handled.
         """
-        for key, value in attrs.items():
+        keys = attrs.keys()
+        keys.sort()
+        for key in keys:
+            if key[0] == '_':  # internal attribute
+                continue
             if key in self._skip_annotations:
                 continue
+            value = attrs[key]
             if value is True:
                 decl.append('+' + key)
             elif value is False:
@@ -776,8 +1011,8 @@ class GenFunctions(object):
 
 class VerifyAttrs(object):
     """
-    This must be called after GenFunctions has generated typedefs
-    for classes.
+    Check attributes and set some defaults.
+    Generate types for classes.
     """
     def __init__(self, tree, config):
         self.tree = tree    # json tree
@@ -845,6 +1080,16 @@ class VerifyAttrs(object):
         if not options.wrap_fortran and not options.wrap_c:
             return
 
+        # cache subprogram type
+        result = node['result']
+        result_type = result['type']
+        result_is_ptr = result['attrs'].get('ptr', False)
+        #  'void'=subroutine   'void *'=function
+        if result_type == 'void' and not result_is_ptr:
+            node['_subprogram'] = 'subroutine'
+        else:
+            node['_subprogram'] = 'function'
+
         found_default = False
         for arg in node['args']:
             argname = arg['name']
@@ -868,9 +1113,11 @@ class VerifyAttrs(object):
                     attrs['intent'] = 'in'
                 elif attrs.get('const', False):
                     attrs['intent'] = 'in'
+                elif typedef.base == 'string':
+                    attrs['intent'] = 'inout'
                 else:
-                    attrs['intent'] = 'inout'  # Fortran default
-                    attrs['intent'] = 'in' # must coordinate with VALUE
+                    # void *
+                    attrs['intent'] = 'in' # XXX must coordinate with VALUE
             else:
                 intent = intent.lower()
                 if intent[0] == '(' and intent[-1] == ')':
@@ -910,6 +1157,15 @@ class VerifyAttrs(object):
                 node['_has_default_arg'] = True
             elif found_default is True:
                 raise RuntimeError("Expected default value for %s" % argname)
+
+            # compute argument names for some attributes
+            # XXX make sure they don't conflict with other names
+            len_name = attrs.get('len', False)
+            if len_name is True:
+                attrs['len'] = 'L' + argname
+            len_name = attrs.get('len_trim', False)
+            if len_name is True:
+                attrs['len'] = 'L' + argname
 #        if typedef.base == 'string':
 
 
@@ -966,10 +1222,11 @@ class Namify(object):
         else:
             util.eval_template(node, 'C_name', '_function')
 
-        if 'F_C_name' in node:
-            fmt_func.F_C_name = node['F_C_name']
+        if cls:
+            util.eval_template(node, 'F_C_name', '_method')
         else:
-            fmt_func.F_C_name = fmt_func.C_name.lower()
+            util.eval_template(node, 'F_C_name', '_function')
+        fmt_func.F_C_name = fmt_func.F_C_name.lower()
 
         if 'C_this' in options:
             fmt_func.C_this = options.C_this
