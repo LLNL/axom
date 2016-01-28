@@ -41,53 +41,50 @@
 
 
 
-namespace asctoolkit
-{
-namespace utilities
-{
-namespace filesystem
-{
+namespace asctoolkit {
+namespace utilities {
+namespace filesystem {
 
-std::string getCWD()
-{
-  char cCurrentPath[FILENAME_MAX];
-
-  if (!GetCurrentDir(cCurrentPath, FILENAME_MAX))
+  std::string getCWD()
   {
-    //Note: Cannot use logging in COMMON component -- topic of JIRA issue ATK-463
-    //SLIC_WARNING("Common::Could not find cwd");
+    char cCurrentPath[FILENAME_MAX];
 
-    return std::string("./");
+    if (!GetCurrentDir(cCurrentPath, FILENAME_MAX))
+    {
+      //Note: Cannot use logging in COMMON component -- topic of JIRA issue ATK-463
+      //SLIC_WARNING("Common::Could not find cwd");
+
+      return std::string("./");
+    }
+
+    return std::string(cCurrentPath);
   }
 
-  return std::string(cCurrentPath);
-}
+//-----------------------------------------------------------------------------
+  bool pathExists(const std::string& fileName)
+  {
+    // Uses system's stat() function.
+    // Return code 0 indicates file exists
+    struct Stat buffer;
+    return (Stat(fileName.c_str(), &buffer) == 0);
+  }
 
 //-----------------------------------------------------------------------------
-bool pathExists(const std::string& fileName)
-{
-  // Uses system's stat() function.
-  // Return code 0 indicates file exists
-  struct Stat buffer;
-  return (Stat(fileName.c_str(), &buffer) == 0);
-}
+  std::string joinPath(const std::string& fileDir, const std::string& fileName,
+                       const std::string& separator)
+  {
+    // Check if we need to add a separator
+    bool pathNeedsSep = !fileDir.empty()
+                        && (fileDir[ fileDir.size() -1] != separator[0]);
 
-//-----------------------------------------------------------------------------
-std::string joinPath(const std::string& fileDir, const std::string& fileName,
-                     const std::string& separator)
-{
-  // Check if we need to add a separator
-  bool pathNeedsSep = !fileDir.empty()
-                      && (fileDir[ fileDir.size() -1] != separator[0]);
+    // Concatenate the path with the fileName to create the full path
+    std::stringstream fullFileNameStream;
+    fullFileNameStream << fileDir
+                       << (pathNeedsSep ? separator : "" )
+                       << fileName;
 
-  // Concatenate the path with the fileName to create the full path
-  std::stringstream fullFileNameStream;
-  fullFileNameStream << fileDir
-                     << (pathNeedsSep ? separator : "" )
-                     << fileName;
-
-  return fullFileNameStream.str();
-}
+    return fullFileNameStream.str();
+  }
 
 
 

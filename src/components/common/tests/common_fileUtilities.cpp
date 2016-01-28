@@ -14,19 +14,18 @@
 
 #include "common/FileUtilities.hpp"
 
-namespace
-{
+namespace {
 
 // Use a file that we know is available in the git repo (as of Jan 2016).
 // It is a data file from slam's Unstructured mesh example
 // TODO: This path should be modified once
 //       we move the data files into their own repository
 
-const std::string presentFile = "ball_1.vtk";
-const std::string presentDir = "src/components/slam/data";
-const std::string presentDirWithSlash = presentDir + "/";
+  const std::string presentFile = "ball_1.vtk";
+  const std::string presentDir = "src/components/slam/data";
+  const std::string presentDirWithSlash = presentDir + "/";
 
-const std::string missingFile = "m_i_s_s_i_n_g__f_i_l_e";
+  const std::string missingFile = "m_i_s_s_i_n_g__f_i_l_e";
 }
 
 

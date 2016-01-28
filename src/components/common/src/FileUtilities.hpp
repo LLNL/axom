@@ -14,18 +14,15 @@
 
 #include <string>
 
-namespace asctoolkit
-{
-namespace utilities
-{
-namespace filesystem
-{
+namespace asctoolkit {
+namespace utilities {
+namespace filesystem {
 
 /**
  * \brief Helper function to print out the current working directory within the file system
  * \return path of cwd if found, else, returns "./"
  */
-std::string getCWD();
+  std::string getCWD();
 
 
 /**
@@ -33,7 +30,7 @@ std::string getCWD();
  * \param [in] fileName string name of a file (possibly including relative or absolute path)
  * \return true if file system contains a file named fileName, false otherwise
  */
-bool pathExists(const std::string& fileName);
+  bool pathExists(const std::string& fileName);
 
 /**
  * \brief Joins a file directory fileDir and a file name fileName with the given separator char
@@ -48,9 +45,9 @@ bool pathExists(const std::string& fileName);
  * \note Example2:  joinPath("abc/", "def") -> "abc/def"
  * \note Example3:  joinPath("abc/", "def/ghi") -> "abc/def/ghi"
  */
-std::string joinPath(const std::string& fileDir
-                     , const std::string& fileName
-                     , const std::string& separator = "/");
+  std::string joinPath(const std::string& fileDir
+                       , const std::string& fileName
+                       , const std::string& separator = "/");
 
 
 
