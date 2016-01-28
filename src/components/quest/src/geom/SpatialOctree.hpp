@@ -1,27 +1,16 @@
 #ifndef SPATIAL_OCTREE__HXX_
 #define SPATIAL_OCTREE__HXX_
 
-#include "quest/BitTwiddle.hpp"
 #include "quest/BoundingBox.hpp"
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 
 #include "slic/slic.hpp"
 
-#include "slam/SizePolicies.hpp"
-#include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
 
 #include "quest/Mesh.hpp"
 #include "quest/OctreeBase.hpp"
-
-#if defined(USE_CXX11)
-#include <unordered_map>
-#else
-#include "boost/unordered_map.hpp"
-#endif
-
-#include <utility>      // for std::pair's operator==()
 
 
 namespace quest
@@ -139,7 +128,7 @@ public:
      * \brief Utility function to find the quantized level lev grid cell of Point pt
      * \param [in] pt The point at which we are querying.
      * \param [in] level The level or resolution.
-     * \pre \f$ 0 \le lev < MAX_LEV == 32 \f$
+     * \pre \f$ 0 \le lev < octree.maxLeafLevel() \f$
      * \return The grid point of the block covering this point at this level
      * \todo KW: Should this function be protected? Is it generally useful?
      */

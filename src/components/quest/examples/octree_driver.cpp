@@ -19,6 +19,7 @@
 // ATK Toolkit includes
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
+#include "common/FileUtilities.hpp"
 
 #include "quest/BoundingBox.hpp"
 #include "quest/Mesh.hpp"
@@ -31,11 +32,10 @@
 #include "quest/Point.hpp"
 #include "quest/SpatialOctree.hpp"
 
-#include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
+#include "slic/UnitTestLogger.hpp"
 
-#include "slam/FileUtilities.hpp"
-
+#include "slam/Utilities.hpp"
 
 // C/C++ includes
 #include <algorithm>
@@ -96,6 +96,11 @@ void print_surface_stats( meshtk::Mesh* mesh)
    LogHistogram edgeLenHist;
    LogHistogram areaHist;
 
+   typedef std::map<int,RangeType> LogRangeMap;;
+   LogRangeMap edgeLenRangeMap;
+   LogRangeMap areaRangeMap;
+
+
    for ( int i=0; i < ncells; ++i )
    {
       GridPt cellids;
@@ -114,10 +119,12 @@ void print_surface_stats( meshtk::Mesh* mesh)
           }
           else
           {
-              edgeRange.addPoint( LengthType(len) );
+              LengthType edgeLen(len);
+              edgeRange.addPoint( edgeLen );
               int exp;
               std::frexp (len, &exp);
               edgeLenHist[exp]++;
+              edgeLenRangeMap[exp].addPoint( edgeLen );
           }
       }
 
@@ -129,45 +136,53 @@ void print_surface_stats( meshtk::Mesh* mesh)
           badTriangles.insert(i);
       else
       {
-          areaRange.addPoint ( LengthType( area));
+          LengthType triArea(area);
+          areaRange.addPoint ( triArea );
           int exp;
           std::frexp (area, &exp);
           areaHist[exp]++;
+          areaRangeMap[exp].addPoint( triArea);
+
       }
    }
 
 
-   std::cout << "\n\tEdge length range is: "  << edgeRange
-             << "\n\tTriangle area range is: "  << areaRange
-             << std::endl;
+   SLIC_INFO("Edge length range is: "  << edgeRange);
+   SLIC_INFO("Triangle area range is: "  << areaRange);
 
-
-   std::cout << "\n  Edge length histogram (lg-arithmic): ";
+   std::stringstream edgeHistStr;
+   edgeHistStr<<"\tEdge length histogram (lg-arithmic): ";
    for(LogHistogram::const_iterator it = edgeLenHist.begin()
            ; it != edgeLenHist.end()
            ; ++it)
    {
-       std::cout <<"\n\t exp: " << it->first <<"\t count: " << it->second;
+       edgeHistStr << "\n\t exp: " << it->first
+                   <<"\t count: " << it->second
+                   <<"\tRange: " << edgeLenRangeMap[it->first];
    }
-   std::cout<<std::endl;
+   SLIC_INFO(edgeHistStr.str());
 
-   std::cout << "\n  Triangle areas histogram (lg-arithmic): ";
+   std::stringstream triHistStr;
+   triHistStr<<"\tTriangle areas histogram (lg-arithmic): ";
    for(LogHistogram::const_iterator it =areaHist.begin()
            ; it != areaHist.end()
            ; ++it)
    {
-       std::cout <<"\n\t exp: " << it->first <<"\t count: " << it->second;
+       triHistStr<<"\n\t exp: " << it->first
+                 <<"\t count: " << it->second
+                 << "\tRange: " << areaRangeMap[it->first];
    }
-   std::cout<<std::endl;
+   SLIC_INFO(triHistStr.str());
 
    if(! badTriangles.empty() )
    {
-       std::cout<<"The following triangles have zero area/edge lengths:\n\t";
+       std::stringstream badTriStr;
+       badTriStr<<"The following triangles have zero area/edge lengths:\n\t";
        for(TriIdxSet::const_iterator it = badTriangles.begin()
                ; it != badTriangles.end()
                ; ++it)
-           std::cout << " " << *it;
-       std::cout<< std::endl;
+           badTriStr<< " " << *it;
+       SLIC_INFO(badTriStr.str());
    }
 }
 
@@ -185,57 +200,54 @@ void refineAndPrint(SpaceOctree3D& octree, const SpacePt& queryPt, bool shouldRe
     GeometricBoundingBox blockBB = octree.blockBoundingBox( leafBlock);
     bool containsPt = blockBB.contains(queryPt);
 
-    std::cout<<"\t{gridPt: " << leafBlock.pt()
+    SLIC_INFO("\t{gridPt: " << leafBlock.pt()
             <<"; lev: " << leafBlock.level()
             <<"} "
             <<" with bounds " << blockBB
-            << (containsPt? " contains " : "does not contain ") << "query point."
-            << std::endl;
+            << (containsPt? " contains " : "does not contain ") << "query point.");
 }
 
 //------------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
   // STEP 0: Initialize SLIC Environment
-  slic::initialize();
-  slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
-  slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout) );
+  slic::UnitTestLogger logger;  // create & initialize logger
 
   bool hasInputArgs = argc > 1;
 
   // STEP 1: get file from user or use default
-  std::string inputFile;
+  std::string stlFile;
   if(hasInputArgs)
   {
-      inputFile = std::string( argv[1] );
+      stlFile = std::string( argv[1] );
   }
   else
   {
       const std::string defaultFileName = "plane_simp.stl";
       const std::string defaultDir = "src/components/quest/data/";
-      inputFile = defaultDir + defaultFileName;
-  }
-  std::string stlFile = asctoolkit::slam::util::findFileRecursive(inputFile);
 
+      stlFile = asctoolkit::utilities::filesystem::joinPath(defaultDir, defaultFileName);
+  }
+
+  stlFile = asctoolkit::slam::util::findFileInAncestorDirs(stlFile);
+  SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( stlFile));
 
   // STEP 2: read file
-  std::cout << "Reading file: " << stlFile << "...";
-  std::cout.flush();
+  SLIC_INFO("Reading file: " << stlFile << "...");
+
   quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( stlFile );
   reader->read();
-  std::cout << "[DONE]\n";
-  std::cout.flush();
+  SLIC_INFO("done.");
 
 
   // STEP 3: get surface mesh
   meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
   reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
   // dump mesh info
-  std::cout<<"Mesh has "
+  SLIC_INFO("Mesh has "
           << surface_mesh->getMeshNumberOfNodes() << " nodes and "
-          << surface_mesh->getMeshNumberOfCells() << " cells."
-          << std::endl;
+          << surface_mesh->getMeshNumberOfCells() << " cells.");
 
   // STEP 4: Delete the reader
   delete reader;
@@ -244,7 +256,7 @@ int main( int argc, char** argv )
 
   // STEP 5: Compute the bounding box
   GeometricBoundingBox meshBB = compute_bounds( surface_mesh);
-  std::cout << "Mesh bounding box: " << meshBB << std::endl;
+  SLIC_INFO( "Mesh bounding box: " << meshBB );
 
   print_surface_stats(surface_mesh);
 
@@ -253,23 +265,23 @@ int main( int argc, char** argv )
 
   SpaceOctree3D octree(meshBB);
   SpacePt queryPt = SpacePt::lerp(meshBB.getMin(), meshBB.getMax(), alpha);
-  std::cout<<"\n"<<"Finding associated grid point for query point: " << queryPt << std::endl;
 
-  for(int lev = 0; lev < SpaceOctree3D::MAX_LEV; ++lev)
+  SLIC_INFO("Finding associated grid point for query point: " << queryPt );
+  for(int lev = 0; lev < octree.maxLeafLevel(); ++lev)
   {
       GridPt gridPt = octree.findGridCellAtLevel(queryPt, lev);
-      std::cout << "  @level " << lev
+      SLIC_INFO("  @level " << lev
               <<":\n\t" <<  gridPt
-              <<"\n\t[max gridPt: " << octree. maxGridCellAtLevel(lev)
+              <<"\n\t[max gridPt: " << octree.maxGridCellAtLevel(lev)
               <<"; spacing" << octree.spacingAtLevel(lev)
               <<";\n\t bounding box " << octree.blockBoundingBox(gridPt, lev)
-              <<"]\n";
+              <<"]");
   }
 
 
-  std::cout << "Recursively refining around query point: " << queryPt << std::endl;
+  SLIC_INFO("Recursively refining around query point: " << queryPt);
   refineAndPrint(octree, queryPt, false);
-  for(int i=0; i< 10; ++i)
+  for(int i=0; i< octree.maxInternalLevel(); ++i)
       refineAndPrint(octree, queryPt);
 
 

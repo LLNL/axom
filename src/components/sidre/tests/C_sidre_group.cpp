@@ -233,8 +233,6 @@ TEST(C_sidre_group,get_group_name_index)
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_destroy_has_view)
 {
-  SLIC_set_abort_on_assert(false);
-
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
   SIDRE_datagroup * group = SIDRE_datagroup_create_group(root, "parent");
@@ -320,7 +318,6 @@ TEST(C_sidre_group,group_name_collisions)
 
   // attempt to create duplicate group name
 
-  SLIC_set_abort_on_assert(false);
   SIDRE_datagroup * badGroup = SIDRE_datagroup_create_group(root, "fields");
   EXPECT_TRUE( badGroup == NULL );
 

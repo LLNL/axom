@@ -1,0 +1,10 @@
+from distutils.core import setup
+
+setup(name='shroud',
+#      version='${PACKAGE_VERSION}',
+      version='0.1.0',
+      description='Generate Fortran wrappers for C++ Libraries',
+
+      package_dir={ 'shroud': '${CMAKE_CURRENT_SOURCE_DIR}/src' },
+      packages=['shroud'],
+)

@@ -331,6 +331,19 @@ private:
     LeafIndicesLevelMap     m_leavesLevelMap;
 };
 
+
+template<int Bits> struct MaxIter {};
+template<>   struct MaxIter<64> { static const int value = 5;};
+template<>   struct MaxIter<32> { static const int value = 4;};
+template<>   struct MaxIter<16> { static const int value = 3;};
+template<>   struct MaxIter<8>  { static const int value = 2;};
+
+
+//,  SIGNED_BIT = std::numeric_limits<CoordType>::is_signed ? 1 : 0
+//,  MAX_ITER = 5 //MaxIter< COORD_BITS + SIGNED_BIT>::value
+
+
+
 } // end namespace junkyard
 } // end namespace quest
 

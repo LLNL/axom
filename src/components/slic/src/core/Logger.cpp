@@ -80,8 +80,8 @@ Logger::~Logger()
 //------------------------------------------------------------------------------
 void Logger::setLoggingMsgLevel( message::Level level )
 {
-  for ( int i=message::Fatal; i < level; ++i ) {
-    m_isEnabled[ i ] = true;
+  for ( int i=0; i < message::Num_Levels; ++i ) {
+    m_isEnabled[ i ] = (i<= level) ? true : false;
   }
 
 }
@@ -206,7 +206,6 @@ void Logger::flushStreams()
 
     unsigned nstreams = m_logStreams[ level ].size();
     for ( unsigned istream=0; istream < nstreams; ++istream ) {
-
       m_logStreams[ level ][ istream ]->flush( );
 
     } // END for all streams

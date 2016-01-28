@@ -79,7 +79,7 @@ TEST( quest_octree, topological_octree_refine)
   BlockIndex rootBlock = octree.root();
   octree.refineLeaf( rootBlock );
 
-  int numChildren  = OctreeType::NUM_CHILDREN;
+  int numChildren  = BlockIndex::numChildren();
   for(int i = 0; i < numChildren; ++i)
   {
       EXPECT_TRUE( octree.isLeaf( octree.child(rootBlock, i)) );
@@ -122,7 +122,7 @@ TEST( quest_octree, spatial_octree_point_location)
               <<" in the octree. "
               << std::endl;
 
-    for(int i=0; i< 10; ++i)
+    for(int i=0; i< octree.maxInternalLevel(); ++i)
     {
         octree.refineLeaf( leafBlock );
         leafBlock = octree.findLeafBlock(queryPt);

@@ -21,13 +21,6 @@ add_custom_command(
             ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
 )
 
-ADD_CUSTOM_TARGET(sidre_generate
-     DEPENDS
-         ${CMAKE_CURRENT_BINARY_DIR}/capi.time
-)
-
-add_dependencies(generate sidre_generate)
-
 #
 # Mark the wappers as done by touching capi.time
 # This should avoid generating the wrappers unless api.yaml is changed.

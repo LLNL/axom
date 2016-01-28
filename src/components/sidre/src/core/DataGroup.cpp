@@ -34,7 +34,6 @@ namespace asctoolkit
 namespace sidre
 {
 
-
 ////////////////////////////////////////////////////////////////////////
 //
 //  Methods for manipulating DataView objects in DataGroup
@@ -54,20 +53,18 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
                                              TypeID type,
                                              SidreLength num_elems )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT(num_elems >= 0);
-
-  if ( name.empty() || hasView(name) || num_elems < 0 )
+  if ( num_elems < 0 )
   {
+    SLIC_CHECK(num_elems >= 0);
     return ATK_NULLPTR;
   }
-  else
+
+  DataView * view = createViewAndBuffer(name);
+  if ( view != ATK_NULLPTR )
   {
-    DataView * const view = createViewAndBuffer(name);
-    view->allocate(type, num_elems);
-    return view;
+    view = view->allocate(type, num_elems);
   }
+  return view;
 }
 
 /*
@@ -82,19 +79,12 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 DataView * DataGroup::createViewAndAllocate( const std::string& name,
                                              const DataType& dtype)
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-
-  if ( name.empty() || hasView(name) )
+  DataView * view = createViewAndBuffer(name);
+  if ( view != ATK_NULLPTR )
   {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = createViewAndBuffer(name);
     view->allocate(dtype);
-    return view;
   }
+  return view;
 }
 
 /*
@@ -109,19 +99,12 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 DataView * DataGroup::createViewAndAllocate( const std::string& name,
                                              const Schema& schema)
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-
-  if ( name.empty() || hasView(name) )
+  DataView * view = createViewAndBuffer(name);
+  if (view != ATK_NULLPTR)
   {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = createViewAndBuffer(name);
     view->allocate(schema);
-    return view;
   }
+  return view;
 }
 
 /*
@@ -133,18 +116,7 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
  */
 DataView * DataGroup::createView( const std::string& name )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-
-  if ( name.empty() || hasView(name) )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = new DataView( name, this);
-    return attachView(view);
-  }
+  return createAndAttachView(name);
 }
 
 /*
@@ -158,20 +130,18 @@ DataView * DataGroup::createView( const std::string& name,
                                   TypeID type,
                                   SidreLength num_elems )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG(num_elems >= 0, "Must define view with number of elems >=0 ");
-
-  if ( name.empty() || hasView(name) || num_elems < 0 )
+  if ( num_elems < 0 )
   {
+    SLIC_CHECK_MSG(num_elems >= 0, "Must define view with number of elems >=0 ");
     return ATK_NULLPTR;
   }
-  else
+
+  DataView * view = createAndAttachView(name);
+  if (view != ATK_NULLPTR)
   {
-    DataView * const view = new DataView( name, this);
     view->declare(type, num_elems);
-    return attachView(view);
   }
+  return view;
 }
 
 /*
@@ -184,19 +154,13 @@ DataView * DataGroup::createView( const std::string& name,
 DataView * DataGroup::createView( const std::string& name,
                                   const DataType& dtype )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-
-  if ( name.empty() || hasView(name) )
+  DataView * view = createAndAttachView(name);
+  if (view != ATK_NULLPTR)
   {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = new DataView( name, this);
     view->declare(dtype);
-    return attachView(view);
   }
+
+  return view;
 }
 
 /*
@@ -209,21 +173,13 @@ DataView * DataGroup::createView( const std::string& name,
 DataView * DataGroup::createView( const std::string& name,
                                   const Schema& schema )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-
-  if ( name.empty() || hasView(name) )
+  DataView * view = createAndAttachView(name);
+  if (view != ATK_NULLPTR)
   {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = new DataView( name, this);
     view->declare(schema);
-    return attachView(view);
   }
+  return view;
 }
-
 
 /*
  *************************************************************************
@@ -235,23 +191,18 @@ DataView * DataGroup::createView( const std::string& name,
 DataView * DataGroup::createView( const std::string& name,
                                   DataBuffer * buff)
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_CHECK( buff != ATK_NULLPTR );
-
-  if ( name.empty() || hasView(name) )
+  if ( buff == ATK_NULLPTR )
   {
+    SLIC_CHECK( buff != ATK_NULLPTR );
     return ATK_NULLPTR;
   }
-  else
+
+  DataView * view = createAndAttachView(name);
+  if ( view != ATK_NULLPTR )
   {
-    DataView * view = new DataView( name, this );
-    if ( buff != ATK_NULLPTR )
-    {
-      view->attachBuffer( buff );
-    }
-    return attachView(view);
+    view->attachBuffer( buff );
   }
+  return view;
 }
 
 /*
@@ -264,22 +215,19 @@ DataView * DataGroup::createView( const std::string& name,
 DataView * DataGroup::createView( const std::string& name,
                                   void * external_ptr )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( external_ptr != ATK_NULLPTR,
-                   "Cannot create external view with null data pointer" );
-
-  if ( name.empty() || hasView(name) || external_ptr == ATK_NULLPTR )
+  if ( external_ptr == ATK_NULLPTR )
   {
+    SLIC_CHECK_MSG( !( external_ptr == ATK_NULLPTR),
+                   "Cannot create external view with null data pointer" );
     return ATK_NULLPTR;
   }
-  else
-  {
-    DataView * view = new DataView(name, this);
-    view->setExternalDataPtr(external_ptr);
 
-    return attachView(view);
+  DataView * view = createAndAttachView(name);
+  if ( view != ATK_NULLPTR )
+  {
+    view->setExternalDataPtr(external_ptr);
   }
+  return view;
 }
 
 /*
@@ -510,8 +458,8 @@ DataView * DataGroup::copyView(DataView * view)
  */
 DataGroup * DataGroup::createGroup( const std::string& name )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasGroup(name) == false, "name == " << name );
+  SLIC_CHECK( !name.empty() );
+  SLIC_CHECK_MSG( hasGroup(name) == false, "name == " << name );
 
   if ( name.empty() || hasGroup(name) )
   {
@@ -850,6 +798,48 @@ DataGroup::~DataGroup()
   destroyGroups();
 }
 
+
+////////////////////////////////////////////////////////////////////////
+//
+// View creation helper methods
+// - createAndAttachView
+// - createViewAndBuffer
+//
+// These two methods are called by our large family of overloaded
+// createView and createViewAndBuffer methods.
+//
+// Private methods do not typically do input checking and use SLIC_CHECK,
+// but these two do in the interest of consolidating some of the input
+// checks from our large number of overloaded createView functions into one
+// algorithm.
+////////////////////////////////////////////////////////////////////////
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to create view and and attach to this group.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createAndAttachView( const std::string& name )
+{
+  if ( name.empty() || hasView(name) )
+  {
+    SLIC_CHECK( !name.empty() );
+    SLIC_CHECK(!hasView(name) );
+    return ATK_NULLPTR;
+  }
+
+  // Want the C++ new operator to return null pointer on failure instead of
+  // throwing an exception.
+  DataView * view = new(std::nothrow) DataView( name, this);
+  if ( view != ATK_NULLPTR )
+  {
+    attachView( view );
+  }
+  return view;
+}
+
 /*
  *************************************************************************
  *
@@ -859,10 +849,28 @@ DataGroup::~DataGroup()
  */
 DataView * DataGroup::createViewAndBuffer( const std::string& name )
 {
-  DataView * view = new DataView( name, this );
-  DataBuffer * buff = this->getDataStore()->createBuffer();
-  view->attachBuffer( buff );
-  return attachView(view);
+
+  if ( name.empty() || hasView(name) )
+  {
+    SLIC_CHECK( !name.empty() );
+    SLIC_CHECK(!hasView(name) );
+    return ATK_NULLPTR;
+  }
+
+  // Create and attach view
+  DataView * view = createAndAttachView(name);
+  if ( view != ATK_NULLPTR )
+  {
+
+    // This should be always be valid here. Can remove this assert when all are XXXIsValid functions are more mature.
+    SLIC_ASSERT( view->attachBufferIsValid() );
+
+    // Create and attach buffer
+    DataBuffer * buff = this->getDataStore()->createBuffer();
+    view->attachBuffer( buff );
+  }
+  return view;
+
 }
 
 /*

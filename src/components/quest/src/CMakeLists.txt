@@ -11,11 +11,11 @@
 set( quest_headers
    
     ## Geometry Headers
-    geom/BitTwiddle.hpp
     geom/BoundingBox.hpp
     geom/Determinants.hpp
     geom/HyperSphere.hpp
     geom/Intersection.hpp
+    geom/MortonIndex.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp
     geom/Orientation.hpp

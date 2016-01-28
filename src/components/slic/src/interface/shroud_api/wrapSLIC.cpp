@@ -41,38 +41,6 @@ return;
 // splicer end function.finalize
 }
 
-void SLIC_set_abort_on_assert(bool willAbort)
-{
-// splicer begin function.set_abort_on_assert
-setAbortOnAssert(willAbort);
-return;
-// splicer end function.set_abort_on_assert
-}
-
-bool SLIC_get_abort_on_assert()
-{
-// splicer begin function.get_abort_on_assert
-bool rv = getAbortOnAssert();
-return rv;
-// splicer end function.get_abort_on_assert
-}
-
-void SLIC_set_abort_on_error(bool willAbort)
-{
-// splicer begin function.set_abort_on_error
-setAbortOnError(willAbort);
-return;
-// splicer end function.set_abort_on_error
-}
-
-bool SLIC_get_abort_on_error()
-{
-// splicer begin function.get_abort_on_error
-bool rv = getAbortOnError();
-return rv;
-// splicer end function.get_abort_on_error
-}
-
 void SLIC_activate_logger(const char * name)
 {
 // splicer begin function.activate_logger
