@@ -28,6 +28,7 @@
 #include "DataBuffer.hpp"
 #include "DataStore.hpp"
 #include "DataView.hpp"
+#include "SidreUtilities.hpp"
 
 namespace asctoolkit
 {
@@ -815,6 +816,90 @@ DataGroup::~DataGroup()
   destroyViews();
   destroyGroups();
 }
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to walk a path and retrieve the group at the last
+ * or next-to-last entry of the path.
+ *
+ * If an empty path or a path with just a single entry, 'foo', is passed
+ * in, then this routine will issue a warning and return a pointer to the
+ * calling group.  If asserts are on, the code will halt.
+ *
+ * 'path': The path to traverse.  Traversed entries will be stripped
+ * from this parameter at algorithm completion.  If 'ignore_last'
+ * is true, this parameter will end up containing the last path entry, else
+ * it will be empty.
+ *
+ * 'first_pos': Optional parameter.  If the position of the first path
+ * delimiter character is known it can be provided in this parameter.
+ *
+ * 'ignore_last': Optional parameter.  If true, the last entry in the path
+ *  will be ignored.
+ *
+ * 'create_on_demand': If true, will create any groups that are not
+ * found while walking the path.
+ *
+ *************************************************************************
+ */
+
+// Developer notes:
+// At next pass, should optimize this.
+// - the split routine performs string copies when populating a new
+//   vector of the tokens.  That could be rewritten to instead populate a
+//   vector of delimiter positions and avoid string copying.
+// - this routine supports several different behavior paths (ignore the
+//   last entry, vs not), create missing entries or not, etc.  This is
+//   to support calls from either our create() routines which need to create
+//   entries on demand, or get() routines which should not, or should be
+//   getting the last entry or not (createGroup vs createView).  If we break
+//   this routine into separate ones, it will duplicate some code, but also
+//   reduce branching.
+// -- AB
+
+DataGroup * DataGroup::walkPath( std::string& path, bool ignore_last, bool create_on_demand )
+{
+  // TODO - write tests that pass in some error conditions and verify code for:
+  // path = ""
+  // path = "foo"
+  // these should result in just getting back the same group you just called this
+  // routine from and issue a warning, but not cause a code crash.
+
+  SLIC_ASSERT( path.size() > 0 );
+  DataGroup * group_ptr = this;
+
+  std::string::size_type pos = detail::find_exclusive( path, m_path_delimiter);
+  if (pos != std::string::npos)
+  {
+    std::vector<std::string> tokens = detail::split(path, m_path_delimiter, pos);
+    std::vector<std::string>::iterator stop = tokens.end() - (ignore_last ? 1 : 0);
+
+    // Navigate path down to desired group.
+    for (std::vector<std::string>::const_iterator iter = tokens.begin(); iter < stop; ++iter)
+    {
+      SLIC_ASSERT( iter->size() > 0 );
+
+      if ( group_ptr->hasGroup(*iter) )
+      {
+        group_ptr = group_ptr->getGroup(*iter);
+      }
+      else if (create_on_demand)
+      {
+        group_ptr = group_ptr->createGroup(*iter);
+      }
+      else
+      {
+        // TODO - add SLIC WARNING MESSAGE - group is missing and create_on_demand is false.
+        break;
+      }
+    }
+    SLIC_ASSERT( group_ptr != ATK_NULLPTR );
+
+    path = (ignore_last ? tokens.back() : "");
+  }
+
+  return group_ptr;
+}
 
 /*
  *************************************************************************
@@ -1107,6 +1192,10 @@ void DataGroup::copyFromNode(Node& n,
     ds_group->copyFromNode(n_group, id_map);
   }
 }
+
+
+/// Character used to denote a path string passed to get/create calls.
+const char DataGroup::m_path_delimiter = '/';
 
 
 } /* end namespace sidre */

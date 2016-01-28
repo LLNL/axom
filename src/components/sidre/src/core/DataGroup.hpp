@@ -853,6 +853,12 @@ private:
 
 //@}
 
+  /*!
+   * \brief Private method to retrieve a sub-group using a path syntax.
+   * Helper function used by get and create calls to support path syntax.
+   */
+  DataGroup * walkPath(std::string& path, bool ignore_last, bool create_on_demand );
+
 
 //@{
 //!  @name Private DataGroup methods for interacting with Conduit Nodes.
@@ -894,6 +900,8 @@ private:
   /// This DataGroup object lives in the tree of this DataStore object.
   DataStore * m_datastore;
 
+  /// Character used to denote a path string passed to get/create calls.
+  static const char m_path_delimiter;
 
   ///
   /// Typedefs for view and shild group containers. They are here to

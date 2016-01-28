@@ -18,7 +18,7 @@ using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
 
 using namespace conduit;
-
+/*
 //------------------------------------------------------------------------------
 
 TEST(sidre_view,create_views)
@@ -39,6 +39,55 @@ TEST(sidre_view,create_views)
   EXPECT_EQ(db_1->getIndex(), 1);
   delete ds;
 }
+*/
+//------------------------------------------------------------------------------
+
+TEST(sidre_view,create_view_from_path)
+{
+  DataStore * ds   = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  // Verify create works when groups must be created on demand.
+  DataView * baz = root->createView("foo/bar/baz");
+  // Groups should have been created.
+  EXPECT_TRUE( root->hasGroup("foo") );
+  EXPECT_TRUE( root->getGroup("foo")->hasGroup("bar") );
+
+  DataGroup * bar = root->getGroup("foo")->getGroup("bar");
+  EXPECT_TRUE( bar->hasView("baz") );
+  EXPECT_EQ( bar->getView("baz"), baz );
+
+  (void) baz;
+
+  delete ds;
+
+  /*
+  ds = new DataStore();
+  root = ds->getRoot();
+
+  // Verify create works when groups already exist.
+  baz = root->createView("foo/bar/baz");
+  EXPECT_TRUE( baz != ATK_NULLPTR );
+
+  EXPECT_TRUE( root->hasGroup("foo") );
+
+  std::cerr << "HERE2" << std::endl;
+
+  foo = root->getGroup("foo");
+  EXPECT_TRUE( foo->hasGroup("bar") );
+
+  std::cerr << "HERE3" << std::endl;
+
+  bar = foo->getGroup("bar");
+  EXPECT_TRUE( bar->hasView("baz"));
+  EXPECT_EQ( baz, bar->getView("baz"));
+
+  std::cerr << "HERE4" << std::endl;
+
+  delete ds;
+  */
+}
+/*
 
 //------------------------------------------------------------------------------
 
@@ -590,3 +639,4 @@ TEST(sidre_view,simple_opaque)
   delete ds;
   delete [] src_data;
 }
+*/
