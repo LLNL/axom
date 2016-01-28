@@ -502,6 +502,18 @@ TEST( quest_boundingBox, bb_bisect )
 }
 
 //------------------------------------------------------------------------------
+TEST( quest_boundingBox, bb_centroid )
+{
+  typedef quest::Point< double,2 > PointType;
+  typedef quest::BoundingBox< double,2 > BoxType;
+
+  BoxType bbox( PointType::zero(), PointType::ones() );
+  PointType centroid = bbox.centroid();
+  EXPECT_DOUBLE_EQ( 0.5, centroid[0] );
+  EXPECT_DOUBLE_EQ( 0.5, centroid[1] );
+}
+
+//------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 

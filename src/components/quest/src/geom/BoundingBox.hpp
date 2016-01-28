@@ -209,6 +209,14 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Computes the centroid of this bounding box instance.
+   * \return pt point at the bounding box centroid.
+   *****************************************************************************
+   */
+  PointType centroid() const;
+
+  /*!
+   *****************************************************************************
    * \brief Returns the dimension of the ambient space for this bounding box.
    * \return d the dimension of this bounding box instance.
    * \post d >= 2.
@@ -423,6 +431,22 @@ void BoundingBox<CoordType, DIM>::addBox(
 {
     addPoint(bbox.getMin());
     addPoint(bbox.getMax());
+}
+
+//------------------------------------------------------------------------------
+template< typename CoordType, int DIM >
+quest::Point< CoordType, DIM > BoundingBox< CoordType,DIM >::centroid() const
+{
+  SLIC_ASSERT( this->isValid() );
+
+  PointType pt;
+  for ( int i=0; i < DIM; ++i ) {
+
+      pt[ i ] = 0.5 * ( m_min[ i ] + m_max[ i ] );
+
+  }
+
+  return( pt );
 }
 
 //------------------------------------------------------------------------------
