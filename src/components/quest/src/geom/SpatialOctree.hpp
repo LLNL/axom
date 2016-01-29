@@ -22,8 +22,8 @@ namespace quest
  * \class
  * \brief Adds spatial extents to an OctreeBase, allowing point location
  */
-template<int DIM, typename LeafNodeType>
-class SpatialOctree : public OctreeBase<DIM, LeafNodeType>
+template<int DIM, typename BlockDataType>
+class SpatialOctree : public OctreeBase<DIM, BlockDataType>
 {
 public:
 
@@ -31,11 +31,9 @@ public:
     typedef quest::Point<double,DIM> SpacePt;
     typedef quest::Vector<double,DIM> SpaceVector;
 
-    typedef typename OctreeBase<DIM, LeafNodeType>::GridPt GridPt;
-    typedef typename OctreeBase<DIM, LeafNodeType>::MapType MapType;
-    typedef typename OctreeBase<DIM, LeafNodeType>::BlockIndex BlockIndex;
-
-//    typedef typename OctreeBase<DIM, LeafNodeType>::OctreeLevels OctreeLevels;
+    typedef typename OctreeBase<DIM, BlockDataType>::GridPt GridPt;
+    typedef typename OctreeBase<DIM, BlockDataType>::MapType MapType;
+    typedef typename OctreeBase<DIM, BlockDataType>::BlockIndex BlockIndex;
 
     typedef asctoolkit::slam::Map<SpaceVector> SpaceVectorLevelMap;
 
@@ -45,16 +43,16 @@ public:
      * \param [in] bb The spatial extent to be indexed by the octree
      */
     SpatialOctree(const GeometricBoundingBox& bb)
-        : OctreeBase<DIM,LeafNodeType>()
+        : OctreeBase<DIM,BlockDataType>()
         , m_deltaLevelMap(& this->m_levels)
         , m_boundingBox(bb)
     {
+        // Cache the extents of a grid cell at each level of resolution
         SpaceVector bbRange = bb.range();
         for(int lev = 0; lev < this->m_levels.size(); ++lev)
         {
             m_deltaLevelMap[lev] = bbRange / static_cast<double>(1<<lev);
         }
-
     }
 
     /**
@@ -86,6 +84,7 @@ public:
 
     /**
      * Returns the width of an octree block at level of resolution level
+     * \param level The level of resolution that we are checking
      */
     const SpaceVector& spacingAtLevel(int level) const
     {
@@ -95,7 +94,7 @@ public:
     /**
      * \brief Finds the index of the leaf block covering the query point pt
      * \param [in] pt The query point in space
-     * \param [in] startingLevel Optional starting level for the query
+     * \param [in] startingLevel (Optional) starting level for the query
      * \pre pt must be in the bounding box of the octree (i.e. boundingBox.contains(pt) == true )
      * \note The collection of leaves covers the bounding box, and the interiors of the leaves do not
      * intersect, so every point in the bounding box should be located in a unique leaf block.
@@ -125,27 +124,27 @@ public:
     }
 
     /**
-     * \brief Utility function to find the quantized level lev grid cell of Point pt
+     * \brief Utility function to find the quantized grid cell at level lev for query point pt
      * \param [in] pt The point at which we are querying.
-     * \param [in] level The level or resolution.
+     * \param [in] lev The level or resolution.
      * \pre \f$ 0 \le lev < octree.maxLeafLevel() \f$
      * \return The grid point of the block covering this point at this level
      * \todo KW: Should this function be protected? Is it generally useful?
      */
-    GridPt findGridCellAtLevel(const SpacePt& pt, int level) const
+    GridPt findGridCellAtLevel(const SpacePt& pt, int lev) const
     {
         SpaceVector ptVec(m_boundingBox.getMin(), pt);
-        const SpaceVector& deltaVec = m_deltaLevelMap[ level];
+        const SpaceVector& deltaVec = m_deltaLevelMap[ lev];
 
         // Find the octree block that covers us at this level
         // Note: we are assuming a half-open interval for all blocks
         //       that are not on the upper boundary of the domain
         GridPt quantizedPt = elementwiseQuantizedRatio( ptVec, deltaVec);
 
-        // Fix for when we are on the upper boundary of the domain
+        // Adjust grid cell when we are on the upper boundary of the domain
         for(int i=0; i< DIM; ++i)
         {
-            if( quantizedPt[i] == 1<<level )
+            if( quantizedPt[i] == (1<<lev) )
                 --quantizedPt[i];
         }
 
@@ -158,10 +157,15 @@ private:
      */
     GridPt elementwiseQuantizedRatio(const SpaceVector& ptFromBBMin, const SpaceVector&  cellWidth) const
     {
+        typedef typename GridPt::CoordType CoordType;
+
         GridPt gridPt;
         for(int i=0; i< DIM; ++i)
-            gridPt[i] = std::floor( ptFromBBMin[i] / cellWidth[i]);
-
+        {
+            // Note: numerator and denomenator are both positive numbers
+            // We do not need to take floor, but cast in case the cell is out of range of CoordType
+            gridPt[i] = static_cast<CoordType>(ptFromBBMin[i] / cellWidth[i]);
+        }
         return gridPt;
     }
 

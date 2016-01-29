@@ -18,9 +18,11 @@
 //------------------------------------------------------------------------------
 TEST( quest_octree, topological_octree_parent_child)
 {
+  SLIC_INFO("*** This test exercises the parent/child relation in quest::OctreeBase");
+
   static const int DIM = 2;
   typedef int CoordType;
-  typedef int LeafNodeType;
+  typedef quest::LeafData LeafNodeType;
 
   typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
   typedef OctreeType::GridPt GridPt;
@@ -64,15 +66,14 @@ TEST( quest_octree, topological_octree_parent_child)
 //------------------------------------------------------------------------------
 TEST( quest_octree, topological_octree_refine)
 {
+  SLIC_INFO("*** This test exercises the block refinement in quest::OctreeBase"
+              <<"\nSpecifically, that refining the root block adds all its children to the octree.");
+
   static const int DIM = 3;
-  typedef int LeafNodeType;
+  typedef quest::LeafData LeafNodeType;
 
   typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
   typedef OctreeType::BlockIndex BlockIndex;
-
-
-  std::cout<<"Quest::Octree -- Testing that refining the root block"
-          <<" adds all its children to the octree.\n";
 
   OctreeType octree;
 
@@ -90,8 +91,11 @@ TEST( quest_octree, topological_octree_refine)
 
 TEST( quest_octree, spatial_octree_point_location)
 {
+    SLIC_INFO("*** This test verifies that a query point falls into "
+            << " a child block.");
+
     static const int DIM = 3;
-    typedef int LeafNodeType;
+    typedef quest::LeafData  LeafNodeType;
 
     typedef quest::SpatialOctree<DIM, LeafNodeType> OctreeType;
     typedef OctreeType::BlockIndex BlockIndex;
@@ -101,26 +105,27 @@ TEST( quest_octree, spatial_octree_point_location)
 
     GeometricBoundingBox bb(SpacePt(10), SpacePt(20));
 
+    // Generate a point within the bounding box
     double alpha = 2./3.;
     SpacePt queryPt = SpacePt::lerp(bb.getMin(), bb.getMax(), alpha);
     EXPECT_TRUE( bb.contains(queryPt));
 
     OctreeType octree(bb);
 
+    // Check that the point lies in a leaf of the tree and that this is the root of the tree
     BlockIndex leafBlock = octree.findLeafBlock(queryPt);
     EXPECT_TRUE( octree.isLeaf(leafBlock));
+    EXPECT_EQ( octree.root(), leafBlock );
 
     GeometricBoundingBox leafBB = octree.blockBoundingBox(leafBlock);
     EXPECT_TRUE( leafBB.contains( queryPt ));
     EXPECT_TRUE( bb.contains(leafBB));
 
-    std::cout <<"Query pt: " << queryPt
+    SLIC_INFO("Query pt: " << queryPt
               <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was NOT" )
               <<" contained in bounding box " << leafBB
-              <<"\n\t of leaf { pt: " << leafBlock.pt()
-              <<"; level: " << leafBlock.level() <<"}"
-              <<" in the octree. "
-              << std::endl;
+              <<"\n\t of octree root " << leafBlock
+              );
 
     for(int i=0; i< octree.maxInternalLevel(); ++i)
     {
@@ -132,17 +137,17 @@ TEST( quest_octree, spatial_octree_point_location)
         EXPECT_TRUE( leafBB.contains( queryPt ));
         EXPECT_TRUE( bb.contains(leafBB));
 
-        std::cout <<"Query pt: " << queryPt
+        SLIC_INFO("Query pt: " << queryPt
                   <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was not")
                   <<" contained in bounding box " << leafBB
-                  <<"\n\t of leaf { pt: " << leafBlock.pt()
-                  <<"; level: " << leafBlock.level() <<"}"
-                  <<" in the octree. "
-                  << std::endl;
+                  <<"\n\t of leaf " << leafBlock
+                  <<" in the octree. ");
     }
 
 
 }
+
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"

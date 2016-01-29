@@ -2,6 +2,8 @@
 #ifndef OCTREE_BASE__HXX_
 #define OCTREE_BASE__HXX_
 
+#include <ostream>   // for ostream in print
+
 #include "quest/BoundingBox.hpp"
 #include "quest/MortonIndex.hpp"
 #include "quest/Point.hpp"
@@ -20,19 +22,94 @@
 #include "boost/unordered_map.hpp"
 #endif
 
-#include <utility>      // for std::pair's operator==()
+/**
+ * \file
+ * \brief Defines templated OctreeBase class and its inner class BlockIndex
+ */
 
 
 namespace quest
 {
+
+  /**
+   * \brief Minimal implementation of a BlockDataType for an OctreeBase.
+   * LeafData is default constructible and provides an isLeaf() and setInternal() functions.
+   * \note This implementation uses ones-complement to differentiate between leaf and internal blocks.
+   * This has the nice properties that (a) all internal LeafData have an id with a negative number,
+   * (b) the LeafData id's can be zero-based (c) all LeafDatas -- representing leaf and internal blocks
+   * can live in the same index space.
+   */
+  class LeafData
+  {
+  public:
+      LeafData()
+      {
+          static int idGenerator = 0;
+          m_id = idGenerator++;
+      }
+
+      LeafData(const LeafData& other): m_id(other.m_id) {}
+      LeafData& operator=(const LeafData& other) { m_id = other.m_id; return *this;}
+
+      /**
+       * \brief Predicate to determine if this LeafData represents a leaf block in the tree
+       */
+      bool isLeaf() const { return m_id >= 0; }
+
+      /**
+       * \brief Sets the data associated with this leaf
+       */
+      void setData(int leafID) { m_id = leafID; }
+
+      /**
+       * Returns the normalized form of the id for this LeafData instance
+       * \note The normalized form is a non-negative integer.
+       */
+      int getID() const { return isLeaf()? m_id : ~m_id; }
+
+      /**
+       * \brief Predicate to determine if this LeafData is associated with a leaf block
+       * or internal block of the octree.
+       * \return True, if the associated block is internal, false otherwise
+       */
+      void setInternal() { if(isLeaf()) { m_id = ~m_id; } }
+
+      /**
+       * Equality operator for comparing two LeafData instances
+       */
+      friend bool operator==(const LeafData& lhs, const LeafData& rhs )
+      {
+          return lhs.m_id == rhs.m_id;
+      }
+
+  protected:
+      int m_id;
+  };
+
+
+
 
 /**
  * \class
  * \brief Handles the non-geometric operations for our octree such as refinement,
  * finding the parents and children of a node and determining whether a leaf node exists
  *
+ * \note There are two concepts here.
+ *      A set of nested dyadic integer grids -- A grid at level n has 2^n cells in each of the DIM dimensions
+ *      and an adaptive octree defined by a subset of the grid cells from these nested grids.
+ *      The former is a conceptual aid in the sense that it is implicitly encoded.
+ *
+ *      An octree block at level l is refined by adding its 2^DIM children blocks at level (l+1).
+ *      The root of the octree covers the entire domains and has no parent.
+ *      The leaf blocks of the octree have no children.
+ *      The interior of the children do not overlap, and their union covers that of their parent block.
+ *      Non-leaf blocks are referred to as 'internal'
+ *
+ * \note Requirements for BlockDataType: it must be default constructible and provide an isLeaf() predicate as well
+ * as a setInternal() function that changes its state from representing a leaf block to representing an internal
+ * block.
  */
-template<int DIM, typename LeafNodeType>
+template<int DIM, typename BlockDataType>
 class OctreeBase
 {
 public:
@@ -45,11 +122,12 @@ public:
 
 
 #if defined(USE_CXX11)
-  typedef std::unordered_map<GridPt, LeafNodeType, PointHash<int> > MapType;
+  typedef std::unordered_map<GridPt, BlockDataType, PointHash<int> > MapType;
 #else
-  typedef boost::unordered_map<GridPt, LeafNodeType, PointHash<int> > MapType;
+  typedef boost::unordered_map<GridPt, BlockDataType, PointHash<int> > MapType;
 #endif
   typedef typename MapType::iterator LevelMapIterator;
+  typedef typename MapType::const_iterator LevelMapCIterator;
 
   typedef asctoolkit::slam::Map<MapType> LeafIndicesLevelMap;
 
@@ -201,6 +279,20 @@ public:
             return bValid;
         }
 
+        std::ostream& print(std::ostream& os) const
+        {
+            os << "{pt: " << m_pt
+                <<"; level: " << m_lev <<"}";
+
+            return os;
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const BlockIndex& block)
+        {
+            block.print(os);
+            return os;
+        }
+
 
     /**
      * \brief Helper function to generate an invalid block index.
@@ -230,7 +322,7 @@ public:
     : m_leavesLevelMap(&m_levels)
   {
       BlockIndex rootBlock = root();
-      m_leavesLevelMap[rootBlock.level()][rootBlock.pt()] = LeafNodeType();
+      m_leavesLevelMap[rootBlock.level()][rootBlock.pt()] = BlockDataType();
   }
 
   /**
@@ -241,7 +333,7 @@ public:
   /**
    * \brief The resolution octree level for internal blocks of the octree
    */
-int maxInternalLevel() const { return m_levels.size()-1; }
+  int maxInternalLevel() const { return m_levels.size()-1; }
 public:
    // \todo KW Convert these two functions to static class functions.
    //        This will require converting m_levels to a static set
@@ -338,7 +430,9 @@ public:
   bool isLeaf(const GridPt& pt, int level) const
   {
       const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[level] ];
-      return levelLeafMap.find(pt) != levelLeafMap.end();
+      LevelMapCIterator blockIt = levelLeafMap.find(pt);
+
+      return (blockIt != levelLeafMap.end() && blockIt->second.isLeaf() );
   }
 
   /**
@@ -353,33 +447,55 @@ public:
 
 
   /**
-   * \brief Removes the given leaf block from the tree and adds its children
-   * \pre leafBlock is a leaf block in the octree.  I.e. octree.leafExists(leafBlock)==true.
-   * \note We might choose to simply mark leafBlock as a non-leaf rather than deleting
-   * it from the tree.
+   * \brief Refines the given leaf block in the octree
+   * Marks leafBlock as internal (non-leaf) and adds its children to the tree
+   * \pre leafBlock is a valid leaf block in the octree.
    */
   void refineLeaf(const BlockIndex & leafBlock)
   {
     SLIC_ASSERT( isLeaf(leafBlock) );
 
-    // 1. Find the leaf node
-    // 2. Remove it from the tree (at the appropriate level
+    // Find the leaf node and set as internal
     MapType& currentNodeLevelMap = m_leavesLevelMap[ m_levels[leafBlock.level()] ];
-    currentNodeLevelMap.erase(leafBlock.pt());
+    currentNodeLevelMap[ leafBlock.pt() ].setInternal();
 
-    // 3. Add its children to the tree
+    // Add its children to the tree
     MapType& childLevelMap = m_leavesLevelMap[ m_levels[leafBlock.childLevel()] ];
-
     typedef typename BlockIndex::ChildIndexSet ChildIndexSet;
     const int numChildren = ChildIndexSet().size();
     for(int childIdx=0; childIdx < numChildren; ++childIdx)
     {
-        childLevelMap[ leafBlock.childPt(childIdx) ] = LeafNodeType();
+        childLevelMap[ leafBlock.childPt(childIdx) ] = BlockDataType();
     }
-
   }
 
+  /**
+   * Accessor to the data associated with leafBlock
+   * \param leafBlock A valid leaf block in the tree
+   * \pre leafBlock is a valid leaf in the tree
+   */
+  BlockDataType& operator[](const BlockIndex& leafBlock)
+  {
+      SLIC_ASSERT(isLeaf(leafBlock));
 
+      return m_leavesLevelMap[ m_levels[leafBlock.level()] ][ leafBlock.pt()];
+  }
+
+  /**
+   * \brief const accessor to leaf data associated with leafBlock
+   * \param leafBlock A valid leaf block in the octree
+   * \pre leafBlock is a valid leaf in the tree
+   */
+  const BlockDataType& operator[](const BlockIndex& leafBlock) const
+  {
+      SLIC_ASSERT( isLeaf(leafBlock) );
+
+      // Note: Using find() method on hashmap since operator[] is non-const
+      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[leafBlock.level()] ];
+      LevelMapCIterator blockIt = levelLeafMap.find(leafBlock.pt());
+
+      return blockIt->second;
+  }
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(OctreeBase)
@@ -388,11 +504,6 @@ protected:
   OctreeLevels            m_levels;
   LeafIndicesLevelMap     m_leavesLevelMap;
 };
-
-
-
-
-
 
 
 } // end namespace quest

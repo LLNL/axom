@@ -75,6 +75,7 @@ public:
          };
 
     typedef Point<T,DIM> PointType;
+    typedef T CoordType;
 
 public:
 
