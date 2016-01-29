@@ -18,7 +18,8 @@ using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
 
 using namespace conduit;
-/*
+
+#if 0
 //------------------------------------------------------------------------------
 
 TEST(sidre_view,create_views)
@@ -39,7 +40,8 @@ TEST(sidre_view,create_views)
   EXPECT_EQ(db_1->getIndex(), 1);
   delete ds;
 }
-*/
+#endif
+
 //------------------------------------------------------------------------------
 
 TEST(sidre_view,create_view_from_path)
@@ -61,7 +63,7 @@ TEST(sidre_view,create_view_from_path)
 
   delete ds;
 
-  /*
+#if 0
   ds = new DataStore();
   root = ds->getRoot();
 
@@ -85,7 +87,7 @@ TEST(sidre_view,create_view_from_path)
   std::cerr << "HERE4" << std::endl;
 
   delete ds;
-  */
+#endif
 }
 /*
 
