@@ -26,7 +26,12 @@ default_template = dict(
 
 def wformat(template, dct):
     # shorthand, wrap fmt.vformat
-    return fmt.vformat(template, None, dct)
+    try:
+        return fmt.vformat(template, None, dct)
+    except AttributeError as e:
+        print(e)
+        raise SystemExit('Error with template: ' + template)
+        
 
 def append_format(lst, template, dct):
     # shorthand, wrap fmt.vformat
