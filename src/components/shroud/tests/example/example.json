@@ -2138,6 +2138,7 @@
         "F_module_name_class_template": "{class_lower}_mod", 
         "F_module_name_library_template": "{library_lower}_mod", 
         "F_module_per_class": true, 
+        "F_name_associated": "associated", 
         "F_name_generic_template": "{underscore_name}", 
         "F_name_impl_template": "{class_name}{underscore_name}{function_suffix}", 
         "F_name_instance_get": "yadda", 

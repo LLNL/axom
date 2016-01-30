@@ -23,6 +23,7 @@ module name_module
         procedure :: method2 => names_method2
         procedure :: get_instance => names_get_instance
         procedure :: set_instance => names_set_instance
+        procedure :: associated => names_associated
         ! splicer begin class.Names.type_bound_procedure_part
         ! splicer end class.Names.type_bound_procedure_part
     end type names
@@ -95,6 +96,14 @@ contains
         type(C_PTR), intent(IN) :: voidptr
         obj%voidptr = voidptr
     end subroutine names_set_instance
+    
+    function names_associated(obj) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        class(names), intent(IN) :: obj
+        logical rv
+        rv = c_associated(obj%voidptr)
+    end function names_associated
     
     ! splicer begin class.Names.additional_functions
     ! splicer end class.Names.additional_functions

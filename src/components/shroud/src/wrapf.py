@@ -352,6 +352,26 @@ class Wrapf(util.WrapperMixin):
             impl.append(-1)
             append_format(impl, 'end subroutine {F_name_impl}', fmt)
         
+        # associated
+        fmt.underscore_name = options['F_name_associated']
+        if fmt.underscore_name:
+            fmt.F_name_method = wformat(options['F_name_method_template'], fmt)
+            fmt.F_name_impl = wformat(options['F_name_impl_template'], fmt)
+
+            self.type_bound_part.append('procedure :: %s => %s' % (
+                    fmt.F_name_method, fmt.F_name_impl))
+
+            impl.append('')
+            append_format(impl, 'function {F_name_impl}({F_this}) result (rv)', fmt)
+            impl.append(1)
+            impl.append('use iso_c_binding, only: c_associated')
+            impl.append('implicit none')
+            append_format(impl, 'class({F_derived_name}), intent(IN) :: {F_this}', fmt)
+            impl.append('logical rv')
+            append_format(impl, 'rv = c_associated({F_instance_ptr})', fmt)
+            impl.append(-1)
+            append_format(impl, 'end function {F_name_impl}', fmt)
+        
     def overload_compare(self, fmt_class, operator, procedure, predicate):
         """ Overload .eq. and .eq.
         """

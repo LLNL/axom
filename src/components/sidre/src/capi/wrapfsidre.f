@@ -72,6 +72,7 @@ module sidre_mod
         procedure :: print => datastore_print
         procedure :: get_instance => datastore_get_instance
         procedure :: set_instance => datastore_set_instance
+        procedure :: associated => datastore_associated
         ! splicer begin class.DataStore.type_bound_procedure_part
         ! splicer end class.DataStore.type_bound_procedure_part
     end type datastore
@@ -123,6 +124,7 @@ module sidre_mod
         procedure :: load => datagroup_load
         procedure :: get_instance => datagroup_get_instance
         procedure :: set_instance => datagroup_set_instance
+        procedure :: associated => datagroup_associated
         generic :: create_view => &
             ! splicer begin class.DataGroup.generic.create_view
             ! splicer end class.DataGroup.generic.create_view
@@ -214,6 +216,7 @@ module sidre_mod
         procedure :: print => databuffer_print
         procedure :: get_instance => databuffer_get_instance
         procedure :: set_instance => databuffer_set_instance
+        procedure :: associated => databuffer_associated
         generic :: allocate => &
             ! splicer begin class.DataBuffer.generic.allocate
             ! splicer end class.DataBuffer.generic.allocate
@@ -281,6 +284,7 @@ module sidre_mod
         procedure :: print => dataview_print
         procedure :: get_instance => dataview_get_instance
         procedure :: set_instance => dataview_set_instance
+        procedure :: associated => dataview_associated
         generic :: allocate => &
             ! splicer begin class.DataView.generic.allocate
             ! splicer end class.DataView.generic.allocate
@@ -1550,6 +1554,14 @@ contains
         obj%voidptr = voidptr
     end subroutine datastore_set_instance
     
+    function datastore_associated(obj) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        class(datastore), intent(IN) :: obj
+        logical rv
+        rv = c_associated(obj%voidptr)
+    end function datastore_associated
+    
     ! splicer begin class.DataStore.additional_functions
     ! splicer end class.DataStore.additional_functions
     
@@ -2069,6 +2081,14 @@ contains
         type(C_PTR), intent(IN) :: voidptr
         obj%voidptr = voidptr
     end subroutine datagroup_set_instance
+    
+    function datagroup_associated(obj) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        class(datagroup), intent(IN) :: obj
+        logical rv
+        rv = c_associated(obj%voidptr)
+    end function datagroup_associated
     
     ! splicer begin class.DataGroup.additional_functions
     
@@ -2621,6 +2641,14 @@ contains
         obj%voidptr = voidptr
     end subroutine databuffer_set_instance
     
+    function databuffer_associated(obj) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        class(databuffer), intent(IN) :: obj
+        logical rv
+        rv = c_associated(obj%voidptr)
+    end function databuffer_associated
+    
     ! splicer begin class.DataBuffer.additional_functions
     ! splicer end class.DataBuffer.additional_functions
     
@@ -3075,6 +3103,14 @@ contains
         type(C_PTR), intent(IN) :: voidptr
         obj%voidptr = voidptr
     end subroutine dataview_set_instance
+    
+    function dataview_associated(obj) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        class(dataview), intent(IN) :: obj
+        logical rv
+        rv = c_associated(obj%voidptr)
+    end function dataview_associated
     
     ! splicer begin class.DataView.additional_functions
     

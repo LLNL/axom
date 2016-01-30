@@ -28,6 +28,7 @@ module tutorial_mod
         procedure :: method1 => class1_method1
         procedure :: get_instance => class1_get_instance
         procedure :: set_instance => class1_set_instance
+        procedure :: associated => class1_associated
         ! splicer begin class.Class1.type_bound_procedure_part
         ! splicer end class.Class1.type_bound_procedure_part
     end type class1
@@ -437,6 +438,14 @@ contains
         type(C_PTR), intent(IN) :: voidptr
         obj%voidptr = voidptr
     end subroutine class1_set_instance
+    
+    function class1_associated(obj) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        class(class1), intent(IN) :: obj
+        logical rv
+        rv = c_associated(obj%voidptr)
+    end function class1_associated
     
     ! splicer begin class.Class1.additional_functions
     ! splicer end class.Class1.additional_functions

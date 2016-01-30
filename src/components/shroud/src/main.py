@@ -156,6 +156,7 @@ class Schema(object):
 
             F_name_instance_get = 'get_instance',
             F_name_instance_set = 'set_instance',
+            F_name_associated = 'associated',
 
             )
         wrapp.add_templates(def_options)
