@@ -19,9 +19,7 @@ def add_templates(options):
         PY_PyTypeObject_template    = '{PY_prefix}{cpp_class}_Type',
         PY_PyObject_template        = '{PY_prefix}{cpp_class}',
         PY_type_filename_template   = 'py{cpp_class}type.cpp',
-
-        PY_name_impl_method_template   = '{PY_prefix}{lower_class}_{underscore_name}{function_suffix}',
-        PY_name_impl_function_template = '{PY_prefix}{underscore_name}{function_suffix}',
+        PY_name_impl_template       = '{PY_prefix}{name_class}{underscore_name}{function_suffix}',
         ))
 
 
@@ -487,10 +485,7 @@ return 1;""", fmt)
 
         PY_impl = [1] + PY_decl + PY_code + [-1]
 
-        if cls:
-            util.eval_template(node, 'PY_name_impl', '_method')
-        else:
-            util.eval_template(node, 'PY_name_impl', '_function')
+        util.eval_template(node, 'PY_name_impl')
 
         expose = True
         if len(self.overloaded_methods[result['name']]) > 1:
@@ -669,10 +664,7 @@ return 1;""", fmt)
             body.append('return NULL;')
             body.append(-1)
 
-            if cls:
-                util.eval_template(methods[0], 'PY_name_impl', '_method', fmt)
-            else:
-                util.eval_template(methods[0], 'PY_name_impl', '_function', fmt)
+            util.eval_template(methods[0], 'PY_name_impl', fmt=fmt)
 
             self.create_method(cls, True, fmt, body)
 

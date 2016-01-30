@@ -316,7 +316,7 @@ class Wrapf(util.WrapperMixin):
         if fmt.underscore_name:
             fmt.underscore_name = options['F_name_instance_get']
             fmt.F_name_method = wformat(options['F_name_method_template'], fmt)
-            fmt.F_name_impl = wformat(options['F_name_impl_method_template'], fmt)
+            fmt.F_name_impl = wformat(options['F_name_impl_template'], fmt)
 
             self.type_bound_part.append('procedure :: %s => %s' % (
                     fmt.F_name_method, fmt.F_name_impl))
@@ -336,7 +336,7 @@ class Wrapf(util.WrapperMixin):
         fmt.underscore_name = options['F_name_instance_set']
         if fmt.underscore_name:
             fmt.F_name_method = wformat(options['F_name_method_template'], fmt)
-            fmt.F_name_impl = wformat(options['F_name_impl_method_template'], fmt)
+            fmt.F_name_impl = wformat(options['F_name_impl_template'], fmt)
 
             self.type_bound_part.append('procedure :: %s => %s' % (
                     fmt.F_name_method, fmt.F_name_impl))

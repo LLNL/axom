@@ -1,6 +1,65 @@
 Advanced Usage
 ==============
 
+Names
+-----
+
+Shroud attempts to provide user control of names while providing reasonable defaults.
+Names are controlled by a format string or can be specified explicitly.
+
+Format strings contain “replacement fields” surrounded by curly braces
+{}. Anything that is not contained in braces is considered literal
+text, which is copied unchanged to the output. If you need to include
+a brace character in the literal text, it can be escaped by doubling:
+{{ and }}. [Python_Format]_
+
+The replacement fields are defined by the format dictionary.  Shroud
+defines values which may be used.
+
+Library name - Updated after reading YAML file.
+   * library - The value of **option** *library*.
+   * lower_library - Lowercase version of *library*.
+   * upper_library - Uppercase version of *library*.
+
+Class name - Updated before processing each class.
+   * cpp_class - The name of the C++ class from the YAML input file.
+   * lower_class - Lowercase version of *cpp_class*.
+   * upper_class - Uppercase version of *cpp_class*
+   * name_class  - Variable which may be used in creating function names.
+                   Defaults to evaluation of *name_class_template*.
+                   Outside of a class, set to empty string.
+   * C_prefix - Prefix for C wrapper functions.
+     Defaults to first three letters of *library*.
+     Set from **options**.
+   * F_C_prefix - Prefix for Fortran name for C wrapper.  Defaults to ``c_``.
+     Set from **options**.
+
+Function name - Updated before processing each function or method.
+   * method_name - Name of function in the YAML file.
+   * underscore_name - *method_name* converted from CamelCase to snake_case.
+   * function_suffix - Suffix append to name.  Used to differentiate overloaded functions.
+     Set from function field.
+
+
+
++------------------------+---------------------------------+------------------+
+| Description            | Option                          | Override         |
++========================+=================================+==================+
+| C wrapper              | *C_name_template*               | *C_name*         |
+| implementation         |                                 |                  |
++------------------------+---------------------------------+------------------+
+| Fortran BIND(C)        | *F_C_name_template*             | *F_C_name*       |
+| interface              |                                 |                  |
++------------------------+---------------------------------+------------------+
+| Fortran wrapper        | *F_name_impl_template*          | *F_name_impl*    |
+| implementation         |                                 |                  |
++------------------------+---------------------------------+------------------+
+| Fortran type method    | *F_name_method_template*        | *F_name_method*  |
++------------------------+---------------------------------+------------------+
+| Fortran generic name   | *F_name_generic_template*       | *F_name_generic* |
++------------------------+---------------------------------+------------------+
+
+
 character
 ---------
 
@@ -113,4 +172,18 @@ complex
 
 derived types
 -------------
+
+
+
+* chained function calls
+
+
+splicers
+--------
+
+
+.. [Python_Format] https://docs.python.org/2/library/string.html#format-string-syntax
+
+
+
 

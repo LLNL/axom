@@ -15,6 +15,7 @@
                 "C_header_filename": "foo.h", 
                 "C_impl_filename": "foo.cpp", 
                 "C_type_name": "TES_names", 
+                "F_C_prefix": "c_", 
                 "F_derived_name": "names", 
                 "F_impl_filename": "foo.f", 
                 "F_module_name": "name_module", 
@@ -26,6 +27,7 @@
                 "PY_type_filename": "pyNamestype.cpp", 
                 "cpp_class": "Names", 
                 "lower_class": "names", 
+                "name_class": "names_", 
                 "upper_class": "NAMES"
             }, 
             "methods": [
@@ -81,6 +83,8 @@
             ], 
             "name": "Names", 
             "options": {
+                "C_name_template": "XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+                "F_C_name_template": "XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
                 "none": "foo"
             }
         }
@@ -111,6 +115,7 @@
         "function_suffix": "", 
         "library": "testnames", 
         "lower_library": "testnames", 
+        "name_class": "", 
         "overloaded": false, 
         "rv": "rv", 
         "upper_library": "TESTNAMES"
@@ -255,10 +260,8 @@
         "C_header_filename_library_template": "wrap{library}.h", 
         "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 
         "C_impl_filename_library_template": "wrap{library}.cpp", 
-        "C_name_function_template": "YYY_{C_prefix}{underscore_name}{function_suffix}", 
-        "C_name_method_template": "XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
-        "F_C_name_function_template": "YYY_{C_prefix}{underscore_name}{function_suffix}", 
-        "F_C_name_method_template": "XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "C_name_template": "{C_prefix}{name_class}{underscore_name}{function_suffix}", 
+        "F_C_name_template": "{F_C_prefix}{name_class}{underscore_name}{function_suffix}", 
         "F_C_prefix": "c_", 
         "F_force_wrapper": true, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
@@ -267,8 +270,7 @@
         "F_module_name_library_template": "{lower_library}_mod", 
         "F_module_per_class": true, 
         "F_name_generic_template": "{underscore_name}", 
-        "F_name_impl_function_template": "{library}_{underscore_name}{function_suffix}", 
-        "F_name_impl_method_template": "{lower_class}_{underscore_name}{function_suffix}", 
+        "F_name_impl_template": "{name_class}{underscore_name}{function_suffix}", 
         "F_name_instance_get": "get_instance", 
         "F_name_instance_set": "set_instance", 
         "F_name_method_template": "{underscore_name}{function_suffix}", 
@@ -278,13 +280,13 @@
         "PY_header_filename_template": "py{library}module.hpp", 
         "PY_helper_filename_template": "py{library}helper.cpp", 
         "PY_module_filename_template": "py{library}module.cpp", 
-        "PY_name_impl_function_template": "{PY_prefix}{underscore_name}{function_suffix}", 
-        "PY_name_impl_method_template": "{PY_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "PY_name_impl_template": "{PY_prefix}{name_class}{underscore_name}{function_suffix}", 
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "", 
         "debug": true, 
         "doxygen": true, 
         "library": "testnames", 
+        "name_class_template": "{lower_class}_", 
         "namespace": "", 
         "wrap_c": true, 
         "wrap_fortran": true, 

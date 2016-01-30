@@ -3,14 +3,7 @@
 options:
   debug: True
   library: testnames
-  C_name_method_template: XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}
-  C_name_function_template: YYY_{C_prefix}{underscore_name}{function_suffix}
 
-  F_C_name_method_template: XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}
-  F_C_name_function_template: YYY_{C_prefix}{underscore_name}{function_suffix}
-
-  F_name_impl_function_template:
-    "{library}_{underscore_name}{function_suffix}"
   # always create wrappers to demonstrate name generation
   F_force_wrapper: True
   wrap_python: True
@@ -28,6 +21,8 @@ classes:
     F_impl_filename: foo.f
     options:
       none: foo
+      C_name_template: XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}
+      F_C_name_template: XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}
 
     methods:
     -  decl: void method1
@@ -36,6 +31,10 @@ classes:
 
 
 functions:
+  - options:
+       C_name_template: YYY_{C_prefix}{underscore_name}{function_suffix}
+       F_C_name_template: YYY_{C_prefix}{underscore_name}{function_suffix}
+       F_name_impl_template: "{library}_{name_class}{underscore_name}{function_suffix}"
   - decl: void function1
   - decl: void function2
     C_name: c_name_special

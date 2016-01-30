@@ -74,6 +74,27 @@ class Schema(object):
     def pop_options(self):
         self.options_stack.pop()
 
+    def check_options_only(self, node):
+        """Process an options only entry in a list.
+
+        Return True if node only has options.
+        node is assumed to be a dictionary.
+        Update current set of options from node['options'].
+        """
+        if len(node) != 1:
+            return False
+        options = node.get('options', None)
+        if not options:
+            return False
+        if not isinstance(options, dict):
+            raise TypeError("options must be a dictionary")
+
+        # replace current options
+        new = util.Options(parent=self.options_stack[-1])
+        new.update(node['options'])
+        self.options_stack[-1] = new
+        return True
+
     def push_fmt(self, node):
         fmt = util.Options(self.fmt_stack[-1])
         self.fmt_stack.append(fmt)
@@ -107,22 +128,22 @@ class Schema(object):
 
             doxygen = True,       # create doxygen comments
 
+            # blank for functions, set in classes.
+            name_class_template = '{lower_class}_',
+
             C_header_filename_library_template = 'wrap{library}.h',
             C_impl_filename_library_template = 'wrap{library}.cpp',
 
             C_header_filename_class_template = 'wrap{cpp_class}.h',
             C_impl_filename_class_template = 'wrap{cpp_class}.cpp',
 
-            C_name_method_template = '{C_prefix}{lower_class}_{underscore_name}{function_suffix}',
-            C_name_function_template = '{C_prefix}{underscore_name}{function_suffix}',
+            C_name_template = '{C_prefix}{name_class}{underscore_name}{function_suffix}',
 
             # Fortran's names for C functions
             F_C_prefix = 'c_',
-            F_C_name_method_template = '{F_C_prefix}{lower_class}_{underscore_name}{function_suffix}',
-            F_C_name_function_template = '{F_C_prefix}{underscore_name}{function_suffix}',
+            F_C_name_template = '{F_C_prefix}{name_class}{underscore_name}{function_suffix}',
 
-            F_name_impl_method_template = '{lower_class}_{underscore_name}{function_suffix}',
-            F_name_impl_function_template ='{underscore_name}{function_suffix}',
+            F_name_impl_template ='{name_class}{underscore_name}{function_suffix}',
 
             F_name_method_template = '{underscore_name}{function_suffix}',
             F_name_generic_template = '{underscore_name}',
@@ -150,6 +171,7 @@ class Schema(object):
         fmt_library.upper_library = fmt_library.library.upper()
         fmt_library.function_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
+        fmt_library.name_class = ''
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
         fmt_library.F_C_prefix    = def_options['F_C_prefix']
         fmt_library.rv            = 'rv'  # return value
@@ -427,9 +449,7 @@ class Schema(object):
 
         classes = node.setdefault('classes', [])
         self.check_classes(classes)
-
-        functions = node.setdefault('functions', [])
-        self.check_functions(functions)
+        self.check_functions(node, 'functions')
 
     def check_classes(self, node):
         if not isinstance(node, list):
@@ -451,7 +471,10 @@ class Schema(object):
         fmt_class.upper_class = name.upper()
         if 'C_prefix' in options:
             fmt_class.C_prefix = options.C_prefix
-
+        if 'F_C_prefix' in options:
+            fmt_class.F_C_prefix = options.F_C_prefix
+        util.eval_template(node, 'name_class')
+        
         if options.F_module_per_class:
             util.eval_template(node, 'F_module_name', '_class')
             util.eval_template(node, 'F_impl_filename', '_class')
@@ -460,12 +483,7 @@ class Schema(object):
         util.eval_template(node, 'C_header_filename', '_class')
         util.eval_template(node, 'C_impl_filename', '_class')
 
-        methods = node.setdefault('methods', [])
-        for method in methods:
-            if not isinstance(method, dict):
-                raise TypeError("classes[n]['methods'] must be a dictionary")
-            self.check_function(method)
-
+        self.check_functions(node, 'methods')
         self.pop_fmt()
         self.pop_options()
 
@@ -515,13 +533,22 @@ class Schema(object):
         self.pop_fmt()
         self.pop_options()
 
-    def check_functions(self, func_list):
-        """ check functions which are not in a class.
+    def check_functions(self, node, member):
+        """ check functions.
+
+        Create a new list without the options only entries.
         """
-        if not isinstance(func_list, list):
+        functions = node.get(member, [])
+
+        if not isinstance(functions, list):
             raise TypeError("functions must be a list")
-        for func in func_list:
+        only_functions = []
+        for func in functions:
+            if self.check_options_only(func):
+                continue
             self.check_function(func)
+            only_functions.append(func)
+        node[member] = only_functions
 
 
 class GenFunctions(object):
@@ -1228,15 +1255,8 @@ class Namify(object):
             return
         fmt_func = node['fmt']
         
-        if cls:
-            util.eval_template(node, 'C_name', '_method')
-        else:
-            util.eval_template(node, 'C_name', '_function')
-
-        if cls:
-            util.eval_template(node, 'F_C_name', '_method')
-        else:
-            util.eval_template(node, 'F_C_name', '_function')
+        util.eval_template(node, 'C_name')
+        util.eval_template(node, 'F_C_name')
         fmt_func.F_C_name = fmt_func.F_C_name.lower()
 
         if 'C_this' in options:
@@ -1250,11 +1270,7 @@ class Namify(object):
             return
         fmt_func = node['fmt']
 
-        if cls:
-            util.eval_template(node, 'F_name_impl', '_method')
-        else:
-            util.eval_template(node, 'F_name_impl', '_function')
-
+        util.eval_template(node, 'F_name_impl')
         util.eval_template(node, 'F_name_method')
         util.eval_template(node, 'F_name_generic')
 
