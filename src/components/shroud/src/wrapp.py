@@ -61,7 +61,7 @@ class Wrapp(util.WrapperMixin):
         fmt_library = self.tree['fmt']
 
         fmt_library.PY_prefix          = options.get('PY_prefix', 'PY_')
-        fmt_library.PY_module_name     = fmt_library.lower_library
+        fmt_library.PY_module_name     = fmt_library.library_lower
         util.eval_template(top, 'PY_module_filename')
         util.eval_template(top, 'PY_header_filename')
         util.eval_template(top, 'PY_helper_filename')
@@ -905,8 +905,8 @@ PyTypeObject {PY_PyTypeObject} = {{
 
 module_begin = """
 /*
- * init{lower_library} - Initialization function for the module
- * *must* be called init{lower_library}
+ * init{library_lower} - Initialization function for the module
+ * *must* be called init{library_lower}
  */
 static char {PY_prefix}_doc__[] =
 "{PY_library_doc}"
@@ -924,25 +924,25 @@ static struct module_state _state;
 #endif
 
 #ifdef IS_PY3K
-static int {lower_library}_traverse(PyObject *m, visitproc visit, void *arg) {{
+static int {library_lower}_traverse(PyObject *m, visitproc visit, void *arg) {{
     Py_VISIT(GETSTATE(m)->error);
     return 0;
 }}
 
-static int {lower_library}_clear(PyObject *m) {{
+static int {library_lower}_clear(PyObject *m) {{
     Py_CLEAR(GETSTATE(m)->error);
     return 0;
 }}
 
 static struct PyModuleDef moduledef = {{
     PyModuleDef_HEAD_INIT,
-    "{lower_library}", /* m_name */
+    "{library_lower}", /* m_name */
     {PY_prefix}_doc__, /* m_doc */
     sizeof(struct module_state), /* m_size */
     {PY_prefix}methods, /* m_methods */
     NULL, /* m_reload */
-    {lower_library}_traverse, /* m_traverse */
-    {lower_library}_clear, /* m_clear */
+    {library_lower}_traverse, /* m_traverse */
+    {library_lower}_clear, /* m_clear */
     NULL  /* m_free */
 }};
 
@@ -960,7 +960,7 @@ PyMODINIT_FUNC
 MOD_INITBASIS(void)
 {{
     PyObject *m = NULL;
-    const char * error_name = "{lower_library}.Error";
+    const char * error_name = "{library_lower}.Error";
 """
 
 module_middle = """

@@ -1680,10 +1680,10 @@
         "class_name": "", 
         "function_suffix": "", 
         "library": "UserLibrary", 
-        "lower_library": "userlibrary", 
+        "library_lower": "userlibrary", 
+        "library_upper": "USERLIBRARY", 
         "overloaded": false, 
-        "rv": "rv", 
-        "upper_library": "USERLIBRARY"
+        "rv": "rv"
     }, 
     "functions": [
         {
@@ -2134,9 +2134,9 @@
         "F_C_prefix": "c_", 
         "F_force_wrapper": false, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
-        "F_impl_filename_library_template": "wrapf{lower_library}.f", 
+        "F_impl_filename_library_template": "wrapf{library_lower}.f", 
         "F_module_name_class_template": "{class_lower}_mod", 
-        "F_module_name_library_template": "{lower_library}_mod", 
+        "F_module_name_library_template": "{library_lower}_mod", 
         "F_module_per_class": true, 
         "F_name_generic_template": "{underscore_name}", 
         "F_name_impl_template": "{class_name}{underscore_name}{function_suffix}", 

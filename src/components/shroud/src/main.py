@@ -148,8 +148,8 @@ class Schema(object):
             F_name_method_template = '{underscore_name}{function_suffix}',
             F_name_generic_template = '{underscore_name}',
 
-            F_module_name_library_template = '{lower_library}_mod',
-            F_impl_filename_library_template = 'wrapf{lower_library}.f',
+            F_module_name_library_template = '{library_lower}_mod',
+            F_impl_filename_library_template = 'wrapf{library_lower}.f',
 
             F_module_name_class_template = '{class_lower}_mod',
             F_impl_filename_class_template = 'wrapf{cpp_class}.f',
@@ -167,12 +167,12 @@ class Schema(object):
 
         fmt_library = node['fmt'] = util.Options(None)
         fmt_library.library       = def_options['library']
-        fmt_library.lower_library = fmt_library.library.lower()
-        fmt_library.upper_library = fmt_library.library.upper()
+        fmt_library.library_lower = fmt_library.library.lower()
+        fmt_library.library_upper = fmt_library.library.upper()
         fmt_library.function_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
         fmt_library.class_name = ''
-        fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
+        fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.library_upper[:3] + '_')
         fmt_library.F_C_prefix    = def_options['F_C_prefix']
         fmt_library.rv            = 'rv'  # return value
         util.eval_template(node, 'C_header_filename', '_library')
