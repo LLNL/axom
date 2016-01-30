@@ -8,12 +8,12 @@ C method ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+construc
 C method void delete()+destructor
 C method int incrementCount(int incr+intent(in)+value)
 C method const string & getName() const
-C method void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+C method void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C method int GetNameLength() const
 C method const string & getNameErrorCheck() const
-C method void getNameErrorCheck(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+C method void getNameErrorCheck(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C method const string & getNameArg() const
-C method void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
+C method void getNameArg(string & name+intent(out)+len(Lname)) const
 C method ExClass2 * getRoot()
 C method int getValue(int value+intent(in)+value)
 C method long getValue(long value+intent(in)+value)
@@ -27,7 +27,7 @@ C method ExClass2 * ExClass2(const string * name+intent(in))+constructor
 C method ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor
 C method void delete()+destructor
 C method const string & getName() const
-C method void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+C method void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C method const int GetNameLength()
 C method ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
 C method void * declare(TypeID type+intent(in)+value)
@@ -62,13 +62,13 @@ C-interface method ExClass1 * new(const string * name+intent(in)+len_trim(Lname)
 C-interface, Fortran method void delete()+destructor
 C-interface, Fortran method int incrementCount(int incr+intent(in)+value)
 C-interface, Fortran method const string & getName() const
-C-interface method void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+C-interface method void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C-interface, Fortran method int GetNameLength() const
 C-interface, Fortran method const string & getNameErrorCheck() const
-C-interface method void getNameErrorCheck(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+C-interface method void getNameErrorCheck(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C-interface method const string & getNameArg() const
-C-interface method void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
-Fortran method void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
+C-interface method void getNameArg(string & name+intent(out)+len(Lname)) const
+Fortran method void getNameArg(string & name+intent(out)+len(Lname)) const
 C-interface, Fortran method ExClass2 * getRoot()
 C-interface, Fortran method int getValue(int value+intent(in)+value)
 C-interface, Fortran method long getValue(long value+intent(in)+value)
@@ -81,7 +81,7 @@ C-interface, Fortran method ExClass2 * ExClass2(const string * name+intent(in))+
 C-interface method ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor
 C-interface, Fortran method void delete()+destructor
 C-interface, Fortran method const string & getName() const
-C-interface method void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+C-interface method void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 C-interface, Fortran method const int GetNameLength()
 C-interface, Fortran method ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
 C-interface method void * declare(TypeID type+intent(in)+value)

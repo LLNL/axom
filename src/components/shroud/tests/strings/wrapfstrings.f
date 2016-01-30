@@ -237,7 +237,7 @@ contains
         ! splicer end get_char2
     end function get_char2
     
-    ! void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))
+    ! void getChar3(char * output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=16
     !>
@@ -288,7 +288,7 @@ contains
         ! splicer end get_string2
     end function get_string2
     
-    ! void getString3(string_result_as_arg & output+intent(out)+len(Loutput))
+    ! void getString3(string & output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=21
     !>

@@ -376,6 +376,11 @@ class Wrapc(util.WrapperMixin):
                     for cmd in cmd_list:
                         append_format(post_call, cmd, fmt)
 
+                cpp_header = c_statements.get(intent,{}).get('cpp_header',None)
+                if cpp_header:
+                    # include any dependent header in generated source
+                    self.header_impl_include[cpp_header] = True
+
             if arg_call:
                 # convert C argument to C++
                 append_format(call_list, arg_typedef.c_to_cpp, fmt)

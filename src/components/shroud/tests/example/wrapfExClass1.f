@@ -325,7 +325,7 @@ contains
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
     
-    ! void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
+    ! void getNameArg(string & name+intent(out)+len(Lname)) const
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=17
     subroutine exclass1_get_name_arg(obj, name)

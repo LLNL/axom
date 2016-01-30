@@ -93,7 +93,7 @@ return rv.c_str();
 // splicer end class.ExClass1.method.get_name
 }
 
-// void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+// void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 // function_index=14
 void AA_exclass1_get_name_bufferify(AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv)
 {
@@ -130,7 +130,7 @@ return rv.c_str();
 // splicer end class.ExClass1.method.get_name_error_check
 }
 
-// void getNameErrorCheck(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+// void getNameErrorCheck(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 // function_index=15
 void AA_exclass1_get_name_error_check_bufferify(AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv)
 {
@@ -153,7 +153,7 @@ return rv.c_str();
 // splicer end class.ExClass1.method.get_name_arg
 }
 
-// void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
+// void getNameArg(string & name+intent(out)+len(Lname)) const
 // function_index=16
 void AA_exclass1_get_name_arg_bufferify(AA_exclass1 * self, char * name, int Lname)
 {

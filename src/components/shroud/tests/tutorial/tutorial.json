@@ -343,7 +343,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 7, 
-            "_decl": "void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))", 
+            "_decl": "void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(LSH_F_rv))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 32, 
             "_generated": "string_to_buffer_and_len", 
@@ -381,7 +381,7 @@
                         "reference": false
                     }, 
                     "name": "SH_F_rv", 
-                    "type": "string_result_as_arg"
+                    "type": "std::string"
                 }
             ], 
             "attrs": {}, 
@@ -457,7 +457,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 8, 
-            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))", 
+            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 33, 
             "_generated": "string_to_buffer_and_len", 
@@ -494,7 +494,7 @@
                         "reference": true
                     }, 
                     "name": "output", 
-                    "type": "string_result_as_arg"
+                    "type": "std::string"
                 }
             ], 
             "attrs": {}, 
@@ -522,7 +522,7 @@
         {
             "_PTR_C_CPP_index": 8, 
             "_PTR_F_C_index": 33, 
-            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))", 
+            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 34, 
             "_generated": "string_to_buffer_and_len", 
@@ -559,7 +559,7 @@
                         "reference": true
                     }, 
                     "name": "output", 
-                    "type": "string_result_as_arg"
+                    "type": "std::string"
                 }
             ], 
             "attrs": {}, 
@@ -1853,7 +1853,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 21, 
-            "_decl": "void LastFunctionCalled(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
+            "_decl": "void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 37, 
             "_generated": "string_to_buffer_and_len", 
@@ -1868,7 +1868,7 @@
                         "reference": true
                     }, 
                     "name": "SH_F_rv", 
-                    "type": "string_result_as_arg"
+                    "type": "std::string"
                 }
             ], 
             "attrs": {
@@ -2070,6 +2070,7 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
                         "delete [] {cpp_var};"
@@ -2079,51 +2080,7 @@
                     ]
                 }, 
                 "result": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
-                    ]
-                }
-            }, 
-            "c_to_cpp": "{cpp_var}", 
-            "c_type": "char", 
-            "cpp_type": "char", 
-            "f_module": {
-                "iso_c_binding": null
-            }, 
-            "f_type": "character(*)"
-        }, 
-        "char_result_as_arg": {
-            "PY_ctor": "PyString_FromString({var})", 
-            "PY_format": "s", 
-            "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
-            "c_statements": {
-                "intent_in": {
-                    "post_call": [
-                        "delete [] {cpp_var};"
-                    ], 
-                    "pre_call": [
-                        "int {c_var_len} = strlen({c_var});", 
-                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
-                        "{cpp_var}[{c_var_len}] = '\\0';"
-                    ], 
-                    "pre_call_trim": [
-                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
-                        "{cpp_var}[{c_var_len}] = '\\0';"
-                    ]
-                }, 
-                "intent_out": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
-                        "delete [] {cpp_var};"
-                    ], 
-                    "pre_call": [
-                        "char * {cpp_var} = new char [{c_var_num} + 1];"
-                    ]
-                }, 
-                "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -2291,11 +2248,13 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -2326,11 +2285,13 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -2339,41 +2300,6 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{cpp_var}.c_str()", 
-            "cpp_type": "std::string", 
-            "f_module": {
-                "iso_c_binding": null
-            }, 
-            "f_type": "character(*)"
-        }, 
-        "string_result_as_arg": {
-            "PY_ctor": "PyString_FromString({var})", 
-            "PY_format": "s", 
-            "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
-            "c_statements": {
-                "intent_in": {
-                    "pre_call": [
-                        "std::string {cpp_var}({c_var});"
-                    ], 
-                    "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
-                    ]
-                }, 
-                "intent_out": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
-                    ]
-                }, 
-                "result": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
-                    ]
-                }
-            }, 
-            "c_to_cpp": "{cpp_var}", 
-            "c_type": "char", 
-            "cpp_header": "shroudrt.hpp", 
             "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
@@ -2396,11 +2322,13 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]

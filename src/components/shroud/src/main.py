@@ -306,11 +306,13 @@ class Schema(object):
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             'delete [] {cpp_var};',
                             ],
+                        cpp_header = 'shroudrt.hpp',
                         ),
                     result = dict(
                         post_call = [
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             ],
+                        cpp_header = 'shroudrt.hpp',
                         ),
                     ),
                 c_to_cpp  = '{cpp_var}',
@@ -368,11 +370,13 @@ class Schema(object):
                         post_call = [
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             ],
+                        cpp_header = 'shroudrt.hpp'
                         ),
                     result = dict(
                         post_call = [
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             ],
+                        cpp_header = 'shroudrt.hpp'
                         ),
                     ),
 
@@ -396,22 +400,6 @@ class Schema(object):
         def_types['integer(C_LONG)'] = def_types['long']
         def_types['real(C_FLOAT)']   = def_types['float']
         def_types['real(C_DOUBLE)']  = def_types['double']
-
-        # result_as_arg
-        tmp = def_types['char'].clone_as('char_result_as_arg')
-        def_types[tmp.name] = tmp
-
-        tmp = def_types['string'].clone_as('string_result_as_arg')
-        tmp.update(dict(
-                cpp_header = 'shroudrt.hpp',
-#                c_post_call   = 'asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});',
-#                f_argsdecl    = [
-#                    'character(*), intent(OUT) :: {result_arg}',
-#                    'type(C_PTR) :: {F_result}'],
-#                f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})',
-#                f_post_call   = 'call FccCopyPtr({result_arg}, len({result_arg}), {F_result})',
-                ))
-        def_types[tmp.name] = tmp
 
         # pure fortran string
         tmp = def_types['string'].clone_as('string_result_fstr')
@@ -883,7 +871,6 @@ class GenFunctions(object):
             # Add additional argument to hold result
             result_as_string = copy.deepcopy(result)
             result_as_string['name'] = result_name
-            result_as_string['type'] = result_typedef.name + '_result_as_arg'
             attrs = result_as_string['attrs']
             attrs['const'] = False
             attrs['len'] = 'L' + result_name

@@ -97,7 +97,7 @@ return rv;
 // splicer end function.get_char1
 }
 
-// void getChar1(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+// void getChar1(char * SH_F_rv+intent(out)+len(LSH_F_rv))+pure
 // function_index=12
 /**
  * \brief return a 'const char *' as character(*)
@@ -126,7 +126,7 @@ return rv;
 // splicer end function.get_char2
 }
 
-// void getChar2(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))
+// void getChar2(char * SH_F_rv+intent(out)+len(LSH_F_rv))
 // function_index=14
 /**
  * \brief return 'const char *' with fixed size (len=30)
@@ -155,7 +155,7 @@ return rv;
 // splicer end function.get_char3
 }
 
-// void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))
+// void getChar3(char * output+intent(out)+len(Loutput))
 // function_index=15
 /**
  * \brief return a 'const char *' as argument
@@ -184,7 +184,7 @@ return rv.c_str();
 // splicer end function.get_string1
 }
 
-// void getString1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+// void getString1(string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
 // function_index=17
 /**
  * \brief return a 'const string&' as character(*)
@@ -218,7 +218,7 @@ return rv.c_str();
 // splicer end function.get_string2
 }
 
-// void getString2(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))
+// void getString2(string & SH_F_rv+intent(out)+len(LSH_F_rv))
 // function_index=19
 /**
  * \brief return 'const string&' with fixed size (len=30)
@@ -258,7 +258,7 @@ return rv.c_str();
 // splicer end function.get_string3
 }
 
-// void getString3(string_result_as_arg & output+intent(out)+len(Loutput))
+// void getString3(string & output+intent(out)+len(Loutput))
 // function_index=20
 /**
  * \brief return a 'const string&' as argument

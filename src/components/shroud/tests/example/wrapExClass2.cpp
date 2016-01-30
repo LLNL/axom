@@ -59,7 +59,7 @@ return rv.c_str();
 // splicer end class.ExClass2.method.get_name
 }
 
-// void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+// void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 // function_index=36
 void AA_exclass2_get_name_bufferify(AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv)
 {

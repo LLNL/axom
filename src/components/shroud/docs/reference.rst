@@ -324,7 +324,7 @@ c_fortran
 c_statements
     A nested dictionary of code template to add.
     The first layer is *intent_in*, *intent_out*, and *result*.
-    The second layer is *pre_call*, *pre_call_trim*, *post_call*.
+    The second layer is *pre_call*, *pre_call_trim*, *post_call*, *cpp_header*.
     The entries are a list of format strings.
 
     intent_in
@@ -339,6 +339,9 @@ c_statements
     intent_out
         Code to add after call when ``intent(OUT)`` or ``intent(INOUT)``.
         Used to implement copy-out semantics.
+
+    result
+        Code to use when passing result as an argument.
 
 c_return_code
     Fortran code used to call function and assign the return value.
