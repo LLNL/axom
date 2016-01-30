@@ -40,9 +40,34 @@ TEST(sidre_group,get_name)
 
   DataGroup * group2 = root->getGroup("foo");
   EXPECT_TRUE(group2 == ATK_NULLPTR);
+}
+
+//------------------------------------------------------------------------------
+// getNameWithPath()
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_name_with_path)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  DataGroup * group = root->createGroup("test1")->createGroup("test2")->createGroup("test3");
+  DataGroup * group2 = root->getGroup("test1/test2/test3");
+
+  EXPECT_EQ(group, group2);
+
+  // Now verify that code will not create missing groups.
+  // TODO - improve error handling so this isn't fatal.
+//  DataGroup * group3 = root->createGroup("testa")->createGroup("testb")->createGroup("testc");
+//  DataGroup * group_bad = root->getGroup("testa/BAD/testc");
+
+//  (void)group3;
+
+//  EXPECT_EQ(group_bad, root->getGroup("testa") );
 
   delete ds;
+
 }
+
 
 //------------------------------------------------------------------------------
 // getParent()
@@ -113,6 +138,23 @@ TEST(sidre_group,get_view)
 
   delete ds;
 }
+//------------------------------------------------------------------------------
+// Verify getViewWithPath()
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_view_with_path)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  DataView * view = root->createGroup("group1")->createGroup("group2")->createView("view1");
+  DataView * view2 = root->getView("group1/group2/view1");
+
+  EXPECT_EQ( view, view2 );
+
+  delete ds;
+}
+
+
 //------------------------------------------------------------------------------
 // Verify getViewName(), getViewIndex()
 //------------------------------------------------------------------------------

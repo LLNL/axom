@@ -28,6 +28,7 @@
 #include "DataBuffer.hpp"
 #include "DataStore.hpp"
 #include "DataView.hpp"
+#include "SidreUtilities.hpp"
 
 namespace asctoolkit
 {
@@ -49,19 +50,27 @@ namespace sidre
  */
 DataView * DataGroup::createView( const std::string& name )
 {
-  if ( name.empty() || hasView(name) )
+  std::string path = name;
+  DataGroup * group = walkPath( path, true );
+
+  if ( group == ATK_NULLPTR )
   {
-    SLIC_CHECK( !name.empty() );
-    SLIC_CHECK(!hasView(name) );
+    SLIC_CHECK( group != ATK_NULLPTR );
+    return ATK_NULLPTR;
+  }
+  else if ( path.empty() || group->hasView(path) )
+  {
+    SLIC_CHECK( !path.empty() );
+    SLIC_CHECK( !group->hasView(path) );
     return ATK_NULLPTR;
   }
 
   // Want the C++ new operator to return null pointer on failure instead of
   // throwing an exception.
-  DataView * view = new(std::nothrow) DataView( name, this);
+  DataView * view = new(std::nothrow) DataView( path, this);
   if ( view != ATK_NULLPTR )
   {
-    attachView( view );
+    group->attachView( view );
   }
   return view;
 }
@@ -476,18 +485,29 @@ DataView * DataGroup::copyView(DataView * view)
  */
 DataGroup * DataGroup::createGroup( const std::string& name )
 {
-  SLIC_CHECK( !name.empty() );
-  SLIC_CHECK_MSG( hasGroup(name) == false, "name == " << name );
 
-  if ( name.empty() || hasGroup(name) )
+  std::string path = name;
+  DataGroup * group = walkPath( path, true );
+
+  if ( group == ATK_NULLPTR )
+  {
+    SLIC_CHECK( group != ATK_NULLPTR );
+    return ATK_NULLPTR;
+  }
+  else if ( path.empty() || group->hasGroup(name) )
+  {
+    SLIC_CHECK( !path.empty() );
+    SLIC_CHECK_MSG( !group->hasGroup(name), "name == " << name );
+
+    return ATK_NULLPTR;
+  }
+
+  DataGroup * new_group = new(std::nothrow) DataGroup( name, this);
+  if ( new_group == ATK_NULLPTR )
   {
     return ATK_NULLPTR;
   }
-  else
-  {
-    DataGroup * group = new DataGroup( name, this);
-    return attachGroup(group);
-  }
+  return group->attachGroup(new_group);
 }
 
 /*
@@ -819,6 +839,85 @@ DataGroup::~DataGroup()
 /*
  *************************************************************************
  *
+ * PRIVATE method to walk down a path to the next-to-last entry.
+ *
+ * If an empty path or a path with just a single entry, 'foo', is passed
+ * in, then this routine will simply return the current group.
+ *
+ * If an error is encoutered, this private function will return ATK_NULLPTR
+ *
+ * 'path': The path to traverse.  Traversed entries will be stripped
+ * from this parameter at algorithm completion, leaving the last entry
+ * in the path remaining.
+ *
+ * 'create_on_demand': If true, will create any groups that are not
+ * found while walking the path.
+ *
+ *************************************************************************
+ */
+
+// Developer notes:
+// At next pass, should optimize this.
+// #1 the split routine performs string copies when populating a new
+//   vector of the tokens.  That could be rewritten to instead populate a
+//   vector of delimiter positions and avoid string copying.
+// #2 if the provided path is invalid, our code will halt.  This should be improved
+//   to handle it.  (Figure out what an appropriate return value is, and how
+//   caller public function should handle it).
+// #3 Since this function can create groups on demand, it's not a const function so
+//   I left it out of our const versions of getGroup, getView.  Need to just split
+//   this function into two, one const and one non-const.
+// -- AB
+
+DataGroup * DataGroup::walkPath( std::string& path, bool create_on_demand )
+{
+  // TODO - write tests that pass in some error conditions and verify code for:
+  // path = ""
+  // path = "foo"
+  // these should result in just getting back the same group you just called this
+  // routine from and issue a warning, but not cause a code crash.
+
+  DataGroup * group_ptr = this;
+
+  std::string::size_type pos = detail::find_exclusive( path, m_path_delimiter);
+  if (pos != std::string::npos)
+  {
+    std::vector<std::string> tokens = detail::split(path, m_path_delimiter, pos);
+    std::vector<std::string>::iterator stop = tokens.end() - 1;
+
+    // Navigate path down to desired group.
+    for (std::vector<std::string>::const_iterator iter = tokens.begin(); iter < stop; ++iter)
+    {
+      SLIC_ASSERT( iter->size() > 0 );
+
+      if ( group_ptr->hasGroup(*iter) )
+      {
+        group_ptr = group_ptr->getGroup(*iter);
+      }
+      else if (create_on_demand)
+      {
+        group_ptr = group_ptr->createGroup(*iter);
+
+        if ( group_ptr == ATK_NULLPTR )
+        {
+          iter = stop;
+        }
+      }
+      else
+      {
+//        SLIC_CHECK_MSG(false, "Path is invalid, group " << group_ptr->getName() << " does not have group with name " << *iter);
+        SLIC_ERROR("Path is invalid, group " << group_ptr->getName() << " does not have group with name " << *iter);
+      }
+    }
+    path = tokens.back();
+  }
+
+  return group_ptr;
+}
+
+/*
+ *************************************************************************
+ *
  * PRIVATE method to attach given view to group.
  *
  *************************************************************************
@@ -1107,6 +1206,10 @@ void DataGroup::copyFromNode(Node& n,
     ds_group->copyFromNode(n_group, id_map);
   }
 }
+
+
+/// Character used to denote a path string passed to get/create calls.
+const char DataGroup::m_path_delimiter = '/';
 
 
 } /* end namespace sidre */
