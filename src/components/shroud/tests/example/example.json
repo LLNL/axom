@@ -76,7 +76,7 @@
                         "F_name_generic": "new", 
                         "F_name_impl": "exclass1_new", 
                         "F_name_method": "new", 
-                        "method_name": "new", 
+                        "function_name": "new", 
                         "underscore_name": "new"
                     }, 
                     "options": {}, 
@@ -154,7 +154,7 @@
                         "F_name_impl": "exclass1_delete", 
                         "F_name_method": "delete", 
                         "PY_name_impl": "PP_exclass1_delete", 
-                        "method_name": "delete", 
+                        "function_name": "delete", 
                         "underscore_name": "delete"
                     }, 
                     "options": {}, 
@@ -187,7 +187,7 @@
                         "F_name_impl": "exclass1_increment_count", 
                         "F_name_method": "increment_count", 
                         "PY_name_impl": "PP_exclass1_increment_count", 
-                        "method_name": "incrementCount", 
+                        "function_name": "incrementCount", 
                         "underscore_name": "increment_count"
                     }, 
                     "options": {}, 
@@ -216,7 +216,7 @@
                         "F_name_impl": "exclass1_get_name", 
                         "F_name_method": "get_name", 
                         "PY_name_impl": "PP_exclass1_get_name", 
-                        "method_name": "getName", 
+                        "function_name": "getName", 
                         "underscore_name": "get_name"
                     }, 
                     "options": {}, 
@@ -296,7 +296,7 @@
                         "F_name_impl": "exclass1_get_name_length", 
                         "F_name_method": "get_name_length", 
                         "PY_name_impl": "PP_exclass1_get_name_length", 
-                        "method_name": "GetNameLength", 
+                        "function_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
                     }, 
                     "helper": true, 
@@ -326,7 +326,7 @@
                         "F_name_impl": "exclass1_get_name_error_check", 
                         "F_name_method": "get_name_error_check", 
                         "PY_name_impl": "PP_exclass1_get_name_error_check", 
-                        "method_name": "getNameErrorCheck", 
+                        "function_name": "getNameErrorCheck", 
                         "underscore_name": "get_name_error_check"
                     }, 
                     "options": {}, 
@@ -396,7 +396,7 @@
                         "C_name": "AA_exclass1_get_name_arg", 
                         "F_C_name": "c_exclass1_get_name_arg", 
                         "PY_name_impl": "PP_exclass1_get_name_arg", 
-                        "method_name": "getNameArg", 
+                        "function_name": "getNameArg", 
                         "underscore_name": "get_name_arg"
                     }, 
                     "options": {
@@ -516,7 +516,7 @@
                         "F_name_impl": "exclass1_get_root", 
                         "F_name_method": "get_root", 
                         "PY_name_impl": "PP_exclass1_get_root", 
-                        "method_name": "getRoot", 
+                        "function_name": "getRoot", 
                         "underscore_name": "get_root"
                     }, 
                     "options": {}, 
@@ -556,8 +556,8 @@
                         "F_name_impl": "exclass1_get_value_from_int", 
                         "F_name_method": "get_value_from_int", 
                         "PY_name_impl": "PP_exclass1_get_value_from_int", 
+                        "function_name": "getValue", 
                         "function_suffix": "_from_int", 
-                        "method_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
                     "function_suffix": "_from_int", 
@@ -596,8 +596,8 @@
                         "F_name_impl": "exclass1_get_value_1", 
                         "F_name_method": "get_value_1", 
                         "PY_name_impl": "PP_exclass1_get_value_1", 
+                        "function_name": "getValue", 
                         "function_suffix": "_1", 
-                        "method_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
                     "options": {}, 
@@ -621,7 +621,7 @@
                         "F_name_impl": "exclass1_get_addr", 
                         "F_name_method": "get_addr", 
                         "PY_name_impl": "PP_exclass1_get_addr", 
-                        "method_name": "getAddr", 
+                        "function_name": "getAddr", 
                         "underscore_name": "get_addr"
                     }, 
                     "options": {}, 
@@ -656,7 +656,7 @@
                         "F_name_impl": "exclass1_has_addr", 
                         "F_name_method": "has_addr", 
                         "PY_name_impl": "PP_exclass1_has_addr", 
-                        "method_name": "hasAddr", 
+                        "function_name": "hasAddr", 
                         "underscore_name": "has_addr"
                     }, 
                     "options": {}, 
@@ -680,7 +680,7 @@
                         "F_name_impl": "exclass1_splicer_special", 
                         "F_name_method": "splicer_special", 
                         "PY_name_impl": "PP_exclass1_splicer_special", 
-                        "method_name": "SplicerSpecial", 
+                        "function_name": "SplicerSpecial", 
                         "underscore_name": "splicer_special"
                     }, 
                     "options": {}, 
@@ -775,7 +775,7 @@
                         "F_name_generic": "ex_class2", 
                         "F_name_impl": "exclass2_ex_class2", 
                         "F_name_method": "ex_class2", 
-                        "method_name": "ExClass2", 
+                        "function_name": "ExClass2", 
                         "underscore_name": "ex_class2"
                     }, 
                     "options": {}, 
@@ -845,7 +845,7 @@
                         "F_name_impl": "exclass2_delete", 
                         "F_name_method": "delete", 
                         "PY_name_impl": "PP_exclass2_delete", 
-                        "method_name": "delete", 
+                        "function_name": "delete", 
                         "underscore_name": "delete"
                     }, 
                     "options": {}, 
@@ -872,7 +872,7 @@
                         "F_name_impl": "exclass2_get_name", 
                         "F_name_method": "get_name", 
                         "PY_name_impl": "PP_exclass2_get_name", 
-                        "method_name": "getName", 
+                        "function_name": "getName", 
                         "underscore_name": "get_name"
                     }, 
                     "options": {}, 
@@ -947,7 +947,7 @@
                         "F_name_impl": "exclass2_get_name_length", 
                         "F_name_method": "get_name_length", 
                         "PY_name_impl": "PP_exclass2_get_name_length", 
-                        "method_name": "GetNameLength", 
+                        "function_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
                     }, 
                     "options": {
@@ -986,7 +986,7 @@
                         "F_name_impl": "exclass2_get_class1", 
                         "F_name_method": "get_class1", 
                         "PY_name_impl": "PP_exclass2_get_class1", 
-                        "method_name": "get_class1", 
+                        "function_name": "get_class1", 
                         "underscore_name": "get_class1"
                     }, 
                     "options": {}, 
@@ -1157,8 +1157,8 @@
                         "C_name": "AA_exclass2_declare_1", 
                         "F_C_name": "c_exclass2_declare_1", 
                         "PY_name_impl": "PP_exclass2_declare_1", 
+                        "function_name": "declare", 
                         "function_suffix": "_1", 
-                        "method_name": "declare", 
                         "underscore_name": "declare"
                     }, 
                     "fortran_generic": {
@@ -1305,7 +1305,7 @@
                         "F_name_impl": "exclass2_destroyall", 
                         "F_name_method": "destroyall", 
                         "PY_name_impl": "PP_exclass2_destroyall", 
-                        "method_name": "destroyall", 
+                        "function_name": "destroyall", 
                         "underscore_name": "destroyall"
                     }, 
                     "options": {}, 
@@ -1331,7 +1331,7 @@
                         "F_name_impl": "exclass2_get_type_id", 
                         "F_name_method": "get_type_id", 
                         "PY_name_impl": "PP_exclass2_get_type_id", 
-                        "method_name": "getTypeID", 
+                        "function_name": "getTypeID", 
                         "underscore_name": "get_type_id"
                     }, 
                     "options": {}, 
@@ -1367,7 +1367,7 @@
                     }, 
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
-                        "method_name": "setValue", 
+                        "function_name": "setValue", 
                         "underscore_name": "set_value"
                     }, 
                     "options": {
@@ -1548,7 +1548,7 @@
                     }, 
                     "decl": "ValueType getValue()", 
                     "fmt": {
-                        "method_name": "getValue", 
+                        "function_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
                     "options": {
@@ -1701,7 +1701,7 @@
                 "F_name_impl": "local_function1", 
                 "F_name_method": "local_function1", 
                 "PY_name_impl": "PP_local_function1", 
-                "method_name": "local_function1", 
+                "function_name": "local_function1", 
                 "underscore_name": "local_function1"
             }, 
             "options": {}, 
@@ -1737,7 +1737,7 @@
                 "F_name_impl": "is_name_valid", 
                 "F_name_method": "is_name_valid", 
                 "PY_name_impl": "PP_is_name_valid", 
-                "method_name": "isNameValid", 
+                "function_name": "isNameValid", 
                 "underscore_name": "is_name_valid"
             }, 
             "options": {
@@ -1802,7 +1802,7 @@
                 "F_name_impl": "is_initialized", 
                 "F_name_method": "is_initialized", 
                 "PY_name_impl": "PP_is_initialized", 
-                "method_name": "isInitialized", 
+                "function_name": "isInitialized", 
                 "underscore_name": "is_initialized"
             }, 
             "options": {}, 
@@ -1843,8 +1843,8 @@
                 "F_name_impl": "test_names", 
                 "F_name_method": "test_names", 
                 "PY_name_impl": "PP_test_names", 
+                "function_name": "test_names", 
                 "function_suffix": "", 
-                "method_name": "test_names", 
                 "underscore_name": "test_names"
             }, 
             "function_suffix": "", 
@@ -1938,8 +1938,8 @@
                 "F_name_impl": "test_names_flag", 
                 "F_name_method": "test_names_flag", 
                 "PY_name_impl": "PP_test_names_flag", 
+                "function_name": "test_names", 
                 "function_suffix": "_flag", 
-                "method_name": "test_names", 
                 "underscore_name": "test_names"
             }, 
             "function_suffix": "_flag", 
@@ -2111,8 +2111,8 @@
                 "F_name_impl": "testoptional_2", 
                 "F_name_method": "testoptional_2", 
                 "PY_name_impl": "PP_testoptional_2", 
+                "function_name": "testoptional", 
                 "function_suffix": "_2", 
-                "method_name": "testoptional", 
                 "underscore_name": "testoptional"
             }, 
             "options": {}, 

@@ -51,7 +51,7 @@
                 "F_name_generic": "pass_char", 
                 "F_name_impl": "pass_char", 
                 "F_name_method": "pass_char", 
-                "method_name": "passChar", 
+                "function_name": "passChar", 
                 "underscore_name": "pass_char"
             }, 
             "options": {}, 
@@ -77,7 +77,7 @@
                 "F_name_generic": "return_char", 
                 "F_name_impl": "return_char", 
                 "F_name_method": "return_char", 
-                "method_name": "returnChar", 
+                "function_name": "returnChar", 
                 "underscore_name": "return_char"
             }, 
             "options": {}, 
@@ -126,7 +126,7 @@
                 "F_name_generic": "pass_char_ptr", 
                 "F_name_impl": "pass_char_ptr", 
                 "F_name_method": "pass_char_ptr", 
-                "method_name": "passCharPtr", 
+                "function_name": "passCharPtr", 
                 "underscore_name": "pass_char_ptr"
             }, 
             "options": {}, 
@@ -203,7 +203,7 @@
             "fmt": {
                 "C_name": "STR_get_char1", 
                 "F_C_name": "c_get_char1", 
-                "method_name": "getChar1", 
+                "function_name": "getChar1", 
                 "underscore_name": "get_char1"
             }, 
             "options": {
@@ -314,7 +314,7 @@
                 "F_name_generic": "get_char2", 
                 "F_name_impl": "get_char2", 
                 "F_name_method": "get_char2", 
-                "method_name": "getChar2", 
+                "function_name": "getChar2", 
                 "underscore_name": "get_char2"
             }, 
             "options": {}, 
@@ -387,7 +387,7 @@
             "fmt": {
                 "C_name": "STR_get_char3", 
                 "F_C_name": "c_get_char3", 
-                "method_name": "getChar3", 
+                "function_name": "getChar3", 
                 "underscore_name": "get_char3"
             }, 
             "options": {
@@ -510,7 +510,7 @@
             "fmt": {
                 "C_name": "STR_get_string1", 
                 "F_C_name": "c_get_string1", 
-                "method_name": "getString1", 
+                "function_name": "getString1", 
                 "underscore_name": "get_string1"
             }, 
             "options": {
@@ -622,7 +622,7 @@
                 "F_name_generic": "get_string2", 
                 "F_name_impl": "get_string2", 
                 "F_name_method": "get_string2", 
-                "method_name": "getString2", 
+                "function_name": "getString2", 
                 "underscore_name": "get_string2"
             }, 
             "options": {}, 
@@ -697,7 +697,7 @@
             "fmt": {
                 "C_name": "STR_get_string3", 
                 "F_C_name": "c_get_string3", 
-                "method_name": "getString3", 
+                "function_name": "getString3", 
                 "underscore_name": "get_string3"
             }, 
             "options": {
@@ -836,7 +836,7 @@
                 "F_name_generic": "accept_string_const_reference", 
                 "F_name_impl": "accept_string_const_reference", 
                 "F_name_method": "accept_string_const_reference", 
-                "method_name": "acceptStringConstReference", 
+                "function_name": "acceptStringConstReference", 
                 "underscore_name": "accept_string_const_reference"
             }, 
             "options": {}, 
@@ -917,7 +917,7 @@
                 "F_name_generic": "accept_string_reference", 
                 "F_name_impl": "accept_string_reference", 
                 "F_name_method": "accept_string_reference", 
-                "method_name": "acceptStringReference", 
+                "function_name": "acceptStringReference", 
                 "underscore_name": "accept_string_reference"
             }, 
             "options": {}, 

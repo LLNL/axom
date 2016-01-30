@@ -526,7 +526,7 @@ class Schema(object):
 
         result = node['result']
 
-        fmt_func.method_name =     result['name']
+        fmt_func.function_name   = result['name']
         fmt_func.underscore_name = util.un_camel(result['name'])
 
         # docs

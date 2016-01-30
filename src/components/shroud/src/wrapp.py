@@ -375,7 +375,7 @@ return 1;""", fmt)
                 PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ', NULL };')
             else:
                 PY_decl.append('char * kw_list[] = { "' + '", "'.join(arg_names) + ', NULL" };')
-            format.extend([ ':', fmt.method_name])
+            format.extend([ ':', fmt.function_name])
             fmt.PyArg_format = ''.join(format)
             fmt.PyArg_addrargs = ', '.join(addrargs)
             PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords(args, kwds, "{PyArg_format}", kw_list,', fmt))
@@ -419,11 +419,11 @@ return 1;""", fmt)
                 append_format(PY_code, 'delete self->{BBB};', fmt)
                 append_format(PY_code, 'self->{BBB} = NULL;', fmt)
             elif result_type == 'void' and not result_is_ptr:
-                line = wformat('{PY_this_call}{method_name}({call_list});', fmt)
+                line = wformat('{PY_this_call}{function_name}({call_list});', fmt)
                 PY_code.append(line)
             else:
                 need_rv = True
-                line = wformat('{rv_asgn}{PY_this_call}{method_name}({call_list});', fmt)
+                line = wformat('{rv_asgn}{PY_this_call}{function_name}({call_list});', fmt)
                 PY_code.append(line)
 
             if 'PY_error_pattern' in node:
@@ -530,14 +530,14 @@ return 1;""", fmt)
 # use function_suffix in splicer name since a single C++ function may
 # produce several methods.
 # XXX - make splicer name customizable?
-#        self._create_splicer(fmt.method_name, self.PyMethodBody, default=PY_impl)
+#        self._create_splicer(fmt.function_name, self.PyMethodBody, default=PY_impl)
         self._create_splicer(fmt.underscore_name + fmt.function_suffix,
                              self.PyMethodBody, default=PY_impl)
         self.PyMethodBody.append('}')
 
         if expose is True:
             # default name
-            self.PyMethodDef.append( wformat('{{"{method_name}{function_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
+            self.PyMethodDef.append( wformat('{{"{function_name}{function_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
 #        elif expose is not False:
 #            # override name
 #            fmt = util.Options(fmt)

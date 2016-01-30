@@ -409,7 +409,7 @@ class Wrapc(util.WrapperMixin):
                 fmt.C_object = wformat(template, fmt)
 
         # body of function
-        splicer_code = self.splicer_stack[-1].get(fmt_func.method_name, None)
+        splicer_code = self.splicer_stack[-1].get(fmt_func.function_name, None)
         if 'C_code' in options:
             C_code = [   wformat(options.C_code, fmt) ]
         elif splicer_code:
@@ -426,12 +426,12 @@ class Wrapc(util.WrapperMixin):
             elif is_dtor:
                 C_code.append('delete %sobj;' % fmt_func.C_this)
             elif CPP_subprogram == 'subroutine':
-                line = wformat('{CPP_this_call}{method_name}{CPP_template}({C_call_list});',
+                line = wformat('{CPP_this_call}{function_name}{CPP_template}({C_call_list});',
                                fmt)
                 C_code.append(line)
                 return_line = 'return;'
             else:
-                line = wformat('{rv_decl} = {CPP_this_call}{method_name}{CPP_template}({C_call_list});',
+                line = wformat('{rv_decl} = {CPP_this_call}{function_name}{CPP_template}({C_call_list});',
                                fmt)
                 C_code.append(line)
 

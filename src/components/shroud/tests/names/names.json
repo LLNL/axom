@@ -46,7 +46,7 @@
                         "F_name_impl": "names_method1", 
                         "F_name_method": "type_method1", 
                         "PY_name_impl": "PY_names_method1", 
-                        "method_name": "method1", 
+                        "function_name": "method1", 
                         "underscore_name": "method1"
                     }, 
                     "options": {}, 
@@ -70,7 +70,7 @@
                         "F_name_impl": "names_method2", 
                         "F_name_method": "method2", 
                         "PY_name_impl": "PY_names_method2", 
-                        "method_name": "method2", 
+                        "function_name": "method2", 
                         "underscore_name": "method2"
                     }, 
                     "options": {}, 
@@ -135,7 +135,7 @@
                 "F_name_impl": "testnames_function1", 
                 "F_name_method": "function1", 
                 "PY_name_impl": "PY_function1", 
-                "method_name": "function1", 
+                "function_name": "function1", 
                 "underscore_name": "function1"
             }, 
             "options": {}, 
@@ -162,7 +162,7 @@
                 "F_name_impl": "f_name_special", 
                 "F_name_method": "function2", 
                 "PY_name_impl": "PY_function2", 
-                "method_name": "function2", 
+                "function_name": "function2", 
                 "underscore_name": "function2"
             }, 
             "options": {}, 
@@ -202,8 +202,8 @@
                 "F_name_impl": "F_name_function3a_int", 
                 "F_name_method": "function3a_0", 
                 "PY_name_impl": "PY_function3a_0", 
+                "function_name": "function3a", 
                 "function_suffix": "_0", 
-                "method_name": "function3a", 
                 "underscore_name": "function3a"
             }, 
             "options": {}, 
@@ -243,8 +243,8 @@
                 "F_name_impl": "F_name_function3a_long", 
                 "F_name_method": "function3a_1", 
                 "PY_name_impl": "PY_function3a_1", 
+                "function_name": "function3a", 
                 "function_suffix": "_1", 
-                "method_name": "function3a", 
                 "underscore_name": "function3a"
             }, 
             "options": {}, 
