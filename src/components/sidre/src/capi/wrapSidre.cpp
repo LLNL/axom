@@ -11,6 +11,7 @@
 //
 // wrapSidre.cpp
 #include "wrapSidre.h"
+#include <string>
 #include "sidre/SidreTypes.hpp"
 
 extern "C" {

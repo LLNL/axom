@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 
 #include "sidre/sidre.h"
-
+#include "slic/wrapSLIC.h"
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -233,8 +233,6 @@ TEST(C_sidre_group,get_group_name_index)
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_destroy_has_view)
 {
-  // XXX setAbortOnAssert(false);
-
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
   SIDRE_datagroup * group = SIDRE_datagroup_create_group(root, "parent");
@@ -245,11 +243,11 @@ TEST(C_sidre_group,create_destroy_has_view)
 
   EXPECT_TRUE( SIDRE_datagroup_has_view(group, "view") );
   // try creating view again, should be a no-op.
-  //XXX  EXPECT_TRUE( SIDRE_datagroup_create_view_empty(group, "view") == NULL );
+  EXPECT_TRUE( SIDRE_datagroup_create_view_empty(group, "view") == NULL );
 
   SIDRE_datagroup_destroy_view(group, "view");
   // destroy already destroyed group.  Should be a no-op, not a failure
-  //XXX  SIDRE_datagroup_destroy_view(group, "view");
+  SIDRE_datagroup_destroy_view(group, "view");
 
   EXPECT_FALSE( SIDRE_datagroup_has_view(group, "view") );
 
@@ -259,15 +257,22 @@ TEST(C_sidre_group,create_destroy_has_view)
                                             50);
 
   // error condition check - try again with duplicate name, should be a no-op
-  //XXX  EXPECT_TRUE( SIDRE_datagroup_create_view_and_allocate( group, "viewWithLength1", SIDRE_FLOAT64_ID, 50) );
+  //XXX EXPECT_TRUE( SIDRE_datagroup_create_view_and_allocate( group, "viewWithLength1", SIDRE_FLOAT64_ID, 50) );
   SIDRE_datagroup_destroy_view_and_data_name( group, "viewWithLength1");
   EXPECT_FALSE( SIDRE_datagroup_has_view( group, "viewWithLength1") );
 
-  //XXX EXPECT_TRUE( SIDRE_datagroup_create_view_and_allocate( group, "viewWithLengthBadLen", SIDRE_FLOAT64_ID, -1) == NULL );
+  EXPECT_TRUE( SIDRE_datagroup_create_view_and_allocate( group,
+                                                         "viewWithLengthBadLen",
+                                                         SIDRE_FLOAT64_ID,
+                                                         -1) == NULL );
 
   // try api call that specifies data type in another way
-  //XXX SIDRE_datagroup_create_view_and_allocate( group, "viewWithLength2", SIDRE_FLOAT64_ID, 50 );
-  //XXX EXPECT_TRUE( SIDRE_datagroup_create_view_and_allocate( group, "viewWithLength2", SIDRE_FLOAT64_ID, 50 ) == NULL );
+  SIDRE_datagroup_create_view_and_allocate( group, "viewWithLength2",
+                                            SIDRE_FLOAT64_ID, 50 );
+  EXPECT_TRUE( SIDRE_datagroup_create_view_and_allocate( group,
+                                                         "viewWithLength2",
+                                                         SIDRE_FLOAT64_ID,
+                                                         50 ) == NULL );
   // destroy this view using index
   SIDRE_datagroup_destroy_view_and_data_index( group, SIDRE_datagroup_get_first_valid_view_index(
                                                  group) );
@@ -313,15 +318,12 @@ TEST(C_sidre_group,group_name_collisions)
 
   // attempt to create duplicate group name
 
-#if 0
-  setAbortOnAssert(false);
   SIDRE_datagroup * badGroup = SIDRE_datagroup_create_group(root, "fields");
   EXPECT_TRUE( badGroup == NULL );
 
   // check error condition
   // attempt to create duplicate view name.
-  EXPECT_TRUE(SIDRE_datagroup_create_view(flds, "a") == NULL);
-#endif
+  EXPECT_TRUE(SIDRE_datagroup_create_view_empty(flds, "a") == NULL);
 
   SIDRE_datastore_delete(ds);
 }

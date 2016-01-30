@@ -3,8 +3,8 @@
 # List of single source file examples
 #
 set(example_sources
-    StressGroups.cpp
-    shocktube_example.cpp
+    sidre_stressgroups_example.cpp
+    sidre_shocktube_example.cpp
 )
 
 
@@ -25,7 +25,7 @@ endif()
 foreach(example_source ${example_sources})
     get_filename_component(exe_name ${example_source} NAME_WE)
     make_executable(
-        EXECUTABLE_NAME   "sidre_${exe_name}"
+        EXECUTABLE_NAME   "${exe_name}"
         EXECUTABLE_SOURCE ${example_source}
         DEPENDS_ON sidre conduit slic ${EXTRA_LIBS}
         ADD_CTEST)

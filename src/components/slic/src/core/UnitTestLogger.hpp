@@ -66,17 +66,31 @@ public:
   UnitTestLogger()
   {
      initialize();
+     setLoggingMsgLevel( message::Debug );
 
-     std::string format = 
+
+     // Formatting for warning, errors and fatal message
+     std::string wefFormatStr =
         std::string("\n***********************************\n")+
-        std::string( "LEVEL=<LEVEL>\n" ) +
+        std::string( "[<LEVEL> in line <LINE> of file <FILE>]\n") +
         std::string( "MESSAGE=<MESSAGE>\n" ) +
-        std::string( "FILE=<FILE>\n" ) +
-        std::string( "LINE=<LINE>\n" ) +
         std::string("***********************************\n");
 
-     setLoggingMsgLevel( message::Debug );
-     addStreamToAllMsgLevels(new GenericOutputStream(&std::cout, format));
+     // Simple formatting for debug and info messages
+     std::string diFormatStr = "[<LEVEL>] <MESSAGE> \n";
+
+     GenericOutputStream* wefStream
+             = new GenericOutputStream(&std::cout, wefFormatStr);
+     GenericOutputStream* diStream
+             = new GenericOutputStream(&std::cout, diFormatStr);
+
+
+     addStreamToMsgLevel(wefStream, message::Fatal) ;
+     addStreamToMsgLevel(wefStream, message::Error);
+     addStreamToMsgLevel(wefStream, message::Warning);
+     addStreamToMsgLevel(diStream,  message::Info);
+     addStreamToMsgLevel(diStream,  message::Debug);
+
  }
 
   /*!

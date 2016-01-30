@@ -309,6 +309,9 @@ return 1;""", fmt)
             for arg in node['args']:
                 arg_name = arg['name']
                 fmt.var = arg_name
+                fmt.c_var = arg['name']      # name in c prototype.
+                fmt.cpp_var = fmt.c_var      # name in c++ call.
+                fmt.c_var_len = 'UUU'
                 arg_names.append(arg_name)
                 arg_offsets.append( '(char *) kwcpp+%d' % offset)
                 offset += len(arg_name) + 1

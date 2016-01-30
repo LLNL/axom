@@ -128,7 +128,7 @@ PY_function4a(
     {
         return NULL;
     }
-    const std::string & rv = Function4a(arg1, arg2);
+    const std::string rv = Function4a(arg1, arg2);
     return PyString_FromString(rv.c_str());
 // splicer end function.function4a
 }

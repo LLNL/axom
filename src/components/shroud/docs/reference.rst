@@ -97,9 +97,22 @@ C_prefix
   Prefix added to name of generated C routines.
   The prefix helps to ensure unique global names.
 
+C_proto_type
+
+   XXX  override prototype of generated C function
+
+C_return_type
+
+   XXX   override return type of function
+
 cpp_header
 
   C++ header file name.
+
+F_C_prefix
+
+  Prefix added to name of generated Fortran interface for C routines.
+  Defaults to **c_**.
 
 F_string_result_as_arg
 
@@ -114,6 +127,9 @@ F_string_len_trim
   the ``std::string`` constructor, instead of the Fortran wrapper
   creating a ``NULL`` terminated string using ``trim``.  This avoids
   copying the string in the Fortran wrapper.
+  Defaults to *true*.
+
+.. bufferify
 
 F_force_wrapper
 
@@ -195,6 +211,14 @@ C_name_method_template
 F_C_name
 
     Defaults to C_name.lower() - tut_class1_method1
+
+F_C_name_method_template
+
+    C_{lower_class}_{underscore_name}{function_suffix}
+
+F_C_name_function_template
+
+    C_{underscore_name}{function_suffix}
 
 F_name_generic_template
 
@@ -412,10 +436,32 @@ c_fortran
     Expression to convert from C to Fortran.
     Defaults to *None*.
 
-c_argdecl
+c_statements
 
-    List of argument declarations for C wrapper, *None*=match declaration.
-    Used with string_from_buffer .
+    A nested dictionary of code template to add.
+    The first layer is *intent_in*, *intent_out*, and *result*.
+    The second layer is *pre_call*, *pre_call_trim*, *post_call*.
+    The entries are a list of templates.
+
+    intent_in
+
+        Code to add for argument with intent(IN).
+        Can be used to convert types or copy-in semantics.
+        For example, ``char *`` to ``std::string``.
+
+    intent_in_trim
+
+        Code to add for argument with intent(IN) and len_trim attribute 
+        For example, ``char *, int`` into ``std::string``
+
+    intent_out
+
+        Code to add after call when ``intent(OUT)`` or ``intent(INOUT)``.
+        Used to implement copy-out semantics.
+
+c_return_code
+
+    Fortran code used to call function and assign the return value.
     Defaults to *None*.
 
 f_c_args
@@ -682,7 +728,17 @@ F_name_generic
 ..    method1
     Defaults to option *F_name_generic_template*.
 
+F_name_instance_get
 
+    Name of method to get ``type(C_PTR)`` instance pointer from wrapped class.
+    Defaults to *get_instance*.
+    If the name is blank, no function is generated.
+
+F_name_instance_set
+
+    Name of method to set ``type(C_PTR)`` instance pointer in wrapped class.
+    Defaults to *set_instance*.
+    If the name is blank, no function is generated.
 
 Annotations
 -----------

@@ -35,8 +35,7 @@ namespace slic {
 // Initialize static variables for controlling runtime behavior of asserts and
 // error macros.
 //------------------------------------------------------------------------------
-bool RuntimeAbortBehavior::willAbortOnAssert = true;
-bool RuntimeAbortBehavior::willAbortOnError = true;
+bool debug::checksAreErrors = false;
 
 void initialize()
 {
@@ -71,31 +70,6 @@ std::string getActiveLoggerName()
 void setLoggingMsgLevel( message::Level level )
 {
   Logger::getActiveLogger()->setLoggingMsgLevel( level );
-}
-
-//------------------------------------------------------------------------------
-void setAbortOnAssert( bool willAbort )
-{
-  RuntimeAbortBehavior::willAbortOnAssert = willAbort;
-}
-
-//------------------------------------------------------------------------------
-bool getAbortOnAssert()
-{
-  return RuntimeAbortBehavior::willAbortOnAssert;
-}
-
-
-//------------------------------------------------------------------------------
-void setAbortOnError( bool willAbort )
-{
-  RuntimeAbortBehavior::willAbortOnError = willAbort;
-}
-
-//------------------------------------------------------------------------------
-bool getAbortOnError()
-{
-  return RuntimeAbortBehavior::willAbortOnError;
 }
 
 //------------------------------------------------------------------------------
@@ -165,16 +139,13 @@ void logMessage( message::Level level,
 //------------------------------------------------------------------------------
 void logErrorMessage( const std::string& message,
                       const std::string& fileName,
-                      int line,
-                      bool shouldAbort )
+                      int line )
 {
   std::ostringstream oss;
   oss << message << slic::stacktrace();
 
   slic::logMessage( message::Fatal, oss.str(), fileName, line );
-  if ( shouldAbort ) {
-    asctoolkit::utilities::processAbort();
-  }
+  asctoolkit::utilities::processAbort();
 }
 
 //------------------------------------------------------------------------------

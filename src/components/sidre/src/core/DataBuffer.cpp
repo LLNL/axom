@@ -24,6 +24,7 @@
 
 // Standard C++ headers
 #include <algorithm>
+#include <cstring> //for memcpy
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
@@ -167,7 +168,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 
   void * realloc_data = allocateBytes(new_size);
 
-  memcpy(realloc_data, m_data, std::min(old_size, new_size));
+  std::memcpy(realloc_data, m_data, std::min(old_size, new_size));
 
   // cleanup old data
   cleanup();

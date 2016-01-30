@@ -12,7 +12,9 @@ set(quest_tests
     quest_mesh_extent.cpp
     quest_boundingBox.cpp
     quest_intersection.cpp
+    quest_morton.cpp
     quest_numeric_array.cpp
+    quest_octree.cpp
     quest_orient.cpp
     quest_point.cpp
     quest_squared_distance.cpp

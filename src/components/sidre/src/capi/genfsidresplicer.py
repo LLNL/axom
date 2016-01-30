@@ -50,9 +50,9 @@ function datagroup_create_array_view_{typename}_{nd}(group, name, value) result(
     lname = len_trim(name)
     {extents_asgn}
     call SHROUD_C_LOC(value, addr)
-    rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+    rv%voidptr = c_datagroup_create_view_external_bufferify( &
         group%voidptr, name, lname, addr)
-    call SIDRE_dataview_apply_type_shape(rv%voidptr, type, {rank}, extents)
+    call c_dataview_apply_type_shape(rv%voidptr, type, {rank}, extents)
 end function datagroup_create_array_view_{typename}_{nd}""".format(
         extents_decl=extents_decl,
         extents_asgn=extents_asgn, **d)

@@ -17,6 +17,7 @@
 #include "Timer.hxx"
 
 #include <algorithm>
+#include <set>
 
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;

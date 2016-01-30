@@ -15,8 +15,8 @@ function using an explicit value.
 | C wrapper              | *C_name_function_template*      | *C_name*         |
 | implementation         | *C_name_method_template*        |                  |
 +------------------------+---------------------------------+------------------+
-| Fortran BIND(C)        | C_name.lower()                  | *F_C_name*       |
-| interface              |                                 |                  |
+| Fortran BIND(C)        | *F_C_name_function_template*    | *F_C_name*       |
+| interface              | *F_C_name_method_template*      |                  |
 +------------------------+---------------------------------+------------------+
 | Fortran wrapper        | *F_name_impl_function_template* | *F_name_impl*    |
 | implementation         | *F_name_impl_method_template*   |                  |

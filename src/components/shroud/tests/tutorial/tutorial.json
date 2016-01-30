@@ -29,6 +29,7 @@
                 {
                     "_decl": "Class1 * new()+constructor", 
                     "_function_index": 0, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {
                         "constructor": true
@@ -36,7 +37,7 @@
                     "decl": "Class1 *new()  +constructor", 
                     "fmt": {
                         "C_name": "TUT_class1_new", 
-                        "F_C_name": "tut_class1_new", 
+                        "F_C_name": "c_class1_new", 
                         "F_name_generic": "new", 
                         "F_name_impl": "class1_new", 
                         "F_name_method": "new", 
@@ -55,6 +56,7 @@
                 {
                     "_decl": "void delete()+destructor", 
                     "_function_index": 1, 
+                    "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {
                         "destructor": true
@@ -62,7 +64,7 @@
                     "decl": "void delete()  +destructor", 
                     "fmt": {
                         "C_name": "TUT_class1_delete", 
-                        "F_C_name": "tut_class1_delete", 
+                        "F_C_name": "c_class1_delete", 
                         "F_name_generic": "delete", 
                         "F_name_impl": "class1_delete", 
                         "F_name_method": "delete", 
@@ -80,12 +82,13 @@
                 {
                     "_decl": "void Method1()", 
                     "_function_index": 2, 
+                    "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void Method1()", 
                     "fmt": {
                         "C_name": "TUT_class1_method1", 
-                        "F_C_name": "tut_class1_method1", 
+                        "F_C_name": "c_class1_method1", 
                         "F_name_generic": "method1", 
                         "F_name_impl": "class1_method1", 
                         "F_name_method": "method1", 
@@ -112,6 +115,7 @@
         "C_impl_filename": "wrapTutorial.cpp", 
         "C_prefix": "TUT_", 
         "C_this": "self", 
+        "F_C_prefix": "c_", 
         "F_C_pure_clause": "", 
         "F_C_result_clause": "", 
         "F_derived_member": "voidptr", 
@@ -138,6 +142,7 @@
         {
             "_decl": "void Function1()", 
             "_function_index": 3, 
+            "_subprogram": "subroutine", 
             "args": [], 
             "attrs": {}, 
             "decl": "void Function1()", 
@@ -161,6 +166,7 @@
         {
             "_decl": "double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)", 
             "_function_index": 4, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -199,8 +205,9 @@
             }
         }, 
         {
-            "_decl": "void Sum(int len+intent(in)+value, int * values+intent(in)+dimension((*)), int * result+intent(out))", 
+            "_decl": "void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))", 
             "_function_index": 5, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -252,6 +259,7 @@
         {
             "_decl": "bool Function3(bool arg+intent(in)+value)", 
             "_function_index": 6, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -266,7 +274,7 @@
             "decl": "bool Function3(bool arg)", 
             "fmt": {
                 "C_name": "TUT_function3", 
-                "F_C_name": "tut_function3", 
+                "F_C_name": "c_function3", 
                 "F_name_generic": "function3", 
                 "F_name_impl": "function3", 
                 "F_name_method": "function3", 
@@ -283,8 +291,9 @@
         }, 
         {
             "_PTR_F_C_index": 32, 
-            "_decl": "const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure", 
+            "_decl": "const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
             "_function_index": 7, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -307,13 +316,9 @@
                     "type": "std::string"
                 }
             ], 
-            "attrs": {
-                "pure": true
-            }, 
-            "decl": "const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure", 
+            "attrs": {}, 
+            "decl": "const std::string Function4a+len(30)( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
-                "C_name": "TUT_function4a", 
-                "F_C_name": "tut_function4a", 
                 "F_name_generic": "function4a", 
                 "F_name_impl": "function4a", 
                 "F_name_method": "function4a", 
@@ -321,26 +326,31 @@
                 "method_name": "Function4a", 
                 "underscore_name": "function4a"
             }, 
-            "options": {}, 
+            "options": {
+                "wrap_c": false
+            }, 
             "result": {
                 "attrs": {
                     "const": true, 
-                    "reference": true
+                    "len": "(30)"
                 }, 
                 "name": "Function4a", 
                 "type": "std::string"
             }
         }, 
         {
-            "_decl": "const std::string & Function4a(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)+pure", 
+            "_PTR_C_CPP_index": 7, 
+            "_decl": "void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 32, 
             "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
                         "const": true, 
                         "intent": "in", 
-                        "len_trim": true, 
+                        "len_trim": "Larg1", 
                         "reference": true, 
                         "value": false
                     }, 
@@ -351,21 +361,31 @@
                     "attrs": {
                         "const": true, 
                         "intent": "in", 
-                        "len_trim": true, 
+                        "len_trim": "Larg2", 
                         "reference": true, 
                         "value": false
                     }, 
                     "name": "arg2", 
                     "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "LSH_F_rv", 
+                        "ptr": true, 
+                        "reference": false
+                    }, 
+                    "name": "SH_F_rv", 
+                    "type": "string_result_as_arg"
                 }
             ], 
-            "attrs": {
-                "pure": true
-            }, 
-            "decl": "const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure", 
+            "attrs": {}, 
+            "decl": "const std::string Function4a+len(30)( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4a_bufferify", 
-                "F_C_name": "tut_function4a_bufferify", 
+                "F_C_name": "c_function4a_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -375,17 +395,19 @@
             }, 
             "result": {
                 "attrs": {
-                    "const": true, 
-                    "reference": true
+                    "const": false, 
+                    "len": "(30)", 
+                    "ptr": false, 
+                    "reference": false
                 }, 
                 "name": "Function4a", 
-                "type": "std::string"
+                "type": "void"
             }
         }, 
         {
-            "_PTR_F_C_index": 33, 
             "_decl": "const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
             "_function_index": 8, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -412,16 +434,14 @@
             "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4b", 
-                "F_C_name": "tut_function4b", 
-                "F_name_generic": "function4b", 
-                "F_name_impl": "function4b", 
-                "F_name_method": "function4b", 
+                "F_C_name": "c_function4b", 
                 "PY_name_impl": "PY_function4b", 
                 "method_name": "Function4b", 
                 "underscore_name": "function4b"
             }, 
             "options": {
-                "F_string_result_as_arg": "output"
+                "F_string_result_as_arg": "output", 
+                "wrap_fortran": false
             }, 
             "result": {
                 "attrs": {
@@ -433,15 +453,18 @@
             }
         }, 
         {
-            "_decl": "const std::string & Function4b(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)", 
+            "_PTR_C_CPP_index": 8, 
+            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 33, 
             "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
                         "const": true, 
                         "intent": "in", 
-                        "len_trim": true, 
+                        "len_trim": "Larg1", 
                         "reference": true, 
                         "value": false
                     }, 
@@ -452,19 +475,30 @@
                     "attrs": {
                         "const": true, 
                         "intent": "in", 
-                        "len_trim": true, 
+                        "len_trim": "Larg2", 
                         "reference": true, 
                         "value": false
                     }, 
                     "name": "arg2", 
                     "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "Loutput", 
+                        "reference": true
+                    }, 
+                    "name": "output", 
+                    "type": "string_result_as_arg"
                 }
             ], 
             "attrs": {}, 
             "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4b_bufferify", 
-                "F_C_name": "tut_function4b_bufferify", 
+                "F_C_name": "c_function4b_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -474,11 +508,78 @@
             }, 
             "result": {
                 "attrs": {
-                    "const": true, 
-                    "reference": true
+                    "const": false, 
+                    "ptr": false, 
+                    "reference": false
                 }, 
                 "name": "Function4b", 
-                "type": "std::string"
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 8, 
+            "_PTR_F_C_index": 33, 
+            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 34, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Larg1", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Larg2", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg2", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "Loutput", 
+                        "reference": true
+                    }, 
+                    "name": "output", 
+                    "type": "string_result_as_arg"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
+            "fmt": {
+                "F_name_generic": "function4b", 
+                "F_name_impl": "function4b", 
+                "F_name_method": "function4b", 
+                "function_suffix": ""
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "Function4b", 
+                "type": "void"
             }
         }, 
         {
@@ -486,6 +587,7 @@
             "_function_index": 22, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
             "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
@@ -496,7 +598,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_function5", 
-                "F_C_name": "tut_function5", 
+                "F_C_name": "c_function5", 
                 "F_name_generic": "function5", 
                 "F_name_impl": "function5", 
                 "F_name_method": "function5", 
@@ -518,6 +620,7 @@
             "_function_index": 23, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -538,7 +641,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_function5_arg1", 
-                "F_C_name": "tut_function5_arg1", 
+                "F_C_name": "c_function5_arg1", 
                 "F_name_generic": "function5", 
                 "F_name_impl": "function5_arg1", 
                 "F_name_method": "function5_arg1", 
@@ -568,6 +671,7 @@
                 2
             ], 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -597,7 +701,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_function5_arg1_arg2", 
-                "F_C_name": "tut_function5_arg1_arg2", 
+                "F_C_name": "c_function5_arg1_arg2", 
                 "F_name_generic": "function5", 
                 "F_name_impl": "function5_arg1_arg2", 
                 "F_name_method": "function5_arg1_arg2", 
@@ -614,7 +718,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 34, 
+            "_PTR_F_C_index": 35, 
             "_cpp_overload": [
                 10, 
                 11
@@ -622,6 +726,7 @@
             "_decl": "void Function6(const std::string & name+intent(in))", 
             "_function_index": 10, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -638,7 +743,7 @@
             "decl": "void Function6(const std::string& name)", 
             "fmt": {
                 "C_name": "TUT_function6_from_name", 
-                "F_C_name": "tut_function6_from_name", 
+                "F_C_name": "c_function6_from_name", 
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_name", 
                 "F_name_method": "function6_from_name", 
@@ -656,20 +761,23 @@
             }
         }, 
         {
+            "_PTR_C_CPP_index": 10, 
             "_cpp_overload": [
                 10, 
                 11
             ], 
-            "_decl": "void Function6(const std::string & name+intent(in)+len_trim)", 
-            "_function_index": 34, 
+            "_decl": "void Function6(const std::string & name+intent(in)+len_trim(Lname))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 35, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
                         "const": true, 
                         "intent": "in", 
-                        "len_trim": true, 
+                        "len_trim": "Lname", 
                         "reference": true, 
                         "value": false
                     }, 
@@ -681,7 +789,7 @@
             "decl": "void Function6(const std::string& name)", 
             "fmt": {
                 "C_name": "TUT_function6_from_name_bufferify", 
-                "F_C_name": "tut_function6_from_name_bufferify", 
+                "F_C_name": "c_function6_from_name_bufferify", 
                 "function_suffix": "_from_name_bufferify"
             }, 
             "function_suffix": "_from_name", 
@@ -704,6 +812,7 @@
             "_decl": "void Function6(int indx+intent(in)+value)", 
             "_function_index": 11, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -718,7 +827,7 @@
             "decl": "void Function6(int indx)", 
             "fmt": {
                 "C_name": "TUT_function6_from_index", 
-                "F_C_name": "tut_function6_from_index", 
+                "F_C_name": "c_function6_from_index", 
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_index", 
                 "F_name_method": "function6_from_index", 
@@ -739,6 +848,7 @@
             "_decl": "void Function7(ArgType arg+intent(in)+value)", 
             "_function_index": 12, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -777,6 +887,7 @@
             "_function_index": 24, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -792,7 +903,7 @@
             "fmt": {
                 "CPP_template": "<int>", 
                 "C_name": "TUT_function7_int", 
-                "F_C_name": "tut_function7_int", 
+                "F_C_name": "c_function7_int", 
                 "F_name_generic": "function7", 
                 "F_name_impl": "function7_int", 
                 "F_name_method": "function7_int", 
@@ -814,6 +925,7 @@
             "_function_index": 25, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -829,7 +941,7 @@
             "fmt": {
                 "CPP_template": "<double>", 
                 "C_name": "TUT_function7_double", 
-                "F_C_name": "tut_function7_double", 
+                "F_C_name": "c_function7_double", 
                 "F_name_generic": "function7", 
                 "F_name_impl": "function7_double", 
                 "F_name_method": "function7_double", 
@@ -850,6 +962,7 @@
             "_decl": "RetType Function8()", 
             "_function_index": 13, 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
             "cpp_template": {
@@ -879,6 +992,7 @@
             "_function_index": 26, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
             "decl": "RetType Function8()", 
@@ -886,7 +1000,7 @@
                 "CPP_return_templated": true, 
                 "CPP_template": "<int>", 
                 "C_name": "TUT_function8_int", 
-                "F_C_name": "tut_function8_int", 
+                "F_C_name": "c_function8_int", 
                 "F_name_generic": "function8", 
                 "F_name_impl": "function8_int", 
                 "F_name_method": "function8_int", 
@@ -908,6 +1022,7 @@
             "_function_index": 27, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
             "decl": "RetType Function8()", 
@@ -915,7 +1030,7 @@
                 "CPP_return_templated": true, 
                 "CPP_template": "<double>", 
                 "C_name": "TUT_function8_double", 
-                "F_C_name": "tut_function8_double", 
+                "F_C_name": "c_function8_double", 
                 "F_name_generic": "function8", 
                 "F_name_impl": "function8_double", 
                 "F_name_method": "function8_double", 
@@ -936,6 +1051,7 @@
             "_decl": "void Function9(double arg+intent(in)+value)", 
             "_function_index": 14, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -950,7 +1066,7 @@
             "decl": "void Function9(double arg)", 
             "fmt": {
                 "C_name": "TUT_function9", 
-                "F_C_name": "tut_function9", 
+                "F_C_name": "c_function9", 
                 "PY_name_impl": "PY_function9", 
                 "method_name": "Function9", 
                 "underscore_name": "function9"
@@ -973,9 +1089,10 @@
         {
             "_PTR_F_C_index": 14, 
             "_decl": "void Function9(float arg+intent(in)+value)", 
-            "_function_index": 36, 
+            "_function_index": 39, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1008,9 +1125,10 @@
         {
             "_PTR_F_C_index": 14, 
             "_decl": "void Function9(double arg+intent(in)+value)", 
-            "_function_index": 37, 
+            "_function_index": 40, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1048,12 +1166,13 @@
             "_decl": "void Function10()", 
             "_function_index": 15, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [], 
             "attrs": {}, 
             "decl": "void Function10()", 
             "fmt": {
                 "C_name": "TUT_function10_0", 
-                "F_C_name": "tut_function10_0", 
+                "F_C_name": "c_function10_0", 
                 "F_name_generic": "function10", 
                 "F_name_impl": "function10_0", 
                 "F_name_method": "function10_0", 
@@ -1070,7 +1189,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 35, 
+            "_PTR_F_C_index": 36, 
             "_cpp_overload": [
                 15, 
                 16
@@ -1078,6 +1197,7 @@
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
             "_function_index": 16, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1102,7 +1222,7 @@
             "decl": "void Function10(const std::string &name, double arg2)", 
             "fmt": {
                 "C_name": "TUT_function10_1", 
-                "F_C_name": "tut_function10_1", 
+                "F_C_name": "c_function10_1", 
                 "PY_name_impl": "PY_function10_1", 
                 "function_suffix": "_1", 
                 "method_name": "Function10", 
@@ -1131,9 +1251,10 @@
                 16
             ], 
             "_decl": "void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)", 
-            "_function_index": 38, 
+            "_function_index": 41, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1180,9 +1301,10 @@
                 16
             ], 
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
-            "_function_index": 39, 
+            "_function_index": 42, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1223,20 +1345,23 @@
             }
         }, 
         {
+            "_PTR_C_CPP_index": 16, 
             "_cpp_overload": [
                 15, 
                 16
             ], 
-            "_decl": "void Function10(const std::string & name+intent(in)+len_trim, double arg2+intent(in)+value)", 
-            "_function_index": 35, 
+            "_decl": "void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 36, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
                         "const": true, 
                         "intent": "in", 
-                        "len_trim": true, 
+                        "len_trim": "Lname", 
                         "reference": true, 
                         "value": false
                     }, 
@@ -1256,7 +1381,7 @@
             "decl": "void Function10(const std::string &name, double arg2)", 
             "fmt": {
                 "C_name": "TUT_function10_1_bufferify", 
-                "F_C_name": "tut_function10_1_bufferify", 
+                "F_C_name": "c_function10_1_bufferify", 
                 "function_suffix": "_1_bufferify"
             }, 
             "fortran_generic": {
@@ -1285,6 +1410,7 @@
             "_function_index": 28, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1304,7 +1430,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_overload1_num", 
-                "F_C_name": "tut_overload1_num", 
+                "F_C_name": "c_overload1_num", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_num", 
                 "F_name_method": "overload1_num", 
@@ -1330,6 +1456,7 @@
             "_function_index": 29, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1358,7 +1485,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_overload1_num_offset", 
-                "F_C_name": "tut_overload1_num_offset", 
+                "F_C_name": "c_overload1_num_offset", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_num_offset", 
                 "F_name_method": "overload1_num_offset", 
@@ -1392,6 +1519,7 @@
                 3
             ], 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1429,7 +1557,7 @@
             ], 
             "fmt": {
                 "C_name": "TUT_overload1_num_offset_stride", 
-                "F_C_name": "tut_overload1_num_offset_stride", 
+                "F_C_name": "c_overload1_num_offset_stride", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_num_offset_stride", 
                 "F_name_method": "overload1_num_offset_stride", 
@@ -1454,6 +1582,7 @@
             "_function_index": 30, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1476,7 +1605,7 @@
             "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
             "fmt": {
                 "C_name": "TUT_overload1_3", 
-                "F_C_name": "tut_overload1_3", 
+                "F_C_name": "c_overload1_3", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_3", 
                 "F_name_method": "overload1_3", 
@@ -1502,6 +1631,7 @@
             "_function_index": 31, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1533,7 +1663,7 @@
             "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
             "fmt": {
                 "C_name": "TUT_overload1_4", 
-                "F_C_name": "tut_overload1_4", 
+                "F_C_name": "c_overload1_4", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_4", 
                 "F_name_method": "overload1_4", 
@@ -1567,6 +1697,7 @@
                 4
             ], 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1607,7 +1738,7 @@
             "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
             "fmt": {
                 "C_name": "TUT_overload1_5", 
-                "F_C_name": "tut_overload1_5", 
+                "F_C_name": "c_overload1_5", 
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_5", 
                 "F_name_method": "overload1_5", 
@@ -1626,6 +1757,7 @@
         {
             "_decl": "TypeID typefunc(TypeID arg+intent(in)+value)", 
             "_function_index": 19, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1658,6 +1790,7 @@
         {
             "_decl": "EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)", 
             "_function_index": 20, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1690,6 +1823,7 @@
         {
             "_decl": "const std::string & LastFunctionCalled()+pure", 
             "_function_index": 21, 
+            "_subprogram": "function", 
             "args": [], 
             "attrs": {
                 "pure": true
@@ -1697,15 +1831,14 @@
             "decl": "const std::string& LastFunctionCalled() +pure", 
             "fmt": {
                 "C_name": "TUT_last_function_called", 
-                "F_C_name": "tut_last_function_called", 
-                "F_name_generic": "last_function_called", 
-                "F_name_impl": "last_function_called", 
-                "F_name_method": "last_function_called", 
+                "F_C_name": "c_last_function_called", 
                 "PY_name_impl": "PY_last_function_called", 
                 "method_name": "LastFunctionCalled", 
                 "underscore_name": "last_function_called"
             }, 
-            "options": {}, 
+            "options": {
+                "wrap_fortran": false
+            }, 
             "result": {
                 "attrs": {
                     "const": true, 
@@ -1713,6 +1846,79 @@
                 }, 
                 "name": "LastFunctionCalled", 
                 "type": "std::string"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 21, 
+            "_decl": "void LastFunctionCalled(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 37, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "LSH_F_rv", 
+                        "reference": true
+                    }, 
+                    "name": "SH_F_rv", 
+                    "type": "string_result_as_arg"
+                }
+            ], 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const std::string& LastFunctionCalled() +pure", 
+            "fmt": {
+                "C_name": "TUT_last_function_called_bufferify", 
+                "F_C_name": "c_last_function_called_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "LastFunctionCalled", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 21, 
+            "_decl": "const string_result_fstr & LastFunctionCalled()+pure", 
+            "_function_index": 38, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const std::string& LastFunctionCalled() +pure", 
+            "fmt": {
+                "F_name_generic": "last_function_called", 
+                "F_name_impl": "last_function_called", 
+                "F_name_method": "last_function_called"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "LastFunctionCalled", 
+                "type": "string_result_fstr"
             }
         }
     ], 
@@ -1723,6 +1929,9 @@
         "C_impl_filename_library_template": "wrap{library}.cpp", 
         "C_name_function_template": "{C_prefix}{underscore_name}{function_suffix}", 
         "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "F_C_name_function_template": "{F_C_prefix}{underscore_name}{function_suffix}", 
+        "F_C_name_method_template": "{F_C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "F_C_prefix": "c_", 
         "F_force_wrapper": false, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
         "F_impl_filename_library_template": "wrapf{lower_library}.f", 
@@ -1732,6 +1941,8 @@
         "F_name_generic_template": "{underscore_name}", 
         "F_name_impl_function_template": "{underscore_name}{function_suffix}", 
         "F_name_impl_method_template": "{lower_class}_{underscore_name}{function_suffix}", 
+        "F_name_instance_get": "get_instance", 
+        "F_name_instance_set": "set_instance", 
         "F_name_method_template": "{underscore_name}{function_suffix}", 
         "F_string_len_trim": true, 
         "PY_PyObject_template": "{PY_prefix}{cpp_class}", 
@@ -1827,6 +2038,108 @@
             "f_pre_call": "{tmp_var} = {var}  ! coerce to C_BOOL", 
             "f_type": "logical", 
             "f_use_tmp": true
+        }, 
+        "char": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "post_call": [
+                        "delete [] {cpp_var};"
+                    ], 
+                    "pre_call": [
+                        "int {c_var_len} = strlen({c_var});", 
+                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
+                        "{cpp_var}[{c_var_len}] = '\\0';"
+                    ], 
+                    "pre_call_trim": [
+                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
+                        "{cpp_var}[{c_var_len}] = '\\0';"
+                    ]
+                }, 
+                "intent_out": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "delete [] {cpp_var};"
+                    ], 
+                    "pre_call": [
+                        "char * {cpp_var} = new char [{c_var_num} + 1];"
+                    ]
+                }, 
+                "result": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_type": "char", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)"
+        }, 
+        "char_result_as_arg": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "post_call": [
+                        "delete [] {cpp_var};"
+                    ], 
+                    "pre_call": [
+                        "int {c_var_len} = strlen({c_var});", 
+                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
+                        "{cpp_var}[{c_var_len}] = '\\0';"
+                    ], 
+                    "pre_call_trim": [
+                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
+                        "{cpp_var}[{c_var_len}] = '\\0';"
+                    ]
+                }, 
+                "intent_out": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "delete [] {cpp_var};"
+                    ], 
+                    "pre_call": [
+                        "char * {cpp_var} = new char [{c_var_num} + 1];"
+                    ]
+                }, 
+                "result": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_type": "char", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)"
+        }, 
+        "char_scalar": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_type": "char", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character"
         }, 
         "double": {
             "PY_format": "d", 
@@ -1960,14 +2273,34 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "pre_call": [
+                        "std::string {cpp_var}({c_var});"
+                    ], 
+                    "pre_call_trim": [
+                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                    ]
+                }, 
+                "intent_out": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
+            "cpp_header": "<string>", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
-            "f_args": "trim({var}) // C_NULL_CHAR", 
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)"
         }, 
         "string": {
@@ -1975,40 +2308,34 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "pre_call": [
+                        "std::string {cpp_var}({c_var});"
+                    ], 
+                    "pre_call_trim": [
+                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                    ]
+                }, 
+                "intent_out": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
+            "cpp_header": "<string>", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
-            "f_args": "trim({var}) // C_NULL_CHAR", 
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)"
-        }, 
-        "string_from_buffer": {
-            "base": "string", 
-            "c_argdecl": [
-                "const char *{var}", 
-                "int len_{var}"
-            ], 
-            "c_fortran": "character(kind=C_CHAR)", 
-            "c_to_cpp": "std::string({var}, len_{var})", 
-            "c_type": "char", 
-            "cpp_to_c": "{var}.c_str()", 
-            "cpp_type": "std::string", 
-            "f_args": "{var}, len_trim({var})", 
-            "f_c_argdecl": [
-                "type(C_PTR), intent(IN), value :: {var}", 
-                "integer(C_INT), intent(IN), value :: len_{var}"
-            ], 
-            "f_c_args": [
-                "{var}", 
-                "len_{var}"
-            ], 
-            "f_module": {
-                "iso_c_binding": null
-            }, 
-            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)"
         }, 
         "string_result_as_arg": {
@@ -2016,19 +2343,70 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "pre_call": [
+                        "std::string {cpp_var}({c_var});"
+                    ], 
+                    "pre_call_trim": [
+                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                    ]
+                }, 
+                "intent_out": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
+            "cpp_header": "shroudrt.hpp", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
-            "f_args": "trim({var}) // C_NULL_CHAR", 
-            "f_argsdecl": [
-                "character(*), intent(OUT) :: {result_arg}", 
-                "type(C_PTR) :: {F_result}"
-            ], 
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_post_call": "call FccCopyPtr({result_arg}, len({result_arg}), {F_result})", 
-            "f_return_code": "{F_result} = {F_C_name}({F_arg_c_call_tab})", 
+            "f_type": "character(*)"
+        }, 
+        "string_result_fstr": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "pre_call": [
+                        "std::string {cpp_var}({c_var});"
+                    ], 
+                    "pre_call_trim": [
+                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                    ]
+                }, 
+                "intent_out": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_header": "<string>", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)"
         }, 
         "void": {

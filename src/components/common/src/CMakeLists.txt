@@ -4,13 +4,16 @@
 set(common_headers
     ATKMacros.hpp
     CommonTypes.hpp
+    FileUtilities.hpp
     Utilities.hpp
+    cstdint_wrapper.hpp
     )
 
 #
 # Specify all sources
 #
 set(common_sources
+    FileUtilities.cpp
 	Utilities.cpp
     )
 

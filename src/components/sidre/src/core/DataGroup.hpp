@@ -60,7 +60,6 @@
 #include "DataView.hpp"
 
 
-
 namespace asctoolkit
 {
 namespace sidre
@@ -209,7 +208,7 @@ public:
    */
   IndexType getViewIndex(const std::string& name) const
   {
-    SLIC_CHECK_MSG( hasView(name), "no view found with name == " << name);
+    SLIC_CHECK_MSG( !name.empty() && hasView(name), "Group " << this->getName() << " does not have view with name '" << name << "'");
 
     return m_view_coll.getItemIndex(name);
   }
@@ -221,7 +220,7 @@ public:
    */
   const std::string& getViewName(IndexType idx) const
   {
-    SLIC_CHECK_MSG( hasView(idx), "no view found with idx == " << idx );
+    SLIC_CHECK_MSG( hasView(idx), "Group " << this->getName() << " does not have view with index " << idx);
 
     return m_view_coll.getItemName(idx);
   }
@@ -231,23 +230,44 @@ public:
 
 //@{
 //!  @name DataView access and iteration methods.
+  //!
+  //!  Some of these methods support a path syntax for input.  When a path is
+  //!  provided the method will retrieve the last item in the path.  All
+  //!  items in the path must exist.
+  //!
+  //!  Example:
+  //!  getView("foo/bar/baz")
+  //!  is equivalent to
+  //!  getGroup("foo")->getGroup("bar")->getView("baz")
+  //!
+
 
   /*!
-   * \brief Return (non-const) pointer to DataView with given name.
+
+   * \brief Return (non-const) pointer to DataView with given name or path.
+   * This algorithm requires that all groups in the path are already created.
+   * Example:
+   * getView("foo/bar/baz")
+   * is equivalent to
+   * getGroup("foo")->getGroup("bar")->getView("baz")
    */
   DataView * getView( const std::string& name )
   {
-    SLIC_CHECK_MSG( hasView(name), "no view found with name == " << name);
+    std::string path = name;
+    DataGroup * group = walkPath( path, false );
 
-    return m_view_coll.getItem(name);
+    SLIC_CHECK_MSG( !path.empty() && group->hasView(name), "Group " << group->getName() << " can't retrieve view with name '" << path << "'");
+
+    return group->m_view_coll.getItem(path);
   }
 
   /*!
    * \brief Return (const) pointer to DataView with given name.
    */
+  // TODO - Add path support to const function version.
   const DataView * getView( const std::string& name ) const
   {
-    SLIC_CHECK_MSG( hasView(name), "no view found with name == " << name);
+    SLIC_CHECK_MSG( !name.empty() && hasView(name), "Group " << this->getName() << " can't retrieve view with name '" << name << "'");
 
     return m_view_coll.getItem(name);
   }
@@ -257,7 +277,7 @@ public:
    */
   DataView * getView( IndexType idx )
   {
-    SLIC_CHECK_MSG( hasView(idx), "no view found with idx == " << idx );
+    SLIC_CHECK_MSG( hasView(idx), "Group " << this->getName() << " does not have view with index " << idx);
 
     return m_view_coll.getItem(idx);
   }
@@ -265,9 +285,10 @@ public:
   /*!
    * \brief Return (const) pointer to DataView with given index.
    */
+  // TODO - Add path support to const function version.
   const DataView * getView( IndexType idx ) const
   {
-    SLIC_CHECK_MSG( hasView(idx), "no view found with idx == " << idx );
+    SLIC_CHECK_MSG( hasView(idx), "Group " << this->getName() << " does not have view with index " << idx);
 
     return m_view_coll.getItem(idx);
   }
@@ -297,9 +318,144 @@ public:
 
 //@}
 
+  //@{
+  //!  @name Methods to create a DataView
+  //!
+  //!  These methods support a path syntax for input.  When a path is provided
+  //!  the method will traverse down to the last group in the path before
+  //!  executing the called operation.  Creation methods will automatically
+  //!  create a chain of groups if they are not already present.
+  //!
+  //!  Example:
+  //!  createView("foo/bar/baz")
+  //!  is equivalent to
+  //!  createGroup("foo")->createGroup("bar")->createView("baz")
+  //!
+
+    /*!
+     * \brief Create and attach an undescribed (i.e., empty) DataView object
+     *  with given name or path.
+     *
+     * IMPORTANT: To do anything useful with the view, it has to be described
+     * and associated with data; for example, attach it to a data buffer and
+     * apply a data description, describe it and allocate it, etc.
+     *
+     * If name is an empty string or group already has a view with given
+     * name method does nothing.
+     *
+     * \return pointer to created DataView object or ATK_NULLPTR if new
+     * view is not created.
+     */
+    DataView * createView( const std::string& name );
+
+    /*!
+     * \brief Create DataView object with given name and described by data type
+     *        and number of elements, and attach new view to this group object.
+     *
+     * IMPORTANT: This method does not allocate data or associate the view
+     * with data.
+     *
+     * If name is an empty string, or group already has a view with given
+     * name, or given number of elements is < 0 method does nothing.
+     *
+     * \return pointer to created DataView object or ATK_NULLPTR if new
+     * view is not created.
+     */
+    DataView * createView( const std::string& name,
+                           TypeID type,
+                           SidreLength num_elems );
+
+    /*!
+     * \brief Create DataView object with given name and described by
+     *        Conduit DataType, and attach new view to this group object.
+     *
+     * IMPORTANT: This method does not allocate data or associated the view
+     * with data.
+     *
+     * If name is an empty string, or group already has a view with given
+     * name, method does nothing.
+     *
+     * \return pointer to created DataView object or ATK_NULLPTR if new
+     * view is not created.
+     */
+    DataView * createView( const std::string& name,
+                           const DataType& dtype);
+
+    /*!
+     * \brief Create DataView object with given name and described by
+     *        Conduit Schema, and attach new view to this group object.
+     *
+     * IMPORTANT: This method does not allocate data or associated the view
+     * with data.
+     *
+     * If name is an empty string, or group already has a view with given
+     * name, method does nothing.
+     *
+     * \return pointer to created DataView object or ATK_NULLPTR if new
+     * view is not created.
+     */
+    DataView * createView( const std::string& name,
+                           const Schema& schema);
+
+    /*!
+     * \brief Create DataView object with given name, attach it to given buffer,
+     *        and attach new view to this group object.
+     *
+     * This is equivalent to calling: createView(name)->attachBuffer(buff);
+     *
+     * IMPORTANT: The view cannot be used to access data in buffer until it
+     * is described by calling a DataView::apply() method.
+     *
+     * If name is an empty string, or group already has a view with given
+     * name, or given buffer pointer is null, method does nothing.
+     *
+     * \return pointer to created DataView object or ATK_NULLPTR if new
+     * view is not created.
+     */
+    DataView * createView( const std::string& name,
+                           DataBuffer * buff );
+
+    /*!
+     * \brief Create DataView object with given name to hold external data
+     *        and attach new view to this group object.
+     *
+     * This is equivalent to calling:
+     * createView(name)->setExternalDataPtr(external_ptr);
+     *
+     * IMPORTANT: Note that the view is "opaque" (it has no knowledge of
+     * the type or structure of the data) until a DataView::apply() method
+     * is called.
+     *
+     * If name is an empty string, or group already has a view with given
+     * name, or given data pointer is null, method does nothing.
+       //
+       // RDH -- If a null data ptr is passed, should this be the same as creating
+       //        an empty view?
+       //
+     *
+     * \return pointer to created DataView object or ATK_NULLPTR if new
+     * view is not created.
+     */
+    DataView * createView( const std::string& name,
+                           void * external_ptr );
+
+  //@}
+
+
 
 //@{
 //!  @name DataView creation methods that also describe and allocate data.
+//!
+//!  These methods support a path syntax for input.  When a path is provided
+//!  the method will traverse down to the last group in the path before
+//!  executing the called operation.  Creation methods will automatically
+//!  create a chain of groups if they are not already present.
+//!
+//!  Example:
+//!  createView("foo/bar/baz")
+//!  is equivalent to
+//!  createGroup("foo")->createGroup("bar")->createView("baz")
+
 
   /*!
    * \brief Create DataView object with given name, data type, and
@@ -351,125 +507,6 @@ public:
 //@}
 
 
-//@{
-//!  @name Methods to create a DataView and possibly describe it without
-//         data allocation.
-
-  /*!
-   * \brief Create an undescribed (i.e., empty) DataView object with given
-   *        name and attach new view to this group object.
-   *
-   * IMPORTANT: To do anything useful with the view, it has to be described
-   * and associated with data; for example, attach it to a data buffer and
-   * apply a data description, describe it and allocate it, etc.
-   *
-   * If name is an empty string, group already has a view with given
-   * name, or given buffer pointer is null, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name );
-
-  /*!
-   * \brief Create DataView object with given name and described by data type
-   *        and number of elements, and attach new view to this group object.
-   *
-   * IMPORTANT: This method does not allocate data or associated the view
-   * with data.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given number of elements is < 0 method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         TypeID type,
-                         SidreLength num_elems );
-
-  /*!
-   * \brief Create DataView object with given name and described by
-   *        Conduit DataType, and attach new view to this group object.
-   *
-   * IMPORTANT: This method does not allocate data or associated the view
-   * with data.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         const DataType& dtype);
-
-  /*!
-   * \brief Create DataView object with given name and described by
-   *        Conduit Schema, and attach new view to this group object.
-   *
-   * IMPORTANT: This method does not allocate data or associated the view
-   * with data.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         const Schema& schema);
-
-//@}
-
-
-//@{
-//!  @name DataView creation methods that attach view to existing data
-//!        buffer or external data.
-
-  /*!
-   * \brief Create DataView object with given name, attach it to given buffer,
-   *        and attach new view to this group object.
-   *
-   * This is equivalent to calling: createView(name)->attachBuffer(buff);
-   *
-   * IMPORTANT: The view cannot be used to access data in buffer until it
-   * is described by calling a DataView::apply() method.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given buffer pointer is null, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         DataBuffer * buff );
-
-  /*!
-   * \brief Create DataView object with given name to hold external data
-   *        and attach new view to this group object.
-   *
-   * This is equivalent to calling:
-   * createView(name)->setExternalDataPtr(external_ptr);
-   *
-   * IMPORTANT: Note that the view is "opaque" (it has no knowledge of
-   * the type or structure of the data) until a DataView::apply() method
-   * is called.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given data pointer is null, method does nothing.
-     //
-     // RDH -- If a null data ptr is passed, should this be the same as creating
-     //        an empty view?
-     //
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         void * external_ptr );
-
-//@}
 
 
 //@{
@@ -572,7 +609,7 @@ public:
    */
   IndexType getGroupIndex(const std::string& name) const
   {
-    SLIC_CHECK_MSG( hasGroup(name), "no group found with name == " << name);
+    SLIC_CHECK_MSG( !name.empty() && hasGroup(name), "Group " << this->getName() << " does not have group with name '" << name << "'");
 
     return m_group_coll.getItemIndex(name);
   }
@@ -584,7 +621,7 @@ public:
    */
   const std::string& getGroupName(IndexType idx) const
   {
-    SLIC_CHECK_MSG( hasGroup(idx), "no group found with idx == " << idx );
+    SLIC_CHECK_MSG( hasGroup(idx), "Group " << this->getName() << " does not have group with index " << idx);
 
     return m_group_coll.getItemName(idx);
   }
@@ -594,15 +631,28 @@ public:
 
 //@{
 //!  @name (child) DataGroup access and iteration methods.
+//!
+//!  Some of these methods support a path syntax for input.  When a path is
+//!  provided the method will retrieve the last item in the path.  All
+//!  items in the path must exist.
+//!
+//!  Example:
+//!  getGroup("foo/bar/baz")
+//!  is equivalent to
+//!  getGroup("foo")->getGroup("bar")->getGroup("baz")
+//!
 
   /*!
    * \brief Return (non-const) pointer to child DataGroup with given name.
    */
   DataGroup * getGroup( const std::string& name )
   {
-    SLIC_CHECK_MSG( hasGroup(name), "no group found with name == " << name);
+    std::string path = name;
+    DataGroup * group = walkPath( path, false );
 
-    return m_group_coll.getItem(name);
+    SLIC_CHECK_MSG( !path.empty() && group->hasGroup(path), "Group " << group->getName() << " does not have group with name '" << path << "'");
+
+    return group->m_group_coll.getItem(path);
   }
 
   /*!
@@ -610,7 +660,7 @@ public:
    */
   DataGroup const * getGroup( const std::string& name ) const
   {
-    SLIC_CHECK_MSG( hasGroup(name), "no group found with name == " << name);
+    SLIC_CHECK_MSG( !name.empty() && hasGroup(name), "Group " << getName() << " does not have group with name '" << name << "'");
 
     return m_group_coll.getItem(name);
   }
@@ -620,7 +670,7 @@ public:
    */
   DataGroup * getGroup( IndexType idx )
   {
-    SLIC_CHECK_MSG( hasGroup(idx), "no group found with idx == " << idx );
+    SLIC_CHECK_MSG( hasGroup(idx), "Group " << this->getName() << " does not have group with index " << idx);
 
     return m_group_coll.getItem(idx);
   }
@@ -630,7 +680,7 @@ public:
    */
   const DataGroup * getGroup( IndexType idx ) const
   {
-    SLIC_CHECK_MSG( hasGroup(idx), "no group found with idx == " << idx );
+    SLIC_CHECK_MSG( hasGroup(idx), "Group " << this->getName() << " does not have group with index " << idx);
 
     return m_group_coll.getItem(idx);
   }
@@ -664,6 +714,13 @@ public:
 
 //@{
 //!  @name (child) DataGroup create and destroy methods.
+//!  The creation methods support a path syntax for input.  When a path is
+//!  provided the method will create all groups in the method (if not already
+//!  present).
+//!  Example:
+//!  createGroup("foo/bar/baz")
+//!  is equivalent to
+//!  createGroup("foo")->createGroup("bar")->createGroup("baz")
 
   /*!
    * \brief Create a DataGroup object with given name and attach as a
@@ -834,12 +891,6 @@ private:
 //!  @name Private DataGroup view and buffer manipulation methods.
 
   /*!
-   * \brief Private method to create DataView and DataBuffer and
-   *        attach view to buffer.
-   */
-  DataView * createViewAndBuffer( const std::string& name );
-
-  /*!
    * \brief Private methods to attach/detach DataView object to DataGroup.
    */
   DataView * attachView(DataView * view);
@@ -864,6 +915,20 @@ private:
   DataGroup * detachGroup(IndexType idx);
 
 //@}
+
+  /*!
+   * \brief Private method to retrieve the next-to-last entry in a path.  This
+   * entry is usually the one that needs to perform an action, such as creating or
+   * retrieving a group or view.
+   *
+   * path - The path to traverse.  This parameter is modified during algorithm
+   * execution.  Upon completion it will contain the last entry in the path.  This
+   * is typically a name of a group or view that needs to be created or retrieved.
+   *
+   * create_on_demand - This controls whether any missing groups should be created
+   * while traversing a path.
+   */
+  DataGroup * walkPath(std::string& path, bool create_on_demand );
 
 
 //@{
@@ -906,6 +971,8 @@ private:
   /// This DataGroup object lives in the tree of this DataStore object.
   DataStore * m_datastore;
 
+  /// Character used to denote a path string passed to get/create calls.
+  static const char m_path_delimiter;
 
   ///
   /// Typedefs for view and shild group containers. They are here to
