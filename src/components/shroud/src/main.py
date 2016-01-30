@@ -129,7 +129,7 @@ class Schema(object):
             doxygen = True,       # create doxygen comments
 
             # blank for functions, set in classes.
-            name_class_template = '{lower_class}_',
+            class_name_template = '{class_lower}_',
 
             C_header_filename_library_template = 'wrap{library}.h',
             C_impl_filename_library_template = 'wrap{library}.cpp',
@@ -137,13 +137,13 @@ class Schema(object):
             C_header_filename_class_template = 'wrap{cpp_class}.h',
             C_impl_filename_class_template = 'wrap{cpp_class}.cpp',
 
-            C_name_template = '{C_prefix}{name_class}{underscore_name}{function_suffix}',
+            C_name_template = '{C_prefix}{class_name}{underscore_name}{function_suffix}',
 
             # Fortran's names for C functions
             F_C_prefix = 'c_',
-            F_C_name_template = '{F_C_prefix}{name_class}{underscore_name}{function_suffix}',
+            F_C_name_template = '{F_C_prefix}{class_name}{underscore_name}{function_suffix}',
 
-            F_name_impl_template ='{name_class}{underscore_name}{function_suffix}',
+            F_name_impl_template ='{class_name}{underscore_name}{function_suffix}',
 
             F_name_method_template = '{underscore_name}{function_suffix}',
             F_name_generic_template = '{underscore_name}',
@@ -151,7 +151,7 @@ class Schema(object):
             F_module_name_library_template = '{lower_library}_mod',
             F_impl_filename_library_template = 'wrapf{lower_library}.f',
 
-            F_module_name_class_template = '{lower_class}_mod',
+            F_module_name_class_template = '{class_lower}_mod',
             F_impl_filename_class_template = 'wrapf{cpp_class}.f',
 
             F_name_instance_get = 'get_instance',
@@ -171,7 +171,7 @@ class Schema(object):
         fmt_library.upper_library = fmt_library.library.upper()
         fmt_library.function_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
-        fmt_library.name_class = ''
+        fmt_library.class_name = ''
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
         fmt_library.F_C_prefix    = def_options['F_C_prefix']
         fmt_library.rv            = 'rv'  # return value
@@ -467,13 +467,13 @@ class Schema(object):
         options = self.push_options(node)
         fmt_class = self.push_fmt(node)
         fmt_class.cpp_class = name
-        fmt_class.lower_class = name.lower()
-        fmt_class.upper_class = name.upper()
+        fmt_class.class_lower = name.lower()
+        fmt_class.class_upper = name.upper()
         if 'C_prefix' in options:
             fmt_class.C_prefix = options.C_prefix
         if 'F_C_prefix' in options:
             fmt_class.F_C_prefix = options.F_C_prefix
-        util.eval_template(node, 'name_class')
+        util.eval_template(node, 'class_name')
         
         if options.F_module_per_class:
             util.eval_template(node, 'F_module_name', '_class')

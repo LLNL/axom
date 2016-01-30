@@ -71,10 +71,10 @@ Library name - Updated after reading YAML file.
 
 Class name - Updated before processing each class.
    * cpp_class - The name of the C++ class from the YAML input file.
-   * lower_class - Lowercase version of *cpp_class*.
-   * upper_class - Uppercase version of *cpp_class*
-   * name_class  - Variable which may be used in creating function names.
-                   Defaults to evaluation of *name_class_template*.
+   * class_lower - Lowercase version of *cpp_class*.
+   * class_upper - Uppercase version of *cpp_class*
+   * class_name  - Variable which may be used in creating function names.
+                   Defaults to evaluation of *class_name_template*.
                    Outside of a class, set to empty string.
    * C_prefix - Prefix for C wrapper functions.
      Defaults to first three letters of *library*.

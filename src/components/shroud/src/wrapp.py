@@ -19,7 +19,7 @@ def add_templates(options):
         PY_PyTypeObject_template    = '{PY_prefix}{cpp_class}_Type',
         PY_PyObject_template        = '{PY_prefix}{cpp_class}',
         PY_type_filename_template   = 'py{cpp_class}type.cpp',
-        PY_name_impl_template       = '{PY_prefix}{name_class}{underscore_name}{function_suffix}',
+        PY_name_impl_template       = '{PY_prefix}{class_name}{underscore_name}{function_suffix}',
         ))
 
 

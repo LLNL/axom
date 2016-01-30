@@ -154,7 +154,7 @@ C_name_template
     {C_prefix}{class_name}_{underscore_name}{function_suffix}
 
 F_C_name_template
-    {F_C_prefix}{lower_class_name}{underscore_name}{function_suffix}
+    {F_C_prefix}{class_name}{underscore_name}{function_suffix}
 
 F_name_generic_template
     {underscore_name}
@@ -191,7 +191,7 @@ F_impl_filename_library_template
     wrapf{lower_library}.f
 
 F_module_name_class_template
-    {lower_class}_mod
+    {class_lower}_mod
 
 F_impl_filename_class_template
     wrapf{cpp_class}.f

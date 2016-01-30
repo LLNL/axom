@@ -43,7 +43,7 @@ types:
 functions:
 - options:
     # Change the default template for Fortran functions to include the library name.
-    F_name_impl_template: "{lower_library}_{name_class}{underscore_name}{function_suffix}"
+    F_name_impl_template: "{lower_library}_{class_name}{underscore_name}{function_suffix}"
 - decl: void initialize()
 - decl: bool isInitialized()
 - decl: void finalize()

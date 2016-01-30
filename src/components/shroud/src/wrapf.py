@@ -293,12 +293,12 @@ class Wrapf(util.WrapperMixin):
         self._pop_splicer(fmt_class.cpp_class)
 
         # overload operators
-        self.overload_compare(fmt_class, '.eq.', fmt_class.lower_class + '_eq',
+        self.overload_compare(fmt_class, '.eq.', fmt_class.class_lower + '_eq',
                               wformat('c_associated(a%{F_derived_member}, b%{F_derived_member})', fmt_class))
-#        self.overload_compare(fmt_class, '==', fmt_class.lower_class + '_eq', None)
-        self.overload_compare(fmt_class, '.ne.', fmt_class.lower_class + '_ne',
+#        self.overload_compare(fmt_class, '==', fmt_class.class_lower + '_eq', None)
+        self.overload_compare(fmt_class, '.ne.', fmt_class.class_lower + '_ne',
                               wformat('.not. c_associated(a%{F_derived_member}, b%{F_derived_member})', fmt_class))
-#        self.overload_compare(fmt_class, '/=', fmt_class.lower_class + '_ne', None)
+#        self.overload_compare(fmt_class, '/=', fmt_class.class_lower + '_ne', None)
 
     def write_object_get_set(self, node, fmt_class):
         """Write get and set methods for instance pointer.
