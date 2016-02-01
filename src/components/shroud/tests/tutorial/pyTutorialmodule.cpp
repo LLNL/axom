@@ -67,16 +67,16 @@ PY_sum(
     int len;
     int * values;
     int * result;
-    const char *kwcpp = "len\0values\0result";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4,(char *) kwcpp+11, NULL };
+    const char *kwcpp = "len\0values";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iii:Sum", kw_list,
-        &len, &values, &result))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ii:Sum", kw_list,
+        &len, &values))
     {
         return NULL;
     }
     Sum(len, values, result);
-    Py_RETURN_NONE;
+    return Py_BuildValue("i", *result);
 // splicer end function.sum
 }
 
@@ -103,7 +103,8 @@ PY_function3(
     }
     arg = PyObject_IsTrue(SH_Py_arg);
     bool rv = Function3(arg);
-    return PyBool_FromLong(rv);
+    PyObject * rv_obj = PyBool_FromLong(rv);
+    return (PyObject *) rv_obj;
 // splicer end function.function3
 }
 
@@ -129,7 +130,8 @@ PY_function4a(
         return NULL;
     }
     const std::string rv = Function4a(arg1, arg2);
-    return PyString_FromString(rv.c_str());
+    PyObject * rv_obj = PyString_FromString(rv.c_str());
+    return (PyObject *) rv_obj;
 // splicer end function.function4a
 }
 
@@ -155,7 +157,8 @@ PY_function4b(
         return NULL;
     }
     const std::string & rv = Function4b(arg1, arg2);
-    return PyString_FromString(rv.c_str());
+    PyObject * rv_obj = PyString_FromString(rv.c_str());
+    return (PyObject *) rv_obj;
 // splicer end function.function4b
 }
 
@@ -439,7 +442,8 @@ PY_last_function_called(
 {
 // splicer begin function.last_function_called
     const std::string & rv = LastFunctionCalled();
-    return PyString_FromString(rv.c_str());
+    PyObject * rv_obj = PyString_FromString(rv.c_str());
+    return (PyObject *) rv_obj;
 // splicer end function.last_function_called
 }
 

@@ -2276,7 +2276,10 @@
                     "need_wrapper": true
                 }
             }, 
-            "f_type": "logical"
+            "f_type": "logical", 
+            "py_statements": {
+                "post_parse": "{cpp_var} = PyObject_IsTrue({py_var});"
+            }
         }, 
         "char": {
             "PY_ctor": "PyString_FromString({var})", 
@@ -2502,7 +2505,10 @@
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_type": "character(*)"
+            "f_type": "character(*)", 
+            "py_statements": {
+                "ctor": "PyString_FromString({c_var})"
+            }
         }, 
         "string": {
             "PY_ctor": "PyString_FromString({var})", 
@@ -2539,7 +2545,10 @@
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_type": "character(*)"
+            "f_type": "character(*)", 
+            "py_statements": {
+                "ctor": "PyString_FromString({c_var})"
+            }
         }, 
         "string_result_fstr": {
             "PY_ctor": "PyString_FromString({var})", 
@@ -2577,7 +2586,10 @@
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)"
+            "f_type": "character(*)", 
+            "py_statements": {
+                "ctor": "PyString_FromString({c_var})"
+            }
         }, 
         "void": {
             "c_fortran": "type(C_PTR)", 

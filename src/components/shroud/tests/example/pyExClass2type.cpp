@@ -170,7 +170,8 @@ PP_exclass2_get_name(
 {
 // splicer begin class.ExClass2.method.get_name
     const std::string & rv = self->BBB->getName();
-    return PyString_FromString(rv.c_str());
+    PyObject * rv_obj = PyString_FromString(rv.c_str());
+    return (PyObject *) rv_obj;
 // splicer end class.ExClass2.method.get_name
 }
 
@@ -283,7 +284,7 @@ PP_exclass2_get_type_id(
 {
 // splicer begin class.ExClass2.method.get_type_id
     TypeID rv = self->BBB->getTypeID();
-    return Py_BuildValue("O", rv);
+    return (PyObject *) rv;
 // splicer end class.ExClass2.method.get_type_id
 }
 // splicer begin class.ExClass2.impl.after_methods

@@ -283,8 +283,15 @@ return 1;""", fmt)
 
         PY_decl = []     # variables for function
         PY_code = []
-        format = []      # for PyArg_ParseTupleAndKeywords
-        addrargs = []    # for PyArg_ParseTupleAndKeywords
+
+        # input to Py_BuildValue
+        build_format = []
+        build_vargs = []
+
+        # PyArg_ParseTupleAndKeywords
+        parse_format = []
+        parse_vargs = []
+
         cpp_call_list = []
 
         # parse arguments
@@ -312,43 +319,50 @@ return 1;""", fmt)
                 fmt.c_var = arg['name']
                 fmt.cpp_var = fmt.c_var
                 fmt.py_var = 'SH_Py_' + fmt.c_var
-
-                # names to PyArg_ParseTupleAndKeywords
-                arg_names.append(arg_name)
-                arg_offsets.append( '(char *) kwcpp+%d' % offset)
-                offset += len(arg_name) + 1
-                arg_typedef = self.typedef[arg['type']]
-
                 attrs = arg['attrs']
-                # XXX default should be handled differently
-                if 'default' in attrs:
-                    if not found_default:
-                        format.append('|')  # add once
-                        found_default = True
-                    # call for default arguments  (num args, arg string)
-                    default_calls.append(
-                        (len(cpp_call_list),  ', '.join(cpp_call_list)))
 
-                format.append(arg_typedef.PY_format)
-                if arg_typedef.PY_PyTypeObject:
-                    # Expect object of given type
-                    format.append('!')
-                    addrargs.append('&' + arg_typedef.PY_PyTypeObject)
-                    arg_name = fmt.py_var
-                elif arg_typedef.PY_from_object:
-                    # Use function to convert object
-                    format.append('&')
-                    addrargs.append(arg_typedef.PY_from_object)
+                arg_typedef = self.typedef[arg['type']]
+                if attrs['intent'] in [ 'inout', 'in']:
+                    # names to PyArg_ParseTupleAndKeywords
+                    arg_names.append(arg_name)
+                    arg_offsets.append( '(char *) kwcpp+%d' % offset)
+                    offset += len(arg_name) + 1
 
-                # add argument to call to PyArg_ParseTypleAndKeywords
-                addrargs.append('&' + arg_name)
+                    # XXX default should be handled differently
+                    if 'default' in attrs:
+                        if not found_default:
+                            parse_format.append('|')  # add once
+                            found_default = True
+                        # call for default arguments  (num args, arg string)
+                        default_calls.append(
+                            (len(cpp_call_list),  ', '.join(cpp_call_list)))
+
+                    parse_format.append(arg_typedef.PY_format)
+                    if arg_typedef.PY_PyTypeObject:
+                        # Expect object of given type
+                        parse_format.append('!')
+                        parse_vargs.append('&' + arg_typedef.PY_PyTypeObject)
+                        arg_name = fmt.py_var
+                    elif arg_typedef.PY_from_object:
+                        # Use function to convert object
+                        parse_format.append('&')
+                        parse_vargs.append(arg_typedef.PY_from_object)
+
+                    # add argument to call to PyArg_ParseTypleAndKeywords
+                    parse_vargs.append('&' + arg_name)
+
+                if attrs['intent'] in [ 'inout', 'out']:
+                    # output variable must be a pointer
+                    # XXX - fix up for strings
+                    build_format.append(arg_typedef.PY_format)
+                    build_vargs.append('*' + fmt.c_var);
 
                 # argument for C++ function
                 lang = 'cpp_type'
                 if arg_typedef.base == 'string':
                     # C++ will coerce char * to std::string
                     lang = 'c_type'
-                if arg['attrs'].get('reference', False):
+                if attrs.get('reference', False):
                     # convert a reference to a pointer
                     ptr = True
                 else:
@@ -379,12 +393,12 @@ return 1;""", fmt)
                 PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ', NULL };')
             else:
                 PY_decl.append('char * kw_list[] = { "' + '", "'.join(arg_names) + ', NULL" };')
-            format.extend([ ':', fmt.function_name])
-            fmt.PyArg_format = ''.join(format)
-            fmt.PyArg_addrargs = ', '.join(addrargs)
+            parse_format.extend([ ':', fmt.function_name])
+            fmt.PyArg_format = ''.join(parse_format)
+            fmt.PyArg_vargs = ', '.join(parse_vargs)
             PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords(args, kwds, "{PyArg_format}", kw_list,', fmt))
             PY_code.append(1)
-            PY_code.append(wformat('{PyArg_addrargs}))', fmt))
+            PY_code.append(wformat('{PyArg_vargs}))', fmt))
             PY_code.append(-1)
             PY_code.extend(['{', 1, 'return NULL;', -1, '}'])
 
@@ -454,39 +468,59 @@ return 1;""", fmt)
             PY_decl.append('')
 
         # return Object
+        addrarg = None
+        fmt.var = fmt.rv
+        fmt.cpp_var = fmt.rv
+        fmt.py_var = 'rv_obj'
         if CPP_subprogram == 'subroutine':
-            PY_code.append('Py_RETURN_NONE;')
+            addrarg = None
         elif result_typedef.base == 'wrapped':
-            lfmt = util.Options(fmt)
-            lfmt.rv_obj = 'rv_obj'
-            lfmt.PY_PyObject = result_typedef.PY_PyObject
-            lfmt.PY_PyTypeObject = result_typedef.PY_PyTypeObject
-            append_format(PY_code, '{PY_PyObject} * {rv_obj} = PyObject_New({PY_PyObject}, &{PY_PyTypeObject});', lfmt)
-            append_format(PY_code, '{rv_obj}->{BBB} = {rv};', lfmt)
-            append_format(PY_code, 'return (PyObject *) {rv_obj};', lfmt)
+            fmt.PyObject = result_typedef.PY_PyObject
+            fmt.PY_PyTypeObject = result_typedef.PY_PyTypeObject
+            append_format(PY_code, '{PyObject} * {py_var} = PyObject_New({PyObject}, &{PY_PyTypeObject});', fmt)
+            append_format(PY_code, '{py_var}->{BBB} = {rv};', fmt)
+            addrarg = fmt.py_var
+            format = 'O'
         elif result_typedef.PY_ctor:
-            fmt.var = fmt.rv
-            fmt.cpp_var = fmt.rv
             fmt.var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
-            append_format(PY_code, 'return ' + result_typedef.PY_ctor + ';', fmt)
+            fmt.PyObject = result_typedef.PY_PyObject or 'PyObject'
+            append_format(PY_code, '{PyObject} * {py_var} = ' + result_typedef.PY_ctor + ';', fmt)
+            addrarg = fmt.py_var
+            format = 'O'
         else:
             fmt.var = 'rv'
             fmt.cpp_var = 'rv'
             format = [ result_typedef.PY_format ]
-            addrargs = [ ]
             if result_typedef.PY_to_object:
                 format.append('&')
-                addrargs.append(result_typedef.PY_to_object)
+                addrarg = result_typedef.PY_to_object
             if result_is_ptr:
-                append_format(addrargs, result_typedef.cpp_to_c, fmt)  # if C++
+                addrarg = wformat(result_typedef.cpp_to_c, fmt)  # if C++
             elif result_is_ref:
-                append_format(addrargs, result_typedef.cpp_to_c, fmt)  # if C++
+                addrarg = wformat(result_typedef.cpp_to_c, fmt)  # if C++
             else:
                 # XXX intermediate variable?
-                addrargs.append('rv')
-            fmt.PyArg_format = ''.join(format)
-            fmt.PyArg_addrargs = ', '.join(addrargs)
-            PY_code.append(wformat('return Py_BuildValue("{PyArg_format}", {PyArg_addrargs});', fmt))
+                addrarg = 'rv'
+
+        # Add result (if any) to front of result tuple
+        if addrarg:
+            build_format.insert(0, ''.join(format))
+            build_vargs.insert(0, addrarg)
+
+        fmt.PyArg_format = ''.join(build_format)
+        fmt.PyArg_vargs = ', '.join(build_vargs)
+        if not build_format:
+            PY_code.append('Py_RETURN_NONE;')
+        elif len(build_format) > 1:
+            # return tuple
+            PY_code.append(wformat('return Py_BuildValue("({PyArg_format})", {PyArg_vargs});', fmt))
+        elif build_format[0] == 'O':
+            # return a single object already created
+            fmt.rv_obj = build_vargs[0]
+            append_format(PY_code, 'return (PyObject *) {rv_obj};', fmt)
+        else:
+            # create object
+            PY_code.append(wformat('return Py_BuildValue("{PyArg_format}", {PyArg_vargs});', fmt))
 
         PY_impl = [1] + PY_decl + PY_code + [-1]
 

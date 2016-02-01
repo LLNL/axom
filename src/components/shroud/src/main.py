@@ -268,6 +268,10 @@ class Schema(object):
                         ),
                     ),
 
+                py_statements = dict(
+                    post_parse = '{cpp_var} = PyObject_IsTrue({py_var});',
+                    ),
+
 #XXX            PY_format = 'p',  # Python 3.3 or greater
                 PY_ctor   = 'PyBool_FromLong({rv})',
                 PY_PyTypeObject = 'PyBool_Type',
@@ -389,6 +393,10 @@ class Schema(object):
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
 #                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+
+                py_statements = dict(
+                    ctor = 'PyString_FromString({c_var})',
+                    ),
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({var})',
                 base = 'string',

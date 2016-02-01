@@ -52,7 +52,8 @@ PP_is_name_valid(
         return NULL;
     }
     bool rv = isNameValid(name);
-    return PyBool_FromLong(rv);
+    PyObject * rv_obj = PyBool_FromLong(rv);
+    return (PyObject *) rv_obj;
 // splicer end function.is_name_valid
 }
 
@@ -68,7 +69,8 @@ PP_is_initialized(
 {
 // splicer begin function.is_initialized
     bool rv = isInitialized();
-    return PyBool_FromLong(rv);
+    PyObject * rv_obj = PyBool_FromLong(rv);
+    return (PyObject *) rv_obj;
 // splicer end function.is_initialized
 }
 

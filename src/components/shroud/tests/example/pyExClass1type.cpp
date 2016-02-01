@@ -94,7 +94,8 @@ PP_exclass1_get_name(
         return NULL;
     }
     
-    return PyString_FromString(rv.c_str());
+    PyObject * rv_obj = PyString_FromString(rv.c_str());
+    return (PyObject *) rv_obj;
 // splicer end class.ExClass1.method.get_name
 }
 
@@ -126,7 +127,8 @@ PP_exclass1_get_name_error_check(
 {
 // splicer begin class.ExClass1.method.get_name_error_check
     const std::string & rv = self->BBB->getNameErrorCheck();
-    return PyString_FromString(rv.c_str());
+    PyObject * rv_obj = PyString_FromString(rv.c_str());
+    return (PyObject *) rv_obj;
 // splicer end class.ExClass1.method.get_name_error_check
 }
 
@@ -142,7 +144,8 @@ PP_exclass1_get_name_arg(
 {
 // splicer begin class.ExClass1.method.get_name_arg
     const std::string & rv = self->BBB->getNameArg();
-    return PyString_FromString(rv.c_str());
+    PyObject * rv_obj = PyString_FromString(rv.c_str());
+    return (PyObject *) rv_obj;
 // splicer end class.ExClass1.method.get_name_arg
 }
 
@@ -218,7 +221,7 @@ PP_exclass1_get_addr(
 {
 // splicer begin class.ExClass1.method.get_addr
     void * rv = self->BBB->getAddr();
-    return Py_BuildValue("O", rv);
+    return (PyObject *) rv;
 // splicer end class.ExClass1.method.get_addr
 }
 
@@ -245,7 +248,8 @@ PP_exclass1_has_addr(
     }
     in = PyObject_IsTrue(SH_Py_in);
     bool rv = self->BBB->hasAddr(in);
-    return PyBool_FromLong(rv);
+    PyObject * rv_obj = PyBool_FromLong(rv);
+    return (PyObject *) rv_obj;
 // splicer end class.ExClass1.method.has_addr
 }
 

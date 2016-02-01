@@ -34,6 +34,7 @@ def wformat(template, dct):
         
 
 def append_format(lst, template, dct):
+    # shorthand, wrap fmt.vformat
     lst.append(wformat(template, dct))
 
 def eval_template(node, name, tname='', fmt=None):
@@ -304,6 +305,7 @@ class Typedef(object):
         PY_to_object=None,    # PyBuild - object = converter(address)
         PY_from_object=None,  # PyArg_Parse - status = converter(object, address);
         PY_post_parse='KKK',  # Used if PY_PyTypeObject is set
+        py_statements={},
         )
 
     def __init__(self, name, **kw):
