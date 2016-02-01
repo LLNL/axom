@@ -252,6 +252,8 @@ return 1;""", fmt)
         fmt = util.Options(fmt_func)
         fmt.doc_string = 'documentation'
 
+        CPP_subprogram = node['_subprogram']
+
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
@@ -260,6 +262,7 @@ return 1;""", fmt)
         if node.get('return_this', False):
             result_type = 'void'
             result_is_ptr = False
+            CPP_subprogram = 'subroutine'
 
         result_typedef = self.typedef[result_type]
         is_ctor  = node['attrs'].get('constructor', False)
@@ -419,7 +422,7 @@ return 1;""", fmt)
             if is_dtor:
                 append_format(PY_code, 'delete self->{BBB};', fmt)
                 append_format(PY_code, 'self->{BBB} = NULL;', fmt)
-            elif result_type == 'void' and not result_is_ptr:
+            elif CPP_subprogram == 'subroutine':
                 line = wformat('{PY_this_call}{function_name}({call_list});', fmt)
                 PY_code.append(line)
             else:
@@ -451,7 +454,7 @@ return 1;""", fmt)
             PY_decl.append('')
 
         # return Object
-        if result_type == 'void' and not result_is_ptr:
+        if CPP_subprogram == 'subroutine':
             PY_code.append('Py_RETURN_NONE;')
         elif result_typedef.base == 'wrapped':
             lfmt = util.Options(fmt)
