@@ -89,7 +89,8 @@ DataView * DataGroup::createView( const std::string& name,
 {
   if ( num_elems < 0 )
   {
-    SLIC_CHECK_MSG(num_elems >= 0, "Must define view with number of elems >=0 ");
+    SLIC_CHECK_MSG(num_elems >= 0,
+                   "Must define view with number of elems >=0 ");
     return ATK_NULLPTR;
   }
 
@@ -151,7 +152,7 @@ DataView * DataGroup::createView( const std::string& name,
                                   DataBuffer * buff)
 {
   SLIC_CHECK_MSG( buff != ATK_NULLPTR,
-                   "Cannot attach buffer to view, the provided buffer pointer is null.");
+                  "Cannot attach buffer to view, the provided buffer pointer is null.");
 
   DataView * view = createView(name);
   if ( view != ATK_NULLPTR && buff != ATK_NULLPTR)
@@ -172,7 +173,7 @@ DataView * DataGroup::createView( const std::string& name,
                                   void * external_ptr )
 {
   SLIC_CHECK_MSG( external_ptr != ATK_NULLPTR,
-                   "Cannot set view to point to external data, the provided pointer is null." );
+                  "Cannot set view to point to external data, the provided pointer is null." );
 
   DataView * view = createView(name);
   if ( view != ATK_NULLPTR && external_ptr != ATK_NULLPTR )
@@ -882,11 +883,13 @@ DataGroup * DataGroup::walkPath( std::string& path, bool create_on_demand )
   std::string::size_type pos = detail::find_exclusive( path, m_path_delimiter);
   if (pos != std::string::npos)
   {
-    std::vector<std::string> tokens = detail::split(path, m_path_delimiter, pos);
+    std::vector<std::string> tokens =
+      detail::split(path, m_path_delimiter, pos);
     std::vector<std::string>::iterator stop = tokens.end() - 1;
 
     // Navigate path down to desired group.
-    for (std::vector<std::string>::const_iterator iter = tokens.begin(); iter < stop; ++iter)
+    for (std::vector<std::string>::const_iterator iter = tokens.begin() ;
+         iter < stop ; ++iter)
     {
       SLIC_ASSERT( iter->size() > 0 );
 
@@ -906,7 +909,9 @@ DataGroup * DataGroup::walkPath( std::string& path, bool create_on_demand )
       else
       {
 //        SLIC_CHECK_MSG(false, "Path is invalid, group " << group_ptr->getName() << " does not have group with name " << *iter);
-        SLIC_ERROR("Path is invalid, group " << group_ptr->getName() << " does not have group with name " << *iter);
+        SLIC_ERROR(
+          "Path is invalid, group " << group_ptr->getName() << " does not have group with name " <<
+            *iter);
       }
     }
     path = tokens.back();
