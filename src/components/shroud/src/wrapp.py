@@ -284,11 +284,11 @@ return 1;""", fmt)
         PY_decl = []     # variables for function
         PY_code = []
 
-        # input to Py_BuildValue
+        # arguments to Py_BuildValue
         build_format = []
         build_vargs = []
 
-        # PyArg_ParseTupleAndKeywords
+        # arguments to PyArg_ParseTupleAndKeywords
         parse_format = []
         parse_vargs = []
 
@@ -322,6 +322,7 @@ return 1;""", fmt)
                 attrs = arg['attrs']
 
                 arg_typedef = self.typedef[arg['type']]
+                py_statements = arg_typedef.py_statements
                 if attrs['intent'] in [ 'inout', 'in']:
                     # names to PyArg_ParseTupleAndKeywords
                     arg_names.append(arg_name)
@@ -335,7 +336,7 @@ return 1;""", fmt)
                             found_default = True
                         # call for default arguments  (num args, arg string)
                         default_calls.append(
-                            (len(cpp_call_list),  ', '.join(cpp_call_list)))
+                            (len(cpp_call_list), len(post_parse), ', '.join(cpp_call_list)))
 
                     parse_format.append(arg_typedef.PY_format)
                     if arg_typedef.PY_PyTypeObject:
@@ -350,6 +351,12 @@ return 1;""", fmt)
 
                     # add argument to call to PyArg_ParseTypleAndKeywords
                     parse_vargs.append('&' + arg_name)
+
+                    cmd_list = py_statements.get('intent_in',{}).get('post_parse',[])
+                    if cmd_list:
+                        fmt.cpp_var = 'SH_' + fmt.c_var
+                        for cmd in cmd_list:
+                            append_format(post_parse, cmd, fmt)
 
                 if attrs['intent'] in [ 'inout', 'out']:
                     # output variable must be a pointer
@@ -373,16 +380,13 @@ return 1;""", fmt)
                     # A Python Object which must be converted to C++ type.
                     objtype = arg_typedef.PY_PyObject or 'PyObject'
                     PY_decl.append(objtype + ' * ' + fmt.py_var + ';')
-                    append_format(post_parse, arg_typedef.PY_post_parse, fmt)
                     cpp_call_list.append(fmt.cpp_var)
                 elif arg_typedef.PY_from_object:
                     # already a C++ type
-                    post_parse.append(None)
                     cpp_call_list.append(fmt.cpp_var)
                 else:
                     # convert to C++ type
                     fmt.ptr=' *' if arg['attrs'].get('ptr', False) else ''
-                    post_parse.append(None)
                     append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
 
 
@@ -411,7 +415,7 @@ return 1;""", fmt)
 
         # call with all arguments
         default_calls.append(
-            (len(cpp_call_list),  ', '.join(cpp_call_list)))
+            (len(cpp_call_list),  len(post_parse), ', '.join(cpp_call_list)))
 
         # If multiple calls, declare return value once
         # Else delare on call line.
@@ -422,16 +426,15 @@ return 1;""", fmt)
             fmt.rv_asgn = fmt.rv_decl + ' = '
         need_rv = False
 
-        for nargs, call_list in default_calls:
+        for nargs, len_post_parse, call_list in default_calls:
             if found_default:
                 PY_code.append('case %d:' % nargs)
                 PY_code.append(1)
 
             fmt.call_list = call_list
 
-            for post in post_parse[:nargs]:
-                if post:
-                    PY_code.append(post)
+            for post in post_parse[:len_post_parse]:
+                PY_code.append(post)
 
             if is_dtor:
                 append_format(PY_code, 'delete self->{BBB};', fmt)

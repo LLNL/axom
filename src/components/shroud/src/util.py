@@ -304,7 +304,6 @@ class Typedef(object):
                               # ex. PyBool_FromLong({rv})
         PY_to_object=None,    # PyBuild - object = converter(address)
         PY_from_object=None,  # PyArg_Parse - status = converter(object, address);
-        PY_post_parse='KKK',  # Used if PY_PyTypeObject is set
         py_statements={},
         )
 

@@ -101,8 +101,8 @@ PY_function3(
     {
         return NULL;
     }
-    arg = PyObject_IsTrue(SH_Py_arg);
-    bool rv = Function3(arg);
+    SH_arg = PyObject_IsTrue(SH_Py_arg);
+    bool rv = Function3(SH_arg);
     PyObject * rv_obj = PyBool_FromLong(rv);
     return (PyObject *) rv_obj;
 // splicer end function.function3
@@ -129,7 +129,9 @@ PY_function4a(
     {
         return NULL;
     }
-    const std::string rv = Function4a(arg1, arg2);
+    std::string SH_arg1(arg1);
+    std::string SH_arg2(arg2);
+    const std::string rv = Function4a(SH_arg1, SH_arg2);
     PyObject * rv_obj = PyString_FromString(rv.c_str());
     return (PyObject *) rv_obj;
 // splicer end function.function4a
@@ -156,7 +158,9 @@ PY_function4b(
     {
         return NULL;
     }
-    const std::string & rv = Function4b(arg1, arg2);
+    std::string SH_arg1(arg1);
+    std::string SH_arg2(arg2);
+    const std::string & rv = Function4b(SH_arg1, SH_arg2);
     PyObject * rv_obj = PyString_FromString(rv.c_str());
     return (PyObject *) rv_obj;
 // splicer end function.function4b
@@ -196,8 +200,8 @@ PY_function5_arg1_arg2(
         rv = Function5(arg1);
         break;
     case 2:
-        arg2 = PyObject_IsTrue(SH_Py_arg2);
-        rv = Function5(arg1, arg2);
+        SH_arg2 = PyObject_IsTrue(SH_Py_arg2);
+        rv = Function5(arg1, SH_arg2);
         break;
     }
     return Py_BuildValue("d", rv);
@@ -220,7 +224,8 @@ PY_function6_from_name(
     {
         return NULL;
     }
-    Function6(name);
+    std::string SH_name(name);
+    Function6(SH_name);
     Py_RETURN_NONE;
 // splicer end function.function6_from_name
 }
@@ -300,7 +305,8 @@ PY_function10_1(
     {
         return NULL;
     }
-    Function10(name, arg2);
+    std::string SH_name(name);
+    Function10(SH_name, arg2);
     Py_RETURN_NONE;
 // splicer end function.function10_1
 }

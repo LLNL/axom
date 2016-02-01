@@ -212,8 +212,8 @@ PP_exclass2_get_class1(
     {
         return NULL;
     }
-    in = SH_Py_in ? SH_Py_in->BBB : NULL;
-    ExClass1 * rv = self->BBB->get_class1(in);
+    SH_in = SH_Py_in ? SH_Py_in->BBB : NULL;
+    ExClass1 * rv = self->BBB->get_class1(SH_in);
     PP_ExClass1 * rv_obj = PyObject_New(PP_ExClass1, &PP_ExClass1_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;

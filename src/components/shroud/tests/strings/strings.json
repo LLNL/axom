@@ -1016,7 +1016,6 @@
         "bool": {
             "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
-            "PY_post_parse": "{cpp_var} = PyObject_IsTrue({py_var});", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
@@ -1036,7 +1035,11 @@
             }, 
             "f_type": "logical", 
             "py_statements": {
-                "post_parse": "{cpp_var} = PyObject_IsTrue({py_var});"
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = PyObject_IsTrue({py_var});"
+                    ]
+                }
             }
         }, 
         "char": {
@@ -1262,7 +1265,12 @@
             }, 
             "f_type": "character(*)", 
             "py_statements": {
-                "ctor": "PyString_FromString({c_var})"
+                "ctor": "PyString_FromString({c_var})", 
+                "intent_in": {
+                    "post_parse": [
+                        "std::string {cpp_var}({c_var});"
+                    ]
+                }
             }
         }, 
         "string": {
@@ -1302,7 +1310,12 @@
             }, 
             "f_type": "character(*)", 
             "py_statements": {
-                "ctor": "PyString_FromString({c_var})"
+                "ctor": "PyString_FromString({c_var})", 
+                "intent_in": {
+                    "post_parse": [
+                        "std::string {cpp_var}({c_var});"
+                    ]
+                }
             }
         }, 
         "string_result_fstr": {
@@ -1343,7 +1356,12 @@
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)", 
             "py_statements": {
-                "ctor": "PyString_FromString({c_var})"
+                "ctor": "PyString_FromString({c_var})", 
+                "intent_in": {
+                    "post_parse": [
+                        "std::string {cpp_var}({c_var});"
+                    ]
+                }
             }
         }, 
         "void": {

@@ -51,7 +51,8 @@ PP_is_name_valid(
     {
         return NULL;
     }
-    bool rv = isNameValid(name);
+    std::string SH_name(name);
+    bool rv = isNameValid(SH_name);
     PyObject * rv_obj = PyBool_FromLong(rv);
     return (PyObject *) rv_obj;
 // splicer end function.is_name_valid
@@ -90,7 +91,8 @@ PP_test_names(
     {
         return NULL;
     }
-    test_names(name);
+    std::string SH_name(name);
+    test_names(SH_name);
     Py_RETURN_NONE;
 // splicer end function.test_names
 }
@@ -112,7 +114,8 @@ PP_test_names_flag(
     {
         return NULL;
     }
-    test_names(name, flag);
+    std::string SH_name(name);
+    test_names(SH_name, flag);
     Py_RETURN_NONE;
 // splicer end function.test_names_flag
 }

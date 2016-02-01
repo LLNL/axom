@@ -452,10 +452,26 @@ PY_from_object
     PyArg_Parse - status = converter(object, address).
     Defaults to *None*.
 
-PY_post_parse
-   Used if PY_PyTypeObject is set.
-   A format expression to convert a *PyObject* into the type.
-   Ex. ``{var} = PyObject_IsTrue({var_obj});``
+py_statement
+    A nested dictionary of code template to add.
+    The first layer is *intent_in*, *intent_out*, and *result*.
+    The entries are a list of format strings.
+
+..    declare
+        A list of declarations needed by *pre_call* or *f_post_call*.
+
+    post_parse
+        Statements to execute after the call to ``PyArg_ParseTupleAndKeywords``.
+        Used to convert C values into C++ values.
+	Ex. ``{var} = PyObject_IsTrue({var_obj});``
+
+..    post_call
+        Statement to execute after call.
+        Can be use to cleanup after *f_pre_call*
+        or to coerce the return value.
+
+
+
 
 Format dictionary for Type fields
   * var - name of variable, defaults to argument name.

@@ -246,8 +246,8 @@ PP_exclass1_has_addr(
     {
         return NULL;
     }
-    in = PyObject_IsTrue(SH_Py_in);
-    bool rv = self->BBB->hasAddr(in);
+    SH_in = PyObject_IsTrue(SH_Py_in);
+    bool rv = self->BBB->hasAddr(SH_in);
     PyObject * rv_obj = PyBool_FromLong(rv);
     return (PyObject *) rv_obj;
 // splicer end class.ExClass1.method.has_addr
