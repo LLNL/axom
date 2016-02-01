@@ -1016,7 +1016,7 @@
         "bool": {
             "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
-            "PY_post_parse": "{var} = PyObject_IsTrue({var_obj});", 
+            "PY_post_parse": "{cpp_var} = PyObject_IsTrue({py_var});", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 

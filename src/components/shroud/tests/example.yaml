@@ -243,8 +243,8 @@ patterns:
             return NULL;
         }}
     PY_invalid_name: >
-        if (! isNameValid({var})) {{
-            PyErr_SetString(PyExc_KeyError, "{var}");
+        if (! isNameValid({cpp_var})) {{
+            PyErr_SetString(PyExc_KeyError, "XXX need value of name");
             return NULL;
         }}
 

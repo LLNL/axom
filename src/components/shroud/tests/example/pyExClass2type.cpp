@@ -202,16 +202,16 @@ PP_exclass2_get_class1(
 {
 // splicer begin class.ExClass2.method.get_class1
     ExClass1 * in;
-    PP_ExClass1 * in_obj;
+    PP_ExClass1 * SH_Py_in;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:get_class1", kw_list,
-        &PP_ExClass1_Type, &in_obj))
+        &PP_ExClass1_Type, &SH_Py_in))
     {
         return NULL;
     }
-    in = in_obj ? in_obj->BBB : NULL;
+    in = SH_Py_in ? SH_Py_in->BBB : NULL;
     ExClass1 * rv = self->BBB->get_class1(in);
     PP_ExClass1 * rv_obj = PyObject_New(PP_ExClass1, &PP_ExClass1_Type);
     rv_obj->BBB = rv;

@@ -36,17 +36,12 @@ class Wrapp(util.WrapperMixin):
         self._init_splicer(splicers)
         self.comment = '//'
 
-    def _begin_output_file(self):
+    def XXX_begin_output_file(self):
         """Start a new class for output"""
-        self.f_type_decl = []
-        self.c_interface = []
-        self.impl = []         # implementation, after contains
-        self.c_interface.append('interface')
-        self.c_interface.append(1)
+        pass
 
-    def _end_output_file(self):
-        self.c_interface.append(-1)
-        self.c_interface.append('end interface')
+    def XXX_end_output_file(self):
+        pass
 
     def _begin_class(self):
         pass
@@ -234,9 +229,14 @@ return 1;""", fmt)
         self.multi_dispatch(cls, functions)
 
     def wrap_function(self, cls, node):
-        """
+        """Write a Python wrapper for a C++ function.
+
         cls  - class node or None for functions
         node - function/method node
+
+        fmt.c_var   - name of variable in PyArg_ParseTupleAndKeywords
+        fmt.cpp_var - name of variable in c++ call.
+        fmt.py_var  - name of PyObject variable
         """
         options = node['options']
         if not options.wrap_python:
@@ -306,16 +306,18 @@ return 1;""", fmt)
             offset = 0
             for arg in node['args']:
                 arg_name = arg['name']
-                fmt.var = arg_name
-                fmt.c_var = arg['name']      # name in c prototype.
-                fmt.cpp_var = fmt.c_var      # name in c++ call.
-                fmt.c_var_len = 'UUU'
+                fmt.c_var = arg['name']
+                fmt.cpp_var = fmt.c_var
+                fmt.py_var = 'SH_Py_' + fmt.c_var
+
+                # names to PyArg_ParseTupleAndKeywords
                 arg_names.append(arg_name)
                 arg_offsets.append( '(char *) kwcpp+%d' % offset)
                 offset += len(arg_name) + 1
                 arg_typedef = self.typedef[arg['type']]
 
                 attrs = arg['attrs']
+                # XXX default should be handled differently
                 if 'default' in attrs:
                     if not found_default:
                         format.append('|')  # add once
@@ -329,13 +331,13 @@ return 1;""", fmt)
                     # Expect object of given type
                     format.append('!')
                     addrargs.append('&' + arg_typedef.PY_PyTypeObject)
-                    arg_name = fmt.var + '_obj'
+                    arg_name = fmt.py_var
                 elif arg_typedef.PY_from_object:
                     # Use function to convert object
                     format.append('&')
                     addrargs.append(arg_typedef.PY_from_object)
 
-                # add argument
+                # add argument to call to PyArg_ParseTypleAndKeywords
                 addrargs.append('&' + arg_name)
 
                 # argument for C++ function
@@ -352,15 +354,14 @@ return 1;""", fmt)
                 
                 if arg_typedef.PY_PyTypeObject:
                     # A Python Object which must be converted to C++ type.
-                    fmt.var_obj = arg_name
                     objtype = arg_typedef.PY_PyObject or 'PyObject'
-                    PY_decl.append(objtype + ' * ' + fmt.var_obj + ';')
+                    PY_decl.append(objtype + ' * ' + fmt.py_var + ';')
                     append_format(post_parse, arg_typedef.PY_post_parse, fmt)
-                    cpp_call_list.append(fmt.var)
+                    cpp_call_list.append(fmt.cpp_var)
                 elif arg_typedef.PY_from_object:
                     # already a C++ type
                     post_parse.append(None)
-                    cpp_call_list.append(fmt.var)
+                    cpp_call_list.append(fmt.cpp_var)
                 else:
                     # convert to C++ type
                     fmt.ptr=' *' if arg['attrs'].get('ptr', False) else ''
@@ -428,7 +429,8 @@ return 1;""", fmt)
 
             if 'PY_error_pattern' in node:
                 lfmt = util.Options(fmt)
-                lfmt.var = fmt.rv
+                lfmt.c_var = fmt.rv
+                lfmt.cpp_var = fmt.rv
                 append_format(PY_code, self.patterns[node['PY_error_pattern']], lfmt)
 
             if found_default:

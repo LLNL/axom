@@ -2165,7 +2165,7 @@
     }, 
     "patterns": {
         "C_invalid_name": "if (! isNameValid({cpp_var})) {{\n    return NULL;\n}}\n", 
-        "PY_invalid_name": "if (! isNameValid({var})) {{\n    PyErr_SetString(PyExc_KeyError, \"{var}\");\n    return NULL;\n}}\n"
+        "PY_invalid_name": "if (! isNameValid({cpp_var})) {{\n    PyErr_SetString(PyExc_KeyError, \"XXX need value of name\");\n    return NULL;\n}}\n"
     }, 
     "splicer": {
         "c": [
@@ -2183,7 +2183,7 @@
             "PY_PyObject": "PP_ExClass1", 
             "PY_PyTypeObject": "PP_ExClass1_Type", 
             "PY_from_object": "PP_ExClass1_from_Object", 
-            "PY_post_parse": "{var} = {var_obj} ? {var_obj}->{BBB} : NULL;", 
+            "PY_post_parse": "{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;", 
             "PY_to_object": "PP_ExClass1_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
@@ -2206,7 +2206,7 @@
             "PY_PyObject": "PP_ExClass2", 
             "PY_PyTypeObject": "PP_ExClass2_Type", 
             "PY_from_object": "PP_ExClass2_from_Object", 
-            "PY_post_parse": "{var} = {var_obj} ? {var_obj}->{BBB} : NULL;", 
+            "PY_post_parse": "{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;", 
             "PY_to_object": "PP_ExClass2_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
@@ -2258,7 +2258,7 @@
         "bool": {
             "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
-            "PY_post_parse": "{var} = PyObject_IsTrue({var_obj});", 
+            "PY_post_parse": "{cpp_var} = PyObject_IsTrue({py_var});", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 

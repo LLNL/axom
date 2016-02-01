@@ -90,7 +90,7 @@ PP_exclass1_get_name(
 // splicer begin class.ExClass1.method.get_name
     const std::string & rv = self->BBB->getName();
     if (! isNameValid(rv)) {
-        PyErr_SetString(PyExc_KeyError, "rv");
+        PyErr_SetString(PyExc_KeyError, "XXX need value of name");
         return NULL;
     }
     
@@ -234,16 +234,16 @@ PP_exclass1_has_addr(
 {
 // splicer begin class.ExClass1.method.has_addr
     bool in;
-    PyObject * in_obj;
+    PyObject * SH_Py_in;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:hasAddr", kw_list,
-        &PyBool_Type, &in_obj))
+        &PyBool_Type, &SH_Py_in))
     {
         return NULL;
     }
-    in = PyObject_IsTrue(in_obj);
+    in = PyObject_IsTrue(SH_Py_in);
     bool rv = self->BBB->hasAddr(in);
     return PyBool_FromLong(rv);
 // splicer end class.ExClass1.method.has_addr

@@ -34,8 +34,7 @@ def wformat(template, dct):
         
 
 def append_format(lst, template, dct):
-    # shorthand, wrap fmt.vformat
-    lst.append(fmt.vformat(template, None, dct))
+    lst.append(wformat(template, dct))
 
 def eval_template(node, name, tname='', fmt=None):
     """fmt[name] = node[name] or option[name + tname + '_template']

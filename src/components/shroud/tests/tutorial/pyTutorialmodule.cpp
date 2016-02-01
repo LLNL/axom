@@ -92,16 +92,16 @@ PY_function3(
 {
 // splicer begin function.function3
     bool arg;
-    PyObject * arg_obj;
+    PyObject * SH_Py_arg;
     const char *kwcpp = "arg";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:Function3", kw_list,
-        &PyBool_Type, &arg_obj))
+        &PyBool_Type, &SH_Py_arg))
     {
         return NULL;
     }
-    arg = PyObject_IsTrue(arg_obj);
+    arg = PyObject_IsTrue(SH_Py_arg);
     bool rv = Function3(arg);
     return PyBool_FromLong(rv);
 // splicer end function.function3
@@ -173,7 +173,7 @@ PY_function5_arg1_arg2(
     Py_ssize_t shroud_nargs = 0;
     double arg1;
     bool arg2;
-    PyObject * arg2_obj;
+    PyObject * SH_Py_arg2;
     const char *kwcpp = "arg1\0arg2";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     double rv;
@@ -181,7 +181,7 @@ PY_function5_arg1_arg2(
     if (args != NULL) shroud_nargs += PyTuple_Size(args);
     if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|dO!:Function5", kw_list,
-        &arg1, &PyBool_Type, &arg2_obj))
+        &arg1, &PyBool_Type, &SH_Py_arg2))
     {
         return NULL;
     }
@@ -193,7 +193,7 @@ PY_function5_arg1_arg2(
         rv = Function5(arg1);
         break;
     case 2:
-        arg2 = PyObject_IsTrue(arg2_obj);
+        arg2 = PyObject_IsTrue(SH_Py_arg2);
         rv = Function5(arg1, arg2);
         break;
     }
