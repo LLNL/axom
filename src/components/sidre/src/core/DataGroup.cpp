@@ -911,7 +911,7 @@ DataGroup * DataGroup::walkPath( std::string& path, bool create_on_demand )
 //        SLIC_CHECK_MSG(false, "Path is invalid, group " << group_ptr->getName() << " does not have group with name " << *iter);
         SLIC_ERROR(
           "Path is invalid, group " << group_ptr->getName() << " does not have group with name " <<
-            *iter);
+          *iter);
       }
     }
     path = tokens.back();

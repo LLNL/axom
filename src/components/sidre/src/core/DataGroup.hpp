@@ -210,7 +210,7 @@ public:
   {
     SLIC_CHECK_MSG( !name.empty() && hasView(name),
                     "Group " << this->getName() << " does not have view with name '" << name <<
-        "'");
+                    "'");
 
     return m_view_coll.getItemIndex(name);
   }
@@ -224,7 +224,7 @@ public:
   {
     SLIC_CHECK_MSG( hasView(idx),
                     "Group " << this->getName() << " does not have view with index " <<
-        idx);
+                    idx);
 
     return m_view_coll.getItemName(idx);
   }
@@ -263,7 +263,7 @@ public:
     SLIC_CHECK_MSG( !path.empty() && group->hasView(
                       name),
                     "Group " << group->getName() << " can't retrieve view with name '" << path <<
-        "'");
+                    "'");
 
     return group->m_view_coll.getItem(path);
   }
@@ -276,7 +276,7 @@ public:
   {
     SLIC_CHECK_MSG( !name.empty() && hasView(name),
                     "Group " << this->getName() << " can't retrieve view with name '" << name <<
-        "'");
+                    "'");
 
     return m_view_coll.getItem(name);
   }
@@ -288,7 +288,7 @@ public:
   {
     SLIC_CHECK_MSG( hasView(idx),
                     "Group " << this->getName() << " does not have view with index " <<
-        idx);
+                    idx);
 
     return m_view_coll.getItem(idx);
   }
@@ -301,7 +301,7 @@ public:
   {
     SLIC_CHECK_MSG( hasView(idx),
                     "Group " << this->getName() << " does not have view with index " <<
-        idx);
+                    idx);
 
     return m_view_coll.getItem(idx);
   }
@@ -624,7 +624,7 @@ public:
   {
     SLIC_CHECK_MSG( !name.empty() && hasGroup(name),
                     "Group " << this->getName() << " does not have group with name '" << name <<
-        "'");
+                    "'");
 
     return m_group_coll.getItemIndex(name);
   }
@@ -638,7 +638,7 @@ public:
   {
     SLIC_CHECK_MSG( hasGroup(idx),
                     "Group " << this->getName() << " does not have group with index " <<
-        idx);
+                    idx);
 
     return m_group_coll.getItemName(idx);
   }
@@ -670,7 +670,7 @@ public:
     SLIC_CHECK_MSG( !path.empty() && group->hasGroup(
                       path),
                     "Group " << group->getName() << " does not have group with name '" << path <<
-        "'");
+                    "'");
 
     return group->m_group_coll.getItem(path);
   }
@@ -682,7 +682,7 @@ public:
   {
     SLIC_CHECK_MSG( !name.empty() && hasGroup(name),
                     "Group " << getName() << " does not have group with name '" << name <<
-        "'");
+                    "'");
 
     return m_group_coll.getItem(name);
   }
@@ -694,7 +694,7 @@ public:
   {
     SLIC_CHECK_MSG( hasGroup(idx),
                     "Group " << this->getName() << " does not have group with index " <<
-        idx);
+                    idx);
 
     return m_group_coll.getItem(idx);
   }
@@ -706,7 +706,7 @@ public:
   {
     SLIC_CHECK_MSG( hasGroup(idx),
                     "Group " << this->getName() << " does not have group with index " <<
-        idx);
+                    idx);
 
     return m_group_coll.getItem(idx);
   }
