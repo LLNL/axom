@@ -432,7 +432,7 @@ PY_enumfunc(
         return NULL;
     }
     EnumTypeID rv = enumfunc(static_cast<EnumTypeID>(arg));
-    return Py_BuildValue("i", rv);
+    return Py_BuildValue("i", static_cast<int>(rv));
 // splicer end function.enumfunc
 }
 

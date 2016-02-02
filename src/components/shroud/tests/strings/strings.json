@@ -1043,7 +1043,7 @@
             }
         }, 
         "char": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -1090,7 +1090,7 @@
             "f_type": "character(*)"
         }, 
         "char_scalar": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_to_cpp": "{cpp_var}", 
@@ -1229,7 +1229,7 @@
             "f_type": "integer(C_SIZE_T)"
         }, 
         "std::string": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -1265,7 +1265,6 @@
             }, 
             "f_type": "character(*)", 
             "py_statements": {
-                "ctor": "PyString_FromString({c_var})", 
                 "intent_in": {
                     "post_parse": [
                         "std::string {cpp_var}({c_var});"
@@ -1274,7 +1273,7 @@
             }
         }, 
         "string": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -1310,7 +1309,6 @@
             }, 
             "f_type": "character(*)", 
             "py_statements": {
-                "ctor": "PyString_FromString({c_var})", 
                 "intent_in": {
                     "post_parse": [
                         "std::string {cpp_var}({c_var});"
@@ -1319,7 +1317,7 @@
             }
         }, 
         "string_result_fstr": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -1356,7 +1354,6 @@
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)", 
             "py_statements": {
-                "ctor": "PyString_FromString({c_var})", 
                 "intent_in": {
                     "post_parse": [
                         "std::string {cpp_var}({c_var});"

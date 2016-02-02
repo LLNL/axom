@@ -208,6 +208,42 @@ return 1;""", fmt)
 
         self._pop_splicer('helper')
 
+    def intent_out(self, typedef, fmt, output):
+        """Create PyObject from C++ value.
+
+        typedef - typedef of C++ variable.
+        fmt - format dictionary
+        post_parse - output lines.
+        """
+
+        fmt.PyObject = typedef.PY_PyObject or 'PyObject'
+        fmt.PyTypeObject = typedef.PY_PyTypeObject
+
+        cmd_list = typedef.py_statements.get('intent_out',{}).get('ctor',[])
+        if cmd_list:
+            # must create py_var from cpp_var.
+#            fmt.cpp_var = 'SH_' + fmt.c_var
+            for cmd in cmd_list:
+                append_format(output, cmd, fmt)
+            format = 'O'
+            vargs = fmt.py_var
+
+        elif typedef.PY_ctor:
+            fmt.c_var = wformat(typedef.cpp_to_c, fmt)  # if C++
+            append_format(output, '{PyObject} * {py_var} = ' + typedef.PY_ctor + ';', fmt)
+            format = 'O'
+            vargs = fmt.py_var
+
+        else:
+            format = typedef.PY_format
+            vargs = ''
+            if typedef.PY_to_object:
+                format += '&'
+                vargs = typedef.PY_to_object
+            vargs += wformat(typedef.cpp_to_c, fmt)  # if C++
+
+        return format, vargs
+
     def wrap_functions(self, cls, functions):
         """Wrap functions for a library or class.
         Compute overloading map.
@@ -284,13 +320,15 @@ return 1;""", fmt)
         PY_decl = []     # variables for function
         PY_code = []
 
-        # arguments to Py_BuildValue
-        build_format = []
-        build_vargs = []
-
         # arguments to PyArg_ParseTupleAndKeywords
         parse_format = []
         parse_vargs = []
+        post_parse = []
+
+        # arguments to Py_BuildValue
+        build_format = []
+        build_vargs = []
+        post_call = []
 
         cpp_call_list = []
 
@@ -305,7 +343,6 @@ return 1;""", fmt)
                     'if (kwds != NULL) shroud_nargs += PyDict_Size(args);',
                     ])
 
-        post_parse = []
         args = node['args']
         if not args:
             fmt.ml_flags = 'METH_NOARGS'
@@ -470,46 +507,16 @@ return 1;""", fmt)
         if len(PY_decl):
             PY_decl.append('')
 
-        # return Object
-        addrarg = None
-        fmt.var = fmt.rv
-        fmt.cpp_var = fmt.rv
-        fmt.py_var = 'rv_obj'
-        if CPP_subprogram == 'subroutine':
-            addrarg = None
-        elif result_typedef.base == 'wrapped':
-            fmt.PyObject = result_typedef.PY_PyObject
-            fmt.PY_PyTypeObject = result_typedef.PY_PyTypeObject
-            append_format(PY_code, '{PyObject} * {py_var} = PyObject_New({PyObject}, &{PY_PyTypeObject});', fmt)
-            append_format(PY_code, '{py_var}->{BBB} = {rv};', fmt)
-            addrarg = fmt.py_var
-            format = 'O'
-        elif result_typedef.PY_ctor:
-            fmt.var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
-            fmt.PyObject = result_typedef.PY_PyObject or 'PyObject'
-            append_format(PY_code, '{PyObject} * {py_var} = ' + result_typedef.PY_ctor + ';', fmt)
-            addrarg = fmt.py_var
-            format = 'O'
-        else:
-            fmt.var = 'rv'
-            fmt.cpp_var = 'rv'
-            format = [ result_typedef.PY_format ]
-            if result_typedef.PY_to_object:
-                format.append('&')
-                addrarg = result_typedef.PY_to_object
-            if result_is_ptr:
-                addrarg = wformat(result_typedef.cpp_to_c, fmt)  # if C++
-            elif result_is_ref:
-                addrarg = wformat(result_typedef.cpp_to_c, fmt)  # if C++
-            else:
-                # XXX intermediate variable?
-                addrarg = 'rv'
+        if CPP_subprogram == 'function':
+            fmt.c_var = fmt.rv
+            fmt.cpp_var = fmt.rv
+            fmt.py_var = 'rv_obj'
+            format, vargs = self.intent_out(result_typedef, fmt, PY_code)
+            # Add result to front of result tuple
+            build_format.insert(0, format)
+            build_vargs.insert(0, vargs)
 
-        # Add result (if any) to front of result tuple
-        if addrarg:
-            build_format.insert(0, ''.join(format))
-            build_vargs.insert(0, addrarg)
-
+        # may be multiple return values using intent(OUT)
         fmt.PyArg_format = ''.join(build_format)
         fmt.PyArg_vargs = ', '.join(build_vargs)
         if not build_format:

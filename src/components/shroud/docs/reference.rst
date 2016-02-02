@@ -465,6 +465,10 @@ py_statement
         Used to convert C values into C++ values.
 	Ex. ``{var} = PyObject_IsTrue({var_obj});``
 
+    ctor
+        Statements to create a Python object.
+	Must ensure that ``py_var = cpp_var`` in some form.
+
 ..    post_call
         Statement to execute after call.
         Can be use to cleanup after *f_pre_call*
@@ -474,8 +478,6 @@ py_statement
 
 
 Format dictionary for Type fields
-  * var - name of variable, defaults to argument name.
-  * tmp_var - temporary variable.  defaults to *tmp_{var}*.
   * result_arg - name of result variable from *F_string_result_as_arg*.
   * F_result - name of result variable
   * F_C_name - name of BIND(C) interface

@@ -332,7 +332,7 @@ class Schema(object):
                 f_module = dict(iso_c_binding=None),
 #                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
-                PY_ctor = 'PyString_FromString({var})',
+                PY_ctor = 'PyString_FromString({c_var})',
                 base = 'string',
                 ),
 
@@ -353,7 +353,7 @@ class Schema(object):
                 f_module = dict(iso_c_binding=None),
 #                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
-                PY_ctor = 'PyString_FromString({var})',
+                PY_ctor = 'PyString_FromString({c_var})',
 ##                base = 'string',
                 ),
 
@@ -403,10 +403,9 @@ class Schema(object):
                             'std::string {cpp_var}({c_var});'
                             ],
                         ),
-                    ctor = 'PyString_FromString({c_var})',
                     ),
                 PY_format = 's',
-                PY_ctor = 'PyString_FromString({var})',
+                PY_ctor = 'PyString_FromString({c_var})',
                 base = 'string',
                 ),
             )
@@ -1108,7 +1107,14 @@ class VerifyAttrs(object):
                             '{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;',
                             ],
                         ),
+                    intent_out = dict(
+                        ctor = [
+                            '{PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});',
+                            '{py_var}->{BBB} = {cpp_var};',
+                            ]
+                        ),
                     ),
+#                PY_ctor = 'PyObject_New({PyObject}, &{PyTypeObject})',
 
                 # allow forward declarations to avoid recursive headers
                 forward = name,
