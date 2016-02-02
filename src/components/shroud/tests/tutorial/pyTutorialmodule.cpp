@@ -103,8 +103,8 @@ PY_function3(
     }
     SH_arg = PyObject_IsTrue(SH_Py_arg);
     bool rv = Function3(SH_arg);
-    PyObject * rv_obj = PyBool_FromLong(rv);
-    return (PyObject *) rv_obj;
+    PyObject * SH_Py_rv = PyBool_FromLong(rv);
+    return (PyObject *) SH_Py_rv;
 // splicer end function.function3
 }
 
@@ -132,8 +132,8 @@ PY_function4a(
     std::string SH_arg1(arg1);
     std::string SH_arg2(arg2);
     const std::string rv = Function4a(SH_arg1, SH_arg2);
-    PyObject * rv_obj = PyString_FromString(rv.c_str());
-    return (PyObject *) rv_obj;
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
 // splicer end function.function4a
 }
 
@@ -161,8 +161,8 @@ PY_function4b(
     std::string SH_arg1(arg1);
     std::string SH_arg2(arg2);
     const std::string & rv = Function4b(SH_arg1, SH_arg2);
-    PyObject * rv_obj = PyString_FromString(rv.c_str());
-    return (PyObject *) rv_obj;
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
 // splicer end function.function4b
 }
 
@@ -448,8 +448,8 @@ PY_last_function_called(
 {
 // splicer begin function.last_function_called
     const std::string & rv = LastFunctionCalled();
-    PyObject * rv_obj = PyString_FromString(rv.c_str());
-    return (PyObject *) rv_obj;
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
 // splicer end function.last_function_called
 }
 

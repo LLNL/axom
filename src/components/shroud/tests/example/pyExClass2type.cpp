@@ -170,8 +170,8 @@ PP_exclass2_get_name(
 {
 // splicer begin class.ExClass2.method.get_name
     const std::string & rv = self->BBB->getName();
-    PyObject * rv_obj = PyString_FromString(rv.c_str());
-    return (PyObject *) rv_obj;
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
 // splicer end class.ExClass2.method.get_name
 }
 
@@ -214,9 +214,9 @@ PP_exclass2_get_class1(
     }
     SH_in = SH_Py_in ? SH_Py_in->BBB : NULL;
     ExClass1 * rv = self->BBB->get_class1(SH_in);
-    PP_ExClass1 * rv_obj = PyObject_New(PP_ExClass1, &PP_ExClass1_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    PP_ExClass1 * SH_Py_rv = PyObject_New(PP_ExClass1, &PP_ExClass1_Type);
+    SH_Py_rv->BBB = rv;
+    return (PyObject *) SH_Py_rv;
 // splicer end class.ExClass2.method.get_class1
 }
 

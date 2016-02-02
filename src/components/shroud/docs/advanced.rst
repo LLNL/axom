@@ -108,6 +108,15 @@ Function name - Updated before processing each function or method.
 | Fortran generic name   | *F_name_generic_template*       | *F_name_generic* |
 +------------------------+---------------------------------+------------------+
 
+Local Variable
+^^^^^^^^^^^^^^
+
+*SH_* prefix on local variables.
+
+Results are named from *fmt.rv*.
+
+Fortran option F_result.
+
 
 Character Type
 --------------

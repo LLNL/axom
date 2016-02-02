@@ -317,7 +317,7 @@ return 1;""", fmt)
             is_const = False
         else:
             is_const = None
-        fmt.rv_decl = self.std_c_decl('cpp_type', result, name='rv', const=is_const)  # return value
+        fmt.rv_decl = self.std_c_decl('cpp_type', result, name=fmt.rv, const=is_const)  # return value
 
         PY_decl = []     # variables for function
         PY_code = []
@@ -511,7 +511,7 @@ return 1;""", fmt)
         if CPP_subprogram == 'function':
             fmt.c_var = fmt.rv
             fmt.cpp_var = fmt.rv
-            fmt.py_var = 'rv_obj'
+            fmt.py_var = 'SH_Py_' + fmt.cpp_var
             format, vargs = self.intent_out(result_typedef, fmt, PY_code)
             # Add result to front of result tuple
             build_format.insert(0, format)
@@ -529,8 +529,8 @@ return 1;""", fmt)
             PY_code.append(wformat('return Py_BuildValue("({PyArg_format})", {PyArg_vargs});', fmt))
         elif build_format[0] == 'O':
             # return a single object already created
-            fmt.rv_obj = build_vargs[0]
-            append_format(PY_code, 'return (PyObject *) {rv_obj};', fmt)
+            fmt.py_var = build_vargs[0]
+            append_format(PY_code, 'return (PyObject *) {py_var};', fmt)
         else:
             # create object
             PY_code.append(wformat('return Py_BuildValue("{PyArg_format}", {PyArg_vargs});', fmt))

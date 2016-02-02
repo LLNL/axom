@@ -281,7 +281,7 @@ class Wrapc(util.WrapperMixin):
         if is_const:
             fmt.C_const = 'const '
         fmt.CPP_this = fmt_func.C_this + 'obj'
-        fmt.rv_decl = self._c_decl('cpp_type', CPP_result, name='rv')  # return value
+        fmt.rv_decl = self._c_decl('cpp_type', CPP_result, name=fmt.rv)  # return value
 
         proto_list = []
         call_list = []
@@ -325,9 +325,6 @@ class Wrapc(util.WrapperMixin):
             if c_attrs.get('_is_result', False):
                 arg_call = False
                 result_arg = arg
-#                fmt.var = 'rv'           # name of result variable
-#                fmt.c_var = 'rv'           # name of result variable
-#                fmt.cpp_var = 'rv'           # name of result variable
                 slist = [ 'result' ]
             else:
                 arg_call = arg
@@ -370,7 +367,7 @@ class Wrapc(util.WrapperMixin):
                 if cmd_list:
                     # pick up c_str() from cpp_to_c
                     if intent == 'result':
-                        fmt.cpp_var = 'rv'
+                        fmt.cpp_var = fmt.rv
                     fmt.cpp_val = wformat(arg_typedef.cpp_to_c, fmt)
 #                    append_format(post_call, '// c_var={c_var}  cpp_var={cpp_var}  cpp_val={cpp_val}', fmt)
                     for cmd in cmd_list:
@@ -399,7 +396,7 @@ class Wrapc(util.WrapperMixin):
 
         fmt.C_prototype = options.get('C_prototype', ', '.join(proto_list))
 
-        fmt.cpp_var = 'rv'
+        fmt.cpp_var = fmt.rv
         if node.get('return_this', False):
             fmt.C_return_type = 'void'
         else:
