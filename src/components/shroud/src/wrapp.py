@@ -236,6 +236,8 @@ return 1;""", fmt)
 
         else:
             format = typedef.PY_format
+            if format == 'O':
+                raise RuntimeError("PY_format should not be 'O' for " + typedef.name)
             vargs = ''
             if typedef.PY_to_object:
                 format += '&'
@@ -398,11 +400,9 @@ return 1;""", fmt)
                 if attrs['intent'] in [ 'inout', 'out']:
                     # output variable must be a pointer
                     # XXX - fix up for strings
-#                    format, vargs = self.intent_out(result_typedef, fmt, PY_code)
-#                    build_format.append(format)
-#                    build_vargs.append(vargs)
-                    build_format.append(arg_typedef.PY_format)
-                    build_vargs.append('*' + fmt.c_var);
+                    format, vargs = self.intent_out(arg_typedef, fmt, post_call)
+                    build_format.append(format)
+                    build_vargs.append('*' + vargs)
 
                 # argument for C++ function
                 lang = 'cpp_type'
@@ -472,9 +472,7 @@ return 1;""", fmt)
                 PY_code.append(1)
 
             fmt.call_list = call_list
-
-            for post in post_parse[:len_post_parse]:
-                PY_code.append(post)
+            PY_code.extend(post_parse[:len_post_parse])
 
             if is_dtor:
                 append_format(PY_code, 'delete self->{BBB};', fmt)
@@ -518,6 +516,8 @@ return 1;""", fmt)
             # Add result to front of result tuple
             build_format.insert(0, format)
             build_vargs.insert(0, vargs)
+
+        PY_code.extend(post_call)
 
         # may be multiple return values using intent(OUT)
         fmt.PyArg_format = ''.join(build_format)

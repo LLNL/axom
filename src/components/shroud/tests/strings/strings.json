@@ -1380,6 +1380,7 @@
             }
         }, 
         "void": {
+            "PY_ctor": "PyCapsule_New({cpp_var}, NULL, NULL)", 
             "c_fortran": "type(C_PTR)", 
             "c_type": "void", 
             "cpp_type": "void", 

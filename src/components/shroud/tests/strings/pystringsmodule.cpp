@@ -74,7 +74,8 @@ PY_pass_char_ptr(
         return NULL;
     }
     passCharPtr(dest, src);
-    return Py_BuildValue("s", *dest);
+    PyObject * SH_Py_dest = PyString_FromString(dest);
+    return (PyObject *) *SH_Py_dest;
 // splicer end function.pass_char_ptr
 }
 
@@ -228,7 +229,8 @@ PY_accept_string_reference(
     }
     std::string SH_arg1(arg1);
     acceptStringReference(SH_arg1);
-    return Py_BuildValue("s", *arg1);
+    PyObject * SH_Py_arg1 = PyString_FromString(SH_arg1.c_str());
+    return (PyObject *) *SH_Py_arg1;
 // splicer end function.accept_string_reference
 }
 static PyMethodDef PY_methods[] = {

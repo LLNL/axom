@@ -192,6 +192,7 @@ class Schema(object):
 #                fortran = 'subroutine',
                 c_fortran = 'type(C_PTR)',
                 f_type = 'type(C_PTR)',
+                PY_ctor = 'PyCapsule_New({cpp_var}, NULL, NULL)',
                 ),
             int    = util.Typedef('int',
                 c_type    = 'int',

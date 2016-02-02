@@ -2266,18 +2266,23 @@
             "typedef": "long"
         }, 
         "TypeID": {
+            "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_header": "sidre/SidreTypes.h", 
             "c_to_cpp": "getTypeID({c_var})", 
             "c_type": "int", 
             "cpp_header": "sidre/SidreWrapperHelpers.hpp", 
+            "cpp_to_c": "static_cast<int>({cpp_var})", 
             "cpp_type": "TypeID", 
+            "f_cast": "int({f_var}, C_INT)", 
+            "f_kind": "C_INT", 
             "f_module": {
                 "iso_c_binding": [
                     "C_INT"
                 ]
             }, 
-            "f_type": "integer(C_INT)"
+            "f_type": "integer(C_INT)", 
+            "typedef": "int"
         }, 
         "bool": {
             "PY_PyTypeObject": "PyBool_Type", 
@@ -2631,6 +2636,7 @@
             }
         }, 
         "void": {
+            "PY_ctor": "PyCapsule_New({cpp_var}, NULL, NULL)", 
             "c_fortran": "type(C_PTR)", 
             "c_type": "void", 
             "cpp_type": "void", 

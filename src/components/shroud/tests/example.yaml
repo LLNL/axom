@@ -49,18 +49,13 @@ types:
 #      - C_LONG
 
   TypeID:
+    typedef : int
     # enum for types
     c_header : sidre/SidreTypes.h
     cpp_header : sidre/SidreWrapperHelpers.hpp
-    c_type   : int
     cpp_type: TypeID
-#    cpp_to_c : static_cast<int>({cpp_var})
+    cpp_to_c : static_cast<int>({cpp_var})
     c_to_cpp :  getTypeID({c_var})
-    c_fortran: integer(C_INT)
-    f_type   : integer(C_INT)
-    f_module :
-      iso_c_binding:
-      -  C_INT
 
 classes:
   - name: ExClass1

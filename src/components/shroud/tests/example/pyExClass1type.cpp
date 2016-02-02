@@ -221,7 +221,8 @@ PP_exclass1_get_addr(
 {
 // splicer begin class.ExClass1.method.get_addr
     void * rv = self->BBB->getAddr();
-    return (PyObject *) rv;
+    PyObject * rv_obj = PyCapsule_New(rv, NULL, NULL);
+    return (PyObject *) rv_obj;
 // splicer end class.ExClass1.method.get_addr
 }
 

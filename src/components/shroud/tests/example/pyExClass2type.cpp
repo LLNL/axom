@@ -239,7 +239,7 @@ PP_exclass2_declare_1(
     
     if (args != NULL) shroud_nargs += PyTuple_Size(args);
     if (kwds != NULL) shroud_nargs += PyDict_Size(args);
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|l:declare", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|l:declare", kw_list,
         &type, &len))
     {
         return NULL;
@@ -284,7 +284,7 @@ PP_exclass2_get_type_id(
 {
 // splicer begin class.ExClass2.method.get_type_id
     TypeID rv = self->BBB->getTypeID();
-    return (PyObject *) rv;
+    return Py_BuildValue("i", static_cast<int>(rv));
 // splicer end class.ExClass2.method.get_type_id
 }
 // splicer begin class.ExClass2.impl.after_methods
