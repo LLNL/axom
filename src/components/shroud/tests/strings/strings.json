@@ -2,6 +2,7 @@
     "F_module_dependencies": [], 
     "classes": [], 
     "fmt": {
+        "BBB": "BBB", 
         "C_const": "", 
         "C_header_filename": "wrapstrings.h", 
         "C_impl_filename": "wrapstrings.cpp", 
@@ -17,6 +18,12 @@
         "F_result": "rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
+        "PY_header_filename": "pystringsmodule.hpp", 
+        "PY_helper_filename": "pystringshelper.cpp", 
+        "PY_library_doc": "library documentation", 
+        "PY_module_filename": "pystringsmodule.cpp", 
+        "PY_module_name": "strings", 
+        "PY_prefix": "PY_", 
         "class_name": "", 
         "function_suffix": "", 
         "library": "strings", 
@@ -51,6 +58,7 @@
                 "F_name_generic": "pass_char", 
                 "F_name_impl": "pass_char", 
                 "F_name_method": "pass_char", 
+                "PY_name_impl": "PY_pass_char", 
                 "function_name": "passChar", 
                 "underscore_name": "pass_char"
             }, 
@@ -77,6 +85,7 @@
                 "F_name_generic": "return_char", 
                 "F_name_impl": "return_char", 
                 "F_name_method": "return_char", 
+                "PY_name_impl": "PY_return_char", 
                 "function_name": "returnChar", 
                 "underscore_name": "return_char"
             }, 
@@ -126,6 +135,7 @@
                 "F_name_generic": "pass_char_ptr", 
                 "F_name_impl": "pass_char_ptr", 
                 "F_name_method": "pass_char_ptr", 
+                "PY_name_impl": "PY_pass_char_ptr", 
                 "function_name": "passCharPtr", 
                 "underscore_name": "pass_char_ptr"
             }, 
@@ -203,6 +213,7 @@
             "fmt": {
                 "C_name": "STR_get_char1", 
                 "F_C_name": "c_get_char1", 
+                "PY_name_impl": "PY_get_char1", 
                 "function_name": "getChar1", 
                 "underscore_name": "get_char1"
             }, 
@@ -314,6 +325,7 @@
                 "F_name_generic": "get_char2", 
                 "F_name_impl": "get_char2", 
                 "F_name_method": "get_char2", 
+                "PY_name_impl": "PY_get_char2", 
                 "function_name": "getChar2", 
                 "underscore_name": "get_char2"
             }, 
@@ -387,6 +399,7 @@
             "fmt": {
                 "C_name": "STR_get_char3", 
                 "F_C_name": "c_get_char3", 
+                "PY_name_impl": "PY_get_char3", 
                 "function_name": "getChar3", 
                 "underscore_name": "get_char3"
             }, 
@@ -510,6 +523,7 @@
             "fmt": {
                 "C_name": "STR_get_string1", 
                 "F_C_name": "c_get_string1", 
+                "PY_name_impl": "PY_get_string1", 
                 "function_name": "getString1", 
                 "underscore_name": "get_string1"
             }, 
@@ -622,6 +636,7 @@
                 "F_name_generic": "get_string2", 
                 "F_name_impl": "get_string2", 
                 "F_name_method": "get_string2", 
+                "PY_name_impl": "PY_get_string2", 
                 "function_name": "getString2", 
                 "underscore_name": "get_string2"
             }, 
@@ -697,6 +712,7 @@
             "fmt": {
                 "C_name": "STR_get_string3", 
                 "F_C_name": "c_get_string3", 
+                "PY_name_impl": "PY_get_string3", 
                 "function_name": "getString3", 
                 "underscore_name": "get_string3"
             }, 
@@ -836,6 +852,7 @@
                 "F_name_generic": "accept_string_const_reference", 
                 "F_name_impl": "accept_string_const_reference", 
                 "F_name_method": "accept_string_const_reference", 
+                "PY_name_impl": "PY_accept_string_const_reference", 
                 "function_name": "acceptStringConstReference", 
                 "underscore_name": "accept_string_const_reference"
             }, 
@@ -917,6 +934,7 @@
                 "F_name_generic": "accept_string_reference", 
                 "F_name_impl": "accept_string_reference", 
                 "F_name_method": "accept_string_reference", 
+                "PY_name_impl": "PY_accept_string_reference", 
                 "function_name": "acceptStringReference", 
                 "underscore_name": "accept_string_reference"
             }, 
@@ -1006,7 +1024,7 @@
         "namespace": "", 
         "wrap_c": true, 
         "wrap_fortran": true, 
-        "wrap_python": false
+        "wrap_python": true
     }, 
     "patterns": {
         "C_invalid_name": "if ({cpp_var}.empty()) {{\n    return NULL;\n}}\n", 

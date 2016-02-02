@@ -398,6 +398,9 @@ return 1;""", fmt)
                 if attrs['intent'] in [ 'inout', 'out']:
                     # output variable must be a pointer
                     # XXX - fix up for strings
+#                    format, vargs = self.intent_out(result_typedef, fmt, PY_code)
+#                    build_format.append(format)
+#                    build_vargs.append(vargs)
                     build_format.append(arg_typedef.PY_format)
                     build_vargs.append('*' + fmt.c_var);
 

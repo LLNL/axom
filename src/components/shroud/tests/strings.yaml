@@ -6,7 +6,7 @@ options:
   debug: True
   library: strings
   cpp_header: strings.hpp
-  wrap_python: False
+  wrap_python: True
 
 functions:
 

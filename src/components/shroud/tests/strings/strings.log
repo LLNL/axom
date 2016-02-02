@@ -47,3 +47,17 @@ C-interface function void acceptStringConstReference(const std::string & arg1+in
 C-interface, Fortran function void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))
 C-interface function void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
 Close wrapfstrings.f
+Python function void passChar(char_scalar status+intent(in)+value)
+Python function char_scalar returnChar()
+Python function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
+Python function const char * getChar1()+pure
+Python function const char * getChar2()
+Python function const char * getChar3()
+Python function const string & getString1()+pure
+Python function const string & getString2()
+Python function const string & getString3()
+Python function void acceptStringConstReference(const std::string & arg1+intent(in))
+Python function void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))
+Close pystringsmodule.hpp
+Close pystringsmodule.cpp
+Close pystringshelper.cpp
