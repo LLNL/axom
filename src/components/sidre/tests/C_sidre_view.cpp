@@ -532,8 +532,8 @@ TEST(C_sidre_view,simple_opaque)
                                                                    "my_opaque",
                                                                    src_ptr);
 
-  // we have a buffer because an "external" view currently uses one
-  EXPECT_EQ(SIDRE_datastore_get_num_buffers(ds), 1u);
+  // External pointers are held in the view, no buffer should be present.
+  EXPECT_EQ(SIDRE_datastore_get_num_buffers(ds), 0u);
 
   EXPECT_TRUE(SIDRE_dataview_is_external(opq_view));
   EXPECT_TRUE(!SIDRE_dataview_is_applied(opq_view));

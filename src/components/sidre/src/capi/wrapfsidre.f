@@ -209,8 +209,6 @@ module sidre_mod
         procedure :: allocate_from_type_long => databuffer_allocate_from_type_long
         procedure :: reallocate_int => databuffer_reallocate_int
         procedure :: reallocate_long => databuffer_reallocate_long
-        procedure :: set_external_data => databuffer_set_external_data
-        procedure :: is_external => databuffer_is_external
         procedure :: get_void_ptr => databuffer_get_void_ptr
         procedure :: get_type_id => databuffer_get_type_id
         procedure :: get_num_elements => databuffer_get_num_elements
@@ -1095,23 +1093,6 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
         end subroutine c_databuffer_reallocate
-        
-        subroutine c_databuffer_set_external_data(self, external_data) &
-                bind(C, name="SIDRE_databuffer_set_external_data")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: external_data
-        end subroutine c_databuffer_set_external_data
-        
-        pure function c_databuffer_is_external(self) &
-                result(rv) &
-                bind(C, name="SIDRE_databuffer_is_external")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            logical(C_BOOL) :: rv
-        end function c_databuffer_is_external
         
         function c_databuffer_get_void_ptr(self) &
                 result(rv) &
@@ -2631,28 +2612,6 @@ contains
             int(num_elems, C_LONG))
         ! splicer end class.DataBuffer.method.reallocate_long
     end subroutine databuffer_reallocate_long
-    
-    subroutine databuffer_set_external_data(obj, external_data)
-        use iso_c_binding
-        implicit none
-        class(databuffer) :: obj
-        type(C_PTR), value, intent(IN) :: external_data
-        ! splicer begin class.DataBuffer.method.set_external_data
-        call c_databuffer_set_external_data(  &
-            obj%voidptr,  &
-            external_data)
-        ! splicer end class.DataBuffer.method.set_external_data
-    end subroutine databuffer_set_external_data
-    
-    function databuffer_is_external(obj) result(rv)
-        use iso_c_binding
-        implicit none
-        class(databuffer) :: obj
-        logical :: rv
-        ! splicer begin class.DataBuffer.method.is_external
-        rv = c_databuffer_is_external(obj%voidptr)
-        ! splicer end class.DataBuffer.method.is_external
-    end function databuffer_is_external
     
     function databuffer_get_void_ptr(obj) result(rv)
         use iso_c_binding

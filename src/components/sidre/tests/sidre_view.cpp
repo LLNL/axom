@@ -623,8 +623,8 @@ TEST(sidre_view,simple_opaque)
 
   DataView * opq_view = root->createView("my_opaque", src_ptr);
 
-  // we have a buffer because an "external" view currently uses one
-  EXPECT_EQ(ds->getNumBuffers(), 1u);
+  // External pointers are held in the view, should not have a buffer.
+  EXPECT_EQ(ds->getNumBuffers(), 0u);
 
   EXPECT_TRUE(opq_view->isExternal());
   EXPECT_TRUE(!opq_view->isApplied());
