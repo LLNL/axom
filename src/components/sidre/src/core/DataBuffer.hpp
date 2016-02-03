@@ -111,8 +111,6 @@ public:
     return m_node.value();
   }
 
-  //@}
-
   /*!
    * \brief Return type of data for this DataBuffer object.
    */
@@ -133,6 +131,25 @@ public:
    * \brief Return total number of bytes associated with this DataBuffer object.
    */
   size_t getTotalBytes() const;
+
+  //@}
+
+  /*!
+   * \brief Return true if buffer contains allocated data.
+   */
+  bool isAllocated() const
+  {
+    return m_data != ATK_NULLPTR;
+  }
+
+  /*!
+   * \brief Return true if data description exists.  It may/may not have been
+   * applied to the data yet.  ( Check isApplied() for that. )
+   */
+  bool isDescribed() const
+  {
+    return !m_schema.dtype().is_empty();
+  }
 
   /*
    * \brief Return true if DataBuffer has an associated DataView with given

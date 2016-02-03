@@ -155,6 +155,11 @@ public:
   }
 
   /*!
+   * \brief Return true if view holds data that has been allocated.
+   */
+  bool isAllocated() const;
+
+  /*!
    * \brief Return true if data description (schema) has been applied to data
    *        in buffer associated with view; false otherwise.
    */
@@ -183,6 +188,22 @@ public:
   }
 
   /*!
+   * \brief Return true if view contains a scalar value.
+   */
+  bool isScalar() const
+  {
+    return (m_state == SCALAR);
+  }
+
+  /*!
+   * \brief Return true if view contains a string value.
+   */
+  bool isString() const
+  {
+    return (m_state == STRING);
+  }
+
+  /*!
    * \brief Return type of data for this DataView object.
    */
   TypeID getTypeID() const
@@ -198,7 +219,14 @@ public:
    */
   size_t getTotalBytes() const
   {
-    return m_schema.total_bytes();
+    if ( isApplied() )
+    {
+      return m_node.schema().total_bytes();
+    }
+    else
+    {
+      return m_schema.total_bytes();
+    }
   }
 
   /*!
@@ -209,7 +237,14 @@ public:
    */
   size_t getNumElements() const
   {
-    return m_schema.dtype().number_of_elements();
+    if ( isApplied() )
+    {
+      return m_node.schema().dtype().number_of_elements();
+    }
+    else
+    {
+      return m_schema.dtype().number_of_elements();
+    }
   }
 
   /*!
@@ -236,7 +271,14 @@ public:
    */
   const Schema& getSchema() const
   {
-    return m_schema;
+    if ( isApplied() )
+    {
+      return m_node.schema();
+    }
+    else
+    {
+      return m_schema;
+    }
   }
 
   /*!
@@ -490,6 +532,7 @@ public:
 #endif
 
     m_node.set(value);
+    m_is_applied = true;
     m_state = SCALAR;
     return this;
   }
@@ -504,9 +547,9 @@ public:
  */
   DataView * setString(const std::string& value)
   {
-    // TODO: Check with Cyrus that the set_string function is the right call (should be).
     m_node.set_string(value);
     m_state = STRING;
+    m_is_applied = true;
     return this;
   };
 
