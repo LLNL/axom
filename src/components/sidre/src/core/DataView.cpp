@@ -522,6 +522,22 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
 /*
  *************************************************************************
  *
+ * Return true if view contains a buffer with allocated data.
+ *
+ * Note: Most of our isXXX functions are implemented in the header.
+ * This one is in not, because we are only forward declaring the buffer
+ * class in the view header.
+ *************************************************************************
+ */
+bool DataView::isAllocated() const
+{
+  return ( (m_data_buffer != ATK_NULLPTR) && (m_data_buffer->isAllocated() ) );
+}
+
+
+/*
+ *************************************************************************
+ *
  * Return number of dimensions and fill in shape information.
  *
  *************************************************************************
