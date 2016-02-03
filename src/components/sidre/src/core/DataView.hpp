@@ -621,8 +621,7 @@ public:
    */
   Node::Value getData()
   {
-    SLIC_ASSERT_MSG( m_is_applied,
-                     "View description has not been applied to data");
+    SLIC_CHECK_MSG( isApplied(), "Called getData() on view with no described data.  Returned value will be ambiguous.");
     return m_node.value();
   }
 

@@ -281,12 +281,8 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
  */
 DataView * DataView::apply()
 {
-  if ( !applyIsValid() || !isDescribed() )
+  if ( !applyIsValid() )
   {
-    SLIC_CHECK_MSG( applyIsValid(),
-                     "View state, '" << getStateStringName(m_state) << "', does not allow apply operation");
-    SLIC_CHECK_MSG( isDescribed(),
-                    "View has no data description, apply() is a no-op");
     return this;
   }
 
@@ -328,23 +324,10 @@ DataView * DataView::apply(SidreLength num_elems,
                            SidreLength offset,
                            SidreLength stride)
 {
-  SLIC_ASSERT_MSG( applyIsValid(),
-                   "View state does not allow apply operation");
-  // TODO -
-  // This check is wrong, we allow calling apply on external pointer.
-  //SLIC_ASSERT_MSG( m_state != EXTERNAL || m_schema.dtype().is_empty(),
-  //                 "View state does not allow apply operation");
-  // TODO - Need to update this check, we don't always have a buffer now.
-  //SLIC_ASSERT_MSG( m_data_buffer != ATK_NULLPTR,
-  //                 "View needs buffer to get type information");
-  SLIC_ASSERT(num_elems >= 0);
-  SLIC_ASSERT(offset >= 0);
+  SLIC_CHECK(num_elems >= 0);
+  SLIC_CHECK(offset >= 0);
 
-  // This is wrong, need to update.
-  if ( applyIsValid() &&
-       ( m_state != EXTERNAL || isDescribed() ) &&
-       m_data_buffer != ATK_NULLPTR &&
-       num_elems >= 0 && offset >= 0)
+  if ( num_elems >= 0 && offset >= 0)
   {
     DataType dtype(m_schema.dtype());
     if ( dtype.is_empty() )
@@ -373,13 +356,10 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
                            SidreLength offset,
                            SidreLength stride)
 {
-  SLIC_ASSERT_MSG( applyIsValid(),
-                   "View state does not allow apply operation");
   SLIC_ASSERT(num_elems >= 0);
   SLIC_ASSERT(offset >= 0);
 
-  if ( applyIsValid() &&
-       num_elems >= 0 && offset >= 0)
+  if ( num_elems >= 0 && offset >= 0)
   {
     DataType dtype = conduit::DataType::default_dtype(type);
 
@@ -405,10 +385,8 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
  */
 DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
 {
-  if ( !applyIsValid() || ndims < 1 || shape == ATK_NULLPTR )
+  if ( ndims < 1 || shape == ATK_NULLPTR )
   {
-    SLIC_CHECK_MSG( applyIsValid(),
-                     "View state " << getStateStringName(m_state) << " does not allow apply operation");
     SLIC_CHECK(ndims >= 1);
     SLIC_CHECK(shape != ATK_NULLPTR);
 
@@ -458,14 +436,10 @@ DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
  */
 DataView * DataView::apply(const DataType &dtype)
 {
-  SLIC_ASSERT_MSG( applyIsValid(),
-                   "View state does not allow apply operation");
 
-  if ( applyIsValid() )
-  {
-    declare(dtype);
-    apply();
-  }
+  declare(dtype);
+  apply();
+
   return this;
 }
 
@@ -478,14 +452,9 @@ DataView * DataView::apply(const DataType &dtype)
  */
 DataView * DataView::apply(const Schema& schema)
 {
-  SLIC_ASSERT_MSG( applyIsValid(),
-                   "View state does not allow apply operation");
+  declare(schema);
+  apply();
 
-  if ( applyIsValid() )
-  {
-    declare(schema);
-    apply();
-  }
   return this;
 }
 
@@ -510,7 +479,7 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
     m_node.set( (detail::sidre_uint64)external_ptr);
     m_state = EXTERNAL;
 
-    if (applyIsValid() && isDescribed() )
+    if ( isDescribed() )
     {
       apply();
     }
@@ -785,8 +754,17 @@ bool DataView::setExternalDataPtrIsValid() const
  */
 bool DataView::applyIsValid() const
 {
-  // Must have some data for it to be applied to.
-  return ( hasData() );
+  SLIC_CHECK_MSG(isDescribed(), "Unable to call apply on view without a data description.");
+  SLIC_CHECK_MSG(m_state != SCALAR && m_state != STRING, "Unable to call apply on view containing a scalar or string value.");
+  bool cond = (isDescribed() && m_state != SCALAR && m_state!= STRING );
+
+  // If view has a buffer with describe data, verify that it is compatible with view's description (has sufficient number of bytes).
+  if ( hasBuffer() && m_data_buffer->isDescribed() )
+  {
+    SLIC_CHECK_MSG( m_data_buffer->getTotalBytes() >= getTotalBytes(), "Unable to call apply on view with buffer, # of bytes required for view description exceeds available # of bytes in buffer." );
+    cond = cond && (m_data_buffer->getTotalBytes() >= this->getTotalBytes() );
+  }
+  return cond;
 }
 
 /*
