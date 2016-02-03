@@ -106,17 +106,11 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
  */
 DataBuffer * DataBuffer::allocate()
 {
-  SLIC_ASSERT_MSG( !m_is_data_external,
-                   "Attempting to allocate buffer holding external data");
-
-  if ( !m_is_data_external )
-  {
-    // cleanup old data
-    cleanup();
-    std::size_t alloc_size = getTotalBytes();
-    m_data = allocateBytes(alloc_size);
-    m_node.set_external(m_schema, m_data);
-  }
+  // cleanup old data
+  cleanup();
+  std::size_t alloc_size = getTotalBytes();
+  m_data = allocateBytes(alloc_size);
+  m_node.set_external(m_schema, m_data);
 
   return this;
 }
@@ -131,10 +125,8 @@ DataBuffer * DataBuffer::allocate()
 DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
 {
   SLIC_ASSERT_MSG(num_elems >= 0, "Must allocate number of elements >=0");
-  SLIC_ASSERT_MSG( !m_is_data_external,
-                   "Attempting to allocate buffer holding external data");
 
-  if ( num_elems >= 0 && !m_is_data_external )
+  if ( num_elems >= 0 )
   {
     declare(type, num_elems);
     allocate();
@@ -153,8 +145,6 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
 DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 {
   SLIC_ASSERT_MSG(num_elems >= 0, "Must re-allocate number of elements >=0");
-  SLIC_ASSERT_MSG( !m_is_data_external,
-                   "Attempting to re-allocate buffer holding external data");
   SLIC_ASSERT_MSG( m_data != ATK_NULLPTR,
                    "Attempting to reallocate an unallocated buffer");
 
@@ -206,27 +196,6 @@ DataBuffer * DataBuffer::update(const void * src, size_t nbytes)
 /*
  *************************************************************************
  *
- * Set buffer to externally-owned data.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::setExternalData(void * external_data)
-{
-  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR,
-                   "Attempting to set buffer to external data given null pointer" );
-
-  if ( external_data != ATK_NULLPTR )
-  {
-    m_data = external_data;
-    m_node.set_external(m_schema, m_data);
-    m_is_data_external = true;
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
  * Copy data buffer description to given Conduit node.
  *
  *************************************************************************
@@ -234,7 +203,6 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
 void DataBuffer::info(Node &n) const
 {
   n["index"].set(m_index);
-  n["is_data_external"].set(m_is_data_external);
   n["schema"].set(m_schema.to_json());
   n["node"].set(m_node.to_json());
 }
@@ -280,8 +248,7 @@ DataBuffer::DataBuffer( IndexType index )
   m_type(EMPTY_ID),
   m_data(ATK_NULLPTR),
   m_node(),
-  m_schema(),
-  m_is_data_external(false)
+  m_schema()
 {}
 
 
@@ -298,8 +265,7 @@ DataBuffer::DataBuffer(const DataBuffer& source )
   m_type(EMPTY_ID),
   m_data(source.m_data),
   m_node(source.m_node),
-  m_schema(source.m_schema),
-  m_is_data_external(source.m_is_data_external)
+  m_schema(source.m_schema)
 {
 // disallow?
 }
@@ -361,10 +327,7 @@ void DataBuffer::cleanup()
   // cleanup allocated data
   if ( m_data != ATK_NULLPTR )
   {
-    if (!m_is_data_external )
-    {
-      releaseBytes(m_data);
-    }
+    releaseBytes(m_data);
   }
 }
 
@@ -393,11 +356,8 @@ void * DataBuffer::allocateBytes(std::size_t num_bytes)
  */
 void DataBuffer::releaseBytes(void * ptr)
 {
-  if ( !m_is_data_external )
-  {
-    delete [] ((char *)ptr);
-    m_data = ATK_NULLPTR;
-  }
+  delete [] ((char *)ptr);
+  m_data = ATK_NULLPTR;
 }
 
 

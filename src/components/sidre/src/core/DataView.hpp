@@ -164,6 +164,15 @@ public:
   }
 
   /*!
+   * \brief Return true if data description exists.  It may/may not have been
+   * applied to the data yet.  ( Check isApplied() for that. )
+   */
+  bool isDescribed() const
+  {
+    return !m_schema.dtype().is_empty();
+  }
+
+  /*!
    * \brief Convenience function that returns true if view is opaque
    *        (i.e., has access to data but has no knowledge of the data
    *        type or structure); false otherwise.
@@ -594,6 +603,13 @@ public:
    */
   void * getVoidPtr()
   {
+    // Must have some data present.
+    if ( !hasData() )
+    {
+      SLIC_CHECK_MSG( hasData(), "Unable to retrieve raw pointer to data, no data exists in view.");
+      return ATK_NULLPTR;
+    }
+
     if ( isOpaque() )
     {
       return (void *)m_node.as_uint64();
@@ -759,6 +775,14 @@ private:
    *  \brief Private method returns string name of given view state enum value.
    */
   char const * getStateStringName(State state) const;
+
+  /*!
+   *  \brief Private method returns true if view holds any data.
+   */
+  bool hasData () const
+  {
+    return ( m_state != EMPTY && m_state != DESCRIBED );
+  }
 
   /// Name of this DataView object.
   std::string m_name;
