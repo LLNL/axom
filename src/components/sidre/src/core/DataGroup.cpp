@@ -105,6 +105,33 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
+ * Create view with given name, and data description using type and shape.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  TypeID type,
+                                  int ndims,
+                                  SidreLength * shape )
+{
+  if ( !(ndims >= 0) )
+  {
+    SLIC_CHECK_MSG(ndims >= 0,
+                   "Must define view with number of ndims >=0 ");
+    return ATK_NULLPTR;
+  }
+
+  DataView * view = createView(name);
+  if (view != ATK_NULLPTR)
+  {
+    view->declare(type, ndims, shape);
+  }
+  return view;
+}
+
+/*
+ *************************************************************************
+ *
  * Create view with given name, and data description using a conduit
  * Datatype class.
  *
@@ -199,6 +226,30 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
                                              SidreLength num_elems )
 {
   DataView * view = createView(name, type, num_elems);
+  if ( view != ATK_NULLPTR )
+  {
+    view->allocate();
+  }
+  return view;
+}
+
+/*
+ *************************************************************************
+ *
+ * Create view with given name, and data description using type,
+ * number of dimnesions, and number of elements per dimension.
+ *
+ * In addition, create an associated buffer, allocate the data, and attach
+ * view to new buffer.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createViewAndAllocate( const std::string& name,
+                                             TypeID type,
+                                             int ndims,
+                                             SidreLength * shape )
+{
+  DataView * view = createView(name, type, ndims, shape);
   if ( view != ATK_NULLPTR )
   {
     view->allocate();

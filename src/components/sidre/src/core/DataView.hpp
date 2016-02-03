@@ -672,6 +672,22 @@ private:
   DataView * declare( TypeID type, SidreLength num_elems);
 
   /*!
+   * \brief Declare a data view with given type, number of dimensions,  and
+   *        number of elements per dimension.
+   *
+   *
+   * IMPORTANT: If view has been previously declared, this operation will
+   *            re-declare the view. To have the new declaration take effect,
+   *            the apply() method must be called.
+   *
+   * If given number of dimensions or total number of elements < 0,
+   * or view is opaque, method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * declare(TypeID type, int ndims, SidreLength * shape);
+
+  /*!
    * \brief Declare a data view with a Conduit data type object.
    *
    * IMPORTANT: If view has been previously declared, this operation will

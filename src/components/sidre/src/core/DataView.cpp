@@ -395,41 +395,13 @@ DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
 {
   SLIC_ASSERT_MSG( applyIsValid(),
                    "View state does not allow apply operation");
-  SLIC_ASSERT(ndims >= 1);
+  SLIC_ASSERT(ndims >= 0);
   SLIC_ASSERT(shape != ATK_NULLPTR);
 
   if ( applyIsValid() && ndims >= 0 && shape != ATK_NULLPTR)
   {
-    if (ndims == 1)
-    {
-      if (m_shape != ATK_NULLPTR)
-      {
-        delete m_shape;
-        m_shape = ATK_NULLPTR;
-      }
-    }
-    else
-    {
-      if (m_shape != ATK_NULLPTR)
-      {
-        m_shape->resize(ndims);
-      }
-      else
-      {
-        m_shape = new std::vector<SidreLength>(ndims);
-      }
-    }
-
-    SidreLength num_elems = 1;
-    for (int i=0 ; i < ndims ; i++)
-    {
-      num_elems *= shape[i];
-      if (m_shape != ATK_NULLPTR)
-      {
-        (*m_shape)[i] = shape[i];
-      }
-    }
-    apply(type, num_elems );
+    declare(type, ndims, shape);
+    apply();
   }
   return this;
 }
@@ -662,6 +634,62 @@ DataView * DataView::declare(TypeID type, SidreLength num_elems)
 
     m_is_applied = false;
   }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to declare data view with type, number of dimensions,
+ *         and number of elements per dimension.
+ *         Only use m_shape if ndims > 1.
+ *
+ *************************************************************************
+ */
+DataView * DataView::declare(TypeID type, int ndims, SidreLength * shape)
+{
+  SLIC_ASSERT(ndims >= 0);
+  SLIC_ASSERT(shape != ATK_NULLPTR);
+  SidreLength num_elems = 0;
+
+  if ( ndims > 0 && shape != ATK_NULLPTR)
+  {
+    if (ndims == 1)
+    {
+      if (m_shape != ATK_NULLPTR)
+      {
+        delete m_shape;
+        m_shape = ATK_NULLPTR;
+      }
+    }
+    else
+    {
+      if (m_shape != ATK_NULLPTR)
+      {
+        m_shape->resize(ndims);
+      }
+      else
+      {
+        m_shape = new std::vector<SidreLength>(ndims);
+      }
+    }
+
+    num_elems = 1;
+    for (int i=0 ; i < ndims ; i++)
+    {
+      num_elems *= shape[i];
+      if (m_shape != ATK_NULLPTR)
+      {
+        (*m_shape)[i] = shape[i];
+      }
+    }
+  }
+  else
+  {
+    delete m_shape;
+    m_shape = ATK_NULLPTR;
+  }
+  declare(type, num_elems);
   return this;
 }
 
