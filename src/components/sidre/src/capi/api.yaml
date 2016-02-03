@@ -221,9 +221,6 @@ classes:
           num_elems:
           -  int
           -  long
-      - decl: DataBuffer * setExternalData( void* external_data)
-        return_this: True
-      - decl: bool isExternal() const
       - decl: void* getVoidPtr()
       - decl: TypeID getTypeID() const
       - decl: size_t getNumElements() const
