@@ -86,13 +86,21 @@ SIDRE_IndexType SIDRE_datagroup_get_first_valid_view_index(
 SIDRE_IndexType SIDRE_datagroup_get_next_valid_view_index(
   SIDRE_datagroup * self, SIDRE_IndexType idx);
 
-SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate(
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_nelems(
   SIDRE_datagroup * self, const char * name, int type,
   SIDRE_SidreLength num_elems);
 
-SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_bufferify(
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_nelems_bufferify(
   SIDRE_datagroup * self, const char * name, int Lname, int type,
   SIDRE_SidreLength num_elems);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_shape(
+  SIDRE_datagroup * self, const char * name, int type, int ndims,
+  SIDRE_SidreLength * num_elems);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_shape_bufferify(
+  SIDRE_datagroup * self, const char * name, int Lname, int type, int ndims,
+  SIDRE_SidreLength * num_elems);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_empty(SIDRE_datagroup * self,
                                                    const char * name);
@@ -108,6 +116,15 @@ SIDRE_dataview * SIDRE_datagroup_create_view_from_type(SIDRE_datagroup * self,
 SIDRE_dataview * SIDRE_datagroup_create_view_from_type_bufferify(
   SIDRE_datagroup * self, const char * name, int Lname, int type,
   SIDRE_SidreLength num_elems);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_from_shape(SIDRE_datagroup * self,
+                                                        const char * name,
+                                                        int type, int ndims,
+                                                        SIDRE_SidreLength * shape);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_from_shape_bufferify(
+  SIDRE_datagroup * self, const char * name, int Lname, int type, int ndims,
+  SIDRE_SidreLength * shape);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_into_buffer(SIDRE_datagroup * self,
                                                          const char * name,

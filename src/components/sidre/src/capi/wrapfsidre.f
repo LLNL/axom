@@ -96,11 +96,13 @@ module sidre_mod
         procedure :: get_view_name => datagroup_get_view_name
         procedure :: get_first_valid_view_index => datagroup_get_first_valid_view_index
         procedure :: get_next_valid_view_index => datagroup_get_next_valid_view_index
-        procedure :: create_view_and_allocate_int => datagroup_create_view_and_allocate_int
-        procedure :: create_view_and_allocate_long => datagroup_create_view_and_allocate_long
+        procedure :: create_view_and_allocate_nelems_int => datagroup_create_view_and_allocate_nelems_int
+        procedure :: create_view_and_allocate_nelems_long => datagroup_create_view_and_allocate_nelems_long
+        procedure :: create_view_and_allocate_shape => datagroup_create_view_and_allocate_shape
         procedure :: create_view_empty => datagroup_create_view_empty
         procedure :: create_view_from_type_int => datagroup_create_view_from_type_int
         procedure :: create_view_from_type_long => datagroup_create_view_from_type_long
+        procedure :: create_view_from_shape => datagroup_create_view_from_shape
         procedure :: create_view_into_buffer => datagroup_create_view_into_buffer
         procedure :: create_view_external => datagroup_create_view_external
         procedure :: destroy_view => datagroup_destroy_view
@@ -129,13 +131,15 @@ module sidre_mod
             create_view_empty,  &
             create_view_from_type_int,  &
             create_view_from_type_long,  &
+            create_view_from_shape,  &
             create_view_into_buffer,  &
             create_view_external
         generic :: create_view_and_allocate => &
             ! splicer begin class.DataGroup.generic.create_view_and_allocate
             ! splicer end class.DataGroup.generic.create_view_and_allocate
-            create_view_and_allocate_int,  &
-            create_view_and_allocate_long
+            create_view_and_allocate_nelems_int,  &
+            create_view_and_allocate_nelems_long,  &
+            create_view_and_allocate_shape
         generic :: destroy_group => &
             ! splicer begin class.DataGroup.generic.destroy_group
             ! splicer end class.DataGroup.generic.destroy_group
@@ -598,9 +602,9 @@ module sidre_mod
             integer(C_INT) :: rv
         end function c_datagroup_get_next_valid_view_index
         
-        function c_datagroup_create_view_and_allocate(self, name, type, num_elems) &
+        function c_datagroup_create_view_and_allocate_nelems(self, name, type, num_elems) &
                 result(rv) &
-                bind(C, name="SIDRE_datagroup_create_view_and_allocate")
+                bind(C, name="SIDRE_datagroup_create_view_and_allocate_nelems")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -608,11 +612,11 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
-        end function c_datagroup_create_view_and_allocate
+        end function c_datagroup_create_view_and_allocate_nelems
         
-        function c_datagroup_create_view_and_allocate_bufferify(self, name, Lname, type, num_elems) &
+        function c_datagroup_create_view_and_allocate_nelems_bufferify(self, name, Lname, type, num_elems) &
                 result(rv) &
-                bind(C, name="SIDRE_datagroup_create_view_and_allocate_bufferify")
+                bind(C, name="SIDRE_datagroup_create_view_and_allocate_nelems_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -621,7 +625,34 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
-        end function c_datagroup_create_view_and_allocate_bufferify
+        end function c_datagroup_create_view_and_allocate_nelems_bufferify
+        
+        function c_datagroup_create_view_and_allocate_shape(self, name, type, ndims, num_elems) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_and_allocate_shape")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_INT), value, intent(IN) :: ndims
+            integer(C_LONG), intent(IN) :: num_elems(*)
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_and_allocate_shape
+        
+        function c_datagroup_create_view_and_allocate_shape_bufferify(self, name, Lname, type, ndims, num_elems) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_and_allocate_shape_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_INT), value, intent(IN) :: ndims
+            integer(C_LONG), intent(IN) :: num_elems(*)
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_and_allocate_shape_bufferify
         
         function c_datagroup_create_view_empty(self, name) &
                 result(rv) &
@@ -668,6 +699,33 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
         end function c_datagroup_create_view_from_type_bufferify
+        
+        function c_datagroup_create_view_from_shape(self, name, type, ndims, shape) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_from_shape")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_INT), value, intent(IN) :: ndims
+            integer(C_LONG), intent(IN) :: shape(*)
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_from_shape
+        
+        function c_datagroup_create_view_from_shape_bufferify(self, name, Lname, type, ndims, shape) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_from_shape_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_INT), value, intent(IN) :: ndims
+            integer(C_LONG), intent(IN) :: shape(*)
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_from_shape_bufferify
         
         function c_datagroup_create_view_into_buffer(self, name, buff) &
                 result(rv) &
@@ -1680,7 +1738,7 @@ contains
         ! splicer end class.DataGroup.method.get_next_valid_view_index
     end function datagroup_get_next_valid_view_index
     
-    function datagroup_create_view_and_allocate_int(obj, name, type, num_elems) result(rv)
+    function datagroup_create_view_and_allocate_nelems_int(obj, name, type, num_elems) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
@@ -1688,17 +1746,17 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
         type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_view_and_allocate_int
-        rv%voidptr = c_datagroup_create_view_and_allocate_bufferify(  &
+        ! splicer begin class.DataGroup.method.create_view_and_allocate_nelems_int
+        rv%voidptr = c_datagroup_create_view_and_allocate_nelems_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name, kind=C_INT),  &
             type,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataGroup.method.create_view_and_allocate_int
-    end function datagroup_create_view_and_allocate_int
+        ! splicer end class.DataGroup.method.create_view_and_allocate_nelems_int
+    end function datagroup_create_view_and_allocate_nelems_int
     
-    function datagroup_create_view_and_allocate_long(obj, name, type, num_elems) result(rv)
+    function datagroup_create_view_and_allocate_nelems_long(obj, name, type, num_elems) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
@@ -1706,15 +1764,35 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_view_and_allocate_long
-        rv%voidptr = c_datagroup_create_view_and_allocate_bufferify(  &
+        ! splicer begin class.DataGroup.method.create_view_and_allocate_nelems_long
+        rv%voidptr = c_datagroup_create_view_and_allocate_nelems_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name, kind=C_INT),  &
             type,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataGroup.method.create_view_and_allocate_long
-    end function datagroup_create_view_and_allocate_long
+        ! splicer end class.DataGroup.method.create_view_and_allocate_nelems_long
+    end function datagroup_create_view_and_allocate_nelems_long
+    
+    function datagroup_create_view_and_allocate_shape(obj, name, type, ndims, num_elems) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: ndims
+        integer(C_LONG), intent(IN) :: num_elems(*)
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_and_allocate_shape
+        rv%voidptr = c_datagroup_create_view_and_allocate_shape_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            type,  &
+            ndims,  &
+            num_elems)
+        ! splicer end class.DataGroup.method.create_view_and_allocate_shape
+    end function datagroup_create_view_and_allocate_shape
     
     function datagroup_create_view_empty(obj, name) result(rv)
         use iso_c_binding
@@ -1765,6 +1843,26 @@ contains
             int(num_elems, C_LONG))
         ! splicer end class.DataGroup.method.create_view_from_type_long
     end function datagroup_create_view_from_type_long
+    
+    function datagroup_create_view_from_shape(obj, name, type, ndims, shape) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: ndims
+        integer(C_LONG), intent(IN) :: shape(*)
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_from_shape
+        rv%voidptr = c_datagroup_create_view_from_shape_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            type,  &
+            ndims,  &
+            shape)
+        ! splicer end class.DataGroup.method.create_view_from_shape
+    end function datagroup_create_view_from_shape
     
     function datagroup_create_view_into_buffer(obj, name, buff) result(rv)
         use iso_c_binding

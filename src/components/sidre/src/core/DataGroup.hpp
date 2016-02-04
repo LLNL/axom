@@ -379,6 +379,26 @@ public:
                          SidreLength num_elems );
 
   /*!
+   * \brief Create DataView object with given name and described by data type,
+   *        number of dimensions and number of elements per dimension,
+   *        and attach new view to this group object.
+   *
+   * IMPORTANT: This method does not allocate data or associate the view
+   * with data.
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, or given number of dimensions is < 0, or total number of elements
+   * is < 0 method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         int ndims,
+                         SidreLength * shape );
+
+  /*!
    * \brief Create DataView object with given name and described by
    *        Conduit DataType, and attach new view to this group object.
    *
@@ -486,6 +506,24 @@ public:
   DataView * createViewAndAllocate( const std::string& name,
                                     TypeID type,
                                     SidreLength num_elems );
+
+  /*!
+   * \brief Create DataView object with given name, data type,
+   *        number of dimensions, and number of elements per dimension,
+   *        allocate the data, and attach new view to this group object.
+   *
+   * This is equivalent to calling: createView(name)->allocate(type, ndims, shape);
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, or given number of elements is < 0 method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createViewAndAllocate( const std::string& name,
+                                    TypeID type,
+                                    int ndims,
+                                    SidreLength * shape );
 
   /*!
    * \brief Create DataView object with given name and Conduit DataType,
