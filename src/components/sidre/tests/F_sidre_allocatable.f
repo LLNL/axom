@@ -281,9 +281,7 @@ program fortran_test
   call external_allocatable_int_3d
   call external_static_int
   call external_allocatable_double
-
-  ! TODO - Re-enable this test after call order is fixed ( ATK-561 ).
-  !call datastore_int_3d
+  call datastore_int_3d
 
   call fruit_summary
   call fruit_finalize
