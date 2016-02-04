@@ -32,7 +32,6 @@ int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
 
-
   size_t num_files = 0;
   std::string file_base;
   if (argc == 3) {
@@ -42,17 +41,21 @@ int main(int argc, char * argv[])
     return 0;
   }
 
+  int my_rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
+
   DataGroup * flds = root->createGroup("fields");
   DataGroup * flds2 = root->createGroup("fields2");
 
   DataGroup * ga = flds->createGroup("a");
   DataGroup * gb = flds2->createGroup("b");
-  ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
-  ga->getView("i0")->setValue(1);
-  gb->createViewAndBuffer("i1")->allocate(DataType::c_int());
-  gb->getView("i1")->setValue(4);
+  ga->createView("i0")->allocate(DataType::c_int());
+  ga->getView("i0")->setScalar(my_rank + 101);
+  gb->createView("i1")->allocate(DataType::c_int());
+  gb->getView("i1")->setScalar(4*my_rank*my_rank + 404);
 
   std::vector<DataGroup *> groups;
   groups.push_back(root);

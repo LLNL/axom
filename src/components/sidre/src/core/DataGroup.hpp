@@ -774,6 +774,10 @@ public:
   void save(const std::string& obase,
             const std::string& protocol) const;
 
+  void save(const std::string& obase,
+            const std::string& protocol,
+            const hid_t& h5_file_id) const;
+
   /*!
    * \brief Load data group (including data views and child groups)
    *        from a file set named "obase" into this DataGroup object.
@@ -782,6 +786,10 @@ public:
    */
   void load(const std::string& obase,
             const std::string& protocol);
+
+  void load(const std::string& obase,
+            const std::string& protocol,
+            const hid_t& h5_file_id);
 
 //@}
 

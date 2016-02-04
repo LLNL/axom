@@ -9,6 +9,12 @@ include(cmake/FindConduit.cmake)
 
 
 ################################
+# HDF5
+################################
+include(cmake/FindHDF5.cmake)
+
+
+################################
 # Sparsehash
 ################################
 include(cmake/FindSparsehash.cmake)

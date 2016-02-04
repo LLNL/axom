@@ -71,6 +71,11 @@ public:
     return m_my_rank < m_first_regular_group_rank ? m_group_size + 1 : m_group_size; 
   }
 
+  bool isFirstInGroup()
+  {
+     return (m_rank_within_group == 0); 
+  }
+
   bool isLastInGroup()
   {
      return (m_rank_after_me == -1); 

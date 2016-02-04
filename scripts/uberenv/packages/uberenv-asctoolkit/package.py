@@ -14,6 +14,7 @@ class UberenvAsctoolkit(Package):
     # all of theses are custom
     depends_on("cmake")
     depends_on("python")
+    depends_on("hdf5")
     depends_on("conduit")
     depends_on("py-sphinx")
     depends_on("py-breathe")
@@ -83,6 +84,10 @@ class UberenvAsctoolkit(Package):
         else:
             cfg.write("# no fortran compiler\n\n")
             cfg.write('set(ENABLE_FORTRAN OFF CACHE PATH "")\n\n')
+
+        cfg.write('set(ENABLE_HDF5 ON CACHE PATH "")\n\n')
+        cfg.write("# hdf5 from uberenv\n")
+        cfg.write('set(HDF5_DIR "%s" CACHE PATH "")\n\n' % spec['hdf5'].prefix)
 
         cfg.write("# conduit from uberenv\n")
         cfg.write('set(CONDUIT_DIR "%s" CACHE PATH "")\n\n' % conduit_dir)

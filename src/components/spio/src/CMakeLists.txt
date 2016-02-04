@@ -31,6 +31,7 @@ make_library( LIBRARY_NAME
                 "${spio_headers}"
               DEPENDS_ON
                 conduit
+                hdf5
                 sidre
               WITH_MPI
             )

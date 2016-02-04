@@ -777,6 +777,25 @@ void DataGroup::save(const std::string& obase,
   }
 }
 
+void DataGroup::save(const std::string& obase,
+                     const std::string& protocol, 
+                     const hid_t& h5_file_id) const
+{
+  if (protocol == "conduit")
+  {
+    Node n;
+    copyToNode(n);
+    // //    n.save(obase);
+    std::string file_path;
+    std::string hdf5_path;
+    conduit::utils::split_string(obase,
+                                 std::string(":"),
+                                 file_path,
+                                 hdf5_path); 
+    conduit::io::hdf5_write(n, h5_file_id, hdf5_path);
+  }
+}
+
 /*
  *************************************************************************
  *
@@ -797,6 +816,28 @@ void DataGroup::load(const std::string& obase,
     Node n;
     conduit::io::load(obase, n);
     //n.load(obase);
+    // for debugging call: n.print();
+    copyFromNode(n);
+  }
+}
+
+
+void DataGroup::load(const std::string& obase,
+                     const std::string& protocol,
+                     const hid_t& h5_file_id)
+{
+  if (protocol == "conduit")
+  {
+    destroyGroups();
+    destroyViews();
+    std::string file_path;
+    std::string hdf5_path;
+    conduit::utils::split_string(obase,
+                                 std::string(":"),
+                                 file_path,
+                                 hdf5_path);
+    Node n;
+    conduit::io::hdf5_read(h5_file_id, hdf5_path, n);
     // for debugging call: n.print();
     copyFromNode(n);
   }
@@ -995,7 +1036,9 @@ void DataGroup::copyToNode(Node& n) const
   // save the buffers discovered by buffer_ids
   for (size_t i=0 ; i < buffer_ids.size() ; i++)
   {
-    Node& buff = n["buffers"].append();
+    std::ostringstream oss;
+    oss << "buffer_" << i;
+    Node& buff = n["buffers"].fetch(oss.str());
     IndexType buffer_id = buffer_ids[i];
     DataBuffer * ds_buff =  m_datastore->getBuffer(buffer_id);
     buff["id"].set(buffer_id);

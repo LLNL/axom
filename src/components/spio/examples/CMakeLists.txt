@@ -14,6 +14,6 @@ set(example_sources
 #
 foreach(example_source ${example_sources})
     make_executable( EXECUTABLE_SOURCE ${example_source}
-        DEPENDS_ON spio sidre conduit conduit_io slic ${EXTRA_LIBS} WITH_MPI)
+        DEPENDS_ON spio sidre conduit conduit_io slic ${EXTRA_LIBS} )
 endforeach()
 

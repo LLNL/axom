@@ -21,6 +21,8 @@
 // Associated header file
 #include "IOManager.hpp"
 
+#include "hdf5.h"
+
 // Other toolkit component headers
 #include "common/CommonTypes.hpp"
 
@@ -39,7 +41,7 @@ namespace spio
 /*
  *************************************************************************
  *
- * Datastore ctor creates root group.
+ * Create manager
  *
  *************************************************************************
  */
@@ -61,7 +63,7 @@ IOManager::IOManager(MPI_Comm comm,
 /*
  *************************************************************************
  *
- * Datastore dtor destroys all contents.
+ * Destroy all contents
  *
  *************************************************************************
  */
@@ -73,47 +75,67 @@ IOManager::~IOManager()
 /*
  *************************************************************************
  *
- * Return non-cost pointer to buffer with given index or null ptr.
+ * Write to file.
  *
  *************************************************************************
  */
 void IOManager::write(const std::string& file_string, int cycle, const std::string& protocol)
 {
   int group_id = m_baton.waitForMyTurn();
-  std::ostringstream oss;
-  oss << file_string << "_" << group_id << "_" << cycle;
-  std::string file_name = oss.str();
-//  conduit::mpi::send();
+  std::ostringstream namestream;
+  namestream << file_string << "_" << group_id << "_" << cycle;
+  std::string file_name = namestream.str();
   for (int i = 0; i < m_num_datagroups; ++i) {
-    m_datagroups[i]->save(file_name, protocol);
+    std::ostringstream savestream;
+    savestream << file_name << ".group" << i << ".hdf5";
+    std::string hdf5_name = savestream.str();
+
+    hid_t h5_file_id;
+    if (m_baton.isFirstInGroup()) {
+      h5_file_id = H5Fcreate(hdf5_name.c_str(),
+                             H5F_ACC_TRUNC,
+                             H5P_DEFAULT,
+                             H5P_DEFAULT);   
+    } else {
+      h5_file_id = H5Fopen(hdf5_name.c_str(),
+                           H5F_ACC_RDWR,
+                           H5P_DEFAULT); 
+    }
+
+    savestream << ":datagroup" << i << "_" << m_my_rank << "/";
+    m_datagroups[i]->save(savestream.str(), protocol, h5_file_id);
+
+    H5Fclose(h5_file_id);
   }
-//  if (m_num_datagroups == 1) {
-//    if (m_baton.groupSize() == 1) {
-//      m_datagroups[0]->save(file_name, protocol);
-//    } else if (m_baton.isLastInGroup()) {
-//    } else {
-//      conduit::Node n;
-//      m_datagroups[0]->copyToNode(n);
-//    }
-//  }   
   (void)m_baton.finishMyTurn();
 }
 
 /*
  *************************************************************************
  *
- * Create new data buffer and assign unique id.
+ * Read from file
  *
  *************************************************************************
  */
 void IOManager::read(const std::string& file_string, int cycle, const std::string& protocol)
 {
   int group_id = m_baton.waitForMyTurn();
-  std::ostringstream oss;
-  oss << file_string << "_" <<  group_id << "_" << cycle;
-  std::string file_name = oss.str();
+  std::ostringstream namestream;
+  namestream << file_string << "_" <<  group_id << "_" << cycle;
+  std::string file_name = namestream.str();
   for (int i = 0; i < m_num_datagroups; ++i) {
-    m_datagroups[i]->load(file_name, protocol);
+    std::ostringstream loadstream;
+    loadstream << file_name << ".group" << i << ".hdf5";
+    std::string hdf5_name = loadstream.str();
+    hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
+                               H5F_ACC_RDONLY,
+                               H5P_DEFAULT);
+
+    loadstream << ":datagroup" << i << "_" << m_my_rank << "/";
+
+    m_datagroups[i]->load(loadstream.str(), protocol, h5_file_id);
+
+    H5Fclose(h5_file_id);
   }
   (void)m_baton.finishMyTurn();
 }
