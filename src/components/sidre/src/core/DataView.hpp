@@ -219,14 +219,7 @@ public:
    */
   size_t getTotalBytes() const
   {
-    if ( isApplied() )
-    {
-      return m_node.schema().total_bytes();
-    }
-    else
-    {
-      return m_schema.total_bytes();
-    }
+    return getSchema().total_bytes();
   }
 
   /*!
@@ -237,14 +230,7 @@ public:
    */
   size_t getNumElements() const
   {
-    if ( isApplied() )
-    {
-      return m_node.schema().dtype().number_of_elements();
-    }
-    else
-    {
-      return m_schema.dtype().number_of_elements();
-    }
+    return getSchema().dtype().number_of_elements();
   }
 
   /*!
@@ -621,7 +607,8 @@ public:
    */
   Node::Value getData()
   {
-    SLIC_CHECK_MSG( isApplied(), "Called getData() on view with no described data.  Returned value will be ambiguous.");
+    SLIC_ASSERT_MSG( m_is_applied,
+                     "View description has not been applied to data");
     return m_node.value();
   }
 
@@ -730,6 +717,22 @@ private:
   DataView * declare( TypeID type, SidreLength num_elems);
 
   /*!
+   * \brief Declare a data view with given type, number of dimensions,  and
+   *        number of elements per dimension.
+   *
+   *
+   * IMPORTANT: If view has been previously declared, this operation will
+   *            re-declare the view. To have the new declaration take effect,
+   *            the apply() method must be called.
+   *
+   * If given number of dimensions or total number of elements < 0,
+   * or view is opaque, method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * declare(TypeID type, int ndims, SidreLength * shape);
+
+  /*!
    * \brief Declare a data view with a Conduit data type object.
    *
    * IMPORTANT: If view has been previously declared, this operation will
@@ -792,7 +795,7 @@ private:
   /// Enum with constants that identify the state of a view.
   ///
   /// Note that these states are not mutually-exclusive. These constants
-  /// combined with the boolean m_is_applied uniquesly identify the view
+  /// combined with the boolean m_is_applied uniquely identify the view
   /// state, or how it was created and defined.
   ///
   enum State
