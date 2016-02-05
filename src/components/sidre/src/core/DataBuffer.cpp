@@ -62,16 +62,13 @@ size_t DataBuffer::getTotalBytes() const
  */
 DataView * DataBuffer::getView( IndexType idx )
 {
-  SLIC_CHECK_MSG(hasView(idx), "no view exists with index == " << idx);
-
-  if ( hasView(idx) )
+  if ( !hasView(idx) )
   {
-    return m_views[idx];
-  }
-  else
-  {
+    SLIC_CHECK_MSG(hasView(idx), "no view exists with index == " << idx);
     return ATK_NULLPTR;
   }
+
+  return m_views[idx];
 }
 
 
@@ -84,16 +81,18 @@ DataView * DataBuffer::getView( IndexType idx )
  */
 DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
 {
-  SLIC_ASSERT_MSG(num_elems >= 0, "Must declare number of elements >=0");
-
-  if ( num_elems >= 0 )
+  if ( num_elems < 0 )
   {
-    m_type = type;
-
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(num_elems);
-    m_schema.set(dtype);
+    SLIC_CHECK_MSG(num_elems >= 0, "Must declare number of elements >=0");
+    return this;
   }
+
+  m_type = type;
+
+  DataType dtype = conduit::DataType::default_dtype(type);
+  dtype.set_number_of_elements(num_elems);
+  m_schema.set(dtype);
+
   return this;
 }
 
@@ -124,13 +123,14 @@ DataBuffer * DataBuffer::allocate()
  */
 DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
 {
-  SLIC_ASSERT_MSG(num_elems >= 0, "Must allocate number of elements >=0");
-
-  if ( num_elems >= 0 )
+  if ( num_elems < 0 )
   {
-    declare(type, num_elems);
-    allocate();
+    SLIC_CHECK_MSG(num_elems >= 0, "Must allocate number of elements >=0");
+    return this;
   }
+
+  declare(type, num_elems);
+  allocate();
 
   return this;
 }
@@ -144,9 +144,13 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
  */
 DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 {
-  SLIC_ASSERT_MSG(num_elems >= 0, "Must re-allocate number of elements >=0");
-  SLIC_ASSERT_MSG( m_data != ATK_NULLPTR,
-                   "Attempting to reallocate an unallocated buffer");
+  if ( num_elems < 0 || m_data == ATK_NULLPTR )
+  {
+    SLIC_CHECK_MSG(num_elems >= 0, "Must re-allocate number of elements >=0");
+    SLIC_CHECK_MSG( m_data != ATK_NULLPTR,
+                     "Attempting to reallocate an unallocated buffer");
+    return this;
+  }
 
   std::size_t old_size = getTotalBytes();
   // update the buffer's Conduit Node
@@ -181,14 +185,13 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
  */
 DataBuffer * DataBuffer::update(const void * src, size_t nbytes)
 {
-  size_t buff_nbytes = getTotalBytes();
-  SLIC_ASSERT_MSG(nbytes <= buff_nbytes,
-                  "Must allocate number of elements >=0");
-
-  if ( src != ATK_NULLPTR && nbytes <= buff_nbytes)
+  if ( nbytes > getTotalBytes() )
   {
-    memcpy(m_data, src, nbytes);
+    SLIC_CHECK_MSG(nbytes <= getTotalBytes(), "Unable to copy data into buffer, size exceeds available # bytes in buffer.");
+    return this;
   }
+
+  std::memcpy(m_data, src, nbytes);
 
   return this;
 }
@@ -335,14 +338,11 @@ void DataBuffer::cleanup()
  *************************************************************************
  *
  * PRIVATE allocateBytes
- *
+ * Note: We allow a zero bytes allocation ( since it's legal for new() ).
  *************************************************************************
  */
 void * DataBuffer::allocateBytes(std::size_t num_bytes)
 {
-  SLIC_ASSERT_MSG(num_bytes > 0,
-                  "Attempting to allocate 0 bytes");
-
   char * data = new char[num_bytes];
   return ((void *)data);
 }
