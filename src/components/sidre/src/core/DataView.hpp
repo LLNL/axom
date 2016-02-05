@@ -635,7 +635,9 @@ public:
     // Must have some data present.
     if ( !hasData() )
     {
-      SLIC_CHECK_MSG( hasData(), "Unable to retrieve raw pointer to data, no data exists in view.");
+      SLIC_CHECK_MSG(
+        hasData(),
+        "Unable to retrieve raw pointer to data, no data exists in view.");
       return ATK_NULLPTR;
     }
 

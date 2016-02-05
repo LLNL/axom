@@ -131,5 +131,3 @@ TEST(C_sidre_external, save_load_external_view)
 }
 
 #endif
-
-
