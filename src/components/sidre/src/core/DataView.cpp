@@ -45,9 +45,9 @@ namespace sidre
 DataView * DataView::allocate()
 {
 
-  if ( !allocateIsValid() )
+  if ( !isAllocateValid() )
   {
-    SLIC_CHECK_MSG( allocateIsValid(),
+    SLIC_CHECK_MSG( isAllocateValid(),
                      "View " << this->getName() << "'s state " << getStateStringName(m_state) << " does not allow data allocation");
     return this;
   }
@@ -80,7 +80,7 @@ DataView * DataView::allocate()
  */
 DataView * DataView::allocate( TypeID type, SidreLength num_elems)
 {
-  if ( num_elems < 1 )
+  if ( num_elems < 0 )
   {
     SLIC_CHECK(num_elems >= 0);
     return this;
@@ -140,9 +140,9 @@ DataView * DataView::reallocate(SidreLength num_elems)
     return allocate( vtype, num_elems);
   }
 
-  if ( !allocateIsValid() || num_elems < 0 )
+  if ( !isAllocateValid() || num_elems < 0 )
   {
-    SLIC_CHECK_MSG( allocateIsValid(),
+    SLIC_CHECK_MSG( isAllocateValid(),
                      "View " << this->getName() << "'s state " << getStateStringName(m_state) << " does not allow data re-allocation");
     SLIC_CHECK(num_elems >= 0);
 
@@ -175,9 +175,9 @@ DataView * DataView::reallocate(const DataType& dtype)
   TypeID type = static_cast<TypeID>(dtype.id());
   TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
 
-  if (!allocateIsValid() || type != view_type)
+  if (!isAllocateValid() || type != view_type)
   {
-    SLIC_CHECK_MSG( allocateIsValid(),
+    SLIC_CHECK_MSG( isAllocateValid(),
                      "View " << this->getName() << "'s state " << getStateStringName(m_state) << " does not allow data re-allocation");
     SLIC_CHECK_MSG( type == view_type,
                      "View " << this->getName() << " attempting to re-allocate with different type.");
@@ -211,9 +211,9 @@ DataView * DataView::reallocate(const Schema& schema)
   TypeID type = static_cast<TypeID>(schema.dtype().id());
   TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
 
-  if ( !allocateIsValid() || type != view_type )
+  if ( !isAllocateValid() || type != view_type )
   {
-    SLIC_CHECK_MSG( allocateIsValid(),
+    SLIC_CHECK_MSG( isAllocateValid(),
                      "View " << this->getName() << "'s state " << getStateStringName(m_state) << " does not allow data re-allocation");
     SLIC_CHECK_MSG( type == view_type,
                      "View " << this->getName() << " attempting to re-allocate with different type.");
@@ -238,9 +238,9 @@ DataView * DataView::reallocate(const Schema& schema)
  */
 DataView * DataView::attachBuffer(DataBuffer * buff)
 {
-  if ( !attachBufferIsValid() || buff == ATK_NULLPTR)
+  if ( !isAttachBufferValid() || buff == ATK_NULLPTR)
   {
-    SLIC_CHECK_MSG( attachBufferIsValid(),
+    SLIC_CHECK_MSG( isAttachBufferValid(),
                      "View state " << getStateStringName(m_state) << " does not allow attaching buffer");
     SLIC_CHECK( buff != ATK_NULLPTR );
     return this;
@@ -278,9 +278,9 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
  */
 DataView * DataView::apply()
 {
-  if ( !applyIsValid() )
+  if ( !isApplyValid() )
   {
-    SLIC_CHECK_MSG( applyIsValid(),
+    SLIC_CHECK_MSG( isApplyValid(),
                      "View state, '" << getStateStringName(m_state) << "', does not allow apply operation");
     return this;
   }
@@ -440,10 +440,10 @@ DataView * DataView::apply(const Schema& schema)
  */
 DataView * DataView::setExternalDataPtr(void * external_ptr)
 {
-  SLIC_ASSERT_MSG( setExternalDataPtrIsValid(),
+  SLIC_ASSERT_MSG( isSetExternalDataPtrValid(),
                    "View state " << getStateStringName(m_state) << " does not allow setting external data pointer");
 
-  if ( setExternalDataPtrIsValid() )
+  if ( isSetExternalDataPtrValid() )
   {
     // todo, conduit should provide a check for if uint64 is a
     // good enough type to rep void *
@@ -736,7 +736,7 @@ DataView * DataView::declare(const Schema& schema)
  *
  *************************************************************************
  */
-bool DataView::allocateIsValid() const
+bool DataView::isAllocateValid() const
 {
   if ( !isDescribed() || m_state == EXTERNAL || m_state == SCALAR || m_state == STRING ||
        (m_data_buffer != ATK_NULLPTR && m_data_buffer->getNumViews() != 1) )
@@ -762,7 +762,7 @@ bool DataView::allocateIsValid() const
  *
  *************************************************************************
  */
-bool DataView::attachBufferIsValid() const
+bool DataView::isAttachBufferValid() const
 {
   return ( m_state == EMPTY || m_state == DESCRIBED );
 }
@@ -775,7 +775,7 @@ bool DataView::attachBufferIsValid() const
  *
  *************************************************************************
  */
-bool DataView::setExternalDataPtrIsValid() const
+bool DataView::isSetExternalDataPtrValid() const
 {
   return ( m_state == EMPTY || m_state == DESCRIBED || m_state == EXTERNAL );
 }
@@ -788,7 +788,7 @@ bool DataView::setExternalDataPtrIsValid() const
  *
  *************************************************************************
  */
-bool DataView::applyIsValid() const
+bool DataView::isApplyValid() const
 {
   SLIC_CHECK_MSG( isDescribed(), "Apply not valid, no description in view to apply.");
   SLIC_CHECK_MSG( !hasBuffer() && m_state != EXTERNAL, "Apply not valid, no buffer or external data to apply description to.");

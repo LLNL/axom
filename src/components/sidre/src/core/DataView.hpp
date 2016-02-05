@@ -768,25 +768,25 @@ private:
    *  \brief Private method returns true if data allocation on view is a
    *         valid operation; else false
    */
-  bool allocateIsValid() const;
+  bool isAllocateValid() const;
 
   /*!
    *  \brief Private method returns true if attaching buffer to view is a
    *         valid operation; else false
    */
-  bool attachBufferIsValid() const;
+  bool isAttachBufferValid() const;
 
   /*!
    *  \brief Private method returns true if setting external data pointer is
              on view is a valid operation; else false
    */
-  bool setExternalDataPtrIsValid() const;
+  bool isSetExternalDataPtrValid() const;
 
   /*!
    *  \brief Private method returns true if apply is a valid operation on
    *         view; else false
    */
-  bool applyIsValid() const;
+  bool isApplyValid() const;
 
 //@}
 
