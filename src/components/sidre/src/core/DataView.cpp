@@ -48,7 +48,7 @@ DataView * DataView::allocate()
   if ( !allocateIsValid() )
   {
     SLIC_CHECK_MSG( allocateIsValid(),
-                     "View state " << getStateStringName(m_state) << " does not allow data allocation");
+                     "View " << this->getName() << "'s state " << getStateStringName(m_state) << " does not allow data allocation");
     return this;
   }
 
@@ -126,6 +126,7 @@ DataView * DataView::allocate(const Schema& schema)
  *************************************************************************
  *
  * Reallocate data for view to given number of elements.
+ * This function requires that the view is already described.
  *
  *************************************************************************
  */
@@ -133,19 +134,19 @@ DataView * DataView::reallocate(SidreLength num_elems)
 {
   TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
 
-  if ( !allocateIsValid() || num_elems < 0 )
-  {
-    SLIC_CHECK_MSG( allocateIsValid(),
-                     "View state " << getStateStringName(m_state) << " does not allow data re-allocation");
-    SLIC_CHECK(num_elems >= 0);
-
-    return this;
-  }
-
   // If we don't have an allocated buffer, we can just call allocate.
   if ( !isAllocated() )
   {
     return allocate( vtype, num_elems);
+  }
+
+  if ( !allocateIsValid() || num_elems < 0 )
+  {
+    SLIC_CHECK_MSG( allocateIsValid(),
+                     "View " << this->getName() << "'s state " << getStateStringName(m_state) << " does not allow data re-allocation");
+    SLIC_CHECK(num_elems >= 0);
+
+    return this;
   }
 
   declare(vtype, num_elems);
@@ -165,22 +166,22 @@ DataView * DataView::reallocate(SidreLength num_elems)
  */
 DataView * DataView::reallocate(const DataType& dtype)
 {
+  // If we don't have an allocated buffer, we can just call allocate.
+  if ( !isAllocated() )
+  {
+    return allocate(dtype);
+  }
+
   TypeID type = static_cast<TypeID>(dtype.id());
   TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
 
   if (!allocateIsValid() || type != view_type)
   {
     SLIC_CHECK_MSG( allocateIsValid(),
-                     "View state " << getStateStringName(m_state) << " does not allow data re-allocation");
+                     "View " << this->getName() << "'s state " << getStateStringName(m_state) << " does not allow data re-allocation");
     SLIC_CHECK_MSG( type == view_type,
-                     "Attempting to re-allocate with a different type");
+                     "View " << this->getName() << " attempting to re-allocate with different type.");
     return this;
-  }
-
-  // If we don't have an allocated buffer, we can just call allocate.
-  if ( !isAllocated() )
-  {
-    return allocate(dtype);
   }
 
   declare(dtype);
@@ -201,22 +202,22 @@ DataView * DataView::reallocate(const DataType& dtype)
  */
 DataView * DataView::reallocate(const Schema& schema)
 {
+  // If we don't have an allocated buffer, we can just call allocate.
+  if ( !isAllocated() )
+  {
+    return allocate(schema);
+  }
+
   TypeID type = static_cast<TypeID>(schema.dtype().id());
   TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
 
   if ( !allocateIsValid() || type != view_type )
   {
     SLIC_CHECK_MSG( allocateIsValid(),
-                     "View state " << getStateStringName(m_state) << " does not allow data re-allocation");
+                     "View " << this->getName() << "'s state " << getStateStringName(m_state) << " does not allow data re-allocation");
     SLIC_CHECK_MSG( type == view_type,
-                     "Attempting to re-allocate with a different type");
+                     "View " << this->getName() << " attempting to re-allocate with different type.");
     return this;
-  }
-
-  // If we don't have an allocated buffer, we can just call allocate.
-  if ( !isAllocated() )
-  {
-    return allocate(schema);
   }
 
   declare(schema);
