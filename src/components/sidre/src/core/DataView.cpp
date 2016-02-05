@@ -258,21 +258,10 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
   m_state = BUFFER_ATTACHED;
   m_is_applied = false;
 
-  if (isDescribed())
+  // If view is described and the buffer is allocated, then call apply.
+  if ( isDescribed() && m_data_buffer->isAllocated() )
   {
-    SLIC_CHECK_MSG(
-      m_schema.total_bytes() > m_data_buffer->getTotalBytes(),
-      "Unable to apply description to view's data, # of bytes in description is > # of bytes in buffer's data.");
-    if ( m_schema.total_bytes() <= m_data_buffer->getTotalBytes() )
-    {
-      apply();
-    }
-  }
-  {
-    //
-    // RDH -- What if the view is not described and the buffer is not
-    //        declared and allocated???
-    //
+    apply();
   }
 
   return this;
@@ -450,24 +439,24 @@ DataView * DataView::apply(const Schema& schema)
  */
 DataView * DataView::setExternalDataPtr(void * external_ptr)
 {
-  SLIC_ASSERT_MSG( isSetExternalDataPtrValid(),
+  if ( !isSetExternalDataPtrValid() || external_ptr == ATK_NULLPTR )
+  {
+    SLIC_CHECK_MSG( isSetExternalDataPtrValid(),
                    "View state " << getStateStringName(
                      m_state) <<
       " does not allow setting external data pointer");
 
-  if ( isSetExternalDataPtrValid() )
+    SLIC_CHECK_MSG( external_ptr != ATK_NULLPTR, "Unable to set external pointer to NULL.");
+
+    return this;
+  }
+
+  m_node.set( (detail::sidre_uint64)external_ptr );
+  m_state = EXTERNAL;
+
+  if ( isDescribed() )
   {
-    // todo, conduit should provide a check for if uint64 is a
-    // good enough type to rep void *
-
-    // TODO - Store the pointer in conduit node.
-    m_node.set( (detail::sidre_uint64)external_ptr);
-    m_state = EXTERNAL;
-
-    if ( isDescribed() )
-    {
-      apply();
-    }
+    apply();
   }
 
   return this;
@@ -625,21 +614,23 @@ DataView::~DataView()
  */
 DataView * DataView::declare(TypeID type, SidreLength num_elems)
 {
-  SLIC_ASSERT_MSG(num_elems >= 0, "Must give number of elements >= 0");
-
-  if ( num_elems >= 0 )
+  if ( num_elems < 0 )
   {
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(num_elems);
-    m_schema.set(dtype);
-
-    if ( m_state == EMPTY )
-    {
-      m_state = DESCRIBED;
-    }
-
-    m_is_applied = false;
+    SLIC_CHECK_MSG(num_elems >= 0, "Declare: must give number of elements >= 0");
+    return this;
   }
+
+  DataType dtype = conduit::DataType::default_dtype(type);
+  dtype.set_number_of_elements(num_elems);
+  m_schema.set(dtype);
+
+  if ( m_state == EMPTY )
+  {
+    m_state = DESCRIBED;
+  }
+
+  m_is_applied = false;
+
   return this;
 }
 
@@ -654,47 +645,44 @@ DataView * DataView::declare(TypeID type, SidreLength num_elems)
  */
 DataView * DataView::declare(TypeID type, int ndims, SidreLength * shape)
 {
-  SLIC_ASSERT(ndims >= 0);
-  SLIC_ASSERT(shape != ATK_NULLPTR);
-  SidreLength num_elems = 0;
-
-  if ( ndims > 0 && shape != ATK_NULLPTR)
+  if ( ndims < 0 || shape == ATK_NULLPTR)
   {
-    if (ndims == 1)
-    {
-      if (m_shape != ATK_NULLPTR)
-      {
-        delete m_shape;
-        m_shape = ATK_NULLPTR;
-      }
-    }
-    else
-    {
-      if (m_shape != ATK_NULLPTR)
-      {
-        m_shape->resize(ndims);
-      }
-      else
-      {
-        m_shape = new std::vector<SidreLength>(ndims);
-      }
-    }
+    SLIC_CHECK(ndims >= 0);
+    SLIC_CHECK(shape != ATK_NULLPTR);
 
-    num_elems = 1;
-    for (int i=0 ; i < ndims ; i++)
+    return this;
+  }
+
+  if (ndims == 1)
+  {
+    if (m_shape != ATK_NULLPTR)
     {
-      num_elems *= shape[i];
-      if (m_shape != ATK_NULLPTR)
-      {
-        (*m_shape)[i] = shape[i];
-      }
+      delete m_shape;
+      m_shape = ATK_NULLPTR;
     }
   }
   else
   {
-    delete m_shape;
-    m_shape = ATK_NULLPTR;
+    if (m_shape != ATK_NULLPTR)
+    {
+      m_shape->resize(ndims);
+    }
+    else
+    {
+      m_shape = new std::vector<SidreLength>(ndims);
+    }
   }
+
+  SidreLength num_elems = 1;
+  for (int i=0 ; i < ndims ; i++)
+  {
+    num_elems *= shape[i];
+    if (m_shape != ATK_NULLPTR)
+    {
+      (*m_shape)[i] = shape[i];
+    }
+  }
+
   declare(type, num_elems);
   return this;
 }
@@ -783,7 +771,7 @@ bool DataView::isAllocateValid() const
  */
 bool DataView::isAttachBufferValid() const
 {
-  return ( m_state == EMPTY || m_state == DESCRIBED );
+  return ( m_state == EMPTY || m_state == DESCRIBED || m_state == BUFFER_ATTACHED );
 }
 
 /*
@@ -816,7 +804,7 @@ bool DataView::isApplyValid() const
     "Apply not valid, no buffer or external data to apply description to.");
   bool success = ( isDescribed() && ( hasBuffer() || m_state == EXTERNAL ) );
 
-  if (hasBuffer() && m_data_buffer->isDescribed() )
+  if (hasBuffer() && m_data_buffer->isAllocated() )
   {
     SLIC_CHECK_MSG(
       getTotalBytes() <= m_data_buffer->getTotalBytes(),
