@@ -3,24 +3,24 @@
 ! splicer begin module_use
 ! map conduit type names to sidre type names
 use conduit, only : &
-    SIDRE_EMPTY_ID      => CONDUIT_EMPTY_T, &
-    SIDRE_INT8_ID       => CONDUIT_INT8_T, &
-    SIDRE_INT16_ID      => CONDUIT_INT16_T, &
-    SIDRE_INT32_ID      => CONDUIT_INT32_T, &
-    SIDRE_INT64_ID      => CONDUIT_INT64_T, &
-    SIDRE_UINT8_ID      => CONDUIT_UINT8_T, &
-    SIDRE_UINT16_ID     => CONDUIT_UINT16_T, &
-    SIDRE_UINT32_ID     => CONDUIT_UINT32_T, &
-    SIDRE_UINT64_ID     => CONDUIT_UINT64_T, &
-    SIDRE_FLOAT32_ID    => CONDUIT_FLOAT32_T, &
-    SIDRE_FLOAT64_ID    => CONDUIT_FLOAT64_T, &
-    SIDRE_CHAR8_STR_ID  => CONDUIT_CHAR8_STR_T, &
-    SIDRE_INT_ID        => CONDUIT_INT_T, &
-    SIDRE_UINT_ID       => CONDUIT_UINT_T, &
-    SIDRE_LONG_ID       => CONDUIT_LONG_T, &
-    SIDRE_ULONG_ID      => CONDUIT_ULONG_T, &
-    SIDRE_FLOAT_ID      => CONDUIT_FLOAT_T, &
-    SIDRE_DOUBLE_ID     => CONDUIT_DOUBLE_T
+    SIDRE_EMPTY_ID      => CONDUIT_EMPTY_ID, &
+    SIDRE_INT8_ID       => CONDUIT_INT8_ID, &
+    SIDRE_INT16_ID      => CONDUIT_INT16_ID, &
+    SIDRE_INT32_ID      => CONDUIT_INT32_ID, &
+    SIDRE_INT64_ID      => CONDUIT_INT64_ID, &
+    SIDRE_UINT8_ID      => CONDUIT_UINT8_ID, &
+    SIDRE_UINT16_ID     => CONDUIT_UINT16_ID, &
+    SIDRE_UINT32_ID     => CONDUIT_UINT32_ID, &
+    SIDRE_UINT64_ID     => CONDUIT_UINT64_ID, &
+    SIDRE_FLOAT32_ID    => CONDUIT_FLOAT32_ID, &
+    SIDRE_FLOAT64_ID    => CONDUIT_FLOAT64_ID, &
+    SIDRE_CHAR8_STR_ID  => CONDUIT_CHAR8_STR_ID, &
+    SIDRE_INT_ID        => CONDUIT_INT_ID, &
+    SIDRE_UINT_ID       => CONDUIT_UINT_ID, &
+    SIDRE_LONG_ID       => CONDUIT_LONG_ID, &
+    SIDRE_ULONG_ID      => CONDUIT_ULONG_ID, &
+    SIDRE_FLOAT_ID      => CONDUIT_FLOAT_ID, &
+    SIDRE_DOUBLE_ID     => CONDUIT_DOUBLE_ID
 use, intrinsic :: iso_c_binding, only : C_LONG
 ! splicer end module_use
 
