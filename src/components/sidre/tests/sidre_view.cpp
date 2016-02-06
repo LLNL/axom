@@ -89,7 +89,6 @@ TEST(sidre_view,create_view_from_path)
   delete ds;
 #endif
 }
-/*
 
 //------------------------------------------------------------------------------
 
@@ -171,7 +170,7 @@ TEST(sidre_view,int_array_strided_views)
   dv_e->print();
   dv_o->print();
 
-// Check base pointer case:
+  // Check base pointer case:
   int * v_e_ptr = dv_e->getData();
   int * v_o_ptr = dv_o->getData();
   for(int i=0 ; i<10 ; i += 2)
@@ -187,7 +186,7 @@ TEST(sidre_view,int_array_strided_views)
     EXPECT_EQ(v_o_ptr[i] % 2, 1);
   }
 
-// Check Conduit mem-map struct case:
+  // Check Conduit mem-map struct case:
   int_array dv_e_ptr = dv_e->getData();
   int_array dv_o_ptr = dv_o->getData();
   for(int i=0 ; i<5 ; ++i)
@@ -217,7 +216,7 @@ TEST(sidre_view,int_array_strided_views)
   dv_e1->print();
   dv_o1->print();
 
-// Check base pointer case:
+  // Check base pointer case:
   int * v_e1_ptr = dv_e1->getData();
   int * v_o1_ptr = dv_o1->getData();
   for(int i=0 ; i<10 ; i += 2)
@@ -233,7 +232,7 @@ TEST(sidre_view,int_array_strided_views)
     EXPECT_EQ(v_o1_ptr[i], v_o_ptr[i]);
   }
 
-// Check Conduit mem-map struct case:
+  // Check Conduit mem-map struct case:
   int_array dv_e1_ptr = dv_e1->getData();
   int_array dv_o1_ptr = dv_o1->getData();
   for(int i=0 ; i<5 ; i++)
@@ -624,8 +623,8 @@ TEST(sidre_view,simple_opaque)
 
   DataView * opq_view = root->createView("my_opaque", src_ptr);
 
-  // we have a buffer because an "external" view currently uses one
-  EXPECT_EQ(ds->getNumBuffers(), 1u);
+  // External pointers are held in the view, should not have a buffer.
+  EXPECT_EQ(ds->getNumBuffers(), 0u);
 
   EXPECT_TRUE(opq_view->isExternal());
   EXPECT_TRUE(!opq_view->isApplied());
@@ -641,4 +640,3 @@ TEST(sidre_view,simple_opaque)
   delete ds;
   delete [] src_data;
 }
-*/

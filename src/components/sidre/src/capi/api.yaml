@@ -115,11 +115,15 @@ classes:
     -  decl: IndexType getFirstValidViewIndex() const
     -  decl: IndexType getNextValidViewIndex(IndexType idx) const
     -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, SidreLength num_elems)
-#       function_suffix:
+       function_suffix: _nelems
        fortran_generic:
          num_elems:
          -  int
          -  long
+       PY_error_pattern: PY_null_to_none
+
+    -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, int ndims, SidreLength *num_elems+dimension)
+       function_suffix: _shape
        PY_error_pattern: PY_null_to_none
 
 #    -  decl: DataView *createViewAndAllocate( const std::string& name, const DataType& dtype)
@@ -128,12 +132,17 @@ classes:
     -  decl: DataView *createView( const string& name )
        function_suffix: _empty
        PY_error_pattern: PY_null_to_none
+
     -  decl: DataView *createView( const std::string& name, TypeID type, SidreLength num_elems)
        function_suffix: _from_type
        fortran_generic:
          num_elems:
          -  int
          -  long
+       PY_error_pattern: PY_null_to_none
+
+    -  decl: DataView *createView( const std::string& name, TypeID type, int ndims, SidreLength * shape+dimension)
+       function_suffix: _from_shape
        PY_error_pattern: PY_null_to_none
 
 #    -  decl: DataView *createView( const std::string& name, const DataType& dtype)
@@ -221,9 +230,6 @@ classes:
           num_elems:
           -  int
           -  long
-      - decl: DataBuffer * setExternalData( void* external_data)
-        return_this: True
-      - decl: bool isExternal() const
       - decl: void* getVoidPtr()
       - decl: TypeID getTypeID() const
       - decl: size_t getNumElements() const

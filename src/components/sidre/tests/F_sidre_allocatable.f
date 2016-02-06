@@ -229,9 +229,7 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    view = root%create_view("iarray")
-    call view%apply(SIDRE_INT_ID, 3, extents_in)
-    call view%allocate()
+    view = root%create_view_and_allocate("iarray", SIDRE_INT_ID, 3, extents_in)
 
     call view%get_data(ipointer)
 
@@ -283,7 +281,6 @@ program fortran_test
   call external_allocatable_int_3d
   call external_static_int
   call external_allocatable_double
-
   call datastore_int_3d
 
   call fruit_summary

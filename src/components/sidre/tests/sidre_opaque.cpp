@@ -123,6 +123,8 @@ TEST(sidre_opaque,basic_inout)
 
   Extent * test_extent =
     static_cast<Extent *>(ext_view->getVoidPtr());
+  EXPECT_EQ(ext, test_extent);
+
   int test_ihi = test_extent->m_ihi;
 
   EXPECT_EQ(test_ihi, ihi_val);
