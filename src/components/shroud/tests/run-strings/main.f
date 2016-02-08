@@ -34,13 +34,13 @@ contains
 
     call pass_char("w")
 
+    ch = return_char()
+    call assert_true( ch == "w")
+
     ! character(*) function
     str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
     call pass_char_ptr(dest=str, src="bird")
     call assert_true( str == "bird")
-
-    ch = return_char()
-    call assert_true( ch == "w")
 
   end subroutine test_charargs
 

@@ -1,6 +1,7 @@
 Read yaml strings.yaml
 C function void passChar(char_scalar status+intent(in)+value)
 C function char_scalar returnChar()
+C function void returnChar(char_scalar * SH_F_rv+intent(out)+len(LSH_F_rv))
 C function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
 C function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in)+len_trim(Lsrc))
 C function const char * getChar1()+pure
@@ -24,6 +25,7 @@ Close wrapstrings.cpp
 Close shroudrt.hpp
 C-interface, Fortran function void passChar(char_scalar status+intent(in)+value)
 C-interface, Fortran function char_scalar returnChar()
+C-interface function void returnChar(char_scalar * SH_F_rv+intent(out)+len(LSH_F_rv))
 C-interface, Fortran function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
 C-interface function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in)+len_trim(Lsrc))
 C-interface function const char * getChar1()+pure

@@ -30,6 +30,11 @@ import wrapc
 import wrapf
 import wrapp
 
+# char functions cannot be wrapped directly in intel 15.  Instead the result is passed down
+# as an argument from the Fortran wrapper to the C wrapper.
+# Similar to how char * funtions are handled.
+intel_15_fix = True
+
 wformat = util.wformat
 
 class Config(object):
@@ -410,6 +415,17 @@ class Schema(object):
                 base = 'string',
                 ),
             )
+
+        if intel_15_fix:
+            # Copy C++ function result into C result argument.
+            def_types['char_scalar'].c_statements = dict(
+                result = dict(
+                    post_call = [
+                        '// {c_var_len} is always 1, test to silence warning about unused variable',
+                        'if ({c_var_len} == 1) *{c_var} = {cpp_val};',
+                        ],
+                    ),
+                )
 
         # aliases
         def_types['std::string']     = def_types['string']
@@ -843,6 +859,11 @@ class GenFunctions(object):
         is_pure = node['attrs'].get('pure', False)
         if result_typedef.base == 'string':
             if result_type == 'char' and not result_is_ptr:
+                if intel_15_fix:
+                    result['attrs']['len'] = 1
+                    has_string_result = True
+                    result_as_arg = options.get('F_string_result_as_arg', '')
+                    result_name = result_as_arg or 'SH_F_rv'
                 result['type'] = 'char_scalar'
             else:
                 has_string_result = True
