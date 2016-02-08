@@ -447,7 +447,6 @@ class Wrapc(util.WrapperMixin):
                         node.get('_error_pattern_suffix', '')
                     if C_error_pattern in self.patterns:
                         lfmt = util.Options(fmt)
-#                        lfmt.var = fmt.rv
                         C_code.append('// check for error')
                         append_format(C_code, self.patterns[C_error_pattern], lfmt)
 
