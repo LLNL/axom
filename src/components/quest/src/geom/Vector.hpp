@@ -441,8 +441,8 @@ std::ostream& Vector< T, DIM >::print(std::ostream& os) const
 {
     os <<"<";
     for(int dim=0; dim < DIM -1; ++ dim)
-        os << this->m_components[dim] << ",";
-    os << this->m_components[DIM-1] << ">";
+        os << static_cast<typename NonChar<T>::type>(this->m_components[dim]) << ",";
+    os << static_cast<typename NonChar<T>::type>(this->m_components[DIM-1]) << ">";
 
     return os;
 }
