@@ -19,7 +19,9 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     ######################################################
     # Add define we can use when debug builds are enabled
     ######################################################
-    if(CMAKE_BUILD_TYPE MATCHES Debug)
+    if( (CMAKE_BUILD_TYPE MATCHES Debug)
+        OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo )
+      )
         add_definitions(-DATK_DEBUG)
     endif()
 
@@ -31,7 +33,10 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     endif()
 
     # Extra Flags for the debug builds with the C compiler.
-    if(EXTRA_C_FLAGS_DEBUG AND CMAKE_BUILD_TYPE MATCHES Debug)
+    if(EXTRA_C_FLAGS_DEBUG AND
+      ( (CMAKE_BUILD_TYPE MATCHES Debug)
+        OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo) )
+      )
         add_compile_options("${EXTRA_C_FLAGS_DEBUG}")
     endif()
 
@@ -48,7 +53,10 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     endif()
 
     # Extra Flags for the debug builds with the C++ compiler.
-    if(EXTRA_CXX_FLAGS_DEBUG AND CMAKE_BUILD_TYPE MATCHES Debug)
+    if(EXTRA_CXX_FLAGS_DEBUG AND
+      ( (CMAKE_BUILD_TYPE MATCHES Debug)
+        OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo) )
+      )
         add_compile_options("${EXTRA_CXX_FLAGS_DEBUG}")
     endif()
 
