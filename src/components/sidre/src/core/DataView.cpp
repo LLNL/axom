@@ -102,6 +102,13 @@ DataView * DataView::allocate( TypeID type, SidreLength num_elems)
  */
 DataView * DataView::allocate(const DataType& dtype)
 {
+  if ( dtype.is_empty() )
+  {
+    SLIC_CHECK_MSG( !dtype.is_empty(),
+        " Unable to call allocate with empty data type.");
+    return this;
+  }
+
   declare(dtype);
   allocate();
 
@@ -117,6 +124,13 @@ DataView * DataView::allocate(const DataType& dtype)
  */
 DataView * DataView::allocate(const Schema& schema)
 {
+  if ( schema.dtype().is_empty() )
+  {
+    SLIC_CHECK_MSG( !schema.dtype().is_empty(),
+        " Unable to call allocate, schema has empty data type.");
+    return this;
+  }
+
   declare(schema);
   allocate();
 
@@ -177,8 +191,10 @@ DataView * DataView::reallocate(const DataType& dtype)
   TypeID type = static_cast<TypeID>(dtype.id());
   TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
 
-  if (!isAllocateValid() || type != view_type)
+  if (dtype.is_empty() || !isAllocateValid() || type != view_type)
   {
+    SLIC_CHECK_MSG( !dtype.is_empty(),
+        " Unable to call re-allocate with empty data type.");
     SLIC_CHECK_MSG( isAllocateValid(),
                     "View " << this->getName() << "'s state " <<
         getStateStringName(m_state) << " does not allow data re-allocation");
@@ -215,8 +231,10 @@ DataView * DataView::reallocate(const Schema& schema)
   TypeID type = static_cast<TypeID>(schema.dtype().id());
   TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
 
-  if ( !isAllocateValid() || type != view_type )
+  if ( schema.dtype().is_empty() || !isAllocateValid() || type != view_type )
   {
+    SLIC_CHECK_MSG( !schema.dtype().is_empty(),
+        " Unable to call re-allocate, schema has empty data type.");
     SLIC_CHECK_MSG( isAllocateValid(),
                     "View " << this->getName() << "'s state " <<
         getStateStringName(m_state) << " does not allow data re-allocation");
@@ -409,6 +427,13 @@ DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
  */
 DataView * DataView::apply(const DataType &dtype)
 {
+  if ( dtype.is_empty() )
+  {
+    SLIC_CHECK_MSG( !dtype.is_empty(),
+        " Unable to call apply, data type is empty.");
+    return this;
+  }
+
   declare(dtype);
   apply();
 
@@ -424,6 +449,13 @@ DataView * DataView::apply(const DataType &dtype)
  */
 DataView * DataView::apply(const Schema& schema)
 {
+  if ( schema.dtype().is_empty() )
+  {
+    SLIC_CHECK_MSG( !schema.dtype().is_empty(),
+        " Unable to call apply, schema has empty data type.");
+    return this;
+  }
+
   declare(schema);
   apply();
 
