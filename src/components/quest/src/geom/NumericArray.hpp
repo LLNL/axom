@@ -126,12 +126,14 @@ struct NonChar
 template<>
 struct NonChar<char>
 {
-    typedef int type;  /** A non-char signed type to which we can cast a char for output */
+    /** A non-char signed type to which we can cast a char for output */
+    typedef int type;
 };
 template<>
 struct NonChar<unsigned char>
 {
-    typedef unsigned int type; /** A non-char unsigned type to which we can cast a char for output */
+    /** A non-char unsigned type to which we can cast a char for output */
+    typedef unsigned int type;
 };
 
 
