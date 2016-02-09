@@ -23,6 +23,9 @@ set(gtest_slam_tests
 
    # aux tests
    slam_ModularInt.cpp
+   
+   # testing utility functions
+   slam_utilities.cpp
    )
 
 

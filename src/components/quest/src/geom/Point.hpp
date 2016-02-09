@@ -229,7 +229,7 @@ public:
    * \param [in] A user-supplied point
    * \param [in] B user-supplied point
    * \param [in] alpha weight with which to interpolate
-   * \return p Linearly interpolated point: p = (1-alpha)A + alpha*B..
+   * \return p Linearly interpolated point: p = (1-alpha)A + alpha*B.
    *****************************************************************************
    */
   static Point lerp( const Point& A, const Point& B, double alpha);

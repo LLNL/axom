@@ -19,6 +19,7 @@ using asctoolkit::sidre::DataView;
 
 using namespace conduit;
 
+#if 0
 //------------------------------------------------------------------------------
 
 TEST(sidre_view,create_views)
@@ -38,6 +39,55 @@ TEST(sidre_view,create_views)
   EXPECT_EQ(db_0->getIndex(), 0);
   EXPECT_EQ(db_1->getIndex(), 1);
   delete ds;
+}
+#endif
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_view,create_view_from_path)
+{
+  DataStore * ds   = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  // Verify create works when groups must be created on demand.
+  DataView * baz = root->createView("foo/bar/baz");
+  // Groups should have been created.
+  EXPECT_TRUE( root->hasGroup("foo") );
+  EXPECT_TRUE( root->getGroup("foo")->hasGroup("bar") );
+
+  DataGroup * bar = root->getGroup("foo")->getGroup("bar");
+  EXPECT_TRUE( bar->hasView("baz") );
+  EXPECT_EQ( bar->getView("baz"), baz );
+
+  (void) baz;
+
+  delete ds;
+
+#if 0
+  ds = new DataStore();
+  root = ds->getRoot();
+
+  // Verify create works when groups already exist.
+  baz = root->createView("foo/bar/baz");
+  EXPECT_TRUE( baz != ATK_NULLPTR );
+
+  EXPECT_TRUE( root->hasGroup("foo") );
+
+  std::cerr << "HERE2" << std::endl;
+
+  foo = root->getGroup("foo");
+  EXPECT_TRUE( foo->hasGroup("bar") );
+
+  std::cerr << "HERE3" << std::endl;
+
+  bar = foo->getGroup("bar");
+  EXPECT_TRUE( bar->hasView("baz"));
+  EXPECT_EQ( baz, bar->getView("baz"));
+
+  std::cerr << "HERE4" << std::endl;
+
+  delete ds;
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -120,7 +170,7 @@ TEST(sidre_view,int_array_strided_views)
   dv_e->print();
   dv_o->print();
 
-// Check base pointer case:
+  // Check base pointer case:
   int * v_e_ptr = dv_e->getData();
   int * v_o_ptr = dv_o->getData();
   for(int i=0 ; i<10 ; i += 2)
@@ -136,7 +186,7 @@ TEST(sidre_view,int_array_strided_views)
     EXPECT_EQ(v_o_ptr[i] % 2, 1);
   }
 
-// Check Conduit mem-map struct case:
+  // Check Conduit mem-map struct case:
   int_array dv_e_ptr = dv_e->getData();
   int_array dv_o_ptr = dv_o->getData();
   for(int i=0 ; i<5 ; ++i)
@@ -166,7 +216,7 @@ TEST(sidre_view,int_array_strided_views)
   dv_e1->print();
   dv_o1->print();
 
-// Check base pointer case:
+  // Check base pointer case:
   int * v_e1_ptr = dv_e1->getData();
   int * v_o1_ptr = dv_o1->getData();
   for(int i=0 ; i<10 ; i += 2)
@@ -182,7 +232,7 @@ TEST(sidre_view,int_array_strided_views)
     EXPECT_EQ(v_o1_ptr[i], v_o_ptr[i]);
   }
 
-// Check Conduit mem-map struct case:
+  // Check Conduit mem-map struct case:
   int_array dv_e1_ptr = dv_e1->getData();
   int_array dv_o1_ptr = dv_o1->getData();
   for(int i=0 ; i<5 ; i++)
@@ -573,8 +623,8 @@ TEST(sidre_view,simple_opaque)
 
   DataView * opq_view = root->createView("my_opaque", src_ptr);
 
-  // we have a buffer because an "external" view currently uses one
-  EXPECT_EQ(ds->getNumBuffers(), 1u);
+  // External pointers are held in the view, should not have a buffer.
+  EXPECT_EQ(ds->getNumBuffers(), 0u);
 
   EXPECT_TRUE(opq_view->isExternal());
   EXPECT_TRUE(!opq_view->isApplied());

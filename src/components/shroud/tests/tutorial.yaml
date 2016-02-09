@@ -18,8 +18,8 @@ types:
   EnumTypeID:
     typedef  : int
     cpp_type : EnumTypeID
-    c_to_cpp : static_cast<EnumTypeID>({var})
-    cpp_to_c : static_cast<int>({var})
+    c_to_cpp : static_cast<EnumTypeID>({c_var})
+    cpp_to_c : static_cast<int>({cpp_var})
 
 
 functions:
@@ -28,12 +28,13 @@ functions:
 - decl: void Sum(int len, int *values+dimension+intent(in),
                  int *result+intent(out))
 - decl: bool Function3(bool arg)
-- decl: const std::string& Function4a(
+- decl: const std::string Function4a+len(30)(
     const std::string& arg1,
-    const std::string& arg2 ) +pure
+    const std::string& arg2 )
+# +pure
 #  result:
 #    attrs:
-#      pure: true
+#      len: 30
 - decl: const std::string& Function4b(
     const std::string& arg1,
     const std::string& arg2 )

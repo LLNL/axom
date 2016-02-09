@@ -10,6 +10,7 @@ C function void function3a(int i+intent(in)+value)
 C function void function3a(long i+intent(in)+value)
 Close top.h
 Close top.cpp
+Close shroudrt.hpp
 class Names
 C-interface, Fortran method void method1()
 C-interface, Fortran method void method2()

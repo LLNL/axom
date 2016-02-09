@@ -11,9 +11,9 @@
 
 #include "PolygonMeshXY.hpp"
 #include "slic/slic.hpp"
-
 #include "myTimer.hpp"
-#include <stdio.h>
+
+#include <sstream>
 
 namespace tinyHydro {
 
@@ -156,7 +156,8 @@ namespace tinyHydro {
     ret *= (1. / nZones);
 
     timer.stop();
-    std::cout << "Elapsed time for averaging was " << timer.getElapsedTime() << " seconds." << std::endl;
+
+    SLIC_INFO("Elapsed time for averaging was " << timer.getElapsedTime() << " seconds.");
 
     return ret;
   }
@@ -166,32 +167,34 @@ namespace tinyHydro {
 
   void PolygonMeshXY::dumpMesh()
   {
-    printf( "Mesh has %i nodes and %i zones", nodes.size(), zones.size());
+    SLIC_INFO( "Mesh has " << nodes.size() << " nodes and " << zones.size() << " zones");
 
-    printf( "\n\nNodes");
+    std::stringstream nodesStr;
+    nodesStr << "Nodes";
     for(int i = 0; i< nodes.size(); ++i)
     {
       VectorXY p = getPos(i);
-      printf("\n\t Node %i -- pos (%g,%g) ", i, p.x, p.y);
+      nodesStr  << "\n\t Node " << i
+                << " -- pos (" << p.x << "," << p.y << ")";
     }
+    SLIC_INFO(nodesStr.str() << "\n----\n");
 
-    printf("\n\nZones");
+    std::stringstream zonesStr;
+    zonesStr << "Zones";
     for(int i = 0; i< zones.size(); ++i)
     {
       VectorXY p = getZonePos(i);
       ZoneToNodeRelation::RelationSet zNodes = zoneToNodes[i];
       ZoneToNodeRelation::RelationSet zFaces = zoneToFaces[i];
-      printf("\n\t Zone %i -- pos (%g,%g) -- vol %g -- zNumNodes %i -- zoneNodes %i %i %i %i -- zoneFaces %i %i %i %i"
-          , i
-          , p.x, p.y
-          , zoneVol(i)
-          , zNodes.size()
-          , zNodes[0], zNodes[1], zNodes[2], zNodes[3]
-          , zFaces[0], zFaces[1], zFaces[2], zFaces[3]
-      );
+      zonesStr  << "\n\t Zone " << i
+                << " -- pos (" << p.x << "," << p.y << " )"
+                << " -- vol " << zoneVol(i)
+                << "-- zNumNodes " << zNodes.size()
+                << "-- zoneNodes " << zNodes[0] << " " << zNodes[1] << " " << zNodes[2] << " " << zNodes[3]
+                << "-- zoneFaces " << zFaces[0] << " " << zFaces[1] << " " << zFaces[2] << " " << zFaces[3]
+      ;
     }
-
-    printf("\n\n--\n\n");
+    SLIC_INFO(zonesStr.str() << "\n----\n");
 
   }
 

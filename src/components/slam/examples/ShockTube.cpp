@@ -43,10 +43,7 @@
 
 
 #include <cmath>
-#include <map>
-#include <vector>
 #include <string>
-#include <iostream>
 #include <iomanip>
 
 
@@ -155,9 +152,9 @@ namespace slamShocktube {
       int numElems;
       int numFaces;
 
-      std::cout << "How many zones for the 1D shock tube? ";
+      SLIC_INFO("How many zones for the 1D shock tube? ");
       numElems = INIT_NUM_ELEMS;
-      std::cout << numElems << std::endl;
+      SLIC_INFO("\t\t" << numElems );
 
       // add an inflow and outflow zone
       numElems += 2;
@@ -176,16 +173,16 @@ namespace slamShocktube {
 
       while (pratio < 0.0 || pratio > 1.0)
       {
-        std::cout << "What pressure ratio would you like (0 <= x <= 1)? ";
+        SLIC_INFO("What pressure ratio would you like (0 <= x <= 1)? ");
         pratio = INIT_P_RATIO;
-        std::cout << pratio << std::endl;
+        SLIC_INFO("\t\t" << pratio );
       }
 
       while (dratio < 0.0 || dratio > 1.0)
       {
-        std::cout << "What density ratio would you like (0 <= x <= 1)? ";
+        SLIC_INFO("What density ratio would you like (0 <= x <= 1)? ");
         dratio = INIT_D_RATIO;
-        std::cout << dratio << std::endl;
+        SLIC_INFO("\t\t" << dratio );
       }
 
       realsRegistry.addScalar("pressureRatio",  pratio);
@@ -199,16 +196,16 @@ namespace slamShocktube {
       int numOutputDumps;
       int numCyclesPerDump;
 
-      std::cout << "How many dumps would you like? ";
+      SLIC_INFO(  "How many dumps would you like? ");
       numOutputDumps = INIT_NUM_OUTPUT_DUMPS;
-      std::cout << numOutputDumps << std::endl;
+      SLIC_INFO(  "\t\t" << numOutputDumps );
 
-      std::cout << "How many cycles between dumps would you like? ";
+      SLIC_INFO(  "How many cycles between dumps would you like? ");
       numCyclesPerDump = INIT_NUM_CYCLES_PER_DUMP;
-      std::cout << numCyclesPerDump << std::endl;
+      SLIC_INFO(  "\t\t" << numCyclesPerDump );
 
       int numTotalCycles = numOutputDumps * numCyclesPerDump;
-      std::cout << "\nSimulation will run for " << numTotalCycles << " cycles." << std::endl;
+      SLIC_INFO(  "Simulation will run for " << numTotalCycles << " cycles.\n");
 
       intsRegistry. addScalar("numOutputDumps",   numOutputDumps);
       intsRegistry. addScalar("numCyclesPerDump", numCyclesPerDump);
@@ -247,7 +244,7 @@ namespace slamShocktube {
     // define the subsets
     ShockTubeMesh::PositionType numElems = mesh->elems.size();
 
-    // constuct the element subsets using the named-parameter idiom
+    // construct the element subsets using the named-parameter idiom
     typedef ShockTubeMesh::ElemSubset::SetBuilder ElemSubsetBuilder;
     mesh->inFlowElems    = ElemSubsetBuilder().range(0,1)
         . parent( &mesh->elems);
@@ -518,30 +515,35 @@ namespace slamShocktube {
     // TODO: The following is currently grabbing the raw data from the Map and spitting out at most MAX_ELEM_DUMP elements
     // I would like to create a subset with a stride to only print every n_th element
     // Alternatively -- it can use an indirection map to grab the values, and write out to an sstream
-    std::cout << "\n\t\tElem idx: ";
-    std:: copy( mesh.elems.begin(),               mesh.elems.begin() + maxDump,       std::ostream_iterator<ShockTubeMesh::IndexType>(std::cout, "\t"));
-    std::cout << "...\t";
-    std:: copy( mesh.elems.end() - rmaxDump,      mesh.elems.end(),                   std::ostream_iterator<ShockTubeMesh::IndexType>(std::cout, "\t"));
 
-    std::cout << "\n\t\tMass : " << std::setprecision(3);
-    std:: copy( mass.data().begin(),              mass.data().begin() + maxDump,      std::ostream_iterator<double>(std::cout, "\t"));
-    std::cout << "...\t";
-    std:: copy( mass.data().end() - rmaxDump,     mass.data().end(),                  std::ostream_iterator<double>(std::cout, "\t"));
+    std::stringstream dumpStream;
 
-    std::cout << "\n\t\tMomentum: ";
-    std:: copy( momentum.data().begin(),          momentum.data().begin() + maxDump,  std::ostream_iterator<double>(std::cout, "\t"));
-    std::cout << "...\t";
-    std:: copy( momentum.data().end() - rmaxDump, momentum.data().end(),              std::ostream_iterator<double>(std::cout, "\t"));
+    dumpStream << "\n\t\tElem idx: ";
+    std:: copy( mesh.elems.begin(),               mesh.elems.begin() + maxDump,       std::ostream_iterator<ShockTubeMesh::IndexType>(dumpStream, "\t"));
+    dumpStream << "...\t";
+    std:: copy( mesh.elems.end() - rmaxDump,      mesh.elems.end(),                   std::ostream_iterator<ShockTubeMesh::IndexType>(dumpStream, "\t"));
 
-    std::cout << "\n\t\tEnergy : ";
-    std:: copy( energy.data().begin(),            energy.data().begin() + maxDump,    std::ostream_iterator<double>(std::cout, "\t"));
-    std::cout << "...\t";
-    std:: copy( energy.data().end() - rmaxDump,   energy.data().end(),                std::ostream_iterator<double>(std::cout, "\t"));
+    dumpStream << "\n\t\tMass : " << std::setprecision(3);
+    std:: copy( mass.data().begin(),              mass.data().begin() + maxDump,      std::ostream_iterator<double>(dumpStream, "\t"));
+    dumpStream << "...\t";
+    std:: copy( mass.data().end() - rmaxDump,     mass.data().end(),                  std::ostream_iterator<double>(dumpStream, "\t"));
 
-    std::cout << "\n\t\tPressure: ";
-    std:: copy( pressure.data().begin(),          pressure.data().begin() + maxDump,  std::ostream_iterator<double>(std::cout, "\t"));
-    std::cout << "...\t";
-    std:: copy( pressure.data().end() - rmaxDump, pressure.data().end(),              std::ostream_iterator<double>(std::cout, "\t"));
+    dumpStream << "\n\t\tMomentum: ";
+    std:: copy( momentum.data().begin(),          momentum.data().begin() + maxDump,  std::ostream_iterator<double>(dumpStream, "\t"));
+    dumpStream << "...\t";
+    std:: copy( momentum.data().end() - rmaxDump, momentum.data().end(),              std::ostream_iterator<double>(dumpStream, "\t"));
+
+    dumpStream << "\n\t\tEnergy : ";
+    std:: copy( energy.data().begin(),            energy.data().begin() + maxDump,    std::ostream_iterator<double>(dumpStream, "\t"));
+    dumpStream << "...\t";
+    std:: copy( energy.data().end() - rmaxDump,   energy.data().end(),                std::ostream_iterator<double>(dumpStream, "\t"));
+
+    dumpStream << "\n\t\tPressure: ";
+    std:: copy( pressure.data().begin(),          pressure.data().begin() + maxDump,  std::ostream_iterator<double>(dumpStream, "\t"));
+    dumpStream << "...\t";
+    std:: copy( pressure.data().end() - rmaxDump, pressure.data().end(),              std::ostream_iterator<double>(dumpStream, "\t"));
+
+    SLIC_INFO( dumpStream.str() );
 
   }
 
@@ -579,7 +581,8 @@ int main(void)
   {
     if( currCycle % dumpInterval == 0)
     {
-      std::cout << "\n\tStarting cycle " << currCycle << " at time " << realsRegistry.getScalar("time");
+      SLIC_INFO("\tStarting cycle " << currCycle
+                                    << " at time " << realsRegistry.getScalar("time"));
       dumpData(mesh);
     }
 
@@ -587,9 +590,11 @@ int main(void)
     UpdateElemInfo(mesh);
   }
 
-  std::cout << "\n\tFinished cycle " << currCycle << " at time " << realsRegistry.getScalar("time");
+  SLIC_INFO("\tFinished cycle " << currCycle
+                                << " at time " << realsRegistry.getScalar("time"));
   dumpData(mesh);
-  std::cout << "\ndone." << std::endl;
+
+  SLIC_INFO("done.");
 
   return 0;
 }

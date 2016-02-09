@@ -67,16 +67,16 @@ PY_sum(
     int len;
     int * values;
     int * result;
-    const char *kwcpp = "len\0values\0result";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4,(char *) kwcpp+11, NULL };
+    const char *kwcpp = "len\0values";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iii:Sum", kw_list,
-        &len, &values, &result))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ii:Sum", kw_list,
+        &len, &values))
     {
         return NULL;
     }
     Sum(len, values, result);
-    Py_RETURN_NONE;
+    return Py_BuildValue("i", *result);
 // splicer end function.sum
 }
 
@@ -92,18 +92,19 @@ PY_function3(
 {
 // splicer begin function.function3
     bool arg;
-    PyObject * arg_obj;
+    PyObject * SH_Py_arg;
     const char *kwcpp = "arg";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:Function3", kw_list,
-        &PyBool_Type, &arg_obj))
+        &PyBool_Type, &SH_Py_arg))
     {
         return NULL;
     }
-    arg = PyObject_IsTrue(arg_obj);
-    bool rv = Function3(arg);
-    return PyBool_FromLong(rv);
+    SH_arg = PyObject_IsTrue(SH_Py_arg);
+    bool rv = Function3(SH_arg);
+    PyObject * SH_Py_rv = PyBool_FromLong(rv);
+    return (PyObject *) SH_Py_rv;
 // splicer end function.function3
 }
 
@@ -128,8 +129,11 @@ PY_function4a(
     {
         return NULL;
     }
-    const std::string & rv = Function4a(arg1, arg2);
-    return PyString_FromString(rv.c_str());
+    std::string SH_arg1(arg1);
+    std::string SH_arg2(arg2);
+    const std::string rv = Function4a(SH_arg1, SH_arg2);
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
 // splicer end function.function4a
 }
 
@@ -154,8 +158,11 @@ PY_function4b(
     {
         return NULL;
     }
-    const std::string & rv = Function4b(arg1, arg2);
-    return PyString_FromString(rv.c_str());
+    std::string SH_arg1(arg1);
+    std::string SH_arg2(arg2);
+    const std::string & rv = Function4b(SH_arg1, SH_arg2);
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
 // splicer end function.function4b
 }
 
@@ -173,7 +180,7 @@ PY_function5_arg1_arg2(
     Py_ssize_t shroud_nargs = 0;
     double arg1;
     bool arg2;
-    PyObject * arg2_obj;
+    PyObject * SH_Py_arg2;
     const char *kwcpp = "arg1\0arg2";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     double rv;
@@ -181,7 +188,7 @@ PY_function5_arg1_arg2(
     if (args != NULL) shroud_nargs += PyTuple_Size(args);
     if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|dO!:Function5", kw_list,
-        &arg1, &PyBool_Type, &arg2_obj))
+        &arg1, &PyBool_Type, &SH_Py_arg2))
     {
         return NULL;
     }
@@ -193,8 +200,8 @@ PY_function5_arg1_arg2(
         rv = Function5(arg1);
         break;
     case 2:
-        arg2 = PyObject_IsTrue(arg2_obj);
-        rv = Function5(arg1, arg2);
+        SH_arg2 = PyObject_IsTrue(SH_Py_arg2);
+        rv = Function5(arg1, SH_arg2);
         break;
     }
     return Py_BuildValue("d", rv);
@@ -217,7 +224,8 @@ PY_function6_from_name(
     {
         return NULL;
     }
-    Function6(name);
+    std::string SH_name(name);
+    Function6(SH_name);
     Py_RETURN_NONE;
 // splicer end function.function6_from_name
 }
@@ -297,7 +305,8 @@ PY_function10_1(
     {
         return NULL;
     }
-    Function10(name, arg2);
+    std::string SH_name(name);
+    Function10(SH_name, arg2);
     Py_RETURN_NONE;
 // splicer end function.function10_1
 }
@@ -423,7 +432,7 @@ PY_enumfunc(
         return NULL;
     }
     EnumTypeID rv = enumfunc(static_cast<EnumTypeID>(arg));
-    return Py_BuildValue("i", rv);
+    return Py_BuildValue("i", static_cast<int>(rv));
 // splicer end function.enumfunc
 }
 
@@ -439,7 +448,8 @@ PY_last_function_called(
 {
 // splicer begin function.last_function_called
     const std::string & rv = LastFunctionCalled();
-    return PyString_FromString(rv.c_str());
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
 // splicer end function.last_function_called
 }
 

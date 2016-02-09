@@ -10,7 +10,14 @@
 //
 // Support functions for shroud
 //
+// Other CS Toolkit headers
 #include "common/FC.h"
+
+
+namespace asctoolkit
+{
+namespace shroud
+{
 
 extern "C" {
 
@@ -33,3 +40,8 @@ void FC_GLOBAL(shroud_c_loc,SHROUD_C_LOC)(void * addr, void * * out)
 }
 
 }  // extern "C"
+
+/*--------------------------------------------------------------------------*/
+
+} /* end namespace sidre */
+} /* end namespace asctoolkit */

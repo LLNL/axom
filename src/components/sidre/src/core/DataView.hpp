@@ -155,12 +155,26 @@ public:
   }
 
   /*!
+   * \brief Return true if view holds data that has been allocated.
+   */
+  bool isAllocated() const;
+
+  /*!
    * \brief Return true if data description (schema) has been applied to data
    *        in buffer associated with view; false otherwise.
    */
   bool isApplied() const
   {
     return m_is_applied;
+  }
+
+  /*!
+   * \brief Return true if data description exists.  It may/may not have been
+   * applied to the data yet.  ( Check isApplied() for that. )
+   */
+  bool isDescribed() const
+  {
+    return !m_schema.dtype().is_empty();
   }
 
   /*!
@@ -171,6 +185,22 @@ public:
   bool  isOpaque() const
   {
     return m_state == EXTERNAL && !isApplied();
+  }
+
+  /*!
+   * \brief Return true if view contains a scalar value.
+   */
+  bool isScalar() const
+  {
+    return (m_state == SCALAR);
+  }
+
+  /*!
+   * \brief Return true if view contains a string value.
+   */
+  bool isString() const
+  {
+    return (m_state == STRING);
   }
 
   /*!
@@ -189,7 +219,7 @@ public:
    */
   size_t getTotalBytes() const
   {
-    return m_schema.total_bytes();
+    return getSchema().total_bytes();
   }
 
   /*!
@@ -200,7 +230,7 @@ public:
    */
   size_t getNumElements() const
   {
-    return m_schema.dtype().number_of_elements();
+    return getSchema().dtype().number_of_elements();
   }
 
   /*!
@@ -227,7 +257,14 @@ public:
    */
   const Schema& getSchema() const
   {
-    return m_schema;
+    if ( isApplied() )
+    {
+      return m_node.schema();
+    }
+    else
+    {
+      return m_schema;
+    }
   }
 
   /*!
@@ -481,6 +518,7 @@ public:
 #endif
 
     m_node.set(value);
+    m_is_applied = true;
     m_state = SCALAR;
     return this;
   }
@@ -495,9 +533,9 @@ public:
  */
   DataView * setString(const std::string& value)
   {
-    // TODO: Check with Cyrus that the set_string function is the right call (should be).
     m_node.set_string(value);
     m_state = STRING;
+    m_is_applied = true;
     return this;
   };
 
@@ -594,6 +632,15 @@ public:
    */
   void * getVoidPtr()
   {
+    // Must have some data present.
+    if ( !hasData() )
+    {
+      SLIC_CHECK_MSG(
+        hasData(),
+        "Unable to retrieve raw pointer to data, no data exists in view.");
+      return ATK_NULLPTR;
+    }
+
     if ( isOpaque() )
     {
       return (void *)m_node.as_uint64();
@@ -672,6 +719,22 @@ private:
   DataView * declare( TypeID type, SidreLength num_elems);
 
   /*!
+   * \brief Declare a data view with given type, number of dimensions,  and
+   *        number of elements per dimension.
+   *
+   *
+   * IMPORTANT: If view has been previously declared, this operation will
+   *            re-declare the view. To have the new declaration take effect,
+   *            the apply() method must be called.
+   *
+   * If given number of dimensions or total number of elements < 0,
+   * or view is opaque, method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * declare(TypeID type, int ndims, SidreLength * shape);
+
+  /*!
    * \brief Declare a data view with a Conduit data type object.
    *
    * IMPORTANT: If view has been previously declared, this operation will
@@ -707,25 +770,25 @@ private:
    *  \brief Private method returns true if data allocation on view is a
    *         valid operation; else false
    */
-  bool allocateIsValid() const;
+  bool isAllocateValid() const;
 
   /*!
    *  \brief Private method returns true if attaching buffer to view is a
    *         valid operation; else false
    */
-  bool attachBufferIsValid() const;
+  bool isAttachBufferValid() const;
 
   /*!
    *  \brief Private method returns true if setting external data pointer is
              on view is a valid operation; else false
    */
-  bool setExternalDataPtrIsValid() const;
+  bool isSetExternalDataPtrValid() const;
 
   /*!
    *  \brief Private method returns true if apply is a valid operation on
    *         view; else false
    */
-  bool applyIsValid() const;
+  bool isApplyValid() const;
 
 //@}
 
@@ -734,7 +797,7 @@ private:
   /// Enum with constants that identify the state of a view.
   ///
   /// Note that these states are not mutually-exclusive. These constants
-  /// combined with the boolean m_is_applied uniquesly identify the view
+  /// combined with the boolean m_is_applied uniquely identify the view
   /// state, or how it was created and defined.
   ///
   enum State
@@ -759,6 +822,14 @@ private:
    *  \brief Private method returns string name of given view state enum value.
    */
   char const * getStateStringName(State state) const;
+
+  /*!
+   *  \brief Private method returns true if view holds any data.
+   */
+  bool hasData () const
+  {
+    return ( m_state != EMPTY && m_state != DESCRIBED );
+  }
 
   /// Name of this DataView object.
   std::string m_name;

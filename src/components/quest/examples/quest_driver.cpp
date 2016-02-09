@@ -25,6 +25,8 @@
 // ATK Toolkit includes
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
+#include "common/FileUtilities.hpp"
+
 #include "quest/BoundingBox.hpp"
 #include "quest/Field.hpp"
 #include "quest/FieldData.hpp"
@@ -37,9 +39,11 @@
 #include "quest/UniformMesh.hpp"
 #include "quest/UnstructuredMesh.hpp"
 #include "quest/Point.hpp"
-#include "slic/GenericOutputStream.hpp"
+
 #include "slic/slic.hpp"
-#include "slam/FileUtilities.hpp"
+#include "slic/UnitTestLogger.hpp"
+
+#include "slam/Utilities.hpp"
 
 // C/C++ includes
 #include <algorithm>
@@ -51,6 +55,8 @@
 using namespace asctoolkit;
 
 typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+typedef quest::BoundingBox<double,3>                        GeometricBoundingBox;
+typedef quest::Vector<double,3>                             SpaceVector;
 
 //------------------------------------------------------------------------------
 void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
@@ -186,7 +192,7 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
 }
 
 //------------------------------------------------------------------------------
-void compute_bounds( meshtk::Mesh* mesh, double minPt[3], double maxPt[3] )
+GeometricBoundingBox compute_bounds( meshtk::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -204,10 +210,7 @@ void compute_bounds( meshtk::Mesh* mesh, double minPt[3], double maxPt[3] )
 
    SLIC_ASSERT( meshBB.isValid() );
 
-   // copy bounds out to function parameters
-   meshBB.getMin().to_array(minPt);
-   meshBB.getMax().to_array(maxPt);
-
+   return meshBB;
 }
 
 //------------------------------------------------------------------------------
@@ -256,16 +259,13 @@ void flag_boundary( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
           Point3D pnt;
           surface_mesh->getMeshNode( nodeIdx, pnt.data() );
 
-          const double dx = pnt[0]-origin[0];
-          const double dy = pnt[1]-origin[1];
-          const double dz = pnt[2]-origin[2];
+          const quest::Vector3D delta(origin, pnt);
+          const GridPt gridPt = GridPt::make_point( std::floor( delta[0] / h[0])
+                                                  , std::floor( delta[1] / h[1])
+                                                  , std::floor( delta[2] / h[2]));
 
-          const int i = std::floor( dx/h[0] ) ;
-          const int j = std::floor( dy/h[1] ) ;
-          const int k = std::floor( dz/h[2] ) ;
-
-          ijkBounds.addPoint( GridPt::make_point(i,j,k) );
-          globalGridBounds.addPoint( GridPt::make_point(i,j,k) );
+          ijkBounds.addPoint( gridPt );
+          globalGridBounds.addPoint( gridPt );
 
       } // END for all cell nodes;
 
@@ -288,45 +288,7 @@ void flag_boundary( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
    } // END for all surface elements
 
 
-   std::cout<<"Overall grid bounds: " << globalGridBounds << std::endl;
-}
-
-/**
- * \brief Try to find a valid input file.
- * \return The file
- */
-std::string getStlFileName(const std::string & inputFileName)
-{
-    std::string fileName = inputFileName;
-    const int MAX_ATTEMPTS= 3;
-
-    if( inputFileName == "")
-    {
-        // Try to use the default file name.
-        // HACK: If it doesn't work, try to access from a parent directory
-        //       Fix if/when we have better file utilities
-        //       and replace with path to the root of the data repo when available
-        const std::string defaultFileName = "plane.stl";
-        const std::string defaultDir = "src/components/quest/data/";
-        fileName = defaultDir + defaultFileName;
-
-        std::ifstream meshFile(fileName.c_str());
-        for(int attempts = 0; !meshFile && attempts < MAX_ATTEMPTS; ++attempts)
-        {
-          fileName = "../" + fileName;
-          meshFile.open( fileName.c_str());
-        }
-
-        SLIC_ERROR_IF( !meshFile
-            , "fstream error -- problem opening file: '"  << defaultDir + defaultFileName
-                                                          << "' (also tried several"
-                                                          << " ancestors up to '../" << fileName << "')."
-                                                          << "\nThe current working directory is: '"
-                                                          << asctoolkit::slam::util::getCWD() << "'");
-        meshFile.close();
-    }
-
-    return fileName;
+   SLIC_INFO("Overall grid bounds: " << globalGridBounds );
 }
 
 //------------------------------------------------------------------------------
@@ -443,32 +405,43 @@ void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
 int main( int argc, char** argv )
 {
   // STEP 0: Initialize SLIC Environment
-  slic::initialize();
-  slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
-  slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout) );
+  slic::UnitTestLogger logger;  // create & initialize logger
+
 
   bool hasInputArgs = argc > 1;
 
   // STEP 1: get file from user or use default
-  std::string stlFile = getStlFileName(hasInputArgs ? std::string( argv[1] ) : "") ;
+  std::string stlFile;
+  if(hasInputArgs)
+  {
+      stlFile = std::string( argv[1] );
+  }
+  else
+  {
+      const std::string defaultFileName = "plane_simp.stl";
+      const std::string defaultDir = "src/components/quest/data";
+
+      stlFile = asctoolkit::utilities::filesystem::joinPath(defaultDir, defaultFileName);
+  }
+
+  stlFile = asctoolkit::slam::util::findFileInAncestorDirs(stlFile);
+  SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( stlFile));
 
   // STEP 2: read file
-  std::cout << "Reading file: " << stlFile << "...";
-  std::cout.flush();
+  SLIC_INFO( "Reading file: " << stlFile << "...");
+
   quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( stlFile );
   reader->read();
-  std::cout << "[DONE]\n";
-  std::cout.flush();
+  SLIC_INFO("done");
 
   // STEP 3: get surface mesh
   meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
   reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
   // dump mesh info
-  std::cout<<"Mesh has "
+  SLIC_DEBUG("Mesh has "
           << surface_mesh->getMeshNumberOfNodes() << " nodes and "
-          << surface_mesh->getMeshNumberOfCells() << " cells."
-          << std::endl;
+          << surface_mesh->getMeshNumberOfCells() << " cells.");
 
   // STEP 4: Delete the reader
   delete reader;
@@ -478,17 +451,14 @@ int main( int argc, char** argv )
   write_vtk( surface_mesh, "surface_mesh.vtk" );
 
   // STEP 6: compute bounds
-  double min[3];
-  double max[3];
-  compute_bounds( surface_mesh, min, max );
-  std::cout << "min: " << min[0] << ", " << min[1] << ", " << min[2] << "\n";
-  std::cout << "max: " << max[0] << ", " << max[1] << ", " << max[2] << "\n";
+  GeometricBoundingBox meshBB = compute_bounds( surface_mesh);
+  SLIC_INFO("Mesh bounding box: " << meshBB );
 
   // STEP 7: get dimensions from user
   int nx, ny, nz;
-  if(hasInputArgs > 1)
+  if(hasInputArgs)
   {
-      std::cout << "Enter Nx Ny Nz:";
+      std::cout << "Enter Nx Ny Nz: \n";
       std::cin >> nx >> ny >> nz;
   }
   else
@@ -496,12 +466,12 @@ int main( int argc, char** argv )
       nx = ny = nz = 32;
   }
 
-  double h[3];
-  h[0] = (max[0]-min[0]) / (nx);
-  h[1] = (max[1]-min[1]) / (ny);
-  h[2] = (max[2]-min[2]) / (nz);
-  std::cout << "h: " << h[0] << " " << h[1] << " " << h[2] << std::endl;
-  std::cout.flush();
+  SpaceVector h;
+  const SpaceVector& bbDiff = meshBB.range();
+  h[0] = bbDiff[0] / nx;
+  h[1] = bbDiff[1] / ny;
+  h[2] = bbDiff[2] / nz;
+  SLIC_INFO("grid cell size: " << h);
 
   int node_ext[6];
   node_ext[0] = 0;
@@ -512,7 +482,7 @@ int main( int argc, char** argv )
   node_ext[5] = nz;
 
   // STEP 8: Construct uniform mesh
-  meshtk::UniformMesh* umesh = new meshtk::UniformMesh(3,min,h,node_ext);
+  meshtk::UniformMesh* umesh = new meshtk::UniformMesh(3, meshBB.getMin().data(),h.data(),node_ext);
 
   // STEP 9: Flag boundary cells on uniform mesh
   flag_boundary( surface_mesh, umesh );
@@ -522,7 +492,5 @@ int main( int argc, char** argv )
   delete surface_mesh;
   surface_mesh = ATK_NULLPTR;
 
-  // STEP 11: Finalize SLIC environment
-  slic::finalize();
   return 0;
 }

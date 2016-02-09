@@ -170,7 +170,8 @@ PP_exclass2_get_name(
 {
 // splicer begin class.ExClass2.method.get_name
     const std::string & rv = self->BBB->getName();
-    return PyString_FromString(rv.c_str());
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
 // splicer end class.ExClass2.method.get_name
 }
 
@@ -202,20 +203,20 @@ PP_exclass2_get_class1(
 {
 // splicer begin class.ExClass2.method.get_class1
     ExClass1 * in;
-    PP_ExClass1 * in_obj;
+    PP_ExClass1 * SH_Py_in;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:get_class1", kw_list,
-        &PP_ExClass1_Type, &in_obj))
+        &PP_ExClass1_Type, &SH_Py_in))
     {
         return NULL;
     }
-    in = in_obj ? in_obj->BBB : NULL;
-    ExClass1 * rv = self->BBB->get_class1(in);
-    PP_ExClass1 * rv_obj = PyObject_New(PP_ExClass1, &PP_ExClass1_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    SH_in = SH_Py_in ? SH_Py_in->BBB : NULL;
+    ExClass1 * rv = self->BBB->get_class1(SH_in);
+    PP_ExClass1 * SH_Py_rv = PyObject_New(PP_ExClass1, &PP_ExClass1_Type);
+    SH_Py_rv->BBB = rv;
+    return (PyObject *) SH_Py_rv;
 // splicer end class.ExClass2.method.get_class1
 }
 
@@ -238,7 +239,7 @@ PP_exclass2_declare_1(
     
     if (args != NULL) shroud_nargs += PyTuple_Size(args);
     if (kwds != NULL) shroud_nargs += PyDict_Size(args);
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|l:declare", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|l:declare", kw_list,
         &type, &len))
     {
         return NULL;
@@ -283,7 +284,7 @@ PP_exclass2_get_type_id(
 {
 // splicer begin class.ExClass2.method.get_type_id
     TypeID rv = self->BBB->getTypeID();
-    return Py_BuildValue("O", rv);
+    return Py_BuildValue("i", static_cast<int>(rv));
 // splicer end class.ExClass2.method.get_type_id
 }
 // splicer begin class.ExClass2.impl.after_methods

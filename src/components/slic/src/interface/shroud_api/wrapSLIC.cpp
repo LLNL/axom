@@ -11,6 +11,8 @@
 //
 // wrapSLIC.cpp
 #include "wrapSLIC.h"
+#include <string>
+#include "shroudrt.hpp"
 #include "slic/slic.hpp"
 
 extern "C" {
@@ -41,42 +43,29 @@ return;
 // splicer end function.finalize
 }
 
-void SLIC_set_abort_on_assert(bool willAbort)
+void SLIC_create_logger(const char * name, char imask)
 {
-// splicer begin function.set_abort_on_assert
-setAbortOnAssert(willAbort);
+// splicer begin function.create_logger
+std::string SH_name(name);
+createLogger(SH_name, imask);
 return;
-// splicer end function.set_abort_on_assert
+// splicer end function.create_logger
 }
 
-bool SLIC_get_abort_on_assert()
+void SLIC_create_logger_bufferify(const char * name, int Lname, char imask)
 {
-// splicer begin function.get_abort_on_assert
-bool rv = getAbortOnAssert();
-return rv;
-// splicer end function.get_abort_on_assert
-}
-
-void SLIC_set_abort_on_error(bool willAbort)
-{
-// splicer begin function.set_abort_on_error
-setAbortOnError(willAbort);
+// splicer begin function.create_logger_bufferify
+std::string SH_name(name, Lname);
+createLogger(SH_name, imask);
 return;
-// splicer end function.set_abort_on_error
-}
-
-bool SLIC_get_abort_on_error()
-{
-// splicer begin function.get_abort_on_error
-bool rv = getAbortOnError();
-return rv;
-// splicer end function.get_abort_on_error
+// splicer end function.create_logger_bufferify
 }
 
 void SLIC_activate_logger(const char * name)
 {
 // splicer begin function.activate_logger
-activateLogger(name);
+std::string SH_name(name);
+activateLogger(SH_name);
 return;
 // splicer end function.activate_logger
 }
@@ -84,9 +73,19 @@ return;
 void SLIC_activate_logger_bufferify(const char * name, int Lname)
 {
 // splicer begin function.activate_logger_bufferify
-activateLogger(std::string(name, Lname));
+std::string SH_name(name, Lname);
+activateLogger(SH_name);
 return;
 // splicer end function.activate_logger_bufferify
+}
+
+void SLIC_get_active_logger_name_bufferify(char * name, int Lname)
+{
+// splicer begin function.get_active_logger_name_bufferify
+std::string rv = getActiveLoggerName();
+asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+return;
+// splicer end function.get_active_logger_name_bufferify
 }
 
 void SLIC_set_logging_msg_level(int level)
@@ -100,7 +99,9 @@ return;
 void SLIC_log_message(int level, const char * message, const char * fileName, int line, bool filter)
 {
 // splicer begin function.log_message
-logMessage(static_cast<message::Level>(level), message, fileName, line, filter);
+std::string SH_message(message);
+std::string SH_fileName(fileName);
+logMessage(static_cast<message::Level>(level), SH_message, SH_fileName, line, filter);
 return;
 // splicer end function.log_message
 }
@@ -108,7 +109,9 @@ return;
 void SLIC_log_message_bufferify(int level, const char * message, int Lmessage, const char * fileName, int LfileName, int line, bool filter)
 {
 // splicer begin function.log_message_bufferify
-logMessage(static_cast<message::Level>(level), std::string(message, Lmessage), std::string(fileName, LfileName), line, filter);
+std::string SH_message(message, Lmessage);
+std::string SH_fileName(fileName, LfileName);
+logMessage(static_cast<message::Level>(level), SH_message, SH_fileName, line, filter);
 return;
 // splicer end function.log_message_bufferify
 }

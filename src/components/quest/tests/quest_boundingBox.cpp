@@ -59,7 +59,6 @@ TEST( quest_boundingBox, bb_ctor_from_singlePt)
 
 }
 
-
 TEST( quest_boundingBox, bb_ctor_from_twoPoints)
 {
   static const int DIM = 3;
@@ -175,7 +174,6 @@ TEST( quest_boundingBox, bb_test_clear)
 
 }
 
-
 TEST( quest_boundingBox, bb_copy_and_assignment)
 {
   static const int DIM = 3;
@@ -281,6 +279,7 @@ TEST( quest_boundingBox, bb_add_box)
             << "After addBox() we should now contain points in between the two bounding boxes";
     EXPECT_FALSE(bbox1.contains(QPoint(10)))
             << "Points outside both ranges are still outside";
+    EXPECT_TRUE(bbox1.contains(bbox2));
 
 
     //
@@ -298,6 +297,7 @@ TEST( quest_boundingBox, bb_add_box)
     EXPECT_TRUE(bbox3.contains(QPoint::make_point(2,3,1)));
     EXPECT_TRUE(bbox3.contains(QPoint::make_point(6,6,7)));
     EXPECT_TRUE(bbox3.contains(QPoint(4)));
+    EXPECT_TRUE(bbox3.contains(bbox4));
 
 
     //
@@ -307,8 +307,162 @@ TEST( quest_boundingBox, bb_add_box)
     EXPECT_NE(bbox5, bbox1);
     bbox5.addBox(bbox1);
     EXPECT_EQ( bbox5, bbox1);
+    EXPECT_TRUE(bbox5.contains(bbox1));
 
 }
+
+TEST( quest_boundingBox, bb_different_coord_types)
+{
+    static const int DIM = 3;
+    typedef quest::Point<double, DIM> PointD;
+    typedef quest::BoundingBox<double, DIM> BBoxD;
+
+    typedef quest::Point<int, DIM> PointI;
+    typedef quest::BoundingBox<int, DIM> BBoxI;
+
+    // checking that an integer point is in the double bounding box
+    BBoxD dBox( PointD(1.), PointD(3.));
+    EXPECT_TRUE( dBox.contains( PointI(2)));
+    EXPECT_FALSE( dBox.contains( PointI(4)));
+
+    // Adding an integer point and testing
+    EXPECT_FALSE( dBox.contains( PointD(3.5)));
+    dBox.addPoint( PointI(4) );
+    EXPECT_TRUE( dBox.contains( PointD(3.5)));
+
+
+    BBoxI iBox(PointI(1), PointI(3));
+    EXPECT_TRUE( iBox.contains( PointD(2.5)));
+    EXPECT_TRUE( iBox.contains( PointD(1.)));
+    EXPECT_TRUE( iBox.contains( PointD(3.)));
+    EXPECT_FALSE( iBox.contains( PointD(4.)));
+
+    // Comparisons to double should be fine.
+    EXPECT_FALSE( iBox.contains( PointD(3.5)));
+
+    // TRICKY --- 4.5 will get rounded to 4,
+    //    so 3.5 will be in the box, but 4.25 will not !!
+    iBox.addPoint( PointD(4.5) );
+    EXPECT_TRUE( iBox.contains( PointD(3.5)));
+    EXPECT_FALSE( iBox.contains( PointD(4.25)));
+
+}
+
+TEST( quest_boundingBox, bb_expand)
+{
+    static const int DIM = 3;
+    typedef double CoordType;
+    typedef quest::Point<CoordType, DIM> QPoint;
+    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+
+    //
+    std::cout <<"Testing bounding box inflate"<<std::endl;
+
+
+    QBBox bbox ( QPoint(1), QPoint(3) );
+    EXPECT_TRUE(bbox.isValid());
+
+
+    // Expansion by positive number 0.5
+    QBBox bbox1 ( bbox) ;
+    bbox1.expand(0.5);
+    EXPECT_TRUE(bbox1.isValid());
+    EXPECT_EQ(bbox1.getMin(), QPoint(.5));
+    EXPECT_EQ(bbox1.getMax(), QPoint(3.5));
+
+    // Expansion by negative number -0.5 is contraction
+    QBBox bbox2 ( bbox);
+    bbox2.expand(-0.5);
+    EXPECT_TRUE(bbox2.isValid());
+    EXPECT_EQ(bbox2.getMin(), QPoint(1.5));
+    EXPECT_EQ(bbox2.getMax(), QPoint(2.5));
+
+
+    // Expand by too much 5 -- we are checking that bounds fix themselves
+    QBBox bbox3 ( bbox);
+    bbox3.expand(-5);
+    EXPECT_TRUE(bbox3.isValid());
+    EXPECT_EQ(bbox3.getMin(), QPoint(-2)); // 3 + -5 == -2
+    EXPECT_EQ(bbox3.getMax(), QPoint(6));  // 1 - -5 == 6
+
+}
+
+TEST( quest_boundingBox, bb_scale)
+{
+    static const int DIM = 3;
+    typedef double CoordType;
+    typedef quest::Point<CoordType, DIM> QPoint;
+    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+
+    //
+    std::cout <<"Testing bounding box scale"<<std::endl;
+
+
+    QBBox bbox ( QPoint(1), QPoint(3) );
+    EXPECT_TRUE(bbox.isValid());
+
+
+    // Expansion by positive number 0.5
+    QBBox bbox1 ( bbox) ;
+    bbox1.scale(1.5);
+    EXPECT_TRUE(bbox1.isValid());
+    EXPECT_EQ(bbox1.getMin(), QPoint(.5));
+    EXPECT_EQ(bbox1.getMax(), QPoint(3.5));
+
+    // scale by a number less than 1
+    QBBox bbox2 ( bbox);
+    bbox2.scale(0.5);
+    EXPECT_TRUE(bbox2.isValid());
+    EXPECT_EQ(bbox2.getMin(), QPoint(1.5));
+    EXPECT_EQ(bbox2.getMax(), QPoint(2.5));
+
+    // Show that scaling by zero set the bounds to its midpoint
+    QBBox bbox3 ( bbox);
+    bbox3.scale( 0.);
+    EXPECT_EQ( bbox3.getMin(), bbox3.getMax());
+    QPoint midpoint = QPoint::midpoint(bbox.getMin(), bbox.getMax());
+    EXPECT_EQ( bbox3.getMin(), midpoint);
+
+    // Show that scaling by a negative is the same as a positive value
+    QBBox bbox4 ( bbox);
+    bbox4.scale(-1.);
+    EXPECT_EQ( bbox, bbox4);
+
+}
+
+TEST( quest_boundingBox, bb_shift)
+{
+    static const int DIM = 3;
+    typedef double CoordType;
+    typedef quest::Point<CoordType, DIM> QPoint;
+    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+
+    typedef quest::Vector<CoordType, DIM> QVec;
+
+    //
+    std::cout <<"Testing bounding box shift"<<std::endl;
+
+
+    QBBox bbox ( QPoint(1), QPoint(3) );
+    EXPECT_TRUE(bbox.isValid());
+
+
+    // Expansion by positive number 0.5
+    QBBox bbox1 ( bbox) ;
+    bbox1.shift(QVec(0.5));
+    EXPECT_TRUE(bbox1.isValid());
+    EXPECT_EQ(bbox1.getMin(), QPoint(1.5));
+    EXPECT_EQ(bbox1.getMax(), QPoint(3.5));
+
+    // Expansion by negative number -0.5 is contraction
+    QBBox bbox2 ( bbox);
+    bbox2.shift(QVec(-0.5));
+    EXPECT_TRUE(bbox2.isValid());
+    EXPECT_EQ(bbox2.getMin(), QPoint(0.5));
+    EXPECT_EQ(bbox2.getMax(), QPoint(2.5));
+
+}
+
 
 
 //----------------------------------------------------------------------

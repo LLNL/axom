@@ -87,6 +87,9 @@ bool SIDRE_dataview_is_opaque(SIDRE_dataview * self);
 
 const char * SIDRE_dataview_get_name(const SIDRE_dataview * self);
 
+void SIDRE_dataview_get_name_bufferify(SIDRE_dataview * self, char * name,
+                                       int Lname);
+
 SIDRE_databuffer * SIDRE_dataview_get_buffer(SIDRE_dataview * self);
 
 void * SIDRE_dataview_get_void_ptr(SIDRE_dataview * self);

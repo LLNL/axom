@@ -79,7 +79,7 @@ template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const 
  *******************************************************************************
  * \class Vector
  *
- * \brief Represents a vector, \f$ v \in \mathcal{R}^d. It provides access
+ * \brief Represents a vector, \f$ v \in \mathcal{R}^d \f$. It provides access
  *  methods for setting and querying the vector components as well as vector
  *  math operators, e.g., adding, subtracting, dot_product and cross_product.
  *

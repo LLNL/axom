@@ -33,17 +33,15 @@ bool SLIC_is_initialized();
 
 void SLIC_finalize();
 
-void SLIC_set_abort_on_assert(bool willAbort);
+void SLIC_create_logger(const char * name, char imask);
 
-bool SLIC_get_abort_on_assert();
-
-void SLIC_set_abort_on_error(bool willAbort);
-
-bool SLIC_get_abort_on_error();
+void SLIC_create_logger_bufferify(const char * name, int Lname, char imask);
 
 void SLIC_activate_logger(const char * name);
 
 void SLIC_activate_logger_bufferify(const char * name, int Lname);
+
+void SLIC_get_active_logger_name_bufferify(char * name, int Lname);
 
 void SLIC_set_logging_msg_level(int level);
 

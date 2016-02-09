@@ -21,6 +21,7 @@ set(sidre_sources
     core/DataGroup.cpp
     core/DataStore.cpp
     core/DataView.cpp
+    core/SidreUtilities.cpp
 )
 
 # The CAPI is only built to provide a Fortran interface.  If no Fortran,

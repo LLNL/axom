@@ -15,50 +15,6 @@
 #include <stdlib.h>
 
 //------------------------------------------------------------------------------
-// Test DataBuffer::declareExternal()
-//------------------------------------------------------------------------------
-
-TEST(C_sidre_external, declare_external_buffer)
-{
-  SIDRE_datastore * ds = SIDRE_datastore_new();
-
-  const int len = 11;
-
-  int * idata = (int *) malloc(sizeof(int) * len);
-  double * ddata = (double *) malloc(sizeof(double) * len);
-
-  for (int ii = 0 ; ii < len ; ++ii)
-  {
-    idata[ii] = ii;
-    ddata[ii] = idata[ii] * 2.0;
-  }
-
-  SIDRE_databuffer * dbuff_0 = SIDRE_datastore_create_buffer(ds);
-  SIDRE_databuffer * dbuff_1 = SIDRE_datastore_create_buffer(ds);
-  SIDRE_databuffer * dbuff_2 = SIDRE_datastore_create_buffer(ds);
-
-  SIDRE_databuffer_allocate_from_type(dbuff_0, SIDRE_DOUBLE_ID, len);
-  SIDRE_databuffer_declare(dbuff_1, SIDRE_INT_ID, len);
-  SIDRE_databuffer_set_external_data(dbuff_1, idata);
-  SIDRE_databuffer_declare(dbuff_2, SIDRE_DOUBLE_ID, len);
-  SIDRE_databuffer_set_external_data(dbuff_2, ddata);
-
-  EXPECT_EQ(SIDRE_databuffer_is_external(dbuff_0), false);
-  EXPECT_EQ(SIDRE_databuffer_is_external(dbuff_1), true);
-  EXPECT_EQ(SIDRE_databuffer_is_external(dbuff_2), true);
-
-  EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff_0), sizeof(double)*len);
-  EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff_1), sizeof(int)*len);
-  EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff_2), sizeof(double)*len);
-
-  SIDRE_datastore_print(ds);
-
-  SIDRE_datastore_delete(ds);
-  free(idata);
-  free(ddata);
-}
-
-//------------------------------------------------------------------------------
 // Test DataGroup::create_external_view()
 //------------------------------------------------------------------------------
 TEST(C_sidre_external, create_external_view)
@@ -105,6 +61,7 @@ TEST(C_sidre_external, create_external_view)
   free(ddata);
 }
 
+#if 0
 //------------------------------------------------------------------------------
 // Test DataGroup::save(), DataGroup::load() with external buffers
 //------------------------------------------------------------------------------
@@ -133,11 +90,6 @@ TEST(C_sidre_external, save_load_external_view)
 
   EXPECT_EQ(SIDRE_datagroup_get_num_views(root), 2u);
 
-  SIDRE_databuffer * tmpbuf = SIDRE_dataview_get_buffer(iview);
-  EXPECT_EQ(SIDRE_databuffer_is_external(tmpbuf), true);
-  tmpbuf = SIDRE_dataview_get_buffer(dview);
-  EXPECT_EQ(SIDRE_databuffer_is_external(tmpbuf), true);
-
   SIDRE_dataview_print(iview);
   SIDRE_dataview_print(dview);
 
@@ -159,10 +111,6 @@ TEST(C_sidre_external, save_load_external_view)
   SIDRE_dataview * dview2 = SIDRE_datagroup_get_view_from_name(root2, "ddata");
 
   EXPECT_EQ(SIDRE_datagroup_get_num_views(root2), 2u);
-  tmpbuf = SIDRE_dataview_get_buffer(iview2);
-  EXPECT_EQ(SIDRE_databuffer_is_external(tmpbuf), false);
-  tmpbuf = SIDRE_dataview_get_buffer(dview2);
-  EXPECT_EQ(SIDRE_databuffer_is_external(tmpbuf), false);
 
   int * idata_chk = (int *) SIDRE_dataview_get_void_ptr(iview2);
   for (int ii = 0 ; ii < len ; ++ii)
@@ -181,3 +129,5 @@ TEST(C_sidre_external, save_load_external_view)
   free(idata);
   free(ddata);
 }
+
+#endif

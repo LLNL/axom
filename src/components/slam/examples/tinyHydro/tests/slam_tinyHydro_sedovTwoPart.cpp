@@ -12,7 +12,6 @@
 
 #include <vector>
 #include <cmath>
-#include <iostream>
 
 #include "slic/slic.hpp"
 
@@ -32,7 +31,9 @@ std::ostream& operator<<(std::ostream& os, const VectorXY & vec)
 
 void tinyHydroSedov_2part()
 {
-  std::cout << "\n****** Sedov cylindrical square grid test." << std::endl;
+  SLIC_INFO("\n\t***********************************\n"
+      << "\tSedov cylindrical square grid test.\n"
+      << "\t***********************************");
 
   int steps = 0;
   int n = 80;
@@ -59,7 +60,7 @@ void tinyHydroSedov_2part()
   Part p1(reg1, gamma);
   Part p2(reg2, gamma);
 
-  std::cout << "**setting initial density, energy, velocity for sedov problem" << std::endl;
+  SLIC_INFO("**setting initial density, energy, velocity for sedov problem");
   double rho0 = 1.0;
   for (unsigned int i = 0; i < reg1.size(); i++)
   {
@@ -84,17 +85,17 @@ void tinyHydroSedov_2part()
   s.addPart(&p2);
 
 
-  std::cout << "**making hydro" << std::endl;
+  SLIC_INFO("**making hydro");
   Hydro h(&s);
 
-  std::cout << "**Set boundary conditions!" << std::endl;
+  SLIC_INFO("**Set boundary conditions!");
   h.setBC("bottom", 0xdeadbeef, 0);     // x can slide, y fixed
   h.setBC("left",   0,          0xdeadbeef); // x fixed, y can slide
   h.setBC("top",    0,          0);     // fixed x,y
   h.setBC("right",  0,          0);     // fixed x,y
 
 
-  std::cout << "**Initialize" << std::endl;
+  SLIC_INFO( "**Initialize" );
   h.initialize();
 
   h.cfl = 0.1;
@@ -112,15 +113,17 @@ void tinyHydroSedov_2part()
     h.advance(0.3);
   }
   timer.stop();
-  std::cout << "Elapsed time after advancing was " << timer.getElapsedTime() << " seconds." << std::endl;
+
+  SLIC_INFO("--");
+  SLIC_INFO("Elapsed time after advancing was " << timer.getElapsedTime() << " seconds.");
 
 
   double E1 = h.totalEnergy();
 
-  std::cout << "\n\t Total final energy: " << E1 << std::endl;
-  std::cout << "\t (E1-E0)/E0 = : " << (E1 - E0) / E0 << std::endl;
+  SLIC_INFO("\t Total final energy: " << E1 );
+  SLIC_INFO("\t (E1-E0)/E0 = : " << (E1 - E0) / E0 );
 
-  std::cout << "\nPASS" << std::endl;
+  SLIC_INFO(" *** PASS ***");
 }
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
