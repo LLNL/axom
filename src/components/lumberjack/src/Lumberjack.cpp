@@ -80,11 +80,9 @@ void Lumberjack::clearCombiners()
     m_combiners.clear();
 }
 
-void Lumberjack::getMessages(std::vector<Message*>& filledVector)
+const std::vector<Message*>& Lumberjack::getMessages() const
 {
-    if (m_communicator->shouldMessagesBeOutputted()){
-        filledVector.swap(m_messages);
-    }
+    return m_messages;
 }
 
 void Lumberjack::ranksLimit(int value)
@@ -120,7 +118,7 @@ void Lumberjack::queueMessage(const std::string& text, const std::string& fileNa
 void Lumberjack::pushMessagesOnce()
 {
     const char* packedMessagesToBeSent = "";
-    if (!m_communicator->shouldMessagesBeOutputted()) {
+    if (!m_communicator->isOutputNode()) {
         combineMessages();
         packedMessagesToBeSent = packMessages();
         clearMessages();
@@ -144,7 +142,7 @@ void Lumberjack::pushMessagesFully()
     std::vector<const char*> receivedPackedMessages;
     int numPushesToFlush = m_communicator->numPushesToFlush();
     for (int i=0; i<numPushesToFlush; ++i){
-        if (!m_communicator->shouldMessagesBeOutputted()) {
+        if (!m_communicator->isOutputNode()) {
             combineMessages();
             packedMessagesToBeSent = packMessages();
             clearMessages();
@@ -160,6 +158,11 @@ void Lumberjack::pushMessagesFully()
     }
 
     combineMessages();
+}
+
+bool Lumberjack::isOutputNode()
+{
+    return m_communicator->isOutputNode();
 }
 
 const char* Lumberjack::packMessages()

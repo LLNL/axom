@@ -104,7 +104,7 @@ void BinaryTreeCommunicator::push(const char* packedMessagesToBeSent,
     MPI_Barrier(m_mpiComm);
 }
 
-bool BinaryTreeCommunicator::shouldMessagesBeOutputted()
+bool BinaryTreeCommunicator::isOutputNode()
 {
     if (m_mpiCommRank == 0){
         return true;

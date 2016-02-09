@@ -114,16 +114,15 @@ int main(int argc, char** argv)
     std::clock_t end = clock();
 
     // Get messages back out of lumberjack since they have been pushed.
-    std::vector<asctoolkit::lumberjack::Message*> messages;
-    lj.getMessages(messages);
+    if (lj.isOutputNode()) {
+        std::vector<asctoolkit::lumberjack::Message*> messages = lj.getMessages();
 
-    if (commRank == 0) {
        std::ofstream outFile;
        outFile.open("speedTestOutput");
        for(int i=0; i<(int)(messages.size()); ++i){
            outFile << messages[i]->text();
-           delete messages[i];
        }
+       lj.clearMessages();
        outFile.close();
    }
 

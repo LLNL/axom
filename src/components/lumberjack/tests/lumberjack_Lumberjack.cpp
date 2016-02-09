@@ -61,7 +61,7 @@ class TestCommunicator: public asctoolkit::lumberjack::Communicator {
             receivedPackedMessages = receivedPackedMessages;
         }
 
-        bool shouldMessagesBeOutputted()
+        bool isOutputNode()
         {
             return true;
         }
@@ -88,8 +88,7 @@ TEST(lumberjack_Lumberjack, combineMessages01)
 
     lumberjack.pushMessagesFully();
 
-    std::vector<asctoolkit::lumberjack::Message*> messages;
-    lumberjack.getMessages(messages);
+    std::vector<asctoolkit::lumberjack::Message*> messages = lumberjack.getMessages();
 
     EXPECT_EQ((int)messages.size(), 1);
     EXPECT_EQ(messages[0]->text(), "Should be combined.");

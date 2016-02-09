@@ -57,12 +57,13 @@ int main(int argc, char** argv)
     lj.pushMessagesFully();
 
     // Get messages back out of lumberjack since they have been pushed.
-    std::vector<asctoolkit::lumberjack::Message*> messages;
-    lj.getMessages(messages);
-    for(int i=0; i<(int)(messages.size()); ++i){
-        std::cout << "(" << messages[i]->stringOfRanks() << ") " << messages[i]->ranksCount() <<
-                     " '" << messages[i]->text() << "'" << std::endl;
-        delete messages[i];
+    if (lj.isOutputNode()){
+        std::vector<asctoolkit::lumberjack::Message*> messages = lj.getMessages();
+        for(int i=0; i<(int)(messages.size()); ++i){
+            std::cout << "(" << messages[i]->stringOfRanks() << ") " << messages[i]->ranksCount() <<
+                         " '" << messages[i]->text() << "'" << std::endl;
+        }
+        lj.clearMessages();
     }
 
     // Finalize lumberjack

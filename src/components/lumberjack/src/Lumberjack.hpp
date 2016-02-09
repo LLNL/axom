@@ -109,19 +109,6 @@ class Lumberjack {
 
         /*!
          *****************************************************************************
-         * \brief Fills the given vector with all currently held Message classes.
-         *
-         * This swaps the given vector with this ranks's internal vector that holds it's Message classes.
-         * The given vector should be empty.  If the rank is not supposed to output messages,
-         * then the vector is not swapped with the internal vector.
-         *
-         * \param [in,out] filledVector An empty vector that will be filled with Message classes.
-         *****************************************************************************
-         */
-        void getMessages(std::vector<Message*>& filledVector);
-
-        /*!
-         *****************************************************************************
          * \brief Sets the rank limit.
          *
          * This is the limit on how many ranks generated a given message are individually tracked
@@ -135,11 +122,13 @@ class Lumberjack {
 
         /*!
          *****************************************************************************
-         * \brief Returns the rank limit.
+         * \brief Returns the limit on tracked ranks.
          *
          * This is the limit on how many ranks generated a given message are individually tracked
          * per Message.  After the limit has been reached, only the Message::rankCount is 
          * incremented.
+         *
+         * \return The limit on tracked ranks
          *****************************************************************************
          */
         int ranksLimit();
@@ -152,6 +141,19 @@ class Lumberjack {
          *****************************************************************************
          */
         void clearMessages();
+
+        /*!
+         *****************************************************************************
+         * \brief Returns a const reference vector with all currently held Message classes.
+         *
+         * This returns a const reference to the vector that holds the Message classes held by
+         * this node. You should check isOutputNode() to indicate if you should
+         * output messages depending on your communication scheme.
+         *
+         * \param [in,out] filledVector An empty vector that will be filled with Message classes.
+         *****************************************************************************
+         */
+        const std::vector<Message*>& getMessages() const;
 
         /*!
          *****************************************************************************
@@ -203,6 +205,16 @@ class Lumberjack {
          *****************************************************************************
          */
         void pushMessagesFully();
+
+        /*!
+         *****************************************************************************
+         * \brief Function indicates whether this node should be outputting messages.
+         * The Communicator class's communication structure dictates this.
+         *
+         * \return Boolean indicates whether you should output messages
+         *****************************************************************************
+         */
+        bool isOutputNode();
     private:
         /*!
          *****************************************************************************
@@ -211,6 +223,8 @@ class Lumberjack {
          * The messages are packed into the following format:
          *  \<message count>*\<largest message size>*\<packed message size>*\<packed message>\<packed message size>...
          * This function does not delete messages.
+         *
+         * \return Packed version of all currently held messages
          *****************************************************************************
          */
         const char* packMessages();

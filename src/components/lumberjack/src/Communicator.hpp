@@ -130,11 +130,13 @@ class Communicator {
 
         /*!
          *****************************************************************************
-         * \brief Function used by the Lumberjack class to indicate whether this node should be
-         * outputting messages. The Communicator class's tree structure dictates this.
+         * \brief Function indicates whether this node should be outputting messages.
+         * The Communicator class's communication structure dictates this.
+         *
+         * \return Boolean indicates whether you should output messages
          *****************************************************************************
          */
-        virtual bool shouldMessagesBeOutputted() = 0;
+        virtual bool isOutputNode() = 0;
 };
 
 } // end namespace lumberjack

@@ -37,6 +37,8 @@ set(slic_sources
 if (ENABLE_MPI)
    list(APPEND slic_headers streams/SynchronizedStream.hpp)
    list(APPEND slic_sources streams/SynchronizedStream.cpp)
+   list(APPEND slic_headers streams/LumberjackStream.hpp)
+   list(APPEND slic_sources streams/LumberjackStream.cpp)
 endif()
 
 # XXX ENABLE_FORTRAN_WRAPPER
