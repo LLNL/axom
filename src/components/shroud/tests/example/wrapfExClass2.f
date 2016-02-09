@@ -42,6 +42,7 @@ module exclass2_mod
         procedure :: get_value_int => exclass2_get_value_int
         procedure :: get_value_double => exclass2_get_value_double
         procedure :: yadda => exclass2_yadda
+        procedure :: associated => exclass2_associated
         generic :: declare => &
             ! splicer begin class.ExClass2.generic.declare
             ! splicer end class.ExClass2.generic.declare
@@ -477,6 +478,14 @@ contains
         type(C_PTR) :: voidptr
         voidptr = obj%voidptr
     end function exclass2_yadda
+    
+    function exclass2_associated(obj) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        class(exclass2), intent(IN) :: obj
+        logical rv
+        rv = c_associated(obj%voidptr)
+    end function exclass2_associated
     
     ! splicer begin class.ExClass2.additional_functions
     ! splicer end class.ExClass2.additional_functions

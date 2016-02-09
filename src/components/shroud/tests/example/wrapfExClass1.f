@@ -40,6 +40,7 @@ module exclass1_mod
         procedure :: has_addr => exclass1_has_addr
         procedure :: splicer_special => exclass1_splicer_special
         procedure :: yadda => exclass1_yadda
+        procedure :: associated => exclass1_associated
         generic :: get_value => &
             ! splicer begin class.ExClass1.generic.get_value
             ! splicer end class.ExClass1.generic.get_value
@@ -325,7 +326,7 @@ contains
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
     
-    ! void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
+    ! void getNameArg(string & name+intent(out)+len(Lname)) const
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=17
     subroutine exclass1_get_name_arg(obj, name)
@@ -430,6 +431,14 @@ contains
         type(C_PTR) :: voidptr
         voidptr = obj%voidptr
     end function exclass1_yadda
+    
+    function exclass1_associated(obj) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        class(exclass1), intent(IN) :: obj
+        logical rv
+        rv = c_associated(obj%voidptr)
+    end function exclass1_associated
     
     ! splicer begin class.ExClass1.additional_functions
     ! splicer end class.ExClass1.additional_functions

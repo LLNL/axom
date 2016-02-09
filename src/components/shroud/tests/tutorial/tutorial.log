@@ -11,9 +11,9 @@ C function void Function1()
 C function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
 C function void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))
 C function bool Function3(bool arg+intent(in)+value)
-C function void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))
+C function void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(LSH_F_rv))
 C function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
-C function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
+C function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))
 C function double Function5()
 C function double Function5(double arg1+default(3.1415)+intent(in)+value)
 C function double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
@@ -37,7 +37,7 @@ C function int overload1(double type+intent(in)+value, int num+intent(in)+value,
 C function TypeID typefunc(TypeID arg+intent(in)+value)
 C function EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)
 C function const std::string & LastFunctionCalled()+pure
-C function void LastFunctionCalled(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+C function void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
 Close wrapTutorial.h
 Close wrapTutorial.cpp
 Close shroudrt.hpp
@@ -50,10 +50,10 @@ C-interface, Fortran function double Function2(double arg1+intent(in)+value, int
 C-interface, Fortran function void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))
 C-interface, Fortran function bool Function3(bool arg+intent(in)+value)
 Fortran function const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
-C-interface function void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))
+C-interface function void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(LSH_F_rv))
 C-interface function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
-C-interface function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
-Fortran function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
+C-interface function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))
+Fortran function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))
 C-interface, Fortran function double Function5()
 C-interface, Fortran function double Function5(double arg1+default(3.1415)+intent(in)+value)
 C-interface, Fortran function double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
@@ -81,7 +81,7 @@ C-interface, Fortran function int overload1(double type+intent(in)+value, int nu
 C-interface, Fortran function TypeID typefunc(TypeID arg+intent(in)+value)
 C-interface, Fortran function EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)
 C-interface function const std::string & LastFunctionCalled()+pure
-C-interface function void LastFunctionCalled(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+C-interface function void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
 Fortran function const string_result_fstr & LastFunctionCalled()+pure
 Close wrapftutorial.f
 class Class1

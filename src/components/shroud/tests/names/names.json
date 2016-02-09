@@ -15,6 +15,7 @@
                 "C_header_filename": "foo.h", 
                 "C_impl_filename": "foo.cpp", 
                 "C_type_name": "TES_names", 
+                "F_C_prefix": "c_", 
                 "F_derived_name": "names", 
                 "F_impl_filename": "foo.f", 
                 "F_module_name": "name_module", 
@@ -24,9 +25,10 @@
                 "PY_from_object_func": "PP_Names_from_Object", 
                 "PY_to_object_func": "PP_Names_to_Object", 
                 "PY_type_filename": "pyNamestype.cpp", 
-                "cpp_class": "Names", 
-                "lower_class": "names", 
-                "upper_class": "NAMES"
+                "class_lower": "names", 
+                "class_name": "names_", 
+                "class_upper": "NAMES", 
+                "cpp_class": "Names"
             }, 
             "methods": [
                 {
@@ -44,7 +46,7 @@
                         "F_name_impl": "names_method1", 
                         "F_name_method": "type_method1", 
                         "PY_name_impl": "PY_names_method1", 
-                        "method_name": "method1", 
+                        "function_name": "method1", 
                         "underscore_name": "method1"
                     }, 
                     "options": {}, 
@@ -68,7 +70,7 @@
                         "F_name_impl": "names_method2", 
                         "F_name_method": "method2", 
                         "PY_name_impl": "PY_names_method2", 
-                        "method_name": "method2", 
+                        "function_name": "method2", 
                         "underscore_name": "method2"
                     }, 
                     "options": {}, 
@@ -81,6 +83,8 @@
             ], 
             "name": "Names", 
             "options": {
+                "C_name_template": "XXX_{C_prefix}{class_name}{underscore_name}{function_suffix}", 
+                "F_C_name_template": "XXX_{C_prefix}{class_name}{underscore_name}{function_suffix}", 
                 "none": "foo"
             }
         }
@@ -108,12 +112,13 @@
         "PY_module_filename": "pytestnamesmodule.cpp", 
         "PY_module_name": "testnames", 
         "PY_prefix": "PY_", 
+        "class_name": "", 
         "function_suffix": "", 
         "library": "testnames", 
-        "lower_library": "testnames", 
+        "library_lower": "testnames", 
+        "library_upper": "TESTNAMES", 
         "overloaded": false, 
-        "rv": "rv", 
-        "upper_library": "TESTNAMES"
+        "rv": "rv"
     }, 
     "functions": [
         {
@@ -130,7 +135,7 @@
                 "F_name_impl": "testnames_function1", 
                 "F_name_method": "function1", 
                 "PY_name_impl": "PY_function1", 
-                "method_name": "function1", 
+                "function_name": "function1", 
                 "underscore_name": "function1"
             }, 
             "options": {}, 
@@ -157,7 +162,7 @@
                 "F_name_impl": "f_name_special", 
                 "F_name_method": "function2", 
                 "PY_name_impl": "PY_function2", 
-                "method_name": "function2", 
+                "function_name": "function2", 
                 "underscore_name": "function2"
             }, 
             "options": {}, 
@@ -197,8 +202,8 @@
                 "F_name_impl": "F_name_function3a_int", 
                 "F_name_method": "function3a_0", 
                 "PY_name_impl": "PY_function3a_0", 
+                "function_name": "function3a", 
                 "function_suffix": "_0", 
-                "method_name": "function3a", 
                 "underscore_name": "function3a"
             }, 
             "options": {}, 
@@ -238,8 +243,8 @@
                 "F_name_impl": "F_name_function3a_long", 
                 "F_name_method": "function3a_1", 
                 "PY_name_impl": "PY_function3a_1", 
+                "function_name": "function3a", 
                 "function_suffix": "_1", 
-                "method_name": "function3a", 
                 "underscore_name": "function3a"
             }, 
             "options": {}, 
@@ -255,20 +260,18 @@
         "C_header_filename_library_template": "wrap{library}.h", 
         "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 
         "C_impl_filename_library_template": "wrap{library}.cpp", 
-        "C_name_function_template": "YYY_{C_prefix}{underscore_name}{function_suffix}", 
-        "C_name_method_template": "XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
-        "F_C_name_function_template": "YYY_{C_prefix}{underscore_name}{function_suffix}", 
-        "F_C_name_method_template": "XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "C_name_template": "{C_prefix}{class_name}{underscore_name}{function_suffix}", 
+        "F_C_name_template": "{F_C_prefix}{class_name}{underscore_name}{function_suffix}", 
         "F_C_prefix": "c_", 
         "F_force_wrapper": true, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
-        "F_impl_filename_library_template": "wrapf{lower_library}.f", 
-        "F_module_name_class_template": "{lower_class}_mod", 
-        "F_module_name_library_template": "{lower_library}_mod", 
+        "F_impl_filename_library_template": "wrapf{library_lower}.f", 
+        "F_module_name_class_template": "{class_lower}_mod", 
+        "F_module_name_library_template": "{library_lower}_mod", 
         "F_module_per_class": true, 
+        "F_name_associated": "associated", 
         "F_name_generic_template": "{underscore_name}", 
-        "F_name_impl_function_template": "{library}_{underscore_name}{function_suffix}", 
-        "F_name_impl_method_template": "{lower_class}_{underscore_name}{function_suffix}", 
+        "F_name_impl_template": "{class_name}{underscore_name}{function_suffix}", 
         "F_name_instance_get": "get_instance", 
         "F_name_instance_set": "set_instance", 
         "F_name_method_template": "{underscore_name}{function_suffix}", 
@@ -278,9 +281,9 @@
         "PY_header_filename_template": "py{library}module.hpp", 
         "PY_helper_filename_template": "py{library}helper.cpp", 
         "PY_module_filename_template": "py{library}module.cpp", 
-        "PY_name_impl_function_template": "{PY_prefix}{underscore_name}{function_suffix}", 
-        "PY_name_impl_method_template": "{PY_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "PY_name_impl_template": "{PY_prefix}{class_name}{underscore_name}{function_suffix}", 
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
+        "class_name_template": "{class_lower}_", 
         "cpp_header": "", 
         "debug": true, 
         "doxygen": true, 
@@ -296,15 +299,14 @@
             "PY_PyObject": "PY_Names", 
             "PY_PyTypeObject": "PY_Names_Type", 
             "PY_from_object": "PP_Names_from_Object", 
-            "PY_post_parse": "{var} = {var_obj} ? {var_obj}->{BBB} : NULL;", 
             "PY_to_object": "PP_Names_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}Names{ptr}>(static_cast<{C_const}void *>({var}))", 
+            "c_to_cpp": "static_cast<{C_const}Names{ptr}>(static_cast<{C_const}void *>({c_var}))", 
             "c_type": "TES_names", 
-            "cpp_to_c": "static_cast<{C_const}TES_names *>(static_cast<{C_const}void *>({var}))", 
+            "cpp_to_c": "static_cast<{C_const}TES_names *>(static_cast<{C_const}void *>({cpp_var}))", 
             "cpp_type": "Names", 
-            "f_args": "{var}%{F_derived_member}", 
+            "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "names", 
             "f_module": {
                 "name_module": [
@@ -313,70 +315,52 @@
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
             "f_type": "type(names)", 
-            "forward": "Names"
+            "forward": "Names", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;"
+                    ]
+                }, 
+                "intent_out": {
+                    "ctor": [
+                        "{PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});", 
+                        "{py_var}->{BBB} = {cpp_var};"
+                    ]
+                }
+            }
         }, 
         "bool": {
             "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
-            "PY_post_parse": "{var} = PyObject_IsTrue({var_obj});", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
-            "f_argsdecl": [
-                "logical(C_BOOL) {tmp_var}"
-            ], 
             "f_kind": "C_BOOL", 
-            "f_pre_call": "{tmp_var} = {var}  ! coerce to C_BOOL", 
-            "f_type": "logical", 
-            "f_use_tmp": true
-        }, 
-        "char": {
-            "PY_ctor": "PyString_FromString({var})", 
-            "PY_format": "s", 
-            "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
-            "c_statements": {
+            "f_statements": {
                 "intent_in": {
-                    "post_call": [
-                        "delete [] {cpp_var};"
+                    "declare": [
+                        "logical(C_BOOL) {c_var}"
                     ], 
                     "pre_call": [
-                        "int {c_var_len} = strlen({c_var});", 
-                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
-                        "{cpp_var}[{c_var_len}] = '\\0';"
-                    ], 
-                    "pre_call_trim": [
-                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
-                        "{cpp_var}[{c_var_len}] = '\\0';"
-                    ]
-                }, 
-                "intent_out": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
-                        "delete [] {cpp_var};"
-                    ], 
-                    "pre_call": [
-                        "char * {cpp_var} = new char [{c_var_num} + 1];"
+                        "{c_var} = {f_var}  ! coerce to C_BOOL"
                     ]
                 }, 
                 "result": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
-                    ]
+                    "need_wrapper": true
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
-            "c_type": "char", 
-            "cpp_type": "char", 
-            "f_module": {
-                "iso_c_binding": null
-            }, 
-            "f_type": "character(*)"
+            "f_type": "logical", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = PyObject_IsTrue({py_var});"
+                    ]
+                }
+            }
         }, 
-        "char_result_as_arg": {
-            "PY_ctor": "PyString_FromString({var})", 
+        "char": {
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -398,6 +382,7 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
                         "delete [] {cpp_var};"
@@ -407,6 +392,7 @@
                     ]
                 }, 
                 "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -421,9 +407,17 @@
             "f_type": "character(*)"
         }, 
         "char_scalar": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "result": {
+                    "post_call": [
+                        "// {c_var_len} is always 1, test to silence warning about unused variable", 
+                        "if ({c_var_len} == 1) *{c_var} = {cpp_val};"
+                    ]
+                }
+            }, 
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_type": "char", 
@@ -437,7 +431,7 @@
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
             "cpp_type": "double", 
-            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_cast": "real({f_var}, C_DOUBLE)", 
             "f_kind": "C_DOUBLE", 
             "f_module": {
                 "iso_c_binding": [
@@ -451,7 +445,7 @@
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
             "cpp_type": "float", 
-            "f_cast": "real({var}, C_FLOAT)", 
+            "f_cast": "real({f_var}, C_FLOAT)", 
             "f_kind": "C_FLOAT", 
             "f_module": {
                 "iso_c_binding": [
@@ -465,7 +459,7 @@
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
-            "f_cast": "int({var}, C_INT)", 
+            "f_cast": "int({f_var}, C_INT)", 
             "f_kind": "C_INT", 
             "f_module": {
                 "iso_c_binding": [
@@ -479,7 +473,7 @@
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
-            "f_cast": "int({var}, C_INT)", 
+            "f_cast": "int({f_var}, C_INT)", 
             "f_kind": "C_INT", 
             "f_module": {
                 "iso_c_binding": [
@@ -493,7 +487,7 @@
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
-            "f_cast": "int({var}, C_LONG)", 
+            "f_cast": "int({f_var}, C_LONG)", 
             "f_kind": "C_LONG", 
             "f_module": {
                 "iso_c_binding": [
@@ -507,7 +501,7 @@
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
-            "f_cast": "int({var}, C_LONG)", 
+            "f_cast": "int({f_var}, C_LONG)", 
             "f_kind": "C_LONG", 
             "f_module": {
                 "iso_c_binding": [
@@ -521,7 +515,7 @@
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
             "cpp_type": "double", 
-            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_cast": "real({f_var}, C_DOUBLE)", 
             "f_kind": "C_DOUBLE", 
             "f_module": {
                 "iso_c_binding": [
@@ -535,7 +529,7 @@
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
             "cpp_type": "float", 
-            "f_cast": "real({var}, C_FLOAT)", 
+            "f_cast": "real({f_var}, C_FLOAT)", 
             "f_kind": "C_FLOAT", 
             "f_module": {
                 "iso_c_binding": [
@@ -550,7 +544,7 @@
             "c_header": "stdlib.h", 
             "c_type": "size_t", 
             "cpp_type": "size_t", 
-            "f_cast": "int({var}, C_SIZE_T)", 
+            "f_cast": "int({f_var}, C_SIZE_T)", 
             "f_kind": "C_SIZE_T", 
             "f_module": {
                 "iso_c_binding": [
@@ -560,7 +554,7 @@
             "f_type": "integer(C_SIZE_T)"
         }, 
         "std::string": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -574,11 +568,13 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -587,15 +583,22 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_type": "character(*)"
+            "f_type": "character(*)", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "std::string {cpp_var}({c_var});"
+                    ]
+                }
+            }
         }, 
         "string": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -609,11 +612,13 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -622,50 +627,22 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_type": "character(*)"
-        }, 
-        "string_result_as_arg": {
-            "PY_ctor": "PyString_FromString({var})", 
-            "PY_format": "s", 
-            "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
-            "c_statements": {
+            "f_type": "character(*)", 
+            "py_statements": {
                 "intent_in": {
-                    "pre_call": [
+                    "post_parse": [
                         "std::string {cpp_var}({c_var});"
-                    ], 
-                    "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
-                    ]
-                }, 
-                "intent_out": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
-                    ]
-                }, 
-                "result": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
-            }, 
-            "c_to_cpp": "{cpp_var}", 
-            "c_type": "char", 
-            "cpp_header": "shroudrt.hpp", 
-            "cpp_to_c": "{var}.c_str()", 
-            "cpp_type": "std::string", 
-            "f_module": {
-                "iso_c_binding": null
-            }, 
-            "f_type": "character(*)"
+            }
         }, 
         "string_result_fstr": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -679,11 +656,13 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -692,15 +671,23 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)"
+            "f_type": "character(*)", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "std::string {cpp_var}({c_var});"
+                    ]
+                }
+            }
         }, 
         "void": {
+            "PY_ctor": "PyCapsule_New({cpp_var}, NULL, NULL)", 
             "c_fortran": "type(C_PTR)", 
             "c_type": "void", 
             "cpp_type": "void", 
