@@ -462,6 +462,39 @@ DataView * DataView::apply(const Schema& schema)
   return this;
 }
 
+
+/*
+ *************************************************************************
+ *
+ * Get void pointer to any data held by the view.
+ *
+ *************************************************************************
+ */
+void * DataView::getVoidPtr()
+{
+  // Verify we actually have some data in the view first.
+  if ( m_state == EMPTY ||
+       m_state == DESCRIBED ||
+       ( m_data_buffer != ATK_NULLPTR && !m_data_buffer->isAllocated() )
+     )
+  {
+    SLIC_CHECK_MSG( m_state != EMPTY && m_state != DESCRIBED, "Unable to retrieve raw pointer to data, view is empty.");
+    SLIC_CHECK_MSG( m_data_buffer == ATK_NULLPTR || m_data_buffer->isAllocated(), "Unable to retrieve raw pointer to unallocated data.");
+    return ATK_NULLPTR;
+  }
+
+  if ( isOpaque() )
+  {
+    return (void *)m_node.as_uint64();
+  }
+  else
+  {
+    return m_node.element_ptr(0);
+  }
+}
+
+
+
 /*
  *************************************************************************
  *

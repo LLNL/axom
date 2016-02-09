@@ -627,29 +627,10 @@ public:
   }
 
   /*!
-   * \brief Returns a void pointer to data described by the view (with any
+   * \brief Returns a void pointer to data in the view (if described, it will take into account any
    * offset, stride, schema, etc. applied).
    */
-  void * getVoidPtr()
-  {
-    // Must have some data present.
-    if ( !hasData() )
-    {
-      SLIC_CHECK_MSG(
-        hasData(),
-        "Unable to retrieve raw pointer to data, no data exists in view.");
-      return ATK_NULLPTR;
-    }
-
-    if ( isOpaque() )
-    {
-      return (void *)m_node.as_uint64();
-    }
-    else
-    {
-      return m_node.element_ptr(0);
-    }
-  }
+  void * getVoidPtr();
 
 //@}
 
@@ -822,14 +803,6 @@ private:
    *  \brief Private method returns string name of given view state enum value.
    */
   char const * getStateStringName(State state) const;
-
-  /*!
-   *  \brief Private method returns true if view holds any data.
-   */
-  bool hasData () const
-  {
-    return ( m_state != EMPTY && m_state != DESCRIBED );
-  }
 
   /// Name of this DataView object.
   std::string m_name;

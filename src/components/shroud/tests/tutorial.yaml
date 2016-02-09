@@ -18,8 +18,8 @@ types:
   EnumTypeID:
     typedef  : int
     cpp_type : EnumTypeID
-    c_to_cpp : static_cast<EnumTypeID>({var})
-    cpp_to_c : static_cast<int>({var})
+    c_to_cpp : static_cast<EnumTypeID>({c_var})
+    cpp_to_c : static_cast<int>({cpp_var})
 
 
 functions:

@@ -1,8 +1,125 @@
 Advanced Usage
 ==============
 
-character
----------
+Customizing Behavior
+--------------------
+
+Options
+^^^^^^^
+
+Options are used to customize the behavior of Shroud.
+The are defined in the YAML files as a dictionary.
+Options can be defined at the global, class, or function level.
+Each level creates a new scope which can access all upper level options.
+This allows the user to modifiy behavior for all functions or just a single one::
+
+    options:
+      option_a = false
+      option_b = false
+      option_c = false
+
+    classes:
+    - name: class1
+      options:
+    #    option_a = false     # inherited
+         option_b = true
+    #    option_c = false     # inherited
+      methods:
+      - decl: void funtion1
+        options:
+    #     option_a = false    # inherited
+    #     option_b = true     # ihherited
+          option_c = true
+
+
+Fields
+^^^^^^
+
+Fields only apply to the type, class or function to which it belongs.
+They are not inherited.
+For example, *C_name* is a field which is used to name
+a single C wrapper function.  While *C_name_template* is an option which
+controls the default value of *C_name*.
+
+Annotations
+^^^^^^^^^^^
+
+Annotations or attributes apply to specific arguments or results.
+They describe semantic behavior for an argument.
+
+
+
+How Names are Computed
+----------------------
+
+Shroud attempts to provide user control of names while providing reasonable defaults.
+Names are controlled by a format string or can be specified explicitly.
+
+Format strings contain “replacement fields” surrounded by curly braces
+{}. Anything that is not contained in braces is considered literal
+text, which is copied unchanged to the output. If you need to include
+a brace character in the literal text, it can be escaped by doubling:
+{{ and }}. [Python_Format]_
+
+The replacement fields are defined by the format dictionary.  Shroud
+defines values which may be used.
+
+Library name - Updated after reading YAML file.
+   * library - The value of **option** *library*.
+   * lower_library - Lowercase version of *library*.
+   * upper_library - Uppercase version of *library*.
+
+Class name - Updated before processing each class.
+   * cpp_class - The name of the C++ class from the YAML input file.
+   * class_lower - Lowercase version of *cpp_class*.
+   * class_upper - Uppercase version of *cpp_class*
+   * class_name  - Variable which may be used in creating function names.
+                   Defaults to evaluation of *class_name_template*.
+                   Outside of a class, set to empty string.
+   * C_prefix - Prefix for C wrapper functions.
+     Defaults to first three letters of *library*.
+     Set from **options**.
+   * F_C_prefix - Prefix for Fortran name for C wrapper.  Defaults to ``c_``.
+     Set from **options**.
+
+Function name - Updated before processing each function or method.
+   * function_name - Name of function in the YAML file.
+   * underscore_name - *method_name* converted from CamelCase to snake_case.
+   * function_suffix - Suffix append to name.  Used to differentiate overloaded functions.
+     Set from function field *function_suffix*.
+     Mulitple suffixes may be applied.
+
+
+
++------------------------+---------------------------------+------------------+
+| Description            | Option                          | Override         |
++========================+=================================+==================+
+| C wrapper              | *C_name_template*               | *C_name*         |
+| implementation         |                                 |                  |
++------------------------+---------------------------------+------------------+
+| Fortran BIND(C)        | *F_C_name_template*             | *F_C_name*       |
+| interface              |                                 |                  |
++------------------------+---------------------------------+------------------+
+| Fortran wrapper        | *F_name_impl_template*          | *F_name_impl*    |
+| implementation         |                                 |                  |
++------------------------+---------------------------------+------------------+
+| Fortran method         | *F_name_method_template*        | *F_name_method*  |
++------------------------+---------------------------------+------------------+
+| Fortran generic name   | *F_name_generic_template*       | *F_name_generic* |
++------------------------+---------------------------------+------------------+
+
+Local Variable
+^^^^^^^^^^^^^^
+
+*SH_* prefix on local variables.
+
+Results are named from *fmt.rv*.
+
+Fortran option F_result.
+
+
+Character Type
+--------------
 
 Fortran, C, and C++ all have their own semantics for character variables.
 
@@ -13,7 +130,7 @@ Fortran, C, and C++ all have their own semantics for character variables.
 It is not sufficient to pass an address between Fortran and C++ like
 it is with other native types.  In order to get ideomatic behavior in
 the Fortran wrappers it is often necessary to copy the values.  This
-is to account for blank filled vs ``NULL`` terminated.  It is helps
+is to account for blank filled vs ``NULL`` terminated.  It also helps
 support ``const`` vs non-``const`` strings.
 
 A C 'bufferify' wrapper is created which accepts the address of the
@@ -26,13 +143,11 @@ or a std::string instance.
 Character Arguments
 ^^^^^^^^^^^^^^^^^^^
 
-
 When an argument has intent *out*, then *len* attribute is added.
 This allows the wrapper routine to know how much space as available for the output string.
 
 When the argument has intent *in*, then the *len_trim* attribute is added to the *bufferify*
 wrapper only.  The non-bufferify version will use ``strlen`` to compute the length of data.
-
 
 Character Function
 ^^^^^^^^^^^^^^^^^^
@@ -107,10 +222,24 @@ The generated C wrapper::
 .. char **
 
 
-complex
--------
+Complex Type
+------------
 
 
-derived types
+Derived Types
 -------------
+
+
+
+* chained function calls
+
+
+splicers
+--------
+
+
+.. [Python_Format] https://docs.python.org/2/library/string.html#format-string-syntax
+
+
+
 

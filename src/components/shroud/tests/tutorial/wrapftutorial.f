@@ -28,6 +28,7 @@ module tutorial_mod
         procedure :: method1 => class1_method1
         procedure :: get_instance => class1_get_instance
         procedure :: set_instance => class1_set_instance
+        procedure :: associated => class1_associated
         ! splicer begin class.Class1.type_bound_procedure_part
         ! splicer end class.Class1.type_bound_procedure_part
     end type class1
@@ -438,6 +439,14 @@ contains
         obj%voidptr = voidptr
     end subroutine class1_set_instance
     
+    function class1_associated(obj) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        class(class1), intent(IN) :: obj
+        logical rv
+        rv = c_associated(obj%voidptr)
+    end function class1_associated
+    
     ! splicer begin class.Class1.additional_functions
     ! splicer end class.Class1.additional_functions
     
@@ -475,7 +484,7 @@ contains
         ! splicer end function4a
     end function function4a
     
-    ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
+    ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=34
     subroutine function4b(arg1, arg2, output)

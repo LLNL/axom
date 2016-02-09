@@ -26,8 +26,6 @@ options:
   # for the result.
   F_string_result_as_arg: name
 
-  # Change the default template for Fortran names to include the library name.
-  F_name_impl_function_template: "{lower_library}_{underscore_name}{function_suffix}"
   
 ######################################################################
 
@@ -36,20 +34,23 @@ types:
     # enum
     typedef  : int
     cpp_type : message::Level
-    c_to_cpp : static_cast<message::Level>({var})
-    cpp_to_c : static_cast<int>({var})
+    c_to_cpp : static_cast<message::Level>({c_var})
+    cpp_to_c : static_cast<int>({cpp_var})
 
 
 ######################################################################
 
 functions:
-  -  decl: void initialize()
-  -  decl: bool isInitialized()
-  -  decl: void finalize()
+- options:
+    # Change the default template for Fortran functions to include the library name.
+    F_name_impl_template: "{library_lower}_{class_name}{underscore_name}{function_suffix}"
+- decl: void initialize()
+- decl: bool isInitialized()
+- decl: void finalize()
 
-  -  decl: void createLogger( const std::string& name, char imask )
-  -  decl: void activateLogger( const std::string& name )
-  -  decl: std::string getActiveLoggerName()
-  -  decl: void setLoggingMsgLevel( Level level )
-  -  decl: void logMessage( Level level, const std::string& message, const std::string& fileName, int line, bool filter )
+- decl: void createLogger( const std::string& name, char imask )
+- decl: void activateLogger( const std::string& name )
+- decl: std::string getActiveLoggerName()
+- decl: void setLoggingMsgLevel( Level level )
+- decl: void logMessage( Level level, const std::string& message, const std::string& fileName, int line, bool filter )
   

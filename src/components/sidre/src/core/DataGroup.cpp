@@ -185,7 +185,7 @@ DataView * DataGroup::createView( const std::string& name,
  *************************************************************************
  *
  * Create view with given name, but no data description.  Attach provided
- * buffer to view.f
+ * buffer to view.
  *
  *************************************************************************
  */

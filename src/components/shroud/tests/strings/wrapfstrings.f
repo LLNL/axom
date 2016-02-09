@@ -20,13 +20,21 @@ module strings_mod
             character(kind=C_CHAR), value, intent(IN) :: status
         end subroutine pass_char
         
-        function return_char() &
+        function c_return_char() &
                 result(rv) &
                 bind(C, name="STR_return_char")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR) :: rv
-        end function return_char
+        end function c_return_char
+        
+        subroutine c_return_char_bufferify(SH_F_rv, LSH_F_rv) &
+                bind(C, name="STR_return_char_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv
+            integer(C_INT), value, intent(IN) :: LSH_F_rv
+        end subroutine c_return_char_bufferify
         
         subroutine c_pass_char_ptr(dest, Ndest, src) &
                 bind(C, name="STR_pass_char_ptr")
@@ -181,6 +189,24 @@ module strings_mod
 
 contains
     
+    ! char_scalar returnChar()
+    ! string_to_buffer_and_len
+    ! function_index=1
+    !>
+    !! \brief return a char argument (non-pointer)
+    !!
+    !<
+    function return_char() result(rv)
+        use iso_c_binding
+        implicit none
+        character :: rv
+        ! splicer begin return_char
+        call c_return_char_bufferify(  &
+            rv,  &
+            len(rv, kind=C_INT))
+        ! splicer end return_char
+    end function return_char
+    
     ! void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
     ! string_to_buffer_and_len
     ! function_index=2
@@ -205,7 +231,7 @@ contains
     end subroutine pass_char_ptr
     
     ! const string_result_fstr * getChar1()+pure
-    ! function_index=13
+    ! function_index=14
     !>
     !! \brief return a 'const char *' as character(*)
     !!
@@ -237,9 +263,9 @@ contains
         ! splicer end get_char2
     end function get_char2
     
-    ! void getChar3(char_result_as_arg * output+intent(out)+len(Loutput))
+    ! void getChar3(char * output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=16
+    ! function_index=17
     !>
     !! \brief return a 'const char *' as argument
     !!
@@ -256,7 +282,7 @@ contains
     end subroutine get_char3
     
     ! const string_result_fstr & getString1()+pure
-    ! function_index=18
+    ! function_index=19
     !>
     !! \brief return a 'const string&' as character(*)
     !!
@@ -288,9 +314,9 @@ contains
         ! splicer end get_string2
     end function get_string2
     
-    ! void getString3(string_result_as_arg & output+intent(out)+len(Loutput))
+    ! void getString3(string & output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=21
+    ! function_index=22
     !>
     !! \brief return a 'const string&' as argument
     !!
