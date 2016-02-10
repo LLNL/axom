@@ -105,7 +105,7 @@ DataView * DataView::allocate(const DataType& dtype)
   if ( dtype.is_empty() )
   {
     SLIC_CHECK_MSG( !dtype.is_empty(),
-        " Unable to call allocate with empty data type.");
+        " Unable to allocate with empty data type.");
     return this;
   }
 
@@ -127,7 +127,7 @@ DataView * DataView::allocate(const Schema& schema)
   if ( schema.dtype().is_empty() )
   {
     SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        " Unable to call allocate, schema has empty data type.");
+        " Unable to allocate, schema has empty data type.");
     return this;
   }
 
@@ -194,7 +194,7 @@ DataView * DataView::reallocate(const DataType& dtype)
   if (dtype.is_empty() || !isAllocateValid() || type != view_type)
   {
     SLIC_CHECK_MSG( !dtype.is_empty(),
-        " Unable to call re-allocate with empty data type.");
+        " Unable to re-allocate with empty data type.");
     SLIC_CHECK_MSG( isAllocateValid(),
                     "View " << this->getName() << "'s state " <<
         getStateStringName(m_state) << " does not allow data re-allocation");
@@ -234,7 +234,7 @@ DataView * DataView::reallocate(const Schema& schema)
   if ( schema.dtype().is_empty() || !isAllocateValid() || type != view_type )
   {
     SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        " Unable to call re-allocate, schema has empty data type.");
+        " Unable to re-allocate, schema has empty data type.");
     SLIC_CHECK_MSG( isAllocateValid(),
                     "View " << this->getName() << "'s state " <<
         getStateStringName(m_state) << " does not allow data re-allocation");
@@ -430,7 +430,7 @@ DataView * DataView::apply(const DataType &dtype)
   if ( dtype.is_empty() )
   {
     SLIC_CHECK_MSG( !dtype.is_empty(),
-        " Unable to call apply, data type is empty.");
+        " Unable to apply description, data type is empty.");
     return this;
   }
 
@@ -452,7 +452,7 @@ DataView * DataView::apply(const Schema& schema)
   if ( schema.dtype().is_empty() )
   {
     SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        " Unable to call apply, schema has empty data type.");
+        " Unable to apply description, schema has empty data type.");
     return this;
   }
 
@@ -494,7 +494,6 @@ void * DataView::getVoidPtr()
 }
 
 
-
 /*
  *************************************************************************
  *
@@ -530,7 +529,8 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
 /*
  *************************************************************************
  *
- * Return true if view contains a buffer with allocated data.
+ * Return true if view contains allocated data.  This could mean a buffer
+ * with allocated data, or a scalar value, or a string.
  *
  * Note: Most of our isXXX functions are implemented in the header.
  * This one is in not, because we are only forward declaring the buffer
@@ -814,27 +814,28 @@ DataView * DataView::declare(const Schema& schema)
  *
  * PRIVATE method returns true if view can allocate data; else false.
  *
+ * This method does not need to emit the view state as part of it's
+ * checking.  The caller functions are already printing out the view
+ * state if this function returns false.
  *************************************************************************
  */
 bool DataView::isAllocateValid() const
 {
-  if ( !isDescribed() || m_state == EXTERNAL || m_state == SCALAR ||
-       m_state == STRING ||
-       (m_data_buffer != ATK_NULLPTR && m_data_buffer->getNumViews() != 1) )
+  // Check that we have a description and rule out having data that allocate
+  // can't be called on.
+  if ( !isDescribed() || m_state == EXTERNAL || m_state == SCALAR || m_state == EXTERNAL )
+  {
+    SLIC_CHECK_MSG( isDescribed(),
+                    "Allocate is not valid, view has no description.");
+    return false;
+  }
+
+  // Check that buffer, if present, is referenced by only this view.
+  if (m_data_buffer != ATK_NULLPTR && m_data_buffer->getNumViews() != 1 )
   {
     SLIC_CHECK_MSG(
-      isDescribed(),
-      "Allocate is not valid, view has no data description.");
-    SLIC_CHECK_MSG( m_state != EXTERNAL,
-                    "Allocate is not valid, view contains an external data pointer.");
-    SLIC_CHECK_MSG( m_state != SCALAR,
-                    "Allocate is not valid, view contains a scalar.");
-    SLIC_CHECK_MSG( m_state != STRING,
-                    "Allocate is not valid, view contains a string.");
-    SLIC_CHECK_MSG(
-      m_data_buffer != ATK_NULLPTR && m_data_buffer->getNumViews() != 1, ""
-                                                                         "Allocate is not valid, buffer does not contain exactly one view.");
-
+      m_data_buffer != ATK_NULLPTR && m_data_buffer->getNumViews() != 1,
+        "Allocate is not valid, buffer does not contain exactly one view.");
     return false;
   }
 
@@ -846,6 +847,10 @@ bool DataView::isAllocateValid() const
  *
  * PRIVATE method returns true if attaching buffer to view is valid;
  * else false.
+ *
+ * This method does not need to emit the view state as part of it's
+ * checking.  The caller functions are already printing out the view
+ * state if this function returns false.
  *
  *************************************************************************
  */
@@ -859,6 +864,10 @@ bool DataView::isAttachBufferValid() const
  *
  * PRIVATE method returns true if setting external data pointer on view
  * is valid; else false.
+ *
+ * This method does not need to emit the view state as part of it's
+ * checking.  The caller functions are already printing out the view
+ * state if this function returns false.
  *
  *************************************************************************
  */
@@ -877,22 +886,26 @@ bool DataView::isSetExternalDataPtrValid() const
  */
 bool DataView::isApplyValid() const
 {
-  SLIC_CHECK_MSG(
-    isDescribed(), "Apply not valid, no description in view to apply.");
-  SLIC_CHECK_MSG(
-    !hasBuffer() && m_state != EXTERNAL,
-    "Apply not valid, no buffer or external data to apply description to.");
-  bool success = ( isDescribed() && ( hasBuffer() || m_state == EXTERNAL ) );
-
-  if (hasBuffer() && m_data_buffer->isAllocated() )
+  // Valid if view has a description and an external pointer or compatible
+  // buffer to apply description to.
+  if ( isDescribed() &&
+      ( m_state == EXTERNAL ||
+        ( hasBuffer() && m_data_buffer->isAllocated() &&
+        ( getTotalBytes() <= m_data_buffer->getTotalBytes()))
+      )
+     )
   {
-    SLIC_CHECK_MSG(
-      getTotalBytes() <= m_data_buffer->getTotalBytes(),
-      "Apply not valid, # of bytes required by view description exceeds bytes in buffer.");
-    success = success && ( getTotalBytes() <= m_data_buffer->getTotalBytes() );
+    return true;
   }
 
-  return success;
+  SLIC_CHECK_MSG(isDescribed(),
+     "Apply not valid, no description in view to apply.");
+  SLIC_CHECK_MSG( ( m_state == EXTERNAL ||
+    ( hasBuffer() && m_data_buffer->isAllocated() &&
+    ( getTotalBytes() <= m_data_buffer->getTotalBytes() ) ) ), "Apply not valid, no applicable data to apply description to.");
+
+  return false;
+
 }
 
 /*
