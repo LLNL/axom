@@ -140,13 +140,6 @@ DataView * DataGroup::createView( const std::string& name,
 DataView * DataGroup::createView( const std::string& name,
                                   const DataType& dtype )
 {
-  if ( dtype.is_empty() )
-  {
-    SLIC_CHECK_MSG( !dtype.is_empty(),
-        " Unable to call createView with empty data type.");
-    return ATK_NULLPTR;
-  }
-
   DataView * view = createView(name);
   if (view != ATK_NULLPTR)
   {
@@ -166,13 +159,6 @@ DataView * DataGroup::createView( const std::string& name,
 DataView * DataGroup::createView( const std::string& name,
                                   const Schema& schema )
 {
-  if ( schema.dtype().is_empty() )
-  {
-    SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        " Unable to call createView, schema has empty data type.");
-    return ATK_NULLPTR;
-  }
-
   DataView * view = createView(name);
   if (view != ATK_NULLPTR)
   {

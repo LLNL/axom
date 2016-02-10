@@ -761,6 +761,13 @@ DataView * DataView::declare(TypeID type, int ndims, SidreLength * shape)
  */
 DataView * DataView::declare(const DataType& dtype)
 {
+  if ( dtype.is_empty() )
+  {
+    SLIC_CHECK_MSG( !dtype.is_empty(),
+        " Unable to set description in View, datatype parameter is empty.");
+    return this;
+  }
+
   m_schema.set(dtype);
 
   if ( m_state == EMPTY )
@@ -782,6 +789,14 @@ DataView * DataView::declare(const DataType& dtype)
  */
 DataView * DataView::declare(const Schema& schema)
 {
+  if ( schema.dtype().is_empty() )
+  {
+    SLIC_CHECK_MSG( !schema.dtype().is_empty(),
+        " Unable to set description in View, schema parameter has empty datatype.");
+    return this;
+  }
+
+
   m_schema.set(schema);
 
   if ( m_state == EMPTY )
