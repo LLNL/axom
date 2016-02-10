@@ -15,6 +15,9 @@
 #include "quest/Point.hpp"
 #include "quest/MortonIndex.hpp"
 
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
 #include <cstdlib>
 #include <limits>
 
@@ -57,9 +60,7 @@ namespace {
 
 TEST( quest_point, test_max_set_bit)
 {
-    std::cout <<" This test checks that MortonBase's maxSetBit function works properly"
-            << std::endl;
-
+    SLIC_INFO(" This test checks that MortonBase's maxSetBit function works properly");
 
     typedef int CoordType;
 
@@ -86,6 +87,10 @@ TEST( quest_point, test_max_set_bit)
 TEST( quest_point, test_mortonizer)
 {
   using namespace quest;
+
+  SLIC_INFO("Testing Morton conversion on some simple points");
+
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
 
   Point<int,2> pt2(2);  // (0b10, 0b10)
   Mortonizer<int,2> morton2;
@@ -118,6 +123,7 @@ TEST( quest_point, test_mortonizer)
   EXPECT_EQ( mIdx3, mIdx3Alt );
   EXPECT_EQ( morton3.demortonize(mIdx3Alt), pt3 );
 
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
 
   // The following will not compile -- static_assert CoordType must be integral
   //Mortonizer<double,2> mortonD;
@@ -133,15 +139,21 @@ void testMortonizer2D()
     typedef Point<CoordType, DIM> GridPoint;
 
     int maxBits = quest::Mortonizer<CoordType,DIM>::uniqueCoordBits();
-    std::cout<<"\tMax bits is: " << maxBits << std::endl;
+    SLIC_INFO("\tMax bits per dimension: " << std::numeric_limits<CoordType>::digits);
+    SLIC_INFO("\tMax unique bits per dimension: " << maxBits);
 
-
+    SLIC_DEBUG("Testing " << MAX_ITER << " random points");
     for(int i=0; i< MAX_ITER; ++i)
     {
         GridPoint origPt = randomPoint<CoordType, DIM>(0, 1 << maxBits);
+        SLIC_DEBUG( "\tOriginal point: " << origPt);
 
         MortonIndex mortonIdx = convertPointToMorton2D( origPt);
+        SLIC_DEBUG( "\tMorton index: " << mortonIdx);
+
         GridPoint convertedPt = convertMortonToPoint2D<CoordType>( mortonIdx);
+        SLIC_DEBUG( "\tConverted point: " << convertedPt << "\n..");
+
         EXPECT_EQ( origPt, convertedPt );
 
         MortonIndex convertedMortonIdx = convertPointToMorton2D( convertedPt );
@@ -152,33 +164,33 @@ void testMortonizer2D()
 
 TEST( quest_point, test_integral_types_2D)
 {
-    std::cout <<"*** Testing morton indexing in 2D with different coord types" << std::endl;
+    SLIC_INFO("*** Testing morton indexing in 2D with different coord types");
 
-    std::cout <<"Testing char -- ";
+    SLIC_INFO("Testing char -- ");
     testMortonizer2D<char>();
 
-    std::cout <<"Testing uchar -- ";
+    SLIC_INFO("Testing uchar -- ");
     testMortonizer2D<unsigned char>();
 
     // --
-    std::cout <<"Testing short -- ";
+    SLIC_INFO("Testing short -- ");
     testMortonizer2D<short>();
 
-    std::cout <<"Testing ushort -- ";
+    SLIC_INFO("Testing ushort-- ");
     testMortonizer2D<unsigned short>();
 
     // --
-    std::cout <<"Testing int-- ";
+    SLIC_INFO("Testing int -- ");
     testMortonizer2D<int>();
 
-    std::cout <<"Testing uint-- ";
+    SLIC_INFO("Testing uint -- ");
     testMortonizer2D<unsigned int>();
 
     // --
-    std::cout <<"Testing long-- ";
+    SLIC_INFO("Testing long -- ");
     testMortonizer2D<long long int>();
 
-    std::cout <<"Testing ull-- ";
+    SLIC_INFO("Testing ull-- ");
     testMortonizer2D<unsigned long long int>();
 
 }
@@ -193,15 +205,23 @@ void testMortonizer3D()
     typedef Point<CoordType, DIM> GridPoint;
 
     int maxBits = quest::Mortonizer<CoordType,DIM>::uniqueCoordBits();
-    std::cout<<"\tMax bits is: " << maxBits << std::endl;
+    SLIC_INFO("\tMax bits per dimension: " << std::numeric_limits<CoordType>::digits);
+    SLIC_INFO("\tMax unique bits per dimension: " << maxBits );
 
-
+    SLIC_DEBUG("Testing " << MAX_ITER << " random points");
     for(int i=0; i< MAX_ITER; ++i)
     {
         GridPoint origPt = randomPoint<CoordType, DIM>(0, 1 << maxBits);
 
+        SLIC_DEBUG( "\tOriginal point: " << origPt);
+
         MortonIndex mortonIdx = convertPointToMorton3D( origPt);
+        SLIC_DEBUG( "\tMorton index: " << mortonIdx);
+
         GridPoint convertedPt = convertMortonToPoint3D<CoordType>( mortonIdx);
+        SLIC_DEBUG( "\tConverted point: " << convertedPt << "\n..");
+
+
         EXPECT_EQ( origPt, convertedPt );
 
         MortonIndex convertedMortonIdx = convertPointToMorton3D( convertedPt );
@@ -212,35 +232,34 @@ void testMortonizer3D()
 
 TEST( quest_point, test_integral_types_3D)
 {
-    std::cout <<"*** Testing morton indexing in 3D with different coord types" << std::endl;
+    SLIC_INFO("*** Testing morton indexing in 3D with different coord types");
 
-    std::cout <<"Testing char -- ";
+    SLIC_INFO("Testing char -- ");
     testMortonizer3D<char>();
 
-    std::cout <<"Testing uchar -- ";
+    SLIC_INFO("Testing uchar -- ");
     testMortonizer3D<unsigned char>();
 
     // --
-    std::cout <<"Testing short -- ";
+    SLIC_INFO("Testing short -- ");
     testMortonizer3D<short>();
 
-    std::cout <<"Testing ushort -- ";
+    SLIC_INFO("Testing ushort-- ");
     testMortonizer3D<unsigned short>();
 
     // --
-    std::cout <<"Testing int-- ";
+    SLIC_INFO("Testing int -- ");
     testMortonizer3D<int>();
 
-    std::cout <<"Testing uint-- ";
+    SLIC_INFO("Testing uint -- ");
     testMortonizer3D<unsigned int>();
 
     // --
-    std::cout <<"Testing long-- ";
+    SLIC_INFO("Testing long -- ");
     testMortonizer3D<long long int>();
 
-    std::cout <<"Testing ull-- ";
+    SLIC_INFO("Testing ull-- ");
     testMortonizer3D<unsigned long long int>();
-
 }
 
 
@@ -249,7 +268,9 @@ TEST( quest_point, test_point_hasher)
 {
     using namespace quest;
 
-    std::cout<<"** Here we test the point hasher which can be used e.g. in an unordered_map" << std::endl;
+    SLIC_INFO("** Here we test the point hasher which can be used e.g. in an unordered_map");
+
+    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
 
     typedef int CoordType;
     PointHash<CoordType> ptHash;
@@ -284,11 +305,11 @@ TEST( quest_point, test_point_hasher)
     exp = 0x953111;                 // in hex (read bits bottom up, left to right)
     EXPECT_EQ( ptHash(p4), exp);
 
+    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
+
 }
 
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
@@ -297,6 +318,7 @@ int main(int argc, char * argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info );
 
   // finalized when exiting main scope
 

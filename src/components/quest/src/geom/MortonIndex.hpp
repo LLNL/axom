@@ -1,6 +1,6 @@
 
-#ifndef BIT_TWIDDLE_HXX_
-#define BIT_TWIDDLE_HXX_
+#ifndef MORTON_INDEX_HXX_
+#define MORTON_INDEX_HXX_
 
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
@@ -22,9 +22,9 @@
  * that can be used as a std::hash for unordered_maps
  */
 
-namespace {
-
-}
+#if defined(__clang__)
+  #define CIRCUMVENT_CLANG_OPTIMIZATION_BUG
+#endif
 
 namespace quest
 {
@@ -60,9 +60,9 @@ namespace quest
     protected:
 
         /**
-         * \brief Expands bits in bitwise representation of an integral type and fills holes with zero
-         * \param [in] x The integral type that we are expanding
-         * \return An expanded MortonIndex
+         * \brief Expands bits in bitwise representation of an integral type and zero-fills the holes
+         * \param [in] x The integer type that we are expanding
+         * \return A zero-filled expanded MortonIndex
          * In dimension D, it adds (D-1) zeros between each bit,
          * so, e.g. in 2D, 6 == 0b0110 becomes 0b*0*1*1*0 == 0b00010100 == 20
          * \todo We might be able to reduce the number of iterations MAX_ITER
@@ -70,7 +70,23 @@ namespace quest
          */
         static MortonIndex expandBits(MortonIndex x)
         {
+          // NOTE: KW 2/2016
+          //   We are marking the loop variable as 'volatile' in clang
+          //   to circumvent a bug in clang's optimizer for the 3D case.
+          //   We are testing for this in quest/tests/quest_morton_clang_repro.cpp.
+          //
+          //   For simplicity, this 'fix' is currently being applied
+          //   to the 2D case as well (which does not have a compiler bug).
+          //
+          //   If we see a performance impact in 2D, we can use a std::enable_if
+          //    (or tagged dispatch) on the derived dimension to optimize the 2D case
+          //   (the dimension =is actually available at compile time, just not to the preprocessor),
+
+          #if defined(CIRCUMVENT_CLANG_OPTIMIZATION_BUG)
+            for(volatile int i=Derived::MAX_ITER; i >= 0; --i)
+          #else
             for(int i=Derived::MAX_ITER; i >= 0; --i)
+          #endif
             {
                 x = (x | (x << Derived::S[i])) & Derived::B[i];
             }
@@ -504,4 +520,9 @@ namespace quest
 
 } // end namespace quest
 
-#endif  // BIT_TWIDDLE_HXX_
+
+#ifdef CIRCUMVENT_CLANG_OPTIMIZATION_BUG
+  #undef CIRCUMVENT_CLANG_OPTIMIZATION_BUG
+#endif
+
+#endif  // MORTON_INDEX_HXX_
