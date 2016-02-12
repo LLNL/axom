@@ -23,23 +23,25 @@ Useful links
   * `Bamboo <https://lc.llnl.gov/bamboo/browse/ASC>`_
   * `ASCTOOLKIT-USERS mailing list <https://listserv.llnl.gov/Scripts/wa.exe?A0=ASCTOOLKIT-USERS>`_
   * `ASCTOOLKIT-DEV mailing list <https://listserv.llnl.gov/Scripts/wa.exe?A0=ASCTOOLKIT-DEV>`_
-  * `Coding Guidelines <https://lc.llnl.gov/toolkit/docs/sphinx/coding_guidlines_docs/html/index.html>`_
+  * `Coding Guidelines  <../../coding_guidelines_docs/html/index.html>`_
 
 Components
 
   *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_
   *  Lumberjack (Scalable Message Filtering)
-  *  `SiDRe: Simulation Data Repository (formerly known as Datastore) <https://lc.llnl.gov/toolkit/docs/sphinx/sidre_docs/html/index.html>`_
+  *  `SiDRe: Simulation Data Repository (Datastore) <../../sidre_docs/html/index.html>`_
   *  SLAM (Set-theoretic Lightweight API for Meshes)
   *  SLIC (Simple Logging Interface Code)
-  *  `Shroud (C++ API to C/Fortran)  <https://lc.llnl.gov/toolkit/docs/sphinx/shroud_docs/html/index.html>`_
+  *  `Shroud (C++ API to C/Fortran)  <../../shroud_docs/html/index.html>`_
 
 Doxygen
 
-  *  `SLAM <https://lc.llnl.gov/toolkit/docs/doxygen/meshapi_doxygen/html/index.html>`_
-  *  `SiDRe <https://lc.llnl.gov/toolkit/docs/doxygen/sidre_doxygen/html/index.html>`_
-  *  `SLIC <https://lc.llnl.gov/toolkit/docs/doxygen/slic_doxygen/html/index.html>`_
-  
+  *  `Common <../../../doxygen/common_doxygen/html/index.html>`_
+  *  `Quest <../../../doxygen/quest_doxygen/html/index.html>`_
+  *  `Sidre <../../../doxygen/sidre_doxygen/html/index.html>`_
+  *  `SLAM <../../../doxygen/slam_doxygen/html/index.html>`_
+  *  `SLIC <../../../doxygen/slic_doxygen/html/index.html>`_
+
 
 
 
