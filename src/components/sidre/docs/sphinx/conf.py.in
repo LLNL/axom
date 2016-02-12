@@ -105,17 +105,7 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ----------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-html_theme = '@SPHINX_HTML_THEME@'
-
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-html_theme_options = @SPHINX_HTML_THEME_OPTIONS@
-
-# Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+@SPHINX_HTML_THEME@
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -268,13 +258,6 @@ texinfo_documents = [
 
 # add breathe support
 
-breathe_projects = { "conduit": "@CMAKE_CURRENT_BINARY_DIR@/../doxygen/xml/" }
+breathe_projects = { "sidre": "@CMAKE_CURRENT_BINARY_DIR@/../sidre/xml/" }
 
-breathe_default_project = "conduit"
-
-try:
-    import sphinx_rtd_theme
-    html_theme = "sphinx_rtd_theme"
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-except:
-    pass
+breathe_default_project = "sidre"

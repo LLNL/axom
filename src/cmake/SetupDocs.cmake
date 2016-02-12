@@ -65,13 +65,30 @@ if(SPHINX_FOUND)
     #html_theme = 'nature'
     #html_theme = 'haiku'
     #html_theme = 'sphinxdoc'
+    #
+    # Theme options are theme-specific and customize the look and feel of a theme
+    # further.  For a list of options available for each theme, see the
+    # documentation.
+    #html_theme =
+    #
+    # Add any paths that contain custom themes here, relative to this directory.
+    #html_theme_path = []
 
-#    set(SPHINX_HTML_THEME          "alabaster")
-#    set(SPHINX_HTML_THEME_OPTIONS  "{}")
-
-    # use with classic
-    set(SPHINX_HTML_THEME         "classic")
-    set(SPHINX_HTML_THEME_OPTIONS "{'codebgcolor': 'lightgrey', 'stickysidebar': 'true' }")
+    set(SPHINX_HTML_THEME "
+try:
+    import sphinx_rtd_theme
+except:
+    html_theme = 'classic'
+    html_theme_options = {
+        'codebgcolor': 'lightgrey',
+        'stickysidebar': 'true'
+    }
+    html_theme_path = []
+else:
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_options = {}
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+")
 
     add_custom_target(sphinx_docs)
     add_dependencies(docs sphinx_docs)
