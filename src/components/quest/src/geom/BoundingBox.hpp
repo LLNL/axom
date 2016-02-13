@@ -300,6 +300,18 @@ public:
 
   /*!
    *****************************************************************************
+   * \param [in] otherBB the bounding box that we are checking.
+   * \return status true if bb intersects, else false.
+   * \note We are allowing the other bounding box to have a different coordinate
+   *  type. This should work as long as the two CoordTypes are comparable with
+   *  operator<().
+   *****************************************************************************
+   */
+  template < typename OtherType >
+  bool intersects( const BoundingBox< OtherType, DIM >& otherBB ) const;
+
+  /*!
+   *****************************************************************************
    * \brief Checks that we have a valid bounding box.
    * \note A bounding box is valid when the length of each dimension is greater
    *  than or equal to zero.
@@ -389,6 +401,26 @@ bool BoundingBox<CoordType, DIM>::contains(
         const BoundingBox<OtherCoordType,DIM>& otherBB) const
 {
     return this->contains(otherBB.getMin()) && this->contains(otherBB.getMax());
+}
+
+//------------------------------------------------------------------------------
+template < typename CoordType, int DIM >
+template < typename OtherType  >
+bool BoundingBox< CoordType,DIM >::intersects(
+        const BoundingBox< OtherType, DIM >& otherBB ) const
+{
+  for ( int i=0; i < DIM; ++i ) {
+
+     if ( (m_max[ i ] < otherBB.m_min[ i ]) ||
+          (m_min[ i ] > otherBB.m_max[ i ]) ) {
+
+         return false;
+
+     } // END if
+
+  } // END for all dimensions
+
+  return true;
 }
 
 //------------------------------------------------------------------------------
