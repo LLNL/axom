@@ -99,7 +99,7 @@ public:
    */
   BoundingBox()
     : m_min( PointType( std::numeric_limits< CoordType>::max() ) )
-    , m_max( PointType( std::numeric_limits< CoordType>::min() ) ) {}
+    , m_max( PointType( (-1.0)*std::numeric_limits< CoordType>::max() ) ) {}
 
 
   /*!
