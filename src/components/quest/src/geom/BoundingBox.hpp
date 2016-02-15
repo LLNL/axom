@@ -341,6 +341,33 @@ public:
    */
   std::ostream& print(std::ostream& os) const;
 
+  /// \name Static methods
+  /// @{
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the list of points of a 2-D BoundingBox instance.
+   * \param [in]  bb user-supplied instance of the bounding box.
+   * \param [out] pnts the list of points
+   * \post pnts.size() == 4
+   *****************************************************************************
+   */
+  static void getPoints( const BoundingBox< CoordType,2 >& bb,
+                         std::vector< Point< CoordType,2 > >& pnts );
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the list of points of a 3-D BoundingBox instance.
+   * \param [in]  bb user-supplied instance of the bounding box.
+   * \param [out] pnts the list of points
+   * \post pnts.size() == 8
+   *****************************************************************************
+   */
+  static void getPoints( const BoundingBox< CoordType,3 >& bb,
+                         std::vector< Point< CoordType,3 > >& pnts );
+
+  /// @}
+
 private:
   /*!
    *****************************************************************************
@@ -593,6 +620,45 @@ void BoundingBox< T,DIM >::bisect( BoxType& right, BoxType& left, int dim )
    new_left_min[ dim ] = mid;
    left.setMin( new_left_min );
    SLIC_ASSERT( left.isValid() );
+}
+
+//------------------------------------------------------------------------------
+//    Implementation of static methods
+//------------------------------------------------------------------------------
+template < typename CoordType, int DIM >
+inline void BoundingBox< CoordType,DIM >::getPoints(
+        const BoundingBox< CoordType,2 >& bb,
+        std::vector< Point< CoordType,2 > >& pnts )
+{
+  pnts.resize( 4 );
+  const Point< CoordType,2 >& min = bb.getMin();
+  const Point< CoordType,2 >& max = bb.getMax();
+
+  pnts[ 0 ] = Point< CoordType,2 >::make_point( min[0], min[1] );
+  pnts[ 1 ] = Point< CoordType,2 >::make_point( max[0], min[1] );
+  pnts[ 2 ] = Point< CoordType,2 >::make_point( max[0], max[1] );
+  pnts[ 3 ] = Point< CoordType,2 >::make_point( min[0], max[1] );
+}
+
+//------------------------------------------------------------------------------
+template < typename CoordType, int DIM >
+inline void BoundingBox< CoordType,DIM >::getPoints(
+        const BoundingBox< CoordType,3 >& bb,
+        std::vector< Point< CoordType,3 > >& pnts )
+{
+  pnts.resize( 8 );
+  const Point< CoordType,3 >& min = bb.getMin();
+  const Point< CoordType,3 >& max = bb.getMax();
+
+  pnts[ 0 ] = Point< CoordType,3 >::make_point( min[0], min[1], min[2] );
+  pnts[ 1 ] = Point< CoordType,3 >::make_point( max[0], min[1], min[2] );
+  pnts[ 2 ] = Point< CoordType,3 >::make_point( max[0], max[1], min[2] );
+  pnts[ 3 ] = Point< CoordType,3 >::make_point( min[0], max[1], min[2] );
+
+  pnts[ 4 ] = Point< CoordType,3 >::make_point( min[0], min[1], max[2] );
+  pnts[ 5 ] = Point< CoordType,3 >::make_point( max[0], min[1], max[2] );
+  pnts[ 6 ] = Point< CoordType,3 >::make_point( max[0], max[1], max[2] );
+  pnts[ 7 ] = Point< CoordType,3 >::make_point( min[0], max[1], max[2] );
 }
 
 //------------------------------------------------------------------------------
