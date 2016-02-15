@@ -9,7 +9,9 @@
 #-------------------------------------------------------------------------------
 
 set( quest_headers
-   
+
+    SignedDistance.hpp
+
     ## Geometry Headers
     geom/BoundingBox.hpp
     geom/BucketTree.hpp
