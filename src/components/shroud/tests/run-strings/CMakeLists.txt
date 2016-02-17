@@ -30,7 +30,7 @@ add_test( NAME shroud-run-strings
 #
 # Make Python module library
 #
-if(ENABLE_PYTHON_MODULE)
+if(ENABLE_PYTHON_API)
     include_directories(${PYTHON_INCLUDE_DIRS})
 
     set(BUILD_SHARED_LIBS TRUE)
@@ -59,4 +59,4 @@ if(ENABLE_PYTHON_MODULE)
 #        COMMAND ln -sf libstrings.so strings.so
 #    )
 
-endif(ENABLE_PYTHON_MODULE)
+endif(ENABLE_PYTHON_API)

@@ -68,22 +68,21 @@ EOS8
 ----
 
 EOS8 is written in C++ and plans to provide a Fortran binding.
-"""
-We pass around handles when possible, basically an integer id that maps to
-an actual C++ object underneath the covers. The handles are the first
-argument. There are a few places where pointers get passed around and
-reinterpret_cast'ed in the C++ layer.
 
-We looked at Babel but decided not to use it since it wasn't really being
-supported any longer, it was a bit heavyweight, and there was some
-run-time support needed.
+    We pass around handles when possible, basically an integer id that maps to
+    an actual C++ object underneath the covers. The handles are the first
+    argument. There are a few places where pointers get passed around and
+    reinterpret_cast'ed in the C++ layer.
 
-Right now the C++ headers are converted to C via a perl script with
-regexes with some hand-rolling when necessary. I tried to use clang and
-parse the headers, but never quite got it to work. The fortran is
-generated off the C wrappers. I'd like to take better advantage of native
-fortran datatypes, but aren't quite there yet.
-"""
+    We looked at Babel but decided not to use it since it wasn't really being
+    supported any longer, it was a bit heavyweight, and there was some
+    run-time support needed.
+
+    Right now the C++ headers are converted to C via a perl script with
+    regexes with some hand-rolling when necessary. I tried to use clang and
+    parse the headers, but never quite got it to work. The fortran is
+    generated off the C wrappers. I'd like to take better advantage of native
+    fortran datatypes, but aren't quite there yet.
 
 CDI
 ---
@@ -91,3 +90,8 @@ CDI
 CDI is a C and Fortran Interface to access Climate and NWP model Data. https://code.zmaw.de/projects/cdi
 
 "One part of CDI[1] is a such generator. It still has some rough edges and we haven't yet decided what to do about functions returning char * (it seems like that will need some wrapping unless we simply return TYPE(c_ptr) and let the caller deal with that) but if you'd like to have a starting point in Ruby try interfaces/f2003/bindGen.rb from the tarball you can download" https://groups.google.com/d/msg/comp.lang.fortran/oadwd3HHtGA/J8DD8kGeVw8J
+
+Links
+-----
+
+  * `Generating C Interfaces <http://fortranwiki.org/fortran/show/Generating+C+Interfaces>`_
