@@ -783,7 +783,7 @@ DataView * DataView::declare(const Schema& schema)
 void DataView::declareShape()
 {
   m_shape.resize(1);
-  m_shape[0] = m_schema.dtype().number_of_elements();
+  m_shape[0] = getSchema().dtype().number_of_elements();
 }
 
 /*

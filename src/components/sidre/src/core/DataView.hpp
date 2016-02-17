@@ -510,17 +510,21 @@ public:
 //
     // Check that parameter type provided matches what type is stored in the node.
 #if defined(ATK_DEBUG)
-    DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
-    SLIC_ASSERT_MSG( arg_id == m_node.dtype().id(),
-                     "Mismatch between setScalar()" <<
-                     DataType::id_to_name(
-                       arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() <<
-                     ").");
+    if (m_state != EMPTY)
+    {
+      DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
+      SLIC_ASSERT_MSG( arg_id == m_node.dtype().id(),
+                       "Mismatch between setScalar()" <<
+                       DataType::id_to_name(
+                         arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() <<
+                       ").");
+    }
 #endif
 
     m_node.set(value);
     m_is_applied = true;
     m_state = SCALAR;
+    declareShape();
     return this;
   }
 
@@ -537,6 +541,7 @@ public:
     m_node.set_string(value);
     m_state = STRING;
     m_is_applied = true;
+    declareShape();
     return this;
   };
 
