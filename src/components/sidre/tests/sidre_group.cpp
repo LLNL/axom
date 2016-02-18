@@ -682,3 +682,52 @@ TEST(sidre_group,save_restore_complex)
   delete ds2;
 
 }
+
+//------------------------------------------------------------------------------
+// isEquivalentTo()
+//------------------------------------------------------------------------------
+TEST(sidre_group,is_equivalent_to)
+{
+  DataStore * ds = new DataStore();
+
+  //These are the parents for two separate subtrees of the root group.
+  //Everything below them will be created identically.
+  DataGroup * parent1 = ds->getRoot()->createGroup("parent1");
+  DataGroup * parent2 = ds->getRoot()->createGroup("parent2");
+
+  //The flds1 and flds2 groups will be compared for equivalence
+  DataGroup * flds1 = parent1->createGroup("fields");
+  DataGroup * flds2 = parent2->createGroup("fields");
+
+  DataGroup * ga1 = flds1->createGroup("a");
+  DataGroup * gb1 = flds1->createGroup("b");
+  DataGroup * gc1 = flds1->createGroup("c");
+  DataGroup * ga2 = flds2->createGroup("a");
+  DataGroup * gb2 = flds2->createGroup("b");
+  DataGroup * gc2 = flds2->createGroup("c");
+
+  ga1->createViewAndAllocate("i0", DataType::c_int());
+  gb1->createViewAndAllocate("f0", DataType::c_float());
+  gc1->createViewAndAllocate("d0", DataType::c_double());
+  ga2->createViewAndAllocate("i0", DataType::c_int());
+  gb2->createViewAndAllocate("f0", DataType::c_float());
+  gc2->createViewAndAllocate("d0", DataType::c_double());
+
+  ga1->getView("i0")->setScalar(1);
+  gb1->getView("f0")->setScalar( 100.0f );
+  gc1->getView("d0")->setScalar(3000.00);
+  ga2->getView("i0")->setScalar(1);
+  gb2->getView("f0")->setScalar( 100.0f );
+  gc2->getView("d0")->setScalar(3000.00);
+
+  // Groups were created identically, so should be equivalent.
+  EXPECT_TRUE(flds1->isEquivalentTo(flds2));
+
+  // Add something extra to flds2, making them not equivalent.
+  gc2->createViewAndAllocate("extra", DataType::c_double());
+
+  EXPECT_FALSE(flds1->isEquivalentTo(flds2));
+
+  delete ds;
+
+}

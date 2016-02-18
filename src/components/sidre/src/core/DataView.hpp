@@ -283,6 +283,18 @@ public:
     return m_node;
   }
 
+  /*!
+   * \brief Returns boolean telling whether two DataViews have equivalent
+   * internal description, in terms of name, datatype, and current state of the
+   * object.  Values of the data are not checked.
+   */
+  bool isEquivalentTo(const DataView * other) const
+  {
+    return (m_name == other->m_name) && (getTypeID() == other->getTypeID())
+           && (m_state == other->m_state)
+           && (m_is_applied == other->m_is_applied);
+  }
+
 //@}
 
 

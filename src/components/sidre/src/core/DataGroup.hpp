@@ -229,6 +229,15 @@ public:
     return m_view_coll.getItemName(idx);
   }
 
+  /*!
+   * \brief Return boolean telling if two DataGroups are equivalent.
+   *
+   * To be equivalent they must have identical hierarchy structures with
+   * the same names for all child DataGroups and DataViews, and the DataViews
+   * must all pass DataView's equivalence test.
+   */
+  bool isEquivalentTo(const DataGroup * other) const;
+
 //@}
 
 
