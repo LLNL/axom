@@ -537,11 +537,28 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
  * class in the view header.
  *************************************************************************
  */
-bool DataView::isAllocated() const
+bool DataView::isAllocated()
 {
-  return ( (m_data_buffer != ATK_NULLPTR) && (m_data_buffer->isAllocated() ) );
-}
+  if ( m_state == EMPTY || m_state == DESCRIBED )
+  {
+    // May want to warn user if they're calling this on an empty view.
+    SLIC_CHECK_MSG( m_state != EMPTY && m_state != DESCRIBED, "isAllocated was called with an empty view, was this intentional?");
+    return false;
+  }
 
+  if ( m_state == SCALAR ||
+       m_state == STRING ||
+       ( hasBuffer() && m_data_buffer->isAllocated() ) ||
+       // TODO - Clean this up when we stop keeping our external pointers in two places!
+       (isOpaque() && ((void *)m_node.as_uint64() != ATK_NULLPTR)) ||
+       (!isOpaque() && m_node.element_ptr(0) != ATK_NULLPTR )
+     )
+  {
+    return true;
+  }
+
+  return false;
+}
 
 /*
  *************************************************************************
@@ -823,7 +840,7 @@ bool DataView::isAllocateValid() const
 {
   // Check that we have a description and rule out having data that allocate
   // can't be called on.
-  if ( !isDescribed() || m_state == EXTERNAL || m_state == SCALAR || m_state == EXTERNAL )
+  if ( !isDescribed() || m_state == EXTERNAL || m_state == SCALAR )
   {
     SLIC_CHECK_MSG( isDescribed(),
                     "Allocate is not valid, view has no description.");

@@ -157,7 +157,8 @@ public:
   /*!
    * \brief Return true if view holds data that has been allocated.
    */
-  bool isAllocated() const;
+  // TODO - Would like to make this a const function.  Need to have conduit element_ptr() be const to do this.
+  bool isAllocated();
 
   /*!
    * \brief Return true if data description (schema) has been applied to data
@@ -510,7 +511,7 @@ public:
     // Check that parameter type provided matches what type is stored in the node.
 #if defined(ATK_DEBUG)
     DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
-    SLIC_ASSERT_MSG( arg_id == m_node.dtype().id(),
+    SLIC_CHECK_MSG( arg_id == m_node.dtype().id(),
                      "Mismatch between setScalar()" <<
                      DataType::id_to_name(
                        arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() <<
@@ -630,6 +631,7 @@ public:
    * \brief Returns a void pointer to data in the view (if described, it will take into account any
    * offset, stride, schema, etc. applied).
    */
+  // TODO - Would like this to be a const function, but it calls a conduit function which is not const.
   void * getVoidPtr();
 
 //@}
