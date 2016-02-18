@@ -797,8 +797,8 @@ DataView * DataView::declare(const Schema& schema)
  */
 void DataView::declareShape()
 {
-  m_shape.resize(1);
-  m_shape[0] = m_schema.dtype().number_of_elements();
+  m_shape.clear();
+  m_shape.push_back(m_schema.dtype().number_of_elements());
 }
 
 /*
@@ -810,10 +810,10 @@ void DataView::declareShape()
  */
 void DataView::declareShape(int ndims, SidreLength * shape)
 {
-  m_shape.resize(ndims);
+  m_shape.clear();
   for (int i=0 ; i < ndims ; i++)
   {
-    m_shape[i] = shape[i];
+    m_shape.push_back(shape[i]);
   }
 }
 
