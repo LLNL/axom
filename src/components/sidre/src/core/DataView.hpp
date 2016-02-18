@@ -157,7 +157,8 @@ public:
   /*!
    * \brief Return true if view holds data that has been allocated.
    */
-  bool isAllocated() const;
+  // TODO - Would like to make this a const function.  Need to have conduit element_ptr() be const to do this.
+  bool isAllocated();
 
   /*!
    * \brief Return true if data description (schema) has been applied to data
@@ -219,7 +220,7 @@ public:
    */
   size_t getTotalBytes() const
   {
-    return getSchema().total_bytes();
+    return m_schema.total_bytes();
   }
 
   /*!
@@ -230,7 +231,7 @@ public:
    */
   size_t getNumElements() const
   {
-    return getSchema().dtype().number_of_elements();
+    return m_schema.dtype().number_of_elements();
   }
 
   /*!
@@ -257,14 +258,7 @@ public:
    */
   const Schema& getSchema() const
   {
-    if ( isApplied() )
-    {
-      return m_node.schema();
-    }
-    else
-    {
-      return m_schema;
-    }
+    return m_node.schema();
   }
 
   /*!
@@ -510,7 +504,7 @@ public:
     // Check that parameter type provided matches what type is stored in the node.
 #if defined(ATK_DEBUG)
     DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
-    SLIC_ASSERT_MSG( arg_id == m_node.dtype().id(),
+    SLIC_CHECK_MSG( arg_id == m_node.dtype().id(),
                      "Mismatch between setScalar()" <<
                      DataType::id_to_name(
                        arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() <<
@@ -518,6 +512,7 @@ public:
 #endif
 
     m_node.set(value);
+    m_schema.set(m_node.schema());
     m_is_applied = true;
     m_state = SCALAR;
     return this;
@@ -534,6 +529,7 @@ public:
   DataView * setString(const std::string& value)
   {
     m_node.set_string(value);
+    m_schema.set(m_node.schema());
     m_state = STRING;
     m_is_applied = true;
     return this;
@@ -630,7 +626,8 @@ public:
    * \brief Returns a void pointer to data in the view (if described, it will take into account any
    * offset, stride, schema, etc. applied).
    */
-  void * getVoidPtr();
+  // TODO - Would like this to be a const function, but it calls a conduit function which is not const.
+  void * getVoidPtr() const;
 
 //@}
 

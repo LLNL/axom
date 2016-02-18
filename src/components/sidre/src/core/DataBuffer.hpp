@@ -135,11 +135,11 @@ public:
   //@}
 
   /*!
-   * \brief Return true if buffer contains allocated data.
+   * \brief Return true if buffer contains allocated data of > 0 bytes.
    */
   bool isAllocated() const
   {
-    return m_data != ATK_NULLPTR;
+    return (m_data != ATK_NULLPTR) && (getTotalBytes() > 0);
   }
 
   /*!
