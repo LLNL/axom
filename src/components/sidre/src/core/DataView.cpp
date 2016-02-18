@@ -105,7 +105,7 @@ DataView * DataView::allocate(const DataType& dtype)
   if ( dtype.is_empty() )
   {
     SLIC_CHECK_MSG( !dtype.is_empty(),
-        " Unable to allocate with empty data type.");
+        "Unable to allocate with empty data type.");
     return this;
   }
 
@@ -127,7 +127,7 @@ DataView * DataView::allocate(const Schema& schema)
   if ( schema.dtype().is_empty() )
   {
     SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        " Unable to allocate, schema has empty data type.");
+        "Unable to allocate, schema has empty data type.");
     return this;
   }
 
@@ -194,7 +194,7 @@ DataView * DataView::reallocate(const DataType& dtype)
   if (dtype.is_empty() || !isAllocateValid() || type != view_type)
   {
     SLIC_CHECK_MSG( !dtype.is_empty(),
-        " Unable to re-allocate with empty data type.");
+        "Unable to re-allocate with empty data type.");
     SLIC_CHECK_MSG( isAllocateValid(),
                     "View " << this->getName() << "'s state " <<
         getStateStringName(m_state) << " does not allow data re-allocation");
@@ -234,7 +234,7 @@ DataView * DataView::reallocate(const Schema& schema)
   if ( schema.dtype().is_empty() || !isAllocateValid() || type != view_type )
   {
     SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        " Unable to re-allocate, schema has empty data type.");
+        "Unable to re-allocate, schema has empty data type.");
     SLIC_CHECK_MSG( isAllocateValid(),
                     "View " << this->getName() << "'s state " <<
         getStateStringName(m_state) << " does not allow data re-allocation");
@@ -430,7 +430,7 @@ DataView * DataView::apply(const DataType &dtype)
   if ( dtype.is_empty() )
   {
     SLIC_CHECK_MSG( !dtype.is_empty(),
-        " Unable to apply description, data type is empty.");
+        "Unable to apply description, data type is empty.");
     return this;
   }
 
@@ -452,7 +452,7 @@ DataView * DataView::apply(const Schema& schema)
   if ( schema.dtype().is_empty() )
   {
     SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        " Unable to apply description, schema has empty data type.");
+        "Unable to apply description, schema has empty data type.");
     return this;
   }
 
@@ -462,7 +462,6 @@ DataView * DataView::apply(const Schema& schema)
   return this;
 }
 
-
 /*
  *************************************************************************
  *
@@ -470,7 +469,7 @@ DataView * DataView::apply(const Schema& schema)
  *
  *************************************************************************
  */
-void * DataView::getVoidPtr()
+void * DataView::getVoidPtr() const
 {
   // Verify we actually have some data in the view first.
   if ( m_state == EMPTY ||
@@ -489,10 +488,9 @@ void * DataView::getVoidPtr()
   }
   else
   {
-    return m_node.element_ptr(0);
+    return const_cast<void*>(m_node.element_ptr(0));
   }
 }
-
 
 /*
  *************************************************************************
@@ -781,7 +779,7 @@ DataView * DataView::declare(const DataType& dtype)
   if ( dtype.is_empty() )
   {
     SLIC_CHECK_MSG( !dtype.is_empty(),
-        " Unable to set description in View, datatype parameter is empty.");
+        "Unable to set description in View, datatype parameter is empty.");
     return this;
   }
 
@@ -809,7 +807,7 @@ DataView * DataView::declare(const Schema& schema)
   if ( schema.dtype().is_empty() )
   {
     SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        " Unable to set description in View, schema parameter has empty datatype.");
+        "Unable to set description in View, schema parameter has empty datatype.");
     return this;
   }
 
@@ -840,7 +838,7 @@ bool DataView::isAllocateValid() const
 {
   // Check that we have a description and rule out having data that allocate
   // can't be called on.
-  if ( !isDescribed() || m_state == EXTERNAL || m_state == SCALAR )
+  if ( !isDescribed() || m_state == EXTERNAL || m_state == SCALAR || m_state == STRING)
   {
     SLIC_CHECK_MSG( isDescribed(),
                     "Allocate is not valid, view has no description.");
@@ -901,7 +899,7 @@ bool DataView::isSetExternalDataPtrValid() const
  *
  *************************************************************************
  */
-bool DataView::isApplyValid()
+bool DataView::isApplyValid() const
 {
   // Valid if view has a description and a non-null external pointer or has a
   // compatible buffer to apply description to.

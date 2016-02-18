@@ -627,7 +627,7 @@ public:
    * offset, stride, schema, etc. applied).
    */
   // TODO - Would like this to be a const function, but it calls a conduit function which is not const.
-  void * getVoidPtr();
+  void * getVoidPtr() const;
 
 //@}
 
@@ -766,7 +766,7 @@ private:
    *  \brief Private method returns true if apply is a valid operation on
    *         view; else false
    */
-  bool isApplyValid();
+  bool isApplyValid() const;
 
 //@}
 
