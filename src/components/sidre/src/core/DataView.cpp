@@ -901,20 +901,20 @@ bool DataView::isSetExternalDataPtrValid() const
  *
  *************************************************************************
  */
-bool DataView::isApplyValid() const
+bool DataView::isApplyValid()
 {
-  // Valid if view has a description and an external pointer or compatible
-  // buffer to apply description to.
+  // Valid if view has a description and a non-null external pointer or has a
+  // compatible buffer to apply description to.
   if ( isDescribed() &&
-      ( m_state == EXTERNAL ||
-        ( hasBuffer() && m_data_buffer->isAllocated() &&
-        ( getTotalBytes() <= m_data_buffer->getTotalBytes()))
-      )
+        ( ( (m_state == EXTERNAL) && (getVoidPtr() != ATK_NULLPTR) ) ||
+        ( hasBuffer() && m_data_buffer->isAllocated() && (getTotalBytes() <= m_data_buffer->getTotalBytes()) )
+       )
      )
   {
     return true;
   }
 
+  // TODO - These can be cleaned up (break them up into smaller checks, after SLIC_IF_CHECK is added.
   SLIC_CHECK_MSG(isDescribed(),
      "Apply not valid, no description in view to apply.");
   SLIC_CHECK_MSG( ( m_state == EXTERNAL ||

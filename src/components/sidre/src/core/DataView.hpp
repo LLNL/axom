@@ -220,7 +220,7 @@ public:
    */
   size_t getTotalBytes() const
   {
-    return getSchema().total_bytes();
+    return m_schema.total_bytes();
   }
 
   /*!
@@ -231,7 +231,7 @@ public:
    */
   size_t getNumElements() const
   {
-    return getSchema().dtype().number_of_elements();
+    return m_schema.dtype().number_of_elements();
   }
 
   /*!
@@ -258,14 +258,7 @@ public:
    */
   const Schema& getSchema() const
   {
-    if ( isApplied() )
-    {
-      return m_node.schema();
-    }
-    else
-    {
-      return m_schema;
-    }
+    return m_node.schema();
   }
 
   /*!
@@ -519,6 +512,7 @@ public:
 #endif
 
     m_node.set(value);
+    m_schema.set(m_node.schema());
     m_is_applied = true;
     m_state = SCALAR;
     return this;
@@ -535,6 +529,7 @@ public:
   DataView * setString(const std::string& value)
   {
     m_node.set_string(value);
+    m_schema.set(m_node.schema());
     m_state = STRING;
     m_is_applied = true;
     return this;
@@ -771,7 +766,7 @@ private:
    *  \brief Private method returns true if apply is a valid operation on
    *         view; else false
    */
-  bool isApplyValid() const;
+  bool isApplyValid();
 
 //@}
 
