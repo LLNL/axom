@@ -684,7 +684,7 @@ DataView * DataView::declare(TypeID type, SidreLength num_elems)
   DataType dtype = conduit::DataType::default_dtype(type);
   dtype.set_number_of_elements(num_elems);
   m_schema.set(dtype);
-  declareShape(num_elems);
+  declareShape();
 
   if ( m_state == EMPTY )
   {
@@ -746,7 +746,7 @@ DataView * DataView::declare(const DataType& dtype)
   }
 
   m_schema.set(dtype);
-  declareShape(dtype.number_of_elements());
+  declareShape();
 
   if ( m_state == EMPTY )
   {
@@ -775,7 +775,7 @@ DataView * DataView::declare(const Schema& schema)
   }
 
   m_schema.set(schema);
-  declareShape(schema.dtype().number_of_elements());
+  declareShape();
 
   if ( m_state == EMPTY )
   {
@@ -795,10 +795,10 @@ DataView * DataView::declare(const Schema& schema)
  *
  *************************************************************************
  */
-void DataView::declareShape(SidreLength num_elems)
+void DataView::declareShape()
 {
   m_shape.resize(1);
-  m_shape[0] = num_elems;
+  m_shape[0] = m_schema.dtype().number_of_elements();
 }
 
 /*

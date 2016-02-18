@@ -519,7 +519,7 @@ public:
     m_schema.set(m_node.schema());
     m_is_applied = true;
     m_state = SCALAR;
-    declareShape(1);
+    declareShape();
     return this;
   }
 
@@ -537,7 +537,7 @@ public:
     m_schema.set(m_node.schema());
     m_state = STRING;
     m_is_applied = true;
-    declareShape(value.length() + 1);  // Include trailing NULL
+    declareShape();
     return this;
   };
 
@@ -747,7 +747,7 @@ private:
   /*!
    * \brief Set the shape to be a one dimension with the declared number of elements.
    */
-  void declareShape(SidreLength num_elems);
+  void declareShape();
 
   /*!
    * \brief Set the shape to be a ndims dimensions with shape.
