@@ -378,17 +378,13 @@ void DataGroup::destroyViewAndData( const std::string& name )
   DataView * view = detachView(name);
   if ( view != ATK_NULLPTR )
   {
-//
-// RDH -- Should this check to see if there is only one view attached to
-//        the buffer before destroying it?
-//
     DataBuffer * const buffer = view->getBuffer();
-    delete view;
-
     if ( buffer != ATK_NULLPTR )
     {
+      buffer->detachView(view);
       getDataStore()->destroyBuffer(buffer->getIndex());
     }
+    delete view;
   }
 }
 
@@ -410,12 +406,12 @@ void DataGroup::destroyViewAndData( IndexType idx )
   {
     // RDH TODO -- there should be a better way?
     DataBuffer * const buffer = view->getBuffer();
-    delete view;
-
     if ( buffer != ATK_NULLPTR )
     {
+      buffer->detachView(view);
       getDataStore()->destroyBuffer(buffer->getIndex());
     }
+    delete view;
   }
 }
 

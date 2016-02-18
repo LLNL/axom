@@ -124,16 +124,14 @@ DataStore::~DataStore()
  */
 DataBuffer * DataStore::getBuffer( IndexType idx ) const
 {
-  SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
 
-  if ( hasBuffer(idx) )
+  if ( !hasBuffer(idx) )
   {
-    return m_data_buffers[idx];
-  }
-  else
-  {
+    SLIC_CHECK_MSG(hasBuffer(idx), "Datastore has no buffer with index == " << idx);
     return ATK_NULLPTR;
   }
+
+  return m_data_buffers[idx];
 }
 
 /*
@@ -171,14 +169,22 @@ DataBuffer * DataStore::createBuffer()
  */
 void DataStore::destroyBuffer( IndexType idx )
 {
-  SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
-
-  if ( hasBuffer(idx) )
+  if ( !hasBuffer(idx) || m_data_buffers[idx] == ATK_NULLPTR ||
+      m_data_buffers[idx]->getNumViews() != 0 )
   {
-    delete m_data_buffers[idx];
-    m_data_buffers[idx] = ATK_NULLPTR;
-    m_free_buffer_ids.push(idx);
+    SLIC_CHECK_MSG( hasBuffer(idx), "No buffer found with index " << idx);
+    SLIC_CHECK_MSG( m_data_buffers[idx] != ATK_NULLPTR,
+        "Datastore has NULL pointer for buffer index " << idx);
+    SLIC_CHECK_MSG( m_data_buffers[idx] != ATK_NULLPTR &&
+        m_data_buffers[idx]->getNumViews() != 0,
+        "Unable to delete buffer, it has " <<
+        m_data_buffers[idx]->getNumViews() << " still attached.");
+    return;
   }
+
+  delete m_data_buffers[idx];
+  m_data_buffers[idx] = ATK_NULLPTR;
+  m_free_buffer_ids.push(idx);
 }
 
 
