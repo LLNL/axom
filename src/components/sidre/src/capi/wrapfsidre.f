@@ -50,6 +50,8 @@ module sidre_mod
     implicit none
     
     ! splicer begin module_top
+    integer, parameter :: MAXNAMESIZE = 128
+    
     integer, parameter :: SIDRE_LENGTH = C_LONG
     
     integer, parameter :: invalid_index = -1
@@ -449,13 +451,13 @@ module sidre_mod
             type(C_PTR) rv
         end function c_datagroup_get_name
         
-        subroutine c_datagroup_get_name_bufferify(self, name, Lname) &
+        subroutine c_datagroup_get_name_bufferify(self, SH_F_rv, LSH_F_rv) &
                 bind(C, name="SIDRE_datagroup_get_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(OUT) :: name(*)
-            integer(C_INT), value, intent(IN) :: Lname
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: LSH_F_rv
         end subroutine c_datagroup_get_name_bufferify
         
         pure function c_datagroup_get_parent(self) &
@@ -577,14 +579,14 @@ module sidre_mod
             type(C_PTR) rv
         end function c_datagroup_get_view_name
         
-        subroutine c_datagroup_get_view_name_bufferify(self, idx, name, Lname) &
+        subroutine c_datagroup_get_view_name_bufferify(self, idx, SH_F_rv, LSH_F_rv) &
                 bind(C, name="SIDRE_datagroup_get_view_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            character(kind=C_CHAR), intent(OUT) :: name(*)
-            integer(C_INT), value, intent(IN) :: Lname
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: LSH_F_rv
         end subroutine c_datagroup_get_view_name_bufferify
         
         pure function c_datagroup_get_first_valid_view_index(self) &
@@ -912,14 +914,14 @@ module sidre_mod
             type(C_PTR) rv
         end function c_datagroup_get_group_name
         
-        subroutine c_datagroup_get_group_name_bufferify(self, idx, name, Lname) &
+        subroutine c_datagroup_get_group_name_bufferify(self, idx, SH_F_rv, LSH_F_rv) &
                 bind(C, name="SIDRE_datagroup_get_group_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            character(kind=C_CHAR), intent(OUT) :: name(*)
-            integer(C_INT), value, intent(IN) :: Lname
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: LSH_F_rv
         end subroutine c_datagroup_get_group_name_bufferify
         
         pure function c_datagroup_get_first_valid_group_index(self) &
@@ -1295,13 +1297,13 @@ module sidre_mod
             type(C_PTR) rv
         end function c_dataview_get_name
         
-        subroutine c_dataview_get_name_bufferify(self, name, Lname) &
+        subroutine c_dataview_get_name_bufferify(self, SH_F_rv, LSH_F_rv) &
                 bind(C, name="SIDRE_dataview_get_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(OUT) :: name(*)
-            integer(C_INT), value, intent(IN) :: Lname
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: LSH_F_rv
         end subroutine c_dataview_get_name_bufferify
         
         function c_dataview_get_buffer(self) &
@@ -1604,18 +1606,18 @@ contains
     ! splicer begin class.DataStore.additional_functions
     ! splicer end class.DataStore.additional_functions
     
-    subroutine datagroup_get_name(obj, name)
+    function datagroup_get_name(obj) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*), intent(OUT) :: name
+        character(kind=C_CHAR, len=(MAXNAMESIZE)) :: rv
         ! splicer begin class.DataGroup.method.get_name
         call c_datagroup_get_name_bufferify(  &
             obj%voidptr,  &
-            name,  &
-            len(name, kind=C_INT))
+            rv,  &
+            len(rv, kind=C_INT))
         ! splicer end class.DataGroup.method.get_name
-    end subroutine datagroup_get_name
+    end function datagroup_get_name
     
     function datagroup_get_parent(obj) result(rv)
         use iso_c_binding
@@ -1712,20 +1714,20 @@ contains
         ! splicer end class.DataGroup.method.get_view_index
     end function datagroup_get_view_index
     
-    subroutine datagroup_get_view_name(obj, idx, name)
+    function datagroup_get_view_name(obj, idx) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        character(*), intent(OUT) :: name
+        character(kind=C_CHAR, len=(MAXNAMESIZE)) :: rv
         ! splicer begin class.DataGroup.method.get_view_name
         call c_datagroup_get_view_name_bufferify(  &
             obj%voidptr,  &
             idx,  &
-            name,  &
-            len(name, kind=C_INT))
+            rv,  &
+            len(rv, kind=C_INT))
         ! splicer end class.DataGroup.method.get_view_name
-    end subroutine datagroup_get_view_name
+    end function datagroup_get_view_name
     
     function datagroup_get_first_valid_view_index(obj) result(rv)
         use iso_c_binding
@@ -2014,20 +2016,20 @@ contains
         ! splicer end class.DataGroup.method.get_group_index
     end function datagroup_get_group_index
     
-    subroutine datagroup_get_group_name(obj, idx, name)
+    function datagroup_get_group_name(obj, idx) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        character(*), intent(OUT) :: name
+        character(kind=C_CHAR, len=(MAXNAMESIZE)) :: rv
         ! splicer begin class.DataGroup.method.get_group_name
         call c_datagroup_get_group_name_bufferify(  &
             obj%voidptr,  &
             idx,  &
-            name,  &
-            len(name, kind=C_INT))
+            rv,  &
+            len(rv, kind=C_INT))
         ! splicer end class.DataGroup.method.get_group_name
-    end subroutine datagroup_get_group_name
+    end function datagroup_get_group_name
     
     function datagroup_get_first_valid_group_index(obj) result(rv)
         use iso_c_binding
@@ -2937,18 +2939,18 @@ contains
         ! splicer end class.DataView.method.is_opaque
     end function dataview_is_opaque
     
-    subroutine dataview_get_name(obj, name)
+    function dataview_get_name(obj) result(rv)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        character(*), intent(OUT) :: name
+        character(kind=C_CHAR, len=(MAXNAMESIZE)) :: rv
         ! splicer begin class.DataView.method.get_name
         call c_dataview_get_name_bufferify(  &
             obj%voidptr,  &
-            name,  &
-            len(name, kind=C_INT))
+            rv,  &
+            len(rv, kind=C_INT))
         ! splicer end class.DataView.method.get_name
-    end subroutine dataview_get_name
+    end function dataview_get_name
     
     function dataview_get_buffer(obj) result(rv)
         use iso_c_binding

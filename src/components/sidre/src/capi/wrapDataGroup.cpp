@@ -32,13 +32,13 @@ const char * SIDRE_datagroup_get_name(const SIDRE_datagroup * self)
 // splicer end class.DataGroup.method.get_name
 }
 
-void SIDRE_datagroup_get_name_bufferify(SIDRE_datagroup * self, char * name,
-                                        int Lname)
+void SIDRE_datagroup_get_name_bufferify(SIDRE_datagroup * self, char * SH_F_rv,
+                                        int LSH_F_rv)
 {
   DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_name_bufferify
   const std::string & rv = selfobj->getName();
-  asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+  asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
   return;
 // splicer end class.DataGroup.method.get_name_bufferify
 }
@@ -176,8 +176,8 @@ const char * SIDRE_datagroup_get_view_name(const SIDRE_datagroup * self,
 }
 
 void SIDRE_datagroup_get_view_name_bufferify(SIDRE_datagroup * self,
-                                             SIDRE_IndexType idx, char * name,
-                                             int Lname)
+                                             SIDRE_IndexType idx,
+                                             char * SH_F_rv, int LSH_F_rv)
 {
   DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_view_name_bufferify
@@ -185,11 +185,11 @@ void SIDRE_datagroup_get_view_name_bufferify(SIDRE_datagroup * self,
 // check for error
   if (!nameIsValid(rv))
   {
-    std::memset(name, ' ', Lname);
+    std::memset(SH_F_rv, ' ', LSH_F_rv);
     return;
   }
 
-  asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+  asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
   return;
 // splicer end class.DataGroup.method.get_view_name_bufferify
 }
@@ -549,8 +549,8 @@ const char * SIDRE_datagroup_get_group_name(const SIDRE_datagroup * self,
 }
 
 void SIDRE_datagroup_get_group_name_bufferify(SIDRE_datagroup * self,
-                                              SIDRE_IndexType idx, char * name,
-                                              int Lname)
+                                              SIDRE_IndexType idx,
+                                              char * SH_F_rv, int LSH_F_rv)
 {
   DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_group_name_bufferify
@@ -558,11 +558,11 @@ void SIDRE_datagroup_get_group_name_bufferify(SIDRE_datagroup * self,
 // check for error
   if (!nameIsValid(rv))
   {
-    std::memset(name, ' ', Lname);
+    std::memset(SH_F_rv, ' ', LSH_F_rv);
     return;
   }
 
-  asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+  asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
   return;
 // splicer end class.DataGroup.method.get_group_name_bufferify
 }
