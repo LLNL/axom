@@ -524,7 +524,7 @@ public:
     m_node.set(value);
     m_is_applied = true;
     m_state = SCALAR;
-    declareShape();
+    declareShape(1);
     return this;
   }
 
@@ -541,7 +541,7 @@ public:
     m_node.set_string(value);
     m_state = STRING;
     m_is_applied = true;
-    declareShape();
+    declareShape(value.length() + 1);  // Include trailing NULL
     return this;
   };
 
@@ -750,7 +750,7 @@ private:
   /*!
    * \brief Set the shape to be a one dimension with the declared number of elements.
    */
-  void declareShape();
+  void declareShape(SidreLength num_elems);
 
   /*!
    * \brief Set the shape to be a ndims dimensions with shape.
