@@ -178,11 +178,8 @@ DataView * DataGroup::createView( const std::string& name,
 DataView * DataGroup::createView( const std::string& name,
                                   DataBuffer * buff)
 {
-  SLIC_CHECK_MSG( buff != ATK_NULLPTR,
-                  "Cannot attach buffer to view, the provided buffer pointer is null.");
-
   DataView * view = createView(name);
-  if ( view != ATK_NULLPTR && buff != ATK_NULLPTR)
+  if ( view != ATK_NULLPTR )
   {
     view->attachBuffer( buff );
   }
@@ -199,11 +196,8 @@ DataView * DataGroup::createView( const std::string& name,
 DataView * DataGroup::createView( const std::string& name,
                                   void * external_ptr )
 {
-  SLIC_CHECK_MSG( external_ptr != ATK_NULLPTR,
-                  "Cannot set view to point to external data, the provided pointer is null." );
-
   DataView * view = createView(name);
-  if ( view != ATK_NULLPTR && external_ptr != ATK_NULLPTR )
+  if ( view != ATK_NULLPTR )
   {
     view->setExternalDataPtr(external_ptr);
   }
