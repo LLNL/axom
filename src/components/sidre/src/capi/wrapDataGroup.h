@@ -40,8 +40,8 @@ typedef struct s_SIDRE_dataview SIDRE_dataview;
 
 const char * SIDRE_datagroup_get_name(const SIDRE_datagroup * self);
 
-void SIDRE_datagroup_get_name_bufferify(SIDRE_datagroup * self, char * name,
-                                        int Lname);
+void SIDRE_datagroup_get_name_bufferify(SIDRE_datagroup * self, char * SH_F_rv,
+                                        int LSH_F_rv);
 
 const SIDRE_datagroup * SIDRE_datagroup_get_parent(const SIDRE_datagroup * self);
 
@@ -77,8 +77,8 @@ const char * SIDRE_datagroup_get_view_name(const SIDRE_datagroup * self,
                                            SIDRE_IndexType idx);
 
 void SIDRE_datagroup_get_view_name_bufferify(SIDRE_datagroup * self,
-                                             SIDRE_IndexType idx, char * name,
-                                             int Lname);
+                                             SIDRE_IndexType idx,
+                                             char * SH_F_rv, int LSH_F_rv);
 
 SIDRE_IndexType SIDRE_datagroup_get_first_valid_view_index(
   SIDRE_datagroup * self);
@@ -183,8 +183,8 @@ const char * SIDRE_datagroup_get_group_name(const SIDRE_datagroup * self,
                                             SIDRE_IndexType idx);
 
 void SIDRE_datagroup_get_group_name_bufferify(SIDRE_datagroup * self,
-                                              SIDRE_IndexType idx, char * name,
-                                              int Lname);
+                                              SIDRE_IndexType idx,
+                                              char * SH_F_rv, int LSH_F_rv);
 
 SIDRE_IndexType SIDRE_datagroup_get_first_valid_group_index(
   SIDRE_datagroup * self);

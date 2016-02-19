@@ -193,13 +193,13 @@ const char * SIDRE_dataview_get_name(const SIDRE_dataview * self)
 // splicer end class.DataView.method.get_name
 }
 
-void SIDRE_dataview_get_name_bufferify(SIDRE_dataview * self, char * name,
-                                       int Lname)
+void SIDRE_dataview_get_name_bufferify(SIDRE_dataview * self, char * SH_F_rv,
+                                       int LSH_F_rv)
 {
   DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_name_bufferify
   const std::string & rv = selfobj->getName();
-  asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+  asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
   return;
 // splicer end class.DataView.method.get_name_bufferify
 }

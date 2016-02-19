@@ -24,7 +24,7 @@ options:
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
   # for the result.
-  F_string_result_as_arg: name
+#  F_string_result_as_arg: name
 #  wrap_python: True
 
 
@@ -90,7 +90,7 @@ classes:
       cpp_header: sidre/DataGroup.hpp
 
     methods:
-    -  decl: const std::string& getName() const
+    -  decl: const std::string& getName+len(MAXNAMESIZE)() const
 #    -  decl: DataGroup* getParent()
     -  decl: const DataGroup* getParent() const
 #    -  decl: DataStore* getDataStore() const
@@ -108,7 +108,7 @@ classes:
        PY_error_pattern: PY_null_to_none
 #    -  decl: DataView const *getView( const IndexType idx ) const
     -  decl: IndexType getViewIndex(const std::string &name) const
-    -  decl: const std::string& getViewName(IndexType idx) const
+    -  decl: const std::string& getViewName+len(MAXNAMESIZE)(IndexType idx) const
        C_error_pattern: C_invalid_name
        PY_error_pattern: PY_invalid_name_idx
 
@@ -175,7 +175,7 @@ classes:
 #    -  decl: DataGroup * getGroup( IndexType idx)
 #    -  decl: DataGroup const * getGroup(IndexType idx) const
     -  decl: IndexType getGroupIndex(const std::string &name) const
-    -  decl: const std::string& getGroupName(IndexType idx) const
+    -  decl: const std::string& getGroupName+len(MAXNAMESIZE)(IndexType idx) const
        C_error_pattern: C_invalid_name
        PY_error_pattern: PY_invalid_name_idx
     -  decl: IndexType getFirstValidGroupIndex() const
@@ -295,7 +295,7 @@ classes:
     - decl: bool isExternal() const
     - decl: bool isApplied() const
     - decl: bool isOpaque() const
-    - decl: const std::string& getName() const
+    - decl: const std::string& getName+len(MAXNAMESIZE)() const
     - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const
     - decl: void * getVoidPtr() const
