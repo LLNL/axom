@@ -640,8 +640,8 @@ contains
 
     opq_view = root%create_view_external("my_opaque", src_ptr)
 
-    ! we have a buffer because an "external" view currently uses one
-    call assert_true(ds%get_num_buffers() == 1)
+    ! External pointers are held in the view, not buffer
+    call assert_true(ds%get_num_buffers() == 0)
 
     call assert_true(opq_view%is_external(), "opq_view%is_external()")
     call assert_true(opq_view%is_applied() .eqv. .false., "opq_view%is_applied()")

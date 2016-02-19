@@ -90,11 +90,12 @@ PP_exclass1_get_name(
 // splicer begin class.ExClass1.method.get_name
     const std::string & rv = self->BBB->getName();
     if (! isNameValid(rv)) {
-        PyErr_SetString(PyExc_KeyError, "rv");
+        PyErr_SetString(PyExc_KeyError, "XXX need value of name");
         return NULL;
     }
     
-    return PyString_FromString(rv.c_str());
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
 // splicer end class.ExClass1.method.get_name
 }
 
@@ -126,7 +127,8 @@ PP_exclass1_get_name_error_check(
 {
 // splicer begin class.ExClass1.method.get_name_error_check
     const std::string & rv = self->BBB->getNameErrorCheck();
-    return PyString_FromString(rv.c_str());
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
 // splicer end class.ExClass1.method.get_name_error_check
 }
 
@@ -142,7 +144,8 @@ PP_exclass1_get_name_arg(
 {
 // splicer begin class.ExClass1.method.get_name_arg
     const std::string & rv = self->BBB->getNameArg();
-    return PyString_FromString(rv.c_str());
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
 // splicer end class.ExClass1.method.get_name_arg
 }
 
@@ -158,9 +161,9 @@ PP_exclass1_get_root(
 {
 // splicer begin class.ExClass1.method.get_root
     ExClass2 * rv = self->BBB->getRoot();
-    PP_ExClass2 * rv_obj = PyObject_New(PP_ExClass2, &PP_ExClass2_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    PP_ExClass2 * SH_Py_rv = PyObject_New(PP_ExClass2, &PP_ExClass2_Type);
+    SH_Py_rv->BBB = rv;
+    return (PyObject *) SH_Py_rv;
 // splicer end class.ExClass1.method.get_root
 }
 
@@ -218,7 +221,8 @@ PP_exclass1_get_addr(
 {
 // splicer begin class.ExClass1.method.get_addr
     void * rv = self->BBB->getAddr();
-    return Py_BuildValue("O", rv);
+    PyObject * SH_Py_rv = PyCapsule_New(rv, NULL, NULL);
+    return (PyObject *) SH_Py_rv;
 // splicer end class.ExClass1.method.get_addr
 }
 
@@ -234,18 +238,19 @@ PP_exclass1_has_addr(
 {
 // splicer begin class.ExClass1.method.has_addr
     bool in;
-    PyObject * in_obj;
+    PyObject * SH_Py_in;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:hasAddr", kw_list,
-        &PyBool_Type, &in_obj))
+        &PyBool_Type, &SH_Py_in))
     {
         return NULL;
     }
-    in = PyObject_IsTrue(in_obj);
-    bool rv = self->BBB->hasAddr(in);
-    return PyBool_FromLong(rv);
+    SH_in = PyObject_IsTrue(SH_Py_in);
+    bool rv = self->BBB->hasAddr(SH_in);
+    PyObject * SH_Py_rv = PyBool_FromLong(rv);
+    return (PyObject *) SH_Py_rv;
 // splicer end class.ExClass1.method.has_addr
 }
 

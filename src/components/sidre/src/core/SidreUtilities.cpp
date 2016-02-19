@@ -39,29 +39,30 @@ namespace detail
  * Splits a string given the provided delimiter into a vector of strings.
  * If the position of the first delimiter is known, it can be provided in the 'pos' parameter.
  */
-std::vector<std::string> split(const std::string& s, char c, std::string::size_type pos)
+std::vector<std::string> split(const std::string& s, char c,
+                               std::string::size_type pos)
 {
-   std::vector<std::string> v;
-   std::string::size_type i = 0;
+  std::vector<std::string> v;
+  std::string::size_type i = 0;
 
-   if (pos == std::string::npos)
-   {
-     pos = s.find(c);
-   }
-   while (pos != std::string::npos)
-   {
-      v.push_back(s.substr(i, pos-i));
-      std::cerr << "pushed back " << v.back() << std::endl;
-      i = ++pos;
-      pos = s.find(c, pos);
+  if (pos == std::string::npos)
+  {
+    pos = s.find(c);
+  }
+  while (pos != std::string::npos)
+  {
+    v.push_back(s.substr(i, pos-i));
+    std::cerr << "pushed back " << v.back() << std::endl;
+    i = ++pos;
+    pos = s.find(c, pos);
 
-      if (pos == std::string::npos)
-		{
-        v.push_back(s.substr(i, s.length()));
-		}
-   }
+    if (pos == std::string::npos)
+    {
+      v.push_back(s.substr(i, s.length()));
+    }
+  }
 
-   return v;
+  return v;
 }
 
 /*

@@ -26,7 +26,6 @@ contains
   subroutine get_name
     type(datastore) ds
     type(datagroup) root, group, group2
-    character(30) name
 
     call set_case_name("get_name")
 
@@ -34,11 +33,10 @@ contains
     root = ds%get_root()
     group = root%create_group("test")
 
-    call group%get_name(name)
-    call assert_true(name == "test" )
+    call assert_true(group%get_name() == "test" )
 
     group2 = root%get_group("foo")
-    call assert_false( c_associated( group2%get_instance()) )
+    call assert_false( group2%associated() )
     
     call ds%delete()
   end subroutine get_name
@@ -130,7 +128,7 @@ contains
 
     ! check error condition
     view2 = parent%get_view("non-existant view")
-    call assert_false( c_associated(view2%get_instance()) )
+    call assert_false( view2%associated() )
 
     call ds%delete()
   end subroutine get_view
@@ -143,8 +141,7 @@ contains
     type(datagroup) root, parent
     type(dataview) view1, view2
     integer idx1, idx2, idx3    ! IndexType
-    character(len=30) name1, name2, name3
-    character(len=30) tmpname
+    character(len=MAXNAMESIZE) name1, name2, name3
 
     call set_case_name("get_view_name_index")
 
@@ -160,21 +157,19 @@ contains
     idx1 = parent%get_view_index("view1")
     idx2 = parent%get_view_index("view2")
 
-    call parent%get_view_name(idx1, name1)
-    call parent%get_view_name(idx2, name2)
+    name1 = parent%get_view_name(idx1)
+    name2 = parent%get_view_name(idx2)
 
     call assert_equals(name1, "view1")
-    call view1%get_name(tmpname)
-    call assert_equals(tmpname, name1)
+    call assert_equals(view1%get_name(), name1)
     
     call assert_equals(name2, "view2")
-    call view2%get_name(tmpname)
-    call assert_equals(tmpname, name2)
+    call assert_equals(view2%get_name(), name2)
 
     idx3 = parent%get_view_index("view3")
     call assert_equals(idx3, invalid_index)
 
-    call parent%get_view_name(idx3, name3)
+    name3 = parent%get_view_name(idx3)
     call assert_true(name3 == " ")
     call assert_false(name_is_valid(name3))
 
@@ -209,16 +204,14 @@ contains
     idx1 = parent%get_first_valid_view_index()
     idx2 = parent%get_next_valid_view_index(idx1)
 
-    call parent%get_view_name(idx1, name1)
-    call parent%get_view_name(idx2, name2)
+    name1 = parent%get_view_name(idx1)
+    name2 = parent%get_view_name(idx2)
 
     call assert_true(name1 == "view1")
-    call view1%get_name(name1)
-    call assert_true(name1 == "view1")
+    call assert_true(view1%get_name() == "view1")
 
     call assert_true(name2 == "view2")
-    call view2%get_name(name2)
-    call assert_true(name2 == "view2")
+    call assert_true(view2%get_name() == "view2")
 
     ! check error conditions
     badidx1 = emptygroup%get_first_valid_view_index()
@@ -237,8 +230,7 @@ contains
     type(datastore) ds
     type(datagroup) root, parent, group1, group2
     integer idx1, idx2, idx3     ! IndexType
-    character(len=30) name1, name2, name3
-    character(len=30) tmpname
+    character(len=MAXNAMESIZE) name1, name2, name3
 
     call set_case_name("get_group_name_index")
 
@@ -255,20 +247,19 @@ contains
     idx1 = parent%get_group_index("group1")
     idx2 = parent%get_group_index("group2")
 
-    call parent%get_group_name(idx1, name1)
-    call assert_equals(name1, "group1")
-    call group1%get_name(tmpname)
-    call assert_equals(tmpname, name1)
+    name1 = parent%get_group_name(idx1)
+    name2 = parent%get_group_name(idx2)
 
-    call parent%get_group_name(idx2, name2)
+    call assert_equals(name1, "group1")
+    call assert_equals(group1%get_name(), name1)
+
     call assert_equals(name2, "group2")
-    call group2%get_name(tmpname)
-    call assert_equals(tmpname, name2)
+    call assert_equals(group2%get_name(), name2)
 
     idx3 = parent%get_group_index("group3")
     call assert_equals(idx3, invalid_index)
 
-    call parent%get_group_name(idx3, name3)
+    name3 = parent%get_group_name(idx3)
     call assert_true(name3 == " ")
     call assert_false(name_is_valid(name3))
 
@@ -298,7 +289,7 @@ contains
     call assert_true( group%has_view("view") )
     ! try creating view again, should be a no-op.
     view1 = group%create_view("view")
-    call assert_false( c_associated(view1%get_instance()) )
+    call assert_false( view1%associated() )
 
     call group%destroy_view("view")
 
@@ -309,19 +300,18 @@ contains
 
     ! error condition check - try again with duplicate name, should be a no-op
 !XXX    view1 = group%create_view_and_allocate( "viewWithLength1", SIDRE_FLOAT64_ID, 50 )
-!XXX    call assert_true( c_associated(view1%get_instance()) )
+!XXX    call assert_true( view1%associated() )
     call group%destroy_view_and_data("viewWithLength1")
     call assert_false( group%has_view("viewWithLength1"), &
          'group%has_view("viewWithLength1"' )
 
     view1 = group%create_view_and_allocate( "viewWithLengthBadLen", SIDRE_FLOAT64_ID, -1 )
-    call assert_false( c_associated(view1%get_instance()), 'c_associated(view1%get_instance())' )
+    call assert_false( view1%associated(), 'view1%associated()' )
 
     ! try api call that specifies data type in another way
     view1 = group%create_view_and_allocate( "viewWithLength2", SIDRE_FLOAT64_ID, 50 )
     view2 = group%create_view_and_allocate( "viewWithLength2", SIDRE_FLOAT64_ID, 50 )
-    call assert_false( c_associated(view2%get_instance()), &
-         'c_associated(view2%get_instance())')
+    call assert_false( view2%associated(), 'view2%associated()')
     ! destroy this view using index
     call group%destroy_view_and_data( group%get_first_valid_view_index() )
 
@@ -374,12 +364,12 @@ contains
     ! attempt to create duplicate group name
 
     badGroup = root%create_group("fields")
-    call assert_false( c_associated(badgroup%get_instance()) )
+    call assert_false( badgroup%associated() )
 
     ! check error condition
     ! attempt to create duplicate view name.
     view = flds%create_view("a")
-    call assert_false( c_associated(view%get_instance()))
+    call assert_false( view%associated())
 
     call ds%delete()
   end subroutine group_name_collisions

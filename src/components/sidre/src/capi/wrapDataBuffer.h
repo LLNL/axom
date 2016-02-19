@@ -47,11 +47,6 @@ void SIDRE_databuffer_allocate_from_type(SIDRE_databuffer * self, int type,
 void SIDRE_databuffer_reallocate(SIDRE_databuffer * self,
                                  SIDRE_SidreLength num_elems);
 
-void SIDRE_databuffer_set_external_data(SIDRE_databuffer * self,
-                                        void * external_data);
-
-bool SIDRE_databuffer_is_external(SIDRE_databuffer * self);
-
 void * SIDRE_databuffer_get_void_ptr(SIDRE_databuffer * self);
 
 int SIDRE_databuffer_get_type_id(SIDRE_databuffer * self);

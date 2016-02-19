@@ -1,3 +1,26 @@
 SiDRe Documentation
 =======================
 
+
+
+DataStore
+---------
+
+.. doxygenclass:: asctoolkit::sidre::DataStore
+   :members:
+   :undoc-members:
+
+DataView
+--------
+
+.. doxygenclass:: asctoolkit::sidre::DataView
+   :members:
+   :undoc-members:
+
+DataBuffer
+----------
+
+.. doxygenclass:: asctoolkit::sidre::DataBuffer
+   :members:
+   :undoc-members:
+

@@ -55,10 +55,6 @@ class DataView;
  *      which is assigned by the DataStore when the buffer is created.
  *    - The data object owned by a DataBuffer is unique to that DataBuffer
  *      object; i.e.,  DataBuffers that own data do not share their data.
- *    - A DataBuffer may hold a pointer to externally-owned data. When this
- *      is the case, the buffer cannot be used to (re)allocate or deallocate
- *      the data. However, the external data can be desribed and accessed
- *      via the buffer object in a similar to data that is owned by a buffer.
  *    - Typical usage is to declare the data a DataBuffer will hold and then
  *      either allocate it by calling one of the DataBuffer allocate or
  *      reallocate methods, or set the buffer to reference externally-owned
@@ -100,15 +96,6 @@ public:
   }
 
   /*!
-   * \brief Return true if buffer holds externally-owned data, or
-   * false if buffer owns the data it holds (default case).
-   */
-  bool isExternal() const
-  {
-    return m_is_data_external;
-  }
-
-  /*!
    * \brief Return void-pointer to data held by DataBuffer.
    */
   void * getVoidPtr()
@@ -123,8 +110,6 @@ public:
   {
     return m_node.value();
   }
-
-  //@}
 
   /*!
    * \brief Return type of data for this DataBuffer object.
@@ -146,6 +131,25 @@ public:
    * \brief Return total number of bytes associated with this DataBuffer object.
    */
   size_t getTotalBytes() const;
+
+  //@}
+
+  /*!
+   * \brief Return true if buffer contains allocated data of > 0 bytes.
+   */
+  bool isAllocated() const
+  {
+    return (m_data != ATK_NULLPTR) && (getTotalBytes() > 0);
+  }
+
+  /*!
+   * \brief Return true if data description exists.  It may/may not have been
+   * applied to the data yet.  ( Check isApplied() for that. )
+   */
+  bool isDescribed() const
+  {
+    return !m_schema.dtype().is_empty();
+  }
 
   /*
    * \brief Return true if DataBuffer has an associated DataView with given
@@ -233,21 +237,7 @@ public:
    */
   DataBuffer * update(const void * src, size_t nbytes);
 
-  /*!
-   * \brief Set buffer to external data.
-   *
-   * It is the responsibility of the caller to make sure that the buffer
-   * object was previously declared, that the data pointer is consistent
-   * with how the buffer was declared, and that the buffer is not already
-   * holding data that it owns.
-   *
-   * If given pointer is null, this method does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * setExternalData(void * external_data);
-
-//@}
+  //@}
 
 
   /*!
@@ -328,9 +318,6 @@ private:
   /// Conduit Schema that describes buffer data.
   Schema m_schema;
 
-  /// Is buffer holding externally-owned data?
-  bool m_is_data_external;
-
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
@@ -344,9 +331,6 @@ private:
   DataBuffer();
   DataBuffer& operator=( const DataBuffer& );
 #endif
-
-
-
 
 };
 

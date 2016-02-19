@@ -50,7 +50,8 @@ TEST(sidre_group,get_name_with_path)
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataGroup * group = root->createGroup("test1")->createGroup("test2")->createGroup("test3");
+  DataGroup * group =
+    root->createGroup("test1")->createGroup("test2")->createGroup("test3");
   DataGroup * group2 = root->getGroup("test1/test2/test3");
 
   EXPECT_EQ(group, group2);
@@ -146,7 +147,8 @@ TEST(sidre_group,get_view_with_path)
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataView * view = root->createGroup("group1")->createGroup("group2")->createView("view1");
+  DataView * view =
+    root->createGroup("group1")->createGroup("group2")->createView("view1");
   DataView * view2 = root->getView("group1/group2/view1");
 
   EXPECT_EQ( view, view2 );

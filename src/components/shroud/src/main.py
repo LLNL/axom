@@ -30,6 +30,11 @@ import wrapc
 import wrapf
 import wrapp
 
+# char functions cannot be wrapped directly in intel 15.  Instead the result is passed down
+# as an argument from the Fortran wrapper to the C wrapper.
+# Similar to how char * funtions are handled.
+intel_15_fix = True
+
 wformat = util.wformat
 
 class Config(object):
@@ -74,6 +79,27 @@ class Schema(object):
     def pop_options(self):
         self.options_stack.pop()
 
+    def check_options_only(self, node):
+        """Process an options only entry in a list.
+
+        Return True if node only has options.
+        node is assumed to be a dictionary.
+        Update current set of options from node['options'].
+        """
+        if len(node) != 1:
+            return False
+        options = node.get('options', None)
+        if not options:
+            return False
+        if not isinstance(options, dict):
+            raise TypeError("options must be a dictionary")
+
+        # replace current options
+        new = util.Options(parent=self.options_stack[-1])
+        new.update(node['options'])
+        self.options_stack[-1] = new
+        return True
+
     def push_fmt(self, node):
         fmt = util.Options(self.fmt_stack[-1])
         self.fmt_stack.append(fmt)
@@ -107,34 +133,35 @@ class Schema(object):
 
             doxygen = True,       # create doxygen comments
 
+            # blank for functions, set in classes.
+            class_name_template = '{class_lower}_',
+
             C_header_filename_library_template = 'wrap{library}.h',
             C_impl_filename_library_template = 'wrap{library}.cpp',
 
             C_header_filename_class_template = 'wrap{cpp_class}.h',
             C_impl_filename_class_template = 'wrap{cpp_class}.cpp',
 
-            C_name_method_template = '{C_prefix}{lower_class}_{underscore_name}{function_suffix}',
-            C_name_function_template = '{C_prefix}{underscore_name}{function_suffix}',
+            C_name_template = '{C_prefix}{class_name}{underscore_name}{function_suffix}',
 
             # Fortran's names for C functions
             F_C_prefix = 'c_',
-            F_C_name_method_template = '{F_C_prefix}{lower_class}_{underscore_name}{function_suffix}',
-            F_C_name_function_template = '{F_C_prefix}{underscore_name}{function_suffix}',
+            F_C_name_template = '{F_C_prefix}{class_name}{underscore_name}{function_suffix}',
 
-            F_name_impl_method_template = '{lower_class}_{underscore_name}{function_suffix}',
-            F_name_impl_function_template ='{underscore_name}{function_suffix}',
+            F_name_impl_template ='{class_name}{underscore_name}{function_suffix}',
 
             F_name_method_template = '{underscore_name}{function_suffix}',
             F_name_generic_template = '{underscore_name}',
 
-            F_module_name_library_template = '{lower_library}_mod',
-            F_impl_filename_library_template = 'wrapf{lower_library}.f',
+            F_module_name_library_template = '{library_lower}_mod',
+            F_impl_filename_library_template = 'wrapf{library_lower}.f',
 
-            F_module_name_class_template = '{lower_class}_mod',
+            F_module_name_class_template = '{class_lower}_mod',
             F_impl_filename_class_template = 'wrapf{cpp_class}.f',
 
             F_name_instance_get = 'get_instance',
             F_name_instance_set = 'set_instance',
+            F_name_associated = 'associated',
 
             )
         wrapp.add_templates(def_options)
@@ -146,11 +173,12 @@ class Schema(object):
 
         fmt_library = node['fmt'] = util.Options(None)
         fmt_library.library       = def_options['library']
-        fmt_library.lower_library = fmt_library.library.lower()
-        fmt_library.upper_library = fmt_library.library.upper()
+        fmt_library.library_lower = fmt_library.library.lower()
+        fmt_library.library_upper = fmt_library.library.upper()
         fmt_library.function_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
-        fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
+        fmt_library.class_name = ''
+        fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.library_upper[:3] + '_')
         fmt_library.F_C_prefix    = def_options['F_C_prefix']
         fmt_library.rv            = 'rv'  # return value
         util.eval_template(node, 'C_header_filename', '_library')
@@ -169,12 +197,13 @@ class Schema(object):
 #                fortran = 'subroutine',
                 c_fortran = 'type(C_PTR)',
                 f_type = 'type(C_PTR)',
+                PY_ctor = 'PyCapsule_New({cpp_var}, NULL, NULL)',
                 ),
             int    = util.Typedef('int',
                 c_type    = 'int',
                 cpp_type  = 'int',
                 f_kind    = 'C_INT',
-                f_cast    = 'int({var}, C_INT)',
+                f_cast    = 'int({f_var}, C_INT)',
                 c_fortran = 'integer(C_INT)',
                 f_type    = 'integer(C_INT)',
                 f_module  = dict(iso_c_binding=['C_INT']),
@@ -184,7 +213,7 @@ class Schema(object):
                 c_type    = 'long',
                 cpp_type  = 'long',
                 f_kind    = 'C_LONG',
-                f_cast    = 'int({var}, C_LONG)',
+                f_cast    = 'int({f_var}, C_LONG)',
                 c_fortran = 'integer(C_LONG)',
                 f_type    = 'integer(C_LONG)',
                 f_module  = dict(iso_c_binding=['C_LONG']),
@@ -195,7 +224,7 @@ class Schema(object):
                 cpp_type  = 'size_t',
                 c_header  = 'stdlib.h',
                 f_kind    = 'C_SIZE_T',
-                f_cast    = 'int({var}, C_SIZE_T)',
+                f_cast    = 'int({f_var}, C_SIZE_T)',
                 c_fortran = 'integer(C_SIZE_T)',
                 f_type    = 'integer(C_SIZE_T)',
                 f_module  = dict(iso_c_binding=['C_SIZE_T']),
@@ -206,7 +235,7 @@ class Schema(object):
                 c_type    = 'float',
                 cpp_type  = 'float',
                 f_kind    = 'C_FLOAT',
-                f_cast    = 'real({var}, C_FLOAT)',
+                f_cast    = 'real({f_var}, C_FLOAT)',
                 c_fortran = 'real(C_FLOAT)',
                 f_type    = 'real(C_FLOAT)',
                 f_module  = dict(iso_c_binding=['C_FLOAT']),
@@ -216,7 +245,7 @@ class Schema(object):
                 c_type    = 'double',
                 cpp_type  = 'double',
                 f_kind    = 'C_DOUBLE',
-                f_cast    = 'real({var}, C_DOUBLE)',
+                f_cast    = 'real({f_var}, C_DOUBLE)',
                 c_fortran = 'real(C_DOUBLE)',
                 f_type    = 'real(C_DOUBLE)',
                 f_module  = dict(iso_c_binding=['C_DOUBLE']),
@@ -230,21 +259,39 @@ class Schema(object):
                 c_fortran = 'logical(C_BOOL)',
 
                 f_type    = 'logical',
-                f_use_tmp  = True,
-                f_argsdecl = ['logical(C_BOOL) {tmp_var}'],
-                f_pre_call = '{tmp_var} = {var}  ! coerce to C_BOOL',
+                f_statements = dict(
+                    intent_in = dict(
+                        declare = [
+                            'logical(C_BOOL) {c_var}',
+                            ],
+                        pre_call = [
+                            '{c_var} = {f_var}  ! coerce to C_BOOL',
+                            ],
+                        ),
+                    result = dict(
+                        # The wrapper is needed to convert bool to logical
+                        need_wrapper = True,
+                        ),
+                    ),
+
+                py_statements = dict(
+                    intent_in = dict(
+                        post_parse = [
+                            '{cpp_var} = PyObject_IsTrue({py_var});',
+                            ],
+                        ),
+                    ),
 
 #XXX            PY_format = 'p',  # Python 3.3 or greater
                 PY_ctor   = 'PyBool_FromLong({rv})',
                 PY_PyTypeObject = 'PyBool_Type',
-                PY_post_parse = '{var} = PyObject_IsTrue({var_obj});',
                 ),
 
             # implies null terminated string
             char = util.Typedef('char',
                 cpp_type = 'char',
 #                cpp_header = '<string>',
-#                cpp_to_c = '{var}.c_str()',  # . or ->
+#                cpp_to_c = '{cpp_var}.c_str()',  # . or ->
 
                 c_type   = 'char',    # XXX - char *
 
@@ -273,11 +320,13 @@ class Schema(object):
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             'delete [] {cpp_var};',
                             ],
+                        cpp_header = 'shroudrt.hpp',
                         ),
                     result = dict(
                         post_call = [
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             ],
+                        cpp_header = 'shroudrt.hpp',
                         ),
                     ),
                 c_to_cpp  = '{cpp_var}',
@@ -289,7 +338,7 @@ class Schema(object):
                 f_module = dict(iso_c_binding=None),
 #                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
-                PY_ctor = 'PyString_FromString({var})',
+                PY_ctor = 'PyString_FromString({c_var})',
                 base = 'string',
                 ),
 
@@ -297,7 +346,7 @@ class Schema(object):
             char_scalar = util.Typedef('char_scalar',
                 cpp_type = 'char',
 #                cpp_header = '<string>',
-#                cpp_to_c = '{var}.c_str()',  # . or ->
+#                cpp_to_c = '{cpp_var}.c_str()',  # . or ->
 
                 c_type   = 'char',    # XXX - char *
 
@@ -310,7 +359,7 @@ class Schema(object):
                 f_module = dict(iso_c_binding=None),
 #                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
-                PY_ctor = 'PyString_FromString({var})',
+                PY_ctor = 'PyString_FromString({c_var})',
 ##                base = 'string',
                 ),
 
@@ -318,7 +367,7 @@ class Schema(object):
             string = util.Typedef('string',
                 cpp_type = 'std::string',
                 cpp_header = '<string>',
-                cpp_to_c = '{var}.c_str()',  # . or ->
+                cpp_to_c = '{cpp_var}.c_str()',  # . or ->
 
                 c_type   = 'char',    # XXX - char *
 
@@ -335,11 +384,13 @@ class Schema(object):
                         post_call = [
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             ],
+                        cpp_header = 'shroudrt.hpp'
                         ),
                     result = dict(
                         post_call = [
                             'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             ],
+                        cpp_header = 'shroudrt.hpp'
                         ),
                     ),
 
@@ -351,11 +402,30 @@ class Schema(object):
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
 #                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+
+                py_statements = dict(
+                    intent_in = dict(
+                        post_parse = [
+                            'std::string {cpp_var}({c_var});'
+                            ],
+                        ),
+                    ),
                 PY_format = 's',
-                PY_ctor = 'PyString_FromString({var})',
+                PY_ctor = 'PyString_FromString({c_var})',
                 base = 'string',
                 ),
             )
+
+        if intel_15_fix:
+            # Copy C++ function result into C result argument.
+            def_types['char_scalar'].c_statements = dict(
+                result = dict(
+                    post_call = [
+                        '// {c_var_len} is always 1, test to silence warning about unused variable',
+                        'if ({c_var_len} == 1) *{c_var} = {cpp_val};',
+                        ],
+                    ),
+                )
 
         # aliases
         def_types['std::string']     = def_types['string']
@@ -363,22 +433,6 @@ class Schema(object):
         def_types['integer(C_LONG)'] = def_types['long']
         def_types['real(C_FLOAT)']   = def_types['float']
         def_types['real(C_DOUBLE)']  = def_types['double']
-
-        # result_as_arg
-        tmp = def_types['char'].clone_as('char_result_as_arg')
-        def_types[tmp.name] = tmp
-
-        tmp = def_types['string'].clone_as('string_result_as_arg')
-        tmp.update(dict(
-                cpp_header = 'shroudrt.hpp',
-#                c_post_call   = 'asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});',
-#                f_argsdecl    = [
-#                    'character(*), intent(OUT) :: {result_arg}',
-#                    'type(C_PTR) :: {F_result}'],
-#                f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})',
-#                f_post_call   = 'call FccCopyPtr({result_arg}, len({result_arg}), {F_result})',
-                ))
-        def_types[tmp.name] = tmp
 
         # pure fortran string
         tmp = def_types['string'].clone_as('string_result_fstr')
@@ -416,9 +470,7 @@ class Schema(object):
 
         classes = node.setdefault('classes', [])
         self.check_classes(classes)
-
-        functions = node.setdefault('functions', [])
-        self.check_functions(functions)
+        self.check_functions(node, 'functions')
 
     def check_classes(self, node):
         if not isinstance(node, list):
@@ -436,11 +488,14 @@ class Schema(object):
         options = self.push_options(node)
         fmt_class = self.push_fmt(node)
         fmt_class.cpp_class = name
-        fmt_class.lower_class = name.lower()
-        fmt_class.upper_class = name.upper()
+        fmt_class.class_lower = name.lower()
+        fmt_class.class_upper = name.upper()
         if 'C_prefix' in options:
             fmt_class.C_prefix = options.C_prefix
-
+        if 'F_C_prefix' in options:
+            fmt_class.F_C_prefix = options.F_C_prefix
+        util.eval_template(node, 'class_name')
+        
         if options.F_module_per_class:
             util.eval_template(node, 'F_module_name', '_class')
             util.eval_template(node, 'F_impl_filename', '_class')
@@ -449,12 +504,7 @@ class Schema(object):
         util.eval_template(node, 'C_header_filename', '_class')
         util.eval_template(node, 'C_impl_filename', '_class')
 
-        methods = node.setdefault('methods', [])
-        for method in methods:
-            if not isinstance(method, dict):
-                raise TypeError("classes[n]['methods'] must be a dictionary")
-            self.check_function(method)
-
+        self.check_functions(node, 'methods')
         self.pop_fmt()
         self.pop_options()
 
@@ -497,20 +547,29 @@ class Schema(object):
 
         result = node['result']
 
-        fmt_func.method_name =     result['name']
+        fmt_func.function_name   = result['name']
         fmt_func.underscore_name = util.un_camel(result['name'])
 
         # docs
         self.pop_fmt()
         self.pop_options()
 
-    def check_functions(self, func_list):
-        """ check functions which are not in a class.
+    def check_functions(self, node, member):
+        """ check functions.
+
+        Create a new list without the options only entries.
         """
-        if not isinstance(func_list, list):
+        functions = node.get(member, [])
+
+        if not isinstance(functions, list):
             raise TypeError("functions must be a list")
-        for func in func_list:
+        only_functions = []
+        for func in functions:
+            if self.check_options_only(func):
+                continue
             self.check_function(func)
+            only_functions.append(func)
+        node[member] = only_functions
 
 
 class GenFunctions(object):
@@ -800,6 +859,11 @@ class GenFunctions(object):
         is_pure = node['attrs'].get('pure', False)
         if result_typedef.base == 'string':
             if result_type == 'char' and not result_is_ptr:
+                if intel_15_fix:
+                    result['attrs']['len'] = 1
+                    has_string_result = True
+                    result_as_arg = options.get('F_string_result_as_arg', '')
+                    result_name = result_as_arg or 'SH_F_rv'
                 result['type'] = 'char_scalar'
             else:
                 has_string_result = True
@@ -845,7 +909,6 @@ class GenFunctions(object):
             # Add additional argument to hold result
             result_as_string = copy.deepcopy(result)
             result_as_string['name'] = result_name
-            result_as_string['type'] = result_typedef.name + '_result_as_arg'
             attrs = result_as_string['attrs']
             attrs['const'] = False
             attrs['len'] = 'L' + result_name
@@ -1045,14 +1108,14 @@ class VerifyAttrs(object):
             self.typedef[name] = util.Typedef(
                 name,
                 cpp_type = name,
-                cpp_to_c = 'static_cast<{C_const}%s *>(static_cast<{C_const}void *>({var}))' % cname,
+                cpp_to_c = 'static_cast<{C_const}%s *>(static_cast<{C_const}void *>({cpp_var}))' % cname,
                 c_type = cname,
                 # opaque pointer -> void pointer -> class instance pointer
-                c_to_cpp = 'static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({var}))' % name,
+                c_to_cpp = 'static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({c_var}))' % name,
                 c_fortran = 'type(C_PTR)',
                 f_type = 'type(%s)' % unname,
                 f_derived_type = unname,
-                f_args = '{var}%{F_derived_member}',
+                f_args = '{c_var}%{F_derived_member}',
                 # XXX module name may not conflict with type name
                 f_module = {fmt_class.F_module_name:[unname]},
 
@@ -1060,7 +1123,20 @@ class VerifyAttrs(object):
 #                f_c_return_decl = 'type(CPTR)' % unname,
                 f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})',
 
-                PY_post_parse = '{var} = {var_obj} ? {var_obj}->{BBB} : NULL;',
+                py_statements = dict(
+                    intent_in = dict(
+                        post_parse = [
+                            '{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;',
+                            ],
+                        ),
+                    intent_out = dict(
+                        ctor = [
+                            '{PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});',
+                            '{py_var}->{BBB} = {cpp_var};',
+                            ]
+                        ),
+                    ),
+#                PY_ctor = 'PyObject_New({PyObject}, &{PyTypeObject})',
 
                 # allow forward declarations to avoid recursive headers
                 forward = name,
@@ -1217,15 +1293,8 @@ class Namify(object):
             return
         fmt_func = node['fmt']
         
-        if cls:
-            util.eval_template(node, 'C_name', '_method')
-        else:
-            util.eval_template(node, 'C_name', '_function')
-
-        if cls:
-            util.eval_template(node, 'F_C_name', '_method')
-        else:
-            util.eval_template(node, 'F_C_name', '_function')
+        util.eval_template(node, 'C_name')
+        util.eval_template(node, 'F_C_name')
         fmt_func.F_C_name = fmt_func.F_C_name.lower()
 
         if 'C_this' in options:
@@ -1239,11 +1308,7 @@ class Namify(object):
             return
         fmt_func = node['fmt']
 
-        if cls:
-            util.eval_template(node, 'F_name_impl', '_method')
-        else:
-            util.eval_template(node, 'F_name_impl', '_function')
-
+        util.eval_template(node, 'F_name_impl')
         util.eval_template(node, 'F_name_method')
         util.eval_template(node, 'F_name_generic')
 

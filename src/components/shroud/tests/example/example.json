@@ -28,6 +28,7 @@
                 "C_impl_filename": "wrapExClass1.cpp", 
                 "C_prefix": "AA_", 
                 "C_type_name": "AA_exclass1", 
+                "F_C_prefix": "c_", 
                 "F_derived_name": "exclass1", 
                 "F_impl_filename": "wrapfExClass1.f", 
                 "F_module_name": "exclass1_mod", 
@@ -37,9 +38,10 @@
                 "PY_from_object_func": "PP_ExClass1_from_Object", 
                 "PY_to_object_func": "PP_ExClass1_to_Object", 
                 "PY_type_filename": "pyExClass1type.cpp", 
-                "cpp_class": "ExClass1", 
-                "lower_class": "exclass1", 
-                "upper_class": "EXCLASS1"
+                "class_lower": "exclass1", 
+                "class_name": "exclass1_", 
+                "class_upper": "EXCLASS1", 
+                "cpp_class": "ExClass1"
             }, 
             "methods": [
                 {
@@ -74,7 +76,7 @@
                         "F_name_generic": "new", 
                         "F_name_impl": "exclass1_new", 
                         "F_name_method": "new", 
-                        "method_name": "new", 
+                        "function_name": "new", 
                         "underscore_name": "new"
                     }, 
                     "options": {}, 
@@ -152,7 +154,7 @@
                         "F_name_impl": "exclass1_delete", 
                         "F_name_method": "delete", 
                         "PY_name_impl": "PP_exclass1_delete", 
-                        "method_name": "delete", 
+                        "function_name": "delete", 
                         "underscore_name": "delete"
                     }, 
                     "options": {}, 
@@ -185,7 +187,7 @@
                         "F_name_impl": "exclass1_increment_count", 
                         "F_name_method": "increment_count", 
                         "PY_name_impl": "PP_exclass1_increment_count", 
-                        "method_name": "incrementCount", 
+                        "function_name": "incrementCount", 
                         "underscore_name": "increment_count"
                     }, 
                     "options": {}, 
@@ -214,7 +216,7 @@
                         "F_name_impl": "exclass1_get_name", 
                         "F_name_method": "get_name", 
                         "PY_name_impl": "PP_exclass1_get_name", 
-                        "method_name": "getName", 
+                        "function_name": "getName", 
                         "underscore_name": "get_name"
                     }, 
                     "options": {}, 
@@ -232,7 +234,7 @@
                     "C_error_pattern": "C_invalid_name", 
                     "PY_error_pattern": "PY_invalid_name", 
                     "_PTR_C_CPP_index": 3, 
-                    "_decl": "void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const", 
+                    "_decl": "void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 14, 
                     "_generated": "string_to_buffer_and_len", 
@@ -247,7 +249,7 @@
                                 "reference": true
                             }, 
                             "name": "SH_F_rv", 
-                            "type": "string_result_as_arg"
+                            "type": "string"
                         }
                     ], 
                     "attrs": {
@@ -294,7 +296,7 @@
                         "F_name_impl": "exclass1_get_name_length", 
                         "F_name_method": "get_name_length", 
                         "PY_name_impl": "PP_exclass1_get_name_length", 
-                        "method_name": "GetNameLength", 
+                        "function_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
                     }, 
                     "helper": true, 
@@ -324,7 +326,7 @@
                         "F_name_impl": "exclass1_get_name_error_check", 
                         "F_name_method": "get_name_error_check", 
                         "PY_name_impl": "PP_exclass1_get_name_error_check", 
-                        "method_name": "getNameErrorCheck", 
+                        "function_name": "getNameErrorCheck", 
                         "underscore_name": "get_name_error_check"
                     }, 
                     "options": {}, 
@@ -339,7 +341,7 @@
                 }, 
                 {
                     "_PTR_C_CPP_index": 5, 
-                    "_decl": "void getNameErrorCheck(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const", 
+                    "_decl": "void getNameErrorCheck(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 15, 
                     "_generated": "string_to_buffer_and_len", 
@@ -354,7 +356,7 @@
                                 "reference": true
                             }, 
                             "name": "SH_F_rv", 
-                            "type": "string_result_as_arg"
+                            "type": "string"
                         }
                     ], 
                     "attrs": {
@@ -394,7 +396,7 @@
                         "C_name": "AA_exclass1_get_name_arg", 
                         "F_C_name": "c_exclass1_get_name_arg", 
                         "PY_name_impl": "PP_exclass1_get_name_arg", 
-                        "method_name": "getNameArg", 
+                        "function_name": "getNameArg", 
                         "underscore_name": "get_name_arg"
                     }, 
                     "options": {
@@ -412,7 +414,7 @@
                 }, 
                 {
                     "_PTR_C_CPP_index": 6, 
-                    "_decl": "void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const", 
+                    "_decl": "void getNameArg(string & name+intent(out)+len(Lname)) const", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 16, 
                     "_generated": "string_to_buffer_and_len", 
@@ -427,7 +429,7 @@
                                 "reference": true
                             }, 
                             "name": "name", 
-                            "type": "string_result_as_arg"
+                            "type": "string"
                         }
                     ], 
                     "attrs": {
@@ -457,7 +459,7 @@
                 {
                     "_PTR_C_CPP_index": 6, 
                     "_PTR_F_C_index": 16, 
-                    "_decl": "void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const", 
+                    "_decl": "void getNameArg(string & name+intent(out)+len(Lname)) const", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 17, 
                     "_generated": "string_to_buffer_and_len", 
@@ -472,7 +474,7 @@
                                 "reference": true
                             }, 
                             "name": "name", 
-                            "type": "string_result_as_arg"
+                            "type": "string"
                         }
                     ], 
                     "attrs": {
@@ -514,7 +516,7 @@
                         "F_name_impl": "exclass1_get_root", 
                         "F_name_method": "get_root", 
                         "PY_name_impl": "PP_exclass1_get_root", 
-                        "method_name": "getRoot", 
+                        "function_name": "getRoot", 
                         "underscore_name": "get_root"
                     }, 
                     "options": {}, 
@@ -554,8 +556,8 @@
                         "F_name_impl": "exclass1_get_value_from_int", 
                         "F_name_method": "get_value_from_int", 
                         "PY_name_impl": "PP_exclass1_get_value_from_int", 
+                        "function_name": "getValue", 
                         "function_suffix": "_from_int", 
-                        "method_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
                     "function_suffix": "_from_int", 
@@ -594,8 +596,8 @@
                         "F_name_impl": "exclass1_get_value_1", 
                         "F_name_method": "get_value_1", 
                         "PY_name_impl": "PP_exclass1_get_value_1", 
+                        "function_name": "getValue", 
                         "function_suffix": "_1", 
-                        "method_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
                     "options": {}, 
@@ -619,7 +621,7 @@
                         "F_name_impl": "exclass1_get_addr", 
                         "F_name_method": "get_addr", 
                         "PY_name_impl": "PP_exclass1_get_addr", 
-                        "method_name": "getAddr", 
+                        "function_name": "getAddr", 
                         "underscore_name": "get_addr"
                     }, 
                     "options": {}, 
@@ -654,7 +656,7 @@
                         "F_name_impl": "exclass1_has_addr", 
                         "F_name_method": "has_addr", 
                         "PY_name_impl": "PP_exclass1_has_addr", 
-                        "method_name": "hasAddr", 
+                        "function_name": "hasAddr", 
                         "underscore_name": "has_addr"
                     }, 
                     "options": {}, 
@@ -678,7 +680,7 @@
                         "F_name_impl": "exclass1_splicer_special", 
                         "F_name_method": "splicer_special", 
                         "PY_name_impl": "PP_exclass1_splicer_special", 
-                        "method_name": "SplicerSpecial", 
+                        "function_name": "SplicerSpecial", 
                         "underscore_name": "splicer_special"
                     }, 
                     "options": {}, 
@@ -730,6 +732,7 @@
                 "C_impl_filename": "wrapExClass2.cpp", 
                 "C_prefix": "AA_", 
                 "C_type_name": "AA_exclass2", 
+                "F_C_prefix": "c_", 
                 "F_derived_name": "exclass2", 
                 "F_impl_filename": "wrapfExClass2.f", 
                 "F_module_name": "exclass2_mod", 
@@ -739,9 +742,10 @@
                 "PY_from_object_func": "PP_ExClass2_from_Object", 
                 "PY_to_object_func": "PP_ExClass2_to_Object", 
                 "PY_type_filename": "pyExClass2type.cpp", 
-                "cpp_class": "ExClass2", 
-                "lower_class": "exclass2", 
-                "upper_class": "EXCLASS2"
+                "class_lower": "exclass2", 
+                "class_name": "exclass2_", 
+                "class_upper": "EXCLASS2", 
+                "cpp_class": "ExClass2"
             }, 
             "methods": [
                 {
@@ -771,7 +775,7 @@
                         "F_name_generic": "ex_class2", 
                         "F_name_impl": "exclass2_ex_class2", 
                         "F_name_method": "ex_class2", 
-                        "method_name": "ExClass2", 
+                        "function_name": "ExClass2", 
                         "underscore_name": "ex_class2"
                     }, 
                     "options": {}, 
@@ -841,7 +845,7 @@
                         "F_name_impl": "exclass2_delete", 
                         "F_name_method": "delete", 
                         "PY_name_impl": "PP_exclass2_delete", 
-                        "method_name": "delete", 
+                        "function_name": "delete", 
                         "underscore_name": "delete"
                     }, 
                     "options": {}, 
@@ -868,7 +872,7 @@
                         "F_name_impl": "exclass2_get_name", 
                         "F_name_method": "get_name", 
                         "PY_name_impl": "PP_exclass2_get_name", 
-                        "method_name": "getName", 
+                        "function_name": "getName", 
                         "underscore_name": "get_name"
                     }, 
                     "options": {}, 
@@ -884,7 +888,7 @@
                 }, 
                 {
                     "_PTR_C_CPP_index": 20, 
-                    "_decl": "void getName(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv)) const", 
+                    "_decl": "void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 36, 
                     "_generated": "string_to_buffer_and_len", 
@@ -899,7 +903,7 @@
                                 "reference": true
                             }, 
                             "name": "SH_F_rv", 
-                            "type": "string_result_as_arg"
+                            "type": "string"
                         }
                     ], 
                     "attrs": {
@@ -943,7 +947,7 @@
                         "F_name_impl": "exclass2_get_name_length", 
                         "F_name_method": "get_name_length", 
                         "PY_name_impl": "PP_exclass2_get_name_length", 
-                        "method_name": "GetNameLength", 
+                        "function_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
                     }, 
                     "options": {
@@ -982,7 +986,7 @@
                         "F_name_impl": "exclass2_get_class1", 
                         "F_name_method": "get_class1", 
                         "PY_name_impl": "PP_exclass2_get_class1", 
-                        "method_name": "get_class1", 
+                        "function_name": "get_class1", 
                         "underscore_name": "get_class1"
                     }, 
                     "options": {}, 
@@ -1153,8 +1157,8 @@
                         "C_name": "AA_exclass2_declare_1", 
                         "F_C_name": "c_exclass2_declare_1", 
                         "PY_name_impl": "PP_exclass2_declare_1", 
+                        "function_name": "declare", 
                         "function_suffix": "_1", 
-                        "method_name": "declare", 
                         "underscore_name": "declare"
                     }, 
                     "fortran_generic": {
@@ -1301,7 +1305,7 @@
                         "F_name_impl": "exclass2_destroyall", 
                         "F_name_method": "destroyall", 
                         "PY_name_impl": "PP_exclass2_destroyall", 
-                        "method_name": "destroyall", 
+                        "function_name": "destroyall", 
                         "underscore_name": "destroyall"
                     }, 
                     "options": {}, 
@@ -1327,7 +1331,7 @@
                         "F_name_impl": "exclass2_get_type_id", 
                         "F_name_method": "get_type_id", 
                         "PY_name_impl": "PP_exclass2_get_type_id", 
-                        "method_name": "getTypeID", 
+                        "function_name": "getTypeID", 
                         "underscore_name": "get_type_id"
                     }, 
                     "options": {}, 
@@ -1363,7 +1367,7 @@
                     }, 
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
-                        "method_name": "setValue", 
+                        "function_name": "setValue", 
                         "underscore_name": "set_value"
                     }, 
                     "options": {
@@ -1544,7 +1548,7 @@
                     }, 
                     "decl": "ValueType getValue()", 
                     "fmt": {
-                        "method_name": "getValue", 
+                        "function_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
                     "options": {
@@ -1673,12 +1677,13 @@
         "PY_module_filename": "pyUserLibrarymodule.cpp", 
         "PY_module_name": "userlibrary", 
         "PY_prefix": "PP_", 
+        "class_name": "", 
         "function_suffix": "", 
         "library": "UserLibrary", 
-        "lower_library": "userlibrary", 
+        "library_lower": "userlibrary", 
+        "library_upper": "USERLIBRARY", 
         "overloaded": false, 
-        "rv": "rv", 
-        "upper_library": "USERLIBRARY"
+        "rv": "rv"
     }, 
     "functions": [
         {
@@ -1696,7 +1701,7 @@
                 "F_name_impl": "local_function1", 
                 "F_name_method": "local_function1", 
                 "PY_name_impl": "PP_local_function1", 
-                "method_name": "local_function1", 
+                "function_name": "local_function1", 
                 "underscore_name": "local_function1"
             }, 
             "options": {}, 
@@ -1732,7 +1737,7 @@
                 "F_name_impl": "is_name_valid", 
                 "F_name_method": "is_name_valid", 
                 "PY_name_impl": "PP_is_name_valid", 
-                "method_name": "isNameValid", 
+                "function_name": "isNameValid", 
                 "underscore_name": "is_name_valid"
             }, 
             "options": {
@@ -1797,7 +1802,7 @@
                 "F_name_impl": "is_initialized", 
                 "F_name_method": "is_initialized", 
                 "PY_name_impl": "PP_is_initialized", 
-                "method_name": "isInitialized", 
+                "function_name": "isInitialized", 
                 "underscore_name": "is_initialized"
             }, 
             "options": {}, 
@@ -1838,8 +1843,8 @@
                 "F_name_impl": "test_names", 
                 "F_name_method": "test_names", 
                 "PY_name_impl": "PP_test_names", 
+                "function_name": "test_names", 
                 "function_suffix": "", 
-                "method_name": "test_names", 
                 "underscore_name": "test_names"
             }, 
             "function_suffix": "", 
@@ -1933,8 +1938,8 @@
                 "F_name_impl": "test_names_flag", 
                 "F_name_method": "test_names_flag", 
                 "PY_name_impl": "PP_test_names_flag", 
+                "function_name": "test_names", 
                 "function_suffix": "_flag", 
-                "method_name": "test_names", 
                 "underscore_name": "test_names"
             }, 
             "function_suffix": "_flag", 
@@ -2106,8 +2111,8 @@
                 "F_name_impl": "testoptional_2", 
                 "F_name_method": "testoptional_2", 
                 "PY_name_impl": "PP_testoptional_2", 
+                "function_name": "testoptional", 
                 "function_suffix": "_2", 
-                "method_name": "testoptional", 
                 "underscore_name": "testoptional"
             }, 
             "options": {}, 
@@ -2123,21 +2128,19 @@
         "C_header_filename_library_template": "wrap{library}.h", 
         "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 
         "C_impl_filename_library_template": "wrap{library}.cpp", 
-        "C_name_function_template": "{C_prefix}{underscore_name}{function_suffix}", 
-        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "C_name_template": "{C_prefix}{class_name}{underscore_name}{function_suffix}", 
         "C_prefix": "AA_", 
-        "F_C_name_function_template": "{F_C_prefix}{underscore_name}{function_suffix}", 
-        "F_C_name_method_template": "{F_C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "F_C_name_template": "{F_C_prefix}{class_name}{underscore_name}{function_suffix}", 
         "F_C_prefix": "c_", 
         "F_force_wrapper": false, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
-        "F_impl_filename_library_template": "wrapf{lower_library}.f", 
-        "F_module_name_class_template": "{lower_class}_mod", 
-        "F_module_name_library_template": "{lower_library}_mod", 
+        "F_impl_filename_library_template": "wrapf{library_lower}.f", 
+        "F_module_name_class_template": "{class_lower}_mod", 
+        "F_module_name_library_template": "{library_lower}_mod", 
         "F_module_per_class": true, 
+        "F_name_associated": "associated", 
         "F_name_generic_template": "{underscore_name}", 
-        "F_name_impl_function_template": "{underscore_name}{function_suffix}", 
-        "F_name_impl_method_template": "{lower_class}_{underscore_name}{function_suffix}", 
+        "F_name_impl_template": "{class_name}{underscore_name}{function_suffix}", 
         "F_name_instance_get": "yadda", 
         "F_name_instance_set": null, 
         "F_name_method_template": "{underscore_name}{function_suffix}", 
@@ -2147,10 +2150,10 @@
         "PY_header_filename_template": "py{library}module.hpp", 
         "PY_helper_filename_template": "py{library}helper.cpp", 
         "PY_module_filename_template": "py{library}module.cpp", 
-        "PY_name_impl_function_template": "{PY_prefix}{underscore_name}{function_suffix}", 
-        "PY_name_impl_method_template": "{PY_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "PY_name_impl_template": "{PY_prefix}{class_name}{underscore_name}{function_suffix}", 
         "PY_prefix": "PP_", 
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
+        "class_name_template": "{class_lower}_", 
         "cpp_header": "", 
         "debug": true, 
         "doxygen": true, 
@@ -2161,8 +2164,8 @@
         "wrap_python": true
     }, 
     "patterns": {
-        "C_invalid_name": "if (! isNameValid({var})) {{\n    return NULL;\n}}\n", 
-        "PY_invalid_name": "if (! isNameValid({var})) {{\n    PyErr_SetString(PyExc_KeyError, \"{var}\");\n    return NULL;\n}}\n"
+        "C_invalid_name": "if (! isNameValid({cpp_var})) {{\n    return NULL;\n}}\n", 
+        "PY_invalid_name": "if (! isNameValid({cpp_var})) {{\n    PyErr_SetString(PyExc_KeyError, \"XXX need value of name\");\n    return NULL;\n}}\n"
     }, 
     "splicer": {
         "c": [
@@ -2180,15 +2183,14 @@
             "PY_PyObject": "PP_ExClass1", 
             "PY_PyTypeObject": "PP_ExClass1_Type", 
             "PY_from_object": "PP_ExClass1_from_Object", 
-            "PY_post_parse": "{var} = {var_obj} ? {var_obj}->{BBB} : NULL;", 
             "PY_to_object": "PP_ExClass1_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}ExClass1{ptr}>(static_cast<{C_const}void *>({var}))", 
+            "c_to_cpp": "static_cast<{C_const}ExClass1{ptr}>(static_cast<{C_const}void *>({c_var}))", 
             "c_type": "AA_exclass1", 
-            "cpp_to_c": "static_cast<{C_const}AA_exclass1 *>(static_cast<{C_const}void *>({var}))", 
+            "cpp_to_c": "static_cast<{C_const}AA_exclass1 *>(static_cast<{C_const}void *>({cpp_var}))", 
             "cpp_type": "ExClass1", 
-            "f_args": "{var}%{F_derived_member}", 
+            "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "exclass1", 
             "f_module": {
                 "exclass1_mod": [
@@ -2197,21 +2199,33 @@
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
             "f_type": "type(exclass1)", 
-            "forward": "ExClass1"
+            "forward": "ExClass1", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;"
+                    ]
+                }, 
+                "intent_out": {
+                    "ctor": [
+                        "{PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});", 
+                        "{py_var}->{BBB} = {cpp_var};"
+                    ]
+                }
+            }
         }, 
         "ExClass2": {
             "PY_PyObject": "PP_ExClass2", 
             "PY_PyTypeObject": "PP_ExClass2_Type", 
             "PY_from_object": "PP_ExClass2_from_Object", 
-            "PY_post_parse": "{var} = {var_obj} ? {var_obj}->{BBB} : NULL;", 
             "PY_to_object": "PP_ExClass2_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}ExClass2{ptr}>(static_cast<{C_const}void *>({var}))", 
+            "c_to_cpp": "static_cast<{C_const}ExClass2{ptr}>(static_cast<{C_const}void *>({c_var}))", 
             "c_type": "AA_exclass2", 
-            "cpp_to_c": "static_cast<{C_const}AA_exclass2 *>(static_cast<{C_const}void *>({var}))", 
+            "cpp_to_c": "static_cast<{C_const}AA_exclass2 *>(static_cast<{C_const}void *>({cpp_var}))", 
             "cpp_type": "ExClass2", 
-            "f_args": "{var}%{F_derived_member}", 
+            "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "exclass2", 
             "f_module": {
                 "exclass2_mod": [
@@ -2220,7 +2234,20 @@
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
             "f_type": "type(exclass2)", 
-            "forward": "ExClass2"
+            "forward": "ExClass2", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;"
+                    ]
+                }, 
+                "intent_out": {
+                    "ctor": [
+                        "{PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});", 
+                        "{py_var}->{BBB} = {cpp_var};"
+                    ]
+                }
+            }
         }, 
         "SidreLength": {
             "PY_format": "l", 
@@ -2228,7 +2255,7 @@
             "c_header": "sidre/SidreTypes.h", 
             "c_type": "ATK_SidreLength", 
             "cpp_type": "SidreLength", 
-            "f_cast": "int({var}, C_LONG)", 
+            "f_cast": "int({f_var}, C_LONG)", 
             "f_kind": "C_LONG", 
             "f_module": {
                 "iso_c_binding": [
@@ -2239,81 +2266,55 @@
             "typedef": "long"
         }, 
         "TypeID": {
+            "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_header": "sidre/SidreTypes.h", 
-            "c_to_cpp": "getTypeID({var})", 
+            "c_to_cpp": "getTypeID({c_var})", 
             "c_type": "int", 
             "cpp_header": "sidre/SidreWrapperHelpers.hpp", 
+            "cpp_to_c": "static_cast<int>({cpp_var})", 
             "cpp_type": "TypeID", 
+            "f_cast": "int({f_var}, C_INT)", 
+            "f_kind": "C_INT", 
             "f_module": {
                 "iso_c_binding": [
                     "C_INT"
                 ]
             }, 
-            "f_type": "integer(C_INT)"
+            "f_type": "integer(C_INT)", 
+            "typedef": "int"
         }, 
         "bool": {
             "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
-            "PY_post_parse": "{var} = PyObject_IsTrue({var_obj});", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
-            "f_argsdecl": [
-                "logical(C_BOOL) {tmp_var}"
-            ], 
             "f_kind": "C_BOOL", 
-            "f_pre_call": "{tmp_var} = {var}  ! coerce to C_BOOL", 
-            "f_type": "logical", 
-            "f_use_tmp": true
-        }, 
-        "char": {
-            "PY_ctor": "PyString_FromString({var})", 
-            "PY_format": "s", 
-            "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
-            "c_statements": {
+            "f_statements": {
                 "intent_in": {
-                    "post_call": [
-                        "delete [] {cpp_var};"
+                    "declare": [
+                        "logical(C_BOOL) {c_var}"
                     ], 
                     "pre_call": [
-                        "int {c_var_len} = strlen({c_var});", 
-                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
-                        "{cpp_var}[{c_var_len}] = '\\0';"
-                    ], 
-                    "pre_call_trim": [
-                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
-                        "{cpp_var}[{c_var_len}] = '\\0';"
-                    ]
-                }, 
-                "intent_out": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
-                        "delete [] {cpp_var};"
-                    ], 
-                    "pre_call": [
-                        "char * {cpp_var} = new char [{c_var_num} + 1];"
+                        "{c_var} = {f_var}  ! coerce to C_BOOL"
                     ]
                 }, 
                 "result": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
-                    ]
+                    "need_wrapper": true
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
-            "c_type": "char", 
-            "cpp_type": "char", 
-            "f_module": {
-                "iso_c_binding": null
-            }, 
-            "f_type": "character(*)"
+            "f_type": "logical", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = PyObject_IsTrue({py_var});"
+                    ]
+                }
+            }
         }, 
-        "char_result_as_arg": {
-            "PY_ctor": "PyString_FromString({var})", 
+        "char": {
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -2335,6 +2336,7 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
                         "delete [] {cpp_var};"
@@ -2344,6 +2346,7 @@
                     ]
                 }, 
                 "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -2358,9 +2361,17 @@
             "f_type": "character(*)"
         }, 
         "char_scalar": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "result": {
+                    "post_call": [
+                        "// {c_var_len} is always 1, test to silence warning about unused variable", 
+                        "if ({c_var_len} == 1) *{c_var} = {cpp_val};"
+                    ]
+                }
+            }, 
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_type": "char", 
@@ -2374,7 +2385,7 @@
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
             "cpp_type": "double", 
-            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_cast": "real({f_var}, C_DOUBLE)", 
             "f_kind": "C_DOUBLE", 
             "f_module": {
                 "iso_c_binding": [
@@ -2388,7 +2399,7 @@
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
             "cpp_type": "float", 
-            "f_cast": "real({var}, C_FLOAT)", 
+            "f_cast": "real({f_var}, C_FLOAT)", 
             "f_kind": "C_FLOAT", 
             "f_module": {
                 "iso_c_binding": [
@@ -2402,7 +2413,7 @@
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
-            "f_cast": "int({var}, C_INT)", 
+            "f_cast": "int({f_var}, C_INT)", 
             "f_kind": "C_INT", 
             "f_module": {
                 "iso_c_binding": [
@@ -2416,7 +2427,7 @@
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
-            "f_cast": "int({var}, C_INT)", 
+            "f_cast": "int({f_var}, C_INT)", 
             "f_kind": "C_INT", 
             "f_module": {
                 "iso_c_binding": [
@@ -2430,7 +2441,7 @@
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
-            "f_cast": "int({var}, C_LONG)", 
+            "f_cast": "int({f_var}, C_LONG)", 
             "f_kind": "C_LONG", 
             "f_module": {
                 "iso_c_binding": [
@@ -2444,7 +2455,7 @@
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
-            "f_cast": "int({var}, C_LONG)", 
+            "f_cast": "int({f_var}, C_LONG)", 
             "f_kind": "C_LONG", 
             "f_module": {
                 "iso_c_binding": [
@@ -2461,7 +2472,7 @@
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
             "cpp_type": "double", 
-            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_cast": "real({f_var}, C_DOUBLE)", 
             "f_kind": "C_DOUBLE", 
             "f_module": {
                 "iso_c_binding": [
@@ -2475,7 +2486,7 @@
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
             "cpp_type": "float", 
-            "f_cast": "real({var}, C_FLOAT)", 
+            "f_cast": "real({f_var}, C_FLOAT)", 
             "f_kind": "C_FLOAT", 
             "f_module": {
                 "iso_c_binding": [
@@ -2490,7 +2501,7 @@
             "c_header": "stdlib.h", 
             "c_type": "size_t", 
             "cpp_type": "size_t", 
-            "f_cast": "int({var}, C_SIZE_T)", 
+            "f_cast": "int({f_var}, C_SIZE_T)", 
             "f_kind": "C_SIZE_T", 
             "f_module": {
                 "iso_c_binding": [
@@ -2500,7 +2511,7 @@
             "f_type": "integer(C_SIZE_T)"
         }, 
         "std::string": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -2514,11 +2525,13 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -2527,15 +2540,22 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_type": "character(*)"
+            "f_type": "character(*)", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "std::string {cpp_var}({c_var});"
+                    ]
+                }
+            }
         }, 
         "string": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -2549,11 +2569,13 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -2562,50 +2584,22 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_type": "character(*)"
-        }, 
-        "string_result_as_arg": {
-            "PY_ctor": "PyString_FromString({var})", 
-            "PY_format": "s", 
-            "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
-            "c_statements": {
+            "f_type": "character(*)", 
+            "py_statements": {
                 "intent_in": {
-                    "pre_call": [
+                    "post_parse": [
                         "std::string {cpp_var}({c_var});"
-                    ], 
-                    "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
-                    ]
-                }, 
-                "intent_out": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
-                    ]
-                }, 
-                "result": {
-                    "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
-            }, 
-            "c_to_cpp": "{cpp_var}", 
-            "c_type": "char", 
-            "cpp_header": "shroudrt.hpp", 
-            "cpp_to_c": "{var}.c_str()", 
-            "cpp_type": "std::string", 
-            "f_module": {
-                "iso_c_binding": null
-            }, 
-            "f_type": "character(*)"
+            }
         }, 
         "string_result_fstr": {
-            "PY_ctor": "PyString_FromString({var})", 
+            "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -2619,11 +2613,13 @@
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
+                    "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
@@ -2632,15 +2628,23 @@
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)"
+            "f_type": "character(*)", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "std::string {cpp_var}({c_var});"
+                    ]
+                }
+            }
         }, 
         "void": {
+            "PY_ctor": "PyCapsule_New({cpp_var}, NULL, NULL)", 
             "c_fortran": "type(C_PTR)", 
             "c_type": "void", 
             "cpp_type": "void", 
