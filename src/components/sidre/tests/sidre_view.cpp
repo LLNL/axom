@@ -92,6 +92,30 @@ TEST(sidre_view,create_view_from_path)
 
 //------------------------------------------------------------------------------
 
+TEST(sidre_view,scalar_view)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  asctoolkit::sidre::SidreLength dims[2];
+
+  // integer scalar
+  DataView *i0view = root->createView("i0")->setScalar(1);
+  EXPECT_EQ(i0view->getNumElements(), 1u);
+  EXPECT_EQ(i0view->getNumDimensions(), 1);
+  EXPECT_TRUE(i0view->getShape(1, dims) == 1 && dims[0] == 1);
+
+  // string
+  DataView *s0view = root->createView("s0")->setString("I am a string");
+  EXPECT_EQ(s0view->getNumElements(), 14u);
+  EXPECT_EQ(s0view->getNumDimensions(), 1);
+  EXPECT_TRUE(s0view->getShape(1, dims) == 1 && dims[0] == 14);
+
+  delete ds;
+
+}
+
+//------------------------------------------------------------------------------
+
 TEST(sidre_view,int_buffer_from_view)
 {
   DataStore * ds = new DataStore();

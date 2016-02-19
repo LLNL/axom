@@ -239,7 +239,7 @@ public:
    */
   int getNumDimensions() const
   {
-    return ( m_shape == ATK_NULLPTR ? 1 : m_shape->size() );
+    return m_shape.size();
   }
 
   /*!
@@ -247,10 +247,11 @@ public:
    *        information of this data view object.
    *
    *  ndims - maximum number of dimensions to return.
+   *  shape - user supplied buffer assumed to be ndims long.
+   *
+   *  Return the number of dimensions of the view.
+   *  Return -1 if shape is too short to hold all dimensions.
    */
-//
-// RDH -- who allocates shape? What are error conditions??
-//
   int getShape(int ndims, SidreLength * shape) const;
 
   /*!
@@ -503,18 +504,22 @@ public:
 //
     // Check that parameter type provided matches what type is stored in the node.
 #if defined(ATK_DEBUG)
-    DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
-    SLIC_CHECK_MSG( arg_id == m_node.dtype().id(),
-                     "Mismatch between setScalar()" <<
-                     DataType::id_to_name(
-                       arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() <<
-                     ").");
+    if (m_state != EMPTY)
+    {
+      DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
+      SLIC_CHECK_MSG( arg_id == m_node.dtype().id(),
+                      "Mismatch between setScalar()" <<
+                      DataType::id_to_name(
+                        arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() <<
+                      ").");
+    }
 #endif
 
     m_node.set(value);
     m_schema.set(m_node.schema());
     m_is_applied = true;
     m_state = SCALAR;
+    declareShape();
     return this;
   }
 
@@ -532,6 +537,7 @@ public:
     m_schema.set(m_node.schema());
     m_state = STRING;
     m_is_applied = true;
+    declareShape();
     return this;
   };
 
@@ -738,6 +744,16 @@ private:
    */
   DataView * declare(const Schema& schema);
 
+  /*!
+   * \brief Set the shape to be a one dimension with the declared number of elements.
+   */
+  void declareShape();
+
+  /*!
+   * \brief Set the shape to be a ndims dimensions with shape.
+   */
+  void declareShape(int ndims, SidreLength * shape);
+
 //@}
 
 
@@ -817,7 +833,7 @@ private:
   Node m_node;
 
   /// Shape information
-  std::vector<SidreLength> * m_shape;
+  std::vector<SidreLength> m_shape;
 
   /// State of view.
   State m_state;

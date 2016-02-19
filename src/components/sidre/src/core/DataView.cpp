@@ -567,42 +567,27 @@ bool DataView::isAllocated()
  */
 int DataView::getShape(int ndims, SidreLength * shape) const
 {
-  if (m_shape == ATK_NULLPTR)
+  if (static_cast<unsigned>(ndims) < m_shape.size())
   {
-    if (ndims > 0)
-    {
-      shape[0] = getNumElements();
-      return 1;
-    }
-    else
-    {
-      return -1;
-    }
+    return -1;
   }
-  else
-  {
-    if (static_cast<unsigned>(ndims) < m_shape->size())
-    {
-      return -1;
-    }
-    else
-    {
+
 #if 0
-      for(std::vector<SidreLength>::iterator it = v.begin() ; it != v.end() ;
-          ++it)
-      {
-        *shape++ = it.
-      }
-#else
-      for(std::vector<SidreLength>::size_type i = 0 ; i != m_shape->size() ;
-          ++i)
-      {
-        shape[i] = (*m_shape)[i];
-      }
-#endif
-    }
-    return m_shape->size();
+  for(std::vector<SidreLength>::iterator it = v.begin() ;
+      it != v.end() ;
+      ++it)
+  {
+    *shape++ = it.
   }
+#else
+  for(std::vector<SidreLength>::size_type i = 0 ;
+      i != m_shape.size() ;
+      ++i)
+  {
+    shape[i] = m_shape[i];
+  }
+#endif
+  return m_shape.size();
 }
 
 /*
@@ -661,7 +646,7 @@ DataView::DataView( const std::string& name,
   m_data_buffer(ATK_NULLPTR),
   m_schema(),
   m_node(),
-  m_shape(ATK_NULLPTR),
+  m_shape(),
   m_state(EMPTY),
   m_is_applied(false)
 {}
@@ -678,10 +663,6 @@ DataView::~DataView()
   if (m_data_buffer != ATK_NULLPTR)
   {
     m_data_buffer->detachView(this);
-  }
-  if (m_shape != ATK_NULLPTR)
-  {
-    delete m_shape;
   }
 }
 
@@ -703,6 +684,7 @@ DataView * DataView::declare(TypeID type, SidreLength num_elems)
   DataType dtype = conduit::DataType::default_dtype(type);
   dtype.set_number_of_elements(num_elems);
   m_schema.set(dtype);
+  declareShape();
 
   if ( m_state == EMPTY )
   {
@@ -719,7 +701,6 @@ DataView * DataView::declare(TypeID type, SidreLength num_elems)
  *
  * PRIVATE method to declare data view with type, number of dimensions,
  *         and number of elements per dimension.
- *         Only use m_shape if ndims > 1.
  *
  *************************************************************************
  */
@@ -729,41 +710,22 @@ DataView * DataView::declare(TypeID type, int ndims, SidreLength * shape)
   {
     SLIC_CHECK(ndims >= 0);
     SLIC_CHECK(shape != ATK_NULLPTR);
-
     return this;
   }
 
-  if (ndims == 1)
+  SidreLength num_elems = 0;
+  if (ndims > 0)
   {
-    if (m_shape != ATK_NULLPTR)
+    num_elems = shape[0];
+    for (int i=1 ; i < ndims ; i++)
     {
-      delete m_shape;
-      m_shape = ATK_NULLPTR;
-    }
-  }
-  else
-  {
-    if (m_shape != ATK_NULLPTR)
-    {
-      m_shape->resize(ndims);
-    }
-    else
-    {
-      m_shape = new std::vector<SidreLength>(ndims);
-    }
-  }
-
-  SidreLength num_elems = 1;
-  for (int i=0 ; i < ndims ; i++)
-  {
-    num_elems *= shape[i];
-    if (m_shape != ATK_NULLPTR)
-    {
-      (*m_shape)[i] = shape[i];
+      num_elems *= shape[i];
     }
   }
 
   declare(type, num_elems);
+  declareShape(ndims, shape);
+
   return this;
 }
 
@@ -784,6 +746,7 @@ DataView * DataView::declare(const DataType& dtype)
   }
 
   m_schema.set(dtype);
+  declareShape();
 
   if ( m_state == EMPTY )
   {
@@ -811,8 +774,8 @@ DataView * DataView::declare(const Schema& schema)
     return this;
   }
 
-
   m_schema.set(schema);
+  declareShape();
 
   if ( m_state == EMPTY )
   {
@@ -822,6 +785,36 @@ DataView * DataView::declare(const Schema& schema)
   m_is_applied = false;
 
   return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method set shape to declared length.
+ * This is called after declare to set the shape.
+ *
+ *************************************************************************
+ */
+void DataView::declareShape()
+{
+  m_shape.clear();
+  m_shape.push_back(m_schema.dtype().number_of_elements());
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method set shape from user input.
+ *
+ *************************************************************************
+ */
+void DataView::declareShape(int ndims, SidreLength * shape)
+{
+  m_shape.clear();
+  for (int i=0 ; i < ndims ; i++)
+  {
+    m_shape.push_back(shape[i]);
+  }
 }
 
 /*
