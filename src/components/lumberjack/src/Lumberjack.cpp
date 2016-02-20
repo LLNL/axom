@@ -106,12 +106,13 @@ void Lumberjack::clearMessages()
 
 void Lumberjack::queueMessage(const std::string& text)
 {
-    queueMessage(text, "", -1);
+    queueMessage(text, "", -1, "", "");
 }
 
-void Lumberjack::queueMessage(const std::string& text, const std::string& fileName, const int lineNumber)
+void Lumberjack::queueMessage(const std::string& text, const std::string& fileName, const int lineNumber,
+                              const std::string& level, const std::string& tag)
 {
-    Message* mi = new Message(text, m_communicator->rank(), fileName, lineNumber);
+    Message* mi = new Message(text, m_communicator->rank(), fileName, lineNumber, level, tag);
     m_messages.push_back(mi);
 }
 
@@ -170,7 +171,7 @@ const char* Lumberjack::packMessages()
     //This function packs the messages into one long char array
     //  in the following format:
     //
-    // <message count><largest message size><packed message size><packed message><packed message size>...
+    // <message count><packed message size><packed message><packed message size>...
  
     if (m_messages.size() == 0) {
         return "0";
@@ -196,19 +197,16 @@ const char* Lumberjack::packMessages()
         }
     }
 
-    // Create and calculate size of message count and largest message size strings
-    std::string largestSizeString = intToString(largestSize) + memberDelimiter;
+    // Create and calculate size of message count
     std::string messageCountString = intToString(messageCount) + memberDelimiter;
-    totalSize += largestSizeString.size() + messageCountString.size();
+    totalSize += messageCountString.size();
 
     const char* packedMessagesString = new char[totalSize];
     char* packedMessagesIndex = (char*)packedMessagesString;
 
-    // Copy largest size to start of packed message
+    // Copy message count to start of packed message
     std::memcpy(packedMessagesIndex, messageCountString.c_str(), messageCountString.size());
     packedMessagesIndex += messageCountString.size();
-    std::memcpy(packedMessagesIndex, largestSizeString.c_str(), largestSizeString.size());
-    packedMessagesIndex += largestSizeString.size();
 
     for (int i=0;i<messageCount; ++i) {
         // Copy current message size
@@ -227,51 +225,28 @@ const char* Lumberjack::packMessages()
 
 void Lumberjack::unpackMessages(const char* packedMessages)
 {
-    int largestSize, messageCount;
-    std::string tempString;
-    int packedMessagesSize = std::strlen(packedMessages);
-    int i = 0;
-    // Get message count
-    for(; i < packedMessagesSize; ++i) {
-        if (packedMessages[i] == memberDelimiter) {
-            messageCount = stringToInt(tempString);
-            ++i;
-            break;
-        }
-        tempString += packedMessages[i];
-    }
+    std::string packedMessagesString = std::string(packedMessages);
+    std::size_t start, end;
 
-    // Get largest message size
-    tempString = "";
-    for(; i < packedMessagesSize; ++i) {
-        if (packedMessages[i] == memberDelimiter) {
-            largestSize = stringToInt(tempString);
-            ++i;
-            break;
-        }
-        tempString += packedMessages[i];
-    }
+    // Get message count
+    end = packedMessagesString.find(memberDelimiter);
+    int messageCount = stringToInt(packedMessagesString.substr(0, end));
+    start = end + 1;
 
     // Grab each message    
-    char* buffer = new char[largestSize+1];
     Message* message;
     int messageSize;
     for (int j = 0; j < messageCount; ++j) {
-        tempString = "";
-        for(; i < packedMessagesSize; ++i) {
-            if (packedMessages[i] == memberDelimiter) {
-                messageSize = stringToInt(tempString);
-                ++i;
-                break;
-            }
-            tempString += packedMessages[i];
-        }
-        memcpy(buffer, &packedMessages[i], messageSize*sizeof(char));
-        buffer[messageSize] = '\0';
+        //Get current message size
+        end = packedMessagesString.find(memberDelimiter, start);
+        messageSize = stringToInt(packedMessagesString.substr(start, end-start));
+        start = end + 1;
+
+        //Create current message and save
         message = new Message();
-        message->unpack(std::string(buffer), m_ranksLimit);
+        message->unpack(packedMessagesString.substr(start, messageSize), m_ranksLimit);
         m_messages.push_back(message);
-        i += messageSize;
+        start += messageSize;
     }
 }
 

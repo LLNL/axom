@@ -181,9 +181,12 @@ class Lumberjack {
          * \param [in] text Text of the Message
          * \param [in] fileName File name of Message
          * \param [in] lineNumber Line number of Message
+         * \param [in] level The level of the severity of the Message.
+         * \param [in] tag The tag of where the Message originated.
          *****************************************************************************
          */
-        void queueMessage(const std::string& text, const std::string& fileName, const int lineNumber);
+        void queueMessage(const std::string& text, const std::string& fileName, const int lineNumber,
+                          const std::string& level, const std::string& tag);
 
         /*!
          *****************************************************************************
