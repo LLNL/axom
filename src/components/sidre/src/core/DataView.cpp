@@ -118,28 +118,6 @@ DataView * DataView::allocate(const DataType& dtype)
 /*
  *************************************************************************
  *
- * Allocate data for view described by a Conduit schema object.
- *
- *************************************************************************
- */
-DataView * DataView::allocate(const Schema& schema)
-{
-  if ( schema.dtype().is_empty() )
-  {
-    SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        "Unable to allocate, schema has empty data type.");
-    return this;
-  }
-
-  declare(schema);
-  allocate();
-
-  return this;
-}
-
-/*
- *************************************************************************
- *
  * Reallocate data for view to given number of elements.
  * This function requires that the view is already described.
  *
@@ -206,46 +184,6 @@ DataView * DataView::reallocate(const DataType& dtype)
 
   declare(dtype);
   SidreLength num_elems = dtype.number_of_elements();
-  m_data_buffer->reallocate(num_elems);
-  m_state = ALLOCATED;
-  apply();
-
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Reallocate data for view using a Conduit schema object.
- *
- *************************************************************************
- */
-DataView * DataView::reallocate(const Schema& schema)
-{
-  // If we don't have an allocated buffer, we can just call allocate.
-  if ( !isAllocated() )
-  {
-    return allocate(schema);
-  }
-
-  TypeID type = static_cast<TypeID>(schema.dtype().id());
-  TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
-
-  if ( schema.dtype().is_empty() || !isAllocateValid() || type != view_type )
-  {
-    SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        "Unable to re-allocate, schema has empty data type.");
-    SLIC_CHECK_MSG( isAllocateValid(),
-                    "View " << this->getName() << "'s state " <<
-        getStateStringName(m_state) << " does not allow data re-allocation");
-    SLIC_CHECK_MSG( type == view_type,
-                    "View " << this->getName() <<
-        " attempting to re-allocate with different type.");
-    return this;
-  }
-
-  declare(schema);
-  SidreLength num_elems = schema.dtype().number_of_elements();
   m_data_buffer->reallocate(num_elems);
   m_state = ALLOCATED;
   apply();
@@ -435,28 +373,6 @@ DataView * DataView::apply(const DataType &dtype)
   }
 
   declare(dtype);
-  apply();
-
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Apply a Conduit Schema to data view.
- *
- *************************************************************************
- */
-DataView * DataView::apply(const Schema& schema)
-{
-  if ( schema.dtype().is_empty() )
-  {
-    SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        "Unable to apply description, schema has empty data type.");
-    return this;
-  }
-
-  declare(schema);
   apply();
 
   return this;
@@ -673,12 +589,12 @@ DataView::~DataView()
  *
  *************************************************************************
  */
-DataView * DataView::declare(TypeID type, SidreLength num_elems)
+void DataView::declare(TypeID type, SidreLength num_elems)
 {
   if ( num_elems < 0 )
   {
     SLIC_CHECK_MSG(num_elems >= 0, "Declare: must give number of elements >= 0");
-    return this;
+    return;
   }
 
   DataType dtype = conduit::DataType::default_dtype(type);
@@ -692,8 +608,6 @@ DataView * DataView::declare(TypeID type, SidreLength num_elems)
   }
 
   m_is_applied = false;
-
-  return this;
 }
 
 /*
@@ -704,13 +618,13 @@ DataView * DataView::declare(TypeID type, SidreLength num_elems)
  *
  *************************************************************************
  */
-DataView * DataView::declare(TypeID type, int ndims, SidreLength * shape)
+void DataView::declare(TypeID type, int ndims, SidreLength * shape)
 {
   if ( ndims < 0 || shape == ATK_NULLPTR)
   {
     SLIC_CHECK(ndims >= 0);
     SLIC_CHECK(shape != ATK_NULLPTR);
-    return this;
+    return;
   }
 
   SidreLength num_elems = 0;
@@ -725,8 +639,6 @@ DataView * DataView::declare(TypeID type, int ndims, SidreLength * shape)
 
   declare(type, num_elems);
   declareShape(ndims, shape);
-
-  return this;
 }
 
 /*
@@ -736,13 +648,13 @@ DataView * DataView::declare(TypeID type, int ndims, SidreLength * shape)
  *
  *************************************************************************
  */
-DataView * DataView::declare(const DataType& dtype)
+void DataView::declare(const DataType& dtype)
 {
   if ( dtype.is_empty() )
   {
     SLIC_CHECK_MSG( !dtype.is_empty(),
         "Unable to set description in View, datatype parameter is empty.");
-    return this;
+    return;
   }
 
   m_schema.set(dtype);
@@ -754,37 +666,6 @@ DataView * DataView::declare(const DataType& dtype)
   }
 
   m_is_applied = false;
-
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * PRIVATE method to declare data view with a Conduit schema object.
- *
- *************************************************************************
- */
-DataView * DataView::declare(const Schema& schema)
-{
-  if ( schema.dtype().is_empty() )
-  {
-    SLIC_CHECK_MSG( !schema.dtype().is_empty(),
-        "Unable to set description in View, schema parameter has empty datatype.");
-    return this;
-  }
-
-  m_schema.set(schema);
-  declareShape();
-
-  if ( m_state == EMPTY )
-  {
-    m_state = DESCRIBED;
-  }
-
-  m_is_applied = false;
-
-  return this;
 }
 
 /*

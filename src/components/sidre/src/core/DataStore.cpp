@@ -202,7 +202,6 @@ void DataStore::destroyBuffer( IndexType idx )
         m_data_buffers[idx]->getNumViews() != 0,
         "Unable to delete buffer, it has " <<
         m_data_buffers[idx]->getNumViews() << " still attached.");
-std::cerr<< "FOOOOOOOOOOOOOOOO" << std::endl;
     return;
   }
 

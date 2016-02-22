@@ -230,7 +230,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * update(void * src, SidreLength nbytes);
+  DataBuffer * update(const void * src, SidreLength nbytes);
 
   //@}
 
@@ -276,7 +276,7 @@ private:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(TypeID type, SidreLength num_elems);
+  void declare(TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Private methods to attach/detach data view to buffer.
@@ -288,20 +288,9 @@ private:
   /// Allocate bytes on data buffer.
   void * allocateBytes(std::size_t num_bytes);
   /// Copy bytes from one memory location to another.
-  void copyBytes( void * src, void * dst, size_t num_bytes );
+  void copyBytes( const void * src, void * dst, size_t num_bytes );
   /// Release any allocated bytes pointer to by ptr..
   void  releaseBytes(void * ptr);
-
-#ifdef ATK_ENABLE_FORTRAN
-  /*!
-   * \brief Set as Fortran allocatable.
-   *
-   * If given pointer is null, this method does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * setFortranAllocatable(void * array, TypeID type, int rank);
-#endif
 
   /// Index Identifier - unique within a dataStore.
   IndexType m_index;

@@ -158,7 +158,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::update(void * src, SidreLength nbytes)
+DataBuffer * DataBuffer::update(const void * src, SidreLength nbytes)
 {
   if ( nbytes > getTotalBytes() )
   {
@@ -259,12 +259,12 @@ DataBuffer::~DataBuffer()
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
+void DataBuffer::declare(TypeID type, SidreLength num_elems)
 {
   if ( num_elems < 0 )
   {
     SLIC_CHECK_MSG(num_elems >= 0, "Must declare number of elements >=0");
-    return this;
+    return;
   }
 
   DataType& dtype = const_cast<DataType&>(m_node.dtype());
@@ -273,8 +273,6 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
 
   //Note: We have now provided a data description, but the data pointer is
   //still NULL.  This will be set later in our allocate or reallocate calls.
-
-  return this;
 }
 
 /*
@@ -316,7 +314,7 @@ void DataBuffer::detachView( DataView * view )
  *
  *************************************************************************
  */
-void DataBuffer::copyBytes( void * src, void * dst, size_t num_bytes )
+void DataBuffer::copyBytes( const void * src, void * dst, size_t num_bytes )
 {
   std::memcpy( dst, src, num_bytes );
 }
@@ -343,7 +341,7 @@ void * DataBuffer::allocateBytes(std::size_t num_bytes)
  */
 void DataBuffer::releaseBytes( void * ptr)
 {
-  if ( isAllocated() )
+  if ( ptr != ATK_NULLPTR )
   {
     // Pointer type here should always match new call in allocateBytes.
     delete[] static_cast<detail::sidre_int8*>(ptr);

@@ -510,7 +510,7 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   // this one is the Schema & method
   conduit::Schema s;
   s.set(DataType::c_double(10));
-  DataView * const view2 = grp->createViewAndAllocate(viewName2, s);
+  DataView * const view2 = grp->createViewAndAllocate(viewName2, s.dtype());
 
   EXPECT_TRUE(grp->hasView(viewName1));
   EXPECT_EQ( grp->getView(viewName1), view1 );
@@ -531,8 +531,8 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
 
   EXPECT_EQ(view1->getNumElements(), 10u);
   EXPECT_EQ(view2->getNumElements(), 10u);
-  EXPECT_EQ(view1->getTotalBytes(), 10 * sizeof(int));
-  EXPECT_EQ(view2->getTotalBytes(), 10 * sizeof(double));
+  EXPECT_EQ(view1->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(10 * sizeof(int)));
+  EXPECT_EQ(view2->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(10 * sizeof(double)));
 
   grp->destroyViewAndData(viewName1);
   grp->destroyViewAndData(viewName2);
@@ -571,7 +571,7 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
   // view for the second 5 values
   //  (schema call path case)
   conduit::Schema s(DataType::c_int(5,5*sizeof(int)));
-  root->createView("sub_b",base_buff)->apply(s);
+  root->createView("sub_b",base_buff)->apply(s.dtype());
 
   int * sub_a_vals = root->getView("sub_a")->getData();
   int * sub_b_vals = root->getView("sub_b")->getData();

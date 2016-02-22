@@ -133,7 +133,7 @@ TEST(sidre_view,int_buffer_from_view)
 
   dv->print();
 
-  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
+  EXPECT_EQ(dv->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>( sizeof(int) * 10) );
   delete ds;
 
 }
@@ -155,7 +155,7 @@ TEST(sidre_view,int_buffer_from_view_conduit_value)
 
   dv->print();
 
-  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
+  EXPECT_EQ(dv->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>( sizeof(int) * 10) );
   delete ds;
 
 }
@@ -178,7 +178,7 @@ TEST(sidre_view,int_array_strided_views)
 
   dbuff->print();
 
-  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
+  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 10));
 
   DataView * dv_e = root->createView("even",dbuff);
   DataView * dv_o = root->createView("odd",dbuff);
