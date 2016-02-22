@@ -34,7 +34,7 @@ TEST(C_sidre_buffer,create_buffers)
 }
 
 //------------------------------------------------------------------------------
-
+#if 0
 TEST(C_sidre_buffer,alloc_buffer_for_int_array)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
@@ -59,6 +59,7 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
   SIDRE_datastore_print(ds);
   SIDRE_datastore_delete(ds);
 }
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -87,7 +88,7 @@ TEST(C_sidre_buffer,init_buffer_for_int_array)
 }
 
 //------------------------------------------------------------------------------
-
+#if 0
 TEST(C_sidre_buffer,realloc_buffer)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
@@ -133,3 +134,4 @@ TEST(C_sidre_buffer,realloc_buffer)
   SIDRE_datastore_print(ds);
   SIDRE_datastore_delete(ds);
 }
+#endif

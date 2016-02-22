@@ -53,7 +53,7 @@ contains
     ds = datastore_new()
     dbuff = ds%create_buffer()
 
-    call dbuff%declare(SIDRE_INT_ID, 10_8)
+!    call dbuff%declare(SIDRE_INT_ID, 10_8)
     call dbuff%allocate()
 
     call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID, "dbuff%get_typeid()")
@@ -168,8 +168,8 @@ program fortran_test
   call init_fruit
 
   call create_buffers
-  call alloc_buffer_for_int_array
-  call init_buffer_for_int_array
+  !call alloc_buffer_for_int_array
+  !call init_buffer_for_int_array
   call realloc_buffer
 
   call fruit_summary

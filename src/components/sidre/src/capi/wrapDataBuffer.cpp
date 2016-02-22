@@ -38,16 +38,6 @@ size_t SIDRE_databuffer_get_num_views(SIDRE_databuffer * self)
 // splicer end class.DataBuffer.method.get_num_views
 }
 
-void SIDRE_databuffer_declare(SIDRE_databuffer * self, int type,
-                              SIDRE_SidreLength num_elems)
-{
-  DataBuffer * selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
-// splicer begin class.DataBuffer.method.declare
-  selfobj->declare(getTypeID(type), num_elems);
-  return;
-// splicer end class.DataBuffer.method.declare
-}
-
 void SIDRE_databuffer_allocate_existing(SIDRE_databuffer * self)
 {
   DataBuffer * selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));

@@ -102,12 +102,23 @@ public:
   DataBuffer * getBuffer( IndexType idx ) const;
 
   /*!
-   * \brief Create a data buffer object and return a pointer to it.
+   * \brief Create an undescribed data buffer object and return a pointer to it.
+   *    When allocating, the type and number of elements must be provided
+   *    in the allocate call.
    *
    *    The buffer object is assigned a unique index when created and the
    *    buffer object is owned by the data store.
    */
   DataBuffer * createBuffer();
+
+  /*!
+   * \brief Create a data buffer object with specified type and number of
+   *    elements and return a pointer to it.
+   *
+   *    The buffer object is assigned a unique index when created and the
+   *    buffer object is owned by the data store.
+   */
+  DataBuffer * createBuffer( TypeID type, SidreLength num_elems );
 
   /*!
    * \brief Remove data buffer with given index from the datastore and

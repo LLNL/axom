@@ -143,21 +143,44 @@ DataBuffer * DataStore::getBuffer( IndexType idx ) const
  */
 DataBuffer * DataStore::createBuffer()
 {
-  // TODO: implement pool, look for free nodes.  Allocate in blocks.
-  IndexType newIndex = m_data_buffers.size();
-  m_data_buffers.push_back( ATK_NULLPTR );
-  if( !m_free_buffer_ids.empty() )
-  {
-    newIndex = m_free_buffer_ids.top();
-    m_free_buffer_ids.pop();
-  }
-  DataBuffer * const obj = new DataBuffer( newIndex );
+  DataBuffer * const obj = new(std::nothrow) DataBuffer();
 
-  m_data_buffers[newIndex] = obj;
+  SLIC_CHECK_MSG( obj != ATK_NULLPTR, "Datastore failed to create buffer object.");
+  if (obj != ATK_NULLPTR)
+  {
+    // TODO: implement pool, look for free nodes.  Allocate in blocks.
+    IndexType newIndex= m_data_buffers.size();
+    if( !m_free_buffer_ids.empty() )
+    {
+      newIndex = m_free_buffer_ids.top();
+      m_free_buffer_ids.pop();
+    }
+    obj->m_index = newIndex;
+    m_data_buffers.push_back( ATK_NULLPTR );
+    m_data_buffers[newIndex] = obj;
+  }
 
   return obj;
 }
 
+/*
+ *************************************************************************
+ *
+ * Create new data buffer and assign unique id.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
+{
+  DataBuffer * buffer = createBuffer();
+
+  if (buffer != ATK_NULLPTR)
+  {
+    buffer->declare(type, num_elems);
+  }
+
+  return buffer;
+}
 
 /*
  *************************************************************************
@@ -179,6 +202,7 @@ void DataStore::destroyBuffer( IndexType idx )
         m_data_buffers[idx]->getNumViews() != 0,
         "Unable to delete buffer, it has " <<
         m_data_buffers[idx]->getNumViews() << " still attached.");
+std::cerr<< "FOOOOOOOOOOOOOOOO" << std::endl;
     return;
   }
 

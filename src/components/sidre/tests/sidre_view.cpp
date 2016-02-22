@@ -166,9 +166,8 @@ TEST(sidre_view,int_array_strided_views)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  DataBuffer * dbuff = ds->createBuffer();
+  DataBuffer * dbuff = ds->createBuffer(asctoolkit::sidre::INT_ID, 10);
 
-  dbuff->declare(asctoolkit::sidre::INT_ID, 10);
   dbuff->allocate();
   int * data_ptr = static_cast<int *>(dbuff->getData());
 
@@ -284,12 +283,11 @@ TEST(sidre_view,int_array_depth_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  DataBuffer * dbuff = ds->createBuffer();
 
   const size_t depth_nelems = 10;
+  DataBuffer * dbuff = ds->createBuffer(asctoolkit::sidre::INT_ID, 4 * depth_nelems);
 
   // Allocate buffer to hold data for 4 "depth" views
-  dbuff->declare(asctoolkit::sidre::INT_ID, 4 * depth_nelems );
   dbuff->allocate();
   int * data_ptr = static_cast<int *>(dbuff->getData());
 

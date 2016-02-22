@@ -218,7 +218,7 @@ public:
    * IMPORTANT: This is the total bytes described by the view; they may not
    *            yet be allocated.
    */
-  size_t getTotalBytes() const
+  SidreLength getTotalBytes() const
   {
     return m_schema.total_bytes();
   }
@@ -229,7 +229,7 @@ public:
    * IMPORTANT: This is the number of elements described by the view;
    *            they may not yet be allocated.
    */
-  size_t getNumElements() const
+  SidreLength getNumElements() const
   {
     return m_schema.dtype().number_of_elements();
   }
@@ -609,8 +609,14 @@ public:
    */
   Node::Value getData()
   {
-    SLIC_ASSERT_MSG( m_is_applied,
-                     "View description has not been applied to data");
+    if ( !isAllocated() || !isDescribed())
+    {
+      SLIC_CHECK_MSG( isAllocated(),
+                       "No view data present, memory has not been allocated.");
+      SLIC_CHECK_MSG( isApplied(),
+                       "View data description not present.");
+      return Node().value();
+    }
     return m_node.value();
   }
 

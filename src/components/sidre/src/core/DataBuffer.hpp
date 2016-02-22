@@ -56,9 +56,8 @@ class DataView;
  *    - The data object owned by a DataBuffer is unique to that DataBuffer
  *      object; i.e.,  DataBuffers that own data do not share their data.
  *    - Typical usage is to declare the data a DataBuffer will hold and then
- *      either allocate it by calling one of the DataBuffer allocate or
- *      reallocate methods, or set the buffer to reference externally-owned
- *      data by calling setExternalData().
+ *      allocate it by calling one of the DataBuffer allocate or
+ *      reallocate methods.
  *    - A DataBuffer object maintains a collection of DataViews that
  *      refer to its data.
  *
@@ -90,7 +89,7 @@ public:
   /*!
    * \brief Return number of views attached to this buffer.
    */
-  size_t getNumViews() const
+  SidreLength getNumViews() const
   {
     return m_views.size();
   }
@@ -100,7 +99,7 @@ public:
    */
   void * getVoidPtr()
   {
-    return m_data;
+    return m_node.data_ptr();
   }
 
   /*!
@@ -108,6 +107,12 @@ public:
    */
   Node::Value getData()
   {
+    if ( !isAllocated() )
+    {
+      SLIC_CHECK_MSG( isAllocated(), "Buffer data is not allocated.");
+      return Node().value();
+    }
+
     return m_node.value();
   }
 
@@ -116,22 +121,24 @@ public:
    */
   TypeID getTypeID() const
   {
-    return static_cast<TypeID>(m_schema.dtype().id());
+    return static_cast<TypeID>(m_node.dtype().id());
   }
 
   /*!
    * \brief Return total number of elements allocated by this DataBuffer object.
    */
-  size_t getNumElements() const
+  SidreLength getNumElements() const
   {
-    return m_schema.dtype().number_of_elements();
+    return m_node.dtype().number_of_elements();
   }
 
   /*!
    * \brief Return total number of bytes associated with this DataBuffer object.
    */
-  size_t getTotalBytes() const;
-
+  SidreLength getTotalBytes() const
+  {
+    return m_node.dtype().total_bytes();
+  }
   //@}
 
   /*!
@@ -139,7 +146,7 @@ public:
    */
   bool isAllocated() const
   {
-    return (m_data != ATK_NULLPTR) && (getTotalBytes() > 0);
+    return (m_node.data_ptr() != ATK_NULLPTR) && (getTotalBytes() > 0);
   }
 
   /*!
@@ -148,7 +155,7 @@ public:
    */
   bool isDescribed() const
   {
-    return !m_schema.dtype().is_empty();
+    return !m_node.dtype().is_empty();
   }
 
   /*
@@ -171,19 +178,7 @@ public:
 
 
 //@{
-//!  @name Data declaration and allocation methods
-
-  /*!
-   * \brief Declare a buffer with data given type and number of elements.
-   *
-   * To use the buffer, the data must be allocated by calling allocate()
-   * or set to external data by calling setExternalData().
-   *
-   * If given number of elements is < 0, method does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * declare(TypeID type, SidreLength num_elems);
+//!  @name Data allocation methods
 
   /*!
    * \brief Allocate data previously declared using a declare() method.
@@ -235,10 +230,9 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * update(const void * src, size_t nbytes);
+  DataBuffer * update(void * src, SidreLength nbytes);
 
   //@}
-
 
   /*!
    * \brief Copy data buffer description to given Conduit node.
@@ -259,9 +253,9 @@ public:
 private:
 
   /*!
-   *  \brief Private ctor that assigns unique id.
+   *  \brief Private ctor.
    */
-  DataBuffer( IndexType uid );
+  DataBuffer();
 
   /*!
    * \brief Private copy ctor.
@@ -274,20 +268,29 @@ private:
   ~DataBuffer();
 
   /*!
+   * \brief Declare a buffer with data given type and number of elements.
+   *
+   * To use the buffer, the data must be allocated by calling allocate()
+   *
+   * If given number of elements is < 0, method does nothing.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * declare(TypeID type, SidreLength num_elems);
+
+  /*!
    * \brief Private methods to attach/detach data view to buffer.
    */
   void attachView( DataView * dataView );
   ///
   void detachView( DataView * dataView );
 
-  /*!
-   * \brief Private methods allocate and deallocate data owned by buffer.
-   */
-  void cleanup();
-  ///
+  /// Allocate bytes on data buffer.
   void * allocateBytes(std::size_t num_bytes);
-  ///
-  void  releaseBytes(void * );
+  /// Copy bytes from one memory location to another.
+  void copyBytes( void * src, void * dst, size_t num_bytes );
+  /// Release any allocated bytes pointer to by ptr..
+  void  releaseBytes(void * ptr);
 
 #ifdef ATK_ENABLE_FORTRAN
   /*!
@@ -306,34 +309,22 @@ private:
   /// Container of DataViews attached to this buffer.
   std::vector<DataView *> m_views;
 
-  // Type of data pointed to by m_data
-  TypeID m_type;
-
-  /// Pointer to the data owned by DataBuffer.
-  void * m_data;
-
   /// Conduit Node that holds buffer data.
   Node m_node;
-
-  /// Conduit Schema that describes buffer data.
-  Schema m_schema;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
 #ifdef USE_CXX11
-  DataBuffer() = delete;
   DataBuffer( DataBuffer&& ) = delete;
 
   DataBuffer& operator=( const DataBuffer& ) = delete;
   DataBuffer& operator=( DataBuffer&& ) = delete;
 #else
-  DataBuffer();
   DataBuffer& operator=( const DataBuffer& );
 #endif
 
 };
-
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */

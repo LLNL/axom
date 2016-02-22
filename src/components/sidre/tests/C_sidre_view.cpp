@@ -85,7 +85,7 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
 }
 
 //------------------------------------------------------------------------------
-
+#if 0
 TEST(C_sidre_view,int_array_strided_views)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
@@ -157,9 +157,9 @@ TEST(C_sidre_view,int_array_strided_views)
   SIDRE_datastore_delete(ds);
 
 }
-
+#endif
 //------------------------------------------------------------------------------
-
+#if 0
 TEST(C_sidre_view,int_array_depth_view)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
@@ -215,9 +215,9 @@ TEST(C_sidre_view,int_array_depth_view)
   SIDRE_datastore_delete(ds);
 
 }
-
+#endif
 //------------------------------------------------------------------------------
-
+#if 0
 TEST(sidre_view,int_array_view_attach_buffer)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
@@ -280,7 +280,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
   SIDRE_datastore_delete(ds);
 
 }
-
+#endif
 //------------------------------------------------------------------------------
 
 TEST(C_sidre_view,int_array_multi_view_resize)
