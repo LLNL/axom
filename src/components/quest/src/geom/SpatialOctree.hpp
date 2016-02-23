@@ -32,6 +32,8 @@ public:
     typedef quest::Vector<double,DIM> SpaceVector;
 
     typedef typename OctreeBase<DIM, BlockDataType>::GridPt GridPt;
+    typedef typename GridPt::CoordType CoordType;
+
     typedef typename OctreeBase<DIM, BlockDataType>::MapType MapType;
     typedef typename OctreeBase<DIM, BlockDataType>::BlockIndex BlockIndex;
 
@@ -45,6 +47,7 @@ public:
     SpatialOctree(const GeometricBoundingBox& bb)
         : OctreeBase<DIM,BlockDataType>()
         , m_deltaLevelMap(& this->m_levels)
+        , m_invDeltaLevelMap(& this->m_levels)
         , m_boundingBox(bb)
     {
         // Cache the extents of a grid cell at each level of resolution
@@ -52,6 +55,9 @@ public:
         for(int lev = 0; lev < this->m_levels.size(); ++lev)
         {
             m_deltaLevelMap[lev] = bbRange / static_cast<double>(1<<lev);
+
+            for(int dim=0; dim < DIM; ++dim)
+                m_invDeltaLevelMap[lev][dim] = 1./m_deltaLevelMap[lev][dim];
         }
     }
 
@@ -103,11 +109,11 @@ public:
      */
     BlockIndex findLeafBlock(const SpacePt& pt, int startingLevel = 0) const
     {
-        bool found = false;
         BlockIndex leafBlock = BlockIndex::invalid_index();
 
         SLIC_ASSERT( m_boundingBox.contains(pt) );
 
+        bool found = false;
         for(int lev=startingLevel; !found && lev < this->m_levels.size(); ++lev)
         {
             GridPt gridPt = findGridCellAtLevel(pt, lev);
@@ -128,25 +134,23 @@ public:
      * \param [in] pt The point at which we are querying.
      * \param [in] lev The level or resolution.
      * \pre \f$ 0 \le lev < octree.maxLeafLevel() \f$
+     * \post Each coordinate of the returned gridPt is in range \f$ [0, 2^{lev}) \f$
      * \return The grid point of the block covering this point at this level
      * \todo KW: Should this function be protected? Is it generally useful?
      */
     GridPt findGridCellAtLevel(const SpacePt& pt, int lev) const
     {
         SpaceVector ptVec(m_boundingBox.getMin(), pt);
-        const SpaceVector& deltaVec = m_deltaLevelMap[ lev];
+        const SpaceVector& invDeltaVec = m_invDeltaLevelMap[ lev];
 
         // Find the octree block that covers us at this level
         // Note: we are assuming a half-open interval for all blocks
         //       that are not on the upper boundary of the domain
-        GridPt quantizedPt = elementwiseQuantizedRatio( ptVec, deltaVec);
+        GridPt quantizedPt = elementwiseQuantizedRatio( ptVec, invDeltaVec);
 
         // Adjust grid cell when we are on the upper boundary of the domain
-        for(int i=0; i< DIM; ++i)
-        {
-            if( quantizedPt[i] == (1<<lev) )
-                --quantizedPt[i];
-        }
+        const CoordType highestCell = (1<<lev)-1;
+        quantizedPt.array().clampUpper( highestCell );
 
         return quantizedPt;
     }
@@ -157,14 +161,12 @@ private:
      */
     GridPt elementwiseQuantizedRatio(const SpaceVector& ptFromBBMin, const SpaceVector&  cellWidth) const
     {
-        typedef typename GridPt::CoordType CoordType;
-
         GridPt gridPt;
         for(int i=0; i< DIM; ++i)
         {
-            // Note: numerator and denomenator are both positive numbers
+            // Note: numerator and denominator are both positive numbers
             // We do not need to take floor, but cast in case the cell is out of range of CoordType
-            gridPt[i] = static_cast<CoordType>(ptFromBBMin[i] / cellWidth[i]);
+            gridPt[i] = static_cast<CoordType>(ptFromBBMin[i] * cellWidth[i]);
         }
         return gridPt;
     }
@@ -173,7 +175,8 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT(SpatialOctree)
 
 protected:
-    SpaceVectorLevelMap     m_deltaLevelMap;
+    SpaceVectorLevelMap     m_deltaLevelMap;    // The width of a cell at each level or resolution
+    SpaceVectorLevelMap     m_invDeltaLevelMap; // Its inverse is useful for quantizing
     GeometricBoundingBox    m_boundingBox;
 };
 
