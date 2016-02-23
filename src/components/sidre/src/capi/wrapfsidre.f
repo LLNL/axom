@@ -214,6 +214,8 @@ module sidre_mod
     contains
         procedure :: get_index => databuffer_get_index
         procedure :: get_num_views => databuffer_get_num_views
+        procedure :: declare_int => databuffer_declare_int
+        procedure :: declare_long => databuffer_declare_long
         procedure :: allocate_existing => databuffer_allocate_existing
         procedure :: allocate_from_type_int => databuffer_allocate_from_type_int
         procedure :: allocate_from_type_long => databuffer_allocate_from_type_long
@@ -233,6 +235,11 @@ module sidre_mod
             allocate_existing,  &
             allocate_from_type_int,  &
             allocate_from_type_long
+        generic :: declare => &
+            ! splicer begin class.DataBuffer.generic.declare
+            ! splicer end class.DataBuffer.generic.declare
+            declare_int,  &
+            declare_long
         generic :: reallocate => &
             ! splicer begin class.DataBuffer.generic.reallocate
             ! splicer end class.DataBuffer.generic.reallocate
@@ -1078,6 +1085,15 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function c_databuffer_get_num_views
+        
+        subroutine c_databuffer_declare(self, type, num_elems) &
+                bind(C, name="SIDRE_databuffer_declare")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: num_elems
+        end subroutine c_databuffer_declare
         
         subroutine c_databuffer_allocate_existing(self) &
                 bind(C, name="SIDRE_databuffer_allocate_existing")
@@ -2578,6 +2594,34 @@ contains
         rv = c_databuffer_get_num_views(obj%voidptr)
         ! splicer end class.DataBuffer.method.get_num_views
     end function databuffer_get_num_views
+    
+    subroutine databuffer_declare_int(obj, type, num_elems)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: num_elems
+        ! splicer begin class.DataBuffer.method.declare_int
+        call c_databuffer_declare(  &
+            obj%voidptr,  &
+            type,  &
+            int(num_elems, C_LONG))
+        ! splicer end class.DataBuffer.method.declare_int
+    end subroutine databuffer_declare_int
+    
+    subroutine databuffer_declare_long(obj, type, num_elems)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: num_elems
+        ! splicer begin class.DataBuffer.method.declare_long
+        call c_databuffer_declare(  &
+            obj%voidptr,  &
+            type,  &
+            int(num_elems, C_LONG))
+        ! splicer end class.DataBuffer.method.declare_long
+    end subroutine databuffer_declare_long
     
     subroutine databuffer_allocate_existing(obj)
         use iso_c_binding

@@ -36,6 +36,9 @@ SIDRE_IndexType SIDRE_databuffer_get_index(SIDRE_databuffer * self);
 
 size_t SIDRE_databuffer_get_num_views(SIDRE_databuffer * self);
 
+void SIDRE_databuffer_declare(SIDRE_databuffer * self, int type,
+                              SIDRE_SidreLength num_elems);
+
 void SIDRE_databuffer_allocate_existing(SIDRE_databuffer * self);
 
 void SIDRE_databuffer_allocate_from_type(SIDRE_databuffer * self, int type,
