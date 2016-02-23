@@ -110,9 +110,8 @@ contains
 
     ds = datastore_new()
     root = ds%get_root()
-    dbuff = ds%create_buffer()
+    dbuff = ds%create_buffer(SIDRE_INT_ID, 10_8)
 
-!    call dbuff%declare(SIDRE_INT_ID, 10_8)
     call dbuff%allocate()
     data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
@@ -246,16 +245,16 @@ contains
 
     ! create our main data store
     ds = datastore_new()
-    dbuff = ds%create_buffer()
-
-    ! get access to our root data Group
-    root = ds%get_root()
 
     depth_nelems = 10 
     total_nelems = 4 * depth_nelems
 
+    dbuff = ds%create_buffer(SIDRE_INT_ID, total_nelems)
+
+    ! get access to our root data Group
+    root = ds%get_root()
+
     ! Allocate buffer to hold data for 4 "depth" views
-!    call dbuff%declare(SIDRE_INT_ID, total_nelems)
     call dbuff%allocate()
 
     data_ptr = dbuff%get_void_ptr()
@@ -343,8 +342,7 @@ contains
     call assert_true( elem_count == 2 * field_nelems, "elem_count == 2 * field_nelems" )
 
     ! Create buffer to hold data for all fields and allocate
-    dbuff = ds%create_buffer()
-    !call dbuff%declare(SIDRE_INT_ID, elem_count)
+    dbuff = ds%create_buffer(SIDRE_INT_ID, elem_count)
     call dbuff%allocate()
 
     call assert_true( dbuff%get_num_elements() == elem_count, "dbuff%get_num_elements() == elem_count" ) 
@@ -673,10 +671,10 @@ program fortran_test
   call create_views
   call int_buffer_from_view
   call int_buffer_from_view_conduit_value
-!  call int_array_multi_view
+  call int_array_multi_view
   call init_int_array_multi_view
-!  call int_array_depth_view
-!  call int_array_view_attach_buffer
+  call int_array_depth_view
+  call int_array_view_attach_buffer
   call int_array_multi_view_resize
   call int_array_realloc
   call simple_opaque
