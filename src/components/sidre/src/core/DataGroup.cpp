@@ -407,7 +407,6 @@ void DataGroup::destroyViewAndData( IndexType idx )
   DataView * view = detachView(idx);
   if ( view != ATK_NULLPTR )
   {
-    // RDH TODO -- there should be a better way?
     DataBuffer * const buffer = view->getBuffer();
     if ( buffer != ATK_NULLPTR )
     {
@@ -436,8 +435,6 @@ void DataGroup::destroyViewsAndData()
   while ( indexIsValid(vidx) )
   {
     DataView * view = this->getView(vidx);
-
-    // RDH TODO -- there should be a better way?
     DataBuffer * const buffer = view->getBuffer();
 
     if ( buffer != ATK_NULLPTR )
