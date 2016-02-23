@@ -182,8 +182,6 @@ public:
   /*!
    * \brief Declare a buffer with data given type and number of elements.
    *
-   * To use the buffer with data given type and number of elements.
-   *
    * To use the buffer, the data must be allocated by calling allocate().
    *
    * If given number of elements is < 0, method does nothing.
@@ -191,7 +189,6 @@ public:
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * declare(TypeID type, SidreLength num_elems);
-
 
   /*!
    * \brief Allocate data previously declared using a declare() method.
@@ -266,7 +263,7 @@ public:
 private:
 
   /*!
-   *  \brief Private ctor that assigned unique id.
+   *  \brief Private ctor that assigns unique id.
    */
   DataBuffer( IndexType uid );
 

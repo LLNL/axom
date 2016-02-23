@@ -76,8 +76,6 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
   dtype.set( dtype.default_dtype(type) );
   dtype.set_number_of_elements(num_elems);
 
-  //Note: We have now provided a data description, but the data pointer is
-  //still NULL.  This will be set later in our allocate or reallocate calls.
   return this;
 }
 
