@@ -143,22 +143,17 @@ DataBuffer * DataStore::getBuffer( IndexType idx ) const
  */
 DataBuffer * DataStore::createBuffer()
 {
-  DataBuffer * const obj = new(std::nothrow) DataBuffer();
-
-  SLIC_CHECK_MSG( obj != ATK_NULLPTR, "Datastore failed to create buffer object.");
-  if (obj != ATK_NULLPTR)
+  // TODO: implement pool, look for free nodes.  Allocate in blocks.
+  IndexType newIndex = m_data_buffers.size();
+  m_data_buffers.push_back( ATK_NULLPTR );
+  if( !m_free_buffer_ids.empty() )
   {
-    // TODO: implement pool, look for free nodes.  Allocate in blocks.
-    IndexType newIndex= m_data_buffers.size();
-    if( !m_free_buffer_ids.empty() )
-    {
-      newIndex = m_free_buffer_ids.top();
-      m_free_buffer_ids.pop();
-    }
-    obj->m_index = newIndex;
-    m_data_buffers.push_back( ATK_NULLPTR );
-    m_data_buffers[newIndex] = obj;
+    newIndex = m_free_buffer_ids.top();
+    m_free_buffer_ids.pop();
   }
+
+  DataBuffer * const obj = new(std::nothrow) DataBuffer( newIndex );
+  m_data_buffers[newIndex] = obj;
 
   return obj;
 }

@@ -60,6 +60,30 @@ DataView * DataBuffer::getView( IndexType idx )
 /*
  *************************************************************************
  *
+ * Declare buffer to hold data of given type and number of elements.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
+{
+  if ( num_elems < 0 )
+  {
+    SLIC_CHECK_MSG(num_elems >= 0, "Must declare number of elements >=0");
+    return this;
+  }
+
+  DataType& dtype = const_cast<DataType&>(m_node.dtype());
+  dtype.set( dtype.default_dtype(type) );
+  dtype.set_number_of_elements(num_elems);
+
+  //Note: We have now provided a data description, but the data pointer is
+  //still NULL.  This will be set later in our allocate or reallocate calls.
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Allocate data previously declared.
  *
  *************************************************************************
@@ -219,8 +243,9 @@ void DataBuffer::print(std::ostream& os) const
  *
  *************************************************************************
  */
-DataBuffer::DataBuffer()
-  : m_views(),
+DataBuffer::DataBuffer( IndexType uid )
+  : m_index(uid),
+  m_views(),
   m_node()
 {}
 
@@ -250,29 +275,6 @@ DataBuffer::DataBuffer(const DataBuffer& source )
 DataBuffer::~DataBuffer()
 {
   releaseBytes(getVoidPtr());
-}
-
-/*
- *************************************************************************
- *
- * PRIVATE Declare buffer to hold data of given type and number of elements.
- *
- *************************************************************************
- */
-void DataBuffer::declare(TypeID type, SidreLength num_elems)
-{
-  if ( num_elems < 0 )
-  {
-    SLIC_CHECK_MSG(num_elems >= 0, "Must declare number of elements >=0");
-    return;
-  }
-
-  DataType& dtype = const_cast<DataType&>(m_node.dtype());
-  dtype.set( dtype.default_dtype(type) );
-  dtype.set_number_of_elements(num_elems);
-
-  //Note: We have now provided a data description, but the data pointer is
-  //still NULL.  This will be set later in our allocate or reallocate calls.
 }
 
 /*
@@ -328,8 +330,7 @@ void DataBuffer::copyBytes( const void * src, void * dst, size_t num_bytes )
  */
 void * DataBuffer::allocateBytes(std::size_t num_bytes)
 {
-  detail::sidre_int8 * data = new(std::nothrow) detail::sidre_int8[num_bytes];
-  return static_cast<void *>(data);
+  return new(std::nothrow) detail::sidre_int8[num_bytes];
 }
 
 /*
@@ -341,11 +342,8 @@ void * DataBuffer::allocateBytes(std::size_t num_bytes)
  */
 void DataBuffer::releaseBytes( void * ptr)
 {
-  if ( ptr != ATK_NULLPTR )
-  {
-    // Pointer type here should always match new call in allocateBytes.
-    delete[] static_cast<detail::sidre_int8*>(ptr);
-  }
+  // Pointer type here should always match new call in allocateBytes.
+  delete[] static_cast<detail::sidre_int8*>(ptr);
 }
 
 } /* end namespace sidre */

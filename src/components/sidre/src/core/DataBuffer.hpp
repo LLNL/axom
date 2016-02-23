@@ -67,10 +67,10 @@ class DataBuffer
 
 public:
 
-  //
-  // Friend declarations to constrain usage via controlled access to
-  // private members.
-  //
+  /*!
+   * Friend declarations to constrain usage via controlled access to
+   * private members.
+   */
   friend class DataStore;
   friend class DataGroup;
   friend class DataView;
@@ -89,7 +89,7 @@ public:
   /*!
    * \brief Return number of views attached to this buffer.
    */
-  SidreLength getNumViews() const
+  IndexType getNumViews() const
   {
     return m_views.size();
   }
@@ -176,9 +176,22 @@ public:
 
 //@}
 
-
 //@{
-//!  @name Data allocation methods
+//!  @name Data declaration and allocation methods
+
+  /*!
+   * \brief Declare a buffer with data given type and number of elements.
+   *
+   * To use the buffer with data given type and number of elements.
+   *
+   * To use the buffer, the data must be allocated by calling allocate().
+   *
+   * If given number of elements is < 0, method does nothing.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * declare(TypeID type, SidreLength num_elems);
+
 
   /*!
    * \brief Allocate data previously declared using a declare() method.
@@ -253,9 +266,9 @@ public:
 private:
 
   /*!
-   *  \brief Private ctor.
+   *  \brief Private ctor that assigned unique id.
    */
-  DataBuffer();
+  DataBuffer( IndexType uid );
 
   /*!
    * \brief Private copy ctor.
@@ -268,28 +281,25 @@ private:
   ~DataBuffer();
 
   /*!
-   * \brief Declare a buffer with data given type and number of elements.
-   *
-   * To use the buffer, the data must be allocated by calling allocate()
-   *
-   * If given number of elements is < 0, method does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  void declare(TypeID type, SidreLength num_elems);
-
-  /*!
    * \brief Private methods to attach/detach data view to buffer.
    */
   void attachView( DataView * dataView );
   ///
   void detachView( DataView * dataView );
 
-  /// Allocate bytes on data buffer.
+  /*!
+   * \brief Allocate bytes for data in data buffer
+   */
   void * allocateBytes(std::size_t num_bytes);
-  /// Copy bytes from one memory location to another.
+
+  /*!
+   * \brief Copy bytes from one memory location to another.
+   */
   void copyBytes( const void * src, void * dst, size_t num_bytes );
-  /// Release any allocated bytes pointer to by ptr..
+
+  /*!
+   * \brief Release any allocated bytes pointed to by ptr.
+   */
   void  releaseBytes(void * ptr);
 
   /// Index Identifier - unique within a dataStore.
@@ -305,11 +315,13 @@ private:
    *  Unimplemented ctors and copy-assignment operators.
    */
 #ifdef USE_CXX11
+  DataBuffer() = delete;
   DataBuffer( DataBuffer&& ) = delete;
 
   DataBuffer& operator=( const DataBuffer& ) = delete;
   DataBuffer& operator=( DataBuffer&& ) = delete;
 #else
+  DataBuffer();
   DataBuffer& operator=( const DataBuffer& );
 #endif
 
