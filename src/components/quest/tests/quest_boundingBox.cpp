@@ -9,6 +9,7 @@
  */
 
 
+#include <limits>
 
 #include "gtest/gtest.h"
 
@@ -463,6 +464,60 @@ TEST( quest_boundingBox, bb_shift)
 
 }
 
+
+TEST( quest_boundingBox, highest_lowest_values)
+{
+    using namespace quest;
+
+    static const int DIM = 3;
+
+    // Testing that our type trait for highest and lowest values
+    // is doing the right thing in our CXX11 and pre-CXX11 compilers
+
+    // Test double
+    double maxD = std::numeric_limits<double>::max();
+    double minD = -maxD;
+    EXPECT_EQ( maxD, ValueRange<double>::highest());
+    EXPECT_EQ( minD, ValueRange<double>::lowest());
+    // Test float
+    double maxF = std::numeric_limits<float>::max();
+    double minF = -maxF;
+    EXPECT_EQ( maxF, ValueRange<float>::highest());
+    EXPECT_EQ( minF, ValueRange<float>::lowest());
+    // Test int
+    int maxI = std::numeric_limits<int>::max();
+    int minI = std::numeric_limits<int>::min();
+    EXPECT_EQ( maxI, ValueRange<int>::highest());
+    EXPECT_EQ( minI, ValueRange<int>::lowest());
+    // Test uint
+    unsigned int maxU = std::numeric_limits<unsigned int>::max();
+    unsigned int minU = std::numeric_limits<unsigned int>::min();
+    EXPECT_EQ( maxU, ValueRange<unsigned int>::highest());
+    EXPECT_EQ( minU, ValueRange<unsigned int>::lowest());
+
+
+    // Testing that our default constructor for bounding boxes is properly setting the range.
+
+    // Note: The bounds are intentionally in the reverse order -- this is how we ensure
+    //       that adding a point to an empty bounding box always updates the bounds properly
+
+    typedef quest::BoundingBox<double , DIM> BBoxD;
+    EXPECT_TRUE(BBoxD().getMin()[0] > 0 );
+    EXPECT_TRUE(BBoxD().getMax()[0] < 0 );
+
+    typedef quest::BoundingBox<float, DIM> BBoxF;
+    EXPECT_TRUE(BBoxF().getMin()[0] > 0 );
+    EXPECT_TRUE(BBoxF().getMax()[0] < 0 );
+
+    typedef quest::BoundingBox<int, DIM> BBoxI;
+    EXPECT_TRUE(BBoxI().getMin()[0] > 0 );
+    EXPECT_TRUE(BBoxI().getMax()[0] < 0 );
+
+    typedef quest::BoundingBox<unsigned int, DIM> BBoxU;
+    EXPECT_TRUE(BBoxU().getMin()[0] > 0 );
+    EXPECT_TRUE(BBoxU().getMax()[0] == 0 );
+}
+
 //------------------------------------------------------------------------------
 TEST( quest_boundingBox, bb_longest_dimension )
 {
@@ -473,6 +528,7 @@ TEST( quest_boundingBox, bb_longest_dimension )
   int longest_dimension = bbox.getLongestDimension();
   EXPECT_EQ( 1, longest_dimension );
 }
+
 
 //------------------------------------------------------------------------------
 TEST( quest_boundingBox, bb_bisect )

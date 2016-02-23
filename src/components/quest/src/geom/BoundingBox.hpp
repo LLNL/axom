@@ -59,6 +59,55 @@ template<typename T, int DIM>
 std::ostream& operator<<(std::ostream & os, const BoundingBox<T,DIM> & pt);
 
 
+/**
+ * \brief Type trait to find the highest and lowest values for a given numeric type
+ *
+ * \note numeric_limits::max() always provides the highest possible value for all numeric type.
+ * \note For integral values, numeric_limits ::min() provides the lowest value,
+ *       but for float and double, it provides the smallest positive number.
+ *       This was fixed in cxx11 with the function numeric_limits::lowest()
+ */
+template<typename T>
+struct ValueRange
+{
+    /** \brief Returns the highest representable value of type T */
+    static const T highest() { return std::numeric_limits<T>::max(); }
+
+    /** \brief Returns the lowest representable value of type T */
+    static const T lowest() {
+        #ifdef USE_CXX11
+            return std::numeric_limits<T>::lowest();
+        #else
+            return std::numeric_limits<T>::min();
+        #endif
+    }
+};
+
+#ifndef USE_CXX11
+
+/**
+ * \brief Template specialization of ValueRange for float types
+ * \note Only necessary for pre-CXX11
+ */
+template<> struct ValueRange<float>
+{
+    typedef float T;
+    static const T highest() { return std::numeric_limits<T>::max(); }
+    static const T lowest()  { return -std::numeric_limits<T>::max(); }
+};
+
+/**
+ * \brief Template specialization of ValueRange for double types
+ * \note Only necessary for pre-CXX11
+ */
+template<> struct ValueRange<double>
+{
+    typedef double T;
+    static const T highest() { return std::numeric_limits<T>::max(); }
+    static const T lowest()  { return -std::numeric_limits<T>::max(); }
+};
+#endif
+
 
 /*!
  *******************************************************************************
@@ -98,8 +147,8 @@ public:
    *****************************************************************************
    */
   BoundingBox()
-    : m_min( PointType( std::numeric_limits< CoordType>::max() ) )
-    , m_max( PointType( (-1.0)*std::numeric_limits< CoordType>::max() ) ) {}
+    : m_min( PointType( ValueRange< CoordType>::highest() ) )
+    , m_max( PointType( ValueRange< CoordType>::lowest() ) ) {}
 
 
   /*!
@@ -611,8 +660,8 @@ void BoundingBox<CoordType, DIM>::checkAndFixBounds ()
 template<typename CoordType, int DIM>
 void BoundingBox<CoordType, DIM>::clear()
 {
-    m_min = PointType( std::numeric_limits< CoordType>::max() );
-    m_max = PointType( std::numeric_limits< CoordType>::min() );
+    m_min = PointType( ValueRange< CoordType>::highest() );
+    m_max = PointType( ValueRange< CoordType>::lowest() );
 }
 
 //------------------------------------------------------------------------------
