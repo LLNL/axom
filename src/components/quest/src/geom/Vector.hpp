@@ -320,6 +320,16 @@ public:
   static Vector< T,3 > cross_product( const Vector< T,3 >& u,
                                       const Vector< T,3 >& v );
 
+  /*!
+   *****************************************************************************
+   * \brief Utility function to constructs a Vector with the given coordinates.
+   * \param [in] x the x--coordinate of the vector.
+   * \param [in] y the y--coordinate of the vector.
+   * \param [in] z the z--coordinate of the vector. Default is 0.0.
+   * \return v a Vector instance with the given coordinates.
+   *****************************************************************************
+   */
+  static Vector make_vector( const T& x, const T& y, const T& z=0.0 );
 
 private:
   NumericArray<T,DIM> m_components;
@@ -542,6 +552,16 @@ std::ostream& operator<<(std::ostream & os, const Vector<T,DIM> & vec)
 {
     vec.print(os);
     return os;
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+inline Vector< T, DIM > Vector< T,DIM >::make_vector( const T& x,
+                                                   const T& y,
+                                                   const T& z )
+{
+  T tmp_array[3] = { x, y, z};
+  return Vector(tmp_array, DIM);
 }
 
 

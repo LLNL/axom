@@ -41,8 +41,6 @@
 #include "slic/UnitTestLogger.hpp"
 
 #include "slam/Utilities.hpp"
-#include "slam/RangeSet.hpp"
-#include "slam/Map.hpp"
 
 
 // C/C++ includes
@@ -51,6 +49,7 @@
 #include <iostream>
 #include <limits>
 #include <fstream>
+#include <iomanip>  // for setprecision()
 
 using namespace asctoolkit;
 
@@ -222,6 +221,84 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
 }
 
 
+void testIntersectionOnRegularGrid()
+{
+    static int const DIM = 3;
+    typedef quest::Point< double,DIM >   PointType;
+    typedef quest::Triangle< double,DIM > TriangleType;
+    typedef quest::BoundingBox< double,DIM > BoundingBoxType;
+
+    double xArr[3] = { 1., 0., 0.};
+    double yArr[3] = { 0., 1., 0.};
+    double zArr[3] = { 0., 0., 1.};
+
+    PointType ptX(xArr);
+    PointType ptY(yArr);
+    PointType ptZ(zArr);
+
+    TriangleType unitTri( ptX, ptY, ptZ );
+
+    typedef meshtk::UnstructuredMesh<meshtk::MIXED> DebugMesh;
+    DebugMesh* debugMesh = new DebugMesh(3);
+
+    // Add triangle to mesh
+    debugMesh->insertNode( ptX[0], ptX[1], ptX[2]);
+    debugMesh->insertNode( ptY[0], ptY[1], ptY[2]);
+    debugMesh->insertNode( ptZ[0], ptZ[1], ptZ[2]);
+
+    int tArr[3] = {0,1,2};
+    debugMesh->insertCell(tArr, meshtk::LINEAR_TRIANGLE, 3);
+
+    PointType bbMin(-0.1);
+    PointType bbMax(1.1);
+    BoundingBoxType bbox( bbMin,bbMax );
+
+    typedef quest::SpatialOctree<DIM, quest::LeafData> SpaceOctree;
+    SpaceOctree oct( bbox);
+
+
+    int lev =3;
+    for(int i=0; i< 1<<lev; ++i)
+    {
+        for(int j=0; j< 1<<lev; ++j)
+        {
+            for(int k=0; k< 1<<lev; ++k)
+            {
+                SpaceOctree::BlockIndex block( quest::Point<int,3>::make_point(i,j,k), lev );
+                SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(block);
+
+                if( quest::intersect( unitTri, blockBB))
+                {
+                    // Add to debug mesh
+                    int vStart = debugMesh->getMeshNumberOfNodes();
+
+                    debugMesh->insertNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
+                    debugMesh->insertNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
+                    debugMesh->insertNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+                    debugMesh->insertNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+
+                    debugMesh->insertNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
+                    debugMesh->insertNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
+                    debugMesh->insertNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+                    debugMesh->insertNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+
+                    int data[8];
+                    for(int i=0; i< 8; ++i)
+                        data[i] = vStart + i;
+
+                    debugMesh->insertCell( data, meshtk::LINEAR_HEX, 8);
+                }
+            }
+        }
+    }
+
+
+    debugMesh->toVtkFile("gridIntersections.vtk");
+
+    delete debugMesh;
+}
+
+
 
 /**
  * \brief Computes some statistics about the surface mesh.
@@ -360,104 +437,6 @@ void print_surface_stats( meshtk::Mesh* mesh)
 }
 
 /**
- * Use octree index over mesh vertices to convert the 'triangle soup'
- * from the stl file into an indexed triangle mesh representation.
- * In particular, all vertices that are nearly coincident will be merged,
- * and degenerate triangles (where the three vertices do not have unique indices)
- * will be removed.
- */
-void update_trimesh_verts(meshtk::Mesh*& mesh, Octree3D& octree)
-{
-    typedef int VertexIndex;
-    static const VertexIndex NO_VERTEX = quest::InOutLeafData::NO_VERTEX;
-
-
-    typedef asctoolkit::slam::PositionSet MeshVertsSet;
-    typedef asctoolkit::slam::Map<VertexIndex> IndexMap;
-
-    // Create a map from old vertex IDs to new vertex ids
-    MeshVertsSet oldVerts( mesh->getMeshNumberOfNodes() );
-    IndexMap vertexIndexMap( &oldVerts, NO_VERTEX);
-
-    // Generate unique indices for mesh vertices
-    int uniqueVertexCounter = 0;
-    for(int i=0; i< oldVerts.size(); ++i)
-    {
-        // Get the coordinates of the vertex
-        SpacePt pt;
-        mesh->getMeshNode(i, pt.data());
-
-        // Find the block and its indexed vertex in the octree
-        BlockIndex leafBlock = octree.findLeafBlock(pt);
-        SLIC_ASSERT( octree[leafBlock].hasVertex() );
-        VertexIndex vInd = octree[ leafBlock ].vertexIndex();
-
-        // If the indexed vertex doesn't have a new id, give it one
-        if(vertexIndexMap[vInd] == NO_VERTEX)
-        {
-            vertexIndexMap[vInd] = uniqueVertexCounter++;
-        }
-
-        // If this is not the indexed vertex, grab that vertex's new IDX
-        if(vInd != i)
-        {
-            vertexIndexMap[i] = vertexIndexMap[vInd];
-        }
-    }
-
-    // Find coordinates for the new mesh vertices
-    // Cache in temporary SLAM Map since these may be out of order w.r.t. new vertex indices
-    typedef asctoolkit::slam::Map<SpacePt> MeshCoordsField;
-    MeshVertsSet newVerts( uniqueVertexCounter );
-    MeshCoordsField newVertCoords( &newVerts);
-    for(int i=0; i< oldVerts.size(); ++i)
-    {
-        VertexIndex vInd = vertexIndexMap[i];
-        mesh->getMeshNode(i, newVertCoords[vInd].data() );
-    }
-
-    // Create a new triangles mesh.
-    // * add new vertices from octree to the mesh
-    // * update vertex references in octree to new vertex indices
-    TriangleMesh* newMesh = new TriangleMesh(3);
-    for(int i = 0; i< newVerts.size(); ++i)
-    {
-        const SpacePt& pos = newVertCoords[i];
-        newMesh->insertNode(pos[0], pos[1], pos[2]);
-
-        BlockIndex leafBlock = octree.findLeafBlock(pos);
-        SLIC_ASSERT( octree.isLeaf(leafBlock) && octree[leafBlock].hasVertex() );
-        octree[ leafBlock ].setVertex(i);
-    }
-
-    // Add triangles from old mesh to new mesh using updated vertex ids
-    typedef quest::Point<int,3> TriVertIndices;
-    int numOldMeshTris =  mesh->getMeshNumberOfCells();
-    for(int i=0; i< numOldMeshTris ; ++i)
-    {
-       TriVertIndices vertIndices;
-       mesh->getMeshCell( i, vertIndices.data() );
-
-       // Remap the vertex IDs
-       for(int j=0; j< 3; ++j)
-           vertIndices[j] = vertexIndexMap[ vertIndices[j] ];
-
-       // Skip degenerate triangles -- need 3 unique vertex IDS
-       if(    (vertIndices[0] != vertIndices[1])
-           && (vertIndices[1] != vertIndices[2])
-           && (vertIndices[2] != vertIndices[0]) )
-       {
-           newMesh->insertCell( vertIndices.data(), meshtk::LINEAR_TRIANGLE, 3);
-       }
-    }
-
-    // Delete old mesh, redirect pointer to newly created mesh
-    delete mesh;
-    mesh = newMesh;
-}
-
-
-/**
  * \brief Finds the octree leaf containing the given query point, and optionally refines the leaf
  */
 void refineAndPrint(Octree3D& octree, const SpacePt& queryPt, bool shouldRefine = true)
@@ -531,18 +510,19 @@ int main( int argc, char** argv )
   SLIC_INFO( "Mesh bounding box: " << meshBB );
   print_surface_stats(surface_mesh);
 
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
+
+
+  testIntersectionOnRegularGrid();
+
   // STEP 6: Create octree over mesh's bounding box and query a point in space
   Octree3D octree(meshBB, surface_mesh);
   octree.generateIndex();
 
-  // STEP 7: Update triangle mesh vertex indices based on octree partition
-  SLIC_INFO("Updating mesh based on octree vertices.");
-  update_trimesh_verts(surface_mesh, octree);
-
   print_surface_stats(surface_mesh);
   write_vtk(surface_mesh, "meldedTriMesh.vtk");
 
-  // STEP 8: Insert triangles into the octree
+  // STEP 7: Insert triangles into the octree
 
 
 

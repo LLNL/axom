@@ -262,6 +262,24 @@ public:
             return !(*this==other);
         }
 
+        bool operator<(const BlockIndex& other) const {
+            if(m_lev < other.m_lev)
+                return true;
+            if(m_lev > other.m_lev)
+                return false;
+
+            for(int i=0; i<DIM; ++i)
+            {
+                if(m_pt[i] < other.m_pt[i])
+                    return true;
+                if(m_pt[i] > other.m_pt[i])
+                    return false;
+            }
+
+            return false;
+        }
+
+
         /**
          * \brief Checks the validity of the index.
          * A block index is valid when its level is \f$ \ge 0 \f$
@@ -422,27 +440,77 @@ public:
 
 public:
   /**
-   * \brief Determine whether the octree contains a leaf block associated with grid point pt at level level
+   * \brief Determine whether the octree contains a leaf block associated with grid point pt at level lev
    * \param [in] pt The grid point to check
    * \param [in] level The level of the grid point
    * \returns true if the associated block is a leaf in the octree, false otherwise
    */
-  bool isLeaf(const GridPt& pt, int level) const
+  bool isLeaf(const GridPt& pt, int lev) const
   {
-      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[level] ];
+      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[lev] ];
       LevelMapCIterator blockIt = levelLeafMap.find(pt);
 
       return (blockIt != levelLeafMap.end() && blockIt->second.isLeaf() );
   }
 
   /**
-   * \brief Determine whether the octree contains a leaf block associated with grid point pt at level level
+   * \brief Determine whether the octree contains a leaf block associated with this BlockIndex
    * \param [in] block The BlockIndex of the tree to check
    * \returns true if the associated block is a leaf in the octree, false otherwise
    */
   bool isLeaf(const BlockIndex& block) const
   {
       return isLeaf(block.pt(), block.level());
+  }
+
+
+  /**
+   * \brief Determine whether the octree contains an internal block associated with grid point pt at level lev
+   * \param [in] pt The grid point to check
+   * \param [in] level The level of the grid point
+   * \returns true if the associated block is an internal block of the octree, false otherwise
+   */
+  bool isInternal(const GridPt& pt, int lev) const
+  {
+      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[lev] ];
+      LevelMapCIterator blockIt = levelLeafMap.find(pt);
+
+      return (blockIt != levelLeafMap.end() && (! blockIt->second.isLeaf()) );
+  }
+
+  /**
+   * \brief Determine whether the octree contains an internal block associated with this BlockIndex
+   * \param [in] block The BlockIndex of the tree to check
+   * \returns true if the associated block is an internal block of the octree, false otherwise
+   */
+  bool isInternal(const BlockIndex& block) const
+  {
+      return isInternal(block.pt(), block.level());
+  }
+
+  /**
+   * \brief Determine whether the octree contains a block (internal or leaf) associated with grid point pt at level lev
+   * \param [in] pt The grid point to check
+   * \param [in] level The level of the grid point
+   * \returns true if the associated block is in the octree, false otherwise
+   */
+  bool hasBlock(const GridPt& pt, int lev) const
+  {
+      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[lev] ];
+      LevelMapCIterator blockIt = levelLeafMap.find(pt);
+
+      return (blockIt != levelLeafMap.end());
+  }
+
+
+  /**
+   * \brief Determine whether the octree contains a block (internal or leaf) associated with this BlockIndex
+   * \param [in] block The BlockIndex of the tree to check
+   * \returns true if the associated block is a block of the octree, false otherwise
+   */
+  bool hasBlock(const BlockIndex& block) const
+  {
+      return hasBlock(block.pt(), block.level());
   }
 
 
@@ -470,29 +538,29 @@ public:
   }
 
   /**
-   * Accessor to the data associated with leafBlock
-   * \param leafBlock A valid leaf block in the tree
-   * \pre leafBlock is a valid leaf in the tree
+   * \brief Accessor to the data associated with block
+   * \param block A block (internal or leaf) in the tree
+   * \pre block is a leaf in the tree
    */
-  BlockDataType& operator[](const BlockIndex& leafBlock)
+  BlockDataType& operator[](const BlockIndex& block)
   {
-      SLIC_ASSERT(isLeaf(leafBlock));
+      SLIC_ASSERT_MSG(hasBlock(block), "Block " << block << " was not a block in the tree.");
 
-      return m_leavesLevelMap[ m_levels[leafBlock.level()] ][ leafBlock.pt()];
+      return m_leavesLevelMap[ m_levels[block.level()] ][ block.pt()];
   }
 
   /**
-   * \brief const accessor to leaf data associated with leafBlock
-   * \param leafBlock A valid leaf block in the octree
-   * \pre leafBlock is a valid leaf in the tree
+   * \brief Const accessor to the data associated with block
+   * \param block A block (internal or leaf) in the tree
+   * \pre block is a leaf in the tree
    */
-  const BlockDataType& operator[](const BlockIndex& leafBlock) const
+  const BlockDataType& operator[](const BlockIndex& block) const
   {
-      SLIC_ASSERT( isLeaf(leafBlock) );
+      SLIC_ASSERT_MSG(hasBlock(block), "Block " << block << " was not a block in the tree.");
 
       // Note: Using find() method on hashmap since operator[] is non-const
-      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[leafBlock.level()] ];
-      LevelMapCIterator blockIt = levelLeafMap.find(leafBlock.pt());
+      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[block.level()] ];
+      LevelMapCIterator blockIt = levelLeafMap.find(block.pt());
 
       return blockIt->second;
   }

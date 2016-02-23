@@ -30,6 +30,10 @@
 #include "quest/CellType.hpp"
 #include "quest/CellConnectivity.hpp"
 #include "quest/MeshCoordinates.hpp"
+#include "quest/Field.hpp"
+#include "quest/FieldTypes.hpp"
+#include "quest/FieldData.hpp"
+
 #include "slic/slic.hpp"
 
 #include "common/ATKMacros.hpp"
@@ -424,10 +428,13 @@ void UnstructuredMesh< CellType >::toVtkFile( const std::string& file )
   } // END for all nodes
 
   // STEP 2: Write mesh cell connectivity
-  // TODO: note currently this does not work with mixed cell types
   const int ncells   = m_cell_connectivity->getNumberOfCells();
-  const int maxnodes = m_cell_connectivity->getNumberOfNodes( 0 );
-  ofs << "CELLS " << ncells << " " << ncells*(maxnodes+1) << std::endl;
+
+  int numCellNodes = 0;
+  for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ){
+      numCellNodes += m_cell_connectivity->getNumberOfNodes( cellIdx ) + 1;
+  }
+  ofs << "CELLS " << ncells << " " << numCellNodes << std::endl;
 
   for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
 
@@ -449,6 +456,67 @@ void UnstructuredMesh< CellType >::toVtkFile( const std::string& file )
     int vtk_type = cell::vtk_types[ ctype ];
     ofs << vtk_type << std::endl;
   } // END for all cells
+
+  // STEP 4: Write Cell Data
+  ofs << "CELL_DATA " << ncells << std::endl;
+  FieldData* CD = this->getCellFieldData();
+  for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
+
+      Field* field = CD->getField( f );
+
+      ofs << "SCALARS " << field->getName() << " ";
+      if ( field->getType() == DOUBLE_FIELD_TYPE ) {
+
+          double* dataPtr = field->getDoublePtr();
+          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+
+          ofs << "double\n";
+          ofs << "LOOKUP_TABLE default\n";
+          for (int i=0; i < ncells; ++i) {
+              ofs << dataPtr[ i ] << std::endl;
+          }
+
+      } else {
+
+          int* dataPtr = field->getIntPtr();
+          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+
+          ofs << "int\n";
+          ofs << "LOOKUP_TABLE default\n";
+          for (int i=0; i < ncells; ++i ) {
+             ofs << dataPtr[ i ] << std::endl;
+          }
+      }
+  }
+
+  // STEP 5: Write Point Data
+  const int nnodes = this->getMeshNumberOfNodes();
+  ofs << "POINT_DATA " << nnodes << std::endl;
+  FieldData* PD = this->getNodeFieldData();
+  for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
+
+      Field* field = PD->getField( f );
+
+      ofs << "SCALARS " << field->getName() << " ";
+      if ( field->getType() == DOUBLE_FIELD_TYPE ) {
+
+          double* dataPtr = field->getDoublePtr();
+          ofs << "double\n";
+          ofs << "LOOKUP_TABLE default\n";
+          for (int i=0; i < nnodes; ++i) {
+              ofs << dataPtr[ i ] << std::endl;
+          }
+
+      } else {
+
+          int* dataPtr = field->getIntPtr();
+          ofs << "int\n";
+          ofs << "LOOKUP_TABLE default\n";
+          for (int i=0; i < nnodes; ++i) {
+              ofs << dataPtr[ i ] << std::endl;
+          }
+      }
+  }
 
   ofs.close();
 }

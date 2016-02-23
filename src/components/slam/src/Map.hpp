@@ -140,7 +140,11 @@ namespace slam    {
     /// \}
 
   private:
-    inline void verifyPosition(SetPosition setIndex)       const { SLIC_ASSERT( setIndex < m_set->size()  ); }
+    inline void verifyPosition(SetPosition setIndex)       const
+    {
+        SLIC_ASSERT_MSG( setIndex < m_set->size()
+                       , "Attempted to access element " << setIndex << " but map's set has size " <<   m_set->size() );
+    }
 
   private:
     const Set *  m_set;

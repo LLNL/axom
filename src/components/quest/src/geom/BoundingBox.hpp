@@ -63,7 +63,7 @@ std::ostream& operator<<(std::ostream & os, const BoundingBox<T,DIM> & pt);
  * \brief Type trait to find the highest and lowest values for a given numeric type
  *
  * \note numeric_limits::max() always provides the highest possible value for all numeric type.
- * \note For integral values, numeric_limits ::min() provides the lowest value,
+ * \note For integral types, numeric_limits ::min() provides the lowest value,
  *       but for float and double, it provides the smallest positive number.
  *       This was fixed in cxx11 with the function numeric_limits::lowest()
  */
@@ -283,7 +283,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Scales the bounding box towards its center by a given amount.
+   * \brief Scales the bounding box about its center by a given amount.
    * \param [in] scaleFactor the multiplicative factor by which to scale
    * \note Checks to ensure that the bounding box is valid after inflation.
    * \note If scaleFactor is less than 1, the bounding box will shrink.
@@ -323,7 +323,17 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Checks whether the box contains another bounding box
+   * \brief Checks whether the box contains the point in its interior or its lower boundaries
+   * \param [in] otherPt the point that we are checking
+   * \return status true if point inside the box, else false.
+   *****************************************************************************
+   */
+  template<typename OtherType>
+  bool halfOpenContains( const Point<OtherType, DIM>& otherPt) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Checks whether the box full contains another bounding box
    * \param [in] otherBB the bounding box that we are checking
    * \return status true if bb is inside the box, else false.
    * \note We are allowing the other bounding box to have a different coordinate
@@ -497,6 +507,19 @@ bool BoundingBox<CoordType, DIM>::contains(
     for(int dim = 0; dim < DIM; ++dim)
     {
         if( otherPt[dim] < m_min[dim] || otherPt[dim] >  m_max[dim])
+            return false;
+    }
+    return true;
+}
+
+//------------------------------------------------------------------------------
+template<typename CoordType, int DIM>
+template<typename OtherCoordType>
+bool BoundingBox<CoordType, DIM>::halfOpenContains(const Point<OtherCoordType,DIM>& otherPt) const
+{
+    for(int dim = 0; dim < DIM; ++dim)
+    {
+        if( otherPt[dim] < m_min[dim] || otherPt[dim] >=  m_max[dim])
             return false;
     }
     return true;

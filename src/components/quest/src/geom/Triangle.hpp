@@ -30,6 +30,17 @@
 namespace quest
 {
 
+// Forward declare the templated classes and operator functions
+template<typename T, int DIM> class Triangle;
+
+/*!
+ * \brief Overloaded output operator for triangles
+ */
+template<typename T, int DIM>
+std::ostream& operator<<(std::ostream & os, const Triangle<T,DIM> & tri);
+
+
+
 template < typename T, int DIM >
 class Triangle
 {
@@ -55,7 +66,9 @@ public:
    */
   Triangle( const PointType& A,
             const PointType& B,
-            const PointType& C ): m_A (A), m_B(B), m_C(C)  { }
+            const PointType& C )
+        : m_A (A), m_B(B), m_C(C)    {}
+
 
   /*!
    *****************************************************************************
@@ -118,12 +131,40 @@ public:
    */
   const PointType& C() const { return m_C; };
 
+  /*!
+   * \brief Simple formatted print of a triangle instance
+   * \param os The output stream to write to
+   * \return A reference to the modified ostream
+   */
+  std::ostream& print(std::ostream& os) const
+  {
+      os <<"{"
+         << m_A <<" "
+         << m_B <<" "
+         << m_C <<"}";
+
+      return os;
+  }
+
+
 private:
 
   PointType m_A;
   PointType m_B;
   PointType m_C;
 };
+
+//------------------------------------------------------------------------------
+/// Free functions implementing Triangle's operators
+//------------------------------------------------------------------------------
+
+template<typename T, int DIM>
+std::ostream& operator<<(std::ostream & os, const Triangle<T,DIM> & tri)
+{
+    tri.print(os);
+    return os;
+}
+
 
 } /* namespace quest */
 

@@ -64,7 +64,7 @@ public:
     /**
      * \brief Return the spatial bounding box of a grid cell at the given level or resolution
      */
-    GeometricBoundingBox blockBoundingBox(const BlockIndex & block)
+    GeometricBoundingBox blockBoundingBox(const BlockIndex & block) const
     {
         return blockBoundingBox( block.pt(), block.level() );
     }
@@ -72,7 +72,7 @@ public:
     /**
      * \brief Return the spatial bounding box of a grid cell at the given level or resolution
      */
-    GeometricBoundingBox blockBoundingBox(const GridPt & gridPt, int level)
+    GeometricBoundingBox blockBoundingBox(const GridPt & gridPt, int level) const
     {
         const SpaceVector& deltaVec = m_deltaLevelMap[ level];
 
@@ -155,6 +155,28 @@ public:
         return quantizedPt;
     }
 
+    int containingLevel(const SpaceVector& range, int startingLevel = 0) const
+    {
+        int lev = startingLevel;
+
+        bool found = false;
+        for(; !found && lev < this->m_levels.size(); ++lev)
+        {
+            for(int i=0; !found && i<DIM; ++i)
+            {
+                if( m_deltaLevelMap[lev][i] < range[i])
+                {
+                    found = true;
+                    --lev;
+                }
+            }
+
+        }
+
+        return lev;
+
+
+    }
 private:
     /**
      * \brief Helper function to quantize to the integer grid

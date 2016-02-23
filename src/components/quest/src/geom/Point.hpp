@@ -32,6 +32,8 @@
 // C/C++ includes
 #include <cstring> // For memcpy()
 #include <ostream> // For print() and operator <<
+#include <iomanip> // For setprecision
+
 
 
 namespace quest
@@ -203,6 +205,7 @@ public:
    *****************************************************************************
    */
   std::ostream& print(std::ostream& os) const;
+
   /*!
    *****************************************************************************
    * \brief Utility function to constructs a Point with the given coordinates.
@@ -312,6 +315,7 @@ inline Point< T,DIM > Point< T,DIM >::lerp(
 template < typename T, int DIM >
 std::ostream& Point< T, DIM >::print(std::ostream& os) const
 {
+//    os << std::setprecision(17);
     os <<"(";
     for(int dim=0; dim < DIM -1; ++ dim)
         os << static_cast<typename NonChar<T>::type>(m_components[dim]) << ",";
