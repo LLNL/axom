@@ -68,13 +68,21 @@ module sidre_mod
         procedure :: delete => datastore_delete
         procedure :: get_root => datastore_get_root
         procedure :: get_buffer => datastore_get_buffer
-        procedure :: create_buffer => datastore_create_buffer
+        procedure :: create_buffer_empty => datastore_create_buffer_empty
+        procedure :: create_buffer_from_type_int => datastore_create_buffer_from_type_int
+        procedure :: create_buffer_from_type_long => datastore_create_buffer_from_type_long
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_num_buffers => datastore_get_num_buffers
         procedure :: print => datastore_print
         procedure :: get_instance => datastore_get_instance
         procedure :: set_instance => datastore_set_instance
         procedure :: associated => datastore_associated
+        generic :: create_buffer => &
+            ! splicer begin class.DataStore.generic.create_buffer
+            ! splicer end class.DataStore.generic.create_buffer
+            create_buffer_empty,  &
+            create_buffer_from_type_int,  &
+            create_buffer_from_type_long
         ! splicer begin class.DataStore.type_bound_procedure_part
         ! splicer end class.DataStore.type_bound_procedure_part
     end type datastore
@@ -399,14 +407,25 @@ module sidre_mod
             type(C_PTR) :: rv
         end function c_datastore_get_buffer
         
-        function c_datastore_create_buffer(self) &
+        function c_datastore_create_buffer_empty(self) &
                 result(rv) &
-                bind(C, name="SIDRE_datastore_create_buffer")
+                bind(C, name="SIDRE_datastore_create_buffer_empty")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function c_datastore_create_buffer
+        end function c_datastore_create_buffer_empty
+        
+        function c_datastore_create_buffer_from_type(self, type, num_elems) &
+                result(rv) &
+                bind(C, name="SIDRE_datastore_create_buffer_from_type")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: num_elems
+            type(C_PTR) :: rv
+        end function c_datastore_create_buffer_from_type
         
         subroutine c_datastore_destroy_buffer(self, id) &
                 bind(C, name="SIDRE_datastore_destroy_buffer")
@@ -1522,15 +1541,45 @@ contains
         ! splicer end class.DataStore.method.get_buffer
     end function datastore_get_buffer
     
-    function datastore_create_buffer(obj) result(rv)
+    function datastore_create_buffer_empty(obj) result(rv)
         use iso_c_binding
         implicit none
         class(datastore) :: obj
         type(databuffer) :: rv
-        ! splicer begin class.DataStore.method.create_buffer
-        rv%voidptr = c_datastore_create_buffer(obj%voidptr)
-        ! splicer end class.DataStore.method.create_buffer
-    end function datastore_create_buffer
+        ! splicer begin class.DataStore.method.create_buffer_empty
+        rv%voidptr = c_datastore_create_buffer_empty(obj%voidptr)
+        ! splicer end class.DataStore.method.create_buffer_empty
+    end function datastore_create_buffer_empty
+    
+    function datastore_create_buffer_from_type_int(obj, type, num_elems) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datastore) :: obj
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: num_elems
+        type(databuffer) :: rv
+        ! splicer begin class.DataStore.method.create_buffer_from_type_int
+        rv%voidptr = c_datastore_create_buffer_from_type(  &
+            obj%voidptr,  &
+            type,  &
+            int(num_elems, C_LONG))
+        ! splicer end class.DataStore.method.create_buffer_from_type_int
+    end function datastore_create_buffer_from_type_int
+    
+    function datastore_create_buffer_from_type_long(obj, type, num_elems) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datastore) :: obj
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: num_elems
+        type(databuffer) :: rv
+        ! splicer begin class.DataStore.method.create_buffer_from_type_long
+        rv%voidptr = c_datastore_create_buffer_from_type(  &
+            obj%voidptr,  &
+            type,  &
+            int(num_elems, C_LONG))
+        ! splicer end class.DataStore.method.create_buffer_from_type_long
+    end function datastore_create_buffer_from_type_long
     
     subroutine datastore_destroy_buffer(obj, id)
         use iso_c_binding

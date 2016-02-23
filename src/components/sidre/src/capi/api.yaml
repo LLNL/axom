@@ -70,9 +70,18 @@ classes:
 #    -  decl: bool hasBuffer( IndexType idx ) const
     - decl:  DataBuffer * getBuffer( IndexType idx )
     -  decl: DataBuffer * createBuffer()
+       function_suffix: _empty
+    -  decl: DataBuffer * createBuffer( TypeID type, SidreLength num_elems )
+       function_suffix: _from_type
+       fortran_generic:
+         num_elems:
+         -  int
+         -  long
+       PY_error_pattern: PY_null_to_none
+
     -  decl: void destroyBuffer( IndexType id )
 #    -  decl: void Destroybuffers()
-#    -  decl: DataBuffer * detatchBuffer( const IndexType id )
+#    -  decl: DataBuffer * detachBuffer( const IndexType id )
     -  decl: size_t getNumBuffers() const
 #    -  decl: IndexType getFirstValidBufferIndex() const
 #    -  decl: IndexType getNextValidBufferIndex(IndexType idx) const;
