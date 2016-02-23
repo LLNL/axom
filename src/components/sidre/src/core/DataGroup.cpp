@@ -367,7 +367,7 @@ void DataGroup::destroyViews()
  *
  * Detach view with given name from group and destroy view.
  *
- * DataBuffer in DataStore is destroyed.
+ * Destroy DataBuffer if buffer has no other view attached to it.
  *
  *************************************************************************
  */
@@ -382,7 +382,10 @@ void DataGroup::destroyViewAndData( const std::string& name )
     if ( buffer != ATK_NULLPTR )
     {
       buffer->detachView(view);
-      getDataStore()->destroyBuffer(buffer->getIndex());
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer->getIndex());
+      }
     }
     delete view;
   }
@@ -393,7 +396,7 @@ void DataGroup::destroyViewAndData( const std::string& name )
  *
  * Detach view with given index from group and destroy view.
  *
- * DataBuffer in DataStore is destroyed.
+ * Destroy DataBuffer if buffer has no other view attached to it.
  *
  *************************************************************************
  */
@@ -404,12 +407,14 @@ void DataGroup::destroyViewAndData( IndexType idx )
   DataView * view = detachView(idx);
   if ( view != ATK_NULLPTR )
   {
-    // RDH TODO -- there should be a better way?
     DataBuffer * const buffer = view->getBuffer();
     if ( buffer != ATK_NULLPTR )
     {
       buffer->detachView(view);
-      getDataStore()->destroyBuffer(buffer->getIndex());
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer->getIndex());
+      }
     }
     delete view;
   }
@@ -430,16 +435,17 @@ void DataGroup::destroyViewsAndData()
   while ( indexIsValid(vidx) )
   {
     DataView * view = this->getView(vidx);
-
-    // RDH TODO -- there should be a better way?
     DataBuffer * const buffer = view->getBuffer();
-    delete view;
 
     if ( buffer != ATK_NULLPTR )
     {
-      getDataStore()->destroyBuffer(buffer->getIndex());
+      buffer->detachView(view);
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer->getIndex());
+      }
     }
-
+    delete view;
     vidx = getNextValidViewIndex(vidx);
   }
 
