@@ -582,20 +582,25 @@ public:
   void destroyViews();
 
   /*!
-   * \brief Destroy view in this DataGroup with given name AND destroy
-   *        its associated data, if it owns the data.
+   * \brief Destroy view in this DataGroup with given name.  Destroy it's data
+   *        also, if this is the only view referencing that data.
+   *
+   *        Data will not be destroyed as long as a view still exists that
+   *        references it.
    */
   void destroyViewAndData(const std::string& name);
 
   /*!
-   * \brief Destroy view in this DataGroup with given index AND destroy
-   *        its associated data, if it owns the data.
+   * \brief Destroy view in this DataGroup with given index.  Destroy it's data
+   *        also, if this is the only view referencing that data.
+   *
+   *        Data will not be destroyed as long as a view still exists that
+   *        references it.
    */
   void destroyViewAndData(IndexType idx);
 
   /*!
-   * \brief Destroy all views in this DataGroup AND destroy their
-   *        associated data.
+   * \brief Calls destroyViewAndData on all views in this group.
    */
   void destroyViewsAndData();
 
