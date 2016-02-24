@@ -593,7 +593,7 @@ int DataView::getShape(int ndims, SidreLength * shape) const
 /*
  *************************************************************************
  *
- * Print JSON description of data view to stdout.
+ * Test equivalence of two DataViews
  *
  *************************************************************************
  */
