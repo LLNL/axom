@@ -415,22 +415,6 @@ public:
                          const DataType& dtype);
 
   /*!
-   * \brief Create DataView object with given name and described by
-   *        Conduit Schema, and attach new view to this group object.
-   *
-   * IMPORTANT: This method does not allocate data or associated the view
-   * with data.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         const Schema& schema);
-
-  /*!
    * \brief Create DataView object with given name, attach it to given buffer,
    *        and attach new view to this group object.
    *
@@ -539,21 +523,6 @@ public:
    */
   DataView * createViewAndAllocate( const std::string& name,
                                     const DataType& dtype);
-
-  /*!
-   * \brief Create DataView object with given name and Conduit Schema,
-   *        allocate the data, and attach new view to this group object.
-   *
-   * This is equivalent to calling: createView(name)->allocate(schema);
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createViewAndAllocate( const std::string& name,
-                                    const Schema& schema);
 
 //@}
 

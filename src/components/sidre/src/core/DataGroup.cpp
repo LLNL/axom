@@ -152,24 +152,6 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view with given name, and data described using a conduit schema.
- *
- *************************************************************************
- */
-DataView * DataGroup::createView( const std::string& name,
-                                  const Schema& schema )
-{
-  DataView * view = createView(name);
-  if (view != ATK_NULLPTR)
-  {
-    view->declare(schema);
-  }
-  return view;
-}
-
-/*
- *************************************************************************
- *
  * Create view with given name, but no data description.  Attach provided
  * buffer to view.
  *
@@ -275,29 +257,6 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
   }
   return view;
 }
-
-/*
- *************************************************************************
- *
- * Create view with given name, and data described using a conduit schema.
- *
- * In addition, create an associated buffer, allocate the data, and attach
- * view to new buffer.
- *
- *************************************************************************
- */
-DataView * DataGroup::createViewAndAllocate( const std::string& name,
-                                             const Schema& schema)
-{
-  // createView will verify args.
-  DataView * view = createView(name, schema);
-  if (view != ATK_NULLPTR)
-  {
-    view->allocate();
-  }
-  return view;
-}
-
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -511,7 +470,7 @@ DataView * DataGroup::copyView(DataView * view)
   else
   {
     DataView * res = createView(view->getName(), view->getBuffer());
-    res->declare(view->getSchema());
+    res->declare(view->getSchema().dtype());
     if (view->isApplied())
     {
       res->apply();
@@ -1239,9 +1198,9 @@ void DataGroup::copyFromNode(Node& n,
 
       // create a new view with the buffer
       DataView * ds_view = createView(view_name, ds_buff);
-      // declare using the schema
+      // declare using the schema datatype
       Schema schema(n_view["schema"].as_string());
-      ds_view->declare(schema);
+      ds_view->declare(schema.dtype());
       // if the schema was applied, restore this state
       if (n_view["is_applied"].to_uint64() != 0)
         ds_view->apply();

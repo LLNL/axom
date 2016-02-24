@@ -151,13 +151,31 @@ DataBuffer * DataStore::createBuffer()
     newIndex = m_free_buffer_ids.top();
     m_free_buffer_ids.pop();
   }
-  DataBuffer * const obj = new DataBuffer( newIndex );
 
+  DataBuffer * const obj = new(std::nothrow) DataBuffer( newIndex );
   m_data_buffers[newIndex] = obj;
 
   return obj;
 }
 
+/*
+ *************************************************************************
+ *
+ * Create new data buffer and assign unique id.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
+{
+  DataBuffer * buffer = createBuffer();
+
+  if (buffer != ATK_NULLPTR)
+  {
+    buffer->declare(type, num_elems);
+  }
+
+  return buffer;
+}
 
 /*
  *************************************************************************
