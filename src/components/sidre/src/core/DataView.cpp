@@ -597,6 +597,24 @@ int DataView::getShape(int ndims, SidreLength * shape) const
  *
  *************************************************************************
  */
+bool DataView::isEquivalentTo(const DataView * other) const
+{
+  return (m_name == other->m_name) && (getTypeID() == other->getTypeID())
+         && (m_state == other->m_state)
+         && (m_is_applied == other->m_is_applied)
+         && (hasBuffer() == other->hasBuffer())
+         && (isAllocated() == other->isAllocated())
+         && (getTotalBytes() == other->getTotalBytes());
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Print JSON description of data view to stdout.
+ *
+ *************************************************************************
+ */
 void DataView::print() const
 {
   print(std::cout);
