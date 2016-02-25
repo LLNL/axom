@@ -795,6 +795,9 @@ private:
   /// Shape information
   std::vector<SidreLength> m_shape;
 
+  /// Pointer to external memory
+  void * m_external_ptr;
+
   /// State of view.
   State m_state;
 
