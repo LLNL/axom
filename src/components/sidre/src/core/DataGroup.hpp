@@ -414,6 +414,23 @@ public:
   DataView * createView( const std::string& name,
                          const DataType& dtype);
 
+#if 1
+  template<typename ScalarType>
+  DataView * createViewWithScalar( const std::string& name, ScalarType value)
+  {
+    DataView * view = createView(name);
+    if (view != ATK_NULLPTR)
+    {
+      view->setScalar(value);
+    }
+
+    return view;
+  }
+#endif
+
+  DataView * createView( const std::string& name,
+                         const std::string& value);
+
   /*!
    * \brief Create DataView object with given name, attach it to given buffer,
    *        and attach new view to this group object.

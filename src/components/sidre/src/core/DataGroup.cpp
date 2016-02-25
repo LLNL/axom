@@ -149,6 +149,19 @@ DataView * DataGroup::createView( const std::string& name,
   return view;
 }
 
+DataView * DataGroup::createView( const std::string& name,
+                                  const std::string& value)
+{
+  DataView * view = createView(name);
+  if (view != ATK_NULLPTR)
+  {
+    view->setString(value);
+  }
+
+  return view;
+}
+
+
 /*
  *************************************************************************
  *
