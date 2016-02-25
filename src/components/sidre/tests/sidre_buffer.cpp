@@ -46,7 +46,8 @@ TEST(sidre_buffer,create_buffer_with_description)
 
   EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
   EXPECT_EQ(dbuff->getNumElements(), 10u);
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 10));
+  EXPECT_EQ(dbuff->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 10));
 
   int * data_ptr = dbuff->getData();
 
@@ -75,7 +76,8 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
 
   EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
   EXPECT_EQ(dbuff->getNumElements(), 10u);
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 10));
+  EXPECT_EQ(dbuff->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 10));
 
   //  int * data_ptr = static_cast<int *>(dbuff->getData());
   int * data_ptr = dbuff->getData();
@@ -102,7 +104,8 @@ TEST(sidre_buffer,init_buffer_for_int_array)
 
   EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
   EXPECT_EQ(dbuff->getNumElements(), 10u);
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 10));
+  EXPECT_EQ(dbuff->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 10));
 
   int * data_ptr = static_cast<int *>(dbuff->getData());
 
@@ -129,7 +132,8 @@ TEST(sidre_buffer,realloc_buffer)
 
   EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
   EXPECT_EQ(dbuff->getNumElements(), 5u);
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 5));
+  EXPECT_EQ(dbuff->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 5));
 
   int * data_ptr = static_cast<int *>(dbuff->getVoidPtr());
 
@@ -150,7 +154,8 @@ TEST(sidre_buffer,realloc_buffer)
   std::cerr << dbuff->getTypeID() << std::endl;
   EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
   EXPECT_EQ(dbuff->getNumElements(), 10u);
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 10));
+  EXPECT_EQ(dbuff->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 10));
 
   // data buffer changes
   data_ptr = static_cast<int *>(dbuff->getVoidPtr());

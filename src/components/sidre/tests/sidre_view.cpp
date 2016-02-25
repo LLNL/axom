@@ -99,13 +99,13 @@ TEST(sidre_view,scalar_view)
   asctoolkit::sidre::SidreLength dims[2];
 
   // integer scalar
-  DataView *i0view = root->createView("i0")->setScalar(1);
+  DataView * i0view = root->createView("i0")->setScalar(1);
   EXPECT_EQ(i0view->getNumElements(), 1u);
   EXPECT_EQ(i0view->getNumDimensions(), 1);
   EXPECT_TRUE(i0view->getShape(1, dims) == 1 && dims[0] == 1);
 
   // string
-  DataView *s0view = root->createView("s0")->setString("I am a string");
+  DataView * s0view = root->createView("s0")->setString("I am a string");
   EXPECT_EQ(s0view->getNumElements(), 14u);
   EXPECT_EQ(s0view->getNumDimensions(), 1);
   EXPECT_TRUE(s0view->getShape(1, dims) == 1 && dims[0] == 14);
@@ -133,7 +133,8 @@ TEST(sidre_view,int_buffer_from_view)
 
   dv->print();
 
-  EXPECT_EQ(dv->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>( sizeof(int) * 10) );
+  EXPECT_EQ(dv->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>( sizeof(int) * 10) );
   delete ds;
 
 }
@@ -155,7 +156,8 @@ TEST(sidre_view,int_buffer_from_view_conduit_value)
 
   dv->print();
 
-  EXPECT_EQ(dv->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>( sizeof(int) * 10) );
+  EXPECT_EQ(dv->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>( sizeof(int) * 10) );
   delete ds;
 
 }
@@ -178,7 +180,8 @@ TEST(sidre_view,int_array_strided_views)
 
   dbuff->print();
 
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 10));
+  EXPECT_EQ(dbuff->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(sizeof(int) * 10));
 
   DataView * dv_e = root->createView("even",dbuff);
   DataView * dv_o = root->createView("odd",dbuff);
@@ -285,7 +288,8 @@ TEST(sidre_view,int_array_depth_view)
   DataGroup * root = ds->getRoot();
 
   const asctoolkit::sidre::SidreLength depth_nelems = 10;
-  DataBuffer * dbuff = ds->createBuffer(asctoolkit::sidre::INT_ID, 4 * depth_nelems);
+  DataBuffer * dbuff = ds->createBuffer(asctoolkit::sidre::INT_ID,
+                                        4 * depth_nelems);
 
   // Allocate buffer to hold data for 4 "depth" views
   dbuff->allocate();
@@ -590,8 +594,10 @@ TEST(sidre_view,int_array_realloc)
     a2_ptr[i] = -5;
   }
 
-  EXPECT_EQ(a1->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(sizeof(float)*5));
-  EXPECT_EQ(a2->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(sizeof(int)*5));
+  EXPECT_EQ(a1->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(sizeof(float)*5));
+  EXPECT_EQ(a2->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(sizeof(int)*5));
 
 
   a1->reallocate(DataType::c_float(10));
@@ -617,8 +623,10 @@ TEST(sidre_view,int_array_realloc)
     a2_ptr[i] = -15;
   }
 
-  EXPECT_EQ(a1->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(sizeof(float)*10));
-  EXPECT_EQ(a2->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(sizeof(int)*15));
+  EXPECT_EQ(a1->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(sizeof(float)*10));
+  EXPECT_EQ(a2->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(sizeof(int)*15));
 
   // Try some errors
   // XXX  a1->reallocate(DataType::c_int(20));

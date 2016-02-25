@@ -580,9 +580,9 @@ public:
     if ( !isAllocated() || !isDescribed())
     {
       SLIC_CHECK_MSG( isAllocated(),
-                       "No view data present, memory has not been allocated.");
+                      "No view data present, memory has not been allocated.");
       SLIC_CHECK_MSG( isApplied(),
-                       "View data description not present.");
+                      "View data description not present.");
       return Node().value();
     }
     return m_node.value();

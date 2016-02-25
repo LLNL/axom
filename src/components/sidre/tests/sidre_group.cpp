@@ -519,7 +519,8 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   }
 
   EXPECT_EQ(view1->getNumElements(), 10u);
-  EXPECT_EQ(view1->getTotalBytes(), static_cast<asctoolkit::sidre::SidreLength>(10 * sizeof(int)));
+  EXPECT_EQ(view1->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(10 * sizeof(int)));
 
   grp->destroyViewAndData(viewName1);
 

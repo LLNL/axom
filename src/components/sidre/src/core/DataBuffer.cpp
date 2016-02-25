@@ -90,7 +90,8 @@ DataBuffer * DataBuffer::allocate()
 {
   if (!isDescribed() || isAllocated() )
   {
-    SLIC_CHECK_MSG(isDescribed(), "Buffer has no data description, unable to allocate.");
+    SLIC_CHECK_MSG(isDescribed(),
+                   "Buffer has no data description, unable to allocate.");
     SLIC_CHECK_MSG(!isAllocated(), "Buffer is already allocated.");
 
     return this;
@@ -98,7 +99,9 @@ DataBuffer * DataBuffer::allocate()
 
   void * data = allocateBytes( getTotalBytes() );
 
-  SLIC_CHECK_MSG( data != ATK_NULLPTR, "Buffer failed to allocate memory of size " << getTotalBytes() );
+  SLIC_CHECK_MSG( data != ATK_NULLPTR,
+                  "Buffer failed to allocate memory of size " <<
+                  getTotalBytes() );
   if (data != ATK_NULLPTR)
   {
     m_node.set_external( DataType( m_node.dtype() ), data );
@@ -139,7 +142,8 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
   // If buffer not allocated just call allocate.
   if (!isAllocated())
   {
-    SLIC_CHECK_MSG( isDescribed(), "Can't re-allocate, no data description in buffer.");
+    SLIC_CHECK_MSG(isDescribed(),
+                   "Can't re-allocate, no data description in buffer.");
     if (isDescribed() )
     {
       allocate();
@@ -149,7 +153,8 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 
   if ( num_elems < 0 )
   {
-    SLIC_CHECK_MSG(num_elems >= 0, "Must re-allocate with number of elements >=0");
+    SLIC_CHECK_MSG(num_elems >= 0,
+                   "Must re-allocate with number of elements >=0");
     return this;
   }
 
@@ -161,7 +166,8 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
   SidreLength new_size = dtype.total_bytes();
   void * new_data_ptr = allocateBytes(new_size);
 
-  SLIC_CHECK_MSG(new_data_ptr != ATK_NULLPTR, "Buffer failed to re-allocate with " << new_size << " bytes.");
+  SLIC_CHECK_MSG(new_data_ptr != ATK_NULLPTR,
+                 "Buffer failed to re-allocate with " << new_size << " bytes.");
   if ( new_data_ptr != ATK_NULLPTR )
   {
     m_node.reset();
@@ -184,7 +190,9 @@ DataBuffer * DataBuffer::update(const void * src, SidreLength nbytes)
 {
   if ( nbytes > getTotalBytes() )
   {
-    SLIC_CHECK_MSG(nbytes <= getTotalBytes(), "Unable to copy data into buffer, size exceeds available # bytes in buffer.");
+    SLIC_CHECK_MSG(
+      nbytes <= getTotalBytes(),
+      "Unable to copy data into buffer, size exceeds available # bytes in buffer.");
     return this;
   }
 
@@ -341,7 +349,7 @@ void * DataBuffer::allocateBytes(std::size_t num_bytes)
 void DataBuffer::releaseBytes( void * ptr)
 {
   // Pointer type here should always match new call in allocateBytes.
-  delete[] static_cast<detail::sidre_int8*>(ptr);
+  delete[] static_cast<detail::sidre_int8 *>(ptr);
 }
 
 } /* end namespace sidre */
