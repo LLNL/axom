@@ -37,8 +37,10 @@ set(slic_sources
 if (ENABLE_MPI)
    list(APPEND slic_headers streams/SynchronizedStream.hpp)
    list(APPEND slic_sources streams/SynchronizedStream.cpp)
-   list(APPEND slic_headers streams/LumberjackStream.hpp)
-   list(APPEND slic_sources streams/LumberjackStream.cpp)
+   if (ENABLE_lumberjack)
+      list(APPEND slic_headers streams/LumberjackStream.hpp)
+      list(APPEND slic_sources streams/LumberjackStream.cpp)
+   endif()
 endif()
 
 # XXX ENABLE_FORTRAN_WRAPPER
@@ -82,6 +84,7 @@ make_library( LIBRARY_NAME
               DEPENDS_ON
                   common
                   ${wrapper_depends_on}
+                  lumberjack
               )
 
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

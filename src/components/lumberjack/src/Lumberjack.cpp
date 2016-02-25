@@ -106,11 +106,11 @@ void Lumberjack::clearMessages()
 
 void Lumberjack::queueMessage(const std::string& text)
 {
-    queueMessage(text, "", -1, "", "");
+    queueMessage(text, "", -1, 0, "");
 }
 
 void Lumberjack::queueMessage(const std::string& text, const std::string& fileName, const int lineNumber,
-                              const std::string& level, const std::string& tag)
+                              int level, const std::string& tag)
 {
     Message* mi = new Message(text, m_communicator->rank(), fileName, lineNumber, level, tag);
     m_messages.push_back(mi);

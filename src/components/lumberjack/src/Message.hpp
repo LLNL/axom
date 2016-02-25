@@ -65,7 +65,7 @@ class Message {
         , m_ranksCount(0)
         , m_fileName("")
         , m_lineNumber(0)
-        , m_level("")
+        , m_level(0)
         , m_tag("") {}
 
         /*!
@@ -83,7 +83,7 @@ class Message {
          */
         Message(const std::string& text, int rank,
                 const std::string& fileName, int lineNumber,
-                const std::string& level, const std::string& tag)
+                int level, const std::string& tag)
         : m_text(text)
         , m_ranks(1, rank)
         , m_ranksCount(1)
@@ -110,7 +110,7 @@ class Message {
         Message(const std::string& text, const std::vector<int>& ranks,
                 int ranksCount, int ranksLimit,
                 const std::string& fileName, int lineNumber,
-                const std::string& level, const std::string& tag)
+                int level, const std::string& tag)
         : m_text(text)
         , m_ranks()
         , m_ranksCount(0)
@@ -172,7 +172,7 @@ class Message {
          * \brief Returns the level of the severity of the Message.
          *****************************************************************************
          */
-        std::string level() const;
+        int level() const;
 
         /*!
          *****************************************************************************
@@ -217,7 +217,7 @@ class Message {
          * \param [in] newLevel The new severity level for this Message.
          *****************************************************************************
          */
-        void level(std::string newLevel);
+        void level(int newLevel);
 
         /*!
          *****************************************************************************
@@ -226,7 +226,7 @@ class Message {
          * \param [in] newTag The new tag of where the Message originated.
          *****************************************************************************
          */
-        void tag(std::string newTag);
+        void tag(const std::string& newTag);
 
         /*!
          *****************************************************************************
@@ -283,7 +283,7 @@ class Message {
         int m_ranksCount;
         std::string m_fileName;
         int m_lineNumber;
-        std::string m_level;
+        int m_level;
         std::string m_tag;
 };
 

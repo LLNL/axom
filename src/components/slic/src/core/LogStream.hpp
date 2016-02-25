@@ -98,7 +98,7 @@ public:
    * \param [in] tagName user-supplied tag to associate with the given message.
    * \param [in] fileName the file where this message is appended
    * \param [in] line the line within the file at which the message is appended.
-   * \param [in] filter_dulicates optional parameter that indicates whether
+   * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    *
    * \note The following wildcards may be used to ignore a particular field:
@@ -127,6 +127,18 @@ public:
    *****************************************************************************
    */
   virtual void flush() { };
+
+  /*!
+   *****************************************************************************
+   * \brief Pushes messages incrementally up the log stream. It's a NO-OP by default.
+   * \note The intent of this method is to be overridden by concrete
+   *  implementations that need to be incrementally advanced. This is primarily
+   *  useful for applications running in a distributed MPI environment, where the push
+   *  is a collective operation intended for a incrementally advancing messages through
+   *  the log stream.
+   *****************************************************************************
+   */
+  virtual void push() { };
 
 protected:
 

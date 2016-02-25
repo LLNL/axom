@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
  * Produced at the Lawrence Livermore National Laboratory.
  *
  * All rights reserved.
@@ -10,21 +10,23 @@
 
 /*!
  *******************************************************************************
- * \file SynchronizedStream.hpp
+ * \file LumberjackStream.hpp
  *
- * \date May 7, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
+ * \date January 13, 2016
+ * \author Chris White (white238@llnl.gov)
  *
  *******************************************************************************
  */
 
-#ifndef SYNCHRONIZEDSTREAM_HPP_
-#define SYNCHRONIZEDSTREAM_HPP_
+#ifndef LUMBERJACKSTREAM_HPP_
+#define LUMBERJACKSTREAM_HPP_
 
 #include "slic/LogStream.hpp"
 
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
+
+#include "lumberjack/Lumberjack.hpp"
 
 // C/C++ includes
 #include <iostream> // for std::ostream
@@ -38,7 +40,7 @@ namespace slic {
 
 /*!
  *******************************************************************************
- * \class SynchronizedStream
+ * \class LumberjackStream
  *
  * \brief A concrete instance of LogStream that dumps messages to a C++
  *  std::ostream object.
@@ -53,14 +55,14 @@ namespace slic {
  *  with an std::ofstream object.
  *******************************************************************************
  */
-class SynchronizedStream : public LogStream
+class LumberjackStream : public LogStream
 {
 public:
-  SynchronizedStream( std::ostream* stream, MPI_Comm comm );
-  SynchronizedStream( std::ostream* stream, MPI_Comm comm,
-                      std::string& format);
+  LumberjackStream( std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj );
+  LumberjackStream( std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj,
+                    std::string& format );
 
-  virtual ~SynchronizedStream();
+  virtual ~LumberjackStream();
 
   /*!
    *****************************************************************************
@@ -88,41 +90,59 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Dumps the messages to the console in rank-order.
+   * \brief Pushes all messages to the output node according to Lumberjack's
+   *  Communication scheme. Then writes it to the given stream.
    *****************************************************************************
    */
   virtual void flush();
 
-private:
+  /*!
+   *****************************************************************************
+   * \brief Pushes all messages once to their parent node according to Lumberjack's
+   *  Communication scheme. This does not guarantee all messages have reached the 
+   *  output node. This does not write out to the given stream.
+   *****************************************************************************
+   */
+  virtual void push();
 
-  /// Forward declarations
-  struct MessageCache;
+  /*!
+   *****************************************************************************
+   * \brief Writes the messages that are at the output node to the given stream.
+   *  It does not flush any messages and not all messages are guaranteed to be
+   *  at the output node.
+   *****************************************************************************
+   */
+  virtual void write();
+
+private:
+  void initializeLumberjack();
+  void finalizeLumberjack();
 
   /// \name Private Members
   /// @{
 
-  MPI_Comm m_comm;
-  MessageCache* m_cache;
+  asctoolkit::lumberjack::Lumberjack* m_lj;
+  asctoolkit::lumberjack::Communicator* m_ljComm;
+  bool m_isLJOwnedBySLIC;
   std::ostream* m_stream;
   /// @}
 
   /*!
    *****************************************************************************
    * \brief Default constructor. Made private to prevent applications from
-   *  using it. Instead the constructor that passes the underlying MPI comm
+   *  using it. Instead the constructor that passes the underlying Lumberjack instance
    *  should be used.
    *****************************************************************************
    */
-  SynchronizedStream(): m_comm(MPI_COMM_NULL),
-                        m_cache( static_cast<MessageCache*>(ATK_NULLPTR) ),
-                        m_stream( static_cast<std::ostream*>(ATK_NULLPTR) )
+  LumberjackStream(): m_lj( static_cast<asctoolkit::lumberjack::Lumberjack*>(ATK_NULLPTR) ),
+                      m_stream( static_cast<std::ostream*>(ATK_NULLPTR) )
   { };
 
 
-  DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);
+  DISABLE_COPY_AND_ASSIGNMENT(LumberjackStream);
 };
 
 } /* namespace slic */
 } /* namespace asctoolkit */
 
-#endif /* SYNCHRONIZEDSTREAM_HPP_ */
+#endif /* LUMBERJACKSTREAM_HPP_ */

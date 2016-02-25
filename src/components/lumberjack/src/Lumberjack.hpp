@@ -186,7 +186,7 @@ class Lumberjack {
          *****************************************************************************
          */
         void queueMessage(const std::string& text, const std::string& fileName, const int lineNumber,
-                          const std::string& level, const std::string& tag);
+                          int level, const std::string& tag);
 
         /*!
          *****************************************************************************

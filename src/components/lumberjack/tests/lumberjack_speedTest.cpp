@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     //Process command line options
     bool commandLineError = false;
     if (argc != 4) {
-        std::cout << "Error: Wrong amount of command line arguements given. Usage:" << std::endl << 
+        std::cout << "Error: Wrong amount of command line arguments given. Usage:" << std::endl << 
                      "   " << argv[0] << " <b|r depending on binary or root communicator> <num messages before push once> <file to be read>" << std::endl;
         return 1;
     }
