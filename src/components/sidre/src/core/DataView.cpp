@@ -252,12 +252,7 @@ DataView * DataView::apply()
   else
   {
     SLIC_ASSERT( m_state == EXTERNAL );
-
-    // Get the undescribed (opaque) external pointer value out of node.  We are
-    // going to set the pointer again in the node, this time using
-    // set_external(), with a schema, so conduit recognizes it as a
-    // pointer.
-    data_pointer = (void *)m_node.as_uint64();
+    data_pointer = m_external_ptr;
   }
 
   m_node.set_external(m_schema, data_pointer);
@@ -406,7 +401,7 @@ void * DataView::getVoidPtr() const
 
   if ( isOpaque() )
   {
-    return (void *)m_node.as_uint64();
+    return m_external_ptr;
   }
   else
   {
@@ -435,7 +430,7 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
     return this;
   }
 
-  m_node.set( (detail::sidre_uint64)external_ptr );
+  m_external_ptr = external_ptr;
   m_state = EXTERNAL;
 
   if ( isDescribed() )
@@ -470,9 +465,7 @@ bool DataView::isAllocated()
   if ( m_state == SCALAR ||
        m_state == STRING ||
        ( hasBuffer() && m_data_buffer->isAllocated() ) ||
-       // TODO - Clean this up when we stop keeping our external pointers in two places!
-       (isOpaque() && ((void *)m_node.as_uint64() != ATK_NULLPTR)) ||
-       (!isOpaque() && m_node.element_ptr(0) != ATK_NULLPTR )
+       (m_state == EXTERNAL && m_external_ptr != ATK_NULLPTR)
        )
   {
     return true;
@@ -570,6 +563,7 @@ DataView::DataView( const std::string& name,
   m_schema(),
   m_node(),
   m_shape(),
+  m_external_ptr(ATK_NULLPTR),
   m_state(EMPTY),
   m_is_applied(false)
 {}
@@ -789,7 +783,7 @@ bool DataView::isApplyValid() const
   // Valid if view has a description and a non-null external pointer or has a
   // compatible buffer to apply description to.
   if ( isDescribed() &&
-       ( ( (m_state == EXTERNAL) && (getVoidPtr() != ATK_NULLPTR) ) ||
+       ( ( (m_state == EXTERNAL) && (m_external_ptr != ATK_NULLPTR) ) ||
          ( hasBuffer() && m_data_buffer->isAllocated() &&
            (getTotalBytes() <= m_data_buffer->getTotalBytes()) )
        )
