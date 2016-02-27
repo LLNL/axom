@@ -43,16 +43,24 @@ namespace spio
 /*!
  * \class IOManager
  *
- * \brief IOManager
+ * \brief IOManager manages and organizes the I/O operations.
  *
- * It dumps and reads
+ * This class handles the bookkeeping and organizing tasks that must be done
+ * before calling DataGroup's I/O methods.  It uses IOBaton to control the
+ * parallel I/O operations, such that one rank at a time interacts with any
+ * particular output file.
  */
 class IOManager
 {
 public:
 
   /*!
-   * \brief Default ctor initializes IOManager
+   * \brief Constructor
+   *
+   * \param com               MPI communicator
+   * \param groups            Array of pointers to DataGroups.
+   * \param num_datagroups    Size of the groups array
+   * \param num_files         Number of files for I/O
    */
   IOManager(MPI_Comm com,
             sidre::DataGroup ** groups,
@@ -60,12 +68,31 @@ public:
             int num_files);
 
   /*!
-   * \brief Dtor destroys
+   * \brief Destructor
    */
   ~IOManager();
 
-  void write(const std::string& file_string, int cycle, const std::string& protocol);
-  void read(const std::string& file_string, int cycle, const std::string& protocol);
+  /*!
+   * \brief write
+   *
+   * \param file_string   base name for output file
+   * \param cycle         cycle counter
+   * \param protocol      identifies I/O protocol (format, e
+   */
+  void write(const std::string& file_string,
+             int cycle,
+             const std::string& protocol);
+
+  /*!
+   * \brief read
+   *
+   * \param file_string   base name of input file
+   * \param cycle         cycle counter
+   * \param protocol      identifies I/O protocol
+   */
+  void read(const std::string& file_string,
+            int cycle,
+            const std::string& protocol);
 
 private:
   /*!

@@ -88,7 +88,7 @@ IOBaton::~IOBaton()
 }
 
 
-int IOBaton::waitForMyTurn()
+int IOBaton::wait()
 {
   int return_val = -1;
   if (m_rank_before_me != -1) {
@@ -105,7 +105,7 @@ int IOBaton::waitForMyTurn()
   return return_val;
 }
 
-int IOBaton::finishMyTurn()
+int IOBaton::pass()
 {
   int return_val = 0;
   if (m_rank_after_me != -1) {

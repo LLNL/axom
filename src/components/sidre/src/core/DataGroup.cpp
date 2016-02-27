@@ -781,7 +781,7 @@ void DataGroup::save(const std::string& obase,
                      const std::string& protocol, 
                      const hid_t& h5_file_id) const
 {
-  if (protocol == "conduit")
+  if (protocol == "conduit_hdf5")
   {
     Node n;
     copyToNode(n);
@@ -826,7 +826,7 @@ void DataGroup::load(const std::string& obase,
                      const std::string& protocol,
                      const hid_t& h5_file_id)
 {
-  if (protocol == "conduit")
+  if (protocol == "conduit_hdf5")
   {
     destroyGroups();
     destroyViews();

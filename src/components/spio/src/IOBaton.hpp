@@ -38,45 +38,71 @@ namespace asctoolkit
 namespace spio
 {
 
-// using directives to make Conduit usage easier and less visible
-//using conduit::Node;
-
 /*!
  * \class IOBaton
  *
- * \brief IOBaton
+ * \brief IOBaton ensures that during I/O operations, only one rank will
+ * interact with a particular file at one time.
  *
- * It dumps and reads
+ * Each rank is placed into a group of ranks, with the number of groups being
+ * equal to the number of I/O files, and then the ranks use the wait and
+ * pass methods to pass control of I/O operations from one rank to the next
+ * within the group.
  */
 class IOBaton
 {
 public:
 
   /*!
-   * \brief Default ctor initializes IOBaton
+   * \brief Constructor
+   *
+   * \param com        MPI communicator
+   * \param num_files  Number of files involved in an I/O operation
    */
   IOBaton(MPI_Comm com,
           int num_files);
 
   /*!
-   * \brief Dtor destroys
+   * \brief Destructor
    */
   ~IOBaton();
 
-  int waitForMyTurn();
-  int finishMyTurn(); 
+  /*!
+   * \brief Wait for previous rank to pass control to the local rank.
+   *
+   * \return An integer id for the group of which this rank is a member.
+   */
+  int wait();
 
-  int groupSize()
+  /*!
+   * \brief Pass control to the next rank.
+   *
+   * \return  0 if sucessful, -1 if not.
+   */
+  int pass(); 
+
+  /*!
+   * \brief Size of local rank's group.
+   *
+   * \return Number of ranks in the group.
+   */
+  int groupSize() const
   {
     return m_my_rank < m_first_regular_group_rank ? m_group_size + 1 : m_group_size; 
   }
 
-  bool isFirstInGroup()
+  /*!
+   * \brief Tells if the local rank is the first (lowest) in its group.
+   */
+  bool isFirstInGroup() const
   {
      return (m_rank_within_group == 0); 
   }
 
-  bool isLastInGroup()
+  /*!
+   * \brief Tells if the local rank is the last (highest) in its group.
+   */
+  bool isLastInGroup() const
   {
      return (m_rank_after_me == -1); 
   }

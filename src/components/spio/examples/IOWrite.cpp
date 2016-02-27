@@ -61,7 +61,7 @@ int main(int argc, char * argv[])
   groups.push_back(root);
 
   IOManager writer(MPI_COMM_WORLD, &(groups[0]), groups.size(), num_files);
-  writer.write(file_base, 0, "conduit");
+  writer.write(file_base, 0, "conduit_hdf5");
 
   delete ds;
 
