@@ -92,6 +92,11 @@ else:
         cachefile = os.path.join(cachefile, "other", "%s.cmake" % platform_info )
         print "No SYS_TYPE in environment, using hostname config file: '%s'" % ( cachefile )
 
+print "Environment:"
+print "------------"
+print os.environ
+print "------------"
+
 assert os.path.exists( cachefile ), "Could not find cmake cache file '%s'." % cachefile
 
 
