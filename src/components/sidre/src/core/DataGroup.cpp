@@ -148,6 +148,19 @@ DataView * DataGroup::createView( const std::string& name,
 
   return view;
 }
+#if 0
+DataView * DataGroup::createView( const std::string& name,
+                                  int value)
+{
+  DataView * view = createView(name);
+  if (view != ATK_NULLPTR)
+  {
+    view->setScalar(value);
+  }
+
+  return view;
+}
+#endif
 
 DataView * DataGroup::createView( const std::string& name,
                                   const std::string& value)

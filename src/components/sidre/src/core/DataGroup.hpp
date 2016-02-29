@@ -414,9 +414,11 @@ public:
   DataView * createView( const std::string& name,
                          const DataType& dtype);
 
-#if 1
+#if 0
+  DataView * createView( const std::string& name, int value);
+#else
   template<typename ScalarType>
-  DataView * createViewWithScalar( const std::string& name, ScalarType value)
+  DataView * createView( const std::string& name, ScalarType value)
   {
     DataView * view = createView(name);
     if (view != ATK_NULLPTR)
