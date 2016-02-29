@@ -78,6 +78,7 @@ if args.hostconfig != "":
     platform_info = os.path.split(cachefile)[1]
     if platform_info.endswith(".cmake"):
         platform_info = platform_info[:-6]
+    print "Using user specified host config file: '%s'." % cachefile
 else:
     # Check if 'SYS_TYPE' exists, and look for cache file there.
     cachefile = scriptsdir.replace("scripts","host-configs")
@@ -85,9 +86,11 @@ else:
         systype = os.environ["SYS_TYPE"]
         platform_info = systype.split("_")[0]
         cachefile = os.path.join( cachefile, platform_info, "%s.cmake" % args.compiler ) 
+        print "Detected LC SYS_TYPE '%s'.  Using host config file: '%s'." % ( os.environ["SYS_TYPE"], cachefile )
     else:
         platform_info = platform.node()
         cachefile = os.path.join(cachefile, "other", "%s.cmake" % platform_info )
+        print "No SYS_TYPE in environment, using hostname config file: '%s'" % ( cachefile )
 
 assert os.path.exists( cachefile ), "Could not find cmake cache file '%s'." % cachefile
 
