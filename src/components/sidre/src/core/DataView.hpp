@@ -67,7 +67,7 @@ class DataStore;
  *          deallocated by the view if and only if it is the only view
  *          attached to the buffer.
  *        # A view can describe and allocate data using semantics similar
- *          to DataBuffer data declaration and allocation. In this case, no
+ *          to DataBuffer data description and allocation. In this case, no
  *          other view is allowed to (re)allocate or deallocate the data held
  *          by the associated data buffer.
  *        # A view can describe data associated with a pointer to an
@@ -390,7 +390,7 @@ public:
      // RDH -- will this be changed for consistency?
      //
    *
-   * IMPORTANT: If view has been previously declared (or applied), this
+   * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, is external and does not have a
@@ -411,7 +411,7 @@ public:
    *       is different than the Conduit DataType usage below where offset
    *       and stride are in number of bytes.
    *
-   * IMPORTANT: If view has been previously declared (or applied), this
+   * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, or given number of elements < 0,
@@ -429,7 +429,7 @@ public:
    *
    * NOTE: The units for the shape are in number of elements.
    *
-   * IMPORTANT: If view has been previously declared (or applied), this
+   * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, or given number of dimensions < 0,
@@ -484,7 +484,7 @@ public:
     m_schema.set(m_node.schema());
     m_is_applied = true;
     m_state = SCALAR;
-    declareShape();
+    describeShape();
     return this;
   }
 
@@ -502,7 +502,7 @@ public:
     m_schema.set(m_node.schema());
     m_state = STRING;
     m_is_applied = true;
-    declareShape();
+    describeShape();
     return this;
   };
 
@@ -663,25 +663,25 @@ private:
 //!        (callable only by DataGroup and DataView methods).
 
   /*!
-   * \brief Declare a data view with given type and number of elements, and
+   * \brief Describe a data view with given type and number of elements.
    *
    *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
+   * IMPORTANT: If view has been previously described, this operation will
+   *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If given number of elements < 0, or view is opaque, method does nothing.
    *
    */
-  void declare( TypeID type, SidreLength num_elems);
+  void describe( TypeID type, SidreLength num_elems);
 
   /*!
-   * \brief Declare a data view with given type, number of dimensions,  and
+   * \brief Describe a data view with given type, number of dimensions, and
    *        number of elements per dimension.
    *
    *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
+   * IMPORTANT: If view has been previously described, this operation will
+   *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If given number of dimensions or total number of elements < 0,
@@ -689,30 +689,30 @@ private:
    *
    * \return pointer to this DataView object.
    */
-  void declare(TypeID type, int ndims, SidreLength * shape);
+  void describe(TypeID type, int ndims, SidreLength * shape);
 
   /*!
    * \brief Declare a data view with a Conduit data type object.
    *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
+   * IMPORTANT: If view has been previously described, this operation will
+   *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If view is opaque, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
-  void declare(const DataType& dtype);
+  void describe(const DataType& dtype);
 
   /*!
-   * \brief Set the shape to be a one dimension with the declared number of elements.
+   * \brief Set the shape to be a one dimension with the described number of elements.
    */
-  void declareShape();
+  void describeShape();
 
   /*!
    * \brief Set the shape to be a ndims dimensions with shape.
    */
-  void declareShape(int ndims, SidreLength * shape);
+  void describeShape(int ndims, SidreLength * shape);
 
 //@}
 

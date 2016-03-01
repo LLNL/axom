@@ -88,7 +88,7 @@ DataView * DataView::allocate( TypeID type, SidreLength num_elems)
     return this;
   }
 
-  declare(type, num_elems);
+  describe(type, num_elems);
   allocate();
 
   return this;
@@ -110,7 +110,7 @@ DataView * DataView::allocate(const DataType& dtype)
     return this;
   }
 
-  declare(dtype);
+  describe(dtype);
   allocate();
 
   return this;
@@ -145,7 +145,7 @@ DataView * DataView::reallocate(SidreLength num_elems)
     return this;
   }
 
-  declare(vtype, num_elems);
+  describe(vtype, num_elems);
   m_data_buffer->reallocate(num_elems);
   m_state = ALLOCATED;
   apply();
@@ -185,7 +185,7 @@ DataView * DataView::reallocate(const DataType& dtype)
     return this;
   }
 
-  declare(dtype);
+  describe(dtype);
   SidreLength num_elems = dtype.number_of_elements();
   m_data_buffer->reallocate(num_elems);
   m_state = ALLOCATED;
@@ -290,7 +290,7 @@ DataView * DataView::apply(SidreLength num_elems,
   dtype.set_offset(offset * dtype.element_bytes() );
   dtype.set_stride(stride * dtype.element_bytes() );
 
-  declare(dtype);
+  describe(dtype);
 
   apply();
 
@@ -324,7 +324,7 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
   dtype.set_offset(offset * bytes_per_elem);
   dtype.set_stride(stride * bytes_per_elem);
 
-  declare(dtype);
+  describe(dtype);
   apply();
 
   return this;
@@ -348,7 +348,7 @@ DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
     return this;
   }
 
-  declare(type, ndims, shape);
+  describe(type, ndims, shape);
   apply();
 
   return this;
@@ -370,7 +370,7 @@ DataView * DataView::apply(const DataType &dtype)
     return this;
   }
 
-  declare(dtype);
+  describe(dtype);
   apply();
 
   return this;
@@ -582,23 +582,23 @@ DataView::~DataView()
 /*
  *************************************************************************
  *
- * PRIVATE method to declare data view with type and number of elements.
+ * PRIVATE method to describe data view with type and number of elements.
  *
  *************************************************************************
  */
-void DataView::declare(TypeID type, SidreLength num_elems)
+void DataView::describe(TypeID type, SidreLength num_elems)
 {
   if ( num_elems < 0 )
   {
     SLIC_CHECK_MSG(num_elems >= 0,
-                   "Declare: must give number of elements >= 0");
+                   "Describe: must give number of elements >= 0");
     return;
   }
 
   DataType dtype = conduit::DataType::default_dtype(type);
   dtype.set_number_of_elements(num_elems);
   m_schema.set(dtype);
-  declareShape();
+  describeShape();
 
   if ( m_state == EMPTY )
   {
@@ -611,12 +611,12 @@ void DataView::declare(TypeID type, SidreLength num_elems)
 /*
  *************************************************************************
  *
- * PRIVATE method to declare data view with type, number of dimensions,
+ * PRIVATE method to describe data view with type, number of dimensions,
  *         and number of elements per dimension.
  *
  *************************************************************************
  */
-void DataView::declare(TypeID type, int ndims, SidreLength * shape)
+void DataView::describe(TypeID type, int ndims, SidreLength * shape)
 {
   if ( ndims < 0 || shape == ATK_NULLPTR)
   {
@@ -635,18 +635,18 @@ void DataView::declare(TypeID type, int ndims, SidreLength * shape)
     }
   }
 
-  declare(type, num_elems);
-  declareShape(ndims, shape);
+  describe(type, num_elems);
+  describeShape(ndims, shape);
 }
 
 /*
  *************************************************************************
  *
- * PRIVATE method to declare data view with a Conduit data type object.
+ * PRIVATE method to describe data view with a Conduit data type object.
  *
  *************************************************************************
  */
-void DataView::declare(const DataType& dtype)
+void DataView::describe(const DataType& dtype)
 {
   if ( dtype.is_empty() )
   {
@@ -657,7 +657,7 @@ void DataView::declare(const DataType& dtype)
   }
 
   m_schema.set(dtype);
-  declareShape();
+  describeShape();
 
   if ( m_state == EMPTY )
   {
@@ -670,12 +670,12 @@ void DataView::declare(const DataType& dtype)
 /*
  *************************************************************************
  *
- * PRIVATE method set shape to declared length.
- * This is called after declare to set the shape.
+ * PRIVATE method set shape to described length.
+ * This is called after describe to set the shape.
  *
  *************************************************************************
  */
-void DataView::declareShape()
+void DataView::describeShape()
 {
   m_shape.clear();
   m_shape.push_back(m_schema.dtype().number_of_elements());
@@ -688,7 +688,7 @@ void DataView::declareShape()
  *
  *************************************************************************
  */
-void DataView::declareShape(int ndims, SidreLength * shape)
+void DataView::describeShape(int ndims, SidreLength * shape)
 {
   m_shape.clear();
   for (int i=0 ; i < ndims ; i++)
