@@ -85,6 +85,7 @@ args = parser.parse_args()
 ########################
 platform_info = ""
 scriptsdir = os.path.dirname( os.path.abspath(sys.argv[0]) )
+systype = get_systype()
 
 if args.hostconfig != "":
     cachefile = os.path.abspath(args.hostconfig)
@@ -95,7 +96,6 @@ if args.hostconfig != "":
 else:
     # Check if 'SYS_TYPE' exists, and look for cache file there.
     cachefile = scriptsdir.replace("scripts","host-configs")
-    systype = get_systype()
     if systype:
         platform_info = systype.split("_")[0]
         cachefile = os.path.join( cachefile, platform_info, "%s.cmake" % args.compiler ) 
@@ -158,6 +158,13 @@ os.makedirs(installpath)
 ############################
 
 cmakeline = "cmake"
+# Use toolkit cmake installation, if present.
+if systype:
+    toolkit_cmake = os.path.join("/usr/gapps/asctoolkit/tools", systype, "cmake", "bin", "cmake")
+    if os.path.exists(toolkit_cmake):
+        print "Detected toolkit cmake installation at '%s'" % toolkit_cmake
+        cmakeline = toolkit_cmake
+
 # Add cache file option
 cmakeline += " -C %s" % cachefile
 # Add build type (opt or debug)
