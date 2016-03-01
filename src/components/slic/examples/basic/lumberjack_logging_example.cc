@@ -93,7 +93,7 @@ int main( int argc, char** argv )
   int cycleCount = 0;
   int linesSize = (int)lines.size();
   for (int i = 0; i < linesSize; ++i){
-    slic::logMessage( static_cast< slic::message::Level >(0),
+    slic::logMessage( slic::message::Info,
                          lines[i],
                          __FILE__,
                          __LINE__
