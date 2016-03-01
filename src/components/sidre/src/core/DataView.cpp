@@ -786,8 +786,20 @@ bool DataView::isApplyValid() const
     return false;
   }
 
-  if ( m_state != EXTERNAL )
+  switch (m_state)
   {
+  case STRING:
+    SLIC_CHECK_MSG(m_state == STRING,
+                   "Apply not valid for a STRING view");
+    return false;
+  case SCALAR:
+    SLIC_CHECK_MSG(m_state == STRING,
+                   "Apply not valid for a SCALAR view");
+    return false;
+  case EXTERNAL:
+    break;
+  case BUFFER_ATTACHED:
+  case ALLOCATED:
     if ( !hasBuffer() )
     {
       SLIC_CHECK_MSG(hasBuffer(),
@@ -805,6 +817,9 @@ bool DataView::isApplyValid() const
         return false;
       }
     }
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
 
   return true;
