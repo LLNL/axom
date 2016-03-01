@@ -276,8 +276,15 @@ TEST(sidre_view,int_array_strided_views)
 
 
   ds->print();
-  delete ds;
 
+  // Delete buffer and make sure views are no longer allocated.
+  dbuff->deallocate();
+  EXPECT_FALSE(dv_e->isAllocated());
+  EXPECT_FALSE(dv_o->isAllocated());
+  EXPECT_FALSE(dv_e1->isAllocated());
+  EXPECT_FALSE(dv_o1->isAllocated());
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------

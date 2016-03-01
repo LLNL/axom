@@ -231,6 +231,17 @@ public:
   DataBuffer * reallocate(SidreLength num_elems);
 
   /*!
+   * \brief Deallocate data in a buffer.
+   *
+   * If the buffer has no data, the routine does nothing.
+   * All attached views will have their address set to NULL,
+   * and their length set to 0.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * deallocate();
+
+  /*!
    * \brief Update contents of buffer memory.
    *
    * This will copy nbytes of data into the buffer.  nbytes must be greater

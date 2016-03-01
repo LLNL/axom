@@ -182,6 +182,31 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 /*
  *************************************************************************
  *
+ * Deallocate data in a buffer.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::deallocate()
+{
+  if (!isAllocated())
+    return this;
+
+  releaseBytes(getVoidPtr());
+  m_node.set_external( DataType( m_node.dtype() ), ATK_NULLPTR );
+
+  for(std::vector<DataView *>::iterator it = m_views.begin() ;
+      it != m_views.end() ;
+      ++it)
+  {
+      (*it)->apply(0);
+  }
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Update contents of buffer from src and which is nbytes long.
  *
  *************************************************************************

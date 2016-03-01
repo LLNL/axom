@@ -784,10 +784,16 @@ bool DataView::isApplyValid() const
   // compatible buffer to apply description to.
   if ( isDescribed() &&
        ( ( (m_state == EXTERNAL) && (m_external_ptr != ATK_NULLPTR) ) ||
+#if 0
          ( hasBuffer() && m_data_buffer->isAllocated() &&
            (getTotalBytes() <= m_data_buffer->getTotalBytes()) )
-       )
-       )
+#else
+         ( hasBuffer() && (
+			   (m_data_buffer->isAllocated() && getTotalBytes() <= m_data_buffer->getTotalBytes() ) ||
+			   (!m_data_buffer->isAllocated() && getTotalBytes() == 0))
+#endif
+	   )
+	 ))
   {
     return true;
   }
