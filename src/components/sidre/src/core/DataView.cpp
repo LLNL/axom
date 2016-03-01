@@ -779,10 +779,10 @@ bool DataView::isApplyValid() const
   // Valid if view has a description and a non-null external pointer or has a
   // compatible buffer to apply description to.
   if ( isDescribed() &&
-       ( ( m_state == EXTERNAL && 
-	   (m_external_ptr != ATK_NULLPTR ||
-	    (m_external_ptr == ATK_NULLPTR && getTotalBytes() == 0)))
-	 ||
+       ( ( m_state == EXTERNAL &&
+           (m_external_ptr != ATK_NULLPTR ||
+            (m_external_ptr == ATK_NULLPTR && getTotalBytes() == 0)))
+         ||
          ( hasBuffer() && m_data_buffer->isAllocated() &&
            (getTotalBytes() <= m_data_buffer->getTotalBytes()) )
        )
@@ -795,11 +795,11 @@ bool DataView::isApplyValid() const
   SLIC_CHECK_MSG(isDescribed(),
                  "Apply not valid, no description in view to apply.");
   SLIC_CHECK_MSG(m_state == EXTERNAL &&
-		 (m_external_ptr != ATK_NULLPTR ||
-		  (m_external_ptr == ATK_NULLPTR && getTotalBytes() == 0)),
-		 "External view must be non-NULL or NULL with a zero length.");
+                 (m_external_ptr != ATK_NULLPTR ||
+                  (m_external_ptr == ATK_NULLPTR && getTotalBytes() == 0)),
+                 "External view must be non-NULL or NULL with a zero length.");
   SLIC_CHECK_MSG(hasBuffer() && m_data_buffer->isAllocated() &&
-		 ( getTotalBytes() <= m_data_buffer->getTotalBytes()),
+                 ( getTotalBytes() <= m_data_buffer->getTotalBytes()),
                  "Apply not valid, no applicable data to apply description to.");
 
   return false;
