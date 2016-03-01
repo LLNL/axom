@@ -772,38 +772,42 @@ bool DataView::isSetExternalDataPtrValid() const
  * PRIVATE method returns true if apply is a valid operation on view;
  * else false.
  *
+ * For an EXTERNAL view, assume user provided m_external_ptr and
+ * description are consistent. This includes m_external_ptr == NULL.
+ *
  *************************************************************************
  */
 bool DataView::isApplyValid() const
 {
-  // Valid if view has a description and a non-null external pointer or has a
-  // compatible buffer to apply description to.
-  if ( isDescribed() &&
-       ( ( m_state == EXTERNAL &&
-           (m_external_ptr != ATK_NULLPTR ||
-            (m_external_ptr == ATK_NULLPTR && getTotalBytes() == 0)))
-         ||
-         ( hasBuffer() && m_data_buffer->isAllocated() &&
-           (getTotalBytes() <= m_data_buffer->getTotalBytes()) )
-       )
-       )
+  if ( !isDescribed() )
   {
-    return true;
+    SLIC_CHECK_MSG(isDescribed(),
+                   "Apply not valid, no description in view to apply.");
+    return false;
   }
 
-  // TODO - These can be cleaned up (break them up into smaller checks, after SLIC_IF_CHECK is added.
-  SLIC_CHECK_MSG(isDescribed(),
-                 "Apply not valid, no description in view to apply.");
-  SLIC_CHECK_MSG(m_state == EXTERNAL &&
-                 (m_external_ptr != ATK_NULLPTR ||
-                  (m_external_ptr == ATK_NULLPTR && getTotalBytes() == 0)),
-                 "External view must be non-NULL or NULL with a zero length.");
-  SLIC_CHECK_MSG(hasBuffer() && m_data_buffer->isAllocated() &&
-                 ( getTotalBytes() <= m_data_buffer->getTotalBytes()),
-                 "Apply not valid, no applicable data to apply description to.");
+  if ( m_state != EXTERNAL )
+  {
+    if ( !hasBuffer() )
+    {
+      SLIC_CHECK_MSG(hasBuffer(),
+                     "Apply not valid, no buffer available");
+      return false;
+    }
 
-  return false;
+    if ( m_data_buffer->isAllocated() )
+    {
+      if ( !(getTotalBytes() <= m_data_buffer->getTotalBytes()) )
+      {
+        SLIC_CHECK_MSG(
+          getTotalBytes() <= m_data_buffer->getTotalBytes(),
+          "Apply not valid, buffer description is smaller than view description");
+        return false;
+      }
+    }
+  }
 
+  return true;
 }
 
 /*
