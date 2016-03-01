@@ -418,15 +418,11 @@ void * DataView::getVoidPtr() const
  */
 DataView * DataView::setExternalDataPtr(void * external_ptr)
 {
-  if ( !isSetExternalDataPtrValid() || external_ptr == ATK_NULLPTR )
+  if ( !isSetExternalDataPtrValid() )
   {
     SLIC_CHECK_MSG( isSetExternalDataPtrValid(),
                     "View state " << getStateStringName(m_state) <<
                     " does not allow setting external data pointer");
-
-    SLIC_CHECK_MSG( external_ptr != ATK_NULLPTR,
-                    "Unable to set external pointer to NULL.");
-
     return this;
   }
 
@@ -465,7 +461,7 @@ bool DataView::isAllocated()
   if ( m_state == SCALAR ||
        m_state == STRING ||
        ( hasBuffer() && m_data_buffer->isAllocated() ) ||
-       (m_state == EXTERNAL && m_external_ptr != ATK_NULLPTR)
+       ( m_state == EXTERNAL && m_external_ptr != ATK_NULLPTR )
        )
   {
     return true;
@@ -783,7 +779,10 @@ bool DataView::isApplyValid() const
   // Valid if view has a description and a non-null external pointer or has a
   // compatible buffer to apply description to.
   if ( isDescribed() &&
-       ( ( (m_state == EXTERNAL) && (m_external_ptr != ATK_NULLPTR) ) ||
+       ( ( m_state == EXTERNAL && 
+	   (m_external_ptr != ATK_NULLPTR ||
+	    (m_external_ptr == ATK_NULLPTR && getTotalBytes() == 0)))
+	 ||
          ( hasBuffer() && m_data_buffer->isAllocated() &&
            (getTotalBytes() <= m_data_buffer->getTotalBytes()) )
        )
@@ -795,10 +794,13 @@ bool DataView::isApplyValid() const
   // TODO - These can be cleaned up (break them up into smaller checks, after SLIC_IF_CHECK is added.
   SLIC_CHECK_MSG(isDescribed(),
                  "Apply not valid, no description in view to apply.");
-  SLIC_CHECK_MSG( ( m_state == EXTERNAL ||
-                    ( hasBuffer() && m_data_buffer->isAllocated() &&
-                      ( getTotalBytes() <= m_data_buffer->getTotalBytes() ) ) ),
-                  "Apply not valid, no applicable data to apply description to.");
+  SLIC_CHECK_MSG(m_state == EXTERNAL &&
+		 (m_external_ptr != ATK_NULLPTR ||
+		  (m_external_ptr == ATK_NULLPTR && getTotalBytes() == 0)),
+		 "External view must be non-NULL or NULL with a zero length.");
+  SLIC_CHECK_MSG(hasBuffer() && m_data_buffer->isAllocated() &&
+		 ( getTotalBytes() <= m_data_buffer->getTotalBytes()),
+                 "Apply not valid, no applicable data to apply description to.");
 
   return false;
 
@@ -861,7 +863,7 @@ char const * DataView::getStateStringName(State state) const
 
   default:
   {
-    ret_string = "/0";
+    ret_string = "UNKNOWN";
   }
   }
 
