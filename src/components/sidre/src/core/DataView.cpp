@@ -156,6 +156,32 @@ DataView * DataView::reallocate(SidreLength num_elems)
 /*
  *************************************************************************
  *
+ * Deallocate data for view.
+ *
+ *************************************************************************
+ */
+DataView * DataView::deallocate()
+{
+  if ( !isAllocateValid() )
+  {
+    SLIC_CHECK_MSG( isAllocateValid(),
+                    "View " << this->getName() << "'s state " <<
+                    getStateStringName(m_state) <<
+                    " does not allow data deallocation");
+    return this;
+  }
+
+  if ( m_data_buffer != ATK_NULLPTR )
+  {
+    m_data_buffer->deallocate();
+  }
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Reallocate data for view using a Conduit data type object.
  *
  *************************************************************************

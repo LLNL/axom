@@ -16,6 +16,7 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
+using asctoolkit::sidre::INT_ID;
 
 using namespace conduit;
 
@@ -112,6 +113,30 @@ TEST(sidre_view,scalar_view)
 
   delete ds;
 
+}
+
+//------------------------------------------------------------------------------
+
+// Most tests deallocate via the DataStore destructor
+
+TEST(sidre_view,alloc_and_dealloc)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  DataView * dv = root->createView("u0", INT_ID, 10);
+  EXPECT_FALSE(dv->isAllocated());
+
+  // try to deallocate an unallocated view
+  dv->deallocate();
+
+  dv->allocate();
+  EXPECT_TRUE(dv->isAllocated());
+
+  dv->deallocate();
+  EXPECT_FALSE(dv->isAllocated());
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
