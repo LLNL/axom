@@ -172,7 +172,7 @@ DataBuffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
 
   if (buffer != ATK_NULLPTR)
   {
-    buffer->declare(type, num_elems);
+    buffer->describe(type, num_elems);
   }
 
   return buffer;
