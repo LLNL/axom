@@ -29,14 +29,26 @@ namespace asctoolkit {
 namespace slic {
 
 //------------------------------------------------------------------------------
+LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit ) :
+    m_stream( stream )
+{
+  this->initializeLumberjack( comm, ranksLimit );
+}
+
+//------------------------------------------------------------------------------
+LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
+                                    std::string& format ) :
+    m_stream( stream )
+{
+  this->initializeLumberjack( comm, ranksLimit );
+  this->setFormatString( format );
+}
+
+//------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream(std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj):
     m_lj( lj ),
     m_stream( stream )
 {
-  m_isLJOwnedBySLIC = false;
-  if ( m_lj == ATK_NULLPTR ) {
-    this->initializeLumberjack();
-  }
 }
 
 //------------------------------------------------------------------------------
@@ -46,10 +58,6 @@ LumberjackStream::LumberjackStream( std::ostream* stream,
     m_lj( lj ),
     m_stream( stream )
 {
-  m_isLJOwnedBySLIC = false;
-  if ( m_lj == ATK_NULLPTR ) {
-    this->initializeLumberjack();
-  }
   this->setFormatString( format );
 }
 
@@ -122,11 +130,12 @@ void LumberjackStream::write()
 }
 
 //------------------------------------------------------------------------------
-void LumberjackStream::initializeLumberjack()
+void LumberjackStream::initializeLumberjack( MPI_Comm comm, int ranksLimit )
 {
   m_ljComm = new asctoolkit::lumberjack::BinaryTreeCommunicator;
+  m_ljComm->initialize(m_mpiComm, ranksLimit);
   m_lj = new asctoolkit::lumberjack::Lumberjack;
-  m_lj->initialize(m_ljComm, 5);
+  m_lj->initialize(m_ljComm, ranksLimit);
   m_isLJOwnedBySLIC = true;
 }
 

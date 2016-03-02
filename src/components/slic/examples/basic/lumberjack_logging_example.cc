@@ -55,12 +55,6 @@ int main( int argc, char** argv )
   int rank=-1;
   MPI_Comm_rank( MPI_COMM_WORLD, &rank );
 
-  // Initialize Lumberjack
-  lumberjack::BinaryTreeCommunicator ljComm;
-  ljComm.initialize(MPI_COMM_WORLD, RANKSLIMIT);
-  asctoolkit::lumberjack::Lumberjack lj;
-  lj.initialize(&ljComm, RANKSLIMIT);
-
   // Initialize SLIC
   std::string format = std::string( "<MESSAGE>\n") +
                        std::string( "\t<TIMESTAMP>" ) +
@@ -73,10 +67,10 @@ int main( int argc, char** argv )
   std::ofstream outFile;
   outFile.open("speedTestOutput");
 
-  // Set SLIC logging level and stream
+  // Set SLIC logging level and Lumberjack Logging stream
   slic::setLoggingMsgLevel( slic::message::Debug );
   slic::LumberjackStream* ljStream = 
-        new slic::LumberjackStream( &outFile, &lj, format );
+        new slic::LumberjackStream( &outFile, MPI_COMM_WORLD, RANKSLIMIT, format );
   slic::addStreamToAllMsgLevels( ljStream );
 
   // Read lines from file
@@ -109,10 +103,8 @@ int main( int argc, char** argv )
   // Fully flush system of messages
   slic::flushStreams();
 
-  // Shutdown SLIC and Lumberjack
+  // Shutdown SLIC which in turn shutsdown Lumberjack
   slic::finalize();
-  ljComm.finalize();
-  lj.finalize();
 
   // Finalize MPI
   MPI_Finalize();

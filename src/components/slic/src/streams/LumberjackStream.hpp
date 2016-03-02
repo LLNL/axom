@@ -58,6 +58,9 @@ namespace slic {
 class LumberjackStream : public LogStream
 {
 public:
+  LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit );
+  LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
+                    std::string& format );
   LumberjackStream( std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj );
   LumberjackStream( std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj,
                     std::string& format );
@@ -115,15 +118,16 @@ public:
   virtual void write();
 
 private:
-  void initializeLumberjack();
+  void initializeLumberjack( MPI_Comm comm, int ranksLimit );
   void finalizeLumberjack();
 
   /// \name Private Members
   /// @{
 
+  MPI_Comm m_mpiComm;
   asctoolkit::lumberjack::Lumberjack* m_lj;
   asctoolkit::lumberjack::Communicator* m_ljComm;
-  bool m_isLJOwnedBySLIC;
+  bool m_isLJOwnedBySLIC = false;
   std::ostream* m_stream;
   /// @}
 
