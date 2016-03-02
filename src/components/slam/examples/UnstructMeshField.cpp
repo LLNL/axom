@@ -20,19 +20,15 @@
  * \author K. Weiss (modified to use the asc toolkit mesh API)
  */
 
-#include <iostream>
 #include <fstream>
 #include <sstream>
-#include <list>
-#include <set>
-#include <vector>
 #include <cmath>
 #include <cstdlib>
 
+#include "common/FileUtilities.hpp"
+
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
-
-#include "slam/FileUtilities.hpp"
 
 #include "slam/Set.hpp"
 #include "slam/RangeSet.hpp"
@@ -41,6 +37,7 @@
 #include "slam/DynamicVariableRelation.hpp"
 
 #include "slam/Map.hpp"
+#include "slam/Utilities.hpp"
 
 
 #ifndef USE_CONSTANT_RELATION
@@ -63,20 +60,22 @@ namespace slamUnstructuredHex {
     Point(const DataType& x, const DataType& y, const DataType& z) : m_x(x), m_y(y), m_z(z){}
     Point() : m_x(DataType()), m_y(DataType()), m_z(DataType()){}
 
-    DataType                                radius() const { return std::sqrt( m_x * m_x + m_y * m_y + m_z * m_z); }
-    Point& operator                         +=(const Point& pt){ m_x += pt.m_x; m_y += pt.m_y; m_z += pt.m_z; return *this; }
-    Point& operator                         *=(const DataType& sc){ m_x *= sc; m_y *= sc; m_z *= sc; return *this; }
-    template<typename T>    Point& operator /=(const T& sc){ return operator*=( 1. / sc); }
+    DataType        radius() const { return std::sqrt( m_x * m_x + m_y * m_y + m_z * m_z); }
+    Point& operator +=(const Point& pt){ m_x += pt.m_x; m_y += pt.m_y; m_z += pt.m_z; return *this; }
+    Point& operator *=(const DataType& sc){ m_x *= sc; m_y *= sc; m_z *= sc; return *this; }
+
+    template<typename T>
+    Point& operator /=(const T& sc){ return operator*=( 1. / sc); }
 
     DataType m_x, m_y, m_z;
   };
-  Point operator                            +(const Point& pt1, const Point& pt2)  { Point pt(pt1); pt += pt2;      return pt; }
+  Point operator    +(const Point& pt1, const Point& pt2)  { Point pt(pt1); pt += pt2;      return pt; }
 
-  Point operator                            *(const Point& pt1, const DataType& sc){ Point pt(pt1); pt *= sc;       return pt; }
-  Point operator                            *(const DataType& sc,const Point& pt1) { Point pt(pt1); pt *= sc;       return pt; }
+  Point operator    *(const Point& pt1, const DataType& sc){ Point pt(pt1); pt *= sc;       return pt; }
+  Point operator    *(const DataType& sc,const Point& pt1) { Point pt(pt1); pt *= sc;       return pt; }
 
   template<typename T>
-  Point operator                            /(const Point& pt1, const T& sc){ Point pt(pt1); pt *= (1. / sc);  return pt; }
+  Point operator    /(const Point& pt1, const T& sc){ Point pt(pt1); pt *= (1. / sc);  return pt; }
 
 
   struct HexMesh
@@ -145,16 +144,16 @@ namespace slamUnstructuredHex {
     // uses RAII to open/close the file
     SimpleVTKHeshMeshReader(const std::string & fileName) : vtkMesh( fileName.c_str() )
     {
-      // check if the file opened, if not try one directory higher
       if(!vtkMesh)
       {
-        std::string pFileName = "../" + fileName;
-        vtkMesh.open( pFileName.c_str() );
+        using namespace asctoolkit::slam::util;
+        std::string ancesFile = findFileInAncestorDirs( fileName);
+        SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( ancesFile));
+
+        SLIC_INFO("Opening file " << ancesFile);
+        vtkMesh.open( ancesFile.c_str() );
       }
 
-      SLIC_ERROR_IF( !vtkMesh
-          , "fstream error -- problem opening file: '"  << fileName << "' (also tried '../" << fileName << "')"
-                                                        << "\nThe current working directory is: '" << asctoolkit::slam::util::getCWD() << "'");
     }
     ~SimpleVTKHeshMeshReader()
     {
@@ -176,7 +175,7 @@ namespace slamUnstructuredHex {
       vtkMesh >> numNodes;
       vtkMesh >> junk;
 
-      std::cout << "\tNumber of nodes = " << numNodes << "\n";
+      SLIC_INFO("\t** Number of nodes = " << numNodes);
 
       // Create the set of Nodes
       mesh->nodes = HexMesh::NodeSet(numNodes);
@@ -208,7 +207,7 @@ namespace slamUnstructuredHex {
           ,  "Error in reading mesh!\n" << "  numZones = " << numZones << "\n"
                                         << "  numZones*" << (HexMesh::NODES_PER_ZONE) << " = " << numZones * (HexMesh::NODES_PER_ZONE) << "\n"
                                         << "  numNodeZoneIndices = " << numNodeZoneIndices << "\n" );
-      std::cout << "\tNumber of zones = "  << numZones << "\n";
+      SLIC_INFO("\t** Number of zones = " << numZones);
 
       // Create the set of Zones
       mesh->zones = HexMesh::ZoneSet(numZones);
@@ -242,7 +241,8 @@ namespace slamUnstructuredHex {
         vtkMesh >> nodeCount;
 
         SLIC_ASSERT_MSG( nodeCount == HexMesh::NODES_PER_ZONE
-            , "Unsupported mesh type with zone = " << *zIt << ", nodeCount = " << nodeCount << " (expected " << HexMesh::NODES_PER_ZONE << ")");
+            , "Unsupported mesh type with zone = "  << *zIt << ", nodeCount = " << nodeCount
+                                                    << " (expected " << HexMesh::NODES_PER_ZONE << ")");
 
         for( IndexType n = 0; n < (HexMesh::NODES_PER_ZONE); ++n )
         {
@@ -262,6 +262,8 @@ namespace slamUnstructuredHex {
       SLIC_ASSERT_MSG(  mesh->relationZoneNode.isValid(), "Error creating (static) relation from zones to nodes!");
       SLIC_ASSERT_MSG(  oIt == offsetsVec.end(),          "Error reading nodes of zones!\n" << offsetsVec.end() - oIt );
     }
+
+
   private:
     std::ifstream vtkMesh;
   };
@@ -277,7 +279,7 @@ namespace slamUnstructuredHex {
   void generateNodeZoneRelation(HexMesh* mesh)
   {
     // Now build the (variable) relation from nodes to zones
-    // Strategy: We will first build this as a DynamicVariableRelation, and then linearize it to a StaticVariableRelation
+    // Strategy: We will first build this as a DynamicVariableRelation, and then linearize to a StaticVariableRelation
     // In both cases, we are using the relation's range() function to get a pair of iterators to the inner relation
 
     // --- Step 1: Generate a dynamic variable relation from Nodes to Zones
@@ -337,7 +339,7 @@ namespace slamUnstructuredHex {
     SLIC_ASSERT_MSG(  mesh->relationNodeZone.isValid(), "Error creating (static) relation from nodes to zones!\n");
     SLIC_ASSERT_MSG(  count == numZonesOfNode,          "Error creating zones of Node list!\n");
 
-    std::cout << "\n\tnumZonesOfNode = " << numZonesOfNode << "\n";
+    SLIC_INFO("\t** numZonesOfNode = " << numZonesOfNode);
   }
 
   void computeZoneBarycenters(HexMesh* mesh)
@@ -414,7 +416,7 @@ namespace slamUnstructuredHex {
     }
 
     DataType err = std::sqrt( errSqSum / mesh->numNodes() );
-    std::cout << "\n\tThe L2-ish error in the node average radius was " << err << std::endl;
+    SLIC_INFO("\t** The L2-ish error in the node average radius was " << err);
 
     return err;
   }
@@ -444,7 +446,7 @@ int main()
               << "ball_" << fileResolutions[res] << ".vtk";
     std::string meshName = filePath.str();
 
-    std::cout << "\n** Loading mesh file '" << meshName << "' and generating zone-> node relation...\n";
+    SLIC_INFO("Loading mesh file '" << meshName << "' and generating zone-> node relation");
 
     HexMesh hexMesh;
     readHexMesh( meshName, &hexMesh );
@@ -452,28 +454,28 @@ int main()
     //--------------------------------------------------------------
 
     // Now build the node to zone relation
-    std::cout << "\n** Generating node->zone relation...";
+    SLIC_INFO("\tGenerating node->zone relation");
     generateNodeZoneRelation( &hexMesh );
 
     //--------------------------------------------------------------
     // Now that we have the mesh in memory, we can start to do things with it.
 //for(int i=0; i<1000; ++i) {
-    std::cout << "\n** Computing zone barycenters using zone->node relation...";
+    SLIC_INFO("\tComputing zone barycenters using zone->node relation");
     computeZoneBarycenters(&hexMesh);
 
-    std::cout << "\n** Generating a zone-centered radius field...";
+    SLIC_INFO("\tGenerating a zone-centered radius field");
     createZoneRadiusField(&hexMesh);
 
-    std::cout << "\n** Computing node-based errors using node->zone relation...";
     DataType errVal = computeNodalErrors(&hexMesh);
 
     // Some error checking based on precomputed values
-    SLIC_ASSERT_MSG( asctoolkit::utilities::compareReals(errVal, expectedResults[res]), "Error differed from expected value."
-        << "\n\texpected: " << expectedResults[res]
-        << "\n\tactual: "   << errVal
-        << "\n\tdiff: "     << (errVal - expectedResults[res]));
+    SLIC_ASSERT_MSG(
+      asctoolkit::utilities::compareReals(errVal, expectedResults[res]), "Error differed from expected value."
+      << "\n\texpected: " << expectedResults[res]
+      << "\n\tactual: "   << errVal
+      << "\n\tdiff: "     << (errVal - expectedResults[res]));
 //}
-    std::cout << "\ndone." << std::endl;
+    SLIC_INFO("\tdone.\n");
   }
 
   //--------------------------------------------------------------

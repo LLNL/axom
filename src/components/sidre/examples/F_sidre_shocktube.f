@@ -622,7 +622,7 @@ subroutine DumpUltra( prob )
   integer, parameter :: fp = 8
   integer i, j
   integer ierr
-  character(30) name
+  character(MAXNAMESIZE) name
   integer length
   integer(C_INT), pointer :: idata(:)
   real(C_DOUBLE), pointer :: ddata(:)
@@ -644,7 +644,7 @@ subroutine DumpUltra( prob )
   do i=1, prob%get_num_views()
      view = prob%get_view(i-1)
      length = view%get_num_elements()
-     call view%get_name(name)
+     name = view%get_name()
      if ( length <= 1 ) then
         select case (view%get_type_id())
         case (SIDRE_INT32_ID)
@@ -660,7 +660,7 @@ subroutine DumpUltra( prob )
   do i=1, elem%get_num_views()
      view = elem%get_view(i-1)
      length = view%get_num_elements()
-     call view%get_name(name)
+     name = view%get_name()
      write(fp, '("# ", a)') trim(name)
 
      select case (view%get_type_id())

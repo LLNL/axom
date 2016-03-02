@@ -25,6 +25,8 @@ use, intrinsic :: iso_c_binding, only : C_LONG
 ! splicer end module_use
 
 ! splicer begin module_top
+integer, parameter :: MAXNAMESIZE = 128
+
 integer, parameter :: SIDRE_LENGTH = C_LONG
 
 integer, parameter :: invalid_index = -1

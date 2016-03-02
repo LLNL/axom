@@ -113,6 +113,32 @@ template<typename T, int DIM> NumericArray<T,DIM> operator/(const NumericArray<T
 template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const NumericArray<T,DIM> & arr);
 
 
+
+/**
+ * \brief Type trait to avoid outputting chars when a value is expected
+ *  This avoids unintentionally outputting system beeps
+ */
+template <typename T>
+struct NonChar
+{
+    typedef T type;     /** The non-char type to return */
+};
+template<>
+struct NonChar<char>
+{
+    /** A non-char signed type to which we can cast a char for output */
+    typedef int type;
+};
+template<>
+struct NonChar<unsigned char>
+{
+    /** A non-char unsigned type to which we can cast a char for output */
+    typedef unsigned int type;
+};
+
+
+
+
 /*!
  *******************************************************************************
  * \class NumericArray
@@ -187,18 +213,20 @@ public:
    */
   NumericArray& operator=(const NumericArray& rhs);
 
+  //@{
   /*!
    *****************************************************************************
    * \brief Access operator for individual components.
    * \param [in] i the component index to access
    * \return p[i] the value at the given component index.
-   * \pre (i >= 0) && (i < ndims)
+   * \pre \f$  0 \le i < DIM \f$
    *****************************************************************************
    */
   const T& operator[](int i) const;
   T& operator[](int i);
+  //@}
 
-
+  //@{
   /*!
    *****************************************************************************
    * \brief Returns a pointer to the underlying data.
@@ -206,6 +234,7 @@ public:
    */
   const T* data() const;
   T* data();
+  //@}
 
   /*!
    *****************************************************************************
@@ -232,7 +261,7 @@ public:
    *****************************************************************************
    * \brief Component-wise addition assignment operator.
    * \param [in] arr the array to add.
-   * Adds the numeric array @arr to this instance (component-wise).
+   * Adds the numeric array arr to this instance (component-wise).
    * \return A reference to the NumericArray instance after addition.
    *****************************************************************************
    */
@@ -242,7 +271,7 @@ public:
    *****************************************************************************
    * \brief Component-wise subtraction assignment operator.
    * \param [in] arr the array to subtract.
-   * Subtracts the numeric array @arr from this instance (component-wise).
+   * Subtracts the numeric array arr from this instance (component-wise).
    * \return A reference to the NumericArray instance after subtraction.
    *****************************************************************************
    */
@@ -252,7 +281,7 @@ public:
   *****************************************************************************
   * \brief Scalar multiplication on the NumericArray instance.
   * \param [in] scalar the scalar value with which to multiply.
-  * Each element of the numeric array is multiplied by @scalar
+  * Each element of the numeric array is multiplied by scalar
   * \return A reference to the NumericArray instance after scalar multiplication.
   *****************************************************************************
   */
@@ -263,7 +292,7 @@ public:
   * \brief Scalar division on the NumericArray instance.
   * \param [in] scalar the scalar value with which to divide .
   * \pre scalar != 0
-  * Each element of the numeric array is divided by @scalar
+  * Each element of the numeric array is divided by scalar
   * \return A reference to the NumericArray instance after scalar division.
   *****************************************************************************
   */
@@ -273,7 +302,7 @@ public:
   *****************************************************************************
   * \brief Component-wise multiplication assignment operator.
   * \param [in] arr the array to multiply (component-wise).
-  * Multiplies the numeric array @arr with this instance (component-wise).
+  * Multiplies the numeric array arr with this instance (component-wise).
   * \return A reference to the NumericArray instance after cwise multiplication.
   *****************************************************************************
   */
@@ -283,7 +312,7 @@ public:
   *****************************************************************************
   * \brief Component-wise division assignment operator.
   * \param [in] arr the array to divide (component-wise).
-  * Divides the numeric array @arr with this instance (component-wise).
+  * Divides the numeric array arr with this instance (component-wise).
   * \pre forall i, arr[i] != 0
   * \return A reference to the NumericArray instance after cwise division.
   *****************************************************************************
@@ -309,7 +338,7 @@ public:
  /*!
   *****************************************************************************
   * \brief Find the index of the max component.
-  * \return The index of the largest component ( 0 <= ret < DIM)
+  * \return The index of the largest component ( \f$ 0 \le ret < DIM \f$)
   *****************************************************************************
   */
  int argMax() const;
@@ -317,7 +346,7 @@ public:
  /*!
   *****************************************************************************
   * \brief Find the index of the min component.
-  * \return The index of the smallest component ( 0 <= ret < DIM)
+  * \return The index of the smallest component ( \f$ 0 \le ret < DIM \f$)
   *****************************************************************************
   */
  int argMin() const;
@@ -326,7 +355,7 @@ private:
   void verifyIndex(int idx) const { SLIC_ASSERT(idx >= 0 && idx < DIM); }
 
 protected:
-  T m_components[ DIM ];
+  T m_components[ DIM ];    /*! The encapsulated array */
 };
 
 } /* namespace quest */
@@ -429,8 +458,8 @@ std::ostream& NumericArray< T, DIM >::print(std::ostream& os) const
 {
     os <<"[";
     for(int dim=0; dim < DIM -1; ++ dim)
-        os << m_components[dim] << ",";
-    os << m_components[DIM-1] << "]";
+        os << static_cast<typename NonChar<T>::type>(m_components[dim]) << ",";
+    os << static_cast<typename NonChar<T>::type>(m_components[DIM-1]) << "]";
 
     return os;
 }

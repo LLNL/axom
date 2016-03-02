@@ -2,6 +2,11 @@
 # Setup compiler options
 ############################
 
+# Basic helper modules.
+include(CheckCXXCompilerFlag)
+include(AddCXXCompilerFlag)
+include(CXXFeatureCheck)
+
 #############################################
 # Support extra compiler flags and defines
 #############################################
@@ -14,7 +19,9 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     ######################################################
     # Add define we can use when debug builds are enabled
     ######################################################
-    if(CMAKE_BUILD_TYPE MATCHES Debug)
+    if( (CMAKE_BUILD_TYPE MATCHES Debug)
+        OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo )
+      )
         add_definitions(-DATK_DEBUG)
     endif()
 
@@ -26,7 +33,10 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     endif()
 
     # Extra Flags for the debug builds with the C compiler.
-    if(EXTRA_C_FLAGS_DEBUG AND CMAKE_BUILD_TYPE MATCHES Debug)
+    if(EXTRA_C_FLAGS_DEBUG AND
+      ( (CMAKE_BUILD_TYPE MATCHES Debug)
+        OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo) )
+      )
         add_compile_options("${EXTRA_C_FLAGS_DEBUG}")
     endif()
 
@@ -43,7 +53,10 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     endif()
 
     # Extra Flags for the debug builds with the C++ compiler.
-    if(EXTRA_CXX_FLAGS_DEBUG AND CMAKE_BUILD_TYPE MATCHES Debug)
+    if(EXTRA_CXX_FLAGS_DEBUG AND
+      ( (CMAKE_BUILD_TYPE MATCHES Debug)
+        OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo) )
+      )
         add_compile_options("${EXTRA_CXX_FLAGS_DEBUG}")
     endif()
 
@@ -95,14 +108,15 @@ if (ENABLE_GLOBALCOMPILERWARNINGSASERRORS)
    MESSAGE(STATUS  "Treating compiler warnings as errors on all targets.")
 endif()
 
-
 ################################
 # Enable C++11 
 ################################
-## Enable ENABLE C++ 11 features
 if (ENABLE_CXX11)
-  # define a macro so the code can ifdef accordingly.
-  add_definitions("-DUSE_CXX11")
+   add_definitions("-DUSE_CXX11")
+   add_cxx_compiler_flag(-std=c++11)
+   if (NOT HAVE_CXX_FLAG_STD_CXX11)
+      MESSAGE(FATAL_ERROR "This compiler does not support the standard C++11 flag of '-std=c++11'.  Support for it must be added manually in SetupCompilerOptions.cmake.")
+   endif()
 endif()
 
 ################################

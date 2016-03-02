@@ -21,6 +21,7 @@ set(sidre_sources
     core/DataGroup.cpp
     core/DataStore.cpp
     core/DataView.cpp
+    core/SidreUtilities.cpp
 )
 
 # The CAPI is only built to provide a Fortran interface.  If no Fortran,
@@ -93,7 +94,7 @@ install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 #endif()
 
 
-if(ENABLE_PYTHON_MODULE)
+if(ENABLE_PYTHON_API)
     set(sidre_python_sources
         capi/pyDataStoretype.cpp
         capi/pyDataGrouptype.cpp
@@ -128,4 +129,4 @@ if(ENABLE_PYTHON_MODULE)
 
 #http://stackoverflow.com/questions/2152077/is-it-possible-to-get-cmake-to-build-both-a-static-and-shared-version-of-the-sam
 # object library to avoid compile files twice
-endif(ENABLE_PYTHON_MODULE)
+endif(ENABLE_PYTHON_API)

@@ -18,6 +18,7 @@ Contents:
 
    introduction
    tutorial
+   advanced
    reference
    faq
    previouswork

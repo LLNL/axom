@@ -53,8 +53,7 @@ contains
     ds = datastore_new()
     dbuff = ds%create_buffer()
 
-    call dbuff%declare(SIDRE_INT_ID, 10_8)
-    call dbuff%allocate()
+    call dbuff%allocate(SIDRE_INT_ID, 10_8)
 
     call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID, "dbuff%get_typeid()")
     call assert_true(dbuff%get_num_elements() == 10, "dbuff%get_num_elements()")

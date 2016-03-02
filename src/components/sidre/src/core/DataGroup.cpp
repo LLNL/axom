@@ -28,129 +28,58 @@
 #include "DataBuffer.hpp"
 #include "DataStore.hpp"
 #include "DataView.hpp"
+#include "SidreUtilities.hpp"
 
 namespace asctoolkit
 {
 namespace sidre
 {
 
-
 ////////////////////////////////////////////////////////////////////////
 //
-//  Methods for manipulating DataView objects in DataGroup
+//  Methods for creating DataView object in DataGroup
 //
 ////////////////////////////////////////////////////////////////////////
 
 /*
  *************************************************************************
  *
- * Create view with given name, data type, and number of elements.
- * Attach view to this group. Create associated buffer, allocate the
- * data, and attach view to new buffer.
- *
- *************************************************************************
- */
-DataView * DataGroup::createViewAndAllocate( const std::string& name,
-                                             TypeID type,
-                                             SidreLength num_elems )
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT(num_elems >= 0);
-
-  if ( name.empty() || hasView(name) || num_elems < 0 )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = createViewAndBuffer(name);
-    view->allocate(type, num_elems);
-    return view;
-  }
-}
-
-/*
- *************************************************************************
- *
- * Create view with given name and Conduit DataType. Attach view to
- * this group. Create associated buffer, allocate the data, and attach
- * view to new buffer.
- *
- *************************************************************************
- */
-DataView * DataGroup::createViewAndAllocate( const std::string& name,
-                                             const DataType& dtype)
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-
-  if ( name.empty() || hasView(name) )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = createViewAndBuffer(name);
-    view->allocate(dtype);
-    return view;
-  }
-}
-
-/*
- *************************************************************************
- *
- * Create view with given name and Conduit Schema. Attach view to
- * this group. Create associated buffer, allocate the data, and attach
- * view to new buffer.
- *
- *************************************************************************
- */
-DataView * DataGroup::createViewAndAllocate( const std::string& name,
-                                             const Schema& schema)
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-
-  if ( name.empty() || hasView(name) )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = createViewAndBuffer(name);
-    view->allocate(schema);
-    return view;
-  }
-}
-
-/*
- *************************************************************************
- *
- * Create empty view and attach view to group.
+ * Create view with given name, but no data description.
  *
  *************************************************************************
  */
 DataView * DataGroup::createView( const std::string& name )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  std::string path = name;
+  DataGroup * group = walkPath( path, true );
 
-  if ( name.empty() || hasView(name) )
+  if ( group == ATK_NULLPTR )
   {
+    SLIC_CHECK( group != ATK_NULLPTR );
     return ATK_NULLPTR;
   }
-  else
+  else if ( path.empty() || group->hasView(path) )
   {
-    DataView * const view = new DataView( name, this);
-    return attachView(view);
+    SLIC_CHECK( !path.empty() );
+    SLIC_CHECK( !group->hasView(path) );
+    return ATK_NULLPTR;
   }
+
+  // Want the C++ new operator to return null pointer on failure instead of
+  // throwing an exception.
+  DataView * view = new(std::nothrow) DataView( path, this);
+  if ( view != ATK_NULLPTR )
+  {
+    group->attachView( view );
+  }
+  return view;
 }
 
 /*
  *************************************************************************
  *
- * Create view with declaration and attach it to group.
+ * Create view with given name, and data description using type and
+ * number of elements.
  *
  *************************************************************************
  */
@@ -158,129 +87,184 @@ DataView * DataGroup::createView( const std::string& name,
                                   TypeID type,
                                   SidreLength num_elems )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG(num_elems >= 0, "Must define view with number of elems >=0 ");
-
-  if ( name.empty() || hasView(name) || num_elems < 0 )
+  if ( num_elems < 0 )
   {
+    SLIC_CHECK_MSG(num_elems >= 0,
+                   "Must define view with number of elems >=0 ");
     return ATK_NULLPTR;
   }
-  else
+
+  DataView * view = createView(name);
+  if (view != ATK_NULLPTR)
   {
-    DataView * const view = new DataView( name, this);
-    view->declare(type, num_elems);
-    return attachView(view);
+    view->describe(type, num_elems);
   }
+  return view;
 }
 
 /*
  *************************************************************************
  *
- * Create view with declaration and attach it to group.
+ * Create view with given name, and data description using type and shape.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  TypeID type,
+                                  int ndims,
+                                  SidreLength * shape )
+{
+  if ( !(ndims >= 0) )
+  {
+    SLIC_CHECK_MSG(ndims >= 0,
+                   "Must define view with number of ndims >=0 ");
+    return ATK_NULLPTR;
+  }
+
+  DataView * view = createView(name);
+  if (view != ATK_NULLPTR)
+  {
+    view->describe(type, ndims, shape);
+  }
+  return view;
+}
+
+/*
+ *************************************************************************
+ *
+ * Create view with given name, and data description using a conduit
+ * Datatype class.
  *
  *************************************************************************
  */
 DataView * DataGroup::createView( const std::string& name,
                                   const DataType& dtype )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  DataView * view = createView(name);
+  if (view != ATK_NULLPTR)
+  {
+    view->describe(dtype);
+  }
 
-  if ( name.empty() || hasView(name) )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = new DataView( name, this);
-    view->declare(dtype);
-    return attachView(view);
-  }
+  return view;
 }
 
 /*
  *************************************************************************
  *
- * Create view with declaration and attach it to group.
- *
- *************************************************************************
- */
-DataView * DataGroup::createView( const std::string& name,
-                                  const Schema& schema )
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-
-  if ( name.empty() || hasView(name) )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = new DataView( name, this);
-    view->declare(schema);
-    return attachView(view);
-  }
-}
-
-
-/*
- *************************************************************************
- *
- * Create view into given buffer and attach view to group.
+ * Create view with given name, but no data description.  Attach provided
+ * buffer to view.
  *
  *************************************************************************
  */
 DataView * DataGroup::createView( const std::string& name,
                                   DataBuffer * buff)
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_CHECK( buff != ATK_NULLPTR );
-
-  if ( name.empty() || hasView(name) )
+  DataView * view = createView(name);
+  if ( view != ATK_NULLPTR )
   {
-    return ATK_NULLPTR;
+    view->attachBuffer( buff );
   }
-  else
-  {
-    DataView * view = new DataView( name, this );
-    if ( buff != ATK_NULLPTR )
-    {
-      view->attachBuffer( buff );
-    }
-    return attachView(view);
-  }
+  return view;
 }
 
 /*
  *************************************************************************
  *
- * Create external data view and attach to group.
+ * Create view with given name, pointing to undescribed external data.
  *
  *************************************************************************
  */
 DataView * DataGroup::createView( const std::string& name,
                                   void * external_ptr )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( external_ptr != ATK_NULLPTR,
-                   "Cannot create external view with null data pointer" );
-
-  if ( name.empty() || hasView(name) || external_ptr == ATK_NULLPTR )
+  DataView * view = createView(name);
+  if ( view != ATK_NULLPTR )
   {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * view = new DataView(name, this);
     view->setExternalDataPtr(external_ptr);
-
-    return attachView(view);
   }
+  return view;
 }
+
+/*
+ *************************************************************************
+ *
+ * Create view with given name, and data description using type and
+ * number of elements.
+ *
+ * In addition, create an associated buffer, allocate the data, and attach
+ * view to new buffer.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createViewAndAllocate( const std::string& name,
+                                             TypeID type,
+                                             SidreLength num_elems )
+{
+  // createView will verify args.
+  DataView * view = createView(name, type, num_elems);
+  if ( view != ATK_NULLPTR )
+  {
+    view->allocate();
+  }
+  return view;
+}
+
+/*
+ *************************************************************************
+ *
+ * Create view with given name, and data description using type,
+ * number of dimnesions, and number of elements per dimension.
+ *
+ * In addition, create an associated buffer, allocate the data, and attach
+ * view to new buffer.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createViewAndAllocate( const std::string& name,
+                                             TypeID type,
+                                             int ndims,
+                                             SidreLength * shape )
+{
+  // createView will verify args.
+  DataView * view = createView(name, type, ndims, shape);
+  if ( view != ATK_NULLPTR )
+  {
+    view->allocate();
+  }
+  return view;
+}
+
+/*
+ *************************************************************************
+ *
+ * Create view with given name, and data description using a conduit
+ * Datatype class.
+ *
+ * In addition, create an associated buffer, allocate the data, and attach
+ * view to new buffer.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createViewAndAllocate( const std::string& name,
+                                             const DataType& dtype)
+{
+  // createView will verify args.
+  DataView * view = createView(name, dtype);
+  if ( view != ATK_NULLPTR )
+  {
+    view->allocate();
+  }
+  return view;
+}
+
+////////////////////////////////////////////////////////////////////////
+//
+//  Methods for deleting, detaching, copying, or moving DataView object
+//  in a DataGroup
+//
+////////////////////////////////////////////////////////////////////////
+
 
 /*
  *************************************************************************
@@ -342,7 +326,7 @@ void DataGroup::destroyViews()
  *
  * Detach view with given name from group and destroy view.
  *
- * DataBuffer in DataStore is destroyed.
+ * Destroy DataBuffer if buffer has no other view attached to it.
  *
  *************************************************************************
  */
@@ -353,17 +337,16 @@ void DataGroup::destroyViewAndData( const std::string& name )
   DataView * view = detachView(name);
   if ( view != ATK_NULLPTR )
   {
-//
-// RDH -- Should this check to see if there is only one view attached to
-//        the buffer before destroying it?
-//
     DataBuffer * const buffer = view->getBuffer();
-    delete view;
-
     if ( buffer != ATK_NULLPTR )
     {
-      getDataStore()->destroyBuffer(buffer->getIndex());
+      buffer->detachView(view);
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer->getIndex());
+      }
     }
+    delete view;
   }
 }
 
@@ -372,7 +355,7 @@ void DataGroup::destroyViewAndData( const std::string& name )
  *
  * Detach view with given index from group and destroy view.
  *
- * DataBuffer in DataStore is destroyed.
+ * Destroy DataBuffer if buffer has no other view attached to it.
  *
  *************************************************************************
  */
@@ -383,14 +366,16 @@ void DataGroup::destroyViewAndData( IndexType idx )
   DataView * view = detachView(idx);
   if ( view != ATK_NULLPTR )
   {
-    // RDH TODO -- there should be a better way?
     DataBuffer * const buffer = view->getBuffer();
-    delete view;
-
     if ( buffer != ATK_NULLPTR )
     {
-      getDataStore()->destroyBuffer(buffer->getIndex());
+      buffer->detachView(view);
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer->getIndex());
+      }
     }
+    delete view;
   }
 }
 
@@ -409,16 +394,17 @@ void DataGroup::destroyViewsAndData()
   while ( indexIsValid(vidx) )
   {
     DataView * view = this->getView(vidx);
-
-    // RDH TODO -- there should be a better way?
     DataBuffer * const buffer = view->getBuffer();
-    delete view;
 
     if ( buffer != ATK_NULLPTR )
     {
-      getDataStore()->destroyBuffer(buffer->getIndex());
+      buffer->detachView(view);
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer->getIndex());
+      }
     }
-
+    delete view;
     vidx = getNextValidViewIndex(vidx);
   }
 
@@ -484,7 +470,7 @@ DataView * DataGroup::copyView(DataView * view)
   else
   {
     DataView * res = createView(view->getName(), view->getBuffer());
-    res->declare(view->getSchema());
+    res->describe(view->getSchema().dtype());
     if (view->isApplied())
     {
       res->apply();
@@ -510,18 +496,29 @@ DataView * DataGroup::copyView(DataView * view)
  */
 DataGroup * DataGroup::createGroup( const std::string& name )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasGroup(name) == false, "name == " << name );
 
-  if ( name.empty() || hasGroup(name) )
+  std::string path = name;
+  DataGroup * group = walkPath( path, true );
+
+  if ( group == ATK_NULLPTR )
+  {
+    SLIC_CHECK( group != ATK_NULLPTR );
+    return ATK_NULLPTR;
+  }
+  else if ( path.empty() || group->hasGroup(name) )
+  {
+    SLIC_CHECK( !path.empty() );
+    SLIC_CHECK_MSG( !group->hasGroup(name), "name == " << name );
+
+    return ATK_NULLPTR;
+  }
+
+  DataGroup * new_group = new(std::nothrow) DataGroup( name, this);
+  if ( new_group == ATK_NULLPTR )
   {
     return ATK_NULLPTR;
   }
-  else
-  {
-    DataGroup * group = new DataGroup( name, this);
-    return attachGroup(group);
-  }
+  return group->attachGroup(new_group);
 }
 
 /*
@@ -896,16 +893,84 @@ DataGroup::~DataGroup()
 /*
  *************************************************************************
  *
- * PRIVATE method to create view and buffer and attach view to buffer.
+ * PRIVATE method to walk down a path to the next-to-last entry.
+ *
+ * If an empty path or a path with just a single entry, 'foo', is passed
+ * in, then this routine will simply return the current group.
+ *
+ * If an error is encoutered, this private function will return ATK_NULLPTR
+ *
+ * 'path': The path to traverse.  Traversed entries will be stripped
+ * from this parameter at algorithm completion, leaving the last entry
+ * in the path remaining.
+ *
+ * 'create_on_demand': If true, will create any groups that are not
+ * found while walking the path.
  *
  *************************************************************************
  */
-DataView * DataGroup::createViewAndBuffer( const std::string& name )
+
+// Developer notes:
+// At next pass, should optimize this.
+// #1 the split routine performs string copies when populating a new
+//   vector of the tokens.  That could be rewritten to instead populate a
+//   vector of delimiter positions and avoid string copying.
+// #2 if the provided path is invalid, our code will halt.  This should be improved
+//   to handle it.  (Figure out what an appropriate return value is, and how
+//   caller public function should handle it).
+// #3 Since this function can create groups on demand, it's not a const function so
+//   I left it out of our const versions of getGroup, getView.  Need to just split
+//   this function into two, one const and one non-const.
+// -- AB
+
+DataGroup * DataGroup::walkPath( std::string& path, bool create_on_demand )
 {
-  DataView * view = new DataView( name, this );
-  DataBuffer * buff = this->getDataStore()->createBuffer();
-  view->attachBuffer( buff );
-  return attachView(view);
+  // TODO - write tests that pass in some error conditions and verify code for:
+  // path = ""
+  // path = "foo"
+  // these should result in just getting back the same group you just called this
+  // routine from and issue a warning, but not cause a code crash.
+
+  DataGroup * group_ptr = this;
+
+  std::string::size_type pos = detail::find_exclusive( path, m_path_delimiter);
+  if (pos != std::string::npos)
+  {
+    std::vector<std::string> tokens =
+      detail::split(path, m_path_delimiter, pos);
+    std::vector<std::string>::iterator stop = tokens.end() - 1;
+
+    // Navigate path down to desired group.
+    for (std::vector<std::string>::const_iterator iter = tokens.begin() ;
+         iter < stop ; ++iter)
+    {
+      SLIC_ASSERT( iter->size() > 0 );
+
+      if ( group_ptr->hasGroup(*iter) )
+      {
+        group_ptr = group_ptr->getGroup(*iter);
+      }
+      else if (create_on_demand)
+      {
+        group_ptr = group_ptr->createGroup(*iter);
+
+        if ( group_ptr == ATK_NULLPTR )
+        {
+          iter = stop;
+        }
+      }
+      else
+      {
+//        SLIC_CHECK_MSG(false, "Path is invalid, group " << group_ptr->getName() << " does not have group with name " << *iter);
+        SLIC_ERROR(
+          "Path is invalid, group " << group_ptr->getName() << " does not have group with name " <<
+          *iter);
+      }
+    }
+    path = tokens.back();
+  }
+
+  return group_ptr;
 }
 
 /*
@@ -1145,7 +1210,7 @@ void DataGroup::copyFromNode(Node& n,
         Schema schema(n_buff["schema"].as_string());
         TypeID type = static_cast<TypeID>(schema.dtype().id());
         SidreLength num_elems = schema.dtype().number_of_elements();
-        ds_buff->declare(type, num_elems);
+        ds_buff->describe(type, num_elems);
         if (n_buff.has_path("data"))
         {
           ds_buff->allocate();
@@ -1178,9 +1243,9 @@ void DataGroup::copyFromNode(Node& n,
 
       // create a new view with the buffer
       DataView * ds_view = createView(view_name, ds_buff);
-      // declare using the schema
+      // declare using the schema datatype
       Schema schema(n_view["schema"].as_string());
-      ds_view->declare(schema);
+      ds_view->describe(schema.dtype());
       // if the schema was applied, restore this state
       if (n_view["is_applied"].to_uint64() != 0)
         ds_view->apply();
@@ -1201,6 +1266,10 @@ void DataGroup::copyFromNode(Node& n,
     ds_group->copyFromNode(n_group, id_map);
   }
 }
+
+
+/// Character used to denote a path string passed to get/create calls.
+const char DataGroup::m_path_delimiter = '/';
 
 
 } /* end namespace sidre */

@@ -13,12 +13,12 @@ import parse_decl
 fmt = string.Formatter()
 
 default_template = dict(
-#    C_name='{C_prefix}{lower_class}_{underscore_name}{function_suffix}',
+#    C_name='{C_prefix}{class_lower}_{underscore_name}{function_suffix}',
 
 #    C_header_filename = 'wrap{cpp_class}.h',
 #    C_impl_filename = 'wrap{cpp_class}.cpp',
 
-#    F_name_impl = '{lower_class}_{underscore_name}{function_suffix}',
+#    F_name_impl = '{class_lower}_{underscore_name}{function_suffix}',
 #    F_name_method = '{underscore_name}{function_suffix}',
 #    F_name_generic = '{underscore_name}',
 )
@@ -26,11 +26,16 @@ default_template = dict(
 
 def wformat(template, dct):
     # shorthand, wrap fmt.vformat
-    return fmt.vformat(template, None, dct)
+    try:
+        return fmt.vformat(template, None, dct)
+    except AttributeError as e:
+        print(e)
+        raise SystemExit('Error with template: ' + template)
+        
 
 def append_format(lst, template, dct):
     # shorthand, wrap fmt.vformat
-    lst.append(fmt.vformat(template, None, dct))
+    lst.append(wformat(template, dct))
 
 def eval_template(node, name, tname='', fmt=None):
     """fmt[name] = node[name] or option[name + tname + '_template']
@@ -178,6 +183,11 @@ class WrapperMixin(object):
 #####
 
     def write_output_file(self, fname, directory, output):
+        """
+        fname  - file name
+        directory - output directory
+        output - list of lines to write
+        """
         fp = open(os.path.join(directory, fname), 'w')
         fp.write('%s %s\n' % (self.comment, fname))
         fp.write(self.comment + ' This is generated code, do not edit\n')
@@ -189,10 +199,14 @@ class WrapperMixin(object):
         print("Wrote", fname)
 
     def write_copyright(self, fp):
+        """
+        Write the copyright from the input YAML file.
+        """
         for line in self.tree.get('copyright', []):
             if line:
                 fp.write(self.comment + ' ' + line + '\n')
             else:
+                # convert None to blank line
                 fp.write(self.comment + '\n')
 
     def write_lines(self, fp, lines):
@@ -257,16 +271,16 @@ class Typedef(object):
         typedef=None,         # Initialize from existing type
 
         cpp_type=None,        # Name of type in C++
-        cpp_to_c='{var}',     # Expression to convert from C++ to C
+        cpp_to_c='{cpp_var}', # Expression to convert from C++ to C
         cpp_header=None,      # Name of C++ header file required for implementation
                               # For example, if cpp_to_c was a function
 
         c_type=None,          # Name of type in C
         c_header=None,        # Name of C header file required for type
-        c_to_cpp='{var}',     # Expression to convert from C to C++
+        c_to_cpp='{c_var}',   # Expression to convert from C to C++
         c_fortran=None,       # Expression to convert from C to Fortran
-        c_argdecl=None,       # List of argument declarations for C wrapper, None=match declaration
-                              # used with string_from_buffer 
+        c_statements={},
+        c_return_code=None,
 
         f_c_args=None,        # List of argument names to F_C routine
         f_c_argdecl=None,     # List of declarations to F_C routine
@@ -279,15 +293,7 @@ class Typedef(object):
         f_kind = None,        # Fortran kind of type
         f_cast = '{var}',     # Expression to convert to type
                               # e.g. intrinsics such as int and real
-        f_use_tmp = False,    # Pass {tmp_var} to C routine instead of {var}
-        f_argsdecl = None,    # List of declarations need by argument.
-        f_pre_call = None,    # Statement to execute before call, often to coerce types
-        f_post_call = None,   # Statement to execute after call - cleanup, coerce result
-
-# XXX - maybe later.  For not in wrapping routines
-#        f_attr_len_trim = None,
-#        f_attr_len = None,
-#        f_attr_size = None,
+        f_statements={},
 
         result_as_arg = None, # override fields when result should be treated as an argument
 
@@ -298,7 +304,7 @@ class Typedef(object):
                               # ex. PyBool_FromLong({rv})
         PY_to_object=None,    # PyBuild - object = converter(address)
         PY_from_object=None,  # PyArg_Parse - status = converter(object, address);
-        PY_post_parse='KKK',  # Used if PY_PyTypeObject is set
+        py_statements={},
         )
 
     def __init__(self, name, **kw):

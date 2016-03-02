@@ -12,7 +12,6 @@
 
 #include <vector>
 #include <cmath>
-#include <iostream>
 
 #include "gtest/gtest.h"
 
@@ -34,7 +33,9 @@ std::ostream& operator<<(std::ostream& os, const VectorXY & vec)
 
 TEST(gtest_slam_tinyHydro,test_02_density_with_prescribed_velocity)
 {
-  std::cout << "\n****** move mesh with prescribed velocity, test density change." << std::endl;
+  SLIC_INFO("\t******************************************************\n"
+      << "\tmove mesh with prescribed velocity, test density change.\n"
+      << "\t*******************************************************");
 
   int n = 100;
   int kz = n;
@@ -50,7 +51,7 @@ TEST(gtest_slam_tinyHydro,test_02_density_with_prescribed_velocity)
   Part p(zones);
   State s(mesh);
 
-  std::cout << "**setting initial densities" << std::endl;
+  SLIC_INFO("**setting initial densities");
   double rho0 = 1.0;
   for (int i = 0; i < mesh.numZones(); i++)
   {
@@ -64,7 +65,7 @@ TEST(gtest_slam_tinyHydro,test_02_density_with_prescribed_velocity)
   //p.setE(0, E/(4.0*zonemass)); // puts shock at r=0.8 at t=0.3, in XY coords
 
 
-  std::cout << "**setting initial velocities" << std::endl;
+  SLIC_INFO("**setting initial velocities");
   for (int i = 0; i < mesh.numNodes(); i++)
   {
     VectorXY pos = mesh.getPos(i);
@@ -74,10 +75,10 @@ TEST(gtest_slam_tinyHydro,test_02_density_with_prescribed_velocity)
   s.addPart(&p);
   Part* pp = s.getPart(0);
 
-  std::cout << "**making hydro" << std::endl;
+  SLIC_INFO("**making hydro");
   Hydro h(&s);
 
-  std::cout << "**Before we begin:" << std::endl;
+  SLIC_INFO("**Before we begin:");
   h.Cl = 0.;
   h.Cq = 0.;
 
@@ -87,14 +88,12 @@ TEST(gtest_slam_tinyHydro,test_02_density_with_prescribed_velocity)
 
   h.step(dt);
 
-  std::cout << "**Taking steps:" << std::endl;
+  SLIC_INFO("**Taking steps:");
   while( h.time < 0.499999 )
     h.step(dt);
 
-  std::cout << "\n"
-            << " hydro cycle = " << h.cycle
-            << " hydro time  = " << h.time
-            << std::endl;
+  SLIC_INFO("\t hydro cycle = " << h.cycle
+                                << " hydro time  = " << h.time);
 
   double rhoTheory = (1.0 / (1.0 - h.time));
   rhoTheory = rhoTheory * rhoTheory * rho0;
@@ -105,13 +104,16 @@ TEST(gtest_slam_tinyHydro,test_02_density_with_prescribed_velocity)
     && std::fabs(pp->rho(n - 1) - rhoTheory) < tol
     , "FAIL -- densities are not correct\n");
 
-  std::cout << "\nPASS" << std::endl;
+  SLIC_INFO(" *** PASS *** " );
 }
 
 
 TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
 {
-  std::cout << "\n****** test gradient operator and force calculation." << std::endl;
+  SLIC_INFO("\t******************************************************\n"
+      << "\t     test gradient operator and force calculation.\n"
+      << "\t*******************************************************");
+
 
   typedef std::vector<int> IntVec;
   IntVec vals;
@@ -135,7 +137,7 @@ TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
   Part p(zones);
   State s(mesh);
 
-  std::cout << "**setting initial density, energy, to make a linear pressure profile" << std::endl;
+  SLIC_INFO("**setting initial density, energy, to make a linear pressure profile");
   double rho0 = 1.0;
   for (int i = 0; i < mesh.numZones(); i++)
   {
@@ -147,37 +149,36 @@ TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
   s.addPart(&p);
   double dt = 0.1;
 
-  std::cout << "**making hydro" << std::endl;
+  SLIC_INFO("**making hydro");
   Hydro h(&s);
   h.setBC("bottom", 0xdeadbeef, 0);   // fix bottom nodes in y
 
 
-  std::cout << "**Before we begin:" << std::endl;
+  SLIC_INFO("**Before we begin:");
   h.initialize();
 
   for(IntVec::iterator it = vals.begin(); it != vals.end(); ++it)
   {
-    std::cout << "density[ " << *it << "] = " <<  p.rho( *it)
-              << " energy[ " << *it << "] = " << p.e(*it)
-              << std::endl;
+    SLIC_INFO("\tdensity[ " << *it << "] = " <<  p.rho( *it)
+                            << " energy[ " << *it << "] = " << p.e(*it));
   }
-  std::cout << "e0, e1, e2, e3, e4 = "
-            << p.e(0) << " "
-            << p.e(1) << " "
-            << p.e(2) << " "
-            << p.e(3) << " "
-            << p.e(4) << " "
-            << std::endl
-  ;
 
-  std::cout << "**Computing forces:" << std::endl;
+  SLIC_INFO("\te0, e1, e2, e3, e4 = "
+      << p.e(0) << " "
+      << p.e(1) << " "
+      << p.e(2) << " "
+      << p.e(3) << " "
+      << p.e(4) << " "
+  );
+
+  SLIC_INFO("**Computing forces:");
 
   h.calcForce(s);
 
   for(IntVec::iterator it = vals.begin(); it != vals.end(); ++it)
   {
     VectorXY f = h.getForce(*it);
-    std::cout << "\tForce on node " << *it << " = " << f << "\n";
+    SLIC_INFO("\tForce on node " << *it << " = " << f );
   }
 
 
@@ -194,18 +195,18 @@ TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
       << ", tolerance: " << tol
   );
 
-  std::cout << "**Testing acceleration:" << std::endl;
+  SLIC_INFO("**Testing acceleration:");
 
   h.Cq = 0.0;   // turn off Q
   h.Cl = 0.0;   // turn off Q
-  std::cout << "\ttaking a step.." << std::endl;
+  SLIC_INFO("\ttaking a step..");
   h.step(dt);
 
 
   for(IntVec::iterator it = vals.begin(); it != vals.end(); ++it)
   {
     VectorXY f = s.u(*it);
-    std::cout << "\tNew velocity on node " << *it << ": " << f << ")\n";
+    SLIC_INFO("\tNew velocity on node " << *it << ": " << f << ")");
   }
 
   VectorXY u0 = s.u(0);
@@ -217,12 +218,13 @@ TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
       , "acceleration/velocity calculation FAILS");
 
 
-  std::cout << "\nPASS" << std::endl;
+  SLIC_INFO(" *** PASS ***");
 
   if(false)
   {
-    std::cout << f12 << f13 << u0 << u11 << u12;
-  }                                                           // tmp workaround for compiler error about unused variables
+    // tmp workaround for compiler error about unused variables
+    SLIC_INFO(f12 << f13 << u0 << u11 << u12);
+  }
 
 }
 
@@ -230,7 +232,9 @@ TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
 
 TEST(gtest_slam_tinyHydro,test_04_BC)
 {
-  std::cout << "\n****** testing boundary conditions." << std::endl;
+  SLIC_INFO("\t******************************************************\n"
+      << "\t           testing boundary conditions.\n"
+      << "\t*******************************************************");
 
   int n = 10;
   int kz = n;
@@ -246,7 +250,7 @@ TEST(gtest_slam_tinyHydro,test_04_BC)
   Part p(zones);
   State s(mesh);
 
-  std::cout << "**setting initial density, energy, to make a linear pressure profile" << std::endl;
+  SLIC_INFO("**setting initial density, energy, to make a linear pressure profile");
   double rho0 = 1.0;
   for (int i = 0; i < mesh.numZones(); i++)
   {
@@ -258,27 +262,27 @@ TEST(gtest_slam_tinyHydro,test_04_BC)
   s.addPart(&p);
   double dt = 0.1;
 
-  std::cout << "**making hydro" << std::endl;
+  SLIC_INFO("**making hydro");
   Hydro h(&s);
 
 
-  std::cout << "**setting boundary conditions" << std::endl;
+  SLIC_INFO("**setting boundary conditions");
   h.setBC("bottom", 0xdeadbeef, 0);   // fix bottom nodes in y
-  std::cout << "\tbottom free in x, y is fixed" << std::endl;
+  SLIC_INFO("\tbottom free in x, y is fixed");
 
-  h.setBC("top",    0xdeadbeef, 0);
-  std::cout << "\ttop free in x, y is fixed" << std::endl;
+  h.setBC("top", 0xdeadbeef, 0);
+  SLIC_INFO("\ttop free in x, y is fixed");
 
   //h.setBC("left", 0,0); # leave unset to test free condition default
-  std::cout << "\tleft free in x, free in y" << std::endl;
+  SLIC_INFO("\tleft free in x, free in y");
 
   h.setBC("right", -1,0);
-  std::cout << "\tright -1 in x, y is fixed" << std::endl;
+  SLIC_INFO("\tright -1 in x, y is fixed");
 
   h.initialize();
 
 
-  std::cout << "**stepping" << std::endl;
+  SLIC_INFO("**stepping");
   h.step(dt);
 
   VectorXY u0 = s.u(0);
@@ -292,10 +296,10 @@ TEST(gtest_slam_tinyHydro,test_04_BC)
   VectorXY n120 = mesh.getPos(120);
 
 
-  std::cout << " Bottom left -- u: "   << u0   << " -- n: " << n0 << std::endl;
-  std::cout << " Left side -- u: "     << u11  << " -- n: " << n11 << std::endl;
-  std::cout << " Right side -- u: "    << u21  << " -- n: " << n21 << std::endl;
-  std::cout << " Top right -- u: "     << u120 << " -- n: " << n120 << std::endl;
+  SLIC_INFO(" Bottom left -- u: " << u0   << " -- n: " << n0);
+  SLIC_INFO(" Left side -- u: " << u11  << " -- n: " << n11);
+  SLIC_INFO(" Right side -- u: " << u21  << " -- n: " << n21);
+  SLIC_INFO(" Top right -- u: " << u120 << " -- n: " << n120);
 
 
   double tol = 1e-21;
@@ -307,14 +311,16 @@ TEST(gtest_slam_tinyHydro,test_04_BC)
       && std::fabs(u120.y ) < tol
       , "BC test FAILS ");
 
-  std::cout << "\nPASS" << std::endl;
+  SLIC_INFO(" *** PASS *** " );
 }
 
 
 
 TEST(gtest_slam_tinyHydro,test_05_newDT_Noh)
 {
-  std::cout << "\n****** testing newDT method -- Noh." << std::endl;
+  SLIC_INFO("\t******************************************************\n"
+      << "\t            testing newDT method -- Noh.\n"
+      << "\t*******************************************************");
 
   int n = 10;
   int kz = n;
@@ -330,7 +336,7 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Noh)
   Part p(zones);
   State s(mesh);
 
-  std::cout << "**setting initial density, energy, velocity for Noh problem" << std::endl;
+  SLIC_INFO("**setting initial density, energy, velocity for Noh problem");
   double rho0 = 1.0;
   for (int i = 0; i < mesh.numZones(); i++)
   {
@@ -346,7 +352,7 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Noh)
   s.addPart(&p);
 
 
-  std::cout << "**making hydro" << std::endl;
+  SLIC_INFO("**making hydro");
   Hydro h(&s);
 
   for (int i = 0; i < h.numBCnodes(3); i++)     //set left nodes (left=3) to zero velocity
@@ -354,57 +360,64 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Noh)
     h.getState()->setU(h.bcNode(3,i),VectorXY(0,0));
   }
 
-  std::cout << "**Set boundary conditions!" << std::endl;
+  SLIC_INFO("**Set boundary conditions!");
   h.setBC("bottom", 0xdeadbeef, 0);
   h.setBC("top",    0xdeadbeef, 0);
   h.setBC("left",   0,          0xdeadbeef);
   h.setBC("right",  -1,         0xdeadbeef);
 
 
-  std::cout << "**Printing positions of boundary condition nodes:" << std::endl;
+  SLIC_INFO("**Printing positions of boundary condition nodes:");
   for(int j = 0; j< 4; ++j)
   {
     switch (j)
     {
-    case 0: std::cout << "\n  bottom boundary nodes\n";
+    case 0:
+      SLIC_INFO("bottom boundary nodes");
       break;
-    case 1: std::cout << "\n  right boundary nodes\n";
+    case 1:
+      SLIC_INFO("right boundary nodes");
       break;
-    case 2: std::cout << "\n  top boundary nodes\n";
+    case 2:
+      SLIC_INFO("top boundary nodes");
       break;
-    case 3: std::cout << "\n  left boundary nodes\n";
+    case 3:
+      SLIC_INFO("left boundary nodes");
       break;
     }
     for (int i = 0; i < h.numBCnodes(j); ++i)       //set left nodes (left=3) to zero velocity
     {
       int nodeNum = h.bcNode(j,i);
-      std::cout << "\t" << nodeNum << " -- " <<   s.u(nodeNum);
+      SLIC_INFO("\t" << nodeNum << " -- " <<   s.u(nodeNum) );
 
     }
   }
-  std::cout << std::endl;
+
+  SLIC_INFO("");
 
 
 
   h.initialize();
 
-  std::cout << "**Get DT!" << std::endl;
+  SLIC_INFO("**Get DT!");
   double dt = h.newDT();
-  std::cout << "\tnewDT = " << dt << std::endl;
+  SLIC_INFO("\tnewDT = " << dt );
 
   double tol = 1.0e-16;
   double expDT = 0.1 * h.cfl;
   SLIC_ASSERT_MSG( std::fabs(dt - expDT) < tol
       , " newDT calculation FAILS -- expected dt = " << expDT << " but got " << dt << " instead, leaving " << dt - expDT);
 
-  std::cout << "\nPASS" << std::endl;
+  SLIC_INFO(" *** PASS *** " );
 }
 
 
 
 TEST(gtest_slam_tinyHydro,test_05_newDT_Sedov)
 {
-  std::cout << "\n****** testing newDT method -- Sedov." << std::endl;
+  SLIC_INFO("\t******************************************************\n"
+      << "\t              testing newDT method -- Sedov.\n"
+      << "\t*******************************************************");
 
   int n = 10;
   int kz = n;
@@ -420,7 +433,7 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Sedov)
   Part p(zones);
   State s(mesh);
 
-  std::cout << "**setting initial density, energy, velocity for Sedov problem" << std::endl;
+  SLIC_INFO("**setting initial density, energy, velocity for Sedov problem");
   double rho0 = 1.0;
   for (int i = 0; i < mesh.numZones(); i++)
   {
@@ -439,13 +452,13 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Sedov)
   s.addPart(&p);
 
 
-  std::cout << "**making hydro" << std::endl;
+  SLIC_INFO("**making hydro");
   Hydro h(&s);
 
   for (int i = 0; i < mesh.numNodes(); i++)
     s.setU(i,VectorXY(0,0));
 
-  std::cout << "**set boundary conditions" << std::endl;
+  SLIC_INFO("**set boundary conditions");
   h.setBC("bottom", 0xdeadbeef, 0);
   h.setBC("top",    0xdeadbeef, 0xdeadbeef);
   h.setBC("left",   0,          0xdeadbeef);
@@ -453,9 +466,9 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Sedov)
 
   h.initialize();
 
-  std::cout << "**Get DT!" << std::endl;
+  SLIC_INFO("**Get DT!");
   double dt = h.newDT();
-  std::cout << "\tnewDT = " << dt << std::endl;
+  SLIC_INFO("\tnewDT = " << dt );
 
   double L = 0.1;
   double cfl = 0.7;
@@ -467,16 +480,15 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Sedov)
   SLIC_ASSERT_MSG( std::fabs(dt - theoryDT) < tol
       , " newDT calculation FAILS -- expected dt = " << theoryDT << " but code got " << dt << ". Diff:" <<  dt - theoryDT);
 
-  std::cout << "\nPASS" << std::endl;
-
+  SLIC_INFO(" *** PASS ***");
 }
-
-
 
 
 TEST(gtest_slam_tinyHydro,test_06_PdV_work)
 {
-  std::cout << "\n****** testing PdV work." << std::endl;
+  SLIC_INFO("\t******************************************************\n"
+      << "\t              testing PdV work.\n"
+      << "\t*******************************************************");
 
   int steps = 100;
 
@@ -494,7 +506,7 @@ TEST(gtest_slam_tinyHydro,test_06_PdV_work)
   Part p(zones);
   State s(mesh);
 
-  std::cout << "**setting initial density, energy, velocity for 1x1 compression problem" << std::endl;
+  SLIC_INFO("**setting initial density, energy, velocity for 1x1 compression problem");
   double rho0 = 1.0;
   double e0 = 1.0;
   double u0 = -0.1;
@@ -516,30 +528,30 @@ TEST(gtest_slam_tinyHydro,test_06_PdV_work)
 
 
 
-  std::cout << "**making hydro" << std::endl;
+  SLIC_INFO("**making hydro");
   Hydro h(&s);
 
-  std::cout << "**Set boundary conditions!" << std::endl;
+  SLIC_INFO("**Set boundary conditions!");
   h.setBC("bottom", 0xdeadbeef, 0);
   h.setBC("top",    0xdeadbeef, 0);
   h.setBC("left",   0,          0xdeadbeef);
   h.setBC("right",  u0,         0xdeadbeef);
 
 
-  std::cout << "**Turn off Q!" << std::endl;
+  SLIC_INFO("**Turn off Q!");
   h.Cq = 0.;
   h.Cl = 0.;
 
-  std::cout << "**Initialize" << std::endl;
+  SLIC_INFO("**Initialize");
   h.initialize();
 
   double dt = 0.01;
 
-  std::cout << "**take " << steps << " steps with dt = " << dt << std::endl;
+  SLIC_INFO("**take " << steps << " steps with dt = " << dt );
   for (int i = 0; i < mesh.numZones(); i++)
     h.step(dt);
 
-  std::cout << "**done stepping. " << std::endl;
+  SLIC_INFO("**done stepping. ");
 
   double tol = 1.0e-6;
   double theoryRho = 1.0 / (1.0 + h.time * u0);
@@ -551,15 +563,15 @@ TEST(gtest_slam_tinyHydro,test_06_PdV_work)
   double theoryE = std::pow(theoryRho / rho0, 2.0 / 3.0); // e = e0*(rho/rho0)**(gamma-1)
   double eCode = h.getState()->getPart(0)->e(0);
 
-  std::cout << "\t h.getState().getPart(0).e(0) " << eCode << std::endl;
-  std::cout << "\t theory e " << theoryE << std::endl;
+  SLIC_INFO("\t h.getState().getPart(0).e(0) " << eCode );
+  SLIC_INFO("\t theory e " << theoryE );
 
   SLIC_ASSERT_MSG( std::fabs(theoryE - eCode) < tol
       , "PdV calculation FAILS");
 
 
 
-  std::cout << "\nPASS" << std::endl;
+  SLIC_INFO(" *** PASS *** ");
 }
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------

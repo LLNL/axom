@@ -146,7 +146,9 @@ if (BUILD_TESTING)
             CACHE INTERNAL "GoogleTest link libraries" FORCE)
 
   ## Add Fruit   FortRan UnIT test
-  add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/fruit-3.3.9)
+  if (ENABLE_FORTRAN)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/fruit-3.3.9)
+  endif (ENABLE_FORTRAN)
 
   if(ENABLE_BENCHMARK)
     ## add google benchmark
@@ -343,11 +345,6 @@ macro(make_library)
 
    endif()
 
-   if ( ENABLE_CXX11 )
-      ## Note, this requires cmake 3.1 and above
-      set_property(TARGET ${arg_LIBRARY_NAME} PROPERTY CXX_STANDARD 11)
-   endif()
-
    foreach(src ${arg_LIBRARY_SOURCES})
        if(IS_ABSOLUTE)
            list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${src}")
@@ -444,13 +441,6 @@ macro(make_executable)
    #  endif()
    #endforeach()
 
-
-
-   if ( ENABLE_CXX11 )
-     ## Note, this requires cmake 3.1 and above
-     set_property(TARGET ${exe_name} PROPERTY CXX_STANDARD 11)
-   endif()
-
    if ( ${ENABLE_MPI} )
       add_target_definitions( TO ${exe_name}
                               TARGET_DEFINITIONS USE_MPI )
@@ -499,11 +489,6 @@ macro(make_executable)
    set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
         CACHE STRING "" FORCE )
 
-    if ( ENABLE_CXX11 )
-      ## Note, this requires cmake 3.1 and above
-      set_property(TARGET ${exe_name} PROPERTY CXX_STANDARD 11)
-    endif()
-
 endmacro(make_executable)
 
 ##------------------------------------------------------------------------------
@@ -527,11 +512,6 @@ macro(add_gtest)
    target_include_directories(${test_name} PRIVATE "${GTEST_INCLUDES}")
    target_link_libraries( ${test_name} "${GTEST_LIBS}" )
    target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
-
-   if ( ENABLE_CXX11 )
-      ## Note, this requires cmake 3.1 and above
-      set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
-   endif()
 
    add_test( NAME ${test_name}
              COMMAND ${test_name}
@@ -580,11 +560,6 @@ macro(add_benchmark)
       target_include_directories(${test_name} PRIVATE "${GBENCHMARK_INCLUDES}")
       target_link_libraries( ${test_name} "${GBENCHMARK_LIBS}" )
       target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
-
-      if ( ENABLE_CXX11 )
-         ## Note, this requires cmake 3.1 and above
-         set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
-      endif()
 
       # Add the command line arguments, if present
       set(test_command "${test_name}")
@@ -697,40 +672,3 @@ add_custom_target(copy_headers_${proj}
 
 endmacro(copy_headers_target)
 
-
-##------------------------------------------------------------------------------
-## get info about Python
-#FIND_PACKAGE(PythonLibs)
-#message(STATUS "-------------- ${PYTHON_INCLUDE_DIRS}")
-
-if(PYTHON_EXECUTABLE)
-
-    # PYTHONLIBS_FOUND           - have the Python libs been found
-    # PYTHON_LIBRARIES           - path to the python library
-    # PYTHON_INCLUDE_DIRS        - path to where Python.h is found
-    # PYTHONLIBS_VERSION_STRING  - version of the Python libs found
-
-    execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/python_location.py
-        OUTPUT_VARIABLE PYCONFIG
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    list(GET PYCONFIG 0  PYTHON_MAJOR_VERSION)
-    list(GET PYCONFIG 1  PYTHON_MINOR_VERSION)
-    list(GET PYCONFIG 2  PYTHON_MICRO_VERSION)
-    list(GET PYCONFIG 3  PYTHON_PREFIX)
-
-    set(PYTHONLIBS_VERSION_STRING "${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}.${PYTHON_MICRO_VERSION}")
-    set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION})
-    message(STATUS "PythonLibs Version ${PYTHONLIBS_VERSION_STRING}")
-
-    ## Set the Python module directory
-    set(CMAKE_Python_MODULE_DIRECTORY
-        ${PROJECT_BINARY_DIR}/lib/python
-        CACHE PATH
-        "Directory where all Python modules will go in the build tree"
-    )
-    file(MAKE_DIRECTORY ${CMAKE_Python_MODULE_DIRECTORY})
-    set(ENV{PYTHONPATH} ${CMAKE_Python_MODULE_DIRECTORY})
-endif(PYTHON_EXECUTABLE)

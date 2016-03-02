@@ -20,38 +20,32 @@
 
 #include "common/Utilities.hpp"
 
-#include <cstdlib>
+#include <cstdlib> // for exit, EXIT_SUCCESS, EXIT_FAILURE
 
 #ifdef USE_MPI
 #include <mpi.h>
 #endif
 
-namespace asctoolkit
-{
-namespace utilities
-{
+namespace asctoolkit {
+namespace utilities {
 
-void processAbort()
-{
+  void processAbort()
+  {
 #ifndef USE_MPI
-  exit( -1 );
+    exit( EXIT_FAILURE );
 #else
-  int mpi = 0;
-  MPI_Initialized( &mpi );
-  if ( mpi )
-  {
-
-    MPI_Abort( MPI_COMM_WORLD, -1 );
-
-  }
-  else
-  {
-
-    exit( -1 );
-
-  }
+    int mpi = 0;
+    MPI_Initialized( &mpi );
+    if ( mpi )
+    {
+      MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+    }
+    else
+    {
+      exit( EXIT_FAILURE );
+    }
 #endif
-}
+  }
 
-}
-}
+}   // end namespace utilities
+}   // end namespace asctoolkit

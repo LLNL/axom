@@ -12,6 +12,7 @@
 // wrapDataStore.cpp
 #include "wrapDataStore.h"
 #include "sidre/DataStore.hpp"
+#include "sidre/SidreTypes.hpp"
 
 extern "C" {
 namespace asctoolkit
@@ -21,9 +22,10 @@ namespace sidre
 
 SIDRE_datastore * SIDRE_datastore_new()
 {
-  DataStore * selfobj = new DataStore();
+
 // splicer begin class.DataStore.method.new
-  return static_cast<SIDRE_datastore *>(static_cast<void *>(selfobj));
+  DataStore * rv = new DataStore();
+  return static_cast<SIDRE_datastore *>(static_cast<void *>(rv));
 // splicer end class.DataStore.method.new
 }
 
@@ -54,13 +56,23 @@ SIDRE_databuffer * SIDRE_datastore_get_buffer(SIDRE_datastore * self,
 // splicer end class.DataStore.method.get_buffer
 }
 
-SIDRE_databuffer * SIDRE_datastore_create_buffer(SIDRE_datastore * self)
+SIDRE_databuffer * SIDRE_datastore_create_buffer_empty(SIDRE_datastore * self)
 {
   DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
-// splicer begin class.DataStore.method.create_buffer
+// splicer begin class.DataStore.method.create_buffer_empty
   DataBuffer * rv = selfobj->createBuffer();
   return static_cast<SIDRE_databuffer *>(static_cast<void *>(rv));
-// splicer end class.DataStore.method.create_buffer
+// splicer end class.DataStore.method.create_buffer_empty
+}
+
+SIDRE_databuffer * SIDRE_datastore_create_buffer_from_type(
+  SIDRE_datastore * self, int type, SIDRE_SidreLength num_elems)
+{
+  DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
+// splicer begin class.DataStore.method.create_buffer_from_type
+  DataBuffer * rv = selfobj->createBuffer(getTypeID(type), num_elems);
+  return static_cast<SIDRE_databuffer *>(static_cast<void *>(rv));
+// splicer end class.DataStore.method.create_buffer_from_type
 }
 
 void SIDRE_datastore_destroy_buffer(SIDRE_datastore * self, SIDRE_IndexType id)

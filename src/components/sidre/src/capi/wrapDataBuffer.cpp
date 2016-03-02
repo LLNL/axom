@@ -38,14 +38,14 @@ size_t SIDRE_databuffer_get_num_views(SIDRE_databuffer * self)
 // splicer end class.DataBuffer.method.get_num_views
 }
 
-void SIDRE_databuffer_declare(SIDRE_databuffer * self, int type,
-                              SIDRE_SidreLength num_elems)
+void SIDRE_databuffer_describe(SIDRE_databuffer * self, int type,
+                               SIDRE_SidreLength num_elems)
 {
   DataBuffer * selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
-// splicer begin class.DataBuffer.method.declare
-  selfobj->declare(getTypeID(type), num_elems);
+// splicer begin class.DataBuffer.method.describe
+  selfobj->describe(getTypeID(type), num_elems);
   return;
-// splicer end class.DataBuffer.method.declare
+// splicer end class.DataBuffer.method.describe
 }
 
 void SIDRE_databuffer_allocate_existing(SIDRE_databuffer * self)
@@ -75,25 +75,6 @@ void SIDRE_databuffer_reallocate(SIDRE_databuffer * self,
   selfobj->reallocate(num_elems);
   return;
 // splicer end class.DataBuffer.method.reallocate
-}
-
-void SIDRE_databuffer_set_external_data(SIDRE_databuffer * self,
-                                        void * external_data)
-{
-  DataBuffer * selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
-// splicer begin class.DataBuffer.method.set_external_data
-  selfobj->setExternalData(external_data);
-  return;
-// splicer end class.DataBuffer.method.set_external_data
-}
-
-bool SIDRE_databuffer_is_external(SIDRE_databuffer * self)
-{
-  DataBuffer * selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
-// splicer begin class.DataBuffer.method.is_external
-  bool rv = selfobj->isExternal();
-  return rv;
-// splicer end class.DataBuffer.method.is_external
 }
 
 void * SIDRE_databuffer_get_void_ptr(SIDRE_databuffer * self)

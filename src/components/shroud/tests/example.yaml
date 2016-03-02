@@ -23,12 +23,17 @@ options:
 
   PY_prefix: PP_
 
+  # do not create get/set instance routines
+  F_name_instance_get: yadda
+  F_name_instance_set:
+  
+
 types:
   other:
     cpp_type: junk
 
 #  string:
-#    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : NULL"
+#    cpp_to_c : "isNameValid({cpp_var}) ? {cpp_var}.c_str() : NULL"
 
   SidreLength:
     typedef  : long
@@ -44,18 +49,13 @@ types:
 #      - C_LONG
 
   TypeID:
+    typedef : int
     # enum for types
     c_header : sidre/SidreTypes.h
     cpp_header : sidre/SidreWrapperHelpers.hpp
-    c_type   : int
     cpp_type: TypeID
-#    cpp_to_c : static_cast<int>({var})
-    c_to_cpp :  getTypeID({var})
-    c_fortran: integer(C_INT)
-    f_type   : integer(C_INT)
-    f_module :
-      iso_c_binding:
-      -  C_INT
+    cpp_to_c : static_cast<int>({cpp_var})
+    c_to_cpp :  getTypeID({c_var})
 
 classes:
   - name: ExClass1
@@ -202,6 +202,9 @@ functions:
        C_code:  "return name != NULL;"
        F_code:  rv = name .ne. " "
 
+  # return bool, no arguments.
+  # This needs to generate a Fortran wrapper to convert the bool to logical
+  -  decl: bool isInitialized()
 
   # overrides which each accept a string.
   # Test the name of generated 'bufferify' functions
@@ -231,12 +234,12 @@ functions:
 ######################################################################
 patterns:
     C_invalid_name: >
-        if (! isNameValid({var})) {{
+        if (! isNameValid({cpp_var})) {{
             return NULL;
         }}
     PY_invalid_name: >
-        if (! isNameValid({var})) {{
-            PyErr_SetString(PyExc_KeyError, "{var}");
+        if (! isNameValid({cpp_var})) {{
+            PyErr_SetString(PyExc_KeyError, "XXX need value of name");
             return NULL;
         }}
 

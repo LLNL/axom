@@ -20,9 +20,11 @@ TEST(C_sidre_view,create_views)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv_0 =
-    SIDRE_datagroup_create_view_and_allocate(root, "field0", SIDRE_INT_ID, 1);
+    SIDRE_datagroup_create_view_and_allocate_nelems(root, "field0",
+                                                    SIDRE_INT_ID, 1);
   SIDRE_dataview * dv_1 =
-    SIDRE_datagroup_create_view_and_allocate(root, "field1", SIDRE_INT_ID, 1);
+    SIDRE_datagroup_create_view_and_allocate_nelems(root, "field1",
+                                                    SIDRE_INT_ID, 1);
 
   SIDRE_databuffer * db_0 = SIDRE_dataview_get_buffer(dv_0);
   SIDRE_databuffer * db_1 = SIDRE_dataview_get_buffer(dv_1);
@@ -40,7 +42,8 @@ TEST(C_sidre_view,int_buffer_from_view)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv =
-    SIDRE_datagroup_create_view_and_allocate(root, "u0", SIDRE_INT_ID, 10);
+    SIDRE_datagroup_create_view_and_allocate_nelems(root, "u0", SIDRE_INT_ID,
+                                                    10);
 
   EXPECT_EQ(SIDRE_dataview_get_type_id(dv), SIDRE_INT_ID);
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
@@ -65,7 +68,8 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv =
-    SIDRE_datagroup_create_view_and_allocate(root, "u0", SIDRE_INT_ID, 10);
+    SIDRE_datagroup_create_view_and_allocate_nelems(root, "u0", SIDRE_INT_ID,
+                                                    10);
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
 
   for(int i=0 ; i<10 ; i++)
@@ -81,14 +85,14 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
 }
 
 //------------------------------------------------------------------------------
-
 TEST(C_sidre_view,int_array_strided_views)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
-  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer(ds);
+  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
+                                                                     SIDRE_INT_ID,
+                                                                     10);
 
-  SIDRE_databuffer_declare(dbuff, SIDRE_INT_ID, 10);
   SIDRE_databuffer_allocate_existing(dbuff);
   int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
 
@@ -153,18 +157,19 @@ TEST(C_sidre_view,int_array_strided_views)
   SIDRE_datastore_delete(ds);
 
 }
-
 //------------------------------------------------------------------------------
-
 TEST(C_sidre_view,int_array_depth_view)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
-  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer(ds);
 
   const size_t depth_nelems = 10;
+  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
+                                                                     SIDRE_INT_ID,
+                                                                     4 *
+                                                                     depth_nelems);
 
-  SIDRE_databuffer_declare(dbuff, SIDRE_INT_ID, 4 * depth_nelems);
+
   SIDRE_databuffer_allocate_existing(dbuff);
   int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
 
@@ -211,9 +216,7 @@ TEST(C_sidre_view,int_array_depth_view)
   SIDRE_datastore_delete(ds);
 
 }
-
 //------------------------------------------------------------------------------
-
 TEST(sidre_view,int_array_view_attach_buffer)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
@@ -234,8 +237,10 @@ TEST(sidre_view,int_array_view_attach_buffer)
   EXPECT_EQ(elem_count, 2 * field_nelems);
 
   // create buffer to hold data for all fields and allocate
-  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer(ds);
-  SIDRE_databuffer_declare(dbuff, SIDRE_INT_ID, 2 * field_nelems);
+  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
+                                                                     SIDRE_INT_ID,
+                                                                     2 *
+                                                                     field_nelems);
   SIDRE_databuffer_allocate_existing(dbuff);
   EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), elem_count);
 
@@ -276,7 +281,6 @@ TEST(sidre_view,int_array_view_attach_buffer)
   SIDRE_datastore_delete(ds);
 
 }
-
 //------------------------------------------------------------------------------
 
 TEST(C_sidre_view,int_array_multi_view_resize)
@@ -301,8 +305,8 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   SIDRE_datagroup * r_old = SIDRE_datagroup_create_group(root, "r_old");
   // create a view to hold the base buffer
   SIDRE_dataview * base_old =
-    SIDRE_datagroup_create_view_and_allocate(r_old, "base_data",
-                                             SIDRE_INT_ID, 40);
+    SIDRE_datagroup_create_view_and_allocate_nelems(r_old, "base_data",
+                                                    SIDRE_INT_ID, 40);
 
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(base_old);
 
@@ -459,11 +463,11 @@ TEST(C_sidre_view,int_array_realloc)
 
   // create a view to hold the base buffer
   SIDRE_dataview * a1 =
-    SIDRE_datagroup_create_view_and_allocate(root, "a1",
-                                             SIDRE_FLOAT_ID, 5);
+    SIDRE_datagroup_create_view_and_allocate_nelems(root, "a1",
+                                                    SIDRE_FLOAT_ID, 5);
   SIDRE_dataview * a2 =
-    SIDRE_datagroup_create_view_and_allocate(root, "a2",
-                                             SIDRE_INT_ID, 5);
+    SIDRE_datagroup_create_view_and_allocate_nelems(root, "a2",
+                                                    SIDRE_INT_ID, 5);
 
   float * a1_ptr = (float *) SIDRE_dataview_get_void_ptr(a1);
   int * a2_ptr = (int *)  SIDRE_dataview_get_void_ptr(a2);
@@ -528,8 +532,8 @@ TEST(C_sidre_view,simple_opaque)
                                                                    "my_opaque",
                                                                    src_ptr);
 
-  // we have a buffer because an "external" view currently uses one
-  EXPECT_EQ(SIDRE_datastore_get_num_buffers(ds), 1u);
+  // External pointers are held in the view, no buffer should be present.
+  EXPECT_EQ(SIDRE_datastore_get_num_buffers(ds), 0u);
 
   EXPECT_TRUE(SIDRE_dataview_is_external(opq_view));
   EXPECT_TRUE(!SIDRE_dataview_is_applied(opq_view));

@@ -16,13 +16,23 @@ add_executable( shroud-run-tutorial
     ../tutorial/wrapTutorial.cpp
     ../tutorial/wrapClass1.cpp
 )
-target_link_libraries(shroud-run-tutorial shroudrt)
+target_link_libraries(shroud-run-tutorial fruit shroudrt)
 set_target_properties(shroud-run-tutorial PROPERTIES LINKER_LANGUAGE Fortran)
+add_test( NAME shroud-run-tutorial
+          COMMAND shroud-run-tutorial
+          WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+)
+
+#add_fortran_test(
+#    TEST_SOURCE ${test}
+#    DEPENDS_ON fruit
+#)
+
 
 #
 # Make Python module library
 #
-if(ENABLE_PYTHON_MODULE)
+if(ENABLE_PYTHON_API)
     include_directories(${PYTHON_INCLUDE_DIRS})
 
     set(BUILD_SHARED_LIBS TRUE)
@@ -35,6 +45,8 @@ if(ENABLE_PYTHON_MODULE)
             ../tutorial/pyClass1type.cpp
 	    ../tutorial/pyTutorialmodule.cpp
             ../tutorial/pyTutorialhelper.cpp
+        DEPENDS_ON
+            shroudrt
     )
 
     # Python wants the name to be tutorial.so
@@ -49,4 +61,4 @@ if(ENABLE_PYTHON_MODULE)
 #        COMMAND ln -sf libtutorial.so tutorial.so
 #    )
 
-endif(ENABLE_PYTHON_MODULE)
+endif(ENABLE_PYTHON_API)

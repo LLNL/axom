@@ -21,7 +21,6 @@
 // explicit deletes when the hydro object is destroyed.
 
 #include "State.hpp"
-#include <stdio.h>
 
 #include "TinyHydroTypes.hpp"
 

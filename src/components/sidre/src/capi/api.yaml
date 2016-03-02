@@ -24,7 +24,7 @@ options:
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
   # for the result.
-  F_string_result_as_arg: name
+#  F_string_result_as_arg: name
 #  wrap_python: True
 
 
@@ -49,9 +49,9 @@ types:
     c_header : sidre/SidreTypes.h
     cpp_header : sidre/SidreTypes.hpp
     cpp_type : TypeID
-    c_to_cpp : getTypeID({var})
-#    c_to_cpp : static_cast<TypeID>({var})
-    cpp_to_c : static_cast<int>({var})
+    c_to_cpp : getTypeID({c_var})
+#    c_to_cpp : static_cast<TypeID>({c_var})
+    cpp_to_c : static_cast<int>({cpp_var})
 
 
 # XXX
@@ -70,9 +70,18 @@ classes:
 #    -  decl: bool hasBuffer( IndexType idx ) const
     - decl:  DataBuffer * getBuffer( IndexType idx )
     -  decl: DataBuffer * createBuffer()
+       function_suffix: _empty
+    -  decl: DataBuffer * createBuffer( TypeID type, SidreLength num_elems )
+       function_suffix: _from_type
+       fortran_generic:
+         num_elems:
+         -  int
+         -  long
+       PY_error_pattern: PY_null_to_none
+
     -  decl: void destroyBuffer( IndexType id )
 #    -  decl: void Destroybuffers()
-#    -  decl: DataBuffer * detatchBuffer( const IndexType id )
+#    -  decl: DataBuffer * detachBuffer( const IndexType id )
     -  decl: size_t getNumBuffers() const
 #    -  decl: IndexType getFirstValidBufferIndex() const
 #    -  decl: IndexType getNextValidBufferIndex(IndexType idx) const;
@@ -90,7 +99,7 @@ classes:
       cpp_header: sidre/DataGroup.hpp
 
     methods:
-    -  decl: const std::string& getName() const
+    -  decl: const std::string& getName+len(MAXNAMESIZE)() const
 #    -  decl: DataGroup* getParent()
     -  decl: const DataGroup* getParent() const
 #    -  decl: DataStore* getDataStore() const
@@ -108,18 +117,22 @@ classes:
        PY_error_pattern: PY_null_to_none
 #    -  decl: DataView const *getView( const IndexType idx ) const
     -  decl: IndexType getViewIndex(const std::string &name) const
-    -  decl: const std::string& getViewName(IndexType idx) const
+    -  decl: const std::string& getViewName+len(MAXNAMESIZE)(IndexType idx) const
        C_error_pattern: C_invalid_name
        PY_error_pattern: PY_invalid_name_idx
 
     -  decl: IndexType getFirstValidViewIndex() const
     -  decl: IndexType getNextValidViewIndex(IndexType idx) const
     -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, SidreLength num_elems)
-#       function_suffix:
+       function_suffix: _nelems
        fortran_generic:
          num_elems:
          -  int
          -  long
+       PY_error_pattern: PY_null_to_none
+
+    -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, int ndims, SidreLength *num_elems+dimension)
+       function_suffix: _shape
        PY_error_pattern: PY_null_to_none
 
 #    -  decl: DataView *createViewAndAllocate( const std::string& name, const DataType& dtype)
@@ -128,12 +141,17 @@ classes:
     -  decl: DataView *createView( const string& name )
        function_suffix: _empty
        PY_error_pattern: PY_null_to_none
+
     -  decl: DataView *createView( const std::string& name, TypeID type, SidreLength num_elems)
        function_suffix: _from_type
        fortran_generic:
          num_elems:
          -  int
          -  long
+       PY_error_pattern: PY_null_to_none
+
+    -  decl: DataView *createView( const std::string& name, TypeID type, int ndims, SidreLength * shape+dimension)
+       function_suffix: _from_shape
        PY_error_pattern: PY_null_to_none
 
 #    -  decl: DataView *createView( const std::string& name, const DataType& dtype)
@@ -166,7 +184,7 @@ classes:
 #    -  decl: DataGroup * getGroup( IndexType idx)
 #    -  decl: DataGroup const * getGroup(IndexType idx) const
     -  decl: IndexType getGroupIndex(const std::string &name) const
-    -  decl: const std::string& getGroupName(IndexType idx) const
+    -  decl: const std::string& getGroupName+len(MAXNAMESIZE)(IndexType idx) const
        C_error_pattern: C_invalid_name
        PY_error_pattern: PY_invalid_name_idx
     -  decl: IndexType getFirstValidGroupIndex() const
@@ -197,14 +215,14 @@ classes:
     methods:
       - decl: IndexType getIndex() const
       - decl: size_t getNumViews() const
-      - decl: DataBuffer* declare(TypeID type, SidreLength num_elems)
+      - decl: DataBuffer* describe(TypeID type, SidreLength num_elems)
         return_this: True
         fortran_generic:
           num_elems:
           -  int
           -  long
-#      - decl: DataBuffer* declare(const Schema& schema)
-#      - decl: DataBuffer* declare(const DataType& dtype)
+#      - decl: DataBuffer* describe(const Schema& schema)
+#      - decl: DataBuffer* describe(const DataType& dtype)
       - decl: DataBuffer* allocate()
         function_suffix: _existing
         return_this: True
@@ -221,9 +239,6 @@ classes:
           num_elems:
           -  int
           -  long
-      - decl: DataBuffer * setExternalData( void* external_data)
-        return_this: True
-      - decl: bool isExternal() const
       - decl: void* getVoidPtr()
       - decl: TypeID getTypeID() const
       - decl: size_t getNumElements() const
@@ -289,7 +304,7 @@ classes:
     - decl: bool isExternal() const
     - decl: bool isApplied() const
     - decl: bool isOpaque() const
-    - decl: const std::string& getName() const
+    - decl: const std::string& getName+len(MAXNAMESIZE)() const
     - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const
     - decl: void * getVoidPtr() const
@@ -345,24 +360,30 @@ functions:
 ######################################################################
 patterns:
     C_invalid_name: >
-        if (! nameIsValid({var})) {{
+        if (! nameIsValid({cpp_var})) {{
             return SIDRE_InvalidName;
         }}
+    # return a blank field string if an error occurs
+    C_invalid_name_as_buffer: >
+        if (! nameIsValid({cpp_var})) {{
+            std::memset({f_string}, ' ', {f_string_len});
+            return;
+        }}
     PY_invalid_name: >
-        if (! nameIsValid({var})) {{
-            PyErr_SetString(PyExc_KeyError, "{var}");
+        if (! nameIsValid({cpp_var})) {{
+            PyErr_SetString(PyExc_KeyError, "XXX - need name");
             return NULL;
         }}
     # report the invalid index, assume local variable idx
     PY_invalid_name_idx: >
-        if (! nameIsValid({var})) {{
+        if (! nameIsValid({cpp_var})) {{
             Py_RETURN_NONE;
         }}
 #            PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));
 #            return NULL;
     # Convert NULL to None
     PY_null_to_none: >
-        if ({var} == ATK_NULLPTR) {{
+        if ({cpp_var} == ATK_NULLPTR) {{
             Py_RETURN_NONE;
         }}
 

@@ -67,7 +67,7 @@ class DataStore;
  *          deallocated by the view if and only if it is the only view
  *          attached to the buffer.
  *        # A view can describe and allocate data using semantics similar
- *          to DataBuffer data declaration and allocation. In this case, no
+ *          to DataBuffer data description and allocation. In this case, no
  *          other view is allowed to (re)allocate or deallocate the data held
  *          by the associated data buffer.
  *        # A view can describe data associated with a pointer to an
@@ -155,12 +155,27 @@ public:
   }
 
   /*!
+   * \brief Return true if view holds data that has been allocated.
+   */
+  // TODO - Would like to make this a const function.  Need to have conduit element_ptr() be const to do this.
+  bool isAllocated();
+
+  /*!
    * \brief Return true if data description (schema) has been applied to data
    *        in buffer associated with view; false otherwise.
    */
   bool isApplied() const
   {
     return m_is_applied;
+  }
+
+  /*!
+   * \brief Return true if data description exists.  It may/may not have been
+   * applied to the data yet.  ( Check isApplied() for that. )
+   */
+  bool isDescribed() const
+  {
+    return !m_schema.dtype().is_empty();
   }
 
   /*!
@@ -171,6 +186,22 @@ public:
   bool  isOpaque() const
   {
     return m_state == EXTERNAL && !isApplied();
+  }
+
+  /*!
+   * \brief Return true if view contains a scalar value.
+   */
+  bool isScalar() const
+  {
+    return (m_state == SCALAR);
+  }
+
+  /*!
+   * \brief Return true if view contains a string value.
+   */
+  bool isString() const
+  {
+    return (m_state == STRING);
   }
 
   /*!
@@ -187,7 +218,7 @@ public:
    * IMPORTANT: This is the total bytes described by the view; they may not
    *            yet be allocated.
    */
-  size_t getTotalBytes() const
+  SidreLength getTotalBytes() const
   {
     return m_schema.total_bytes();
   }
@@ -198,7 +229,7 @@ public:
    * IMPORTANT: This is the number of elements described by the view;
    *            they may not yet be allocated.
    */
-  size_t getNumElements() const
+  SidreLength getNumElements() const
   {
     return m_schema.dtype().number_of_elements();
   }
@@ -208,7 +239,7 @@ public:
    */
   int getNumDimensions() const
   {
-    return ( m_shape == ATK_NULLPTR ? 1 : m_shape->size() );
+    return m_shape.size();
   }
 
   /*!
@@ -216,10 +247,11 @@ public:
    *        information of this data view object.
    *
    *  ndims - maximum number of dimensions to return.
+   *  shape - user supplied buffer assumed to be ndims long.
+   *
+   *  Return the number of dimensions of the view.
+   *  Return -1 if shape is too short to hold all dimensions.
    */
-//
-// RDH -- who allocates shape? What are error conditions??
-//
   int getShape(int ndims, SidreLength * shape) const;
 
   /*!
@@ -227,7 +259,7 @@ public:
    */
   const Schema& getSchema() const
   {
-    return m_schema;
+    return m_node.schema();
   }
 
   /*!
@@ -287,18 +319,6 @@ public:
   DataView * allocate(const DataType& dtype);
 
   /*!
-   * \brief Allocate data for view described by a Conduit schema object.
-   *
-   * NOTE: The allocate() method describes conditions where view
-   *       allocation is allowed. If none of those is true,
-   *       this method does nothing.
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView * allocate(const Schema& schema);
-
-
-  /*!
    * \brief  Reallocate data for view to given number of elements (type
    *         stays the same).
    *
@@ -326,20 +346,6 @@ public:
    * \return pointer to this DataView object.
    */
   DataView * reallocate(const DataType& dtype);
-
-  /*!
-   * \brief  Reallocate data for view as specified by a Conduit schema object.
-   *
-   * NOTE: Reallocation from a view is only allowed under that same conditions
-   *       described by the allocate() method. If none of those is true,
-   *       or data type is undefined, this method does nothing.
-   *
-   * NOTE: The data type of the given schema object must match the view type,
-   *       if it is defined. If not, the method does nothing.
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView * reallocate(const Schema& schema);
 
 //@}
 
@@ -384,7 +390,7 @@ public:
      // RDH -- will this be changed for consistency?
      //
    *
-   * IMPORTANT: If view has been previously declared (or applied), this
+   * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, is external and does not have a
@@ -405,7 +411,7 @@ public:
    *       is different than the Conduit DataType usage below where offset
    *       and stride are in number of bytes.
    *
-   * IMPORTANT: If view has been previously declared (or applied), this
+   * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, or given number of elements < 0,
@@ -423,7 +429,7 @@ public:
    *
    * NOTE: The units for the shape are in number of elements.
    *
-   * IMPORTANT: If view has been previously declared (or applied), this
+   * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, or given number of dimensions < 0,
@@ -441,15 +447,6 @@ public:
    * \return pointer to this DataView object.
    */
   DataView * apply(const DataType& dtype);
-
-  /*!
-   * \brief Apply data description (schema) to view's data.
-   *
-   * If view holds a scalar or a string, the method does nothing.
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView * apply(const Schema& schema);
 
 //@}
 
@@ -472,16 +469,22 @@ public:
 //
     // Check that parameter type provided matches what type is stored in the node.
 #if defined(ATK_DEBUG)
-    DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
-    SLIC_ASSERT_MSG( arg_id == m_node.dtype().id(),
-                     "Mismatch between setScalar()" <<
-                     DataType::id_to_name(
-                       arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() <<
-                     ").");
+    if (m_state != EMPTY)
+    {
+      DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
+      SLIC_CHECK_MSG( arg_id == m_node.dtype().id(),
+                      "Mismatch between setScalar()" <<
+                      DataType::id_to_name(
+                        arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() <<
+                      ").");
+    }
 #endif
 
     m_node.set(value);
+    m_schema.set(m_node.schema());
+    m_is_applied = true;
     m_state = SCALAR;
+    describeShape();
     return this;
   }
 
@@ -495,9 +498,11 @@ public:
  */
   DataView * setString(const std::string& value)
   {
-    // TODO: Check with Cyrus that the set_string function is the right call (should be).
     m_node.set_string(value);
+    m_schema.set(m_node.schema());
     m_state = STRING;
+    m_is_applied = true;
+    describeShape();
     return this;
   };
 
@@ -566,11 +571,20 @@ public:
   /*!
    * \brief Return data held by view and cast it to any compatible type
    *  allowed by Conduit (return type depends on type caller assigns it to).
+   *
+   *  If view does not contain allocated data, an empty Node::Value will be
+   *  returned.
    */
   Node::Value getData()
   {
-    SLIC_ASSERT_MSG( m_is_applied,
-                     "View description has not been applied to data");
+    if ( !isAllocated() || !isDescribed())
+    {
+      SLIC_CHECK_MSG( isAllocated(),
+                      "No view data present, memory has not been allocated.");
+      SLIC_CHECK_MSG( isApplied(),
+                      "View data description not present.");
+      return Node().value();
+    }
     return m_node.value();
   }
 
@@ -589,20 +603,11 @@ public:
   }
 
   /*!
-   * \brief Returns a void pointer to data described by the view (with any
+   * \brief Returns a void pointer to data in the view (if described, it will take into account any
    * offset, stride, schema, etc. applied).
    */
-  void * getVoidPtr()
-  {
-    if ( isOpaque() )
-    {
-      return (void *)m_node.as_uint64();
-    }
-    else
-    {
-      return m_node.element_ptr(0);
-    }
-  }
+  // TODO - Would like this to be a const function, but it calls a conduit function which is not const.
+  void * getVoidPtr() const;
 
 //@}
 
@@ -658,44 +663,56 @@ private:
 //!        (callable only by DataGroup and DataView methods).
 
   /*!
-   * \brief Declare a data view with given type and number of elements, and
+   * \brief Describe a data view with given type and number of elements.
    *
    *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
+   * IMPORTANT: If view has been previously described, this operation will
+   *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If given number of elements < 0, or view is opaque, method does nothing.
    *
+   */
+  void describe( TypeID type, SidreLength num_elems);
+
+  /*!
+   * \brief Describe a data view with given type, number of dimensions, and
+   *        number of elements per dimension.
+   *
+   *
+   * IMPORTANT: If view has been previously described, this operation will
+   *            re-describe the view. To have the new description take effect,
+   *            the apply() method must be called.
+   *
+   * If given number of dimensions or total number of elements < 0,
+   * or view is opaque, method does nothing.
+   *
    * \return pointer to this DataView object.
    */
-  DataView * declare( TypeID type, SidreLength num_elems);
+  void describe(TypeID type, int ndims, SidreLength * shape);
 
   /*!
    * \brief Declare a data view with a Conduit data type object.
    *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
+   * IMPORTANT: If view has been previously described, this operation will
+   *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If view is opaque, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
-  DataView * declare(const DataType& dtype);
+  void describe(const DataType& dtype);
 
   /*!
-   * \brief Declare a data view with a schema object.
-   *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
-   *            the apply() method must be called.
-   *
-   * If view is opaque, the method does nothing.
-   *
-   * \return pointer to this DataView object.
+   * \brief Set the shape to be a one dimension with the described number of elements.
    */
-  DataView * declare(const Schema& schema);
+  void describeShape();
+
+  /*!
+   * \brief Set the shape to be a ndims dimensions with shape.
+   */
+  void describeShape(int ndims, SidreLength * shape);
 
 //@}
 
@@ -707,25 +724,25 @@ private:
    *  \brief Private method returns true if data allocation on view is a
    *         valid operation; else false
    */
-  bool allocateIsValid() const;
+  bool isAllocateValid() const;
 
   /*!
    *  \brief Private method returns true if attaching buffer to view is a
    *         valid operation; else false
    */
-  bool attachBufferIsValid() const;
+  bool isAttachBufferValid() const;
 
   /*!
    *  \brief Private method returns true if setting external data pointer is
              on view is a valid operation; else false
    */
-  bool setExternalDataPtrIsValid() const;
+  bool isSetExternalDataPtrValid() const;
 
   /*!
    *  \brief Private method returns true if apply is a valid operation on
    *         view; else false
    */
-  bool applyIsValid() const;
+  bool isApplyValid() const;
 
 //@}
 
@@ -734,7 +751,7 @@ private:
   /// Enum with constants that identify the state of a view.
   ///
   /// Note that these states are not mutually-exclusive. These constants
-  /// combined with the boolean m_is_applied uniquesly identify the view
+  /// combined with the boolean m_is_applied uniquely identify the view
   /// state, or how it was created and defined.
   ///
   enum State
@@ -776,7 +793,10 @@ private:
   Node m_node;
 
   /// Shape information
-  std::vector<SidreLength> * m_shape;
+  std::vector<SidreLength> m_shape;
+
+  /// Pointer to external memory
+  void * m_external_ptr;
 
   /// State of view.
   State m_state;

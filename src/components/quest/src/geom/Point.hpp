@@ -229,7 +229,7 @@ public:
    * \param [in] A user-supplied point
    * \param [in] B user-supplied point
    * \param [in] alpha weight with which to interpolate
-   * \return p Linearly interpolated point: p = (1-alpha)A + alpha*B..
+   * \return p Linearly interpolated point: p = (1-alpha)A + alpha*B.
    *****************************************************************************
    */
   static Point lerp( const Point& A, const Point& B, double alpha);
@@ -313,8 +313,8 @@ std::ostream& Point< T, DIM >::print(std::ostream& os) const
 {
     os <<"(";
     for(int dim=0; dim < DIM -1; ++ dim)
-        os << m_components[dim] << ",";
-    os << m_components[DIM-1] << ")";
+        os << static_cast<typename NonChar<T>::type>(m_components[dim]) << ",";
+    os << static_cast<typename NonChar<T>::type>(m_components[DIM-1]) << ")";
 
     return os;
 }

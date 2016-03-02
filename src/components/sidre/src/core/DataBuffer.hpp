@@ -55,14 +55,9 @@ class DataView;
  *      which is assigned by the DataStore when the buffer is created.
  *    - The data object owned by a DataBuffer is unique to that DataBuffer
  *      object; i.e.,  DataBuffers that own data do not share their data.
- *    - A DataBuffer may hold a pointer to externally-owned data. When this
- *      is the case, the buffer cannot be used to (re)allocate or deallocate
- *      the data. However, the external data can be desribed and accessed
- *      via the buffer object in a similar to data that is owned by a buffer.
- *    - Typical usage is to declare the data a DataBuffer will hold and then
- *      either allocate it by calling one of the DataBuffer allocate or
- *      reallocate methods, or set the buffer to reference externally-owned
- *      data by calling setExternalData().
+ *    - Typical usage is to describe the data a DataBuffer will hold and then
+ *      allocate it by calling one of the DataBuffer allocate or
+ *      reallocate methods.
  *    - A DataBuffer object maintains a collection of DataViews that
  *      refer to its data.
  *
@@ -72,10 +67,10 @@ class DataBuffer
 
 public:
 
-  //
-  // Friend declarations to constrain usage via controlled access to
-  // private members.
-  //
+  /*!
+   * Friend declarations to constrain usage via controlled access to
+   * private members.
+   */
   friend class DataStore;
   friend class DataGroup;
   friend class DataView;
@@ -94,18 +89,9 @@ public:
   /*!
    * \brief Return number of views attached to this buffer.
    */
-  size_t getNumViews() const
+  IndexType getNumViews() const
   {
     return m_views.size();
-  }
-
-  /*!
-   * \brief Return true if buffer holds externally-owned data, or
-   * false if buffer owns the data it holds (default case).
-   */
-  bool isExternal() const
-  {
-    return m_is_data_external;
   }
 
   /*!
@@ -113,7 +99,7 @@ public:
    */
   void * getVoidPtr()
   {
-    return m_data;
+    return m_node.data_ptr();
   }
 
   /*!
@@ -121,31 +107,56 @@ public:
    */
   Node::Value getData()
   {
+    if ( !isAllocated() )
+    {
+      SLIC_CHECK_MSG( isAllocated(), "Buffer data is not allocated.");
+      return Node().value();
+    }
+
     return m_node.value();
   }
-
-  //@}
 
   /*!
    * \brief Return type of data for this DataBuffer object.
    */
   TypeID getTypeID() const
   {
-    return static_cast<TypeID>(m_schema.dtype().id());
+    return static_cast<TypeID>(m_node.dtype().id());
   }
 
   /*!
    * \brief Return total number of elements allocated by this DataBuffer object.
    */
-  size_t getNumElements() const
+  SidreLength getNumElements() const
   {
-    return m_schema.dtype().number_of_elements();
+    return m_node.dtype().number_of_elements();
   }
 
   /*!
    * \brief Return total number of bytes associated with this DataBuffer object.
    */
-  size_t getTotalBytes() const;
+  SidreLength getTotalBytes() const
+  {
+    return m_node.dtype().total_bytes();
+  }
+  //@}
+
+  /*!
+   * \brief Return true if buffer contains allocated data of > 0 bytes.
+   */
+  bool isAllocated() const
+  {
+    return (m_node.data_ptr() != ATK_NULLPTR) && (getTotalBytes() > 0);
+  }
+
+  /*!
+   * \brief Return true if data description exists.  It may/may not have been
+   * applied to the data yet.  ( Check isApplied() for that. )
+   */
+  bool isDescribed() const
+  {
+    return !m_node.dtype().is_empty();
+  }
 
   /*
    * \brief Return true if DataBuffer has an associated DataView with given
@@ -165,45 +176,37 @@ public:
 
 //@}
 
-
 //@{
 //!  @name Data declaration and allocation methods
 
   /*!
-   * \brief Declare a buffer with data given type and number of elements.
+   * \brief Describe a buffer with data given type and number of elements.
    *
-   * To use the buffer, the data must be allocated by calling allocate()
-   * or set to external data by calling setExternalData().
+   * To use the buffer, the data must be allocated by calling allocate().
    *
    * If given number of elements is < 0, method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(TypeID type, SidreLength num_elems);
+  DataBuffer * describe(TypeID type, SidreLength num_elems);
 
   /*!
-   * \brief Allocate data previously declared using a declare() method.
+   * \brief Allocate data previously described using a describe() method.
    *
    * It is the responsibility of the caller to make sure that the buffer
-   * object was previously declared.  If the the buffer is already
+   * object was previously described.  If the the buffer is already
    * holding data that it owns, that data will be deallocated and new data
-   * will be allocated according to the current declared state.
-   *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
+   * will be allocated according to the current described state.
    *
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * allocate();
 
   /*!
-   * \brief Declare and allocate data described by type and number of elements.
+   * \brief Describe and allocate data described by type and number of elements.
    *
-   * This is equivalent to calling declare(type, num_elems), then allocate().
+   * This is equivalent to calling describe(type, num_elems), then allocate().
    * on this DataBuffer object.
-   *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -212,10 +215,9 @@ public:
   /*!
    * \brief Reallocate data to given number of elements.
    *
-   *        Equivalent to calling declare(type), then allocate().
+   *        Equivalent to calling describe(type), then allocate().
    *
-   * If buffer is already set to externally-owned data or given
-   * number of elements < 0, this method does nothing.
+   * If given number of elements < 0, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -231,24 +233,9 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * update(const void * src, size_t nbytes);
+  DataBuffer * update(const void * src, SidreLength nbytes);
 
-  /*!
-   * \brief Set buffer to external data.
-   *
-   * It is the responsibility of the caller to make sure that the buffer
-   * object was previously declared, that the data pointer is consistent
-   * with how the buffer was declared, and that the buffer is not already
-   * holding data that it owns.
-   *
-   * If given pointer is null, this method does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * setExternalData(void * external_data);
-
-//@}
-
+  //@}
 
   /*!
    * \brief Copy data buffer description to given Conduit node.
@@ -291,24 +278,19 @@ private:
   void detachView( DataView * dataView );
 
   /*!
-   * \brief Private methods allocate and deallocate data owned by buffer.
+   * \brief Allocate bytes for data in data buffer
    */
-  void cleanup();
-  ///
   void * allocateBytes(std::size_t num_bytes);
-  ///
-  void  releaseBytes(void * );
 
-#ifdef ATK_ENABLE_FORTRAN
   /*!
-   * \brief Set as Fortran allocatable.
-   *
-   * If given pointer is null, this method does nothing.
-   *
-   * \return pointer to this DataBuffer object.
+   * \brief Copy bytes from one memory location to another.
    */
-  DataBuffer * setFortranAllocatable(void * array, TypeID type, int rank);
-#endif
+  void copyBytes( const void * src, void * dst, size_t num_bytes );
+
+  /*!
+   * \brief Release any allocated bytes pointed to by ptr.
+   */
+  void  releaseBytes(void * ptr);
 
   /// Index Identifier - unique within a dataStore.
   IndexType m_index;
@@ -316,20 +298,8 @@ private:
   /// Container of DataViews attached to this buffer.
   std::vector<DataView *> m_views;
 
-  // Type of data pointed to by m_data
-  TypeID m_type;
-
-  /// Pointer to the data owned by DataBuffer.
-  void * m_data;
-
   /// Conduit Node that holds buffer data.
   Node m_node;
-
-  /// Conduit Schema that describes buffer data.
-  Schema m_schema;
-
-  /// Is buffer holding externally-owned data?
-  bool m_is_data_external;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.
@@ -345,11 +315,7 @@ private:
   DataBuffer& operator=( const DataBuffer& );
 #endif
 
-
-
-
 };
-
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */

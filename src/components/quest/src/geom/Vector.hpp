@@ -79,7 +79,7 @@ template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const 
  *******************************************************************************
  * \class Vector
  *
- * \brief Represents a vector, \f$ v \in \mathcal{R}^d. It provides access
+ * \brief Represents a vector, \f$ v \in \mathcal{R}^d \f$. It provides access
  *  methods for setting and querying the vector components as well as vector
  *  math operators, e.g., adding, subtracting, dot_product and cross_product.
  *
@@ -345,7 +345,7 @@ template < typename T, int DIM >
 Vector< T,DIM >::Vector( const Point< T,DIM >& A,
                            const Point< T,DIM >& B )
 {
-    this->m_components = B.array() - A.array();
+    m_components = B.array() - A.array();
 }
 
 
@@ -353,7 +353,7 @@ Vector< T,DIM >::Vector( const Point< T,DIM >& A,
 template < typename T, int DIM >
 inline Vector< T,DIM >& Vector< T,DIM >::operator*=( T scalar )
 {
-    this->m_components *= scalar;
+    m_components *= scalar;
     return *this;
 }
 
@@ -361,7 +361,7 @@ inline Vector< T,DIM >& Vector< T,DIM >::operator*=( T scalar )
 template < typename T, int DIM >
 inline Vector< T,DIM >& Vector< T,DIM >::operator/=( T scalar )
 {
-    this->m_components /= scalar;
+    m_components /= scalar;
     return *this;
 }
 
@@ -370,7 +370,7 @@ inline Vector< T,DIM >& Vector< T,DIM >::operator/=( T scalar )
 template < typename T, int DIM >
 inline Vector< T, DIM >& Vector< T,DIM >::operator+=(const Vector<T,DIM>& v)
 {
-  this->m_components += v.array();
+  m_components += v.array();
   return *this;
 }
 
@@ -378,8 +378,7 @@ inline Vector< T, DIM >& Vector< T,DIM >::operator+=(const Vector<T,DIM>& v)
 template < typename T, int DIM >
 inline Vector< T, DIM >& Vector< T,DIM >::operator-=(const Vector<T,DIM>& v)
 {
-  this->m_components -= v.array();
-
+  m_components -= v.array();
   return *this;
 }
 
@@ -387,7 +386,7 @@ inline Vector< T, DIM >& Vector< T,DIM >::operator-=(const Vector<T,DIM>& v)
 template < typename T, int DIM >
 inline double Vector< T, DIM >::squared_norm() const
 {
-   return this->dot(*this);
+   return dot(*this);
 }
 
 //------------------------------------------------------------------------------
@@ -405,7 +404,7 @@ inline Vector< T, DIM > Vector< T, DIM >::unitVector() const
 
   Vector v( *this);
 
-  const double len_sq = this->squared_norm();
+  const double len_sq = squared_norm();
   if(len_sq >= EPS)
   {
     v /= ( std::sqrt(len_sq) );
@@ -424,7 +423,7 @@ template < typename T, int DIM >
 inline void Vector< T, DIM >::negate()
 {
   for ( int i=0; i < DIM; ++i )
-    this->m_components[ i ] = -this->m_components[ i ];
+    m_components[ i ] = -m_components[ i ];
 }
 
 //------------------------------------------------------------------------------
@@ -441,8 +440,8 @@ std::ostream& Vector< T, DIM >::print(std::ostream& os) const
 {
     os <<"<";
     for(int dim=0; dim < DIM -1; ++ dim)
-        os << this->m_components[dim] << ",";
-    os << this->m_components[DIM-1] << ">";
+        os << static_cast<typename NonChar<T>::type>(m_components[dim]) << ",";
+    os << static_cast<typename NonChar<T>::type>(m_components[DIM-1]) << ">";
 
     return os;
 }
@@ -470,7 +469,7 @@ inline Vector< T,3 > Vector< T,DIM >::cross_product(
 {
   Vector< T,3 > c;
   c[ 0 ] = math::determinant( u[1],u[2], v[1],v[2] );
-  c[ 1 ] = math::determinant( u[0],u[2], v[0],v[2] ) * ( -1.0 );
+  c[ 1 ] = math::determinant( v[0],v[2], u[0],u[2] ); // NOTE: Transposed u and v to negate
   c[ 2 ] = math::determinant( u[0],u[1], v[0],v[1] );
   return( c );
 }

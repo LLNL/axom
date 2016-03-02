@@ -23,8 +23,6 @@ using asctoolkit::sidre::InvalidIndex;
 using asctoolkit::sidre::nameIsValid;
 using asctoolkit::sidre::indexIsValid;
 using asctoolkit::sidre::DataType;
-using asctoolkit::slic::setAbortOnError;
-using asctoolkit::slic::setAbortOnAssert;
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -42,9 +40,35 @@ TEST(sidre_group,get_name)
 
   DataGroup * group2 = root->getGroup("foo");
   EXPECT_TRUE(group2 == ATK_NULLPTR);
+}
+
+//------------------------------------------------------------------------------
+// getNameWithPath()
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_name_with_path)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  DataGroup * group =
+    root->createGroup("test1")->createGroup("test2")->createGroup("test3");
+  DataGroup * group2 = root->getGroup("test1/test2/test3");
+
+  EXPECT_EQ(group, group2);
+
+  // Now verify that code will not create missing groups.
+  // TODO - improve error handling so this isn't fatal.
+//  DataGroup * group3 = root->createGroup("testa")->createGroup("testb")->createGroup("testc");
+//  DataGroup * group_bad = root->getGroup("testa/BAD/testc");
+
+//  (void)group3;
+
+//  EXPECT_EQ(group_bad, root->getGroup("testa") );
 
   delete ds;
+
 }
+
 
 //------------------------------------------------------------------------------
 // getParent()
@@ -115,6 +139,24 @@ TEST(sidre_group,get_view)
 
   delete ds;
 }
+//------------------------------------------------------------------------------
+// Verify getViewWithPath()
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_view_with_path)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  DataView * view =
+    root->createGroup("group1")->createGroup("group2")->createView("view1");
+  DataView * view2 = root->getView("group1/group2/view1");
+
+  EXPECT_EQ( view, view2 );
+
+  delete ds;
+}
+
+
 //------------------------------------------------------------------------------
 // Verify getViewName(), getViewIndex()
 //------------------------------------------------------------------------------
@@ -235,8 +277,6 @@ TEST(sidre_group,get_group_name_index)
 //------------------------------------------------------------------------------
 TEST(sidre_group,create_destroy_has_view)
 {
-  setAbortOnAssert(false);
-
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
   DataGroup * group = root->createGroup("parent");
@@ -320,7 +360,6 @@ TEST(sidre_group,group_name_collisions)
 
   // attempt to create duplicate group name
 
-  setAbortOnAssert(false);
   DataGroup * badGroup = ds->getRoot()->createGroup("fields");
   EXPECT_TRUE( badGroup == ATK_NULLPTR );
 
@@ -331,6 +370,7 @@ TEST(sidre_group,group_name_collisions)
   delete ds;
 }
 //------------------------------------------------------------------------------
+#if 0
 TEST(sidre_group,view_copy_move)
 {
   DataStore * ds = new DataStore();
@@ -374,8 +414,9 @@ TEST(sidre_group,view_copy_move)
 
   delete ds;
 }
-
+#endif
 //------------------------------------------------------------------------------
+#if 0
 TEST(sidre_group,groups_move_copy)
 {
   DataStore * ds = new DataStore();
@@ -411,7 +452,7 @@ TEST(sidre_group,groups_move_copy)
 
   delete ds;
 }
-
+#endif
 //------------------------------------------------------------------------------
 TEST(sidre_group,create_destroy_view_and_buffer2)
 {
@@ -466,35 +507,22 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   // this one is the DataType & method
   DataView * const view1 = grp->createViewAndAllocate(viewName1,
                                                       DataType::c_int(10));
-  // this one is the Schema & method
-  conduit::Schema s;
-  s.set(DataType::c_double(10));
-  DataView * const view2 = grp->createViewAndAllocate(viewName2, s);
 
   EXPECT_TRUE(grp->hasView(viewName1));
   EXPECT_EQ( grp->getView(viewName1), view1 );
 
-  EXPECT_TRUE(grp->hasView(viewName2));
-  EXPECT_EQ( grp->getView(viewName2), view2 );
-
-
   int * v1_vals = view1->getData();
-  double * v2_vals = view2->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
     v1_vals[i] = i;
-    v2_vals[i] = i * 3.1415;
   }
 
-
   EXPECT_EQ(view1->getNumElements(), 10u);
-  EXPECT_EQ(view2->getNumElements(), 10u);
-  EXPECT_EQ(view1->getTotalBytes(), 10 * sizeof(int));
-  EXPECT_EQ(view2->getTotalBytes(), 10 * sizeof(double));
+  EXPECT_EQ(view1->getTotalBytes(),
+            static_cast<asctoolkit::sidre::SidreLength>(10 * sizeof(int)));
 
   grp->destroyViewAndData(viewName1);
-  grp->destroyViewAndData(viewName2);
 
   delete ds;
 }
@@ -526,19 +554,12 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
   //
   // view for the first 5 values
   root->createView("sub_a", base_buff)->apply(DataType::c_int(5));
-  //
-  // view for the second 5 values
-  //  (schema call path case)
-  conduit::Schema s(DataType::c_int(5,5*sizeof(int)));
-  root->createView("sub_b",base_buff)->apply(s);
 
   int * sub_a_vals = root->getView("sub_a")->getData();
-  int * sub_b_vals = root->getView("sub_b")->getData();
 
   for(int i=0 ; i<5 ; i++)
   {
     EXPECT_EQ(sub_a_vals[i], 10);
-    EXPECT_EQ(sub_b_vals[i], 20);
   }
 
   delete ds;

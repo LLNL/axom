@@ -229,9 +229,7 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    view = root%create_view("iarray")
-    call view%apply(SIDRE_INT_ID, 3, extents_in)
-    call view%allocate()
+    view = root%create_view_and_allocate("iarray", SIDRE_INT_ID, 3, extents_in)
 
     call view%get_data(ipointer)
 
@@ -249,6 +247,17 @@ contains
     call assert_true(extents(1) == size(ipointer, 1))
     call assert_true(extents(2) == size(ipointer, 2))
     call assert_true(extents(3) == size(ipointer, 3))
+
+    ! reshape as 1-d using shape
+    extents_in(1) = size(ipointer)
+    call view%apply(SIDRE_INT_ID, 1, extents_in(1:1))
+    num_elements = view%get_num_elements()
+    call assert_equals(num_elements, size(ipointer))
+
+    ! reshape as 1-d using length
+    call view%apply(SIDRE_INT_ID, extents_in(1))
+    num_elements = view%get_num_elements()
+    call assert_equals(num_elements, size(ipointer))
 
     call ds%delete()
 
@@ -272,7 +281,6 @@ program fortran_test
   call external_allocatable_int_3d
   call external_static_int
   call external_allocatable_double
-
   call datastore_int_3d
 
   call fruit_summary
