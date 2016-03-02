@@ -1267,6 +1267,61 @@ void DataGroup::copyFromNode(Node& n,
   }
 }
 
+/*
+ *************************************************************************
+ *
+ * Test this DataGroup for equavalence to another DataGroup.
+ *
+ *************************************************************************
+ */
+bool DataGroup::isEquivalentTo(const DataGroup * other) const
+{
+  // Equality of names
+  bool is_equiv = (m_name == other->m_name);
+
+  // Sizes of collections of child items must be equal
+  if (is_equiv)
+  {
+    is_equiv = (m_view_coll.getNumItems() == other->m_view_coll.getNumItems())
+               && (m_group_coll.getNumItems() ==
+                   other->m_group_coll.getNumItems());
+  }
+
+  // Test equivalence of DataViews
+  if (is_equiv)
+  {
+    IndexType vidx = getFirstValidViewIndex();
+    IndexType other_vidx = other->getFirstValidViewIndex();
+    while ( is_equiv && indexIsValid(vidx) && indexIsValid(other_vidx) )
+    {
+      const DataView * view = getView(vidx);
+      const DataView * other_view = other->getView(other_vidx);
+      is_equiv = view->isEquivalentTo(other_view);
+      vidx = getNextValidViewIndex(vidx);
+      other_vidx = getNextValidViewIndex(other_vidx);
+    }
+  }
+
+  // Recursively call this method to test equivalence of child DataGroups
+  if (is_equiv)
+  {
+    IndexType gidx = getFirstValidGroupIndex();
+    IndexType other_gidx = getFirstValidGroupIndex();
+    while ( is_equiv && indexIsValid(gidx) && indexIsValid(other_gidx) )
+    {
+      const DataGroup * group =  getGroup(gidx);
+      const DataGroup * other_group =  other->getGroup(other_gidx);
+      is_equiv = group->isEquivalentTo(other_group);
+      gidx = getNextValidGroupIndex(gidx);
+      other_gidx = getNextValidGroupIndex(other_gidx);
+    }
+  }
+
+  return is_equiv;
+
+}
+
+
 
 /// Character used to denote a path string passed to get/create calls.
 const char DataGroup::m_path_delimiter = '/';
