@@ -73,6 +73,14 @@ copy_headers_target( ${PROJECT_NAME}
 #
 # make the library
 #
+set(slic_depends_on
+    common
+    ${wrapper_depends_on}
+)
+if (ENABLE_lumberjack)
+  list(APPEND slic_depends_on lumberjack)
+endif()
+
 make_library( LIBRARY_NAME
                   slic
 
@@ -82,9 +90,7 @@ make_library( LIBRARY_NAME
                   "${slic_fortran_sources}"
 
               DEPENDS_ON
-                  common
-                  ${wrapper_depends_on}
-                  lumberjack
+                  "${slic_depends_on}"
               )
 
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
