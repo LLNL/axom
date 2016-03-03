@@ -105,6 +105,9 @@ TEST(sidre_view,scalar_view)
   EXPECT_EQ(i0view->getNumDimensions(), 1);
   EXPECT_TRUE(i0view->getShape(1, dims) == 1 && dims[0] == 1);
 
+  // Should report an error
+  i0view->apply(INT_ID, 1);
+
   // string
   DataView * s0view = root->createView("s0")->setString("I am a string");
   EXPECT_EQ(s0view->getNumElements(), 14u);

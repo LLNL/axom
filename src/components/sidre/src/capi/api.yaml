@@ -215,14 +215,14 @@ classes:
     methods:
       - decl: IndexType getIndex() const
       - decl: size_t getNumViews() const
-      - decl: DataBuffer* declare(TypeID type, SidreLength num_elems)
+      - decl: DataBuffer* describe(TypeID type, SidreLength num_elems)
         return_this: True
         fortran_generic:
           num_elems:
           -  int
           -  long
-#      - decl: DataBuffer* declare(const Schema& schema)
-#      - decl: DataBuffer* declare(const DataType& dtype)
+#      - decl: DataBuffer* describe(const Schema& schema)
+#      - decl: DataBuffer* describe(const DataType& dtype)
       - decl: DataBuffer* allocate()
         function_suffix: _existing
         return_this: True

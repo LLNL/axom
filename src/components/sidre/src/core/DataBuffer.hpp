@@ -55,7 +55,7 @@ class DataView;
  *      which is assigned by the DataStore when the buffer is created.
  *    - The data object owned by a DataBuffer is unique to that DataBuffer
  *      object; i.e.,  DataBuffers that own data do not share their data.
- *    - Typical usage is to declare the data a DataBuffer will hold and then
+ *    - Typical usage is to describe the data a DataBuffer will hold and then
  *      allocate it by calling one of the DataBuffer allocate or
  *      reallocate methods.
  *    - A DataBuffer object maintains a collection of DataViews that
@@ -180,7 +180,7 @@ public:
 //!  @name Data declaration and allocation methods
 
   /*!
-   * \brief Declare a buffer with data given type and number of elements.
+   * \brief Describe a buffer with data given type and number of elements.
    *
    * To use the buffer, the data must be allocated by calling allocate().
    *
@@ -188,31 +188,25 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(TypeID type, SidreLength num_elems);
+  DataBuffer * describe(TypeID type, SidreLength num_elems);
 
   /*!
-   * \brief Allocate data previously declared using a declare() method.
+   * \brief Allocate data previously described using a describe() method.
    *
    * It is the responsibility of the caller to make sure that the buffer
-   * object was previously declared.  If the the buffer is already
+   * object was previously described.  If the the buffer is already
    * holding data that it owns, that data will be deallocated and new data
-   * will be allocated according to the current declared state.
-   *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
+   * will be allocated according to the current described state.
    *
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * allocate();
 
   /*!
-   * \brief Declare and allocate data described by type and number of elements.
+   * \brief Describe and allocate data described by type and number of elements.
    *
-   * This is equivalent to calling declare(type, num_elems), then allocate().
+   * This is equivalent to calling describe(type, num_elems), then allocate().
    * on this DataBuffer object.
-   *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -221,10 +215,9 @@ public:
   /*!
    * \brief Reallocate data to given number of elements.
    *
-   *        Equivalent to calling declare(type), then allocate().
+   *        Equivalent to calling describe(type), then allocate().
    *
-   * If buffer is already set to externally-owned data or given
-   * number of elements < 0, this method does nothing.
+   * If given number of elements < 0, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */

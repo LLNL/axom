@@ -88,7 +88,7 @@ DataView * DataView::allocate( TypeID type, SidreLength num_elems)
     return this;
   }
 
-  declare(type, num_elems);
+  describe(type, num_elems);
   allocate();
 
   return this;
@@ -110,7 +110,7 @@ DataView * DataView::allocate(const DataType& dtype)
     return this;
   }
 
-  declare(dtype);
+  describe(dtype);
   allocate();
 
   return this;
@@ -145,7 +145,7 @@ DataView * DataView::reallocate(SidreLength num_elems)
     return this;
   }
 
-  declare(vtype, num_elems);
+  describe(vtype, num_elems);
   m_data_buffer->reallocate(num_elems);
   m_state = ALLOCATED;
   apply();
@@ -211,7 +211,7 @@ DataView * DataView::reallocate(const DataType& dtype)
     return this;
   }
 
-  declare(dtype);
+  describe(dtype);
   SidreLength num_elems = dtype.number_of_elements();
   m_data_buffer->reallocate(num_elems);
   m_state = ALLOCATED;
@@ -316,7 +316,7 @@ DataView * DataView::apply(SidreLength num_elems,
   dtype.set_offset(offset * dtype.element_bytes() );
   dtype.set_stride(stride * dtype.element_bytes() );
 
-  declare(dtype);
+  describe(dtype);
 
   apply();
 
@@ -350,7 +350,7 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
   dtype.set_offset(offset * bytes_per_elem);
   dtype.set_stride(stride * bytes_per_elem);
 
-  declare(dtype);
+  describe(dtype);
   apply();
 
   return this;
@@ -374,7 +374,7 @@ DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
     return this;
   }
 
-  declare(type, ndims, shape);
+  describe(type, ndims, shape);
   apply();
 
   return this;
@@ -396,7 +396,7 @@ DataView * DataView::apply(const DataType &dtype)
     return this;
   }
 
-  declare(dtype);
+  describe(dtype);
   apply();
 
   return this;
@@ -444,15 +444,11 @@ void * DataView::getVoidPtr() const
  */
 DataView * DataView::setExternalDataPtr(void * external_ptr)
 {
-  if ( !isSetExternalDataPtrValid() || external_ptr == ATK_NULLPTR )
+  if ( !isSetExternalDataPtrValid() )
   {
     SLIC_CHECK_MSG( isSetExternalDataPtrValid(),
                     "View state " << getStateStringName(m_state) <<
                     " does not allow setting external data pointer");
-
-    SLIC_CHECK_MSG( external_ptr != ATK_NULLPTR,
-                    "Unable to set external pointer to NULL.");
-
     return this;
   }
 
@@ -491,7 +487,7 @@ bool DataView::isAllocated()
   if ( m_state == SCALAR ||
        m_state == STRING ||
        ( hasBuffer() && m_data_buffer->isAllocated() ) ||
-       (m_state == EXTERNAL && m_external_ptr != ATK_NULLPTR)
+       ( m_state == EXTERNAL && m_external_ptr != ATK_NULLPTR )
        )
   {
     return true;
@@ -612,23 +608,23 @@ DataView::~DataView()
 /*
  *************************************************************************
  *
- * PRIVATE method to declare data view with type and number of elements.
+ * PRIVATE method to describe data view with type and number of elements.
  *
  *************************************************************************
  */
-void DataView::declare(TypeID type, SidreLength num_elems)
+void DataView::describe(TypeID type, SidreLength num_elems)
 {
   if ( num_elems < 0 )
   {
     SLIC_CHECK_MSG(num_elems >= 0,
-                   "Declare: must give number of elements >= 0");
+                   "Describe: must give number of elements >= 0");
     return;
   }
 
   DataType dtype = conduit::DataType::default_dtype(type);
   dtype.set_number_of_elements(num_elems);
   m_schema.set(dtype);
-  declareShape();
+  describeShape();
 
   if ( m_state == EMPTY )
   {
@@ -641,12 +637,12 @@ void DataView::declare(TypeID type, SidreLength num_elems)
 /*
  *************************************************************************
  *
- * PRIVATE method to declare data view with type, number of dimensions,
+ * PRIVATE method to describe data view with type, number of dimensions,
  *         and number of elements per dimension.
  *
  *************************************************************************
  */
-void DataView::declare(TypeID type, int ndims, SidreLength * shape)
+void DataView::describe(TypeID type, int ndims, SidreLength * shape)
 {
   if ( ndims < 0 || shape == ATK_NULLPTR)
   {
@@ -665,18 +661,18 @@ void DataView::declare(TypeID type, int ndims, SidreLength * shape)
     }
   }
 
-  declare(type, num_elems);
-  declareShape(ndims, shape);
+  describe(type, num_elems);
+  describeShape(ndims, shape);
 }
 
 /*
  *************************************************************************
  *
- * PRIVATE method to declare data view with a Conduit data type object.
+ * PRIVATE method to describe data view with a Conduit data type object.
  *
  *************************************************************************
  */
-void DataView::declare(const DataType& dtype)
+void DataView::describe(const DataType& dtype)
 {
   if ( dtype.is_empty() )
   {
@@ -687,7 +683,7 @@ void DataView::declare(const DataType& dtype)
   }
 
   m_schema.set(dtype);
-  declareShape();
+  describeShape();
 
   if ( m_state == EMPTY )
   {
@@ -700,12 +696,12 @@ void DataView::declare(const DataType& dtype)
 /*
  *************************************************************************
  *
- * PRIVATE method set shape to declared length.
- * This is called after declare to set the shape.
+ * PRIVATE method set shape to described length.
+ * This is called after describe to set the shape.
  *
  *************************************************************************
  */
-void DataView::declareShape()
+void DataView::describeShape()
 {
   m_shape.clear();
   m_shape.push_back(m_schema.dtype().number_of_elements());
@@ -718,7 +714,7 @@ void DataView::declareShape()
  *
  *************************************************************************
  */
-void DataView::declareShape(int ndims, SidreLength * shape)
+void DataView::describeShape(int ndims, SidreLength * shape)
 {
   m_shape.clear();
   for (int i=0 ; i < ndims ; i++)
@@ -802,38 +798,50 @@ bool DataView::isSetExternalDataPtrValid() const
  * PRIVATE method returns true if apply is a valid operation on view;
  * else false.
  *
+ * For an EXTERNAL view, assume user provided m_external_ptr and
+ * description are consistent. This includes m_external_ptr == NULL.
+ *
  *************************************************************************
  */
 bool DataView::isApplyValid() const
 {
-  // Valid if view has a description and a non-null external pointer or has a
-  // compatible buffer to apply description to.
-  if ( isDescribed() &&
-       ( ( (m_state == EXTERNAL) && (m_external_ptr != ATK_NULLPTR) ) ||
-#if 0
-         ( hasBuffer() && m_data_buffer->isAllocated() &&
-           (getTotalBytes() <= m_data_buffer->getTotalBytes()) )
-#else
-         ( hasBuffer() && (
-			   (m_data_buffer->isAllocated() && getTotalBytes() <= m_data_buffer->getTotalBytes() ) ||
-			   (!m_data_buffer->isAllocated() && getTotalBytes() == 0))
-#endif
-	   )
-	 ))
+  if ( !isDescribed() )
   {
-    return true;
+    SLIC_CHECK_MSG(isDescribed(),
+                   "Apply not valid, no description in view to apply.");
+    return false;
   }
 
-  // TODO - These can be cleaned up (break them up into smaller checks, after SLIC_IF_CHECK is added.
-  SLIC_CHECK_MSG(isDescribed(),
-                 "Apply not valid, no description in view to apply.");
-  SLIC_CHECK_MSG( ( m_state == EXTERNAL ||
-                    ( hasBuffer() && m_data_buffer->isAllocated() &&
-                      ( getTotalBytes() <= m_data_buffer->getTotalBytes() ) ) ),
-                  "Apply not valid, no applicable data to apply description to.");
+  switch (m_state)
+  {
+  case STRING:
+    SLIC_CHECK_MSG(m_state == STRING,
+                   "Apply not valid for a STRING view");
+    return false;
+  case SCALAR:
+    SLIC_CHECK_MSG(m_state == STRING,
+                   "Apply not valid for a SCALAR view");
+    return false;
+  case EXTERNAL:
+    break;
+  case BUFFER_ATTACHED:
+  case ALLOCATED:
+    if ( m_data_buffer->isAllocated() )
+    {
+      if ( !(getTotalBytes() <= m_data_buffer->getTotalBytes()) )
+      {
+        SLIC_CHECK_MSG(
+          getTotalBytes() <= m_data_buffer->getTotalBytes(),
+          "Apply not valid, buffer description is smaller than view description");
+        return false;
+      }
+    }
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
+  }
 
-  return false;
-
+  return true;
 }
 
 /*
@@ -893,7 +901,7 @@ char const * DataView::getStateStringName(State state) const
 
   default:
   {
-    ret_string = "/0";
+    ret_string = "UNKNOWN";
   }
   }
 
