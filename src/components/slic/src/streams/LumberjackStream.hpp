@@ -124,7 +124,6 @@ private:
   /// \name Private Members
   /// @{
 
-  MPI_Comm m_mpiComm;
   asctoolkit::lumberjack::Lumberjack* m_lj;
   asctoolkit::lumberjack::Communicator* m_ljComm;
   bool m_isLJOwnedBySLIC = false;

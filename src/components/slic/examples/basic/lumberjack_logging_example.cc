@@ -36,20 +36,19 @@
 
 using namespace asctoolkit;
 
-#define CYCLELIMIT 10
+#define CYCLELIMIT 5
 #define RANKSLIMIT 5
+
+#define N 20
+
+slic::message::Level getRandomEvent( const int start, const int end )
+{
+  return( static_cast<slic::message::Level>(std::rand() % (end-start) + start));
+}
 
 //------------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
-  // Process command line options
-  if (argc != 2) {
-    std::cout << "Error: Wrong amount of command line arguments given. Usage:" << std::endl << 
-                 "   " << argv[0] << " <file to be read>" << std::endl;
-    return 1;
-  }
-  char* fileName = argv[1];
-
   // Initialize MPI
   MPI_Init( &argc, &argv );
   int rank=-1;
@@ -63,35 +62,24 @@ int main( int argc, char** argv )
                        std::string( "\tLINE=<LINE>\n");
   slic::initialize();
 
-  // Open file for outputting messages
-  std::ofstream outFile;
-  outFile.open("speedTestOutput");
-
   // Set SLIC logging level and Lumberjack Logging stream
   slic::setLoggingMsgLevel( slic::message::Debug );
   slic::LumberjackStream* ljStream = 
-        new slic::LumberjackStream( &outFile, MPI_COMM_WORLD, RANKSLIMIT, format );
+        new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, RANKSLIMIT, format );
   slic::addStreamToAllMsgLevels( ljStream );
-
-  // Read lines from file
-  std::string currMessage;
-  std::vector<std::string> lines;
-  std::ifstream file(fileName);
-  while(std::getline(file, currMessage)){
-    currMessage += '\n';
-    lines.push_back(currMessage);
-  }
-  file.close();
 
   // Queue messages
   int cycleCount = 0;
-  int linesSize = (int)lines.size();
-  for (int i = 0; i < linesSize; ++i){
-    slic::logMessage( slic::message::Info,
-                         lines[i],
-                         __FILE__,
-                         __LINE__
-                         );
+  for (int i = 0; i < N; ++i){
+    std::ostringstream oss;
+    oss << "[ " << rank << "]: message " << i << "/" << N-1;
+
+    slic::logMessage( getRandomEvent(0,slic::message::Num_Levels),
+                      oss.str(),
+                      __FILE__,
+                      __LINE__
+                      );
+
     ++cycleCount;
     if (cycleCount > CYCLELIMIT) {
       // Incrementally push messages through the log stream

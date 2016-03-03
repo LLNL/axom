@@ -133,7 +133,7 @@ void LumberjackStream::write()
 void LumberjackStream::initializeLumberjack( MPI_Comm comm, int ranksLimit )
 {
   m_ljComm = new asctoolkit::lumberjack::BinaryTreeCommunicator;
-  m_ljComm->initialize(m_mpiComm, ranksLimit);
+  m_ljComm->initialize(comm, ranksLimit);
   m_lj = new asctoolkit::lumberjack::Lumberjack;
   m_lj->initialize(m_ljComm, ranksLimit);
   m_isLJOwnedBySLIC = true;
