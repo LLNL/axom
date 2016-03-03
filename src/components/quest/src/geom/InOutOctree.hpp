@@ -146,6 +146,7 @@ namespace quest
         {
             m_vertIndex = NO_VERTEX;
             m_tris.clear();
+            m_tris = TriangleList(0);    // reconstruct to deallocate memory
         }
 
         /**
@@ -242,6 +243,8 @@ public:
      */
     void generateIndex();
 
+
+
     /**
      * \brief The point containment query.
      * \param pt The point that we want to check for containment within the surface
@@ -251,6 +254,12 @@ public:
     bool within(const SpacePt& pt) const;
 
 private:
+
+    /**
+     * \brief Insert all triangles of the mesh into the octree, generating a PM octree
+     */
+    void insertMeshTriangles();
+
 
     /**
      * \brief Helper function to insert a vertex into the octree
@@ -339,6 +348,14 @@ private:
      * Utility function to print some statistics about the InOutOctree instance
      */
     void printOctreeStats(bool trianglesAlreadyInserted) const;
+
+
+    /**
+     * Ensures that all triangles have a consistent orientation
+     * \note Assumption is that most normals are consistently oriented, with some inconsistencies
+     *       If this turns out to be invalid, we may need to revisit this algorithm
+     */
+    void checkAndFixNormals();
 
 private:
 
@@ -612,6 +629,7 @@ void InOutOctree<DIM>::generateIndex ()
     vStart = std::chrono::system_clock::now();
 #endif
 
+#ifdef USE_OLD_TRIANGLE_INSERTION
     // STEP 2 -- Add mesh triangles to octree
     int numMeshTris = m_surfaceMesh->getMeshNumberOfCells();
     for(int idx=0; idx < numMeshTris; ++idx)
@@ -670,6 +688,17 @@ void InOutOctree<DIM>::generateIndex ()
 #endif
 
     }
+#else
+
+
+    // STEP 2 -- Add mesh triangles to octree
+    insertMeshTriangles();
+
+
+
+#endif
+
+
 
 #ifdef USE_CXX11
     vEnd = std::chrono::system_clock::now();
@@ -683,8 +712,105 @@ void InOutOctree<DIM>::generateIndex ()
     printOctreeStats(true);
     checkValid(true);
 
+    checkAndFixNormals();
+
     // STEP 3 -- Color the blocks of the octree -- Black (in), White(out), Gray(Intersects surface)
 
+
+}
+
+
+
+template<int DIM>
+void InOutOctree<DIM>::insertMeshTriangles ()
+{
+    SLIC_ASSERT( !m_vertexSet.empty() );
+
+    // Add all triangle references to the root
+    BlockIndex rootBlock = this->root();
+    InOutLeafData& rootData = (*this)[rootBlock];
+    int numMeshTris = m_surfaceMesh->getMeshNumberOfCells();
+    rootData.triangles().reserve(numMeshTris);
+    for(int idx=0; idx < numMeshTris; ++idx)
+        rootData.addTriangle(idx);
+
+    // Iterate through octree levels and insert triangles into the blocks that they intersect
+    for(int lev=0; lev< this->m_levels.size(); ++lev)
+    {
+        typedef typename OctreeBaseType::MapType LeavesLevelMap;
+        typedef typename LeavesLevelMap::iterator LeavesIterator;
+
+        LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
+        for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
+        {
+            BlockIndex blk(it->first, lev);
+            InOutLeafData& blkData = it->second;
+
+            if(! blkData.hasTriangles() )
+                continue;
+
+            bool isInternal = !blkData.isLeaf();
+            bool isLeafThatMustRefine = blkData.isLeaf() && ! allTrianglesIncidentInCommonVertex(blk, blkData);
+
+            // There is only work to do on internal blocks and leaves that must refine
+            if( !isInternal && !isLeafThatMustRefine )
+                continue;
+
+            // At this point, we must distribute the triangles among the appropriate children
+            InOutLeafData::TriangleList parentTriangles;
+            parentTriangles.swap(blkData.triangles());
+            int numTriangles = parentTriangles.size();
+
+            if( isLeafThatMustRefine )
+            {
+                VertexIndex vIdx = blkData.vertexIndex();
+
+                // Clear the current leaf and refine
+                blkData.clear();
+                this->refineLeaf(blk);
+
+                if( m_vertexToBlockMap[vIdx] == blk )
+                    insertVertex(vIdx, blk.childLevel());
+            }
+
+
+            // Cache information about children blocks
+            BlockIndex           childBlk[BlockIndex::numChildren()];
+            GeometricBoundingBox childBB[BlockIndex::numChildren()];
+            InOutLeafData*       childData[BlockIndex::numChildren()];
+            for(int j=0; j< BlockIndex::numChildren(); ++j)
+            {
+                childBlk[j]  = blk.child(j);
+                childBB[j]   = this->blockBoundingBox( childBlk[j] );
+                childData[j] = &(*this)[childBlk[j] ];
+            }
+
+            // Add all triangles to intersecting children blocks
+            for(int i=0; i< numTriangles; ++i)
+            {
+                TriangleIndex tIdx = parentTriangles[i];
+                SpaceTriangle spaceTri = trianglePositions(tIdx);
+                GeometricBoundingBox tBB = triangleBoundingBox(tIdx);
+                tBB.scale(1.00001);
+
+                for(int j=0; j< BlockIndex::numChildren(); ++j)
+                {
+                    if( childData[j]->isLeaf())
+                    {
+                        if(blockIndexesVertex(tIdx, childBlk[j]) || intersect(spaceTri, childBB[j]))
+                            childData[j]->addTriangle(tIdx);
+                    }
+                    else if( intersect(tBB, childBB[j]) )
+                    {
+                        childData[j]->addTriangle(tIdx);
+                    }
+
+                }
+            }
+
+            blkData.clear();
+        }
+    }
 
 }
 
@@ -1254,6 +1380,20 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
 
     if(trianglesAlreadyInserted)
     {
+        if(DEBUG_TRI_IDX >= 0)
+        {
+             dumpMeshVTK("triangle", DEBUG_TRI_IDX, this->root(), this->blockBoundingBox(this->root()), true);
+
+
+             TriVertIndices tv = triangleVertexIndices(DEBUG_TRI_IDX);
+             for(int i=0; i< 3; ++i)
+             {
+                 BlockIndex blk = m_vertexToBlockMap[ tv[i] ];
+                 dumpMeshVTK("triangleVertexBlock", DEBUG_TRI_IDX, blk, this->blockBoundingBox(blk), false);
+             }
+
+        }
+
         typedef asctoolkit::slam::Map<int> TriCountMap;
         typedef asctoolkit::slam::Map<int> CardinalityVTMap;
 
@@ -1273,6 +1413,13 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
                     for(int i = 0; i < leafData.numTriangles(); ++i)
                     {
                         ++triCount[ tris[i]];
+
+                        if(DEBUG_TRI_IDX == tris[i] )
+                        {
+                            BlockIndex blk(it->first, lev);
+                            dumpMeshVTK("triangleIntersect", tris[i], blk, this->blockBoundingBox(blk), false);
+                        }
+
                     }
                 }
             }
@@ -1390,6 +1537,49 @@ namespace{
 
         return os;
     }
+}
+
+
+
+template<int DIM>
+void InOutOctree<DIM>::checkAndFixNormals()
+{
+    int numVerts = m_surfaceMesh->getMeshNumberOfNodes();
+
+    SLIC_ASSERT_MSG(!m_vertexSet.empty()
+                    , "InOutOctree::checkAndFixNormals() -- This function assumes that we have a valid mapping"
+                    << " from vertices to their octree blocks.");
+
+
+    typedef std::vector<int> OrientationVector;
+    OrientationVector orientVec;
+
+    for(int idx=0; idx < numVerts; ++idx)
+    {
+        const BlockIndex& blk = m_vertexToBlockMap[idx];
+        const InOutLeafData& leaf = (*this)[blk];
+//
+//        if(leaf.hasTriangles())
+//        {
+//            orientVector.clear();
+//            int numTris = leaf.numTriangles();
+//            orientVector.reserve(numTris);
+//
+//            const typename InOutLeafData::TriangleList& tris = leaf.triangles();
+//            for(int i=0; i< numTris; ++i)
+//            {
+//                TriangleIndex tIdx = tris[i];
+//                TriVertIndices tv = triangleVertexIndices(tIdx);
+//
+//                /***  HERE  ***/
+//
+//
+//
+//            }
+//        }
+    }
+
+
 }
 
 template<int DIM>
