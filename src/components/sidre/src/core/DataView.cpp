@@ -515,10 +515,10 @@ int DataView::getShape(int ndims, SidreLength * shape) const
  */
 bool DataView::isEquivalentTo(const DataView * other) const
 {
+  //add isAllocated() if it can be declared const
   return (getName() == other->getName()) && (getTypeID() == other->getTypeID())
          && (isApplied() == other->isApplied())
          && (hasBuffer() == other->hasBuffer())
-         && (isAllocated() == other->isAllocated())
          && (getTotalBytes() == other->getTotalBytes());
 }
 

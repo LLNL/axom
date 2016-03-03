@@ -31,15 +31,15 @@ add_subdirectory(examples)
 ################################
 # Add tests
 ################################
-#if (BUILD_TESTING)
-#  add_subdirectory(tests)
-#endif()
+if (BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
 
 
 ################################
 # Add docs
 ################################
-#add_subdirectory(docs)
+add_subdirectory(docs)
 
 ################################
 # Create CMake importable
