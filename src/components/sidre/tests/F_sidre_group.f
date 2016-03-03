@@ -26,7 +26,6 @@ contains
   subroutine get_name
     type(datastore) ds
     type(datagroup) root, group, group2
-    character(30) name
 
     call set_case_name("get_name")
 
@@ -34,8 +33,7 @@ contains
     root = ds%get_root()
     group = root%create_group("test")
 
-    call group%get_name(name)
-    call assert_true(name == "test" )
+    call assert_true(group%get_name() == "test" )
 
     group2 = root%get_group("foo")
     call assert_false( group2%associated() )
@@ -143,8 +141,7 @@ contains
     type(datagroup) root, parent
     type(dataview) view1, view2
     integer idx1, idx2, idx3    ! IndexType
-    character(len=30) name1, name2, name3
-    character(len=30) tmpname
+    character(len=MAXNAMESIZE) name1, name2, name3
 
     call set_case_name("get_view_name_index")
 
@@ -160,21 +157,19 @@ contains
     idx1 = parent%get_view_index("view1")
     idx2 = parent%get_view_index("view2")
 
-    call parent%get_view_name(idx1, name1)
-    call parent%get_view_name(idx2, name2)
+    name1 = parent%get_view_name(idx1)
+    name2 = parent%get_view_name(idx2)
 
     call assert_equals(name1, "view1")
-    call view1%get_name(tmpname)
-    call assert_equals(tmpname, name1)
+    call assert_equals(view1%get_name(), name1)
     
     call assert_equals(name2, "view2")
-    call view2%get_name(tmpname)
-    call assert_equals(tmpname, name2)
+    call assert_equals(view2%get_name(), name2)
 
     idx3 = parent%get_view_index("view3")
     call assert_equals(idx3, invalid_index)
 
-    call parent%get_view_name(idx3, name3)
+    name3 = parent%get_view_name(idx3)
     call assert_true(name3 == " ")
     call assert_false(name_is_valid(name3))
 
@@ -209,16 +204,14 @@ contains
     idx1 = parent%get_first_valid_view_index()
     idx2 = parent%get_next_valid_view_index(idx1)
 
-    call parent%get_view_name(idx1, name1)
-    call parent%get_view_name(idx2, name2)
+    name1 = parent%get_view_name(idx1)
+    name2 = parent%get_view_name(idx2)
 
     call assert_true(name1 == "view1")
-    call view1%get_name(name1)
-    call assert_true(name1 == "view1")
+    call assert_true(view1%get_name() == "view1")
 
     call assert_true(name2 == "view2")
-    call view2%get_name(name2)
-    call assert_true(name2 == "view2")
+    call assert_true(view2%get_name() == "view2")
 
     ! check error conditions
     badidx1 = emptygroup%get_first_valid_view_index()
@@ -237,8 +230,7 @@ contains
     type(datastore) ds
     type(datagroup) root, parent, group1, group2
     integer idx1, idx2, idx3     ! IndexType
-    character(len=30) name1, name2, name3
-    character(len=30) tmpname
+    character(len=MAXNAMESIZE) name1, name2, name3
 
     call set_case_name("get_group_name_index")
 
@@ -255,20 +247,19 @@ contains
     idx1 = parent%get_group_index("group1")
     idx2 = parent%get_group_index("group2")
 
-    call parent%get_group_name(idx1, name1)
-    call assert_equals(name1, "group1")
-    call group1%get_name(tmpname)
-    call assert_equals(tmpname, name1)
+    name1 = parent%get_group_name(idx1)
+    name2 = parent%get_group_name(idx2)
 
-    call parent%get_group_name(idx2, name2)
+    call assert_equals(name1, "group1")
+    call assert_equals(group1%get_name(), name1)
+
     call assert_equals(name2, "group2")
-    call group2%get_name(tmpname)
-    call assert_equals(tmpname, name2)
+    call assert_equals(group2%get_name(), name2)
 
     idx3 = parent%get_group_index("group3")
     call assert_equals(idx3, invalid_index)
 
-    call parent%get_group_name(idx3, name3)
+    name3 = parent%get_group_name(idx3)
     call assert_true(name3 == " ")
     call assert_false(name_is_valid(name3))
 
@@ -550,39 +541,25 @@ contains
     ! this one is the DataType & method
     view1 = grp%create_view_and_allocate(view_name1, SIDRE_INT_ID, 10)
 
-!--    ! this one is the Schema & method
-!--    Schema s
-!--    s.set(DataType::c_double(10))
-!--    DataView * const view2 = grp%create_view_and_buffer(view_name2,
-
     call assert_true(grp%has_view(view_name1))
     call assert_true(grp%get_view(view_name1) == view1)
 
-!--    call assert_true(grp%has_view(view_name2))
-!--    call assert_equals( grp%get_view(view_name2), view2 )
-
-
     call view1%get_data(v1_vals)
-!--    double * v2_vals = view2%get_data()
   
     do i = 1, 10
        v1_vals(i) = i
-!--       v2_vals(i) = i * 3.1415
     enddo
 
     call assert_true(view1%get_num_elements() == 10)
-!--    call assert_equals(view2%get_num_elements(), 10)
 !--    call assert_equals(view1%get_total_bytes(), 10 * sizeof(int))
-!--    call assert_equals(view2%get_total_bytes(), 10 * sizeof(double))
 
     call grp%destroy_view_and_data(view_name1)
-!--    call grp%destroy_view_and_buffer(view_name2)
 
     call ds%delete()
   end subroutine create_destroy_alloc_view_and_data
 
   !------------------------------------------------------------------------------
-  subroutine create_view_of_buffer_with_schema
+  subroutine create_view_of_buffer_with_datatype
     type(datastore) ds
     type(datagroup) root
     type(dataview) base
@@ -591,7 +568,7 @@ contains
 !--    integer i
 !    integer(C_INT), pointer :: sub_a_vals(:)
 
-    call set_case_name("create_view_of_buffer_with_schema")
+    call set_case_name("create_view_of_buffer_with_datatype")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -609,20 +586,15 @@ contains
     ! view for the first 5 values
 !--    root%createView("sub_a", base_buff, DataType::c_int(5))
     ! view for the second 5 values
-    !  (schema call path case)
-!--    Schema s(DataType::c_int(5,5*sizeof(int)))
-!--    root%createView("sub_b",base_buff,s)
 
 !--    int * sub_a_vals = root%get_view("sub_a")%get_data(sub_a_vals)
-!--    int * sub_b_vals = root%get_view("sub_b")%get_data(sub_b_vals)
 
 !--    do i = 1, 5
 !--       call assert_equals(sub_a_vals(i), 10)
-!--       call assert_equals(sub_b_vals(i), 20)
 !--    enddo
 
     call ds%delete()
-  end subroutine create_view_of_buffer_with_schema
+  end subroutine create_view_of_buffer_with_datatype
 
   !------------------------------------------------------------------------------
   subroutine save_restore_simple
@@ -760,7 +732,7 @@ program fortran_test
   call groups_move_copy
   call create_destroy_view_and_data
   call create_destroy_alloc_view_and_data
-  call create_view_of_buffer_with_schema
+  call create_view_of_buffer_with_datatype
   call save_restore_simple
   call save_restore_complex
 

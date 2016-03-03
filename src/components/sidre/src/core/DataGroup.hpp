@@ -415,22 +415,6 @@ public:
                          const DataType& dtype);
 
   /*!
-   * \brief Create DataView object with given name and described by
-   *        Conduit Schema, and attach new view to this group object.
-   *
-   * IMPORTANT: This method does not allocate data or associated the view
-   * with data.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         const Schema& schema);
-
-  /*!
    * \brief Create DataView object with given name, attach it to given buffer,
    *        and attach new view to this group object.
    *
@@ -540,21 +524,6 @@ public:
   DataView * createViewAndAllocate( const std::string& name,
                                     const DataType& dtype);
 
-  /*!
-   * \brief Create DataView object with given name and Conduit Schema,
-   *        allocate the data, and attach new view to this group object.
-   *
-   * This is equivalent to calling: createView(name)->allocate(schema);
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createViewAndAllocate( const std::string& name,
-                                    const Schema& schema);
-
 //@}
 
 
@@ -582,20 +551,25 @@ public:
   void destroyViews();
 
   /*!
-   * \brief Destroy view in this DataGroup with given name AND destroy
-   *        its associated data, if it owns the data.
+   * \brief Destroy view in this DataGroup with given name.  Destroy it's data
+   *        also, if this is the only view referencing that data.
+   *
+   *        Data will not be destroyed as long as a view still exists that
+   *        references it.
    */
   void destroyViewAndData(const std::string& name);
 
   /*!
-   * \brief Destroy view in this DataGroup with given index AND destroy
-   *        its associated data, if it owns the data.
+   * \brief Destroy view in this DataGroup with given index.  Destroy it's data
+   *        also, if this is the only view referencing that data.
+   *
+   *        Data will not be destroyed as long as a view still exists that
+   *        references it.
    */
   void destroyViewAndData(IndexType idx);
 
   /*!
-   * \brief Destroy all views in this DataGroup AND destroy their
-   *        associated data.
+   * \brief Calls destroyViewAndData on all views in this group.
    */
   void destroyViewsAndData();
 

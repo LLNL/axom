@@ -10,6 +10,19 @@ import argparse
 import platform
 import shutil
 
+# Helper function to get SYS_TYPE on LC systems.
+# Does not require SYS_TYPE to be set in environment (making some automated scripts easier )
+def get_systype():
+    import os
+    lc_home_config_filename = "/etc/home.config"
+    if os.path.exists(lc_home_config_filename):
+        file_handle = open(lc_home_config_filename, "r")
+        content = file_handle.readlines()
+        for line in content:
+            if line.startswith("SYS_TYPE"):
+                return line.split(" ")[1].strip()
+    return None
+
 parser = argparse.ArgumentParser(description="Configure cmake build.")
 
 parser.add_argument("-bp",
@@ -72,22 +85,25 @@ args = parser.parse_args()
 ########################
 platform_info = ""
 scriptsdir = os.path.dirname( os.path.abspath(sys.argv[0]) )
+systype = get_systype()
 
 if args.hostconfig != "":
     cachefile = os.path.abspath(args.hostconfig)
     platform_info = os.path.split(cachefile)[1]
     if platform_info.endswith(".cmake"):
         platform_info = platform_info[:-6]
+    print "Using user specified host config file: '%s'." % cachefile
 else:
     # Check if 'SYS_TYPE' exists, and look for cache file there.
     cachefile = scriptsdir.replace("scripts","host-configs")
-    if "SYS_TYPE" in os.environ:
-        systype = os.environ["SYS_TYPE"]
+    if systype:
         platform_info = systype.split("_")[0]
         cachefile = os.path.join( cachefile, platform_info, "%s.cmake" % args.compiler ) 
+        print "Detected LC SYS_TYPE '%s'.  Using host config file: '%s'." % ( systype, cachefile )
     else:
         platform_info = platform.node()
         cachefile = os.path.join(cachefile, "other", "%s.cmake" % platform_info )
+        print "No /etc/home.config file found, must not be a LC system.  Using hostname config file: '%s'" % ( cachefile )
 
 assert os.path.exists( cachefile ), "Could not find cmake cache file '%s'." % cachefile
 
@@ -142,6 +158,13 @@ os.makedirs(installpath)
 ############################
 
 cmakeline = "cmake"
+# Use toolkit cmake installation, if present.
+if systype:
+    toolkit_cmake = os.path.join("/usr/gapps/asctoolkit/tools", systype, "cmake", "bin", "cmake")
+    if os.path.exists(toolkit_cmake):
+        print "Detected toolkit cmake installation at '%s'" % toolkit_cmake
+        cmakeline = toolkit_cmake
+
 # Add cache file option
 cmakeline += " -C %s" % cachefile
 # Add build type (opt or debug)

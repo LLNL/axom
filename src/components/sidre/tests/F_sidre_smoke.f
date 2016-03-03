@@ -47,8 +47,8 @@ contains
 
     root = ds%get_root()
 
-    call root%get_group_name(idx, name)
-    call assert_true(name == " ", "error return from get_group_name")
+    call assert_true(root%get_group_name(idx) == " ", &
+         "error return from get_group_name")
     call assert_true(root%get_group_index(name) == invalid_index, &
          "root%get_group_index(name) == invalid_index")
 

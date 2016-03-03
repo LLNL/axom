@@ -313,8 +313,8 @@ std::ostream& Point< T, DIM >::print(std::ostream& os) const
 {
     os <<"(";
     for(int dim=0; dim < DIM -1; ++ dim)
-        os << m_components[dim] << ",";
-    os << m_components[DIM-1] << ")";
+        os << static_cast<typename NonChar<T>::type>(m_components[dim]) << ",";
+    os << static_cast<typename NonChar<T>::type>(m_components[DIM-1]) << ")";
 
     return os;
 }

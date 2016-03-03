@@ -494,7 +494,6 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
   SIDRE_datagroup * const grp = SIDRE_datagroup_create_group(root, "grp");
 
   const char * viewName1 = "viewBuffer1";
-  const char * viewName2 = "viewBuffer2";
 
   // use create + alloc convenience methods
   // this one is the DataType & method
@@ -502,16 +501,9 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
     SIDRE_datagroup_create_view_and_allocate_nelems(grp, viewName1,
                                                     SIDRE_INT_ID, 10);
 
-  // this one is the Schema & method
-  SIDRE_dataview * const view2 =
-    SIDRE_datagroup_create_view_and_allocate_nelems(grp, viewName2,
-                                                    SIDRE_DOUBLE_ID, 10);
-
   EXPECT_TRUE(SIDRE_datagroup_has_view(grp, viewName1));
   EXPECT_EQ( SIDRE_datagroup_get_view_from_name(grp, viewName1), view1 );
 
-  EXPECT_TRUE(SIDRE_datagroup_has_view(grp, viewName2));
-  EXPECT_EQ( SIDRE_datagroup_get_view_from_name(grp, viewName2), view2 );
 
 #ifdef XXX
   int * v1_vals = (int *) SIDRE_dataview_get_void_ptr(view1);
@@ -525,19 +517,16 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
 #endif
 
   EXPECT_EQ(SIDRE_dataview_get_num_elements(view1), 10u);
-  EXPECT_EQ(SIDRE_dataview_get_num_elements(view2), 10u);
   EXPECT_EQ(SIDRE_dataview_get_total_bytes(view1), 10 * sizeof(int));
-  EXPECT_EQ(SIDRE_dataview_get_total_bytes(view2), 10 * sizeof(double));
 
   SIDRE_datagroup_destroy_view_and_data_name(grp, viewName1);
-  SIDRE_datagroup_destroy_view_and_data_name(grp, viewName2);
 
   SIDRE_datastore_delete(ds);
 }
 
 #ifdef XXX
 //------------------------------------------------------------------------------
-TEST(C_sidre_group,create_view_of_buffer_with_schema)
+TEST(C_sidre_group,create_view_of_buffer_with_datatype)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
@@ -566,21 +555,14 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   // view for the first 5 values
   SIDRE_datagroup_create_view(root, "sub_a", base_buff, SIDRE_C_INT_T, 5);
   // view for the second 5 values
-  //  (schema call path case)
-  Schema s(DataType::uint32(5, 5*sizeof(int)));
-  SIDRE_datagroup_create_view(root, "sub_b", base_buff, s);
 
   int * sub_a_vals = (int *) SIDRE_dataview_get_void_ptr(SIDRE_datagroup_get_view_from_name(
                                                            root,
                                                            "sub_a"));
-  int * sub_b_vals = (int *) SIDR_dataview_get_void_ptr(SIDRE_datagroup_get_view_from_name(
-                                                          root,
-                                                          "sub_b"));
 
   for(int i=0 ; i<5 ; i++)
   {
     EXPECT_EQ(sub_a_vals[i], 10);
-    EXPECT_EQ(sub_b_vals[i], 20);
   }
 
   SIDRE_datastore_delete(ds);

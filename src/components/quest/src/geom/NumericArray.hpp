@@ -113,6 +113,32 @@ template<typename T, int DIM> NumericArray<T,DIM> operator/(const NumericArray<T
 template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const NumericArray<T,DIM> & arr);
 
 
+
+/**
+ * \brief Type trait to avoid outputting chars when a value is expected
+ *  This avoids unintentionally outputting system beeps
+ */
+template <typename T>
+struct NonChar
+{
+    typedef T type;     /** The non-char type to return */
+};
+template<>
+struct NonChar<char>
+{
+    /** A non-char signed type to which we can cast a char for output */
+    typedef int type;
+};
+template<>
+struct NonChar<unsigned char>
+{
+    /** A non-char unsigned type to which we can cast a char for output */
+    typedef unsigned int type;
+};
+
+
+
+
 /*!
  *******************************************************************************
  * \class NumericArray
@@ -432,8 +458,8 @@ std::ostream& NumericArray< T, DIM >::print(std::ostream& os) const
 {
     os <<"[";
     for(int dim=0; dim < DIM -1; ++ dim)
-        os << m_components[dim] << ",";
-    os << m_components[DIM-1] << "]";
+        os << static_cast<typename NonChar<T>::type>(m_components[dim]) << ",";
+    os << static_cast<typename NonChar<T>::type>(m_components[DIM-1]) << "]";
 
     return os;
 }

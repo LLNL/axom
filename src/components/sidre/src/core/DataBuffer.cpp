@@ -18,13 +18,12 @@
  ******************************************************************************
  */
 
-
 // Associated header file
 #include "DataBuffer.hpp"
 
 // Standard C++ headers
 #include <algorithm>
-#include <cstring> //for memcpy
+#include <cstring> // for std::memcpy
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
@@ -35,23 +34,10 @@
 #include "DataView.hpp"
 #include "SidreTypes.hpp"
 
-
 namespace asctoolkit
 {
 namespace sidre
 {
-
-/*
- *************************************************************************
- *
- * Return total number of bytes associated with this DataBuffer object.
- *
- *************************************************************************
- */
-size_t DataBuffer::getTotalBytes() const
-{
-  return m_schema.total_bytes();
-}
 
 /*
  *************************************************************************
@@ -64,34 +50,31 @@ DataView * DataBuffer::getView( IndexType idx )
 {
   if ( !hasView(idx) )
   {
-    SLIC_CHECK_MSG(hasView(idx), "no view exists with index == " << idx);
+    SLIC_CHECK_MSG(hasView(idx), "Buffer has no view with index " << idx);
     return ATK_NULLPTR;
   }
 
   return m_views[idx];
 }
 
-
 /*
  *************************************************************************
  *
- * Declare buffer to OWN data of given type and number of elements.
+ * Describe buffer to hold data of given type and number of elements.
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
+DataBuffer * DataBuffer::describe(TypeID type, SidreLength num_elems)
 {
   if ( num_elems < 0 )
   {
-    SLIC_CHECK_MSG(num_elems >= 0, "Must declare number of elements >=0");
+    SLIC_CHECK_MSG(num_elems >= 0, "Must describe number of elements >=0");
     return this;
   }
 
-  m_type = type;
-
-  DataType dtype = conduit::DataType::default_dtype(type);
+  DataType& dtype = const_cast<DataType&>(m_node.dtype());
+  dtype.set( dtype.default_dtype(type) );
   dtype.set_number_of_elements(num_elems);
-  m_schema.set(dtype);
 
   return this;
 }
@@ -99,25 +82,37 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
 /*
  *************************************************************************
  *
- * Allocate data previously declared.
+ * Allocate data previously described.
  *
  *************************************************************************
  */
 DataBuffer * DataBuffer::allocate()
 {
-  // cleanup old data
-  cleanup();
-  std::size_t alloc_size = getTotalBytes();
-  m_data = allocateBytes(alloc_size);
-  m_node.set_external(m_schema, m_data);
+  if (!isDescribed() || isAllocated() )
+  {
+    SLIC_CHECK_MSG(isDescribed(),
+                   "Buffer has no data description, unable to allocate.");
+    SLIC_CHECK_MSG(!isAllocated(), "Buffer is already allocated.");
 
+    return this;
+  }
+
+  void * data = allocateBytes( getTotalBytes() );
+
+  SLIC_CHECK_MSG( data != ATK_NULLPTR,
+                  "Buffer failed to allocate memory of size " <<
+                  getTotalBytes() );
+  if (data != ATK_NULLPTR)
+  {
+    m_node.set_external( DataType( m_node.dtype() ), data );
+  }
   return this;
 }
 
 /*
  *************************************************************************
  *
- * Declare and allocate data described by type and num elements.
+ * Describe and allocate data described by type and num elements.
  *
  *************************************************************************
  */
@@ -129,7 +124,7 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
     return this;
   }
 
-  declare(type, num_elems);
+  describe(type, num_elems);
   allocate();
 
   return this;
@@ -144,34 +139,42 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
  */
 DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 {
-  if ( num_elems < 0 || m_data == ATK_NULLPTR )
+  // If buffer not allocated just call allocate.
+  if (!isAllocated())
   {
-    SLIC_CHECK_MSG(num_elems >= 0, "Must re-allocate number of elements >=0");
-    SLIC_CHECK_MSG( m_data != ATK_NULLPTR,
-                     "Attempting to reallocate an unallocated buffer");
+    SLIC_CHECK_MSG(isDescribed(),
+                   "Can't re-allocate, no data description in buffer.");
+    if (isDescribed() )
+    {
+      allocate();
+    }
     return this;
   }
 
-  std::size_t old_size = getTotalBytes();
-  // update the buffer's Conduit Node
-  DataType dtype = conduit::DataType::default_dtype(m_type);
+  if ( num_elems < 0 )
+  {
+    SLIC_CHECK_MSG(num_elems >= 0,
+                   "Must re-allocate with number of elements >=0");
+    return this;
+  }
+
+  SidreLength old_size = getTotalBytes();
+  void * old_data_ptr = getVoidPtr();
+
+  DataType dtype( m_node.dtype() );
   dtype.set_number_of_elements( num_elems );
-  m_schema.set(dtype);
+  SidreLength new_size = dtype.total_bytes();
+  void * new_data_ptr = allocateBytes(new_size);
 
-  std::size_t new_size = getTotalBytes();
-
-  void * realloc_data = allocateBytes(new_size);
-
-  std::memcpy(realloc_data, m_data, std::min(old_size, new_size));
-
-  // cleanup old data
-  cleanup();
-
-  // let the buffer hold the new data
-  m_data = realloc_data;
-
-  // update the conduit node data pointer
-  m_node.set_external(m_schema, m_data);
+  SLIC_CHECK_MSG(new_data_ptr != ATK_NULLPTR,
+                 "Buffer failed to re-allocate with " << new_size << " bytes.");
+  if ( new_data_ptr != ATK_NULLPTR )
+  {
+    m_node.reset();
+    m_node.set_external(dtype, new_data_ptr);
+    update(old_data_ptr, std::min(old_size, new_size) );
+    releaseBytes( old_data_ptr);
+  }
 
   return this;
 }
@@ -183,15 +186,17 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::update(const void * src, size_t nbytes)
+DataBuffer * DataBuffer::update(const void * src, SidreLength nbytes)
 {
   if ( nbytes > getTotalBytes() )
   {
-    SLIC_CHECK_MSG(nbytes <= getTotalBytes(), "Unable to copy data into buffer, size exceeds available # bytes in buffer.");
+    SLIC_CHECK_MSG(
+      nbytes <= getTotalBytes(),
+      "Unable to copy data into buffer, size exceeds available # bytes in buffer.");
     return this;
   }
 
-  std::memcpy(m_data, src, nbytes);
+  copyBytes(src, getVoidPtr(), nbytes);
 
   return this;
 }
@@ -206,7 +211,6 @@ DataBuffer * DataBuffer::update(const void * src, size_t nbytes)
 void DataBuffer::info(Node &n) const
 {
   n["index"].set(m_index);
-  n["schema"].set(m_schema.to_json());
   n["node"].set(m_node.to_json());
 }
 
@@ -245,15 +249,11 @@ void DataBuffer::print(std::ostream& os) const
  *
  *************************************************************************
  */
-DataBuffer::DataBuffer( IndexType index )
-  : m_index(index),
+DataBuffer::DataBuffer( IndexType uid )
+  : m_index(uid),
   m_views(),
-  m_type(EMPTY_ID),
-  m_data(ATK_NULLPTR),
-  m_node(),
-  m_schema()
+  m_node()
 {}
-
 
 /*
  *************************************************************************
@@ -265,10 +265,7 @@ DataBuffer::DataBuffer( IndexType index )
 DataBuffer::DataBuffer(const DataBuffer& source )
   : m_index(source.m_index),
   m_views(source.m_views),
-  m_type(EMPTY_ID),
-  m_data(source.m_data),
-  m_node(source.m_node),
-  m_schema(source.m_schema)
+  m_node(source.m_node)
 {
 // disallow?
 }
@@ -283,9 +280,8 @@ DataBuffer::DataBuffer(const DataBuffer& source )
  */
 DataBuffer::~DataBuffer()
 {
-  cleanup();
+  releaseBytes(getVoidPtr());
 }
-
 
 /*
  *************************************************************************
@@ -298,7 +294,6 @@ void DataBuffer::attachView( DataView * view )
 {
   m_views.push_back( view );
 }
-
 
 /*
  *************************************************************************
@@ -321,17 +316,15 @@ void DataBuffer::detachView( DataView * view )
 /*
  *************************************************************************
  *
- * PRIVATE cleanup
+ * PRIVATE copyBytes
+ * Encapsulated our memory copying routine in private function in case
+ * developers want to compare different implementations.
  *
  *************************************************************************
  */
-void DataBuffer::cleanup()
+void DataBuffer::copyBytes( const void * src, void * dst, size_t num_bytes )
 {
-  // cleanup allocated data
-  if ( m_data != ATK_NULLPTR )
-  {
-    releaseBytes(m_data);
-  }
+  std::memcpy( dst, src, num_bytes );
 }
 
 /*
@@ -343,8 +336,7 @@ void DataBuffer::cleanup()
  */
 void * DataBuffer::allocateBytes(std::size_t num_bytes)
 {
-  char * data = new char[num_bytes];
-  return ((void *)data);
+  return new(std::nothrow) detail::sidre_int8[num_bytes];
 }
 
 /*
@@ -354,12 +346,11 @@ void * DataBuffer::allocateBytes(std::size_t num_bytes)
  *
  *************************************************************************
  */
-void DataBuffer::releaseBytes(void * ptr)
+void DataBuffer::releaseBytes( void * ptr)
 {
-  delete [] ((char *)ptr);
-  m_data = ATK_NULLPTR;
+  // Pointer type here should always match new call in allocateBytes.
+  delete[] static_cast<detail::sidre_int8 *>(ptr);
 }
-
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */
