@@ -800,13 +800,6 @@ bool DataView::isApplyValid() const
     break;
   case BUFFER_ATTACHED:
   case ALLOCATED:
-    if ( !hasBuffer() )
-    {
-      SLIC_CHECK_MSG(hasBuffer(),
-                     "Apply not valid, no buffer available");
-      return false;
-    }
-
     if ( m_data_buffer->isAllocated() )
     {
       if ( !(getTotalBytes() <= m_data_buffer->getTotalBytes()) )
