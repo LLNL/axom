@@ -171,7 +171,7 @@ DataView * DataView::deallocate()
     return this;
   }
 
-  if ( m_data_buffer != ATK_NULLPTR )
+  if ( hasBuffer() )
   {
     m_data_buffer->deallocate();
   }

@@ -114,8 +114,14 @@ TEST(sidre_view,scalar_view)
   EXPECT_EQ(s0view->getNumDimensions(), 1);
   EXPECT_TRUE(s0view->getShape(1, dims) == 1 && dims[0] == 14);
 
-  delete ds;
+  // Check illegal operations
+  i0view->allocate();
+  i0view->deallocate();
 
+  s0view->allocate();
+  s0view->deallocate();
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
