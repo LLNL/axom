@@ -143,13 +143,13 @@ public:
    * covering its domain.
    */
   class BlockIndex {
-  private:
+  public:
 
       enum  {
           /** The number of children of an octree block (\f$ 2^{DIM} \f$ in dimension DIM ) */
           NUM_CHILDREN = 1 << DIM
       };
-
+  private:
       typedef asctoolkit::slam::policies::CompileTimeSizeHolder<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
 
   public:

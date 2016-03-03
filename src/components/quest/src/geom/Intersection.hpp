@@ -126,17 +126,17 @@ namespace {
       return d1 < -r || d0 > r;
   }
 
-  /**
-   * \brief Helper function to find disjoint projections for the AABB-triangle test
-   * \param {vo,v1,v2} Vertices of the triangle
-   * \param n Face normal
-   * \param r Radius of projection
-   * \return True of the intervals are disjoint, false otherwise
-   */
-  bool crossEdgesDisjoint(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& n, double r)
-  {
-      return intervalsDisjoint( n.dot(v0), n.dot(v1), n.dot(v2), r);
-  }
+//  /**
+//   * \brief Helper function to find disjoint projections for the AABB-triangle test
+//   * \param {vo,v1,v2} Vertices of the triangle
+//   * \param n Face normal
+//   * \param r Radius of projection
+//   * \return True of the intervals are disjoint, false otherwise
+//   */
+//  bool crossEdgesDisjoint(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& n, double r)
+//  {
+//      return intervalsDisjoint( n.dot(v0), n.dot(v1), n.dot(v2), r);
+//  }
 
 
   bool crossEdgesDisjoint2(double d0, double d1, double r)
