@@ -418,15 +418,11 @@ void * DataView::getVoidPtr() const
  */
 DataView * DataView::setExternalDataPtr(void * external_ptr)
 {
-  if ( !isSetExternalDataPtrValid() || external_ptr == ATK_NULLPTR )
+  if ( !isSetExternalDataPtrValid() )
   {
     SLIC_CHECK_MSG( isSetExternalDataPtrValid(),
                     "View state " << getStateStringName(m_state) <<
                     " does not allow setting external data pointer");
-
-    SLIC_CHECK_MSG( external_ptr != ATK_NULLPTR,
-                    "Unable to set external pointer to NULL.");
-
     return this;
   }
 
@@ -465,7 +461,7 @@ bool DataView::isAllocated()
   if ( m_state == SCALAR ||
        m_state == STRING ||
        ( hasBuffer() && m_data_buffer->isAllocated() ) ||
-       (m_state == EXTERNAL && m_external_ptr != ATK_NULLPTR)
+       ( m_state == EXTERNAL && m_external_ptr != ATK_NULLPTR )
        )
   {
     return true;
@@ -776,32 +772,50 @@ bool DataView::isSetExternalDataPtrValid() const
  * PRIVATE method returns true if apply is a valid operation on view;
  * else false.
  *
+ * For an EXTERNAL view, assume user provided m_external_ptr and
+ * description are consistent. This includes m_external_ptr == NULL.
+ *
  *************************************************************************
  */
 bool DataView::isApplyValid() const
 {
-  // Valid if view has a description and a non-null external pointer or has a
-  // compatible buffer to apply description to.
-  if ( isDescribed() &&
-       ( ( (m_state == EXTERNAL) && (m_external_ptr != ATK_NULLPTR) ) ||
-         ( hasBuffer() && m_data_buffer->isAllocated() &&
-           (getTotalBytes() <= m_data_buffer->getTotalBytes()) )
-       )
-       )
+  if ( !isDescribed() )
   {
-    return true;
+    SLIC_CHECK_MSG(isDescribed(),
+                   "Apply not valid, no description in view to apply.");
+    return false;
   }
 
-  // TODO - These can be cleaned up (break them up into smaller checks, after SLIC_IF_CHECK is added.
-  SLIC_CHECK_MSG(isDescribed(),
-                 "Apply not valid, no description in view to apply.");
-  SLIC_CHECK_MSG( ( m_state == EXTERNAL ||
-                    ( hasBuffer() && m_data_buffer->isAllocated() &&
-                      ( getTotalBytes() <= m_data_buffer->getTotalBytes() ) ) ),
-                  "Apply not valid, no applicable data to apply description to.");
+  switch (m_state)
+  {
+  case STRING:
+    SLIC_CHECK_MSG(m_state == STRING,
+                   "Apply not valid for a STRING view");
+    return false;
+  case SCALAR:
+    SLIC_CHECK_MSG(m_state == STRING,
+                   "Apply not valid for a SCALAR view");
+    return false;
+  case EXTERNAL:
+    break;
+  case BUFFER_ATTACHED:
+  case ALLOCATED:
+    if ( m_data_buffer->isAllocated() )
+    {
+      if ( !(getTotalBytes() <= m_data_buffer->getTotalBytes()) )
+      {
+        SLIC_CHECK_MSG(
+          getTotalBytes() <= m_data_buffer->getTotalBytes(),
+          "Apply not valid, buffer description is smaller than view description");
+        return false;
+      }
+    }
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
+  }
 
-  return false;
-
+  return true;
 }
 
 /*
@@ -861,7 +875,7 @@ char const * DataView::getStateStringName(State state) const
 
   default:
   {
-    ret_string = "/0";
+    ret_string = "UNKNOWN";
   }
   }
 
