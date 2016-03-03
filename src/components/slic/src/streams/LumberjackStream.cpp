@@ -24,6 +24,7 @@
 
 #include "common/ATKMacros.hpp"
 #include "lumberjack/BinaryTreeCommunicator.hpp"
+#include "lumberjack/Lumberjack.hpp"
 
 namespace asctoolkit {
 namespace slic {

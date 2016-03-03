@@ -26,14 +26,21 @@
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 
-#include "lumberjack/Lumberjack.hpp"
-
 // C/C++ includes
 #include <iostream> // for std::ostream
 
 // MPI
 #include <mpi.h> // For MPI
 
+// Forward declarations
+namespace asctoolkit {
+namespace lumberjack {
+
+  class Lumberjack;
+  class Communicator;
+
+}
+}
 
 namespace asctoolkit {
 namespace slic {
