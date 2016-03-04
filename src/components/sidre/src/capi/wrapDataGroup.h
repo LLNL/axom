@@ -102,6 +102,40 @@ SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_shape_bufferify(
   SIDRE_datagroup * self, const char * name, int Lname, int type, int ndims,
   SIDRE_SidreLength * num_elems);
 
+SIDRE_dataview * SIDRE_datagroup_create_view_scalar_int(SIDRE_datagroup * self,
+                                                        const char * name,
+                                                        int value);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_scalar_int_bufferify(
+  SIDRE_datagroup * self, const char * name, int Lname, int value);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_scalar_long(SIDRE_datagroup * self,
+                                                         const char * name,
+                                                         long value);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_scalar_long_bufferify(
+  SIDRE_datagroup * self, const char * name, int Lname, long value);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_scalar_float(
+  SIDRE_datagroup * self, const char * name, float value);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_scalar_float_bufferify(
+  SIDRE_datagroup * self, const char * name, int Lname, float value);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_scalar_double(
+  SIDRE_datagroup * self, const char * name, double value);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_scalar_double_bufferify(
+  SIDRE_datagroup * self, const char * name, int Lname, double value);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_string(SIDRE_datagroup * self,
+                                                    const char * name,
+                                                    const char * value);
+
+SIDRE_dataview * SIDRE_datagroup_create_view_string_bufferify(
+  SIDRE_datagroup * self, const char * name, int Lname, const char * value,
+  int Lvalue);
+
 SIDRE_dataview * SIDRE_datagroup_create_view_empty(SIDRE_datagroup * self,
                                                    const char * name);
 
