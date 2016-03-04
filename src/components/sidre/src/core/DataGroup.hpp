@@ -559,7 +559,7 @@ public:
    * view is not created.
    */
   DataView * createViewString( const std::string& name,
-			       const std::string& value);
+                               const std::string& value);
 
 //@}
 

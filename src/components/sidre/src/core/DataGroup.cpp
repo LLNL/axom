@@ -266,7 +266,7 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
  *************************************************************************
  */
 DataView * DataGroup::createViewString( const std::string& name,
-					const std::string& value)
+                                        const std::string& value)
 {
   DataView * view = createView(name);
   if (view != ATK_NULLPTR)
