@@ -15,7 +15,6 @@
 #include "common/CommonTypes.hpp"
 #include "lumberjack/Communicator.hpp"
 #include "lumberjack/Message.hpp"
-#include "lumberjack/Utility.hpp"
 
 #include <stdlib.h>
 #include <time.h>

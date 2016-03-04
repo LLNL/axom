@@ -19,7 +19,8 @@
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 #include "lumberjack/RootCommunicator.hpp"
 #include "lumberjack/Message.hpp"
-#include "lumberjack/Utility.hpp"
+
+#include "common/StringUtilities.hpp"
 
 #include <mpi.h>
 
@@ -40,7 +41,7 @@ int main(int argc, char** argv)
         return 1;
     }
     std::string communicatorName = "";
-    int cycleLimit = asctoolkit::lumberjack::stringToInt(argv[2]);
+    int cycleLimit = asctoolkit::utilities::string::stringToInt(argv[2]);
     char* fileName = argv[3];
 
     if (std::string(argv[1]) == "b") {

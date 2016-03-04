@@ -56,8 +56,9 @@ int main( int argc, char** argv )
 
   // Initialize SLIC
   std::string format = std::string( "<MESSAGE>\n") +
-                       std::string( "\t<TIMESTAMP>" ) +
+                       std::string( "\t<TIMESTAMP>\n" ) +
                        std::string( "\tLEVEL=<LEVEL>\n") +
+                       std::string( "\tRANKS=<RANK>\n") +
                        std::string( "\tFILE=<FILE>\n") +
                        std::string( "\tLINE=<LINE>\n");
   slic::initialize();
@@ -72,7 +73,7 @@ int main( int argc, char** argv )
   int cycleCount = 0;
   for (int i = 0; i < N; ++i){
     std::ostringstream oss;
-    oss << "[ " << rank << "]: message " << i << "/" << N-1;
+    oss << "message " << i << "/" << N-1;
 
     slic::logMessage( getRandomEvent(0,slic::message::Num_Levels),
                       oss.str(),

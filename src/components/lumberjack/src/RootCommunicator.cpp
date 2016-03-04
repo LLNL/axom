@@ -24,7 +24,6 @@
 #include <cstdlib>
 
 #include "lumberjack/MPIUtility.hpp"
-#include "lumberjack/Utility.hpp"
 
 namespace asctoolkit {
 namespace lumberjack {

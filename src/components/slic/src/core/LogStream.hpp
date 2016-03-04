@@ -70,6 +70,7 @@ public:
    *    <li> <TAG> user-supplied tag </li>
    *    <li> <FILE> with the filename </li>
    *    <li> <LINE> with the line number </li>
+   *    <li> <LINE> with the MPI rank </li>
    *    <li> <TIMESTAMP> date/time the message is logged </li>
    *  </ul>
    *
@@ -83,6 +84,7 @@ public:
    *         std::string( "* MESSAGE=<MESSAGE>\n" ) +
    *         std::string( "* FILE=<FILE>\n" ) +
    *         std::string( "* LINE=<LINE>\n" ) +
+   *         std::string( "* RANK=<RANK>\n" ) +
    *         std::string( "***********************************\n" );
    * \endcode
    *****************************************************************************
@@ -159,6 +161,7 @@ protected:
    std::string getFormatedMessage( const std::string& msgLevel,
                                    const std::string& message,
                                    const std::string& tagName,
+                                   const std::string& rank,
                                    const std::string& fileName,
                                    int line );
 

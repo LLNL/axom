@@ -19,7 +19,7 @@
 
 #include "lumberjack/Message.hpp"
 
-#include "lumberjack/Utility.hpp"
+#include "common/StringUtilities.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -69,7 +69,7 @@ std::string Message::stringOfRanks(std::string delimiter) const
     std::string returnString = "";
     int ranksSize = m_ranks.size();
     for(int i=0; i<ranksSize;++i){
-        returnString += intToString(m_ranks[i]);
+        returnString += asctoolkit::utilities::string::intToString(m_ranks[i]);
         if (i < (ranksSize-1)) {
             returnString += delimiter;
         }
@@ -144,23 +144,23 @@ std::string Message::pack()
 
     int ranksSize = (int)m_ranks.size();
     for (int i=0; i<ranksSize; ++i){
-        packedMessage += intToString(m_ranks[i]);
+        packedMessage += asctoolkit::utilities::string::intToString(m_ranks[i]);
         if (i < (ranksSize-1)) {
             packedMessage += rankDelimiter;
         }
     }
     packedMessage += memberDelimiter;
 
-    packedMessage += intToString(m_ranksCount) + memberDelimiter;
+    packedMessage += asctoolkit::utilities::string::intToString(m_ranksCount) + memberDelimiter;
 
     packedMessage += m_fileName + memberDelimiter;
 
     if (m_lineNumber > 0){
-        packedMessage += intToString(m_lineNumber);
+        packedMessage += asctoolkit::utilities::string::intToString(m_lineNumber);
     }
     packedMessage += memberDelimiter;
 
-    packedMessage += intToString(m_level) + memberDelimiter;
+    packedMessage += asctoolkit::utilities::string::intToString(m_level) + memberDelimiter;
 
     packedMessage += m_tag + memberDelimiter;
 
@@ -189,7 +189,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
         std::cerr << "Error: Lumberjack recieved a truncated message that ended in the rank count section." << std::endl;
         std::cerr << packedMessage << std::endl;
     }
-    m_ranksCount = stringToInt(packedMessage.substr(start, end-start));
+    m_ranksCount = asctoolkit::utilities::string::stringToInt(packedMessage.substr(start, end-start));
     start = end + 1;
 
     //Grab file name
@@ -207,7 +207,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
         std::cerr << "Error: Lumberjack recieved a truncated message that ended in the line number section." << std::endl;
         std::cerr << packedMessage << std::endl;
     }
-    m_lineNumber = stringToInt(packedMessage.substr(start, end-start));
+    m_lineNumber = asctoolkit::utilities::string::stringToInt(packedMessage.substr(start, end-start));
     start = end + 1;
 
     //Grab level
@@ -216,7 +216,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
         std::cerr << "Error: Lumberjack recieved a truncated message that ended in the level section." << std::endl;
         std::cerr << packedMessage << std::endl;
     }
-    m_level = stringToInt(packedMessage.substr(start, end-start));
+    m_level = asctoolkit::utilities::string::stringToInt(packedMessage.substr(start, end-start));
     start = end + 1;
 
     //Grab tag
@@ -245,11 +245,11 @@ void Message::unpackRanks(const std::string& ranksString, int ranksLimit)
     start = 0;
     while (true) {
         if (end == std::string::npos) {
-            addRank(stringToInt(ranksString.substr(start)), ranksLimit);
+            addRank(asctoolkit::utilities::string::stringToInt(ranksString.substr(start)), ranksLimit);
             break;
         }
         else {
-            addRank(stringToInt(ranksString.substr(start, end-start)), ranksLimit);
+            addRank(asctoolkit::utilities::string::stringToInt(ranksString.substr(start, end-start)), ranksLimit);
         }
         start = end + 1;
         end = ranksString.find(rankDelimiter, start);

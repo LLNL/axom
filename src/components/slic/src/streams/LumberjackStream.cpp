@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "common/ATKMacros.hpp"
+#include "common/StringUtilities.hpp"
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 #include "lumberjack/Lumberjack.hpp"
 
@@ -124,7 +125,8 @@ void LumberjackStream::write()
       (*m_stream) << this->getFormatedMessage( message::getLevelAsString(
                                                  static_cast<message::Level>(messages[i]->level()) ),
                                                messages[i]->text(), messages[i]->tag(),
-                                               messages[i]->fileName(), messages[i]->lineNumber() );
+                                               messages[i]->stringOfRanks(), messages[i]->fileName(),
+                                               messages[i]->lineNumber() );
     }
     m_lj->clearMessages();
   }

@@ -21,8 +21,7 @@
 #include "lumberjack/Lumberjack.hpp"
 
 #include "common/CommonTypes.hpp"
-
-#include "lumberjack/Utility.hpp"
+#include "common/StringUtilities.hpp"
 
 #include <cstring>
 
@@ -189,7 +188,7 @@ const char* Lumberjack::packMessages()
     for (int i=0;i<messageCount; ++i) {
         packedMessages.push_back(m_messages[i]->pack());
         currSize = packedMessages[i].size();
-        sizeStrings.push_back(intToString(currSize));
+        sizeStrings.push_back(asctoolkit::utilities::string::intToString(currSize));
         //           message size + size string size + memberDelimiter size
         totalSize += currSize + sizeStrings[i].size() + 1;
         if (largestSize < currSize) {
@@ -198,7 +197,7 @@ const char* Lumberjack::packMessages()
     }
 
     // Create and calculate size of message count
-    std::string messageCountString = intToString(messageCount) + memberDelimiter;
+    std::string messageCountString = asctoolkit::utilities::string::intToString(messageCount) + memberDelimiter;
     totalSize += messageCountString.size();
 
     const char* packedMessagesString = new char[totalSize];
@@ -230,7 +229,7 @@ void Lumberjack::unpackMessages(const char* packedMessages)
 
     // Get message count
     end = packedMessagesString.find(memberDelimiter);
-    int messageCount = stringToInt(packedMessagesString.substr(0, end));
+    int messageCount = asctoolkit::utilities::string::stringToInt(packedMessagesString.substr(0, end));
     start = end + 1;
 
     // Grab each message    
@@ -239,7 +238,7 @@ void Lumberjack::unpackMessages(const char* packedMessages)
     for (int j = 0; j < messageCount; ++j) {
         //Get current message size
         end = packedMessagesString.find(memberDelimiter, start);
-        messageSize = stringToInt(packedMessagesString.substr(start, end-start));
+        messageSize = asctoolkit::utilities::string::stringToInt(packedMessagesString.substr(start, end-start));
         start = end + 1;
 
         //Create current message and save
