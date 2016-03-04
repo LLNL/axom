@@ -414,25 +414,6 @@ public:
   DataView * createView( const std::string& name,
                          const DataType& dtype);
 
-#if 0
-  DataView * createView( const std::string& name, int value);
-#else
-  template<typename ScalarType>
-  DataView * createView( const std::string& name, ScalarType value)
-  {
-    DataView * view = createView(name);
-    if (view != ATK_NULLPTR)
-    {
-      view->setScalar(value);
-    }
-
-    return view;
-  }
-#endif
-
-  DataView * createView( const std::string& name,
-                         const std::string& value);
-
   /*!
    * \brief Create DataView object with given name, attach it to given buffer,
    *        and attach new view to this group object.
@@ -542,6 +523,43 @@ public:
    */
   DataView * createViewAndAllocate( const std::string& name,
                                     const DataType& dtype);
+
+  /*!
+   * \brief Create DataView object with given name for a scalar value.
+   *
+   * This is equivalent to calling: createView(name)->setScalar(value);
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  template<typename ScalarType>
+  DataView * createViewScalar( const std::string& name, ScalarType value)
+  {
+    DataView * view = createView(name);
+    if (view != ATK_NULLPTR)
+    {
+      view->setScalar(value);
+    }
+
+    return view;
+  }
+
+  /*!
+   * \brief Create DataView object with given name for a string value.
+   *
+   * This is equivalent to calling: createView(name)->setString(value);
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createViewString( const std::string& name,
+			       const std::string& value);
 
 //@}
 

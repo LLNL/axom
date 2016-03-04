@@ -148,32 +148,6 @@ DataView * DataGroup::createView( const std::string& name,
 
   return view;
 }
-#if 0
-DataView * DataGroup::createView( const std::string& name,
-                                  int value)
-{
-  DataView * view = createView(name);
-  if (view != ATK_NULLPTR)
-  {
-    view->setScalar(value);
-  }
-
-  return view;
-}
-#endif
-
-DataView * DataGroup::createView( const std::string& name,
-                                  const std::string& value)
-{
-  DataView * view = createView(name);
-  if (view != ATK_NULLPTR)
-  {
-    view->setString(value);
-  }
-
-  return view;
-}
-
 
 /*
  *************************************************************************
@@ -281,6 +255,25 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
   {
     view->allocate();
   }
+  return view;
+}
+
+/*
+ *************************************************************************
+ *
+ * Create view with given name for a string.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createViewString( const std::string& name,
+					const std::string& value)
+{
+  DataView * view = createView(name);
+  if (view != ATK_NULLPTR)
+  {
+    view->setString(value);
+  }
+
   return view;
 }
 
