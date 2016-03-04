@@ -769,11 +769,20 @@ void DataGroup::save(const std::string& obase,
     Node n;
     copyToNode(n);
     // for debugging call: n.print();
-//    n.save(obase);
     conduit::io::save(n, obase);
   }
 }
 
+/*
+ *************************************************************************
+ *
+ * Save this group object (including data views and child groups) to an
+ * hdf5 file named "obase".
+ *
+ * Note: Only valid protocol is "conduit".
+ *
+ *************************************************************************
+ *          */
 void DataGroup::save(const std::string& obase,
                      const std::string& protocol, 
                      const hid_t& h5_file_id) const
@@ -782,7 +791,6 @@ void DataGroup::save(const std::string& obase,
   {
     Node n;
     copyToNode(n);
-    // //    n.save(obase);
     std::string file_path;
     std::string hdf5_path;
     conduit::utils::split_string(obase,
@@ -812,13 +820,22 @@ void DataGroup::load(const std::string& obase,
     destroyViews();
     Node n;
     conduit::io::load(obase, n);
-    //n.load(obase);
     // for debugging call: n.print();
     copyFromNode(n);
   }
 }
 
 
+/*
+ *************************************************************************
+ *
+ * Load data group (including data views and child groups) from an hdf5 file
+ * named "obase" into this group object.
+ *
+ * Note: Only valid protocol is "conduit_hdf5".
+ *
+ *************************************************************************
+ */
 void DataGroup::load(const std::string& obase,
                      const std::string& protocol,
                      const hid_t& h5_file_id)

@@ -878,6 +878,12 @@ public:
   void save(const std::string& obase,
             const std::string& protocol) const;
 
+  /*!
+   * \brief Save this DataGroup object (including data views and child
+   *        groups) to an hdf5 file.
+   *
+   * \warning Currently, only valid protocol is "conduit_hdf5".
+   */
   void save(const std::string& obase,
             const std::string& protocol,
             const hid_t& h5_file_id) const;
@@ -891,6 +897,12 @@ public:
   void load(const std::string& obase,
             const std::string& protocol);
 
+  /*!
+   * \brief Load data group (including data views and child groups)
+   *        from an hdf5 file into this DataGroup object.
+   *
+   * \warning Currently, only valid protocol is "conduit_hdf5".
+   */
   void load(const std::string& obase,
             const std::string& protocol,
             const hid_t& h5_file_id);
