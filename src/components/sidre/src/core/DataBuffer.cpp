@@ -60,15 +60,15 @@ DataView * DataBuffer::getView( IndexType idx )
 /*
  *************************************************************************
  *
- * Declare buffer to hold data of given type and number of elements.
+ * Describe buffer to hold data of given type and number of elements.
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
+DataBuffer * DataBuffer::describe(TypeID type, SidreLength num_elems)
 {
   if ( num_elems < 0 )
   {
-    SLIC_CHECK_MSG(num_elems >= 0, "Must declare number of elements >=0");
+    SLIC_CHECK_MSG(num_elems >= 0, "Must describe number of elements >=0");
     return this;
   }
 
@@ -82,7 +82,7 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
 /*
  *************************************************************************
  *
- * Allocate data previously declared.
+ * Allocate data previously described.
  *
  *************************************************************************
  */
@@ -112,7 +112,7 @@ DataBuffer * DataBuffer::allocate()
 /*
  *************************************************************************
  *
- * Declare and allocate data described by type and num elements.
+ * Describe and allocate data described by type and num elements.
  *
  *************************************************************************
  */
@@ -124,7 +124,7 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
     return this;
   }
 
-  declare(type, num_elems);
+  describe(type, num_elems);
   allocate();
 
   return this;

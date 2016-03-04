@@ -97,7 +97,7 @@ DataView * DataGroup::createView( const std::string& name,
   DataView * view = createView(name);
   if (view != ATK_NULLPTR)
   {
-    view->declare(type, num_elems);
+    view->describe(type, num_elems);
   }
   return view;
 }
@@ -124,7 +124,7 @@ DataView * DataGroup::createView( const std::string& name,
   DataView * view = createView(name);
   if (view != ATK_NULLPTR)
   {
-    view->declare(type, ndims, shape);
+    view->describe(type, ndims, shape);
   }
   return view;
 }
@@ -143,7 +143,7 @@ DataView * DataGroup::createView( const std::string& name,
   DataView * view = createView(name);
   if (view != ATK_NULLPTR)
   {
-    view->declare(dtype);
+    view->describe(dtype);
   }
 
   return view;
@@ -489,7 +489,7 @@ DataView * DataGroup::copyView(DataView * view)
   else
   {
     DataView * res = createView(view->getName(), view->getBuffer());
-    res->declare(view->getSchema().dtype());
+    res->describe(view->getSchema().dtype());
     if (view->isApplied())
     {
       res->apply();
@@ -1184,7 +1184,7 @@ void DataGroup::copyFromNode(Node& n,
         Schema schema(n_buff["schema"].as_string());
         TypeID type = static_cast<TypeID>(schema.dtype().id());
         SidreLength num_elems = schema.dtype().number_of_elements();
-        ds_buff->declare(type, num_elems);
+        ds_buff->describe(type, num_elems);
         if (n_buff.has_path("data"))
         {
           ds_buff->allocate();
@@ -1219,7 +1219,7 @@ void DataGroup::copyFromNode(Node& n,
       DataView * ds_view = createView(view_name, ds_buff);
       // declare using the schema datatype
       Schema schema(n_view["schema"].as_string());
-      ds_view->declare(schema.dtype());
+      ds_view->describe(schema.dtype());
       // if the schema was applied, restore this state
       if (n_view["is_applied"].to_uint64() != 0)
         ds_view->apply();
