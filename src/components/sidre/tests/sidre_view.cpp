@@ -114,8 +114,20 @@ TEST(sidre_view,scalar_view)
   EXPECT_EQ(s0view->getNumDimensions(), 1);
   EXPECT_TRUE(s0view->getShape(1, dims) == 1 && dims[0] == 14);
 
-  delete ds;
+  // using convenience functions
+  // integer scalar
+  DataView * i1view = root->createViewScalar("i1", 1);
+  EXPECT_EQ(i1view->getNumElements(), 1u);
+  EXPECT_EQ(i1view->getNumDimensions(), 1);
+  EXPECT_TRUE(i1view->getShape(1, dims) == 1 && dims[0] == 1);
 
+  // string
+  DataView * s1view = root->createViewString("s1", "I am a string");
+  EXPECT_EQ(s1view->getNumElements(), 14u);
+  EXPECT_EQ(s1view->getNumDimensions(), 1);
+  EXPECT_TRUE(s1view->getShape(1, dims) == 1 && dims[0] == 14);
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
