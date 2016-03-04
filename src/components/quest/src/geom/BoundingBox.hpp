@@ -219,7 +219,7 @@ public:
    *****************************************************************************
    * \brief Returns the dimension of the ambient space for this bounding box.
    * \return d the dimension of this bounding box instance.
-   * \post d >= 2.
+   * \post d >= 1.
    *****************************************************************************
    */
   int dimension() const { return DIM; };
@@ -229,6 +229,9 @@ public:
    * \brief Finds the longest dimension of the bounding box
    * \return idx the index of the longest dimension.
    * \post idx >= 0 < DIM
+   * \note In the case of ties, where the bounding box has more than one side
+   *  with the same length, the code picks the first dimension as the longest
+   *  dimension.
    *****************************************************************************
    */
   int getLongestDimension() const;
@@ -327,7 +330,9 @@ public:
    *  method will split the bounding box along the longest dimension.
    * \param [in/out] right the right sub-box.
    * \param [in/out] left  the left sub-box.
-   * \param [in] dimension optionally the dimension at which to sp
+   * \param [in] dimension the dimension to split along (optional)
+   * \pre dimension >= -1 && dimension < DIM
+   * \note if dimension==-1, the bounding box is split along its longest edge.
    *****************************************************************************
    */
   void bisect( BoxType& right, BoxType& left, int dimension=-1);
@@ -350,6 +355,17 @@ public:
    * \param [in]  bb user-supplied instance of the bounding box.
    * \param [out] pnts the list of points
    * \post pnts.size() == 4
+   * \note The ordering of the points has as follows:
+   * \verbatim
+   *
+   *     3      2
+   *     +------+
+   *     |      |
+   *     |      |
+   *     +------+
+   *     0      1
+   *
+   * \endverbatim
    *****************************************************************************
    */
   static void getPoints( const BoundingBox< CoordType,2 >& bb,
@@ -361,6 +377,21 @@ public:
    * \param [in]  bb user-supplied instance of the bounding box.
    * \param [out] pnts the list of points
    * \post pnts.size() == 8
+   * \note The ordering of the points has as follows:
+   * \verbatim
+   *
+   *         4          7
+   *         +----------+
+   *        /|         /|
+   *     5 / |      6 / |
+   *      +--|-------+  |
+   *      |  +-------|--+
+   *      | / 0      | / 3
+   *      |/         |/
+   *      +----------+
+   *      1          2
+   *
+   * \endverbatim
    *****************************************************************************
    */
   static void getPoints( const BoundingBox< CoordType,3 >& bb,

@@ -109,7 +109,7 @@ public:
    *****************************************************************************
    * \brief Inserts an object, identified by its bounding box and user-supplied
    *  data, to the bucket tree.
-   * \param [in] box Axis-Aligned bounding box encapsulating the object.
+   * \param [in] box Axis-Aligned bounding box enclosing the object.
    * \param [in] data user-supplied data associated with the object.
    *****************************************************************************
    */
@@ -328,7 +328,7 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Computes the linear index of the 1st bucket the within the level.
+   * \brief Computes the linear index of the 1st bucket within the level.
    * \param [in] l the level index in query (starting from 0).
    * \return idx the index of the 1st bucket within the level.
    * \pre l >= 0
