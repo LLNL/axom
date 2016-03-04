@@ -48,7 +48,7 @@ void init()
 
   std::string physicsA_format =
       std::string( "====\n" ) +
-      std::string( "<TIMESTAMP>" ) +
+      std::string( "<TIMESTAMP>\n" ) +
       std::string( "====\n" ) +
       std::string( "[<LEVEL>]: <MESSAGE>\n" ) +
       std::string( "\t FILE:<FILE>\n" ) +

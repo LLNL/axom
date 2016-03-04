@@ -22,7 +22,6 @@ set(lumberjack_headers
     MPIUtility.hpp
     RootCommunicator.hpp
     TextEqualityCombiner.hpp
-    Utility.hpp
     )
 
 #
@@ -34,7 +33,6 @@ set(lumberjack_sources
     Message.cpp
     MPIUtility.cpp
     RootCommunicator.cpp
-    Utility.cpp
     )
 
 
@@ -46,6 +44,8 @@ make_library( LIBRARY_NAME
               LIBRARY_SOURCES
                   "${lumberjack_sources}"
                   "${lumberjack_headers}"
+              DEPENDS_ON
+                  common
               )
 
 add_dependencies(lumberjack copy_headers_lumberjack)

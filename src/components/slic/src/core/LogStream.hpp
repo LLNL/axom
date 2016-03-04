@@ -70,6 +70,7 @@ public:
    *    <li> <TAG> user-supplied tag </li>
    *    <li> <FILE> with the filename </li>
    *    <li> <LINE> with the line number </li>
+   *    <li> <LINE> with the MPI rank </li>
    *    <li> <TIMESTAMP> date/time the message is logged </li>
    *  </ul>
    *
@@ -83,6 +84,7 @@ public:
    *         std::string( "* MESSAGE=<MESSAGE>\n" ) +
    *         std::string( "* FILE=<FILE>\n" ) +
    *         std::string( "* LINE=<LINE>\n" ) +
+   *         std::string( "* RANK=<RANK>\n" ) +
    *         std::string( "***********************************\n" );
    * \endcode
    *****************************************************************************
@@ -98,7 +100,7 @@ public:
    * \param [in] tagName user-supplied tag to associate with the given message.
    * \param [in] fileName the file where this message is appended
    * \param [in] line the line within the file at which the message is appended.
-   * \param [in] filter_dulicates optional parameter that indicates whether
+   * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    *
    * \note The following wildcards may be used to ignore a particular field:
@@ -128,6 +130,18 @@ public:
    */
   virtual void flush() { };
 
+  /*!
+   *****************************************************************************
+   * \brief Pushes messages incrementally up the log stream. It's a NO-OP by default.
+   * \note The intent of this method is to be overridden by concrete
+   *  implementations that need to be incrementally advanced. This is primarily
+   *  useful for applications running in a distributed MPI environment, where the push
+   *  is a collective operation intended for a incrementally advancing messages through
+   *  the log stream.
+   *****************************************************************************
+   */
+  virtual void push() { };
+
 protected:
 
   /*!
@@ -147,6 +161,7 @@ protected:
    std::string getFormatedMessage( const std::string& msgLevel,
                                    const std::string& message,
                                    const std::string& tagName,
+                                   const std::string& rank,
                                    const std::string& fileName,
                                    int line );
 
