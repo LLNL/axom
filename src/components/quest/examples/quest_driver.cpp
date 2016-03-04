@@ -26,7 +26,7 @@
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"
-#include "common/TaskTimer.hpp"
+#include "common/Timer.hpp"
 
 #include "quest/BoundingBox.hpp"
 #include "quest/BucketTree.hpp"
@@ -361,7 +361,7 @@ int main( int argc, char** argv )
 
   // STEP 9: Compute the distance field on the uniform mesh
   SLIC_INFO( "computing distance field..." );
-  utilities::TaskTimer timer;
+  utilities::Timer timer;
   timer.start();
   distance_field( surface_mesh, umesh );
   timer.stop();

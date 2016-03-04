@@ -19,7 +19,7 @@
 
 #include "gtest/gtest.h"
 
-#include "common/TaskTimer.hpp"
+#include "common/Timer.hpp"
 #include "slic/slic.hpp"
 
 #ifdef WIN32
@@ -34,7 +34,7 @@ void sleep(int numSeconds)
 
 TEST(gtest_common_TaskTimer, timer_check )
 {
-  asctoolkit::utilities::TaskTimer t;
+  asctoolkit::utilities::Timer t;
   t.start();
 
   sleep( 2 );

@@ -17,8 +17,8 @@
  *******************************************************************************
  */
 
-#ifndef TASKTIMER_HPP_
-#define TASKTIMER_HPP_
+#ifndef TIMER_HPP_
+#define TIMER_HPP_
 
 namespace asctoolkit {
 
@@ -43,7 +43,7 @@ namespace utilities {
  *  \endcode
  *******************************************************************************
  */
-class TaskTimer
+class Timer
 {
 public:
 
@@ -52,14 +52,14 @@ public:
    * \brief Default constructor.
    *****************************************************************************
    */
-  TaskTimer();
+  Timer();
 
   /*!
    *****************************************************************************
    * \brief Destructor.
    *****************************************************************************
    */
-  ~TaskTimer();
+  ~Timer();
 
   /*!
    *****************************************************************************
@@ -102,4 +102,4 @@ private:
 
 } /* namespace asctoolkit */
 
-#endif /* TASKTIMER_HPP_ */
+#endif /* TIMER_HPP_ */

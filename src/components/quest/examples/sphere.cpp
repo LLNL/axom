@@ -28,7 +28,7 @@
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"
-#include "common/TaskTimer.hpp"
+#include "common/Timer.hpp"
 
 #include "quest/BoundingBox.hpp"
 #include "quest/BucketTree.hpp"
@@ -524,7 +524,7 @@ int main( int argc, char** argv )
   meshtk::UniformMesh* umesh =
           new meshtk::UniformMesh(3,meshBounds.getMin().data(),h.data(),ext);
 
-  utilities::TaskTimer timer;
+  utilities::Timer timer;
 
   // STEP 9: Run the n^2 algorithm.
   SLIC_INFO( "Running n^2 algorithm..." );

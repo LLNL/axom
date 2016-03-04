@@ -17,7 +17,7 @@
  *******************************************************************************
  */
 
-#include "TaskTimer.hpp"
+#include "Timer.hpp"
 
 // C/C++ includes
 #ifdef USE_CXX11
@@ -32,7 +32,7 @@ namespace asctoolkit {
 namespace utilities {
 
 
-TaskTimer::TaskTimer() :
+Timer::Timer() :
         m_startTime(0.0),
         m_endTime(0.0)
 {
@@ -40,13 +40,13 @@ TaskTimer::TaskTimer() :
 }
 
 //------------------------------------------------------------------------------
-TaskTimer::~TaskTimer()
+Timer::~Timer()
 {
 
 }
 
 //------------------------------------------------------------------------------
-double TaskTimer::getCurrentTime()
+double Timer::getCurrentTime()
 {
   double t = 0.0;
 
