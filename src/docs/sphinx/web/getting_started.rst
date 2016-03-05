@@ -14,42 +14,42 @@ The Toolkit source code can be obtained from the Toolkit git/Stash project locat
 
 If you've never used git/Stash, you will need to create an `SSH key <https://confluence.atlassian.com/bitbucketserver/creating-ssh-keys-776639788.html>`_ and  `add that SSH Key <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_ to your `CZ Stash Profile <https://lc.llnl.gov/stash/account>`_.
 
-*  First, clone the Toolkit repo in some local directory you own.::
+1.  First, clone the Toolkit repo in some local directory you own.::
 
      git clone ssh://git@cz-stash.llnl.gov:7999/atk/asctoolkit.git
 
      cd asctoolkit
 
-*  Then checkout the branch you wish to use. For example, the *"develop"* branch is currently the most robust and tested branch. Toolkit development work is pushed to it regularly.::
+2.  Then checkout the branch you wish to use. For example, the *"develop"* branch is currently the most robust and tested branch. Toolkit development work is pushed to it regularly.::
 
-    git checkout develop
+            git checkout develop
 
-*  If you are using a development branch of the Toolkit and wish to keep up with the latest developments, you will need to pull them into your local copy.  This can be done as follows: ::
+    *   If you are using a development branch of the Toolkit and wish to keep up with the latest developments, you will need to pull them into your local copy.  This can be done as follows: ::
 
-    git pull
+            git pull
 
-*  If you wish to follow and use a different Toolkit branch (i.e., a topic branch), you can check it out with the following commands: ::
+    *  If you wish to follow and use a different Toolkit branch (i.e., a topic branch), you can check it out with the following commands: ::
 
-    # update the list of remote branches
-    git fetch
+         # update the list of remote branches
+           git fetch
 
-    # list the available branches
+         # list the available branches
 
-    git branch -a 
+           git branch -a 
 
-    git checkout {branch name, excluding the remotes/origin/}
+           git checkout {branch name, excluding the remotes/origin/}
 
-Here is a concrete example: ::
+   Here is a concrete example: ::
 
-    git branch -a | grep unify 
+       git branch -a | grep unify 
 
-       remotes/origin/feature/zagaris2/restructure-and-unify
+           remotes/origin/feature/zagaris2/restructure-and-unify
 
-    git checkout feature/zagaris2/restructure-and-unify
+       git checkout feature/zagaris2/restructure-and-unify
 
-    Branch feature/zagaris2/restructure-and-unify set up to track remote branch feature/zagaris2/restructure-and-unify from origin.
+       Branch feature/zagaris2/restructure-and-unify set up to track remote branch feature/zagaris2/restructure-and-unify from origin.
 
-     Switched to a new branch 'feature/zagaris2/restructure-and-unify'
+       Switched to a new branch 'feature/zagaris2/restructure-and-unify'
 
 If you wish to do development on the Toolkit and push your work back to the Toolkit git/Stash repo, please see the instructions for `Code Development in the Toolkit <https://lc.llnl.gov/confluence/display/ASCT/Code+Development+in+the+Toolkit>`_.
 
@@ -74,45 +74,45 @@ If you have python on your platform, you can use the script "scripts/config-buil
 
 **Example:** ::
  
- # From the root of the asctoolkit repo, with cmake in your path run:
-   ./scripts/config-build.py
+ 1.  From the root of the asctoolkit repo, with cmake in your path run:
+       ./scripts/config-build.py
 
- # If no options are provided, will configure and create a build directory with the default compiler for this platform
+     # If no options are provided, will configure and create a build directory with the default compiler for this platform
 
- # cd into the build directory; e.g., 
-   cd build-chaos-gnu-debug
+ 2.  cd into the build directory; e.g., 
+       cd build-chaos-gnu-debug
 
- # build the toolkit libs and unit tests
-   make 
+ 3.  Build the toolkit libs and unit tests
+         make 
 
- # run the toolkit unit tests
-   make test
+ 4.  Run the toolkit unit tests
+         make test
 
 --------------------------------
 Configuring manually using CMake
 --------------------------------
 You can also execute CMake directly to configure a build. ::
 
- # from the root of the asctoolkit repo
- # our CMake setup disallows in-source builds, so you need to create a build directory
+ 1. From the root of the asctoolkit repo:
+    # our CMake setup disallows in-source builds, so you need to create a build directory
 
-   mkdir mybuild
-   cd mybuild
+         mkdir mybuild
+         cd mybuild
 
- # configure an out-of-source build in a directory named "build-debug"
-   cmake  -DCMAKE_BUILD_TYPE=Debug ../src
+ 2. Configure an out-of-source build in a directory named "build-debug"
+         cmake  -DCMAKE_BUILD_TYPE=Debug ../src
 
- # or, to include a default cache file you can use the -C option
+     or, to include a default cache file you can use the -C option
 
- # cmake  -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/other/Darwin.cmake ../src
+         cmake  -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/other/Darwin.cmake ../src
 
- # cmake  -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/$SYS_TYPE.cmake ../src
+         cmake  -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/$SYS_TYPE.cmake ../src
 
- # build the toolkit libs and unit tests
-   make 
+ 3. Build the toolkit libs and unit tests
+        make 
 
- # run the toolkit unit tests
-   make test
+ 4. Run the toolkit unit tests
+        make test
 
 You can use ccmake or cmake-gui to modify specific build options.
 
