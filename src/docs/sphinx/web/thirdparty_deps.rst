@@ -1,4 +1,0 @@
-Third-party Dependencies 
----------------------
-
-Info!
