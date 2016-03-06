@@ -955,7 +955,7 @@ void BucketTree< T,NDIMS >::find( const PointType& pt,
 
             const double TOL = 1.0e-9;
             const double d2b = this->getMinSqDistanceToBucket( bucketIdx, pt );
-            if ( (lowerDistBound-TOL) <= d2b && d2b <= (upperDistBound+TOL) ) {
+            if ( d2b <= (upperDistBound+TOL) ) {
 
               keep = true;
 
