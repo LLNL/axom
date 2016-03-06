@@ -901,7 +901,7 @@ void BucketTree< T,NDIMS >::find( const PointType& pt,
 
   // STEP 1: pre-allocate buffer storage for buckets to check at each level.
   std::vector< int > buckets_to_check;
-  buckets_to_check.reserve( m_tree.size() );
+  buckets_to_check.reserve( BucketTree::pow2( m_numLevels-1 ) );
 
   // STEP 2: pre-populate buffer with the two buckets in level one
   buckets_to_check.push_back( 1 );
