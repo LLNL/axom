@@ -133,7 +133,7 @@ private:
 
   asctoolkit::lumberjack::Lumberjack* m_lj;
   asctoolkit::lumberjack::Communicator* m_ljComm;
-  bool m_isLJOwnedBySLIC = false;
+  bool m_isLJOwnedBySLIC;
   std::ostream* m_stream;
   /// @}
 
