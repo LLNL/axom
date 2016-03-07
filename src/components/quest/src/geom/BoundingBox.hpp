@@ -150,22 +150,6 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Sets the min point for this bounding box instance.
-   * \param [in] newMin the new min point.
-   *****************************************************************************
-   */
-  void setMin( const PointType& newMin ) { m_min = newMin; };
-
-  /*!
-   *****************************************************************************
-   * \brief Sets the max point for this bounding box instance.
-   * \param [in] newMax the new max point.
-   *****************************************************************************
-   */
-  void setMax( const PointType& newMax ) { m_max = newMax; };
-
-  /*!
-   *****************************************************************************
    * \brief Returns const reference to the min corner of the bounding box.
    * \return const reference to the min corner of the bounding box.
    *****************************************************************************
@@ -400,6 +384,23 @@ public:
   /// @}
 
 private:
+
+  /*!
+   *****************************************************************************
+   * \brief Sets the min point for this bounding box instance.
+   * \param [in] newMin the new min point.
+   *****************************************************************************
+   */
+  inline void setMin( const PointType& newMin ) { m_min = newMin; };
+
+  /*!
+   *****************************************************************************
+   * \brief Sets the max point for this bounding box instance.
+   * \param [in] newMax the new max point.
+   *****************************************************************************
+   */
+  inline void setMax( const PointType& newMax ) { m_max = newMax; };
+
   /*!
    *****************************************************************************
    * \brief Ensures that the bounds are valid.
