@@ -196,7 +196,7 @@ DataBuffer * DataBuffer::deallocate()
   releaseBytes(getVoidPtr());
   m_node.set_external( DataType( m_node.dtype() ), ATK_NULLPTR );
 
-  for (int i = 0; i < m_views.size(); ++i)
+  for (size_t i = 0; i < m_views.size(); ++i)
   {
     m_views[i]->apply(0);
   }
