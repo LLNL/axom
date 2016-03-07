@@ -50,7 +50,6 @@ set( quest_headers
     mesh/UnstructuredMesh.hpp
     
     ## STL library headers
-    stl/stla_io.hpp
     stl/STLReader.hpp
     
     ## quest interface headers
@@ -75,7 +74,6 @@ set( quest_sources
     mesh/UniformMesh.cpp
     
     ## STL library sources
-    stl/stla_io.cpp
     stl/STLReader.cpp
     
     ## quest interface sources
