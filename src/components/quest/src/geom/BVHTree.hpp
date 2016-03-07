@@ -899,6 +899,15 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
 
   }
 
+  const double TOL = 1.0e-9;
+
+  int globalClosestBucketIdx  = -1;
+  double estLowerBound        = std::numeric_limits< double >::max();
+  double estUpperBound        = std::numeric_limits< double >::min();
+  std::vector< int > first_set_candidates;
+  first_set_candidates.reserve( BVHTree::pow2( m_numLevels-1 ) );
+
+
   // STEP 1: pre-allocate buffer storage for buckets to check at each level.
   std::vector< int > buckets_to_check;
   buckets_to_check.reserve( BVHTree::pow2( m_numLevels-1 ) );
@@ -909,7 +918,8 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
 
   // STEP 3: iteratively descend down in the hierarchy, pruning away
   // buckets that are too far away from the query point, pt, until a
-  // set of candidate leaf buckets is attained.
+  // first set of candidate leaf buckets is attained. This also, computes
+  // the estLowerBound and estUpperBound
   for ( int level=1; level < m_numLevels; ++level ) {
 
       const int nbuckets = buckets_to_check.size();
@@ -953,7 +963,6 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
 
          } else {
 
-            const double TOL = 1.0e-9;
             const double d2b = this->getMinSqDistanceToBucket( bucketIdx, pt );
             if ( d2b <= (upperDistBound+TOL) ) {
 
@@ -971,7 +980,14 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
          } // END if
          else if ( keep && !m_tree[ bucketIdx ].Void ) {
 
-            candidate_buckets.push_back( bucketIdx );
+            first_set_candidates.push_back( bucketIdx );
+
+            double minDist = this->getMinSqDistanceToBucket( bucketIdx,pt );
+            if ( minDist < estLowerBound ) {
+               globalClosestBucketIdx = bucketIdx;
+               estLowerBound = minDist;
+               estUpperBound = this->getMaxSqDistanceToBucket( bucketIdx, pt );
+            }
 
          } // END else if
 
@@ -982,6 +998,32 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
                               buckets_to_check.begin()+nbuckets );
 
   } // END for all levels
+
+  SLIC_ASSERT( globalClosestBucketIdx >= 0 &&
+               globalClosestBucketIdx < static_cast< int >( m_tree.size() ) );
+
+  // STEP 4: further filter first_set_candidate buckets into the final set
+  // of candidate buckets to pass back to the caller.
+  const int numCandidates = first_set_candidates.size();
+  candidate_buckets.clear();
+  candidate_buckets.reserve( numCandidates );
+  candidate_buckets.push_back( globalClosestBucketIdx );
+
+  for ( int i=0; i < numCandidates; ++i ) {
+
+     const int bucketIdx = first_set_candidates[ i ];
+     if ( bucketIdx != globalClosestBucketIdx ) {
+
+         double minDist = this->getMinSqDistanceToBucket( bucketIdx, pt );
+         if ( minDist <= (estUpperBound+TOL) ) {
+
+            candidate_buckets.push_back( bucketIdx );
+
+         }
+     }
+
+
+  } // END for all first set candidates
 
 }
 
