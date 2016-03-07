@@ -59,6 +59,7 @@ TEST(sidre_buffer,create_buffer_with_description)
   dbuff->print();
 
   ds->print();
+
   delete ds;
 }
 
@@ -90,6 +91,9 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
   dbuff->print();
 
   ds->print();
+
+  dbuff->deallocate();
+
   delete ds;
 }
 
