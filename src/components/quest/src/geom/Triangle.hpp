@@ -40,14 +40,22 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Constructor -- creates a triangle from the 3 points A,B,C.
+   * \brief Default constructor. Creates a degenerate triangle.
+   *****************************************************************************
+   */
+  Triangle() { }
+
+  /*!
+   *****************************************************************************
+   * \brief Custom Constructor. Creates a triangle from the 3 points A,B,C.
+   * \param [in] A point instance corresponding to vertex A of the triangle.
+   * \param [in] B point instance corresponding to vertex B of the triangle.
+   * \param [in] C point instance corresponding to vertex C of the triangle.
    *****************************************************************************
    */
   Triangle( const PointType& A,
             const PointType& B,
-            const PointType& C )
-        : m_A (A), m_B(B), m_C(C)    {}
-
+            const PointType& C ): m_A (A), m_B(B), m_C(C)  { }
 
   /*!
    *****************************************************************************
@@ -58,37 +66,59 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief
-   * \return A
+   * \brief Returns a reference to vertex A of the triangle.
+   * \return A reference to vertex A of the triangle.
+   * \see quest::Point
+   *****************************************************************************
+   */
+  PointType& A( ) { return m_A; };
+
+  /*!
+   *****************************************************************************
+   * \brief Returns a const reference to vertex A of the triangle.
+   * \return A const reference to vertex A of the triangle.
+   * \see quest::Point
    *****************************************************************************
    */
   const PointType& A() const { return m_A; };
 
   /*!
    *****************************************************************************
-   * \brief
-   * \return B
+   * \brief Returns a reference to vertex B of the triangle.
+   * \return B reference to vertex B of the triangle.
+   * \see quest::Point
+   *****************************************************************************
+   */
+  PointType& B( ) { return m_B; };
+
+  /*!
+   *****************************************************************************
+   * \brief Returns a const reference to vertex B of the triangle.
+   * \return B const reference to vertex B of the triangle.
+   * \see quest::Point
    *****************************************************************************
    */
   const PointType& B() const { return m_B; };
 
   /*!
    *****************************************************************************
-   * \brief
-   * \return C
+   * \brief Returns a reference to vertex C of the triangle.
+   * \return C reference to vertex C of the triangle.
+   * \see quest::Point
+   *****************************************************************************
+   */
+  PointType& C( ) { return m_C; };
+
+  /*!
+   *****************************************************************************
+   * \brief Returns a const reference to vertex C of the triangle.
+   * \return C const reference to vertex C of the triangle.
+   * \see quest::Point
    *****************************************************************************
    */
   const PointType& C() const { return m_C; };
 
 private:
-
-  /*!
-   *****************************************************************************
-   * \brief Default constructor. Does nothing.
-   * \note Made private to prevent its use.
-   *****************************************************************************
-   */
-  Triangle() { }
 
   PointType m_A;
   PointType m_B;
