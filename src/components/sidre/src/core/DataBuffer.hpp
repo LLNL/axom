@@ -227,8 +227,9 @@ public:
    * \brief Deallocate data in a buffer.
    *
    * If the buffer has no data, the routine does nothing.
-   * All attached views will have their address set to NULL,
-   * and their length set to 0.
+   * All attached views will continue to be attached;
+   * however, their data address will be set to ATK_NULLPTR
+   * with a data length of 0.
    *
    * \return pointer to this DataBuffer object.
    */

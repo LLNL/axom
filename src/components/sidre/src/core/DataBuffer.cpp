@@ -189,16 +189,16 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 DataBuffer * DataBuffer::deallocate()
 {
   if (!isAllocated())
+  {
     return this;
+  }
 
   releaseBytes(getVoidPtr());
   m_node.set_external( DataType( m_node.dtype() ), ATK_NULLPTR );
 
-  for(std::vector<DataView *>::iterator it = m_views.begin() ;
-      it != m_views.end() ;
-      ++it)
+  for (int i = 0; i < m_views.size(); ++i)
   {
-      (*it)->apply(0);
+    m_views[i]->apply(0);
   }
 
   return this;
