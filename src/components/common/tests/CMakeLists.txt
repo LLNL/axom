@@ -3,6 +3,7 @@
 #
 
 set(gtest_common_tests
+   common_TaskTimer.cpp
    common_fileUtilities.cpp
    common_types.cpp
    )

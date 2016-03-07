@@ -70,6 +70,11 @@ std::string LogStream::getTimeStamp( )
   std::time_t t;
   std::time( &t );
   std::string timestamp( std::asctime( std::localtime( &t ) ) );
+
+  // Remove trailing newline added by previous line
+  if (timestamp[timestamp.size()-1] == '\n') {
+    timestamp.erase(timestamp.size()-1);
+  }
   return timestamp;
 }
 
@@ -77,6 +82,7 @@ std::string LogStream::getTimeStamp( )
 std::string LogStream::getFormatedMessage( const std::string& msgLevel,
                                            const std::string& message,
                                            const std::string& tagName,
+                                           const std::string& rank,
                                            const std::string& fileName,
                                            int line )
 {
@@ -86,6 +92,7 @@ std::string LogStream::getFormatedMessage( const std::string& msgLevel,
   this->replaceKey( msg, "<MESSAGE>", message );
   this->replaceKey( msg, "<TAG>", tagName );
   this->replaceKey( msg, "<FILE>", fileName );
+  this->replaceKey( msg, "<RANK>", rank );
 
   if ( line != MSG_IGNORE_LINE ) {
 

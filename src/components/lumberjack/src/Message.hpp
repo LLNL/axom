@@ -64,7 +64,9 @@ class Message {
         , m_ranks()
         , m_ranksCount(0)
         , m_fileName("")
-        , m_lineNumber(0) {}
+        , m_lineNumber(0)
+        , m_level(0)
+        , m_tag("") {}
 
         /*!
          *****************************************************************************
@@ -75,15 +77,20 @@ class Message {
          * \param [in] rank The rank where the Message originated.
          * \param [in] fileName The file name where the Message originated.
          * \param [in] lineNumber The line number where the Message originated.
+         * \param [in] level The level of the severity of the Message.
+         * \param [in] tag The tag of where the Message originated.
          *****************************************************************************
          */
         Message(const std::string& text, int rank,
-                    const std::string& fileName, int lineNumber)
+                const std::string& fileName, int lineNumber,
+                int level, const std::string& tag)
         : m_text(text)
         , m_ranks(1, rank)
         , m_ranksCount(1)
         , m_fileName(fileName)
-        , m_lineNumber(lineNumber) {}
+        , m_lineNumber(lineNumber)
+        , m_level(level)
+        , m_tag(tag) {}
 
         /*!
          *****************************************************************************
@@ -96,16 +103,21 @@ class Message {
          * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
          * \param [in] fileName The file name where the Message originated.
          * \param [in] lineNumber The line number where the Message originated.
+         * \param [in] msgLevel The level of the severity of the Message.
+         * \param [in] tagName The tag of where the Message originated.
          *****************************************************************************
          */
         Message(const std::string& text, const std::vector<int>& ranks,
-                    int ranksCount, int ranksLimit,
-                    const std::string& fileName, int lineNumber)
+                int ranksCount, int ranksLimit,
+                const std::string& fileName, int lineNumber,
+                int level, const std::string& tag)
         : m_text(text)
         , m_ranks()
         , m_ranksCount(0)
         , m_fileName(fileName)
         , m_lineNumber(lineNumber)
+        , m_level(level)
+        , m_tag(tag)
         {
             addRanks(ranks, ranksCount, ranksLimit);
         }
@@ -113,21 +125,21 @@ class Message {
         // Getters
         /*!
          *****************************************************************************
-         * \brief Returns text of the Message.
+         * \brief Returns the text of the Message.
          *****************************************************************************
          */
         std::string text() const;
 
         /*!
          *****************************************************************************
-         * \brief Returns vector of the ranks where this Message originated.
+         * \brief Returns the vector of the ranks where this Message originated.
          *****************************************************************************
          */
         std::vector<int> ranks() const;
 
         /*!
          *****************************************************************************
-         * \brief Returns total count of ranks where this Message originated.
+         * \brief Returns the total count of ranks where this Message originated.
          *****************************************************************************
          */
         int ranksCount() const;
@@ -143,17 +155,31 @@ class Message {
 
         /*!
          *****************************************************************************
-         * \brief Returns file name of where this Message originated.
+         * \brief Returns the file name of where this Message originated.
          *****************************************************************************
          */
         std::string fileName() const;
 
         /*!
          *****************************************************************************
-         * \brief Returns line number of where this Message originated.
+         * \brief Returns the line number of where this Message originated.
          *****************************************************************************
          */
         int lineNumber() const;
+
+        /*!
+         *****************************************************************************
+         * \brief Returns the level of the severity of the Message.
+         *****************************************************************************
+         */
+        int level() const;
+
+        /*!
+         *****************************************************************************
+         * \brief Returns the tag of where the Message originated.
+         *****************************************************************************
+         */
+        std::string tag() const;
 
         // Setters
 
@@ -179,10 +205,28 @@ class Message {
          *****************************************************************************
          * \brief Sets a new line number for this Message.
          *
-         * \param [in] newLineNumber The delimiter used to separate the ranks in returned string.
+         * \param [in] newLineNumber The new line number to be set for this message.
          *****************************************************************************
          */
         void lineNumber(int newLineNumber);
+
+        /*!
+         *****************************************************************************
+         * \brief Sets a new severity level for this Message.
+         *
+         * \param [in] newLevel The new severity level for this Message.
+         *****************************************************************************
+         */
+        void level(int newLevel);
+
+        /*!
+         *****************************************************************************
+         * \brief Sets a new tag of where the Message originated.
+         *
+         * \param [in] newTag The new tag of where the Message originated.
+         *****************************************************************************
+         */
+        void tag(const std::string& newTag);
 
         /*!
          *****************************************************************************
@@ -232,11 +276,15 @@ class Message {
          */
         void unpack(const std::string& packedMessage, int ranksLimit);
     private:
+        void unpackRanks(const std::string& ranksString, int ranksLimit);
+        
         std::string m_text;
         std::vector<int> m_ranks;
         int m_ranksCount;
         std::string m_fileName;
         int m_lineNumber;
+        int m_level;
+        std::string m_tag;
 };
 
 } // end namespace lumberjack

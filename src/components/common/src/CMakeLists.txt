@@ -5,6 +5,8 @@ set(common_headers
     ATKMacros.hpp
     CommonTypes.hpp
     FileUtilities.hpp
+    StringUtilities.hpp
+    Timer.hpp
     Utilities.hpp
     cstdint_wrapper.hpp
     )
@@ -14,7 +16,9 @@ set(common_headers
 #
 set(common_sources
     FileUtilities.cpp
-	Utilities.cpp
+    StringUtilities.cpp
+    Timer.cpp
+    Utilities.cpp
     )
 
 #

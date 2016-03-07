@@ -140,7 +140,7 @@ if (BUILD_TESTING)
 
   ## add google test
   add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gtest-1.7.0)
-  set(GTEST_INCLUDES ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR}
+  set(GTEST_INCLUDES ${gtest_SOURCE_DIR}/include
             CACHE INTERNAL "GoogleTest include directories" FORCE)
   set(GTEST_LIBS gtest_main gtest
             CACHE INTERNAL "GoogleTest link libraries" FORCE)
@@ -174,20 +174,22 @@ endif()
 ################################
 # MPI
 ################################
+message(STATUS "MPI Support is ${ENABLE_MPI}")
 if (ENABLE_MPI)
   find_package(MPI REQUIRED)
+  message(STATUS "MPI C Compile Flags: ${MPI_C_COMPILE_FLAGS}")
+  message(STATUS "MPI C Include Path: ${MPI_C_INCLUDE_PATH}")
+  message(STATUS "MPI C Link Flags: ${MPI_C_LINK_FLAGS}")
+  message(STATUS "MPI C Libraries: ${MPI_C_LIBRARIES}")
 endif()
 
 ################################
 # OpenMP
 ################################
+message(STATUS "OpenMP Support is ${ENABLE_OPENMP}")
 if(ENABLE_OPENMP)
     find_package(OpenMP REQUIRED)
-    if (OPENMP_FOUND)
-        message(STATUS "Found OpenMP")
-    else()
-        message(STATUS "Could not find OpenMP")
-    endif()
+    message(STATUS "OpenMP CXX Flags: ${OpenMP_CXX_FLAGS}")
 endif()
 
 ################################
@@ -288,6 +290,7 @@ endmacro(add_target_definitions)
 ##
 ## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this argument
 ## is supplied, the openmp compiler flag will be added to the compiler command
+## and the -DUSE_OPENMP, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_library)
 
@@ -346,7 +349,7 @@ macro(make_library)
    endif()
 
    foreach(src ${arg_LIBRARY_SOURCES})
-       if(IS_ABSOLUTE)
+       if(IS_ABSOLUTE ${src})
            list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${src}")
        else()
            list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
@@ -391,6 +394,7 @@ endmacro(make_library)
 ##
 ## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this argument
 ## is supplied, the openmp compiler flag will be added to the compiler command
+## and the -DUSE_OPENMP, will be included to the compiler definition.
 ##
 ## Optionally, "ADD_CTEST" can be supplied as an argument. When this argument
 ## is supplied, the executable is added as a ctest with no command line options.
@@ -479,7 +483,7 @@ macro(make_executable)
                )
    endif()
 
-   if(IS_ABSOLUTE)
+   if(IS_ABSOLUTE ${arg_EXECUTABLE_SOURCE})
        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_EXECUTABLE_SOURCE}")
    else()
        list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
@@ -519,7 +523,7 @@ macro(add_gtest)
              )
 
    # add any passed source files to the running list for this project
-   if(IS_ABSOLUTE)
+   if(IS_ABSOLUTE ${arg_TEST_SOURCE})
       list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
    else()
       list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
@@ -579,7 +583,7 @@ macro(add_benchmark)
 
       
       # add any passed source files to the running list for this project
-      if(IS_ABSOLUTE)
+      if(IS_ABSOLUTE ${arg_TEST_SOURCE})
          list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
       else()
          list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
@@ -659,7 +663,7 @@ add_custom_target(copy_headers_${proj}
 
      # add any passed source files to the running list for this project
      foreach(hdr ${hdrs})
-         if(IS_ABSOLUTE)
+         if(IS_ABSOLUTE ${hdr})
              list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${hdr}")
          else()
              list(APPEND "${PROJECT_NAME}_ALL_SOURCES"

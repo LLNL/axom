@@ -97,7 +97,7 @@ TEST(sidre_external, create_external_view_null)
   EXPECT_EQ(view->getTotalBytes(), 0u);
 
   void * ptr = view->getVoidPtr();
-  EXPECT_EQ(ptr, ATK_NULLPTR);
+  EXPECT_EQ(ptr, (void *) ATK_NULLPTR);
 
   // getData will not work since the address is NULL
   //  int * idata_chk = view->getData();
