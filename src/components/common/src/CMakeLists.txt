@@ -6,6 +6,7 @@ set(common_headers
     CommonTypes.hpp
     FileUtilities.hpp
     StringUtilities.hpp
+    Timer.hpp
     Utilities.hpp
     cstdint_wrapper.hpp
     )
@@ -16,6 +17,7 @@ set(common_headers
 set(common_sources
     FileUtilities.cpp
     StringUtilities.cpp
+    Timer.cpp
     Utilities.cpp
     )
 

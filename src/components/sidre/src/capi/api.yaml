@@ -123,6 +123,7 @@ classes:
 
     -  decl: IndexType getFirstValidViewIndex() const
     -  decl: IndexType getNextValidViewIndex(IndexType idx) const
+
     -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, SidreLength num_elems)
        function_suffix: _nelems
        fortran_generic:
@@ -137,6 +138,18 @@ classes:
 
 #    -  decl: DataView *createViewAndAllocate( const std::string& name, const DataType& dtype)
 #    -  decl: DataView *createViewAndAllocate( const std::string& name, const Schema& schema)
+
+    -  decl: DataView *createViewScalar( const std::string& name, ScalarType value)
+       cpp_template:
+         ScalarType:
+         - int
+         - long
+         - float
+         - double
+       PY_error_pattern: PY_null_to_none
+
+    -  decl: DataView *createViewString( const std::string& name, const std::string& value)
+       PY_error_pattern: PY_null_to_none
 
     -  decl: DataView *createView( const string& name )
        function_suffix: _empty
