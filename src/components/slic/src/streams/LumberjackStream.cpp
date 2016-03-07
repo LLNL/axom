@@ -32,6 +32,7 @@ namespace slic {
 
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit ) :
+    m_isLJOwnedBySLIC( false ),
     m_stream( stream )
 {
   this->initializeLumberjack( comm, ranksLimit );
@@ -40,6 +41,7 @@ LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ran
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
                                     std::string& format ) :
+    m_isLJOwnedBySLIC( false ),
     m_stream( stream )
 {
   this->initializeLumberjack( comm, ranksLimit );
@@ -49,6 +51,7 @@ LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ran
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream(std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj):
     m_lj( lj ),
+    m_isLJOwnedBySLIC( false ),
     m_stream( stream )
 {
 }
@@ -58,6 +61,7 @@ LumberjackStream::LumberjackStream( std::ostream* stream,
                                     asctoolkit::lumberjack::Lumberjack* lj,
                                     std::string& format ) :
     m_lj( lj ),
+    m_isLJOwnedBySLIC( false ),
     m_stream( stream )
 {
   this->setFormatString( format );
