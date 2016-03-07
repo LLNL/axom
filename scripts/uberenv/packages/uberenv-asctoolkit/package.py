@@ -13,6 +13,7 @@ class UberenvAsctoolkit(Package):
     
     # all of theses are custom
     depends_on("cmake")
+    depends_on("doxygen")
     depends_on("python")
     depends_on("conduit")
     depends_on("py-sphinx")
@@ -52,6 +53,7 @@ class UberenvAsctoolkit(Package):
         # conduit
         conduit_dir      = spec['conduit'].prefix
         cmake_exe        = pjoin(spec['cmake'].prefix.bin,"cmake")
+        doxygen_exe      = pjoin(spec['doxygen'].prefix.bin,"doxygen")
         python_exe       = pjoin(spec['python'].prefix.bin,"python")
         sphinx_build_exe = pjoin(spec['python'].prefix.bin,"sphinx-build")
         uncrustify_exe   = pjoin(spec['uncrustify'].prefix.bin,"uncrustify")
@@ -86,6 +88,9 @@ class UberenvAsctoolkit(Package):
 
         cfg.write("# conduit from uberenv\n")
         cfg.write('set(CONDUIT_DIR "%s" CACHE PATH "")\n\n' % conduit_dir)
+
+        cfg.write("# doxygen from uberenv\n")
+        cfg.write("# doxygen exectuable path: %s\n\n" % doxygen_exe)
 
         cfg.write("# python from uberenv\n")
         cfg.write('set(PYTHON_EXECUTABLE "%s" CACHE PATH "")\n\n' % python_exe)
