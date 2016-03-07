@@ -1,0 +1,38 @@
+/*************************************************************************
+ *
+ * This file is part of the ASC CS Toolkit distribution.  For full copyright 
+ * information, see COPYRIGHT and COPYING.LESSER. 
+ *
+ * Copyright:     (c) 2016 Lawrence Livermore National Security, LLC
+ * Description:   Generation of ASC CS Toolkit Doxygen source code manual 
+ *
+ ************************************************************************/
+namespace asctoolkit {
+   namespace slam {
+
+/*!
+  @page component_slam The Slam Component
+ 
+  The Slam component .......:
+  
+  - asctoolkit::slam::DynamicVariableRelation   
+  - asctoolkit::slam::FieldRegistry                                     
+  - asctoolkit::slam::IndirectionSet
+  - asctoolkit::slam::Map                              
+  - asctoolkit::slam::ModularInt
+  - asctoolkit::slam::NullSet
+  - asctoolkit::slam::OrderedSet
+  - asctoolkit::slam::ProductSet
+  - asctoolkit::slam::RangeSet
+  - asctoolkit::slam::Relation
+  - asctoolkit::slam::Set   
+  - asctoolkit::slam::StaticConstantRelation
+  - asctoolkit::slam::StaticVariableRelation
+  - asctoolkit::slam::Utilities 
+  - \subpage slam_policies
+  
+  All class names in the slam component are in the namespace asctoolkit::slam.
+*/
+
+}
+}

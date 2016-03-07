@@ -1,0 +1,31 @@
+/*************************************************************************
+ *
+ * This file is part of the ASC CS Toolkit distribution.  For full copyright 
+ * information, see COPYRIGHT and COPYING.LESSER. 
+ *
+ * Copyright:     (c) 2016 Lawrence Livermore National Security, LLC
+ * Description:   Generation of ASC CS Toolkit Doxygen source code manual 
+ *
+ ************************************************************************/
+namespace asctoolkit {
+   namespace slam      {
+      namespace policies {
+
+/*!
+  @page slam_policies Slam Policies
+ 
+  The Slam policies .......:
+  
+  - asctoolkit::slam::policies::IndirectionPolicies   
+  - asctoolkit::slam::policies::OffsetPolicies                                     
+  - asctoolkit::slam::policies::PolicyTraits
+  - asctoolkit::slam::policies::SizePolicies                              
+  - asctoolkit::slam::policies::StridePolicies
+  - asctoolkit::slam::policies::SubsettingPolicies
+  
+  All class names in the slam policies are in the namespace asctoolkit::slam::policies.
+*/
+
+}
+}
+}

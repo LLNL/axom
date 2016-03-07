@@ -1,0 +1,39 @@
+/*************************************************************************
+ *
+ * This file is part of the ASC CS Toolkit distribution.  For full copyright 
+ * information, see COPYRIGHT and COPYING.LESSER. 
+ *
+ * Copyright:     (c) 2016 Lawrence Livermore National Security, LLC
+ * Description:   Generation of ASC CS Toolkit Quest Doxygen source code manual 
+ *
+ ************************************************************************/
+namespace  quest {
+
+/*!
+  @page component_quest The Quest Component
+ 
+  The Quest component .......:
+  
+  - quest::BoundingBox
+  - quest::Determinants
+  - quest::HyperSphere    
+  - quest::Intersection
+  - quest::MortonIndex
+  - quest::NumericArray 
+  - quest::OctreeBase 
+  - quest::Orientation 
+  - quest::Point 
+  - quest::Ray  
+  - quest::Segment   
+  - quest::SpatialOctree 
+  - quest::SquaredDistance 
+  - quest::Triangle
+  - quest::Vector 
+  - quest::fuzzy_compare 
+  - \subpage component_meshtk "Meshtk". It provides a simple API to support efficient spatial queries.
+  
+  All class names in the quest component are in the namespace quest.
+*/
+
+}
+}
