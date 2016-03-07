@@ -53,6 +53,9 @@ set( quest_headers
     stl/stla_io.hpp
     stl/STLReader.hpp
     
+    ## quest interface headers
+    interface/quest.hpp
+    
    )
    
 set( quest_sources
@@ -74,6 +77,9 @@ set( quest_sources
     ## STL library sources
     stl/stla_io.cpp
     stl/STLReader.cpp
+    
+    ## quest interface sources
+    interface/quest.cpp
     
    )
 
