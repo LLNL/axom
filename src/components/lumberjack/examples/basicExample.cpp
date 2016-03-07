@@ -40,33 +40,34 @@ int main(int argc, char** argv)
     asctoolkit::lumberjack::BinaryTreeCommunicator communicator;
     communicator.initialize(MPI_COMM_WORLD, ranksLimit);
 
-    // Initialize lumberjack logger
-    asctoolkit::lumberjack::Lumberjack logger;
-    logger.initialize(&communicator, ranksLimit);
+    // Initialize lumberjack
+    asctoolkit::lumberjack::Lumberjack lj;
+    lj.initialize(&communicator, ranksLimit);
 
     // Queue messages into lumberjack
     if (commRank == 0){
-        logger.queueMessage("This message will not combined");
+        lj.queueMessage("This message will not combined");
     }
     else {
-        logger.queueMessage("This message will be combined");
-        logger.queueMessage("This message will be combined");
-        logger.queueMessage("This message will be combined");
+        lj.queueMessage("This message will be combined");
+        lj.queueMessage("This message will be combined");
+        lj.queueMessage("This message will be combined");
     }
     // Push messages fully through lumberjack's communicator
-    logger.pushMessagesFully();
+    lj.pushMessagesFully();
 
     // Get messages back out of lumberjack since they have been pushed.
-    std::vector<asctoolkit::lumberjack::Message*> messages;
-    logger.getMessages(messages);
-    for(int i=0; i<(int)(messages.size()); ++i){
-        std::cout << "(" << messages[i]->stringOfRanks() << ") " << messages[i]->ranksCount() <<
-                     " '" << messages[i]->text() << "'" << std::endl;
-        delete messages[i];
+    if (lj.isOutputNode()){
+        std::vector<asctoolkit::lumberjack::Message*> messages = lj.getMessages();
+        for(int i=0; i<(int)(messages.size()); ++i){
+            std::cout << "(" << messages[i]->stringOfRanks() << ") " << messages[i]->ranksCount() <<
+                         " '" << messages[i]->text() << "'" << std::endl;
+        }
+        lj.clearMessages();
     }
 
-    // Finalize the lumberjack logger
-    logger.finalize();
+    // Finalize lumberjack
+    lj.finalize();
     // Finalize the lumberjack communicator
     communicator.finalize();
     // Finalize MPI

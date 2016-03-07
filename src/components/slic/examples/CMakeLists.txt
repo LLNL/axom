@@ -16,6 +16,7 @@ set(example_sources
 
 set(mpi_example_sources
     basic/parallel_logging_example.cc
+    basic/lumberjack_logging_example.cc
     basic/separate_file_per_rank.cc
     )
 

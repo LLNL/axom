@@ -127,7 +127,7 @@ class RootCommunicator: public Communicator {
          * outputting messages. Only the root node outputs messages.
          *****************************************************************************
          */
-        bool shouldMessagesBeOutputted();
+        bool isOutputNode();
     private:
         MPI_Comm m_mpiComm;
         int m_mpiCommRank;

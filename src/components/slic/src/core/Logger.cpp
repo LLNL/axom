@@ -215,6 +215,21 @@ void Logger::flushStreams()
 }
 
 //------------------------------------------------------------------------------
+void Logger::pushStreams()
+{
+  for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
+
+    unsigned nstreams = m_logStreams[ level ].size();
+    for ( unsigned istream=0; istream < nstreams; ++istream ) {
+      m_logStreams[ level ][ istream ]->push( );
+
+    } // END for all streams
+
+  } // END for all levels
+
+}
+
+//------------------------------------------------------------------------------
 //                Static Method Implementations
 //------------------------------------------------------------------------------
 

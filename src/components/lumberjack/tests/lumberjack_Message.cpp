@@ -175,11 +175,13 @@ TEST(lumberjack_Message, testConstructor01)
 {
     //Test most basic case: one text, one rank, file name, line number
     asctoolkit::lumberjack::Message m("He's a lumberjack, and he's okay,",
-                                      122, "foo.cpp", 154);
+                                      122, "foo.cpp", 154, 1, "tag1");
 
     EXPECT_EQ(m.text(), "He's a lumberjack, and he's okay,");
     EXPECT_EQ(m.fileName(), "foo.cpp");
     EXPECT_EQ(m.lineNumber(), 154);
+    EXPECT_EQ(m.level(), 1);
+    EXPECT_EQ(m.tag(), "tag1");
     EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)1);
     EXPECT_EQ(m.ranksCount(), 1);
     EXPECT_EQ(m.ranks()[0], 122);
@@ -195,11 +197,14 @@ TEST(lumberjack_Message, testConstructor02)
     }
 
     asctoolkit::lumberjack::Message m("He sleeps all night and he works all day.",
-                                      ranks, ranksLimit, ranksLimit, "foo.cpp", 154);
+                                      ranks, ranksLimit, ranksLimit, "foo.cpp", 154,
+                                      2, "mytag");
 
     EXPECT_EQ(m.text(), "He sleeps all night and he works all day.");
     EXPECT_EQ(m.fileName(), "foo.cpp");
     EXPECT_EQ(m.lineNumber(), 154);
+    EXPECT_EQ(m.level(), 2);
+    EXPECT_EQ(m.tag(), "mytag");
     EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
     EXPECT_EQ(m.ranksCount(), ranksLimit);
     for(int i=0; i<(int)ranksLimit; ++i){
@@ -217,6 +222,8 @@ TEST(lumberjack_Message, stringOfRanks01)
     EXPECT_EQ(m.text(), "");
     EXPECT_EQ(m.fileName(), "");
     EXPECT_EQ(m.lineNumber(), 0);
+    EXPECT_EQ(m.level(), 0);
+    EXPECT_EQ(m.tag(), "");
     EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)1);
     EXPECT_EQ(m.ranksCount(), 1);
     EXPECT_EQ(m.ranks()[0], 400);
@@ -256,7 +263,7 @@ TEST(lumberjack_Message, stringOfRanks03)
     }
 
     asctoolkit::lumberjack::Message m("Unimportant message", ranks, ranksLimit, ranksLimit,
-                                          "test/foo.cpp", 987654321);
+                                          "test/foo.cpp", 987654321, 0, "");
 
     EXPECT_EQ(m.text(), "Unimportant message");
     EXPECT_EQ(m.fileName(), "test/foo.cpp");
@@ -279,7 +286,7 @@ TEST(lumberjack_Message, pack01)
     }
 
     asctoolkit::lumberjack::Message m("Unimportant message", ranks, ranksLimit, ranksLimit,
-                                          "test/foo.cpp", 987654321);
+                                          "test/foo.cpp", 987654321, 0, "");
 
     EXPECT_EQ(m.text(), "Unimportant message");
     EXPECT_EQ(m.fileName(), "test/foo.cpp");
@@ -291,7 +298,7 @@ TEST(lumberjack_Message, pack01)
     }
 
     std::string packedMessage = m.pack();
-    EXPECT_EQ(packedMessage, "0,2,4,6,8*5*test/foo.cpp*987654321*Unimportant message");
+    EXPECT_EQ(packedMessage, "0,2,4,6,8*5*test/foo.cpp*987654321*0**Unimportant message");
 }
 
 TEST(lumberjack_Message, unpack01)
@@ -300,11 +307,33 @@ TEST(lumberjack_Message, unpack01)
     const int ranksLimit = 5;
 
     asctoolkit::lumberjack::Message m;
-    m.unpack("0,2,4,6,8*15*test/foo.cpp*987654321*Unimportant message", ranksLimit);
+    m.unpack("0,2,4,6,8*15*test/foo.cpp*987654321*1*gtest*Unimportant message", ranksLimit);
 
     EXPECT_EQ(m.text(), "Unimportant message");
     EXPECT_EQ(m.fileName(), "test/foo.cpp");
     EXPECT_EQ(m.lineNumber(), 987654321);
+    EXPECT_EQ(m.level(), 1);
+    EXPECT_EQ(m.tag(), "gtest");
+    EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
+    EXPECT_EQ(m.ranksCount(), 15);
+    for(int i=0; i<(int)ranksLimit; ++i){
+        EXPECT_EQ(m.ranks()[i], i*2);
+    }
+}
+
+TEST(lumberjack_Message, unpack02)
+{
+    //Test case: semi full Message
+    const int ranksLimit = 5;
+
+    asctoolkit::lumberjack::Message m;
+    m.unpack("0,2,4,6,8*15*test/foo.cpp*987654321*0**Unimportant message", ranksLimit);
+
+    EXPECT_EQ(m.text(), "Unimportant message");
+    EXPECT_EQ(m.fileName(), "test/foo.cpp");
+    EXPECT_EQ(m.lineNumber(), 987654321);
+    EXPECT_EQ(m.level(), 0);
+    EXPECT_EQ(m.tag(), "");
     EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
     EXPECT_EQ(m.ranksCount(), 15);
     for(int i=0; i<(int)ranksLimit; ++i){

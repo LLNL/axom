@@ -24,7 +24,6 @@
 #include <cstdlib>
 
 #include "lumberjack/MPIUtility.hpp"
-#include "lumberjack/Utility.hpp"
 
 namespace asctoolkit {
 namespace lumberjack {
@@ -83,7 +82,7 @@ void RootCommunicator::push(const char* packedMessagesToBeSent,
     MPI_Barrier(m_mpiComm);
 }
 
-bool RootCommunicator::shouldMessagesBeOutputted()
+bool RootCommunicator::isOutputNode()
 {
     if (m_mpiCommRank == 0){
         return true;

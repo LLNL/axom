@@ -34,7 +34,7 @@ foreach(test ${gtest_thirdparty_tests})
     add_gtest( TEST_SOURCE ${test} DEPENDS_ON conduit)
 endforeach()
 
-if(ENABLE_BENCHMARK)
+if (ENABLE_BENCHMARK)
   foreach(test ${gbenchmark_thirdparty_tests})
       add_benchmark( TEST_SOURCE ${test} TEST_ARGS "--benchmark_min_time=0.0001")
   endforeach()
@@ -53,11 +53,8 @@ if (ENABLE_FORTRAN)
   endforeach()
 endif()
 
-################
-# This is a special case, I am not sure we have logic to add WITH_OPENMP to gtest?
-################
-if(ENABLE_OMP)
-    make_executable( EXECUTABLE_NAME openmp_smoke EXECUTABLE_SOURCE openmp_smoke.cpp WITH_OPENMP)
+if (ENABLE_OPENMP)
+    make_executable( EXECUTABLE_NAME openmp_smoke EXECUTABLE_SOURCE openmp_smoke.cpp WITH_OPENMP ADD_CTEST)
 endif()
 
 
