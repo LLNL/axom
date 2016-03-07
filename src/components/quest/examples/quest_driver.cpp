@@ -29,7 +29,7 @@
 #include "common/Timer.hpp"
 
 #include "quest/BoundingBox.hpp"
-#include "quest/BucketTree.hpp"
+#include "quest/BVHTree.hpp"
 #include "quest/Field.hpp"
 #include "quest/FieldData.hpp"
 #include "quest/FieldVariable.hpp"
@@ -220,7 +220,7 @@ void distance_field( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
 
 #ifdef ATK_DEBUG
   // write the bucket tree to a file
-  const quest::BucketTree< int, 3>* btree = signedDistance.getBucketTree();
+  const quest::BVHTree< int, 3>* btree = signedDistance.getBVHTree();
   SLIC_ASSERT( btree != ATK_NULLPTR );
 
   btree->writeLegacyVtkFile( "bucket-tree.vtk" );

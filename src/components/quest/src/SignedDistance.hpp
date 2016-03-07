@@ -25,7 +25,7 @@
 #include "common/CommonTypes.hpp"
 
 #include "quest/BoundingBox.hpp"
-#include "quest/BucketTree.hpp"
+#include "quest/BVHTree.hpp"
 #include "quest/Field.hpp"
 #include "quest/FieldData.hpp"
 #include "quest/FieldVariable.hpp"
@@ -46,7 +46,7 @@ public:
   typedef Point< double,NDIMS > PointType;
   typedef Triangle< double,NDIMS > TriangleType;
   typedef BoundingBox< double,NDIMS > BoxType;
-  typedef BucketTree< int,NDIMS > BucketTreeType;
+  typedef BVHTree< int,NDIMS > BVHTreeType;
 
 public:
 
@@ -85,7 +85,7 @@ public:
    * \post ptr != ATK_NULLPTR
    *****************************************************************************
    */
-  const BucketTreeType* getBucketTree( ) const { return m_bucketTree; };
+  const BVHTreeType* getBVHTree( ) const { return m_bvhTree; };
 
 private:
 
@@ -133,12 +133,12 @@ private:
    * \note Made private to prevent its use from the calling application.
    *****************************************************************************
    */
-  SignedDistance(): m_surfaceMesh(ATK_NULLPTR), m_bucketTree(ATK_NULLPTR) { };
+  SignedDistance(): m_surfaceMesh(ATK_NULLPTR), m_bvhTree(ATK_NULLPTR) { };
 
 private:
 
   meshtk::Mesh* m_surfaceMesh;   /*!< User-supplied surface mesh. */
-  BucketTreeType* m_bucketTree;  /*!< Spatial acceleration data-structure. */
+  BVHTreeType* m_bvhTree;  /*!< Spatial acceleration data-structure. */
 
   DISABLE_COPY_AND_ASSIGNMENT( SignedDistance );
 
@@ -165,22 +165,22 @@ SignedDistance< NDIMS >::SignedDistance(
   const int ncells = m_surfaceMesh->getMeshNumberOfCells();
 
   // Initialize BucketTree with the surface elements.
-  m_bucketTree  = new BucketTreeType( ncells, maxLevels );
+  m_bvhTree  = new BVHTreeType( ncells, maxLevels );
 
   for ( int icell=0; icell < ncells; ++icell ) {
-      m_bucketTree->insert( this->getCellBoundingBox( icell ), icell );
+      m_bvhTree->insert( this->getCellBoundingBox( icell ), icell );
   } // END for all cells
 
   // Build bounding volume hierarchy
-  m_bucketTree->build( maxObjects );
+  m_bvhTree->build( maxObjects );
 }
 
 //------------------------------------------------------------------------------
 template < int NDIMS >
 SignedDistance< NDIMS >::~SignedDistance( )
 {
-  delete m_bucketTree;
-  m_bucketTree = ATK_NULLPTR;
+  delete m_bvhTree;
+  m_bvhTree = ATK_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
@@ -189,25 +189,25 @@ inline double
 SignedDistance< NDIMS >::computeDistance( const PointType& pt ) const
 {
   SLIC_ASSERT( m_surfaceMesh != ATK_NULLPTR );
-  SLIC_ASSERT( m_bucketTree != ATK_NULLPTR );
+  SLIC_ASSERT( m_bvhTree != ATK_NULLPTR );
 
   double minSqDist = std::numeric_limits< double >::max();
   int closestCell  = -1;
 
   std::vector< int > candidate_buckets;
-  m_bucketTree->find( pt, candidate_buckets );
+  m_bvhTree->find( pt, candidate_buckets );
 
   const int nbuckets = candidate_buckets.size();
   for ( int ibucket=0; ibucket < nbuckets; ++ibucket ) {
 
      const int bucketIdx  = candidate_buckets[ ibucket ];
-     const int numObjects = m_bucketTree->getBucketNumObjects( bucketIdx );
-     const int* objIdList = m_bucketTree->getBucketObjectArray( bucketIdx );
+     const int numObjects = m_bvhTree->getBucketNumObjects( bucketIdx );
+     const int* objIdList = m_bvhTree->getBucketObjectArray( bucketIdx );
 
      for ( int iobject=0; iobject < numObjects; ++iobject ) {
 
         const int objIdx  = objIdList[ iobject ];
-        const int cellIdx = m_bucketTree->getObjectData( objIdx );
+        const int cellIdx = m_bvhTree->getObjectData( objIdx );
         SLIC_ASSERT( (cellIdx >= 0) &&
                      (cellIdx < m_surfaceMesh->getMeshNumberOfCells()) );
 

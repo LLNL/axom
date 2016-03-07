@@ -20,14 +20,14 @@
 
 // QueST includes
 #include "quest/BoundingBox.hpp"
-#include "quest/BucketTree.hpp"
+#include "quest/BVHTree.hpp"
 #include "quest/Point.hpp"
 
 //------------------------------------------------------------------------------
 TEST( quest_bucket_tree, insert_object )
 {
   // some typedef short-cuts
-  typedef quest::BucketTree< int,3 > TreeType;
+  typedef quest::BVHTree< int,3 > TreeType;
   typedef quest::BoundingBox< double,3 > BoxType;
   typedef quest::Point< double,3 > PointType;
 

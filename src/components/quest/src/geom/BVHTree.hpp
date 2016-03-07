@@ -17,8 +17,8 @@
  *******************************************************************************
  */
 
-#ifndef BUCKETTREE_HPP_
-#define BUCKETTREE_HPP_
+#ifndef BVHTREE_HPP_
+#define BVHTREE_HPP_
 
 // ASC Toolkit includes
 #include "common/ATKMacros.hpp"   // for DISABLE_COPY_AND_ASSIGNMENT macro
@@ -41,13 +41,13 @@ namespace quest
 
 /*!
  *******************************************************************************
- * \class BucketTree
+ * \class BVHTree
  *
- * \brief The BucketTree class provides functionality for generating a
+ * \brief The BVHTree class provides functionality for generating a
  *  Bounding Volume Hierarchy (BVH) of axis-aligned bounding boxes, i.e.,
  *  buckets that spatially partitions a set of objects. Each object is defined
  *  by its bounding box and user-supplied data-structure specified as a template
- *  argument. Once generated, the BucketTree can then be used as an
+ *  argument. Once generated, the BVHTree can then be used as an
  *  acceleration structure to speed up the performance of point queries on the
  *  given objects, e.g., minimum distance, closest point, orientation, etc.
  *
@@ -55,7 +55,7 @@ namespace quest
  *******************************************************************************
  */
 template< typename T, int NDIMS >
-class BucketTree
+class BVHTree
 {
 public:
   typedef BoundingBox< double,NDIMS > BoxType;
@@ -65,11 +65,11 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Default constructor, creates an empty BucketTree instance.
+   * \brief Default constructor, creates an empty BVHTree instance.
    * \param [in] maxNumLevel maximum number of subdivision levels. Default is 5.
    *****************************************************************************
    */
-  BucketTree( int maxNumLevel=5 );
+  BVHTree( int maxNumLevel=5 );
 
   /*!
    *****************************************************************************
@@ -80,14 +80,14 @@ public:
    * \note It is recommended to use this constructor for best-performance.
    *****************************************************************************
    */
-  BucketTree( int estNumObjects, int maxNumLevels );
+  BVHTree( int estNumObjects, int maxNumLevels );
 
   /*!
    *****************************************************************************
    * \brief Destructor.
    *****************************************************************************
    */
-  ~BucketTree();
+  ~BVHTree();
 
   /*!
    *****************************************************************************
@@ -99,8 +99,8 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns the number of levels in the given BucketTree instance.
-   * \return N the number of levels in the BucketTree.
+   * \brief Returns the number of levels in the given BVHTree instance.
+   * \return N the number of levels in the BVHTree.
    *****************************************************************************
    */
   int getNumLevels() const { return m_numLevels; };
@@ -156,7 +156,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Checks if the point is inside the BucketTree.
+   * \brief Checks if the point is inside the BVHTree.
    * \param [in] pt the point in query.
    * \return status true if the point is inside, else false.
    *****************************************************************************
@@ -176,7 +176,7 @@ public:
 
   /// @}
 
-  /// \name BucketTree Access methods
+  /// \name BVHTree Access methods
   /// @{
 
   /*!
@@ -337,7 +337,7 @@ private:
   static int level_begin( int l )
   {
     SLIC_ASSERT( l >= 0);
-    return( BucketTree::pow2(l)-1 );
+    return( BVHTree::pow2(l)-1 );
   }
 
   /*!
@@ -351,7 +351,7 @@ private:
   static int level_end( int l )
   {
     SLIC_ASSERT( l >= 0 );
-    return( BucketTree::pow2(l+1)-2 );
+    return( BVHTree::pow2(l+1)-2 );
   }
 
   /*!
@@ -417,7 +417,7 @@ private:
    *   <li> numObjectsInBucket > threshold </li>
    *   <li> bucketLevel < maxNumLevels-1 </li>
    *  <ol>
-   * \note Used in BucketTree::build()
+   * \note Used in BVHTree::build()
    * \pre idx >= 0 && idx < m_tree.size()
    *****************************************************************************
    */
@@ -427,7 +427,7 @@ private:
    *****************************************************************************
    * \brief Helper routine used to refine a bucket in the tree.
    * \param [in] idx index of the bucket in the tree.
-   * \note Used in BucketTree::build()
+   * \note Used in BVHTree::build()
    * \pre idx >= 0 && idx  < m_tree.size()
    *****************************************************************************
    */
@@ -435,7 +435,7 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Resizes this BucketTree instance (as needed) to store the level.
+   * \brief Resizes this BVHTree instance (as needed) to store the level.
    * \param [in] level the level to resize the tree to.
    * \note Helper method used in refine().
    * \note Method resizes as needed, otherwise, this method returns immediately.
@@ -507,19 +507,19 @@ private:
   int m_numLevels;                   /*!< current number of levels        */
   int m_maxNumLevels;                /*!< maximum level of the tree       */
 
-  DISABLE_COPY_AND_ASSIGNMENT(BucketTree);
+  DISABLE_COPY_AND_ASSIGNMENT(BVHTree);
 };
 
 } /* namespace quest */
 
 //------------------------------------------------------------------------------
-//           BucketTree Public API Implementation
+//           BVHTree Public API Implementation
 //------------------------------------------------------------------------------
 namespace quest
 {
 
 template < typename T, int NDIMS >
-BucketTree< T,NDIMS >::BucketTree( int maxNumLevels ):
+BVHTree< T,NDIMS >::BVHTree( int maxNumLevels ):
     m_numLevels( 0 ),
     m_maxNumLevels( maxNumLevels )
 
@@ -527,13 +527,13 @@ BucketTree< T,NDIMS >::BucketTree( int maxNumLevels ):
   // pre-allocate internal data-structures.
   m_objects.reserve( 100 );
 
-  int numBuckets = BucketTree::pow2( m_maxNumLevels ) - 1;
+  int numBuckets = BVHTree::pow2( m_maxNumLevels ) - 1;
   m_tree.reserve( numBuckets );
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-BucketTree< T,NDIMS >::BucketTree( int estNumObjects, int maxNumLevels ):
+BVHTree< T,NDIMS >::BVHTree( int estNumObjects, int maxNumLevels ):
     m_numLevels( 0 ),
     m_maxNumLevels( maxNumLevels )
 
@@ -541,25 +541,25 @@ BucketTree< T,NDIMS >::BucketTree( int estNumObjects, int maxNumLevels ):
   // pre-allocate internal data-structures.
   m_objects.reserve( estNumObjects );
 
-  int numBuckets = BucketTree::pow2( m_maxNumLevels ) - 1;
+  int numBuckets = BVHTree::pow2( m_maxNumLevels ) - 1;
   m_tree.reserve( numBuckets );
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-BucketTree< T,NDIMS >::~BucketTree()
+BVHTree< T,NDIMS >::~BVHTree()
 {
   this->clear();
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void BucketTree< T, NDIMS >::insert( const BoxType& box, const T& data )
+void BVHTree< T, NDIMS >::insert( const BoxType& box, const T& data )
 {
   // Sanity checks
   SLIC_ASSERT( box.isValid() );
 
-  // STEP 0: create a BucketTree Object instance.
+  // STEP 0: create a BVHTree Object instance.
   Object obj;
   obj.Box       = box;
   obj.Data      = data;
@@ -594,15 +594,15 @@ void BucketTree< T, NDIMS >::insert( const BoxType& box, const T& data )
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void BucketTree< T,NDIMS >::resizeToLevel( int level )
+void BVHTree< T,NDIMS >::resizeToLevel( int level )
 {
   if ( level < m_numLevels ) {
     /* short-circuit */
     return;
   }
 
-  const int begin = BucketTree::level_begin( level );
-  const int end   = BucketTree::level_end( level );
+  const int begin = BVHTree::level_begin( level );
+  const int end   = BVHTree::level_end( level );
   if ( end >= static_cast<int>( m_tree.size() ) ) {
 
       const int new_size = end+1;
@@ -625,7 +625,7 @@ void BucketTree< T,NDIMS >::resizeToLevel( int level )
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void BucketTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
+void BVHTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
 {
   // Sanity Checks
   SLIC_ASSERT( parent >= 0 && parent < static_cast<int>(m_tree.size()) );
@@ -654,11 +654,11 @@ void BucketTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
                   ( objIdx < static_cast< int >(m_objects.size()) ) );
 
      // STEP B: get bounding box of the object.
-     const BucketTree::BoxType objBox  = m_objects[ objIdx ].Box;
+     const BVHTree::BoxType objBox  = m_objects[ objIdx ].Box;
      SLIC_ASSERT( objBox.isValid() );
 
      // STEP C: get centroid of the object's bounding box
-     const BucketTree::PointType centroid = objBox.centroid();
+     const BVHTree::PointType centroid = objBox.centroid();
 
      int bucketIdx = -1;
      if ( rightBox.contains( centroid ) ) {
@@ -700,7 +700,7 @@ void BucketTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void BucketTree< T,NDIMS >::refine( int idx )
+void BVHTree< T,NDIMS >::refine( int idx )
 {
   // Sanity checks
   SLIC_ASSERT( idx >= 0 && idx < static_cast<int>(m_tree.size()) );
@@ -717,8 +717,8 @@ void BucketTree< T,NDIMS >::refine( int idx )
   this->resizeToLevel( nextLevel );
 
   // STEP 2: get bucket index of right & left children and mark them valid
-  const int rightChild = BucketTree::right_child( idx );
-  const int leftChild  = BucketTree::left_child( idx );
+  const int rightChild = BVHTree::right_child( idx );
+  const int leftChild  = BVHTree::left_child( idx );
   SLIC_ASSERT( rightChild < static_cast< int >( m_tree.size() ) );
   SLIC_ASSERT( leftChild <  static_cast< int >( m_tree.size() ) );
 
@@ -738,7 +738,7 @@ void BucketTree< T,NDIMS >::refine( int idx )
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-bool BucketTree< T,NDIMS >::shouldRefine( int idx, int threshold )
+bool BVHTree< T,NDIMS >::shouldRefine( int idx, int threshold )
 {
   SLIC_ASSERT( idx >= 0 && idx < static_cast< int >( m_tree.size() ) );
   const int numObjects = m_tree[ idx ].ObjectArray.size();
@@ -753,7 +753,7 @@ bool BucketTree< T,NDIMS >::shouldRefine( int idx, int threshold )
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void BucketTree< T,NDIMS >::build( int threshold )
+void BVHTree< T,NDIMS >::build( int threshold )
 {
   SLIC_ASSERT( threshold >= 1 );
 
@@ -788,8 +788,8 @@ void BucketTree< T,NDIMS >::build( int threshold )
          SLIC_ASSERT( m_tree[ bucketIdx ].Refined );
 
          // STEP D: update workqueue accordingly
-         int leftIdx  = BucketTree::left_child( bucketIdx );
-         int rightIdx = BucketTree::right_child( bucketIdx );
+         int leftIdx  = BVHTree::left_child( bucketIdx );
+         int rightIdx = BVHTree::right_child( bucketIdx );
 
          if ( this->shouldRefine( leftIdx,threshold) ) {
             workqueue.push( leftIdx );
@@ -813,7 +813,7 @@ void BucketTree< T,NDIMS >::build( int threshold )
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void BucketTree< T,NDIMS >::clear()
+void BVHTree< T,NDIMS >::clear()
 {
   m_objects.clear();
   m_tree.clear();
@@ -821,7 +821,7 @@ void BucketTree< T,NDIMS >::clear()
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-bool BucketTree< T,NDIMS >::contains( const PointType& pt ) const
+bool BVHTree< T,NDIMS >::contains( const PointType& pt ) const
 {
   if ( this->empty() ) {
     return false;
@@ -832,7 +832,7 @@ bool BucketTree< T,NDIMS >::contains( const PointType& pt ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-inline double BucketTree< T,NDIMS >::getMinSqDistanceToBucket(
+inline double BVHTree< T,NDIMS >::getMinSqDistanceToBucket(
         int bucketIdx, const PointType& pt ) const
 {
   SLIC_ASSERT( bucketIdx >= 0 &&
@@ -851,7 +851,7 @@ inline double BucketTree< T,NDIMS >::getMinSqDistanceToBucket(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-inline double BucketTree< T,NDIMS >::getMaxSqDistanceToBucket(
+inline double BVHTree< T,NDIMS >::getMaxSqDistanceToBucket(
         int bucketIdx, const PointType& pt ) const
 {
   SLIC_ASSERT( bucketIdx >= 0 &&
@@ -879,7 +879,7 @@ inline double BucketTree< T,NDIMS >::getMaxSqDistanceToBucket(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void BucketTree< T,NDIMS >::find( const PointType& pt,
+void BVHTree< T,NDIMS >::find( const PointType& pt,
                                   std::vector< int >& candidate_buckets ) const
 {
   /* Sanity checks */
@@ -901,7 +901,7 @@ void BucketTree< T,NDIMS >::find( const PointType& pt,
 
   // STEP 1: pre-allocate buffer storage for buckets to check at each level.
   std::vector< int > buckets_to_check;
-  buckets_to_check.reserve( BucketTree::pow2( m_numLevels-1 ) );
+  buckets_to_check.reserve( BVHTree::pow2( m_numLevels-1 ) );
 
   // STEP 2: pre-populate buffer with the two buckets in level one
   buckets_to_check.push_back( 1 );
@@ -965,8 +965,8 @@ void BucketTree< T,NDIMS >::find( const PointType& pt,
 
          if ( keep && m_tree[ bucketIdx ].Refined ) {
 
-            buckets_to_check.push_back( BucketTree::left_child( bucketIdx ) );
-            buckets_to_check.push_back( BucketTree::right_child( bucketIdx ) );
+            buckets_to_check.push_back( BVHTree::left_child( bucketIdx ) );
+            buckets_to_check.push_back( BVHTree::right_child( bucketIdx ) );
 
          } // END if
          else if ( keep && !m_tree[ bucketIdx ].Void ) {
@@ -988,7 +988,7 @@ void BucketTree< T,NDIMS >::find( const PointType& pt,
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 const BoundingBox< double,NDIMS >&
-BucketTree< T,NDIMS >::getBucketBox( int bucketIdx ) const
+BVHTree< T,NDIMS >::getBucketBox( int bucketIdx ) const
 {
   SLIC_ASSERT( bucketIdx >= 0 && bucketIdx < static_cast<int>(m_tree.size()) );
   return m_tree[ bucketIdx ].Box;
@@ -996,7 +996,7 @@ BucketTree< T,NDIMS >::getBucketBox( int bucketIdx ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-int BucketTree< T,NDIMS >::getBucketNumObjects( int bucketIdx ) const
+int BVHTree< T,NDIMS >::getBucketNumObjects( int bucketIdx ) const
 {
   SLIC_ASSERT( bucketIdx >= 0 && bucketIdx < static_cast<int>(m_tree.size()) );
   return ( m_tree[ bucketIdx ].ObjectArray.size() );
@@ -1004,7 +1004,7 @@ int BucketTree< T,NDIMS >::getBucketNumObjects( int bucketIdx ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-const int* BucketTree< T,NDIMS >::getBucketObjectArray( int bucketIdx ) const
+const int* BVHTree< T,NDIMS >::getBucketObjectArray( int bucketIdx ) const
 {
   SLIC_ASSERT( bucketIdx >= 0 && bucketIdx < static_cast<int>(m_tree.size()) );
   return ( &m_tree[bucketIdx].ObjectArray[0] );
@@ -1013,7 +1013,7 @@ const int* BucketTree< T,NDIMS >::getBucketObjectArray( int bucketIdx ) const
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 const BoundingBox< double,NDIMS >&
-BucketTree< T,NDIMS >::getObjectBox( int objIdx ) const
+BVHTree< T,NDIMS >::getObjectBox( int objIdx ) const
 {
   SLIC_ASSERT( objIdx >= 0 && objIdx < static_cast<int>(m_objects.size()) );
   return ( m_objects[ objIdx ].Box );
@@ -1021,7 +1021,7 @@ BucketTree< T,NDIMS >::getObjectBox( int objIdx ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-const T& BucketTree< T,NDIMS >::getObjectData( int objIdx ) const
+const T& BVHTree< T,NDIMS >::getObjectData( int objIdx ) const
 {
   SLIC_ASSERT( objIdx >= 0 && objIdx < static_cast<int>(m_objects.size()) );
   return( m_objects[ objIdx ].Data );
@@ -1029,7 +1029,7 @@ const T& BucketTree< T,NDIMS >::getObjectData( int objIdx ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-int BucketTree< T,NDIMS >::getObjectBucketIndex( int objIdx ) const
+int BVHTree< T,NDIMS >::getObjectBucketIndex( int objIdx ) const
 {
   SLIC_ASSERT( objIdx >= 0 && objIdx < static_cast<int>(m_objects.size()) );
   return( m_objects[ objIdx ].BucketIdx );
@@ -1037,7 +1037,7 @@ int BucketTree< T,NDIMS >::getObjectBucketIndex( int objIdx ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void BucketTree< T,NDIMS >::writeLegacyVtkFile(
+void BVHTree< T,NDIMS >::writeLegacyVtkFile(
                     const std::string& fileName,
                     bool ATK_NOT_USED(include_objects) ) const
 {
@@ -1045,7 +1045,7 @@ void BucketTree< T,NDIMS >::writeLegacyVtkFile(
   std::ofstream ofs;
   ofs.open( fileName.c_str() );
   ofs << "# vtk DataFile Version 3.0\n";
-  ofs << " BucketTree \n";
+  ofs << " BVHTree \n";
   ofs << "ASCII\n";
   ofs << "DATASET UNSTRUCTURED_GRID\n";
 
@@ -1060,8 +1060,8 @@ void BucketTree< T,NDIMS >::writeLegacyVtkFile(
 
   for ( int i=0; i < m_numLevels; ++i ) {
 
-      int start = BucketTree::level_begin( i );
-      int end   = BucketTree::level_end( i );
+      int start = BVHTree::level_begin( i );
+      int end   = BVHTree::level_end( i );
       SLIC_ASSERT( start >= 0 && start < static_cast< int >( m_tree.size() ) );
       SLIC_ASSERT( end   >= 0 && end   < static_cast< int >( m_tree.size() ) );
 
@@ -1071,7 +1071,7 @@ void BucketTree< T,NDIMS >::writeLegacyVtkFile(
             continue;
          }
 
-         const int nnodes = BucketTree::write_box( coordinates,m_tree[j].Box );
+         const int nnodes = BVHTree::write_box( coordinates,m_tree[j].Box );
          coordinates << std::endl;
 
          cells << nnodes << " ";
@@ -1124,4 +1124,4 @@ void BucketTree< T,NDIMS >::writeLegacyVtkFile(
 }
 
 } /* namespace quest */
-#endif /* BUCKETTREE_HPP_ */
+#endif /* BVHTREE_HPP_ */
