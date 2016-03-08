@@ -45,10 +45,7 @@ set(morton_reproducer_src    quest_morton_clang_repro.cpp)
 
 # Tell the code if optimizations (-O2 and -O3 are enabled)
 set(optsDefine "")
-if(CMAKE_BUILD_TYPE MATCHES Release)
-  set(optsDefine "HAS_OPTS")
-endif()
-if(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+if(CMAKE_BUILD_TYPE MATCHES Release OR CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
   set(optsDefine "HAS_OPTS")
 endif()
 
