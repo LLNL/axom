@@ -15,7 +15,10 @@ add_executable( shroud-run-strings
     ../strings/wrapstrings.cpp
 )
 target_link_libraries(shroud-run-strings fruit shroudrt)
-set_target_properties(shroud-run-strings PROPERTIES LINKER_LANGUAGE Fortran)
+set_target_properties(shroud-run-strings PROPERTIES
+   LINKER_LANGUAGE Fortran
+   RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+)
 add_test( NAME shroud-run-strings
           COMMAND shroud-run-strings
           WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}

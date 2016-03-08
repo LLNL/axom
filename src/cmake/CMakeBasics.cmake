@@ -113,9 +113,16 @@ include (DartConfig)
 
 ## Set the path were all test executables will go
  set(TEST_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/bin
+     ${PROJECT_BINARY_DIR}/test
      CACHE PATH
-     "Directory where executables will go in the build tree"
+     "Directory where test executables will go in the build tree"
+     )
+
+## Set the path were all example test executables will go
+ set(EXAMPLE_OUTPUT_DIRECTORY
+     ${PROJECT_BINARY_DIR}/example
+     CACHE PATH
+     "Directory where example executables will go in the build tree"
      )
 
  ## Set the Fortran module directory
@@ -484,9 +491,12 @@ macro(make_executable)
    endif()
 
    if ( ${arg_ADD_CTEST} )
+     set_target_properties(${exe_name} PROPERTIES
+         RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+     )
      add_test( NAME ${exe_name}
                COMMAND ${exe_name}
-               WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+               WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
                )
    endif()
 
@@ -523,10 +533,13 @@ macro(add_gtest)
    target_include_directories(${test_name} PRIVATE "${GTEST_INCLUDES}")
    target_link_libraries( ${test_name} "${GTEST_LIBS}" )
    target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
+   set_target_properties(${test_name} PROPERTIES
+       RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+   )
 
    add_test( NAME ${test_name}
              COMMAND ${test_name}
-             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+             WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
              )
 
    # add any passed source files to the running list for this project
@@ -571,6 +584,9 @@ macro(add_benchmark)
       target_include_directories(${test_name} PRIVATE "${GBENCHMARK_INCLUDES}")
       target_link_libraries( ${test_name} "${GBENCHMARK_LIBS}" )
       target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
+      set_target_properties(${test_name} PROPERTIES
+          RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+      )
 
       # Add the command line arguments, if present
       set(test_command "${test_name}")
@@ -583,7 +599,7 @@ macro(add_benchmark)
       add_test( NAME ${test_name}
                 COMMAND ${test_command}
                 CONFIGURATIONS Benchmark   
-                WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+                WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
                 )
 
       add_dependencies(run_benchmarks ${test_name})
@@ -626,12 +642,15 @@ macro(add_fortran_test)
        target_include_directories( ${test_name} PUBLIC ${CMAKE_Fortran_MODULE_DIRECTORY} )
        target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
-       set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE Fortran)
-       set_target_properties(${test_name} PROPERTIES Fortran_FORMAT "FREE")
+       set_target_properties(${test_name} PROPERTIES
+           LINKER_LANGUAGE Fortran
+           Fortran_FORMAT "FREE"
+           RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+        )
 
         add_test( NAME ${test_name}
                   COMMAND ${test_name}
-                  WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+                  WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
                   )
        #TODO: we aren't tracking / grouping fortran sources.
     endif(ENABLE_FORTRAN)

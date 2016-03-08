@@ -17,7 +17,10 @@ add_executable( shroud-run-tutorial
     ../tutorial/wrapClass1.cpp
 )
 target_link_libraries(shroud-run-tutorial fruit shroudrt)
-set_target_properties(shroud-run-tutorial PROPERTIES LINKER_LANGUAGE Fortran)
+set_target_properties(shroud-run-tutorial PROPERTIES
+    LINKER_LANGUAGE Fortran
+    RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+)
 add_test( NAME shroud-run-tutorial
           COMMAND shroud-run-tutorial
           WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
