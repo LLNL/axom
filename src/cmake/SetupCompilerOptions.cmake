@@ -10,6 +10,8 @@ include(CXXFeatureCheck)
 #############################################
 # Support extra compiler flags and defines
 #############################################
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+
 #
 # We don't try to use this approach for CMake generators that support
 # multiple configurations. See: CZ JIRA: ATK-45
