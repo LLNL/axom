@@ -67,7 +67,7 @@ class DataStore;
  *          deallocated by the view if and only if it is the only view
  *          attached to the buffer.
  *        # A view can describe and allocate data using semantics similar
- *          to DataBuffer data declaration and allocation. In this case, no
+ *          to DataBuffer data description and allocation. In this case, no
  *          other view is allowed to (re)allocate or deallocate the data held
  *          by the associated data buffer.
  *        # A view can describe data associated with a pointer to an
@@ -218,7 +218,7 @@ public:
    * IMPORTANT: This is the total bytes described by the view; they may not
    *            yet be allocated.
    */
-  size_t getTotalBytes() const
+  SidreLength getTotalBytes() const
   {
     return m_schema.total_bytes();
   }
@@ -229,7 +229,7 @@ public:
    * IMPORTANT: This is the number of elements described by the view;
    *            they may not yet be allocated.
    */
-  size_t getNumElements() const
+  SidreLength getNumElements() const
   {
     return m_schema.dtype().number_of_elements();
   }
@@ -319,18 +319,6 @@ public:
   DataView * allocate(const DataType& dtype);
 
   /*!
-   * \brief Allocate data for view described by a Conduit schema object.
-   *
-   * NOTE: The allocate() method describes conditions where view
-   *       allocation is allowed. If none of those is true,
-   *       this method does nothing.
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView * allocate(const Schema& schema);
-
-
-  /*!
    * \brief  Reallocate data for view to given number of elements (type
    *         stays the same).
    *
@@ -360,18 +348,15 @@ public:
   DataView * reallocate(const DataType& dtype);
 
   /*!
-   * \brief  Reallocate data for view as specified by a Conduit schema object.
+   * \brief  Deallocate data for view.
    *
-   * NOTE: Reallocation from a view is only allowed under that same conditions
+   * NOTE: Deallocation from a view is only allowed under that same conditions
    *       described by the allocate() method. If none of those is true,
-   *       or data type is undefined, this method does nothing.
-   *
-   * NOTE: The data type of the given schema object must match the view type,
-   *       if it is defined. If not, the method does nothing.
+   *       or a DataBuffer is not attached, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
-  DataView * reallocate(const Schema& schema);
+  DataView * deallocate();
 
 //@}
 
@@ -416,7 +401,7 @@ public:
      // RDH -- will this be changed for consistency?
      //
    *
-   * IMPORTANT: If view has been previously declared (or applied), this
+   * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, is external and does not have a
@@ -437,7 +422,7 @@ public:
    *       is different than the Conduit DataType usage below where offset
    *       and stride are in number of bytes.
    *
-   * IMPORTANT: If view has been previously declared (or applied), this
+   * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, or given number of elements < 0,
@@ -455,7 +440,7 @@ public:
    *
    * NOTE: The units for the shape are in number of elements.
    *
-   * IMPORTANT: If view has been previously declared (or applied), this
+   * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, or given number of dimensions < 0,
@@ -473,15 +458,6 @@ public:
    * \return pointer to this DataView object.
    */
   DataView * apply(const DataType& dtype);
-
-  /*!
-   * \brief Apply data description (schema) to view's data.
-   *
-   * If view holds a scalar or a string, the method does nothing.
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView * apply(const Schema& schema);
 
 //@}
 
@@ -519,7 +495,7 @@ public:
     m_schema.set(m_node.schema());
     m_is_applied = true;
     m_state = SCALAR;
-    declareShape();
+    describeShape();
     return this;
   }
 
@@ -537,7 +513,7 @@ public:
     m_schema.set(m_node.schema());
     m_state = STRING;
     m_is_applied = true;
-    declareShape();
+    describeShape();
     return this;
   };
 
@@ -606,11 +582,20 @@ public:
   /*!
    * \brief Return data held by view and cast it to any compatible type
    *  allowed by Conduit (return type depends on type caller assigns it to).
+   *
+   *  If view does not contain allocated data, an empty Node::Value will be
+   *  returned.
    */
   Node::Value getData()
   {
-    SLIC_ASSERT_MSG( m_is_applied,
-                     "View description has not been applied to data");
+    if ( !isAllocated() || !isDescribed())
+    {
+      SLIC_CHECK_MSG( isAllocated(),
+                      "No view data present, memory has not been allocated.");
+      SLIC_CHECK_MSG( isApplied(),
+                      "View data description not present.");
+      return Node().value();
+    }
     return m_node.value();
   }
 
@@ -689,26 +674,25 @@ private:
 //!        (callable only by DataGroup and DataView methods).
 
   /*!
-   * \brief Declare a data view with given type and number of elements, and
+   * \brief Describe a data view with given type and number of elements.
    *
    *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
+   * IMPORTANT: If view has been previously described, this operation will
+   *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If given number of elements < 0, or view is opaque, method does nothing.
    *
-   * \return pointer to this DataView object.
    */
-  DataView * declare( TypeID type, SidreLength num_elems);
+  void describe( TypeID type, SidreLength num_elems);
 
   /*!
-   * \brief Declare a data view with given type, number of dimensions,  and
+   * \brief Describe a data view with given type, number of dimensions, and
    *        number of elements per dimension.
    *
    *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
+   * IMPORTANT: If view has been previously described, this operation will
+   *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If given number of dimensions or total number of elements < 0,
@@ -716,43 +700,30 @@ private:
    *
    * \return pointer to this DataView object.
    */
-  DataView * declare(TypeID type, int ndims, SidreLength * shape);
+  void describe(TypeID type, int ndims, SidreLength * shape);
 
   /*!
    * \brief Declare a data view with a Conduit data type object.
    *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
+   * IMPORTANT: If view has been previously described, this operation will
+   *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If view is opaque, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
-  DataView * declare(const DataType& dtype);
+  void describe(const DataType& dtype);
 
   /*!
-   * \brief Declare a data view with a schema object.
-   *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
-   *            the apply() method must be called.
-   *
-   * If view is opaque, the method does nothing.
-   *
-   * \return pointer to this DataView object.
+   * \brief Set the shape to be a one dimension with the described number of elements.
    */
-  DataView * declare(const Schema& schema);
-
-  /*!
-   * \brief Set the shape to be a one dimension with the declared number of elements.
-   */
-  void declareShape();
+  void describeShape();
 
   /*!
    * \brief Set the shape to be a ndims dimensions with shape.
    */
-  void declareShape(int ndims, SidreLength * shape);
+  void describeShape(int ndims, SidreLength * shape);
 
 //@}
 
@@ -834,6 +805,9 @@ private:
 
   /// Shape information
   std::vector<SidreLength> m_shape;
+
+  /// Pointer to external memory
+  void * m_external_ptr;
 
   /// State of view.
   State m_state;

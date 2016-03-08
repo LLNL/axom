@@ -70,9 +70,18 @@ classes:
 #    -  decl: bool hasBuffer( IndexType idx ) const
     - decl:  DataBuffer * getBuffer( IndexType idx )
     -  decl: DataBuffer * createBuffer()
+       function_suffix: _empty
+    -  decl: DataBuffer * createBuffer( TypeID type, SidreLength num_elems )
+       function_suffix: _from_type
+       fortran_generic:
+         num_elems:
+         -  int
+         -  long
+       PY_error_pattern: PY_null_to_none
+
     -  decl: void destroyBuffer( IndexType id )
 #    -  decl: void Destroybuffers()
-#    -  decl: DataBuffer * detatchBuffer( const IndexType id )
+#    -  decl: DataBuffer * detachBuffer( const IndexType id )
     -  decl: size_t getNumBuffers() const
 #    -  decl: IndexType getFirstValidBufferIndex() const
 #    -  decl: IndexType getNextValidBufferIndex(IndexType idx) const;
@@ -114,6 +123,7 @@ classes:
 
     -  decl: IndexType getFirstValidViewIndex() const
     -  decl: IndexType getNextValidViewIndex(IndexType idx) const
+
     -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, SidreLength num_elems)
        function_suffix: _nelems
        fortran_generic:
@@ -128,6 +138,18 @@ classes:
 
 #    -  decl: DataView *createViewAndAllocate( const std::string& name, const DataType& dtype)
 #    -  decl: DataView *createViewAndAllocate( const std::string& name, const Schema& schema)
+
+    -  decl: DataView *createViewScalar( const std::string& name, ScalarType value)
+       cpp_template:
+         ScalarType:
+         - int
+         - long
+         - float
+         - double
+       PY_error_pattern: PY_null_to_none
+
+    -  decl: DataView *createViewString( const std::string& name, const std::string& value)
+       PY_error_pattern: PY_null_to_none
 
     -  decl: DataView *createView( const string& name )
        function_suffix: _empty
@@ -206,14 +228,14 @@ classes:
     methods:
       - decl: IndexType getIndex() const
       - decl: size_t getNumViews() const
-      - decl: DataBuffer* declare(TypeID type, SidreLength num_elems)
+      - decl: DataBuffer* describe(TypeID type, SidreLength num_elems)
         return_this: True
         fortran_generic:
           num_elems:
           -  int
           -  long
-#      - decl: DataBuffer* declare(const Schema& schema)
-#      - decl: DataBuffer* declare(const DataType& dtype)
+#      - decl: DataBuffer* describe(const Schema& schema)
+#      - decl: DataBuffer* describe(const DataType& dtype)
       - decl: DataBuffer* allocate()
         function_suffix: _existing
         return_this: True

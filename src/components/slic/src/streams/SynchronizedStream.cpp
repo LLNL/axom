@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "common/ATKMacros.hpp"
+#include "common/StringUtilities.hpp"
 
 namespace asctoolkit {
 namespace slic {
@@ -95,10 +96,15 @@ void SynchronizedStream::append( message::Level msgLevel,
     return;
   }
 
+  int rank   = -1;
+  MPI_Comm_rank( m_comm, &rank );
+
   // STEP 1: cache formatted message
   m_cache->messages.push_back(
         this->getFormatedMessage(message::getLevelAsString( msgLevel ),
-                                 message, tagName, fileName, line) );
+                                 message, tagName,
+                                 asctoolkit::utilities::string::intToString(rank),
+                                 fileName, line) );
 }
 
 //------------------------------------------------------------------------------

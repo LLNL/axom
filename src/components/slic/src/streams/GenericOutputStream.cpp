@@ -61,6 +61,7 @@ void GenericOutputStream::append( message::Level msgLevel,
   (*m_stream) << this->getFormatedMessage( message::getLevelAsString(msgLevel),
                                             message,
                                             tagName,
+                                            "",
                                             fileName,
                                             line );
 }

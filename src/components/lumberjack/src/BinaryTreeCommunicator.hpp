@@ -127,9 +127,11 @@ class BinaryTreeCommunicator: public Communicator {
          *****************************************************************************
          * \brief Function used by the Lumberjack to indicate whether this node should be
          * outputting messages. Only the root node outputs messages.
+         *
+         * \return Boolean indicates whether you should output messages
          *****************************************************************************
          */
-        bool shouldMessagesBeOutputted();
+        bool isOutputNode();
     private:
         MPI_Comm m_mpiComm;
         int m_mpiCommRank;

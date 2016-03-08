@@ -97,7 +97,7 @@ DataView * DataGroup::createView( const std::string& name,
   DataView * view = createView(name);
   if (view != ATK_NULLPTR)
   {
-    view->declare(type, num_elems);
+    view->describe(type, num_elems);
   }
   return view;
 }
@@ -124,7 +124,7 @@ DataView * DataGroup::createView( const std::string& name,
   DataView * view = createView(name);
   if (view != ATK_NULLPTR)
   {
-    view->declare(type, ndims, shape);
+    view->describe(type, ndims, shape);
   }
   return view;
 }
@@ -143,27 +143,9 @@ DataView * DataGroup::createView( const std::string& name,
   DataView * view = createView(name);
   if (view != ATK_NULLPTR)
   {
-    view->declare(dtype);
+    view->describe(dtype);
   }
 
-  return view;
-}
-
-/*
- *************************************************************************
- *
- * Create view with given name, and data described using a conduit schema.
- *
- *************************************************************************
- */
-DataView * DataGroup::createView( const std::string& name,
-                                  const Schema& schema )
-{
-  DataView * view = createView(name);
-  if (view != ATK_NULLPTR)
-  {
-    view->declare(schema);
-  }
   return view;
 }
 
@@ -279,25 +261,21 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view with given name, and data described using a conduit schema.
- *
- * In addition, create an associated buffer, allocate the data, and attach
- * view to new buffer.
+ * Create view with given name for a string.
  *
  *************************************************************************
  */
-DataView * DataGroup::createViewAndAllocate( const std::string& name,
-                                             const Schema& schema)
+DataView * DataGroup::createViewString( const std::string& name,
+                                        const std::string& value)
 {
-  // createView will verify args.
-  DataView * view = createView(name, schema);
+  DataView * view = createView(name);
   if (view != ATK_NULLPTR)
   {
-    view->allocate();
+    view->setString(value);
   }
+
   return view;
 }
-
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -367,7 +345,7 @@ void DataGroup::destroyViews()
  *
  * Detach view with given name from group and destroy view.
  *
- * DataBuffer in DataStore is destroyed.
+ * Destroy DataBuffer if buffer has no other view attached to it.
  *
  *************************************************************************
  */
@@ -382,7 +360,10 @@ void DataGroup::destroyViewAndData( const std::string& name )
     if ( buffer != ATK_NULLPTR )
     {
       buffer->detachView(view);
-      getDataStore()->destroyBuffer(buffer->getIndex());
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer->getIndex());
+      }
     }
     delete view;
   }
@@ -393,7 +374,7 @@ void DataGroup::destroyViewAndData( const std::string& name )
  *
  * Detach view with given index from group and destroy view.
  *
- * DataBuffer in DataStore is destroyed.
+ * Destroy DataBuffer if buffer has no other view attached to it.
  *
  *************************************************************************
  */
@@ -404,12 +385,14 @@ void DataGroup::destroyViewAndData( IndexType idx )
   DataView * view = detachView(idx);
   if ( view != ATK_NULLPTR )
   {
-    // RDH TODO -- there should be a better way?
     DataBuffer * const buffer = view->getBuffer();
     if ( buffer != ATK_NULLPTR )
     {
       buffer->detachView(view);
-      getDataStore()->destroyBuffer(buffer->getIndex());
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer->getIndex());
+      }
     }
     delete view;
   }
@@ -430,16 +413,17 @@ void DataGroup::destroyViewsAndData()
   while ( indexIsValid(vidx) )
   {
     DataView * view = this->getView(vidx);
-
-    // RDH TODO -- there should be a better way?
     DataBuffer * const buffer = view->getBuffer();
-    delete view;
 
     if ( buffer != ATK_NULLPTR )
     {
-      getDataStore()->destroyBuffer(buffer->getIndex());
+      buffer->detachView(view);
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer->getIndex());
+      }
     }
-
+    delete view;
     vidx = getNextValidViewIndex(vidx);
   }
 
@@ -505,7 +489,7 @@ DataView * DataGroup::copyView(DataView * view)
   else
   {
     DataView * res = createView(view->getName(), view->getBuffer());
-    res->declare(view->getSchema());
+    res->describe(view->getSchema().dtype());
     if (view->isApplied())
     {
       res->apply();
@@ -1200,7 +1184,7 @@ void DataGroup::copyFromNode(Node& n,
         Schema schema(n_buff["schema"].as_string());
         TypeID type = static_cast<TypeID>(schema.dtype().id());
         SidreLength num_elems = schema.dtype().number_of_elements();
-        ds_buff->declare(type, num_elems);
+        ds_buff->describe(type, num_elems);
         if (n_buff.has_path("data"))
         {
           ds_buff->allocate();
@@ -1233,9 +1217,9 @@ void DataGroup::copyFromNode(Node& n,
 
       // create a new view with the buffer
       DataView * ds_view = createView(view_name, ds_buff);
-      // declare using the schema
+      // declare using the schema datatype
       Schema schema(n_view["schema"].as_string());
-      ds_view->declare(schema);
+      ds_view->describe(schema.dtype());
       // if the schema was applied, restore this state
       if (n_view["is_applied"].to_uint64() != 0)
         ds_view->apply();

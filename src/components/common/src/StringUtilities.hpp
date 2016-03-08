@@ -8,22 +8,14 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
-/*!
- *******************************************************************************
- * \file Utility.hpp
- * \author Chris White (white238@llnl.gov)
- *
- * \brief This file contains the definitions of utility functions.
- *******************************************************************************
- */
-
-#ifndef UTILITY_HPP
-#define UTILITY_HPP
+#ifndef COMMON_STRING_UTILITIES_H_
+#define COMMON_STRING_UTILITIES_H_
 
 #include <string>
 
 namespace asctoolkit {
-namespace lumberjack {
+namespace utilities {
+namespace string {
 
 /*!
 *****************************************************************************
@@ -43,7 +35,9 @@ std::string intToString(int intValue);
 */
 int stringToInt(const std::string& stringValue);
 
-} // end namespace lumberjack
+
+} // end namespace string
+} // end namespace utilities
 } // end namespace asctoolkit
 
-#endif
+#endif //  COMMON_STRING_UTILITIES_H_

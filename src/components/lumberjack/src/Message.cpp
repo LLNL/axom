@@ -19,7 +19,7 @@
 
 #include "lumberjack/Message.hpp"
 
-#include "lumberjack/Utility.hpp"
+#include "common/StringUtilities.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -27,14 +27,11 @@
 namespace asctoolkit {
 namespace lumberjack {
 
+//Getters
+
 std::string Message::text() const
 {
     return m_text;
-}
-
-void Message::text(const std::string& newText)
-{
-    m_text = newText;
 }
 
 std::vector<int> Message::ranks() const
@@ -52,12 +49,27 @@ std::string Message::fileName() const
     return m_fileName;
 }
 
+int Message::lineNumber() const
+{
+    return m_lineNumber;
+}
+
+int Message::level() const
+{
+    return m_level;
+}
+
+std::string Message::tag() const
+{
+    return m_tag;
+}
+
 std::string Message::stringOfRanks(std::string delimiter) const
 {
     std::string returnString = "";
     int ranksSize = m_ranks.size();
     for(int i=0; i<ranksSize;++i){
-        returnString += intToString(m_ranks[i]);
+        returnString += asctoolkit::utilities::string::intToString(m_ranks[i]);
         if (i < (ranksSize-1)) {
             returnString += delimiter;
         }
@@ -65,19 +77,31 @@ std::string Message::stringOfRanks(std::string delimiter) const
     return returnString;
 }
 
+//Setters
+
+void Message::text(const std::string& newText)
+{
+    m_text = newText;
+}
+
 void Message::fileName(const std::string& newFileName)
 {
     m_fileName = newFileName;
 }
 
-int Message::lineNumber() const
-{
-    return m_lineNumber;
-}
-
 void Message::lineNumber(int newLineNumber)
 {
     m_lineNumber = newLineNumber;
+}
+
+void Message::level(int newLevel)
+{
+    m_level = newLevel;
+}
+
+void Message::tag(const std::string& newTag)
+{
+    m_tag = newTag;
 }
 
 void Message::addRank(int newRank, int ranksLimit)
@@ -112,112 +136,124 @@ void Message::addRanks(const std::vector<int>& newRanks, int ranksCount, int ran
     m_ranksCount += ranksCount;
 }
 
+// Utilities
+
 std::string Message::pack()
 {
     std::string packedMessage;
+
     int ranksSize = (int)m_ranks.size();
     for (int i=0; i<ranksSize; ++i){
-        packedMessage += intToString(m_ranks[i]);
+        packedMessage += asctoolkit::utilities::string::intToString(m_ranks[i]);
         if (i < (ranksSize-1)) {
             packedMessage += rankDelimiter;
         }
     }
-    packedMessage += memberDelimiter + intToString(m_ranksCount);
-    packedMessage += memberDelimiter + m_fileName + memberDelimiter;
+    packedMessage += memberDelimiter;
+
+    packedMessage += asctoolkit::utilities::string::intToString(m_ranksCount) + memberDelimiter;
+
+    packedMessage += m_fileName + memberDelimiter;
 
     if (m_lineNumber > 0){
-        packedMessage += intToString(m_lineNumber);
+        packedMessage += asctoolkit::utilities::string::intToString(m_lineNumber);
     }
-    packedMessage += memberDelimiter + m_text;
+    packedMessage += memberDelimiter;
+
+    packedMessage += asctoolkit::utilities::string::intToString(m_level) + memberDelimiter;
+
+    packedMessage += m_tag + memberDelimiter;
+
+    packedMessage += m_text;
 
     return packedMessage;
 }
 
 void Message::unpack(const std::string& packedMessage, int ranksLimit)
 {
-    int messageLength = (int)packedMessage.length();
-    std::string currString;
-    int i = 0;
+    std::size_t start, end;
+    std::string section;
 
     // Grab ranks
-    m_ranks.clear();
-    int currRank;
-    for (i=0; i<messageLength; ++i) {
-        if ((packedMessage[i] == memberDelimiter) ||
-            (packedMessage[i] == rankDelimiter)) {
-            currRank = stringToInt(currString);
-            currString = "";
-            addRank(currRank, ranksLimit);
-            if (packedMessage[i] == memberDelimiter) {
-                ++i;
-                break;
-            }
-            else {
-                continue;
-            }
-        }
-        currString += packedMessage[i];
+    end = packedMessage.find(memberDelimiter);
+    if (end == std::string::npos) {
+        std::cerr << "Error: Lumberjack recieved a truncated message that ended in the ranks section." << std::endl;
+        std::cerr << packedMessage << std::endl;
     }
-    if (i >= messageLength) {
-        //ToDo: figure out a better error handling method
-        std::cout << "Error: Lumberjack recieved a truncated message that ended in the rank section." << std::endl;
-        std::cout << packedMessage << std::endl;
-    }
+    unpackRanks(packedMessage.substr(0, end), ranksLimit);
+    start = end + 1;
 
     //Grab rank count since it can differ from list that is sent
-    currString = "";
-    for (; i<messageLength; ++i) {
-        if (packedMessage[i] == memberDelimiter) {
-            m_ranksCount = stringToInt(currString);
-            ++i;
-            break;
-        }
-        currString += packedMessage[i];
+    end = packedMessage.find(memberDelimiter, start);
+    if (end == std::string::npos) {
+        std::cerr << "Error: Lumberjack recieved a truncated message that ended in the rank count section." << std::endl;
+        std::cerr << packedMessage << std::endl;
     }
-    if (i >= messageLength) {
-        //ToDo: figure out a better error handling method
-        std::cout << "Error: Lumberjack recieved a truncated message that ended in the rank count section." << std::endl;
-        std::cout << packedMessage << std::endl;
-    }
+    m_ranksCount = asctoolkit::utilities::string::stringToInt(packedMessage.substr(start, end-start));
+    start = end + 1;
 
     //Grab file name
-    currString = "";
-    for (; i<messageLength; ++i) {
-        if (packedMessage[i] == memberDelimiter) {
-            m_fileName = currString;
-            ++i;
-            break;
-        }
-        currString += packedMessage[i];
+    end = packedMessage.find(memberDelimiter, start);
+    if (end == std::string::npos) {
+        std::cerr << "Error: Lumberjack recieved a truncated message that ended in the file name section." << std::endl;
+        std::cerr << packedMessage << std::endl;
     }
-    if (i >= messageLength) {
-        //ToDo: figure out a better error handling method
-        std::cout << "Error: Lumberjack recieved a truncated message that ended in the file name section." << std::endl;
-        std::cout << packedMessage << std::endl;
-    }
+    m_fileName = packedMessage.substr(start, end-start);
+    start = end + 1;
 
     //Grab line number
-    currString = "";
-    for (; i<messageLength; ++i) {
-        if (packedMessage[i] == memberDelimiter) {
-            m_lineNumber = stringToInt(currString);
-            ++i;
-            break;
-        }
-        currString += packedMessage[i];
+    end = packedMessage.find(memberDelimiter, start);
+    if (end == std::string::npos) {
+        std::cerr << "Error: Lumberjack recieved a truncated message that ended in the line number section." << std::endl;
+        std::cerr << packedMessage << std::endl;
     }
-    if (i >= messageLength) {
-        //ToDo: figure out a better error handling method
-        std::cout << "Error: Lumberjack recieved a truncated message that ended in the line number section." << std::endl;
-        std::cout << packedMessage << std::endl;
+    m_lineNumber = asctoolkit::utilities::string::stringToInt(packedMessage.substr(start, end-start));
+    start = end + 1;
+
+    //Grab level
+    end = packedMessage.find(memberDelimiter, start);
+    if (end == std::string::npos) {
+        std::cerr << "Error: Lumberjack recieved a truncated message that ended in the level section." << std::endl;
+        std::cerr << packedMessage << std::endl;
     }
+    m_level = asctoolkit::utilities::string::stringToInt(packedMessage.substr(start, end-start));
+    start = end + 1;
+
+    //Grab tag
+    end = packedMessage.find(memberDelimiter, start);
+    if (end == std::string::npos) {
+        std::cerr << "Error: Lumberjack recieved a truncated message that ended in the tag section." << std::endl;
+        std::cerr << packedMessage << std::endl;
+    }
+    m_tag = packedMessage.substr(start, end-start);
+    start = end + 1;
 
     //Grab message
-    currString = "";
-    for (; i<messageLength; ++i) {
-        currString += packedMessage[i];
+    m_text = packedMessage.substr(end+1);
+}
+
+void Message::unpackRanks(const std::string& ranksString, int ranksLimit)
+{
+    m_ranks.clear();
+    if (ranksString.empty())
+    {
+        std::cerr << "Error: Lumberjack recieved an empty rank section." << std::endl;
+        return;
     }
-    m_text = currString;
+
+    std::size_t start, end = ranksString.find(rankDelimiter);
+    start = 0;
+    while (true) {
+        if (end == std::string::npos) {
+            addRank(asctoolkit::utilities::string::stringToInt(ranksString.substr(start)), ranksLimit);
+            break;
+        }
+        else {
+            addRank(asctoolkit::utilities::string::stringToInt(ranksString.substr(start, end-start)), ranksLimit);
+        }
+        start = end + 1;
+        end = ranksString.find(rankDelimiter, start);
+    }
 }
 
 } // end namespace lumberjack

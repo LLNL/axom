@@ -68,13 +68,21 @@ module sidre_mod
         procedure :: delete => datastore_delete
         procedure :: get_root => datastore_get_root
         procedure :: get_buffer => datastore_get_buffer
-        procedure :: create_buffer => datastore_create_buffer
+        procedure :: create_buffer_empty => datastore_create_buffer_empty
+        procedure :: create_buffer_from_type_int => datastore_create_buffer_from_type_int
+        procedure :: create_buffer_from_type_long => datastore_create_buffer_from_type_long
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_num_buffers => datastore_get_num_buffers
         procedure :: print => datastore_print
         procedure :: get_instance => datastore_get_instance
         procedure :: set_instance => datastore_set_instance
         procedure :: associated => datastore_associated
+        generic :: create_buffer => &
+            ! splicer begin class.DataStore.generic.create_buffer
+            ! splicer end class.DataStore.generic.create_buffer
+            create_buffer_empty,  &
+            create_buffer_from_type_int,  &
+            create_buffer_from_type_long
         ! splicer begin class.DataStore.type_bound_procedure_part
         ! splicer end class.DataStore.type_bound_procedure_part
     end type datastore
@@ -102,6 +110,11 @@ module sidre_mod
         procedure :: create_view_and_allocate_nelems_int => datagroup_create_view_and_allocate_nelems_int
         procedure :: create_view_and_allocate_nelems_long => datagroup_create_view_and_allocate_nelems_long
         procedure :: create_view_and_allocate_shape => datagroup_create_view_and_allocate_shape
+        procedure :: create_view_scalar_int => datagroup_create_view_scalar_int
+        procedure :: create_view_scalar_long => datagroup_create_view_scalar_long
+        procedure :: create_view_scalar_float => datagroup_create_view_scalar_float
+        procedure :: create_view_scalar_double => datagroup_create_view_scalar_double
+        procedure :: create_view_string => datagroup_create_view_string
         procedure :: create_view_empty => datagroup_create_view_empty
         procedure :: create_view_from_type_int => datagroup_create_view_from_type_int
         procedure :: create_view_from_type_long => datagroup_create_view_from_type_long
@@ -144,6 +157,13 @@ module sidre_mod
             create_view_and_allocate_nelems_int,  &
             create_view_and_allocate_nelems_long,  &
             create_view_and_allocate_shape
+        generic :: create_view_scalar => &
+            ! splicer begin class.DataGroup.generic.create_view_scalar
+            ! splicer end class.DataGroup.generic.create_view_scalar
+            create_view_scalar_int,  &
+            create_view_scalar_long,  &
+            create_view_scalar_float,  &
+            create_view_scalar_double
         generic :: destroy_group => &
             ! splicer begin class.DataGroup.generic.destroy_group
             ! splicer end class.DataGroup.generic.destroy_group
@@ -206,8 +226,8 @@ module sidre_mod
     contains
         procedure :: get_index => databuffer_get_index
         procedure :: get_num_views => databuffer_get_num_views
-        procedure :: declare_int => databuffer_declare_int
-        procedure :: declare_long => databuffer_declare_long
+        procedure :: describe_int => databuffer_describe_int
+        procedure :: describe_long => databuffer_describe_long
         procedure :: allocate_existing => databuffer_allocate_existing
         procedure :: allocate_from_type_int => databuffer_allocate_from_type_int
         procedure :: allocate_from_type_long => databuffer_allocate_from_type_long
@@ -227,11 +247,11 @@ module sidre_mod
             allocate_existing,  &
             allocate_from_type_int,  &
             allocate_from_type_long
-        generic :: declare => &
-            ! splicer begin class.DataBuffer.generic.declare
-            ! splicer end class.DataBuffer.generic.declare
-            declare_int,  &
-            declare_long
+        generic :: describe => &
+            ! splicer begin class.DataBuffer.generic.describe
+            ! splicer end class.DataBuffer.generic.describe
+            describe_int,  &
+            describe_long
         generic :: reallocate => &
             ! splicer begin class.DataBuffer.generic.reallocate
             ! splicer end class.DataBuffer.generic.reallocate
@@ -406,14 +426,25 @@ module sidre_mod
             type(C_PTR) :: rv
         end function c_datastore_get_buffer
         
-        function c_datastore_create_buffer(self) &
+        function c_datastore_create_buffer_empty(self) &
                 result(rv) &
-                bind(C, name="SIDRE_datastore_create_buffer")
+                bind(C, name="SIDRE_datastore_create_buffer_empty")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function c_datastore_create_buffer
+        end function c_datastore_create_buffer_empty
+        
+        function c_datastore_create_buffer_from_type(self, type, num_elems) &
+                result(rv) &
+                bind(C, name="SIDRE_datastore_create_buffer_from_type")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: num_elems
+            type(C_PTR) :: rv
+        end function c_datastore_create_buffer_from_type
         
         subroutine c_datastore_destroy_buffer(self, id) &
                 bind(C, name="SIDRE_datastore_destroy_buffer")
@@ -659,6 +690,122 @@ module sidre_mod
             integer(C_LONG), intent(IN) :: num_elems(*)
             type(C_PTR) :: rv
         end function c_datagroup_create_view_and_allocate_shape_bufferify
+        
+        function c_datagroup_create_view_scalar_int(self, name, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_int")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_int
+        
+        function c_datagroup_create_view_scalar_int_bufferify(self, name, Lname, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_int_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_int_bufferify
+        
+        function c_datagroup_create_view_scalar_long(self, name, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_long")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_LONG), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_long
+        
+        function c_datagroup_create_view_scalar_long_bufferify(self, name, Lname, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_long_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_LONG), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_long_bufferify
+        
+        function c_datagroup_create_view_scalar_float(self, name, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_float")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            real(C_FLOAT), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_float
+        
+        function c_datagroup_create_view_scalar_float_bufferify(self, name, Lname, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_float_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            real(C_FLOAT), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_float_bufferify
+        
+        function c_datagroup_create_view_scalar_double(self, name, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_double")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            real(C_DOUBLE), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_double
+        
+        function c_datagroup_create_view_scalar_double_bufferify(self, name, Lname, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_double_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            real(C_DOUBLE), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_double_bufferify
+        
+        function c_datagroup_create_view_string(self, name, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_string")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            character(kind=C_CHAR), intent(IN) :: value(*)
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_string
+        
+        function c_datagroup_create_view_string_bufferify(self, name, Lname, value, Lvalue) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_string_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            character(kind=C_CHAR), intent(IN) :: value(*)
+            integer(C_INT), value, intent(IN) :: Lvalue
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_string_bufferify
         
         function c_datagroup_create_view_empty(self, name) &
                 result(rv) &
@@ -1067,14 +1214,14 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function c_databuffer_get_num_views
         
-        subroutine c_databuffer_declare(self, type, num_elems) &
-                bind(C, name="SIDRE_databuffer_declare")
+        subroutine c_databuffer_describe(self, type, num_elems) &
+                bind(C, name="SIDRE_databuffer_describe")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-        end subroutine c_databuffer_declare
+        end subroutine c_databuffer_describe
         
         subroutine c_databuffer_allocate_existing(self) &
                 bind(C, name="SIDRE_databuffer_allocate_existing")
@@ -1538,15 +1685,45 @@ contains
         ! splicer end class.DataStore.method.get_buffer
     end function datastore_get_buffer
     
-    function datastore_create_buffer(obj) result(rv)
+    function datastore_create_buffer_empty(obj) result(rv)
         use iso_c_binding
         implicit none
         class(datastore) :: obj
         type(databuffer) :: rv
-        ! splicer begin class.DataStore.method.create_buffer
-        rv%voidptr = c_datastore_create_buffer(obj%voidptr)
-        ! splicer end class.DataStore.method.create_buffer
-    end function datastore_create_buffer
+        ! splicer begin class.DataStore.method.create_buffer_empty
+        rv%voidptr = c_datastore_create_buffer_empty(obj%voidptr)
+        ! splicer end class.DataStore.method.create_buffer_empty
+    end function datastore_create_buffer_empty
+    
+    function datastore_create_buffer_from_type_int(obj, type, num_elems) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datastore) :: obj
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: num_elems
+        type(databuffer) :: rv
+        ! splicer begin class.DataStore.method.create_buffer_from_type_int
+        rv%voidptr = c_datastore_create_buffer_from_type(  &
+            obj%voidptr,  &
+            type,  &
+            int(num_elems, C_LONG))
+        ! splicer end class.DataStore.method.create_buffer_from_type_int
+    end function datastore_create_buffer_from_type_int
+    
+    function datastore_create_buffer_from_type_long(obj, type, num_elems) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datastore) :: obj
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: num_elems
+        type(databuffer) :: rv
+        ! splicer begin class.DataStore.method.create_buffer_from_type_long
+        rv%voidptr = c_datastore_create_buffer_from_type(  &
+            obj%voidptr,  &
+            type,  &
+            int(num_elems, C_LONG))
+        ! splicer end class.DataStore.method.create_buffer_from_type_long
+    end function datastore_create_buffer_from_type_long
     
     subroutine datastore_destroy_buffer(obj, id)
         use iso_c_binding
@@ -1807,6 +1984,87 @@ contains
             num_elems)
         ! splicer end class.DataGroup.method.create_view_and_allocate_shape
     end function datagroup_create_view_and_allocate_shape
+    
+    function datagroup_create_view_scalar_int(obj, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        integer(C_INT), value, intent(IN) :: value
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_scalar_int
+        rv%voidptr = c_datagroup_create_view_scalar_int_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            value)
+        ! splicer end class.DataGroup.method.create_view_scalar_int
+    end function datagroup_create_view_scalar_int
+    
+    function datagroup_create_view_scalar_long(obj, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        integer(C_LONG), value, intent(IN) :: value
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_scalar_long
+        rv%voidptr = c_datagroup_create_view_scalar_long_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            value)
+        ! splicer end class.DataGroup.method.create_view_scalar_long
+    end function datagroup_create_view_scalar_long
+    
+    function datagroup_create_view_scalar_float(obj, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        real(C_FLOAT), value, intent(IN) :: value
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_scalar_float
+        rv%voidptr = c_datagroup_create_view_scalar_float_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            value)
+        ! splicer end class.DataGroup.method.create_view_scalar_float
+    end function datagroup_create_view_scalar_float
+    
+    function datagroup_create_view_scalar_double(obj, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        real(C_DOUBLE), value, intent(IN) :: value
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_scalar_double
+        rv%voidptr = c_datagroup_create_view_scalar_double_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            value)
+        ! splicer end class.DataGroup.method.create_view_scalar_double
+    end function datagroup_create_view_scalar_double
+    
+    function datagroup_create_view_string(obj, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        character(*), intent(IN) :: value
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_string
+        rv%voidptr = c_datagroup_create_view_string_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            value,  &
+            len_trim(value, kind=C_INT))
+        ! splicer end class.DataGroup.method.create_view_string
+    end function datagroup_create_view_string
     
     function datagroup_create_view_empty(obj, name) result(rv)
         use iso_c_binding
@@ -2546,33 +2804,33 @@ contains
         ! splicer end class.DataBuffer.method.get_num_views
     end function databuffer_get_num_views
     
-    subroutine databuffer_declare_int(obj, type, num_elems)
+    subroutine databuffer_describe_int(obj, type, num_elems)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
-        ! splicer begin class.DataBuffer.method.declare_int
-        call c_databuffer_declare(  &
+        ! splicer begin class.DataBuffer.method.describe_int
+        call c_databuffer_describe(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataBuffer.method.declare_int
-    end subroutine databuffer_declare_int
+        ! splicer end class.DataBuffer.method.describe_int
+    end subroutine databuffer_describe_int
     
-    subroutine databuffer_declare_long(obj, type, num_elems)
+    subroutine databuffer_describe_long(obj, type, num_elems)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
-        ! splicer begin class.DataBuffer.method.declare_long
-        call c_databuffer_declare(  &
+        ! splicer begin class.DataBuffer.method.describe_long
+        call c_databuffer_describe(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataBuffer.method.declare_long
-    end subroutine databuffer_declare_long
+        ! splicer end class.DataBuffer.method.describe_long
+    end subroutine databuffer_describe_long
     
     subroutine databuffer_allocate_existing(obj)
         use iso_c_binding
