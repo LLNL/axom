@@ -175,9 +175,8 @@ macro(make_library)
         target_link_libraries(${arg_LIBRARY_NAME} ${dependency})
      endif()
      
-     set(header_target "copy_headers_${dependency}")
-     if (TARGET ${header_target})
-        add_dependencies( ${arg_LIBRARY_NAME} ${header_target} )
+     if (TARGET "copy_headers_${dependency}")
+        add_dependencies( ${arg_LIBRARY_NAME} "copy_headers_${dependency}" )
      endif()
      
    endforeach()
