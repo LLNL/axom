@@ -407,7 +407,7 @@ add_custom_target(copy_headers_${proj}
      COMMAND ${CMAKE_COMMAND}
              -DHEADER_INCLUDES_DIRECTORY=${dest}
              -DLIBHEADERS="${hdrs}"
-             -P ${CMAKE_MODULE_PATH}/copy_headers.cmake
+             -P ${CMAKE_SOURCE_DIR}/cmake/copy_headers.cmake
 
      DEPENDS
         ${hdrs}
