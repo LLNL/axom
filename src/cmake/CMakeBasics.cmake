@@ -126,6 +126,11 @@ mark_as_advanced(
      )
 
 ################################
+#  macros
+################################
+include(ATKMacros)
+
+################################
 # Setup compiler options
 # (must be included after HEADER_INCLUDES_DIRECTORY is set)
 ################################
@@ -191,10 +196,3 @@ if(ENABLE_OPENMP)
     find_package(OpenMP REQUIRED)
     message(STATUS "OpenMP CXX Flags: ${OpenMP_CXX_FLAGS}")
 endif()
-
-################################
-#  macros
-################################
-include(ATKMacros)
-
-
