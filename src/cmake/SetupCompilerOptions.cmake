@@ -2,10 +2,6 @@
 # Setup compiler options
 ############################
 
-# Basic helper modules.
-include(CheckCXXCompilerFlag)
-include(AddCXXCompilerFlag)
-include(CXXFeatureCheck)
 
 #############################################
 # Support extra compiler flags and defines
@@ -93,33 +89,52 @@ if("${isSystemDir}" STREQUAL "-1")
 endif()
 
 ################################
-# Compiler warnings
-################################
-include(EnableExtraCompilerWarnings)
-if (ENABLE_GLOBALCOMPILERWARNINGS)
-   globally_enable_extra_compiler_warnings()
-   MESSAGE(STATUS  "Enabling extra compiler warnings on all targets.")
-endif()
-
-################################
-# Compiler warnings as errors
-################################
-include(EnableCompilerWarningsAsErrors)
-if (ENABLE_GLOBALCOMPILERWARNINGSASERRORS)
-   globally_enable_compiler_warnings_as_errors()
-   MESSAGE(STATUS  "Treating compiler warnings as errors on all targets.")
-endif()
-
-################################
 # Enable C++11 
 ################################
 if (ENABLE_CXX11)
    add_definitions("-DUSE_CXX11")
-   add_cxx_compiler_flag(-std=c++11)
-   if (NOT HAVE_CXX_FLAG_STD_CXX11)
-      MESSAGE(FATAL_ERROR "This compiler does not support the standard C++11 flag of '-std=c++11'.  Support for it must be added manually in SetupCompilerOptions.cmake.")
-   endif()
+   
+   add_compiler_flag(FLAG_LIST CMAKE_CXX_FLAGS DEFAULT -std=c++11)
+   #add_cxx_compiler_flag(-std=c++11)
+   #if (NOT HAVE_CXX_FLAG_STD_CXX11)
+   #   MESSAGE(FATAL_ERROR "This compiler does not support the standard C++11 flag of '-std=c++11'.  Support for it must be added manually in SetupCompilerOptions.cmake.")
+   #endif()
+   set(HAVE_CXX_FLAG_STD_CXX11 TRUE)
+   MESSAGE(STATUS "Enabled C++11")  
 endif()
+
+################################
+# Compiler warnings and errors
+################################
+set(langFlags "CMAKE_C_FLAGS" "CMAKE_CXX_FLAGS")
+
+if (ENABLE_GLOBALCOMPILERWARNINGS)
+   MESSAGE(STATUS  "Enabling extra compiler warnings on all targets.")
+
+   foreach(flagVar ${langFlags})   
+     add_compiler_flag(FLAG_LIST ${flagVar} 
+                     DEFAULT "-W -Wall -Wextra"
+                     MSVC "/W4 /Wall /wd4619 /wd4668 /wd4820 /wd4571 /wd4710"
+                     )
+   endforeach()
+endif()
+
+if (ENABLE_GLOBALCOMPILERWARNINGSASERRORS)
+   MESSAGE(STATUS  "Enabling treatment of warnings as errors on all targets.")
+
+   foreach(flagVar ${langFlags})   
+     add_compiler_flag(FLAG_LIST ${flagVar} 
+                     DEFAULT "-Werror"
+                     MSVC "/WX"
+                     )
+   endforeach()
+endif()
+
+
+foreach(flagVar ${langFlags})   
+    message(STATUS "${flagVar} flags are:  ${${flagVar}}")
+endforeach()
+
 
 ################################
 # Enable Fortran
@@ -145,18 +160,24 @@ else()
 endif()
  
 
-#####################################################
-# Some additional default values for compiler options
-# These write to the cmake cache without overwriting existing values
-# Typically, we can define the gcc/clang flags here, 
-# and overwrite then with the correct values for other compilers
-#####################################################
- 
-set(DISABLE_OMP_PRAGMA_WARNINGS " -Wno-unknown-pragmas " CACHE STRING "Flag to disable warning about pragmas when omp is disabled")
-# message(STATUS "value of DISABLE_OMP_PRAGMA_WARNINGS is ${DISABLE_OMP_PRAGMA_WARNINGS} ")
+#########################################################################
+# Some additional compiler options that can be useful in various targets 
+#########################################################################
 
-# The following can be useful when dealing with third-party sources (e.g. original lulesh) 
-set(DISABLE_UNUSED_PARAMETER_WARNINGS " -Wno-unused-parameter " CACHE STRING "Flag to disable warning about unused function parameters")
- 
+# Flag for disabling warnings about omp pragmas in the code
+add_compiler_flag(FLAG_LIST DISABLE_OMP_PRAGMA_WARNINGS
+                  DEFAULT "-Wno-unknown-pragmas"
+                  XLC     "-qignprag=omp"
+                  )
+
+# Flag for disabling warnings about unused parameters.
+# Useful when we include external code.
+add_compiler_flag(FLAG_LIST DISABLE_UNUSED_PARAMETER_WARNINGS
+                  DEFAULT "-Wno-unused-parameter"
+                  XLC     "-qnoinfo=par"
+                  )
+
+# message(STATUS "value of DISABLE_OMP_PRAGMA_WARNINGS is ${DISABLE_OMP_PRAGMA_WARNINGS} ")
+# message(STATUS "value of DISABLE_UNUSED_PARAMETER_WARNINGS is ${DISABLE_UNUSED_PARAMETER_WARNINGS} ")
  
  
