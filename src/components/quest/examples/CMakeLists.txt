@@ -9,12 +9,13 @@
 #-------------------------------------------------------------------------------
 
 
-make_executable( EXECUTABLE_SOURCE quest_driver.cpp 
+make_executable( EXECUTABLE_SOURCE quest_driver.cpp
                  DEPENDS_ON 
                     quest 
                     common 
                     slic
                     slam
+                 IS_EXAMPLE
                     )
 
 make_executable( EXECUTABLE_NAME quest_sphere 
@@ -24,6 +25,7 @@ make_executable( EXECUTABLE_NAME quest_sphere
                     common 
                     slic 
                     slam
+                 IS_EXAMPLE
                     )
 
 make_executable( EXECUTABLE_NAME quest_octree_driver 
@@ -33,4 +35,5 @@ make_executable( EXECUTABLE_NAME quest_octree_driver
                     common 
                     slic 
                     slam
+                 IS_EXAMPLE
                     )
