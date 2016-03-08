@@ -411,28 +411,46 @@ DataView * DataView::apply(const DataType &dtype)
  */
 void * DataView::getVoidPtr() const
 {
-  // Verify we actually have some data in the view first.
-  if ( m_state == EMPTY ||
-       m_state == DESCRIBED ||
-       ( m_data_buffer != ATK_NULLPTR && !m_data_buffer->isAllocated() )
-       )
+  void * rv = ATK_NULLPTR;
+
+  switch (m_state)
   {
+  case EMPTY:
+  case DESCRIBED:
     SLIC_CHECK_MSG( m_state != EMPTY && m_state != DESCRIBED,
-                    "Unable to retrieve raw pointer to data, view is empty.");
-    SLIC_CHECK_MSG(
-      m_data_buffer == ATK_NULLPTR || m_data_buffer->isAllocated(),
-      "Unable to retrieve raw pointer to unallocated data.");
-    return ATK_NULLPTR;
+                    "Unable to retrieve raw pointer to data, view has no data.");
+    break;
+  case STRING:
+  case SCALAR:
+    rv = const_cast<void *>(m_node.element_ptr(0));
+    break;
+  case EXTERNAL:
+    if (isApplied())
+    {
+      rv = const_cast<void *>(m_node.element_ptr(0));
+    }
+    else
+    {
+      rv = m_external_ptr;  // Opaque
+    }
+    break;
+  case BUFFER_ATTACHED:
+  case ALLOCATED:
+    if ( m_data_buffer == ATK_NULLPTR || ! m_data_buffer->isAllocated() )
+    {
+      SLIC_CHECK_MSG(m_data_buffer == ATK_NULLPTR || m_data_buffer->isAllocated(),
+		     "Unable to retrieve raw pointer to unallocated data.");
+    }
+    else
+    {
+      rv = const_cast<void *>(m_node.element_ptr(0));
+    }
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
 
-  if ( isOpaque() )
-  {
-    return m_external_ptr;
-  }
-  else
-  {
-    return const_cast<void *>(m_node.element_ptr(0));
-  }
+  return rv;
 }
 
 /*
@@ -476,24 +494,32 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
  */
 bool DataView::isAllocated()
 {
-  if ( m_state == EMPTY || m_state == DESCRIBED )
+  bool rv = false;
+
+  switch (m_state)
   {
+  case EMPTY:
+  case DESCRIBED:
     // May want to warn user if they're calling this on an empty view.
     SLIC_CHECK_MSG( m_state != EMPTY && m_state != DESCRIBED,
                     "isAllocated was called with an empty view, was this intentional?");
-    return false;
+    break;
+  case STRING:
+  case SCALAR:
+    rv = true;
+    break;
+  case EXTERNAL:
+    rv = m_external_ptr != ATK_NULLPTR;
+    break;
+  case BUFFER_ATTACHED:
+  case ALLOCATED:
+    rv = m_data_buffer->isAllocated();
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
 
-  if ( m_state == SCALAR ||
-       m_state == STRING ||
-       ( hasBuffer() && m_data_buffer->isAllocated() ) ||
-       ( m_state == EXTERNAL && m_external_ptr != ATK_NULLPTR )
-       )
-  {
-    return true;
-  }
-
-  return false;
+  return rv;
 }
 
 /*
@@ -735,26 +761,38 @@ void DataView::describeShape(int ndims, SidreLength * shape)
  */
 bool DataView::isAllocateValid() const
 {
-  // Check that we have a description and rule out having data that allocate
-  // can't be called on.
-  if ( !isDescribed() || m_state == EXTERNAL || m_state == SCALAR ||
-       m_state == STRING)
+  bool rv = false;
+
+  switch (m_state)
   {
-    SLIC_CHECK_MSG( isDescribed(),
-                    "Allocate is not valid, view has no description.");
-    return false;
+  case EMPTY:
+  case STRING:
+  case SCALAR:
+  case EXTERNAL:
+    SLIC_CHECK_MSG( true, 
+                    "Allocate is not valid for " << getStateStringName(m_state) << "view");
+    break;
+  case DESCRIBED:
+    rv = true;
+    break;
+  case BUFFER_ATTACHED:
+  case ALLOCATED:
+    // Check that buffer is referenced by only this view.
+    if (m_data_buffer->getNumViews() != 1 )
+    {
+      SLIC_CHECK_MSG( m_data_buffer->getNumViews() != 1,
+		      "Allocate is not valid, buffer does not contain exactly one view.");
+    }
+    else
+    {
+      rv = true;
+    }
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
 
-  // Check that buffer, if present, is referenced by only this view.
-  if (m_data_buffer != ATK_NULLPTR && m_data_buffer->getNumViews() != 1 )
-  {
-    SLIC_CHECK_MSG(
-      m_data_buffer != ATK_NULLPTR && m_data_buffer->getNumViews() != 1,
-      "Allocate is not valid, buffer does not contain exactly one view.");
-    return false;
-  }
-
-  return true;
+  return rv;
 }
 
 /*
@@ -805,22 +843,14 @@ bool DataView::isSetExternalDataPtrValid() const
  */
 bool DataView::isApplyValid() const
 {
-  if ( !isDescribed() )
-  {
-    SLIC_CHECK_MSG(isDescribed(),
-                   "Apply not valid, no description in view to apply.");
-    return false;
-  }
-
   switch (m_state)
   {
+  case EMPTY:
+  case DESCRIBED:
   case STRING:
-    SLIC_CHECK_MSG(m_state == STRING,
-                   "Apply not valid for a STRING view");
-    return false;
   case SCALAR:
-    SLIC_CHECK_MSG(m_state == STRING,
-                   "Apply not valid for a SCALAR view");
+    SLIC_CHECK_MSG( true, 
+                    "Apply is not valid for " << getStateStringName(m_state) << "view");
     return false;
   case EXTERNAL:
     break;
