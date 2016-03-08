@@ -536,6 +536,55 @@ macro(add_gtest)
 
 endmacro(add_gtest)
 
+##------------------------------------------------------------------------------
+## add_gtest( TEST_SOURCE testX.cxx NUM_PROCS [n] DEPENDS_ON [dep1 [dep2 ...]] )
+##
+## Adds a google test to the project.
+##------------------------------------------------------------------------------
+macro(add_mpi_gtest)
+
+   set(options)
+   set(singleValueArgs TEST_SOURCE NUM_PROCS)
+   set(multiValueArgs DEPENDS_ON)
+
+   ##  parse the arguments to the macro
+   cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+   get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
+   set(test_name ${test_name_base}_gtest)
+
+   # make sure the test can see the mpi headers
+   include_directories(${MPI_C_INCLUDE_PATH})
+   # guard against empty mpi params
+   if(NOT "${MPI_C_COMPILE_FLAGS}" STREQUAL "")
+       set_source_files_properties(${arg_TEST_SOURCE}
+                                   PROPERTIES
+                                   COMPILE_FLAGS
+                                   ${MPI_C_COMPILE_FLAGS} )
+   endif()
+
+   if(NOT "${MPI_C_LINK_FLAGS}" STREQUAL "")
+       set_source_files_properties(${arg_TEST_SOURCE}
+                                   PROPERTIES
+                                   LINK_FLAGS
+                                   ${MPI_C_LINK_FLAGS} )
+   endif()
+
+   add_executable( ${test_name} ${arg_TEST_SOURCE} )
+
+   target_link_libraries( ${test_name} ${UNIT_TEST_BASE_LIBS} )
+   target_link_libraries( ${test_name} ${MPI_C_LIBRARIES} )
+   target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
+
+   # setup custom test command to launch the test via mpi
+   set(test_parameters ${MPIEXEC_NUMPROC_FLAG} ${arg_NUM_PROCS} "./${test_name}")
+   add_test(NAME ${test_name}
+            COMMAND ${MPIEXEC} ${test_parameters}
+            WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
+
+endmacro()
+
 
 ##------------------------------------------------------------------------------
 ## add_benchmark( TEST_SOURCE testX.cxx TEST_ARGS <commandLineArguments> DEPENDS_ON [dep1 [dep2 ...]] )
