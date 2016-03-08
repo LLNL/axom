@@ -11,7 +11,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake exectuable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/clang-3.5.0/cmake-3.2.2-gxqogrid4avn7pn53z5m35ug3av2pvdq/bin/cmake
+# cmake executable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/clang-3.5.0/cmake-3.2.2-gxqogrid4avn7pn53z5m35ug3av2pvdq/bin/cmake
 
 #######
 # using clang@3.5.0 compiler spec

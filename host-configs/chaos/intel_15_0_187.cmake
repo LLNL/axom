@@ -11,7 +11,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake exectuable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.0/cmake-3.2.2-qjlmocqnctzvaswr6r5ftesbtofsp7yy/bin/cmake
+# cmake executable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.0/cmake-3.2.2-qjlmocqnctzvaswr6r5ftesbtofsp7yy/bin/cmake
 
 #######
 # using intel@15.0.0 compiler spec

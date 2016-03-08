@@ -11,7 +11,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake exectuable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/cmake-3.2.2-jnpt24vowmusazje5nogmtkk2mmriu7u/bin/cmake
+# cmake executable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/cmake-3.2.2-jnpt24vowmusazje5nogmtkk2mmriu7u/bin/cmake
 
 #######
 # using gcc@4.9.3 compiler spec
