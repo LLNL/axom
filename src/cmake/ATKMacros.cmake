@@ -440,34 +440,23 @@ endmacro(add_fortran_test)
 ##------------------------------------------------------------------------------
 macro(copy_headers_target proj hdrs dest)
 
-add_custom_target(copy_headers_${proj}
-     COMMAND ${CMAKE_COMMAND}
-             -DHEADER_INCLUDES_DIRECTORY=${dest}
-             -DLIBHEADERS="${hdrs}"
-             -P ${CMAKE_SOURCE_DIR}/cmake/copy_headers.cmake
+    add_custom_target(copy_headers_${proj}
+        COMMAND ${CMAKE_COMMAND}
+                 -DHEADER_INCLUDES_DIRECTORY=${dest}
+                 -DLIBHEADERS="${hdrs}"
+                 -P ${CMAKE_SOURCE_DIR}/cmake/copy_headers.cmake
 
-     DEPENDS
-        ${hdrs}
+        DEPENDS
+            ${hdrs}
 
-     WORKING_DIRECTORY
-        ${PROJECT_SOURCE_DIR}
+        WORKING_DIRECTORY
+            ${PROJECT_SOURCE_DIR}
 
-     COMMENT
-        "copy headers"
-     )
+        COMMENT
+            "copy headers"
+        )
 
-     # add any passed source files to the running list for this project
-     foreach(hdr ${hdrs})
-         if(IS_ABSOLUTE ${hdr})
-             list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${hdr}")
-         else()
-             list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                         "${CMAKE_CURRENT_SOURCE_DIR}/${hdr}")
-         endif()
-     endforeach()
-
-     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-         CACHE STRING "" FORCE )
+    update_project_sources( TARGET_SOURCES ${hdrs} )
 
 endmacro(copy_headers_target)
 
