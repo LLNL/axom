@@ -23,5 +23,5 @@ target_link_libraries( sidre_lulesh2_example  sidre  conduit slic )
 
 add_test( NAME sidre_lulesh2_example
           COMMAND sidre_lulesh2_example -s 10
-          WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+          WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
         )

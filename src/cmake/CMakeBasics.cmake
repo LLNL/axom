@@ -104,8 +104,15 @@ include (DartConfig)
      "Directory where compiled libraries will go in the build tree"
      )
 
- ## Set the path where all the executables will go
- set(EXECUTABLE_OUTPUT_PATH
+ ## Set the path where all the install executables will go
+ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
+     ${PROJECT_BINARY_DIR}/bin
+     CACHE PATH
+     "Directory where executables will go in the build tree"
+     )
+
+## Set the path were all test executables will go
+ set(TEST_OUTPUT_DIRECTORY
      ${PROJECT_BINARY_DIR}/bin
      CACHE PATH
      "Directory where executables will go in the build tree"
@@ -121,7 +128,7 @@ include (DartConfig)
 ## Mark as advanced
 mark_as_advanced(
      LIBRARY_OUTPUT_PATH
-     EXECUTABLE_OUTPUT_PATH
+     CMAKE_RUNTIME_OUTPUT_DIRECTORY
      CMAKE_Fortran_MODULE_DIRECTORY
      )
 
@@ -479,7 +486,7 @@ macro(make_executable)
    if ( ${arg_ADD_CTEST} )
      add_test( NAME ${exe_name}
                COMMAND ${exe_name}
-               WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+               WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
                )
    endif()
 
@@ -519,7 +526,7 @@ macro(add_gtest)
 
    add_test( NAME ${test_name}
              COMMAND ${test_name}
-             WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
              )
 
    # add any passed source files to the running list for this project
@@ -576,7 +583,7 @@ macro(add_benchmark)
       add_test( NAME ${test_name}
                 COMMAND ${test_command}
                 CONFIGURATIONS Benchmark   
-                WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+                WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
                 )
 
       add_dependencies(run_benchmarks ${test_name})
@@ -624,7 +631,7 @@ macro(add_fortran_test)
 
         add_test( NAME ${test_name}
                   COMMAND ${test_name}
-                  WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+                  WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
                   )
        #TODO: we aren't tracking / grouping fortran sources.
     endif(ENABLE_FORTRAN)

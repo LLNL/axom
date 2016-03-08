@@ -188,7 +188,7 @@ if __name__ == '__main__':
 
     test_binary_dir = os.environ['TEST_BINARY_DIR']
     test_source_dir = os.environ['TEST_SOURCE_DIR']
-    executable_output_path = os.environ['EXECUTABLE_OUTPUT_PATH']
+    executable_output_path = os.environ['EXECUTABLE_OUTPUT_DIR']
     # XXX check existence of directories
 
     if not os.path.isdir(test_binary_dir):

@@ -20,7 +20,7 @@ target_link_libraries(shroud-run-tutorial fruit shroudrt)
 set_target_properties(shroud-run-tutorial PROPERTIES LINKER_LANGUAGE Fortran)
 add_test( NAME shroud-run-tutorial
           COMMAND shroud-run-tutorial
-          WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+          WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
 )
 
 #add_fortran_test(
