@@ -195,4 +195,6 @@ endif()
 ################################
 #  macros
 ################################
-include(ATKMacros.cmake)
+include(ATKMacros)
+
+

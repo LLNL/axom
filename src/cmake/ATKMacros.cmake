@@ -36,6 +36,8 @@
 #
 ###############################################################################
 
+include(PrivateMacros)
+
 ##------------------------------------------------------------------------------
 ## add_component( COMPONENT_NAME <name> DEFAULT_STATE [ON/OFF] )
 ##
@@ -140,14 +142,9 @@ macro(make_library)
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-
    # Check for the variable-based options for OpenMP and sanity check
    if(NOT DEFINED arg_USE_OPENMP)
       set(arg_USE_OPENMP FALSE)
-   endif()
-
-   if ( ${arg_USE_OPENMP} AND NOT ${ENABLE_OPENMP} )
-      message( FATAL_ERROR "Building an OpenMP library, but OpenMP is disabled!" )
    endif()
 
    if ( BUILD_SHARED_LIBS )
@@ -156,49 +153,16 @@ macro(make_library)
       add_library(${arg_LIBRARY_NAME} STATIC ${arg_LIBRARY_SOURCES})
    endif()
 
-   if ( ${ENABLE_MPI} )
-      add_target_definitions( TO ${arg_LIBRARY_NAME}
-                              TARGET_DEFINITIONS USE_MPI )
-
-      target_include_directories( ${arg_LIBRARY_NAME} PUBLIC
-                                  ${MPI_C_INCLUDE_PATH} )
-
-      if(NOT "${MPI_C_COMPILE_FLAGS}" STREQUAL "")
-            set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES COMPILE_FLAGS
-                                   ${MPI_C_COMPILE_FLAGS} )
-      endif()
-
-      if(NOT "${MPI_C_LINK_FLAGS}" STREQUAL "")
-            set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES LINK_FLAGS
-                                   ${MPI_C_LINK_FLAGS} )
-      endif()
-
-      target_link_libraries(${arg_LIBRARY_NAME} ${MPI_C_LIBRARIES})
-
-   endif()
-
-   if ( ${arg_USE_OPENMP} )
-
-      add_target_definitions( TO ${arg_LIBRARY_NAME}
-                              TARGET_DEFINITIONS USE_OPENMP )
-
-      set_target_properties( ${arg_LIBRARY_NAME}
-                             PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
-
-   endif()
-
-   foreach(src ${arg_LIBRARY_SOURCES})
-       if(IS_ABSOLUTE ${src})
-           list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${src}")
-       else()
-           list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                       "${CMAKE_CURRENT_SOURCE_DIR}/${src}")
-       endif()
-   endforeach()
-
-   set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-        CACHE STRING "" FORCE )
-
+    ## handle MPI 
+   setup_mpi_target( BUILD_TARGET ${arg_LIBRARY_NAME} )
+   
+   ## handle OpenMP
+   setup_openmp_target( BUILD_TARGET ${arg_LIBRARY_NAME}
+                        USE_OPENMP ${arg_USE_OPENMP} )
+   
+   ## update project sources                     
+   update_project_sources( TARGET_SOURCES ${arg_LIBRARY_SOURCES})
+   
    ## setup dependencies
    set(lib_header_target "copy_headers_${arg_LIBRARY_NAME}")
    if (TARGET ${lib_header_target})
@@ -206,13 +170,16 @@ macro(make_library)
    endif()
 
    foreach(dependency ${arg_DEPENDS_ON})
+     
      if (TARGET ${dependency})
         target_link_libraries(${arg_LIBRARY_NAME} ${dependency})
      endif()
+     
      set(header_target "copy_headers_${dependency}")
      if (TARGET ${header_target})
         add_dependencies( ${arg_LIBRARY_NAME} ${header_target} )
      endif()
+     
    endforeach()
 
 endmacro(make_library)
@@ -242,23 +209,18 @@ endmacro(make_library)
 ##------------------------------------------------------------------------------
 macro(make_executable)
 
-   set(options ADD_CTEST)
-   set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE USE_OPENMP)
-   set(multiValueArgs DEPENDS_ON)
+  set(options ADD_CTEST)
+  set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE USE_OPENMP)
+  set(multiValueArgs DEPENDS_ON)
 
-   ## parse the arguments to the macro
-   cmake_parse_arguments(arg
-        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+  ## parse the arguments to the macro
+  cmake_parse_arguments(arg
+      "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-   # Check for the variable-based options for OpenMP and sanity check
-   if(NOT  DEFINED arg_USE_OPENMP)
-      set(arg_USE_OPENMP FALSE)
-   endif()
-   if ( ${arg_USE_OPENMP} AND NOT ${ENABLE_OPENMP} )
-      message( FATAL_ERROR
-               "Building an OpenMP executable, but OpenMP is disabled!" )
-   endif()
-
+  # Check for the variable-based options for OpenMP and sanity check
+  if ( NOT DEFINED arg_USE_OPENMP )
+     set(arg_USE_OPENMP FALSE)
+  endif()
 
    # Use the supplied name for the executable (if given), otherwise use the
    # source file's name
@@ -285,37 +247,12 @@ macro(make_executable)
    #  endif()
    #endforeach()
 
-   if ( ${ENABLE_MPI} )
-      add_target_definitions( TO ${exe_name}
-                              TARGET_DEFINITIONS USE_MPI )
-
-      target_include_directories( ${exe_name} PUBLIC
-                                  ${MPI_C_INCLUDE_PATH} )
-
-      if(NOT "${MPI_C_COMPILE_FLAGS}" STREQUAL "")
-            set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS
-                                   ${MPI_C_COMPILE_FLAGS} )
-      endif()
-
-      if(NOT "${MPI_C_LINK_FLAGS}" STREQUAL "")
-            set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS
-                                   ${MPI_C_LINK_FLAGS} )
-      endif()
-
-      target_link_libraries( ${exe_name} ${MPI_C_LIBRARIES})
-   endif()
-
-   if ( ${arg_USE_OPENMP} )
-
-      add_target_definitions( TO ${exe_name} TARGET_DEFINITIONS USE_OPENMP )
-
-      set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS
-                             ${OpenMP_CXX_FLAGS} )
-      set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS
-                             ${OpenMP_CXX_FLAGS} )
-
-   endif()
-
+    ## Handle MPI
+   setup_mpi_target( BUILD_TARGET ${exe_name} )
+   
+   ## Handle OpenMP
+   setup_openmp_target( BUILD_TARGET ${exe_name} USE_OPENMP ${arg_USE_OPENMP} ) 
+   
    if ( ${arg_ADD_CTEST} )
      add_test( NAME ${exe_name}
                COMMAND ${exe_name}
@@ -323,15 +260,8 @@ macro(make_executable)
                )
    endif()
 
-   if(IS_ABSOLUTE ${arg_EXECUTABLE_SOURCE})
-       list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_EXECUTABLE_SOURCE}")
-   else()
-       list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                   "${CMAKE_CURRENT_SOURCE_DIR}/${arg_EXECUTABLE_SOURCE}")
-   endif()
-
-   set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-        CACHE STRING "" FORCE )
+   ## update project sources
+   update_project_sources( TARGET_SOURCES ${arg_EXECUTABLE_SOURCE} )
 
 endmacro(make_executable)
 
@@ -363,16 +293,7 @@ macro(add_gtest)
              )
 
    # add any passed source files to the running list for this project
-   if(IS_ABSOLUTE ${arg_TEST_SOURCE})
-      list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
-   else()
-      list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                  "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
-   endif()
-
-
-   set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-      CACHE STRING "" FORCE )
+   update_project_sources( TARGET_SOURCES ${arg_TEST_SOURCE} )
 
 endmacro(add_gtest)
 
@@ -427,16 +348,8 @@ macro(add_benchmark)
 
       
       # add any passed source files to the running list for this project
-      if(IS_ABSOLUTE ${arg_TEST_SOURCE})
-         list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
-      else()
-         list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                     "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
-      endif()
-
-
-      set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-         CACHE STRING "" FORCE )
+      update_project_sources( TARGET_SOURCES ${arg_TEST_SOURCE} )
+      
    endif(ENABLE_BENCHMARK)
 endmacro(add_benchmark)
 
