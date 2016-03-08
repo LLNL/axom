@@ -1,29 +1,29 @@
 ####################################
-# Datastore 3rd Party Dependencies
+# 3rd Party Dependencies
 ####################################
 
 ################################
 # Conduit
 ################################
-include(cmake/FindConduit.cmake)
+include(cmake/thirdparty/FindConduit.cmake)
 
 
 ################################
 # Sparsehash
 ################################
-include(cmake/FindSparsehash.cmake)
+include(cmake/thirdparty/FindSparsehash.cmake)
 
 ################################
 # Documentation Packages
 ################################
 
 find_package(Doxygen)
-include(cmake/FindSphinx.cmake)
+include(cmake/thirdparty/FindSphinx.cmake)
 
 ################################
 # linting via Uncrustify
 ################################
-include(cmake/FindUncrustify.cmake)
+include(cmake/thirdparty/FindUncrustify.cmake)
 
 ################################
 # Find boost headers
