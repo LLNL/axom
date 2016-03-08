@@ -26,6 +26,7 @@
 #define TRIANGLE_HPP_
 
 #include "quest/Point.hpp"
+#include "quest/Vector.hpp"
 
 namespace quest
 {
@@ -45,7 +46,8 @@ template < typename T, int DIM >
 class Triangle
 {
 public:
-    typedef Point<T,DIM> PointType;
+    typedef Point<T,DIM>  PointType;
+    typedef Vector<T,DIM> VectorType;
 
 public:
 
@@ -130,6 +132,16 @@ public:
    *****************************************************************************
    */
   const PointType& C() const { return m_C; };
+
+
+  /*!
+   * \brief Returns the normal of the triangle (not normalized)
+   */
+  VectorType normal() const
+  {
+      return VectorType::cross_product( VectorType(m_A,m_B), VectorType(m_A,m_C));
+  }
+
 
   /*!
    * \brief Simple formatted print of a triangle instance

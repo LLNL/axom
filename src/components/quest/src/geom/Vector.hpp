@@ -143,7 +143,8 @@ public:
    * \pre A.dimension() == ndims
    *****************************************************************************
    */
-  Vector( const Point< T,DIM >& A, const Point< T,DIM >& B );
+  Vector( const Point< T,DIM >& A, const Point< T,DIM >& B ) : m_components(B.array() - A.array()) {}
+
 
   /*!
    *****************************************************************************
@@ -349,15 +350,6 @@ typedef Vector< double, 3 > Vector3D;
 //  Vector implementation
 //------------------------------------------------------------------------------
 namespace quest {
-
-//------------------------------------------------------------------------------
-template < typename T, int DIM >
-Vector< T,DIM >::Vector( const Point< T,DIM >& A,
-                           const Point< T,DIM >& B )
-{
-    m_components = B.array() - A.array();
-}
-
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >

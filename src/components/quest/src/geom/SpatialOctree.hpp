@@ -61,6 +61,13 @@ public:
         }
     }
 
+
+    /**
+     * \brief Returns a reference to the octree's bounding box (i.e. the bounding box of the root block)
+     */
+    const GeometricBoundingBox& boundingBox() const { return m_boundingBox; }
+
+
     /**
      * \brief Return the spatial bounding box of a grid cell at the given level or resolution
      */
@@ -149,7 +156,7 @@ public:
         GridPt quantizedPt = elementwiseQuantizedRatio( ptVec, invDeltaVec);
 
         // Adjust grid cell when we are on the upper boundary of the domain
-        const CoordType highestCell = (1<<lev)-1;
+        const CoordType highestCell = this->maxCoordAtLevel(lev);
         quantizedPt.array().clampUpper( highestCell );
 
         return quantizedPt;
@@ -174,9 +181,8 @@ public:
         }
 
         return lev;
-
-
     }
+
 private:
     /**
      * \brief Helper function to quantize to the integer grid

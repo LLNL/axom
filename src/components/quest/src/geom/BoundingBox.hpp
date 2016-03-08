@@ -213,13 +213,22 @@ public:
    */
   const PointType& getMax() const { return m_max; };
 
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the midpoint of the bounding box.
+   * \return midpoint of the bounding box.
+   *****************************************************************************
+   */
+  PointType midPoint() const { return PointType::midpoint(m_min, m_max); }
+
   /*!
    *****************************************************************************
    * \brief Returns a vector from the min to the max points of the bounding box
    * \return Vector from min point to max point of bounding box.
    *****************************************************************************
    */
-  VectorType range() const { return VectorType(getMin(), getMax()); };
+  VectorType range() const { return VectorType(m_min, m_max); };
 
   /*!
    *****************************************************************************

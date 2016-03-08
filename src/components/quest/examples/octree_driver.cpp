@@ -21,12 +21,14 @@
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"
+#include "common/Timer.hpp"
 
 #include "quest/BoundingBox.hpp"
 #include "quest/Field.hpp"
 #include "quest/FieldData.hpp"
 #include "quest/FieldVariable.hpp"
 #include "quest/Mesh.hpp"
+#include "quest/Orientation.hpp"
 #include "quest/Point.hpp"
 #include "quest/STLReader.hpp"
 #include "quest/SquaredDistance.hpp"
@@ -253,7 +255,7 @@ void testIntersectionOnRegularGrid()
     PointType bbMax(1.1);
     BoundingBoxType bbox( bbMin,bbMax );
 
-    typedef quest::SpatialOctree<DIM, quest::LeafData> SpaceOctree;
+    typedef quest::SpatialOctree<DIM, quest::BlockData> SpaceOctree;
     SpaceOctree oct( bbox);
 
 
@@ -296,6 +298,51 @@ void testIntersectionOnRegularGrid()
     debugMesh->toVtkFile("gridIntersections.vtk");
 
     delete debugMesh;
+}
+
+
+void testContainmentOnRegularGrid(const Octree3D& inOutOctree
+           , const GeometricBoundingBox& meshBounds
+           , int gridRes)
+{
+    SpaceVector h( meshBounds.getMin(), meshBounds.getMax());
+    for(int i=0; i<3; ++i)
+        h[i] /= gridRes;
+
+    int ext[6];
+    ext[0] = ext[2] = ext[4] = 0;
+    ext[1] = ext[3] = ext[5] = gridRes;
+
+    meshtk::UniformMesh* umesh =
+            new meshtk::UniformMesh(3,meshBounds.getMin().data(),h.data(),ext);
+
+
+    const int nnodes = umesh->getNumberOfNodes();
+    meshtk::FieldData* PD = umesh->getNodeFieldData();
+    SLIC_ASSERT( PD != ATK_NULLPTR );
+
+    PD->addField( new meshtk::FieldVariable< int >("containment",nnodes) );
+    int* containment = PD->getField( "containment" )->getIntPtr();
+    SLIC_ASSERT( containment != ATK_NULLPTR );
+
+
+    asctoolkit::utilities::Timer timer(true);
+    for ( int inode=0; inode < nnodes; ++inode )
+    {
+        quest::Point< double,3 > pt;
+        umesh->getMeshNode( inode, pt.data() );
+
+        containment[ inode ] = inOutOctree.within(pt) ? 1 : 0;
+    }
+    timer.stop();
+    SLIC_INFO("Generating "<< gridRes << "^3 containment field took " << timer.elapsed() << " seconds.");
+
+
+    std::stringstream sstr;
+    sstr << "gridContainment_" << gridRes << ".vtk";
+    write_vtk( umesh, sstr.str());
+
+    delete umesh;
 }
 
 
@@ -509,6 +556,7 @@ int main( int argc, char** argv )
   GeometricBoundingBox meshBB = compute_bounds( surface_mesh);
   SLIC_INFO( "Mesh bounding box: " << meshBB );
   print_surface_stats(surface_mesh);
+  meshBB.scale(1.01);
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
 
@@ -519,11 +567,13 @@ int main( int argc, char** argv )
   Octree3D octree(meshBB, surface_mesh);
   octree.generateIndex();
 
+
   print_surface_stats(surface_mesh);
   write_vtk(surface_mesh, "meldedTriMesh.vtk");
 
   // STEP 7: Insert triangles into the octree
-
+  for(int i=1; i< 9 ; ++i)
+      testContainmentOnRegularGrid( octree, meshBB, 1<<i);
 
 
   //

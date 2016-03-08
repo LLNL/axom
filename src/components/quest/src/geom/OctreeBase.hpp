@@ -33,42 +33,42 @@ namespace quest
 
   /**
    * \brief Minimal implementation of a BlockDataType for an OctreeBase.
-   * LeafData is default constructible and provides an isLeaf() and setInternal() functions.
+   * BlockData is default constructible and provides an isLeaf() and setInternal() functions.
    * \note This implementation uses ones-complement to differentiate between leaf and internal blocks.
    * This has the nice properties that (a) all internal LeafData have an id with a negative number,
    * (b) the LeafData id's can be zero-based (c) all LeafDatas -- representing leaf and internal blocks
    * can live in the same index space.
    */
-  class LeafData
+  class BlockData
   {
   public:
-      LeafData()
+      BlockData()
       {
           static int idGenerator = 0;
           m_id = idGenerator++;
       }
 
-      LeafData(const LeafData& other): m_id(other.m_id) {}
-      LeafData& operator=(const LeafData& other) { m_id = other.m_id; return *this;}
+      BlockData(const BlockData& other): m_id(other.m_id) {}
+      BlockData& operator=(const BlockData& other) { m_id = other.m_id; return *this;}
 
       /**
-       * \brief Predicate to determine if this LeafData represents a leaf block in the tree
+       * \brief Predicate to determine if this BlockData represents a leaf block in the tree
        */
       bool isLeaf() const { return m_id >= 0; }
 
       /**
-       * \brief Sets the data associated with this leaf
+       * \brief Sets the data associated with this block
        */
       void setData(int leafID) { m_id = leafID; }
 
       /**
-       * Returns the normalized form of the id for this LeafData instance
+       * Returns the normalized form of the id for this BlockData instance
        * \note The normalized form is a non-negative integer.
        */
       int getID() const { return isLeaf()? m_id : ~m_id; }
 
       /**
-       * \brief Predicate to determine if this LeafData is associated with a leaf block
+       * \brief Predicate to determine if this BlockData is associated with a leaf block
        * or internal block of the octree.
        * \return True, if the associated block is internal, false otherwise
        */
@@ -77,7 +77,7 @@ namespace quest
       /**
        * Equality operator for comparing two LeafData instances
        */
-      friend bool operator==(const LeafData& lhs, const LeafData& rhs )
+      friend bool operator==(const BlockData& lhs, const BlockData& rhs )
       {
           return lhs.m_id == rhs.m_id;
       }
@@ -148,12 +148,16 @@ public:
       enum  {
           /** The number of children of an octree block (\f$ 2^{DIM} \f$ in dimension DIM ) */
           NUM_CHILDREN = 1 << DIM
+          , /** The number of face neighbors of an octree block (\f$ 2 * {DIM} \f$ in dimension DIM ) */
+          NUM_FACE_NEIGHBORS = 2 * DIM
       };
   private:
       typedef asctoolkit::slam::policies::CompileTimeSizeHolder<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
+      typedef asctoolkit::slam::policies::CompileTimeSizeHolder<int, NUM_FACE_NEIGHBORS> OCTREE_FACE_NEIGHBORS_SIZE;
 
   public:
       typedef asctoolkit::slam::OrderedSet<OCTREE_CHILDREN_SIZE> ChildIndexSet;
+      typedef asctoolkit::slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE> FaceNeighborIndexSet;
 
   public:
       /**
@@ -233,6 +237,19 @@ public:
         }
 
         /**
+         * \brief Returns a grid point at the specified offset from the current block index's point
+         */
+        GridPt neighborPt(const GridPt& offset) const
+        {
+            GridPt nPoint(m_pt);
+            for(int i=0; i< DIM; ++i)
+                nPoint[i] += offset[i];
+
+            return nPoint;
+        }
+
+
+        /**
          * \brief Returns the parent BlockIndex of this block
          * \note Returns an invalid BlockIndex if we attempt to find
          *       the parent of the root block
@@ -253,6 +270,22 @@ public:
         }
 
 
+        /**
+         * \brief Returns the face neighbor grid point of this block
+         * \pre 0 <= neighborIndex < 2 * DIM
+         * \note The face neighbors indices cycle through the dimensions, two per dimension,
+         *   e.g. Neighbor 0 is at offset (-1, 0,0,...,0), neighbor 1 is at offset (1,0,0,..,0)
+         *   and neighbor 2 is at offset (0,-1, 0, 0, ..., 0) etc...
+         */
+        BlockIndex faceNeighbor(int neighborIndex) const
+        {
+            SLIC_ASSERT( FaceNeighborIndexSet().isValidIndex(neighborIndex) );
+
+            GridPt offset;
+            offset[ neighborIndex / 2 ] = (neighborIndex %2 == 0) ? -1 : 1;
+
+            return BlockIndex( neighborPt( offset), m_lev);
+        }
 
         bool operator==(const BlockIndex& other) const {
             return (m_lev == other.m_lev) && (m_pt == other.m_pt);
@@ -324,6 +357,10 @@ public:
        */
       static int numChildren() { return ChildIndexSet().size(); }
 
+      /**
+       * \brief The number of face neighbors that an octree block can have (ignoring boundaries)
+       */
+      static int numFaceNeighbors() { return FaceNeighborIndexSet().size(); }
 
   private:
       GridPt m_pt;
@@ -366,7 +403,18 @@ public:
    */
   GridPt maxGridCellAtLevel(int level) const
   {
-    return GridPt(1<< m_levels[level] );
+    return GridPt( maxCoordAtLevel(level) );
+  }
+
+  /**
+   * \brief Finds the highest coordinate value at a given level or resolution
+   * \param [in] level The level or resolution.
+   * \pre \f$ 0 \le lev < \f$ maxLeafLevel()
+   * \todo Convert this to a static class function.
+   */
+  CoordType maxCoordAtLevel(int level) const
+  {
+      return (1<< m_levels[level])-1;
   }
 
   /**
@@ -497,9 +545,7 @@ public:
   bool hasBlock(const GridPt& pt, int lev) const
   {
       const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[lev] ];
-      LevelMapCIterator blockIt = levelLeafMap.find(pt);
-
-      return (blockIt != levelLeafMap.end());
+      return (levelLeafMap.find(pt) != levelLeafMap.end());
   }
 
 
@@ -513,6 +559,34 @@ public:
       return hasBlock(block.pt(), block.level());
   }
 
+  /**
+   * \brief Determine whether the octree block associated with grid point pt and level lev is a possible block in this octree
+   * \note A block index is out of bounds if its level is not in the tree, or its grid point is out of the
+   * range of possible grid points for its level
+   */
+  bool inBounds(const GridPt& pt, int lev) const
+  {
+      if( lev < 0 || lev > maxLeafLevel())
+          return false;
+
+      const CoordType maxVal = maxCoordAtLevel(lev);
+      for(int i=0; i< DIM; ++i)
+          if( pt[i] < 0 || pt[i] > maxVal)
+              return false;
+
+      return true;
+  }
+
+
+  /**
+   * \brief Determine whether the octree block associated with BlockIndex is a possible block in this octree
+   * \note A block index is out of bounds if its level is not in the tree, or its grid point is out of the
+   * range of possible grid points for its level
+   */
+  bool inBounds(const BlockIndex& block) const
+  {
+      return inBounds(block.pt(), block.level());
+  }
 
   /**
    * \brief Refines the given leaf block in the octree
@@ -563,6 +637,44 @@ public:
       LevelMapCIterator blockIt = levelLeafMap.find(block.pt());
 
       return blockIt->second;
+  }
+
+  /**
+   * \brief Finds the finest octree leaf covering BlockIndex blk
+   * \param blk A BlockIndex, not necessarily in the octree
+   * \post The returned block, if valid, is blk or one of its ancestor blocks.
+   * \return The blockIndex of the finest octree leaf covering blk, if it exists,
+   *    BlockIndex::invalid_index otherwise (e.g. blk is out of bounds)
+   */
+  BlockIndex coveringLeafBlock(const BlockIndex& blk) const
+  {
+      // Check that point is in bounds
+      if(!this->inBounds(blk))
+          return BlockIndex::invalid_index();
+
+      // Check if the block exists at the current level (and is a leaf)
+      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[blk.level()] ];
+      LevelMapCIterator blockIt = levelLeafMap.find(blk.pt());
+      if( blockIt != levelLeafMap.end()) // octree hasBlock( blk))
+      {
+          if( blockIt->second.isLeaf() )  // and isLeaf() -- Neighbor is at same level
+              return blk;
+          else
+          {   // The neighbor is internal, so its children are at a finer level
+              return BlockIndex::invalid_index();
+          }
+      }
+      else
+      {
+          // Same level neighbor doesn't exist -- find its ancestor
+          BlockIndex ancestorBlk = blk.parent();
+          while(! this->hasBlock(ancestorBlk))
+          {
+              ancestorBlk = ancestorBlk.parent();
+          }
+          SLIC_ASSERT( this->isLeaf(ancestorBlk));
+          return ancestorBlk;
+      }
   }
 
 private:

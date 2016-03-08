@@ -18,6 +18,7 @@ set(quest_tests
     quest_octree.cpp
     quest_orient.cpp
     quest_point.cpp
+    quest_spatial_octree.cpp
     quest_squared_distance.cpp
     quest_vector.cpp
    )
