@@ -30,7 +30,7 @@ Components
   *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_
   *  Lumberjack (Scalable Message Filtering)
   *  `Shroud (C++ API to C/Fortran)  <../../shroud_docs/html/index.html>`_
-  *  `SiDRe: Simulation Data Repository (Datastore) <../../sidre_docs/html/index.html>`_
+  *  `Sidre: Simulation Data Repository (Datastore) <../../sidre_docs/html/index.html>`_
   *  SLAM (Set-theoretic Lightweight API for Meshes)
   *  SLIC (Simple Logging Interface Code)
 
