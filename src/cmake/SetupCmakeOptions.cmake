@@ -12,5 +12,6 @@ option(ENABLE_GLOBALCOMPILERWARNINGS "Enable extra compiler warnings on all buil
 option(ENABLE_GLOBALCOMPILERWARNINGSASERRORS "Enable treating compiler warnings as errors on all build targets." OFF)
 option(ENABLE_MPI "Enables MPI compiler support" OFF)
 option(ENABLE_OPENMP "Enables OpenMP compiler support" OFF)
+option(ENABLE_PYTHON_API "Enable python interface." OFF)
 option(ENABLE_BENCHMARK "Enables google benchmark" OFF)
 
