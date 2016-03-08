@@ -282,7 +282,9 @@ macro(add_gtest)
 
    get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
    set(test_name ${test_name_base}_gtest)
+
    add_executable( ${test_name} ${arg_TEST_SOURCE} )
+
    target_include_directories(${test_name} PRIVATE "${GTEST_INCLUDES}")
    target_link_libraries( ${test_name} "${GTEST_LIBS}" )
    target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
@@ -316,27 +318,12 @@ macro(add_mpi_gtest)
    get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
    set(test_name ${test_name_base}_gtest)
 
-   # make sure the test can see the mpi headers
-   include_directories(${MPI_C_INCLUDE_PATH})
-   # guard against empty mpi params
-   if(NOT "${MPI_C_COMPILE_FLAGS}" STREQUAL "")
-       set_source_files_properties(${arg_TEST_SOURCE}
-                                   PROPERTIES
-                                   COMPILE_FLAGS
-                                   ${MPI_C_COMPILE_FLAGS} )
-   endif()
-
-   if(NOT "${MPI_C_LINK_FLAGS}" STREQUAL "")
-       set_source_files_properties(${arg_TEST_SOURCE}
-                                   PROPERTIES
-                                   LINK_FLAGS
-                                   ${MPI_C_LINK_FLAGS} )
-   endif()
-
    add_executable( ${test_name} ${arg_TEST_SOURCE} )
 
-   target_link_libraries( ${test_name} ${UNIT_TEST_BASE_LIBS} )
-   target_link_libraries( ${test_name} ${MPI_C_LIBRARIES} )
+   setup_mpi_target( BUILD_TARGET ${test_name} )
+
+   target_include_directories( ${test_name} PRIVATE "${GTEST_INCLUDES}" )
+   target_link_libraries( ${test_name} "${GTEST_LIBS}" )
    target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
    # setup custom test command to launch the test via mpi
