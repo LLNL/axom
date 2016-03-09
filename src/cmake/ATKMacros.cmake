@@ -36,186 +36,7 @@
 #
 ###############################################################################
 
-################################
-# Setup build options and their default values
-################################
-include(SetupCmakeOptions)
-
-################################
-# Prevent in-source builds
-################################
-include(PreventInSourceBuilds)
-
-################################
-# Setup 3rd Party Libs
-################################
-include(SetupThirdParty)
-
-################################
-# Setup toolkit docs targets
-################################
-include(SetupDocs)
-
-################################
-# Setup toolkit generate targets
-################################
-include(SetupGenerate)
-
-################################
-# Setup toolkit source checks
-################################
-include(SetupCodeChecks)
-
-################################
-# Setup code metrics -
-# profiling, code coverage, etc.
-################################
-include(SetupCodeMetrics)
-
-
-include (DartConfig)
-
-# XXX this should move to some better place and be based on compiler
-#set (CMAKE_Fortran_FLAGS_DEBUG   "${CMAKE_Fortran_FLAGS_DEBUG} -fcheck=bounds")
-
-################################
-# Standard Build Layout
-################################
-
-##
-## Defines the layout of the build directory. Namely,
-## it indicates the location where the various header files should go,
-## where to store libraries (static or shared), the location of the
-## bin directory for all executables and the location for fortran moudules.
-##
-
-## Set the path where all the header will be stored
- set(HEADER_INCLUDES_DIRECTORY
-     ${PROJECT_BINARY_DIR}/include/
-     CACHE PATH
-     "Directory where all headers will go in the build tree"
-     )
- include_directories(${HEADER_INCLUDES_DIRECTORY})
-
- ## Set the path where all the libraries will be stored
- set(LIBRARY_OUTPUT_PATH
-     ${PROJECT_BINARY_DIR}/lib
-     CACHE PATH
-     "Directory where compiled libraries will go in the build tree"
-     )
-
- ## Set the path where all the install executables will go
- set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/bin
-     CACHE PATH
-     "Directory where executables will go in the build tree"
-     )
-
-## Set the path were all test executables will go
- set(TEST_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/test
-     CACHE PATH
-     "Directory where test executables will go in the build tree"
-     )
-
-## Set the path were all example test executables will go
- set(EXAMPLE_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/example
-     CACHE PATH
-     "Directory where example executables will go in the build tree"
-     )
-
- ## Set the Fortran module directory
- set(CMAKE_Fortran_MODULE_DIRECTORY
-     ${PROJECT_BINARY_DIR}/lib/fortran
-     CACHE PATH
-     "Directory where all Fortran modules will go in the build tree"
-     )
-
-## Mark as advanced
-mark_as_advanced(
-     LIBRARY_OUTPUT_PATH
-     CMAKE_RUNTIME_OUTPUT_DIRECTORY
-     CMAKE_Fortran_MODULE_DIRECTORY
-     )
-
-################################
-#  macros
-################################
-include(ATKMacros)
-
-################################
-# Setup compiler options
-# (must be included after HEADER_INCLUDES_DIRECTORY is set)
-################################
-include(SetupCompilerOptions)
-
-################################
-# Standard CMake Options
-################################
-
-include(ExternalProject)
-if (BUILD_TESTING)
-
-  ## add google test
-  add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gtest-1.7.0)
-  set(GTEST_INCLUDES ${gtest_SOURCE_DIR}/include
-            CACHE INTERNAL "GoogleTest include directories" FORCE)
-  set(GTEST_LIBS gtest_main gtest
-            CACHE INTERNAL "GoogleTest link libraries" FORCE)
-
-  ## Add Fruit   FortRan UnIT test
-  if (ENABLE_FORTRAN)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/fruit-3.3.9)
-  endif (ENABLE_FORTRAN)
-
-  if(ENABLE_BENCHMARK)
-    ## add google benchmark
-    add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gbenchmark)
-    set(GBENCHMARK_INCLUDES ${benchmark_SOURCE_DIR}/include ${benchmark_SOURCE_DIR}
-            CACHE INTERNAL "Google Benchmark include directories" FORCE)
-    set(GBENCHMARK_LIBS benchmark
-            CACHE INTERNAL "Google Benchmark link libraries" FORCE)
-
-    #message(STATUS "Google benchmark -- \n\t inc -- ${GBENCHMARK_INCLUDES} -- \n\t lib -- ${GBENCHMARK_LIBS} ")
-  
-    # This sets up a target to run the benchmarks
-    add_custom_target(run_benchmarks COMMAND ctest -C Benchmark -VV -R benchmark)
-
-  endif()
-
-  enable_testing()
-  
-#  add_dependencies(test run_benchmarks)
-
-endif()
-
-################################
-# MPI
-################################
-message(STATUS "MPI Support is ${ENABLE_MPI}")
-if (ENABLE_MPI)
-  find_package(MPI REQUIRED)
-  message(STATUS "MPI C Compile Flags: ${MPI_C_COMPILE_FLAGS}")
-  message(STATUS "MPI C Include Path: ${MPI_C_INCLUDE_PATH}")
-  message(STATUS "MPI C Link Flags: ${MPI_C_LINK_FLAGS}")
-  message(STATUS "MPI C Libraries: ${MPI_C_LIBRARIES}")
-endif()
-
-################################
-# OpenMP
-################################
-message(STATUS "OpenMP Support is ${ENABLE_OPENMP}")
-if(ENABLE_OPENMP)
-    find_package(OpenMP REQUIRED)
-    message(STATUS "OpenMP CXX Flags: ${OpenMP_CXX_FLAGS}")
-endif()
-<<<<<<< HEAD
-
-################################
-#  macros
-################################
-
+include(PrivateMacros)
 
 ##------------------------------------------------------------------------------
 ## add_component( COMPONENT_NAME <name> DEFAULT_STATE [ON/OFF] )
@@ -308,9 +129,9 @@ endmacro(add_target_definitions)
 ## "make_library", as well as, the corresponding "copy_headers_target" of each
 ## of the supplied dependencies.
 ##
-## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this argument
-## is supplied, the openmp compiler flag will be added to the compiler command
-## and the -DUSE_OPENMP, will be included to the compiler definition.
+## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this 
+## argument is supplied, the openmp compiler flag will be added to the compiler 
+## command and the -DUSE_OPENMP, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_library)
 
@@ -321,14 +142,9 @@ macro(make_library)
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-
    # Check for the variable-based options for OpenMP and sanity check
    if(NOT DEFINED arg_USE_OPENMP)
       set(arg_USE_OPENMP FALSE)
-   endif()
-
-   if ( ${arg_USE_OPENMP} AND NOT ${ENABLE_OPENMP} )
-      message( FATAL_ERROR "Building an OpenMP library, but OpenMP is disabled!" )
    endif()
 
    if ( BUILD_SHARED_LIBS )
@@ -337,49 +153,16 @@ macro(make_library)
       add_library(${arg_LIBRARY_NAME} STATIC ${arg_LIBRARY_SOURCES})
    endif()
 
-   if ( ${ENABLE_MPI} )
-      add_target_definitions( TO ${arg_LIBRARY_NAME}
-                              TARGET_DEFINITIONS USE_MPI )
-
-      target_include_directories( ${arg_LIBRARY_NAME} PUBLIC
-                                  ${MPI_C_INCLUDE_PATH} )
-
-      if(NOT "${MPI_C_COMPILE_FLAGS}" STREQUAL "")
-            set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES COMPILE_FLAGS
-                                   ${MPI_C_COMPILE_FLAGS} )
-      endif()
-
-      if(NOT "${MPI_C_LINK_FLAGS}" STREQUAL "")
-            set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES LINK_FLAGS
-                                   ${MPI_C_LINK_FLAGS} )
-      endif()
-
-      target_link_libraries(${arg_LIBRARY_NAME} ${MPI_C_LIBRARIES})
-
-   endif()
-
-   if ( ${arg_USE_OPENMP} )
-
-      add_target_definitions( TO ${arg_LIBRARY_NAME}
-                              TARGET_DEFINITIONS USE_OPENMP )
-
-      set_target_properties( ${arg_LIBRARY_NAME}
-                             PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
-
-   endif()
-
-   foreach(src ${arg_LIBRARY_SOURCES})
-       if(IS_ABSOLUTE ${src})
-           list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${src}")
-       else()
-           list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                       "${CMAKE_CURRENT_SOURCE_DIR}/${src}")
-       endif()
-   endforeach()
-
-   set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-        CACHE STRING "" FORCE )
-
+    ## handle MPI 
+   setup_mpi_target( BUILD_TARGET ${arg_LIBRARY_NAME} )
+   
+   ## handle OpenMP
+   setup_openmp_target( BUILD_TARGET ${arg_LIBRARY_NAME}
+                        USE_OPENMP ${arg_USE_OPENMP} )
+   
+   ## update project sources                     
+   update_project_sources( TARGET_SOURCES ${arg_LIBRARY_SOURCES})
+   
    ## setup dependencies
    set(lib_header_target "copy_headers_${arg_LIBRARY_NAME}")
    if (TARGET ${lib_header_target})
@@ -387,13 +170,16 @@ macro(make_library)
    endif()
 
    foreach(dependency ${arg_DEPENDS_ON})
+     
      if (TARGET ${dependency})
         target_link_libraries(${arg_LIBRARY_NAME} ${dependency})
      endif()
+     
      set(header_target "copy_headers_${dependency}")
      if (TARGET ${header_target})
         add_dependencies( ${arg_LIBRARY_NAME} ${header_target} )
      endif()
+     
    endforeach()
 
 endmacro(make_library)
@@ -401,7 +187,7 @@ endmacro(make_library)
 ##------------------------------------------------------------------------------
 ## make_executable( EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...]
 ##                  USE_OPENMP < TRUE or FALSE (default)>
-##                  [IS_EXAMPLE] [ADD_CTEST])
+##                  [ADD_CTEST])
 ##
 ## Adds an executable to the project.
 ##
@@ -412,33 +198,29 @@ endmacro(make_library)
 ## In addition, the target will be linked with the given list of library
 ## dependencies.
 ##
-## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this argument
-## is supplied, the openmp compiler flag will be added to the compiler command
-## and the -DUSE_OPENMP, will be included to the compiler definition.
+## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this 
+## argument is supplied, the openmp compiler flag will be added to the compiler 
+## command and the -DUSE_OPENMP, will be included to the compiler definition.
 ##
 ## Optionally, "ADD_CTEST" can be supplied as an argument. When this argument
 ## is supplied, the executable is added as a ctest with no command line options.
-## If you need command line options for your ctest, add it manually with ADD_TEST().
+## If you need command line options for your ctest, add it manually with 
+## ADD_TEST().
 ##------------------------------------------------------------------------------
 macro(make_executable)
 
-   set(options IS_EXAMPLE ADD_CTEST)
-   set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE USE_OPENMP)
-   set(multiValueArgs DEPENDS_ON)
+  set(options ADD_CTEST)
+  set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE USE_OPENMP)
+  set(multiValueArgs DEPENDS_ON)
 
-   ## parse the arguments to the macro
-   cmake_parse_arguments(arg
-        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+  ## parse the arguments to the macro
+  cmake_parse_arguments(arg
+      "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-   # Check for the variable-based options for OpenMP and sanity check
-   if(NOT  DEFINED arg_USE_OPENMP)
-      set(arg_USE_OPENMP FALSE)
-   endif()
-   if ( ${arg_USE_OPENMP} AND NOT ${ENABLE_OPENMP} )
-      message( FATAL_ERROR
-               "Building an OpenMP executable, but OpenMP is disabled!" )
-   endif()
-
+  # Check for the variable-based options for OpenMP and sanity check
+  if ( NOT DEFINED arg_USE_OPENMP )
+     set(arg_USE_OPENMP FALSE)
+  endif()
 
    # Use the supplied name for the executable (if given), otherwise use the
    # source file's name
@@ -465,63 +247,21 @@ macro(make_executable)
    #  endif()
    #endforeach()
 
-   if ( ${ENABLE_MPI} )
-      add_target_definitions( TO ${exe_name}
-                              TARGET_DEFINITIONS USE_MPI )
-
-      target_include_directories( ${exe_name} PUBLIC
-                                  ${MPI_C_INCLUDE_PATH} )
-
-      if(NOT "${MPI_C_COMPILE_FLAGS}" STREQUAL "")
-            set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS
-                                   ${MPI_C_COMPILE_FLAGS} )
-      endif()
-
-      if(NOT "${MPI_C_LINK_FLAGS}" STREQUAL "")
-            set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS
-                                   ${MPI_C_LINK_FLAGS} )
-      endif()
-
-      target_link_libraries( ${exe_name} ${MPI_C_LIBRARIES})
-   endif()
-
-   if ( ${arg_USE_OPENMP} )
-
-      add_target_definitions( TO ${exe_name} TARGET_DEFINITIONS USE_OPENMP )
-
-      set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS
-                             ${OpenMP_CXX_FLAGS} )
-      set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS
-                             ${OpenMP_CXX_FLAGS} )
-
-   endif()
-
-   if ( ${arg_IS_EXAMPLE} )
-       set_target_properties(${exe_name} PROPERTIES
-           RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUTPUT_DIRECTORY}
-       )
-   endif()
+    ## Handle MPI
+   setup_mpi_target( BUILD_TARGET ${exe_name} )
+   
+   ## Handle OpenMP
+   setup_openmp_target( BUILD_TARGET ${exe_name} USE_OPENMP ${arg_USE_OPENMP} ) 
+   
    if ( ${arg_ADD_CTEST} )
-     if ( NOT ${arg_IS_EXAMPLE} )
-         set_target_properties(${exe_name} PROPERTIES
-             RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
-         )
-     endif()
      add_test( NAME ${exe_name}
                COMMAND ${exe_name}
-               WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+               WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
                )
    endif()
 
-   if(IS_ABSOLUTE ${arg_EXECUTABLE_SOURCE})
-       list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_EXECUTABLE_SOURCE}")
-   else()
-       list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                   "${CMAKE_CURRENT_SOURCE_DIR}/${arg_EXECUTABLE_SOURCE}")
-   endif()
-
-   set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-        CACHE STRING "" FORCE )
+   ## update project sources
+   update_project_sources( TARGET_SOURCES ${arg_EXECUTABLE_SOURCE} )
 
 endmacro(make_executable)
 
@@ -542,43 +282,71 @@ macro(add_gtest)
 
    get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
    set(test_name ${test_name_base}_gtest)
+
    add_executable( ${test_name} ${arg_TEST_SOURCE} )
+
    target_include_directories(${test_name} PRIVATE "${GTEST_INCLUDES}")
    target_link_libraries( ${test_name} "${GTEST_LIBS}" )
    target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
-   set_target_properties(${test_name} PROPERTIES
-       RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
-   )
 
    add_test( NAME ${test_name}
              COMMAND ${test_name}
-             WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+             WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
              )
 
    # add any passed source files to the running list for this project
-   if(IS_ABSOLUTE ${arg_TEST_SOURCE})
-      list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
-   else()
-      list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                  "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
-   endif()
-
-
-   set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-      CACHE STRING "" FORCE )
+   update_project_sources( TARGET_SOURCES ${arg_TEST_SOURCE} )
 
 endmacro(add_gtest)
 
+##------------------------------------------------------------------------------
+## add_mpi_gtest( TEST_SOURCE testX.cxx NUM_PROCS [n] 
+##                DEPENDS_ON [dep1 [dep2 ...]] )
+##
+## Adds a google test to the project.
+##------------------------------------------------------------------------------
+macro(add_mpi_gtest)
+
+   set(options)
+   set(singleValueArgs TEST_SOURCE NUM_PROCS)
+   set(multiValueArgs DEPENDS_ON)
+
+   ##  parse the arguments to the macro
+   cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+   get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
+   set(test_name ${test_name_base}_gtest)
+
+   add_executable( ${test_name} ${arg_TEST_SOURCE} )
+
+   setup_mpi_target( BUILD_TARGET ${test_name} )
+
+   target_include_directories( ${test_name} PRIVATE "${GTEST_INCLUDES}" )
+   target_link_libraries( ${test_name} "${GTEST_LIBS}" )
+   target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
+
+   # setup custom test command to launch the test via mpi
+   set(test_parameters ${MPIEXEC_NUMPROC_FLAG} ${arg_NUM_PROCS} "./${test_name}")
+   add_test(NAME ${test_name}
+            COMMAND ${MPIEXEC} ${test_parameters}
+            WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
+
+endmacro()
+
 
 ##------------------------------------------------------------------------------
-## add_benchmark( TEST_SOURCE testX.cxx TEST_ARGS <commandLineArguments> DEPENDS_ON [dep1 [dep2 ...]] )
+## add_benchmark( TEST_SOURCE testX.cxx TEST_ARGS <commandLineArguments> 
+##                DEPENDS_ON [dep1 [dep2 ...]] )
 ##
 ## Adds a (google) benchmark test to the project.
-## TEST_ARGS is a string containing a space delimited set of command line arguments for the test
-## e.g.        
-##   add_benchmark( TEST_SOURCE slamBench.cpp 
-##                  TEST_ARGS "--benchmark_min_time=0.0 --v=3 --benchmark_format=json"
-##                  DEPENDS_ON slic slam)
+## TEST_ARGS is a string containing a space delimited set of command line 
+## arguments for the test
+##        
+##  add_benchmark( 
+##          TEST_SOURCE slamBench.cpp 
+##          TEST_ARGS "--benchmark_min_time=0.0 --v=3 --benchmark_format=json"
+##          DEPENDS_ON slic slam )
 ##------------------------------------------------------------------------------
 macro(add_benchmark)
 
@@ -597,9 +365,6 @@ macro(add_benchmark)
       target_include_directories(${test_name} PRIVATE "${GBENCHMARK_INCLUDES}")
       target_link_libraries( ${test_name} "${GBENCHMARK_LIBS}" )
       target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
-      set_target_properties(${test_name} PROPERTIES
-          RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
-      )
 
       # Add the command line arguments, if present
       set(test_command "${test_name}")
@@ -608,27 +373,20 @@ macro(add_benchmark)
          list(APPEND test_command ${argList})
       endif()
       
-      # The 'CONFIGURATIONS Benchmark' line excludes benchmarks from the general list of tests
+      # The 'CONFIGURATIONS Benchmark' line excludes benchmarks 
+      # from the general list of tests
       add_test( NAME ${test_name}
                 COMMAND ${test_command}
                 CONFIGURATIONS Benchmark   
-                WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+                WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
                 )
 
       add_dependencies(run_benchmarks ${test_name})
 
       
       # add any passed source files to the running list for this project
-      if(IS_ABSOLUTE ${arg_TEST_SOURCE})
-         list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
-      else()
-         list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                     "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
-      endif()
-
-
-      set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-         CACHE STRING "" FORCE )
+      update_project_sources( TARGET_SOURCES ${arg_TEST_SOURCE} )
+      
    endif(ENABLE_BENCHMARK)
 endmacro(add_benchmark)
 
@@ -652,18 +410,16 @@ macro(add_fortran_test)
        set(test_name ${test_name_base}_ftest)
        add_executable( ${test_name} ${arg_TEST_SOURCE} )
 
-       target_include_directories( ${test_name} PUBLIC ${CMAKE_Fortran_MODULE_DIRECTORY} )
+       target_include_directories( ${test_name} PUBLIC 
+                                   ${CMAKE_Fortran_MODULE_DIRECTORY} )
        target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
-       set_target_properties(${test_name} PROPERTIES
-           LINKER_LANGUAGE Fortran
-           Fortran_FORMAT "FREE"
-           RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
-        )
+       set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE Fortran)
+       set_target_properties(${test_name} PROPERTIES Fortran_FORMAT "FREE")
 
         add_test( NAME ${test_name}
                   COMMAND ${test_name}
-                  WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+                  WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
                   )
        #TODO: we aren't tracking / grouping fortran sources.
     endif(ENABLE_FORTRAN)
@@ -684,36 +440,23 @@ endmacro(add_fortran_test)
 ##------------------------------------------------------------------------------
 macro(copy_headers_target proj hdrs dest)
 
-add_custom_target(copy_headers_${proj}
-     COMMAND ${CMAKE_COMMAND}
-             -DHEADER_INCLUDES_DIRECTORY=${dest}
-             -DLIBHEADERS="${hdrs}"
-             -P ${CMAKE_SOURCE_DIR}/cmake/copy_headers.cmake
+    add_custom_target(copy_headers_${proj}
+        COMMAND ${CMAKE_COMMAND}
+                 -DHEADER_INCLUDES_DIRECTORY=${dest}
+                 -DLIBHEADERS="${hdrs}"
+                 -P ${CMAKE_SOURCE_DIR}/cmake/copy_headers.cmake
 
-     DEPENDS
-        ${hdrs}
+        DEPENDS
+            ${hdrs}
 
-     WORKING_DIRECTORY
-        ${PROJECT_SOURCE_DIR}
+        WORKING_DIRECTORY
+            ${PROJECT_SOURCE_DIR}
 
-     COMMENT
-        "copy headers"
-     )
+        COMMENT
+            "copy headers"
+        )
 
-     # add any passed source files to the running list for this project
-     foreach(hdr ${hdrs})
-         if(IS_ABSOLUTE ${hdr})
-             list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${hdr}")
-         else()
-             list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                         "${CMAKE_CURRENT_SOURCE_DIR}/${hdr}")
-         endif()
-     endforeach()
-
-     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-         CACHE STRING "" FORCE )
+    update_project_sources( TARGET_SOURCES ${hdrs} )
 
 endmacro(copy_headers_target)
 
-=======
->>>>>>> 86cbffc1232bc9e9fc251974e7c5a6a45a7d9348

@@ -119,7 +119,7 @@ def patch_spack(spack_dir,compilers_yaml,pkgs):
     if not os.path.isdir(spack_etc):
         os.mkdir(spack_etc)
     sexe("cp %s spack/etc/spack" % compilers_yaml)
-    dest_spack_pkgs = pjoin(spack_dir,"var","spack","packages")
+    dest_spack_pkgs = pjoin(spack_dir,"var","spack","repos","builtin","packages")
     # hot-copy our packages into spack
     sexe("cp -Rf %s %s" % (pkgs,dest_spack_pkgs))
 
@@ -178,6 +178,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
