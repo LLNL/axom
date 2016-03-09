@@ -164,9 +164,8 @@ macro(make_library)
    update_project_sources( TARGET_SOURCES ${arg_LIBRARY_SOURCES})
    
    ## setup dependencies
-   set(lib_header_target "copy_headers_${arg_LIBRARY_NAME}")
-   if (TARGET ${lib_header_target})
-      add_dependencies( ${arg_LIBRARY_NAME} ${lib_header_target})
+   if (TARGET "copy_headers_${arg_LIBRARY_NAME}")
+      add_dependencies( ${arg_LIBRARY_NAME} "copy_headers_${arg_LIBRARY_NAME}")
    endif()
 
    foreach(dependency ${arg_DEPENDS_ON})

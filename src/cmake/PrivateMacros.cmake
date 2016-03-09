@@ -56,25 +56,24 @@ macro(setup_mpi_target)
     message( FATAL_ERROR "Must provide a BUILD_TARGET argument to the macro" )
   endif()
   
-  if (NOT ${ENABLE_MPI} )
-    ## short-circuit
-    return()
-  endif()
-  
-  add_target_definitions( TO ${arg_BUILD_TARGET} TARGET_DEFINITIONS USE_MPI )
-  target_include_directories( ${arg_BUILD_TARGET} PUBLIC ${MPI_C_INCLUDE_PATH} )
+  if ( ${ENABLE_MPI} )
+ 
+    add_target_definitions( TO ${arg_BUILD_TARGET} TARGET_DEFINITIONS USE_MPI )
+    target_include_directories( ${arg_BUILD_TARGET} PUBLIC ${MPI_C_INCLUDE_PATH} )
 
-  if ( NOT "${MPI_C_COMPILE_FLAGS}" STREQUAL "")
-     set_target_properties( ${arg_BUILD_TARGET} 
-            PROPERTIES COMPILE_FLAGS ${MPI_C_COMPILE_FLAGS} )
-  endif()
+    if ( NOT "${MPI_C_COMPILE_FLAGS}" STREQUAL "")
+       set_target_properties( ${arg_BUILD_TARGET} 
+              PROPERTIES COMPILE_FLAGS ${MPI_C_COMPILE_FLAGS} )
+    endif()
 
-  if ( NOT "${MPI_C_LINK_FLAGS}" STREQUAL "")
-     set_target_properties( ${arg_BUILD_TARGET} 
-            PROPERTIES LINK_FLAGS ${MPI_C_LINK_FLAGS} )
-  endif()
+    if ( NOT "${MPI_C_LINK_FLAGS}" STREQUAL "")
+       set_target_properties( ${arg_BUILD_TARGET} 
+              PROPERTIES LINK_FLAGS ${MPI_C_LINK_FLAGS} )
+    endif()
 
-  target_link_libraries(${arg_BUILD_TARGET} ${MPI_C_LIBRARIES})
+    target_link_libraries(${arg_BUILD_TARGET} ${MPI_C_LIBRARIES})
+    
+  endif()
 
 endmacro(setup_mpi_target)
 
