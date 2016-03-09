@@ -169,6 +169,14 @@ if args.cmakeoption:
 
 cmakeline += " %s/../src " % scriptsdir
 
+# Dump the cmake command to file for convenience
+cmdfile = open("cmake_cmd", "w")
+cmdfile.write(cmakeline)
+cmdfile.close()
+import stat
+st = os.stat("cmake_cmd")
+os.chmod("cmake_cmd", st.st_mode | stat.S_IEXEC)
+
 ############################
 # Run CMake
 ############################

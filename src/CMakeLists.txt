@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.1)
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH
+      "${CMAKE_SOURCE_DIR}/cmake/thirdparty"
+      "${CMAKE_SOURCE_DIR}/cmake"
+      ${CMAKE_MODULE_PATH})
 
 ################################
 # ASCTK ToolKit

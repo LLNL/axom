@@ -120,7 +120,8 @@ if ( ${buildOrigLulesh} )
         EXECUTABLE_NAME slam_OrigLulesh 
         EXECUTABLE_SOURCE ${lulesh_exe_source} 
         DEPENDS_ON "slamLuleshOrigLib" 
-        USE_OPENMP ${ENABLE_OPENMP} 
+        USE_OPENMP ${ENABLE_OPENMP}
+        IS_EXAMPLE
        ) 
           
 endif()
@@ -172,15 +173,17 @@ foreach(test ${gtest_slam_tinyHydro_tests})
     add_gtest( TEST_SOURCE ${test} DEPENDS_ON slamTinyHydroLib slic)
 endforeach()
 
-make_executable( 
+make_executable(
     EXECUTABLE_NAME "slam_tinyHydro_sedov" 
     EXECUTABLE_SOURCE ${tinyHydro_dir}/tests/slam_tinyHydro_sedovTwoPart.cpp
     DEPENDS_ON slamTinyHydroLib
+    IS_EXAMPLE
 )
 make_executable( 
     EXECUTABLE_NAME "slam_tinyHydro_sod" 
     EXECUTABLE_SOURCE ${tinyHydro_dir}/tests/slam_tinyHydro_sod1DTwoPart.cpp
     DEPENDS_ON slamTinyHydroLib
+    IS_EXAMPLE
     ADD_CTEST
 )
     
