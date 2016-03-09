@@ -58,7 +58,7 @@ macro(add_shroud)
     add_custom_command(
         OUTPUT  ${_timestamp}
         DEPENDS shroud_python ${CMAKE_CURRENT_SOURCE_DIR}/${arg_YAML_INPUT_FILE} ${shroud_depends}
-        COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud
+        COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shroud
                 --logdir ${CMAKE_CURRENT_BINARY_DIR}
                 # path controls where to search for splicer files listed in YAML_INPUT_FILE
                 --path ${CMAKE_CURRENT_BINARY_DIR}

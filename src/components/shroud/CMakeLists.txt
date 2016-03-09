@@ -42,7 +42,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/shroud.in
                @ONLY)
 # now copy the temporary into the final destination, setting the permissions
 file(COPY ${tmp_file}
-    DESTINATION ${EXECUTABLE_OUTPUT_PATH}
+    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     FILE_PERMISSIONS
         OWNER_READ OWNER_EXECUTE
         GROUP_READ GROUP_EXECUTE
