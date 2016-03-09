@@ -199,12 +199,22 @@ public:
   /*!
    *****************************************************************************
    * \brief Flushes all streams.
-   * \note When used within an MPI distributed environment, flushAllStreams is
+   * \note When used within an MPI distributed environment, flushStreams is
    *  a collective operation. All ranks in the user-supplied communicator must
    *  call this method.
    *****************************************************************************
    */
   void flushStreams();
+
+  /*!
+   *****************************************************************************
+   * \brief Pushes messages incrementally up all streams.
+   * \note When used within an MPI distributed environment, pushStreams is
+   *  a collective operation. All ranks in the user-supplied communicator must
+   *  call this method.
+   *****************************************************************************
+   */
+  void pushStreams();
 
   /// \name Static Methods
   ///@{

@@ -110,6 +110,11 @@ module sidre_mod
         procedure :: create_view_and_allocate_nelems_int => datagroup_create_view_and_allocate_nelems_int
         procedure :: create_view_and_allocate_nelems_long => datagroup_create_view_and_allocate_nelems_long
         procedure :: create_view_and_allocate_shape => datagroup_create_view_and_allocate_shape
+        procedure :: create_view_scalar_int => datagroup_create_view_scalar_int
+        procedure :: create_view_scalar_long => datagroup_create_view_scalar_long
+        procedure :: create_view_scalar_float => datagroup_create_view_scalar_float
+        procedure :: create_view_scalar_double => datagroup_create_view_scalar_double
+        procedure :: create_view_string => datagroup_create_view_string
         procedure :: create_view_empty => datagroup_create_view_empty
         procedure :: create_view_from_type_int => datagroup_create_view_from_type_int
         procedure :: create_view_from_type_long => datagroup_create_view_from_type_long
@@ -152,6 +157,13 @@ module sidre_mod
             create_view_and_allocate_nelems_int,  &
             create_view_and_allocate_nelems_long,  &
             create_view_and_allocate_shape
+        generic :: create_view_scalar => &
+            ! splicer begin class.DataGroup.generic.create_view_scalar
+            ! splicer end class.DataGroup.generic.create_view_scalar
+            create_view_scalar_int,  &
+            create_view_scalar_long,  &
+            create_view_scalar_float,  &
+            create_view_scalar_double
         generic :: destroy_group => &
             ! splicer begin class.DataGroup.generic.destroy_group
             ! splicer end class.DataGroup.generic.destroy_group
@@ -678,6 +690,122 @@ module sidre_mod
             integer(C_LONG), intent(IN) :: num_elems(*)
             type(C_PTR) :: rv
         end function c_datagroup_create_view_and_allocate_shape_bufferify
+        
+        function c_datagroup_create_view_scalar_int(self, name, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_int")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_int
+        
+        function c_datagroup_create_view_scalar_int_bufferify(self, name, Lname, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_int_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_int_bufferify
+        
+        function c_datagroup_create_view_scalar_long(self, name, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_long")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_LONG), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_long
+        
+        function c_datagroup_create_view_scalar_long_bufferify(self, name, Lname, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_long_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_LONG), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_long_bufferify
+        
+        function c_datagroup_create_view_scalar_float(self, name, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_float")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            real(C_FLOAT), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_float
+        
+        function c_datagroup_create_view_scalar_float_bufferify(self, name, Lname, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_float_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            real(C_FLOAT), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_float_bufferify
+        
+        function c_datagroup_create_view_scalar_double(self, name, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_double")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            real(C_DOUBLE), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_double
+        
+        function c_datagroup_create_view_scalar_double_bufferify(self, name, Lname, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_scalar_double_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            real(C_DOUBLE), value, intent(IN) :: value
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_scalar_double_bufferify
+        
+        function c_datagroup_create_view_string(self, name, value) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_string")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            character(kind=C_CHAR), intent(IN) :: value(*)
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_string
+        
+        function c_datagroup_create_view_string_bufferify(self, name, Lname, value, Lvalue) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_string_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            character(kind=C_CHAR), intent(IN) :: value(*)
+            integer(C_INT), value, intent(IN) :: Lvalue
+            type(C_PTR) :: rv
+        end function c_datagroup_create_view_string_bufferify
         
         function c_datagroup_create_view_empty(self, name) &
                 result(rv) &
@@ -1856,6 +1984,87 @@ contains
             num_elems)
         ! splicer end class.DataGroup.method.create_view_and_allocate_shape
     end function datagroup_create_view_and_allocate_shape
+    
+    function datagroup_create_view_scalar_int(obj, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        integer(C_INT), value, intent(IN) :: value
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_scalar_int
+        rv%voidptr = c_datagroup_create_view_scalar_int_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            value)
+        ! splicer end class.DataGroup.method.create_view_scalar_int
+    end function datagroup_create_view_scalar_int
+    
+    function datagroup_create_view_scalar_long(obj, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        integer(C_LONG), value, intent(IN) :: value
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_scalar_long
+        rv%voidptr = c_datagroup_create_view_scalar_long_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            value)
+        ! splicer end class.DataGroup.method.create_view_scalar_long
+    end function datagroup_create_view_scalar_long
+    
+    function datagroup_create_view_scalar_float(obj, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        real(C_FLOAT), value, intent(IN) :: value
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_scalar_float
+        rv%voidptr = c_datagroup_create_view_scalar_float_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            value)
+        ! splicer end class.DataGroup.method.create_view_scalar_float
+    end function datagroup_create_view_scalar_float
+    
+    function datagroup_create_view_scalar_double(obj, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        real(C_DOUBLE), value, intent(IN) :: value
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_scalar_double
+        rv%voidptr = c_datagroup_create_view_scalar_double_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            value)
+        ! splicer end class.DataGroup.method.create_view_scalar_double
+    end function datagroup_create_view_scalar_double
+    
+    function datagroup_create_view_string(obj, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        character(*), intent(IN) :: value
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_string
+        rv%voidptr = c_datagroup_create_view_string_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name, kind=C_INT),  &
+            value,  &
+            len_trim(value, kind=C_INT))
+        ! splicer end class.DataGroup.method.create_view_string
+    end function datagroup_create_view_string
     
     function datagroup_create_view_empty(obj, name) result(rv)
         use iso_c_binding

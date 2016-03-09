@@ -114,8 +114,51 @@ TEST(sidre_view,scalar_view)
   EXPECT_EQ(s0view->getNumDimensions(), 1);
   EXPECT_TRUE(s0view->getShape(1, dims) == 1 && dims[0] == 14);
 
-  delete ds;
+  // using convenience functions
+  // integer scalar
+  DataView * i1view = root->createViewScalar("i1", 1);
+  EXPECT_EQ(i1view->getNumElements(), 1u);
+  EXPECT_EQ(i1view->getNumDimensions(), 1);
+  EXPECT_TRUE(i1view->getShape(1, dims) == 1 && dims[0] == 1);
 
+  // string
+  DataView * s1view = root->createViewString("s1", "I am a string");
+  EXPECT_EQ(s1view->getNumElements(), 14u);
+  EXPECT_EQ(s1view->getNumDimensions(), 1);
+  EXPECT_TRUE(s1view->getShape(1, dims) == 1 && dims[0] == 14);
+
+  // Check illegal operations
+  i0view->allocate();
+  i0view->deallocate();
+
+  s0view->allocate();
+  s0view->deallocate();
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+
+// Most tests deallocate via the DataStore destructor
+
+TEST(sidre_view,alloc_and_dealloc)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  DataView * dv = root->createView("u0", INT_ID, 10);
+  EXPECT_FALSE(dv->isAllocated());
+
+  // try to deallocate an unallocated view
+  dv->deallocate();
+
+  dv->allocate();
+  EXPECT_TRUE(dv->isAllocated());
+
+  dv->deallocate();
+  EXPECT_FALSE(dv->isAllocated());
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -280,8 +323,15 @@ TEST(sidre_view,int_array_strided_views)
 
 
   ds->print();
-  delete ds;
 
+  // Delete buffer and make sure views are no longer allocated.
+  dbuff->deallocate();
+  EXPECT_FALSE(dv_e->isAllocated());
+  EXPECT_FALSE(dv_o->isAllocated());
+  EXPECT_FALSE(dv_e1->isAllocated());
+  EXPECT_FALSE(dv_o1->isAllocated());
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------

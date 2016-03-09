@@ -19,7 +19,8 @@
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 #include "lumberjack/RootCommunicator.hpp"
 #include "lumberjack/Message.hpp"
-#include "lumberjack/Utility.hpp"
+
+#include "common/StringUtilities.hpp"
 
 #include <mpi.h>
 
@@ -35,12 +36,12 @@ int main(int argc, char** argv)
     //Process command line options
     bool commandLineError = false;
     if (argc != 4) {
-        std::cout << "Error: Wrong amount of command line arguements given. Usage:" << std::endl << 
+        std::cout << "Error: Wrong amount of command line arguments given. Usage:" << std::endl << 
                      "   " << argv[0] << " <b|r depending on binary or root communicator> <num messages before push once> <file to be read>" << std::endl;
         return 1;
     }
     std::string communicatorName = "";
-    int cycleLimit = asctoolkit::lumberjack::stringToInt(argv[2]);
+    int cycleLimit = asctoolkit::utilities::string::stringToInt(argv[2]);
     char* fileName = argv[3];
 
     if (std::string(argv[1]) == "b") {
@@ -78,7 +79,7 @@ int main(int argc, char** argv)
     }
     communicator->initialize(MPI_COMM_WORLD, ranksLimit);
 
-    // Initialize lumberjack logger
+    // Initialize lumberjack
     asctoolkit::lumberjack::Lumberjack lj;
     lj.initialize(communicator, ranksLimit);
 
@@ -114,20 +115,19 @@ int main(int argc, char** argv)
     std::clock_t end = clock();
 
     // Get messages back out of lumberjack since they have been pushed.
-    std::vector<asctoolkit::lumberjack::Message*> messages;
-    lj.getMessages(messages);
+    if (lj.isOutputNode()) {
+        std::vector<asctoolkit::lumberjack::Message*> messages = lj.getMessages();
 
-    if (commRank == 0) {
        std::ofstream outFile;
        outFile.open("speedTestOutput");
        for(int i=0; i<(int)(messages.size()); ++i){
            outFile << messages[i]->text();
-           delete messages[i];
        }
+       lj.clearMessages();
        outFile.close();
    }
 
-    // Finalize the lumberjack 
+    // Finalize lumberjack 
     lj.finalize();
     // Finalize the lumberjack communicator
     communicator->finalize();

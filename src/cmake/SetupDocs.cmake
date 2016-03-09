@@ -7,11 +7,11 @@
 # 
 # All rights reserved.
 # 
-# This file is part of Conduit. 
+# This file is part of CS Toolkit. 
 # 
-# For details, see https://lc.llnl.gov/conduit/.
+# For details, see https://lc.llnl.gov/..../.
 # 
-# Please also read conduit/LICENSE
+# Please also read xxxx/LICENSE
 # 
 # Redistribution and use in source and binary forms, with or without 
 # modification, are permitted provided that the following conditions are met:

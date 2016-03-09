@@ -47,8 +47,8 @@ int main( int argc, char** argv )
   int rank=-1;
   MPI_Comm_rank( MPI_COMM_WORLD, &rank );
 
-  std::string format = std::string( "<MESSAGE>\n") +
-                       std::string( "\t<TIMESTAMP>" ) +
+  std::string format = std::string( "[<RANK>]: <MESSAGE>\n") +
+                       std::string( "\t<TIMESTAMP>\n" ) +
                        std::string( "\tLEVEL=<LEVEL>\n") +
                        std::string( "\tFILE=<FILE>\n") +
                        std::string( "\tLINE=<LINE>\n");
@@ -64,7 +64,7 @@ int main( int argc, char** argv )
   for ( int i=0; i < N; ++i ) {
 
     std::ostringstream oss;
-    oss << "[ " << rank << "]: message " << i << "/" << N-1;
+    oss << "message " << i << "/" << N-1;
 
     slic::logMessage( getRandomEvent(0,slic::message::Num_Levels),
                          oss.str(),

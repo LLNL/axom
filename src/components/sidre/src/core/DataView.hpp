@@ -354,6 +354,17 @@ public:
    */
   DataView * reallocate(const DataType& dtype);
 
+  /*!
+   * \brief  Deallocate data for view.
+   *
+   * NOTE: Deallocation from a view is only allowed under that same conditions
+   *       described by the allocate() method. If none of those is true,
+   *       or a DataBuffer is not attached, this method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * deallocate();
+
 //@}
 
 

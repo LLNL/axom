@@ -66,11 +66,12 @@ public:
    *****************************************************************************
    * \brief Appends the given message to the stream.
    *
-   * \param [in] msgType the type of the message.
+   * \param [in] msgLevel the level of the message.
    * \param [in] message the user-supplied message.
+   * \param [in] tagName user-supplied tag to associate with the given message.
    * \param [in] fileName the file where this message is appended
    * \param [in] line the line within the file at which the message is appended.
-   * \param [in] filter_dulicates optional parameter that indicates whether
+   * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    *
    * \note This method doesn't put anything to the console. Instead the
@@ -108,7 +109,7 @@ private:
   /*!
    *****************************************************************************
    * \brief Default constructor. Made private to prevent applications from
-   *  using it. Instead the constructor that passes the underlying MPI comm.
+   *  using it. Instead the constructor that passes the underlying MPI comm
    *  should be used.
    *****************************************************************************
    */
