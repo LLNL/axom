@@ -187,7 +187,7 @@ endmacro(make_library)
 ##------------------------------------------------------------------------------
 ## make_executable( EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...]
 ##                  USE_OPENMP < TRUE or FALSE (default)>
-##                  [ADD_CTEST])
+##                  [IS_EXAMPLE] [ADD_CTEST])
 ##
 ## Adds an executable to the project.
 ##
@@ -209,7 +209,7 @@ endmacro(make_library)
 ##------------------------------------------------------------------------------
 macro(make_executable)
 
-  set(options ADD_CTEST)
+  set(options IS_EXAMPLE ADD_CTEST)
   set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE USE_OPENMP)
   set(multiValueArgs DEPENDS_ON)
 
@@ -253,10 +253,20 @@ macro(make_executable)
    ## Handle OpenMP
    setup_openmp_target( BUILD_TARGET ${exe_name} USE_OPENMP ${arg_USE_OPENMP} ) 
    
+   if ( ${arg_IS_EXAMPLE} )
+       set_target_properties(${exe_name} PROPERTIES
+           RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUTPUT_DIRECTORY}
+       )
+   endif()
    if ( ${arg_ADD_CTEST} )
+     if ( NOT ${arg_IS_EXAMPLE} )
+         set_target_properties(${exe_name} PROPERTIES
+             RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+         )
+     endif()
      add_test( NAME ${exe_name}
                COMMAND ${exe_name}
-               WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+               WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
                )
    endif()
 
