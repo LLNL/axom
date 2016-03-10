@@ -46,13 +46,15 @@ namespace sidre
  */
 DataView * DataView::allocate()
 {
-  if (m_state == EMPTY) {
-      m_data_buffer = m_owning_group->getDataStore()->createBuffer();
-      m_data_buffer->attachView(this);
-      m_state = BUFFER;
+  if (m_state == EMPTY)
+  {
+    m_data_buffer = m_owning_group->getDataStore()->createBuffer();
+    m_data_buffer->attachView(this);
+    m_state = BUFFER;
   }
 
-  if ( isAllocateValid() ) {
+  if ( isAllocateValid() )
+  {
     TypeID type = static_cast<TypeID>(m_schema.dtype().id());
     SidreLength num_elems = m_schema.dtype().number_of_elements();
     m_data_buffer->allocate(type, num_elems);
@@ -122,17 +124,23 @@ DataView * DataView::reallocate(SidreLength num_elems)
   if ( num_elems < 0 )
   {
     SLIC_CHECK_MSG(false, "num_elems must be >= 0");
-  } else if ( m_state == EMPTY ) {
+  }
+  else if ( m_state == EMPTY )
+  {
     allocate( vtype, num_elems);
-  } else if ( isAllocateValid() ) {
-      if ( m_data_buffer->isAllocated() )  //  if ( isAllocated() )
-	  {
-	  describe(vtype, num_elems);
-	  m_data_buffer->reallocate(num_elems);
-	  apply();
-      } else {
-	  allocate( vtype, num_elems );
-      }
+  }
+  else if ( isAllocateValid() )
+  {
+    if ( m_data_buffer->isAllocated() )    //  XXX if ( isAllocated() )
+    {
+      describe(vtype, num_elems);
+      m_data_buffer->reallocate(num_elems);
+      apply();
+    }
+    else
+    {
+      allocate( vtype, num_elems );
+    }
   }
 
   return this;
@@ -487,7 +495,7 @@ bool DataView::isAllocated()
     rv = m_external_ptr != ATK_NULLPTR;
     break;
   case BUFFER:
-      // XXX what if buffer allocated but description is not applied. Look in Node?  isApplied?
+    // XXX what if buffer allocated but description is not applied. Look in Node?  isApplied?
     rv = m_data_buffer->isAllocated();
     break;
   case STRING:
@@ -736,15 +744,17 @@ bool DataView::isAllocateValid() const
   case STRING:
   case SCALAR:
   case EXTERNAL:
-    SLIC_CHECK_MSG( false, 
-                    "Allocate is not valid for " << getStateStringName(m_state) << "view");
+    SLIC_CHECK_MSG( false,
+                    "Allocate is not valid for " <<
+                    getStateStringName(m_state) << "view");
     break;
   case BUFFER:
     // Check that buffer is only referenced by this view.
     if (m_data_buffer->getNumViews() != 1 )
     {
-      SLIC_CHECK_MSG( m_data_buffer->getNumViews() != 1,
-		      "Allocate is not valid, buffer does not contain exactly one view.");
+      SLIC_CHECK_MSG(
+        m_data_buffer->getNumViews() != 1,
+        "Allocate is not valid, buffer does not contain exactly one view.");
     }
     else
     {
@@ -807,9 +817,10 @@ bool DataView::isApplyValid() const
 {
   bool rv = false;
 
-  if ( ! isDescribed() )
+  if ( !isDescribed() )
   {
-    SLIC_CHECK_MSG(false, "Apply is not valid, no description in view to apply");
+    SLIC_CHECK_MSG(false,
+                   "Apply is not valid, no description in view to apply");
   }
 
   switch (m_state)
@@ -818,21 +829,22 @@ bool DataView::isApplyValid() const
   case STRING:
   case SCALAR:
     SLIC_CHECK_MSG( false,
-                    "Apply is not valid for " << getStateStringName(m_state) << "view");
+                    "Apply is not valid for " <<
+                    getStateStringName(m_state) << "view");
     break;
   case EXTERNAL:
-      // XXX apply to a NULL pointer?
+    // XXX apply to a NULL pointer?
     rv = true;
     break;
   case BUFFER:
-    if ( ! m_data_buffer->isAllocated() )
+    if ( !m_data_buffer->isAllocated() )
     {
       SLIC_CHECK_MSG(false, "Apply is not valid, buffer is not allocated");
     }
     else if ( getTotalBytes() > m_data_buffer->getTotalBytes() )
     {
       SLIC_CHECK_MSG(false,
-		     "Apply is not valid, buffer description is smaller than view description");
+                     "Apply is not valid, buffer description is smaller than view description");
     }
     else
     {
