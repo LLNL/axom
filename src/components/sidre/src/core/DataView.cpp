@@ -39,8 +39,8 @@ namespace sidre
  *************************************************************************
  *
  * Allocate data for view, previously described.
- * The state may transition from EMPTY to BUFFER_ATTACHED;
- * otherwise, the state must already be BUFFER_ATTACHED.
+ * The state may transition from EMPTY to BUFFER;
+ * otherwise, the state must already be BUFFER.
  *
  *************************************************************************
  */
@@ -49,7 +49,7 @@ DataView * DataView::allocate()
   if (m_state == EMPTY) {
       m_data_buffer = m_owning_group->getDataStore()->createBuffer();
       m_data_buffer->attachView(this);
-      m_state = BUFFER_ATTACHED;
+      m_state = BUFFER;
   }
 
   if ( isAllocateValid() ) {
@@ -110,8 +110,8 @@ DataView * DataView::allocate(const DataType& dtype)
  *
  * Reallocate data for view to given number of elements.
  * This function requires that the view is already described.
- * The state may transition from EMPTY to BUFFER_ATTACHED;
- * otherwise, the state must already be BUFFER_ATTACHED.
+ * The state may transition from EMPTY to BUFFER;
+ * otherwise, the state must already be BUFFER.
  *
  *************************************************************************
  */
@@ -224,7 +224,7 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
 
   buff->attachView(this);
   m_data_buffer = buff;
-  m_state = BUFFER_ATTACHED;
+  m_state = BUFFER;
   m_is_applied = false;
 
   // If view is described and the buffer is allocated, then call apply.
@@ -413,7 +413,7 @@ void * DataView::getVoidPtr() const
       rv = m_external_ptr;  // Opaque
     }
     break;
-  case BUFFER_ATTACHED:
+  case BUFFER:
     if (isApplied())
     {
       rv = const_cast<void *>(m_node.element_ptr(0));
@@ -486,7 +486,7 @@ bool DataView::isAllocated()
   case EXTERNAL:
     rv = m_external_ptr != ATK_NULLPTR;
     break;
-  case BUFFER_ATTACHED:
+  case BUFFER:
       // XXX what if buffer allocated but description is not applied. Look in Node?  isApplied?
     rv = m_data_buffer->isAllocated();
     break;
@@ -739,7 +739,7 @@ bool DataView::isAllocateValid() const
     SLIC_CHECK_MSG( false, 
                     "Allocate is not valid for " << getStateStringName(m_state) << "view");
     break;
-  case BUFFER_ATTACHED:
+  case BUFFER:
     // Check that buffer is only referenced by this view.
     if (m_data_buffer->getNumViews() != 1 )
     {
@@ -772,7 +772,7 @@ bool DataView::isAllocateValid() const
  */
 bool DataView::isAttachBufferValid() const
 {
-  return ( m_state == EMPTY || m_state == BUFFER_ATTACHED );
+  return ( m_state == EMPTY || m_state == BUFFER );
 }
 
 /*
@@ -824,7 +824,7 @@ bool DataView::isApplyValid() const
       // XXX apply to a NULL pointer?
     rv = true;
     break;
-  case BUFFER_ATTACHED:
+  case BUFFER:
     if ( ! m_data_buffer->isAllocated() )
     {
       SLIC_CHECK_MSG(false, "Apply is not valid, buffer is not allocated");
@@ -862,8 +862,8 @@ char const * DataView::getStateStringName(State state) const
   case EMPTY:
     ret_string = "EMPTY";
     break;
-  case BUFFER_ATTACHED:
-    ret_string = "BUFFER_ATTACHED";
+  case BUFFER:
+    ret_string = "BUFFER";
     break;
   case EXTERNAL:
     ret_string = "EXTERNAL";
