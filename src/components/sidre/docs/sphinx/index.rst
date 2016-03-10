@@ -34,11 +34,12 @@ capbilities include:
   via a pointer, but the consumer of the pointer must know type information
   to do anything substantial with the data.
 * Multiple, different "views" into a chunk of (shared) data. A Sidre view 
-  includes notions of data type, offset, stride, etc. Thus, a chunk of data 
-  in memory can be interpreted conceptually in different ways.
+  includes description semantics to define data type, number of elements, 
+  offset, stride, etc. Thus, a chunk of data in memory can be interpreted 
+  conceptually in different ways.
 * Arbitrarily-organized data hierarchies. Many mesh-based application codes 
   organize data into hierarchies of contexts (e.g., domains, regions, blocks, 
-  node-centered, element-centered, subsets of elements containing different 
+  mesh centerings, subsets of elements containing different 
   materials, etc.). Sidre supports hierarchical, tree-based organizations 
   in a simple, flexible way.
 * APIs for C++, C, and Fortran along with mechanisms to insure inter-language
