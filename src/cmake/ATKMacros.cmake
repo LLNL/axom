@@ -334,11 +334,14 @@ macro(add_mpi_gtest)
    target_link_libraries( ${test_name} "${GTEST_LIBS}" )
    target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
+   set_target_properties(${test_name} PROPERTIES
+             RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY} )
+
    # setup custom test command to launch the test via mpi
    set(test_parameters ${MPIEXEC_NUMPROC_FLAG} ${arg_NUM_PROCS} "./${test_name}")
    add_test(NAME ${test_name}
             COMMAND ${MPIEXEC} ${test_parameters}
-            WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
+            WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY})
 
 endmacro()
 
