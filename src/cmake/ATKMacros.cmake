@@ -474,52 +474,60 @@ endmacro(copy_headers_target)
 
 
 ##------------------------------------------------------------------------------
-## add_compiler_flag( FLAG_LIST flagList     (required)
+## append_custom_compiler_flag( 
+##                    FLAGS_VAR flagsVar     (required)
 ##                    DEFAULT   defaultFlag  (optional)
 ##                    GNU       gnuFlag      (optional)
 ##                    CLANG     clangFlag    (optional)
 ##                    INTEL     intelFlag    (optional)
-##                    XLC       xlcFlag      (optional)
+##                    XL        xlFlag       (optional)
 ##                    MSVC      msvcFlag     (optional)
 ## )
 ##
-## Adds compiler-specific flags to a given variable of flags (
+## Appends compiler-specific flags to a given variable of flags
 ##
-## If a custom flag is given for the compiler, we use that,
-## Otherwise, we will use the DEFAULT flag.
+## If a custom flag is given for the current compiler, we use that,
+## Otherwise, we will use the DEFAULT flag (if present)
 ##------------------------------------------------------------------------------
-macro(add_compiler_flag)
+macro(append_custom_compiler_flag)
 
    set(options)
-   set(singleValueArgs FLAG_LIST DEFAULT GNU CLANG INTEL XLC MSVC)
+   set(singleValueArgs FLAGS_VAR DEFAULT GNU CLANG INTEL XL MSVC)
    set(multiValueArgs)
 
-   ## parse the arguments
+   # Parse the arguments
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
 
    # Sanity check for required keywords
-   if(NOT DEFINED arg_FLAG_LIST)
-      message( FATAL_ERROR "add_cxx_compiler_flag requires FLAG_LIST keyword, which provides the compiler flag list on which to operate." )
+   if(NOT DEFINED arg_FLAGS_VAR)
+      message( FATAL_ERROR "append_custom_compiler_flag macro requires FLAGS_VAR keyword and argument." )
    endif()
 
 
-   if(DEFINED arg_CLANG AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") )
-      set (${arg_FLAG_LIST} "${${arg_FLAG_LIST}} ${arg_CLANG} " )
-   elseif(DEFINED arg_XLC AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL") )
-      set (${arg_FLAG_LIST} "${${arg_FLAG_LIST}} ${arg_XLC} " )
-   elseif(DEFINED arg_INTEL AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel") )
-      set (${arg_FLAG_LIST} "${${arg_FLAG_LIST}} ${arg_INTEL} " )
-   elseif(DEFINED arg_GNU AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") )
-      set (${arg_FLAG_LIST} "${${arg_FLAG_LIST}} ${arg_GNU} " )
-   elseif(DEFINED arg_MSVC AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC") )
-      set (${arg_FLAG_LIST} "${${arg_FLAG_LIST}} ${arg_MSVC} " )
+   # Set the desired flags based on the compiler family   
+   if(DEFINED arg_CLANG AND COMPILER_FAMILY_IS_CLANG )
+      set (${arg_FLAGS_VAR} "${${arg_FLAGS_VAR}} ${arg_CLANG} " )
+      
+   elseif(DEFINED arg_XL AND COMPILER_FAMILY_IS_XL )
+      set (${arg_FLAGS_VAR} "${${arg_FLAGS_VAR}} ${arg_XL} " )
+      
+   elseif(DEFINED arg_INTEL AND COMPILER_FAMILY_IS_INTEL )
+      set (${arg_FLAGS_VAR} "${${arg_FLAGS_VAR}} ${arg_INTEL} " )
+
+   elseif(DEFINED arg_GNU AND COMPILER_FAMILY_IS_GNU )
+      set (${arg_FLAGS_VAR} "${${arg_FLAGS_VAR}} ${arg_GNU} " )
+      
+   elseif(DEFINED arg_MSVC AND COMPILER_FAMILY_IS_MSVC )
+      set (${arg_FLAGS_VAR} "${${arg_FLAGS_VAR}} ${arg_MSVC} " )
+      
    elseif(DEFINED arg_DEFAULT)
-      set (${arg_FLAG_LIST} "${${arg_FLAG_LIST}} ${arg_DEFAULT} ")
+      set (${arg_FLAGS_VAR} "${${arg_FLAGS_VAR}} ${arg_DEFAULT} ")
+      
    endif()   
 
-   #message(STATUS "After append -- ${arg_FLAG_LIST} --- ${${arg_FLAG_LIST}} ")
+   #message(STATUS "After append -- ${arg_FLAGS_VAR} --- ${${arg_FLAGS_VAR}} ")
 
-endmacro(add_compiler_flag)
+endmacro(append_custom_compiler_flag)
 

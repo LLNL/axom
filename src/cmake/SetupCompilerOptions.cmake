@@ -2,6 +2,36 @@
 # Setup compiler options
 ############################
 
+#####################################################
+# Set some variables to simplify determining compiler
+# Compiler string list from: 
+#   https://cmake.org/cmake/help/v3.0/variable/CMAKE_LANG_COMPILER_ID.html
+####################################################3
+
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") 
+    set(COMPILER_FAMILY_IS_GNU 1)
+    message(STATUS "Compiler family is GNU")
+    
+elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang") # For Clang or AppleClang
+    set(COMPILER_FAMILY_IS_CLANG 1)
+    message(STATUS "Compiler family is Clang")
+    
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "XL") 
+    set(COMPILER_FAMILY_IS_XL 1)
+    message(STATUS "Compiler family is XL")    
+    
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel") 
+    set(COMPILER_FAMILY_IS_INTEL 1)
+    message(STATUS "Compiler family is Intel")
+   
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC") 
+    set(COMPILER_FAMILY_IS_MSVC 1)
+    message(STATUS "Compiler family is MSVC")
+    
+endif()
+
+
+
 
 #############################################
 # Support extra compiler flags and defines
@@ -94,25 +124,23 @@ endif()
 if (ENABLE_CXX11)
    add_definitions("-DUSE_CXX11")
    
-   add_compiler_flag(FLAG_LIST CMAKE_CXX_FLAGS DEFAULT -std=c++11)
-   #add_cxx_compiler_flag(-std=c++11)
-   #if (NOT HAVE_CXX_FLAG_STD_CXX11)
-   #   MESSAGE(FATAL_ERROR "This compiler does not support the standard C++11 flag of '-std=c++11'.  Support for it must be added manually in SetupCompilerOptions.cmake.")
-   #endif()
+   append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS DEFAULT -std=c++11)
    set(HAVE_CXX_FLAG_STD_CXX11 TRUE)
+   
    MESSAGE(STATUS "Enabled C++11")  
 endif()
 
-################################
-# Compiler warnings and errors
-################################
+##################################################################
+# Additional compiler warnings and treatment of warnings as errors
+##################################################################
+
 set(langFlags "CMAKE_C_FLAGS" "CMAKE_CXX_FLAGS")
 
 if (ENABLE_GLOBALCOMPILERWARNINGS)
    MESSAGE(STATUS  "Enabling extra compiler warnings on all targets.")
 
    foreach(flagVar ${langFlags})   
-     add_compiler_flag(FLAG_LIST ${flagVar} 
+     append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
                      DEFAULT "-W -Wall -Wextra"
                      MSVC "/W4 /Wall /wd4619 /wd4668 /wd4820 /wd4571 /wd4710"
                      )
@@ -123,7 +151,7 @@ if (ENABLE_GLOBALCOMPILERWARNINGSASERRORS)
    MESSAGE(STATUS  "Enabling treatment of warnings as errors on all targets.")
 
    foreach(flagVar ${langFlags})   
-     add_compiler_flag(FLAG_LIST ${flagVar} 
+     append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
                      DEFAULT "-Werror"
                      MSVC "/WX"
                      )
@@ -160,21 +188,22 @@ else()
 endif()
  
 
-#########################################################################
-# Some additional compiler options that can be useful in various targets 
-#########################################################################
+##############################################################################
+# Setup some additional compiler options that can be useful in various targets
+# These are stored in their own variables.
+##############################################################################
 
 # Flag for disabling warnings about omp pragmas in the code
-add_compiler_flag(FLAG_LIST DISABLE_OMP_PRAGMA_WARNINGS
+append_custom_compiler_flag(FLAGS_VAR DISABLE_OMP_PRAGMA_WARNINGS
                   DEFAULT "-Wno-unknown-pragmas"
-                  XLC     "-qignprag=omp"
+                  XL      "-qignprag=omp"
                   )
 
 # Flag for disabling warnings about unused parameters.
 # Useful when we include external code.
-add_compiler_flag(FLAG_LIST DISABLE_UNUSED_PARAMETER_WARNINGS
+append_custom_compiler_flag(FLAGS_VAR DISABLE_UNUSED_PARAMETER_WARNINGS
                   DEFAULT "-Wno-unused-parameter"
-                  XLC     "-qnoinfo=par"
+                  XL      "-qnoinfo=par"
                   )
 
 # message(STATUS "value of DISABLE_OMP_PRAGMA_WARNINGS is ${DISABLE_OMP_PRAGMA_WARNINGS} ")
