@@ -28,7 +28,7 @@ namespace asctoolkit {
   - asctoolkit::slam::Set   
   - asctoolkit::slam::StaticConstantRelation
   - asctoolkit::slam::StaticVariableRelation
-  - \subpage utilities 
+  - asctoolkit::slam::Utilities 
   - \subpage slam_policies
   
   All class names in the slam component are in the namespace asctoolkit::slam.

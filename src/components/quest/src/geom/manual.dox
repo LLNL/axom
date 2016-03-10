@@ -15,7 +15,7 @@ namespace  quest {
   The Quest component .......:
   
   - quest::BoundingBox
-  - \subpage determinants "Determinants". Computes determinants of a given matrix. 
+  - quest::Determinants
   - quest::HyperSphere    
   - quest::Intersection
   - quest::MortonIndex

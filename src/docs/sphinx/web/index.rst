@@ -36,9 +36,7 @@ Components
 
 Doxygen
 
-  *  `CSToolkit <../../../doxygen/asc_toolkit_doxygen/html/index.html>`_
   *  `Common <../../../doxygen/common_doxygen/html/index.html>`_
-  *  `Lumberjack <../../../doxygen/lumberjack_doxygen/html/index.html>`_
   *  `Quest <../../../doxygen/quest_doxygen/html/index.html>`_
   *  `Sidre <../../../doxygen/sidre_doxygen/html/index.html>`_
   *  `SLAM <../../../doxygen/slam_doxygen/html/index.html>`_
