@@ -191,22 +191,26 @@ endif()
 ##############################################################################
 # Setup some additional compiler options that can be useful in various targets
 # These are stored in their own variables.
+# Usage: To add one of these sets of flags to some source files:
+#   get_source_file_property(_origflags <src_file> COMPILE_FLAGS)
+#   set_source_files_properties(<list_of_src_files> 
+#        PROPERTIES COMPILE_FLAGS "${_origFlags} ${<flags_variable}" )
 ##############################################################################
 
 # Flag for disabling warnings about omp pragmas in the code
-append_custom_compiler_flag(FLAGS_VAR DISABLE_OMP_PRAGMA_WARNINGS
+append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_OMP_PRAGMA_WARNINGS
                   DEFAULT "-Wno-unknown-pragmas"
                   XL      "-qignprag=omp"
                   )
 
 # Flag for disabling warnings about unused parameters.
 # Useful when we include external code.
-append_custom_compiler_flag(FLAGS_VAR DISABLE_UNUSED_PARAMETER_WARNINGS
+append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_PARAMETER_WARNINGS
                   DEFAULT "-Wno-unused-parameter"
                   XL      "-qnoinfo=par"
                   )
 
-# message(STATUS "value of DISABLE_OMP_PRAGMA_WARNINGS is ${DISABLE_OMP_PRAGMA_WARNINGS} ")
-# message(STATUS "value of DISABLE_UNUSED_PARAMETER_WARNINGS is ${DISABLE_UNUSED_PARAMETER_WARNINGS} ")
+# message(STATUS "value of ATK_DISABLE_OMP_PRAGMA_WARNINGS is ${ATK_DISABLE_OMP_PRAGMA_WARNINGS} ")
+# message(STATUS "value of ATK_DISABLE_UNUSED_PARAMETER_WARNINGS is ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS} ")
  
  
