@@ -47,7 +47,8 @@ set(lulesh_exe_source
 
 ## Ignore omp pragmas when openMP is not defined
 if ( NOT ENABLE_OPENMP )
-    set_source_files_properties(${lulesh_lib_sources} ${lulesh_exe_source} PROPERTIES COMPILE_FLAGS "${DISABLE_OMP_PRAGMA_WARNINGS}" )
+    set_source_files_properties(${lulesh_lib_sources} ${lulesh_exe_source} 
+        PROPERTIES COMPILE_FLAGS "${ATK_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
 
@@ -96,9 +97,9 @@ if ( ${buildOrigLulesh} )
         )
     
     # Add some extra configuration flags for MPI, OpenMP and allowing unused parameters (in 3rd party source code)
-    set(luleshExtraCompileFlags ${DISABLE_UNUSED_PARAMETER_WARNINGS})
+    set(luleshExtraCompileFlags ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS})
     if ( NOT ENABLE_OPENMP )
-        set(luleshExtraCompileFlags "${luleshExtraCompileFlags} ${DISABLE_OMP_PRAGMA_WARNINGS}")
+        set(luleshExtraCompileFlags "${luleshExtraCompileFlags} ${ATK_DISABLE_OMP_PRAGMA_WARNINGS}")
     endif()
 
     if ( ENABLE_MPI )
