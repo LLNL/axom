@@ -769,10 +769,6 @@ private:
   {
     EMPTY,           // View created with name only :
                      //    has no data or data description
-    DESCRIBED,       // View created with name and data description :
-                     //    applied is false
-    ALLOCATED,       // View created, described, and allocated (by view) :
-                     //    applied is true
     BUFFER_ATTACHED, // View has a buffer attached explicitly. :
                      //    applied may be true or false
     EXTERNAL,        // View holds pointer to external data (no buffer) :
