@@ -487,9 +487,9 @@ endmacro(copy_headers_target)
 ##------------------------------------------------------------------------------
 macro(add_compiler_flag)
 
-   #set(options )
+   set(options)
    set(singleValueArgs FLAG_LIST DEFAULT GNU CLANG INTEL XLC MSVC)
-   #set(multiValueArgs )
+   set(multiValueArgs)
 
    ## parse the arguments
    cmake_parse_arguments(arg
@@ -512,7 +512,7 @@ macro(add_compiler_flag)
       set (${arg_FLAG_LIST} "${${arg_FLAG_LIST}} ${arg_GNU} " )
    elseif(DEFINED arg_MSVC AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC") )
       set (${arg_FLAG_LIST} "${${arg_FLAG_LIST}} ${arg_MSVC} " )
-   else()
+   elseif(DEFINED arg_DEFAULT)
       set (${arg_FLAG_LIST} "${${arg_FLAG_LIST}} ${arg_DEFAULT} ")
    endif()   
 
