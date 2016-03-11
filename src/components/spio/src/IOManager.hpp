@@ -21,10 +21,6 @@
 #ifndef IOPARALLEL_HPP_
 #define IOPARALLEL_HPP_
 
-// Standard C++ headers
-#include <vector>
-#include <stack>
-
 #include "mpi.h"
 
 // Other CS Toolkit headers
