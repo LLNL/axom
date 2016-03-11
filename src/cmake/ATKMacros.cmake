@@ -183,7 +183,9 @@ macro(make_library)
 endmacro(make_library)
 
 ##------------------------------------------------------------------------------
-## make_executable( EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...]
+## make_executable( EXECUTABLE_NAME <name>
+##                  EXECUTABLE_SOURCE <source>
+##                  DEPENDS_ON [dep1 ...]
 ##                  USE_OPENMP < TRUE or FALSE (default)>
 ##                  [IS_EXAMPLE] [ADD_CTEST])
 ##

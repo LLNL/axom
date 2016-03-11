@@ -21,12 +21,9 @@ set_source_files_properties( ${lulesh_sources} PROPERTIES LANGUAGE "CXX" )
 add_executable( sidre_lulesh2  ${lulesh_sources} ${lulesh_headers})
 target_link_libraries( sidre_lulesh2 sidre conduit slic )
 
-if(ENABLE_FORTRAN)
-  set_target_properties(sidre_lulesh2 PROPERTIES
-      LINKER_LANGUAGE Fortran
-      RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUTPUT_DIRECTORY}
-  )
-endif()
+set_target_properties(sidre_lulesh2 PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUTPUT_DIRECTORY}
+)
 
 add_test( NAME sidre_lulesh2
           COMMAND sidre_lulesh2 -s 10
