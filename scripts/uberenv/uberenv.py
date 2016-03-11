@@ -64,10 +64,20 @@ from os.path import join as pjoin
 # Meta Package Name
 uberenv_pkg_name = "uberenv-asctoolkit"
 
-def sexe(cmd):
-    "Basic shell call helper."
-    print "[sexe:%s ]" % cmd
-    subprocess.call(cmd,shell=True)
+def sexe(cmd,ret_output=False,echo = False):
+    """ Helper for executing shell commands. """
+    if echo:
+        print "[exe: %s]" % cmd
+    if ret_output:
+        p = subprocess.Popen(cmd,
+                             shell=True,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
+        res =p.communicate()[0]
+        return p.returncode,res
+    else:
+        return subprocess.call(cmd,shell=True)
+
 
 def parse_args():
     "Parses args from command line"
@@ -85,14 +95,45 @@ def parse_args():
     # force rebuild of these packages
     parser.add_option("--force",
                       dest="force",
-                      default=uberenv_pkg_name,
-                      help="force rebuild of these packages")   
+                      default=False,
+                      action='store_true',
+                      help="force rebuild of uberenv packages")   
     # parse args
     opts, extras = parser.parse_args()
     # we want a dict b/c the values could 
     # be passed without using optparse
     opts = vars(opts)
     return opts, extras
+
+def spack_package_is_installed(pkg,spec):
+    # TODO: We need a better way to check this
+    # the term colors are underming me 
+    # ( I was trying to check for z installed pacakges, with z > 0
+    rcode, output = sexe("spack/bin/spack find " + pkg + " " + spec,
+                         ret_output=True,echo=True)
+    lines = output.split("\n")
+    return len(lines) > 1
+
+def spack_package_deps(pkg,spec):
+    # TODO: In the future, we will can use uninstall by hash
+    # and we won't need this
+    rcode, output = sexe("spack/bin/spack find --deps %s %s" % (pkg,spec),
+                         ret_output=True,
+                         echo=True)
+    lines = [ l.strip() for l in output.split("\n") if l.strip() != ""] 
+    lines = [ l[1:] for l in lines if l.startswith("^")]
+    # remove term colors that spack uses
+    lines = [ l.replace("\x1b[0;36m","") for l in lines]
+    lines = [ l.replace("\x1b[0;94m","") for l in lines]
+    lines = [ l.replace("\x1b[0m","") for l in lines]
+    pkgs = set(lines)
+    res = [ pkg + spec for pkg in pkgs]
+    return res    
+
+def spack_uninstall_and_clean(pkg):
+    print "[forcing uninstall of %s]" % pkg
+    sexe("spack/bin/spack uninstall -f %s" % pkg,echo=True)
+    sexe("spack/bin/spack clean %s" % pkg,echo=True)
 
 def uberenv_compilers_yaml_file():
     # path to compilers.yaml, which we will for compiler setup for spack
@@ -119,7 +160,7 @@ def patch_spack(spack_dir,compilers_yaml,pkgs):
     if not os.path.isdir(spack_etc):
         os.mkdir(spack_etc)
     sexe("cp %s spack/etc/spack" % compilers_yaml)
-    dest_spack_pkgs = pjoin(spack_dir,"var","spack","packages")
+    dest_spack_pkgs = pjoin(spack_dir,"var","spack","repos","builtin","packages")
     # hot-copy our packages into spack
     sexe("cp -Rf %s %s" % (pkgs,dest_spack_pkgs))
 
@@ -158,26 +199,23 @@ def main():
         print "[info: destination '%s' already exists]"  % dest_dir
     if os.path.isdir(dest_spack):
         print "[info: destination '%s' already exists]"  % dest_spack
-    if not opts["force"].count(uberenv_pkg_name) == 1:
-         opts["force"] =  opts["force"] + " %s" % uberenv_pkg_name
     compilers_yaml = uberenv_compilers_yaml_file()
     # clone spack into the dest path
     os.chdir(dest_dir)
     sexe("git clone -b develop https://github.com/scalability-llnl/spack.git")
     # twist spack's arms 
     patch_spack(dest_spack,compilers_yaml,pkgs)
-    # for things we want to force: clean up stages and uninstall them
-    force = [ f + opts["spec"] for f in opts["force"].split()]
-    force = " ".join(force)
-    print "[forcing uninstall of %s]" % force
-    sexe("spack/bin/spack uninstall %s" % force)
-    sexe("spack/bin/spack clean %s" % force)
+    if opts["force"]:
+        deps = spack_package_deps(uberenv_pkg_name,opts["spec"])
+        for dep in deps:
+            spack_uninstall_and_clean(dep)
+    if spack_package_is_installed(uberenv_pkg_name,opts["spec"]):
+        spack_uninstall_and_clean(uberenv_pkg_name + " " + opts["spec"])
     # use the uberenv package to trigger the right builds and build an host-config.cmake file
     sexe("spack/bin/spack install " + uberenv_pkg_name + " " + opts["spec"])
 
 
 if __name__ == "__main__":
     main()
-
 
 
