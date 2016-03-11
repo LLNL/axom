@@ -9,19 +9,7 @@ import subprocess
 import argparse
 import platform
 import shutil
-
-# Helper function to get SYS_TYPE on LC systems.
-# Does not require SYS_TYPE to be set in environment (making some automated scripts easier )
-def get_systype():
-    import os
-    lc_home_config_filename = "/etc/home.config"
-    if os.path.exists(lc_home_config_filename):
-        file_handle = open(lc_home_config_filename, "r")
-        content = file_handle.readlines()
-        for line in content:
-            if line.startswith("SYS_TYPE"):
-                return line.split(" ")[1].strip()
-    return None
+import helpers
 
 parser = argparse.ArgumentParser(description="Configure cmake build.")
 
@@ -85,7 +73,7 @@ args = parser.parse_args()
 ########################
 platform_info = ""
 scriptsdir = os.path.dirname( os.path.abspath(sys.argv[0]) )
-systype = get_systype()
+systype = helpers.get_systype()
 
 if args.hostconfig != "":
     cachefile = os.path.abspath(args.hostconfig)
@@ -157,13 +145,8 @@ os.makedirs(installpath)
 # Build CMake command line
 ############################
 
-cmakeline = "cmake"
-# Use toolkit cmake installation, if present.
-if systype:
-    toolkit_cmake = os.path.join("/usr/gapps/asctoolkit/tools", systype, "cmake", "bin", "cmake")
-    if os.path.exists(toolkit_cmake):
-        print "Detected toolkit cmake installation at '%s'" % toolkit_cmake
-        cmakeline = toolkit_cmake
+cmakeline = helpers.extract_cmake_location(cachefile)
+assert cmakeline, "Host config file doesn't contain valid cmake location, value was %s" % cmakeline
 
 # Add cache file option
 cmakeline += " -C %s" % cachefile
@@ -185,6 +168,14 @@ if args.cmakeoption:
     cmakeline += " -D" + args.cmakeoption
 
 cmakeline += " %s/../src " % scriptsdir
+
+# Dump the cmake command to file for convenience
+cmdfile = open("cmake_cmd", "w")
+cmdfile.write(cmakeline)
+cmdfile.close()
+import stat
+st = os.stat("cmake_cmd")
+os.chmod("cmake_cmd", st.st_mode | stat.S_IEXEC)
 
 ############################
 # Run CMake
