@@ -67,7 +67,6 @@ inline bool nameIsValid(const std::string& name)
 
 enum DataTypeId
 {
-  EMPTY_ID = SIDRE_EMPTY_ID,
   INT8_ID  = SIDRE_INT8_ID,
   INT16_ID = SIDRE_INT16_ID,
   INT32_ID = SIDRE_INT32_ID,
