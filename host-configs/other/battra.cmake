@@ -2,7 +2,7 @@
 # uberenv host-config for asctoolkit
 #######
 # cmake from uberenv
-# cmake exectuable path: /home/taylor16/asctoolkit/thirdparty_libs/spack/opt/unknown_arch/gcc@4.8.3/cmake@3.2.2/bin/cmake
+# cmake executable path: /home/taylor16/asctoolkit/thirdparty_libs/spack/opt/unknown_arch/gcc@4.8.3/cmake@3.2.2/bin/cmake
 
 # python from uberenv
 set(PYTHON_EXECUTABLE "/home/taylor16/asctoolkit/thirdparty_libs/spack/opt/unknown_arch/gcc@4.8.3/python@2.7.8/bin/python" CACHE PATH "")

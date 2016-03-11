@@ -15,7 +15,7 @@ set(CMAKE_Fortran_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bggfortran"
 # uberenv host-config for asctoolkit
 #######
 # cmake from uberenv
-# cmake exectuable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/cmake@3.2.2/bin/cmake
+# cmake executable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/cmake@3.2.2/bin/cmake
 
 # python from uberenv
 #set(PYTHON_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/python@2.7.8/bin/python" CACHE PATH "")

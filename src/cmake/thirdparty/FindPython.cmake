@@ -103,7 +103,7 @@ FUNCTION(PYTHON_ADD_DISTUTILS_SETUP target_name)
             build
             install
               --install-purelib=${CMAKE_Python_MODULE_DIRECTORY}
-              --install-scripts=${EXECUTABLE_OUTPUT_PATH}
+              --install-scripts=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
             COMMAND ${CMAKE_COMMAND} -E touch ${timestamp}
             DEPENDS  ${setup_file} ${ARGN}
     )

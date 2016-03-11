@@ -53,11 +53,22 @@ if (ENABLE_FORTRAN)
   endforeach()
 endif()
 
+
+################
+# Add OpenMP tests
+################
 if (ENABLE_OPENMP)
-    make_executable( EXECUTABLE_NAME openmp_smoke EXECUTABLE_SOURCE openmp_smoke.cpp WITH_OPENMP ADD_CTEST)
+    make_executable( EXECUTABLE_NAME openmp_smoke 
+                     EXECUTABLE_SOURCE openmp_smoke.cpp 
+                     USE_OPENMP TRUE 
+                     ADD_CTEST)
 endif()
 
 
-
-    
+################
+# Add MPI tests
+################
+if (ENABLE_MPI)
+    add_mpi_gtest(TEST_SOURCE mpi_smoke.cpp NUM_PROCS 2)
+endif()
 

@@ -79,7 +79,7 @@ TEST(gtest_common_fileUtilities,common_fileUtil_pathExists)
   std::string fullFile = presentDirWithSlash + presentFile;
 
   bool valid = pathExists( fullFile );
-  for(int i=0 ; i < 3 ; ++i)
+  for(int i=0 ; i < 4 ; ++i)
   {
     fullFile = "../" + fullFile;
     valid = valid || pathExists( fullFile );

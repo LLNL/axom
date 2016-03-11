@@ -2,7 +2,7 @@
 # uberenv host-config for asctoolkit
 #######
 # cmake from uberenv
-# cmake exectuable path: /Users/harrison37/Work/asctoolkit/uberenv_libs/spack/opt/macosx_10.9_x86_64/clang@3.4svn/cmake@3.2.2/bin/cmake
+# cmake executable path: /Users/harrison37/Work/asctoolkit/uberenv_libs/spack/opt/macosx_10.9_x86_64/clang@3.4svn/cmake@3.2.2/bin/cmake
 
 # conduit from uberenv
 set(CONDUIT_DIR "/Users/harrison37/Work/asctoolkit/uberenv_libs/spack/opt/macosx_10.9_x86_64/clang@3.4svn/conduit@github-6758ccf0" CACHE PATH "")

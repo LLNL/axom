@@ -5,7 +5,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake exectuable path: /home/taylor16/tpl/v2/spack/opt/spack/x86_64/gcc-4.9.3/cmake-3.2.2-jp3rjtj6rx7upaun3ouujnhmkumzacfz/bin/cmake
+# cmake executable path: /home/taylor16/tpl/v2/spack/opt/spack/x86_64/gcc-4.9.3/cmake-3.2.2-jp3rjtj6rx7upaun3ouujnhmkumzacfz/bin/cmake
 
 #######
 # using gcc@4.9.3 compiler spec

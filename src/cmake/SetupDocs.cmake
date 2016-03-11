@@ -51,29 +51,6 @@ endif()
 
 
 if(SPHINX_FOUND)
-    #html_theme = 'classic'
-    # new 'default' theme is now called 'alabastor'
-    #html_theme = 'alabaster'
-    # Trying out some others...(I didn't explore options for each)
-    # These are OK:
-    #html_theme = 'bizstyle'
-    #html_theme = 'agogo'
-    #html_theme = 'scrolls'
-    #html_theme = 'sphinx_rtd_theme'  (section highlighting is weird)
-    # I don't like these:
-    #html_theme = 'pyramid'
-    #html_theme = 'nature'
-    #html_theme = 'haiku'
-    #html_theme = 'sphinxdoc'
-    #
-    # Theme options are theme-specific and customize the look and feel of a theme
-    # further.  For a list of options available for each theme, see the
-    # documentation.
-    #html_theme =
-    #
-    # Add any paths that contain custom themes here, relative to this directory.
-    #html_theme_path = []
-
     set(SPHINX_HTML_THEME "
 try:
     import sphinx_rtd_theme
