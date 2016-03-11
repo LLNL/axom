@@ -116,7 +116,7 @@ This is declared at the top of the 'cmake' configuration, and provides a central
 +-------------------------------------+-------------------------------+--------+
 |ENABLE_CODECOV                       |Enable code coverage via gcov  |  ON    |
 +-------------------------------------+-------------------------------+--------+
-|ENABLE_CXX11                         |Enables C++11 language support |  OFF   | 
+|ENABLE_CXX11                         |Enables C++11 language support |  ON    | 
 +-------------------------------------+-------------------------------+--------+
 |ENABLE_FORTRAN                       |Enables Fortran compiler       |  ON    |
 |                                     |support                        |        |
@@ -129,7 +129,7 @@ This is declared at the top of the 'cmake' configuration, and provides a central
 +-------------------------------------+-------------------------------+--------+
 |ENABLE_MPI                           |ENABLE MPI                     | OFF    |
 +-------------------------------------+-------------------------------+--------+
-|ENABLE_OMP                           |ENABLE OpenMP                  | OFF    |
+|ENABLE_OPENMP                        |ENABLE OpenMP                  | OFF    |
 +-------------------------------------+-------------------------------+--------+
 |ENABLE_BENCHMARK                     |ENABLE google benchmark        | OFF    |
 +-------------------------------------+-------------------------------+--------+
