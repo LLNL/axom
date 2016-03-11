@@ -54,7 +54,7 @@ endif()
 
 make_library( LIBRARY_NAME      slamLuleshLib
               LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
-              USE_OPENMP ${ENABLE_OMP} 
+              USE_OPENMP ${ENABLE_OPENMP} 
               ) 
 
 add_dependencies(slamLuleshLib slam)
@@ -66,7 +66,7 @@ make_executable( EXECUTABLE_NAME    slam_Lulesh
                     slic
                     slam 
                     slamLuleshLib
-                  USE_OPENMP ${ENABLE_OMP} 
+                  USE_OPENMP ${ENABLE_OPENMP} 
                   ADD_CTEST
                   ) 
 
