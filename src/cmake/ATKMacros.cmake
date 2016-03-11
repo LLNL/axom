@@ -343,7 +343,7 @@ macro(add_mpi_gtest)
             COMMAND ${MPIEXEC} ${test_parameters}
             WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY})
 
-endmacro()
+endmacro(add_mpi_gtest)
 
 
 ##------------------------------------------------------------------------------

@@ -109,6 +109,8 @@ macro(setup_openmp_target)
 
     set_target_properties( ${arg_BUILD_TARGET}
                            PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
+    set_target_properties( ${arg_BUILD_TARGET}
+                           PROPERTIES LINK_FLAGS ${OpenMP_CXX_FLAGS} )
 
   endif()
 
