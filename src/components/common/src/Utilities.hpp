@@ -22,14 +22,6 @@
 #ifndef UTILITIES_HPP_
 #define UTILITIES_HPP_
 
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <cstdlib>
-
-#ifdef USE_MPI
-#include "mpi.h"
-#endif
 #include <cmath>
 #include <algorithm>
 
