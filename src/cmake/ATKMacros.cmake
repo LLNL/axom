@@ -200,10 +200,14 @@ endmacro(make_library)
 ## argument is supplied, the openmp compiler flag will be added to the compiler 
 ## command and the -DUSE_OPENMP, will be included to the compiler definition.
 ##
+## IS_EXAMPLE will add the executable into the example directory.
+##
 ## Optionally, "ADD_CTEST" can be supplied as an argument. When this argument
 ## is supplied, the executable is added as a ctest with no command line options.
 ## If you need command line options for your ctest, add it manually with 
-## ADD_TEST().
+## ADD_TEST(). The execuable will be created in the test directory.
+## If IS_EXAMPLE is also set, then the executable will be in the example directory
+## but it will be run with 'make test'.
 ##------------------------------------------------------------------------------
 macro(make_executable)
 
@@ -293,13 +297,16 @@ macro(add_gtest)
 
    add_executable( ${test_name} ${arg_TEST_SOURCE} )
 
+   set_target_properties(${test_name} PROPERTIES
+       RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY} )
+
    target_include_directories(${test_name} PRIVATE "${GTEST_INCLUDES}")
    target_link_libraries( ${test_name} "${GTEST_LIBS}" )
    target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
    add_test( NAME ${test_name}
              COMMAND ${test_name}
-             WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+             WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
              )
 
    # add any passed source files to the running list for this project
@@ -421,16 +428,19 @@ macro(add_fortran_test)
        set(test_name ${test_name_base}_ftest)
        add_executable( ${test_name} ${arg_TEST_SOURCE} )
 
+       set_target_properties(${test_name} PROPERTIES
+           LINKER_LANGUAGE Fortran
+	   Fortran_FORMAT "FREE"
+           RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+       )
+
        target_include_directories( ${test_name} PUBLIC 
                                    ${CMAKE_Fortran_MODULE_DIRECTORY} )
        target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
-       set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE Fortran)
-       set_target_properties(${test_name} PROPERTIES Fortran_FORMAT "FREE")
-
         add_test( NAME ${test_name}
                   COMMAND ${test_name}
-                  WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+                  WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
                   )
        #TODO: we aren't tracking / grouping fortran sources.
     endif(ENABLE_FORTRAN)
