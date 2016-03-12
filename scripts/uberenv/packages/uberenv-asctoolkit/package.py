@@ -68,7 +68,7 @@ class UberenvAsctoolkit(Package):
         cfg.write("##################################\n\n")
         # show path to cmake for reference
         cfg.write("# cmake from uberenv\n")
-        cfg.write("# cmake exectuable path: %s\n\n" % cmake_exe)
+        cfg.write("# cmake executable path: %s\n\n" % cmake_exe)
 
         # compiler settings
         cfg.write("#######\n")
