@@ -68,7 +68,7 @@ class UberenvAsctoolkit(Package):
         cfg.write("##################################\n\n")
         # show path to cmake for reference
         cfg.write("# cmake from uberenv\n")
-        cfg.write("# cmake executable path: %s\n\n" % cmake_exe)
+        cfg.write("# cmake exectuable path: %s\n\n" % cmake_exe)
 
         # compiler settings
         cfg.write("#######\n")
@@ -90,7 +90,7 @@ class UberenvAsctoolkit(Package):
         cfg.write('set(CONDUIT_DIR "%s" CACHE PATH "")\n\n' % conduit_dir)
 
         cfg.write("# doxygen from uberenv\n")
-        cfg.write("# doxygen executable path: %s\n\n" % doxygen_exe)
+        cfg.write('set(DOXYGEN_EXECUTABLE "%s" CACHE PATH "")\n\n' % doxygen_exe)
 
         cfg.write("# python from uberenv\n")
         cfg.write('set(PYTHON_EXECUTABLE "%s" CACHE PATH "")\n\n' % python_exe)
@@ -113,7 +113,7 @@ class UberenvAsctoolkit(Package):
             cfg.write('set(LCOV_PATH "%s/usr/bin/lcov" CACHE PATH "")\n\n' % spec['lcov'].prefix)
             cfg.write('set(GENHTML_PATH "%s/usr/bin/genhtml" CACHE PATH "")\n\n' % spec['lcov'].prefix)
         else:
-            cfg.write("# lcov and genhtml not build by uberenv\n\n")
+            cfg.write("# lcov and genhtml not built by uberenv\n\n")
 
         cfg.write("##################################\n")
         cfg.write("# end uberenv host-config\n")
@@ -123,6 +123,7 @@ class UberenvAsctoolkit(Package):
         mkdirp(prefix)
         install(host_cfg_fname,prefix)
         print "[result host-config file: %s]" % host_cfg_fname
+
 
 
 
