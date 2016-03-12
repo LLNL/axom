@@ -200,9 +200,15 @@ def main():
     if os.path.isdir(dest_spack):
         print "[info: destination '%s' already exists]"  % dest_spack
     compilers_yaml = uberenv_compilers_yaml_file()
-    # clone spack into the dest path
+
     os.chdir(dest_dir)
-    sexe("git clone -b develop https://github.com/scalability-llnl/spack.git")
+    if not os.path.isdir("spack"):
+        # clone spack into the dest path
+        sexe("git clone -b develop https://github.com/llnl/spack.git")
+    else:
+        # if we already have a checkout, clean and update it
+        sexe("git clean -f")
+        sexe("git pull")
     # twist spack's arms 
     patch_spack(dest_spack,compilers_yaml,pkgs)
     if opts["force"]:
@@ -210,9 +216,9 @@ def main():
         for dep in deps:
             spack_uninstall_and_clean(dep)
     if spack_package_is_installed(uberenv_pkg_name,opts["spec"]):
-        spack_uninstall_and_clean(uberenv_pkg_name + " " + opts["spec"])
+        spack_uninstall_and_clean(uberenv_pkg_name + "%" + opts["spec"])
     # use the uberenv package to trigger the right builds and build an host-config.cmake file
-    sexe("spack/bin/spack install " + uberenv_pkg_name + " " + opts["spec"])
+    sexe("spack/bin/spack install " + uberenv_pkg_name + "%" + opts["spec"],echo=True)
 
 
 if __name__ == "__main__":
