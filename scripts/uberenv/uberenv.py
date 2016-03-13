@@ -55,14 +55,13 @@ import subprocess
 import shutil
 import socket
 import platform
-
-from os import environ as env
+import json
 
 from optparse import OptionParser
+
+from os import environ as env
 from os.path import join as pjoin
 
-# Meta Package Name
-uberenv_pkg_name = "uberenv-asctoolkit"
 
 def sexe(cmd,ret_output=False,echo = False):
     """ Helper for executing shell commands. """
@@ -97,7 +96,14 @@ def parse_args():
                       dest="force",
                       default=False,
                       action='store_true',
-                      help="force rebuild of uberenv packages")   
+                      help="force rebuild of uberenv packages")
+    # a file that holds settings for a specific project 
+    # using uberenv.py 
+    parser.add_option("--package_json",
+                      dest="package_json",
+                      default=pjoin(uberenv_script_dir(),"uberenv_package.json"),
+                      help="uberenv package info json file")
+
     # parse args
     opts, extras = parser.parse_args()
     # we want a dict b/c the values could 
@@ -105,11 +111,19 @@ def parse_args():
     opts = vars(opts)
     return opts, extras
 
+def uberenv_script_dir():
+    # returns the directory of the uberenv.py script
+    return os.path.dirname(os.path.abspath(__file__))
+
+def uberenv_package_info(package_json):
+    # reads package info from json file
+    return json.load(open(package_json))
+
 def spack_package_is_installed(pkg,spec):
     # TODO: We need a better way to check this
-    # the term colors are underming me 
+    # the term colors are undermining me 
     # ( I was trying to check for z installed pacakges, with z > 0
-    rcode, output = sexe("spack/bin/spack find " + pkg + " " + spec,
+    rcode, output = sexe("spack/bin/spack find " + pkg + spec,
                          ret_output=True,echo=True)
     lines = output.split("\n")
     return len(lines) > 1
@@ -137,7 +151,7 @@ def spack_uninstall_and_clean(pkg):
 
 def uberenv_compilers_yaml_file():
     # path to compilers.yaml, which we will for compiler setup for spack
-    compilers_yaml = pjoin(os.path.split(os.path.abspath(__file__))[0],
+    compilers_yaml = pjoin(uberenv_script_dir(),
                            "compilers.yaml")
     if not os.path.isfile(compilers_yaml):
         print "[failed to find uberenv 'compilers.yaml' file]"
@@ -168,10 +182,16 @@ def patch_spack(spack_dir,compilers_yaml,pkgs):
 def main():
     """
     clones and runs spack to setup our third_party libs and
-    creates a host-config.cmake file that can be used by %s.
-    """ % uberenv_pkg_name
+    creates a host-config.cmake file that can be used by 
+    our project.
+    """ 
     # parse args from command line
     opts, extras = parse_args()
+    
+    pkg_info = uberenv_package_info(opts["package_json"])
+    print pkg_info
+    uberenv_pkg_name = pkg_info["uberenv_package_name"]
+    
     # setup osx deployment target
     print "[uberenv options: %s]" % str(opts)
     if "darwin" in platform.system().lower():
@@ -216,9 +236,9 @@ def main():
         for dep in deps:
             spack_uninstall_and_clean(dep)
     if spack_package_is_installed(uberenv_pkg_name,opts["spec"]):
-        spack_uninstall_and_clean(uberenv_pkg_name + "%" + opts["spec"])
+        spack_uninstall_and_clean(uberenv_pkg_name + opts["spec"])
     # use the uberenv package to trigger the right builds and build an host-config.cmake file
-    sexe("spack/bin/spack install " + uberenv_pkg_name + "%" + opts["spec"],echo=True)
+    sexe("spack/bin/spack install " + uberenv_pkg_name + opts["spec"],echo=True)
 
 
 if __name__ == "__main__":
