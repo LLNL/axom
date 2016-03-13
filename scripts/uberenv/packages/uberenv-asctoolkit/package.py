@@ -11,10 +11,13 @@ class UberenvAsctoolkit(Package):
     # hash for dummy tarfile
     version('0.1', '8d378ef62dedc2df5db447b029b71200')
     
-    # all of theses are custom
-    depends_on("cmake")
+    # standard spack packages
     depends_on("doxygen")
     depends_on("python")
+    depends_on("uncrustify")
+    
+    # custom spack packages
+    depends_on("cmake~ncurses~openssl@3.3.1")
     depends_on("conduit")
     depends_on("py-sphinx")
     depends_on("py-breathe")
@@ -29,12 +32,9 @@ class UberenvAsctoolkit(Package):
     depends_on("boost-headers")
     depends_on("sparsehash-headers")
 
-    # this was pushed to develop, but not yet in the diy branch
-    depends_on("uncrustify")
-
     # use dummy tarfile to avoid downloads
     def url_for_version(self, version):
-        dummy_tar_path =  os.path.abspath(pjoin(os.path.split(__file__)[0]))
+        dummy_tar_path =  os.path.abspath(pjoin(os.path.dirname(__file__)))
         dummy_tar_path = pjoin(dummy_tar_path,"uberenv-asctoolkit.tar.gz")
         url      = "file://" + dummy_tar_path
         return url
