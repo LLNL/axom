@@ -238,7 +238,7 @@ def main():
     if spack_package_is_installed(uberenv_pkg_name,opts["spec"]):
         spack_uninstall_and_clean(uberenv_pkg_name + opts["spec"])
     # use the uberenv package to trigger the right builds and build an host-config.cmake file
-    sexe("spack/bin/spack install " + uberenv_pkg_name + opts["spec"],echo=True)
+    sexe("spack/bin/spack -d install " + uberenv_pkg_name + opts["spec"],echo=True)
 
 
 if __name__ == "__main__":
