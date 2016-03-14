@@ -12,4 +12,4 @@ chmod -f -R g+rwX ${LC_TPL_PATH}/spack ${LC_TPL_PATH}/*.cmake
 # allow everyone else to read, and exec
 echo "Allowing everyone read and execute on $LC_TPL_PATH/spack, $LC_TPL_PATH/*.cmake"
 chmod -f -R a+rX ${LC_TPL_PATH}/spack ${LC_TPL_PATH}/*.cmake
-
+echo "Finished changing permissions for $LC_TPL_PATH"
