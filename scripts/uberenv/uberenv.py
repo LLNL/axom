@@ -220,15 +220,18 @@ def main():
     if os.path.isdir(dest_spack):
         print "[info: destination '%s' already exists]"  % dest_spack
     compilers_yaml = uberenv_compilers_yaml_file()
-
-    os.chdir(dest_dir)
     if not os.path.isdir("spack"):
+        print "[info: cloning spack from github]"
+        os.chdir(dest_dir)
         # clone spack into the dest path
         sexe("git clone -b develop https://github.com/llnl/spack.git")
     else:
+        print "[info: updating spack from github]"
         # if we already have a checkout, clean and update it
+        os.chdir(pjoin(dest_dir,"spack"))
         sexe("git clean -f")
-        sexe("git pull")
+        sexe("git pull origin develop")
+    os.chdir(dest_dir)
     # twist spack's arms 
     patch_spack(dest_spack,compilers_yaml,pkgs)
     if opts["force"]:
