@@ -11,6 +11,8 @@ import platform
 import shutil
 import helpers
 
+default_compiler = "gcc@4.9.3"
+
 parser = argparse.ArgumentParser(description="Configure cmake build.")
 
 parser.add_argument("-bp",
@@ -27,7 +29,7 @@ parser.add_argument("-ip",
 parser.add_argument("-c",
                     "--compiler",
                     type=str,
-                    default="gnu",
+                    default=default_compiler,
                     help="compiler to use.")
 
 parser.add_argument("-bt",
@@ -65,9 +67,6 @@ parser.add_argument("-hc",
 
 args = parser.parse_args()
 
-
-
-
 ########################
 # Find CMake Cache File
 ########################
@@ -82,12 +81,16 @@ if args.hostconfig != "":
         platform_info = platform_info[:-6]
     print "Using user specified host config file: '%s'." % cachefile
 else:
-    # Check if 'SYS_TYPE' exists, and look for cache file there.
+    # If not specified, then check for a host-config file for this SYS_TYPE with default compiler.
     cachefile = scriptsdir.replace("scripts","host-configs")
     if systype:
         platform_info = systype.split("_")[0]
-        cachefile = os.path.join( cachefile, platform_info, "%s.cmake" % args.compiler ) 
-        print "Detected LC SYS_TYPE '%s'.  Using host config file: '%s'." % ( systype, cachefile )
+        import glob
+        names = glob.glob(cachefile + "/*" + systype + "-" + args.compiler + ".cmake")
+        assert len(names) <= 1, "Could not determine correct host-config file for SYS_TYPE %s, more than one file matched this SYS_TYPE and compiler." % systype
+        assert len(names) > 0, "Could not find host-config file for SYS_TYPE %s and compiler %s" % (systype, args.compiler)
+        cachefile = os.path.join( cachefile, names[0] )
+        print "Found host config file for SYS_TYPE %s, compiler %s: %s" % (systype, args.compiler, cachefile)
     else:
         platform_info = platform.node()
         cachefile = os.path.join(cachefile, "other", "%s.cmake" % platform_info )
