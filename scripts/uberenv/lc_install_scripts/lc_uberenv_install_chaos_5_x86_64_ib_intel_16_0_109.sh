@@ -1,5 +1,5 @@
 #!/bin/bash
 ###############################################################################
-# use uberenv to build third party libs on chaos 5 using gcc 4.7.1
+# use uberenv to build third party libs on chaos 5 using gcc 16.0.0
 ###############################################################################
-./lc_uberenv_install.sh -c gcc@4.7.1 $@
+./lc_uberenv_install.sh -c intel@16.0.109 $@
