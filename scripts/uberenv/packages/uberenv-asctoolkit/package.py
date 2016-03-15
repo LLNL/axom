@@ -90,7 +90,7 @@ class UberenvAsctoolkit(Package):
         cfg.write('set(CONDUIT_DIR "%s" CACHE PATH "")\n\n' % conduit_dir)
 
         cfg.write("# doxygen from uberenv\n")
-        cfg.write("# doxygen executable path: %s\n\n" % doxygen_exe)
+        cfg.write('set(DOXYGEN_EXECUTABLE "%s" CACHE PATH "")\n\n' % doxygen_exe)
 
         cfg.write("# python from uberenv\n")
         cfg.write('set(PYTHON_EXECUTABLE "%s" CACHE PATH "")\n\n' % python_exe)
