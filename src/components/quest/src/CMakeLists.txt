@@ -76,7 +76,12 @@ set( quest_sources
     stl/STLReader.cpp
     
    )
-   
+
+if (ENABLE_MPI)
+  list(APPEND quest_headers stl/PSTLReader.hpp)
+  list(APPEND quest_sources stl/PSTLReader.cpp)
+endif()
+
 copy_headers_target( ${PROJECT_NAME} "${quest_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
                      
