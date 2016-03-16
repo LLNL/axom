@@ -37,3 +37,16 @@ make_executable( EXECUTABLE_NAME quest_octree_driver
                     slam
                  IS_EXAMPLE
                     )
+
+if (ENABLE_MPI)
+
+  make_executable( EXECUTABLE_NAME quest_interface 
+                   EXECUTABLE_SOURCE quest_interface.cpp
+                   DEPENDS_ON 
+                       quest
+                       common
+                       slic
+                   IS_EXAMPLE
+                      )
+                      
+endif()
