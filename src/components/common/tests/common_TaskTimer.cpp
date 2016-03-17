@@ -32,19 +32,44 @@ void sleep(int numSeconds)
 #include <unistd.h> // for sleep()
 #endif
 
-TEST(gtest_common_TaskTimer, timer_check )
+TEST(gtest_common_Timer, timer_check )
+{
+  asctoolkit::utilities::Timer t;
+
+  SLIC_INFO("Checking that a newly constructed timer indicates 0 time elapsed");
+  EXPECT_EQ(0., t.elapsed());
+
+  t.start();
+
+  sleep( 1 );
+
+  t.stop();
+
+  SLIC_INFO("Simple test for elapsed time in different units.");
+  EXPECT_GT( t.elapsedTimeInMicroSec(), t.elapsedTimeInMilliSec() );
+  EXPECT_GT( t.elapsedTimeInMilliSec(), t.elapsedTimeInSec() );
+  EXPECT_EQ( t.elapsed(), t.elapsedTimeInSec() );
+
+
+  SLIC_INFO("Testing that reset() indicates zero elapsed time.");
+  t.reset();
+  ASSERT_DOUBLE_EQ( 0., t.elapsed());
+}
+
+
+TEST(gtest_common_Timer, timer_check_duration )
 {
   asctoolkit::utilities::Timer t;
   t.start();
 
-  sleep( 2 );
+  sleep( 1 );
 
   t.stop();
   double e = t.elapsed();
   SLIC_INFO( "Elapsed: " << e );
 
-  EXPECT_GE( e, 2.0 );
-  EXPECT_LT( e, 3.0 );
+  EXPECT_GE( e, 1.0 );
+  EXPECT_LT( e, 2.0 );
 }
 
 //------------------------------------------------------------------------------

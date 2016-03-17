@@ -8,35 +8,52 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/*!
- *******************************************************************************
- * \file TaskTimer.hpp
- *
- * \date Feb 5, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
-
-#ifdef USE_CXX11
-  #include <chrono>
-#else
-  #include <sys/time.h>
-#endif
-
-
 
 #ifndef TIMER_HPP_
 #define TIMER_HPP_
 
+#ifdef USE_CXX11
+  #include "common/ChronoTimer.hpp"
+#else
+  #include "common/TimeofdayTimer.hpp"
+#endif
+
+namespace {
+#ifdef USE_CXX11
+  typedef asctoolkit::utilities::detail::ChronoTimer HighPrecisionTimer;
+#else
+  typedef asctoolkit::utilities::detail::TimeofdayTimer HighPrecisionTimer;
+#endif
+}
+
+
+
 namespace asctoolkit {
-
 namespace utilities {
-
 
 /*!
  *******************************************************************************
- * \brief A simple Timer class used to measure execution time.
+ * \brief A simple Timer class to measure execution time.
+ *
+ * \note The actual timing functionality is implemented using a HighPrecisionTimer
+ *  instance.  These are located in the detail namespace using the chrono library in C++11
+ *  and glibc gettimeofday() otherwise.
+ *
+ *  \note We might want to extend the functionality of the timer class
+ *   by making HighPrecisionTimer a template parameter.
+ *        API requirements for HighPrecisionTimer class
+ *        -- must be default constructible
+ *        -- timing functions:
+ *              void start()
+ *              void stop()
+ *              void reset()
+ *        -- elapsed time functions:
+ *              double elapsedTimeInSec()
+ *              double elapsedTimeInMilliSec()
+ *              double elapsedTimeInMicroSec()
+ *
+ *  \note We might want to add support for pausing and resuming the timer while
+ *    accumulating the time differences
  *
  *  Example Usage:
  *  \code
@@ -49,32 +66,14 @@ namespace utilities {
  *     t.stop();
  *     std::cout << "Elapsed Time: << t.elapsed() << std::endl;
  *
+ *     t.reset();
+ *
  *  \endcode
  *******************************************************************************
  */
+
 class Timer
 {
-private:
-  // Some typedefs for internal implementation
-  #ifdef USE_CXX11
-    typedef std::chrono::high_resolution_clock  ClockType;
-    typedef std::chrono::time_point<ClockType>  TimeStruct;
-    typedef std::chrono::duration<double>       TimeDiff;
-
-    static constexpr TimeStruct s_defaultTime = TimeStruct();
-  #else
-    typedef timeval                             TimeStruct;
-    typedef long int                            TimeDiff;
-
-    static const TimeStruct s_defaultTime;
-
-    enum { TIMER_ONE      = 1
-         , TIMER_THOUSAND = 1000
-         , TIMER_MILLION  = 1000000
-    };
-
-  #endif
-
 public:
 
   /*!
@@ -84,27 +83,25 @@ public:
    *        during construction (default is false)
    *****************************************************************************
    */
-  Timer(bool startRunning = false);
-
-  /*!
-   *****************************************************************************
-   * \brief Destructor.
-   *****************************************************************************
-   */
-  ~Timer();
+  Timer(bool startRunning = false): m_running(startRunning)
+  {
+      if(m_running)
+          m_hpTimer.start();
+  }
 
   /*!
    *****************************************************************************
    * \brief Starts the timer.Sets the start time of this Timer instance.
    *****************************************************************************
    */
-  void start();
+  void start() { m_running = true; m_hpTimer.start(); }
+
   /*!
    *****************************************************************************
    * \brief Stops the timer. Sets the end time of this Timer instance.
    *****************************************************************************
    */
-  void stop();
+  void stop() { m_hpTimer.stop(); m_running = false; }
 
   /*!
    *****************************************************************************
@@ -120,7 +117,12 @@ public:
    * \return t the elapsed time in seconds.
    *****************************************************************************
    */
-  double elapsedTimeInSec();
+  double elapsedTimeInSec()
+  {
+      if(m_running)
+          m_hpTimer.stop();
+      return m_hpTimer.elapsedTimeInSec();
+  }
 
   /*!
    *****************************************************************************
@@ -128,7 +130,12 @@ public:
    * \return t the elapsed time in milliseconds.
    *****************************************************************************
    */
-  double elapsedTimeInMilliSec();
+  double elapsedTimeInMilliSec()
+  {
+      if(m_running)
+          m_hpTimer.stop();
+      return m_hpTimer.elapsedTimeInMilliSec();
+  }
 
   /*!
    *****************************************************************************
@@ -136,7 +143,12 @@ public:
    * \return t the elapsed time in microseconds.
    *****************************************************************************
    */
-  double elapsedTimeInMicroSec();
+  double elapsedTimeInMicroSec()
+  {
+      if(m_running)
+          m_hpTimer.stop();
+      return m_hpTimer.elapsedTimeInMicroSec();
+  }
 
   /*!
    *****************************************************************************
@@ -144,21 +156,14 @@ public:
    * \post this->elapsed()==0.0
    *****************************************************************************
    */
-  void reset();
+  void reset() { m_running = false; m_hpTimer.reset(); }
 
 private:
-    TimeDiff clockDiff();
-
-private:
-
-    TimeStruct m_startTime;
-    TimeStruct m_stopTime;
-    bool       m_running;
-
+    HighPrecisionTimer  m_hpTimer;
+    bool                m_running;
 };
 
-} /* namespace utilities */
+} // namespace utilities 
+} // namespace asctoolkit 
 
-} /* namespace asctoolkit */
-
-#endif /* TIMER_HPP_ */
+#endif // TIMER_HPP_ 

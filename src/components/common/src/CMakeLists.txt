@@ -9,6 +9,9 @@ set(common_headers
     Timer.hpp
     Utilities.hpp
     cstdint_wrapper.hpp
+    
+    detail/ChronoTimer.hpp
+    detail/TimeofdayTimer.hpp
     )
 
 #
@@ -17,7 +20,6 @@ set(common_headers
 set(common_sources
     FileUtilities.cpp
     StringUtilities.cpp
-    Timer.cpp
     Utilities.cpp
     )
 
