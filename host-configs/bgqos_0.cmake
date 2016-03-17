@@ -1,1 +1,0 @@
-bgqos/gnu.cmake

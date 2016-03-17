@@ -82,7 +82,6 @@ TEST(sidre_types,compare_common_types)
 //------------------------------------------------------------------------------
 TEST(sidre_types,get_sidre_type)
 {
-  EXPECT_EQ(SIDRE_EMPTY_ID,     CONDUIT_EMPTY_ID);
   EXPECT_EQ(SIDRE_INT8_ID,      CONDUIT_INT8_ID);
   EXPECT_EQ(SIDRE_INT16_ID,     CONDUIT_INT16_ID);
   EXPECT_EQ(SIDRE_INT32_ID,     CONDUIT_INT32_ID);
@@ -102,7 +101,6 @@ TEST(sidre_types,get_sidre_type)
   EXPECT_EQ(SIDRE_FLOAT_ID,  CONDUIT_NATIVE_FLOAT_ID);
   EXPECT_EQ(SIDRE_DOUBLE_ID, CONDUIT_NATIVE_DOUBLE_ID);
 
-  EXPECT_EQ(asctoolkit::sidre::EMPTY_ID,  getTypeID(SIDRE_EMPTY_ID));
   EXPECT_EQ(asctoolkit::sidre::INT8_ID,   getTypeID(SIDRE_INT8_ID));
   EXPECT_EQ(asctoolkit::sidre::INT16_ID,  getTypeID(SIDRE_INT16_ID));
   EXPECT_EQ(asctoolkit::sidre::INT32_ID,  getTypeID(SIDRE_INT32_ID));

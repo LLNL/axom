@@ -1,21 +1,21 @@
 ###############################################################################
 #
-# CMake Cache Seed file for bgqos_0 machines using clang.
+# CMake Cache Seed file for bgqos_0 machines using gcc/g++ 4.7.2.
 #
 ###############################################################################
 
 ###############################################################################
 # Select the c and c++ compiler though the standard CMake Variables.
 ###############################################################################
-set(CMAKE_C_COMPILER "/usr/local/bin/bgclang" CACHE PATH "")
-set(CMAKE_CXX_COMPILER "/usr/local/bin/bgclang++" CACHE PATH "")
-set(ENABLE_FORTRAN OFF CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bggcc" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bgg++" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bggfortran" CACHE PATH "")
 
 #######
 # uberenv host-config for asctoolkit
 #######
 # cmake from uberenv
-# cmake exectuable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/cmake@3.2.2/bin/cmake
+# cmake executable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/cmake@3.2.2/bin/cmake
 
 # python from uberenv
 #set(PYTHON_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/python@2.7.8/bin/python" CACHE PATH "")

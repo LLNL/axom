@@ -9,19 +9,9 @@ import subprocess
 import argparse
 import platform
 import shutil
+import helpers
 
-# Helper function to get SYS_TYPE on LC systems.
-# Does not require SYS_TYPE to be set in environment (making some automated scripts easier )
-def get_systype():
-    import os
-    lc_home_config_filename = "/etc/home.config"
-    if os.path.exists(lc_home_config_filename):
-        file_handle = open(lc_home_config_filename, "r")
-        content = file_handle.readlines()
-        for line in content:
-            if line.startswith("SYS_TYPE"):
-                return line.split(" ")[1].strip()
-    return None
+default_compiler = "gcc@4.9.3"
 
 parser = argparse.ArgumentParser(description="Configure cmake build.")
 
@@ -39,7 +29,7 @@ parser.add_argument("-ip",
 parser.add_argument("-c",
                     "--compiler",
                     type=str,
-                    default="gnu",
+                    default=default_compiler,
                     help="compiler to use.")
 
 parser.add_argument("-bt",
@@ -77,15 +67,12 @@ parser.add_argument("-hc",
 
 args = parser.parse_args()
 
-
-
-
 ########################
 # Find CMake Cache File
 ########################
 platform_info = ""
 scriptsdir = os.path.dirname( os.path.abspath(sys.argv[0]) )
-systype = get_systype()
+systype = helpers.get_systype()
 
 if args.hostconfig != "":
     cachefile = os.path.abspath(args.hostconfig)
@@ -94,12 +81,16 @@ if args.hostconfig != "":
         platform_info = platform_info[:-6]
     print "Using user specified host config file: '%s'." % cachefile
 else:
-    # Check if 'SYS_TYPE' exists, and look for cache file there.
+    # If not specified, then check for a host-config file for this SYS_TYPE with default compiler.
     cachefile = scriptsdir.replace("scripts","host-configs")
     if systype:
         platform_info = systype.split("_")[0]
-        cachefile = os.path.join( cachefile, platform_info, "%s.cmake" % args.compiler ) 
-        print "Detected LC SYS_TYPE '%s'.  Using host config file: '%s'." % ( systype, cachefile )
+        import glob
+        names = glob.glob(cachefile + "/*" + systype + "-" + args.compiler + ".cmake")
+        assert len(names) <= 1, "Could not determine correct host-config file for SYS_TYPE %s, more than one file matched this SYS_TYPE and compiler." % systype
+        assert len(names) > 0, "Could not find host-config file for SYS_TYPE %s and compiler %s" % (systype, args.compiler)
+        cachefile = os.path.join( cachefile, names[0] )
+        print "Found host config file for SYS_TYPE %s, compiler %s: %s" % (systype, args.compiler, cachefile)
     else:
         platform_info = platform.node()
         cachefile = os.path.join(cachefile, "other", "%s.cmake" % platform_info )
@@ -157,13 +148,8 @@ os.makedirs(installpath)
 # Build CMake command line
 ############################
 
-cmakeline = "cmake"
-# Use toolkit cmake installation, if present.
-if systype:
-    toolkit_cmake = os.path.join("/usr/gapps/asctoolkit/tools", systype, "cmake", "bin", "cmake")
-    if os.path.exists(toolkit_cmake):
-        print "Detected toolkit cmake installation at '%s'" % toolkit_cmake
-        cmakeline = toolkit_cmake
+cmakeline = helpers.extract_cmake_location(cachefile)
+assert cmakeline, "Host config file doesn't contain valid cmake location, value was %s" % cmakeline
 
 # Add cache file option
 cmakeline += " -C %s" % cachefile
@@ -185,6 +171,14 @@ if args.cmakeoption:
     cmakeline += " -D" + args.cmakeoption
 
 cmakeline += " %s/../src " % scriptsdir
+
+# Dump the cmake command to file for convenience
+cmdfile = open("%s/cmake_cmd" % buildpath, "w")
+cmdfile.write(cmakeline)
+cmdfile.close()
+import stat
+st = os.stat("%s/cmake_cmd" % buildpath)
+os.chmod("%s/cmake_cmd" % buildpath, st.st_mode | stat.S_IEXEC)
 
 ############################
 # Run CMake

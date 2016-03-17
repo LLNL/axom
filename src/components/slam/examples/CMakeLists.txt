@@ -47,13 +47,14 @@ set(lulesh_exe_source
 
 ## Ignore omp pragmas when openMP is not defined
 if ( NOT ENABLE_OPENMP )
-    set_source_files_properties(${lulesh_lib_sources} ${lulesh_exe_source} PROPERTIES COMPILE_FLAGS "${DISABLE_OMP_PRAGMA_WARNINGS}" )
+    set_source_files_properties(${lulesh_lib_sources} ${lulesh_exe_source} 
+        PROPERTIES COMPILE_FLAGS "${ATK_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
 
 make_library( LIBRARY_NAME      slamLuleshLib
               LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
-              USE_OPENMP ${ENABLE_OMP} 
+              USE_OPENMP ${ENABLE_OPENMP} 
               ) 
 
 add_dependencies(slamLuleshLib slam)
@@ -65,7 +66,7 @@ make_executable( EXECUTABLE_NAME    slam_Lulesh
                     slic
                     slam 
                     slamLuleshLib
-                  USE_OPENMP ${ENABLE_OMP} 
+                  USE_OPENMP ${ENABLE_OPENMP} 
                   ADD_CTEST
                   ) 
 
@@ -96,9 +97,9 @@ if ( ${buildOrigLulesh} )
         )
     
     # Add some extra configuration flags for MPI, OpenMP and allowing unused parameters (in 3rd party source code)
-    set(luleshExtraCompileFlags ${DISABLE_UNUSED_PARAMETER_WARNINGS})
+    set(luleshExtraCompileFlags ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS})
     if ( NOT ENABLE_OPENMP )
-        set(luleshExtraCompileFlags "${luleshExtraCompileFlags} ${DISABLE_OMP_PRAGMA_WARNINGS}")
+        set(luleshExtraCompileFlags "${luleshExtraCompileFlags} ${ATK_DISABLE_OMP_PRAGMA_WARNINGS}")
     endif()
 
     if ( ENABLE_MPI )
@@ -120,7 +121,8 @@ if ( ${buildOrigLulesh} )
         EXECUTABLE_NAME slam_OrigLulesh 
         EXECUTABLE_SOURCE ${lulesh_exe_source} 
         DEPENDS_ON "slamLuleshOrigLib" 
-        USE_OPENMP ${ENABLE_OPENMP} 
+        USE_OPENMP ${ENABLE_OPENMP}
+        IS_EXAMPLE
        ) 
           
 endif()
@@ -172,15 +174,17 @@ foreach(test ${gtest_slam_tinyHydro_tests})
     add_gtest( TEST_SOURCE ${test} DEPENDS_ON slamTinyHydroLib slic)
 endforeach()
 
-make_executable( 
+make_executable(
     EXECUTABLE_NAME "slam_tinyHydro_sedov" 
     EXECUTABLE_SOURCE ${tinyHydro_dir}/tests/slam_tinyHydro_sedovTwoPart.cpp
     DEPENDS_ON slamTinyHydroLib
+    IS_EXAMPLE
 )
 make_executable( 
     EXECUTABLE_NAME "slam_tinyHydro_sod" 
     EXECUTABLE_SOURCE ${tinyHydro_dir}/tests/slam_tinyHydro_sod1DTwoPart.cpp
     DEPENDS_ON slamTinyHydroLib
+    IS_EXAMPLE
     ADD_CTEST
 )
     

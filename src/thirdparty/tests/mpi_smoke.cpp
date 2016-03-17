@@ -17,6 +17,7 @@
 
 #include <mpi.h>
 #include <iostream>
+#include <fstream>
 
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -31,14 +32,20 @@ int main(int argc, char** argv)
 
     // Do a basic mpi reduce to determine this actually works
     int globalValue = 0;
-    MPI_Reduce(&commRank, &globalValue, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-    std::cout << globalValue << std::endl;
+    int valueToSend = 1;
+    MPI_Reduce(&valueToSend, &globalValue, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
     // Finalize MPI
     MPI_Finalize();
 
-    if ((globalValue > 1) || (commSize != -1)) {
-        return 0;
+    if (commRank == 0) {
+       std::cout << "Count should be equal to rank size" << std::endl;
+       std::cout << "Count = " << globalValue << ", Size = " << commSize << std::endl;
+
+        if (globalValue != commSize) {
+            return 1;
+        }
     }
-    return 1;
+    
+    return 0;
 }
