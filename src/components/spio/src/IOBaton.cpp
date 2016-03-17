@@ -28,7 +28,7 @@
 #include "sidre/DataGroup.hpp"
 #include "sidre/SidreTypes.hpp"
 
-int asctoolkit::spio::IOBaton::m_invalid_rank_id = -1;
+int asctoolkit::spio::IOBaton::s_invalid_rank_id = -1;
 
 namespace asctoolkit
 {
@@ -48,8 +48,8 @@ IOBaton::IOBaton(MPI_Comm comm,
 : m_mpi_comm(comm),
   m_comm_size(1),
   m_my_rank(0),
-  m_rank_before_me(m_invalid_rank_id),
-  m_rank_after_me(m_invalid_rank_id),
+  m_rank_before_me(s_invalid_rank_id),
+  m_rank_after_me(s_invalid_rank_id),
   m_mpi_tag(378)
 {
   MPI_Comm_size(comm, &m_comm_size);
@@ -92,7 +92,7 @@ IOBaton::~IOBaton()
 int IOBaton::wait()
 {
   int return_val = -1;
-  if (m_rank_before_me != m_invalid_rank_id) {
+  if (m_rank_before_me != s_invalid_rank_id) {
     MPI_Status mpi_stat;
     int baton;
     int mpi_err = MPI_Recv(&baton, 1, MPI_INT, m_rank_before_me,
@@ -109,7 +109,7 @@ int IOBaton::wait()
 int IOBaton::pass()
 {
   int return_val = 0;
-  if (m_rank_after_me != m_invalid_rank_id) {
+  if (m_rank_after_me != s_invalid_rank_id) {
     int baton; 
     int mpi_err = MPI_Ssend(&baton, 1, MPI_INT, m_rank_after_me,
       m_mpi_tag, m_mpi_comm);

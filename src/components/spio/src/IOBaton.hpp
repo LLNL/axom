@@ -104,7 +104,7 @@ public:
    */
   bool isLastInGroup() const
   {
-     return (m_rank_after_me == m_invalid_rank_id); 
+     return (m_rank_after_me == s_invalid_rank_id); 
   }
 
 private:
@@ -122,7 +122,7 @@ private:
   IOBaton& operator=( const IOBaton& );
 #endif
 
-  static int m_invalid_rank_id;
+  static int s_invalid_rank_id;
 
   MPI_Comm m_mpi_comm;
 
