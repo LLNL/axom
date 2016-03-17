@@ -18,7 +18,7 @@ class UberenvAsctoolkit(Package):
     depends_on("uncrustify")
 
     # custom spack packages
-    depends_on("cmake-ncurses-openssl@3.3.1")
+    depends_on("cmake~ncurses~openssl@3.3.1")
     depends_on("conduit")
     depends_on("py-sphinx")
     depends_on("py-breathe")
