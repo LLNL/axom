@@ -13,6 +13,5 @@ option(ENABLE_GLOBALCOMPILERWARNINGSASERRORS "Enable treating compiler warnings 
 option(ENABLE_HDF5"ENABLE HDF5" ON)
 option(ENABLE_MPI "Enables MPI compiler support" OFF)
 option(ENABLE_OPENMP "Enables OpenMP compiler support" OFF)
-option(ENABLE_PYTHON_API "Enable python interface." OFF)
 option(ENABLE_BENCHMARK "Enables google benchmark" OFF)
 
