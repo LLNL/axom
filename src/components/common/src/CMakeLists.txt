@@ -8,10 +8,10 @@ set(common_headers
     StringUtilities.hpp
     Timer.hpp
     Utilities.hpp
-    cstdint_wrapper.hpp
     
     detail/ChronoTimer.hpp
     detail/TimeofdayTimer.hpp
+    detail/cstdint_wrapper.hpp
     )
 
 #
