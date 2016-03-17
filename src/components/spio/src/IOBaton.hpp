@@ -28,9 +28,8 @@
 #include "mpi.h"
 
 // Other CS Toolkit headers
+#include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
-#include "sidre/DataGroup.hpp"
-#include "slic/slic.hpp"
 
 
 namespace asctoolkit
@@ -108,19 +107,8 @@ public:
   }
 
 private:
-  /*!
-   *  Unimplemented ctors and copy-assignment operators.
-   */
-#ifdef USE_CXX11
-  IOBaton( const IOBaton& ) = delete;
-  IOBaton( IOBaton&& ) = delete;
 
-  IOBaton& operator=( const IOBaton& ) = delete;
-  IOBaton& operator=( IOBaton&& ) = delete;
-#else
-  IOBaton( const IOBaton& );
-  IOBaton& operator=( const IOBaton& );
-#endif
+  DISABLE_COPY_AND_ASSIGNMENT( IOBaton );
 
   static int s_invalid_rank_id;
 

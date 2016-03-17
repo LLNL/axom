@@ -21,13 +21,6 @@
 // Associated header file
 #include "IOBaton.hpp"
 
-// Other toolkit component headers
-#include "common/CommonTypes.hpp"
-
-// SiDRe project headers
-#include "sidre/DataGroup.hpp"
-#include "sidre/SidreTypes.hpp"
-
 int asctoolkit::spio::IOBaton::s_invalid_rank_id = -1;
 
 namespace asctoolkit
@@ -39,7 +32,7 @@ namespace spio
 /*
  *************************************************************************
  *
- * Datastore ctor creates root group.
+ * IOBaton constructor
  *
  *************************************************************************
  */
@@ -80,7 +73,7 @@ IOBaton::IOBaton(MPI_Comm comm,
 /*
  *************************************************************************
  *
- * Datastore dtor destroys all contents.
+ * IOBaton dtor destroys all contents.
  *
  *************************************************************************
  */

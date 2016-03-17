@@ -24,10 +24,10 @@
 #include "mpi.h"
 
 // Other CS Toolkit headers
+#include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "sidre/DataGroup.hpp"
 #include "spio/IOBaton.hpp"
-#include "slic/slic.hpp"
 
 
 namespace asctoolkit
@@ -91,19 +91,8 @@ public:
             const std::string& protocol);
 
 private:
-  /*!
-   *  Unimplemented ctors and copy-assignment operators.
-   */
-#ifdef USE_CXX11
-  IOManager( const IOManager& ) = delete;
-  IOManager( IOManager&& ) = delete;
 
-  IOManager& operator=( const IOManager& ) = delete;
-  IOManager& operator=( IOManager&& ) = delete;
-#else
-  IOManager( const IOManager& );
-  IOManager& operator=( const IOManager& );
-#endif
+  DISABLE_COPY_AND_ASSIGNMENT( IOManager );
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
