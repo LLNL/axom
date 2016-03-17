@@ -51,6 +51,8 @@
 #include <sparsehash/dense_hash_map>
 #endif
 
+#include "conduit_io.hpp"
+
 // Other CS Toolkit headers
 #include "slic/slic.hpp"
 

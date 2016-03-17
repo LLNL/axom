@@ -21,10 +21,6 @@
 #ifndef IOBATON_HPP_
 #define IOBATON_HPP_
 
-// Standard C++ headers
-#include <vector>
-#include <stack>
-
 #include "mpi.h"
 
 // Other CS Toolkit headers

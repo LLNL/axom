@@ -21,7 +21,6 @@
 
 #include "SidreDataTypeIds.h"
 #include "conduit.hpp"
-#include "conduit_io.hpp"
 
 namespace asctoolkit
 {
