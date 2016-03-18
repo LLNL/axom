@@ -33,6 +33,7 @@
 #include "mpi.h"
 
 using namespace asctoolkit;
+
 //------------------------------------------------------------------------------
 template < typename T >
 T getRandomDouble( T low, T high )
@@ -42,7 +43,21 @@ T getRandomDouble( T low, T high )
   return ( delta*c+low );
 }
 
-//------------------------------------------------------------------------------
+/*!
+ *******************************************************************************
+ * \brief A simple example illustrating the use of the Quest C-Style interface.
+ * \param [in] argc argument counter.
+ * \param [in] argv argument vector.
+ * \return rc return code.
+ *
+ * \note To run the example
+ * \verbatim
+ *
+ *   [mpirun -np N] ./quest_interface <stl_file>
+ *
+ * \endverbatim
+ *******************************************************************************
+ */
 int main( int argc, char**argv )
 {
   // Initialize MPI
@@ -81,5 +96,7 @@ int main( int argc, char**argv )
   slic::finalize();
 
   MPI_Finalize();
+
+  return 0;
 }
 
