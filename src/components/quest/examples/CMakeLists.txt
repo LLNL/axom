@@ -48,5 +48,17 @@ if (ENABLE_MPI)
                        slic
                    IS_EXAMPLE
                       )
+  
+  if (ENABLE_FORTRAN)                    
+    make_executable( EXECUTABLE_NAME quest_fortran
+                     EXECUTABLE_SOURCE quest_fortran.f90
+                     DEPENDS_ON
+                       quest
+                       common
+                       slic
+                    IS_EXAMPLE
+                       )
+    set_target_properties(quest_fortran PROPERTIES LINKER_LANGUAGE Fortran)
+  endif()
                       
 endif()
