@@ -21,7 +21,7 @@
 // Associated header file
 #include "IOBaton.hpp"
 
-int asctoolkit::spio::IOBaton::s_invalid_rank_id = -1;
+const int asctoolkit::spio::IOBaton::s_invalid_rank_id = -1;
 
 namespace asctoolkit
 {
@@ -43,7 +43,7 @@ IOBaton::IOBaton(MPI_Comm comm,
   m_my_rank(0),
   m_rank_before_me(s_invalid_rank_id),
   m_rank_after_me(s_invalid_rank_id),
-  m_mpi_tag(378)
+  m_mpi_tag(MPI_ANY_TAG)
 {
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
@@ -105,7 +105,7 @@ int IOBaton::pass()
   if (m_rank_after_me != s_invalid_rank_id) {
     int baton; 
     int mpi_err = MPI_Ssend(&baton, 1, MPI_INT, m_rank_after_me,
-      m_mpi_tag, m_mpi_comm);
+      0, m_mpi_comm);
     if (mpi_err != MPI_SUCCESS) {
       return_val = -1;
     }

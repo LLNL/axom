@@ -106,7 +106,7 @@ private:
 
   DISABLE_COPY_AND_ASSIGNMENT( IOBaton );
 
-  static int s_invalid_rank_id;
+  static const int s_invalid_rank_id;
 
   MPI_Comm m_mpi_comm;
 
