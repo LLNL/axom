@@ -85,20 +85,21 @@ endif()
 ##
 ##------------------------------------------------------------------------------
 macro(add_doxygen_target doxygen_target_name)
-    # add a target to generate API documentation with Doxygen
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-    add_custom_target(${doxygen_target_name}
-                     ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                     COMMENT "Generating API documentation with Doxygen" VERBATIM)
+    if (BUILD_DOCS)
+        # add a target to generate API documentation with Doxygen
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+        add_custom_target(${doxygen_target_name}
+                         ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+                         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                         COMMENT "Generating API documentation with Doxygen" VERBATIM)
 
-    add_dependencies(doxygen_docs ${doxygen_target_name})
+        add_dependencies(doxygen_docs ${doxygen_target_name})
 
-    install(CODE "execute_process(COMMAND ${CMAKE_BUILD_TOOL} ${doxygen_target_name} WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
+        install(CODE "execute_process(COMMAND ${CMAKE_BUILD_TOOL} ${doxygen_target_name} WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
 
-    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html" 
-            DESTINATION docs/doxygen/${doxygen_target_name})
-
+        install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html" 
+                DESTINATION docs/doxygen/${doxygen_target_name} OPTIONAL)
+    endif()
 endmacro(add_doxygen_target)
 
 ##------------------------------------------------------------------------------
@@ -114,43 +115,45 @@ endmacro(add_doxygen_target)
 ##
 ##------------------------------------------------------------------------------
 macro(add_sphinx_target sphinx_target_name )
-    MESSAGE(STATUS "Creating sphinx docs target ${sphinx_target_name}")
-    # configured documentation tools and intermediate build results
-    set(SPHINX_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/_build")
+    if (BUILD_DOCS)
+        MESSAGE(STATUS "Creating sphinx docs target ${sphinx_target_name}")
+        # configured documentation tools and intermediate build results
+        set(SPHINX_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/_build")
 
-    # Sphinx cache with pickled ReST documents
-    set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_doctrees")
+        # Sphinx cache with pickled ReST documents
+        set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_doctrees")
 
-    # HTML output directory
-    set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
+        # HTML output directory
+        set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"
-                   "${SPHINX_BUILD_DIR}/conf.py"
-                   @ONLY)
+        configure_file("${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"
+                       "${SPHINX_BUILD_DIR}/conf.py"
+                       @ONLY)
 
-    add_custom_target(${sphinx_target_name}
-            ${SPHINX_EXECUTABLE}
-            -q -b html
-            #-W disable warn on error for now, while our sphinx env is still in flux
-            -c "${SPHINX_BUILD_DIR}"
-            -d "${SPHINX_CACHE_DIR}"
-            "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${SPHINX_HTML_DIR}"
-            COMMENT "Building HTML documentation with Sphinx"
-            DEPENDS ${deps})
-        
-    # hook our new target into the docs dependency chain
-    add_dependencies(sphinx_docs ${sphinx_target_name})
+        add_custom_target(${sphinx_target_name}
+                ${SPHINX_EXECUTABLE}
+                -q -b html
+                #-W disable warn on error for now, while our sphinx env is still in flux
+                -c "${SPHINX_BUILD_DIR}"
+                -d "${SPHINX_CACHE_DIR}"
+                "${CMAKE_CURRENT_SOURCE_DIR}"
+                "${SPHINX_HTML_DIR}"
+                COMMENT "Building HTML documentation with Sphinx"
+                DEPENDS ${deps})
+            
+        # hook our new target into the docs dependency chain
+        add_dependencies(sphinx_docs ${sphinx_target_name})
 
-    ######
-    # This snippet makes sure if we do a make install w/o the optional "docs"
-    # target built, it will be built during the install process.
-    ######
+        ######
+        # This snippet makes sure if we do a make install w/o the optional "docs"
+        # target built, it will be built during the install process.
+        ######
 
-    install(CODE "execute_process(COMMAND ${CMAKE_BUILD_TOOL} ${sphinx_target_name} WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
+        install(CODE "execute_process(COMMAND ${CMAKE_BUILD_TOOL} ${sphinx_target_name} WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
 
-    install(DIRECTORY "${SPHINX_HTML_DIR}" 
-            DESTINATION "docs/sphinx/${sphinx_target_name}")
+        install(DIRECTORY "${SPHINX_HTML_DIR}" 
+                DESTINATION "docs/sphinx/${sphinx_target_name}" OPTIONAL)
+    endif()
 endmacro(add_sphinx_target)
 
 

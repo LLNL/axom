@@ -4,6 +4,7 @@
 
 option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
 option(BUILD_TESTING "Builds unit tests" ON)
+option(BUILD_DOCS "Builds documentation" ON)
 option(ENABLE_CODECOV "Enable code coverage via gcov." OFF)
 option(ENABLE_CXX11 "Enables C++11 language support." ON)
 option(ENABLE_BOOST "Enable Boost" OFF)
