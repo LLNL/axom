@@ -70,7 +70,7 @@ public:
      * \pre m_fileName != ""
      ***************************************************************************
      */
-    void read();
+    virtual void read();
 
     /*!
      ***************************************************************************
@@ -81,7 +81,7 @@ public:
      */
     void getMesh( meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE >* mesh );
 
-private:
+protected:
     std::string m_fileName;
     int m_num_nodes;
     int m_num_faces;
@@ -89,6 +89,7 @@ private:
     double* m_face_normals;
     int*    m_face_connectivity;
 
+private:
     DISABLE_COPY_AND_ASSIGNMENT(STLReader);
 };
 

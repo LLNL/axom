@@ -37,3 +37,29 @@ make_executable( EXECUTABLE_NAME quest_octree_driver
                     slam
                  IS_EXAMPLE
                     )
+
+if (ENABLE_MPI)
+
+  make_executable( EXECUTABLE_NAME quest_interface 
+                   EXECUTABLE_SOURCE quest_interface.cpp
+                   DEPENDS_ON 
+                       quest
+                       common
+                       slic
+                   IS_EXAMPLE
+                      )
+  
+  if (ENABLE_FORTRAN)                    
+    make_executable( EXECUTABLE_NAME quest_interface_fortran
+                     EXECUTABLE_SOURCE quest_interface_fortran.f90
+                     DEPENDS_ON
+                       quest
+                       common
+                       slic
+                    IS_EXAMPLE
+                       )
+    set_target_properties(quest_interface_fortran 
+                          PROPERTIES LINKER_LANGUAGE Fortran)
+  endif()
+                      
+endif()
