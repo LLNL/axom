@@ -22,8 +22,13 @@ set(ENABLE_FORTRAN ON CACHE PATH "")
 
 set(CMAKE_Fortran_COMPILER  "/usr/local/tools/ic-15.0.187/bin/ifort" CACHE PATH "")
 
+set(ENABLE_HDF5 ON CACHE PATH "")
+
+# hdf5 from uberenv
+set(HDF5_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.187/hdf5-1.8.16-gsi5lgxivfyzzkb7loeocsf2ltgrz2o4" CACHE PATH "")
+
 # conduit from uberenv
-set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.187/conduit-github-o5cpfq4ddzpkzcbavipfhbdexs27cfcd" CACHE PATH "")
+set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.187/conduit-github-ydquvdqrwk67p2qyuxvrflb7fxx6bqsn" CACHE PATH "")
 
 # doxygen from uberenv
 set(DOXYGEN_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.187/doxygen-1.8.10-mrea6t4as6cqzbmadm3nrewetgenqegh/bin/doxygen" CACHE PATH "")
