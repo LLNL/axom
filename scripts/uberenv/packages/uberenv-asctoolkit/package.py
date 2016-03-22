@@ -15,6 +15,7 @@ class UberenvAsctoolkit(Package):
     # standard spack packages
     depends_on("doxygen")
     depends_on("python")
+    depends_on("hdf5")
     depends_on("uncrustify")
 
     # custom spack packages
@@ -86,6 +87,10 @@ class UberenvAsctoolkit(Package):
         else:
             cfg.write("# no fortran compiler\n\n")
             cfg.write('set(ENABLE_FORTRAN OFF CACHE PATH "")\n\n')
+
+        cfg.write('set(ENABLE_HDF5 ON CACHE PATH "")\n\n')
+        cfg.write("# hdf5 from uberenv\n")
+        cfg.write('set(HDF5_DIR "%s" CACHE PATH "")\n\n' % spec['hdf5'].prefix)
 
         cfg.write("# conduit from uberenv\n")
         cfg.write('set(CONDUIT_DIR "%s" CACHE PATH "")\n\n' % conduit_dir)
