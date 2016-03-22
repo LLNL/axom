@@ -213,7 +213,7 @@ private:
 
   MeshCoordinates* m_particle_coordinates;
 
-  DISABLE_COPY_AND_ASSIGNMENT(ParticleMesh);
+  DISABLE_COPY_AND_ASSIGNMENT(ParticleMesh)
 };
 
 } /* namespace meshtk */

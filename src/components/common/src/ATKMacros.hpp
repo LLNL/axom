@@ -57,7 +57,7 @@
  *       // Other methods here
  *
  *   private:
- *      DISABLE_COPY_AND_ASSIGNMENT(Foo);
+ *      DISABLE_COPY_AND_ASSIGNMENT(Foo)
  *   };
  *
  * \endcode

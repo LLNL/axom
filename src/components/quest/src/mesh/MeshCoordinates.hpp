@@ -207,7 +207,7 @@ private:
    */
   void initialize(int npoints);
 
-  DISABLE_COPY_AND_ASSIGNMENT(MeshCoordinates);
+  DISABLE_COPY_AND_ASSIGNMENT(MeshCoordinates)
 };
 
 } /* namespace meshtk */

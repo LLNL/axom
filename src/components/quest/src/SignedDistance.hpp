@@ -140,7 +140,7 @@ private:
   meshtk::Mesh* m_surfaceMesh;   /*!< User-supplied surface mesh. */
   BVHTreeType* m_bvhTree;  /*!< Spatial acceleration data-structure. */
 
-  DISABLE_COPY_AND_ASSIGNMENT( SignedDistance );
+  DISABLE_COPY_AND_ASSIGNMENT( SignedDistance )
 
 };
 

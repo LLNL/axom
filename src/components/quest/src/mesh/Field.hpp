@@ -129,7 +129,7 @@ protected:
   int m_type;            /*!< the field type */
 
 private:
-  DISABLE_COPY_AND_ASSIGNMENT(Field);
+  DISABLE_COPY_AND_ASSIGNMENT(Field)
 };
 
 } /* namespace meshtk */

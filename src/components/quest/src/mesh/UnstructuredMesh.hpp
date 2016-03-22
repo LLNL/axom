@@ -288,7 +288,7 @@ private:
   MeshCoordinates*                      m_node_coordinates;
   CellConnectivity< int, CellType >*    m_cell_connectivity;
 
-  DISABLE_COPY_AND_ASSIGNMENT(UnstructuredMesh);
+  DISABLE_COPY_AND_ASSIGNMENT(UnstructuredMesh)
 };
 
 } /* namespace meshtk */

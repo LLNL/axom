@@ -89,7 +89,7 @@ private:
     double* m_face_normals;
     int*    m_face_connectivity;
 
-    DISABLE_COPY_AND_ASSIGNMENT(STLReader);
+    DISABLE_COPY_AND_ASSIGNMENT(STLReader)
 };
 
 } /* namespace quest */

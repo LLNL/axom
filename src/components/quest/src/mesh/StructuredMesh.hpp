@@ -358,7 +358,7 @@ protected:
   Extent< int >* m_extent; /*!< grid extent */
 
 private:
-  DISABLE_COPY_AND_ASSIGNMENT( StructuredMesh );
+  DISABLE_COPY_AND_ASSIGNMENT( StructuredMesh )
 };
 
 } /* namespace meshtk */

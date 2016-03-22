@@ -129,7 +129,7 @@ private:
    std::vector< std::string > m_fields;
    std::map< std::string, Field* > m_container;
 
-   DISABLE_COPY_AND_ASSIGNMENT(FieldData);
+   DISABLE_COPY_AND_ASSIGNMENT(FieldData)
 };
 
 } /* namespace meshtk */
