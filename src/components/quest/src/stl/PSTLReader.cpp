@@ -14,8 +14,9 @@
 #include "PSTLReader.hpp"
 
 #include "common/CommonTypes.hpp"
-#include "quest/stla_io.hpp"
 #include "slic/slic.hpp"
+
+#include "stla_io.hpp"
 
 namespace quest {
 

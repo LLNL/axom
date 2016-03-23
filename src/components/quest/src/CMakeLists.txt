@@ -120,5 +120,6 @@ make_library( LIBRARY_NAME
               DEPENDS_ON
                 "${quest_depends_on}"
              )
+target_include_directories( quest PRIVATE "${CMAKE_SOURCE_DIR}/thirdparty/stla_io" )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )
