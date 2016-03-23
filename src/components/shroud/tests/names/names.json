@@ -295,6 +295,15 @@
     }, 
     "patterns": [], 
     "types": {
+        "MPI_Comm": {
+            "c_fortran": "integer(C_INT)", 
+            "c_header": "mpi.h", 
+            "c_to_cpp": "MPI_Comm_f2c({c_var})", 
+            "c_type": "MPI_Fint", 
+            "cpp_to_c": "MPI_Comm_c2f({cpp_var})", 
+            "cpp_type": "MPI_Comm", 
+            "f_type": "integer"
+        }, 
         "Names": {
             "PY_PyObject": "PY_Names", 
             "PY_PyTypeObject": "PY_Names_Type", 

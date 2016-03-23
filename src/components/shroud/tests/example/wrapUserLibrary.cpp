@@ -31,7 +31,7 @@ return name != NULL;
 }
 
 // bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))
-// function_index=49
+// function_index=50
 bool AA_is_name_valid_bufferify(const char * name, int Lname)
 {
 // splicer begin function.is_name_valid_bufferify
@@ -61,7 +61,7 @@ return;
 }
 
 // void test_names(const std::string & name+intent(in)+len_trim(Lname))
-// function_index=50
+// function_index=51
 void AA_test_names_bufferify(const char * name, int Lname)
 {
 // splicer begin function.test_names_bufferify
@@ -83,7 +83,7 @@ return;
 }
 
 // void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)
-// function_index=51
+// function_index=52
 void AA_test_names_flag_bufferify(const char * name, int Lname, int flag)
 {
 // splicer begin function.test_names_flag_bufferify
@@ -94,7 +94,7 @@ return;
 }
 
 // void testoptional()
-// function_index=47
+// function_index=48
 void AA_testoptional_0()
 {
 // splicer begin function.testoptional_0
@@ -104,7 +104,7 @@ return;
 }
 
 // void testoptional(int i+default(1)+intent(in)+value)
-// function_index=48
+// function_index=49
 void AA_testoptional_1(int i)
 {
 // splicer begin function.testoptional_1
@@ -121,6 +121,16 @@ void AA_testoptional_2(int i, long j)
 testoptional(i, j);
 return;
 // splicer end function.testoptional_2
+}
+
+// void testmpi(MPI_Comm comm+intent(in)+value)
+// function_index=47
+void AA_testmpi(MPI_Fint comm)
+{
+// splicer begin function.testmpi
+testmpi(MPI_Comm_f2c(comm));
+return;
+// splicer end function.testmpi
 }
 
 // splicer begin additional_functions

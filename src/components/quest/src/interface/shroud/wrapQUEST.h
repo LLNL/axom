@@ -18,6 +18,8 @@
 #ifndef WRAPQUEST_H
 #define WRAPQUEST_H
 
+#include "mpi.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,9 +29,9 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
-void QUEST_initialize(int mpicomm, const char * fileName, int ndims, int maxElements, int maxLevels);
+void QUEST_initialize(MPI_Fint comm, const char * fileName, int ndims, int maxElements, int maxLevels);
 
-void QUEST_initialize_bufferify(int mpicomm, const char * fileName, int LfileName, int ndims, int maxElements, int maxLevels);
+void QUEST_initialize_bufferify(MPI_Fint comm, const char * fileName, int LfileName, int ndims, int maxElements, int maxLevels);
 
 void QUEST_finalize();
 

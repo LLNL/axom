@@ -12,6 +12,8 @@
 #ifndef WRAPUSERLIBRARY_H
 #define WRAPUSERLIBRARY_H
 
+#include "mpi.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,6 +44,8 @@ void AA_testoptional_0();
 void AA_testoptional_1(int i);
 
 void AA_testoptional_2(int i, long j);
+
+void AA_testmpi(MPI_Fint comm);
 
 #ifdef __cplusplus
 }
