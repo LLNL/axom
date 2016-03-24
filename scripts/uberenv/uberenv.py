@@ -85,12 +85,17 @@ def parse_args():
     parser.add_option("--prefix",
                       dest="prefix",
                       default="uberenv_libs",
-                      help="destination dir")
+                      help="destination directory")
     # what compiler to use
     parser.add_option("--spec",
                       dest="spec",
                       default=None,
                       help="spack compiler spec")
+    # location of mirror
+    parser.add_option("--mirror",
+                      dest="mirror",
+                      default=None,
+                      help="spack mirror directory")
     # force rebuild of these packages
     parser.add_option("--force",
                       dest="force",
@@ -178,6 +183,20 @@ def patch_spack(spack_dir,compilers_yaml,pkgs):
     # hot-copy our packages into spack
     sexe("cp -Rf %s %s" % (pkgs,dest_spack_pkgs))
 
+def find_spack_mirror(spack_dir, mirror_name):
+    """Return path of uberenv's spack mirror
+    Mirrors can be created with:
+        spack mirror create -d {directory} --dependencies {mirror_name}
+    """
+    rv, res = sexe("spack/bin/spack mirror list", ret_output=True)
+    mirror_path = None
+    for mirror in res.split('\n'):
+        if mirror:
+            parts = mirror.split()
+            if parts[0] == mirror_name:
+                mirror_path = parts[1]
+    return mirror_path
+
 
 def main():
     """
@@ -240,6 +259,26 @@ def main():
             spack_uninstall_and_clean(dep)
     if spack_package_is_installed(uberenv_pkg_name,opts["spec"]):
         spack_uninstall_and_clean(uberenv_pkg_name + opts["spec"])
+
+    # Set up mirror if it does not already exist.
+    mirror_name = 'uberenv-asctoolkit'
+    if opts["mirror"]:
+        new_mirror = 'file://' + opts["mirror"]
+        mirror_path = find_spack_mirror(dest_spack, mirror_name)
+        if mirror_path and mirror_path != new_mirror:
+            # Existing mirror has different URL, so remove
+            sexe("spack/bin/spack mirror remove --scope=site {}".format(
+                    mirror_name))
+            mirror_path = None
+        if not mirror_path:
+            sexe("spack/bin/spack mirror add --scope=site {} {}".format(
+                    mirror_name, new_mirror), echo=True)
+
+    # Report mirror if it exists
+    mirror_path = find_spack_mirror(dest_spack, mirror_name)
+    if mirror_path:
+            print "[using mirror %s]" % mirror_path
+
     # use the uberenv package to trigger the right builds and build an host-config.cmake file
     sexe("spack/bin/spack install " + uberenv_pkg_name + opts["spec"],echo=True)
 
