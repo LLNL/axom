@@ -130,10 +130,10 @@ if args.buildpath != "":
     buildpath = args.buildpath
 elif args.hostconfig != "":
     # use host config name (via platform_info) as build dir base
-    buildpath = "-".join(["build",platform_info,args.buildtype.lower()])
+    buildpath = "-".join(["build",platform_info,args.buildtype.lower()]).replace("@","-")    
 elif args.buildpath == "":
     # Generate build directory name based on platform, buildtype, compiler
-    buildpath = "-".join(["build",platform_info, args.compiler, args.buildtype.lower()])
+    buildpath = "-".join(["build",platform_info, args.compiler, args.buildtype.lower()]).replace("@","-")
 
 buildpath = os.path.abspath(buildpath)
 
@@ -152,10 +152,10 @@ if args.installpath != "":
     installpath = os.path.abspath(args.installpath)
 elif args.hostconfig != "":
     # use host config name (via platform_info) as install dir base
-    installpath = "-".join(["install",platform_info,args.buildtype.lower()])
+    installpath = "-".join(["install",platform_info,args.buildtype.lower()]).replace("@","-")
 else:
     # Generate install directory name based on platform, buildtype, compiler
-    installpath = "-".join(["install",platform_info, args.compiler, args.buildtype.lower()])
+    installpath = "-".join(["install",platform_info, args.compiler, args.buildtype.lower()]).replace("@","-")
 
 installpath = os.path.abspath(installpath)
 
