@@ -102,6 +102,13 @@ module userlibrary_mod
             integer(C_LONG), value, intent(IN) :: j
         end subroutine c_testoptional_2
         
+        subroutine testmpi(comm) &
+                bind(C, name="AA_testmpi")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: comm
+        end subroutine testmpi
+        
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
     end interface
@@ -175,7 +182,7 @@ contains
     
     ! void testoptional()
     ! has_default_arg
-    ! function_index=47
+    ! function_index=48
     subroutine testoptional_0()
         use iso_c_binding
         implicit none
@@ -186,7 +193,7 @@ contains
     
     ! void testoptional(int i+default(1)+intent(in)+value)
     ! has_default_arg
-    ! function_index=48
+    ! function_index=49
     subroutine testoptional_1(i)
         use iso_c_binding
         implicit none

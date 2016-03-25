@@ -159,6 +159,31 @@ PP_testoptional_2(
 // splicer end function.testoptional
 }
 
+static char PP_testmpi__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_testmpi(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.testmpi
+    MPI_Comm comm;
+    const char *kwcpp = "comm";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:testmpi", kw_list,
+        &comm))
+    {
+        return NULL;
+    }
+    testmpi(MPI_Comm_f2c(comm));
+    Py_RETURN_NONE;
+// splicer end function.testmpi
+}
+
 static char PP_test_names__doc__[] =
 "documentation"
 ;
@@ -201,6 +226,7 @@ static PyMethodDef PP_methods[] = {
 {"isNameValid", (PyCFunction)PP_is_name_valid, METH_VARARGS|METH_KEYWORDS, PP_is_name_valid__doc__},
 {"isInitialized", (PyCFunction)PP_is_initialized, METH_NOARGS, PP_is_initialized__doc__},
 {"testoptional", (PyCFunction)PP_testoptional_2, METH_VARARGS|METH_KEYWORDS, PP_testoptional_2__doc__},
+{"testmpi", (PyCFunction)PP_testmpi, METH_VARARGS|METH_KEYWORDS, PP_testmpi__doc__},
 {"test_names", (PyCFunction)PP_test_names, METH_VARARGS|METH_KEYWORDS, PP_test_names__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };

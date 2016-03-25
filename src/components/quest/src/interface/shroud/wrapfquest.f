@@ -22,22 +22,22 @@ module quest_mod
     
     interface
         
-        subroutine c_initialize(mpicomm, fileName, ndims, maxElements, maxLevels) &
+        subroutine c_initialize(comm, fileName, ndims, maxElements, maxLevels) &
                 bind(C, name="QUEST_initialize")
             use iso_c_binding
             implicit none
-            integer(C_INT), value, intent(IN) :: mpicomm
+            integer(C_INT), value, intent(IN) :: comm
             character(kind=C_CHAR), intent(IN) :: fileName(*)
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_INT), value, intent(IN) :: maxElements
             integer(C_INT), value, intent(IN) :: maxLevels
         end subroutine c_initialize
         
-        subroutine c_initialize_bufferify(mpicomm, fileName, LfileName, ndims, maxElements, maxLevels) &
+        subroutine c_initialize_bufferify(comm, fileName, LfileName, ndims, maxElements, maxLevels) &
                 bind(C, name="QUEST_initialize_bufferify")
             use iso_c_binding
             implicit none
-            integer(C_INT), value, intent(IN) :: mpicomm
+            integer(C_INT), value, intent(IN) :: comm
             character(kind=C_CHAR), intent(IN) :: fileName(*)
             integer(C_INT), value, intent(IN) :: LfileName
             integer(C_INT), value, intent(IN) :: ndims
@@ -79,17 +79,17 @@ module quest_mod
 
 contains
     
-    subroutine quest_initialize(mpicomm, fileName, ndims, maxElements, maxLevels)
+    subroutine quest_initialize(comm, fileName, ndims, maxElements, maxLevels)
         use iso_c_binding
         implicit none
-        integer(C_INT), value, intent(IN) :: mpicomm
+        integer, value, intent(IN) :: comm
         character(*), intent(IN) :: fileName
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_INT), value, intent(IN) :: maxElements
         integer(C_INT), value, intent(IN) :: maxLevels
         ! splicer begin initialize
         call c_initialize_bufferify(  &
-            mpicomm,  &
+            comm,  &
             fileName,  &
             len_trim(fileName, kind=C_INT),  &
             ndims,  &
