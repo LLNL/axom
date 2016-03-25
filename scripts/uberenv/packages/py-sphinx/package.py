@@ -6,7 +6,7 @@ class PySphinx(Package):
     """Sphinx Documentation Generator."""
 
     homepage = "http://sphinx-doc.org/"
-    url      = "https://pypi.python.org/packages/source/S/Sphinx/Sphinx-1.3.6.tar.gz#md5=7df638f47749f9284889c93012ffa07f"
+    url      = "https://pypi.python.org/packages/source/S/Sphinx/Sphinx-1.3.6.tar.gz"
 
     version('1.3.6', '7df638f47749f9284889c93012ffa07f')
 
