@@ -1,0 +1,10 @@
+build-
+install-
+.cproject
+.project
+.settings
+build-*
+install-*
+*.orig
+*.uncrustify
+*.*~

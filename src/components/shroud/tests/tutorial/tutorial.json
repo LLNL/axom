@@ -1,0 +1,2413 @@
+{
+    "F_module_dependencies": [], 
+    "classes": [
+        {
+            "F_module_dependencies": [
+                [
+                    "tutorial_mod", 
+                    [
+                        "class1"
+                    ]
+                ]
+            ], 
+            "fmt": {
+                "C_header_filename": "wrapClass1.h", 
+                "C_impl_filename": "wrapClass1.cpp", 
+                "C_type_name": "TUT_class1", 
+                "F_C_prefix": "c_", 
+                "F_derived_name": "class1", 
+                "PY_PyObject": "PY_Class1", 
+                "PY_PyTypeObject": "PY_Class1_Type", 
+                "PY_capsule_name": "PY_Class1_capsule_name", 
+                "PY_from_object_func": "PP_Class1_from_Object", 
+                "PY_to_object_func": "PP_Class1_to_Object", 
+                "PY_type_filename": "pyClass1type.cpp", 
+                "class_lower": "class1", 
+                "class_name": "class1_", 
+                "class_upper": "CLASS1", 
+                "cpp_class": "Class1"
+            }, 
+            "methods": [
+                {
+                    "_decl": "Class1 * new()+constructor", 
+                    "_function_index": 0, 
+                    "_subprogram": "function", 
+                    "args": [], 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "Class1 *new()  +constructor", 
+                    "fmt": {
+                        "C_name": "TUT_class1_new", 
+                        "F_C_name": "c_class1_new", 
+                        "F_name_generic": "new", 
+                        "F_name_impl": "class1_new", 
+                        "F_name_method": "new", 
+                        "function_name": "new", 
+                        "underscore_name": "new"
+                    }, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "new", 
+                        "type": "Class1"
+                    }
+                }, 
+                {
+                    "_decl": "void delete()+destructor", 
+                    "_function_index": 1, 
+                    "_subprogram": "subroutine", 
+                    "args": [], 
+                    "attrs": {
+                        "destructor": true
+                    }, 
+                    "decl": "void delete()  +destructor", 
+                    "fmt": {
+                        "C_name": "TUT_class1_delete", 
+                        "F_C_name": "c_class1_delete", 
+                        "F_name_generic": "delete", 
+                        "F_name_impl": "class1_delete", 
+                        "F_name_method": "delete", 
+                        "PY_name_impl": "PY_class1_delete", 
+                        "function_name": "delete", 
+                        "underscore_name": "delete"
+                    }, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "delete", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "_decl": "void Method1()", 
+                    "_function_index": 2, 
+                    "_subprogram": "subroutine", 
+                    "args": [], 
+                    "attrs": {}, 
+                    "decl": "void Method1()", 
+                    "fmt": {
+                        "C_name": "TUT_class1_method1", 
+                        "F_C_name": "c_class1_method1", 
+                        "F_name_generic": "method1", 
+                        "F_name_impl": "class1_method1", 
+                        "F_name_method": "method1", 
+                        "PY_name_impl": "PY_class1_method1", 
+                        "function_name": "Method1", 
+                        "underscore_name": "method1"
+                    }, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "Method1", 
+                        "type": "void"
+                    }
+                }
+            ], 
+            "name": "Class1", 
+            "options": {}
+        }
+    ], 
+    "fmt": {
+        "BBB": "BBB", 
+        "C_const": "", 
+        "C_header_filename": "wrapTutorial.h", 
+        "C_impl_filename": "wrapTutorial.cpp", 
+        "C_prefix": "TUT_", 
+        "C_this": "self", 
+        "F_C_prefix": "c_", 
+        "F_C_pure_clause": "", 
+        "F_C_result_clause": "", 
+        "F_derived_member": "voidptr", 
+        "F_impl_filename": "wrapftutorial.f", 
+        "F_module_name": "tutorial_mod", 
+        "F_pure_clause": "", 
+        "F_result": "rv", 
+        "F_result_clause": "", 
+        "F_this": "obj", 
+        "PY_header_filename": "pyTutorialmodule.hpp", 
+        "PY_helper_filename": "pyTutorialhelper.cpp", 
+        "PY_library_doc": "library documentation", 
+        "PY_module_filename": "pyTutorialmodule.cpp", 
+        "PY_module_name": "tutorial", 
+        "PY_prefix": "PY_", 
+        "class_name": "", 
+        "function_suffix": "", 
+        "library": "Tutorial", 
+        "library_lower": "tutorial", 
+        "library_upper": "TUTORIAL", 
+        "overloaded": false, 
+        "rv": "rv"
+    }, 
+    "functions": [
+        {
+            "_decl": "void Function1()", 
+            "_function_index": 3, 
+            "_subprogram": "subroutine", 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "void Function1()", 
+            "fmt": {
+                "C_name": "TUT_function1", 
+                "F_C_name": "function1", 
+                "F_name_generic": "function1", 
+                "F_name_impl": "function1", 
+                "F_name_method": "function1", 
+                "PY_name_impl": "PY_function1", 
+                "function_name": "Function1", 
+                "underscore_name": "function1"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function1", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)", 
+            "_function_index": 4, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "double"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "double Function2(double arg1, int arg2)", 
+            "fmt": {
+                "C_name": "TUT_function2", 
+                "F_C_name": "function2", 
+                "F_name_generic": "function2", 
+                "F_name_impl": "function2", 
+                "F_name_method": "function2", 
+                "PY_name_impl": "PY_function2", 
+                "function_name": "Function2", 
+                "underscore_name": "function2"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function2", 
+                "type": "double"
+            }
+        }, 
+        {
+            "_decl": "void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))", 
+            "_function_index": 5, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "len", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "dimension": "(*)", 
+                        "intent": "in", 
+                        "ptr": true, 
+                        "value": false
+                    }, 
+                    "name": "values", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "out", 
+                        "ptr": true, 
+                        "value": false
+                    }, 
+                    "name": "result", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Sum(int len, int *values+dimension+intent(in), int *result+intent(out))", 
+            "fmt": {
+                "C_name": "TUT_sum", 
+                "F_C_name": "sum", 
+                "F_name_generic": "sum", 
+                "F_name_impl": "sum", 
+                "F_name_method": "sum", 
+                "PY_name_impl": "PY_sum", 
+                "function_name": "Sum", 
+                "underscore_name": "sum"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Sum", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "bool Function3(bool arg+intent(in)+value)", 
+            "_function_index": 6, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "bool"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "bool Function3(bool arg)", 
+            "fmt": {
+                "C_name": "TUT_function3", 
+                "F_C_name": "c_function3", 
+                "F_name_generic": "function3", 
+                "F_name_impl": "function3", 
+                "F_name_method": "function3", 
+                "PY_name_impl": "PY_function3", 
+                "function_name": "Function3", 
+                "underscore_name": "function3"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function3", 
+                "type": "bool"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 32, 
+            "_decl": "const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
+            "_function_index": 7, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg2", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "const std::string Function4a+len(30)( const std::string& arg1, const std::string& arg2 )", 
+            "fmt": {
+                "F_name_generic": "function4a", 
+                "F_name_impl": "function4a", 
+                "F_name_method": "function4a", 
+                "PY_name_impl": "PY_function4a", 
+                "function_name": "Function4a", 
+                "underscore_name": "function4a"
+            }, 
+            "options": {
+                "wrap_c": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "len": "(30)"
+                }, 
+                "name": "Function4a", 
+                "type": "std::string"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 7, 
+            "_decl": "void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(LSH_F_rv))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 32, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Larg1", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Larg2", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg2", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "LSH_F_rv", 
+                        "ptr": true, 
+                        "reference": false
+                    }, 
+                    "name": "SH_F_rv", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "const std::string Function4a+len(30)( const std::string& arg1, const std::string& arg2 )", 
+            "fmt": {
+                "C_name": "TUT_function4a_bufferify", 
+                "F_C_name": "c_function4a_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "len": "(30)", 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "Function4a", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
+            "_function_index": 8, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg2", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
+            "fmt": {
+                "C_name": "TUT_function4b", 
+                "F_C_name": "c_function4b", 
+                "PY_name_impl": "PY_function4b", 
+                "function_name": "Function4b", 
+                "underscore_name": "function4b"
+            }, 
+            "options": {
+                "F_string_result_as_arg": "output", 
+                "wrap_fortran": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "Function4b", 
+                "type": "std::string"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 8, 
+            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 33, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Larg1", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Larg2", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg2", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "Loutput", 
+                        "reference": true
+                    }, 
+                    "name": "output", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
+            "fmt": {
+                "C_name": "TUT_function4b_bufferify", 
+                "F_C_name": "c_function4b_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "Function4b", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 8, 
+            "_PTR_F_C_index": 33, 
+            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 34, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Larg1", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Larg2", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg2", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "Loutput", 
+                        "reference": true
+                    }, 
+                    "name": "output", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
+            "fmt": {
+                "F_name_generic": "function4b", 
+                "F_name_impl": "function4b", 
+                "F_name_method": "function4b", 
+                "function_suffix": ""
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "Function4b", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "double Function5()", 
+            "_function_index": 22, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
+            "default_arg_suffix": [
+                "", 
+                "_arg1", 
+                "_arg1_arg2"
+            ], 
+            "fmt": {
+                "C_name": "TUT_function5", 
+                "F_C_name": "c_function5", 
+                "F_name_generic": "function5", 
+                "F_name_impl": "function5", 
+                "F_name_method": "function5", 
+                "function_suffix": ""
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function5", 
+                "type": "double"
+            }
+        }, 
+        {
+            "_decl": "double Function5(double arg1+default(3.1415)+intent(in)+value)", 
+            "_function_index": 23, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "default": 3.1415, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "double"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
+            "default_arg_suffix": [
+                "", 
+                "_arg1", 
+                "_arg1_arg2"
+            ], 
+            "fmt": {
+                "C_name": "TUT_function5_arg1", 
+                "F_C_name": "c_function5_arg1", 
+                "F_name_generic": "function5", 
+                "F_name_impl": "function5_arg1", 
+                "F_name_method": "function5_arg1", 
+                "function_suffix": "_arg1"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function5", 
+                "type": "double"
+            }
+        }, 
+        {
+            "_decl": "double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)", 
+            "_default_funcs": [
+                22, 
+                23
+            ], 
+            "_function_index": 9, 
+            "_has_default_arg": true, 
+            "_nargs": [
+                0, 
+                2
+            ], 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "default": 3.1415, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "double"
+                }, 
+                {
+                    "attrs": {
+                        "default": "true", 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "bool"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
+            "default_arg_suffix": [
+                "", 
+                "_arg1", 
+                "_arg1_arg2"
+            ], 
+            "fmt": {
+                "C_name": "TUT_function5_arg1_arg2", 
+                "F_C_name": "c_function5_arg1_arg2", 
+                "F_name_generic": "function5", 
+                "F_name_impl": "function5_arg1_arg2", 
+                "F_name_method": "function5_arg1_arg2", 
+                "PY_name_impl": "PY_function5_arg1_arg2", 
+                "function_name": "Function5", 
+                "function_suffix": "_arg1_arg2", 
+                "underscore_name": "function5"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function5", 
+                "type": "double"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 35, 
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
+            "_decl": "void Function6(const std::string & name+intent(in))", 
+            "_function_index": 10, 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function6(const std::string& name)", 
+            "fmt": {
+                "C_name": "TUT_function6_from_name", 
+                "F_C_name": "c_function6_from_name", 
+                "F_name_generic": "function6", 
+                "F_name_impl": "function6_from_name", 
+                "F_name_method": "function6_from_name", 
+                "PY_name_impl": "PY_function6_from_name", 
+                "function_name": "Function6", 
+                "function_suffix": "_from_name", 
+                "underscore_name": "function6"
+            }, 
+            "function_suffix": "_from_name", 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function6", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 10, 
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
+            "_decl": "void Function6(const std::string & name+intent(in)+len_trim(Lname))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 35, 
+            "_generated": "string_to_buffer_and_len", 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Lname", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function6(const std::string& name)", 
+            "fmt": {
+                "C_name": "TUT_function6_from_name_bufferify", 
+                "F_C_name": "c_function6_from_name_bufferify", 
+                "function_suffix": "_from_name_bufferify"
+            }, 
+            "function_suffix": "_from_name", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function6", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
+            "_decl": "void Function6(int indx+intent(in)+value)", 
+            "_function_index": 11, 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "indx", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function6(int indx)", 
+            "fmt": {
+                "C_name": "TUT_function6_from_index", 
+                "F_C_name": "c_function6_from_index", 
+                "F_name_generic": "function6", 
+                "F_name_impl": "function6_from_index", 
+                "F_name_method": "function6_from_index", 
+                "PY_name_impl": "PY_function6_from_index", 
+                "function_name": "Function6", 
+                "function_suffix": "_from_index", 
+                "underscore_name": "function6"
+            }, 
+            "function_suffix": "_from_index", 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function6", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "void Function7(ArgType arg+intent(in)+value)", 
+            "_function_index": 12, 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "ArgType"
+                }
+            ], 
+            "attrs": {}, 
+            "cpp_template": {
+                "ArgType": [
+                    "int", 
+                    "double"
+                ]
+            }, 
+            "decl": "void Function7(ArgType arg)", 
+            "fmt": {
+                "function_name": "Function7", 
+                "underscore_name": "function7"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function7", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "void Function7(int arg+intent(in)+value)", 
+            "_function_index": 24, 
+            "_generated": "cpp_template", 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function7(ArgType arg)", 
+            "fmt": {
+                "CPP_template": "<int>", 
+                "C_name": "TUT_function7_int", 
+                "F_C_name": "c_function7_int", 
+                "F_name_generic": "function7", 
+                "F_name_impl": "function7_int", 
+                "F_name_method": "function7_int", 
+                "function_suffix": "_int"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function7", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "void Function7(double arg+intent(in)+value)", 
+            "_function_index": 25, 
+            "_generated": "cpp_template", 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "double"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function7(ArgType arg)", 
+            "fmt": {
+                "CPP_template": "<double>", 
+                "C_name": "TUT_function7_double", 
+                "F_C_name": "c_function7_double", 
+                "F_name_generic": "function7", 
+                "F_name_impl": "function7_double", 
+                "F_name_method": "function7_double", 
+                "function_suffix": "_double"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function7", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "RetType Function8()", 
+            "_function_index": 13, 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {}, 
+            "cpp_template": {
+                "RetType": [
+                    "int", 
+                    "double"
+                ]
+            }, 
+            "decl": "RetType Function8()", 
+            "fmt": {
+                "function_name": "Function8", 
+                "underscore_name": "function8"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function8", 
+                "type": "RetType"
+            }
+        }, 
+        {
+            "_decl": "int Function8()", 
+            "_function_index": 26, 
+            "_generated": "cpp_template", 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "RetType Function8()", 
+            "fmt": {
+                "CPP_return_templated": true, 
+                "CPP_template": "<int>", 
+                "C_name": "TUT_function8_int", 
+                "F_C_name": "c_function8_int", 
+                "F_name_generic": "function8", 
+                "F_name_impl": "function8_int", 
+                "F_name_method": "function8_int", 
+                "function_suffix": "_int"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function8", 
+                "type": "int"
+            }
+        }, 
+        {
+            "_decl": "double Function8()", 
+            "_function_index": 27, 
+            "_generated": "cpp_template", 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "RetType Function8()", 
+            "fmt": {
+                "CPP_return_templated": true, 
+                "CPP_template": "<double>", 
+                "C_name": "TUT_function8_double", 
+                "F_C_name": "c_function8_double", 
+                "F_name_generic": "function8", 
+                "F_name_impl": "function8_double", 
+                "F_name_method": "function8_double", 
+                "function_suffix": "_double"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function8", 
+                "type": "double"
+            }
+        }, 
+        {
+            "_decl": "void Function9(double arg+intent(in)+value)", 
+            "_function_index": 14, 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "double"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function9(double arg)", 
+            "fmt": {
+                "C_name": "TUT_function9", 
+                "F_C_name": "c_function9", 
+                "PY_name_impl": "PY_function9", 
+                "function_name": "Function9", 
+                "underscore_name": "function9"
+            }, 
+            "fortran_generic": {
+                "arg": [
+                    "float", 
+                    "double"
+                ]
+            }, 
+            "options": {
+                "wrap_fortran": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function9", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 14, 
+            "_decl": "void Function9(float arg+intent(in)+value)", 
+            "_function_index": 39, 
+            "_generated": "fortran_generic", 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "float"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function9(double arg)", 
+            "fmt": {
+                "F_name_generic": "function9", 
+                "F_name_impl": "function9_float", 
+                "F_name_method": "function9_float", 
+                "function_suffix": "_float"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function9", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 14, 
+            "_decl": "void Function9(double arg+intent(in)+value)", 
+            "_function_index": 40, 
+            "_generated": "fortran_generic", 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "double"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function9(double arg)", 
+            "fmt": {
+                "F_name_generic": "function9", 
+                "F_name_impl": "function9_double", 
+                "F_name_method": "function9_double", 
+                "function_suffix": "_double"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function9", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
+            "_decl": "void Function10()", 
+            "_function_index": 15, 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "void Function10()", 
+            "fmt": {
+                "C_name": "TUT_function10_0", 
+                "F_C_name": "c_function10_0", 
+                "F_name_generic": "function10", 
+                "F_name_impl": "function10_0", 
+                "F_name_method": "function10_0", 
+                "PY_name_impl": "PY_function10_0", 
+                "function_name": "Function10", 
+                "function_suffix": "_0", 
+                "underscore_name": "function10"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function10", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 36, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
+            "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
+            "_function_index": 16, 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "double"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function10(const std::string &name, double arg2)", 
+            "fmt": {
+                "C_name": "TUT_function10_1", 
+                "F_C_name": "c_function10_1", 
+                "PY_name_impl": "PY_function10_1", 
+                "function_name": "Function10", 
+                "function_suffix": "_1", 
+                "underscore_name": "function10"
+            }, 
+            "fortran_generic": {
+                "arg2": [
+                    "float", 
+                    "double"
+                ]
+            }, 
+            "options": {
+                "F_string_len_trim": true, 
+                "wrap_fortran": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function10", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 16, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
+            "_decl": "void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)", 
+            "_function_index": 41, 
+            "_generated": "fortran_generic", 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "float"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function10(const std::string &name, double arg2)", 
+            "fmt": {
+                "F_name_generic": "function10", 
+                "F_name_impl": "function10_1_float", 
+                "F_name_method": "function10_1_float", 
+                "function_suffix": "_1_float"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function10", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 16, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
+            "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
+            "_function_index": 42, 
+            "_generated": "fortran_generic", 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "double"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function10(const std::string &name, double arg2)", 
+            "fmt": {
+                "F_name_generic": "function10", 
+                "F_name_impl": "function10_1_double", 
+                "F_name_method": "function10_1_double", 
+                "function_suffix": "_1_double"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function10", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 16, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
+            "_decl": "void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 36, 
+            "_generated": "string_to_buffer_and_len", 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Lname", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "double"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function10(const std::string &name, double arg2)", 
+            "fmt": {
+                "C_name": "TUT_function10_1_bufferify", 
+                "F_C_name": "c_function10_1_bufferify", 
+                "function_suffix": "_1_bufferify"
+            }, 
+            "fortran_generic": {
+                "arg2": [
+                    "float", 
+                    "double"
+                ]
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function10", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
+            "_decl": "int overload1(int num+intent(in)+value)", 
+            "_function_index": 28, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "default_arg_suffix": [
+                "_num", 
+                "_num_offset", 
+                "_num_offset_stride"
+            ], 
+            "fmt": {
+                "C_name": "TUT_overload1_num", 
+                "F_C_name": "c_overload1_num", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_num", 
+                "F_name_method": "overload1_num", 
+                "function_suffix": "_num"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
+            }
+        }, 
+        {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
+            "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
+            "_function_index": 29, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 0, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "offset", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "default_arg_suffix": [
+                "_num", 
+                "_num_offset", 
+                "_num_offset_stride"
+            ], 
+            "fmt": {
+                "C_name": "TUT_overload1_num_offset", 
+                "F_C_name": "c_overload1_num_offset", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_num_offset", 
+                "F_name_method": "overload1_num_offset", 
+                "function_suffix": "_num_offset"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
+            }
+        }, 
+        {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
+            "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
+            "_default_funcs": [
+                28, 
+                29
+            ], 
+            "_function_index": 17, 
+            "_has_default_arg": true, 
+            "_nargs": [
+                1, 
+                3
+            ], 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 0, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "offset", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 1, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "stride", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "default_arg_suffix": [
+                "_num", 
+                "_num_offset", 
+                "_num_offset_stride"
+            ], 
+            "fmt": {
+                "C_name": "TUT_overload1_num_offset_stride", 
+                "F_C_name": "c_overload1_num_offset_stride", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_num_offset_stride", 
+                "F_name_method": "overload1_num_offset_stride", 
+                "PY_name_impl": "PY_overload1_num_offset_stride", 
+                "function_name": "overload1", 
+                "function_suffix": "_num_offset_stride", 
+                "underscore_name": "overload1"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
+            }
+        }, 
+        {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
+            "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value)", 
+            "_function_index": 30, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "type", 
+                    "type": "double"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
+            "fmt": {
+                "C_name": "TUT_overload1_3", 
+                "F_C_name": "c_overload1_3", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_3", 
+                "F_name_method": "overload1_3", 
+                "function_suffix": "_3"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
+            }
+        }, 
+        {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
+            "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
+            "_function_index": 31, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "type", 
+                    "type": "double"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 0, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "offset", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
+            "fmt": {
+                "C_name": "TUT_overload1_4", 
+                "F_C_name": "c_overload1_4", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_4", 
+                "F_name_method": "overload1_4", 
+                "function_suffix": "_4"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
+            }
+        }, 
+        {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
+            "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
+            "_default_funcs": [
+                30, 
+                31
+            ], 
+            "_function_index": 18, 
+            "_has_default_arg": true, 
+            "_nargs": [
+                2, 
+                4
+            ], 
+            "_overloaded": true, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "type", 
+                    "type": "double"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 0, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "offset", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 1, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "stride", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
+            "fmt": {
+                "C_name": "TUT_overload1_5", 
+                "F_C_name": "c_overload1_5", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_5", 
+                "F_name_method": "overload1_5", 
+                "PY_name_impl": "PY_overload1_5", 
+                "function_name": "overload1", 
+                "function_suffix": "_5", 
+                "underscore_name": "overload1"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
+            }
+        }, 
+        {
+            "_decl": "TypeID typefunc(TypeID arg+intent(in)+value)", 
+            "_function_index": 19, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "TypeID"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "TypeID typefunc(TypeID arg)", 
+            "fmt": {
+                "C_name": "TUT_typefunc", 
+                "F_C_name": "typefunc", 
+                "F_name_generic": "typefunc", 
+                "F_name_impl": "typefunc", 
+                "F_name_method": "typefunc", 
+                "PY_name_impl": "PY_typefunc", 
+                "function_name": "typefunc", 
+                "underscore_name": "typefunc"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "typefunc", 
+                "type": "TypeID"
+            }
+        }, 
+        {
+            "_decl": "EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)", 
+            "_function_index": 20, 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "EnumTypeID"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "EnumTypeID enumfunc(EnumTypeID arg)", 
+            "fmt": {
+                "C_name": "TUT_enumfunc", 
+                "F_C_name": "enumfunc", 
+                "F_name_generic": "enumfunc", 
+                "F_name_impl": "enumfunc", 
+                "F_name_method": "enumfunc", 
+                "PY_name_impl": "PY_enumfunc", 
+                "function_name": "enumfunc", 
+                "underscore_name": "enumfunc"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "enumfunc", 
+                "type": "EnumTypeID"
+            }
+        }, 
+        {
+            "_decl": "const std::string & LastFunctionCalled()+pure", 
+            "_function_index": 21, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const std::string& LastFunctionCalled() +pure", 
+            "fmt": {
+                "C_name": "TUT_last_function_called", 
+                "F_C_name": "c_last_function_called", 
+                "PY_name_impl": "PY_last_function_called", 
+                "function_name": "LastFunctionCalled", 
+                "underscore_name": "last_function_called"
+            }, 
+            "options": {
+                "wrap_fortran": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "LastFunctionCalled", 
+                "type": "std::string"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 21, 
+            "_decl": "void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 37, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "_is_result": true, 
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "LSH_F_rv", 
+                        "reference": true
+                    }, 
+                    "name": "SH_F_rv", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const std::string& LastFunctionCalled() +pure", 
+            "fmt": {
+                "C_name": "TUT_last_function_called_bufferify", 
+                "F_C_name": "c_last_function_called_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "LastFunctionCalled", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 21, 
+            "_decl": "const string_result_fstr & LastFunctionCalled()+pure", 
+            "_function_index": 38, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const std::string& LastFunctionCalled() +pure", 
+            "fmt": {
+                "F_name_generic": "last_function_called", 
+                "F_name_impl": "last_function_called", 
+                "F_name_method": "last_function_called"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "LastFunctionCalled", 
+                "type": "string_result_fstr"
+            }
+        }
+    ], 
+    "options": {
+        "C_header_filename_class_template": "wrap{cpp_class}.h", 
+        "C_header_filename_library_template": "wrap{library}.h", 
+        "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 
+        "C_impl_filename_library_template": "wrap{library}.cpp", 
+        "C_name_template": "{C_prefix}{class_name}{underscore_name}{function_suffix}", 
+        "F_C_name_template": "{F_C_prefix}{class_name}{underscore_name}{function_suffix}", 
+        "F_C_prefix": "c_", 
+        "F_force_wrapper": false, 
+        "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
+        "F_impl_filename_library_template": "wrapf{library_lower}.f", 
+        "F_module_name_class_template": "{class_lower}_mod", 
+        "F_module_name_library_template": "{library_lower}_mod", 
+        "F_module_per_class": false, 
+        "F_name_associated": "associated", 
+        "F_name_generic_template": "{underscore_name}", 
+        "F_name_impl_template": "{class_name}{underscore_name}{function_suffix}", 
+        "F_name_instance_get": "get_instance", 
+        "F_name_instance_set": "set_instance", 
+        "F_name_method_template": "{underscore_name}{function_suffix}", 
+        "F_string_len_trim": true, 
+        "PY_PyObject_template": "{PY_prefix}{cpp_class}", 
+        "PY_PyTypeObject_template": "{PY_prefix}{cpp_class}_Type", 
+        "PY_header_filename_template": "py{library}module.hpp", 
+        "PY_helper_filename_template": "py{library}helper.cpp", 
+        "PY_module_filename_template": "py{library}module.cpp", 
+        "PY_name_impl_template": "{PY_prefix}{class_name}{underscore_name}{function_suffix}", 
+        "PY_type_filename_template": "py{cpp_class}type.cpp", 
+        "class_name_template": "{class_lower}_", 
+        "cpp_header": "tutorial.hpp", 
+        "debug": true, 
+        "doxygen": true, 
+        "library": "Tutorial", 
+        "namespace": "tutorial", 
+        "wrap_c": true, 
+        "wrap_fortran": true, 
+        "wrap_python": true
+    }, 
+    "patterns": [], 
+    "splicer": {
+        "f": [
+            "ftutorialsplicer.f"
+        ]
+    }, 
+    "types": {
+        "Class1": {
+            "PY_PyObject": "PY_Class1", 
+            "PY_PyTypeObject": "PY_Class1_Type", 
+            "PY_from_object": "PP_Class1_from_Object", 
+            "PY_to_object": "PP_Class1_to_Object", 
+            "base": "wrapped", 
+            "c_fortran": "type(C_PTR)", 
+            "c_to_cpp": "static_cast<{C_const}Class1{ptr}>(static_cast<{C_const}void *>({c_var}))", 
+            "c_type": "TUT_class1", 
+            "cpp_to_c": "static_cast<{C_const}TUT_class1 *>(static_cast<{C_const}void *>({cpp_var}))", 
+            "cpp_type": "Class1", 
+            "f_args": "{c_var}%{F_derived_member}", 
+            "f_derived_type": "class1", 
+            "f_module": {
+                "tutorial_mod": [
+                    "class1"
+                ]
+            }, 
+            "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
+            "f_type": "type(class1)", 
+            "forward": "Class1", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;"
+                    ]
+                }, 
+                "intent_out": {
+                    "ctor": [
+                        "{PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});", 
+                        "{py_var}->{BBB} = {cpp_var};"
+                    ]
+                }
+            }
+        }, 
+        "EnumTypeID": {
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_to_cpp": "static_cast<EnumTypeID>({c_var})", 
+            "c_type": "int", 
+            "cpp_to_c": "static_cast<int>({cpp_var})", 
+            "cpp_type": "EnumTypeID", 
+            "f_cast": "int({f_var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)", 
+            "typedef": "int"
+        }, 
+        "MPI_Comm": {
+            "c_fortran": "integer(C_INT)", 
+            "c_header": "mpi.h", 
+            "c_to_cpp": "MPI_Comm_f2c({c_var})", 
+            "c_type": "MPI_Fint", 
+            "cpp_to_c": "MPI_Comm_c2f({cpp_var})", 
+            "cpp_type": "MPI_Comm", 
+            "f_type": "integer"
+        }, 
+        "TypeID": {
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_type": "int", 
+            "cpp_type": "TypeID", 
+            "f_cast": "int({f_var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)", 
+            "typedef": "int"
+        }, 
+        "bool": {
+            "PY_PyTypeObject": "PyBool_Type", 
+            "PY_ctor": "PyBool_FromLong({rv})", 
+            "c_fortran": "logical(C_BOOL)", 
+            "c_type": "bool", 
+            "cpp_type": "bool", 
+            "f_kind": "C_BOOL", 
+            "f_statements": {
+                "intent_in": {
+                    "declare": [
+                        "logical(C_BOOL) {c_var}"
+                    ], 
+                    "pre_call": [
+                        "{c_var} = {f_var}  ! coerce to C_BOOL"
+                    ]
+                }, 
+                "result": {
+                    "need_wrapper": true
+                }
+            }, 
+            "f_type": "logical", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = PyObject_IsTrue({py_var});"
+                    ]
+                }
+            }
+        }, 
+        "char": {
+            "PY_ctor": "PyString_FromString({c_var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "post_call": [
+                        "delete [] {cpp_var};"
+                    ], 
+                    "pre_call": [
+                        "int {c_var_len} = strlen({c_var});", 
+                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
+                        "{cpp_var}[{c_var_len}] = '\\0';"
+                    ], 
+                    "pre_call_trim": [
+                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
+                        "{cpp_var}[{c_var_len}] = '\\0';"
+                    ]
+                }, 
+                "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "delete [] {cpp_var};"
+                    ], 
+                    "pre_call": [
+                        "char * {cpp_var} = new char [{c_var_num} + 1];"
+                    ]
+                }, 
+                "result": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_type": "char", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)"
+        }, 
+        "char_scalar": {
+            "PY_ctor": "PyString_FromString({c_var})", 
+            "PY_format": "s", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "result": {
+                    "post_call": [
+                        "// {c_var_len} is always 1, test to silence warning about unused variable", 
+                        "if ({c_var_len} == 1) *{c_var} = {cpp_val};"
+                    ]
+                }
+            }, 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_type": "char", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character"
+        }, 
+        "double": {
+            "PY_format": "d", 
+            "c_fortran": "real(C_DOUBLE)", 
+            "c_type": "double", 
+            "cpp_type": "double", 
+            "f_cast": "real({f_var}, C_DOUBLE)", 
+            "f_kind": "C_DOUBLE", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_DOUBLE"
+                ]
+            }, 
+            "f_type": "real(C_DOUBLE)"
+        }, 
+        "float": {
+            "PY_format": "f", 
+            "c_fortran": "real(C_FLOAT)", 
+            "c_type": "float", 
+            "cpp_type": "float", 
+            "f_cast": "real({f_var}, C_FLOAT)", 
+            "f_kind": "C_FLOAT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_FLOAT"
+                ]
+            }, 
+            "f_type": "real(C_FLOAT)"
+        }, 
+        "int": {
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_type": "int", 
+            "cpp_type": "int", 
+            "f_cast": "int({f_var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)"
+        }, 
+        "integer(C_INT)": {
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_type": "int", 
+            "cpp_type": "int", 
+            "f_cast": "int({f_var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)"
+        }, 
+        "integer(C_LONG)": {
+            "PY_format": "l", 
+            "c_fortran": "integer(C_LONG)", 
+            "c_type": "long", 
+            "cpp_type": "long", 
+            "f_cast": "int({f_var}, C_LONG)", 
+            "f_kind": "C_LONG", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
+            "f_type": "integer(C_LONG)"
+        }, 
+        "long": {
+            "PY_format": "l", 
+            "c_fortran": "integer(C_LONG)", 
+            "c_type": "long", 
+            "cpp_type": "long", 
+            "f_cast": "int({f_var}, C_LONG)", 
+            "f_kind": "C_LONG", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
+            "f_type": "integer(C_LONG)"
+        }, 
+        "real(C_DOUBLE)": {
+            "PY_format": "d", 
+            "c_fortran": "real(C_DOUBLE)", 
+            "c_type": "double", 
+            "cpp_type": "double", 
+            "f_cast": "real({f_var}, C_DOUBLE)", 
+            "f_kind": "C_DOUBLE", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_DOUBLE"
+                ]
+            }, 
+            "f_type": "real(C_DOUBLE)"
+        }, 
+        "real(C_FLOAT)": {
+            "PY_format": "f", 
+            "c_fortran": "real(C_FLOAT)", 
+            "c_type": "float", 
+            "cpp_type": "float", 
+            "f_cast": "real({f_var}, C_FLOAT)", 
+            "f_kind": "C_FLOAT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_FLOAT"
+                ]
+            }, 
+            "f_type": "real(C_FLOAT)"
+        }, 
+        "size_t": {
+            "PY_ctor": "PyInt_FromLong({rv})", 
+            "c_fortran": "integer(C_SIZE_T)", 
+            "c_header": "stdlib.h", 
+            "c_type": "size_t", 
+            "cpp_type": "size_t", 
+            "f_cast": "int({f_var}, C_SIZE_T)", 
+            "f_kind": "C_SIZE_T", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_SIZE_T"
+                ]
+            }, 
+            "f_type": "integer(C_SIZE_T)"
+        }, 
+        "std::string": {
+            "PY_ctor": "PyString_FromString({c_var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "pre_call": [
+                        "std::string {cpp_var}({c_var});"
+                    ], 
+                    "pre_call_trim": [
+                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                    ]
+                }, 
+                "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_header": "<string>", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "std::string {cpp_var}({c_var});"
+                    ]
+                }
+            }
+        }, 
+        "string": {
+            "PY_ctor": "PyString_FromString({c_var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "pre_call": [
+                        "std::string {cpp_var}({c_var});"
+                    ], 
+                    "pre_call_trim": [
+                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                    ]
+                }, 
+                "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_header": "<string>", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "std::string {cpp_var}({c_var});"
+                    ]
+                }
+            }
+        }, 
+        "string_result_fstr": {
+            "PY_ctor": "PyString_FromString({c_var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "pre_call": [
+                        "std::string {cpp_var}({c_var});"
+                    ], 
+                    "pre_call_trim": [
+                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                    ]
+                }, 
+                "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_to_cpp": "{cpp_var}", 
+            "c_type": "char", 
+            "cpp_header": "<string>", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "character(*)", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "std::string {cpp_var}({c_var});"
+                    ]
+                }
+            }
+        }, 
+        "void": {
+            "PY_ctor": "PyCapsule_New({cpp_var}, NULL, NULL)", 
+            "c_fortran": "type(C_PTR)", 
+            "c_type": "void", 
+            "cpp_type": "void", 
+            "f_type": "type(C_PTR)"
+        }
+    }
+}
