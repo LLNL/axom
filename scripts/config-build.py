@@ -130,10 +130,10 @@ if args.buildpath != "":
     buildpath = args.buildpath
 elif args.hostconfig != "":
     # use host config name (via platform_info) as build dir base
-    buildpath = "-".join(["build",platform_info,args.buildtype.lower()]).replace("@","-")    
+    buildpath = "-".join(["build",platform_info,args.buildtype.lower()])    
 elif args.buildpath == "":
     # Generate build directory name based on platform, buildtype, compiler
-    buildpath = "-".join(["build",platform_info, args.compiler, args.buildtype.lower()]).replace("@","-")
+    buildpath = "-".join(["build",platform_info, args.compiler, args.buildtype.lower()])
 
 buildpath = os.path.abspath(buildpath)
 
