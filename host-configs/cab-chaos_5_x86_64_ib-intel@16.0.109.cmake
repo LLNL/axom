@@ -58,6 +58,10 @@ set(GENHTML_PATH "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/c
 # end uberenv host-config
 ##################################
 
+# (KW 3/2016) Temporarily disable CXX11 on intel builds until we resolve issue ATK-619
+set(ENABLE_CXX11 OFF CACHE PATH "")
+
+
 #######
 # MPI 
 #######
