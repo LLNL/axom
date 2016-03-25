@@ -121,6 +121,12 @@ class UberenvAsctoolkit(Package):
         else:
             cfg.write("# lcov and genhtml not built by uberenv\n\n")
 
+
+        # Note (KW 3/2016) -- per ATK-659, we are temporarily disabling CXX11 for default configurations on intel builds 
+        if "intel" in spec.compiler:
+            cfg.write("# Temporarily disable CXX11 on intel builds until we resolve issue ATK-619\n")
+            cfg.write('set(ENABLE_CXX11 OFF CACHE PATH "\n')
+            
         cfg.write("##################################\n")
         cfg.write("# end uberenv host-config\n")
         cfg.write("##################################\n")
