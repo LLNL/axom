@@ -50,7 +50,6 @@ set( quest_headers
     mesh/UnstructuredMesh.hpp
     
     ## STL library headers
-    stl/stla_io.hpp
     stl/STLReader.hpp
     
     ## quest interface headers
@@ -75,7 +74,6 @@ set( quest_sources
     mesh/UniformMesh.cpp
     
     ## STL library sources
-    stl/stla_io.cpp
     stl/STLReader.cpp
     
     ## quest interface sources
@@ -122,5 +120,6 @@ make_library( LIBRARY_NAME
               DEPENDS_ON
                 "${quest_depends_on}"
              )
+target_include_directories( quest PRIVATE "${CMAKE_SOURCE_DIR}/thirdparty/stla_io" )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )
