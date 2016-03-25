@@ -32,4 +32,4 @@ echo "-----------------------------------------------------------------------"
 /g/g16/atk/testing_framework/buildtest.py --installdocs --builddir=$ATK_JOB_BUILDDIR
 cd  /usr/global/web-pages/lc/www/toolkit/
 chgrp -R toolkit docs/
-echo "----------------------
+echo "-----------------------------------------------------------------------"
