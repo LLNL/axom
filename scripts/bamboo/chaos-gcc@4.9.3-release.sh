@@ -27,9 +27,8 @@ echo "-----------------------------------------------------------------------"
 
 echo "Installing docs to web space..."
 echo "-----------------------------------------------------------------------"
-#setenv ATK_JOB_BUILDDIR "/g/g16/atk/bambooAgent/asctoolkit.cab.llnl.gov/xml-data/build-dir/ASC-NIG-DC/asctoolkit/"
-#/g/g16/atk/testing_framework/buildtest.py -s -b --builddir='/g/g16/atk/bambooAgent/asctoolkit.cab.llnl.gov/xml-data/build-dir/ASC-NIG-DC/asctoolkit/' --installdocs -t test docs install
-/g/g16/atk/testing_framework/buildtest.py --installdocs --builddir=$ATK_JOB_BUILDDIR
-cd  /usr/global/web-pages/lc/www/toolkit/
-chgrp -R toolkit docs/
+# Add commands to copy out docs to web area, or make a separate script to do it and call that here.
+# Is there a way to terminate if the make docs above failed?  So we don't try to copy over the
+# files if that failed.
+chgrp -R toolkit /usr/global/web-pages/lc/www/toolkit/docs/
 echo "-----------------------------------------------------------------------"
