@@ -179,6 +179,14 @@ public:
   }
 
   /*!
+   * \brief Return true if view is empty.
+   */
+  bool isEmpty() const
+  {
+    return m_state == EMPTY;
+  }
+
+  /*!
    * \brief Convenience function that returns true if view is opaque
    *        (i.e., has access to data but has no knowledge of the data
    *        type or structure); false otherwise.
@@ -193,7 +201,7 @@ public:
    */
   bool isScalar() const
   {
-    return (m_state == SCALAR);
+    return m_state == SCALAR;
   }
 
   /*!
@@ -201,7 +209,7 @@ public:
    */
   bool isString() const
   {
-    return (m_state == STRING);
+    return m_state == STRING;
   }
 
   /*!
@@ -209,7 +217,7 @@ public:
    */
   TypeID getTypeID() const
   {
-    return static_cast<TypeID>(m_node.dtype().id());
+    return static_cast<TypeID>(m_schema.dtype().id());
   }
 
   /*!
@@ -523,6 +531,9 @@ public:
    * Data is undescribed (i.e., view is opaque) until an apply methods
    * is called on the view.
    *
+   * If external_ptr is NULL, the view will be EMPTY.
+   * Any existing description is unchanged.
+   *
    * \return pointer to this DataView object.
    */
   DataView * setExternalDataPtr(void * external_ptr);
@@ -744,16 +755,21 @@ private:
   bool isAttachBufferValid() const;
 
   /*!
-   *  \brief Private method returns true if setting external data pointer is
-             on view is a valid operation; else false
-   */
-  bool isSetExternalDataPtrValid() const;
-
-  /*!
    *  \brief Private method returns true if apply is a valid operation on
    *         view; else false
    */
   bool isApplyValid() const;
+
+  /*!
+   *  \brief Private method to remove any applied description;
+   *         but preserves user provided description.
+   *
+   */
+  void unapply()
+  {
+    m_node.reset();
+    m_is_applied = false;
+  }
 
 //@}
 

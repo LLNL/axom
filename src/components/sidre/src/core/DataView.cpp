@@ -451,20 +451,23 @@ void * DataView::getVoidPtr() const
  */
 DataView * DataView::setExternalDataPtr(void * external_ptr)
 {
-  if ( !isSetExternalDataPtrValid() )
+  if ( m_state == EMPTY || m_state == EXTERNAL )
   {
-    SLIC_CHECK_MSG( isSetExternalDataPtrValid(),
-                    "View state " << getStateStringName(m_state) <<
-                    " does not allow setting external data pointer");
-    return this;
-  }
+    if (external_ptr == ATK_NULLPTR)
+    {
+      unapply();
+      m_state = EMPTY;
+    }
+    else
+    {
+      m_external_ptr = external_ptr;
+      m_state = EXTERNAL;
 
-  m_external_ptr = external_ptr;
-  m_state = EXTERNAL;
-
-  if ( isDescribed() )
-  {
-    apply();
+      if ( isDescribed() )
+      {
+        apply();
+      }
+    }
   }
 
   return this;
@@ -488,16 +491,12 @@ bool DataView::isAllocated()
   switch (m_state)
   {
   case EMPTY:
-    SLIC_CHECK_MSG( m_state == EMPTY,
-                    "isAllocated was called with an empty view, was this intentional?");
-    break;
-  case EXTERNAL:
-    rv = m_external_ptr != ATK_NULLPTR;
     break;
   case BUFFER:
     // XXX what if buffer allocated but description is not applied. Look in Node?  isApplied?
     rv = m_data_buffer->isAllocated();
     break;
+  case EXTERNAL:
   case STRING:
   case SCALAR:
     rv = true;
@@ -741,9 +740,9 @@ bool DataView::isAllocateValid() const
   switch (m_state)
   {
   case EMPTY:
-      // allocate is valid assuming the caller attaches a buffer.
-      rv = true;
-      break;
+    // allocate is valid assuming the caller attaches a buffer.
+    rv = true;
+    break;
   case STRING:
   case SCALAR:
   case EXTERNAL:
@@ -791,23 +790,6 @@ bool DataView::isAttachBufferValid() const
 /*
  *************************************************************************
  *
- * PRIVATE method returns true if setting external data pointer on view
- * is valid; else false.
- *
- * This method does not need to emit the view state as part of it's
- * checking.  The caller functions are already printing out the view
- * state if this function returns false.
- *
- *************************************************************************
- */
-bool DataView::isSetExternalDataPtrValid() const
-{
-  return ( m_state == EMPTY || m_state == EXTERNAL );
-}
-
-/*
- *************************************************************************
- *
  * PRIVATE method returns true if apply is a valid operation on view;
  * else false.
  *
@@ -833,12 +815,13 @@ bool DataView::isApplyValid() const
   case SCALAR:
     SLIC_CHECK_MSG( false,
                     "Apply is not valid for " <<
-                    getStateStringName(m_state) << "view");
+                    getStateStringName(m_state) << " view");
     break;
   case EXTERNAL:
     if (m_external_ptr == ATK_NULLPTR && getNumElements() > 0)
     {
-      SLIC_CHECK_MSG(false, "Should not apply a non-zero length to a NULL address");
+      SLIC_CHECK_MSG(false,
+                     "Should not apply a non-zero length to a NULL address");
     }
     else
     {
