@@ -66,6 +66,53 @@ static State getState(DataView * view)
   }
 }
 
+//
+// Test various paths to creating a buffer.
+// Assume all are int[10]
+//
+static void alloc_view_checks(DataView * view,
+                              State state,
+                              bool isDescribed, bool isAllocated,
+                              bool isApplied,
+                              SidreLength len)
+{
+  SidreLength dims[2];
+
+  EXPECT_EQ(getState(view), state);
+
+  EXPECT_EQ(view->isDescribed(), isDescribed);
+  EXPECT_EQ(view->isAllocated(), isAllocated);
+  EXPECT_EQ(view->isApplied(), isApplied);
+
+  EXPECT_EQ(view->getNumElements(), len);
+  if (isDescribed)
+  {
+    EXPECT_EQ(view->getTypeID(), INT_ID);
+    EXPECT_EQ(view->getNumDimensions(), 1);
+    EXPECT_TRUE(view->getShape(1, dims) == 1 && dims[0] == len);
+    EXPECT_EQ(view->getTotalBytes(),
+              static_cast<SidreLength>( sizeof(int) * len) );
+  }
+#if 0
+  else
+  {
+    TypeID id = view->getTypeID();
+    EXPECT_EQ(id, INT_ID);
+  }
+#endif
+
+  if (isApplied)
+  {
+    int * data_ptr = view->getData();
+
+    for(int i=0 ; i<len ; i++)
+    {
+      data_ptr[i] = i*i;
+    }
+  }
+
+  //  view->print();
+}
 
 #if 0
 //------------------------------------------------------------------------------
@@ -190,6 +237,7 @@ TEST(sidre_view,scalar_view)
 //------------------------------------------------------------------------------
 
 // Most tests deallocate via the DataStore destructor
+// This is an explicit deallocate test
 
 TEST(sidre_view,alloc_and_dealloc)
 {
@@ -212,53 +260,83 @@ TEST(sidre_view,alloc_and_dealloc)
 }
 
 //------------------------------------------------------------------------------
-//
-// Test various paths to creating a buffer.
-// Assume all are int[10]
-//
-static void alloc_view_checks(DataView * view,
-                              State state,
-                              bool isDescribed, bool isAllocated,
-                              bool isApplied,
-                              SidreLength len)
+
+// Test allocate, reallocate, and deallocate when there are multiple views
+// attached to a buffer.  All operations should be no-ops.
+
+TEST(sidre_view,alloc_and_dealloc_multiview)
 {
-  SidreLength dims[2];
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
 
-  EXPECT_EQ(getState(view), state);
+  DataBuffer *dbuff;
+  DataView *dv1, *dv2;
+  void *baddr;
 
-  EXPECT_EQ(view->isDescribed(), isDescribed);
-  EXPECT_EQ(view->isAllocated(), isAllocated);
-  EXPECT_EQ(view->isApplied(), isApplied);
+  //---------- allocate
+  dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
+  EXPECT_FALSE(dbuff->isAllocated());
+  EXPECT_EQ(dbuff->getNumElements(), BLEN);
+  baddr = dbuff->getVoidPtr();
 
-  EXPECT_EQ(view->getNumElements(), len);
-  if (isDescribed)
-  {
-    EXPECT_EQ(view->getTypeID(), INT_ID);
-    EXPECT_EQ(view->getNumDimensions(), 1);
-    EXPECT_TRUE(view->getShape(1, dims) == 1 && dims[0] == len);
-    EXPECT_EQ(view->getTotalBytes(),
-              static_cast<SidreLength>( sizeof(int) * len) );
-  }
-#if 0
-  else
-  {
-    TypeID id = view->getTypeID();
-    EXPECT_EQ(id, INT_ID);
-  }
-#endif
+  dv1 = root->createView("dv1alloc", dbuff);
+  alloc_view_checks(dv1, BUFFER, true, false, false, BLEN);
+  dv2 = root->createView("dv2alloc", dbuff);
+  alloc_view_checks(dv2, BUFFER, true, false, false, BLEN);
+  EXPECT_EQ(dbuff->getNumViews(), 2);
 
-  if (isApplied)
-  {
-    int * data_ptr = view->getData();
+  dv1->allocate(INT_ID, BLEN+10);
+  alloc_view_checks(dv2, BUFFER, true, false, false, BLEN);
 
-    for(int i=0 ; i<len ; i++)
-    {
-      data_ptr[i] = i*i;
-    }
-  }
+  // buffer is unchanged
+  EXPECT_FALSE(dbuff->isAllocated());
+  EXPECT_EQ(dbuff->getNumElements(), BLEN);
+  EXPECT_EQ(dbuff->getVoidPtr(), baddr);
 
-  //  view->print();
+  //---------- reallocate
+  dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
+  EXPECT_TRUE(dbuff->isAllocated());
+  EXPECT_EQ(dbuff->getNumElements(), BLEN);
+  baddr = dbuff->getVoidPtr();
+
+  dv1 = root->createView("dv1realloc", dbuff);
+  alloc_view_checks(dv1, BUFFER, true, true, true, BLEN);
+  dv2 = root->createView("dv2realloc", dbuff);
+  alloc_view_checks(dv1, BUFFER, true, true, true, BLEN);
+  EXPECT_EQ(dbuff->getNumViews(), 2);
+
+  dv1->reallocate(BLEN+10);
+  alloc_view_checks(dv2, BUFFER, true, true, true, BLEN);
+
+  // buffer is unchanged
+  EXPECT_TRUE(dbuff->isAllocated());
+  EXPECT_EQ(dbuff->getNumElements(), BLEN);
+  EXPECT_EQ(dbuff->getVoidPtr(), baddr);
+
+  //---------- deallocate
+  dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
+  EXPECT_TRUE(dbuff->isAllocated());
+  EXPECT_EQ(dbuff->getNumElements(), BLEN);
+  baddr = dbuff->getVoidPtr();
+
+  dv1 = root->createView("dv1dealloc", dbuff);
+  alloc_view_checks(dv1, BUFFER, true, true, true, BLEN);
+  dv2 = root->createView("dv2dealloc", dbuff);
+  alloc_view_checks(dv1, BUFFER, true, true, true, BLEN);
+  EXPECT_EQ(dbuff->getNumViews(), 2);
+
+  dv1->deallocate();
+  alloc_view_checks(dv2, BUFFER, true, true, true, BLEN);
+
+  // buffer is unchanged
+  EXPECT_TRUE(dbuff->isAllocated());
+  EXPECT_EQ(dbuff->getNumElements(), BLEN);
+  EXPECT_EQ(dbuff->getVoidPtr(), baddr);
+
+  delete ds;
 }
+
+//------------------------------------------------------------------------------
 
 TEST(sidre_view,int_alloc_view)
 {
@@ -308,8 +386,32 @@ TEST(sidre_view,int_alloc_view)
   dv = root->createViewAndAllocate("a2", DataType::c_int(BLEN));
   alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 
-  delete ds;
+  // Allocate zero items
+  dv = root->createView("z0");
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
+  dv->allocate(INT_ID, 0);
+  alloc_view_checks(dv, BUFFER, true, false, false, 0);
+  EXPECT_FALSE(dv->getBuffer()->isAllocated());
 
+  // Reallocate zero items
+  dv = root->createView("z1");
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
+  dv->allocate(INT_ID, BLEN);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(dv->getBuffer()->isAllocated());
+  dv->reallocate(0);
+  alloc_view_checks(dv, BUFFER, true, false, false, 0);
+  EXPECT_FALSE(dv->getBuffer()->isAllocated());
+
+  // Deallocate
+  dv = root->createViewAndAllocate("z2", INT_ID, BLEN);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(dv->getBuffer()->isAllocated());
+  dv->deallocate();
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
+  EXPECT_FALSE(dv->getBuffer()->isAllocated());
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -447,6 +549,7 @@ TEST(sidre_view,int_buffer_view)
   dv->attachBuffer(dbuff);
   alloc_view_checks(dv, BUFFER, true, true, false, BLEN+5);  // XXX - how is isAllocated useful
 
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
