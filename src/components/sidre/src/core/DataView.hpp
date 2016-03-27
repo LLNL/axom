@@ -91,6 +91,7 @@ public:
   // private members.
   //
   friend class DataGroup;
+  friend class DataBuffer;
 
 
 //@{
@@ -743,6 +744,17 @@ private:
    */
   void describeShape(int ndims, SidreLength * shape);
 
+  /*!
+   *  \brief Private method to remove any applied description;
+   *         but preserves user provided description.
+   *
+   */
+  void unapply()
+  {
+    m_node.reset();
+    m_is_applied = false;
+  }
+
 //@}
 
 
@@ -760,17 +772,6 @@ private:
    *         view; else false
    */
   bool isApplyValid() const;
-
-  /*!
-   *  \brief Private method to remove any applied description;
-   *         but preserves user provided description.
-   *
-   */
-  void unapply()
-  {
-    m_node.reset();
-    m_is_applied = false;
-  }
 
 //@}
 

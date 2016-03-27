@@ -198,7 +198,7 @@ DataBuffer * DataBuffer::deallocate()
 
   for (size_t i = 0 ; i < m_views.size() ; ++i)
   {
-    m_views[i]->apply(0);
+    m_views[i]->unapply();
   }
 
   return this;

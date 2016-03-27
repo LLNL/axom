@@ -334,8 +334,9 @@ TEST(sidre_view,int_buffer_view)
   dv->reallocate(BLEN+5);
   alloc_view_checks(dv, BUFFER, true, true, true, BLEN+5);
 
+  // After deallocate, description is intact.
   dv->deallocate();
-  alloc_view_checks(dv, BUFFER, true, false, false, 0);
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN+5);
 
   //----------
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
