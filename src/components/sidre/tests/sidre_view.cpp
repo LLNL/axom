@@ -216,7 +216,8 @@ TEST(sidre_view,alloc_and_dealloc)
 static void alloc_view_checks(DataView * view,
                               State state,
                               bool isDescribed, bool isAllocated,
-                              bool isApplied)
+                              bool isApplied,
+			      SidreLength len)
 {
   SidreLength dims[2];
 
@@ -226,21 +227,21 @@ static void alloc_view_checks(DataView * view,
   EXPECT_EQ(view->isAllocated(), isAllocated);
   EXPECT_EQ(view->isApplied(), isApplied);
 
+  EXPECT_EQ(view->getNumElements(), len);
   if (isDescribed)
   {
     EXPECT_EQ(view->getTypeID(), INT_ID);
-    EXPECT_EQ(view->getNumElements(), BLEN);
     EXPECT_EQ(view->getNumDimensions(), 1);
-    EXPECT_TRUE(view->getShape(1, dims) == 1 && dims[0] == BLEN);
+    EXPECT_TRUE(view->getShape(1, dims) == 1 && dims[0] == len);
     EXPECT_EQ(view->getTotalBytes(),
-              static_cast<SidreLength>( sizeof(int) * BLEN) );
+              static_cast<SidreLength>( sizeof(int) * len) );
   }
 
   if (isApplied)
   {
     int * data_ptr = view->getData();
 
-    for(int i=0 ; i<BLEN ; i++)
+    for(int i=0 ; i<len ; i++)
     {
       data_ptr[i] = i*i;
     }
@@ -257,94 +258,51 @@ TEST(sidre_view,int_alloc_view)
   long shape[] = { BLEN };
 
   dv = root->createView("u0");
-  alloc_view_checks(dv, EMPTY, false, false, false);
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
   dv->allocate(INT_ID, BLEN);
-  alloc_view_checks(dv, BUFFER, true, true, true);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 #if 0
   dv = root->createView("u1");
-  alloc_view_checks(dv, EMPTY, false, false, false);
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
   dv->allocate(INT_ID, 1, shape);  // XXX - missing overload
-  alloc_view_checks(dv, BUFFEER, true, true, true);
+  alloc_view_checks(dv, BUFFEER, true, true, true, BLEN);
 #endif
   dv = root->createView("u2");
-  alloc_view_checks(dv, EMPTY, false, false, false);
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
   dv->allocate(DataType::c_int(BLEN));
-  alloc_view_checks(dv, BUFFER, true, true, true);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 
 
   dv = root->createView("v0", INT_ID, 10);
-  alloc_view_checks(dv, EMPTY, true, false, false);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
   dv->allocate();
-  alloc_view_checks(dv, BUFFER, true, true, true);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 
   dv = root->createView("v1", INT_ID, 1, shape);
-  alloc_view_checks(dv, EMPTY, true, false, false);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
   dv->allocate();
-  alloc_view_checks(dv, BUFFER, true, true, true);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 
   dv = root->createView("v2", DataType::c_int(BLEN));
-  alloc_view_checks(dv, EMPTY, true, false, false);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
   dv->allocate();
-  alloc_view_checks(dv, BUFFER, true, true, true);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 
 
   dv = root->createViewAndAllocate("a0", INT_ID, BLEN);
-  alloc_view_checks(dv, BUFFER, true, true, true);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 
   dv = root->createViewAndAllocate("a1", INT_ID, 1, shape);
-  alloc_view_checks(dv, BUFFER, true, true, true);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 
   dv = root->createViewAndAllocate("a2", DataType::c_int(BLEN));
-  alloc_view_checks(dv, BUFFER, true, true, true);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 
   delete ds;
 
 }
 
 //------------------------------------------------------------------------------
-
-static void buffer_view_checks(DataView * view,
-                               State state,
-                               bool isDescribed, bool isAllocated,
-                               bool isApplied)
-{
-  SidreLength dims[2];
-
-#if 0
-  if (view == NULL)
-  {
-    EXPECT_TRUE(view != NULL);
-    return;
-  }
-#endif
-  check_state(view, state);
-
-  EXPECT_EQ(view->isDescribed(), isDescribed);
-  EXPECT_EQ(view->isAllocated(), isAllocated);
-  EXPECT_EQ(view->isApplied(), isApplied);
-
-  if (isDescribed)
-  {
-    EXPECT_EQ(view->getTypeID(), INT_ID);
-    EXPECT_EQ(view->getNumElements(), BLEN);
-    EXPECT_EQ(view->getNumDimensions(), 1);
-    EXPECT_TRUE(view->getShape(1, dims) == 1 && dims[0] == BLEN);
-    EXPECT_EQ(view->getTotalBytes(),
-              static_cast<SidreLength>( sizeof(int) * BLEN) );
-  }
-
-  if (isApplied)
-  {
-    int * data_ptr = view->getData();
-
-    for(int i=0 ; i<BLEN ; i++)
-    {
-      data_ptr[i] = i*i;
-    }
-  }
-
-  view->print();
-}
 
 TEST(sidre_view,int_buffer_view)
 {
@@ -357,45 +315,66 @@ TEST(sidre_view,int_buffer_view)
   //----------
   dbuff = ds->createBuffer();
   dv = root->createView("u0");
-  buffer_view_checks(dv, EMPTY, false, false, false);
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
 
 #if 0
+  // Attach NULL buffer to EMPTY view, no-op
   dv->attachBuffer(NULL);
-  buffer_view_checks(dv, BUFFER, false, false, false);
+  alloc_view_checks(dv, BUFFER, false, false, false, 0);
 #endif
 
-  dv->attachBuffer(dbuff);   // Attach unallocated buffer
+  dv->attachBuffer(dbuff);   // Attach unallocated buffer to undescribed view
   EXPECT_EQ(dv->getBuffer(), dbuff);  // sanity check
-  buffer_view_checks(dv, BUFFER, false, false, false);
+  alloc_view_checks(dv, BUFFER, false, false, false, 0);
 
   dv->allocate();  // no-op  no description
-  buffer_view_checks(dv, BUFFER, false, false, false);
+  alloc_view_checks(dv, BUFFER, false, false, false, 0);
 
   dv->allocate(INT_ID, 10);
-  buffer_view_checks(dv, BUFFER, true, true, true);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 
-  // Deallocate View
+  dv->reallocate(BLEN+5);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN+5);
+
+  dv->deallocate();
+  alloc_view_checks(dv, BUFFER, true, false, false, 0);
 
   //----------
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
 
   dv = root->createView("u1");
-  buffer_view_checks(dv, EMPTY, false, false, false);
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
 
-  dv->attachBuffer(dbuff);   // Attach allocated buffer
-  //  buffer_view_checks(dv, BUFFER, true, true, true);
+#if 0
+  dv->attachBuffer(dbuff);   // Attach allocated buffer to undescribed view
+  //  alloc_view_checks(dv, BUFFER, true, true, true);
   // XXX - I claim attaching a buffer to an EMPTY view implies the description
-  buffer_view_checks(dv, BUFFER, false, true, false);
+  alloc_view_checks(dv, BUFFER, false, true, false, BLEN);
 
   // Attaching a buffer to a view which already has a buffer is a no-op
-#if 0
   otherbuffer = ds->createBuffer();
   dv->attachBuffer(otherbuffer);
   EXPECT_EQ(dv->getBuffer(), dbuff);
+
+  // Removes databuffer
+  dv->attachBuffer(NULL);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
 #endif
-  // Delete the buffer
 
+  //----------
+  dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
 
+  dv = root->createView("u2", INT_ID, BLEN);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
+
+  dv->attachBuffer(dbuff);   // Attach allocated buffer to described view
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
+
+#if 0
+  // Deallocate the buffer
+  dbuff->deallocate();
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
+#endif
 }
 
 //------------------------------------------------------------------------------
