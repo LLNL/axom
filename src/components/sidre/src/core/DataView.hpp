@@ -372,11 +372,18 @@ public:
   /*!
    * \brief Attach DataBuffer object to data view.
    *
+   * If the view has no description, then the buffer's description
+   * is copied into the view.
+   *
    * Note that, in general, the view cannot be used to access data in
    * buffer until one of the apply() methods is called. However, if
    * the view has a valid data description with a total number of bytes
    * that is <= number of bytes held in the buffer, then apply() will
    * be called internally.
+   *
+   * If data view already has a buffer and buff is NULL, then the
+   * existing buffer will be detached.  If the buffer has not views
+   * attached to it, then it will be deallocated.
    *
    * If data view already has a buffer, or it is an external view,
    * a scalar view, or a string view, this method does nothing.
@@ -747,12 +754,6 @@ private:
    *         valid operation; else false
    */
   bool isAllocateValid() const;
-
-  /*!
-   *  \brief Private method returns true if attaching buffer to view is a
-   *         valid operation; else false
-   */
-  bool isAttachBufferValid() const;
 
   /*!
    *  \brief Private method returns true if apply is a valid operation on

@@ -217,7 +217,7 @@ static void alloc_view_checks(DataView * view,
                               State state,
                               bool isDescribed, bool isAllocated,
                               bool isApplied,
-			      SidreLength len)
+                              SidreLength len)
 {
   SidreLength dims[2];
 
@@ -247,7 +247,7 @@ static void alloc_view_checks(DataView * view,
     }
   }
 
-  view->print();
+  //  view->print();
 }
 
 TEST(sidre_view,int_alloc_view)
@@ -317,17 +317,15 @@ TEST(sidre_view,int_buffer_view)
   dv = root->createView("u0");
   alloc_view_checks(dv, EMPTY, false, false, false, 0);
 
-#if 0
   // Attach NULL buffer to EMPTY view, no-op
   dv->attachBuffer(NULL);
-  alloc_view_checks(dv, BUFFER, false, false, false, 0);
-#endif
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
 
   dv->attachBuffer(dbuff);   // Attach unallocated buffer to undescribed view
-  EXPECT_EQ(dv->getBuffer(), dbuff);  // sanity check
   alloc_view_checks(dv, BUFFER, false, false, false, 0);
+  EXPECT_EQ(dv->getBuffer(), dbuff);  // sanity check
 
-  dv->allocate();  // no-op  no description
+  dv->allocate();  // no-op, no description
   alloc_view_checks(dv, BUFFER, false, false, false, 0);
 
   dv->allocate(INT_ID, 10);
@@ -345,21 +343,23 @@ TEST(sidre_view,int_buffer_view)
   dv = root->createView("u1");
   alloc_view_checks(dv, EMPTY, false, false, false, 0);
 
-#if 0
   dv->attachBuffer(dbuff);   // Attach allocated buffer to undescribed view
-  //  alloc_view_checks(dv, BUFFER, true, true, true);
-  // XXX - I claim attaching a buffer to an EMPTY view implies the description
-  alloc_view_checks(dv, BUFFER, false, true, false, BLEN);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_EQ(dbuff->getNumViews(), 1);
 
-  // Attaching a buffer to a view which already has a buffer is a no-op
+  // no-op, attaching a buffer to a view which already has a buffer
   otherbuffer = ds->createBuffer();
   dv->attachBuffer(otherbuffer);
-  EXPECT_EQ(dv->getBuffer(), dbuff);
+  EXPECT_EQ(dv->getBuffer(), dbuff); // same buffer as before
+  EXPECT_EQ(otherbuffer->getNumViews(), 0);
 
-  // Removes databuffer
+  // Removes buffer
   dv->attachBuffer(NULL);
   alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
-#endif
+  EXPECT_EQ(dbuff->getNumViews(), 0);
+  // XXX - should this be false?  It has no views.
+  //       Use dv->detachBuffer if user want to keep buffer around.
+  EXPECT_TRUE(dbuff->isAllocated());
 
   //----------
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);

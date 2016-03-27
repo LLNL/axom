@@ -336,6 +336,18 @@ void DataBuffer::detachView( DataView * view )
   // check if pos is ok?
   //Erase the "removed" elements.
   m_views.erase(pos, m_views.end());
+
+#if 0
+  // XXX test
+  if (getNumViews() == 0 )
+  {
+    // No views attached, garbage collect.
+    deallocate();
+    DataStore * ds = view->getOwningGroup()->getDataStore();
+    ds->destroyBuffer( m_index );
+  }
+#endif
+
 }
 
 /*

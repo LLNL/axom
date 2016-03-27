@@ -215,30 +215,38 @@ DataView * DataView::reallocate(const DataType& dtype)
 /*
  *************************************************************************
  *
- * Attach buffer to view.
+ * Attach/detach buffer to view.
  *
  *************************************************************************
  */
 DataView * DataView::attachBuffer(DataBuffer * buff)
 {
-  if ( !isAttachBufferValid() || buff == ATK_NULLPTR)
+  if ( m_state == BUFFER && buff == ATK_NULLPTR)
   {
-    SLIC_CHECK_MSG( isAttachBufferValid(),
-                    "View state " << getStateStringName(m_state) <<
-                    " does not allow attaching buffer");
-    SLIC_CHECK( buff != ATK_NULLPTR );
-    return this;
+    // Detach existing buffer.
+    m_data_buffer->detachView(this);
+    m_data_buffer = ATK_NULLPTR;
+    m_state = EMPTY;
+    unapply();
   }
-
-  buff->attachView(this);
-  m_data_buffer = buff;
-  m_state = BUFFER;
-  m_is_applied = false;
-
-  // If view is described and the buffer is allocated, then call apply.
-  if ( isDescribed() && m_data_buffer->isAllocated() )
+  else if ( m_state == EMPTY && buff != ATK_NULLPTR )
   {
-    apply();
+    buff->attachView(this);
+    m_data_buffer = buff;
+    m_state = BUFFER;
+    m_is_applied = false;
+
+    // If not described, use buffers's description if possible.
+    if ( !isDescribed() && buff->isDescribed())
+    {
+      describe( buff->getTypeID(), buff->getNumElements() );
+    }
+
+    // If view is described and the buffer is allocated, then call apply.
+    if ( isDescribed() && m_data_buffer->isAllocated() )
+    {
+      apply();
+    }
   }
 
   return this;
@@ -773,23 +781,6 @@ bool DataView::isAllocateValid() const
 /*
  *************************************************************************
  *
- * PRIVATE method returns true if attaching buffer to view is valid;
- * else false.
- *
- * This method does not need to emit the view state as part of it's
- * checking.  The caller functions are already printing out the view
- * state if this function returns false.
- *
- *************************************************************************
- */
-bool DataView::isAttachBufferValid() const
-{
-  return ( m_state == EMPTY || m_state == BUFFER );
-}
-
-/*
- *************************************************************************
- *
  * PRIVATE method returns true if apply is a valid operation on view;
  * else false.
  *
@@ -806,6 +797,7 @@ bool DataView::isApplyValid() const
   {
     SLIC_CHECK_MSG(false,
                    "Apply is not valid, no description in view to apply");
+    return rv;
   }
 
   switch (m_state)
