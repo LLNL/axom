@@ -239,22 +239,86 @@ TEST(sidre_view,scalar_view)
 // Most tests deallocate via the DataStore destructor
 // This is an explicit deallocate test
 
-TEST(sidre_view,alloc_and_dealloc)
+TEST(sidre_view,dealloc)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
+  DataBuffer *dbuff;
+  DataView * dv;
 
-  DataView * dv = root->createView("u0", INT_ID, 10);
-  EXPECT_FALSE(dv->isAllocated());
-
-  // try to deallocate an unallocated view
-  dv->deallocate();
-
-  dv->allocate();
-  EXPECT_TRUE(dv->isAllocated());
+  //----------  EMPTY(F,F,F)
+  dv = root->createView("e1");
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
 
   dv->deallocate();
-  EXPECT_FALSE(dv->isAllocated());
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
+
+  //----------  EMPTY(T,F,F)
+  dv = root->createView("e2", INT_ID, BLEN);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
+
+  dv->deallocate();
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
+
+  //----------  BUFFER(F,F,F)
+  dv = root->createView("b1");
+  dbuff = ds->createBuffer();
+  dv->attachBuffer(dbuff);
+  alloc_view_checks(dv, BUFFER, false, false, false, 0);
+  
+  dv->deallocate();
+  alloc_view_checks(dv, BUFFER, false, false, false, 0);
+  EXPECT_FALSE(dv->getBuffer()->isAllocated());
+
+  //---------- BUFFER(T,F,F)
+  dv = root->createView("b2");
+  dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
+  dv->attachBuffer(dbuff);
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
+  
+  dv->deallocate();
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
+  EXPECT_FALSE(dv->getBuffer()->isAllocated());
+
+  //---------- BUFFER(T,T,T)
+  dv = root->createView("b3");
+  dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
+  dv->attachBuffer(dbuff);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
+  
+  dv->deallocate();
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
+  EXPECT_FALSE(dv->getBuffer()->isAllocated());
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+
+// allocate/reallocate with zero items results in not applied.
+
+TEST(sidre_view,alloc_zero_items)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  DataView * dv;
+
+  // Allocate zero items
+  dv = root->createView("z0");
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
+  dv->allocate(INT_ID, 0);
+  alloc_view_checks(dv, BUFFER, true, false, false, 0);
+  EXPECT_FALSE(dv->getBuffer()->isAllocated());
+
+  // Reallocate zero items
+  dv = root->createView("z1");
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
+  dv->allocate(INT_ID, BLEN);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(dv->getBuffer()->isAllocated());
+  dv->reallocate(0);
+  alloc_view_checks(dv, BUFFER, true, false, false, 0);
+  EXPECT_FALSE(dv->getBuffer()->isAllocated());
 
   delete ds;
 }
@@ -385,31 +449,6 @@ TEST(sidre_view,int_alloc_view)
 
   dv = root->createViewAndAllocate("a2", DataType::c_int(BLEN));
   alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
-
-  // Allocate zero items
-  dv = root->createView("z0");
-  alloc_view_checks(dv, EMPTY, false, false, false, 0);
-  dv->allocate(INT_ID, 0);
-  alloc_view_checks(dv, BUFFER, true, false, false, 0);
-  EXPECT_FALSE(dv->getBuffer()->isAllocated());
-
-  // Reallocate zero items
-  dv = root->createView("z1");
-  alloc_view_checks(dv, EMPTY, false, false, false, 0);
-  dv->allocate(INT_ID, BLEN);
-  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
-  EXPECT_TRUE(dv->getBuffer()->isAllocated());
-  dv->reallocate(0);
-  alloc_view_checks(dv, BUFFER, true, false, false, 0);
-  EXPECT_FALSE(dv->getBuffer()->isAllocated());
-
-  // Deallocate
-  dv = root->createViewAndAllocate("z2", INT_ID, BLEN);
-  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
-  EXPECT_TRUE(dv->getBuffer()->isAllocated());
-  dv->deallocate();
-  alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
-  EXPECT_FALSE(dv->getBuffer()->isAllocated());
 
   delete ds;
 }
