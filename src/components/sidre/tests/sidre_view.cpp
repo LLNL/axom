@@ -32,34 +32,37 @@ enum State
   BUFFER,
   EXTERNAL,
   SCALAR,
-  STRING
+  STRING,
+  NOTYPE
 };
 
 
 // Check state of View based on booleans since m_state is private.
-static void check_state(DataView * view, State state)
+static State getState(DataView * view)
 {
-  switch (state)
+  if (view->isEmpty())
   {
-  case EMPTY:
-    EXPECT_TRUE(view->isEmpty());
-    break;
-  case BUFFER:
-    EXPECT_TRUE(view->hasBuffer()); // XXX - would isBuffer be of any use?
-    EXPECT_FALSE(view->isEmpty());
-    EXPECT_FALSE(view->isExternal());
-    EXPECT_FALSE(view->isScalar());
-    EXPECT_FALSE(view->isString());
-    break;
-  case EXTERNAL:
-    EXPECT_TRUE(view->isExternal());
-    break;
-  case SCALAR:
-    EXPECT_TRUE(view->isScalar());
-    break;
-  case STRING:
-    EXPECT_TRUE(view->isString());
-    break;
+    return EMPTY;
+  }
+  else if (view->hasBuffer())
+  {
+    return BUFFER;
+  }
+  else if (view->isExternal())
+  {
+    return EXTERNAL;
+  }
+  else if (view->isScalar())
+  {
+    return SCALAR;
+  }
+  else if (view->isString())
+  {
+    return STRING;
+  }
+  else
+  {
+    return NOTYPE;
   }
 }
 
@@ -143,7 +146,7 @@ static void scalar_view_checks(DataView * view,
 {
   SidreLength dims[2];
 
-  check_state(view, state);
+  EXPECT_EQ(getState(view), state);
 
   EXPECT_EQ(view->isDescribed(), isDescribed);
   EXPECT_EQ(view->isAllocated(), isAllocated);
@@ -221,7 +224,7 @@ static void alloc_view_checks(DataView * view,
 {
   SidreLength dims[2];
 
-  check_state(view, state);
+  EXPECT_EQ(getState(view), state);
 
   EXPECT_EQ(view->isDescribed(), isDescribed);
   EXPECT_EQ(view->isAllocated(), isAllocated);
@@ -236,6 +239,13 @@ static void alloc_view_checks(DataView * view,
     EXPECT_EQ(view->getTotalBytes(),
               static_cast<SidreLength>( sizeof(int) * len) );
   }
+#if 0
+  else
+  {
+    TypeID id = view->getTypeID();
+    EXPECT_EQ(id, INT_ID);
+  }
+#endif
 
   if (isApplied)
   {
@@ -366,19 +376,20 @@ TEST(sidre_view,int_buffer_view)
   //----------
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
 
-  dv = root->createView("u2", INT_ID, BLEN);
-  alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
+  // Note: view length is less than buffer length
+  dv = root->createView("u2", INT_ID, BLEN-5);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN-5);
 
   dv->attachBuffer(dbuff);   // Attach allocated buffer to described view
-  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN-5);
 
   // Deallocate the buffer which will update the view.
   dbuff->deallocate();
-  alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN-5);
 
   // Allocate the buffer via the view.
   dv->allocate();
-  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN-5);
   EXPECT_TRUE(dbuff->isAllocated());
 
 }
