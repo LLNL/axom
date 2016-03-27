@@ -502,6 +502,7 @@ bool DataView::isAllocated()
     break;
   case BUFFER:
     // XXX what if buffer allocated but description is not applied. Look in Node?  isApplied?
+    // false if buffer is not allocated or view is not described
     rv = m_data_buffer->isAllocated();
     break;
   case EXTERNAL:

@@ -243,7 +243,7 @@ TEST(sidre_view,dealloc)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  DataBuffer *dbuff;
+  DataBuffer * dbuff;
   DataView * dv;
 
   //----------  EMPTY(F,F,F)
@@ -265,7 +265,7 @@ TEST(sidre_view,dealloc)
   dbuff = ds->createBuffer();
   dv->attachBuffer(dbuff);
   alloc_view_checks(dv, BUFFER, false, false, false, 0);
-  
+
   dv->deallocate();
   alloc_view_checks(dv, BUFFER, false, false, false, 0);
   EXPECT_FALSE(dv->getBuffer()->isAllocated());
@@ -275,7 +275,7 @@ TEST(sidre_view,dealloc)
   dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
   alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
-  
+
   dv->deallocate();
   alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
   EXPECT_FALSE(dv->getBuffer()->isAllocated());
@@ -285,7 +285,7 @@ TEST(sidre_view,dealloc)
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
   alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
-  
+
   dv->deallocate();
   alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
   EXPECT_FALSE(dv->getBuffer()->isAllocated());
@@ -333,9 +333,9 @@ TEST(sidre_view,alloc_and_dealloc_multiview)
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataBuffer *dbuff;
-  DataView *dv1, *dv2;
-  void *baddr;
+  DataBuffer * dbuff;
+  DataView * dv1, * dv2;
+  void * baddr;
 
   //---------- allocate
   dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
