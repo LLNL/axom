@@ -303,6 +303,7 @@ TEST(sidre_view,int_alloc_view)
 }
 
 //------------------------------------------------------------------------------
+// All of these tests have only one view per buffer.
 
 TEST(sidre_view,int_buffer_view)
 {
@@ -371,11 +372,15 @@ TEST(sidre_view,int_buffer_view)
   dv->attachBuffer(dbuff);   // Attach allocated buffer to described view
   alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 
-#if 0
-  // Deallocate the buffer
+  // Deallocate the buffer which will update the view.
   dbuff->deallocate();
   alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
-#endif
+
+  // Allocate the buffer via the view.
+  dv->allocate();
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(dbuff->isAllocated());
+
 }
 
 //------------------------------------------------------------------------------
