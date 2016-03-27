@@ -323,16 +323,27 @@ TEST(sidre_view,int_buffer_view)
   DataView * dv;
   //  long shape[] = { BLEN };
 
-  //----------
-  dbuff = ds->createBuffer();
-  dv = root->createView("u0");
+  //     view                        buffer
+  //                  undescribed  described  allocated
+  //     undescribed      1           2           3
+  //     described        4           5           6
+  //
+  //  buffer description incomptable with view description
+  //                               described  allocated
+  //     described                    7           8
+
+
+  //---------- 1
+  // Attach undescribed buffer to undescribed view
+  dv = root->createView("u1");
   alloc_view_checks(dv, EMPTY, false, false, false, 0);
 
-  // Attach NULL buffer to EMPTY view, no-op
+  // no-op, attach NULL buffer to EMPTY view
   dv->attachBuffer(NULL);
   alloc_view_checks(dv, EMPTY, false, false, false, 0);
 
-  dv->attachBuffer(dbuff);   // Attach unallocated buffer to undescribed view
+  dbuff = ds->createBuffer();
+  dv->attachBuffer(dbuff);
   alloc_view_checks(dv, BUFFER, false, false, false, 0);
   EXPECT_EQ(dv->getBuffer(), dbuff);  // sanity check
 
@@ -349,13 +360,22 @@ TEST(sidre_view,int_buffer_view)
   dv->deallocate();
   alloc_view_checks(dv, BUFFER, true, false, false, BLEN+5);
 
-  //----------
-  dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
-
-  dv = root->createView("u1");
+  //---------- 2
+  // Attach described buffer to undescribed view
+  dv = root->createView("u2");
   alloc_view_checks(dv, EMPTY, false, false, false, 0);
 
-  dv->attachBuffer(dbuff);   // Attach allocated buffer to undescribed view
+  dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
+  dv->attachBuffer(dbuff);
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
+
+  //---------- 3
+  // Attach allocated buffer to undescribed view
+  dv = root->createView("u3");
+  alloc_view_checks(dv, EMPTY, false, false, false, 0);
+
+  dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
+  dv->attachBuffer(dbuff);
   alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
   EXPECT_EQ(dbuff->getNumViews(), 1);
 
@@ -373,24 +393,59 @@ TEST(sidre_view,int_buffer_view)
   //       Use dv->detachBuffer if user want to keep buffer around.
   EXPECT_TRUE(dbuff->isAllocated());
 
-  //----------
+  //---------- 4
+  // Attach undescribed buffer to described view
+  dv = root->createView("u4", INT_ID, BLEN);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
+
+  dbuff = ds->createBuffer();
+  dv->attachBuffer(dbuff);
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
+
+  //---------- 5
+  // Attach described buffer to described view
+  dv = root->createView("u5", INT_ID, BLEN);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
+
+  dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
+  dv->attachBuffer(dbuff);
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
+
+  //---------- 6
+  // Attach allocated buffer to described view
+  dv = root->createView("u6", INT_ID, BLEN);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN);
+
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
-
-  // Note: view length is less than buffer length
-  dv = root->createView("u2", INT_ID, BLEN-5);
-  alloc_view_checks(dv, EMPTY, true, false, false, BLEN-5);
-
-  dv->attachBuffer(dbuff);   // Attach allocated buffer to described view
-  alloc_view_checks(dv, BUFFER, true, true, true, BLEN-5);
+  dv->attachBuffer(dbuff);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
 
   // Deallocate the buffer which will update the view.
   dbuff->deallocate();
-  alloc_view_checks(dv, BUFFER, true, false, false, BLEN-5);
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN);
 
   // Allocate the buffer via the view.
   dv->allocate();
-  alloc_view_checks(dv, BUFFER, true, true, true, BLEN-5);
+  alloc_view_checks(dv, BUFFER, true, true, true, BLEN);
   EXPECT_TRUE(dbuff->isAllocated());
+
+  //---------- 7
+  // Attach incompatable described buffer to described view
+  dv = root->createView("u7", INT_ID, BLEN+5);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN+5);
+
+  dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
+  dv->attachBuffer(dbuff);
+  alloc_view_checks(dv, BUFFER, true, false, false, BLEN+5);
+
+  //---------- 8
+  // Attach incompatable allocated buffer to described view
+  dv = root->createView("u8", INT_ID, BLEN+5);
+  alloc_view_checks(dv, EMPTY, true, false, false, BLEN+5);
+
+  dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
+  dv->attachBuffer(dbuff);
+  alloc_view_checks(dv, BUFFER, true, true, false, BLEN+5);  // XXX - how is isAllocated useful
 
 }
 
