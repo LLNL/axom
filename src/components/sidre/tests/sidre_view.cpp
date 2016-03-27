@@ -23,6 +23,47 @@ using asctoolkit::sidre::CHAR8_STR_ID;
 
 using namespace conduit;
 
+#define BLEN 10
+
+// Match ViewBuffer states
+enum State
+{
+  EMPTY,
+  BUFFER,
+  EXTERNAL,
+  SCALAR,
+  STRING
+};
+
+
+// Check state of View based on booleans since m_state is private.
+static void check_state(DataView * view, State state)
+{
+  switch (state)
+  {
+  case EMPTY:
+    EXPECT_TRUE(view->isEmpty());
+    break;
+  case BUFFER:
+    EXPECT_TRUE(view->hasBuffer()); // XXX - would isBuffer be of any use?
+    EXPECT_FALSE(view->isEmpty());
+    EXPECT_FALSE(view->isExternal());
+    EXPECT_FALSE(view->isScalar());
+    EXPECT_FALSE(view->isString());
+    break;
+  case EXTERNAL:
+    EXPECT_TRUE(view->isExternal());
+    break;
+  case SCALAR:
+    EXPECT_TRUE(view->isScalar());
+    break;
+  case STRING:
+    EXPECT_TRUE(view->isString());
+    break;
+  }
+}
+
+
 #if 0
 //------------------------------------------------------------------------------
 
@@ -95,11 +136,14 @@ TEST(sidre_view,create_view_from_path)
 //------------------------------------------------------------------------------
 
 static void scalar_view_checks(DataView * view,
+                               State state,
                                bool isDescribed, bool isAllocated,
                                bool isApplied,
                                TypeID type, SidreLength len)
 {
   SidreLength dims[2];
+
+  check_state(view, state);
 
   EXPECT_EQ(view->isDescribed(), isDescribed);
   EXPECT_EQ(view->isAllocated(), isAllocated);
@@ -117,16 +161,16 @@ TEST(sidre_view,scalar_view)
   DataGroup * root = ds->getRoot();
 
   DataView * i0view = root->createView("i0")->setScalar(1);
-  scalar_view_checks(i0view, true, true, true, INT_ID, 1);
+  scalar_view_checks(i0view, SCALAR, true, true, true, INT_ID, 1);
 
   DataView * i1view = root->createViewScalar("i1", 1);
-  scalar_view_checks(i1view, true, true, true, INT_ID, 1);
+  scalar_view_checks(i1view, SCALAR, true, true, true, INT_ID, 1);
 
   DataView * s0view = root->createView("s0")->setString("I am a string");
-  scalar_view_checks(s0view, true, true, true, CHAR8_STR_ID, 14);
+  scalar_view_checks(s0view, STRING, true, true, true, CHAR8_STR_ID, 14);
 
   DataView * s1view = root->createViewString("s1", "I am a string");
-  scalar_view_checks(s1view, true, true, true, CHAR8_STR_ID, 14);
+  scalar_view_checks(s1view, STRING, true, true, true, CHAR8_STR_ID, 14);
 
   // Check illegal operations
   i0view->apply(INT_ID, 1);
@@ -169,13 +213,111 @@ TEST(sidre_view,alloc_and_dealloc)
 // Test various paths to creating a buffer.
 // Assume all are int[10]
 //
-#define BLEN 10
+static void alloc_view_checks(DataView * view,
+                              State state,
+                              bool isDescribed, bool isAllocated,
+                              bool isApplied)
+{
+  SidreLength dims[2];
+
+  check_state(view, state);
+
+  EXPECT_EQ(view->isDescribed(), isDescribed);
+  EXPECT_EQ(view->isAllocated(), isAllocated);
+  EXPECT_EQ(view->isApplied(), isApplied);
+
+  if (isDescribed)
+  {
+    EXPECT_EQ(view->getTypeID(), INT_ID);
+    EXPECT_EQ(view->getNumElements(), BLEN);
+    EXPECT_EQ(view->getNumDimensions(), 1);
+    EXPECT_TRUE(view->getShape(1, dims) == 1 && dims[0] == BLEN);
+    EXPECT_EQ(view->getTotalBytes(),
+              static_cast<SidreLength>( sizeof(int) * BLEN) );
+  }
+
+  if (isApplied)
+  {
+    int * data_ptr = view->getData();
+
+    for(int i=0 ; i<BLEN ; i++)
+    {
+      data_ptr[i] = i*i;
+    }
+  }
+
+  view->print();
+}
+
+TEST(sidre_view,int_alloc_view)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  DataView * dv;
+  long shape[] = { BLEN };
+
+  dv = root->createView("u0");
+  alloc_view_checks(dv, EMPTY, false, false, false);
+  dv->allocate(INT_ID, BLEN);
+  alloc_view_checks(dv, BUFFER, true, true, true);
+#if 0
+  dv = root->createView("u1");
+  alloc_view_checks(dv, EMPTY, false, false, false);
+  dv->allocate(INT_ID, 1, shape);  // XXX - missing overload
+  alloc_view_checks(dv, BUFFEER, true, true, true);
+#endif
+  dv = root->createView("u2");
+  alloc_view_checks(dv, EMPTY, false, false, false);
+  dv->allocate(DataType::c_int(BLEN));
+  alloc_view_checks(dv, BUFFER, true, true, true);
+
+
+  dv = root->createView("v0", INT_ID, 10);
+  alloc_view_checks(dv, EMPTY, true, false, false);
+  dv->allocate();
+  alloc_view_checks(dv, BUFFER, true, true, true);
+
+  dv = root->createView("v1", INT_ID, 1, shape);
+  alloc_view_checks(dv, EMPTY, true, false, false);
+  dv->allocate();
+  alloc_view_checks(dv, BUFFER, true, true, true);
+
+  dv = root->createView("v2", DataType::c_int(BLEN));
+  alloc_view_checks(dv, EMPTY, true, false, false);
+  dv->allocate();
+  alloc_view_checks(dv, BUFFER, true, true, true);
+
+
+  dv = root->createViewAndAllocate("a0", INT_ID, BLEN);
+  alloc_view_checks(dv, BUFFER, true, true, true);
+
+  dv = root->createViewAndAllocate("a1", INT_ID, 1, shape);
+  alloc_view_checks(dv, BUFFER, true, true, true);
+
+  dv = root->createViewAndAllocate("a2", DataType::c_int(BLEN));
+  alloc_view_checks(dv, BUFFER, true, true, true);
+
+  delete ds;
+
+}
+
+//------------------------------------------------------------------------------
 
 static void buffer_view_checks(DataView * view,
+                               State state,
                                bool isDescribed, bool isAllocated,
                                bool isApplied)
 {
   SidreLength dims[2];
+
+#if 0
+  if (view == NULL)
+  {
+    EXPECT_TRUE(view != NULL);
+    return;
+  }
+#endif
+  check_state(view, state);
 
   EXPECT_EQ(view->isDescribed(), isDescribed);
   EXPECT_EQ(view->isAllocated(), isAllocated);
@@ -208,54 +350,53 @@ TEST(sidre_view,int_buffer_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
+  DataBuffer * dbuff, * otherbuffer;
   DataView * dv;
-  long shape[] = { BLEN };
+  //  long shape[] = { BLEN };
 
+  //----------
+  dbuff = ds->createBuffer();
   dv = root->createView("u0");
-  buffer_view_checks(dv, false, false, false);
-  dv->allocate(INT_ID, BLEN);
-  buffer_view_checks(dv, true, true, true);
+  buffer_view_checks(dv, EMPTY, false, false, false);
+
 #if 0
-  dv = root->createView("u1");
-  buffer_view_checks(dv, false, false, false);
-  dv->allocate(INT_ID, 1, shape);
-  buffer_view_checks(dv, true, true, true);
+  dv->attachBuffer(NULL);
+  buffer_view_checks(dv, BUFFER, false, false, false);
 #endif
-  dv = root->createView("u2");
-  buffer_view_checks(dv, false, false, false);
-  dv->allocate(DataType::c_int(BLEN));
-  buffer_view_checks(dv, true, true, true);
 
+  dv->attachBuffer(dbuff);   // Attach unallocated buffer
+  EXPECT_EQ(dv->getBuffer(), dbuff);  // sanity check
+  buffer_view_checks(dv, BUFFER, false, false, false);
 
-  dv = root->createView("v0", INT_ID, 10);
-  buffer_view_checks(dv, true, false, false);
-  dv->allocate();
-  buffer_view_checks(dv, true, true, true);
+  dv->allocate();  // no-op  no description
+  buffer_view_checks(dv, BUFFER, false, false, false);
 
-  dv = root->createView("v1", INT_ID, 1, shape);
-  buffer_view_checks(dv, true, false, false);
-  dv->allocate();
-  buffer_view_checks(dv, true, true, true);
+  dv->allocate(INT_ID, 10);
+  buffer_view_checks(dv, BUFFER, true, true, true);
 
-  dv = root->createView("v2", DataType::c_int(BLEN));
-  buffer_view_checks(dv, true, false, false);
-  dv->allocate();
-  buffer_view_checks(dv, true, true, true);
+  // Deallocate View
 
+  //----------
+  dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
 
-  dv = root->createViewAndAllocate("a0", INT_ID, BLEN);
-  buffer_view_checks(dv, true, true, true);
+  dv = root->createView("u1");
+  buffer_view_checks(dv, EMPTY, false, false, false);
 
-  dv = root->createViewAndAllocate("a1", INT_ID, 1, shape);
-  buffer_view_checks(dv, true, true, true);
+  dv->attachBuffer(dbuff);   // Attach allocated buffer
+  //  buffer_view_checks(dv, BUFFER, true, true, true);
+  // XXX - I claim attaching a buffer to an EMPTY view implies the description
+  buffer_view_checks(dv, BUFFER, false, true, false);
 
-  dv = root->createViewAndAllocate("a2", DataType::c_int(BLEN));
-  buffer_view_checks(dv, true, true, true);
+  // Attaching a buffer to a view which already has a buffer is a no-op
+#if 0
+  otherbuffer = ds->createBuffer();
+  dv->attachBuffer(otherbuffer);
+  EXPECT_EQ(dv->getBuffer(), dbuff);
+#endif
+  // Delete the buffer
 
-  delete ds;
 
 }
-#undef BLEN
 
 //------------------------------------------------------------------------------
 
@@ -463,7 +604,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
   DataBuffer * dbuff = ds->createBuffer()->allocate(INT_ID, elem_count);
   EXPECT_EQ(dbuff->getNumElements(), elem_count);
 
-  // Initilize buffer data for testing below.
+  // Initialize buffer data for testing below.
   int * b_ptr = dbuff->getData();
   for(SidreLength i = 0 ; i < elem_count ; ++i)
   {
