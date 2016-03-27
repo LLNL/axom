@@ -17,7 +17,9 @@ using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
 using asctoolkit::sidre::SidreLength;
+using asctoolkit::sidre::TypeID;
 using asctoolkit::sidre::INT_ID;
+using asctoolkit::sidre::CHAR8_STR_ID;
 
 using namespace conduit;
 
@@ -92,44 +94,46 @@ TEST(sidre_view,create_view_from_path)
 
 //------------------------------------------------------------------------------
 
+static void scalar_view_checks(DataView * view,
+                               bool isDescribed, bool isAllocated,
+                               bool isApplied,
+                               TypeID type, SidreLength len)
+{
+  SidreLength dims[2];
+
+  EXPECT_EQ(view->isDescribed(), isDescribed);
+  EXPECT_EQ(view->isAllocated(), isAllocated);
+  EXPECT_EQ(view->isApplied(), isApplied);
+
+  EXPECT_EQ(view->getTypeID(), type);
+  EXPECT_EQ(view->getNumElements(), len);
+  EXPECT_EQ(view->getNumDimensions(), 1);
+  EXPECT_TRUE(view->getShape(1, dims) == 1 && dims[0] == len);
+}
+
 TEST(sidre_view,scalar_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  SidreLength dims[2];
 
-  // integer scalar
   DataView * i0view = root->createView("i0")->setScalar(1);
-  EXPECT_EQ(i0view->getNumElements(), 1u);
-  EXPECT_EQ(i0view->getNumDimensions(), 1);
-  EXPECT_TRUE(i0view->getShape(1, dims) == 1 && dims[0] == 1);
+  scalar_view_checks(i0view, true, true, true, INT_ID, 1);
 
-  // Should report an error
-  i0view->apply(INT_ID, 1);
-
-  // string
-  DataView * s0view = root->createView("s0")->setString("I am a string");
-  EXPECT_EQ(s0view->getNumElements(), 14u);
-  EXPECT_EQ(s0view->getNumDimensions(), 1);
-  EXPECT_TRUE(s0view->getShape(1, dims) == 1 && dims[0] == 14);
-
-  // using convenience functions
-  // integer scalar
   DataView * i1view = root->createViewScalar("i1", 1);
-  EXPECT_EQ(i1view->getNumElements(), 1u);
-  EXPECT_EQ(i1view->getNumDimensions(), 1);
-  EXPECT_TRUE(i1view->getShape(1, dims) == 1 && dims[0] == 1);
+  scalar_view_checks(i1view, true, true, true, INT_ID, 1);
 
-  // string
+  DataView * s0view = root->createView("s0")->setString("I am a string");
+  scalar_view_checks(s0view, true, true, true, CHAR8_STR_ID, 14);
+
   DataView * s1view = root->createViewString("s1", "I am a string");
-  EXPECT_EQ(s1view->getNumElements(), 14u);
-  EXPECT_EQ(s1view->getNumDimensions(), 1);
-  EXPECT_TRUE(s1view->getShape(1, dims) == 1 && dims[0] == 14);
+  scalar_view_checks(s1view, true, true, true, CHAR8_STR_ID, 14);
 
   // Check illegal operations
+  i0view->apply(INT_ID, 1);
   i0view->allocate();
   i0view->deallocate();
 
+  s0view->apply(INT_ID, 1);
   s0view->allocate();
   s0view->deallocate();
 
@@ -161,50 +165,97 @@ TEST(sidre_view,alloc_and_dealloc)
 }
 
 //------------------------------------------------------------------------------
+//
+// Test various paths to creating a buffer.
+// Assume all are int[10]
+//
+#define BLEN 10
 
-TEST(sidre_view,int_buffer_from_view)
+static void buffer_view_checks(DataView * view,
+                               bool isDescribed, bool isAllocated,
+                               bool isApplied)
+{
+  SidreLength dims[2];
+
+  EXPECT_EQ(view->isDescribed(), isDescribed);
+  EXPECT_EQ(view->isAllocated(), isAllocated);
+  EXPECT_EQ(view->isApplied(), isApplied);
+
+  if (isDescribed)
+  {
+    EXPECT_EQ(view->getTypeID(), INT_ID);
+    EXPECT_EQ(view->getNumElements(), BLEN);
+    EXPECT_EQ(view->getNumDimensions(), 1);
+    EXPECT_TRUE(view->getShape(1, dims) == 1 && dims[0] == BLEN);
+    EXPECT_EQ(view->getTotalBytes(),
+              static_cast<SidreLength>( sizeof(int) * BLEN) );
+  }
+
+  if (isApplied)
+  {
+    int * data_ptr = view->getData();
+
+    for(int i=0 ; i<BLEN ; i++)
+    {
+      data_ptr[i] = i*i;
+    }
+  }
+
+  view->print();
+}
+
+TEST(sidre_view,int_buffer_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
+  DataView * dv;
+  long shape[] = { BLEN };
 
-  DataView * dv = root->createViewAndAllocate("u0", DataType::c_int(10));
+  dv = root->createView("u0");
+  buffer_view_checks(dv, false, false, false);
+  dv->allocate(INT_ID, BLEN);
+  buffer_view_checks(dv, true, true, true);
+#if 0
+  dv = root->createView("u1");
+  buffer_view_checks(dv, false, false, false);
+  dv->allocate(INT_ID, 1, shape);
+  buffer_view_checks(dv, true, true, true);
+#endif
+  dv = root->createView("u2");
+  buffer_view_checks(dv, false, false, false);
+  dv->allocate(DataType::c_int(BLEN));
+  buffer_view_checks(dv, true, true, true);
 
-  EXPECT_EQ(dv->getTypeID(), INT_ID);
-  int * data_ptr = dv->getData();
 
-  for(int i=0 ; i<10 ; i++)
-  {
-    data_ptr[i] = i*i;
-  }
+  dv = root->createView("v0", INT_ID, 10);
+  buffer_view_checks(dv, true, false, false);
+  dv->allocate();
+  buffer_view_checks(dv, true, true, true);
 
-  dv->print();
+  dv = root->createView("v1", INT_ID, 1, shape);
+  buffer_view_checks(dv, true, false, false);
+  dv->allocate();
+  buffer_view_checks(dv, true, true, true);
 
-  EXPECT_EQ(dv->getTotalBytes(), static_cast<SidreLength>( sizeof(int) * 10) );
+  dv = root->createView("v2", DataType::c_int(BLEN));
+  buffer_view_checks(dv, true, false, false);
+  dv->allocate();
+  buffer_view_checks(dv, true, true, true);
+
+
+  dv = root->createViewAndAllocate("a0", INT_ID, BLEN);
+  buffer_view_checks(dv, true, true, true);
+
+  dv = root->createViewAndAllocate("a1", INT_ID, 1, shape);
+  buffer_view_checks(dv, true, true, true);
+
+  dv = root->createViewAndAllocate("a2", DataType::c_int(BLEN));
+  buffer_view_checks(dv, true, true, true);
+
   delete ds;
 
 }
-
-//------------------------------------------------------------------------------
-
-TEST(sidre_view,int_buffer_from_view_conduit_value)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-
-  DataView * dv = root->createViewAndAllocate("u0", DataType::c_int(10));
-  int * data_ptr = dv->getData();
-
-  for(int i=0 ; i<10 ; i++)
-  {
-    data_ptr[i] = i*i;
-  }
-
-  dv->print();
-
-  EXPECT_EQ(dv->getTotalBytes(), static_cast<SidreLength>( sizeof(int) * 10) );
-  delete ds;
-
-}
+#undef BLEN
 
 //------------------------------------------------------------------------------
 
@@ -367,7 +418,7 @@ TEST(sidre_view,int_array_depth_view)
   for (int id = 2 ; id < 4 ; ++id)
   {
     views[id] = root->createView(view_names[id], dbuff)
-      ->apply(INT_ID, depth_nelems, id*depth_nelems);
+                ->apply(INT_ID, depth_nelems, id*depth_nelems);
   }
   EXPECT_EQ(dbuff->getNumViews(), 4);
 
