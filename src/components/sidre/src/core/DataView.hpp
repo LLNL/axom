@@ -780,7 +780,7 @@ private:
   ///
   /// Enum with constants that identify the state of a view.
   ///
-  /// Note that these states are not mutually-exclusive. These constants
+  /// Note that these states are mutually-exclusive. These constants
   /// combined with the boolean m_is_applied uniquely identify the view
   /// state, or how it was created and defined.
   ///

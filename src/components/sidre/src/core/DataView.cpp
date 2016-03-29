@@ -50,6 +50,7 @@ DataView * DataView::allocate()
   {
     if (m_state == EMPTY)
     {
+      SLIC_ASSERT( m_data_buffer == ATK_NULLPTR );
       m_data_buffer = m_owning_group->getDataStore()->createBuffer();
       m_data_buffer->attachView(this);
       m_state = BUFFER;
