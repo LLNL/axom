@@ -9,6 +9,8 @@
 #
 add_shroud( YAML_INPUT_FILE api.yaml
             TIMESTAMP capi.time
+            OUTPUT_C_FORTRAN_DIRECTORY .
+            OUTPUT_PYTHON_DIRECTORY .
             DEPENDS_SOURCE csidresplicer.c fsidresplicer.f pysidresplicer.c
             DEPENDS_BINARY genfsidresplicer.f
 )

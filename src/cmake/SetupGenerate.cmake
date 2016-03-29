@@ -8,11 +8,15 @@
 ## add_shroud( YAML_INPUT_FILE file
 ##             DEPENDS_SOURCE file1 ... filen
 ##             DEPENDS_BINARY file1 ... filen
+##             OUTPUT_C_FORTRAN_DIRECTORY dir
+##             OUTPUT_PYTHON_DIRECTORY dir
 ## )
 ##
 ##  YAML_INPUT_FILE - yaml input file to shroud. Required.
 ##  DEPENDS_SOURCE  - splicer files in the source directory
 ##  DEPENDS_BINARY  - splicer files in the binary directory
+##  OUTPUT_C_FORTRAN_DIRECTORY - directory for C and Fortran wrapper output files.
+##  OUTPUT_PYTHON_DIRECTORY - directory for Python wrapper output files.
 ##
 ## Add a shroud target to generate wrappers.
 ##
@@ -28,7 +32,11 @@ macro(add_shroud)
     set(SHROUD_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
     set(options)
-    set(singleValueArgs YAML_INPUT_FILE )
+    set(singleValueArgs
+        YAML_INPUT_FILE
+        OUTPUT_C_FORTRAN_DIRECTORY
+        OUTPUT_PYTHON_DIRECTORY
+    )
     set(multiValueArgs DEPENDS_SOURCE DEPENDS_BINARY )
 
     ## parse the arguments to the macro
@@ -38,6 +46,14 @@ macro(add_shroud)
     # make sure YAML_INPUT_FILE is defined
     if(NOT arg_YAML_INPUT_FILE)
       message(FATAL_ERROR "add_shroud macro must define YAML_INPUT_FILE")
+    endif()
+
+    if(arg_OUTPUT_C_FORTRAN_DIRECTORY)
+      set(SHROUD_OUTPUT_C_FORTRAN_DIRECTORY --outdir-c-fortran ${arg_OUTPUT_C_FORTRAN_DIRECTORY})
+    endif()
+
+    if(arg_OUTPUT_PYTHON_DIRECTORY)
+      set(SHROUD_OUTPUT_PYTHON_DIRECTORY --outdir-python ${arg_OUTPUT_PYTHON_DIRECTORY})
     endif()
 
     # convert DEPENDS to full paths
@@ -55,17 +71,23 @@ macro(add_shroud)
     set(_cfiles     ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.cfiles)
     set(_ffiles     ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.ffiles)
 
+    set(_cmd
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shroud
+        --logdir ${CMAKE_CURRENT_BINARY_DIR}
+        ${SHROUD_OUTPUT_C_FORTRAN_DIRECTORY}
+        ${SHROUD_OUTPUT_PYTHON_DIRECTORY}
+        # path controls where to search for splicer files listed in YAML_INPUT_FILE
+        --path ${CMAKE_CURRENT_BINARY_DIR}
+        --path ${CMAKE_CURRENT_SOURCE_DIR}
+        --cfiles ${_cfiles}
+        --ffiles ${_ffiles}
+        ${CMAKE_CURRENT_SOURCE_DIR}/${arg_YAML_INPUT_FILE}
+    )
+
     add_custom_command(
         OUTPUT  ${_timestamp}
         DEPENDS shroud_python ${CMAKE_CURRENT_SOURCE_DIR}/${arg_YAML_INPUT_FILE} ${shroud_depends}
-        COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shroud
-                --logdir ${CMAKE_CURRENT_BINARY_DIR}
-                # path controls where to search for splicer files listed in YAML_INPUT_FILE
-                --path ${CMAKE_CURRENT_BINARY_DIR}
-                --path ${CMAKE_CURRENT_SOURCE_DIR}
-                --cfiles ${_cfiles}
-                --ffiles ${_ffiles}
-                ${CMAKE_CURRENT_SOURCE_DIR}/${arg_YAML_INPUT_FILE}
+        COMMAND ${_cmd}
         COMMAND touch ${_timestamp}
         COMMAND rm -f ${_uncrustify}
         COMMENT "Running shroud ${arg_YAML_INPUT_FILE}"
@@ -84,7 +106,7 @@ macro(add_shroud)
     if(UNCRUSTIFY_FOUND AND (EXISTS ${_cfg}))
         add_custom_command(
             OUTPUT ${_uncrustify}
-	    DEPENDS  ${_timestamp}
+            DEPENDS  ${_timestamp}
             COMMAND ${UNCRUSTIFY_EXECUTABLE}
                     -c ${_cfg} --no-backup `cat ${_cfiles}`
             COMMAND touch ${_uncrustify}

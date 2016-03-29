@@ -1320,7 +1320,7 @@ class Namify(object):
 
 def main():
 
-    appname = 'modulator3'
+    appname = 'shroud'
     appver = '0.1'
 
     parser = argparse.ArgumentParser(
