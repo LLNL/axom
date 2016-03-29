@@ -158,7 +158,7 @@ class Wrapc(util.WrapperMixin):
                 ])
 
         self.config.cfiles.append(fname)
-        self.write_output_file(fname, self.config.binary_dir, output)
+        self.write_output_file(fname, self.config.c_fortran_dir, output)
 
     def write_impl(self, node, hname, fname, cls=False):
         # node = class node
@@ -188,7 +188,7 @@ class Wrapc(util.WrapperMixin):
         output.append('}  // extern "C"')
 
         self.config.cfiles.append(fname)
-        self.write_output_file(fname, self.config.binary_dir, output)
+        self.write_output_file(fname, self.config.c_fortran_dir, output)
 
     def write_headers(self, headers, output):
         headers.sort()
@@ -490,4 +490,4 @@ class Wrapc(util.WrapperMixin):
 
     def write_helper_files(self):
         output = [ whelpers.FccHeaders ]
-        self.write_output_file('shroudrt.hpp', self.config.binary_dir, output)
+        self.write_output_file('shroudrt.hpp', self.config.c_fortran_dir, output)
