@@ -38,6 +38,7 @@ enum State
 
 
 // Check state of View based on booleans since m_state is private.
+
 static State getState(DataView * view)
 {
   if (view->isEmpty())
@@ -68,7 +69,12 @@ static State getState(DataView * view)
 
 //
 // Test various paths to creating a buffer.
-// Assume all are int[10]
+// Assume all are int[len]
+//
+// Since this function is called in several places, any test failure
+// will be ambiguous.  It should probably be a bool function to allow
+// the caller to also report the error to identify the specific call
+// that failed.
 //
 static void checkViewValues(DataView * view,
                             State state,
@@ -454,6 +460,8 @@ TEST(sidre_view,int_alloc_view)
 }
 
 //------------------------------------------------------------------------------
+
+// Test some association/state transitions.
 // All of these tests have only one view per buffer.
 
 TEST(sidre_view,int_buffer_view)

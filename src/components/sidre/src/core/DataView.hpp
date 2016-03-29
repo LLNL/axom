@@ -383,7 +383,7 @@ public:
    * be called internally.
    *
    * If data view already has a buffer and buff is NULL, then the
-   * existing buffer will be detached.  If the buffer has not views
+   * existing buffer will be detached.  If the buffer has no views
    * attached to it, then it will be deallocated.
    *
    * If data view already has a buffer, or it is an external view,
@@ -748,6 +748,7 @@ private:
    *  \brief Private method to remove any applied description;
    *         but preserves user provided description.
    *
+   *  Note: The description is stored in m_schema.
    */
   void unapply()
   {

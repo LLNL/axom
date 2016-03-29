@@ -236,7 +236,7 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
     m_state = BUFFER;
     m_is_applied = false;
 
-    // If not described, use buffers's description if possible.
+    // If not described, use buffer's description if available.
     if ( !isDescribed() && buff->isDescribed())
     {
       describe( buff->getTypeID(), buff->getNumElements() );
@@ -416,8 +416,6 @@ void * DataView::getVoidPtr() const
   switch (m_state)
   {
   case EMPTY:
-    SLIC_CHECK_MSG( m_state != EMPTY,
-                    "Unable to retrieve raw pointer to data, view has no data.");
     break;
   case EXTERNAL:
     if (isApplied())
@@ -501,9 +499,8 @@ bool DataView::isAllocated()
   case EMPTY:
     break;
   case BUFFER:
-    // XXX what if buffer allocated but description is not applied. Look in Node?  isApplied?
     // false if buffer is not allocated or view is not described
-    rv = m_data_buffer->isAllocated();
+    rv = isDescribed() && m_data_buffer->isAllocated();
     break;
   case EXTERNAL:
   case STRING:
