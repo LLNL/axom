@@ -1,6 +1,7 @@
 #
 # Specify all headers
 #
+add_subdirectory(interface)
 
 set(sidre_headers
     core/Collections.hpp
@@ -24,44 +25,27 @@ set(sidre_sources
     core/SidreUtilities.cpp
 )
 
-add_shroud( YAML_INPUT_FILE shroud_sidre.yaml
-            C_FORTRAN_OUTPUT_DIR c_fortran
-            PYTHON_OUTOUT_DIR python
-            DEPENDS_SOURCE
-                c_fortran/csidresplicer.c c_fortran/fsidresplicer.f
-                python/pysidresplicer.c
-            DEPENDS_BINARY genfsidresplicer.f
-)
-
-add_custom_command(
-    OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/c_fortran/genfsidresplicer.py
-    COMMAND ${PYTHON_EXECUTABLE}
-            ${CMAKE_CURRENT_SOURCE_DIR}/c_fortran/genfsidresplicer.py fortran > 
-            ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
-)
-
 # The CAPI is only built to provide a Fortran interface.  If no Fortran,
 # disable CAPI.
 if (ENABLE_FORTRAN)
     list(APPEND sidre_headers
-        c_fortran/sidre.h
-        c_fortran/SidreTypes.h
+        interface/c_fortran/sidre.h
+        interface/c_fortran/SidreTypes.h
         # generated headers
-        c_fortran/wrapSidre.h
-        c_fortran/wrapDataStore.h
-        c_fortran/wrapDataGroup.h
-        c_fortran/wrapDataBuffer.h
-        c_fortran/wrapDataView.h
+        interface/c_fortran/wrapSidre.h
+        interface/c_fortran/wrapDataStore.h
+        interface/c_fortran/wrapDataGroup.h
+        interface/c_fortran/wrapDataBuffer.h
+        interface/c_fortran/wrapDataView.h
     )   
     set(sidre_fortran_sources
         # generated source
-        c_fortran/wrapSidre.cpp
-        c_fortran/wrapDataStore.cpp
-        c_fortran/wrapDataGroup.cpp
-        c_fortran/wrapDataBuffer.cpp
-        c_fortran/wrapDataView.cpp
-        c_fortran/wrapfsidre.f
+        interface/c_fortran/wrapSidre.cpp
+        interface/c_fortran/wrapDataStore.cpp
+        interface/c_fortran/wrapDataGroup.cpp
+        interface/c_fortran/wrapDataBuffer.cpp
+        interface/c_fortran/wrapDataView.cpp
+        interface/c_fortran/wrapfsidre.f
     )
 
     # wrappers depend on shroud runtime library
@@ -110,13 +94,13 @@ install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
 if(ENABLE_PYTHON_API)
     set(sidre_python_sources
-        python/pyDataStoretype.cpp
-        python/pyDataGrouptype.cpp
-        python/pyDataBuffertype.cpp
-        python/pyDataViewtype.cpp
-        python/pySidremodule.hpp
-        python/pySidremodule.cpp
-        python/pySidrehelper.cpp
+        interface/python/pyDataStoretype.cpp
+        interface/python/pyDataGrouptype.cpp
+        interface/python/pyDataBuffertype.cpp
+        interface/python/pyDataViewtype.cpp
+        interface/python/pySidremodule.hpp
+        interface/python/pySidremodule.cpp
+        interface/python/pySidrehelper.cpp
     )
 
     include_directories(${PYTHON_INCLUDE_DIRS})
