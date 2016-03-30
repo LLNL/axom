@@ -24,32 +24,48 @@ set(sidre_sources
     core/SidreUtilities.cpp
 )
 
+add_shroud( YAML_INPUT_FILE shroud_sidre.yaml
+            OUTPUT_C_FORTRAN_DIRECTORY c_fortran
+            OUTPUT_PYTHON_DIRECTORY python
+            DEPENDS_SOURCE
+                c_fortran/csidresplicer.c c_fortran/fsidresplicer.f
+                python/pysidresplicer.c
+            DEPENDS_BINARY genfsidresplicer.f
+)
+
+add_custom_command(
+    OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/c_fortran/genfsidresplicer.py
+    COMMAND ${PYTHON_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/c_fortran/genfsidresplicer.py fortran > 
+            ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
+)
+
 # The CAPI is only built to provide a Fortran interface.  If no Fortran,
 # disable CAPI.
 if (ENABLE_FORTRAN)
     list(APPEND sidre_headers
-        capi/sidre.h
-        capi/SidreTypes.h
+        c_fortran/sidre.h
+        c_fortran/SidreTypes.h
         # generated headers
-        capi/wrapSidre.h
-        capi/wrapDataStore.h
-        capi/wrapDataGroup.h
-        capi/wrapDataBuffer.h
-        capi/wrapDataView.h
+        c_fortran/wrapSidre.h
+        c_fortran/wrapDataStore.h
+        c_fortran/wrapDataGroup.h
+        c_fortran/wrapDataBuffer.h
+        c_fortran/wrapDataView.h
     )   
     set(sidre_fortran_sources
         # generated source
-        capi/wrapSidre.cpp
-        capi/wrapDataStore.cpp
-        capi/wrapDataGroup.cpp
-        capi/wrapDataBuffer.cpp
-        capi/wrapDataView.cpp
-        capi/wrapfsidre.f
+        c_fortran/wrapSidre.cpp
+        c_fortran/wrapDataStore.cpp
+        c_fortran/wrapDataGroup.cpp
+        c_fortran/wrapDataBuffer.cpp
+        c_fortran/wrapDataView.cpp
+        c_fortran/wrapfsidre.f
     )
-    add_subdirectory(capi)
 
     # wrappers depend on shroud runtime library
-    set(capi_depends_on
+    set(c_fortran_depends_on
         shroudrt
     )
 
@@ -71,18 +87,17 @@ make_library( LIBRARY_NAME
                   "${sidre_sources}"
                   "${sidre_fortran_sources}"
               DEPENDS_ON
-                  ${capi_depends_on}
+                  ${c_fortran_depends_on}
                   common
                   conduit
                   slic
-                  
              )
   
              
 set_target_properties(sidre  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 
 # XXX - would like to have shroudrt loaded automatically with sidre
-#target_link_libraries(sidre ${capi_depends_on})
+#target_link_libraries(sidre ${c_fortran_depends_on})
 
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
@@ -95,13 +110,13 @@ install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
 if(ENABLE_PYTHON_API)
     set(sidre_python_sources
-        capi/pyDataStoretype.cpp
-        capi/pyDataGrouptype.cpp
-        capi/pyDataBuffertype.cpp
-        capi/pyDataViewtype.cpp
-        capi/pySidremodule.hpp
-        capi/pySidremodule.cpp
-        capi/pySidrehelper.cpp
+        python/pyDataStoretype.cpp
+        python/pyDataGrouptype.cpp
+        python/pyDataBuffertype.cpp
+        python/pyDataViewtype.cpp
+        python/pySidremodule.hpp
+        python/pySidremodule.cpp
+        python/pySidrehelper.cpp
     )
 
     include_directories(${PYTHON_INCLUDE_DIRS})

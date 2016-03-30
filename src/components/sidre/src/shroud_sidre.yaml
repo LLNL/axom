@@ -405,9 +405,9 @@ patterns:
 # Files which contain code to be inserted into generated code
 splicer:
   c:
-  -  csidresplicer.c
+  -  c_fortran/csidresplicer.c
   f:
-  -  fsidresplicer.f
+  -  c_fortran/fsidresplicer.f
   -  genfsidresplicer.f
   py:
-  -  pysidresplicer.c
+  -  python/pysidresplicer.c

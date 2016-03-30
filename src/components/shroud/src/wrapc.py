@@ -5,6 +5,7 @@ Generate C bindings for C++ classes
 """
 from __future__ import print_function
 
+import os
 import whelpers
 import util
 from util import append_format
@@ -157,7 +158,7 @@ class Wrapc(util.WrapperMixin):
                 '#endif  // %s' % guard
                 ])
 
-        self.config.cfiles.append(fname)
+        self.config.cfiles.append(os.path.join(self.config.c_fortran_dir, fname))
         self.write_output_file(fname, self.config.c_fortran_dir, output)
 
     def write_impl(self, node, hname, fname, cls=False):
@@ -187,7 +188,7 @@ class Wrapc(util.WrapperMixin):
 
         output.append('}  // extern "C"')
 
-        self.config.cfiles.append(fname)
+        self.config.cfiles.append(os.path.join(self.config.c_fortran_dir, fname))
         self.write_output_file(fname, self.config.c_fortran_dir, output)
 
     def write_headers(self, headers, output):
