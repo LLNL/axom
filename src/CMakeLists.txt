@@ -32,7 +32,9 @@ add_subdirectory(components)
 ################################
 # Add docs
 ################################
-add_subdirectory(docs)
+if (BUILD_DOCS)
+  add_subdirectory(docs)
+endif()
 
 ################################
 # install targets from build

@@ -2,7 +2,10 @@
 #
 #
 project(shroud)
-add_subdirectory(docs)
+
+if (BUILD_DOCS)
+  add_subdirectory(docs)
+endif()
 
 # Make sure Python and required modules are available
 if(PYTHON_EXECUTABLE)
