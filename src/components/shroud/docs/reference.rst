@@ -1,6 +1,39 @@
 Reference
 =========
 
+Command Line Options
+--------------------
+
+help
+       Show this help message and exit
+
+version
+       Show program's version number and exit
+
+outdir OUTDIR
+       Directory for output files
+
+outdir-c-fortran OUTDIR_C_FORTRAN
+       Directory for C/Fortran wrapper output files, overrides --outdir
+
+outdir-python OUTDIR_PYTHON
+       Directory for Python wrapper output files, overrides --outdir
+
+logdir LOGDIR
+       Directory for log files
+
+cfiles CFILES
+       Output file with list of C and C++ files created
+
+ffiles FFILES
+       Output file with list of Fortran created
+
+path PATH
+       Colon delimited paths to search for splicer files, may
+       be supplied multiple times to create path
+
+
+
 Code
 ----
 
