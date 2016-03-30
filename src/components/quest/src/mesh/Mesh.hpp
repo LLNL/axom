@@ -246,7 +246,7 @@ protected:
   FieldData* m_face_data; /*!< FieldData instance for face-centered fields. */
 
 private:
-  DISABLE_COPY_AND_ASSIGNMENT(Mesh)
+  DISABLE_COPY_AND_ASSIGNMENT(Mesh);
 };
 
 } /* namespace meshtk */

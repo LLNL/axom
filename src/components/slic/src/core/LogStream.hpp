@@ -190,7 +190,7 @@ private:
                    const std::string& value,
                    std::size_t pos=std::string::npos );
 
-  DISABLE_COPY_AND_ASSIGNMENT(LogStream)
+  DISABLE_COPY_AND_ASSIGNMENT(LogStream);
 };
 
 } /* namespace slic */

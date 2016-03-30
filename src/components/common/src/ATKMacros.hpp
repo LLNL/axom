@@ -57,7 +57,7 @@
  *       // Other methods here
  *
  *   private:
- *      DISABLE_COPY_AND_ASSIGNMENT(Foo)
+ *      DISABLE_COPY_AND_ASSIGNMENT(Foo);
  *   };
  *
  * \endcode
@@ -66,11 +66,11 @@
 #ifdef USE_CXX11
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
   className( const className & ) = delete;                                     \
-  className& operator=(const className&) = delete;
+  className& operator=(const className&) = delete
 #else
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
   className( const className & );                                              \
-  className& operator=( const className& );
+  className& operator=( const className& )
 #endif
 
 

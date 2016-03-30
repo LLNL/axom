@@ -178,7 +178,7 @@ private:
 
   MeshCoordinates* m_coordinates;
 
-  DISABLE_COPY_AND_ASSIGNMENT(RectilinearMesh)
+  DISABLE_COPY_AND_ASSIGNMENT(RectilinearMesh);
 };
 
 } /* namespace meshtk */

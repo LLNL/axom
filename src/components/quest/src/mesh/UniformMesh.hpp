@@ -178,7 +178,7 @@ private:
   double m_origin[3];
   double m_h[3];
 
-  DISABLE_COPY_AND_ASSIGNMENT(UniformMesh)
+  DISABLE_COPY_AND_ASSIGNMENT(UniformMesh);
 };
 
 } /* namespace meshtk */

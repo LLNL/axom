@@ -507,7 +507,7 @@ private:
   int m_numLevels;                   /*!< current number of levels        */
   int m_maxNumLevels;                /*!< maximum level of the tree       */
 
-  DISABLE_COPY_AND_ASSIGNMENT(BVHTree)
+  DISABLE_COPY_AND_ASSIGNMENT(BVHTree);
 };
 
 } /* namespace quest */

@@ -90,7 +90,7 @@ protected:
     int*    m_face_connectivity;
 
 private:
-    DISABLE_COPY_AND_ASSIGNMENT(STLReader)
+    DISABLE_COPY_AND_ASSIGNMENT(STLReader);
 };
 
 } /* namespace quest */

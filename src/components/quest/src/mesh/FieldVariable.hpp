@@ -92,7 +92,7 @@ private:
     */
    FieldVariable() { m_data=ATK_NULLPTR; };
 
-   DISABLE_COPY_AND_ASSIGNMENT(FieldVariable)
+   DISABLE_COPY_AND_ASSIGNMENT(FieldVariable);
 };
 
 } /* namespace meshtk */
