@@ -14,4 +14,5 @@ option(ENABLE_HDF5 "ENABLE HDF5" ON)
 option(ENABLE_MPI "Enables MPI compiler support" OFF)
 option(ENABLE_OPENMP "Enables OpenMP compiler support" OFF)
 option(ENABLE_BENCHMARK "Enables google benchmark" OFF)
-
+option(ENABLE_SHROUD "Enables code interface generator for fortran, python, etc." ON)
+option(ENABLE_DOCS "Enables creation of sphinx and doxygen documentation." ON)

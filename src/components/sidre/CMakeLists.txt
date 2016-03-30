@@ -12,7 +12,9 @@ include_directories(${HDF5_INCLUDE_DIRS})
 ################################
 # Add the sparsehash headers include
 ################################
-include_directories( ${SPARSEHASH_INCLUDE_DIRS} )
+if(SPARSEHASH_FOUND)
+  include_directories( ${SPARSEHASH_INCLUDE_DIRS} )
+endif()
 
 ################################
 # Add the boost headers include

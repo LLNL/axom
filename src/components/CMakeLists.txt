@@ -4,7 +4,12 @@ endif(ENABLE_PYTHON_API)
 
 
 ## add components
-add_component(COMPONENT_NAME shroud DEFAULT_STATE ON)
+
+# Shroud has to be enabled if we are building with fortran.  Some components need the shroud runtime library.
+if(ENABLE_FORTRAN)
+  add_component(COMPONENT_NAME shroud DEFAULT_STATE ON)
+endif(ENABLE_FORTRAN)
+
 add_component(COMPONENT_NAME common DEFAULT_STATE ON)
 
 # Lumberjack is an extension to SLIC that supports message filtering and reduction capabilities for parallel (MPI) executables.

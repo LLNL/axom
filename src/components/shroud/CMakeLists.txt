@@ -1,6 +1,8 @@
 #
 #
 #
+if(ENABLE_SHROUD)
+
 project(shroud)
 add_subdirectory(docs)
 
@@ -73,10 +75,12 @@ add_test(
 
 if(ENABLE_FORTRAN)
     # Build runtime library
-    add_subdirectory(runtime)
+#    add_subdirectory(runtime)
     add_subdirectory(tests/run-tutorial)
     add_subdirectory(tests/run-strings)
 endif()
+
+endif(ENABLE_SHROUD)
 
 ################################
 # Create CMake importable
@@ -88,6 +92,8 @@ endif()
 #   TODO: Check if we can remove this after merging SLAM with sprint/10
 #       1/25/2016 -- LT: still a problem in sprint/11
 ################################
+
 if(ENABLE_FORTRAN)
-  install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+    add_subdirectory(runtime)
+    install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
 endif()

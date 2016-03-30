@@ -50,7 +50,7 @@ endif()
 # Python
 ################################
 
-if(PYTHON_EXECUTABLE)
+if(PYTHON_EXECUTABLE AND ENABLE_SHROUD)
     ################################
     # Setup includes for Python & Numpy
     ################################
@@ -81,4 +81,4 @@ if(PYTHON_EXECUTABLE)
 
     INSTALL(DIRECTORY DESTINATION ${CMAKE_Python_SITE_PACKAGES})
     INSTALL(CODE " set(ENV\{PYTHONPATH\} ${CMAKE_INSTALL_PREFIX}/${CMAKE_Python_SITE_PACKAGES}) ")
-endif(PYTHON_EXECUTABLE)
+endif(PYTHON_EXECUTABLE AND ENABLE_SHROUD)

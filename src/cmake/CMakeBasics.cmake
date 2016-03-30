@@ -104,12 +104,16 @@ include (DartConfig)
      "Directory where compiled libraries will go in the build tree"
      )
 
+     file(MAKE_DIRECTORY ${LIBRARY_OUTPUT_PATH})
+
  ## Set the path where all the install executables will go
  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
      ${PROJECT_BINARY_DIR}/bin
      CACHE PATH
      "Directory where executables will go in the build tree"
      )
+ 
+     file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 ## Set the path were all test executables will go
  set(TEST_OUTPUT_DIRECTORY
