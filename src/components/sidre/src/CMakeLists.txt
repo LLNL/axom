@@ -29,8 +29,8 @@ set(sidre_sources
 # disable CAPI.
 if (ENABLE_FORTRAN)
     list(APPEND sidre_headers
-        interface/c_fortran/sidre.h
-        interface/c_fortran/SidreTypes.h
+        interface/sidre.h
+        interface/SidreTypes.h
         # generated headers
         interface/c_fortran/wrapSidre.h
         interface/c_fortran/wrapDataStore.h
