@@ -126,10 +126,10 @@ class Hdf5(Package):
                 '--disable-hl',
             ])
 
-        if '+zlib' in specs:
-            extra_args.extend("--with-zlib=%s" % spec['zlib'].prefix)
+        if '+zlib' in spec:
+            extra_args.append("--with-zlib=%s" % spec['zlib'].prefix)
         else:
-            extra_args.extend("--disable-zlib")
+            extra_args.append("--disable-zlib")
 
         configure(
             "--prefix=%s" % prefix,
