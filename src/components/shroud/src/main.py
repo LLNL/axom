@@ -414,6 +414,17 @@ class Schema(object):
                 PY_ctor = 'PyString_FromString({c_var})',
                 base = 'string',
                 ),
+
+            MPI_Comm = util.Typedef(
+                'MPI_Comm',
+                cpp_type = 'MPI_Comm',
+                c_header = 'mpi.h',
+                c_type = 'MPI_Fint',
+                c_fortran = 'integer(C_INT)',  # usually, MPI_Fint will be equivalent to int
+                f_type = 'integer',
+                cpp_to_c = 'MPI_Comm_c2f({cpp_var})',
+                c_to_cpp = 'MPI_Comm_f2c({c_var})',
+                ),
             )
 
         if intel_15_fix:

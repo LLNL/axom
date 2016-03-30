@@ -201,6 +201,7 @@ endif()
 append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_OMP_PRAGMA_WARNINGS
                   DEFAULT "-Wno-unknown-pragmas"
                   XL      "-qignprag=omp"
+                  INTEL   "-diag-disable 3180"
                   )
 
 # Flag for disabling warnings about unused parameters.

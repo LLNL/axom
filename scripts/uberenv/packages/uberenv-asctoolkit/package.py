@@ -15,6 +15,7 @@ class UberenvAsctoolkit(Package):
     # standard spack packages
     depends_on("doxygen")
     depends_on("python")
+    depends_on("hdf5")
     depends_on("uncrustify")
 
     # custom spack packages
@@ -87,6 +88,10 @@ class UberenvAsctoolkit(Package):
             cfg.write("# no fortran compiler\n\n")
             cfg.write('set(ENABLE_FORTRAN OFF CACHE PATH "")\n\n')
 
+        cfg.write('set(ENABLE_HDF5 ON CACHE PATH "")\n\n')
+        cfg.write("# hdf5 from uberenv\n")
+        cfg.write('set(HDF5_DIR "%s" CACHE PATH "")\n\n' % spec['hdf5'].prefix)
+
         cfg.write("# conduit from uberenv\n")
         cfg.write('set(CONDUIT_DIR "%s" CACHE PATH "")\n\n' % conduit_dir)
 
@@ -116,6 +121,12 @@ class UberenvAsctoolkit(Package):
         else:
             cfg.write("# lcov and genhtml not built by uberenv\n\n")
 
+
+        # Note (KW 3/2016) -- per ATK-659, we are temporarily disabling CXX11 for default configurations on intel builds 
+        if "intel" in spec.compiler:
+            cfg.write("# Temporarily disable CXX11 on intel builds until we resolve issue ATK-619\n")
+            cfg.write('set(ENABLE_CXX11 OFF CACHE PATH "\n')
+            
         cfg.write("##################################\n")
         cfg.write("# end uberenv host-config\n")
         cfg.write("##################################\n")

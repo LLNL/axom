@@ -22,8 +22,13 @@ set(CMAKE_CXX_COMPILER "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-omp-3.5.
 
 set(ENABLE_FORTRAN OFF CACHE PATH "")
 
+set(ENABLE_HDF5 ON CACHE PATH "")
+
+# hdf5 from uberenv
+set(HDF5_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/clang-3.5.0/hdf5-1.8.16-ug3bosfeia7xbb2gk3hm5urdtf7uxljl" CACHE PATH "")
+
 # conduit from uberenv
-set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/clang-3.5.0/conduit-github-rq4njsbhpfr4shjmxfqklzr5kbh4aiht" CACHE PATH "")
+set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/clang-3.5.0/conduit-github-uvls4hb24ly273jcvnimd3jflk3dw5zs" CACHE PATH "")
 
 # doxygen from uberenv
 set(DOXYGEN_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/clang-3.5.0/doxygen-1.8.10-tmwreqbkrmnmaqnkxzumjanzmdevnn6r/bin/doxygen" CACHE PATH "")

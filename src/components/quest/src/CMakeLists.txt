@@ -50,8 +50,10 @@ set( quest_headers
     mesh/UnstructuredMesh.hpp
     
     ## STL library headers
-    stl/stla_io.hpp
     stl/STLReader.hpp
+    
+    ## quest interface headers
+    interface/quest.hpp
     
    )
    
@@ -72,11 +74,39 @@ set( quest_sources
     mesh/UniformMesh.cpp
     
     ## STL library sources
-    stl/stla_io.cpp
     stl/STLReader.cpp
     
+    ## quest interface sources
+    interface/quest.cpp
+    
    )
-   
+
+set( quest_depends_on 
+     common
+     slic
+     slam
+     )
+
+if (ENABLE_MPI)
+  list(APPEND quest_headers stl/PSTLReader.hpp)
+  list(APPEND quest_sources stl/PSTLReader.cpp)
+endif()
+
+if (ENABLE_FORTRAN)
+  
+  ## append shroud generated headers/sources to corresponding lists
+  list(APPEND quest_headers interface/shroud/wrapQUEST.h)
+  list(APPEND quest_sources interface/shroud/wrapQUEST.cpp)
+  list(APPEND quest_sources interface/shroud/wrapfquest.f)
+  
+  add_subdirectory(interface/shroud)
+  
+  include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
+  
+  list(APPEND quest_depends_on shroudrt)
+  
+endif()
+
 copy_headers_target( ${PROJECT_NAME} "${quest_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
                      
@@ -88,9 +118,8 @@ make_library( LIBRARY_NAME
                 "${quest_headers}"
               
               DEPENDS_ON
-                common
-                slic
-                slam
+                "${quest_depends_on}"
              )
+target_include_directories( quest PRIVATE "${CMAKE_SOURCE_DIR}/thirdparty/stla_io" )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )

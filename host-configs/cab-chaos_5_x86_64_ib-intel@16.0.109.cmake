@@ -22,8 +22,13 @@ set(ENABLE_FORTRAN ON CACHE PATH "")
 
 set(CMAKE_Fortran_COMPILER  "/usr/local/tools/ic-16.0.109/bin/ifort" CACHE PATH "")
 
+set(ENABLE_HDF5 ON CACHE PATH "")
+
+# hdf5 from uberenv
+set(HDF5_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109/hdf5-1.8.16-fmcjl6o6xofwgc7kuopfomfwh7eonr4c" CACHE PATH "")
+
 # conduit from uberenv
-set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109/conduit-github-hodnxg7yb62xzouc265rf4pjhhhppnrk" CACHE PATH "")
+set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109/conduit-github-zi6mybtnjbl4bdycmbz3mytrhmgldmcm" CACHE PATH "")
 
 # doxygen from uberenv
 set(DOXYGEN_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109/doxygen-1.8.10-i6mt67xh7b7qjfg76gnbjurhgymfq7va/bin/doxygen" CACHE PATH "")
@@ -52,6 +57,10 @@ set(GENHTML_PATH "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/c
 ##################################
 # end uberenv host-config
 ##################################
+
+# (KW 3/2016) Temporarily disable CXX11 on intel builds until we resolve issue ATK-619
+set(ENABLE_CXX11 OFF CACHE PATH "")
+
 
 #######
 # MPI 

@@ -74,6 +74,7 @@ make_library( LIBRARY_NAME
                   ${capi_depends_on}
                   common
                   conduit
+                  conduit_io
                   slic
                   
              )

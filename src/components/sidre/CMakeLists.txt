@@ -7,6 +7,7 @@ project(sidre)
 # Add the conduit include path
 ################################
 include_directories(${CONDUIT_INCLUDE_DIRS})
+include_directories(${HDF5_INCLUDE_DIRS})
 
 ################################
 # Add the sparsehash headers include

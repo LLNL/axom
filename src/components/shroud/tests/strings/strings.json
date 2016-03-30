@@ -1081,6 +1081,15 @@
         "C_invalid_name_as_buffer": "if ({cpp_var}.empty()) {{\n    std::memset({f_string}, ' ', {f_string_len});\n    return;\n}}\n"
     }, 
     "types": {
+        "MPI_Comm": {
+            "c_fortran": "integer(C_INT)", 
+            "c_header": "mpi.h", 
+            "c_to_cpp": "MPI_Comm_f2c({c_var})", 
+            "c_type": "MPI_Fint", 
+            "cpp_to_c": "MPI_Comm_c2f({cpp_var})", 
+            "cpp_type": "MPI_Comm", 
+            "f_type": "integer"
+        }, 
         "bool": {
             "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
