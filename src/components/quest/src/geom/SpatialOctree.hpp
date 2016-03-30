@@ -31,11 +31,13 @@ public:
     typedef quest::Point<double,DIM> SpacePt;
     typedef quest::Vector<double,DIM> SpaceVector;
 
-    typedef typename OctreeBase<DIM, BlockDataType>::GridPt GridPt;
+    typedef OctreeBase<DIM, BlockDataType> BaseOctree;
+
+    typedef typename BaseOctree::GridPt GridPt;
     typedef typename GridPt::CoordType CoordType;
 
-    typedef typename OctreeBase<DIM, BlockDataType>::MapType MapType;
-    typedef typename OctreeBase<DIM, BlockDataType>::BlockIndex BlockIndex;
+    typedef typename BaseOctree::MapType MapType;
+    typedef typename BaseOctree::BlockIndex BlockIndex;
 
     typedef asctoolkit::slam::Map<SpaceVector> SpaceVectorLevelMap;
 
@@ -45,7 +47,7 @@ public:
      * \param [in] bb The spatial extent to be indexed by the octree
      */
     SpatialOctree(const GeometricBoundingBox& bb)
-        : OctreeBase<DIM,BlockDataType>()
+        : BaseOctree()
         , m_deltaLevelMap(& this->m_levels)
         , m_invDeltaLevelMap(& this->m_levels)
         , m_boundingBox(bb)
@@ -87,7 +89,7 @@ public:
         SpacePt upper(m_boundingBox.getMin());
         for(int i=0; i< DIM; ++i)
         {
-            lower[i] +=  gridPt[i]   * deltaVec[i];
+            lower[i] += gridPt[i]   * deltaVec[i];
             upper[i] += (gridPt[i]+1)* deltaVec[i];
         }
 
@@ -114,26 +116,39 @@ public:
      * \note We are assuming a half-open interval on the bounding boxes.
      * \return The block index (i.e. grid point and level) of the leaf block containing the query point
      */
-    BlockIndex findLeafBlock(const SpacePt& pt, int startingLevel = 0) const
+    BlockIndex findLeafBlock(const SpacePt& pt, int startingLevel = -1) const
     {
-        BlockIndex leafBlock = BlockIndex::invalid_index();
-
         SLIC_ASSERT( m_boundingBox.contains(pt) );
 
-        bool found = false;
-        for(int lev=startingLevel; !found && lev < this->m_levels.size(); ++lev)
+        // Perform binary search on levels to find the leaf block containing the point
+        int minLev = 0;
+        int maxLev = this->maxLeafLevel();
+        int lev = (startingLevel == -1) ? maxLev >> 1 : startingLevel;
+
+        while(minLev <= maxLev)
         {
             GridPt gridPt = findGridCellAtLevel(pt, lev);
-            found = this->isLeaf(gridPt, lev);
-
-            if(found)
-                leafBlock = BlockIndex(gridPt, lev);
+            switch( this->blockStatus(gridPt,lev) )
+            {
+            case BaseOctree::BlockNotInTree:
+                // Block must be in coarser levels -- update bounds
+                maxLev = lev-1;
+                lev = (maxLev + minLev)>>1;
+                break;
+            case BaseOctree::InternalBlock:
+                // Block must be in deeper levels -- update bounds
+                minLev = lev+1;
+                lev = (maxLev + minLev)>>1;
+                break;
+            case BaseOctree::LeafBlock:
+                return BlockIndex(gridPt, lev);
+            }
         }
 
-        SLIC_ASSERT_MSG(found, "Point " << pt << " not found "
+        SLIC_ASSERT_MSG(false, "Point " << pt << " not found "
                         <<"in a leaf block of the octree");
 
-        return leafBlock;
+        return BlockIndex::invalid_index();
     }
 
     /**
@@ -147,56 +162,22 @@ public:
      */
     GridPt findGridCellAtLevel(const SpacePt& pt, int lev) const
     {
-        SpaceVector ptVec(m_boundingBox.getMin(), pt);
-        const SpaceVector& invDeltaVec = m_invDeltaLevelMap[ lev];
+        GridPt quantizedPt;
 
-        // Find the octree block that covers us at this level
-        // Note: we are assuming a half-open interval for all blocks
-        //       that are not on the upper boundary of the domain
-        GridPt quantizedPt = elementwiseQuantizedRatio( ptVec, invDeltaVec);
-
-        // Adjust grid cell when we are on the upper boundary of the domain
+        const SpacePt& bbMin = m_boundingBox.getMin();
+        const SpaceVector& invDelta = m_invDeltaLevelMap[ lev];
         const CoordType highestCell = this->maxCoordAtLevel(lev);
-        quantizedPt.array().clampUpper( highestCell );
 
-        return quantizedPt;
-    }
-
-    int containingLevel(const SpaceVector& range, int startingLevel = 0) const
-    {
-        int lev = startingLevel;
-
-        bool found = false;
-        for(; !found && lev < this->m_levels.size(); ++lev)
-        {
-            for(int i=0; !found && i<DIM; ++i)
-            {
-                if( m_deltaLevelMap[lev][i] < range[i])
-                {
-                    found = true;
-                    --lev;
-                }
-            }
-
-        }
-
-        return lev;
-    }
-
-private:
-    /**
-     * \brief Helper function to quantize to the integer grid
-     */
-    GridPt elementwiseQuantizedRatio(const SpaceVector& ptFromBBMin, const SpaceVector&  cellWidth) const
-    {
-        GridPt gridPt;
         for(int i=0; i< DIM; ++i)
         {
-            // Note: numerator and denominator are both positive numbers
-            // We do not need to take floor, but cast in case the cell is out of range of CoordType
-            gridPt[i] = static_cast<CoordType>(ptFromBBMin[i] * cellWidth[i]);
+            // Note: quantCell is always positive, and within range of CoordType
+            //       so truncating is equivalent to the floor function
+            // Note: we need to clamp to avoid setting coordinates past the upper boundaries
+            const CoordType quantCell = static_cast<CoordType>( (pt[i] - bbMin[i]) * invDelta[i] );
+            quantizedPt[i] = std::min( quantCell, highestCell);
         }
-        return gridPt;
+
+        return quantizedPt;
     }
 
 private:

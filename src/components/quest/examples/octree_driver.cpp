@@ -335,12 +335,15 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
         containment[ inode ] = inOutOctree.within(pt) ? 1 : 0;
     }
     timer.stop();
-    SLIC_INFO("Generating "<< gridRes << "^3 containment field took " << timer.elapsed() << " seconds.");
+    SLIC_INFO("Generating "<< gridRes << "^3 containment field took " << timer.elapsed() << " seconds"
+              << "( @ " << nnodes / timer.elapsed() << " queries per second)"
+        );
 
-
+  #ifdef DUMP_VTK_MESH
     std::stringstream sstr;
     sstr << "gridContainment_" << gridRes << ".vtk";
     write_vtk( umesh, sstr.str());
+  #endif
 
     delete umesh;
 }

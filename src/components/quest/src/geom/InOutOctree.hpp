@@ -106,6 +106,8 @@ namespace quest
          */
         bool hasTriangles() const { return !m_tris.empty(); }
 
+        void reserveTriangles(int count) { m_tris.reserve(count); }
+
         /**
          * \brief Find the 'color' of this LeafBlock
          * Black indicates that the entire block is within the surface
@@ -177,6 +179,8 @@ namespace quest
          * \brief Sets the vertex associated with this leaf
          */
         void setVertex(VertexIndex vInd) { m_vertIndex = vInd; }
+
+        void clearVertex() { m_vertIndex = NO_VERTEX; }
 
         void addTriangle(TriangleIndex tInd) { m_tris.push_back(tInd); }
 
@@ -878,12 +882,16 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutLea
 template<int DIM>
 void InOutOctree<DIM>::colorOctreeLeaves()
 {
+    typedef asctoolkit::utilities::Timer Timer;
+
     typedef typename OctreeBaseType::MapType LeavesLevelMap;
     typedef typename LeavesLevelMap::iterator LeavesIterator;
 
     // Bottom-up traversal of octree
     for(int lev=this->maxLeafLevel()-1; lev >= 0; --lev)
     {
+        Timer levelTimer(true);
+
         typedef std::vector<GridPt> GridPtVec;
         GridPtVec uncoloredBlocks;
 
@@ -917,7 +925,7 @@ void InOutOctree<DIM>::colorOctreeLeaves()
         // This should terminate since we know that one of its siblings (or their descendants) is gray
         while(! uncoloredBlocks.empty())
         {
-            SLIC_INFO("\tAt level " << lev << ": Attempting to add " << uncoloredBlocks.size() <<  " uncolored block");
+            //SLIC_INFO("\tAt level " << lev << ": Attempting to add " << uncoloredBlocks.size() <<  " uncolored block");
 
 
             int prevCount = uncoloredBlocks.size();
@@ -935,6 +943,8 @@ void InOutOctree<DIM>::colorOctreeLeaves()
             //
         }
 
+
+      #ifdef ATK_DEBUG
         ////Assumption is that by the time we get to the end, all blocks will be colored...
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
@@ -947,6 +957,9 @@ void InOutOctree<DIM>::colorOctreeLeaves()
                             << " was not colored."
             );
         }
+       #endif
+
+        SLIC_INFO("\tColoring level "<< lev << " took " << levelTimer.elapsed() << " seconds.");
 
     }
 
@@ -1020,6 +1033,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & pt, const InOutLeafData& 
 template<int DIM>
 void InOutOctree<DIM>::insertMeshTriangles ()
 {
+    typedef asctoolkit::utilities::Timer Timer;
+
     typedef typename OctreeBaseType::MapType LeavesLevelMap;
     typedef typename LeavesLevelMap::iterator LeavesIterator;
 
@@ -1035,6 +1050,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
     // Iterate through octree levels and insert triangles into the blocks that they intersect
     for(int lev=0; lev< this->m_levels.size(); ++lev)
     {
+        Timer levelTimer(true);
+
         LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
@@ -1078,6 +1095,7 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                 childBlk[j]  = blk.child(j);
                 childBB[j]   = this->blockBoundingBox( childBlk[j] );
                 childData[j] = &(*this)[childBlk[j] ];
+				//childData[j]->reserveTriangles(numTriangles);
             }
 
             // Add all triangles to intersecting children blocks
@@ -1105,6 +1123,9 @@ void InOutOctree<DIM>::insertMeshTriangles ()
 
             blkData.clear();
         }
+
+        if(! levelLeafMap.empty() )
+          SLIC_INFO("\tInserting triangles into level " << lev <<" took " << levelTimer.elapsed() <<" seconds.");
     }
 
 }
@@ -1403,6 +1424,9 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
     {
         const LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
         levelBlocks[lev] = levelLeafMap.size();
+        levelLeaves[lev] = 0;
+        levelLeavesWithVert[lev] = 0;
+        levelTriangleRefCount[lev] = 0;
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
             if(it->second.isLeaf())
@@ -1429,21 +1453,30 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
     {
         if(levelBlocks[lev] > 0)
         {
+            int percentWithVert = (levelLeaves[lev] > 0)
+                    ? (100. * levelLeavesWithVert[lev]) / levelLeaves[lev]
+                    : 0;
+
             octreeStatsStr << "\t Level " << lev
-                           << " has " << levelLeavesWithVert[lev] << " leaves with vert"
-                           << " out of " << levelLeaves[lev] << " leaves; "
-                           <<  levelBlocks[lev] - levelLeaves[lev] << " internal blocks."
-                           << " and " << levelTriangleRefCount[lev] << " triangle references.\n";
+                           << " has " << levelBlocks[lev] << " blocks -- "
+                           <<  levelBlocks[lev] - levelLeaves[lev] << " internal; "
+                           <<  levelLeaves[lev] << " leaves "
+                           << " (" <<   percentWithVert  << "% w/ vert); ";
+            if(trianglesAlreadyInserted)
+                octreeStatsStr << " and " << levelTriangleRefCount[lev] << " triangle references.";
+
+            octreeStatsStr <<"\n";
         }
     }
 
 
     double meshNumTriangles = static_cast<double>(m_elementSet.size());
+    int percentWithVert = (100. * totalLeavesWithVert) / totalLeaves;
     octreeStatsStr<<"  Mesh has " << m_vertexSet.size() << " vertices."
-                 <<"\n  Octree has " << totalLeavesWithVert << " filled leaves; "
-                 <<  totalLeaves << " leaves; "
-                 <<  totalBlocks - totalLeaves << " internal blocks; "
-                 << totalBlocks << " overall blocks."
+                 <<"\n  Octree has " << totalBlocks << " blocks; "
+                 <<  totalBlocks - totalLeaves << " internal; "
+                 <<  totalLeaves << " leaves "
+                 << " (" <<   percentWithVert  << "% w/ vert); "
                  <<" \n\t There were " << totalTriangleRefCount << " triangle references "
                  <<" (avg. " << totalTriangleRefCount /  meshNumTriangles << " refs per triangle).\n";
 

@@ -495,10 +495,7 @@ public:
    */
   bool isLeaf(const GridPt& pt, int lev) const
   {
-      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[lev] ];
-      LevelMapCIterator blockIt = levelLeafMap.find(pt);
-
-      return (blockIt != levelLeafMap.end() && blockIt->second.isLeaf() );
+      return blockStatus(pt,lev)== LeafBlock;
   }
 
   /**
@@ -508,7 +505,7 @@ public:
    */
   bool isLeaf(const BlockIndex& block) const
   {
-      return isLeaf(block.pt(), block.level());
+      return blockStatus(block)== LeafBlock;
   }
 
 
@@ -520,10 +517,7 @@ public:
    */
   bool isInternal(const GridPt& pt, int lev) const
   {
-      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[lev] ];
-      LevelMapCIterator blockIt = levelLeafMap.find(pt);
-
-      return (blockIt != levelLeafMap.end() && (! blockIt->second.isLeaf()) );
+      return blockStatus(pt,lev)== InternalBlock;
   }
 
   /**
@@ -533,7 +527,7 @@ public:
    */
   bool isInternal(const BlockIndex& block) const
   {
-      return isInternal(block.pt(), block.level());
+      return blockStatus(block)== InternalBlock;
   }
 
   /**
@@ -646,36 +640,67 @@ public:
    * \return The blockIndex of the finest octree leaf covering blk, if it exists,
    *    BlockIndex::invalid_index otherwise (e.g. blk is out of bounds)
    */
-  BlockIndex coveringLeafBlock(const BlockIndex& blk) const
+  BlockIndex coveringLeafBlock(BlockIndex blk) const
   {
       // Check that point is in bounds
       if(!this->inBounds(blk))
           return BlockIndex::invalid_index();
 
-      // Check if the block exists at the current level (and is a leaf)
-      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[blk.level()] ];
-      LevelMapCIterator blockIt = levelLeafMap.find(blk.pt());
-      if( blockIt != levelLeafMap.end()) // octree hasBlock( blk))
+      switch( blockStatus(blk) )
       {
-          if( blockIt->second.isLeaf() )  // and isLeaf() -- Neighbor is at same level
-              return blk;
-          else
-          {   // The neighbor is internal, so its children are at a finer level
-              return BlockIndex::invalid_index();
-          }
+      case LeafBlock:       // Already a leaf -- nothing to do
+          break;
+      case InternalBlock:   // An internal block -- no tree leaf can contain it
+          blk = BlockIndex::invalid_index();
+          break;
+      case BlockNotInTree:  // Find its nearest ancestor in the tree (it will be a leaf)
+          do {
+              blk = blk.parent();
+          } while( ! this-> hasBlock(blk));
+
+          SLIC_ASSERT( this->isLeaf(blk));
+          break;
       }
-      else
-      {
-          // Same level neighbor doesn't exist -- find its ancestor
-          BlockIndex ancestorBlk = blk.parent();
-          while(! this->hasBlock(ancestorBlk))
-          {
-              ancestorBlk = ancestorBlk.parent();
-          }
-          SLIC_ASSERT( this->isLeaf(ancestorBlk));
-          return ancestorBlk;
-      }
+
+      return blk;
   }
+
+protected:
+  /**
+   * \brief Helper enumeration for status of a BlockIndex within an octree instance
+   */
+  enum TreeBlock { BlockNotInTree, InternalBlock, LeafBlock};
+
+
+  /**
+   * \brief Helper function to determine the status of a BlockIndex within an octree instance
+   * \note This function is meant to help with implementing basic octree functionality
+   *       and is not meant to be exposed in the public API
+   * \param pt The grid point of the block index that we are testing
+   * \param lev The level of the block index that we are testing
+   */
+  TreeBlock blockStatus(const GridPt & pt, int lev) const
+  {
+      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[lev] ];
+      LevelMapCIterator blockIt = levelLeafMap.find(pt);
+
+      if(blockIt == levelLeafMap.end())
+          return BlockNotInTree;
+
+      return (blockIt->second.isLeaf()) ? LeafBlock: InternalBlock;
+  }
+
+  /**
+   * \brief Helper function to determine the status of a BlockIndex within an octree instance
+   * \note This function is meant to help with implementing basic octree functionality
+   *       and is not meant to be exposed in the public API
+   * \param blk The block index we are testing
+   */
+  TreeBlock blockStatus(const BlockIndex& blk) const
+  {
+      return blockStatus(blk.pt(), blk.level());
+  }
+
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(OctreeBase)
