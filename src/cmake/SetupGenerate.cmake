@@ -8,15 +8,15 @@
 ## add_shroud( YAML_INPUT_FILE file
 ##             DEPENDS_SOURCE file1 ... filen
 ##             DEPENDS_BINARY file1 ... filen
-##             OUTPUT_C_FORTRAN_DIRECTORY dir
-##             OUTPUT_PYTHON_DIRECTORY dir
+##             C_FORTRAN_OUTPUT_DIR dir
+##             PYTHON_OUTPUT_DIR dir
 ## )
 ##
 ##  YAML_INPUT_FILE - yaml input file to shroud. Required.
 ##  DEPENDS_SOURCE  - splicer files in the source directory
 ##  DEPENDS_BINARY  - splicer files in the binary directory
-##  OUTPUT_C_FORTRAN_DIRECTORY - directory for C and Fortran wrapper output files.
-##  OUTPUT_PYTHON_DIRECTORY - directory for Python wrapper output files.
+##  C_FORTRAN_OUTPUT_DIR - directory for C and Fortran wrapper output files.
+##  PYTHON_OUTPUT_DIR - directory for Python wrapper output files.
 ##
 ## Add a shroud target to generate wrappers.
 ##
@@ -34,8 +34,8 @@ macro(add_shroud)
     set(options)
     set(singleValueArgs
         YAML_INPUT_FILE
-        OUTPUT_C_FORTRAN_DIRECTORY
-        OUTPUT_PYTHON_DIRECTORY
+        C_FORTRAN_OUTPUT_DIR
+        PYTHON_OUTPUT_DIR
     )
     set(multiValueArgs DEPENDS_SOURCE DEPENDS_BINARY )
 
@@ -48,12 +48,12 @@ macro(add_shroud)
       message(FATAL_ERROR "add_shroud macro must define YAML_INPUT_FILE")
     endif()
 
-    if(arg_OUTPUT_C_FORTRAN_DIRECTORY)
-      set(SHROUD_OUTPUT_C_FORTRAN_DIRECTORY --outdir-c-fortran ${arg_OUTPUT_C_FORTRAN_DIRECTORY})
+    if(arg_C_FORTRAN_OUTPUT_DIR)
+      set(SHROUD_C_FORTRAN_OUTPUT_DIR --outdir-c-fortran ${arg_C_FORTRAN_OUTPUT_DIR})
     endif()
 
-    if(arg_OUTPUT_PYTHON_DIRECTORY)
-      set(SHROUD_OUTPUT_PYTHON_DIRECTORY --outdir-python ${arg_OUTPUT_PYTHON_DIRECTORY})
+    if(arg_PYTHON_OUTPUT_DIR)
+      set(SHROUD_PYTHON_OUTPUT_DIR --outdir-python ${arg_PYTHON_OUTPUT_DIR})
     endif()
 
     # convert DEPENDS to full paths
@@ -74,8 +74,8 @@ macro(add_shroud)
     set(_cmd
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shroud
         --logdir ${CMAKE_CURRENT_BINARY_DIR}
-        ${SHROUD_OUTPUT_C_FORTRAN_DIRECTORY}
-        ${SHROUD_OUTPUT_PYTHON_DIRECTORY}
+        ${SHROUD_C_FORTRAN_OUTPUT_DIR}
+        ${SHROUD_PYTHON_OUTPUT_DIR}
         # path controls where to search for splicer files listed in YAML_INPUT_FILE
         --path ${CMAKE_CURRENT_BINARY_DIR}
         --path ${CMAKE_CURRENT_SOURCE_DIR}

@@ -25,8 +25,8 @@ set(sidre_sources
 )
 
 add_shroud( YAML_INPUT_FILE shroud_sidre.yaml
-            OUTPUT_C_FORTRAN_DIRECTORY c_fortran
-            OUTPUT_PYTHON_DIRECTORY python
+            C_FORTRAN_OUTPUT_DIR c_fortran
+            PYTHON_OUTOUT_DIR python
             DEPENDS_SOURCE
                 c_fortran/csidresplicer.c c_fortran/fsidresplicer.f
                 python/pysidresplicer.c
