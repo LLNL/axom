@@ -1,7 +1,7 @@
 #!/bin/sh
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c intel@15.0.187 --buildtype RelWithDebInfo --cmakeoption ENABLE_CXX11=FALSE
+./scripts/config-build.py -c intel@15.0.187 --buildtype RelWithDebInfo -DENABLE_CXX11=FALSE
 cd build-chaos-intel@15.0.187-relwithdebinfo
 echo "-----------------------------------------------------------------------"
 
