@@ -1,7 +1,7 @@
 #!/bin/sh
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c gcc@4.9.3 --buildtype Debug --cmakeoption="ENABLE_CODECOV=TRUE" 
+./scripts/config-build.py -c gcc@4.9.3 --buildtype Debug -DENABLE_CODECOV=TRUE 
 cd build-chaos-gcc@4.9.3-debug
 echo "-----------------------------------------------------------------------"
 

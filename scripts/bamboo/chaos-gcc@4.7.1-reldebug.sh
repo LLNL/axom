@@ -1,7 +1,7 @@
 #!/bin/sh
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c gcc@4.7.1 --buildtype RelWithDebInfo --cmakeoption ENABLE_CXX11=FALSE
+./scripts/config-build.py -c gcc@4.7.1 --buildtype RelWithDebInfo -DENABLE_CXX11=FALSE
 cd build-chaos-gcc@4.7.1-relwithdebinfo
 echo "-----------------------------------------------------------------------"
 
