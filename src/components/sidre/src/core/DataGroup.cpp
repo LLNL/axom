@@ -788,7 +788,35 @@ void DataGroup::save(const std::string& obase,
     Node n;
     copyToNode(n);
     // for debugging call: n.print();
-    n.save(obase);
+    conduit::io::save(n, obase);
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Save this group object (including data views and child groups) to an
+ * hdf5 file named "obase".
+ *
+ * Note: Only valid protocol is "conduit".
+ *
+ *************************************************************************
+ *          */
+void DataGroup::save(const std::string& obase,
+                     const std::string& protocol, 
+                     const hid_t& h5_file_id) const
+{
+  if (protocol == "conduit_hdf5")
+  {
+    Node n;
+    copyToNode(n);
+    std::string file_path;
+    std::string hdf5_path;
+    conduit::utils::split_string(obase,
+                                 std::string(":"),
+                                 file_path,
+                                 hdf5_path); 
+    conduit::io::hdf5_write(n, h5_file_id, hdf5_path);
   }
 }
 
@@ -810,7 +838,39 @@ void DataGroup::load(const std::string& obase,
     destroyGroups();
     destroyViews();
     Node n;
-    n.load(obase);
+    conduit::io::load(obase, n);
+    // for debugging call: n.print();
+    copyFromNode(n);
+  }
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Load data group (including data views and child groups) from an hdf5 file
+ * named "obase" into this group object.
+ *
+ * Note: Only valid protocol is "conduit_hdf5".
+ *
+ *************************************************************************
+ */
+void DataGroup::load(const std::string& obase,
+                     const std::string& protocol,
+                     const hid_t& h5_file_id)
+{
+  if (protocol == "conduit_hdf5")
+  {
+    destroyGroups();
+    destroyViews();
+    std::string file_path;
+    std::string hdf5_path;
+    conduit::utils::split_string(obase,
+                                 std::string(":"),
+                                 file_path,
+                                 hdf5_path);
+    Node n;
+    conduit::io::hdf5_read(h5_file_id, hdf5_path, n);
     // for debugging call: n.print();
     copyFromNode(n);
   }
@@ -1077,7 +1137,9 @@ void DataGroup::copyToNode(Node& n) const
   // save the buffers discovered by buffer_ids
   for (size_t i=0 ; i < buffer_ids.size() ; i++)
   {
-    Node& buff = n["buffers"].append();
+    std::ostringstream oss;
+    oss << "buffer_" << i;
+    Node& buff = n["buffers"].fetch(oss.str());
     IndexType buffer_id = buffer_ids[i];
     DataBuffer * ds_buff =  m_datastore->getBuffer(buffer_id);
     buff["id"].set(buffer_id);
@@ -1240,6 +1302,61 @@ void DataGroup::copyFromNode(Node& n,
     ds_group->copyFromNode(n_group, id_map);
   }
 }
+
+/*
+ *************************************************************************
+ *
+ * Test this DataGroup for equavalence to another DataGroup.
+ *
+ *************************************************************************
+ */
+bool DataGroup::isEquivalentTo(const DataGroup * other) const
+{
+  // Equality of names
+  bool is_equiv = (m_name == other->m_name);
+
+  // Sizes of collections of child items must be equal
+  if (is_equiv)
+  {
+    is_equiv = (m_view_coll.getNumItems() == other->m_view_coll.getNumItems())
+               && (m_group_coll.getNumItems() ==
+                   other->m_group_coll.getNumItems());
+  }
+
+  // Test equivalence of DataViews
+  if (is_equiv)
+  {
+    IndexType vidx = getFirstValidViewIndex();
+    IndexType other_vidx = other->getFirstValidViewIndex();
+    while ( is_equiv && indexIsValid(vidx) && indexIsValid(other_vidx) )
+    {
+      const DataView * view = getView(vidx);
+      const DataView * other_view = other->getView(other_vidx);
+      is_equiv = view->isEquivalentTo(other_view);
+      vidx = getNextValidViewIndex(vidx);
+      other_vidx = getNextValidViewIndex(other_vidx);
+    }
+  }
+
+  // Recursively call this method to test equivalence of child DataGroups
+  if (is_equiv)
+  {
+    IndexType gidx = getFirstValidGroupIndex();
+    IndexType other_gidx = getFirstValidGroupIndex();
+    while ( is_equiv && indexIsValid(gidx) && indexIsValid(other_gidx) )
+    {
+      const DataGroup * group =  getGroup(gidx);
+      const DataGroup * other_group =  other->getGroup(other_gidx);
+      is_equiv = group->isEquivalentTo(other_group);
+      gidx = getNextValidGroupIndex(gidx);
+      other_gidx = getNextValidGroupIndex(other_gidx);
+    }
+  }
+
+  return is_equiv;
+
+}
+
 
 
 /// Character used to denote a path string passed to get/create calls.

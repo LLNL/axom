@@ -9,7 +9,30 @@ import subprocess
 import argparse
 import platform
 import shutil
-import helpers
+
+# Helper function to get SYS_TYPE on LC systems.
+def get_systype():
+    import os
+    lc_home_config_filename = "/etc/home.config"
+    if os.path.exists(lc_home_config_filename):
+        file_handle = open(lc_home_config_filename, "r")
+        content = file_handle.readlines()
+        for line in content:
+            if line.startswith("SYS_TYPE"):
+                return line.split(" ")[1].strip()
+    return None
+
+def extract_cmake_location(file_path):
+    cmake_line_prefix = "# cmake executable path: "
+    if os.path.exists(file_path):
+        file_handle = open(file_path, "r")
+        content = file_handle.readlines()
+        for line in content:
+            if line.startswith(cmake_line_prefix):
+                return line.split(" ")[4].strip()
+        print "Could not find a cmake entry in host config file."
+        return None
+
 
 default_compiler = "gcc@4.9.3"
 
@@ -72,7 +95,7 @@ args = parser.parse_args()
 ########################
 platform_info = ""
 scriptsdir = os.path.dirname( os.path.abspath(sys.argv[0]) )
-systype = helpers.get_systype()
+systype = get_systype()
 
 if args.hostconfig != "":
     cachefile = os.path.abspath(args.hostconfig)
@@ -107,7 +130,7 @@ if args.buildpath != "":
     buildpath = args.buildpath
 elif args.hostconfig != "":
     # use host config name (via platform_info) as build dir base
-    buildpath = "-".join(["build",platform_info,args.buildtype.lower()])
+    buildpath = "-".join(["build",platform_info,args.buildtype.lower()])    
 elif args.buildpath == "":
     # Generate build directory name based on platform, buildtype, compiler
     buildpath = "-".join(["build",platform_info, args.compiler, args.buildtype.lower()])
@@ -129,10 +152,10 @@ if args.installpath != "":
     installpath = os.path.abspath(args.installpath)
 elif args.hostconfig != "":
     # use host config name (via platform_info) as install dir base
-    installpath = "-".join(["install",platform_info,args.buildtype.lower()])
+    installpath = "-".join(["install",platform_info,args.buildtype.lower()]).replace("@","-")
 else:
     # Generate install directory name based on platform, buildtype, compiler
-    installpath = "-".join(["install",platform_info, args.compiler, args.buildtype.lower()])
+    installpath = "-".join(["install",platform_info, args.compiler, args.buildtype.lower()]).replace("@","-")
 
 installpath = os.path.abspath(installpath)
 
@@ -148,7 +171,7 @@ os.makedirs(installpath)
 # Build CMake command line
 ############################
 
-cmakeline = helpers.extract_cmake_location(cachefile)
+cmakeline = extract_cmake_location(cachefile)
 assert cmakeline, "Host config file doesn't contain valid cmake location, value was %s" % cmakeline
 
 # Add cache file option

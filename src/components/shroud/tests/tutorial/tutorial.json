@@ -2022,6 +2022,15 @@
             "f_type": "integer(C_INT)", 
             "typedef": "int"
         }, 
+        "MPI_Comm": {
+            "c_fortran": "integer(C_INT)", 
+            "c_header": "mpi.h", 
+            "c_to_cpp": "MPI_Comm_f2c({c_var})", 
+            "c_type": "MPI_Fint", 
+            "cpp_to_c": "MPI_Comm_c2f({cpp_var})", 
+            "cpp_type": "MPI_Comm", 
+            "f_type": "integer"
+        }, 
         "TypeID": {
             "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 

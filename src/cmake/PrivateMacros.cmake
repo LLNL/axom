@@ -59,7 +59,10 @@ macro(setup_mpi_target)
   if ( ${ENABLE_MPI} )
  
     add_target_definitions( TO ${arg_BUILD_TARGET} TARGET_DEFINITIONS USE_MPI )
-    target_include_directories( ${arg_BUILD_TARGET} PUBLIC ${MPI_C_INCLUDE_PATH} )
+    target_include_directories( ${arg_BUILD_TARGET} 
+                                PUBLIC ${MPI_C_INCLUDE_PATH} )
+    target_include_directories( ${arg_BUILD_TARGET} 
+                                PUBLIC ${MPI_Fortran_INCLUDE_PATH} )
 
     if ( NOT "${MPI_C_COMPILE_FLAGS}" STREQUAL "")
        set_target_properties( ${arg_BUILD_TARGET} 
@@ -71,8 +74,13 @@ macro(setup_mpi_target)
               PROPERTIES LINK_FLAGS ${MPI_C_LINK_FLAGS} )
     endif()
 
-    target_link_libraries(${arg_BUILD_TARGET} ${MPI_C_LIBRARIES})
+    if ( NOT "${MPI_Fortran_LINK_FLAGS}" STREQUAL "" )
+      set_target_properties( ${arg_BUILD_TARGET} 
+             PROPERTIES LINK_FLAGS ${MPI_Fortran_LINK_FLAGS} )
+    endif()
     
+    target_link_libraries( ${arg_BUILD_TARGET} ${MPI_C_LIBRARIES} )
+    target_link_libraries( ${arg_BUILD_TARGET} ${MPI_Fortran_LIBRARIES} )
   endif()
 
 endmacro(setup_mpi_target)

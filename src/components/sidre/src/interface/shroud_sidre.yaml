@@ -18,9 +18,6 @@ options:
   namespace: asctoolkit sidre
   F_module_per_class: False
 
-  # header file for function, each class has its own header file
-  cpp_header: sidre/SidreTypes.hpp
-
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
   # for the result.

@@ -74,6 +74,7 @@ make_library( LIBRARY_NAME
                   ${c_fortran_depends_on}
                   common
                   conduit
+                  conduit_io
                   slic
              )
   

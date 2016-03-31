@@ -344,6 +344,7 @@ c_type
 
 c_header
     Name of C header file required for type.
+    This file is included in the interface header.
     Defaults to *None*.
 
 c_to_cpp
