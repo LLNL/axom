@@ -30,7 +30,9 @@ add_subdirectory(src)
 ################################
 # Add examples
 ################################
-add_subdirectory(examples)
+if (BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 ################################
 # Add tests and benchmarks
@@ -48,8 +50,9 @@ add_code_check_targets(uncrustify.cfg)
 ################################
 # Add docs
 ################################
-add_subdirectory(docs)
-
+if (BUILD_DOCS)
+  add_subdirectory(docs)
+endif()
 
 ################################
 # Create CMake importable

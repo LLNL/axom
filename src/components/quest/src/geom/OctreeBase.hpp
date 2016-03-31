@@ -382,7 +382,7 @@ public:
 
 
 private:
-  DISABLE_COPY_AND_ASSIGNMENT(OctreeBase)
+  DISABLE_COPY_AND_ASSIGNMENT(OctreeBase);
 
 protected:
   OctreeLevels            m_levels;

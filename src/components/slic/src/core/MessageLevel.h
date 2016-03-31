@@ -54,7 +54,7 @@ enum Level {
 /*!
  * \brief Array of strings corresponding to the Level enum.
  */
-const static std::string MessageLevelName[ Num_Levels ] = {
+static const std::string MessageLevelName[ Num_Levels ] = {
     "FATAL",
     "ERROR",
     "WARNING",
@@ -105,18 +105,18 @@ enum flags {
 /*!
  * \brief Convenience bit mask that turns on all four bits.
  */
-const static char everything = fatal | error | warning | info | debug;
+static const char everything = fatal | error | warning | info | debug;
 
 /*!
  * \brief Convenience bit mask that turns on fatal,error and warning bits.
  */
-const static char errors_and_warnings =  fatal | error | warning;
+static const char errors_and_warnings =  fatal | error | warning;
 
 /*!
  * \brief Array of bit masks corresponding to each level.
  * \note Used to loop through the bit mask associated with each level.
  */
-const static flags masks[ message::Num_Levels ] = {
+static const flags masks[ message::Num_Levels ] = {
     fatal,
     error,
     warning,

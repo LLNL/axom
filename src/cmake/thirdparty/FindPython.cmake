@@ -42,7 +42,6 @@
 # 
 ###############################################################################
 
-if (ENABLE_PYTHON)
 # Find the interpreter first
 if(PYTHON_DIR AND NOT PYTHON_EXECUTABLE)
     set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python)
@@ -150,5 +149,3 @@ ENDFUNCTION(PYTHON_ADD_DISTUTILS_SETUP)
 #    )
 #
 #ENDFUNCTION(PYTHON_ADD_HYBRID_MODULE)
-
-endif(ENABLE_PYTHON)

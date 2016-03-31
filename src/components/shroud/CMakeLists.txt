@@ -1,11 +1,12 @@
 #
 #
 #
-
 project(shroud)
 
 if(ENABLE_SHROUD_API_GENERATOR)
-add_subdirectory(docs)
+if (BUILD_DOCS)
+  add_subdirectory(docs)
+endif()
 
 # Make sure Python and required modules are available
 if(PYTHON_EXECUTABLE)
@@ -56,29 +57,32 @@ file(REMOVE ${tmp_file})
 # Write the test script
 # configure into CMakeFiles directory, because it must be in a different directory
 # since file(COPY) does rename files
-set(tmp_file ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/do-test)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/do-test.in
-               ${tmp_file}
-               @ONLY)
-# now copy the temporary into the final destination, setting the permissions
-file(COPY ${tmp_file}
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-    FILE_PERMISSIONS
-        OWNER_READ OWNER_EXECUTE
-        GROUP_READ GROUP_EXECUTE
-        WORLD_READ WORLD_EXECUTE)
-file(REMOVE ${tmp_file})
+if(BUILD_TESTS)
+    set(tmp_file ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/do-test)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/do-test.in
+                   ${tmp_file}
+                   @ONLY)
+    # now copy the temporary into the final destination, setting the permissions
+    file(COPY ${tmp_file}
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+        FILE_PERMISSIONS
+            OWNER_READ OWNER_EXECUTE
+            GROUP_READ GROUP_EXECUTE
+            WORLD_READ WORLD_EXECUTE)
+    file(REMOVE ${tmp_file})
 
-add_test(
-    NAME shroud
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/do-test
-)
+
+    add_test(
+        NAME shroud
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/do-test
+    )
+endif()
 
 if(ENABLE_FORTRAN)
-    # Build runtime library
-#    add_subdirectory(runtime)
-    add_subdirectory(tests/run-tutorial)
-    add_subdirectory(tests/run-strings)
+    if (BUILD_TESTS)
+        add_subdirectory(tests/run-tutorial)
+        add_subdirectory(tests/run-strings)
+    endif()
 endif()
 
 endif(ENABLE_SHROUD_API_GENERATOR)
@@ -93,9 +97,9 @@ endif(ENABLE_SHROUD_API_GENERATOR)
 #   TODO: Check if we can remove this after merging SLAM with sprint/10
 #       1/25/2016 -- LT: still a problem in sprint/11
 ################################
-
 # Still need the shroud runtime library, regardless of whether generator is enabled.
 if(ENABLE_CFORTRAN_API)
+    # Build runtime library
     add_subdirectory(runtime)
     install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
 endif(ENABLE_CFORTRAN_API)
