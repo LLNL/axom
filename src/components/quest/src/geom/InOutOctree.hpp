@@ -24,6 +24,8 @@
 #include "quest/Triangle.hpp"
 #include "quest/Mesh.hpp"
 #include "quest/UnstructuredMesh.hpp"
+#include "quest/FieldData.hpp"
+#include "quest/FieldVariable.hpp"
 
 
 #include <vector> // For InOutLeafData triangle lists -- TODO replace with SLAM DynamicVariableRelation...
@@ -37,6 +39,11 @@
 #ifndef DUMP_VTK_MESH
 //    #define DUMP_VTK_MESH
 #endif
+
+#ifndef DUMP_OCTREE_INFO
+//    #define DUMP_OCTREE_INFO
+#endif
+
 
 /**
  * \file
@@ -402,7 +409,7 @@ private:
 
 private:
 
-    void dumpOctreeMeshVTK(const std::string& name) const
+    void dumpOctreeMeshVTK(const std::string& name, bool hasColors = false) const
     {
       #ifdef DUMP_VTK_MESH
         typedef typename OctreeBaseType::MapType LeavesLevelMap;
@@ -472,19 +479,27 @@ private:
                 int vIdx = leafData.vertexIndex();
                 SpacePt pt = vertexPosition(vIdx);
 
+                //SLIC_INFO("In block " << block<< " vertex id is " << vIdx
+                //      << " associated point is " << pt);
+
+
                 leafVertID[leafCount] = vIdx;
-                leafVertID_unique[leafCount] = (this->findLeafBlock(pt) == block)? vIdx : InOutLeafData::NO_VERTEX;
+                leafVertID_unique[leafCount] = (leafData.hasVertex() && blockIndexesVertex(vIdx, block))
+                        ? vIdx
+                        : InOutLeafData::NO_VERTEX;
                 leafTriCount[leafCount] = leafData.numTriangles();
 
-
-                switch( leafData.color() )
+                if(hasColors)
                 {
-                case InOutLeafData::Black:          leafColors[leafCount] =  1; break;
-                case InOutLeafData::White:          leafColors[leafCount] = -1; break;
-                case InOutLeafData::Gray:           leafColors[leafCount] =  0; break;
-                case InOutLeafData::Undetermined:
-                    SLIC_ASSERT_MSG(false, "Leaf " << block << " of InOutOctree is missing a color.");
-                    break;
+                    switch( leafData.color() )
+                    {
+                    case InOutLeafData::Black:          leafColors[leafCount] =  1; break;
+                    case InOutLeafData::White:          leafColors[leafCount] = -1; break;
+                    case InOutLeafData::Gray:           leafColors[leafCount] =  0; break;
+                    case InOutLeafData::Undetermined:
+                        SLIC_ASSERT_MSG(false, "Leaf " << block << " of InOutOctree is missing a color.");
+                        break;
+                    }
                 }
 
                 leafCount++;
@@ -496,23 +511,27 @@ private:
         CD->addField( new meshtk::FieldVariable< VertexIndex >("vertID", leafSet.size()) );
         CD->addField( new meshtk::FieldVariable< VertexIndex >("uniqVertID", leafSet.size()) );
         CD->addField( new meshtk::FieldVariable< int >("triCount", leafSet.size()) );
-        CD->addField( new meshtk::FieldVariable< int >("colors", leafSet.size()) );
+
+        if(hasColors)
+            CD->addField( new meshtk::FieldVariable< int >("colors", leafSet.size()) );
 
         VertexIndex* vertID = CD->getField( "vertID" )->getIntPtr();
         VertexIndex* uniqVertID = CD->getField( "uniqVertID" )->getIntPtr();
         int* triCount = CD->getField( "triCount" )->getIntPtr();
-        int* colors = CD->getField( "colors" )->getIntPtr();
+        int* colors = hasColors ? CD->getField( "colors" )->getIntPtr() : ATK_NULLPTR;
 
         SLIC_ASSERT( vertID != ATK_NULLPTR );
         SLIC_ASSERT( uniqVertID != ATK_NULLPTR );
         SLIC_ASSERT( triCount != ATK_NULLPTR );
-        SLIC_ASSERT( colors != ATK_NULLPTR );
+        SLIC_ASSERT( !hasColors || (colors != ATK_NULLPTR) );
 
         for ( int i=0; i < leafSet.size(); ++i ) {
             vertID[i] = leafVertID[i];
             uniqVertID[i] = leafVertID_unique[i];
             triCount[i] = leafTriCount[i];
-            colors[i] = leafColors[i];
+
+            if(hasColors)
+                colors[i] = leafColors[i];
         }
 
         debugMesh->toVtkFile(name);
@@ -728,10 +747,13 @@ void InOutOctree<DIM>::generateIndex ()
     timer.stop();
     SLIC_INFO("\tUpdating mesh took " << timer.elapsed() << " seconds.");
 
+
+  #ifdef DUMP_OCTREE_INFO
     // -- Print some stats about the octree
     SLIC_INFO("** Octree stats after inserting vertices");
-    dumpOctreeMeshVTK("prOctree.vtk");
+    dumpOctreeMeshVTK("prOctree.vtk", false);
     printOctreeStats(false);
+  #endif
     checkValid(false);
 
 
@@ -743,8 +765,10 @@ void InOutOctree<DIM>::generateIndex ()
     SLIC_INFO("\tInserting triangles took " << timer.elapsed() << " seconds.");
 
     // -- Print some stats about the octree
+  #ifdef DUMP_OCTREE_INFO
     SLIC_INFO("** Octree stats after inserting triangles");
     printOctreeStats(true);
+  #endif
     checkValid(true);
 
     //checkAndFixNormals();
@@ -755,11 +779,14 @@ void InOutOctree<DIM>::generateIndex ()
 
     timer.stop();
     SLIC_INFO("\tColoring octree leaves took " << timer.elapsed() << " seconds.");
-    dumpOctreeMeshVTK("pmOctree.vtk");
+    dumpOctreeMeshVTK("pmOctree.vtk", true);
 
 
     // CLEANUP -- Finally, fix up the surface mesh after octree operations
+    SLIC_INFO("\tRegenerating the mesh");
     regenerateSurfaceMesh();
+
+    SLIC_INFO("\tFinished generating the InOutOctree.");
 }
 
 template<int DIM>
@@ -959,7 +986,8 @@ void InOutOctree<DIM>::colorOctreeLeaves()
         }
        #endif
 
-        SLIC_INFO("\tColoring level "<< lev << " took " << levelTimer.elapsed() << " seconds.");
+        if(! levelLeafMap.empty() )
+            SLIC_DEBUG("\tColoring level "<< lev << " took " << levelTimer.elapsed() << " seconds.");
 
     }
 
@@ -1125,7 +1153,7 @@ void InOutOctree<DIM>::insertMeshTriangles ()
         }
 
         if(! levelLeafMap.empty() )
-          SLIC_INFO("\tInserting triangles into level " << lev <<" took " << levelTimer.elapsed() <<" seconds.");
+          SLIC_DEBUG("\tInserting triangles into level " << lev <<" took " << levelTimer.elapsed() <<" seconds.");
     }
 
 }
@@ -1142,15 +1170,16 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
     BlockIndex block = this->findLeafBlock(pt, startingLevel);
     InOutLeafData& leafData = (*this)[block];
 
+    #ifdef ATK_DEBUG
     if( idx == DEBUG_VERT_IDX)
     {
-        SLIC_INFO("\t -- pt coords: " << pt
-                  << " contained in block is " << block
-                  << " blockBB " << this->blockBoundingBox(block)
-                  << " leaf vertex is " << leafData.vertexIndex()
+        SLIC_DEBUG("\t -- inserting pt with index " << idx << " and coords: " << pt
+                  << ". Looking at block " << block
+                  << " w/ blockBB " << this->blockBoundingBox(block)
+                  << " indexing leaf vertex " << leafData.vertexIndex()
                     );
     }
-
+    #endif
 
     if(! leafData.hasVertex())
     {
@@ -1176,10 +1205,14 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
 
     }
 
+    #ifdef ATK_DEBUG
     if( leafData.vertexIndex() == DEBUG_VERT_IDX)
     {
-        SLIC_INFO("\t -- vertex " << idx << " is indexed in block " << block);
+        SLIC_DEBUG("-- vertex " << idx
+                  << " is indexed in block " << block
+                  << ". Leaf vertex is " << leafData.vertexIndex() );
     }
+    #endif
 
 }
 
@@ -1677,7 +1710,7 @@ void InOutOctree<DIM>::checkValid(bool trianglesAlreadyInserted) const
     typedef typename OctreeBaseType::MapType LeavesLevelMap;
     typedef typename LeavesLevelMap::const_iterator LeavesIterator;
 
-    SLIC_INFO("Inside InOutOctree::checkValid() to verify state of PR or PM octree.");
+    SLIC_DEBUG("Inside InOutOctree::checkValid() to verify state of PR or PM octree.");
 
 
     // Iterate through the tree
@@ -1693,7 +1726,7 @@ void InOutOctree<DIM>::checkValid(bool trianglesAlreadyInserted) const
                     << "the vertices into the octree.");
 
 
-    SLIC_INFO("--Checking that each vertex is in a leaf block of the tree.");
+    SLIC_DEBUG("--Checking that each vertex is in a leaf block of the tree.");
     const int numVertices = m_vertexSet.size();
     for(int i=0; i< numVertices; ++i)
     {
@@ -1731,7 +1764,7 @@ void InOutOctree<DIM>::checkValid(bool trianglesAlreadyInserted) const
     // Check that each triangle is referenced in at least the three blocks indexing its vertices
     if(trianglesAlreadyInserted)
     {
-        SLIC_INFO("--Checking that each triangle is referenced by the leaf blocks containing its vertices.");
+        SLIC_DEBUG("--Checking that each triangle is referenced by the leaf blocks containing its vertices.");
         const int numTriangles = m_elementSet.size();
         for(int tIdx=0; tIdx< numTriangles; ++tIdx)
         {
@@ -1768,7 +1801,7 @@ void InOutOctree<DIM>::checkValid(bool trianglesAlreadyInserted) const
 
         // Check that internal blocks have no triangle / vertex
         //       and leaf blocks satisfy the conditions above
-        SLIC_INFO("--Checking that internal blocks have no data, and that leaves satisfy all PM conditions");
+        SLIC_DEBUG("--Checking that internal blocks have no data, and that leaves satisfy all PM conditions");
         for(int lev=0; lev< this->m_levels.size(); ++lev)
         {
             const LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
@@ -1823,7 +1856,7 @@ void InOutOctree<DIM>::checkValid(bool trianglesAlreadyInserted) const
         }
     }
 
-    SLIC_INFO("done.");
+    SLIC_DEBUG("done.");
 
 #endif
 }

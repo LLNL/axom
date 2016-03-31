@@ -99,7 +99,7 @@ public:
    * \param [in] arr The numeric array to copy from
    *****************************************************************************
    */
-  explicit Point(const NumericArray<T,DIM>& arr) : m_components(arr) {}
+  Point(const NumericArray<T,DIM>& arr) : m_components(arr) {}
 
   /*!
    *****************************************************************************
@@ -134,7 +134,7 @@ public:
    * \post d >= 1.
    *****************************************************************************
    */
-  int dimension() const { return DIM; };
+  static int dimension() { return DIM; };
 
   /*!
    *****************************************************************************

@@ -118,7 +118,8 @@ public:
      */
     BlockIndex findLeafBlock(const SpacePt& pt, int startingLevel = -1) const
     {
-        SLIC_ASSERT( m_boundingBox.contains(pt) );
+        SLIC_ASSERT_MSG( m_boundingBox.contains(pt)
+                       , "SpatialOctree::findLeafNode -- Did not find " << pt << " in bounding box " << m_boundingBox );
 
         // Perform binary search on levels to find the leaf block containing the point
         int minLev = 0;

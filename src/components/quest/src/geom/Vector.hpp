@@ -112,7 +112,7 @@ public:
    * \param [in] arr The numeric array to copy from
    *****************************************************************************
    */
-  explicit Vector(const NumericArray<T,DIM>& arr) : m_components(arr) {}
+  Vector(const NumericArray<T,DIM>& arr) : m_components(arr) {}
 
   /*!
    *****************************************************************************

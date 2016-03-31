@@ -335,8 +335,8 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
         containment[ inode ] = inOutOctree.within(pt) ? 1 : 0;
     }
     timer.stop();
-    SLIC_INFO("Generating "<< gridRes << "^3 containment field took " << timer.elapsed() << " seconds"
-              << "( @ " << nnodes / timer.elapsed() << " queries per second)"
+    SLIC_INFO("\tQuerying "<< gridRes << "^3 containment field took " << timer.elapsed() << " seconds"
+              << " (@ " << nnodes / timer.elapsed() << " queries per second)"
         );
 
   #ifdef DUMP_VTK_MESH
@@ -449,7 +449,7 @@ void print_surface_stats( meshtk::Mesh* mesh)
                    <<"\t count: " << (it->second / 2)
                    <<"\tRange: " << edgeLenRangeMap[it->first];
    }
-   SLIC_INFO(edgeHistStr.str());
+   SLIC_DEBUG(edgeHistStr.str());
 
    std::stringstream triHistStr;
    triHistStr<<"\tTriangle areas histogram (lg-arithmic): ";
@@ -461,7 +461,7 @@ void print_surface_stats( meshtk::Mesh* mesh)
                  <<"\t count: " << it->second
                  << "\tRange: " << areaRangeMap[it->first];
    }
-   SLIC_INFO(triHistStr.str());
+   SLIC_DEBUG(triHistStr.str());
 
    if(! badTriangles.empty() )
    {
@@ -482,7 +482,7 @@ void print_surface_stats( meshtk::Mesh* mesh)
                badTriStr<<"\n\t\t vId: " << vertIndices[j] <<" @ position: " << vertPos;
            }
        }
-       SLIC_INFO(badTriStr.str());
+       SLIC_DEBUG(badTriStr.str());
    }
 }
 
@@ -574,6 +574,7 @@ int main( int argc, char** argv )
   print_surface_stats(surface_mesh);
   write_vtk(surface_mesh, "meldedTriMesh.vtk");
 
+  SLIC_INFO("-- About to query the octree");
   // STEP 7: Insert triangles into the octree
   for(int i=1; i< 9 ; ++i)
       testContainmentOnRegularGrid( octree, meshBB, 1<<i);

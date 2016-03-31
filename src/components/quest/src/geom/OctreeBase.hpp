@@ -332,7 +332,7 @@ public:
 
         std::ostream& print(std::ostream& os) const
         {
-            os << "{pt: " << m_pt
+            os << "{grid pt: " << m_pt
                 <<"; level: " << m_lev <<"}";
 
             return os;
