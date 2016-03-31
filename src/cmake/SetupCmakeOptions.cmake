@@ -16,4 +16,6 @@ option(ENABLE_HDF5 "ENABLE HDF5" ON)
 option(ENABLE_MPI "Enables MPI compiler support" OFF)
 option(ENABLE_OPENMP "Enables OpenMP compiler support" OFF)
 option(ENABLE_BENCHMARK "Enables google benchmark" OFF)
-
+option(ENABLE_PYTHON "Enables python use." ON)
+option(ENABLE_SHROUD_API_GENERATOR "Enables shroud interface generator for C and Fortran." ON)
+option(ENABLE_CFORTRAN_API "Enables Fortran interface for components." ON)

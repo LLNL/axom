@@ -39,5 +39,5 @@ endif()
 ################################
 # install targets from build
 ################################s
-install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . )
-install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION .)
+install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . OPTIONAL)
+install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION . OPTIONAL)
