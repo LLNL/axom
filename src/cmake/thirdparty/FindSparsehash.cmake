@@ -7,11 +7,8 @@
 
 # first Check for SPARSEHASH_DIR
 
-if(SPARSEHASH_DIR)
-    set(SPARSEHASH_FOUND TRUE)
-
-    #find includes
-    find_path( SPARSEHASH_INCLUDE_DIRS type_traits.h
+#find includes
+find_path( SPARSEHASH_INCLUDE_DIRS type_traits.h
           PATHS  ${SPARSEHASH_DIR}/include/sparsehash/
           NO_DEFAULT_PATH
           NO_CMAKE_ENVIRONMENT_PATH
@@ -25,7 +22,7 @@ if(SPARSEHASH_DIR)
     # if all listed variables are TRUE
     find_package_handle_standard_args(Sparsehash  DEFAULT_MSG
                                       SPARSEHASH_INCLUDE_DIRS)
-else()
+
+if(NOT SPARSEHASH_FOUND)
     MESSAGE(WARNING "Could not find Sparsehash. Sparsehash support needs explicit SPARSEHASH_DIR")
-    set(SPARSEHASH_FOUND FALSE)
 endif()

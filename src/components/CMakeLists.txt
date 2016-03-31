@@ -4,10 +4,9 @@ endif(ENABLE_PYTHON_API)
 
 ## add components
 
+# Note:
 # Shroud has to be enabled if we are building with fortran.  Some components need the shroud runtime library.
-if(ENABLE_CFORTRAN_API)
-  add_component(COMPONENT_NAME shroud DEFAULT_STATE ON)
-endif(ENABLE_CFORTRAN_API)
+add_component(COMPONENT_NAME shroud DEFAULT_STATE ON)
 
 add_component(COMPONENT_NAME common DEFAULT_STATE ON)
 
