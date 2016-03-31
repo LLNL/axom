@@ -166,7 +166,7 @@ private:
     }
 
 private:
-  DISABLE_COPY_AND_ASSIGNMENT(SpatialOctree)
+  DISABLE_COPY_AND_ASSIGNMENT(SpatialOctree);
 
 protected:
     SpaceVectorLevelMap     m_deltaLevelMap;
