@@ -11,7 +11,7 @@ include(cmake/thirdparty/FindConduit.cmake)
 ################################
 # HDF5
 ################################
-include(cmake/FindHDF5.cmake)
+include(cmake/thirdparty/FindHDF5.cmake)
 
 
 ################################
