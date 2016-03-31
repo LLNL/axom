@@ -12,4 +12,6 @@
 # documentation targets
 ################################
 
-add_doxygen_target(spio_doxygen)
+if (BUILD_DOCS)
+  add_doxygen_target(spio_doxygen)
+endif()

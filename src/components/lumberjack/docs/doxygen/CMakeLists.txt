@@ -12,4 +12,6 @@
 # documentation targets
 ################################
 
-add_doxygen_target(lumberjack_doxygen)
+if(BUILD_DOCS)
+  add_doxygen_target(lumberjack_doxygen)
+endif()

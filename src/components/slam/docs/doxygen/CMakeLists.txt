@@ -2,4 +2,6 @@
 # documentation targets
 ################################
 
-add_doxygen_target( slam_doxygen )
+if (BUILD_DOCS)
+  add_doxygen_target( slam_doxygen )
+endif()

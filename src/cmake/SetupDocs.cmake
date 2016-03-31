@@ -85,7 +85,6 @@ endif()
 ##
 ##------------------------------------------------------------------------------
 macro(add_doxygen_target doxygen_target_name)
-    if (ENABLE_DOCS)
     # add a target to generate API documentation with Doxygen
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
     add_custom_target(${doxygen_target_name}
@@ -99,7 +98,6 @@ macro(add_doxygen_target doxygen_target_name)
 
     install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html" 
             DESTINATION docs/doxygen/${doxygen_target_name})
-    endif()
 endmacro(add_doxygen_target)
 
 ##------------------------------------------------------------------------------
@@ -115,7 +113,6 @@ endmacro(add_doxygen_target)
 ##
 ##------------------------------------------------------------------------------
 macro(add_sphinx_target sphinx_target_name )
-    if (ENABLE_DOCS)
     MESSAGE(STATUS "Creating sphinx docs target ${sphinx_target_name}")
     # configured documentation tools and intermediate build results
     set(SPHINX_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/_build")
@@ -153,7 +150,6 @@ macro(add_sphinx_target sphinx_target_name )
 
     install(DIRECTORY "${SPHINX_HTML_DIR}" 
             DESTINATION "docs/sphinx/${sphinx_target_name}")
-    endif()
 endmacro(add_sphinx_target)
 
 

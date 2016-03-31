@@ -5,4 +5,6 @@
 
 # add a target to generate documentation with Sphinx
 
-add_sphinx_target( shroud_docs )
+if (BUILD_DOCS)
+  add_sphinx_target( shroud_docs )
+endif()

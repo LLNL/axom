@@ -1,9 +1,10 @@
 #
 #
 #
-if(ENABLE_SHROUD)
 
 project(shroud)
+
+if(ENABLE_SHROUD_API_GENERATOR)
 add_subdirectory(docs)
 
 # Make sure Python and required modules are available
@@ -80,7 +81,7 @@ if(ENABLE_FORTRAN)
     add_subdirectory(tests/run-strings)
 endif()
 
-endif(ENABLE_SHROUD)
+endif(ENABLE_SHROUD_API_GENERATOR)
 
 ################################
 # Create CMake importable
@@ -93,7 +94,8 @@ endif(ENABLE_SHROUD)
 #       1/25/2016 -- LT: still a problem in sprint/11
 ################################
 
-if(ENABLE_FORTRAN)
+# Still need the shroud runtime library, regardless of whether generator is enabled.
+if(ENABLE_CFORTRAN_API)
     add_subdirectory(runtime)
     install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
-endif()
+endif(ENABLE_CFORTRAN_API)

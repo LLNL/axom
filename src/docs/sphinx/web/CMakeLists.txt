@@ -4,5 +4,6 @@
 ################################
 
 # add a target to generate documentation with Sphinx
-
-add_sphinx_target( web_docs )
+if (BUILD_DOCS)
+  add_sphinx_target( web_docs )
+endif()
