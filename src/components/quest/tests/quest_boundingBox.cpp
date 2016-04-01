@@ -421,7 +421,7 @@ TEST( quest_boundingBox, bb_scale)
     QBBox bbox3 ( bbox);
     bbox3.scale( 0.);
     EXPECT_EQ( bbox3.getMin(), bbox3.getMax());
-    QPoint midpoint = QPoint::midpoint(bbox.getMin(), bbox.getMax());
+    QPoint midpoint = bbox.centroid();
     EXPECT_EQ( bbox3.getMin(), midpoint);
 
     // Show that scaling by a negative is the same as a positive value

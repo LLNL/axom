@@ -104,17 +104,8 @@ namespace {
    */
   bool intervalsDisjoint(double d0, double d1, double d2, double r)
   {
-//    typedef quest::BoundingBox<double,1> Range;
-//    typedef quest::Point<double, 1> Val;
-//
-//    Range range( (Val(d0)) );
-//    range.addPoint( (Val(d1)) );
-//    range.addPoint( (Val(d2)) );
-//
-//    return ( range.getMax()[0] < -r || range.getMin()[0] > r );
-
       if(d1 < d0)
-          std::swap(d1,d0); // d0 < d1
+          std::swap(d1,d0);  // d0 < d1
       if(d2 > d1)
           std::swap(d2,d1);  // d1 is max(d0,d1,d2)
       else if(d2 < d0)
@@ -126,24 +117,13 @@ namespace {
       return d1 < -r || d0 > r;
   }
 
-//  /**
-//   * \brief Helper function to find disjoint projections for the AABB-triangle test
-//   * \param {vo,v1,v2} Vertices of the triangle
-//   * \param n Face normal
-//   * \param r Radius of projection
-//   * \return True of the intervals are disjoint, false otherwise
-//   */
-//  bool crossEdgesDisjoint(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& n, double r)
-//  {
-//      return intervalsDisjoint( n.dot(v0), n.dot(v1), n.dot(v2), r);
-//  }
-
-
-  bool crossEdgesDisjoint2(double d0, double d1, double r)
+  /**
+   * \brief Helper function for Triangle/BoundingBox intersection test
+   */
+  bool crossEdgesDisjoint(double d0, double d1, double r)
   {
       return std::max( -std::max(d0,d1), std::min(d0,d1) ) > r;
   }
-
 
 }
 
@@ -163,6 +143,8 @@ bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
 {
     // Note: Algorithm is derived from the one presented in chapter 5.2.9 of
     //   Real Time Collision Detection book by Christer Ericson
+    // based on Akenine-Moller algorithm (Journal of Graphics Tools)
+    //
     // It uses the Separating Axis Theorem to look for disjoint projections
     // along various axes associated with Faces and Edges of the AABB and triangle.
     // There are 9 tests for the cross products of edges
@@ -177,7 +159,7 @@ bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
     VectorType e = bb.range() / 2.;
 
     // Make the AABB center the origin by moving the triangle vertices
-    PointType center = PointType::midpoint(bb.getMin(), bb.getMax());
+    PointType center = bb.centroid();
     VectorType v[3] = { VectorType(tri.A().array() - center.array())
                       , VectorType(tri.B().array() - center.array())
                       , VectorType(tri.C().array() - center.array()) };
@@ -185,95 +167,45 @@ bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
     // Create the edge vectors of the triangle
     VectorType f[3] = { v[1] - v[0], v[2] - v[1],  v[0] - v[2] };
 
-    // Test cross products of edges between triangle edge vectors f and cube normals (there are 9)
-    //  Note: The implementation from Ericson's Real Time Collision detection might be more efficient since it factors out one of these normals
-    //        and accounts for the fact that the unit vectors have a zero term in their cross product.
-    //  TODO: Revisit and improve implementation if this is a bottleneck
 
-//    SLIC_DEBUG("IntersectAABB_TRI: Running cross edge");
-
-
-#define XEDGE_R( _E0, _E1, _F0, _F1, _IND )   e[ _E0 ] * std::abs(f[ _IND ][ _F0 ])            \
-                                            + e[ _E1 ] * std::abs(f[ _IND ][ _F1 ])
-
-#define XEDGE_S( _V0, _V1, _F0, _F1, _VIND, _FIND) -v[ _VIND ][ _V0 ] * f[ _FIND ][ _F0 ]       \
-                                                   +v[ _VIND ][ _V1 ] * f[ _FIND ][ _F1 ]
-
-#if defined(USE_ALT)
-
-    if( crossEdgesDisjoint( v[0],v[1],v[2], VectorType::make_vector(0,-f[0][2], f[0][1]), e[1] * std::abs(f[0][2]) + e[2]*std::abs(f[0][1]))) return false;
-    if( crossEdgesDisjoint( v[0],v[1],v[2], VectorType::make_vector(0,-f[1][2], f[1][1]), e[1] * std::abs(f[1][2]) + e[2]*std::abs(f[1][1]))) return false;
-    if( crossEdgesDisjoint( v[0],v[1],v[2], VectorType::make_vector(0,-f[2][2], f[2][1]), e[1] * std::abs(f[2][2]) + e[2]*std::abs(f[2][1]))) return false;
-
-    if( crossEdgesDisjoint( v[0],v[1],v[2], VectorType::make_vector(f[0][2], 0, -f[0][0]), e[0] * std::abs(f[0][2]) + e[2]*std::abs(f[0][0]))) return false;
-    if( crossEdgesDisjoint( v[0],v[1],v[2], VectorType::make_vector(f[1][2], 0, -f[1][0]), e[0] * std::abs(f[1][2]) + e[2]*std::abs(f[1][0]))) return false;
-    if( crossEdgesDisjoint( v[0],v[1],v[2], VectorType::make_vector(f[2][2], 0, -f[2][0]), e[0] * std::abs(f[2][2]) + e[2]*std::abs(f[2][0]))) return false;
-
-    if( crossEdgesDisjoint( v[0],v[1],v[2], VectorType::make_vector(-f[0][1], f[0][0], 0), e[0] * std::abs(f[0][1]) + e[1]*std::abs(f[0][0]))) return false;
-    if( crossEdgesDisjoint( v[0],v[1],v[2], VectorType::make_vector(-f[1][1], f[1][0], 0), e[0] * std::abs(f[1][1]) + e[1]*std::abs(f[1][0]))) return false;
-    if( crossEdgesDisjoint( v[0],v[1],v[2], VectorType::make_vector(-f[2][1], f[2][0], 0), e[0] * std::abs(f[2][1]) + e[1]*std::abs(f[2][0]))) return false;
-
-#elif defined(USE_ALT_2)
-    if( intervalsDisjoint( XEDGE_S(1,2,2,1,0,0), XEDGE_S(1,2,2,1,1,0), XEDGE_S(1,2,2,1,2,0), XEDGE_R(1,2,2,1,0))) return false;
-    if( intervalsDisjoint( XEDGE_S(1,2,2,1,0,1), XEDGE_S(1,2,2,1,1,1), XEDGE_S(1,2,2,1,2,1), XEDGE_R(1,2,2,1,1))) return false;
-    if( intervalsDisjoint( XEDGE_S(1,2,2,1,0,2), XEDGE_S(1,2,2,1,1,2), XEDGE_S(1,2,2,1,2,2), XEDGE_R(1,2,2,1,2))) return false;
-
-    if( intervalsDisjoint( XEDGE_S(2,0,0,2,0,0), XEDGE_S(2,0,0,2,1,0), XEDGE_S(2,0,0,2,2,0), XEDGE_R(0,2,2,0,0))) return false;
-    if( intervalsDisjoint( XEDGE_S(2,0,0,2,0,1), XEDGE_S(2,0,0,2,1,1), XEDGE_S(2,0,0,2,2,1), XEDGE_R(0,2,2,0,1))) return false;
-    if( intervalsDisjoint( XEDGE_S(2,0,0,2,0,2), XEDGE_S(2,0,0,2,1,2), XEDGE_S(2,0,0,2,2,2), XEDGE_R(0,2,2,0,2))) return false;
-
-    if( intervalsDisjoint( XEDGE_S(0,1,1,0,0,0), XEDGE_S(0,1,1,0,1,0), XEDGE_S(0,1,1,0,2,0), XEDGE_R(0,1,1,0,0))) return false;
-    if( intervalsDisjoint( XEDGE_S(0,1,1,0,0,1), XEDGE_S(0,1,1,0,1,1), XEDGE_S(0,1,1,0,2,1), XEDGE_R(0,1,1,0,1))) return false;
-    if( intervalsDisjoint( XEDGE_S(0,1,1,0,0,2), XEDGE_S(0,1,1,0,1,2), XEDGE_S(0,1,1,0,2,2), XEDGE_R(0,1,1,0,2))) return false;
-#else
-    // Akenine-Moller algorithm (Journal of Graphics Tools), as given in Real-Time Collision detection book
+    // Test cross products of edges between triangle edge vectors f and cube normals (9 tests)
     // -- using separating axis theorem on the cross product of edges of triangle and face normals of AABB
     // Each test involves three cross products, two of which have the same value
     // The commented parameters highlights this symmetry.
-    if( crossEdgesDisjoint2(/*XEDGE_S(1,2,2,1,0,0),*/ XEDGE_S(1,2,2,1,1,0),   XEDGE_S(1,2,2,1,2,0),   XEDGE_R(1,2,2,1,0))) return false;
-    if( crossEdgesDisjoint2(  XEDGE_S(1,2,2,1,0,1),/* XEDGE_S(1,2,2,1,1,1),*/ XEDGE_S(1,2,2,1,2,1),   XEDGE_R(1,2,2,1,1))) return false;
-    if( crossEdgesDisjoint2(  XEDGE_S(1,2,2,1,0,2),   XEDGE_S(1,2,2,1,1,2),/* XEDGE_S(1,2,2,1,2,2),*/ XEDGE_R(1,2,2,1,2))) return false;
+    #define XEDGE_R( _E0, _E1, _F0, _F1, _IND )   e[ _E0 ] * std::abs(f[ _IND ][ _F0 ])            \
+                                                + e[ _E1 ] * std::abs(f[ _IND ][ _F1 ])
 
-    if( crossEdgesDisjoint2(/*XEDGE_S(2,0,0,2,0,0),*/ XEDGE_S(2,0,0,2,1,0),   XEDGE_S(2,0,0,2,2,0),   XEDGE_R(0,2,2,0,0))) return false;
-    if( crossEdgesDisjoint2(  XEDGE_S(2,0,0,2,0,1),/* XEDGE_S(2,0,0,2,1,1),*/ XEDGE_S(2,0,0,2,2,1),   XEDGE_R(0,2,2,0,1))) return false;
-    if( crossEdgesDisjoint2(  XEDGE_S(2,0,0,2,0,2),   XEDGE_S(2,0,0,2,1,2),/* XEDGE_S(2,0,0,2,2,2),*/ XEDGE_R(0,2,2,0,2))) return false;
+    #define XEDGE_S( _V0, _V1, _F0, _F1, _VIND, _FIND) -v[ _VIND ][ _V0 ] * f[ _FIND ][ _F0 ]       \
+                                                       +v[ _VIND ][ _V1 ] * f[ _FIND ][ _F1 ]
 
-    if( crossEdgesDisjoint2(/*XEDGE_S(0,1,1,0,0,0),*/ XEDGE_S(0,1,1,0,1,0),   XEDGE_S(0,1,1,0,2,0),   XEDGE_R(0,1,1,0,0))) return false;
-    if( crossEdgesDisjoint2(  XEDGE_S(0,1,1,0,0,1),/* XEDGE_S(0,1,1,0,1,1),*/ XEDGE_S(0,1,1,0,2,1),   XEDGE_R(0,1,1,0,1))) return false;
-    if( crossEdgesDisjoint2(  XEDGE_S(0,1,1,0,0,2),   XEDGE_S(0,1,1,0,1,2),/* XEDGE_S(0,1,1,0,2,2),*/ XEDGE_R(0,1,1,0,2))) return false;
+    if( crossEdgesDisjoint(/*XEDGE_S(1,2,2,1,0,0),*/ XEDGE_S(1,2,2,1,1,0),   XEDGE_S(1,2,2,1,2,0),   XEDGE_R(1,2,2,1,0))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(1,2,2,1,0,1),/* XEDGE_S(1,2,2,1,1,1),*/ XEDGE_S(1,2,2,1,2,1),   XEDGE_R(1,2,2,1,1))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(1,2,2,1,0,2),   XEDGE_S(1,2,2,1,1,2),/* XEDGE_S(1,2,2,1,2,2),*/ XEDGE_R(1,2,2,1,2))) return false;
 
- #endif
+    if( crossEdgesDisjoint(/*XEDGE_S(2,0,0,2,0,0),*/ XEDGE_S(2,0,0,2,1,0),   XEDGE_S(2,0,0,2,2,0),   XEDGE_R(0,2,2,0,0))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(2,0,0,2,0,1),/* XEDGE_S(2,0,0,2,1,1),*/ XEDGE_S(2,0,0,2,2,1),   XEDGE_R(0,2,2,0,1))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(2,0,0,2,0,2),   XEDGE_S(2,0,0,2,1,2),/* XEDGE_S(2,0,0,2,2,2),*/ XEDGE_R(0,2,2,0,2))) return false;
+
+    if( crossEdgesDisjoint(/*XEDGE_S(0,1,1,0,0,0),*/ XEDGE_S(0,1,1,0,1,0),   XEDGE_S(0,1,1,0,2,0),   XEDGE_R(0,1,1,0,0))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(0,1,1,0,0,1),/* XEDGE_S(0,1,1,0,1,1),*/ XEDGE_S(0,1,1,0,2,1),   XEDGE_R(0,1,1,0,1))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(0,1,1,0,0,2),   XEDGE_S(0,1,1,0,1,2),/* XEDGE_S(0,1,1,0,2,2),*/ XEDGE_R(0,1,1,0,2))) return false;
+
+    #undef XEDGE_R
+    #undef XEDEG_S
 
 
-//    SLIC_DEBUG("IntersectAABB_TRI: face normals");
-    /// Test face normals of bounding box
+    /// Test face normals of bounding box (3 tests)
     if(intervalsDisjoint(v[0][0], v[1][0], v[2][0], e[0])) return false;
     if(intervalsDisjoint(v[0][1], v[1][1], v[2][1], e[1])) return false;
     if(intervalsDisjoint(v[0][2], v[1][2], v[2][2], e[2])) return false;
 
 
-//    SLIC_DEBUG("IntersectAABB_TRI: tri normal");
     /// Final test -- face normal of triangle's plane
     VectorType planeNormal  = VectorType::cross_product(f[0],f[1]);
     double planeDist    = planeNormal.dot( tri.A());
 
-    // shift bb's min point to origin
-    //center.array() -= bb.getMin().array();
-
     double r = e[0]* std::abs( planeNormal[0]) + e[1]* std::abs( planeNormal[1]) + e[2]* std::abs( planeNormal[2]);
     double s = planeNormal.dot(center) - planeDist;
-
-//    SLIC_DEBUG("\t-- original triangle: " << tri);
-//    SLIC_DEBUG("\t-- original bb: " << bb);
-//    SLIC_DEBUG("\t-- plane normal: " << planeNormal);
-//    SLIC_DEBUG("\t-- plane distance: " << planeDist);
-//    SLIC_DEBUG("\t-- center: " << center);
-//    SLIC_DEBUG("\t-- e: " << e );
-//    SLIC_DEBUG("\t-- tri verts: {" << v[0] <<", " << v[1] <<", " << v[2] <<"}");
-//    SLIC_DEBUG("\t-- tri faces: {" << f[0] <<", " << f[1] <<", " << f[2] <<"}");
-//
-//    SLIC_DEBUG("\t-- r: " << r);
-//    SLIC_DEBUG("\t-- s: " << s);
 
     return std::abs(s) <= r;
 }
@@ -292,13 +224,7 @@ bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
 template < typename T, int DIM>
 bool intersect( const BoundingBox<T, DIM>& bb1, const BoundingBox<T, DIM>& bb2)
 {
-    // AABBs cannot intersect if they are separated along any dimension
-    for(int i=0; i< DIM; ++i)
-    {
-        if(bb1.getMax()[i] < bb2.getMin()[i] || bb1.getMin()[i] > bb2.getMax()[i])
-            return false;
-    }
-    return true;
+    return bb1.intersects(bb2);
 }
 
 

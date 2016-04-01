@@ -216,11 +216,11 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns the midpoint of the bounding box.
-   * \return midpoint of the bounding box.
+   * \brief Returns the centroid (midpoint) of the bounding box.
+   * \return Point at the bounding box centroid.
    *****************************************************************************
    */
-  PointType midPoint() const { return PointType::midpoint(m_min, m_max); }
+  PointType centroid() const { return PointType::midpoint(m_min, m_max); }
 
   /*!
    *****************************************************************************
@@ -248,14 +248,6 @@ public:
    */
   template<typename OtherType>
   void addBox(const BoundingBox<OtherType,DIM>& bbox);
-
-  /*!
-   *****************************************************************************
-   * \brief Computes the centroid of this bounding box instance.
-   * \return pt point at the bounding box centroid.
-   *****************************************************************************
-   */
-  PointType centroid() const;
 
   /*!
    *****************************************************************************
@@ -325,6 +317,10 @@ public:
    * \brief Checks whether the box contains the point
    * \param [in] otherPt the point that we are checking
    * \return status true if point inside the box, else false.
+   *
+   * \note This function assumes all intervals are closed
+   * (i.e. contain their boundaries).  We may need to deal with open
+   * and half open boundaries in the future.
    *****************************************************************************
    */
   template<typename OtherType>
@@ -332,17 +328,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Checks whether the box contains the point in its interior or its lower boundaries
-   * \param [in] otherPt the point that we are checking
-   * \return status true if point inside the box, else false.
-   *****************************************************************************
-   */
-  template<typename OtherType>
-  bool halfOpenContains( const Point<OtherType, DIM>& otherPt) const;
-
-  /*!
-   *****************************************************************************
-   * \brief Checks whether the box full contains another bounding box
+   * \brief Checks whether the box fully contains another bounding box
    * \param [in] otherBB the bounding box that we are checking
    * \return status true if bb is inside the box, else false.
    * \note We are allowing the other bounding box to have a different coordinate
@@ -524,19 +510,6 @@ bool BoundingBox<CoordType, DIM>::contains(
 //------------------------------------------------------------------------------
 template<typename CoordType, int DIM>
 template<typename OtherCoordType>
-bool BoundingBox<CoordType, DIM>::halfOpenContains(const Point<OtherCoordType,DIM>& otherPt) const
-{
-    for(int dim = 0; dim < DIM; ++dim)
-    {
-        if( otherPt[dim] < m_min[dim] || otherPt[dim] >=  m_max[dim])
-            return false;
-    }
-    return true;
-}
-
-//------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-template<typename OtherCoordType>
 bool BoundingBox<CoordType, DIM>::contains(
         const BoundingBox<OtherCoordType,DIM>& otherBB) const
 {
@@ -549,6 +522,7 @@ template < typename OtherType  >
 bool BoundingBox< CoordType,DIM >::intersects(
         const BoundingBox< OtherType, DIM >& otherBB ) const
 {
+  // AABBs cannot intersect if they are separated along any dimension
   for ( int i=0; i < DIM; ++i ) {
 
      if ( (m_max[ i ] < otherBB.m_min[ i ]) ||
@@ -607,22 +581,6 @@ void BoundingBox<CoordType, DIM>::addBox(
 
 //------------------------------------------------------------------------------
 template< typename CoordType, int DIM >
-quest::Point< CoordType, DIM > BoundingBox< CoordType,DIM >::centroid() const
-{
-  SLIC_ASSERT( this->isValid() );
-
-  PointType pt;
-  for ( int i=0; i < DIM; ++i ) {
-
-      pt[ i ] = 0.5 * ( m_min[ i ] + m_max[ i ] );
-
-  }
-
-  return( pt );
-}
-
-//------------------------------------------------------------------------------
-template< typename CoordType, int DIM >
 int BoundingBox<CoordType,DIM>::getLongestDimension() const
 {
   SLIC_ASSERT( this->isValid() );
@@ -659,7 +617,7 @@ void BoundingBox<CoordType, DIM>::expand(CoordType expansionAmount)
 template<typename CoordType, int DIM>
 void BoundingBox<CoordType, DIM>::scale(double scaleFactor)
 {
-    const PointType midpoint = PointType::midpoint(getMin(), getMax());
+    const PointType midpoint = centroid();
     const VectorType r = scaleFactor * 0.5 * range();
 
     m_min = PointType( midpoint.array() - r.array());

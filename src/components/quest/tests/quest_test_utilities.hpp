@@ -13,6 +13,14 @@
 #include "quest/FieldData.hpp"
 
 
+/**
+ * \file
+ *
+ * This file contains several utility functions for testing the quest component,
+ * e.g. generating random doubles and Points, creating a simple mesh of an octahedron...
+ * We may later decide to move some of these into the actual component if they are deemed useful.
+ */
+
 namespace quest {
 namespace utilities {
 
@@ -104,24 +112,24 @@ meshtk::Mesh*  make_octahedron_mesh()
                     , NEG_Z, NEG_Y, NEG_X
                     , NEG_Z, POS_X, NEG_Y };
 
-    // Explicit representation of edge-vertex incidence relation
-    // Note: we don't care about the orientation here
-    const int NUM_EDGES = 12;
-    const int VERTS_PER_EDGE = 3;
-    VertexIndex evRelation[NUM_EDGES*VERTS_PER_EDGE]
-                  = { POS_Z, POS_X  // Four edges incident in +Z
-                    , POS_Z, POS_Y
-                    , POS_Z, NEG_X
-                    , POS_Z, NEG_Y
-                    , NEG_Z, POS_X  // Four edges incident in -Z
-                    , NEG_Z, POS_Y
-                    , NEG_Z, NEG_X
-                    , NEG_Z, NEG_Y
-                    , POS_Y, POS_X  // Four edges not incident in Z
-                    , NEG_Y, POS_Y
-                    , POS_Y, NEG_X
-                    , NEG_Y, NEG_Y };
-
+      // Note (KW 3/2016) -- We are not currently using this
+      // Explicit representation of edge-vertex incidence relation
+      // Note: we don't care about the orientation here
+      //const int NUM_EDGES = 12;
+      //const int VERTS_PER_EDGE = 3;
+      //VertexIndex evRelation[NUM_EDGES*VERTS_PER_EDGE]
+      //              = { POS_Z, POS_X  // Four edges incident in +Z
+      //                , POS_Z, POS_Y
+      //                , POS_Z, NEG_X
+      //                , POS_Z, NEG_Y
+      //                , NEG_Z, POS_X  // Four edges incident in -Z
+      //                , NEG_Z, POS_Y
+      //                , NEG_Z, NEG_X
+      //                , NEG_Z, NEG_Y
+      //                , POS_Y, POS_X  // Four edges not incident in Z
+      //                , NEG_Y, POS_Y
+      //                , POS_Y, NEG_X
+      //                , NEG_Y, NEG_Y };
 
     // First, confirm that all triangles have normals that point away from the origin
     for(int i =0; i < NUM_TRIS; ++i)

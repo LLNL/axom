@@ -136,10 +136,16 @@ public:
 
   /*!
    * \brief Returns the normal of the triangle (not normalized)
+   * \pre This function is only valid when DIM = 3
+   * \return The normal vector to the triangle (when DIM==3), the zero vector otherwise
    */
   VectorType normal() const
   {
-      return VectorType::cross_product( VectorType(m_A,m_B), VectorType(m_A,m_C));
+      SLIC_CHECK_MSG(DIM==3, "quest::Triangle::normal() is only valid when dimension is 3.");
+
+      return (DIM==3)
+              ? VectorType::cross_product( VectorType(m_A,m_B), VectorType(m_A,m_C))
+              : VectorType();
   }
 
 

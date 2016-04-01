@@ -73,10 +73,18 @@ namespace quest
 
     public:
         /**
+         * \brief Default constructor for an InOutLeafData
+         */
+        InOutLeafData()
+            : BlockData()
+            , m_vertIndex(NO_VERTEX)
+        {}
+
+        /**
          * \brief Constructor for an InOutLeafData
          * \param vInd The index of a vertex (optional; default is to not set a vertex)
          */
-        InOutLeafData(VertexIndex vInd = NO_VERTEX)
+        InOutLeafData(VertexIndex vInd)
             : BlockData()
             , m_vertIndex(vInd)
         {}
@@ -399,14 +407,6 @@ private:
      */
     void printOctreeStats(bool trianglesAlreadyInserted) const;
 
-
-    /**
-     * Ensures that all triangles have a consistent orientation
-     * \note Assumption is that most normals are consistently oriented, with some inconsistencies
-     *       If this turns out to be invalid, we may need to revisit this algorithm
-     */
-    void checkAndFixNormals();
-
 private:
 
     void dumpOctreeMeshVTK(const std::string& name, bool hasColors = false) const
@@ -538,6 +538,9 @@ private:
 
         delete debugMesh;
         debugMesh = ATK_NULLPTR;
+      #else
+        if(false)
+            SLIC_DEBUG("Skipped outputting mesh " << name <<" with hasColors = " << hasColors);
       #endif
     }
 
@@ -600,6 +603,10 @@ private:
 
         delete debugMesh;
         debugMesh = ATK_NULLPTR;
+    #else
+        if(false)
+            SLIC_DEBUG("Skipped outputting vtk file " << name <<" on " << (isTri? "tri " : "vertex ") << idx
+                << " and block " << block <<" with blockBB " << blockBB );
       #endif
     }
 
@@ -694,7 +701,9 @@ protected:
     TriangleVertexRelation m_triangleToVertexRelation;
 };
 
+
 namespace{
+#ifdef ATK_DEBUG
     /**
      * \brief Utility function to print the vertex indices of a cell
      */
@@ -718,7 +727,7 @@ namespace{
 
         return os;
     }
-
+#endif
 }
 
 template<int DIM>
@@ -770,8 +779,6 @@ void InOutOctree<DIM>::generateIndex ()
     printOctreeStats(true);
   #endif
     checkValid(true);
-
-    //checkAndFixNormals();
 
     // STEP 3 -- Color the blocks of the octree -- Black (in), White(out), Gray(Intersects surface)
     timer.start();
@@ -1657,48 +1664,6 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
 //        }
     }
 
-
-
-}
-
-
-template<int DIM>
-void InOutOctree<DIM>::checkAndFixNormals()
-{
-    int numVerts = m_vertexSet.size();
-
-    SLIC_ASSERT_MSG(!m_vertexSet.empty()
-                    , "InOutOctree::checkAndFixNormals() -- This function assumes that we have a valid mapping"
-                    << " from vertices to their octree blocks.");
-
-
-    typedef std::vector<int> OrientationVector;
-    OrientationVector orientVec;
-
-    for(int idx=0; idx < numVerts; ++idx)
-    {
-        const BlockIndex& blk = m_vertexToBlockMap[idx];
-        const InOutLeafData& leaf = (*this)[blk];
-//
-//        if(leaf.hasTriangles())
-//        {
-//            orientVector.clear();
-//            int numTris = leaf.numTriangles();
-//            orientVector.reserve(numTris);
-//
-//            const typename InOutLeafData::TriangleList& tris = leaf.triangles();
-//            for(int i=0; i< numTris; ++i)
-//            {
-//                TriangleIndex tIdx = tris[i];
-//                TriVertIndices tv = triangleVertexIndices(tIdx);
-//
-//                /***  HERE  ***/
-//
-//
-//
-//            }
-//        }
-    }
 
 
 }
