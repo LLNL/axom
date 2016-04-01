@@ -97,8 +97,7 @@ macro(add_doxygen_target doxygen_target_name)
     install(CODE "execute_process(COMMAND ${CMAKE_BUILD_TOOL} ${doxygen_target_name} WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
 
     install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html" 
-            DESTINATION docs/doxygen/${doxygen_target_name})
-
+            DESTINATION docs/doxygen/${doxygen_target_name} OPTIONAL)
 endmacro(add_doxygen_target)
 
 ##------------------------------------------------------------------------------
@@ -150,7 +149,7 @@ macro(add_sphinx_target sphinx_target_name )
     install(CODE "execute_process(COMMAND ${CMAKE_BUILD_TOOL} ${sphinx_target_name} WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
 
     install(DIRECTORY "${SPHINX_HTML_DIR}" 
-            DESTINATION "docs/sphinx/${sphinx_target_name}")
+            DESTINATION "docs/sphinx/${sphinx_target_name}" OPTIONAL)
 endmacro(add_sphinx_target)
 
 

@@ -27,8 +27,6 @@
 
 // Toolkit includes
 #include "common/CommonTypes.hpp"
-#include "lumberjack/Lumberjack.hpp"
-#include "lumberjack/BinaryTreeCommunicator.hpp" 
 #include "slic/slic.hpp"
 #include "slic/LumberjackStream.hpp"
 

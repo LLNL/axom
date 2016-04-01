@@ -1,4 +1,3 @@
-
 ###########################
 # Build the example sources
 ###########################
@@ -18,7 +17,7 @@ foreach(example_source ${example_sources})
     make_executable(EXECUTABLE_NAME "slam_${example_name}" 
                     EXECUTABLE_SOURCE ${example_source} 
                     DEPENDS_ON slam slic
-                    ADD_CTEST
+                    ADD_CTEST IS_EXAMPLE
                     )
 endforeach()
 
@@ -51,7 +50,6 @@ if ( NOT ENABLE_OPENMP )
         PROPERTIES COMPILE_FLAGS "${ATK_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
-
 make_library( LIBRARY_NAME      slamLuleshLib
               LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
               USE_OPENMP ${ENABLE_OPENMP} 
@@ -67,7 +65,7 @@ make_executable( EXECUTABLE_NAME    slam_Lulesh
                     slam 
                     slamLuleshLib
                   USE_OPENMP ${ENABLE_OPENMP} 
-                  ADD_CTEST
+                  ADD_CTEST IS_EXAMPLE
                   ) 
 
 

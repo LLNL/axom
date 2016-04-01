@@ -77,18 +77,15 @@ parser.add_argument("-ecc",
                     action='store_true',
 	                help="generate a compilation database.  Can be used by the clang tools such as clang-modernize.  Will create a file called 'compile_commands.json' in your build directory.")
 
-parser.add_argument("-co",
-                    "--cmakeoption",
-                    type=str,
-                    help="specify additional cmake option to add to cmake line.  A '-D' will automatically be prepended.  Use caution, if you are doing something non-trivial, use ccmake or cmake-gui.")
-
 parser.add_argument("-hc",
                     "--hostconfig",
                     default="",
                     type=str,
                     help="select a specific host-config file to initalize CMake's cache")
 
-args = parser.parse_args()
+args, unknown_args = parser.parse_known_args()
+if unknown_args:
+    print "Passing unknown arguments to cmake... %s" % unknown_args
 
 ########################
 # Find CMake Cache File
@@ -190,8 +187,8 @@ if args.eclipse:
 if args.xcode:
     cmakeline += ' -G "XCode"'
 
-if args.cmakeoption:
-    cmakeline += " -D" + args.cmakeoption
+if unknown_args:
+    cmakeline += " " + " ".join( unknown_args )
 
 cmakeline += " %s/../src " % scriptsdir
 

@@ -182,7 +182,7 @@ public:
     }
 
 private:
-  DISABLE_COPY_AND_ASSIGNMENT(SpatialOctree)
+  DISABLE_COPY_AND_ASSIGNMENT(SpatialOctree);
 
 protected:
     SpaceVectorLevelMap     m_deltaLevelMap;    // The width of a cell at each level or resolution

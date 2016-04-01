@@ -11,7 +11,7 @@ include(cmake/thirdparty/FindConduit.cmake)
 ################################
 # HDF5
 ################################
-include(cmake/FindHDF5.cmake)
+include(cmake/thirdparty/FindHDF5.cmake)
 
 
 ################################
@@ -50,7 +50,7 @@ endif()
 # Python
 ################################
 
-if(PYTHON_EXECUTABLE)
+if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
     ################################
     # Setup includes for Python & Numpy
     ################################
@@ -81,4 +81,4 @@ if(PYTHON_EXECUTABLE)
 
     INSTALL(DIRECTORY DESTINATION ${CMAKE_Python_SITE_PACKAGES})
     INSTALL(CODE " set(ENV\{PYTHONPATH\} ${CMAKE_INSTALL_PREFIX}/${CMAKE_Python_SITE_PACKAGES}) ")
-endif(PYTHON_EXECUTABLE)
+endif(ENABLE_PYTHON AND PYTHON_EXECUTABLE)

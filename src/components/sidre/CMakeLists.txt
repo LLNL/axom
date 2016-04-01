@@ -12,7 +12,9 @@ include_directories(${HDF5_INCLUDE_DIRS})
 ################################
 # Add the sparsehash headers include
 ################################
-include_directories( ${SPARSEHASH_INCLUDE_DIRS} )
+if(SPARSEHASH_FOUND)
+  include_directories( ${SPARSEHASH_INCLUDE_DIRS} )
+endif()
 
 ################################
 # Add the boost headers include
@@ -27,7 +29,9 @@ add_subdirectory(src)
 ################################
 # Add examples
 ################################
-add_subdirectory(examples)
+if (BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 ################################
 # Add tests
@@ -42,8 +46,9 @@ add_code_check_targets(uncrustify.cfg)
 ################################
 # Add docs
 ################################
-add_subdirectory(docs)
-
+if (BUILD_DOCS)
+  add_subdirectory(docs)
+endif()
 
 ################################
 # Create CMake importable

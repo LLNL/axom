@@ -26,7 +26,7 @@ foreach(example_source ${example_sources})
     make_executable(EXECUTABLE_NAME "slic_${example_name}" 
                     EXECUTABLE_SOURCE ${example_source} 
                     DEPENDS_ON slic
-                    ADD_CTEST
+                    ADD_CTEST IS_EXAMPLE
                     )
 endforeach()
 
@@ -37,7 +37,7 @@ if (ENABLE_MPI)
         make_executable(EXECUTABLE_NAME "slic_mpi_${example_name}" 
                         EXECUTABLE_SOURCE ${example_source} 
                         DEPENDS_ON slic
-                        ADD_CTEST
+                        ADD_CTEST IS_EXAMPLE
                         )
     endforeach()
 endif()
