@@ -1,7 +1,7 @@
 #!/bin/sh
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c gcc@4.9.3 --buildtype RelWithDebInfo -DENABLE_CXX11=FALSE
+./scripts/config-build.py -c gcc@4.9.3 --buildtype RelWithDebInfo
 cd build-chaos-gcc@4.9.3-relwithdebinfo
 echo "-----------------------------------------------------------------------"
 
