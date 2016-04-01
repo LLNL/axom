@@ -71,10 +71,10 @@ template<typename T>
 struct ValueRange
 {
     /** \brief Returns the highest representable value of type T */
-    static const T highest() { return std::numeric_limits<T>::max(); }
+    static T highest() { return std::numeric_limits<T>::max(); }
 
     /** \brief Returns the lowest representable value of type T */
-    static const T lowest() {
+    static T lowest() {
         #ifdef USE_CXX11
             return std::numeric_limits<T>::lowest();
         #else
@@ -92,8 +92,8 @@ struct ValueRange
 template<> struct ValueRange<float>
 {
     typedef float T;
-    static const T highest() { return std::numeric_limits<T>::max(); }
-    static const T lowest()  { return -std::numeric_limits<T>::max(); }
+    static T highest() { return std::numeric_limits<T>::max(); }
+    static T lowest()  { return -std::numeric_limits<T>::max(); }
 };
 
 /**
@@ -103,8 +103,8 @@ template<> struct ValueRange<float>
 template<> struct ValueRange<double>
 {
     typedef double T;
-    static const T highest() { return std::numeric_limits<T>::max(); }
-    static const T lowest()  { return -std::numeric_limits<T>::max(); }
+    static T highest() { return std::numeric_limits<T>::max(); }
+    static T lowest()  { return -std::numeric_limits<T>::max(); }
 };
 #endif
 

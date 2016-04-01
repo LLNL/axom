@@ -17,6 +17,15 @@
  *******************************************************************************
  */
 
+
+#ifdef USE_CXX11
+  #include <chrono>
+#else
+  #include <sys/time.h>
+#endif
+
+
+
 #ifndef TIMER_HPP_
 #define TIMER_HPP_
 
@@ -27,12 +36,12 @@ namespace utilities {
 
 /*!
  *******************************************************************************
- * \brief A simple TaskTimer class used to measure execution time.
+ * \brief A simple Timer class used to measure execution time.
  *
  *  Example Usage:
  *  \code
  *
- *     utilities::TaskTimer t;
+ *     utilities::Timer t;
  *     t.start();
  *
  *     // code to measure its execution time
@@ -45,14 +54,37 @@ namespace utilities {
  */
 class Timer
 {
+private:
+  // Some typedefs for internal implementation
+  #ifdef USE_CXX11
+    typedef std::chrono::high_resolution_clock  ClockType;
+    typedef std::chrono::time_point<ClockType>  TimeStruct;
+    typedef std::chrono::duration<double>       TimeDiff;
+
+    static constexpr TimeStruct s_defaultTime = TimeStruct();
+  #else
+    typedef timeval                             TimeStruct;
+    typedef long int                            TimeDiff;
+
+    static const TimeStruct s_defaultTime;
+
+    enum { TIMER_ONE      = 1
+         , TIMER_THOUSAND = 1000
+         , TIMER_MILLION  = 1000000
+    };
+
+  #endif
+
 public:
 
   /*!
    *****************************************************************************
    * \brief Default constructor.
+   * \param startRunning Indicates whether to start the timer
+   *        during construction (default is false)
    *****************************************************************************
    */
-  Timer();
+  Timer(bool startRunning = false);
 
   /*!
    *****************************************************************************
@@ -63,17 +95,16 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Starts the timer.Sets the start time of this TaskTimer instance.
+   * \brief Starts the timer.Sets the start time of this Timer instance.
    *****************************************************************************
    */
-  void start() { m_startTime = this->getCurrentTime(); };
-
+  void start();
   /*!
    *****************************************************************************
-   * \brief Stops the timer. Sets the end time of this TaskTimer instance.
+   * \brief Stops the timer. Sets the end time of this Timer instance.
    *****************************************************************************
    */
-  void stop() { m_endTime = this->getCurrentTime(); };
+  void stop();
 
   /*!
    *****************************************************************************
@@ -81,7 +112,31 @@ public:
    * \return t the elapsed time in seconds.
    *****************************************************************************
    */
-  double elapsed() { return (m_endTime-m_startTime);};
+  double elapsed() { return elapsedTimeInSec();};
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the elapsed time in seconds.
+   * \return t the elapsed time in seconds.
+   *****************************************************************************
+   */
+  double elapsedTimeInSec();
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the elapsed time in milliseconds.
+   * \return t the elapsed time in milliseconds.
+   *****************************************************************************
+   */
+  double elapsedTimeInMilliSec();
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the elapsed time in microseconds.
+   * \return t the elapsed time in microseconds.
+   *****************************************************************************
+   */
+  double elapsedTimeInMicroSec();
 
   /*!
    *****************************************************************************
@@ -89,13 +144,17 @@ public:
    * \post this->elapsed()==0.0
    *****************************************************************************
    */
-  void reset() { m_startTime = m_endTime = 0.0; };
+  void reset();
 
 private:
-    double m_startTime;
-    double m_endTime;
+    TimeDiff clockDiff();
 
-    double getCurrentTime();
+private:
+
+    TimeStruct m_startTime;
+    TimeStruct m_stopTime;
+    bool       m_running;
+
 };
 
 } /* namespace utilities */

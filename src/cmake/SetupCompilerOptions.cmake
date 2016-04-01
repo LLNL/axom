@@ -127,7 +127,9 @@ if (ENABLE_CXX11)
    append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS DEFAULT -std=c++11)
    set(HAVE_CXX_FLAG_STD_CXX11 TRUE)
    
-   MESSAGE(STATUS "Enabled C++11")  
+   MESSAGE(STATUS "C++11 support is ON")  
+else()
+   MESSAGE(STATUS "C++11 support if OFF")  
 endif()
 
 ##################################################################

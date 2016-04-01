@@ -142,7 +142,6 @@ set(tinyHydro_lib_headers
     ${tinyHydro_dir}/State.hpp
     ${tinyHydro_dir}/VectorXY.hpp
     ${tinyHydro_dir}/PolygonMeshXY.hpp
-    ${tinyHydro_dir}/myTimer.hpp        
     )
 
 set(tinyHydro_lib_sources
@@ -151,7 +150,6 @@ set(tinyHydro_lib_sources
     ${tinyHydro_dir}/Part.cpp
     ${tinyHydro_dir}/State.cpp
     ${tinyHydro_dir}/PolygonMeshXY.cpp
-    ${tinyHydro_dir}/myTimer.cpp        
     )
 
 
