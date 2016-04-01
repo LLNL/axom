@@ -61,6 +61,10 @@ namespace utilities {
   {
     RealType maxFabs = std::max(std::fabs(a), std::fabs(b) );
     return std::fabs(a-b) <= ( maxFabs * relThresh + absThresh);
+
+    // Equation from Real-Time Collsion Detection book -- http://realtimecollisiondetection.net/pubs/Tolerances/
+    // Note: If we use this, we must update the doxygen
+    // return std::fabs(a-b) <=  std::max(absThresh, relThresh * maxFabs );
   }
 
 

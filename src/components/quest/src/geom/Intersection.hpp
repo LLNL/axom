@@ -21,11 +21,13 @@
 #ifndef INTERSECTION_HPP_
 #define INTERSECTION_HPP_
 
+#include "quest/BoundingBox.hpp"
 #include "quest/Determinants.hpp"
 #include "quest/fuzzy_compare.hpp"
 #include "quest/Point.hpp"
 #include "quest/Ray.hpp"
 #include "quest/Segment.hpp"
+#include "quest/Triangle.hpp"
 
 namespace quest {
 
@@ -89,7 +91,142 @@ bool intersect( const Ray<T,2>& R, const Segment<T,2>& S, Point<T,2>& ip )
    return false;
 }
 
+
+namespace {
+
+  typedef quest::Vector<double, 3> Vector3;
+
+  /**
+   * \brief Helper function to find disjoint projections for the AABB-triangle test
+   * \param {d0,d1,d2}  Values defining the test interval
+   * \param r Radius of projection
+   * \return True of the intervals are disjoint, false otherwise
+   */
+  bool intervalsDisjoint(double d0, double d1, double d2, double r)
+  {
+      if(d1 < d0)
+          std::swap(d1,d0);  // d0 < d1
+      if(d2 > d1)
+          std::swap(d2,d1);  // d1 is max(d0,d1,d2)
+      else if(d2 < d0)
+          std::swap(d2,d0);  // d0 is min(d0,d1,d2)
+
+      SLIC_ASSERT( d0 <= d1 && d0 <= d2);
+      SLIC_ASSERT( d1 >= d0 && d1 >= d2);
+
+      return d1 < -r || d0 > r;
+  }
+
+  /**
+   * \brief Helper function for Triangle/BoundingBox intersection test
+   */
+  bool crossEdgesDisjoint(double d0, double d1, double r)
+  {
+      return std::max( -std::max(d0,d1), std::min(d0,d1) ) > r;
+  }
+
+}
+
+
+
+/*!
+ *******************************************************************************
+ * \brief Determines if a triangle and a bounding box intersect
+ *        (but does not find the point of intersection)
+ * \param [in] tri user-supplied triangle (with three vertices).
+ * \param [in] bb user-supplied axis aligned bounding box.
+ * \return true iff tri intersects with bb, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T>
+bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
+{
+    // Note: Algorithm is derived from the one presented in chapter 5.2.9 of
+    //   Real Time Collision Detection book by Christer Ericson
+    // based on Akenine-Moller algorithm (Journal of Graphics Tools)
+    //
+    // It uses the Separating Axis Theorem to look for disjoint projections
+    // along various axes associated with Faces and Edges of the AABB and triangle.
+    // There are 9 tests for the cross products of edges
+    //           3 tests for the AABB face normals
+    //           1 test for the triangle face normal
+    // We use early termination if we find a separating axis between the shapes
+
+    typedef typename BoundingBox<T,3>::PointType PointType;
+    typedef typename BoundingBox<T,3>::VectorType VectorType;
+
+    // Extent: vector center to max corner of BB
+    VectorType e = bb.range() / 2.;
+
+    // Make the AABB center the origin by moving the triangle vertices
+    PointType center = bb.centroid();
+    VectorType v[3] = { VectorType(tri.A().array() - center.array())
+                      , VectorType(tri.B().array() - center.array())
+                      , VectorType(tri.C().array() - center.array()) };
+
+    // Create the edge vectors of the triangle
+    VectorType f[3] = { v[1] - v[0], v[2] - v[1],  v[0] - v[2] };
+
+
+    // Test cross products of edges between triangle edge vectors f and cube normals (9 tests)
+    // -- using separating axis theorem on the cross product of edges of triangle and face normals of AABB
+    // Each test involves three cross products, two of which have the same value
+    // The commented parameters highlights this symmetry.
+    #define XEDGE_R( _E0, _E1, _F0, _F1, _IND )   e[ _E0 ] * std::abs(f[ _IND ][ _F0 ])            \
+                                                + e[ _E1 ] * std::abs(f[ _IND ][ _F1 ])
+
+    #define XEDGE_S( _V0, _V1, _F0, _F1, _VIND, _FIND) -v[ _VIND ][ _V0 ] * f[ _FIND ][ _F0 ]       \
+                                                       +v[ _VIND ][ _V1 ] * f[ _FIND ][ _F1 ]
+
+    if( crossEdgesDisjoint(/*XEDGE_S(1,2,2,1,0,0),*/ XEDGE_S(1,2,2,1,1,0),   XEDGE_S(1,2,2,1,2,0),   XEDGE_R(1,2,2,1,0))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(1,2,2,1,0,1),/* XEDGE_S(1,2,2,1,1,1),*/ XEDGE_S(1,2,2,1,2,1),   XEDGE_R(1,2,2,1,1))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(1,2,2,1,0,2),   XEDGE_S(1,2,2,1,1,2),/* XEDGE_S(1,2,2,1,2,2),*/ XEDGE_R(1,2,2,1,2))) return false;
+
+    if( crossEdgesDisjoint(/*XEDGE_S(2,0,0,2,0,0),*/ XEDGE_S(2,0,0,2,1,0),   XEDGE_S(2,0,0,2,2,0),   XEDGE_R(0,2,2,0,0))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(2,0,0,2,0,1),/* XEDGE_S(2,0,0,2,1,1),*/ XEDGE_S(2,0,0,2,2,1),   XEDGE_R(0,2,2,0,1))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(2,0,0,2,0,2),   XEDGE_S(2,0,0,2,1,2),/* XEDGE_S(2,0,0,2,2,2),*/ XEDGE_R(0,2,2,0,2))) return false;
+
+    if( crossEdgesDisjoint(/*XEDGE_S(0,1,1,0,0,0),*/ XEDGE_S(0,1,1,0,1,0),   XEDGE_S(0,1,1,0,2,0),   XEDGE_R(0,1,1,0,0))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(0,1,1,0,0,1),/* XEDGE_S(0,1,1,0,1,1),*/ XEDGE_S(0,1,1,0,2,1),   XEDGE_R(0,1,1,0,1))) return false;
+    if( crossEdgesDisjoint(  XEDGE_S(0,1,1,0,0,2),   XEDGE_S(0,1,1,0,1,2),/* XEDGE_S(0,1,1,0,2,2),*/ XEDGE_R(0,1,1,0,2))) return false;
+
+    #undef XEDGE_R
+    #undef XEDEG_S
+
+
+    /// Test face normals of bounding box (3 tests)
+    if(intervalsDisjoint(v[0][0], v[1][0], v[2][0], e[0])) return false;
+    if(intervalsDisjoint(v[0][1], v[1][1], v[2][1], e[1])) return false;
+    if(intervalsDisjoint(v[0][2], v[1][2], v[2][2], e[2])) return false;
+
+
+    /// Final test -- face normal of triangle's plane
+    VectorType planeNormal  = VectorType::cross_product(f[0],f[1]);
+    double planeDist    = planeNormal.dot( tri.A());
+
+    double r = e[0]* std::abs( planeNormal[0]) + e[1]* std::abs( planeNormal[1]) + e[2]* std::abs( planeNormal[2]);
+    double s = planeNormal.dot(center) - planeDist;
+
+    return std::abs(s) <= r;
+}
+
+
 //------------------------------------------------------------------------------
+
+/*!
+ *******************************************************************************
+ * \brief Determines if two axis aligned bounding boxes intersect
+ * \param [in] bb1 user-supplied axis aligned bounding box.
+ * \param [in] bb2 user-supplied axis aligned bounding box.
+ * \return true iff bb1 intersects with bb2, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T, int DIM>
+bool intersect( const BoundingBox<T, DIM>& bb1, const BoundingBox<T, DIM>& bb2)
+{
+    return bb1.intersects(bb2);
+}
+
 
 } /* end namespace quest */
 

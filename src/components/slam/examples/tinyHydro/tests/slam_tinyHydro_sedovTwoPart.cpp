@@ -13,11 +13,11 @@
 #include <vector>
 #include <cmath>
 
+#include "common/Timer.hpp"
 #include "slic/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"
 #include "../HydroC.hpp"
-#include "../myTimer.hpp"
 
 
 using namespace tinyHydro;
@@ -102,7 +102,7 @@ void tinyHydroSedov_2part()
 
   double E0 = h.totalEnergy();
 
-  Timer timer;
+  asctoolkit::utilities::Timer timer;
   timer.start();
   if(steps > 0)
   {
@@ -115,7 +115,7 @@ void tinyHydroSedov_2part()
   timer.stop();
 
   SLIC_INFO("--");
-  SLIC_INFO("Elapsed time after advancing was " << timer.getElapsedTime() << " seconds.");
+  SLIC_INFO("Elapsed time after advancing was " << timer.elapsedTimeInSec() << " seconds.");
 
 
   double E1 = h.totalEnergy();

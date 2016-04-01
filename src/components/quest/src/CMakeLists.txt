@@ -18,6 +18,7 @@ set( quest_headers
     geom/Determinants.hpp
     geom/HyperSphere.hpp
     geom/Intersection.hpp
+    geom/InOutOctree.hpp
     geom/MortonIndex.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp

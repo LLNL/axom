@@ -13,14 +13,19 @@
 #include "gtest/gtest.h"
 
 #include "quest/Point.hpp"
-#include "quest/SpatialOctree.hpp"
+#include "quest/OctreeBase.hpp"
+
+#include "slic/slic.hpp"
+
 
 //------------------------------------------------------------------------------
 TEST( quest_octree, topological_octree_parent_child)
 {
+  SLIC_INFO("*** This test exercises the parent/child relation in quest::OctreeBase");
+
   static const int DIM = 2;
   typedef int CoordType;
-  typedef int LeafNodeType;
+  typedef quest::BlockData LeafNodeType;
 
   typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
   typedef OctreeType::GridPt GridPt;
@@ -64,85 +69,154 @@ TEST( quest_octree, topological_octree_parent_child)
 //------------------------------------------------------------------------------
 TEST( quest_octree, topological_octree_refine)
 {
+  SLIC_INFO("*** This test exercises the block refinement in quest::OctreeBase"
+              <<"\nSpecifically, that refining the root block adds all its children to the octree.");
+
   static const int DIM = 3;
-  typedef int LeafNodeType;
+  typedef quest::BlockData LeafNodeType;
 
   typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
   typedef OctreeType::BlockIndex BlockIndex;
 
-
-  std::cout<<"Quest::Octree -- Testing that refining the root block"
-          <<" adds all its children to the octree.\n";
-
   OctreeType octree;
 
   BlockIndex rootBlock = octree.root();
-  octree.refineLeaf( rootBlock );
+
+  EXPECT_TRUE( octree.hasBlock( rootBlock));
+  EXPECT_TRUE( octree.isLeaf( rootBlock));
+  EXPECT_FALSE( octree.isInternal( rootBlock));
 
   int numChildren  = BlockIndex::numChildren();
   for(int i = 0; i < numChildren; ++i)
   {
+      EXPECT_FALSE( octree.hasBlock( octree.child(rootBlock, i)) );
+  }
+
+
+  octree.refineLeaf( rootBlock );
+
+  EXPECT_TRUE( octree.hasBlock( rootBlock));
+  EXPECT_FALSE( octree.isLeaf( rootBlock));
+  EXPECT_TRUE( octree.isInternal( rootBlock));
+
+
+  for(int i = 0; i < numChildren; ++i)
+  {
+      EXPECT_TRUE( octree.hasBlock( octree.child(rootBlock, i)) );
       EXPECT_TRUE( octree.isLeaf( octree.child(rootBlock, i)) );
   }
 
 }
 
 
-TEST( quest_octree, spatial_octree_point_location)
+//------------------------------------------------------------------------------
+TEST( quest_octree, octree_coveringLeafBlocks)
 {
-    static const int DIM = 3;
-    typedef int LeafNodeType;
+  SLIC_INFO("*** This test exercises the coveringLeafBlock function of OctreeBase");
 
-    typedef quest::SpatialOctree<DIM, LeafNodeType> OctreeType;
-    typedef OctreeType::BlockIndex BlockIndex;
-    typedef OctreeType::SpacePt SpacePt;
-    typedef OctreeType::GeometricBoundingBox GeometricBoundingBox;
+  static const int DIM = 2;
+  typedef quest::BlockData LeafNodeType;
+  typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
+  typedef OctreeType::BlockIndex BlockIndex;
+  typedef OctreeType::GridPt GridPt;
+
+  OctreeType octree;
+
+  BlockIndex rootBlock = octree.root();
+  SLIC_INFO("Root block of octree is " << rootBlock );
+  EXPECT_EQ( rootBlock, octree.coveringLeafBlock(rootBlock) );
+
+  EXPECT_EQ(2*DIM,  rootBlock.numFaceNeighbors());
+
+  // All children blocks of a leaf block have the leaf as their covering block
+  int numChildren  = BlockIndex::numChildren();
+  for(int i = 0; i < numChildren; ++i)
+  {
+      BlockIndex blk = octree.child(rootBlock, i);
+
+      EXPECT_EQ( rootBlock, octree.coveringLeafBlock(blk));
+  }
+
+  // All neighbors of the root block are invalid
+  for(int i=0; i< rootBlock.numFaceNeighbors(); ++i)
+  {
+      BlockIndex neighborBlk = rootBlock.faceNeighbor(i);
+
+      SLIC_INFO(" Face neighbor " << i << " is " << neighborBlk );
+
+      // The root has no valid neighbors at the same level
+      EXPECT_EQ( BlockIndex::invalid_index(), octree.coveringLeafBlock(neighborBlk));
+  }
 
 
-    GeometricBoundingBox bb(SpacePt(10), SpacePt(20));
+  octree.refineLeaf( rootBlock );
 
-    double alpha = 2./3.;
-    SpacePt queryPt = SpacePt::lerp(bb.getMin(), bb.getMax(), alpha);
-    EXPECT_TRUE( bb.contains(queryPt));
+  // No leaf covers a block after it is refined
+  EXPECT_EQ( BlockIndex::invalid_index(), octree.coveringLeafBlock(rootBlock));
 
-    OctreeType octree(bb);
+  // Check neighbors of the root's children
+  for(int i = 0; i < numChildren; ++i)
+  {
+      BlockIndex blk = octree.child(rootBlock, i);
 
-    BlockIndex leafBlock = octree.findLeafBlock(queryPt);
-    EXPECT_TRUE( octree.isLeaf(leafBlock));
+      EXPECT_EQ( blk, octree.coveringLeafBlock(blk));
 
-    GeometricBoundingBox leafBB = octree.blockBoundingBox(leafBlock);
-    EXPECT_TRUE( leafBB.contains( queryPt ));
-    EXPECT_TRUE( bb.contains(leafBB));
+      // Each child or the root has two valid face neighbors
+      int validNeighborCount = 0;
+      for(int i=0; i< blk.numFaceNeighbors(); ++i)
+      {
+          BlockIndex neighborBlk = blk.faceNeighbor(i);
 
-    std::cout <<"Query pt: " << queryPt
-              <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was NOT" )
-              <<" contained in bounding box " << leafBB
-              <<"\n\t of leaf { pt: " << leafBlock.pt()
-              <<"; level: " << leafBlock.level() <<"}"
-              <<" in the octree. "
-              << std::endl;
+          SLIC_INFO(" Face neighbor " << i << " is " << neighborBlk );
 
-    for(int i=0; i< octree.maxInternalLevel(); ++i)
-    {
-        octree.refineLeaf( leafBlock );
-        leafBlock = octree.findLeafBlock(queryPt);
-        EXPECT_TRUE( octree.isLeaf(leafBlock));
+          if( octree.coveringLeafBlock(neighborBlk) != BlockIndex::invalid_index() )
+              validNeighborCount++;
+      }
+      EXPECT_EQ( 2, validNeighborCount);
+  }
 
-        leafBB = octree.blockBoundingBox(leafBlock);
-        EXPECT_TRUE( leafBB.contains( queryPt ));
-        EXPECT_TRUE( bb.contains(leafBB));
+  octree.refineLeaf( octree.child(rootBlock, 0) );
 
-        std::cout <<"Query pt: " << queryPt
-                  <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was not")
-                  <<" contained in bounding box " << leafBB
-                  <<"\n\t of leaf { pt: " << leafBlock.pt()
-                  <<"; level: " << leafBlock.level() <<"}"
-                  <<" in the octree. "
-                  << std::endl;
-    }
+  // Iterate through level 2 blocks and find face-neighbors
+  int lev = 2;
+  for(int i=0; i< (1<<lev); ++i)
+  {
+      for(int j=0; j< (1<<lev); ++j)
+      {
+          GridPt pt = GridPt::make_point(i,j);
+          BlockIndex blk(pt, lev);
+
+          BlockIndex coveringBlock = octree.coveringLeafBlock( blk);
+
+          SLIC_INFO("Covering block of " << blk << " is " << coveringBlock);
+
+          // Every blk has a valid covering block
+          EXPECT_NE( BlockIndex::invalid_index(), coveringBlock);
+
+          // .. at a coarser level
+          EXPECT_GE( blk.level(), coveringBlock.level()) ;
+
+          for(int i=0; i< blk.numFaceNeighbors(); ++i)
+          {
+              BlockIndex neighborBlk = blk.faceNeighbor(i);
+              BlockIndex coveringBlk = octree.coveringLeafBlock(neighborBlk);
+
+              SLIC_INFO("\tFace neighbor " << i << " is " << neighborBlk
+                        << " -- Covering block is " << coveringBlk
+                        << (coveringBlk == BlockIndex::invalid_index() ? " -- invalid_index" : "")
+                  );
+
+              if( octree.coveringLeafBlock(neighborBlk) != BlockIndex::invalid_index() )
+              {
+                  EXPECT_GE( blk.level(), neighborBlk.level());
+              }
+          }
+      }
+  }
 
 
 }
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
