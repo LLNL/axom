@@ -666,7 +666,7 @@ public:
 
 
 private:
-  DISABLE_COPY_AND_ASSIGNMENT(InOutOctree)
+    DISABLE_COPY_AND_ASSIGNMENT(InOutOctree);
 
     /**
      * \brief Checks internal consistency of the octree representation
