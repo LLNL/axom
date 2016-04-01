@@ -1127,7 +1127,9 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                 blkData.clear();
                 this->refineLeaf(blk);
 
-                if( m_vertexToBlockMap[vIdx] == blk )
+                // Note: At this stage, leaf might have triangles but no assigned vertex,
+                //       so we need to check for that
+                if( vIdx != InOutLeafData::NO_VERTEX && m_vertexToBlockMap[vIdx] == blk )
                     insertVertex(vIdx, blk.childLevel());
             }
 
