@@ -39,34 +39,26 @@ namespace sidre
  *************************************************************************
  *
  * Allocate data for view, previously described.
+ * The state may transition from EMPTY to BUFFER;
+ * otherwise, the state must already be BUFFER.
  *
  *************************************************************************
  */
 DataView * DataView::allocate()
 {
-
-  if ( !isAllocateValid() )
+  if ( isAllocateValid() )
   {
-    SLIC_CHECK_MSG( isAllocateValid(),
-                    "View " << this->getName() << "'s state " <<
-                    getStateStringName(m_state) <<
-                    " does not allow data allocation");
-    return this;
-  }
+    if (m_state == EMPTY)
+    {
+      SLIC_ASSERT( m_data_buffer == ATK_NULLPTR );
+      m_data_buffer = m_owning_group->getDataStore()->createBuffer();
+      m_data_buffer->attachView(this);
+      m_state = BUFFER;
+    }
 
-  if ( m_data_buffer == ATK_NULLPTR )
-  {
-    m_data_buffer = m_owning_group->getDataStore()->createBuffer();
-    m_data_buffer->attachView(this);
-  }
-
-  if ( m_data_buffer->getNumViews() == 1 )
-  {
     TypeID type = static_cast<TypeID>(m_schema.dtype().id());
     SidreLength num_elems = m_schema.dtype().number_of_elements();
     m_data_buffer->allocate(type, num_elems);
-    m_state = ALLOCATED;
-
     apply();
   }
 
@@ -121,6 +113,8 @@ DataView * DataView::allocate(const DataType& dtype)
  *
  * Reallocate data for view to given number of elements.
  * This function requires that the view is already described.
+ * The state may transition from EMPTY to BUFFER;
+ * otherwise, the state must already be BUFFER.
  *
  *************************************************************************
  */
@@ -128,27 +122,27 @@ DataView * DataView::reallocate(SidreLength num_elems)
 {
   TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
 
-  // If we don't have an allocated buffer, we can just call allocate.
-  if ( !isAllocated() )
+  if ( num_elems < 0 )
   {
-    return allocate( vtype, num_elems);
+    SLIC_CHECK_MSG(false, "num_elems must be >= 0");
   }
-
-  if ( !isAllocateValid() || num_elems < 0 )
+  else if ( isAllocateValid() )
   {
-    SLIC_CHECK_MSG( isAllocateValid(),
-                    "View " << this->getName() << "'s state " <<
-                    getStateStringName(m_state) <<
-                    " does not allow data re-allocation");
-    SLIC_CHECK(num_elems >= 0);
-
-    return this;
+    if ( m_state == EMPTY )
+    {
+      allocate( vtype, num_elems);
+    }
+    else if ( m_data_buffer->isAllocated() )    //  XXX if ( isAllocated() )
+    {
+      describe(vtype, num_elems);
+      m_data_buffer->reallocate(num_elems);
+      apply();
+    }
+    else
+    {
+      allocate( vtype, num_elems );
+    }
   }
-
-  describe(vtype, num_elems);
-  m_data_buffer->reallocate(num_elems);
-  m_state = ALLOCATED;
-  apply();
 
   return this;
 }
@@ -214,7 +208,6 @@ DataView * DataView::reallocate(const DataType& dtype)
   describe(dtype);
   SidreLength num_elems = dtype.number_of_elements();
   m_data_buffer->reallocate(num_elems);
-  m_state = ALLOCATED;
   apply();
 
   return this;
@@ -223,30 +216,38 @@ DataView * DataView::reallocate(const DataType& dtype)
 /*
  *************************************************************************
  *
- * Attach buffer to view.
+ * Attach/detach buffer to view.
  *
  *************************************************************************
  */
 DataView * DataView::attachBuffer(DataBuffer * buff)
 {
-  if ( !isAttachBufferValid() || buff == ATK_NULLPTR)
+  if ( m_state == BUFFER && buff == ATK_NULLPTR)
   {
-    SLIC_CHECK_MSG( isAttachBufferValid(),
-                    "View state " << getStateStringName(m_state) <<
-                    " does not allow attaching buffer");
-    SLIC_CHECK( buff != ATK_NULLPTR );
-    return this;
+    // Detach existing buffer.
+    m_data_buffer->detachView(this);
+    m_data_buffer = ATK_NULLPTR;
+    m_state = EMPTY;
+    unapply();
   }
-
-  buff->attachView(this);
-  m_data_buffer = buff;
-  m_state = BUFFER_ATTACHED;
-  m_is_applied = false;
-
-  // If view is described and the buffer is allocated, then call apply.
-  if ( isDescribed() && m_data_buffer->isAllocated() )
+  else if ( m_state == EMPTY && buff != ATK_NULLPTR )
   {
-    apply();
+    buff->attachView(this);
+    m_data_buffer = buff;
+    m_state = BUFFER;
+    m_is_applied = false;
+
+    // If not described, use buffer's description if available.
+    if ( !isDescribed() && buff->isDescribed())
+    {
+      describe( buff->getTypeID(), buff->getNumElements() );
+    }
+
+    // If view is described and the buffer is allocated, then call apply.
+    if ( isDescribed() && m_data_buffer->isAllocated() )
+    {
+      apply();
+    }
   }
 
   return this;
@@ -411,28 +412,41 @@ DataView * DataView::apply(const DataType &dtype)
  */
 void * DataView::getVoidPtr() const
 {
-  // Verify we actually have some data in the view first.
-  if ( m_state == EMPTY ||
-       m_state == DESCRIBED ||
-       ( m_data_buffer != ATK_NULLPTR && !m_data_buffer->isAllocated() )
-       )
+  void * rv = ATK_NULLPTR;
+
+  switch (m_state)
   {
-    SLIC_CHECK_MSG( m_state != EMPTY && m_state != DESCRIBED,
-                    "Unable to retrieve raw pointer to data, view is empty.");
-    SLIC_CHECK_MSG(
-      m_data_buffer == ATK_NULLPTR || m_data_buffer->isAllocated(),
-      "Unable to retrieve raw pointer to unallocated data.");
-    return ATK_NULLPTR;
+  case EMPTY:
+    break;
+  case EXTERNAL:
+    if (isApplied())
+    {
+      rv = const_cast<void *>(m_node.element_ptr(0));
+    }
+    else
+    {
+      rv = m_external_ptr;  // Opaque
+    }
+    break;
+  case BUFFER:
+    if (isApplied())
+    {
+      rv = const_cast<void *>(m_node.element_ptr(0));
+    }
+    else
+    {
+      SLIC_CHECK_MSG(false, "View has no applied data.");
+    }
+    break;
+  case STRING:
+  case SCALAR:
+    rv = const_cast<void *>(m_node.element_ptr(0));
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
 
-  if ( isOpaque() )
-  {
-    return m_external_ptr;
-  }
-  else
-  {
-    return const_cast<void *>(m_node.element_ptr(0));
-  }
+  return rv;
 }
 
 /*
@@ -444,20 +458,23 @@ void * DataView::getVoidPtr() const
  */
 DataView * DataView::setExternalDataPtr(void * external_ptr)
 {
-  if ( !isSetExternalDataPtrValid() )
+  if ( m_state == EMPTY || m_state == EXTERNAL )
   {
-    SLIC_CHECK_MSG( isSetExternalDataPtrValid(),
-                    "View state " << getStateStringName(m_state) <<
-                    " does not allow setting external data pointer");
-    return this;
-  }
+    if (external_ptr == ATK_NULLPTR)
+    {
+      unapply();
+      m_state = EMPTY;
+    }
+    else
+    {
+      m_external_ptr = external_ptr;
+      m_state = EXTERNAL;
 
-  m_external_ptr = external_ptr;
-  m_state = EXTERNAL;
-
-  if ( isDescribed() )
-  {
-    apply();
+      if ( isDescribed() )
+      {
+        apply();
+      }
+    }
   }
 
   return this;
@@ -476,24 +493,26 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
  */
 bool DataView::isAllocated()
 {
-  if ( m_state == EMPTY || m_state == DESCRIBED )
+  bool rv = false;
+
+  switch (m_state)
   {
-    // May want to warn user if they're calling this on an empty view.
-    SLIC_CHECK_MSG( m_state != EMPTY && m_state != DESCRIBED,
-                    "isAllocated was called with an empty view, was this intentional?");
-    return false;
+  case EMPTY:
+    break;
+  case BUFFER:
+    // false if buffer is not allocated or view is not described
+    rv = isDescribed() && m_data_buffer->isAllocated();
+    break;
+  case EXTERNAL:
+  case STRING:
+  case SCALAR:
+    rv = true;
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
 
-  if ( m_state == SCALAR ||
-       m_state == STRING ||
-       ( hasBuffer() && m_data_buffer->isAllocated() ) ||
-       ( m_state == EXTERNAL && m_external_ptr != ATK_NULLPTR )
-       )
-  {
-    return true;
-  }
-
-  return false;
+  return rv;
 }
 
 /*
@@ -642,12 +661,6 @@ void DataView::describe(TypeID type, SidreLength num_elems)
   dtype.set_number_of_elements(num_elems);
   m_schema.set(dtype);
   describeShape();
-
-  if ( m_state == EMPTY )
-  {
-    m_state = DESCRIBED;
-  }
-
   m_is_applied = false;
 }
 
@@ -701,12 +714,6 @@ void DataView::describe(const DataType& dtype)
 
   m_schema.set(dtype);
   describeShape();
-
-  if ( m_state == EMPTY )
-  {
-    m_state = DESCRIBED;
-  }
-
   m_is_applied = false;
 }
 
@@ -752,61 +759,39 @@ void DataView::describeShape(int ndims, SidreLength * shape)
  */
 bool DataView::isAllocateValid() const
 {
-  // Check that we have a description and rule out having data that allocate
-  // can't be called on.
-  if ( !isDescribed() || m_state == EXTERNAL || m_state == SCALAR ||
-       m_state == STRING)
+  bool rv = false;
+
+  switch (m_state)
   {
-    SLIC_CHECK_MSG( isDescribed(),
-                    "Allocate is not valid, view has no description.");
-    return false;
+  case EMPTY:
+    // allocate is valid assuming the caller attaches a buffer.
+    rv = true;
+    break;
+  case STRING:
+  case SCALAR:
+  case EXTERNAL:
+    SLIC_CHECK_MSG( false,
+                    "Allocate is not valid for " <<
+                    getStateStringName(m_state) << "view");
+    break;
+  case BUFFER:
+    // Check that buffer is only referenced by this view.
+    if (m_data_buffer->getNumViews() != 1 )
+    {
+      SLIC_CHECK_MSG(
+        m_data_buffer->getNumViews() != 1,
+        "Allocate is not valid, buffer does not contain exactly one view.");
+    }
+    else
+    {
+      rv = true;
+    }
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
 
-  // Check that buffer, if present, is referenced by only this view.
-  if (m_data_buffer != ATK_NULLPTR && m_data_buffer->getNumViews() != 1 )
-  {
-    SLIC_CHECK_MSG(
-      m_data_buffer != ATK_NULLPTR && m_data_buffer->getNumViews() != 1,
-      "Allocate is not valid, buffer does not contain exactly one view.");
-    return false;
-  }
-
-  return true;
-}
-
-/*
- *************************************************************************
- *
- * PRIVATE method returns true if attaching buffer to view is valid;
- * else false.
- *
- * This method does not need to emit the view state as part of it's
- * checking.  The caller functions are already printing out the view
- * state if this function returns false.
- *
- *************************************************************************
- */
-bool DataView::isAttachBufferValid() const
-{
-  return ( m_state == EMPTY || m_state == DESCRIBED ||
-           m_state == BUFFER_ATTACHED );
-}
-
-/*
- *************************************************************************
- *
- * PRIVATE method returns true if setting external data pointer on view
- * is valid; else false.
- *
- * This method does not need to emit the view state as part of it's
- * checking.  The caller functions are already printing out the view
- * state if this function returns false.
- *
- *************************************************************************
- */
-bool DataView::isSetExternalDataPtrValid() const
-{
-  return ( m_state == EMPTY || m_state == DESCRIBED || m_state == EXTERNAL );
+  return rv;
 }
 
 /*
@@ -822,43 +807,55 @@ bool DataView::isSetExternalDataPtrValid() const
  */
 bool DataView::isApplyValid() const
 {
+  bool rv = false;
+
   if ( !isDescribed() )
   {
-    SLIC_CHECK_MSG(isDescribed(),
-                   "Apply not valid, no description in view to apply.");
-    return false;
+    SLIC_CHECK_MSG(false,
+                   "Apply is not valid, no description in view to apply");
+    return rv;
   }
 
   switch (m_state)
   {
+  case EMPTY:
   case STRING:
-    SLIC_CHECK_MSG(m_state == STRING,
-                   "Apply not valid for a STRING view");
-    return false;
   case SCALAR:
-    SLIC_CHECK_MSG(m_state == STRING,
-                   "Apply not valid for a SCALAR view");
-    return false;
-  case EXTERNAL:
+    SLIC_CHECK_MSG( false,
+                    "Apply is not valid for " <<
+                    getStateStringName(m_state) << " view");
     break;
-  case BUFFER_ATTACHED:
-  case ALLOCATED:
-    if ( m_data_buffer->isAllocated() )
+  case EXTERNAL:
+    if (m_external_ptr == ATK_NULLPTR && getNumElements() > 0)
     {
-      if ( !(getTotalBytes() <= m_data_buffer->getTotalBytes()) )
-      {
-        SLIC_CHECK_MSG(
-          getTotalBytes() <= m_data_buffer->getTotalBytes(),
-          "Apply not valid, buffer description is smaller than view description");
-        return false;
-      }
+      SLIC_CHECK_MSG(false,
+                     "Should not apply a non-zero length to a NULL address");
+    }
+    else
+    {
+      rv = true;
+    }
+    break;
+  case BUFFER:
+    if ( !m_data_buffer->isAllocated() )
+    {
+      SLIC_CHECK_MSG(false, "Apply is not valid, buffer is not allocated");
+    }
+    else if ( getTotalBytes() > m_data_buffer->getTotalBytes() )
+    {
+      SLIC_CHECK_MSG(false,
+                     "Apply is not valid, buffer description is smaller than view description");
+    }
+    else
+    {
+      rv = true;
     }
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
 
-  return true;
+  return rv;
 }
 
 /*
@@ -875,54 +872,25 @@ char const * DataView::getStateStringName(State state) const
   switch ( state )
   {
   case EMPTY:
-  {
     ret_string = "EMPTY";
     break;
-  }
-
-  case DESCRIBED:
-  {
-    ret_string = "DESCRIBED";
+  case BUFFER:
+    ret_string = "BUFFER";
     break;
-  }
-
-  case ALLOCATED:
-  {
-    ret_string = "ALLOCATED";
-    break;
-  }
-
-  case BUFFER_ATTACHED:
-  {
-    ret_string = "BUFFER_ATTACHED";
-    break;
-  }
-
   case EXTERNAL:
-  {
     ret_string = "EXTERNAL";
     break;
-  }
-
   case SCALAR:
-  {
     ret_string = "SCALAR";
     break;
-  }
-
   case STRING:
-  {
     ret_string = "STRING";
     break;
-  }
-
   default:
-  {
     ret_string = "UNKNOWN";
   }
-  }
 
-  return( ret_string );
+  return ret_string;
 }
 
 

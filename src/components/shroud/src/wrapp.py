@@ -664,7 +664,7 @@ return 1;""", fmt)
         output.append(wformat(PyTypeObject_template, fmt_type))
         self.namespace(node, 'end', output)
 
-        self.write_output_file(fname, self.config.binary_dir, output)
+        self.write_output_file(fname, self.config.python_dir, output)
 
     def multi_dispatch(self, cls, methods):
         """Look for overloaded methods.
@@ -776,7 +776,7 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
 """, fmt))
         self.namespace(node, 'end', output)
         output.append('#endif  /* %s */' % guard)
-        self.write_output_file(fname, self.config.binary_dir, output)
+        self.write_output_file(fname, self.config.python_dir, output)
 
     def write_module(self, node):
         options = node['options']
@@ -812,7 +812,7 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         output.append(wformat(module_end, fmt))
         self.namespace(node, 'end', output)
 
-        self.write_output_file(fname, self.config.binary_dir, output)
+        self.write_output_file(fname, self.config.python_dir, output)
 
     def write_helper(self):
         node = self.tree
@@ -824,7 +824,7 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         output.append('')
         output.extend(self.py_helper_functions)
         self.namespace(node, 'end', output)
-        self.write_output_file(fmt.PY_helper_filename, self.config.binary_dir, output)
+        self.write_output_file(fmt.PY_helper_filename, self.config.python_dir, output)
 
     def not_implemented_error(self, msg, ret):
         '''A standard splicer for unimplemented code
