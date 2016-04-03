@@ -769,17 +769,7 @@ bool DataView::isAllocateValid() const
                     getStateStringName(m_state) << "view");
     break;
   case BUFFER:
-    // Check that buffer is only referenced by this view.
-    if (m_data_buffer->getNumViews() > 1 )
-    {
-      SLIC_CHECK_MSG(
-        m_data_buffer->getNumViews() > 1,
-        "Allocate is not valid, buffer has more than one view attached.");
-    }
-    else
-    {
-      rv = true;
-    }
+      rv = isDescribed() && m_data_buffer->getNumViews() == 1;
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
