@@ -39,6 +39,7 @@ TODO:
 """
 from __future__ import print_function
 
+import whelpers
 import util
 from util import wformat, append_format
 
@@ -70,6 +71,7 @@ class Wrapf(util.WrapperMixin):
                                # {'.eq.': [ 'abc', 'def'] }
         self.c_interface.append('interface')
         self.c_interface.append(1)
+        self.f_helper = {}
 
     def _end_output_file(self):
         self.c_interface.append(-1)
@@ -761,6 +763,7 @@ class Wrapf(util.WrapperMixin):
                 if f_return_code is None:
                     f_return_code='{F_result} = {F_C_name}({F_arg_c_call_tab})'
                 else:
+                    self.f_helper.update(result_typedef.f_helper.get('f_return_code',{}))
                     need_wrapper = True
                 line1 = wformat(f_return_code, fmt)
                 self.append_method_arguments(F_code, line1)
@@ -830,7 +833,6 @@ class Wrapf(util.WrapperMixin):
         output.append('module %s' % module_name)
         output.append(1)
 
-        output.append('use fstr_mod')
         if options.F_module_per_class:
             # XXX this will have some problems because of forward declarations
             for mname, only in node['F_module_dependencies']:
@@ -874,6 +876,29 @@ class Wrapf(util.WrapperMixin):
         output.extend(self.c_interface)
         output.extend(self.generic_interface)
 
+        # Insert any helper functions needed (They are duplicated in each module)
+        helper_source = []
+        if self.f_helper:
+            find_all_helpers(self.f_helper)
+
+            helpers = self.f_helper.keys()
+            helpers.sort()
+            private_names = []
+            interface_lines = []
+            for helper in helpers:
+                helper_info = whelpers.FHelpers[helper]
+                private_names.extend(helper_info.get('private', []))
+                lines = helper_info.get('interface',None)
+                if lines:
+                    interface_lines.append(lines)
+                lines = helper_info.get('source',None)
+                if lines:
+                    helper_source.append(lines)
+            if private_names:
+                output.append('')
+                output.append('private ' + ', '.join(private_names))
+            output.extend(interface_lines)
+
         output.append(-1)
         output.append('')
         output.append('contains')
@@ -882,6 +907,8 @@ class Wrapf(util.WrapperMixin):
         output.extend(self.impl)
 
         output.extend(self.operator_impl)
+
+        output.extend(helper_source)
 
         output.append(-1)
         output.append('')
@@ -894,3 +921,20 @@ class Wrapf(util.WrapperMixin):
         """ Write C helper functions that will be used by the wrappers.
         """
         pass
+
+
+def find_all_helpers(helpers, check=None):
+    """Find all helper functions recursively.
+    """
+
+    if check is None:
+        # do all top level helpers
+        keys = helpers.keys()  # Copy initial keys since helpers may change
+        for check in keys:
+            for name in whelpers.FHelpers[check].get('f_helper',[]):
+                find_all_helpers(helpers, name)
+    else:
+        if check not in helpers:
+            helpers[check] = True
+            for name in whelpers.FHelpers[check].get('f_helper',[]):
+                find_all_helpers(helpers, name)

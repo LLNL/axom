@@ -491,3 +491,6 @@ class Wrapc(util.WrapperMixin):
     def write_helper_files(self):
         output = [ whelpers.FccHeaders ]
         self.write_output_file('shroudrt.hpp', self.config.binary_dir, output)
+
+        output = [ whelpers.FccCSource ]
+        self.write_output_file('shroudrt.cpp', self.config.binary_dir, output)

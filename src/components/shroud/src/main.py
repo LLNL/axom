@@ -449,6 +449,7 @@ class Schema(object):
         tmp = def_types['string'].clone_as('string_result_fstr')
         tmp.update(dict(
                 f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+                f_helper = dict(f_return_code=dict(fstr=True)),
                 ))
         def_types[tmp.name] = tmp
 

@@ -45,13 +45,9 @@ if (ENABLE_FORTRAN)
         capi/wrapDataBuffer.cpp
         capi/wrapDataView.cpp
         capi/wrapfsidre.f
+        capi/shroudrt.cpp
     )
     add_subdirectory(capi)
-
-    # wrappers depend on shroud runtime library
-    set(capi_depends_on
-        shroudrt
-    )
 
     # Must tell fortran where to look for modules
     include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
@@ -71,7 +67,6 @@ make_library( LIBRARY_NAME
                   "${sidre_sources}"
                   "${sidre_fortran_sources}"
               DEPENDS_ON
-                  ${capi_depends_on}
                   common
                   conduit
                   conduit_io
@@ -81,9 +76,6 @@ make_library( LIBRARY_NAME
   
              
 set_target_properties(sidre  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
-
-# XXX - would like to have shroudrt loaded automatically with sidre
-#target_link_libraries(sidre ${capi_depends_on})
 
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
