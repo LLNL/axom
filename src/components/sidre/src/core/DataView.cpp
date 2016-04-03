@@ -235,13 +235,7 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
     buff->attachView(this);
     m_data_buffer = buff;
     m_state = BUFFER;
-    m_is_applied = false;
-
-    // If not described, use buffer's description if available.
-    if ( !isDescribed() && buff->isDescribed())
-    {
-      describe( buff->getTypeID(), buff->getNumElements() );
-    }
+    SLIC_ASSERT( m_is_applied == false );
 
     // If view is described and the buffer is allocated, then call apply.
     if ( isDescribed() && m_data_buffer->isAllocated() )
@@ -830,7 +824,8 @@ bool DataView::isApplyValid() const
     rv = isDescribed();
     break;
   case BUFFER:
-    rv = 0 < getTotalBytes() && getTotalBytes() <= m_data_buffer->getTotalBytes();
+    rv = 0 < getTotalBytes() &&
+         getTotalBytes() <= m_data_buffer->getTotalBytes();
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
