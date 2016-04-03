@@ -463,6 +463,7 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
     if (external_ptr == ATK_NULLPTR)
     {
       unapply();
+      m_external_ptr = ATK_NULLPTR;
       m_state = EMPTY;
     }
     else
@@ -764,8 +765,7 @@ bool DataView::isAllocateValid() const
   switch (m_state)
   {
   case EMPTY:
-    // allocate is valid assuming the caller attaches a buffer.
-    rv = true;
+    rv = isDescribed();
     break;
   case STRING:
   case SCALAR:
@@ -776,11 +776,11 @@ bool DataView::isAllocateValid() const
     break;
   case BUFFER:
     // Check that buffer is only referenced by this view.
-    if (m_data_buffer->getNumViews() != 1 )
+    if (m_data_buffer->getNumViews() > 1 )
     {
       SLIC_CHECK_MSG(
-        m_data_buffer->getNumViews() != 1,
-        "Allocate is not valid, buffer does not contain exactly one view.");
+        m_data_buffer->getNumViews() > 1,
+        "Allocate is not valid, buffer has more than one view attached.");
     }
     else
     {
@@ -826,30 +826,11 @@ bool DataView::isApplyValid() const
                     getStateStringName(m_state) << " view");
     break;
   case EXTERNAL:
-    if (m_external_ptr == ATK_NULLPTR && getNumElements() > 0)
-    {
-      SLIC_CHECK_MSG(false,
-                     "Should not apply a non-zero length to a NULL address");
-    }
-    else
-    {
-      rv = true;
-    }
+    SLIC_ASSERT ( m_external_ptr != ATK_NULLPTR );
+    rv = isDescribed();
     break;
   case BUFFER:
-    if ( !m_data_buffer->isAllocated() )
-    {
-      SLIC_CHECK_MSG(false, "Apply is not valid, buffer is not allocated");
-    }
-    else if ( getTotalBytes() > m_data_buffer->getTotalBytes() )
-    {
-      SLIC_CHECK_MSG(false,
-                     "Apply is not valid, buffer description is smaller than view description");
-    }
-    else
-    {
-      rv = true;
-    }
+    rv = 0 < getTotalBytes() && getTotalBytes() <= m_data_buffer->getTotalBytes();
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");

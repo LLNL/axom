@@ -389,12 +389,13 @@ public:
    * that is <= number of bytes held in the buffer, then apply() will
    * be called internally.
    *
-   * If data view already has a buffer and buff is NULL, then the
-   * existing buffer will be detached.  If the buffer has no views
-   * attached to it, then it will be deallocated.
-   *
    * If data view already has a buffer, or it is an external view,
    * a scalar view, or a string view, this method does nothing.
+   *
+   * If data view already has a buffer and buff is NULL, the attached
+   * buffer will be detached. After the view is detached from the
+   * buffer, if the buffer has no views attached to it, then it will
+   * be deallocated.
    *
    * \return pointer to this DataView object.
    */
