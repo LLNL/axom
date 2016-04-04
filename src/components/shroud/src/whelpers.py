@@ -128,3 +128,15 @@ interface
 end interface"""
         )
     )
+
+
+# From fstr_mod.f
+#  ! Convert a fortran string in 's' to a null-terminated array of characters.
+#  pure function cstr(s)
+#    use, intrinsic :: iso_c_binding, only : c_char, c_null_char
+#    character(len=*), intent(in) :: s
+#    character(kind=c_char, len=1) :: cstr(len_trim(s)+1)
+#    integer :: i
+#    if (len_trim(s) > 0) cstr = [ (s(i:i), i=1,len_trim(s)) ]
+#    cstr(len_trim(s)+1) = c_null_char
+#  end function cstr
