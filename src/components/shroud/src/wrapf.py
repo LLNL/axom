@@ -39,6 +39,8 @@ TODO:
 """
 from __future__ import print_function
 
+import os
+
 import whelpers
 import util
 from util import wformat, append_format
@@ -914,8 +916,8 @@ class Wrapf(util.WrapperMixin):
         output.append('')
         output.append('end module %s' % module_name)
 
-        self.config.ffiles.append(fname)
-        self.write_output_file(fname, self.config.binary_dir, output)
+        self.config.ffiles.append(os.path.join(self.config.c_fortran_dir, fname))
+        self.write_output_file(fname, self.config.c_fortran_dir, output)
 
     def write_c_helper(self):
         """ Write C helper functions that will be used by the wrappers.

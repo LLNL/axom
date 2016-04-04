@@ -1332,21 +1332,32 @@ class Namify(object):
 
 def main():
 
-    appname = 'modulator3'
+    appname = 'shroud'
     appver = '0.1'
 
-    parser = argparse.ArgumentParser(prog=appname)
+    parser = argparse.ArgumentParser(
+        prog=appname,
+        description="""Create Fortran or Python wrapper for a C++ library.
+""")
     parser.add_argument('--version', action='version', version=appver)
     parser.add_argument('--outdir', default='',
-                        help='directory for output files')
+                        help='Directory for output files')
+    parser.add_argument('--outdir-c-fortran', default='',
+                        dest='outdir_c_fortran',
+                        help='Directory for C/Fortran wrapper output files, ' +
+                        'overrides --outdir')
+    parser.add_argument('--outdir-python', default='',
+                        dest='outdir_python',
+                        help='Directory for Python wrapper output files, ' +
+                        'overrides --outdir')
     parser.add_argument('--logdir', default='',
-                        help='directory for log files')
+                        help='Directory for log files')
     parser.add_argument('--cfiles', default='',
-                        help='output file with list of C and C++ files created')
+                        help='Output file with list of C and C++ files created')
     parser.add_argument('--ffiles', default='',
-                        help='output file with list of Fortran created')
+                        help='Output file with list of Fortran created')
     parser.add_argument('--path', default=[], action='append',
-                        help='colon delimited paths to search for splicer files, may be supplied multiple times to create path')
+                        help='Colon delimited paths to search for splicer files, may be supplied multiple times to create path')
     parser.add_argument('filename', nargs='*',
                         help='Input file to process')
 
@@ -1357,6 +1368,10 @@ def main():
         raise SystemExit("Must give at least one input file")
     if args.outdir and not os.path.isdir(args.outdir):
         raise SystemExit("outdir %s does not exist" % args.outdir)
+    if args.outdir_c_fortran and not os.path.isdir(args.outdir_c_fortran):
+        raise SystemExit("outdir-fortran %s does not exist" % args.outdir)
+    if args.outdir_python and not os.path.isdir(args.outdir_python):
+        raise SystemExit("outdir-python %s does not exist" % args.outdir)
     if args.logdir and not os.path.isdir(args.logdir):
         raise SystemExit("logdir %s does not exist" % args.logdir)
 
@@ -1374,7 +1389,8 @@ def main():
 
     # pass around a configuration object
     config = Config()
-    config.binary_dir = args.outdir
+    config.c_fortran_dir = args.outdir_c_fortran or args.outdir
+    config.python_dir = args.outdir_python or args.outdir
     config.log = log
     config.cfiles = []  # list of C/C++ files created
     config.ffiles = []  # list of Fortran files created

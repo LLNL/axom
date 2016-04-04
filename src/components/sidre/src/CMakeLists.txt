@@ -1,6 +1,7 @@
 #
 # Specify all headers
 #
+add_subdirectory(interface)
 
 set(sidre_headers
     core/Collections.hpp
@@ -28,26 +29,25 @@ set(sidre_sources
 # disable CAPI.
 if (ENABLE_FORTRAN)
     list(APPEND sidre_headers
-        capi/sidre.h
-        capi/SidreTypes.h
+        interface/sidre.h
+        interface/SidreTypes.h
         # generated headers
-        capi/wrapSidre.h
-        capi/wrapDataStore.h
-        capi/wrapDataGroup.h
-        capi/wrapDataBuffer.h
-        capi/wrapDataView.h
+        interface/c_fortran/wrapSidre.h
+        interface/c_fortran/wrapDataStore.h
+        interface/c_fortran/wrapDataGroup.h
+        interface/c_fortran/wrapDataBuffer.h
+        interface/c_fortran/wrapDataView.h
     )   
     set(sidre_fortran_sources
         # generated source
-        capi/wrapSidre.cpp
-        capi/wrapDataStore.cpp
-        capi/wrapDataGroup.cpp
-        capi/wrapDataBuffer.cpp
-        capi/wrapDataView.cpp
-        capi/wrapfsidre.f
-        capi/shroudrt.cpp
+        interface/c_fortran/wrapSidre.cpp
+        interface/c_fortran/wrapDataStore.cpp
+        interface/c_fortran/wrapDataGroup.cpp
+        interface/c_fortran/wrapDataBuffer.cpp
+        interface/c_fortran/wrapDataView.cpp
+        interface/c_fortran/wrapfsidre.f
+        interface/c_fortran/shroudrt.cpp
     )
-    add_subdirectory(capi)
 
     # Must tell fortran where to look for modules
     include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
@@ -71,7 +71,6 @@ make_library( LIBRARY_NAME
                   conduit
                   conduit_io
                   slic
-                  
              )
   
              
@@ -88,13 +87,13 @@ install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
 if(ENABLE_PYTHON_API)
     set(sidre_python_sources
-        capi/pyDataStoretype.cpp
-        capi/pyDataGrouptype.cpp
-        capi/pyDataBuffertype.cpp
-        capi/pyDataViewtype.cpp
-        capi/pySidremodule.hpp
-        capi/pySidremodule.cpp
-        capi/pySidrehelper.cpp
+        interface/python/pyDataStoretype.cpp
+        interface/python/pyDataGrouptype.cpp
+        interface/python/pyDataBuffertype.cpp
+        interface/python/pyDataViewtype.cpp
+        interface/python/pySidremodule.hpp
+        interface/python/pySidremodule.cpp
+        interface/python/pySidrehelper.cpp
     )
 
     include_directories(${PYTHON_INCLUDE_DIRS})

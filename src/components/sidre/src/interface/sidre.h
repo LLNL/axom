@@ -15,8 +15,8 @@
  *  C header file
  */
 
-#ifndef C_DATASTORE_H_
-#define C_DATASTORE_H_
+#ifndef SIDRE_H_
+#define SIDRE_H_
 
 #include "sidre/SidreTypes.h"
 #include "sidre/wrapSidre.h"

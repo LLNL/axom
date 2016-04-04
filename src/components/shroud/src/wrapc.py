@@ -5,6 +5,7 @@ Generate C bindings for C++ classes
 """
 from __future__ import print_function
 
+import os
 import whelpers
 import util
 from util import append_format
@@ -157,8 +158,8 @@ class Wrapc(util.WrapperMixin):
                 '#endif  // %s' % guard
                 ])
 
-        self.config.cfiles.append(fname)
-        self.write_output_file(fname, self.config.binary_dir, output)
+        self.config.cfiles.append(os.path.join(self.config.c_fortran_dir, fname))
+        self.write_output_file(fname, self.config.c_fortran_dir, output)
 
     def write_impl(self, node, hname, fname, cls=False):
         # node = class node
@@ -187,8 +188,8 @@ class Wrapc(util.WrapperMixin):
 
         output.append('}  // extern "C"')
 
-        self.config.cfiles.append(fname)
-        self.write_output_file(fname, self.config.binary_dir, output)
+        self.config.cfiles.append(os.path.join(self.config.c_fortran_dir, fname))
+        self.write_output_file(fname, self.config.c_fortran_dir, output)
 
     def write_headers(self, headers, output):
         headers.sort()
@@ -490,7 +491,7 @@ class Wrapc(util.WrapperMixin):
 
     def write_helper_files(self):
         output = [ whelpers.FccHeaders ]
-        self.write_output_file('shroudrt.hpp', self.config.binary_dir, output)
+        self.write_output_file('shroudrt.hpp', self.config.c_fortran_dir, output)
 
         output = [ whelpers.FccCSource ]
-        self.write_output_file('shroudrt.cpp', self.config.binary_dir, output)
+        self.write_output_file('shroudrt.cpp', self.config.c_fortran_dir, output)
