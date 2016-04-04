@@ -72,32 +72,71 @@ static State getState(DataView * view)
 // Assume all are int[len]
 //
 // Since this function is called in several places, any test failure
-// will be ambiguous.  It should probably be a bool function to allow
-// the caller to also report the error to identify the specific call
-// that failed.
+// will be ambiguous. To use, wrap in the EXPECT_TRUE macro.
+//    EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
+// Any failures will have two reports, one from this routine and one
+// from the call site.
 //
-static void checkViewValues(DataView * view,
+static bool checkViewValues(DataView * view,
                             State state,
                             bool isDescribed, bool isAllocated,
                             bool isApplied,
                             SidreLength len)
 {
+  bool rv = true;
   SidreLength dims[2];
 
-  EXPECT_EQ(getState(view), state);
-
-  EXPECT_EQ(view->isDescribed(), isDescribed);
-  EXPECT_EQ(view->isAllocated(), isAllocated);
-  EXPECT_EQ(view->isApplied(), isApplied);
-
-  EXPECT_EQ(view->getNumElements(), len);
-  if (isDescribed)
+  if (getState(view) != state)
   {
-    EXPECT_EQ(view->getTypeID(), INT_ID);
-    EXPECT_EQ(view->getNumDimensions(), 1);
-    EXPECT_TRUE(view->getShape(1, dims) == 1 && dims[0] == len);
-    EXPECT_EQ(view->getTotalBytes(),
-              static_cast<SidreLength>( sizeof(int) * len) );
+    EXPECT_EQ(getState(view), state);
+    rv = false;
+  }
+
+  if (view->isDescribed() != isDescribed)
+  {
+    EXPECT_EQ(view->isDescribed(), isDescribed);
+    rv = false;
+  }
+  if (view->isAllocated() != isAllocated)
+  {
+    EXPECT_EQ(view->isAllocated(), isAllocated);
+    rv = false;
+  }
+  if (view->isApplied() != isApplied)
+  {
+    EXPECT_EQ(view->isApplied(), isApplied);
+    rv = false;
+  }
+
+  if (view->getNumElements() != len)
+  {
+    EXPECT_EQ(view->getNumElements(), len);
+    rv = false;
+  }
+
+  if (view->isDescribed())
+  {
+    if (view->getTypeID() != INT_ID)
+    {
+      EXPECT_EQ(view->getTypeID(), INT_ID);
+      rv = false;
+    }
+    if (view->getNumDimensions() != 1)
+    {
+      EXPECT_EQ(view->getNumDimensions(), 1);
+      rv = false;
+    }
+    if (view->getShape(1, dims) != 1 || dims[0] != len)
+    {
+      EXPECT_TRUE(view->getShape(1, dims) == 1 && dims[0] == len);
+      rv = false;
+    }
+    if (view->getTotalBytes() != static_cast<SidreLength>( sizeof(int) * len) )
+    {
+      EXPECT_EQ(view->getTotalBytes(),
+                static_cast<SidreLength>( sizeof(int) * len) );
+      rv = false;
+    }
   }
 #if 0
   else
@@ -107,8 +146,9 @@ static void checkViewValues(DataView * view,
   }
 #endif
 
-  if (isApplied)
+  if (view->isApplied())
   {
+    // Fill with data to help the print function
     int * data_ptr = view->getData();
 
     for(int i=0 ; i<len ; i++)
@@ -118,6 +158,8 @@ static void checkViewValues(DataView * view,
   }
 
   //  view->print();
+
+  return rv;
 }
 
 #if 0
@@ -254,46 +296,46 @@ TEST(sidre_view,dealloc)
 
   //----------  EMPTY(F,F,F)
   dv = root->createView("e1");
-  checkViewValues(dv, EMPTY, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
 
   dv->deallocate();
-  checkViewValues(dv, EMPTY, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
 
   //----------  EMPTY(T,F,F)
   dv = root->createView("e2", INT_ID, BLEN);
-  checkViewValues(dv, EMPTY, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN));
 
   dv->deallocate();
-  checkViewValues(dv, EMPTY, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN));
 
   //----------  BUFFER(F,F,F)
   dv = root->createView("b1");
   dbuff = ds->createBuffer();
   dv->attachBuffer(dbuff);
-  checkViewValues(dv, BUFFER, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, false, false, false, 0));
 
   dv->deallocate();
-  checkViewValues(dv, BUFFER, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, false, false, false, 0));
   EXPECT_FALSE(dv->getBuffer()->isAllocated());
 
   //---------- BUFFER(T,F,F)
-  dv = root->createView("b2");
+  dv = root->createView("b2", INT_ID, BLEN);
   dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
-  checkViewValues(dv, BUFFER, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, BLEN));
 
   dv->deallocate();
-  checkViewValues(dv, BUFFER, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, BLEN));
   EXPECT_FALSE(dv->getBuffer()->isAllocated());
 
   //---------- BUFFER(T,T,T)
-  dv = root->createView("b3");
+  dv = root->createView("b3", INT_ID, BLEN);
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
   dv->deallocate();
-  checkViewValues(dv, BUFFER, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, BLEN));
   EXPECT_FALSE(dv->getBuffer()->isAllocated());
 
   delete ds;
@@ -311,19 +353,19 @@ TEST(sidre_view,alloc_zero_items)
 
   // Allocate zero items
   dv = root->createView("z0");
-  checkViewValues(dv, EMPTY, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
   dv->allocate(INT_ID, 0);
-  checkViewValues(dv, BUFFER, true, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, 0));
   EXPECT_FALSE(dv->getBuffer()->isAllocated());
 
   // Reallocate zero items
   dv = root->createView("z1");
-  checkViewValues(dv, EMPTY, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
   dv->allocate(INT_ID, BLEN);
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
   dv->reallocate(0);
-  checkViewValues(dv, BUFFER, true, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, 0));
   EXPECT_FALSE(dv->getBuffer()->isAllocated());
 
   delete ds;
@@ -350,13 +392,13 @@ TEST(sidre_view,alloc_and_dealloc_multiview)
   baddr = dbuff->getVoidPtr();
 
   dv1 = root->createView("dv1alloc", dbuff);
-  checkViewValues(dv1, BUFFER, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv1, BUFFER, false, false, false, 0));
   dv2 = root->createView("dv2alloc", dbuff);
-  checkViewValues(dv2, BUFFER, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv2, BUFFER, false, false, false, 0));
   EXPECT_EQ(dbuff->getNumViews(), 2);
 
   dv1->allocate(INT_ID, BLEN+10);
-  checkViewValues(dv2, BUFFER, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv2, BUFFER, false, false, false, 0));
 
   // buffer is unchanged
   EXPECT_FALSE(dbuff->isAllocated());
@@ -370,13 +412,13 @@ TEST(sidre_view,alloc_and_dealloc_multiview)
   baddr = dbuff->getVoidPtr();
 
   dv1 = root->createView("dv1realloc", dbuff);
-  checkViewValues(dv1, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv1, BUFFER, false, false, false, 0));
   dv2 = root->createView("dv2realloc", dbuff);
-  checkViewValues(dv1, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv1, BUFFER, false, false, false, 0));
   EXPECT_EQ(dbuff->getNumViews(), 2);
 
   dv1->reallocate(BLEN+10);
-  checkViewValues(dv2, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv2, BUFFER, false, false, false, 0));
 
   // buffer is unchanged
   EXPECT_TRUE(dbuff->isAllocated());
@@ -390,13 +432,13 @@ TEST(sidre_view,alloc_and_dealloc_multiview)
   baddr = dbuff->getVoidPtr();
 
   dv1 = root->createView("dv1dealloc", dbuff);
-  checkViewValues(dv1, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv1, BUFFER, false, false, false, 0));
   dv2 = root->createView("dv2dealloc", dbuff);
-  checkViewValues(dv1, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv1, BUFFER, false, false, false, 0));
   EXPECT_EQ(dbuff->getNumViews(), 2);
 
   dv1->deallocate();
-  checkViewValues(dv2, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv2, BUFFER, false, false, false, 0));
 
   // buffer is unchanged
   EXPECT_TRUE(dbuff->isAllocated());
@@ -416,45 +458,45 @@ TEST(sidre_view,int_alloc_view)
   long shape[] = { BLEN };
 
   dv = root->createView("u0");
-  checkViewValues(dv, EMPTY, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
   dv->allocate(INT_ID, BLEN);
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 #if 0
   dv = root->createView("u1");
-  checkViewValues(dv, EMPTY, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
   dv->allocate(INT_ID, 1, shape);  // XXX - missing overload
-  checkViewValues(dv, BUFFEER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFEER, true, true, true, BLEN));
 #endif
   dv = root->createView("u2");
-  checkViewValues(dv, EMPTY, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
   dv->allocate(DataType::c_int(BLEN));
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
 
   dv = root->createView("v0", INT_ID, 10);
-  checkViewValues(dv, EMPTY, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN));
   dv->allocate();
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
   dv = root->createView("v1", INT_ID, 1, shape);
-  checkViewValues(dv, EMPTY, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN));
   dv->allocate();
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
   dv = root->createView("v2", DataType::c_int(BLEN));
-  checkViewValues(dv, EMPTY, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN));
   dv->allocate();
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
 
   dv = root->createViewAndAllocate("a0", INT_ID, BLEN);
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
   dv = root->createViewAndAllocate("a1", INT_ID, 1, shape);
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
   dv = root->createViewAndAllocate("a2", DataType::c_int(BLEN));
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
   delete ds;
 }
@@ -485,47 +527,47 @@ TEST(sidre_view,int_buffer_view)
   //---------- 1
   // Attach undescribed buffer to undescribed view
   dv = root->createView("u1");
-  checkViewValues(dv, EMPTY, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
 
   // no-op, attach NULL buffer to EMPTY view
   dv->attachBuffer(NULL);
-  checkViewValues(dv, EMPTY, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
 
   dbuff = ds->createBuffer();
   dv->attachBuffer(dbuff);
-  checkViewValues(dv, BUFFER, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, false, false, false, 0));
   EXPECT_EQ(dv->getBuffer(), dbuff);  // sanity check
 
   dv->allocate();  // no-op, no description
-  checkViewValues(dv, BUFFER, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, false, false, false, 0));
 
   dv->allocate(INT_ID, 10);
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
   dv->reallocate(BLEN+5);
-  checkViewValues(dv, BUFFER, true, true, true, BLEN+5);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN+5));
 
   // After deallocate, description is intact.
   dv->deallocate();
-  checkViewValues(dv, BUFFER, true, false, false, BLEN+5);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, BLEN+5));
 
   //---------- 2
   // Attach described buffer to undescribed view
   dv = root->createView("u2");
-  checkViewValues(dv, EMPTY, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
 
   dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
-  checkViewValues(dv, BUFFER, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, false, false, false, 0));
 
   //---------- 3
   // Attach allocated buffer to undescribed view
   dv = root->createView("u3");
-  checkViewValues(dv, EMPTY, false, false, false, 0);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
 
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, false, false, false, 0));
   EXPECT_EQ(dbuff->getNumViews(), 1);
 
   // no-op, attaching a buffer to a view which already has a buffer
@@ -536,7 +578,7 @@ TEST(sidre_view,int_buffer_view)
 
   // Removes buffer
   dv->attachBuffer(NULL);
-  checkViewValues(dv, EMPTY, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
   EXPECT_EQ(dbuff->getNumViews(), 0);
   // XXX - should this be false?  It has no views.
   //       Use dv->detachBuffer if user want to keep buffer around.
@@ -545,56 +587,56 @@ TEST(sidre_view,int_buffer_view)
   //---------- 4
   // Attach undescribed buffer to described view
   dv = root->createView("u4", INT_ID, BLEN);
-  checkViewValues(dv, EMPTY, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN));
 
   dbuff = ds->createBuffer();
   dv->attachBuffer(dbuff);
-  checkViewValues(dv, BUFFER, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, BLEN));
 
   //---------- 5
   // Attach described buffer to described view
   dv = root->createView("u5", INT_ID, BLEN);
-  checkViewValues(dv, EMPTY, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN));
 
   dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
-  checkViewValues(dv, BUFFER, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, BLEN));
 
   //---------- 6
   // Attach allocated buffer to described view
   dv = root->createView("u6", INT_ID, BLEN);
-  checkViewValues(dv, EMPTY, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN));
 
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
   // Deallocate the buffer which will update the view.
   dbuff->deallocate();
-  checkViewValues(dv, BUFFER, true, false, false, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, BLEN));
 
   // Allocate the buffer via the view.
   dv->allocate();
-  checkViewValues(dv, BUFFER, true, true, true, BLEN);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
   EXPECT_TRUE(dbuff->isAllocated());
 
   //---------- 7
   // Attach incompatable described buffer to described view
   dv = root->createView("u7", INT_ID, BLEN+5);
-  checkViewValues(dv, EMPTY, true, false, false, BLEN+5);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN+5));
 
   dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
-  checkViewValues(dv, BUFFER, true, false, false, BLEN+5);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, BLEN+5));
 
   //---------- 8
   // Attach incompatable allocated buffer to described view
   dv = root->createView("u8", INT_ID, BLEN+5);
-  checkViewValues(dv, EMPTY, true, false, false, BLEN+5);
+  EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN+5));
 
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
-  checkViewValues(dv, BUFFER, true, true, false, BLEN+5);  // XXX - how is isAllocated useful
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, false, BLEN+5));  // XXX - how is isAllocated useful
 
   delete ds;
 }
