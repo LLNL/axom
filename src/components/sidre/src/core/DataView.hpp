@@ -91,6 +91,7 @@ public:
   // private members.
   //
   friend class DataGroup;
+  friend class DataBuffer;
 
 
 //@{
@@ -179,6 +180,14 @@ public:
   }
 
   /*!
+   * \brief Return true if view is empty.
+   */
+  bool isEmpty() const
+  {
+    return m_state == EMPTY;
+  }
+
+  /*!
    * \brief Convenience function that returns true if view is opaque
    *        (i.e., has access to data but has no knowledge of the data
    *        type or structure); false otherwise.
@@ -193,7 +202,7 @@ public:
    */
   bool isScalar() const
   {
-    return (m_state == SCALAR);
+    return m_state == SCALAR;
   }
 
   /*!
@@ -201,7 +210,7 @@ public:
    */
   bool isString() const
   {
-    return (m_state == STRING);
+    return m_state == STRING;
   }
 
   /*!
@@ -209,7 +218,7 @@ public:
    */
   TypeID getTypeID() const
   {
-    return static_cast<TypeID>(m_node.dtype().id());
+    return static_cast<TypeID>(m_schema.dtype().id());
   }
 
   /*!
@@ -371,6 +380,9 @@ public:
   /*!
    * \brief Attach DataBuffer object to data view.
    *
+   * If the view has no description, then the buffer's description
+   * is copied into the view.
+   *
    * Note that, in general, the view cannot be used to access data in
    * buffer until one of the apply() methods is called. However, if
    * the view has a valid data description with a total number of bytes
@@ -379,6 +391,11 @@ public:
    *
    * If data view already has a buffer, or it is an external view,
    * a scalar view, or a string view, this method does nothing.
+   *
+   * If data view already has a buffer and buff is NULL, the attached
+   * buffer will be detached. After the view is detached from the
+   * buffer, if the buffer has no views attached to it, then it will
+   * be deallocated.
    *
    * \return pointer to this DataView object.
    */
@@ -529,6 +546,9 @@ public:
    *
    * Data is undescribed (i.e., view is opaque) until an apply methods
    * is called on the view.
+   *
+   * If external_ptr is NULL, the view will be EMPTY.
+   * Any existing description is unchanged.
    *
    * \return pointer to this DataView object.
    */
@@ -732,6 +752,18 @@ private:
    */
   void describeShape(int ndims, SidreLength * shape);
 
+  /*!
+   *  \brief Private method to remove any applied description;
+   *         but preserves user provided description.
+   *
+   *  Note: The description is stored in m_schema.
+   */
+  void unapply()
+  {
+    m_node.reset();
+    m_is_applied = false;
+  }
+
 //@}
 
 
@@ -745,18 +777,6 @@ private:
   bool isAllocateValid() const;
 
   /*!
-   *  \brief Private method returns true if attaching buffer to view is a
-   *         valid operation; else false
-   */
-  bool isAttachBufferValid() const;
-
-  /*!
-   *  \brief Private method returns true if setting external data pointer is
-             on view is a valid operation; else false
-   */
-  bool isSetExternalDataPtrValid() const;
-
-  /*!
    *  \brief Private method returns true if apply is a valid operation on
    *         view; else false
    */
@@ -768,7 +788,7 @@ private:
   ///
   /// Enum with constants that identify the state of a view.
   ///
-  /// Note that these states are not mutually-exclusive. These constants
+  /// Note that these states are mutually-exclusive. These constants
   /// combined with the boolean m_is_applied uniquely identify the view
   /// state, or how it was created and defined.
   ///
@@ -776,11 +796,7 @@ private:
   {
     EMPTY,           // View created with name only :
                      //    has no data or data description
-    DESCRIBED,       // View created with name and data description :
-                     //    applied is false
-    ALLOCATED,       // View created, described, and allocated (by view) :
-                     //    applied is true
-    BUFFER_ATTACHED, // View has a buffer attached explicitly. :
+    BUFFER,          // View has a buffer attached explicitly. :
                      //    applied may be true or false
     EXTERNAL,        // View holds pointer to external data (no buffer) :
                      //    applied may be true or false
