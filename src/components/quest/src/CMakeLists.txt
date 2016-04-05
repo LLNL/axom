@@ -98,14 +98,12 @@ if (ENABLE_FORTRAN)
   ## append shroud generated headers/sources to corresponding lists
   list(APPEND quest_headers interface/shroud/wrapQUEST.h)
   list(APPEND quest_sources interface/shroud/wrapQUEST.cpp)
+  list(APPEND quest_sources interface/shroud/shroudrt.cpp)
   list(APPEND quest_sources interface/shroud/wrapfquest.f)
   
   add_subdirectory(interface/shroud)
   
   include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
-  
-  list(APPEND quest_depends_on shroudrt)
-  
 endif()
 
 copy_headers_target( ${PROJECT_NAME} "${quest_headers}"

@@ -14,7 +14,6 @@
 !! \brief Shroud generated wrapper for QUEST library
 !<
 module quest_mod
-    use fstr_mod
     ! splicer begin module_use
     ! splicer end module_use
     implicit none
