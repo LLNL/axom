@@ -26,12 +26,15 @@ add_subdirectory(src)
 ################################
 # Add examples
 ################################
-add_subdirectory(examples)
+if (BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
 
 ################################
 # Add tests
 ################################
-if (BUILD_TESTING)
+if (BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
@@ -39,7 +42,10 @@ endif()
 ################################
 # Add docs
 ################################
-add_subdirectory(docs)
+if (BUILD_DOCS)
+  add_subdirectory(docs)
+endif()
+
 
 ################################
 # Create CMake importable

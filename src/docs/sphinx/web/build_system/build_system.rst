@@ -110,7 +110,7 @@ This is declared at the top of the 'cmake' configuration, and provides a central
 |BUILD_SHARED_LIBS                    |Build shared libraries.        |        |
 |                                     |Default is Static libraries    |  OFF   |
 +-------------------------------------+-------------------------------+--------+
-|BUILD_TESTING                        |Builds unit tests              |  ON    |
+|BUILD_TESTS                          |Builds unit tests              |  ON    |
 +-------------------------------------+-------------------------------+--------+
 |ENABLE_BOOST                         |Enable Boost                   |  OFF   |
 +-------------------------------------+-------------------------------+--------+
@@ -131,7 +131,7 @@ This is declared at the top of the 'cmake' configuration, and provides a central
 +-------------------------------------+-------------------------------+--------+
 |ENABLE_OPENMP                        |ENABLE OpenMP                  | OFF    |
 +-------------------------------------+-------------------------------+--------+
-|ENABLE_BENCHMARK                     |ENABLE google benchmark        | OFF    |
+|ENABLE_BENCHMARKS                    |ENABLE google benchmark        | OFF    |
 +-------------------------------------+-------------------------------+--------+
 
 

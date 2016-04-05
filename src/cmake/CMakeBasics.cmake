@@ -155,7 +155,7 @@ include(SetupCompilerOptions)
 ################################
 
 include(ExternalProject)
-if (BUILD_TESTING)
+if (BUILD_TESTS)
 
   ## add google test
   add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gtest-1.7.0)
@@ -169,7 +169,7 @@ if (BUILD_TESTING)
     add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/fruit-3.3.9)
   endif (ENABLE_FORTRAN)
 
-  if(ENABLE_BENCHMARK)
+  if(ENABLE_BENCHMARKS)
     ## add google benchmark
     add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gbenchmark)
     set(GBENCHMARK_INCLUDES ${benchmark_SOURCE_DIR}/include ${benchmark_SOURCE_DIR}

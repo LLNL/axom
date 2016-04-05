@@ -28,7 +28,7 @@ endif()
 ################################
 # Add tests
 ################################
-if (BUILD_TESTING)
+if (BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 

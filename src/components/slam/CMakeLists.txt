@@ -37,9 +37,9 @@ endif()
 ################################
 # Add tests and benchmarks
 ################################
-if (BUILD_TESTING)
+if (BUILD_TESTS)
   add_subdirectory(tests)
-  if (ENABLE_BENCHMARK)
+  if (ENABLE_BENCHMARKS)
     add_subdirectory(benchmarks)
   endif()
 endif()

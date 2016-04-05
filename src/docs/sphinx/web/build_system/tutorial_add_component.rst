@@ -43,12 +43,14 @@ How to add a new Component to the Build System
              ################################
              # Add examples
              ################################
-                add_subdirectory(examples)
+                if (BUILD_EXAMPLES)
+                   add_subdirectory(examples)
+                endif()
 
              ################################
              # Add tests
              ################################
-                if (BUILD_TESTING)
+                if (BUILD_TESTS)
                    add_subdirectory(tests)
                 endif()
 
@@ -58,7 +60,9 @@ How to add a new Component to the Build System
              ################################
              # Add docs
              ################################
-                add_subdirectory(docs)
+                if (BUILD_DOCS)
+                   add_subdirectory(docs)
+                endif()
 
 
              ################################

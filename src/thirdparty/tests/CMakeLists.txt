@@ -34,7 +34,7 @@ foreach(test ${gtest_thirdparty_tests})
     add_gtest( TEST_SOURCE ${test} DEPENDS_ON conduit)
 endforeach()
 
-if (ENABLE_BENCHMARK)
+if (ENABLE_BENCHMARKS)
   foreach(test ${gbenchmark_thirdparty_tests})
       add_benchmark( TEST_SOURCE ${test} TEST_ARGS "--benchmark_min_time=0.0001")
   endforeach()

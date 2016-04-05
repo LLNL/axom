@@ -370,7 +370,7 @@ endmacro(add_mpi_gtest)
 ##------------------------------------------------------------------------------
 macro(add_benchmark)
 
-   if(ENABLE_BENCHMARK)
+   if(ENABLE_BENCHMARKS)
       set(options)
       set(singleValueArgs TEST_SOURCE TEST_ARGS)
       set(multiValueArgs DEPENDS_ON)
@@ -407,7 +407,7 @@ macro(add_benchmark)
       # add any passed source files to the running list for this project
       update_project_sources( TARGET_SOURCES ${arg_TEST_SOURCE} )
       
-   endif(ENABLE_BENCHMARK)
+   endif(ENABLE_BENCHMARKS)
 endmacro(add_benchmark)
 
 ##------------------------------------------------------------------------------
