@@ -87,8 +87,9 @@ DataView * DataGroup::createView( const std::string& name,
                                   TypeID type,
                                   SidreLength num_elems )
 {
-  if ( num_elems < 0 )
+  if ( type == NO_TYPE_ID || num_elems < 0 )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK_MSG(num_elems >= 0,
                    "Must define view with number of elems >=0 ");
     return ATK_NULLPTR;
@@ -114,8 +115,9 @@ DataView * DataGroup::createView( const std::string& name,
                                   int ndims,
                                   SidreLength * shape )
 {
-  if ( !(ndims >= 0) )
+  if ( type == NO_TYPE_ID || !(ndims >= 0) )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK_MSG(ndims >= 0,
                    "Must define view with number of ndims >=0 ");
     return ATK_NULLPTR;
