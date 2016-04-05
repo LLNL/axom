@@ -8,7 +8,6 @@
 !! \brief Shroud generated wrapper for ExClass1 class
 !<
 module exclass1_mod
-    use fstr_mod
     use exclass2_mod, only : exclass2
     use iso_c_binding, only : C_INT, C_LONG
     ! splicer begin class.ExClass1.module_use

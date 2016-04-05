@@ -1,23 +1,17 @@
-/*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
- *
- * All rights reserved.
- *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
- */
+// shroudrt.cpp
+// This is generated code, do not edit
 //
-// Support functions for shroud
+// Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+// Produced at the Lawrence Livermore National Laboratory.
 //
+// All rights reserved.
+//
+// This source code cannot be distributed without permission and
+// further review from Lawrence Livermore National Laboratory.
+//
+
 // Other CS Toolkit headers
 #include "common/FC.h"
-
-
-namespace asctoolkit
-{
-namespace shroud
-{
 
 extern "C" {
 
@@ -41,7 +35,3 @@ void FC_GLOBAL(shroud_c_loc,SHROUD_C_LOC)(void * addr, void * * out)
 
 }  // extern "C"
 
-/*--------------------------------------------------------------------------*/
-
-} /* end namespace sidre */
-} /* end namespace asctoolkit */

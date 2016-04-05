@@ -50,14 +50,10 @@ if (ENABLE_FORTRAN)
     )   
     set(slic_fortran_sources
         interface/shroud_api/wrapSLIC.cpp
+        interface/shroud_api/shroudrt.cpp
         interface/shroud_api/wrapfslic.f
     )
     add_subdirectory(interface/shroud_api)
-
-    # wrappers depend on shroud runtime library
-    set(wrapper_depends_on
-        shroudrt
-    )
 
     # Must tell fortran where to look for modules
     include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
@@ -75,7 +71,6 @@ copy_headers_target( ${PROJECT_NAME}
 #
 set(slic_depends_on
     common
-    ${wrapper_depends_on}
 )
 if (ENABLE_lumberjack)
   list(APPEND slic_depends_on lumberjack)
