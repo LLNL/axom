@@ -5,31 +5,48 @@
 ################################
 # Conduit
 ################################
-include(cmake/thirdparty/FindConduit.cmake)
+if (CONDUIT_DIR)
+  include(cmake/thirdparty/FindConduit.cmake)
+elseif(NOT CONDUIT_DIR AND ENABLE_SIDRE)
+  message(FATAL_ERROR "Sidre requires Conduit. Set CONDUIT_DIR to location of built Conduit.")
+endif()
 
 
 ################################
 # HDF5
 ################################
-include(cmake/thirdparty/FindHDF5.cmake)
+if (HDF5_DIR)
+  include(cmake/thirdparty/FindHDF5.cmake)
+endif()
 
 
 ################################
 # Sparsehash
 ################################
-include(cmake/thirdparty/FindSparsehash.cmake)
+if (SPARSEHASH_DIR)
+  include(cmake/thirdparty/FindSparsehash.cmake)
+endif()
+
 
 ################################
 # Documentation Packages
 ################################
+if (DOXYGEN_EXECUTABLE)
+  find_package(Doxygen)
+endif()
 
-find_package(Doxygen)
-include(cmake/thirdparty/FindSphinx.cmake)
+if (SPHINX_EXECUTABLE)
+  include(cmake/thirdparty/FindSphinx.cmake)
+endif()
+
 
 ################################
 # linting via Uncrustify
 ################################
-include(cmake/thirdparty/FindUncrustify.cmake)
+if (UNCRUSTIFY_EXECUTABLE)
+  include(cmake/thirdparty/FindUncrustify.cmake)
+endif()
+
 
 ################################
 # Find boost headers

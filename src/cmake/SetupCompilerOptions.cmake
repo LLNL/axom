@@ -129,7 +129,7 @@ if (ENABLE_CXX11)
    
    MESSAGE(STATUS "C++11 support is ON")  
 else()
-   MESSAGE(STATUS "C++11 support if OFF")  
+   MESSAGE(STATUS "C++11 support is OFF")  
 endif()
 
 ##################################################################
