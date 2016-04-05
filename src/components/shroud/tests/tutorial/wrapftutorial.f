@@ -5,7 +5,6 @@
 !! \brief Shroud generated wrapper for Tutorial library
 !<
 module tutorial_mod
-    use fstr_mod
     use, intrinsic :: iso_c_binding, only : C_PTR
     ! splicer begin module_use
     ! splicer end module_use
@@ -386,6 +385,20 @@ module tutorial_mod
         module procedure overload1_4
         module procedure overload1_5
     end interface overload1
+    
+    private fstr, fstr_ptr, fstr_arr, strlen_arr, strlen_ptr
+    
+    interface fstr
+      module procedure fstr_ptr, fstr_arr
+    end interface
+    
+    interface
+       pure function strlen_ptr(s) result(result) bind(c,name="strlen")
+         use, intrinsic :: iso_c_binding
+         integer(c_int) :: result
+         type(c_ptr), value, intent(in) :: s
+       end function strlen_ptr
+    end interface
 
 contains
     
@@ -821,5 +834,42 @@ contains
             rv = .false.
         endif
     end function class1_ne
+    
+    ! Convert a null-terminated C "char *" pointer to a Fortran string.
+    function fstr_ptr(s) result(fs)
+      use, intrinsic :: iso_c_binding, only: c_char, c_ptr, c_f_pointer
+      type(c_ptr), intent(in) :: s
+      character(kind=c_char, len=strlen_ptr(s)) :: fs
+      character(kind=c_char), pointer :: cptr(:)
+      integer :: i
+      call c_f_pointer(s, cptr, [len(fs)])
+      do i=1, len(fs)
+         fs(i:i) = cptr(i)
+      enddo
+    end function fstr_ptr
+    
+    ! Convert a null-terminated array of characters to a Fortran string.
+    function fstr_arr(s) result(fs)
+      use, intrinsic :: iso_c_binding, only : c_char, c_null_char
+      character(kind=c_char, len=1), intent(in) :: s(*)
+      character(kind=c_char, len=strlen_arr(s)) :: fs
+      integer :: i
+      do i = 1, len(fs)
+         fs(i:i) = s(i)
+      enddo
+    end function fstr_arr
+    
+    ! Count the characters in a null-terminated array.
+    pure function strlen_arr(s)
+      use, intrinsic :: iso_c_binding, only : c_char, c_null_char
+      character(kind=c_char, len=1), intent(in) :: s(*)
+      integer :: i, strlen_arr
+      i=1
+      do
+         if (s(i) == c_null_char) exit
+         i = i+1
+      enddo
+      strlen_arr = i-1
+    end function strlen_arr
 
 end module tutorial_mod

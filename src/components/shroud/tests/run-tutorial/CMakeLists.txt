@@ -15,8 +15,9 @@ add_executable( shroud-run-tutorial
     ../tutorial/wrapftutorial.f
     ../tutorial/wrapTutorial.cpp
     ../tutorial/wrapClass1.cpp
+    ../tutorial/shroudrt.cpp
 )
-target_link_libraries(shroud-run-tutorial fruit shroudrt)
+target_link_libraries(shroud-run-tutorial fruit)
 set_target_properties(shroud-run-tutorial PROPERTIES
     LINKER_LANGUAGE Fortran
     RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
@@ -48,8 +49,6 @@ if(ENABLE_PYTHON_API)
             ../tutorial/pyClass1type.cpp
 	    ../tutorial/pyTutorialmodule.cpp
             ../tutorial/pyTutorialhelper.cpp
-        DEPENDS_ON
-            shroudrt
     )
 
     # Python wants the name to be tutorial.so

@@ -1433,6 +1433,11 @@
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_helper": {
+                "f_return_code": {
+                    "fstr": true
+                }
+            }, 
             "f_module": {
                 "iso_c_binding": null
             }, 

@@ -46,11 +46,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapDataBuffer.cpp
         interface/c_fortran/wrapDataView.cpp
         interface/c_fortran/wrapfsidre.f
-    )
-
-    # wrappers depend on shroud runtime library
-    set(c_fortran_depends_on
-        shroudrt
+        interface/c_fortran/shroudrt.cpp
     )
 
     # Must tell fortran where to look for modules
@@ -71,7 +67,6 @@ make_library( LIBRARY_NAME
                   "${sidre_sources}"
                   "${sidre_fortran_sources}"
               DEPENDS_ON
-                  ${c_fortran_depends_on}
                   common
                   conduit
                   conduit_io
@@ -80,9 +75,6 @@ make_library( LIBRARY_NAME
   
              
 set_target_properties(sidre  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
-
-# XXX - would like to have shroudrt loaded automatically with sidre
-#target_link_libraries(sidre ${c_fortran_depends_on})
 
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
