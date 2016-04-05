@@ -25,6 +25,8 @@
 #ifndef SLAM_POLICIES_SUBSET_H_
 #define SLAM_POLICIES_SUBSET_H_
 
+#include "common/ATKMacros.hpp"
+
 #include <set>
 
 namespace asctoolkit {
@@ -85,6 +87,7 @@ namespace policies {
 
       // Next, since child has at least one element, the parent cannot be empty
       bool bValid = ( m_parentSet->size() > 0);
+      ATK_DEBUG_VARIABLE(bValid)
       SLIC_CHECK_MSG(verboseOutput && !bValid
           , "VirtualParentSubset -- if we are a subset and input set is non-empty, then parent set must be non-empty");
 
@@ -139,6 +142,7 @@ namespace policies {
 
       // Next, since child has at least one element, the parent cannot be empty
       bool bValid = (m_parentSet->size() > 0);
+      ATK_DEBUG_VARIABLE(bValid)
       SLIC_CHECK_MSG(verboseOutput && !bValid
           , "VirtualParentSubset -- if input set is non-empty, then parent set must be non-empty");
 

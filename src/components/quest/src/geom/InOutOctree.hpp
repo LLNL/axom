@@ -1,6 +1,7 @@
 #ifndef INOUT_OCTREE__HXX_
 #define INOUT_OCTREE__HXX_
 
+#include "common/ATKMacros.hpp"
 #include "common/Timer.hpp"
 
 #include "quest/BoundingBox.hpp"
@@ -963,6 +964,8 @@ void InOutOctree<DIM>::colorOctreeLeaves()
 
 
             int prevCount = uncoloredBlocks.size();
+            ATK_DEBUG_VARIABLE(prevCount)
+
             GridPtVec prevVec;
             prevVec.swap(uncoloredBlocks);
             for(typename GridPtVec::iterator it = prevVec.begin(), itEnd = prevVec.end(); it < itEnd; ++it)
@@ -973,8 +976,6 @@ void InOutOctree<DIM>::colorOctreeLeaves()
             }
 
             SLIC_ASSERT( static_cast<int>(uncoloredBlocks.size()) < prevCount);
-            //            SLIC_ASSERT(  );
-            //
         }
 
 

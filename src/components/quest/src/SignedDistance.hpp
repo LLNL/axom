@@ -232,6 +232,7 @@ inline int SignedDistance< NDIMS >::computeSign(
   // Get the cell type, for now we support linear triangle,quad in 3-D and
   // line segments in 2-D.
   const int cellType = m_surfaceMesh->getMeshCellType( icell );
+  ATK_DEBUG_VARIABLE(cellType)
 
   // TODO: for now we assume a triangle mesh, the squared_distance() must be
   // updated to support, quad, etc., punting it for now...
@@ -263,6 +264,7 @@ inline void SignedDistance< NDIMS >::updateMinSquaredDistance(
   // Get the cell type, for now we support linear triangle,quad in 3-D and
   // line segments in 2-D.
   const int cellType = m_surfaceMesh->getMeshCellType( icell );
+  ATK_DEBUG_VARIABLE(cellType)
 
   // TODO: for now we assume a triangle mesh, the squared_distance() must be
   // updated to support, quad, etc., punting it for now...
