@@ -87,8 +87,9 @@ DataView * DataGroup::createView( const std::string& name,
                                   TypeID type,
                                   SidreLength num_elems )
 {
-  if ( num_elems < 0 )
+  if ( type == NO_TYPE_ID || num_elems < 0 )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK_MSG(num_elems >= 0,
                    "Must define view with number of elems >=0 ");
     return ATK_NULLPTR;
@@ -114,8 +115,9 @@ DataView * DataGroup::createView( const std::string& name,
                                   int ndims,
                                   SidreLength * shape )
 {
-  if ( !(ndims >= 0) )
+  if ( type == NO_TYPE_ID || !(ndims >= 0) )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK_MSG(ndims >= 0,
                    "Must define view with number of ndims >=0 ");
     return ATK_NULLPTR;
@@ -803,7 +805,7 @@ void DataGroup::save(const std::string& obase,
  *************************************************************************
  *          */
 void DataGroup::save(const std::string& obase,
-                     const std::string& protocol, 
+                     const std::string& protocol,
                      const hid_t& h5_file_id) const
 {
   if (protocol == "conduit_hdf5")
@@ -815,7 +817,7 @@ void DataGroup::save(const std::string& obase,
     conduit::utils::split_string(obase,
                                  std::string(":"),
                                  file_path,
-                                 hdf5_path); 
+                                 hdf5_path);
     conduit::io::hdf5_write(n, h5_file_id, hdf5_path);
   }
 }
