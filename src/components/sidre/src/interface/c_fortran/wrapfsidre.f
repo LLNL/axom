@@ -19,7 +19,7 @@ module sidre_mod
     ! splicer begin module_use
     ! map conduit type names to sidre type names
     use conduit, only : &
-        SIDRE_EMPTY_ID      => CONDUIT_EMPTY_ID, &
+        SIDRE_NO_TYPE_ID    => CONDUIT_EMPTY_ID, &
         SIDRE_INT8_ID       => CONDUIT_INT8_ID, &
         SIDRE_INT16_ID      => CONDUIT_INT16_ID, &
         SIDRE_INT32_ID      => CONDUIT_INT32_ID, &
