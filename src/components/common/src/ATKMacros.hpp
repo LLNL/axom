@@ -63,6 +63,28 @@
 #define ATK_DEBUG_VARIABLE(x)   if (0 && &x == &x){}
 
 
+/*!
+ *******************************************************************************
+ * \def ATK_DEBUG_PARAM(x)
+ * \brief Macro used to silence compiler warnings about parameters
+ *        that are used in debug code but not in release code.
+ * \note Default values are ok
+ * \code
+ *
+ *  void my_function(int x, int ATK_DEBUG_PARAM(y))
+ *  {
+ *    // my implementation
+ *    SLIC_ASSERT(y > 0)
+ *  }
+ *
+ * \endcode
+ *******************************************************************************
+ */
+#ifdef ATK_DEBUG
+ #define ATK_DEBUG_PARAM(_x)  _x
+#else
+ #define ATK_DEBUG_PARAM(_x)
+#endif
 
 
 /*!

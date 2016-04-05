@@ -13,15 +13,6 @@ append_custom_compiler_flag(
             GNU "-ftree-vectorize -fdump-tree-vect -ftree-vectorizer-verbose=7 -fdump-tree-optimized-details " #-march=native "
             )
 
-### Need to add some extra flags to allow parameters and variables that are only used in ATK_WARNINGs
-### TODO: Fix these when the macro becomes available
-SET(EXTRA_FLAGS_WHEN_NO_DEBUG "${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS}")
-
-SET(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} ${EXTRA_FLAGS_WHEN_NO_DEBUG}" CACHE INTERNAL "slam") 
-SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${EXTRA_FLAGS_WHEN_NO_DEBUG}" CACHE INTERNAL "slam") 
-SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${EXTRA_FLAGS_WHEN_NO_DEBUG}" CACHE INTERNAL "slam")
-
-
 ################################
 # Add the slam (meshapi) sources
 ################################

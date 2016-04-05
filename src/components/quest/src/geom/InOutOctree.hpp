@@ -410,7 +410,8 @@ private:
 
 private:
 
-    void dumpOctreeMeshVTK(const std::string& name, bool hasColors = false) const
+    void dumpOctreeMeshVTK( const std::string& name
+                          , bool hasColors = false) const
     {
       #ifdef DUMP_VTK_MESH
         typedef typename OctreeBaseType::MapType LeavesLevelMap;
@@ -540,15 +541,21 @@ private:
         delete debugMesh;
         debugMesh = ATK_NULLPTR;
       #else
-        if(false)
-            SLIC_DEBUG("Skipped outputting mesh " << name <<" with hasColors = " << hasColors);
+        // Do something with the parameters to avoid a warning about unused parameters
+        ATK_DEBUG_VARIABLE(name)
+        ATK_DEBUG_VARIABLE(hasColors)
       #endif
     }
 
     /**
      * \brief Utility function to dump a single element vtk file
      */
-    void dumpMeshVTK(const std::string& name, int idx, const BlockIndex& block, const GeometricBoundingBox& blockBB, bool isTri) const
+    void dumpMeshVTK( const std::string& name
+                    , int idx
+                    , const BlockIndex& block
+                    , const GeometricBoundingBox& blockBB
+                    , bool isTri
+                    ) const
     {
       #ifdef DUMP_VTK_MESH
         DebugMesh* debugMesh= new DebugMesh(3);
@@ -604,10 +611,13 @@ private:
 
         delete debugMesh;
         debugMesh = ATK_NULLPTR;
-    #else
-        if(false)
-            SLIC_DEBUG("Skipped outputting vtk file " << name <<" on " << (isTri? "tri " : "vertex ") << idx
-                << " and block " << block <<" with blockBB " << blockBB );
+      #else
+        // Do something with the parameters to avoid a warning about unused parameters
+        ATK_DEBUG_VARIABLE(name)
+        ATK_DEBUG_VARIABLE(idx)
+        ATK_DEBUG_VARIABLE(block)
+        ATK_DEBUG_VARIABLE(blockBB)
+        ATK_DEBUG_VARIABLE(isTri)
       #endif
     }
 
@@ -1670,7 +1680,7 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
 }
 
 template<int DIM>
-void InOutOctree<DIM>::checkValid(bool trianglesAlreadyInserted) const
+void InOutOctree<DIM>::checkValid(bool ATK_DEBUG_PARAM(trianglesAlreadyInserted)) const
 {
 #ifdef ATK_DEBUG
     typedef typename OctreeBaseType::MapType LeavesLevelMap;
