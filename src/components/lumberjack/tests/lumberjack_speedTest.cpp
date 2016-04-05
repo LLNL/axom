@@ -20,6 +20,7 @@
 #include "lumberjack/RootCommunicator.hpp"
 #include "lumberjack/Message.hpp"
 
+#include "common/CommonTypes.hpp"
 #include "common/StringUtilities.hpp"
 
 #include <mpi.h>
@@ -71,7 +72,7 @@ int main(int argc, char** argv)
     int ranksLimit = commSize/2;
 
     // Initialize which lumberjack communicator we want
-    asctoolkit::lumberjack::Communicator* communicator;
+    asctoolkit::lumberjack::Communicator* communicator = ATK_NULLPTR;
     if (communicatorName == "binary") {
         communicator = new asctoolkit::lumberjack::BinaryTreeCommunicator;
     } else if (communicatorName == "root") {

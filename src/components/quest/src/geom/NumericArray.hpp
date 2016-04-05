@@ -18,6 +18,7 @@
 #ifndef NUMERIC_ARRAY_HXX_
 #define NUMERIC_ARRAY_HXX_
 
+#include "common/ATKMacros.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
@@ -385,7 +386,10 @@ public:
  int argMin() const;
 
 private:
-  void verifyIndex(int idx) const { SLIC_ASSERT(idx >= 0 && idx < DIM); }
+  void verifyIndex(int ATK_DEBUG_PARAM(idx)) const
+  {
+      SLIC_ASSERT(idx >= 0 && idx < DIM);
+  }
 
 protected:
   T m_components[ DIM ];    /*! The encapsulated array */

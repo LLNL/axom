@@ -29,7 +29,9 @@
 
 //#include <iostream>
 
+#include "common/ATKMacros.hpp"
 #include "slic/slic.hpp"
+
 #include "slam/OrderedSet.hpp"
 #include "slam/Relation.hpp"
 #include "slam/PolicyTraits.hpp"
@@ -237,7 +239,10 @@ namespace slam    {
       verifyPosition(fromSetIndex);
       return stride();
     }
-    inline void         verifyPosition(SetPosition fromSetIndex)    const { SLIC_ASSERT( fromSetIndex < m_fromSet->size() ); }
+    inline void         verifyPosition(SetPosition ATK_DEBUG_PARAM(fromSetIndex))    const
+    {
+        SLIC_ASSERT( fromSetIndex >= 0 && fromSetIndex < m_fromSet->size() );
+    }
     inline SetPosition  toSetBeginIndex(SetPosition fromSetIndex)   const { return stride() * (fromSetIndex); }
     inline SetPosition  toSetEndIndex(SetPosition fromSetIndex)     const { return stride() * (fromSetIndex + 1); }
 

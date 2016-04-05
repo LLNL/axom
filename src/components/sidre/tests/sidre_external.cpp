@@ -12,6 +12,7 @@
 
 #include <vector>
 
+#include "common/CommonTypes.hpp"
 #include "sidre/sidre.hpp"
 
 using asctoolkit::sidre::DataBuffer;
@@ -41,7 +42,7 @@ TEST(sidre_external, create_external_view)
 
   for (unsigned int i=0 ; i < 2 ; i++)
   {
-    DataView * view;
+    DataView * view = ATK_NULLPTR;
 
     switch (i)
     {
@@ -92,7 +93,7 @@ TEST(sidre_external, create_external_view_null)
 
   for (int i=0 ; i < 2 ; i++)
   {
-    DataView * view;
+    DataView * view = ATK_NULLPTR;
 
     switch (i)
     {

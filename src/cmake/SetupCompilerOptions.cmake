@@ -145,6 +145,10 @@ if (ENABLE_GLOBALCOMPILERWARNINGS)
      append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
                      DEFAULT "-W -Wall -Wextra"
                      MSVC "/W4 /Wall /wd4619 /wd4668 /wd4820 /wd4571 /wd4710"
+                     XL ""          # qinfo=<grp> produces additional messages on XL
+                                    # qflag=<x>:<x> defines min severity level to produce messages on XL
+                                    #     where x is i info, w warning, e error, s severe; default is: 
+                                    # (default is  qflag=i:i)
                      )
    endforeach()
 endif()
@@ -156,6 +160,7 @@ if (ENABLE_GLOBALCOMPILERWARNINGSASERRORS)
      append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
                      DEFAULT "-Werror"
                      MSVC "/WX"
+                     XL "qhalt=w"       # i info, w warning, e error, s severe (default)
                      )
    endforeach()
 endif()
@@ -213,7 +218,15 @@ append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_PARAMETER_WARNINGS
                   XL      "-qnoinfo=par"
                   )
 
+# Flag for disabling warnings about unused variables
+# Useful when we include external code.
+append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_VARIABLE_WARNINGS
+                  DEFAULT "-Wno-unused-variable"
+                  XL      "-qnoinfo=use"
+                  )
+
 # message(STATUS "value of ATK_DISABLE_OMP_PRAGMA_WARNINGS is ${ATK_DISABLE_OMP_PRAGMA_WARNINGS} ")
 # message(STATUS "value of ATK_DISABLE_UNUSED_PARAMETER_WARNINGS is ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS} ")
+# message(STATUS "value of ATK_DISABLE_UNUSED_VARIABLE_WARNINGS is ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS} ")
  
  

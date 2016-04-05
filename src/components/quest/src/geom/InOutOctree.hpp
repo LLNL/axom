@@ -1,6 +1,7 @@
 #ifndef INOUT_OCTREE__HXX_
 #define INOUT_OCTREE__HXX_
 
+#include "common/ATKMacros.hpp"
 #include "common/Timer.hpp"
 
 #include "quest/BoundingBox.hpp"
@@ -409,7 +410,8 @@ private:
 
 private:
 
-    void dumpOctreeMeshVTK(const std::string& name, bool hasColors = false) const
+    void dumpOctreeMeshVTK( const std::string& name
+                          , bool hasColors = false) const
     {
       #ifdef DUMP_VTK_MESH
         typedef typename OctreeBaseType::MapType LeavesLevelMap;
@@ -539,15 +541,21 @@ private:
         delete debugMesh;
         debugMesh = ATK_NULLPTR;
       #else
-        if(false)
-            SLIC_DEBUG("Skipped outputting mesh " << name <<" with hasColors = " << hasColors);
+        // Do something with the parameters to avoid a warning about unused parameters
+        ATK_DEBUG_VAR(name);
+        ATK_DEBUG_VAR(hasColors);
       #endif
     }
 
     /**
      * \brief Utility function to dump a single element vtk file
      */
-    void dumpMeshVTK(const std::string& name, int idx, const BlockIndex& block, const GeometricBoundingBox& blockBB, bool isTri) const
+    void dumpMeshVTK( const std::string& name
+                    , int idx
+                    , const BlockIndex& block
+                    , const GeometricBoundingBox& blockBB
+                    , bool isTri
+                    ) const
     {
       #ifdef DUMP_VTK_MESH
         DebugMesh* debugMesh= new DebugMesh(3);
@@ -603,10 +611,13 @@ private:
 
         delete debugMesh;
         debugMesh = ATK_NULLPTR;
-    #else
-        if(false)
-            SLIC_DEBUG("Skipped outputting vtk file " << name <<" on " << (isTri? "tri " : "vertex ") << idx
-                << " and block " << block <<" with blockBB " << blockBB );
+      #else
+        // Do something with the parameters to avoid a warning about unused parameters
+        ATK_DEBUG_VAR(name);
+        ATK_DEBUG_VAR(idx);
+        ATK_DEBUG_VAR(block);
+        ATK_DEBUG_VAR(blockBB);
+        ATK_DEBUG_VAR(isTri);
       #endif
     }
 
@@ -963,6 +974,8 @@ void InOutOctree<DIM>::colorOctreeLeaves()
 
 
             int prevCount = uncoloredBlocks.size();
+            ATK_DEBUG_VAR(prevCount);
+
             GridPtVec prevVec;
             prevVec.swap(uncoloredBlocks);
             for(typename GridPtVec::iterator it = prevVec.begin(), itEnd = prevVec.end(); it < itEnd; ++it)
@@ -973,8 +986,6 @@ void InOutOctree<DIM>::colorOctreeLeaves()
             }
 
             SLIC_ASSERT( static_cast<int>(uncoloredBlocks.size()) < prevCount);
-            //            SLIC_ASSERT(  );
-            //
         }
 
 
@@ -1669,7 +1680,7 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
 }
 
 template<int DIM>
-void InOutOctree<DIM>::checkValid(bool trianglesAlreadyInserted) const
+void InOutOctree<DIM>::checkValid(bool ATK_DEBUG_PARAM(trianglesAlreadyInserted)) const
 {
 #ifdef ATK_DEBUG
     typedef typename OctreeBaseType::MapType LeavesLevelMap;
