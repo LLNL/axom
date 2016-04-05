@@ -22,6 +22,7 @@
 // Other CS Toolkit headers
 #include "conduit.h"
 
+#define SIDRE_NO_TYPE_ID    CONDUIT_EMPTY_ID
 #define SIDRE_INT8_ID       CONDUIT_INT8_ID
 #define SIDRE_INT16_ID      CONDUIT_INT16_ID
 #define SIDRE_INT32_ID      CONDUIT_INT32_ID

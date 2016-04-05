@@ -215,10 +215,18 @@ public:
 
   /*!
    * \brief Return type of data for this DataView object.
+   *        Return NO_TYPE_ID for an undescribed view.
    */
   TypeID getTypeID() const
   {
-    return static_cast<TypeID>(m_schema.dtype().id());
+    if (isDescribed())
+    {
+      return static_cast<TypeID>(m_schema.dtype().id());
+    }
+    else
+    {
+      return NO_TYPE_ID;
+    }
   }
 
   /*!
@@ -316,8 +324,9 @@ public:
    * \brief Allocate data for view given type and number of elements.
    *
    * NOTE: The allocate() method describes conditions where view
-   *       allocation is allowed. If none of those is true, or given number
-   *       of elements is < 0, this method does nothing.
+   *       allocation is allowed. If none of those is true, or given 
+   *       a type of NO_TYPE_ID or number of elements is < 0,
+   *       this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -449,8 +458,8 @@ public:
    * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
-   * If view holds a scalar or a string, or given number of elements < 0,
-   * or offset < 0, the method does nothing.
+   * If view holds a scalar or a string, or type is NO_TYPE_ID, 
+   * or given number of elements < 0, or offset < 0, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -467,8 +476,9 @@ public:
    * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
-   * If view holds a scalar or a string, or given number of dimensions < 0,
-   * or pointer to shape is null, the method does nothing.
+   * If view holds a scalar or a string, or type is NO_TYPE_ID, 
+   * or given number of dimensions < 0, or pointer to shape is null,
+   * the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -708,7 +718,8 @@ private:
    *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
-   * If given number of elements < 0, or view is opaque, method does nothing.
+   * If given type of NO_TYPE_ID, or number of elements < 0, or view is opaque,
+   * method does nothing.
    *
    */
   void describe( TypeID type, SidreLength num_elems);
@@ -722,8 +733,8 @@ private:
    *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
-   * If given number of dimensions or total number of elements < 0,
-   * or view is opaque, method does nothing.
+   * If given type of NO_TYPE_ID, or number of dimensions or total
+   * number of elements < 0, or view is opaque, method does nothing.
    *
    * \return pointer to this DataView object.
    */

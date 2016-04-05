@@ -803,7 +803,7 @@ void DataGroup::save(const std::string& obase,
  *************************************************************************
  *          */
 void DataGroup::save(const std::string& obase,
-                     const std::string& protocol, 
+                     const std::string& protocol,
                      const hid_t& h5_file_id) const
 {
   if (protocol == "conduit_hdf5")
@@ -815,7 +815,7 @@ void DataGroup::save(const std::string& obase,
     conduit::utils::split_string(obase,
                                  std::string(":"),
                                  file_path,
-                                 hdf5_path); 
+                                 hdf5_path);
     conduit::io::hdf5_write(n, h5_file_id, hdf5_path);
   }
 }
