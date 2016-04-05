@@ -57,19 +57,19 @@ macro(add_component)
     cmake_parse_arguments(arg
          "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    ## convert the component name to capitals for the ENABLE option.
-    string(TOUPPER ${arg_COMPONENT_NAME} COMPONENT_NAME_CAPITALIZED)
-
     ## setup a cmake vars to capture sources added via our macros
     set("${arg_COMPONENT_NAME}_ALL_SOURCES" CACHE PATH "" FORCE)
 
     ## adds an option so that the user can control whether to build this
     ## component.
+    ## convert the component name to capitals for the ENABLE option.
+    string(TOUPPER ${arg_COMPONENT_NAME} COMPONENT_NAME_CAPITALIZED)
+
     option( ENABLE_${COMPONENT_NAME_CAPITALIZED}
             "Enables ${arg_component_name}"
             ${arg_DEFAULT_STATE})
 
-    if ( ENABLE_${arg_COMPONENT_NAME} )
+    if ( ENABLE_${COMPONENT_NAME_CAPITALIZED} )
         add_subdirectory( ${arg_COMPONENT_NAME} )
     endif()
 
