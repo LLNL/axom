@@ -44,23 +44,23 @@
 
 /*!
  *******************************************************************************
- * \def ATK_DEBUG_VARIABLE(x)
+ * \def ATK_DEBUG_VAR(x)
  * \brief Macro used to silence compiler warnings about variables
  *        that are defined but not used.
  * \note The intent is to use this macro for variables that are only used
- *       for debugging purposes. For example:
+ *       for debugging purposes (e.g. in debug assertions). For example:
  * \code
  *
  *  double myVar = ...
- *  ATK_DEBUG_VARIABLE(myVar)   // code will emit the following warning if extra
- *                              // warnings are enabled and macro is not called
+ *  ATK_DEBUG_VAR(myVar);       // code will emit the following warning in release builds
+ *                              // if extra warnings are enabled and macro is not called
  *                              // warning: unused variable 'myVar' [-Wunused-variable]
  *  SLIC_ASSERT(myVar > 0)
  *
  * \endcode
  *******************************************************************************
  */
-#define ATK_DEBUG_VARIABLE(x)   if (0 && &x == &x){}
+#define ATK_DEBUG_VAR(_x)   static_cast<void>(_x)
 
 
 /*!

@@ -542,8 +542,8 @@ private:
         debugMesh = ATK_NULLPTR;
       #else
         // Do something with the parameters to avoid a warning about unused parameters
-        ATK_DEBUG_VARIABLE(name)
-        ATK_DEBUG_VARIABLE(hasColors)
+        ATK_DEBUG_VAR(name);
+        ATK_DEBUG_VAR(hasColors);
       #endif
     }
 
@@ -613,11 +613,11 @@ private:
         debugMesh = ATK_NULLPTR;
       #else
         // Do something with the parameters to avoid a warning about unused parameters
-        ATK_DEBUG_VARIABLE(name)
-        ATK_DEBUG_VARIABLE(idx)
-        ATK_DEBUG_VARIABLE(block)
-        ATK_DEBUG_VARIABLE(blockBB)
-        ATK_DEBUG_VARIABLE(isTri)
+        ATK_DEBUG_VAR(name);
+        ATK_DEBUG_VAR(idx);
+        ATK_DEBUG_VAR(block);
+        ATK_DEBUG_VAR(blockBB);
+        ATK_DEBUG_VAR(isTri);
       #endif
     }
 
@@ -974,7 +974,7 @@ void InOutOctree<DIM>::colorOctreeLeaves()
 
 
             int prevCount = uncoloredBlocks.size();
-            ATK_DEBUG_VARIABLE(prevCount)
+            ATK_DEBUG_VAR(prevCount);
 
             GridPtVec prevVec;
             prevVec.swap(uncoloredBlocks);

@@ -439,7 +439,7 @@ int main()
 
   int fileResolutions[] = {1,2,4,8};
   DataType expectedResults[] = {0.10736689892, 0.037977237476, 0.013251067479, 0.0046357167735};
-  ATK_DEBUG_VARIABLE(expectedResults)
+  ATK_DEBUG_VAR(expectedResults);
 
   for(int res = 0; res < NUM_RESOLUTIONS; ++res)
   {
@@ -469,7 +469,7 @@ int main()
     createZoneRadiusField(&hexMesh);
 
     DataType errVal = computeNodalErrors(&hexMesh);
-    ATK_DEBUG_VARIABLE(errVal)
+    ATK_DEBUG_VAR(errVal);
 
     // Some error checking based on precomputed values
     SLIC_ASSERT_MSG(

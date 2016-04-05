@@ -87,7 +87,7 @@ namespace policies {
 
       // Next, since child has at least one element, the parent cannot be empty
       bool bValid = ( m_parentSet->size() > 0);
-      ATK_DEBUG_VARIABLE(bValid)
+      ATK_DEBUG_VAR(bValid);
       SLIC_CHECK_MSG(verboseOutput && !bValid
           , "VirtualParentSubset -- if we are a subset and input set is non-empty, then parent set must be non-empty");
 
@@ -144,7 +144,7 @@ namespace policies {
 
       // Next, since child has at least one element, the parent cannot be empty
       bool bValid = (m_parentSet->size() > 0);
-      ATK_DEBUG_VARIABLE(bValid)
+      ATK_DEBUG_VAR(bValid);
       SLIC_CHECK_MSG(verboseOutput && !bValid
           , "VirtualParentSubset -- if input set is non-empty, then parent set must be non-empty");
 
