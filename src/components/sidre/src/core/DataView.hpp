@@ -507,29 +507,37 @@ public:
   template<typename ScalarType>
   DataView * setScalar(ScalarType value)
   {
-//
-// RDH -- This will change when scalar pool is added. Also, the following
-//        check will not be needed because a scalar view will not have
-//        allocated data.
-//
-    // Check that parameter type provided matches what type is stored in the node.
-#if defined(ATK_DEBUG)
-    if (m_state != EMPTY)
+    // If this view already contains a scalar, issue a warning if the user is
+    // changing the underlying type ( ie: integer -> float ).
+    #if defined(ATK_DEBUG)
+    if (m_state == SCALAR)
     {
       DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
       SLIC_CHECK_MSG( arg_id == m_node.dtype().id(),
-                      "Mismatch between setScalar()" <<
-                      DataType::id_to_name(
-                        arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() <<
-                      ").");
+        "You are setting a scalar value in view " << m_name  <<
+        " which has changed the underlying data type." << "Old type = "
+        << m_node.dtype().name() << ", new type ="
+        <<  DataType::id_to_name( arg_id ) << ".");
     }
-#endif
+    #endif
 
-    m_node.set(value);
-    m_schema.set(m_node.schema());
-    m_is_applied = true;
-    m_state = SCALAR;
-    describeShape();
+    // Note: most of these calls that set the view class members are
+    //       unnecessary if the view already holds a scalar.  May be
+    //       a future optimization opportunity to split the
+    if (m_state == EMPTY || m_state == SCALAR)
+    {
+      m_node.set(value);
+      m_schema.set(m_node.schema());
+      m_state = SCALAR;
+      m_is_applied = true;
+      describeShape();
+    }
+    else
+    {
+      SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
+        "Unable to set scalar value on view " << m_name << " with state: " <<
+         getStateStringName(m_state)  );
+    }
     return this;
   }
 
@@ -543,11 +551,23 @@ public:
  */
   DataView * setString(const std::string& value)
   {
-    m_node.set_string(value);
-    m_schema.set(m_node.schema());
-    m_state = STRING;
-    m_is_applied = true;
-    describeShape();
+    // Note: most of these calls that set the view class members are
+    //       unnecessary if the view already holds a string.  May be
+    //       a future optimization opportunity to split the
+    if (m_state == EMPTY || m_state == STRING)
+    {
+      m_node.set_string(value);
+      m_schema.set(m_node.schema());
+      m_state = STRING;
+      m_is_applied = true;
+      describeShape();
+    }
+    else
+    {
+      SLIC_CHECK_MSG(m_state == EMPTY || m_state == STRING,
+        "Unable to set string value on view " << m_name << " with state: " <<
+         getStateStringName(m_state)  );
+    }
     return this;
   };
 

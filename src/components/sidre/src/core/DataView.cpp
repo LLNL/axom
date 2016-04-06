@@ -470,6 +470,11 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
       }
     }
   }
+  else
+  {
+    SLIC_CHECK_MSG( m_state == EMPTY || m_state == EXTERNAL,
+      "Calling setExternalDataPtr on a view with " << getStateStringName(m_state) << " data is not allowed.");
+  }
 
   return this;
 }
