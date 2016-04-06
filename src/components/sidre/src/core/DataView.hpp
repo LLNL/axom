@@ -507,29 +507,31 @@ public:
   template<typename ScalarType>
   DataView * setScalar(ScalarType value)
   {
-//
-// RDH -- This will change when scalar pool is added. Also, the following
-//        check will not be needed because a scalar view will not have
-//        allocated data.
-//
-    // Check that parameter type provided matches what type is stored in the node.
-#if defined(ATK_DEBUG)
-    if (m_state != EMPTY)
+    if (m_state == EMPTY)
     {
+      m_node.set(value);
+      m_schema.set(m_node.schema());
+      m_state = SCALAR;
+      m_is_applied = true;
+      describeShape();
+    }
+    else if (m_state == SCALAR)
+    {
+      #if defined(ATK_DEBUG)
       DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
       SLIC_CHECK_MSG( arg_id == m_node.dtype().id(),
-                      "Mismatch between setScalar()" <<
-                      DataType::id_to_name(
-                        arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() <<
-                      ").");
+                      "You are changing the scalar type in view " << m_name  <<
+                      ", old type = " << m_node.dtype().name() << ", new type ="
+                      <<  DataType::id_to_name( arg_id ) << ".");
+      #endif
+      m_node.set(value);
     }
-#endif
-
-    m_node.set(value);
-    m_schema.set(m_node.schema());
-    m_is_applied = true;
-    m_state = SCALAR;
-    describeShape();
+    else
+    {
+      SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
+        "Unable to call setScalar on view " << m_name << " with state: " <<
+         getStateStringName(m_state)  );
+    }
     return this;
   }
 
@@ -543,11 +545,25 @@ public:
  */
   DataView * setString(const std::string& value)
   {
-    m_node.set_string(value);
-    m_schema.set(m_node.schema());
-    m_state = STRING;
-    m_is_applied = true;
-    describeShape();
+    if (m_state == EMPTY)
+    {
+      m_node.set_string(value);
+      m_schema.set(m_node.schema());
+      m_state = STRING;
+      m_is_applied = true;
+      describeShape();
+    }
+    else if (m_state == STRING)
+    {
+      m_node.set_string(value);
+      describeShape();
+    }
+    else
+    {
+      SLIC_CHECK_MSG(m_state == EMPTY || m_state == STRING,
+        "Unable to call setString on view " << m_name << " with state: " <<
+         getStateStringName(m_state)  );
+    }
     return this;
   };
 
