@@ -59,9 +59,7 @@ const double gammaaInverse = M_SQRT1_2;
 void CreateScalarIntViewAndSetVal( DataGroup * const grp,
                                    const std::string& name, int32 const value )
 {
-  DataView * const view = grp->createViewAndAllocate(name, DataType::int32());
-  view->setScalar(value);
-
+  grp->createViewScalar(name, value);
 }
 
 
@@ -69,8 +67,7 @@ void CreateScalarFloatBufferViewAndSetVal( DataGroup * const grp,
                                            const std::string& name,
                                            float64 const value )
 {
-  DataView * const view = grp->createViewAndAllocate(name, DataType::float64());
-  view->setScalar(value);
+  grp->createViewScalar(name, value);
 }
 
 
@@ -89,7 +86,7 @@ void GetUserInput(DataGroup * const prob)
   {
     int numElems, numFaces;
 
-    printf("How many zones for the 1D shock tube? ");
+    //printf("How many zones for the 1D shock tube? ");
     //scanf("%d", &numElems);
     numElems = 10;
 
@@ -116,14 +113,14 @@ void GetUserInput(DataGroup * const prob)
 
     while (pratio < 0.0 || pratio > 1.0)
     {
-      printf("What pressure ratio would you like (0 <= x <= 1)? ");
+      //printf("What pressure ratio would you like (0 <= x <= 1)? ");
       //scanf("%lf", &pratio);
       pratio = 0.5;
     }
 
     while (dratio < 0.0 || dratio > 1.0)
     {
-      printf("What density ratio would you like (0 <= x <= 1)? ");
+      //printf("What density ratio would you like (0 <= x <= 1)? ");
       //scanf("%lf", &dratio);
       dratio = 0.5;
     }
@@ -141,11 +138,11 @@ void GetUserInput(DataGroup * const prob)
   {
     int numUltraDumps, numCyclesPerDump;
 
-    printf("How many Ultra dumps would you like? ");
+    //printf("How many Ultra dumps would you like? ");
 //    scanf("%d", &numUltraDumps);
     numUltraDumps = 10;
 
-    printf("How many cycles per Ultra dump would you like? ");
+    //printf("How many cycles per Ultra dump would you like? ");
 //    scanf("%d", &numCyclesPerDump);
     numCyclesPerDump = 10;
 
@@ -619,8 +616,11 @@ int main(void)
   int numTotalCycles = prob->getView("numTotalCycles")->getData();
   int dumpInterval = prob->getView("numCyclesPerDump")->getData();
 
+  std::cout << "Starting problem run." << std::endl;
+
   for (*currCycle = 0 ; *currCycle < numTotalCycles ; ++(*currCycle) )
   {
+    std::cout << " cycle " << *currCycle << std::endl;
     /* dump the ultra file, based on the user chosen attribute mask */
     if ( (*currCycle) % dumpInterval == 0)
     {
@@ -631,7 +631,8 @@ int main(void)
     UpdateElemInfo(prob);
   }
 
-  DumpUltra(prob); /* One last dump */
+  // DumpUltra(prob); /* One last dump */
 
+  std::cout << "Finished problem run." << std::endl;
   return 0;
 }
