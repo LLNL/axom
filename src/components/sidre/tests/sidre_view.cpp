@@ -18,6 +18,7 @@ using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
 using asctoolkit::sidre::SidreLength;
 using asctoolkit::sidre::TypeID;
+using asctoolkit::sidre::NO_TYPE_ID;
 using asctoolkit::sidre::INT_ID;
 using asctoolkit::sidre::CHAR8_STR_ID;
 
@@ -138,13 +139,15 @@ static bool checkViewValues(DataView * view,
       rv = false;
     }
   }
-#if 0
   else
   {
     TypeID id = view->getTypeID();
-    EXPECT_EQ(id, INT_ID);
+    if (id != NO_TYPE_ID)
+    {
+      EXPECT_EQ(id, NO_TYPE_ID);
+      rv = false;
+    }
   }
-#endif
 
   if (view->isApplied())
   {

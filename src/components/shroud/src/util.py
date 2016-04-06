@@ -294,6 +294,7 @@ class Typedef(object):
         f_cast = '{var}',     # Expression to convert to type
                               # e.g. intrinsics such as int and real
         f_statements={},
+        f_helper={},          # helper functions to insert into module as PRIVATE
 
         result_as_arg = None, # override fields when result should be treated as an argument
 

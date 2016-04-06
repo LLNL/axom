@@ -41,6 +41,7 @@ C function void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(LSH_F_r
 Close wrapTutorial.h
 Close wrapTutorial.cpp
 Close shroudrt.hpp
+Close shroudrt.cpp
 class Class1
 C-interface, Fortran method Class1 * new()+constructor
 C-interface, Fortran method void delete()+destructor

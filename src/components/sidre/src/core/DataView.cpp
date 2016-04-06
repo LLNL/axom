@@ -74,8 +74,9 @@ DataView * DataView::allocate()
  */
 DataView * DataView::allocate( TypeID type, SidreLength num_elems)
 {
-  if ( num_elems < 0 )
+  if ( type == NO_TYPE_ID || num_elems < 0 )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK(num_elems >= 0);
     return this;
   }
@@ -293,11 +294,9 @@ DataView * DataView::apply(SidreLength num_elems,
                            SidreLength offset,
                            SidreLength stride)
 {
-  if ( num_elems < 0 || offset < 0 )
+  if ( num_elems < 0 )
   {
     SLIC_CHECK(num_elems >= 0);
-    SLIC_CHECK(offset >= 0);
-
     return this;
   }
 
@@ -329,11 +328,10 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
                            SidreLength offset,
                            SidreLength stride)
 {
-  if ( num_elems < 0 || offset < 0)
+  if ( type == NO_TYPE_ID || num_elems < 0 )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK(num_elems >= 0);
-    SLIC_CHECK(offset >= 0);
-
     return this;
   }
 
@@ -361,8 +359,9 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
  */
 DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
 {
-  if ( ndims < 1 || shape == ATK_NULLPTR )
+  if ( type == NO_TYPE_ID || ndims < 1 || shape == ATK_NULLPTR )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK(ndims >= 1);
     SLIC_CHECK(shape != ATK_NULLPTR);
 
@@ -646,18 +645,12 @@ DataView::~DataView()
  *************************************************************************
  *
  * PRIVATE method to describe data view with type and number of elements.
+ *         Caller has already checked arguments.
  *
  *************************************************************************
  */
 void DataView::describe(TypeID type, SidreLength num_elems)
 {
-  if ( num_elems < 0 )
-  {
-    SLIC_CHECK_MSG(num_elems >= 0,
-                   "Describe: must give number of elements >= 0");
-    return;
-  }
-
   DataType dtype = conduit::DataType::default_dtype(type);
   dtype.set_number_of_elements(num_elems);
   m_schema.set(dtype);
@@ -670,18 +663,12 @@ void DataView::describe(TypeID type, SidreLength num_elems)
  *
  * PRIVATE method to describe data view with type, number of dimensions,
  *         and number of elements per dimension.
+ *         Caller has already checked arguments.
  *
  *************************************************************************
  */
 void DataView::describe(TypeID type, int ndims, SidreLength * shape)
 {
-  if ( ndims < 0 || shape == ATK_NULLPTR)
-  {
-    SLIC_CHECK(ndims >= 0);
-    SLIC_CHECK(shape != ATK_NULLPTR);
-    return;
-  }
-
   SidreLength num_elems = 0;
   if (ndims > 0)
   {
@@ -700,19 +687,12 @@ void DataView::describe(TypeID type, int ndims, SidreLength * shape)
  *************************************************************************
  *
  * PRIVATE method to describe data view with a Conduit data type object.
+ *         Caller has already checked arguments.
  *
  *************************************************************************
  */
 void DataView::describe(const DataType& dtype)
 {
-  if ( dtype.is_empty() )
-  {
-    SLIC_CHECK_MSG(
-      !dtype.is_empty(),
-      "Unable to set description in View, datatype parameter is empty.");
-    return;
-  }
-
   m_schema.set(dtype);
   describeShape();
   m_is_applied = false;
@@ -775,7 +755,7 @@ bool DataView::isAllocateValid() const
                     getStateStringName(m_state) << "view");
     break;
   case BUFFER:
-      rv = isDescribed() && m_data_buffer->getNumViews() == 1;
+    rv = isDescribed() && m_data_buffer->getNumViews() == 1;
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");

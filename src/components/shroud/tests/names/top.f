@@ -5,7 +5,6 @@
 !! \brief Shroud generated wrapper for testnames library
 !<
 module top_module
-    use fstr_mod
     ! splicer begin module_use
     ! splicer end module_use
     implicit none

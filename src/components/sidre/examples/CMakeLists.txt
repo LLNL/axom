@@ -37,7 +37,7 @@ if(ENABLE_FORTRAN)
         make_executable(
             EXECUTABLE_NAME   ${exe_name}
             EXECUTABLE_SOURCE ${example_source}
-            DEPENDS_ON sidre conduit conduit_io slic shroudrt ${EXTRA_LIBS}
+            DEPENDS_ON sidre conduit conduit_io slic ${EXTRA_LIBS}
             ADD_CTEST IS_EXAMPLE)
     endforeach()
     set_target_properties(${exe_name} PROPERTIES LINKER_LANGUAGE Fortran)
