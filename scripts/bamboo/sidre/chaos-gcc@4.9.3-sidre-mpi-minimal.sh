@@ -1,3 +1,4 @@
+#!/bin/sh
 # This script builds a minimal set of the toolkit components designed for integration testing of sidre in host application codes.
 # This build configuration is intended to mimick how a host code may build the sidre component.
 
