@@ -332,6 +332,7 @@ TEST(C_sidre_group,group_name_collisions)
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,view_copy_move)
 {
+// Restore this after copy_move is working. ATK-667
 #if 0
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);

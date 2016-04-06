@@ -370,6 +370,7 @@ TEST(sidre_group,group_name_collisions)
   delete ds;
 }
 //------------------------------------------------------------------------------
+// Restore this after copy_move is working. ATK-667
 #if 0
 TEST(sidre_group,view_copy_move)
 {
