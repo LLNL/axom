@@ -48,4 +48,7 @@ endif()
 
 
 
+#
+# Slam (MeshAPI) version of tinyHydro
+#
 add_subdirectory(tinyHydro)
