@@ -62,11 +62,14 @@ macro(add_component)
 
     ## adds an option so that the user can control whether to build this
     ## component.
-    option( ENABLE_${arg_COMPONENT_NAME}
+    ## convert the component name to capitals for the ENABLE option.
+    string(TOUPPER ${arg_COMPONENT_NAME} COMPONENT_NAME_CAPITALIZED)
+
+    option( ENABLE_${COMPONENT_NAME_CAPITALIZED}
             "Enables ${arg_component_name}"
             ${arg_DEFAULT_STATE})
 
-    if ( ENABLE_${arg_COMPONENT_NAME} )
+    if ( ENABLE_${COMPONENT_NAME_CAPITALIZED} )
         add_subdirectory( ${arg_COMPONENT_NAME} )
     endif()
 

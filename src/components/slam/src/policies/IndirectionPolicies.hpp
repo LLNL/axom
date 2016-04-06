@@ -87,7 +87,10 @@ namespace policies {
 
     bool                              hasIndirection() const { return m_arrBuf != ATK_NULLPTR; }
 
-    inline bool                       isValid(PositionType size, PositionType, PositionType, bool verboseOutput = false) const
+    inline bool                       isValid( PositionType size
+                                             , PositionType
+                                             , PositionType
+                                             , bool ATK_DEBUG_PARAM(verboseOutput = false)) const
     {
       // set of zero size is always valid
       if(size == 0)
@@ -134,7 +137,10 @@ namespace policies {
 
     bool                              hasIndirection() const { return m_vecBuf != ATK_NULLPTR; }
 
-    inline bool                       isValid(PositionType size, PositionType offset, PositionType stride, bool verboseOutput = false) const
+    inline bool                       isValid(PositionType size
+											, PositionType offset
+											, PositionType stride
+											, bool ATK_DEBUG_PARAM(verboseOutput = false)) const
     {
       // If set has zero size, we are always valid (even if indirection buffer is null)
       if(size == 0)

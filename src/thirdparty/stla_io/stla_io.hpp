@@ -964,6 +964,8 @@ bool stla_read ( string input_file_name, int node_num, int face_num,
 
   face = 0;
   node = 0;
+  vertex = 0;
+
 //
 //  Open the file.
 //
@@ -1356,6 +1358,8 @@ void stla_size ( string input_file_name, int *solid_num, int *node_num,
   ierror = 0;
 
   state = 0;
+
+  vertex = 0;
 
   *text_num = 0;
   *solid_num = 0;

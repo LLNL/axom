@@ -15,6 +15,7 @@
 
 #include <sstream>
 
+#include "common/ATKMacros.hpp"
 #include "slic/slic.hpp"
 
 #include "slam/Utilities.hpp"
@@ -81,11 +82,11 @@ namespace slam {
     }
 
   private:
-    inline void verifyFieldsKey(KeyType key){
+    inline void verifyFieldsKey(KeyType ATK_DEBUG_PARAM(key)){
       SLIC_ASSERT_MSG( m_dataVecs.find(key) != m_dataVecs.end()
           , "Didn't find " << asctoolkit::slam::util::TypeToString<DataType>::to_string() << " field named " << key );
     }
-    inline void verifyScalarsKey(KeyType key){
+    inline void verifyScalarsKey(KeyType ATK_DEBUG_PARAM(key)){
       SLIC_ASSERT_MSG( m_dataScalars.find(key) != m_dataScalars.end()
           , "Didn't find " << asctoolkit::slam::util::TypeToString<DataType>::to_string() << " scalar named " << key );
     }

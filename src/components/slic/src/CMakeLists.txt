@@ -37,7 +37,7 @@ set(slic_sources
 if (ENABLE_MPI)
    list(APPEND slic_headers streams/SynchronizedStream.hpp)
    list(APPEND slic_sources streams/SynchronizedStream.cpp)
-   if (ENABLE_lumberjack)
+   if (ENABLE_LUMBERJACK)
       list(APPEND slic_headers streams/LumberjackStream.hpp)
       list(APPEND slic_sources streams/LumberjackStream.cpp)
    endif()
@@ -72,7 +72,7 @@ copy_headers_target( ${PROJECT_NAME}
 set(slic_depends_on
     common
 )
-if (ENABLE_lumberjack)
+if (ENABLE_LUMBERJACK)
   list(APPEND slic_depends_on lumberjack)
 endif()
 

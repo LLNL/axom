@@ -66,12 +66,6 @@ include(SetupGenerate)
 ################################
 include(SetupCodeChecks)
 
-################################
-# Setup code metrics -
-# profiling, code coverage, etc.
-################################
-include(SetupCodeMetrics)
-
 
 include (DartConfig)
 
@@ -149,6 +143,13 @@ include(ATKMacros)
 # (must be included after HEADER_INCLUDES_DIRECTORY is set)
 ################################
 include(SetupCompilerOptions)
+
+################################
+# Setup code metrics -
+# profiling, code coverage, etc.
+# (must be included after SetupCompilerOptions)
+################################
+include(SetupCodeMetrics)
 
 ################################
 # Standard CMake Options

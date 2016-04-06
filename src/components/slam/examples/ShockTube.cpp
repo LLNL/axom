@@ -70,7 +70,9 @@ namespace slamShocktube {
   const double INIT_P_RATIO = 0.5;
   const double INIT_D_RATIO = 0.5;
 
+#ifdef ATK_DEBUG
   const bool verboseOutput = false;
+#endif
 
 /**
  * \brief Simple representation of the mesh for this 1D example
