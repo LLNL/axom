@@ -497,6 +497,10 @@ public:
   template<typename ScalarType>
   DataView * setScalar(ScalarType value)
   {
+    if (m_state == BUFFER)
+    {
+
+    }
 //
 // RDH -- This will change when scalar pool is added. Also, the following
 //        check will not be needed because a scalar view will not have
@@ -533,12 +537,20 @@ public:
  */
   DataView * setString(const std::string& value)
   {
-    m_node.set_string(value);
-    m_schema.set(m_node.schema());
-    m_state = STRING;
-    m_is_applied = true;
-    describeShape();
-    return this;
+    if (m_state == EMPTY || m_state == STRING)
+    {
+
+      m_node.set_string(value);
+      m_schema.set(m_node.schema());
+      m_state = STRING;
+      m_is_applied = true;
+      describeShape();
+      return this;
+    }
+    else
+    {
+      SLIC_CHECK_MSG( )
+    }
   };
 
   /*!
@@ -809,7 +821,7 @@ private:
   /*!
    *  \brief Private method returns string name of given view state enum value.
    */
-  char const * getStateStringName(State state) const;
+  static char const * getStateStringName(State state);
 
   /// Name of this DataView object.
   std::string m_name;

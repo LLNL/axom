@@ -471,6 +471,12 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
       }
     }
   }
+  else
+  {
+    SLIC_CHECK_MSG( m_state == EMPTY || m_state == EXTERNAL, "View state " <<
+      getStateStringName(m_state) <<
+      " does not support calling setExternalDataPtr().");
+  }
 
   return this;
 }
@@ -831,7 +837,7 @@ bool DataView::isApplyValid() const
  *
  *************************************************************************
  */
-char const * DataView::getStateStringName(State state) const
+char const * DataView::getStateStringName(State state)
 {
   char const * ret_string = NULL;
 

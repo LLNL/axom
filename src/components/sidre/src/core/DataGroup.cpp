@@ -1153,7 +1153,6 @@ void DataGroup::copyToNode(Node& n) const
       buff["data"].set_external(dtype, ds_buff->getVoidPtr());
     }
   }
-
 }
 
 /*
@@ -1181,25 +1180,65 @@ void DataGroup::copyFromNode(Node& n)
 void DataGroup::copyToNode(Node& n,
                            std::vector<IndexType>& buffer_ids) const
 {
+  // iterator over views in this group
+  // for each view:
+  //   create node, add to views list
+  //   add schema (json'd) to node
+  //   add is_applied value to node
+  //   if has buffer, add the buffer id to node
+  // for each group:
+  //   create node, add to 'groups' list.
+  //   call copyToNode on node (recursive call)
+
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
     const DataView * view = getView(vidx);
     Node& n_view = n["views"].fetch(view->getName());
-    n_view["schema"].set(view->getSchema().to_json());
+
+    n_view["state"] = view->m_state;
     n_view["is_applied"].set(view->isApplied());
 
-    // if we have a buffer, simply add the index to the list
-    if (view->hasBuffer())
+    switch(view->m_state)
     {
+    // If view contains data stored in view's node
+    // (string, scalar, or described pointer.)
+    // then save the view's node.
+    case DataView::EMPTY:
+    break;
+    case DataView::STRING:
+    case DataView::SCALAR:
+    {
+      n_view["node"] = view->getNode();
+      break;
+    }
+    case DataView::EXTERNAL:
+    {
+      // If the external data pointer is described, it is in the view's node.
+      if ( view->isDescribed() )
+      {
+        SLIC_ASSERT( view->isApplied() );
+        n_view["node"] = view->getNode();
+      }
+      break;
+    }
+    case DataView::BUFFER:
+    {
+      n_view["schema"].set(view->getSchema().to_json());
+      n_view["is_applied"].set(view->isApplied());
       IndexType buffer_id = view->getBuffer()->getIndex();
       n_view["buffer_id"].set(buffer_id);
+      // If we have a buffer, keep track of it so we can add it later.
       buffer_ids.push_back(view->getBuffer()->getIndex());
+      break;
     }
-
+    default:
+    {
+      SLIC_ASSERT_MSG(false, "Unexpected value for m_state" << DataView::getStateStringName(view->m_state) );
+    }
     vidx = getNextValidViewIndex(vidx);
+    }
   }
-
   IndexType gidx = getFirstValidGroupIndex();
   while ( indexIsValid(gidx) )
   {
