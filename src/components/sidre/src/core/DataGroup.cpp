@@ -364,7 +364,7 @@ void DataGroup::destroyViewAndData( const std::string& name )
       buffer->detachView(view);
       if (buffer->getNumViews() == 0)
       {
-        getDataStore()->destroyBuffer(buffer->getIndex());
+        getDataStore()->destroyBuffer(buffer);
       }
     }
     delete view;
@@ -393,7 +393,7 @@ void DataGroup::destroyViewAndData( IndexType idx )
       buffer->detachView(view);
       if (buffer->getNumViews() == 0)
       {
-        getDataStore()->destroyBuffer(buffer->getIndex());
+        getDataStore()->destroyBuffer(buffer);
       }
     }
     delete view;
@@ -422,7 +422,7 @@ void DataGroup::destroyViewsAndData()
       buffer->detachView(view);
       if (buffer->getNumViews() == 0)
       {
-        getDataStore()->destroyBuffer(buffer->getIndex());
+        getDataStore()->destroyBuffer(buffer);
       }
     }
     delete view;

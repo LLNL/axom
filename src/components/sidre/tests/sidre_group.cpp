@@ -23,6 +23,8 @@ using asctoolkit::sidre::InvalidIndex;
 using asctoolkit::sidre::nameIsValid;
 using asctoolkit::sidre::indexIsValid;
 using asctoolkit::sidre::DataType;
+using asctoolkit::sidre::FLOAT_ID;
+using asctoolkit::sidre::FLOAT64_ID;
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -296,18 +298,15 @@ TEST(sidre_group,create_destroy_has_view)
   EXPECT_FALSE( group->hasView("view") );
 
   // try api call that specifies specific type and length
-  group->createViewAndAllocate( "viewWithLength1",
-                                asctoolkit::sidre::FLOAT_ID, 50 );
+  group->createViewAndAllocate( "viewWithLength1",FLOAT_ID, 50 );
 
   // error condition check - try again with duplicate name, should be a no-op
-  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1",
-                                             asctoolkit::sidre::FLOAT64_ID,
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1", FLOAT64_ID,
                                              50 ) == ATK_NULLPTR );
   group->destroyViewAndData("viewWithLength1");
   EXPECT_FALSE( group->hasView("viewWithLength1") );
 
-  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen",
-                                             asctoolkit::sidre::FLOAT64_ID,
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen", FLOAT64_ID,
                                              -1 ) == ATK_NULLPTR );
 
   // try api call that specifies data type in another way
@@ -315,8 +314,17 @@ TEST(sidre_group,create_destroy_has_view)
   EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2",
                                              DataType::float64(
                                                50) ) == ATK_NULLPTR );
-  // destroy this view using index
-  group->destroyViewAndData( group->getFirstValidViewIndex() );
+  // destroy view and its buffer using index
+  IndexType indx = group->getFirstValidViewIndex();
+  IndexType bindx = group->getView( indx )->getBuffer()->getIndex();
+  group->destroyViewAndData( indx );
+  EXPECT_TRUE( ds->getBuffer(bindx) == NULL );
+
+  // Destroy view but not the buffer
+  view = group->createViewAndAllocate( "viewWithLength2", FLOAT_ID, 50 );
+  DataBuffer * buff = view->getBuffer();
+  group->destroyView("viewWithLength2");
+  EXPECT_TRUE( buff->isAllocated() );
 
   delete ds;
 }

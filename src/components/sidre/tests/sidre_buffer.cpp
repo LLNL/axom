@@ -16,22 +16,62 @@
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataType;
+using asctoolkit::sidre::DataGroup;
+using asctoolkit::sidre::DataView;
+using asctoolkit::sidre::IndexType;
 
 //------------------------------------------------------------------------------
+
+
+// id's are created in sequence.
+// After detaching or destroying a buffer, the next createBuffer will recycle the id.
 
 TEST(sidre_buffer,create_buffers)
 {
   DataStore * ds = new DataStore();
+  EXPECT_EQ(0u, ds->getNumBuffers());
+
   DataBuffer * dbuff_0 = ds->createBuffer();
+  EXPECT_EQ(1u, ds->getNumBuffers());
+  EXPECT_EQ(0, dbuff_0->getIndex());
+
   DataBuffer * dbuff_1 = ds->createBuffer();
+  EXPECT_EQ(2u, ds->getNumBuffers());
+  EXPECT_EQ(1, dbuff_1->getIndex());
 
-  EXPECT_EQ(dbuff_0->getIndex(), 0);
-  EXPECT_EQ(dbuff_1->getIndex(), 1);
+  //----------
+  // detach by index
+  EXPECT_EQ(ds->detachBuffer(0), dbuff_0);
+  EXPECT_EQ(1u, ds->getNumBuffers());
 
+  DataBuffer * dbuff_0a = ds->createBuffer();
+  EXPECT_EQ(2u, ds->getNumBuffers());
+  EXPECT_EQ(0, dbuff_0a->getIndex());
+
+  // destroy by index
   ds->destroyBuffer(0);
+  EXPECT_EQ(1u, ds->getNumBuffers());
 
-  DataBuffer * dbuff_3 = ds->createBuffer();
-  EXPECT_EQ(dbuff_3->getIndex(), 0);
+  DataBuffer * dbuff_0b = ds->createBuffer();
+  EXPECT_EQ(2u, ds->getNumBuffers());
+  EXPECT_EQ(0, dbuff_0b->getIndex());
+
+  //----------
+  // detach by pointer
+  EXPECT_EQ(ds->detachBuffer(dbuff_1), dbuff_1);
+  EXPECT_EQ(1u, ds->getNumBuffers());
+
+  DataBuffer * dbuff_1a = ds->createBuffer();
+  EXPECT_EQ(2u, ds->getNumBuffers());
+  EXPECT_EQ(1, dbuff_1a->getIndex());
+
+  // destroy by pointer
+  ds->destroyBuffer(dbuff_1a);
+  EXPECT_EQ(1u, ds->getNumBuffers());
+
+  DataBuffer * dbuff_1b = ds->createBuffer();
+  EXPECT_EQ(2u, ds->getNumBuffers());
+  EXPECT_EQ(1, dbuff_1b->getIndex());
 
   delete ds;
 }
@@ -182,5 +222,67 @@ TEST(sidre_buffer,realloc_buffer)
 //  dbuff->print();
 
 //  ds->print();
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_buffer,with_multiple_views)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  DataBuffer * dbuff;
+  DataView * dv1, * dv2;
+
+  dbuff = ds->createBuffer();
+  IndexType idx = dbuff->getIndex();
+
+  dv1 = root->createView("e1", dbuff);
+  dv2 = root->createView("e2", dbuff);
+  EXPECT_TRUE(dv1->hasBuffer());
+  EXPECT_TRUE(dv2->hasBuffer());
+  EXPECT_EQ(ds->getNumBuffers(), 1u);
+  EXPECT_EQ(dbuff->getNumViews(), 2);
+
+  // Detach buffer from first view will not detach from datastore.
+  dv1->attachBuffer(NULL);
+  EXPECT_FALSE(dv1->hasBuffer());
+  EXPECT_EQ(ds->getNumBuffers(), 1u);
+  EXPECT_EQ(dbuff->getNumViews(), 1);
+
+  // Detach buffer from second view will detach from datastore.
+  dv2->attachBuffer(NULL);
+  EXPECT_FALSE(dv2->hasBuffer());
+  EXPECT_EQ(ds->getNumBuffers(), 0u);
+
+  // Buffer has been destroyed since there are no more attached views
+  EXPECT_TRUE(ds->getBuffer(idx) == NULL);
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_buffer,move_buffer)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  DataBuffer * dbuff, * dbuff2;
+  DataView * dv1, * dv2;
+
+  dbuff = ds->createBuffer();
+
+  dv1 = root->createView("e1", dbuff);
+
+  dbuff2 = dv1->detachBuffer();
+  EXPECT_FALSE(dv1->hasBuffer());
+  EXPECT_EQ(dbuff2, dbuff);
+
+  dv2 = root->createView("e2");
+  dv2->attachBuffer(dbuff2);
+
+  EXPECT_TRUE(dv2->hasBuffer());
+  EXPECT_EQ(1u, ds->getNumBuffers());
+  EXPECT_EQ(1, dbuff->getNumViews());
+
   delete ds;
 }

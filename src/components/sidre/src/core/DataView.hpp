@@ -324,7 +324,7 @@ public:
    * \brief Allocate data for view given type and number of elements.
    *
    * NOTE: The allocate() method describes conditions where view
-   *       allocation is allowed. If none of those is true, or given 
+   *       allocation is allowed. If none of those is true, or given
    *       a type of NO_TYPE_ID or number of elements is < 0,
    *       this method does nothing.
    *
@@ -404,12 +404,21 @@ public:
    * If data view already has a buffer and buff is NULL, the attached
    * buffer will be detached. After the view is detached from the
    * buffer, if the buffer has no views attached to it, then it will
-   * be deallocated.
+   * be destroyed.
    *
    * \return pointer to this DataView object.
    */
   DataView * attachBuffer( DataBuffer * buff );
 
+
+  /*!
+   * \brief Detach this view from its DataBuffer.
+   *
+   * If the view has no buffer, the method does nothing.
+   *
+   * \return pointer to detached buffer.
+   */
+  DataBuffer * detachBuffer();
 
 //@{
 //!  @name Methods to apply DataView description to data.
@@ -458,7 +467,7 @@ public:
    * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
-   * If view holds a scalar or a string, or type is NO_TYPE_ID, 
+   * If view holds a scalar or a string, or type is NO_TYPE_ID,
    * or given number of elements < 0, or offset < 0, the method does nothing.
    *
    * \return pointer to this DataView object.
@@ -476,7 +485,7 @@ public:
    * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
-   * If view holds a scalar or a string, or type is NO_TYPE_ID, 
+   * If view holds a scalar or a string, or type is NO_TYPE_ID,
    * or given number of dimensions < 0, or pointer to shape is null,
    * the method does nothing.
    *

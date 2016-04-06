@@ -17,6 +17,7 @@ using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
 using asctoolkit::sidre::SidreLength;
+using asctoolkit::sidre::IndexType;
 using asctoolkit::sidre::TypeID;
 using asctoolkit::sidre::NO_TYPE_ID;
 using asctoolkit::sidre::INT_ID;
@@ -515,6 +516,7 @@ TEST(sidre_view,int_buffer_view)
   DataGroup * root = ds->getRoot();
   DataBuffer * dbuff, * otherbuffer;
   DataView * dv;
+  IndexType bindex;
   //  long shape[] = { BLEN };
 
   //     view                        buffer
@@ -570,6 +572,7 @@ TEST(sidre_view,int_buffer_view)
 
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
+  bindex = dbuff->getIndex();
   EXPECT_TRUE(checkViewValues(dv, BUFFER, false, false, false, 0));
   EXPECT_EQ(dbuff->getNumViews(), 1);
 
@@ -579,13 +582,10 @@ TEST(sidre_view,int_buffer_view)
   EXPECT_EQ(dv->getBuffer(), dbuff); // same buffer as before
   EXPECT_EQ(otherbuffer->getNumViews(), 0);
 
-  // Removes buffer
+  // The current attached buffer will be destroyed.
   dv->attachBuffer(NULL);
   EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
-  EXPECT_EQ(dbuff->getNumViews(), 0);
-  // XXX - should this be false?  It has no views.
-  //       Use dv->detachBuffer if user want to keep buffer around.
-  EXPECT_TRUE(dbuff->isAllocated());
+  EXPECT_TRUE(ds->getBuffer(bindex) == NULL);
 
   //---------- 4
   // Attach undescribed buffer to described view
@@ -653,7 +653,7 @@ TEST(sidre_view,int_array_strided_views)
   DataBuffer * dbuff = ds->createBuffer(INT_ID, 10);
 
   dbuff->allocate();
-  int * data_ptr = static_cast<int *>(dbuff->getData());
+  int * data_ptr = dbuff->getData();
 
   for(int i=0 ; i<10 ; i++)
   {

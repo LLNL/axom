@@ -145,9 +145,13 @@ DataBuffer * DataStore::getBuffer( IndexType idx ) const
 DataBuffer * DataStore::createBuffer()
 {
   // TODO: implement pool, look for free nodes.  Allocate in blocks.
-  IndexType newIndex = m_data_buffers.size();
-  m_data_buffers.push_back( ATK_NULLPTR );
-  if( !m_free_buffer_ids.empty() )
+  IndexType newIndex;
+  if( m_free_buffer_ids.empty() )
+  {
+    newIndex = m_data_buffers.size();
+    m_data_buffers.push_back( ATK_NULLPTR );
+  }
+  else
   {
     newIndex = m_free_buffer_ids.top();
     m_free_buffer_ids.pop();
@@ -176,6 +180,30 @@ DataBuffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
   }
 
   return buffer;
+}
+
+/*
+ *************************************************************************
+ *
+ * Remove data buffer from the datastore and destroy it, recover its
+ * id for reuse.
+ *
+ *************************************************************************
+ */
+void DataStore::destroyBuffer( DataBuffer * buff )
+{
+  if ( buff != ATK_NULLPTR && buff->getNumViews() != 0 )
+  {
+    SLIC_CHECK_MSG( buff != ATK_NULLPTR && buff->getNumViews() != 0,
+                    "Unable to delete buffer, it has " <<
+                    buff->getNumViews() << " still attached.");
+    return;
+  }
+
+  IndexType idx = buff->getIndex();
+  delete buff;
+  m_data_buffers[idx] = ATK_NULLPTR;
+  m_free_buffer_ids.push(idx);
 }
 
 /*
@@ -224,6 +252,19 @@ void DataStore::destroyBuffers()
   }
 }
 
+
+/*
+ *************************************************************************
+ *
+ * Remove data buffer from the datastore leaving it intact,
+ * and return a pointer to it. Its index is recovered for reuse.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataStore::detachBuffer( DataBuffer * buff )
+{
+  return detachBuffer(buff->getIndex());
+}
 
 /*
  *************************************************************************
