@@ -36,7 +36,7 @@ namespace quest {
  * \brief Computes the intersection of the given ray, R, with the segment, S.
  * \param [in] R user-supplied ray R.
  * \param [in] S user-supplied segment S.
- * \param [in/out] ip the point of intersection.
+ * \param [in,out] ip the point of intersection.
  * \return status true iff R intersects with S, otherwise, false.
  *******************************************************************************
  */
@@ -98,7 +98,9 @@ namespace {
 
   /**
    * \brief Helper function to find disjoint projections for the AABB-triangle test
-   * \param {d0,d1,d2}  Values defining the test interval
+   * \param d0 The first value defining the test interval
+   * \param d1 The second value defining the test interval
+   * \param d2 The third value defining the test interval
    * \param r Radius of projection
    * \return True of the intervals are disjoint, false otherwise
    */

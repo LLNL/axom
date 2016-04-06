@@ -55,8 +55,8 @@ public:
    * \brief Creates a SignedDistance instance for queries on the given mesh.
    * \param [in] surfaceMesh user-supplied surface mesh.
    * \param [in] maxObjects max number of objects for spatial decomposition.
-   * \param [in] maxLevel max levels for spatial decomposition (optional).
-   * \note Default maxLevel is 5 if not specified.
+   * \param [in] maxLevels max levels for spatial decomposition (optional).
+   * \note Default maxLevels is 5 if not specified.
    * \pre surfaceMesh != ATK_NULLPTR
    *****************************************************************************
    */
@@ -107,8 +107,8 @@ private:
    * \brief Updates the minimum squared distance of the point to the given cell.
    * \param [in] pt the query point.
    * \param [in] icell the cell on the surface mesh.
-   * \param [in/out] minSqDist the minimum squared distance.
-   * \param [in/out] closest_cell ID of the cell closest cell.
+   * \param [in,out] minSqDist the minimum squared distance.
+   * \param [in,out] closest_cell ID of the cell closest cell.
    * \pre m_surfaceMesh != ATK_NULLPTR.
    * \pre icell >= 0 && icell < m_surfaceMesh->getMeshNumberOfCells().
    *****************************************************************************

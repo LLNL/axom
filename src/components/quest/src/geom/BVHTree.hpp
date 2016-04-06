@@ -254,7 +254,7 @@ public:
    *****************************************************************************
    * \brief Writes the hierarchical decomposition in a VTK file.
    * \param [in] fileName the name of the VTK formatted file to generate.
-   * \param [in[ include_objects optional parameter, when true it also writes
+   * \param [in] include_objects optional parameter, when true it also writes
    *  out the bounding boxes of the supplied objects.
    *****************************************************************************
    */
@@ -357,7 +357,7 @@ private:
   /*!
    *****************************************************************************
    * \brief Writes the box to the given C++ stream.
-   * \param [in/out] oss the output string stream to write the box coordinates.
+   * \param [in,out] oss the output string stream to write the box coordinates.
    * \param [in] box a 2-D bounding box instance.
    * \note This is just a helper routine used when writing out the tree.
    *****************************************************************************
@@ -380,7 +380,7 @@ private:
   /*!
    *****************************************************************************
    * \brief Writes the box to the given C++ stream.
-   * \param [in/out] oss the output string stream to write the box coordinates.
+   * \param [in,out] oss the output string stream to write the box coordinates.
    * \param [in] box a 3-D bounding box instance.
    * \note This is just a helper routine used when writing out the tree.
    *****************************************************************************
@@ -416,7 +416,7 @@ private:
    *  <ol>
    *   <li> numObjectsInBucket > threshold </li>
    *   <li> bucketLevel < maxNumLevels-1 </li>
-   *  <ol>
+   *  </ol>
    * \note Used in BVHTree::build()
    * \pre idx >= 0 && idx < m_tree.size()
    *****************************************************************************

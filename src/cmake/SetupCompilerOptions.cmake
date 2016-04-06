@@ -143,9 +143,12 @@ if (ENABLE_ALL_WARNINGS)
 
    foreach(flagVar ${langFlags})   
      blt_append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
-                     DEFAULT "-W -Wall -Wextra"
-                     MSVC "/W4 /Wall /wd4619 /wd4668 /wd4820 /wd4571 /wd4710"
-                     XL ""          # qinfo=<grp> produces additional messages on XL
+                     DEFAULT "-Wall -Wextra"
+                     CLANG   "-Wall -Wextra" 
+									# Additional  possibilities for clang include: 
+									# 		"-Wdocumentation -Wdeprecated -Weverything"
+                     MSVC    "/W4 /Wall /wd4619 /wd4668 /wd4820 /wd4571 /wd4710"
+                     XL      ""     # qinfo=<grp> produces additional messages on XL
                                     # qflag=<x>:<x> defines min severity level to produce messages on XL
                                     #     where x is i info, w warning, e error, s severe; default is: 
                                     # (default is  qflag=i:i)
@@ -158,9 +161,10 @@ if (ENABLE_WARNINGS_AS_ERRORS)
 
    foreach(flagVar ${langFlags})   
      append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
-                     DEFAULT "-Werror"
-                     MSVC "/WX"
-                     XL "qhalt=w"       # i info, w warning, e error, s severe (default)
+                     DEFAULT  "-Werror"
+                     MSVC     "/WX"
+                     XL       "qhalt=w"       
+                                    # i info, w warning, e error, s severe (default)
                      )
    endforeach()
 endif()

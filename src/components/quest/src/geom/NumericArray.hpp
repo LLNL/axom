@@ -185,10 +185,10 @@ public:
   /*!
    *****************************************************************************
    * \brief Copy constructor.
-   * \param [in] rhs
+   * \param [in] other The numeric array to copy
    *****************************************************************************
    */
-  NumericArray( const NumericArray& rhs ) { *this = rhs; };
+  NumericArray( const NumericArray& pther ) { *this = pther; };
 
   /*!
    *****************************************************************************

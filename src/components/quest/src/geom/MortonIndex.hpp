@@ -188,7 +188,8 @@ namespace quest
          * \brief A function to convert a 2D point to a Morton index
          *
          * Morton indexing interleaves the bits of the point's coordinates
-         * \param [in] x,y The coordinates of the point
+         * \param [in] x The x-coordinate of the point
+         * \param [in] y The y-coordinate of the point
          * \pre CoordType must be an integral type
          * \pre x and y must be positive with value less than \f$ 2^{16} \f$
          * \note These preconditions can easily be relaxed, if desired
@@ -216,9 +217,10 @@ namespace quest
          * \brief A function to convert a Morton index back to a 2D point
          *
          * \param [in] morton The MortonIndex of the desired point
-         * \param [out] x,y The coordinates of the point
+         * \param [out] x The x-coordinate of the point
+         * \param [out] y The y-coordinate of the point
          *  Morton indexing interleaves the bits of the point's coordinates
-         * \return The point's coordinates are in the x and y parameters
+         * \note The point's coordinates are returned in the x and y parameters
          */
         static inline void demortonize(MortonIndex morton, CoordType &x, CoordType & y)
         {
@@ -302,7 +304,9 @@ namespace quest
          * \brief A function to convert a 3D point to a Morton index
          *
          *  Morton indexing interleaves the bits of the point's coordinates
-         * \param [in] x,y,z The coordinates of the point
+         * \param [in] x The x-coordinate of the point
+         * \param [in] y The y-coordinate of the point
+         * \param [in] z The z-coordinate of the point
          * \pre CoordType must be an integral type
          * \pre x and y must be positive with value less than \f$ 2^{10} \f$
          * \note These preconditions can easily be relaxed, if desired
@@ -335,9 +339,11 @@ namespace quest
          * \brief A function to convert a Morton index back to a 3D point
          *
          * \param [in] morton The MortonIndex of the desired point
-         * \param [out] x,y,z The coordinates of the point
+         * \param [out] x The x-coordinate of the point
+         * \param [out] y The y-coordinate of the point
+         * \param [out] z The z-coordinate of the point
          *  Morton indexing interleaves the bits of the point's coordinates
-         * \return The point's coordinates are in the x, y and z parameters
+         * \note The point's coordinates are returned in the x, y and z parameters
          */
         static inline void demortonize(MortonIndex morton, CoordType &x, CoordType & y, CoordType &z)
         {

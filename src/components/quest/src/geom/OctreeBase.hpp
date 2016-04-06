@@ -68,9 +68,7 @@ namespace quest
       int getID() const { return isLeaf()? m_id : ~m_id; }
 
       /**
-       * \brief Predicate to determine if this BlockData is associated with a leaf block
-       * or internal block of the octree.
-       * \return True, if the associated block is internal, false otherwise
+       * \brief Sets the block type to internal
        */
       void setInternal() { if(isLeaf()) { m_id = ~m_id; } }
 
@@ -490,7 +488,7 @@ public:
   /**
    * \brief Determine whether the octree contains a leaf block associated with grid point pt at level lev
    * \param [in] pt The grid point to check
-   * \param [in] level The level of the grid point
+   * \param [in] lev The level of the grid point
    * \returns true if the associated block is a leaf in the octree, false otherwise
    */
   bool isLeaf(const GridPt& pt, int lev) const
@@ -512,7 +510,7 @@ public:
   /**
    * \brief Determine whether the octree contains an internal block associated with grid point pt at level lev
    * \param [in] pt The grid point to check
-   * \param [in] level The level of the grid point
+   * \param [in] lev The level of the grid point
    * \returns true if the associated block is an internal block of the octree, false otherwise
    */
   bool isInternal(const GridPt& pt, int lev) const
@@ -533,7 +531,7 @@ public:
   /**
    * \brief Determine whether the octree contains a block (internal or leaf) associated with grid point pt at level lev
    * \param [in] pt The grid point to check
-   * \param [in] level The level of the grid point
+   * \param [in] lev The level of the grid point
    * \returns true if the associated block is in the octree, false otherwise
    */
   bool hasBlock(const GridPt& pt, int lev) const
