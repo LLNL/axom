@@ -9,7 +9,8 @@
 #-------------------------------------------------------------------------------
 
 
-make_executable( EXECUTABLE_SOURCE quest_driver.cpp
+make_executable( NAME quest_driver
+                 SOURCES quest_driver.cpp
                  DEPENDS_ON 
                     quest 
                     common 
@@ -18,8 +19,8 @@ make_executable( EXECUTABLE_SOURCE quest_driver.cpp
                  IS_EXAMPLE
                     )
 
-make_executable( EXECUTABLE_NAME quest_sphere 
-                 EXECUTABLE_SOURCE sphere.cpp 
+make_executable( NAME quest_sphere 
+                 SOURCES sphere.cpp 
                  DEPENDS_ON 
                     quest 
                     common 
@@ -28,8 +29,8 @@ make_executable( EXECUTABLE_NAME quest_sphere
                  IS_EXAMPLE
                     )
 
-make_executable( EXECUTABLE_NAME quest_octree_driver 
-                 EXECUTABLE_SOURCE octree_driver.cpp 
+make_executable( NAME quest_octree_driver 
+                 SOURCES octree_driver.cpp 
                  DEPENDS_ON 
                     quest 
                     common 
@@ -40,8 +41,8 @@ make_executable( EXECUTABLE_NAME quest_octree_driver
 
 if (ENABLE_MPI)
 
-  make_executable( EXECUTABLE_NAME quest_interface 
-                   EXECUTABLE_SOURCE quest_interface.cpp
+  make_executable( NAME quest_interface 
+                   SOURCES quest_interface.cpp
                    DEPENDS_ON 
                        quest
                        common
@@ -52,8 +53,8 @@ if (ENABLE_MPI)
   #                    on non-intel compilers (see JIRA ticket ATK-649).
   #                    For now, we are only enabling this fortran example on intel.
   if (ENABLE_FORTRAN AND COMPILER_FAMILY_IS_INTEL)                    
-    make_executable( EXECUTABLE_NAME quest_interface_fortran
-                     EXECUTABLE_SOURCE quest_interface_fortran.f90
+    make_executable( NAME quest_interface_fortran
+                     SOURCES quest_interface_fortran.f90
                      DEPENDS_ON
                        quest
                        common

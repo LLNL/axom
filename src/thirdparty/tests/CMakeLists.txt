@@ -8,49 +8,42 @@ include_directories(${CONDUIT_INCLUDE_DIRS})
 #
 
 ################
-# C++ Tests
+# Add gtest tests
 ################
-set(gtest_thirdparty_tests
-    gtest_smoke.cpp
-    conduit_smoke.cpp
+add_gtest( TEST_SOURCE gtest_smoke.cpp )
+
+
+################
+# Test conduit tests
+################
+if (CONDUIT_FOUND)
+  add_gtest( TEST_SOURCE conduit_smoke.cpp DEPENDS_ON conduit)
+
+  if (ENABLE_FORTRAN)
+    add_fortran_test(
+        TEST_SOURCE f_conduit_smoke.f
+        DEPENDS_ON fruit conduit conduit_fortran
     )
-
-set(gbenchmark_thirdparty_tests
-    benchmark_smoke.cpp
-    )
-
-################
-# Fortran Tests
-################
-set(gtest_thirdparty_fortran_tests
-    fruit_smoke.f
-    f_conduit_smoke.f)
-
-
-################
-# Add gtest based tests
-################
-foreach(test ${gtest_thirdparty_tests})
-    add_gtest( TEST_SOURCE ${test} DEPENDS_ON conduit)
-endforeach()
-
-if (ENABLE_BENCHMARKS)
-  foreach(test ${gbenchmark_thirdparty_tests})
-      add_benchmark( TEST_SOURCE ${test} TEST_ARGS "--benchmark_min_time=0.0001")
-  endforeach()
+  endif()
 endif()
 
 
 ################
-# Add fortran tests
+# Test gbenchmark
+################
+if (ENABLE_BENCHMARKS)
+  add_benchmark( TEST_SOURCE benchmark_smoke.cpp TEST_ARGS "--benchmark_min_time=0.0001")
+endif()
+
+
+################
+# Add fruit tests
 ################
 if (ENABLE_FORTRAN)
-  foreach(test ${gtest_thirdparty_fortran_tests})
-      add_fortran_test(
-          TEST_SOURCE ${test}
-          DEPENDS_ON fruit conduit conduit_fortran
-      )
-  endforeach()
+  add_fortran_test(
+      TEST_SOURCE fruit_smoke.f
+      DEPENDS_ON fruit
+  )
 endif()
 
 
@@ -58,10 +51,10 @@ endif()
 # Add OpenMP tests
 ################
 if (ENABLE_OPENMP)
-    make_executable( EXECUTABLE_NAME openmp_smoke 
-                     EXECUTABLE_SOURCE openmp_smoke.cpp 
-                     USE_OPENMP TRUE 
-                     ADD_CTEST)
+  make_executable( NAME openmp_smoke 
+                   SOURCES openmp_smoke.cpp 
+                   USE_OPENMP TRUE 
+                   ADD_CTEST)
 endif()
 
 

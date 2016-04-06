@@ -30,14 +30,14 @@ add_subdirectory(src)
 ################################
 # Add examples
 ################################
-if (BUILD_EXAMPLES)
+if (ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
 ################################
 # Add tests and benchmarks
 ################################
-if (BUILD_TESTS)
+if (ENABLE_TESTS)
   add_subdirectory(tests)
   if (ENABLE_BENCHMARKS)
     add_subdirectory(benchmarks)
@@ -50,7 +50,7 @@ add_code_check_targets(uncrustify.cfg)
 ################################
 # Add docs
 ################################
-if (BUILD_DOCS)
+if (ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 

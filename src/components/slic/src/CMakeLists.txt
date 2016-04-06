@@ -76,10 +76,10 @@ if (ENABLE_lumberjack)
   list(APPEND slic_depends_on lumberjack)
 endif()
 
-make_library( LIBRARY_NAME
+make_library( NAME
                   slic
 
-              LIBRARY_SOURCES
+              SOURCES
                   "${slic_sources}"
                   "${slic_headers}"
                   "${slic_fortran_sources}"

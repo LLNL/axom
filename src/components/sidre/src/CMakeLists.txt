@@ -61,9 +61,9 @@ copy_headers_target( ${PROJECT_NAME} "${sidre_headers}"
 #
 # make the library
 #
-make_library( LIBRARY_NAME
+make_library( NAME
                   sidre
-              LIBRARY_SOURCES
+              SOURCES
                   "${sidre_sources}"
                   "${sidre_fortran_sources}"
               DEPENDS_ON
@@ -98,11 +98,10 @@ if(ENABLE_PYTHON_API)
 
     include_directories(${PYTHON_INCLUDE_DIRS})
 
-    set(BUILD_SHARED_LIBS TRUE)
     make_library(
-        LIBRARY_NAME
+        NAME
             sidre2
-        LIBRARY_SOURCES
+        SOURCES
             ${sidre_sources}
             ${sidre_python_sources}
         DEPENDS_ON

@@ -1,5 +1,5 @@
 if(ENABLE_PYTHON_API)
-    set(BUILD_SHARED_LIBS TRUE)
+    set(ENABLE_SHARED_LIBS TRUE)
 endif(ENABLE_PYTHON_API)
 
 ## add components
@@ -22,5 +22,5 @@ add_component(COMPONENT_NAME sidre DEFAULT_STATE ON)
 add_component(COMPONENT_NAME quest DEFAULT_STATE ON)
 
 if(ENABLE_MPI)
-        add_component(COMPONENT_NAME spio DEFAULT_STATE ON)
+    add_component(COMPONENT_NAME spio DEFAULT_STATE ON)
 endif(ENABLE_MPI)

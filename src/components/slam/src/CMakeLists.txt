@@ -74,9 +74,9 @@ copy_headers_target(  ${PROJECT_NAME}  "${slam_headers}"
 # make the library
 ####################################
 
-make_library( LIBRARY_NAME
+make_library( NAME
                 slam
-              LIBRARY_SOURCES
+              SOURCES
                 "${slam_sources}"
                 "${slam_headers}"
               DEPENDS_ON

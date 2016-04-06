@@ -32,9 +32,9 @@ copy_headers_target( ${PROJECT_NAME} "${common_headers}"
 #
 # make the library
 #
-make_library( LIBRARY_NAME
+make_library( NAME
                   common
-              LIBRARY_SOURCES
+              SOURCES
                   "${common_sources}"
                   "${common_headers}" )
 

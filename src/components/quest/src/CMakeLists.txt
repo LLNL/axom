@@ -109,10 +109,10 @@ endif()
 copy_headers_target( ${PROJECT_NAME} "${quest_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
                      
-make_library( LIBRARY_NAME 
+make_library( NAME 
                 quest
                 
-              LIBRARY_SOURCES
+              SOURCES
                 "${quest_sources}"
                 "${quest_headers}"
               

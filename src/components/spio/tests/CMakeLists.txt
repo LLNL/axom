@@ -2,6 +2,7 @@
 # Specify list of tests
 #
 
-make_executable(ADD_CTEST
-                EXECUTABLE_SOURCE spio_basicWriteRead.cpp
-                DEPENDS_ON spio )
+make_executable(NAME spio_basicWriteRead
+                SOURCES spio_basicWriteRead.cpp
+                DEPENDS_ON spio 
+                ADD_CTEST)

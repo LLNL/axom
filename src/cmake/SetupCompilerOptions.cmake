@@ -138,8 +138,8 @@ endif()
 
 set(langFlags "CMAKE_C_FLAGS" "CMAKE_CXX_FLAGS")
 
-if (ENABLE_GLOBALCOMPILERWARNINGS)
-   MESSAGE(STATUS  "Enabling extra compiler warnings on all targets.")
+if (ENABLE_ALL_WARNINGS)
+   MESSAGE(STATUS  "Enabling all compiler warnings on all targets.")
 
    foreach(flagVar ${langFlags})   
      append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
@@ -149,7 +149,7 @@ if (ENABLE_GLOBALCOMPILERWARNINGS)
    endforeach()
 endif()
 
-if (ENABLE_GLOBALCOMPILERWARNINGSASERRORS)
+if (ENABLE_WARNINGS_AS_ERRORS)
    MESSAGE(STATUS  "Enabling treatment of warnings as errors on all targets.")
 
    foreach(flagVar ${langFlags})   

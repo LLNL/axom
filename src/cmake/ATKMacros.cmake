@@ -112,14 +112,14 @@ macro(add_target_definitions)
 endmacro(add_target_definitions)
 
 ##------------------------------------------------------------------------------
-## make_library( LIBRARY_NAME <libname> LIBRARY_SOURCES [source1 [source2 ...]]
+## make_library( NAME <libname> SOURCES [source1 [source2 ...]]
 ##               DEPENDS_ON [dep1 ...] 
 ##               USE_OPENMP <TRUE or FALSE (default)> )
 ##
 ## Adds a library to the project composed by the given source files.
 ##
 ## Adds a library target, called <libname>, to be built from the given sources.
-## This macro internally checks if the global option "BUILD_SHARED_LIBS" is
+## This macro internally checks if the global option "ENABLE_SHARED_LIBS" is
 ## ON, in which case, it will create a shared library. By default, a static
 ## library is generated.
 ##
@@ -135,8 +135,8 @@ endmacro(add_target_definitions)
 ##------------------------------------------------------------------------------
 macro(make_library)
 
-   set(singleValueArgs LIBRARY_NAME USE_OPENMP)
-   set(multiValueArgs LIBRARY_SOURCES DEPENDS_ON)
+   set(singleValueArgs NAME USE_OPENMP)
+   set(multiValueArgs SOURCES DEPENDS_ON)
 
    ## parse the arguments
    cmake_parse_arguments(arg
@@ -147,35 +147,35 @@ macro(make_library)
       set(arg_USE_OPENMP FALSE)
    endif()
 
-   if ( BUILD_SHARED_LIBS )
-      add_library(${arg_LIBRARY_NAME} SHARED ${arg_LIBRARY_SOURCES})
+   if ( ENABLE_SHARED_LIBS )
+      add_library(${arg_NAME} SHARED ${arg_SOURCES})
    else()
-      add_library(${arg_LIBRARY_NAME} STATIC ${arg_LIBRARY_SOURCES})
+      add_library(${arg_NAME} STATIC ${arg_SOURCES})
    endif()
 
     ## handle MPI 
-   setup_mpi_target( BUILD_TARGET ${arg_LIBRARY_NAME} )
+   setup_mpi_target( BUILD_TARGET ${arg_NAME} )
    
    ## handle OpenMP
-   setup_openmp_target( BUILD_TARGET ${arg_LIBRARY_NAME}
+   setup_openmp_target( BUILD_TARGET ${arg_NAME}
                         USE_OPENMP ${arg_USE_OPENMP} )
    
    ## update project sources                     
-   update_project_sources( TARGET_SOURCES ${arg_LIBRARY_SOURCES})
+   update_project_sources( TARGET_SOURCES ${arg_SOURCES})
    
    ## setup dependencies
-   if (TARGET "copy_headers_${arg_LIBRARY_NAME}")
-      add_dependencies( ${arg_LIBRARY_NAME} "copy_headers_${arg_LIBRARY_NAME}")
+   if (TARGET "copy_headers_${arg_NAME}")
+      add_dependencies( ${arg_NAME} "copy_headers_${arg_NAME}")
    endif()
 
    foreach(dependency ${arg_DEPENDS_ON})
      
      if (TARGET ${dependency})
-        target_link_libraries(${arg_LIBRARY_NAME} ${dependency})
+        target_link_libraries(${arg_NAME} ${dependency})
      endif()
      
      if (TARGET "copy_headers_${dependency}")
-        add_dependencies( ${arg_LIBRARY_NAME} "copy_headers_${dependency}" )
+        add_dependencies( ${arg_NAME} "copy_headers_${dependency}" )
      endif()
      
    endforeach()
@@ -183,17 +183,15 @@ macro(make_library)
 endmacro(make_library)
 
 ##------------------------------------------------------------------------------
-## make_executable( EXECUTABLE_NAME <name>
-##                  EXECUTABLE_SOURCE <source>
+## make_executable( NAME <name>
+##                  SOURCE <source>
 ##                  DEPENDS_ON [dep1 ...]
 ##                  USE_OPENMP < TRUE or FALSE (default)>
 ##                  [IS_EXAMPLE] [ADD_CTEST])
 ##
 ## Adds an executable to the project.
 ##
-## Adds an executable target, called <name>, where <name> corresponds to the
-## the filename of the given <source> without the file extension, e.g., the
-## executable of a source, called driver.cxx, will be "driver".
+## Adds an executable target, called <name>.
 ##
 ## In addition, the target will be linked with the given list of library
 ## dependencies.
@@ -214,8 +212,8 @@ endmacro(make_library)
 macro(make_executable)
 
   set(options IS_EXAMPLE ADD_CTEST)
-  set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE USE_OPENMP)
-  set(multiValueArgs DEPENDS_ON)
+  set(singleValueArgs NAME USE_OPENMP)
+  set(multiValueArgs SOURCES DEPENDS_ON)
 
   ## parse the arguments to the macro
   cmake_parse_arguments(arg
@@ -223,59 +221,57 @@ macro(make_executable)
 
   # Check for the variable-based options for OpenMP and sanity check
   if ( NOT DEFINED arg_USE_OPENMP )
-     set(arg_USE_OPENMP FALSE)
+    set(arg_USE_OPENMP FALSE)
   endif()
 
-   # Use the supplied name for the executable (if given), otherwise use the
-   # source file's name
-   if( NOT "${arg_EXECUTABLE_NAME}" STREQUAL "" )
-     set(exe_name ${arg_EXECUTABLE_NAME})
-   else()
-     get_filename_component(exe_name ${arg_EXECUTABLE_SOURCE} NAME_WE)
-   endif()
+  if( "${arg_NAME}" STREQUAL "" )
+    message(FATAL_ERROR "Must specify executable name with argument NAME <name>")
+  endif()
 
-   add_executable( ${exe_name} ${arg_EXECUTABLE_SOURCE} )
+  add_executable( ${arg_NAME} ${arg_SOURCES} )
 
-   target_link_libraries(${exe_name} ${arg_DEPENDS_ON})
+  target_link_libraries(${arg_NAME} ${arg_DEPENDS_ON})
 
-   ## Add library and header dependencies
-   ##  Want to make this more general as in make_library above
-   ## Problem -- we want to add dependencies that are not targets -- e.g. lib rt
-   # foreach(dependency ${arg_DEPENDS_ON})
-   #  if (TARGET ${dependency})
-   #     target_link_libraries(${exe_name} ${dependency})
-   #  endif()
-   #  set(header_target "copy_headers_${dependency}")
-   #  if (TARGET ${header_target})
-   #     add_dependencies( ${exe_name} ${header_target} )
-   #  endif()
-   #endforeach()
+  ## Add library and header dependencies
+  ##  Want to make this more general as in make_library above
+  ## Problem -- we want to add dependencies that are not targets -- e.g. lib rt
+  # foreach(dependency ${arg_DEPENDS_ON})
+  #  if (TARGET ${dependency})
+  #     target_link_libraries(${arg_NAME} ${dependency})
+  #  endif()
+  #  set(header_target "copy_headers_${dependency}")
+  #  if (TARGET ${header_target})
+  #     add_dependencies( ${arg_NAME} ${header_target} )
+  #  endif()
+  #endforeach()
 
-    ## Handle MPI
-   setup_mpi_target( BUILD_TARGET ${exe_name} )
-   
-   ## Handle OpenMP
-   setup_openmp_target( BUILD_TARGET ${exe_name} USE_OPENMP ${arg_USE_OPENMP} ) 
-   
-   if ( ${arg_IS_EXAMPLE} )
-       set_target_properties(${exe_name} PROPERTIES
-           RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUTPUT_DIRECTORY}
+  ## Handle MPI
+  setup_mpi_target( BUILD_TARGET ${arg_NAME} )
+
+  ## Handle OpenMP
+  setup_openmp_target( BUILD_TARGET ${arg_NAME} USE_OPENMP ${arg_USE_OPENMP} ) 
+
+  if ( ${arg_IS_EXAMPLE} )
+    set_target_properties(${arg_NAME} PROPERTIES
+       RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUTPUT_DIRECTORY}
+    )
+  endif()
+
+  if ( ${arg_ADD_CTEST} )
+    if ( NOT ${arg_IS_EXAMPLE} )
+       set_target_properties(${arg_NAME} PROPERTIES
+           RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
        )
-   endif()
-   if ( ${arg_ADD_CTEST} )
-     if ( NOT ${arg_IS_EXAMPLE} )
-         set_target_properties(${exe_name} PROPERTIES
-             RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
-         )
-     endif()
-     add_test( NAME ${exe_name}
-               COMMAND ${exe_name}
-               WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
-               )
-   endif()
+    endif()
 
-   ## update project sources
-   update_project_sources( TARGET_SOURCES ${arg_EXECUTABLE_SOURCE} )
+    add_test( NAME ${arg_NAME}
+              COMMAND ${arg_NAME}
+              WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+              )
+  endif()
+
+  ## update project sources
+  update_project_sources( TARGET_SOURCES ${arg_SOURCES} )
 
 endmacro(make_executable)
 

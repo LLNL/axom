@@ -7,7 +7,7 @@
 ################################
 # Add tests
 ################################
-if (BUILD_TESTS)
+if (ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 

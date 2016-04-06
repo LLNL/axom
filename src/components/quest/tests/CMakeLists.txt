@@ -52,8 +52,8 @@ if(CMAKE_BUILD_TYPE MATCHES Release OR CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
 endif()
 
 # Create a 2D version of the reproducer -- this should always produce the right results
-make_executable( EXECUTABLE_NAME quest_mortonReproducer2D 
-                 EXECUTABLE_SOURCE ${morton_reproducer_src} 
+make_executable( NAME quest_mortonReproducer2D 
+                 SOURCES ${morton_reproducer_src} 
                  ADD_CTEST
                )
 set_target_properties( quest_mortonReproducer2D
@@ -61,8 +61,8 @@ set_target_properties( quest_mortonReproducer2D
 
 # Create the buggy 3D version of the reproducer
 # It produces the wrong result, and the code tests for this
-make_executable( EXECUTABLE_NAME quest_mortonReproducer3D_buggy1 
-                 EXECUTABLE_SOURCE ${morton_reproducer_src}
+make_executable( NAME quest_mortonReproducer3D_buggy1 
+                 SOURCES ${morton_reproducer_src}
                  ADD_CTEST 
                )
 set_target_properties( quest_mortonReproducer3D_buggy1
@@ -71,8 +71,8 @@ set_target_properties( quest_mortonReproducer3D_buggy1
 
 # Create the still buggy 3D version of the reproducer -- with manual loop unrolling
 # It produces the wrong result, and the code tests for this
-make_executable( EXECUTABLE_NAME quest_mortonReproducer3D_buggy2 
-                 EXECUTABLE_SOURCE ${morton_reproducer_src}
+make_executable( NAME quest_mortonReproducer3D_buggy2 
+                 SOURCES ${morton_reproducer_src}
                  ADD_CTEST 
                )
 set_target_properties( quest_mortonReproducer3D_buggy2
@@ -80,8 +80,8 @@ set_target_properties( quest_mortonReproducer3D_buggy2
 
 # Create the 'fixed'  3D version of the reproducer -- loop parameter is marked volatile
 # The results should be correct this time.
-make_executable( EXECUTABLE_NAME quest_mortonReproducer3D_bugFix
-                 EXECUTABLE_SOURCE ${morton_reproducer_src} 
+make_executable( NAME quest_mortonReproducer3D_bugFix
+                 SOURCES ${morton_reproducer_src} 
                  ADD_CTEST
                )
 set_target_properties( quest_mortonReproducer3D_bugFix

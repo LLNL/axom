@@ -23,8 +23,8 @@ set(mpi_example_sources
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
-    make_executable(EXECUTABLE_NAME "slic_${example_name}" 
-                    EXECUTABLE_SOURCE ${example_source} 
+    make_executable(NAME "slic_${example_name}" 
+                    SOURCES ${example_source} 
                     DEPENDS_ON slic
                     ADD_CTEST IS_EXAMPLE
                     )
@@ -34,8 +34,8 @@ endforeach()
 if (ENABLE_MPI)
     foreach(example_source ${mpi_example_sources})
         get_filename_component(example_name ${example_source} NAME_WE)
-        make_executable(EXECUTABLE_NAME "slic_mpi_${example_name}" 
-                        EXECUTABLE_SOURCE ${example_source} 
+        make_executable(NAME "slic_mpi_${example_name}" 
+                        SOURCES ${example_source} 
                         DEPENDS_ON slic
                         ADD_CTEST IS_EXAMPLE
                         )

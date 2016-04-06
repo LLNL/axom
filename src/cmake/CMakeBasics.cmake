@@ -155,7 +155,7 @@ include(SetupCompilerOptions)
 ################################
 
 include(ExternalProject)
-if (BUILD_TESTS)
+if (ENABLE_TESTS)
 
   ## add google test
   add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gtest-1.7.0)

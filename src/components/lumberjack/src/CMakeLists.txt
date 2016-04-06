@@ -39,9 +39,9 @@ set(lumberjack_sources
 #
 # make the library
 #
-make_library( LIBRARY_NAME
+make_library( NAME
                   lumberjack
-              LIBRARY_SOURCES
+              SOURCES
                   "${lumberjack_sources}"
                   "${lumberjack_headers}"
               DEPENDS_ON

@@ -4,7 +4,7 @@
 project(shroud)
 
 if(ENABLE_SHROUD_API_GENERATOR)
-  if (BUILD_DOCS)
+  if (ENABLE_DOCS)
     add_subdirectory(docs)
   endif()
 

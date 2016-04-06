@@ -24,9 +24,9 @@ copy_headers_target(  ${PROJECT_NAME}  "${spio_headers}"
 #
 # make the library
 #
-make_library( LIBRARY_NAME
+make_library( NAME
                 spio
-              LIBRARY_SOURCES
+              SOURCES
                 "${spio_sources}"
                 "${spio_headers}"
               DEPENDS_ON

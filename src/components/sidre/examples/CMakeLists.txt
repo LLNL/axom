@@ -25,8 +25,8 @@ endif()
 foreach(example_source ${example_sources})
     get_filename_component(exe_name ${example_source} NAME_WE)
     make_executable(
-        EXECUTABLE_NAME   "${exe_name}"
-        EXECUTABLE_SOURCE ${example_source}
+        NAME ${exe_name}
+        SOURCES ${example_source}
         DEPENDS_ON sidre conduit conduit_io slic ${EXTRA_LIBS}
         ADD_CTEST IS_EXAMPLE)
 endforeach()
@@ -35,8 +35,8 @@ if(ENABLE_FORTRAN)
     foreach(example_source ${F_example_sources})
         get_filename_component(exe_name ${example_source} NAME_WE)
         make_executable(
-            EXECUTABLE_NAME   ${exe_name}
-            EXECUTABLE_SOURCE ${example_source}
+            NAME ${exe_name}
+            SOURCES ${example_source}
             DEPENDS_ON sidre conduit conduit_io slic ${EXTRA_LIBS}
             ADD_CTEST IS_EXAMPLE)
     endforeach()

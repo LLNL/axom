@@ -14,8 +14,8 @@ set(example_sources
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
-    make_executable(EXECUTABLE_NAME "slam_${example_name}" 
-                    EXECUTABLE_SOURCE ${example_source} 
+    make_executable(NAME "slam_${example_name}" 
+                    SOURCES ${example_source} 
                     DEPENDS_ON slam slic
                     ADD_CTEST IS_EXAMPLE
                     )
@@ -50,16 +50,16 @@ if ( NOT ENABLE_OPENMP )
         PROPERTIES COMPILE_FLAGS "${ATK_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
-make_library( LIBRARY_NAME      slamLuleshLib
-              LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
+make_library( NAME      slamLuleshLib
+              SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
               USE_OPENMP ${ENABLE_OPENMP} 
               ) 
 
 add_dependencies(slamLuleshLib slam)
 target_link_libraries( slamLuleshLib  slam )
                   
-make_executable( EXECUTABLE_NAME    slam_Lulesh 
-                 EXECUTABLE_SOURCE  ${lulesh_exe_source}
+make_executable( NAME    slam_Lulesh 
+                 SOURCES  ${lulesh_exe_source}
                  DEPENDS_ON 
                     slic
                     slam 
@@ -111,13 +111,13 @@ if ( ${buildOrigLulesh} )
                                 PROPERTIES COMPILE_FLAGS " ${luleshExtraCompileFlags} " )
 
     make_library( 
-        LIBRARY_NAME slamLuleshOrigLib 
-        LIBRARY_SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}"  
+        NAME slamLuleshOrigLib 
+        SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}"  
         USE_OPENMP ${ENABLE_OPENMP} 
        ) 
     make_executable( 
-        EXECUTABLE_NAME slam_OrigLulesh 
-        EXECUTABLE_SOURCE ${lulesh_exe_source} 
+        NAME slam_OrigLulesh 
+        SOURCES ${lulesh_exe_source} 
         DEPENDS_ON "slamLuleshOrigLib" 
         USE_OPENMP ${ENABLE_OPENMP}
         IS_EXAMPLE
@@ -152,8 +152,8 @@ set(tinyHydro_lib_sources
 
 
 make_library( 
-    LIBRARY_NAME slamTinyHydroLib 
-    LIBRARY_SOURCES "${tinyHydro_lib_sources}"  "${tinyHydro_lib_headers}"
+    NAME slamTinyHydroLib 
+    SOURCES "${tinyHydro_lib_sources}"  "${tinyHydro_lib_headers}"
     DEPENDS_ON 
         slic
         slam
@@ -171,14 +171,14 @@ foreach(test ${gtest_slam_tinyHydro_tests})
 endforeach()
 
 make_executable(
-    EXECUTABLE_NAME "slam_tinyHydro_sedov" 
-    EXECUTABLE_SOURCE ${tinyHydro_dir}/tests/slam_tinyHydro_sedovTwoPart.cpp
+    NAME "slam_tinyHydro_sedov" 
+    SOURCES ${tinyHydro_dir}/tests/slam_tinyHydro_sedovTwoPart.cpp
     DEPENDS_ON slamTinyHydroLib
     IS_EXAMPLE
 )
 make_executable( 
-    EXECUTABLE_NAME "slam_tinyHydro_sod" 
-    EXECUTABLE_SOURCE ${tinyHydro_dir}/tests/slam_tinyHydro_sod1DTwoPart.cpp
+    NAME "slam_tinyHydro_sod" 
+    SOURCES ${tinyHydro_dir}/tests/slam_tinyHydro_sod1DTwoPart.cpp
     DEPENDS_ON slamTinyHydroLib
     IS_EXAMPLE
     ADD_CTEST
