@@ -345,6 +345,32 @@ void DataGroup::destroyViews()
 /*
  *************************************************************************
  *
+ * Detach view from group and destroy view.
+ *
+ * Destroy DataBuffer if buffer has no other view attached to it.
+ *
+ *************************************************************************
+ */
+void DataGroup::destroyViewAndData( DataView * view )
+{
+  if ( view != ATK_NULLPTR)
+  {
+    detachView( view->getName() );
+    DataBuffer * const buffer = view->detachBuffer();
+    if ( buffer != ATK_NULLPTR )
+    {
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer);
+      }
+    }
+    delete view;
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Detach view with given name from group and destroy view.
  *
  * Destroy DataBuffer if buffer has no other view attached to it.
@@ -353,22 +379,7 @@ void DataGroup::destroyViews()
  */
 void DataGroup::destroyViewAndData( const std::string& name )
 {
-  SLIC_CHECK_MSG( hasView(name) == true, "name == " << name );
-
-  DataView * view = detachView(name);
-  if ( view != ATK_NULLPTR )
-  {
-    DataBuffer * const buffer = view->getBuffer();
-    if ( buffer != ATK_NULLPTR )
-    {
-      buffer->detachView(view);
-      if (buffer->getNumViews() == 0)
-      {
-        getDataStore()->destroyBuffer(buffer);
-      }
-    }
-    delete view;
-  }
+  destroyViewAndData(getView(name));
 }
 
 /*
@@ -382,22 +393,7 @@ void DataGroup::destroyViewAndData( const std::string& name )
  */
 void DataGroup::destroyViewAndData( IndexType idx )
 {
-  SLIC_CHECK_MSG( hasView(idx) == true, "idx == " << idx );
-
-  DataView * view = detachView(idx);
-  if ( view != ATK_NULLPTR )
-  {
-    DataBuffer * const buffer = view->getBuffer();
-    if ( buffer != ATK_NULLPTR )
-    {
-      buffer->detachView(view);
-      if (buffer->getNumViews() == 0)
-      {
-        getDataStore()->destroyBuffer(buffer);
-      }
-    }
-    delete view;
-  }
+  destroyViewAndData(getView(idx));
 }
 
 /*
@@ -414,18 +410,7 @@ void DataGroup::destroyViewsAndData()
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
-    DataView * view = this->getView(vidx);
-    DataBuffer * const buffer = view->getBuffer();
-
-    if ( buffer != ATK_NULLPTR )
-    {
-      buffer->detachView(view);
-      if (buffer->getNumViews() == 0)
-      {
-        getDataStore()->destroyBuffer(buffer);
-      }
-    }
-    delete view;
+    destroyViewAndData(vidx);
     vidx = getNextValidViewIndex(vidx);
   }
 
@@ -1066,7 +1051,6 @@ DataView * DataGroup::detachView(IndexType idx)
 
   return view;
 }
-
 
 /*
  *************************************************************************

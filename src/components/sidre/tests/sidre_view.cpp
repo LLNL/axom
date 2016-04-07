@@ -96,23 +96,23 @@ static bool checkViewValues(DataView * view,
 
   if (view->isDescribed() != isDescribed)
   {
-    EXPECT_EQ(view->isDescribed(), isDescribed);
+    EXPECT_EQ(isDescribed, view->isDescribed());
     rv = false;
   }
   if (view->isAllocated() != isAllocated)
   {
-    EXPECT_EQ(view->isAllocated(), isAllocated);
+    EXPECT_EQ(isAllocated, view->isAllocated());
     rv = false;
   }
   if (view->isApplied() != isApplied)
   {
-    EXPECT_EQ(view->isApplied(), isApplied);
+    EXPECT_EQ(isApplied, view->isApplied());
     rv = false;
   }
 
   if (view->getNumElements() != len)
   {
-    EXPECT_EQ(view->getNumElements(), len);
+    EXPECT_EQ(len, view->getNumElements());
     rv = false;
   }
 
@@ -120,12 +120,12 @@ static bool checkViewValues(DataView * view,
   {
     if (view->getTypeID() != INT_ID)
     {
-      EXPECT_EQ(view->getTypeID(), INT_ID);
+      EXPECT_EQ(INT_ID, view->getTypeID());
       rv = false;
     }
     if (view->getNumDimensions() != 1)
     {
-      EXPECT_EQ(view->getNumDimensions(), 1);
+      EXPECT_EQ(1, view->getNumDimensions());
       rv = false;
     }
     if (view->getShape(1, dims) != 1 || dims[0] != len)
@@ -145,7 +145,7 @@ static bool checkViewValues(DataView * view,
     TypeID id = view->getTypeID();
     if (id != NO_TYPE_ID)
     {
-      EXPECT_EQ(id, NO_TYPE_ID);
+      EXPECT_EQ(NO_TYPE_ID, id);
       rv = false;
     }
   }
@@ -1146,4 +1146,35 @@ TEST(sidre_view,simple_opaque)
   ds->print();
   delete ds;
   delete [] src_data;
+}
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_datastore,destroy_buffer)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  DataBuffer * dbuff1 = ds->createBuffer()->allocate(INT_ID, BLEN);
+  DataView * view1a = root->createView("view1a", INT_ID, BLEN)
+                      ->attachBuffer(dbuff1);
+  DataView * view1b = root->createView("view1b", INT_ID, BLEN)
+                      ->attachBuffer(dbuff1);
+
+  EXPECT_TRUE(checkViewValues(view1a, BUFFER, true, true, true, BLEN));
+  EXPECT_TRUE(checkViewValues(view1b, BUFFER, true, true, true, BLEN));
+
+  // destroyBuffer will detach from views.
+  IndexType bindex = dbuff1->getIndex();
+  ds->destroyBuffer(bindex);
+  EXPECT_TRUE(ds->getBuffer(bindex) == NULL);
+
+  // views no longer have buffers (but retain descriptions)
+  EXPECT_TRUE(checkViewValues(view1a, EMPTY, true, false, false, BLEN));
+  EXPECT_TRUE(checkViewValues(view1b, EMPTY, true, false, false, BLEN));
+
+  EXPECT_FALSE(view1a->hasBuffer());
+  EXPECT_FALSE(view1b->hasBuffer());
+
+  delete ds;
 }

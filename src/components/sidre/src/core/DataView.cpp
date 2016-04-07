@@ -263,9 +263,6 @@ DataBuffer * DataView::detachBuffer()
   {
     buff = m_data_buffer;
     m_data_buffer->detachView(this);
-    m_data_buffer = ATK_NULLPTR;
-    m_state = EMPTY;
-    unapply();
   }
 
   return buff;

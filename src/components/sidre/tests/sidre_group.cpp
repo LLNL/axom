@@ -286,19 +286,33 @@ TEST(sidre_group,create_destroy_has_view)
   DataView * view = group->createView("view");
   EXPECT_TRUE( group->getParent() == root );
   EXPECT_FALSE( view->hasBuffer() );
-
   EXPECT_TRUE( group->hasView("view") );
+  IndexType iview = group->getViewIndex("view");
+  EXPECT_EQ(0, iview);
+
   // try creating view again, should be a no-op.
   EXPECT_TRUE( group->createView("view") == ATK_NULLPTR );
 
+  // Create another view to make sure destroyView only destroys one view
+  group->createView("viewfiller");
+  EXPECT_EQ(2u, group->getNumViews());
+  IndexType iviewfiller = group->getViewIndex("viewfiller");
+  EXPECT_EQ(1, iviewfiller);
+
   group->destroyView("view");
+  EXPECT_EQ(1u, group->getNumViews());
+  // Check if index changed
+  EXPECT_EQ(iviewfiller, group->getViewIndex("viewfiller"));
+
   // destroy already destroyed group.  Should be a no-op, not a failure
   group->destroyView("view");
-
+  EXPECT_EQ(1u, group->getNumViews());
   EXPECT_FALSE( group->hasView("view") );
 
   // try api call that specifies specific type and length
   group->createViewAndAllocate( "viewWithLength1",FLOAT_ID, 50 );
+  IndexType iview2 = group->getViewIndex("viewWithLength1");
+  EXPECT_EQ(iview, iview2);  // reuse slot
 
   // error condition check - try again with duplicate name, should be a no-op
   EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1", FLOAT64_ID,

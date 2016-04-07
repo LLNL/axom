@@ -124,7 +124,8 @@ public:
    * \brief Remove data buffer from the datastore and destroy it and
    *        its data.
    *
-   *   Note the buffer must not be attached to any views.
+   *   Note that buffer destruction detaches it from all views it was
+   *   associated with.
    */
   void destroyBuffer( DataBuffer * buff );
 
@@ -132,7 +133,8 @@ public:
    * \brief Remove data buffer with given index from the datastore and
    *        destroy it and its data.
    *
-   *   Note the buffer must not be attached to any views.
+   *   Note that buffer destruction detaches it from all views it was
+   *   associated with.
    */
   void destroyBuffer( IndexType idx );
 
@@ -140,8 +142,8 @@ public:
    * \brief Remove all data buffers from the datastore and destroy them
    *        (including data they own).
    *
-   *   Note that buffer destruction detaches it from all groups and views
-   *   it was associated with.
+   *   Note that buffer destruction detaches it from all views it was
+   *   associated with.
    */
   void destroyBuffers();
 

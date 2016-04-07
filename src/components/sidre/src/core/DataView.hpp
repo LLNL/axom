@@ -784,6 +784,18 @@ private:
     m_is_applied = false;
   }
 
+  /*!
+   *  \brief Private method to reset a view from BUFFER to EMPTY.
+   *
+   *         Used by DataBuffer when detaching from a view.
+   */
+  void resetBufferToEmpty()
+  {
+    m_data_buffer = ATK_NULLPTR;
+    m_state = EMPTY;
+    unapply();
+  }
+
 //@}
 
 
