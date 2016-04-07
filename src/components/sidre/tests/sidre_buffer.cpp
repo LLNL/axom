@@ -31,6 +31,7 @@ TEST(sidre_buffer,create_buffers)
   DataStore * ds = new DataStore();
   EXPECT_EQ(0u, ds->getNumBuffers());
 
+  // Create two buffers
   DataBuffer * dbuff_0 = ds->createBuffer();
   EXPECT_EQ(1u, ds->getNumBuffers());
   EXPECT_EQ(0, dbuff_0->getIndex());
@@ -40,14 +41,6 @@ TEST(sidre_buffer,create_buffers)
   EXPECT_EQ(1, dbuff_1->getIndex());
 
   //----------
-  // detach by index
-  EXPECT_EQ(ds->detachBuffer(0), dbuff_0);
-  EXPECT_EQ(1u, ds->getNumBuffers());
-
-  DataBuffer * dbuff_0a = ds->createBuffer();
-  EXPECT_EQ(2u, ds->getNumBuffers());
-  EXPECT_EQ(0, dbuff_0a->getIndex());
-
   // destroy by index
   ds->destroyBuffer(0);
   EXPECT_EQ(1u, ds->getNumBuffers());
@@ -57,16 +50,8 @@ TEST(sidre_buffer,create_buffers)
   EXPECT_EQ(0, dbuff_0b->getIndex());
 
   //----------
-  // detach by pointer
-  EXPECT_EQ(ds->detachBuffer(dbuff_1), dbuff_1);
-  EXPECT_EQ(1u, ds->getNumBuffers());
-
-  DataBuffer * dbuff_1a = ds->createBuffer();
-  EXPECT_EQ(2u, ds->getNumBuffers());
-  EXPECT_EQ(1, dbuff_1a->getIndex());
-
   // destroy by pointer
-  ds->destroyBuffer(dbuff_1a);
+  ds->destroyBuffer(dbuff_1);
   EXPECT_EQ(1u, ds->getNumBuffers());
 
   DataBuffer * dbuff_1b = ds->createBuffer();
@@ -283,6 +268,23 @@ TEST(sidre_buffer,move_buffer)
   EXPECT_TRUE(dv2->hasBuffer());
   EXPECT_EQ(1u, ds->getNumBuffers());
   EXPECT_EQ(1, dbuff->getNumViews());
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_buffer,destroy_all_buffers)
+{
+  DataStore * ds = new DataStore();
+
+  ds->createBuffer();
+  ds->createBuffer();
+  ds->createBuffer();
+  ds->createBuffer();
+  EXPECT_EQ(4u, ds->getNumBuffers());
+
+  ds->destroyAllBuffers();
+  EXPECT_EQ(0u, ds->getNumBuffers());
 
   delete ds;
 }

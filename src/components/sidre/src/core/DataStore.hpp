@@ -145,23 +145,7 @@ public:
    *   Note that buffer destruction detaches it from all views it was
    *   associated with.
    */
-  void destroyBuffers();
-
-  /*!
-   * \brief Remove given data buffer from the datastore, but leave
-   *        it intact.
-   *
-   * \return pointer to DataBuffer object that was detached.
-   */
-  DataBuffer * detachBuffer( DataBuffer * buff );
-
-  /*!
-   * \brief Remove data buffer with given index from the datastore, but leave
-   *        it intact.
-   *
-   * \return pointer to DataBuffer object that was detached.
-   */
-  DataBuffer * detachBuffer( IndexType idx );
+  void destroyAllBuffers();
 
   /*!
    * \brief Return number of buffers in the datastore.

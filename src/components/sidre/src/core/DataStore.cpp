@@ -106,7 +106,7 @@ DataStore::~DataStore()
 {
   // clean up groups and views before we destroy buffers
   delete m_RootGroup;
-  destroyBuffers();
+  destroyAllBuffers();
 
   if ( m_i_initialized_slic )
   {
@@ -215,7 +215,6 @@ void DataStore::destroyBuffer( IndexType idx )
   destroyBuffer(getBuffer(idx));
 }
 
-
 /*
  *************************************************************************
  *
@@ -223,7 +222,7 @@ void DataStore::destroyBuffer( IndexType idx )
  *
  *************************************************************************
  */
-void DataStore::destroyBuffers()
+void DataStore::destroyAllBuffers()
 {
   IndexType bidx = getFirstValidBufferIndex();
   while ( indexIsValid(bidx) )
@@ -231,44 +230,6 @@ void DataStore::destroyBuffers()
     destroyBuffer( bidx );
     bidx = getNextValidBufferIndex(bidx);
   }
-}
-
-
-/*
- *************************************************************************
- *
- * Remove data buffer from the datastore leaving it intact,
- * and return a pointer to it. Its index is recovered for reuse.
- *
- *************************************************************************
- */
-DataBuffer * DataStore::detachBuffer( DataBuffer * buff )
-{
-  return detachBuffer(buff->getIndex());
-}
-
-/*
- *************************************************************************
- *
- * Remove data buffer with given index from the datastore leaving it intact,
- * and return a pointer to it. Its index is recovered for reuse.
- *
- *************************************************************************
- */
-DataBuffer * DataStore::detachBuffer( IndexType idx )
-{
-  SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
-
-  DataBuffer * rval = ATK_NULLPTR;
-
-  if ( hasBuffer(idx) )
-  {
-    rval = m_data_buffers[idx];
-    m_data_buffers[idx] = ATK_NULLPTR;
-    m_free_buffer_ids.push(idx);
-  }
-
-  return rval;
 }
 
 /*
