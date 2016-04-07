@@ -188,7 +188,7 @@ public:
    * \param [in] other The numeric array to copy
    *****************************************************************************
    */
-  NumericArray( const NumericArray& pther ) { *this = pther; };
+  NumericArray( const NumericArray& other ) { *this = other; };
 
   /*!
    *****************************************************************************

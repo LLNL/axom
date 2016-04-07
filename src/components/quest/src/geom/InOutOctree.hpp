@@ -223,7 +223,7 @@ namespace quest
         {
             return (static_cast<const BlockData&>(lhs) == static_cast<const BlockData&>(rhs))
                 && (lhs.m_vertIndex == rhs.m_vertIndex)
-                && (lhs.m_tris.size() == lhs.m_tris.size())     // Note: We are not checking the contents
+                && (lhs.m_tris.size() == rhs.m_tris.size())     // Note: We are not checking the contents
                 // && (lhs.m_tris == lhs.m_tris)                //       of the triangle array, only the size
                 ;
         }
@@ -784,21 +784,20 @@ void InOutOctree<DIM>::generateIndex ()
 
     SLIC_INFO("\tInserting triangles took " << timer.elapsed() << " seconds.");
 
-    // -- Print some stats about the octree
-  #ifdef DUMP_OCTREE_INFO
-    SLIC_INFO("** Octree stats after inserting triangles");
-    printOctreeStats(true);
-  #endif
-    checkValid(true);
-
     // STEP 3 -- Color the blocks of the octree -- Black (in), White(out), Gray(Intersects surface)
     timer.start();
     colorOctreeLeaves();
 
     timer.stop();
     SLIC_INFO("\tColoring octree leaves took " << timer.elapsed() << " seconds.");
-    dumpOctreeMeshVTK("pmOctree.vtk", true);
 
+    // -- Print some stats about the octree
+  #ifdef DUMP_OCTREE_INFO
+    SLIC_INFO("** Octree stats after inserting triangles");
+    dumpOctreeMeshVTK("pmOctree.vtk", true);
+    printOctreeStats(true);
+  #endif
+    checkValid(true);
 
     // CLEANUP -- Finally, fix up the surface mesh after octree operations
     SLIC_INFO("\tRegenerating the mesh");
@@ -1466,10 +1465,17 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
     LeafCountMap levelLeavesWithVert( &this->m_levels);
     LeafCountMap levelTriangleRefCount( &this->m_levels);
 
+    LeafCountMap levelWhiteBlockCount( &this->m_levels);
+    LeafCountMap levelBlackBlockCount( &this->m_levels);
+    LeafCountMap levelGrayBlockCount( &this->m_levels);
+
     int totalBlocks = 0;
     int totalLeaves = 0;
     int totalLeavesWithVert = 0;
     int totalTriangleRefCount = 0;
+    int totalWhiteBlocks = 0;
+    int totalBlackBlocks = 0;
+    int totalGrayBlocks = 0;
 
     // Iterate through blocks -- count the numbers of internal and leaf blocks
     //
@@ -1480,6 +1486,10 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
         levelLeaves[lev] = 0;
         levelLeavesWithVert[lev] = 0;
         levelTriangleRefCount[lev] = 0;
+        levelWhiteBlockCount[lev] = 0;
+        levelBlackBlockCount[lev] = 0;
+        levelGrayBlockCount[lev] = 0;
+
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
             if(it->second.isLeaf())
@@ -1490,12 +1500,23 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
 
             if(it->second.hasTriangles())
                 levelTriangleRefCount[ lev ] += it->second.numTriangles();
+
+            switch(it->second.color())
+            {
+            case InOutLeafData::Black:      ++levelBlackBlockCount[lev]; break;
+            case InOutLeafData::White:      ++levelWhiteBlockCount[lev]; break;
+            case InOutLeafData::Gray:       ++levelGrayBlockCount[lev];  break;
+            case InOutLeafData::Undetermined:                            break;
+            }
         }
 
         totalBlocks += levelBlocks[lev];
         totalLeaves += levelLeaves[lev];
         totalLeavesWithVert += levelLeavesWithVert[lev];
         totalTriangleRefCount += levelTriangleRefCount[ lev ];
+        totalWhiteBlocks += levelWhiteBlockCount[lev];
+        totalBlackBlocks += levelBlackBlockCount[lev];
+        totalGrayBlocks  += levelGrayBlockCount[lev];
     }
 
 
@@ -1516,7 +1537,12 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
                            <<  levelLeaves[lev] << " leaves "
                            << " (" <<   percentWithVert  << "% w/ vert); ";
             if(trianglesAlreadyInserted)
-                octreeStatsStr << " and " << levelTriangleRefCount[lev] << " triangle references.";
+            {
+                octreeStatsStr << " Colors B,W,G ==> " << levelBlackBlockCount[lev]
+                               << "," << levelWhiteBlockCount[lev]
+                               << "," << levelGrayBlockCount[lev]
+                               << " and " << levelTriangleRefCount[lev] << " triangle references.";
+            }
 
             octreeStatsStr <<"\n";
         }
@@ -1531,7 +1557,11 @@ void InOutOctree<DIM>::printOctreeStats(bool trianglesAlreadyInserted) const
                  <<  totalLeaves << " leaves "
                  << " (" <<   percentWithVert  << "% w/ vert); "
                  <<" \n\t There were " << totalTriangleRefCount << " triangle references "
-                 <<" (avg. " << totalTriangleRefCount /  meshNumTriangles << " refs per triangle).\n";
+                 <<" (avg. " << totalTriangleRefCount /  meshNumTriangles << " refs per triangle)."
+                 <<"\n Colors B,W,G ==> " << totalBlackBlocks
+                 << "," << totalWhiteBlocks
+                 << "," << totalGrayBlocks
+                 <<"\n";
 
     SLIC_INFO( octreeStatsStr.str() );
 

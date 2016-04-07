@@ -567,6 +567,7 @@ int main( int argc, char** argv )
   testIntersectionOnRegularGrid();
 
   // STEP 6: Create octree over mesh's bounding box and query a point in space
+  SLIC_INFO("-- About to generate the InOutOctree");
   Octree3D octree(meshBB, surface_mesh);
   octree.generateIndex();
 
