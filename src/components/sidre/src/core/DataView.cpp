@@ -225,11 +225,11 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
 {
   if ( m_state == BUFFER && buff == ATK_NULLPTR)
   {
-    // Detach existing buffer.
-    m_data_buffer->detachView(this);
-    m_data_buffer = ATK_NULLPTR;
-    m_state = EMPTY;
-    unapply();
+    DataBuffer * old_buffer = detachBuffer();
+    if (old_buffer->getNumViews() == 0)
+    {
+      getOwningGroup()->getDataStore()->destroyBuffer(old_buffer);
+    }
   }
   else if ( m_state == EMPTY && buff != ATK_NULLPTR )
   {
@@ -246,6 +246,26 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
   }
 
   return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Detach buffer from view.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataView::detachBuffer()
+{
+  DataBuffer * buff = ATK_NULLPTR;
+
+  if ( m_state == BUFFER)
+  {
+    buff = m_data_buffer;
+    m_data_buffer->detachView(this);
+  }
+
+  return buff;
 }
 
 /*
@@ -800,7 +820,7 @@ bool DataView::isApplyValid() const
     break;
   case BUFFER:
     rv = 0 < getTotalBytes() &&
-         getTotalBytes() <= m_data_buffer->getTotalBytes();
+         getTotalBytes() <= m_data_buffer->getTotalBytes();;
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");

@@ -23,6 +23,8 @@ using asctoolkit::sidre::InvalidIndex;
 using asctoolkit::sidre::nameIsValid;
 using asctoolkit::sidre::indexIsValid;
 using asctoolkit::sidre::DataType;
+using asctoolkit::sidre::FLOAT_ID;
+using asctoolkit::sidre::FLOAT64_ID;
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -284,30 +286,41 @@ TEST(sidre_group,create_destroy_has_view)
   DataView * view = group->createView("view");
   EXPECT_TRUE( group->getParent() == root );
   EXPECT_FALSE( view->hasBuffer() );
-
   EXPECT_TRUE( group->hasView("view") );
+  IndexType iview = group->getViewIndex("view");
+  EXPECT_EQ(0, iview);
+
   // try creating view again, should be a no-op.
   EXPECT_TRUE( group->createView("view") == ATK_NULLPTR );
 
+  // Create another view to make sure destroyView only destroys one view
+  group->createView("viewfiller");
+  EXPECT_EQ(2u, group->getNumViews());
+  IndexType iviewfiller = group->getViewIndex("viewfiller");
+  EXPECT_EQ(1, iviewfiller);
+
   group->destroyView("view");
+  EXPECT_EQ(1u, group->getNumViews());
+  // Check if index changed
+  EXPECT_EQ(iviewfiller, group->getViewIndex("viewfiller"));
+
   // destroy already destroyed group.  Should be a no-op, not a failure
   group->destroyView("view");
-
+  EXPECT_EQ(1u, group->getNumViews());
   EXPECT_FALSE( group->hasView("view") );
 
   // try api call that specifies specific type and length
-  group->createViewAndAllocate( "viewWithLength1",
-                                asctoolkit::sidre::FLOAT_ID, 50 );
+  group->createViewAndAllocate( "viewWithLength1",FLOAT_ID, 50 );
+  IndexType iview2 = group->getViewIndex("viewWithLength1");
+  EXPECT_EQ(iview, iview2);  // reuse slot
 
   // error condition check - try again with duplicate name, should be a no-op
-  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1",
-                                             asctoolkit::sidre::FLOAT64_ID,
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1", FLOAT64_ID,
                                              50 ) == ATK_NULLPTR );
   group->destroyViewAndData("viewWithLength1");
   EXPECT_FALSE( group->hasView("viewWithLength1") );
 
-  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen",
-                                             asctoolkit::sidre::FLOAT64_ID,
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen", FLOAT64_ID,
                                              -1 ) == ATK_NULLPTR );
 
   // try api call that specifies data type in another way
@@ -315,8 +328,17 @@ TEST(sidre_group,create_destroy_has_view)
   EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2",
                                              DataType::float64(
                                                50) ) == ATK_NULLPTR );
-  // destroy this view using index
-  group->destroyViewAndData( group->getFirstValidViewIndex() );
+  // destroy view and its buffer using index
+  IndexType indx = group->getFirstValidViewIndex();
+  IndexType bindx = group->getView( indx )->getBuffer()->getIndex();
+  group->destroyViewAndData( indx );
+  EXPECT_TRUE( ds->getBuffer(bindx) == NULL );
+
+  // Destroy view but not the buffer
+  view = group->createViewAndAllocate( "viewWithLength2", FLOAT_ID, 50 );
+  DataBuffer * buff = view->getBuffer();
+  group->destroyView("viewWithLength2");
+  EXPECT_TRUE( buff->isAllocated() );
 
   delete ds;
 }

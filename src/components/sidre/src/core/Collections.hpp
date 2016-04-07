@@ -52,7 +52,7 @@
  *
  *               size_t getNumItems() const;
  *
- *          - // Retturn first valid item index (i.e., smallest index over
+ *          - // Return first valid item index (i.e., smallest index over
  *            // all items).
  *            // sidre::InvalidIndex returned if no items in collection
  *

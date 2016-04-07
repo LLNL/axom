@@ -581,6 +581,12 @@ public:
 //!  @name DataView destruction methods.
 
   /*!
+   * \brief Destroy view in this DataGroup and leave its associated
+   *        data intact.
+   */
+  void destroyView(DataView * view);
+
+  /*!
    * \brief Destroy view in this DataGroup with given name and leave its
    *        associated data intact.
    */
@@ -597,6 +603,15 @@ public:
    *        data intact.
    */
   void destroyViews();
+
+  /*!
+   * \brief Destroy view in this DataGroup.  Destroy it's data also,
+   *        if this is the only view referencing that data.
+   *
+   *        Data will not be destroyed as long as a view still exists that
+   *        references it.
+   */
+  void destroyViewAndData( DataView * view );
 
   /*!
    * \brief Destroy view in this DataGroup with given name.  Destroy it's data
