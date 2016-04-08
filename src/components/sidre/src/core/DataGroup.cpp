@@ -67,7 +67,7 @@ DataView * DataGroup::createView( const std::string& name )
 
   // Want the C++ new operator to return null pointer on failure instead of
   // throwing an exception.
-  DataView * view = new(std::nothrow) DataView(path, group);
+  DataView * view = new(std::nothrow) DataView(path);
   if ( view != ATK_NULLPTR )
   {
     group->attachView(view);
@@ -1001,8 +1001,7 @@ DataView * DataGroup::attachView(DataView * view)
   }
   else
   {
-    SLIC_ASSERT(view->m_owning_group == ATK_NULLPTR ||
-                view->m_owning_group == this);
+    SLIC_ASSERT(view->m_owning_group == ATK_NULLPTR);
     view->m_owning_group = this;
     m_view_coll.insertItem(view, view->getName());
     return view;

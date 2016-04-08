@@ -731,10 +731,9 @@ private:
 
   /*!
    *  \brief Private ctor that creates a DataView with given name
-   *         in given parent group and which has no data associated with it.
+   *         which has no data associated with it.
    */
-  DataView( const std::string& name,
-            DataGroup * const owning_group );
+  DataView( const std::string& name );
 
   /*!
    * \brief Private copy ctor.

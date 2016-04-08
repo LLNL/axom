@@ -633,10 +633,9 @@ void DataView::info(Node &n) const
  *
  *************************************************************************
  */
-DataView::DataView( const std::string& name,
-                    DataGroup * const owning_group)
+DataView::DataView( const std::string& name)
   :   m_name(name),
-  m_owning_group(owning_group),
+  m_owning_group(ATK_NULLPTR),
   m_data_buffer(ATK_NULLPTR),
   m_schema(),
   m_node(),
