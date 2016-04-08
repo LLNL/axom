@@ -23,7 +23,7 @@ using asctoolkit::sidre::InvalidIndex;
 using asctoolkit::sidre::nameIsValid;
 using asctoolkit::sidre::indexIsValid;
 using asctoolkit::sidre::DataType;
-using asctoolkit::sidre::FLOAT_ID;
+using asctoolkit::sidre::INT_ID;
 using asctoolkit::sidre::FLOAT64_ID;
 
 // API coverage tests
@@ -310,7 +310,7 @@ TEST(sidre_group,create_destroy_has_view)
   EXPECT_FALSE( group->hasView("view") );
 
   // try api call that specifies specific type and length
-  group->createViewAndAllocate( "viewWithLength1",FLOAT_ID, 50 );
+  group->createViewAndAllocate( "viewWithLength1",INT_ID, 50 );
   IndexType iview2 = group->getViewIndex("viewWithLength1");
   EXPECT_EQ(iview, iview2);  // reuse slot
 
@@ -335,7 +335,7 @@ TEST(sidre_group,create_destroy_has_view)
   EXPECT_TRUE( ds->getBuffer(bindx) == NULL );
 
   // Destroy view but not the buffer
-  view = group->createViewAndAllocate( "viewWithLength2", FLOAT_ID, 50 );
+  view = group->createViewAndAllocate( "viewWithLength2", INT_ID, 50 );
   DataBuffer * buff = view->getBuffer();
   group->destroyView("viewWithLength2");
   EXPECT_TRUE( buff->isAllocated() );
@@ -392,54 +392,128 @@ TEST(sidre_group,group_name_collisions)
   delete ds;
 }
 //------------------------------------------------------------------------------
-// Restore this after copy_move is working. ATK-667
-#if 0
+
 TEST(sidre_group,view_copy_move)
 {
   DataStore * ds = new DataStore();
   DataGroup * flds = ds->getRoot()->createGroup("fields");
+  int * buffdata;
+  int extdata[10];
 
-  flds->createViewAndAllocate("i0", DataType::c_int());
-  flds->createViewAndAllocate("f0", DataType::c_float());
-  flds->createViewAndAllocate("d0", DataType::c_double());
+  DataView * views[6];
+  std::string names[6];
 
-  flds->getView("i0")->setScalar(1);
-  flds->getView("f0")->setScalar(100.0);
-  flds->getView("d0")->setScalar(3000.0);
+  // Create view in different states
+  views[0] = flds->createView("empty0");
+  views[1] = flds->createView("empty1", INT_ID, 10);
+  views[2] = flds->createViewAndAllocate("buffer", INT_ID, 10);
+  views[3] = flds->createView("external", INT_ID, 10)->setExternalDataPtr(
+    extdata);
+  views[4] = flds->createViewScalar("scalar", 25);
+  views[5] = flds->createViewString("string", "I am string");
 
-  EXPECT_TRUE(flds->hasView("i0"));
-  EXPECT_TRUE(flds->hasView("f0"));
-  EXPECT_TRUE(flds->hasView("d0"));
+  buffdata = flds->getView("buffer")->getData();
+  for (int i=0 ; i < 10 ; ++i)
+  {
+    extdata[i] = i;
+    buffdata[i] = i + 100;
+  }
 
-  // test moving a view from flds to sub
-  flds->createGroup("sub")->moveView(flds->getView("d0"));
+  for (int i = 0 ; i < 6 ; ++i)
+  {
+    names[i] = views[i]->getName();
+    EXPECT_TRUE(flds->hasView(names[i]));
+  }
+
+  // test moving a view from flds to sub1
+  DataGroup * sub1 = flds->createGroup("sub1");
+
   // flds->print();
-  EXPECT_FALSE(flds->hasView("d0"));
-  EXPECT_TRUE(flds->hasGroup("sub"));
-  EXPECT_TRUE(flds->getGroup("sub")->hasView("d0"));
 
-  // check the data value
-  double * d0_data =  flds->getGroup("sub")->getView("d0")->getData();
-  EXPECT_NEAR(d0_data[0],3000.0,1e-12);
+  for (int i = 0 ; i < 6 ; ++i)
+  {
+    sub1->moveView(views[i]);
+    EXPECT_FALSE(flds->hasView(names[i]));
+    EXPECT_TRUE(sub1->hasView(names[i]));
 
-  // test copying a view from flds to sub
-  flds->getGroup("sub")->copyView(flds->getView("i0"));
+    // moving to same group is a no-op
+    sub1->moveView(views[i]);
+    EXPECT_TRUE(sub1->hasView(names[i]));
+  }
 
   // flds->print();
 
-  EXPECT_TRUE(flds->hasView("i0"));
-  EXPECT_TRUE(flds->getGroup("sub")->hasView("i0"));
+  DataGroup * sub2 = flds->createGroup("sub2");
 
-  // we expect the data pointers to be the same
-  int * i0_ptr = flds->getView("i0")->getData();
-  int * sub_io0_ptr = flds->getGroup("sub")->getView("i0")->getData();
-  EXPECT_EQ(i0_ptr, sub_io0_ptr);
+  for (int i = 0 ; i < 6 ; ++i)
+  {
+    sub2->copyView(views[i]);
+    EXPECT_TRUE(sub1->hasView(names[i]));
+    EXPECT_TRUE(sub2->hasView(names[i]));
+  }
+
+  // Check copies
+  DataView * view1 = sub1->getView("empty0");
+  DataView * view2 = sub2->getView("empty0");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->isEmpty());
+  EXPECT_FALSE(view2->isDescribed());
+  EXPECT_FALSE(view2->isAllocated());
+  EXPECT_FALSE(view2->isApplied());
+
+  view1 = sub1->getView("empty1");
+  view2 = sub2->getView("empty1");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->isEmpty());
+  EXPECT_TRUE(view2->isDescribed());
+  EXPECT_FALSE(view2->isAllocated());
+  EXPECT_FALSE(view2->isApplied());
+
+  view1 = sub1->getView("buffer");
+  view2 = sub2->getView("buffer");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->hasBuffer());
+  EXPECT_TRUE(view2->isDescribed());
+  EXPECT_TRUE(view2->isAllocated());
+  EXPECT_TRUE(view2->isApplied());
+  EXPECT_TRUE(view1->getBuffer() == view2->getBuffer());
+  EXPECT_EQ(2, view1->getBuffer()->getNumViews());
+
+  view1 = sub1->getView("external");
+  view2 = sub2->getView("external");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->isExternal());
+  EXPECT_TRUE(view2->isDescribed());
+  EXPECT_TRUE(view2->isAllocated());
+  EXPECT_TRUE(view2->isApplied());
+  EXPECT_EQ(view1->getVoidPtr(), view2->getVoidPtr());
+
+  view1 = sub1->getView("scalar");
+  view2 = sub2->getView("scalar");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->isScalar());
+  EXPECT_TRUE(view2->isDescribed());
+  EXPECT_TRUE(view2->isAllocated());
+  EXPECT_TRUE(view2->isApplied());
+  EXPECT_EQ( view1->getData<int>(), view2->getData<int>());
+
+  view1 = sub1->getView("string");
+  view2 = sub2->getView("string");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->isString());
+  EXPECT_TRUE(view2->isDescribed());
+  EXPECT_TRUE(view2->isAllocated());
+  EXPECT_TRUE(view2->isApplied());
+  const char * svalue = view1->getString();
+  EXPECT_TRUE(strcmp("I am string", svalue) == 0);
+
+  // flds->print();
 
   delete ds;
 }
-#endif
+
 //------------------------------------------------------------------------------
-#if 0
+
 TEST(sidre_group,groups_move_copy)
 {
   DataStore * ds = new DataStore();
@@ -475,7 +549,7 @@ TEST(sidre_group,groups_move_copy)
 
   delete ds;
 }
-#endif
+
 //------------------------------------------------------------------------------
 TEST(sidre_group,create_destroy_view_and_buffer2)
 {

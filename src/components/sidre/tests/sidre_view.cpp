@@ -261,18 +261,28 @@ TEST(sidre_view,scalar_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
+  int i;
+  const char * s;
 
   DataView * i0view = root->createView("i0")->setScalar(1);
   checkScalarValues(i0view, SCALAR, true, true, true, INT_ID, 1);
+  i = i0view->getScalar();
+  EXPECT_EQ( 1, i);
 
-  DataView * i1view = root->createViewScalar("i1", 1);
+  DataView * i1view = root->createViewScalar("i1", 2);
   checkScalarValues(i1view, SCALAR, true, true, true, INT_ID, 1);
+  i = i1view->getScalar();
+  EXPECT_EQ( 2, i);
 
   DataView * s0view = root->createView("s0")->setString("I am a string");
   checkScalarValues(s0view, STRING, true, true, true, CHAR8_STR_ID, 14);
+  s = s0view->getString();
+  EXPECT_TRUE( strcmp(s, "I am a string") == 0);
 
-  DataView * s1view = root->createViewString("s1", "I am a string");
-  checkScalarValues(s1view, STRING, true, true, true, CHAR8_STR_ID, 14);
+  DataView * s1view = root->createViewString("s1", "I too am a string");
+  checkScalarValues(s1view, STRING, true, true, true, CHAR8_STR_ID, 18);
+  s = s1view->getString();
+  EXPECT_TRUE( strcmp(s, "I too am a string") == 0);
 
   // Check illegal operations
   i0view->apply(INT_ID, 1);
@@ -282,6 +292,18 @@ TEST(sidre_view,scalar_view)
   s0view->apply(INT_ID, 1);
   s0view->allocate();
   s0view->deallocate();
+
+  DataView * empty = root->createView("empty");
+  try
+  {
+    int * j = empty->getScalar();
+    //int j = empty->getScalar();
+    EXPECT_EQ(0, *j);
+  }
+  catch ( conduit::Error e)
+  {}
+  const char * svalue = empty->getString();
+  EXPECT_EQ(NULL, svalue);
 
   delete ds;
 }
@@ -780,7 +802,7 @@ TEST(sidre_view,int_array_depth_view)
 
   // Allocate buffer to hold data for 4 "depth" views
   dbuff->allocate();
-  int * data_ptr = static_cast<int *>(dbuff->getData());
+  int * data_ptr = dbuff->getData();
 
   for(size_t i = 0 ; i < 4 * depth_nelems ; ++i)
   {

@@ -648,6 +648,8 @@ public:
    *
    * If given view pointer is null or group already contains a view with
    * same name as given view, method does nothing.
+   * If the group already owns this view, method does nothing and returns
+   * pointer to view.
    *
    * \return pointer to given DataView object or ATK_NULLPTR if new
    * view is not moved into this group.
@@ -1016,6 +1018,11 @@ private:
    */
   DataView * attachView(DataView * view);
   ///
+  DataView * detachView(const DataView * view)
+  {
+    return detachView(view->getName());
+  }
+  //
   DataView * detachView(const std::string& name);
   ///
   DataView * detachView(IndexType idx);
