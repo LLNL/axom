@@ -410,6 +410,35 @@ public:
    */
   DataView * attachBuffer( DataBuffer * buff );
 
+  /*!
+   * \brief Describe the data view and attach DataBuffer object.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * attachBuffer( TypeID type,
+                           SidreLength num_elems,
+                           DataBuffer * buff )
+  {
+    describe(type, num_elems);
+    attachBuffer(buff);
+    return this;
+  }
+
+  /*!
+   * \brief Describe the data view and attach DataBuffer object.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * attachBuffer( TypeID type,
+                           int ndims,
+                           SidreLength * shape,
+                           DataBuffer * buff )
+  {
+    describe(type, ndims, shape);
+    attachBuffer(buff);
+    return this;
+  }
+
 
   /*!
    * \brief Detach this view from its DataBuffer.
@@ -592,6 +621,39 @@ public:
    * \return pointer to this DataView object.
    */
   DataView * setExternalDataPtr(void * external_ptr);
+
+  /*!
+   * \brief Set view to hold described external data.
+   *
+   * If external_ptr is NULL, the view will be EMPTY.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * setExternalDataPtr(TypeID type,
+                                SidreLength num_elems,
+                                void * external_ptr)
+  {
+    describe(type, num_elems);
+    setExternalDataPtr(external_ptr);
+    return this;
+  }
+
+  /*!
+   * \brief Set view to hold described external data.
+   *
+   * If external_ptr is NULL, the view will be EMPTY.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * setExternalDataPtr(TypeID type,
+                                int ndims,
+                                SidreLength * shape,
+                                void * external_ptr)
+  {
+    describe(type, ndims, shape);
+    setExternalDataPtr(external_ptr);
+    return this;
+  }
 
 //@}
 

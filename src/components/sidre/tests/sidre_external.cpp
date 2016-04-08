@@ -31,6 +31,8 @@ TEST(sidre_external, create_external_view)
   DataGroup * root = ds->getRoot();
 
   const SidreLength len = 11;
+  const int ndims = 1;
+  SidreLength shape[] = { len };
 
   int * idata = new int[len];
 
@@ -39,20 +41,42 @@ TEST(sidre_external, create_external_view)
     idata[ii] = ii;
   }
 
-  for (unsigned int i=0 ; i < 2 ; i++)
+  for (unsigned int i=0 ; i < 8 ; i++)
   {
     DataView * view;
 
     switch (i)
     {
     case 0:
-      view = root->createView("data0", idata)->apply(INT_ID, len);
+      view = root->createView("data0", INT_ID, len, idata);
       break;
     case 1:
-      view = root->createView("data1", INT_ID, len)->setExternalDataPtr(idata);
+      view = root->createView("data1", INT_ID, len)
+                 ->setExternalDataPtr(idata);
       break;
     case 2:
-      //	  view = root->createView("data2", INT_ID, len, idata);
+      view = root->createView("data2")
+                 ->setExternalDataPtr(INT_ID, len, idata);
+      break;
+    case 3:
+      view = root->createView("data3", idata)
+                 ->apply(INT_ID, len);
+      break;
+
+    case 4:
+      view = root->createView("data4", INT_ID, ndims, shape, idata);
+      break;
+    case 5:
+      view = root->createView("data5", INT_ID, ndims, shape)
+                 ->setExternalDataPtr(idata);
+      break;
+    case 6:
+      view = root->createView("data6")
+                 ->setExternalDataPtr(INT_ID, ndims, shape, idata);
+      break;
+    case 7:
+      view = root->createView("data7", idata)
+                 ->apply(INT_ID, ndims, shape);
       break;
     }
 

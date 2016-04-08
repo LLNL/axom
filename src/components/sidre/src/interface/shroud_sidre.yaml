@@ -129,12 +129,11 @@ classes:
          -  long
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, int ndims, SidreLength *num_elems+dimension)
+    -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, int ndims, SidreLength *shape+dimension)
        function_suffix: _shape
        PY_error_pattern: PY_null_to_none
 
 #    -  decl: DataView *createViewAndAllocate( const std::string& name, const DataType& dtype)
-#    -  decl: DataView *createViewAndAllocate( const std::string& name, const Schema& schema)
 
     -  decl: DataView *createViewScalar( const std::string& name, ScalarType value)
        cpp_template:
@@ -160,12 +159,35 @@ classes:
          -  long
        PY_error_pattern: PY_null_to_none
 
+    -  decl: DataView *createView( const std::string& name, TypeID type, SidreLength num_elems, DataBuffer *buff)
+       function_suffix: _from_type_and_buffer
+       fortran_generic:
+         num_elems:
+         -  int
+         -  long
+       PY_error_pattern: PY_null_to_none
+
+    -  decl: DataView *createView( const std::string& name, TypeID type, SidreLength num_elems, void * external_ptr)
+       function_suffix: _from_type_external
+       fortran_generic:
+         num_elems:
+         -  int
+         -  long
+       PY_error_pattern: PY_null_to_none
+
     -  decl: DataView *createView( const std::string& name, TypeID type, int ndims, SidreLength * shape+dimension)
        function_suffix: _from_shape
        PY_error_pattern: PY_null_to_none
 
+    -  decl: DataView *createView( const std::string& name, TypeID type, int ndims, SidreLength * shape+dimension, DataBuffer * buff)
+       function_suffix: _from_shape_and_buffer
+       PY_error_pattern: PY_null_to_none
+
+    -  decl: DataView *createView( const std::string& name, TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
+       function_suffix: _from_shape_external
+       PY_error_pattern: PY_null_to_none
+
 #    -  decl: DataView *createView( const std::string& name, const DataType& dtype)
-#    -  decl: DataView *createView( const std::string& name, const Schema& schema)
 
     -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
        function_suffix: _into_buffer
@@ -231,7 +253,6 @@ classes:
           num_elems:
           -  int
           -  long
-#      - decl: DataBuffer* describe(const Schema& schema)
 #      - decl: DataBuffer* describe(const DataType& dtype)
       - decl: DataBuffer* allocate()
         function_suffix: _existing
@@ -255,7 +276,6 @@ classes:
       - decl: size_t getTotalBytes() const
 #      - decl: Node& getNode()
 #      - decl: const Node& getNode() const
-#      - decl: const Schema& getSchema() const
 #      - decl: DataView* getView(IndexType idx)
 #      - decl: void info(Node& n) const
       - decl: void print() const
@@ -280,7 +300,6 @@ classes:
         -  int
         -  long
 #    - decl: DataView* allocate(const DataType& dtype)
-#    - decl: DataView* allocate(const Schema& schema)
     - decl: DataView * reallocate(SidreLength num_elems)
       return_this: True
       fortran_generic:
@@ -288,11 +307,25 @@ classes:
         -  int
         -  long
 #    - decl: DataView* reallocate(const DataType& dtype)
-#    - decl: DataView* reallocate(const Schema& schema)
     - decl: DataView* apply()
       return_this: True
+
     - decl: DataView* attachBuffer(DataBuffer * buff)
       return_this: True
+      function_suffix: _only
+
+    - decl: DataView* attachBuffer(TypeID type, SidreLength num_elems, DataBuffer * buff)
+      return_this: True
+      function_suffix: _type
+      fortran_generic:
+        num_elems:
+        -  int
+        -  long
+
+    - decl: DataView* attachBuffer(TypeID type, int ndims, SidreLength * shape+dimension, DataBuffer * buff)
+      return_this: True
+      function_suffix: _shape
+
     - decl: DataView* apply(SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
       default_arg_suffix:
         -  _nelems
@@ -309,7 +342,6 @@ classes:
       function_suffix: _type_shape
       return_this: True
 #    - decl: DataView* apply(const DataType& dtype)
-#    - decl: DataView* apply(const Schema& schema)
     - decl: bool hasBuffer() const
     - decl: bool isExternal() const
     - decl: bool isApplied() const
@@ -332,6 +364,20 @@ classes:
         - double
 
     -  decl: DataView * setExternalDataPtr(void * external_ptr)
+       return_this: True
+       function_suffix: _only
+
+    -  decl: DataView * setExternalDataPtr(TypeID type, SidreLength num_elems, void * external_ptr)
+       return_this: True
+       function_suffix: _type
+       fortran_generic:
+         num_elems:
+         -  int
+         -  long
+
+    -  decl: DataView * setExternalDataPtr(TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
+       return_this: True
+       function_suffix: _shape
 
 #           template<typename DataType>
     - decl: DataType getData()

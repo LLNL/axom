@@ -390,6 +390,44 @@ public:
                          SidreLength num_elems );
 
   /*!
+   * \brief createView(name, type, num_elems)->attachBuffer(buff)
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         SidreLength num_elems,
+                         DataBuffer * buff )
+  {
+    DataView * view = createView(name, type, num_elems);
+    if (view != ATK_NULLPTR)
+    {
+      view->attachBuffer(buff);
+    }
+    return view;
+  }
+
+  /*!
+   * \brief createView(name, type, num_elems)->setExternalDataPtr(external_ptr)
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         SidreLength num_elems,
+                         void * external_ptr )
+  {
+    DataView * view = createView(name, type, num_elems);
+    if (view != ATK_NULLPTR)
+    {
+      view->setExternalDataPtr(external_ptr);
+    }
+    return view;
+  }
+
+  /*!
    * \brief Create DataView object with given name and described by data type,
    *        number of dimensions and number of elements per dimension,
    *        and attach new view to this group object.
@@ -408,6 +446,46 @@ public:
                          TypeID type,
                          int ndims,
                          SidreLength * shape );
+
+  /*!
+   * \brief createView(name, type, ndims, shape)->attachBuffer(buff)
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         int ndims,
+                         SidreLength * shape,
+                         DataBuffer * buff )
+  {
+    DataView * view = createView(name, type, ndims, shape);
+    if (view != ATK_NULLPTR)
+    {
+      view->attachBuffer(buff);
+    }
+    return view;
+  }
+
+  /*!
+   * \brief createView(name, type, ndims, shape)->setExternalDataPtr(external_ptr)
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         int ndims,
+                         SidreLength * shape,
+                         void * external_ptr )
+  {
+    DataView * view = createView(name, type, ndims, shape);
+    if (view != ATK_NULLPTR)
+    {
+      view->setExternalDataPtr(external_ptr);
+    }
+    return view;
+  }
 
   /*!
    * \brief Create DataView object with given name and described by
