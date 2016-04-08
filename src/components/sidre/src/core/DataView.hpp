@@ -619,7 +619,9 @@ public:
   }
 
   /*!
-   * \brief Returns a copy of the string contained in the view.
+   * \brief Returns a pointer to the string contained in the view.
+   *
+   *  If the view is not a STRING, then ATK_NULLPTR is returned.
      //
      // RDH -- Should we also provide an overload that returns a const char *?
      //        It seems excessive to create copies of strings for most usage.
