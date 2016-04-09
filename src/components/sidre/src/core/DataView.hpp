@@ -547,17 +547,18 @@ public:
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
-    #if defined(ATK_DEBUG)
+#if defined(ATK_DEBUG)
     if (m_state == SCALAR)
     {
       DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
-      SLIC_CHECK_MSG( arg_id == m_node.dtype().id(),
+      SLIC_CHECK_MSG(
+        arg_id == m_node.dtype().id(),
         "You are setting a scalar value in view " << m_name  <<
         " which has changed the underlying data type." << "Old type = "
         << m_node.dtype().name() << ", new type ="
         <<  DataType::id_to_name( arg_id ) << ".");
     }
-    #endif
+#endif
 
     // Note: most of these calls that set the view class members are
     //       unnecessary if the view already holds a scalar.  May be
@@ -574,7 +575,7 @@ public:
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
         "Unable to set scalar value on view " << m_name << " with state: " <<
-         getStateStringName(m_state)  );
+        getStateStringName(m_state)  );
     }
     return this;
   }
@@ -680,20 +681,27 @@ public:
   }
 
   /*!
-   * \brief Returns a copy of the string contained in the view.
+   * \brief Returns a pointer to the string contained in the view.
+   *
+   *  If the view is not a STRING, then ATK_NULLPTR is returned.
      //
      // RDH -- Should we also provide an overload that returns a const char *?
      //        It seems excessive to create copies of strings for most usage.
+     //        Conduit also provides a as_string() method.
      //
    */
-//
-// RDH -- What happens if the view does not hold a scalar?
-//
-  Node::Value getString()
+  const char * getString()
   {
     //TODO add check that view holds array data.  Will be added in later commit.
     //If debug, should trigger assert.  If release, issue warning.
-    return getData();
+    if (m_state == STRING)
+    {
+      return m_node.as_char8_str();
+    }
+    else
+    {
+      return ATK_NULLPTR;
+    }
   }
 
   /*!
@@ -701,10 +709,18 @@ public:
    */
 //
 // RDH -- What happens if the view does not hold a scalar?
+//     -- Currently it throws an exception.
 //
   Node::Value getScalar()
   {
-    return getData();
+    if (m_state == SCALAR)
+    {
+      return getData();
+    }
+    else
+    {
+      return Node().value();
+    }
   }
 
   /*!
@@ -779,10 +795,9 @@ private:
 
   /*!
    *  \brief Private ctor that creates a DataView with given name
-   *         in given parent group and which has no data associated with it.
+   *         which has no data associated with it.
    */
-  DataView( const std::string& name,
-            DataGroup * const owning_group );
+  DataView( const std::string& name );
 
   /*!
    * \brief Private copy ctor.
@@ -853,6 +868,14 @@ private:
    * \brief Set the shape to be a ndims dimensions with shape.
    */
   void describeShape(int ndims, SidreLength * shape);
+
+  /*!
+   * \brief Copy view contents into an undescribed EMPTY view.
+   *
+   * For SCALAR and STRING the data is copied; EXTERNAL,
+   * data pointer is copied; BUFFER attaches the buffer.
+   */
+  void copyView( DataView * copy ) const;
 
   /*!
    *  \brief Private method to remove any applied description;

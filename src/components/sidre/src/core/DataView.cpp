@@ -493,7 +493,8 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
   else
   {
     SLIC_CHECK_MSG( m_state == EMPTY || m_state == EXTERNAL,
-      "Calling setExternalDataPtr on a view with " << getStateStringName(m_state) << " data is not allowed.");
+                    "Calling setExternalDataPtr on a view with " <<
+                    getStateStringName(m_state) << " data is not allowed.");
   }
 
   return this;
@@ -632,10 +633,9 @@ void DataView::info(Node &n) const
  *
  *************************************************************************
  */
-DataView::DataView( const std::string& name,
-                    DataGroup * const owning_group)
+DataView::DataView( const std::string& name)
   :   m_name(name),
-  m_owning_group(owning_group),
+  m_owning_group(ATK_NULLPTR),
   m_data_buffer(ATK_NULLPTR),
   m_schema(),
   m_node(),
@@ -744,6 +744,44 @@ void DataView::describeShape(int ndims, SidreLength * shape)
   for (int i=0 ; i < ndims ; i++)
   {
     m_shape.push_back(shape[i]);
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method copy the contents of this into a undescribed EMPTY view.
+ *
+ *************************************************************************
+ */
+void DataView::copyView( DataView * copy ) const
+{
+  SLIC_ASSERT( copy->m_state == EMPTY && !copy->isDescribed());
+
+  if (isDescribed())
+  {
+    copy->describe(m_schema.dtype());
+  }
+
+  switch (m_state)
+  {
+  case EMPTY:
+    // Nothing more to do
+    break;
+  case STRING:
+  case SCALAR:
+    copy->m_node = m_node;
+    copy->m_state = m_state;
+    copy->m_is_applied = true;
+    break;
+  case EXTERNAL:
+    copy->setExternalDataPtr(m_external_ptr);
+    break;
+  case BUFFER:
+    copy->attachBuffer( m_data_buffer );
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
 }
 
