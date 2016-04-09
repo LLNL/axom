@@ -29,6 +29,7 @@ import splicer
 import wrapc
 import wrapf
 import wrapp
+import wrapl
 
 # char functions cannot be wrapped directly in intel 15.  Instead the result is passed down
 # as an argument from the Fortran wrapper to the C wrapper.
@@ -130,6 +131,7 @@ class Schema(object):
             wrap_c       = True,
             wrap_fortran = True,
             wrap_python  = False,
+            wrap_lua     = False,
 
             doxygen = True,       # create doxygen comments
 
@@ -165,6 +167,7 @@ class Schema(object):
 
             )
         wrapp.add_templates(def_options)
+        wrapl.add_templates(def_options)
 
         if 'options' in node:
             def_options.update(node['options'])
@@ -707,6 +710,7 @@ class GenFunctions(object):
                 options.wrap_c = True
                 options.wrap_fortran = True
                 options.wrap_python = False
+                options.wrap_lua = False
                 # Convert typename to type
                 fmt.CPP_template = '<%s>' %  type
                 if new['result']['type'] == typename:
@@ -722,6 +726,7 @@ class GenFunctions(object):
         options.wrap_c = False
         options.wrap_fortran = False
         options.wrap_python = False
+        options.wrap_lua = False
 
     def generic_function(self, node, ordered_functions):
         """ Create overloaded functions for each generic method.
@@ -746,6 +751,7 @@ class GenFunctions(object):
                 options.wrap_c = False
                 options.wrap_fortran = True
                 options.wrap_python = False
+                options.wrap_lua = False
                 # Convert typename to type
                 for arg in new['args']:
                     if arg['name'] == argname:
@@ -796,6 +802,7 @@ class GenFunctions(object):
             options.wrap_c = True
             options.wrap_fortran = True
             options.wrap_python = False
+            options.wrap_lua = False
             fmt = new['fmt']
             try:
                 fmt.function_suffix = default_arg_suffix[ndefault]
@@ -903,6 +910,7 @@ class GenFunctions(object):
         options.wrap_c = True
         options.wrap_fortran = False
         options.wrap_python = False
+        options.wrap_lua = False
         C_new['_PTR_C_CPP_index'] = node['_function_index']
 
         newargs = []
@@ -954,6 +962,7 @@ class GenFunctions(object):
             options.wrap_c       = False
             options.wrap_fortran = True
             options.wrap_python = False
+            options.wrap_lua = False
 
             # Do not wrap original function (Has a different result type)
             node['options'].wrap_fortran = False
@@ -971,6 +980,7 @@ class GenFunctions(object):
             options.wrap_c       = False
             options.wrap_fortran = True
             options.wrap_python = False
+            options.wrap_lua = False
             # Do not add '_bufferify'
             F_new['fmt'].function_suffix = node['fmt'].function_suffix
 
@@ -1350,6 +1360,10 @@ def main():
                         dest='outdir_python',
                         help='Directory for Python wrapper output files, ' +
                         'overrides --outdir')
+    parser.add_argument('--outdir-lua', default='',
+                        dest='outdir_lua',
+                        help='Directory for Lua wrapper output files, ' +
+                        'overrides --outdir')
     parser.add_argument('--logdir', default='',
                         help='Directory for log files')
     parser.add_argument('--cfiles', default='',
@@ -1369,9 +1383,11 @@ def main():
     if args.outdir and not os.path.isdir(args.outdir):
         raise SystemExit("outdir %s does not exist" % args.outdir)
     if args.outdir_c_fortran and not os.path.isdir(args.outdir_c_fortran):
-        raise SystemExit("outdir-fortran %s does not exist" % args.outdir)
+        raise SystemExit("outdir-fortran %s does not exist" % args.outdir_c_fortran)
     if args.outdir_python and not os.path.isdir(args.outdir_python):
-        raise SystemExit("outdir-python %s does not exist" % args.outdir)
+        raise SystemExit("outdir-python %s does not exist" % args.outdir_python)
+    if args.outdir_lua and not os.path.isdir(args.outdir_lua):
+        raise SystemExit("outdir-luan %s does not exist" % args.outdir_lua)
     if args.logdir and not os.path.isdir(args.logdir):
         raise SystemExit("logdir %s does not exist" % args.logdir)
 
@@ -1391,13 +1407,14 @@ def main():
     config = Config()
     config.c_fortran_dir = args.outdir_c_fortran or args.outdir
     config.python_dir = args.outdir_python or args.outdir
+    config.lua_dir = args.outdir_lua or args.outdir
     config.log = log
     config.cfiles = []  # list of C/C++ files created
     config.ffiles = []  # list of Fortran files created
 
     # accumulated input
     all = {}
-    splicers = dict(c={}, f={}, py={})
+    splicers = dict(c={}, f={}, py={}, lua={})
 
     for filename in args.filename:
         root, ext = os.path.splitext(filename)
@@ -1425,7 +1442,7 @@ def main():
     if 'splicer' in all:
         # read splicer files defined in input yaml file
         for suffix, names in all['splicer'].items():
-            # suffix = 'c', 'f', 'py'
+            # suffix = 'c', 'f', 'py', 'lua'
             subsplicer = splicers.setdefault(suffix, {})
             for name in names:
                 for pth in search_path:
@@ -1449,6 +1466,9 @@ def main():
 
     if all['options'].wrap_python:
         wrapp.Wrapp(all, config, splicers['py']).wrap_library()
+
+    if all['options'].wrap_lua:
+        wrapl.Wrapl(all, config, splicers['lua']).wrap_library()
 
     # when dumping json, remove function_index to avoid duplication
     del all['function_index']

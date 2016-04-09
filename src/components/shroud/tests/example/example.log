@@ -149,3 +149,32 @@ Python function void testmpi(MPI_Comm comm+intent(in)+value)
 Close pyUserLibrarymodule.hpp
 Close pyUserLibrarymodule.cpp
 Close pyUserLibraryhelper.cpp
+Lua method ExClass1 * new(const string * name+intent(in))+constructor
+Lua method void delete()+destructor
+Lua method int incrementCount(int incr+intent(in)+value)
+Lua method const string & getName() const
+Lua method int GetNameLength() const
+Lua method const string & getNameErrorCheck() const
+Lua method const string & getNameArg() const
+Lua method ExClass2 * getRoot()
+Lua method int getValue(int value+intent(in)+value)
+Lua method long getValue(long value+intent(in)+value)
+Lua method void * getAddr()
+Lua method bool hasAddr(bool in+intent(in)+value)
+Lua method void SplicerSpecial()
+Lua method ExClass2 * ExClass2(const string * name+intent(in))+constructor
+Lua method void delete()+destructor
+Lua method const string & getName() const
+Lua method const int GetNameLength()
+Lua method ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
+Lua method void * declare(TypeID type+intent(in)+value, SidreLength len+default(1)+intent(in)+value)
+Lua method void destroyall()
+Lua method TypeID getTypeID() const
+Lua function void local_function1()
+Lua function bool isNameValid(const std::string & name+intent(in))
+Lua function bool isInitialized()
+Lua function void test_names(const std::string & name+intent(in))
+Lua function void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
+Lua function void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
+Lua function void testmpi(MPI_Comm comm+intent(in)+value)
+Close luaUserLibrarymodule.cpp

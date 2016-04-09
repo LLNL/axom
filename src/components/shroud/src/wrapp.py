@@ -43,7 +43,7 @@ class Wrapp(util.WrapperMixin):
     def XXX_end_output_file(self):
         pass
 
-    def _begin_class(self):
+    def XXX_begin_class(self):
         pass
 
     def reset_file(self):
@@ -55,12 +55,15 @@ class Wrapp(util.WrapperMixin):
         options = self.tree['options']
         fmt_library = self.tree['fmt']
 
+        # Format variables
         fmt_library.PY_prefix          = options.get('PY_prefix', 'PY_')
         fmt_library.PY_module_name     = fmt_library.library_lower
         util.eval_template(top, 'PY_module_filename')
         util.eval_template(top, 'PY_header_filename')
         util.eval_template(top, 'PY_helper_filename')
         fmt_library.BBB = 'BBB'   # name of cpp class pointer in PyObject
+
+        # Variables to accumulate output lines
         self.py_type_object_creation = []
         self.py_type_extern = []
         self.py_type_structs = []
@@ -99,7 +102,7 @@ class Wrapp(util.WrapperMixin):
         self.reset_file()
         if self.tree['functions']:
             self._push_splicer('function')
-            self._begin_class()
+#            self._begin_class()
             self.wrap_functions(None, self.tree['functions'])
             self._pop_splicer('function')
 
