@@ -903,12 +903,12 @@ void DataView::importFrom(conduit::Node& data_holder,
                      "Buffer id map is old-new id entry for buffer " << old_buffer_id );
 
     DataBuffer * buffer = m_owning_group->getDataStore()->getBuffer( buffer_id_map.at(old_buffer_id) );
-    if ( !m_schema.dtype().is_empty() )
+    if ( !schema.dtype().is_empty() )
     {
         describe( schema.dtype() );
     }
     attachBuffer( buffer );
-    if ( !is_applied )
+    if ( is_applied )
     {
       apply();
     }

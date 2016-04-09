@@ -457,15 +457,14 @@ void DataStore::exportTo(const DataGroup * group,
   group->exportTo(data_holder, buffer_indices);
 
   // Now, add all those referenced buffers to the node.
-
-  // TODO - Conduit lists are supported by the conduit protocol, but not
-  //        the conduit_hdf5 protocol.  May need to re-implement this
-  //        to use a dictionary/map instead of list layout if conduit_hdf5
-  //        doesn't add support for conduit lists.
   for (std::set<IndexType>::iterator s_it = buffer_indices.begin();
        s_it != buffer_indices.end(); ++s_it)
   {
-    conduit::Node& buffer_holder = data_holder["buffers"].append();
+    // Use a dictionary layout here instead of conduit list.
+    // Conduit IO HDF5 doesn't support conduit list objects.
+    std::ostringstream oss;
+    oss << "buffer_id_" << *s_it;
+    Node& buffer_holder = data_holder["buffers"].fetch( oss.str() );
     getBuffer( *s_it )->exportTo(buffer_holder);
   }
 }
@@ -495,8 +494,6 @@ void DataStore::importFrom(DataGroup * group,
 
   group->destroyGroups();
   group->destroyViews();
-
-  std::cerr << " importing data into group " << group->getName() << std::endl;
 
   // First - Import buffers into the datastore.
   std::map<IndexType, IndexType> buffer_indices_map;

@@ -265,8 +265,6 @@ void DataBuffer::print(std::ostream& os) const
   n.to_json_stream(os);
 }
 
-
-
 /*
  *************************************************************************
  *
@@ -425,7 +423,7 @@ void DataBuffer::exportTo( conduit::Node& data_holder)
  */
 void DataBuffer::importFrom( conduit::Node& buffer_holder)
 {
-  Schema schema( buffer_holder["schema"].as_string() );
+  Schema schema( buffer_holder["schema_json"].as_string() );
   TypeID type = static_cast<TypeID>( schema.dtype().id() );
   SidreLength num_elems = schema.dtype().number_of_elements();
 
@@ -439,6 +437,10 @@ void DataBuffer::importFrom( conduit::Node& buffer_holder)
     conduit::Node& buffer_data_holder = buffer_holder["data"];
     update(buffer_data_holder.element_ptr(0),
            buffer_data_holder.total_bytes() );
+  }
+  else
+  {
+    std::cerr << "NO PATH??" << std::endl;
   }
 }
 

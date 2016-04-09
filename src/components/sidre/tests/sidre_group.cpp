@@ -636,6 +636,27 @@ TEST(sidre_group,save_restore_api)
 }
 
 //------------------------------------------------------------------------------
+TEST(sidre_group,save_restore_scalars_and_strings)
+{
+  DataStore * ds1 = new DataStore();
+
+  ds1->getRoot()->createViewScalar<int>("i0", 1);
+  ds1->getRoot()->createViewScalar<float>("f0", 1.0);
+  ds1->getRoot()->createViewScalar<double>("d0", 10.0);
+
+  ds1->save("sidre_save_scalars_and_strings", "conduit");
+
+  DataStore * ds2 = new DataStore();
+
+  ds2->load("sidre_save_scalars_and_strings", "conduit");
+
+  EXPECT_TRUE( ds1->getRoot()->isEquivalentTo( ds2->getRoot()) );
+
+  delete ds1;
+  delete ds2;
+}
+
+//------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_external_data)
 {
   int foo[100];
@@ -663,11 +684,8 @@ TEST(sidre_group,save_restore_external_data)
   view = ds->getRoot()->getView("external_array");
 
   int* new_data_pointer = new int[100];
-std::cerr << view->getTotalBytes() << std::endl;
 
-std::cerr << sizeof( int[100] ) << std::endl;
-
-EXPECT_TRUE( view->getTotalBytes() == sizeof( int[100] ) );
+  EXPECT_TRUE( view->getTotalBytes() == sizeof( int[100] ) );
 
   std::memcpy(&new_data_pointer[0], view->getVoidPtr(), view->getTotalBytes() );
 
@@ -695,45 +713,53 @@ TEST(sidre_group,save_restore_complex)
   DataGroup * gb = flds->createGroup("b");
   DataGroup * gc = flds->createGroup("c");
 
-  ga->createViewScalar("i0", 1);
-  // Be careful on floats vs doubles.  It's best to be explicit on the type,
-  // or the compiler will cast floats up to doubles.
-  gb->createViewScalar<float>("f0", 100.0);
-  gc->createViewScalar<double>("d0", 3000.00);
+  ga->createViewScalar<int>("i0", 100.0);
+  ga->createViewScalar<double>("d0", 3000.00);
+  gb->createViewString("s0", "foo");
 
-  // check that all sub groups exist
-  EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_TRUE(flds->hasGroup("b"));
-  EXPECT_TRUE(flds->hasGroup("c"));
+  gc->createViewAndAllocate("int100", asctoolkit::sidre::INT_ID, 100);
+  int* data_ptr = gc->getView("int100")->getArray();
+  for (int i =0; i < 100; ++i)
+  {
+    data_ptr[i] = i;
+  }
 
-  //ds->print();
+  ds->save("sidre_mixed_types","conduit");
 
-  ds->getRoot()->save("out_sidre_group_save_restore_complex","conduit");
-
-#if 0
   DataStore * ds2 = new DataStore();
 
+  ds2->load("sidre_mixed_types","conduit");
 
-  ds2->getRoot()->load("out_sidre_group_save_restore_complex","conduit");
+  EXPECT_TRUE( ds->getRoot()->isEquivalentTo(ds2->getRoot()) );
+
+  delete ds;
 
   flds = ds2->getRoot()->getGroup("fields");
+
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
   EXPECT_TRUE(flds->hasGroup("b"));
   EXPECT_TRUE(flds->hasGroup("c"));
 
-  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getData<int>(),1);
-  EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getData<float>(),100.0,
-              1e-12);
-  EXPECT_NEAR(flds->getGroup("c")->getView(
-                "d0")->getData<double>(),3000.0, 1e-12);
+  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getData<int>(),100.0);
+  EXPECT_NEAR(flds->getGroup("a")->getView("d0")->getData<double>(),3000.0, 1e-12);
+
+  int* new_data_ptr = flds->getGroup("c")->getView("int100")->getArray();
+  for (int i = 0; i < 100; ++i)
+  {
+    EXPECT_TRUE( new_data_ptr[i] == i);
+  }
+
+  // TODO - Figure out the right way to get the string value our of conduit node!!
+  //char * char_ptr = flds->getGroup("b")->getView("s0")->getString();
+  //EXPECT_TRUE( std::string(char_ptr) == "foo" );
+
+
 
   //ds2->print();
 
-  delete ds;
   delete ds2;
-#endif
-}
+  }
 
 //------------------------------------------------------------------------------
 // isEquivalentTo()
