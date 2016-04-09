@@ -646,13 +646,13 @@ public:
    * \brief Remove DataView object from its owning group and attach
    *        to this DataGroup object.
    *
-   * If given view pointer is null or group already contains a view with
-   * same name as given view, method does nothing.
    * If the group already owns this view, method does nothing and returns
    * pointer to view.
+   * If given view pointer is null or group already contains a view with
+   * same name as given view, method does nothing and returns ATK_NULLPTR.
    *
-   * \return pointer to given DataView object or ATK_NULLPTR if new
-   * view is not moved into this group.
+   * \return pointer to view which is attached to this group or ATK_NULLPTR
+   *         if the view is not attached to this group.
    */
   DataView * moveView(DataView * view);
 

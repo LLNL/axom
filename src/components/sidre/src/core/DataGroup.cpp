@@ -436,7 +436,7 @@ DataView * DataGroup::moveView(DataView * view)
   DataGroup * curr_group = view->getOwningGroup();
   if (curr_group == this )
   {
-    // Already owns this view
+    // this group already owns the view
     return view;
   }
   else if (hasView(view->getName()) )
