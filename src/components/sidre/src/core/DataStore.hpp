@@ -25,15 +25,14 @@
 #include <vector>
 #include <stack>
 
+#include "conduit_io.hpp"
+
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
-
-
-
 
 namespace asctoolkit
 {
@@ -81,6 +80,13 @@ public:
     return m_RootGroup;
   };
 
+  /*!
+   * \brief Return pointer to the root DataGroup.
+   */
+  const DataGroup * getRoot() const
+  {
+    return m_RootGroup;
+  };
 
 //@{
 //!  @name DataBuffer methods
@@ -196,6 +202,53 @@ public:
    */
   void print(std::ostream& os) const;
 
+  /*!
+   * \brief Save the datastore to a file set named "obase"
+   * If a group is provided, only that sub-tree will be saved.
+   *
+   * Note: Only supported protocol currently is "conduit".
+   */
+  void save( const std::string& obase,
+             const std::string& protocol,
+             const DataGroup* group = ATK_NULLPTR ) const;
+
+  /*!
+   * \brief Save the datastore to an hdf5 file named "obase"
+   * If a group is provided, only that sub-tree will be saved.
+   * Note: Only supported protocol currently is "conduit_hdf5".
+   */
+  void save( const std::string& obase,
+             const std::string& protocol,
+             const hid_t& h5_file_id,
+             const DataGroup* group = ATK_NULLPTR ) const;
+
+  /*!
+   * \brief TODO
+   */
+  void load(const std::string& obase,
+            const std::string& protocol,
+            DataGroup * group = ATK_NULLPTR);
+
+  /*!
+   * \brief TODO
+   */
+  void load(const std::string& obase,
+            const std::string& protocol,
+            const hid_t& h5_file_id,
+            DataGroup * group = ATK_NULLPTR);
+
+  /*!
+   * \brief TODO
+   */
+  void exportTo( const DataGroup * group,
+                  conduit::Node& data_holder,
+                  const std::string& protocol ) const;
+  /*!
+   * \brief TODO
+   */
+
+  void importFrom(DataGroup * group,
+                  conduit::Node& data_holder);
 
 private:
   /*!

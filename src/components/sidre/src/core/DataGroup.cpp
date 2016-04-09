@@ -771,55 +771,38 @@ void DataGroup::printTree( const int nlevels,
   }
 }
 
-
 /*
  *************************************************************************
  *
- * Save this group object (including data views and child groups) to a
- * file set named "obase".
+ * Saves data group (including data views and child groups) to a file
+ * set named "obase" from this group object.
  *
  * Note: Only valid protocol is "conduit".
  *
  *************************************************************************
  */
-void DataGroup::save(const std::string& obase,
-                     const std::string& protocol) const
+
+void DataGroup::save( const std::string& obase,
+                      const std::string& protocol) const
 {
-  if (protocol == "conduit")
-  {
-    Node n;
-    copyToNode(n);
-    // for debugging call: n.print();
-    conduit::io::save(n, obase);
-  }
+  this->getDataStore()->save( obase, protocol, this);
 }
 
 /*
  *************************************************************************
  *
- * Save this group object (including data views and child groups) to an
- * hdf5 file named "obase".
+ * Saves data group (including data views and child groups) to an hdf5 file
+ * named "obase" from this group object.
  *
- * Note: Only valid protocol is "conduit".
+ * Note: Only valid protocol is "conduit_hdf5".
  *
  *************************************************************************
- *          */
+ */
 void DataGroup::save(const std::string& obase,
                      const std::string& protocol,
                      const hid_t& h5_file_id) const
 {
-  if (protocol == "conduit_hdf5")
-  {
-    Node n;
-    copyToNode(n);
-    std::string file_path;
-    std::string hdf5_path;
-    conduit::utils::split_string(obase,
-                                 std::string(":"),
-                                 file_path,
-                                 hdf5_path);
-    conduit::io::hdf5_write(n, h5_file_id, hdf5_path);
-  }
+  this->getDataStore()->save( obase, protocol, h5_file_id, this);
 }
 
 /*
@@ -835,17 +818,8 @@ void DataGroup::save(const std::string& obase,
 void DataGroup::load(const std::string& obase,
                      const std::string& protocol)
 {
-  if (protocol == "conduit")
-  {
-    destroyGroups();
-    destroyViews();
-    Node n;
-    conduit::io::load(obase, n);
-    // for debugging call: n.print();
-    copyFromNode(n);
-  }
+  this->getDataStore()->load( obase, protocol, this );
 }
-
 
 /*
  *************************************************************************
@@ -861,21 +835,7 @@ void DataGroup::load(const std::string& obase,
                      const std::string& protocol,
                      const hid_t& h5_file_id)
 {
-  if (protocol == "conduit_hdf5")
-  {
-    destroyGroups();
-    destroyViews();
-    std::string file_path;
-    std::string hdf5_path;
-    conduit::utils::split_string(obase,
-                                 std::string(":"),
-                                 file_path,
-                                 hdf5_path);
-    Node n;
-    conduit::io::hdf5_read(h5_file_id, hdf5_path, n);
-    // for debugging call: n.print();
-    copyFromNode(n);
-  }
+  this->getDataStore()->load( obase, protocol, h5_file_id, this );
 }
 
 
@@ -1067,7 +1027,6 @@ DataView * DataGroup::detachView(IndexType idx)
   return view;
 }
 
-
 /*
  *************************************************************************
  *
@@ -1127,129 +1086,41 @@ DataGroup * DataGroup::detachGroup(IndexType idx)
 /*
  *************************************************************************
  *
- * PRIVATE method to copy group to given Conduit node.
- *
- *************************************************************************
- */
-void DataGroup::copyToNode(Node& n) const
-{
-  std::vector<IndexType> buffer_ids;
-  copyToNode(n,buffer_ids);
-
-  // save the buffers discovered by buffer_ids
-  for (size_t i=0 ; i < buffer_ids.size() ; i++)
-  {
-    std::ostringstream oss;
-    oss << "buffer_" << i;
-    Node& buff = n["buffers"].fetch(oss.str());
-    IndexType buffer_id = buffer_ids[i];
-    DataBuffer * ds_buff =  m_datastore->getBuffer(buffer_id);
-    buff["id"].set(buffer_id);
-    DataType dtype = conduit::DataType::default_dtype(ds_buff->getTypeID());
-    dtype.set_number_of_elements(ds_buff->getNumElements());
-    buff["schema"].set(dtype.to_json());
-
-    // only set our data if the buffer was initialized
-    if (ds_buff->getVoidPtr() != ATK_NULLPTR )
-    {
-      buff["data"].set_external(dtype, ds_buff->getVoidPtr());
-    }
-  }
-}
-
-/*
- *************************************************************************
- *
- * PRIVATE method to copy from given Conduit node to this group.
- *
- *************************************************************************
- */
-void DataGroup::copyFromNode(Node& n)
-{
-  std::map<IndexType, IndexType> id_map;
-  copyFromNode(n, id_map);
-}
-
-/*
- *************************************************************************
- *
  * PRIVATE method to copy from group to given Conduit node using
- * given vector of ids to maintain correct association of data buffers
+ * given set of ids to maintain correct association of data buffers
  * to data views.
  *
  *************************************************************************
  */
-void DataGroup::copyToNode(Node& n,
-                           std::vector<IndexType>& buffer_ids) const
-{
-  // iterator over views in this group
-  // for each view:
-  //   create node, add to views list
-  //   add schema (json'd) to node
-  //   add is_applied value to node
-  //   if has buffer, add the buffer id to node
-  // for each group:
-  //   create node, add to 'groups' list.
-  //   call copyToNode on node (recursive call)
 
+void DataGroup::exportTo(conduit::Node& data_holder,
+                          std::set<IndexType>& buffer_indices) const
+{
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
     const DataView * view = getView(vidx);
-    Node& n_view = n["views"].fetch(view->getName());
-
-    n_view["state"] = view->m_state;
-    n_view["is_applied"].set(view->isApplied());
-
-    switch(view->m_state)
-    {
-    // If view contains data stored in view's node
-    // (string, scalar, or described pointer.)
-    // then save the view's node.
-    case DataView::EMPTY:
-    break;
-    case DataView::STRING:
-    case DataView::SCALAR:
-    {
-      n_view["node"] = view->getNode();
-      break;
-    }
-    case DataView::EXTERNAL:
-    {
-      // If the external data pointer is described, it is in the view's node.
-      if ( view->isDescribed() )
-      {
-        SLIC_ASSERT( view->isApplied() );
-        n_view["node"] = view->getNode();
-      }
-      break;
-    }
-    case DataView::BUFFER:
-    {
-      n_view["schema"].set(view->getSchema().to_json());
-      n_view["is_applied"].set(view->isApplied());
-      IndexType buffer_id = view->getBuffer()->getIndex();
-      n_view["buffer_id"].set(buffer_id);
-      // If we have a buffer, keep track of it so we can add it later.
-      buffer_ids.push_back(view->getBuffer()->getIndex());
-      break;
-    }
-    default:
-    {
-      SLIC_ASSERT_MSG(false, "Unexpected value for m_state" << DataView::getStateStringName(view->m_state) );
-    }
+    Node& n_view = data_holder["views"].fetch(view->getName());
+    view->exportTo( n_view, buffer_indices );
     vidx = getNextValidViewIndex(vidx);
-    }
   }
+
   IndexType gidx = getFirstValidGroupIndex();
   while ( indexIsValid(gidx) )
   {
     const DataGroup * group =  getGroup(gidx);
-    Node& n_group = n["groups"].fetch(group->getName());
-    group->copyToNode(n_group, buffer_ids);
+    Node& n_group = data_holder["groups"].fetch(group->getName());
+    group->exportTo(n_group, buffer_indices);
 
     gidx = getNextValidGroupIndex(gidx);
   }
+
+  // TODO - take this out when CON-131 resolved ( can't write out empty node ).
+  if (data_holder.dtype().is_empty() )
+  {
+    data_holder.set_string("empty");
+  }
+
 }
 
 /*
@@ -1261,86 +1132,36 @@ void DataGroup::copyToNode(Node& n,
  *
  *************************************************************************
  */
-void DataGroup::copyFromNode(Node& n,
-                             std::map<IndexType, IndexType>& id_map)
+void DataGroup::importFrom(conduit::Node& data_holder,
+                           const std::map<IndexType, IndexType>& buffer_id_map)
 {
-  /// for restore each group contains:
-  /// buffers, views, and groups
+// If the group is empty, conduit will complain if you call 'has_path'.
 
-  // create the buffers
-  if (n.has_path("buffers"))
+  // Added CON-132 ticket asking if has_path can just return false if node is empty or not an object type.
+  if ( data_holder.dtype().is_object() && data_holder.has_path("views") )
   {
-    conduit::NodeIterator buffs_itr = n["buffers"].children();
-    while (buffs_itr.has_next())
+    // create the views
+    conduit::NodeIterator views_itr = data_holder["views"].children();
+    while (views_itr.has_next())
     {
-      Node& n_buff = buffs_itr.next();
-      IndexType buffer_id = n_buff["id"].as_int32();
-
-      // create a new mapping and buffer if necessary
-      if ( id_map.find(buffer_id) == id_map.end())
-      {
-        DataBuffer * ds_buff = this->getDataStore()->createBuffer();
-        // map "id" to whatever new index the data store gives us.
-        IndexType buffer_ds_id = ds_buff->getIndex();
-        id_map[buffer_id] = buffer_ds_id;
-        // setup the new data store buffer
-        Schema schema(n_buff["schema"].as_string());
-        TypeID type = static_cast<TypeID>(schema.dtype().id());
-        SidreLength num_elems = schema.dtype().number_of_elements();
-        ds_buff->describe(type, num_elems);
-        if (n_buff.has_path("data"))
-        {
-          ds_buff->allocate();
-          // copy the data from the node
-          void * data = n_buff["data"].element_ptr(0);
-          size_t nbytes = n_buff["data"].total_bytes();
-          ds_buff->update(data, nbytes);
-        }
-      }
-    }
-  }
-
-  // create the child views
-  conduit::NodeIterator views_itr = n["views"].children();
-  while (views_itr.has_next())
-  {
-    Node& n_view = views_itr.next();
-    if (n_view.has_path("buffer_id"))
-    {
+      Node& n_view = views_itr.next();
       std::string view_name = views_itr.path();
 
-      IndexType buffer_id = n_view["buffer_id"].as_int32();
-      // get the mapped buffer id
-
-      SLIC_ASSERT_MSG( id_map.find(buffer_id) != id_map.end(),
-                       "Invalid buffer index mapping." );
-
-      buffer_id = id_map[buffer_id];
-      DataBuffer * ds_buff = m_datastore->getBuffer(buffer_id);
-
-      // create a new view with the buffer
-      DataView * ds_view = createView(view_name, ds_buff);
-      // declare using the schema datatype
-      Schema schema(n_view["schema"].as_string());
-      ds_view->describe(schema.dtype());
-      // if the schema was applied, restore this state
-      if (n_view["is_applied"].to_uint64() != 0)
-        ds_view->apply();
-    }
-    else
-    {
-      SLIC_ASSERT_MSG( 0, "DataGroup cannot restore opaque views." );
+      DataView * view = createView( view_name );
+      view->importFrom(n_view, buffer_id_map);
     }
   }
-
-  // create the child groups
-  conduit::NodeIterator groups_itr = n["groups"].children();
-  while (groups_itr.has_next())
+  if ( data_holder.dtype().is_object() && data_holder.has_path("groups") )
   {
-    Node& n_group = groups_itr.next();
-    std::string group_name = groups_itr.path();
-    DataGroup * ds_group = createGroup(group_name);
-    ds_group->copyFromNode(n_group, id_map);
+    // create the child groups
+    conduit::NodeIterator groups_itr = data_holder["groups"].children();
+    while (groups_itr.has_next())
+    {
+      Node& n_group = groups_itr.next();
+      std::string group_name = groups_itr.path();
+      DataGroup * group = createGroup(group_name);
+      group->importFrom(n_group, buffer_id_map);
+    }
   }
 }
 

@@ -23,6 +23,7 @@
 
 // Standard C++ headers
 #include <string>
+#include <set>
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
@@ -778,6 +779,18 @@ private:
    * \brief Set the shape to be a ndims dimensions with shape.
    */
   void describeShape(int ndims, SidreLength * shape);
+
+  /*!
+   * \brief TODO
+   */
+  void exportTo(conduit::Node& data_holder,
+                std::set<IndexType>& buffer_indices) const;
+
+  /*!
+   * \brief TODO
+   */
+  void importFrom(conduit::Node& data_holder,
+                  const std::map<IndexType, IndexType>& buffer_id_map);
 
   /*!
    *  \brief Private method to remove any applied description;

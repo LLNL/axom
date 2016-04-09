@@ -150,8 +150,7 @@ public:
   }
 
   /*!
-   * \brief Return true if data description exists.  It may/may not have been
-   * applied to the data yet.  ( Check isApplied() for that. )
+   * \brief Return true if data description exists.
    */
   bool isDescribed() const
   {
@@ -303,6 +302,16 @@ private:
    * \brief Release any allocated bytes pointed to by ptr.
    */
   void  releaseBytes(void * ptr);
+
+  /*!
+   * \brief Exports buffer's state to a conduit node.
+   */
+  void exportTo( conduit::Node& data_holder );
+
+  /*!
+   * \brief Import buffer's state from a conduit node.
+   */
+  void importFrom( conduit::Node& data_holder );
 
   /// Index Identifier - unique within a dataStore.
   IndexType m_index;
