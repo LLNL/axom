@@ -110,3 +110,24 @@ Python function const std::string & LastFunctionCalled()+pure
 Close pyTutorialmodule.hpp
 Close pyTutorialmodule.cpp
 Close pyTutorialhelper.cpp
+Lua method Class1 * new()+constructor
+Lua method void delete()+destructor
+Lua method void Method1()
+Lua function void Function1()
+Lua function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
+Lua function void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))
+Lua function bool Function3(bool arg+intent(in)+value)
+Lua function const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
+Lua function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
+Lua function double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
+Lua function void Function6(const std::string & name+intent(in))
+Lua function void Function6(int indx+intent(in)+value)
+Lua function void Function9(double arg+intent(in)+value)
+Lua function void Function10()
+Lua function void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)
+Lua function int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
+Lua function int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
+Lua function TypeID typefunc(TypeID arg+intent(in)+value)
+Lua function EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)
+Lua function const std::string & LastFunctionCalled()+pure
+Close luaTutorialpackage.cpp

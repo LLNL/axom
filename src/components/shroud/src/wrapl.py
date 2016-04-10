@@ -8,8 +8,8 @@ from util import wformat, append_format
 
 def add_templates(options):
     options.update(dict(
-        LUA_module_filename_template = 'lua{library}module.cpp',
-#        LUA_header_filename_template = 'lua{library}module.hpp',
+        LUA_module_filename_template = 'lua{library}package.cpp',
+#        LUA_header_filename_template = 'lua{library}package.hpp',
 #        LUA_helper_filename_template = 'lua{library}helper.cpp',
 #        LUA_PyTypeObject_template    = '{LUA_prefix}{cpp_class}_Type',
 #        LUA_PyObject_template        = '{LUA_prefix}{cpp_class}',
@@ -29,7 +29,7 @@ class Wrapl(util.WrapperMixin):
         self.log = config.log
         self.typedef = tree['types']
         self._init_splicer(splicers)
-        self.comment = '--'
+        self.comment = '//'
 
     def reset_file(self):
         pass

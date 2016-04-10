@@ -177,4 +177,4 @@ Lua function void test_names(const std::string & name+intent(in))
 Lua function void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
 Lua function void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
 Lua function void testmpi(MPI_Comm comm+intent(in)+value)
-Close luaUserLibrarymodule.cpp
+Close luaUserLibrarypackage.cpp

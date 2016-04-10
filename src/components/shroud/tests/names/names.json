@@ -276,7 +276,7 @@
         "F_name_instance_set": "set_instance", 
         "F_name_method_template": "{underscore_name}{function_suffix}", 
         "F_string_len_trim": true, 
-        "LUA_module_filename_template": "lua{library}module.cpp", 
+        "LUA_module_filename_template": "lua{library}package.cpp", 
         "LUA_name_impl_template": "{LUA_prefix}{class_name}{underscore_name}{function_suffix}", 
         "PY_PyObject_template": "{PY_prefix}{cpp_class}", 
         "PY_PyTypeObject_template": "{PY_prefix}{cpp_class}_Type", 

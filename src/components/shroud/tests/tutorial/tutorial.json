@@ -43,6 +43,7 @@
                         "F_name_generic": "new", 
                         "F_name_impl": "class1_new", 
                         "F_name_method": "new", 
+                        "LUA_name_impl": "l_class1_new", 
                         "function_name": "new", 
                         "underscore_name": "new"
                     }, 
@@ -70,6 +71,7 @@
                         "F_name_generic": "delete", 
                         "F_name_impl": "class1_delete", 
                         "F_name_method": "delete", 
+                        "LUA_name_impl": "l_class1_delete", 
                         "PY_name_impl": "PY_class1_delete", 
                         "function_name": "delete", 
                         "underscore_name": "delete"
@@ -94,6 +96,7 @@
                         "F_name_generic": "method1", 
                         "F_name_impl": "class1_method1", 
                         "F_name_method": "method1", 
+                        "LUA_name_impl": "l_class1_method1", 
                         "PY_name_impl": "PY_class1_method1", 
                         "function_name": "Method1", 
                         "underscore_name": "method1"
@@ -127,6 +130,9 @@
         "F_result": "rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
+        "LUA_module_filename": "luaTutorialpackage.cpp", 
+        "LUA_module_name": "tutorial", 
+        "LUA_prefix": "l_", 
         "PY_header_filename": "pyTutorialmodule.hpp", 
         "PY_helper_filename": "pyTutorialhelper.cpp", 
         "PY_library_doc": "library documentation", 
@@ -155,6 +161,7 @@
                 "F_name_generic": "function1", 
                 "F_name_impl": "function1", 
                 "F_name_method": "function1", 
+                "LUA_name_impl": "l_function1", 
                 "PY_name_impl": "PY_function1", 
                 "function_name": "Function1", 
                 "underscore_name": "function1"
@@ -196,6 +203,7 @@
                 "F_name_generic": "function2", 
                 "F_name_impl": "function2", 
                 "F_name_method": "function2", 
+                "LUA_name_impl": "l_function2", 
                 "PY_name_impl": "PY_function2", 
                 "function_name": "Function2", 
                 "underscore_name": "function2"
@@ -248,6 +256,7 @@
                 "F_name_generic": "sum", 
                 "F_name_impl": "sum", 
                 "F_name_method": "sum", 
+                "LUA_name_impl": "l_sum", 
                 "PY_name_impl": "PY_sum", 
                 "function_name": "Sum", 
                 "underscore_name": "sum"
@@ -281,6 +290,7 @@
                 "F_name_generic": "function3", 
                 "F_name_impl": "function3", 
                 "F_name_method": "function3", 
+                "LUA_name_impl": "l_function3", 
                 "PY_name_impl": "PY_function3", 
                 "function_name": "Function3", 
                 "underscore_name": "function3"
@@ -325,6 +335,7 @@
                 "F_name_generic": "function4a", 
                 "F_name_impl": "function4a", 
                 "F_name_method": "function4a", 
+                "LUA_name_impl": "l_function4a", 
                 "PY_name_impl": "PY_function4a", 
                 "function_name": "Function4a", 
                 "underscore_name": "function4a"
@@ -439,6 +450,7 @@
             "fmt": {
                 "C_name": "TUT_function4b", 
                 "F_C_name": "c_function4b", 
+                "LUA_name_impl": "l_function4b", 
                 "PY_name_impl": "PY_function4b", 
                 "function_name": "Function4b", 
                 "underscore_name": "function4b"
@@ -713,6 +725,7 @@
                 "F_name_generic": "function5", 
                 "F_name_impl": "function5_arg1_arg2", 
                 "F_name_method": "function5_arg1_arg2", 
+                "LUA_name_impl": "l_function5_arg1_arg2", 
                 "PY_name_impl": "PY_function5_arg1_arg2", 
                 "function_name": "Function5", 
                 "function_suffix": "_arg1_arg2", 
@@ -755,6 +768,7 @@
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_name", 
                 "F_name_method": "function6_from_name", 
+                "LUA_name_impl": "l_function6_from_name", 
                 "PY_name_impl": "PY_function6_from_name", 
                 "function_name": "Function6", 
                 "function_suffix": "_from_name", 
@@ -840,6 +854,7 @@
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_index", 
                 "F_name_method": "function6_from_index", 
+                "LUA_name_impl": "l_function6_from_index", 
                 "PY_name_impl": "PY_function6_from_index", 
                 "function_name": "Function6", 
                 "function_suffix": "_from_index", 
@@ -1082,6 +1097,7 @@
             "fmt": {
                 "C_name": "TUT_function9", 
                 "F_C_name": "c_function9", 
+                "LUA_name_impl": "l_function9", 
                 "PY_name_impl": "PY_function9", 
                 "function_name": "Function9", 
                 "underscore_name": "function9"
@@ -1193,6 +1209,7 @@
                 "F_name_generic": "function10", 
                 "F_name_impl": "function10_0", 
                 "F_name_method": "function10_0", 
+                "LUA_name_impl": "l_function10_0", 
                 "PY_name_impl": "PY_function10_0", 
                 "function_name": "Function10", 
                 "function_suffix": "_0", 
@@ -1240,6 +1257,7 @@
             "fmt": {
                 "C_name": "TUT_function10_1", 
                 "F_C_name": "c_function10_1", 
+                "LUA_name_impl": "l_function10_1", 
                 "PY_name_impl": "PY_function10_1", 
                 "function_name": "Function10", 
                 "function_suffix": "_1", 
@@ -1583,6 +1601,7 @@
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_num_offset_stride", 
                 "F_name_method": "overload1_num_offset_stride", 
+                "LUA_name_impl": "l_overload1_num_offset_stride", 
                 "PY_name_impl": "PY_overload1_num_offset_stride", 
                 "function_name": "overload1", 
                 "function_suffix": "_num_offset_stride", 
@@ -1766,6 +1785,7 @@
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_5", 
                 "F_name_method": "overload1_5", 
+                "LUA_name_impl": "l_overload1_5", 
                 "PY_name_impl": "PY_overload1_5", 
                 "function_name": "overload1", 
                 "function_suffix": "_5", 
@@ -1800,6 +1820,7 @@
                 "F_name_generic": "typefunc", 
                 "F_name_impl": "typefunc", 
                 "F_name_method": "typefunc", 
+                "LUA_name_impl": "l_typefunc", 
                 "PY_name_impl": "PY_typefunc", 
                 "function_name": "typefunc", 
                 "underscore_name": "typefunc"
@@ -1833,6 +1854,7 @@
                 "F_name_generic": "enumfunc", 
                 "F_name_impl": "enumfunc", 
                 "F_name_method": "enumfunc", 
+                "LUA_name_impl": "l_enumfunc", 
                 "PY_name_impl": "PY_enumfunc", 
                 "function_name": "enumfunc", 
                 "underscore_name": "enumfunc"
@@ -1856,6 +1878,7 @@
             "fmt": {
                 "C_name": "TUT_last_function_called", 
                 "F_C_name": "c_last_function_called", 
+                "LUA_name_impl": "l_last_function_called", 
                 "PY_name_impl": "PY_last_function_called", 
                 "function_name": "LastFunctionCalled", 
                 "underscore_name": "last_function_called"
@@ -1969,7 +1992,7 @@
         "F_name_instance_set": "set_instance", 
         "F_name_method_template": "{underscore_name}{function_suffix}", 
         "F_string_len_trim": true, 
-        "LUA_module_filename_template": "lua{library}module.cpp", 
+        "LUA_module_filename_template": "lua{library}package.cpp", 
         "LUA_name_impl_template": "{LUA_prefix}{class_name}{underscore_name}{function_suffix}", 
         "PY_PyObject_template": "{PY_prefix}{cpp_class}", 
         "PY_PyTypeObject_template": "{PY_prefix}{cpp_class}_Type", 
@@ -1986,7 +2009,7 @@
         "namespace": "tutorial", 
         "wrap_c": true, 
         "wrap_fortran": true, 
-        "wrap_lua": false, 
+        "wrap_lua": true, 
         "wrap_python": true
     }, 
     "patterns": [], 
