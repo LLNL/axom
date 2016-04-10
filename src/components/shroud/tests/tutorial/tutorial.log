@@ -127,4 +127,4 @@ Lua function int overload1(double type+intent(in)+value, int num+intent(in)+valu
 Lua function TypeID typefunc(TypeID arg+intent(in)+value)
 Lua function EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)
 Lua function const std::string & LastFunctionCalled()+pure
-Close luaTutorialpackage.cpp
+Close luaTutorialpackage.hpp

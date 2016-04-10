@@ -8,8 +8,8 @@ from util import wformat, append_format
 
 def add_templates(options):
     options.update(dict(
-        LUA_module_filename_template = 'lua{library}package.cpp',
-#        LUA_header_filename_template = 'lua{library}package.hpp',
+        LUA_package_filename_template = 'lua{library}package.cpp',
+        LUA_header_filename_template = 'lua{library}package.hpp',
 #        LUA_helper_filename_template = 'lua{library}helper.cpp',
 #        LUA_PyTypeObject_template    = '{LUA_prefix}{cpp_class}_Type',
 #        LUA_PyObject_template        = '{LUA_prefix}{cpp_class}',
@@ -40,11 +40,15 @@ class Wrapl(util.WrapperMixin):
         fmt_library = self.tree['fmt']
 
         # Format variables
-        fmt_library.LUA_prefix          = options.get('LUA_prefix', 'l_')
-        fmt_library.LUA_module_name     = fmt_library.library_lower
-        util.eval_template(top, 'LUA_module_filename')
+        fmt_library.LUA_prefix        = options.get('LUA_prefix', 'l_')
+        fmt_library.LUA_package_name  = fmt_library.library_lower
+        fmt_library.LUA_state = 'L'
+        fmt_library.LUA_package_reg = 'XXX1'
+        util.eval_template(top, 'LUA_package_filename')
+        util.eval_template(top, 'LUA_header_filename')
 
         # Variables to accumulate output lines
+        self.luaL_Reg_package = []
         self.body_lines = []
 
         self._push_splicer('class')
@@ -63,8 +67,8 @@ class Wrapl(util.WrapperMixin):
             self.wrap_functions(None, self.tree['functions'])
             self._pop_splicer('function')
 
-#        self.write_header(self.tree)
-        self.write_module(self.tree)
+        self.write_header(self.tree)
+        self.write_package(self.tree)
 #        self.write_helper()
 
     def wrap_class(self, node):
@@ -105,7 +109,6 @@ class Wrapl(util.WrapperMixin):
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
         fmt.doc_string = 'documentation'
-        fmt.LUA_state = 'L'
         util.eval_template(node, 'LUA_name_impl')
 
         CPP_subprogram = node['_subprogram']
@@ -153,6 +156,7 @@ class Wrapl(util.WrapperMixin):
             append_format(LUA_decl, 'int shroud_nargs = lua_gettop({LUA_state});', fmt)
 
         if True:
+            fmt.LUA_index = 1
             for arg in node['args']:
                 arg_name = arg['name']
                 fmt.c_var = arg['name']
@@ -162,7 +166,6 @@ class Wrapl(util.WrapperMixin):
                 attrs = arg['attrs']
 
                 lua_pop = None
-                fmt.LUA_index = 0
 
                 arg_typedef = self.typedef[arg['type']]
                 LUA_statements = arg_typedef.LUA_statements
@@ -181,6 +184,14 @@ class Wrapl(util.WrapperMixin):
                         # call for default arguments  (num args, arg string)
                         default_calls.append(
                             (len(cpp_call_list), len(post_parse), ', '.join(cpp_call_list)))
+                        LUA_code.extend([
+                                'if (shroud_nargs > {}) {{'.format(fmt.LUA_index-1),
+                                1,
+                                '{} = {}'.format(fmt.c_var, lua_pop),
+                                -1,
+                                '}'
+                                ])
+                        lua_pop = False;
 
 #                    parse_format.append(arg_typedef.PY_format)
 #                    if arg_typedef.PY_PyTypeObject:
@@ -201,6 +212,7 @@ class Wrapl(util.WrapperMixin):
 #                        fmt.cpp_var = 'SH_' + fmt.c_var
 #                        for cmd in cmd_list:
 #                            append_format(post_parse, cmd, fmt)
+                    fmt.LUA_index += 1 
 
                 if attrs['intent'] in [ 'inout', 'out']:
                     # output variable must be a pointer
@@ -245,8 +257,11 @@ class Wrapl(util.WrapperMixin):
 #                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
 #                fmt_func.C_object = wformat(template, fmt_func)
             fmt.LUA_this_call = wformat('self->{BBB}->', fmt)  # call method syntax
+##            if ctor: add to package else add to class meta-table
+                
         else:
             fmt.LUA_this_call = ''  # call function syntax
+            self.luaL_Reg_package.append(wformat('{{"{function_name}{function_suffix}", {LUA_name_impl}}},', fmt))
 
         # call with all arguments
         default_calls.append(
@@ -331,18 +346,67 @@ class Wrapl(util.WrapperMixin):
                 '}'
                 ])
 
-    def write_module(self, node):
+    def write_header(self, node):
         options = node['options']
         fmt = node['fmt']
-        fname = fmt.LUA_module_filename
+        fname = fmt.LUA_header_filename
 
         output = []
 
+        # add guard
+        guard = fname.replace(".", "_").upper()
+        output.extend([
+                '#ifndef %s' % guard,
+                '#define %s' % guard,
+                '#include "lua.h"',
+                wformat('int luaopen_{LUA_package_name} (lua_state *{LUA_state});', fmt),
+                ])
+        output.append('#endif  /* %s */' % guard)
+        self.write_output_file(fname, self.config.python_dir, output)
+
+    def append_luaL_Reg(self, output, name, lines):
+        """Create luaL_Reg struct"""
+        output.extend([
+                'static const struct luaL_Reg {} [] = {{'.format(name),
+                1,
+                ])
+        output.extend(self.lines)
+        output.extend([
+                '{NULL, NULL}   /*sentinel */',
+                -1,
+                '};',
+                ''
+                ])
+
+    def write_package(self, node):
+        options = node['options']
+        fmt = node['fmt']
+        fname = fmt.LUA_package_filename
+
+        output = []
+
+        if options.cpp_header:
+            for include in options.cpp_header.split():
+                output.append('#include "%s"' % include)
+        output.append(wformat('#include "{LUA_header_filename}"', fmt))
+        self._create_splicer('include', output)
+
+        output.append('')
+        self.namespace(node, 'begin', output)
+        self._create_splicer('C_definition', output)
+
         output.extend(self.body_lines)
 
+        self.append_luaL_Reg(output, fmt.LUA_package_reg, self.lua_Reg_package)
+        output.extend([
+                wformat('int luaopen_{LUA_package_name} (lua_state *{LUA_state}) {{', fmt),
+                1,
+                wformat('luaL_newLib({LUA_state}, {LUA_package_reg});', fmt),
+                'return 1',
+                -1,
+                '}'
+                ])
+
+        self.namespace(node, 'end', output)
+
         self.write_output_file(fname, self.config.lua_dir, output)
-
-
-
-
-        
