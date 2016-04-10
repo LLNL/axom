@@ -298,6 +298,7 @@ class Typedef(object):
 
         result_as_arg = None, # override fields when result should be treated as an argument
 
+        # Python
         PY_format='O',        # 'format unit' for PyArg_Parse
         PY_PyTypeObject=None, # variable name of PyTypeObject instance
         PY_PyObject=None,     # typedef name of PyObject instance
@@ -306,6 +307,11 @@ class Typedef(object):
         PY_to_object=None,    # PyBuild - object = converter(address)
         PY_from_object=None,  # PyArg_Parse - status = converter(object, address);
         py_statements={},
+
+        # Lua
+        LUA_pop = 'POP',
+        LUA_push = 'PUSH',
+        LUA_statements={},
         )
 
     def __init__(self, name, **kw):

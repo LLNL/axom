@@ -129,6 +129,9 @@ functions:
 
 classes:
 - name: Class1
+  options:
+    # skip lua for classes for now
+    wrap_lua: False
   methods:
   - decl: Class1 *new()  +constructor
   - decl: void delete()  +destructor

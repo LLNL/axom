@@ -76,7 +76,6 @@
                         "F_name_generic": "new", 
                         "F_name_impl": "exclass1_new", 
                         "F_name_method": "new", 
-                        "LUA_name_impl": "l_exclass1_new", 
                         "function_name": "new", 
                         "underscore_name": "new"
                     }, 
@@ -155,7 +154,6 @@
                         "F_name_generic": "delete", 
                         "F_name_impl": "exclass1_delete", 
                         "F_name_method": "delete", 
-                        "LUA_name_impl": "l_exclass1_delete", 
                         "PY_name_impl": "PP_exclass1_delete", 
                         "function_name": "delete", 
                         "underscore_name": "delete"
@@ -189,7 +187,6 @@
                         "F_name_generic": "increment_count", 
                         "F_name_impl": "exclass1_increment_count", 
                         "F_name_method": "increment_count", 
-                        "LUA_name_impl": "l_exclass1_increment_count", 
                         "PY_name_impl": "PP_exclass1_increment_count", 
                         "function_name": "incrementCount", 
                         "underscore_name": "increment_count"
@@ -219,7 +216,6 @@
                         "F_name_generic": "get_name", 
                         "F_name_impl": "exclass1_get_name", 
                         "F_name_method": "get_name", 
-                        "LUA_name_impl": "l_exclass1_get_name", 
                         "PY_name_impl": "PP_exclass1_get_name", 
                         "function_name": "getName", 
                         "underscore_name": "get_name"
@@ -301,7 +297,6 @@
                         "F_name_generic": "get_name_length", 
                         "F_name_impl": "exclass1_get_name_length", 
                         "F_name_method": "get_name_length", 
-                        "LUA_name_impl": "l_exclass1_get_name_length", 
                         "PY_name_impl": "PP_exclass1_get_name_length", 
                         "function_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
@@ -332,7 +327,6 @@
                         "F_name_generic": "get_name_error_check", 
                         "F_name_impl": "exclass1_get_name_error_check", 
                         "F_name_method": "get_name_error_check", 
-                        "LUA_name_impl": "l_exclass1_get_name_error_check", 
                         "PY_name_impl": "PP_exclass1_get_name_error_check", 
                         "function_name": "getNameErrorCheck", 
                         "underscore_name": "get_name_error_check"
@@ -404,7 +398,6 @@
                     "fmt": {
                         "C_name": "AA_exclass1_get_name_arg", 
                         "F_C_name": "c_exclass1_get_name_arg", 
-                        "LUA_name_impl": "l_exclass1_get_name_arg", 
                         "PY_name_impl": "PP_exclass1_get_name_arg", 
                         "function_name": "getNameArg", 
                         "underscore_name": "get_name_arg"
@@ -527,7 +520,6 @@
                         "F_name_generic": "get_root", 
                         "F_name_impl": "exclass1_get_root", 
                         "F_name_method": "get_root", 
-                        "LUA_name_impl": "l_exclass1_get_root", 
                         "PY_name_impl": "PP_exclass1_get_root", 
                         "function_name": "getRoot", 
                         "underscore_name": "get_root"
@@ -568,7 +560,6 @@
                         "F_name_generic": "get_value", 
                         "F_name_impl": "exclass1_get_value_from_int", 
                         "F_name_method": "get_value_from_int", 
-                        "LUA_name_impl": "l_exclass1_get_value_from_int", 
                         "PY_name_impl": "PP_exclass1_get_value_from_int", 
                         "function_name": "getValue", 
                         "function_suffix": "_from_int", 
@@ -609,7 +600,6 @@
                         "F_name_generic": "get_value", 
                         "F_name_impl": "exclass1_get_value_1", 
                         "F_name_method": "get_value_1", 
-                        "LUA_name_impl": "l_exclass1_get_value_1", 
                         "PY_name_impl": "PP_exclass1_get_value_1", 
                         "function_name": "getValue", 
                         "function_suffix": "_1", 
@@ -635,7 +625,6 @@
                         "F_name_generic": "get_addr", 
                         "F_name_impl": "exclass1_get_addr", 
                         "F_name_method": "get_addr", 
-                        "LUA_name_impl": "l_exclass1_get_addr", 
                         "PY_name_impl": "PP_exclass1_get_addr", 
                         "function_name": "getAddr", 
                         "underscore_name": "get_addr"
@@ -671,7 +660,6 @@
                         "F_name_generic": "has_addr", 
                         "F_name_impl": "exclass1_has_addr", 
                         "F_name_method": "has_addr", 
-                        "LUA_name_impl": "l_exclass1_has_addr", 
                         "PY_name_impl": "PP_exclass1_has_addr", 
                         "function_name": "hasAddr", 
                         "underscore_name": "has_addr"
@@ -696,7 +684,6 @@
                         "F_name_generic": "splicer_special", 
                         "F_name_impl": "exclass1_splicer_special", 
                         "F_name_method": "splicer_special", 
-                        "LUA_name_impl": "l_exclass1_splicer_special", 
                         "PY_name_impl": "PP_exclass1_splicer_special", 
                         "function_name": "SplicerSpecial", 
                         "underscore_name": "splicer_special"
@@ -793,7 +780,6 @@
                         "F_name_generic": "ex_class2", 
                         "F_name_impl": "exclass2_ex_class2", 
                         "F_name_method": "ex_class2", 
-                        "LUA_name_impl": "l_exclass2_ex_class2", 
                         "function_name": "ExClass2", 
                         "underscore_name": "ex_class2"
                     }, 
@@ -864,7 +850,6 @@
                         "F_name_generic": "delete", 
                         "F_name_impl": "exclass2_delete", 
                         "F_name_method": "delete", 
-                        "LUA_name_impl": "l_exclass2_delete", 
                         "PY_name_impl": "PP_exclass2_delete", 
                         "function_name": "delete", 
                         "underscore_name": "delete"
@@ -892,7 +877,6 @@
                         "F_name_generic": "get_name", 
                         "F_name_impl": "exclass2_get_name", 
                         "F_name_method": "get_name", 
-                        "LUA_name_impl": "l_exclass2_get_name", 
                         "PY_name_impl": "PP_exclass2_get_name", 
                         "function_name": "getName", 
                         "underscore_name": "get_name"
@@ -969,7 +953,6 @@
                         "F_name_generic": "get_name_length", 
                         "F_name_impl": "exclass2_get_name_length", 
                         "F_name_method": "get_name_length", 
-                        "LUA_name_impl": "l_exclass2_get_name_length", 
                         "PY_name_impl": "PP_exclass2_get_name_length", 
                         "function_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
@@ -1009,7 +992,6 @@
                         "F_name_generic": "get_class1", 
                         "F_name_impl": "exclass2_get_class1", 
                         "F_name_method": "get_class1", 
-                        "LUA_name_impl": "l_exclass2_get_class1", 
                         "PY_name_impl": "PP_exclass2_get_class1", 
                         "function_name": "get_class1", 
                         "underscore_name": "get_class1"
@@ -1184,7 +1166,6 @@
                     "fmt": {
                         "C_name": "AA_exclass2_declare_1", 
                         "F_C_name": "c_exclass2_declare_1", 
-                        "LUA_name_impl": "l_exclass2_declare_1", 
                         "PY_name_impl": "PP_exclass2_declare_1", 
                         "function_name": "declare", 
                         "function_suffix": "_1", 
@@ -1335,7 +1316,6 @@
                         "F_name_generic": "destroyall", 
                         "F_name_impl": "exclass2_destroyall", 
                         "F_name_method": "destroyall", 
-                        "LUA_name_impl": "l_exclass2_destroyall", 
                         "PY_name_impl": "PP_exclass2_destroyall", 
                         "function_name": "destroyall", 
                         "underscore_name": "destroyall"
@@ -1362,7 +1342,6 @@
                         "F_name_generic": "get_type_id", 
                         "F_name_impl": "exclass2_get_type_id", 
                         "F_name_method": "get_type_id", 
-                        "LUA_name_impl": "l_exclass2_get_type_id", 
                         "PY_name_impl": "PP_exclass2_get_type_id", 
                         "function_name": "getTypeID", 
                         "underscore_name": "get_type_id"
@@ -1712,9 +1691,6 @@
         "F_result": "rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
-        "LUA_module_filename": "luaUserLibrarypackage.cpp", 
-        "LUA_module_name": "userlibrary", 
-        "LUA_prefix": "l_", 
         "PY_header_filename": "pyUserLibrarymodule.hpp", 
         "PY_helper_filename": "pyUserLibraryhelper.cpp", 
         "PY_library_doc": "library documentation", 
@@ -1744,7 +1720,6 @@
                 "F_name_generic": "local_function1", 
                 "F_name_impl": "local_function1", 
                 "F_name_method": "local_function1", 
-                "LUA_name_impl": "l_local_function1", 
                 "PY_name_impl": "PP_local_function1", 
                 "function_name": "local_function1", 
                 "underscore_name": "local_function1"
@@ -1781,7 +1756,6 @@
                 "F_name_generic": "is_name_valid", 
                 "F_name_impl": "is_name_valid", 
                 "F_name_method": "is_name_valid", 
-                "LUA_name_impl": "l_is_name_valid", 
                 "PY_name_impl": "PP_is_name_valid", 
                 "function_name": "isNameValid", 
                 "underscore_name": "is_name_valid"
@@ -1848,7 +1822,6 @@
                 "F_name_generic": "is_initialized", 
                 "F_name_impl": "is_initialized", 
                 "F_name_method": "is_initialized", 
-                "LUA_name_impl": "l_is_initialized", 
                 "PY_name_impl": "PP_is_initialized", 
                 "function_name": "isInitialized", 
                 "underscore_name": "is_initialized"
@@ -1890,7 +1863,6 @@
                 "F_name_generic": "test_names", 
                 "F_name_impl": "test_names", 
                 "F_name_method": "test_names", 
-                "LUA_name_impl": "l_test_names", 
                 "PY_name_impl": "PP_test_names", 
                 "function_name": "test_names", 
                 "function_suffix": "", 
@@ -1987,7 +1959,6 @@
                 "F_name_generic": "test_names", 
                 "F_name_impl": "test_names_flag", 
                 "F_name_method": "test_names_flag", 
-                "LUA_name_impl": "l_test_names_flag", 
                 "PY_name_impl": "PP_test_names_flag", 
                 "function_name": "test_names", 
                 "function_suffix": "_flag", 
@@ -2164,7 +2135,6 @@
                 "F_name_generic": "testoptional", 
                 "F_name_impl": "testoptional_2", 
                 "F_name_method": "testoptional_2", 
-                "LUA_name_impl": "l_testoptional_2", 
                 "PY_name_impl": "PP_testoptional_2", 
                 "function_name": "testoptional", 
                 "function_suffix": "_2", 
@@ -2199,7 +2169,6 @@
                 "F_name_generic": "testmpi", 
                 "F_name_impl": "testmpi", 
                 "F_name_method": "testmpi", 
-                "LUA_name_impl": "l_testmpi", 
                 "PY_name_impl": "PP_testmpi", 
                 "function_name": "testmpi", 
                 "underscore_name": "testmpi"
@@ -2252,7 +2221,7 @@
         "namespace": "example nested", 
         "wrap_c": true, 
         "wrap_fortran": true, 
-        "wrap_lua": true, 
+        "wrap_lua": false, 
         "wrap_python": true
     }, 
     "patterns": {
@@ -2351,6 +2320,8 @@
             "f_type": "integer"
         }, 
         "SidreLength": {
+            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
             "PY_format": "l", 
             "c_fortran": "integer(C_LONG)", 
             "c_header": "sidre/SidreTypes.h", 
@@ -2367,6 +2338,8 @@
             "typedef": "long"
         }, 
         "TypeID": {
+            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
             "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_header": "sidre/SidreTypes.h", 
@@ -2386,6 +2359,8 @@
             "typedef": "int"
         }, 
         "bool": {
+            "LUA_pop": "lua_toboolean({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushboolean({LUA_state}, {c_var})", 
             "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
             "c_fortran": "logical(C_BOOL)", 
@@ -2415,6 +2390,8 @@
             }
         }, 
         "char": {
+            "LUA_pop": "lua_tostring({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state}, {c_var})", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
@@ -2462,6 +2439,8 @@
             "f_type": "character(*)"
         }, 
         "char_scalar": {
+            "LUA_pop": "lua_tostring({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state}, {c_var})", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -2482,6 +2461,8 @@
             "f_type": "character"
         }, 
         "double": {
+            "LUA_pop": "lua_tonumber({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state}, {c_var})", 
             "PY_format": "d", 
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
@@ -2496,6 +2477,8 @@
             "f_type": "real(C_DOUBLE)"
         }, 
         "float": {
+            "LUA_pop": "lua_tonumber({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state}, {c_var})", 
             "PY_format": "f", 
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
@@ -2510,6 +2493,8 @@
             "f_type": "real(C_FLOAT)"
         }, 
         "int": {
+            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
             "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
@@ -2524,6 +2509,8 @@
             "f_type": "integer(C_INT)"
         }, 
         "integer(C_INT)": {
+            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
             "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
@@ -2538,6 +2525,8 @@
             "f_type": "integer(C_INT)"
         }, 
         "integer(C_LONG)": {
+            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
             "PY_format": "l", 
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
@@ -2552,6 +2541,8 @@
             "f_type": "integer(C_LONG)"
         }, 
         "long": {
+            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
             "PY_format": "l", 
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
@@ -2569,6 +2560,8 @@
             "cpp_type": "junk"
         }, 
         "real(C_DOUBLE)": {
+            "LUA_pop": "lua_tonumber({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state}, {c_var})", 
             "PY_format": "d", 
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
@@ -2583,6 +2576,8 @@
             "f_type": "real(C_DOUBLE)"
         }, 
         "real(C_FLOAT)": {
+            "LUA_pop": "lua_tonumber({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state}, {c_var})", 
             "PY_format": "f", 
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
@@ -2597,6 +2592,8 @@
             "f_type": "real(C_FLOAT)"
         }, 
         "size_t": {
+            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
             "PY_ctor": "PyInt_FromLong({rv})", 
             "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
@@ -2612,6 +2609,8 @@
             "f_type": "integer(C_SIZE_T)"
         }, 
         "std::string": {
+            "LUA_pop": "lua_tostring({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state}, {c_var})", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
@@ -2656,6 +2655,8 @@
             }
         }, 
         "string": {
+            "LUA_pop": "lua_tostring({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state}, {c_var})", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
@@ -2700,6 +2701,8 @@
             }
         }, 
         "string_result_fstr": {
+            "LUA_pop": "lua_tostring({LUA_state}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state}, {c_var})", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 

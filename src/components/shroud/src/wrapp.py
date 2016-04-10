@@ -356,7 +356,7 @@ return 1;""", fmt)
             arg_names = []
             arg_offsets  = []
             offset = 0
-            for arg in node['args']:
+            for arg in args:
                 arg_name = arg['name']
                 fmt.c_var = arg['name']
                 fmt.cpp_var = fmt.c_var
@@ -511,6 +511,7 @@ return 1;""", fmt)
         if len(PY_decl):
             PY_decl.append('')
 
+        # Compute return value
         if CPP_subprogram == 'function':
             fmt.c_var = fmt.rv
             fmt.cpp_var = fmt.rv

@@ -20,7 +20,6 @@ options:
   F_module_per_class: True
   # include files to add to module
   wrap_python: True
-  wrap_lua: True
 
   PY_prefix: PP_
 

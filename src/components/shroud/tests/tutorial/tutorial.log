@@ -110,9 +110,6 @@ Python function const std::string & LastFunctionCalled()+pure
 Close pyTutorialmodule.hpp
 Close pyTutorialmodule.cpp
 Close pyTutorialhelper.cpp
-Lua method Class1 * new()+constructor
-Lua method void delete()+destructor
-Lua method void Method1()
 Lua function void Function1()
 Lua function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
 Lua function void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))

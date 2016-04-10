@@ -105,28 +105,215 @@ class Wrapl(util.WrapperMixin):
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
         fmt.doc_string = 'documentation'
+        fmt.LUA_state = 'L'
         util.eval_template(node, 'LUA_name_impl')
 
-##-        result = node['result']
-##-        result_type = result['type']
-##-        result_is_ptr = result['attrs'].get('ptr', False)
-##-        result_is_ref = result['attrs'].get('reference', False)
-##-
-##-        if node.get('return_this', False):
-##-            result_type = 'void'
-##-            result_is_ptr = False
-##-            CPP_subprogram = 'subroutine'
-##-
-##-        result_typedef = self.typedef[result_type]
-##-        is_ctor  = node['attrs'].get('constructor', False)
-##-        is_dtor  = node['attrs'].get('destructor', False)
-##-#        is_const = result['attrs'].get('const', False)
+        CPP_subprogram = node['_subprogram']
+
+        result = node['result']
+        result_type = result['type']
+        result_is_ptr = result['attrs'].get('ptr', False)
+        result_is_ref = result['attrs'].get('reference', False)
+
+        if node.get('return_this', False):
+            result_type = 'void'
+            result_is_ptr = False
+            CPP_subprogram = 'subroutine'
+
+        result_typedef = self.typedef[result_type]
+        is_ctor  = node['attrs'].get('constructor', False)
+        is_dtor  = node['attrs'].get('destructor', False)
+#        is_const = result['attrs'].get('const', False)
 ##-        if is_ctor:   # or is_dtor:
 ##-            # XXX - have explicit delete
 ##-            # need code in __init__ and __del__
 ##-            return
 
+        # XXX if a class, then knock off const since the PyObject
+        # is not const, otherwise, use const from result.
+        if result_typedef.base == 'wrapped':
+            is_const = False
+        else:
+            is_const = None
+        fmt.rv_decl = self.std_c_decl('cpp_type', result, name=fmt.rv, const=is_const)  # return value
 
+        LUA_decl = []  # declare variables and pop values
+        LUA_code = []  # call C++ function
+        LUA_push = []  # push results
+
+        post_parse = []
+
+        cpp_call_list = []
+
+        # parse arguments
+        # call function based on number of default arguments provided
+        default_calls = []   # each possible default call
+        found_default = False
+        if '_has_default_arg' in node:
+            append_format(LUA_decl, 'int shroud_nargs = lua_gettop({LUA_state});', fmt)
+
+        if True:
+            for arg in node['args']:
+                arg_name = arg['name']
+                fmt.c_var = arg['name']
+                fmt.cpp_var = fmt.c_var
+                fmt.lua_var = 'SH_Lua_' + fmt.c_var
+                fmt.c_var_len = 'L' + fmt.c_var
+                attrs = arg['attrs']
+
+                lua_pop = None
+                fmt.LUA_index = 0
+
+                arg_typedef = self.typedef[arg['type']]
+                LUA_statements = arg_typedef.LUA_statements
+                if attrs['intent'] in [ 'inout', 'in']:
+                    lua_pop = wformat(arg_typedef.LUA_pop, fmt)
+#x                    # names to PyArg_ParseTupleAndKeywords
+#X                    arg_names.append(arg_name)
+#X                    arg_offsets.append( '(char *) kwcpp+%d' % offset)
+#X                    offset += len(arg_name) + 1
+
+                    # XXX default should be handled differently
+                    if 'default' in attrs:
+                        if not found_default:
+#                            parse_format.append('|')  # add once
+                            found_default = True
+                        # call for default arguments  (num args, arg string)
+                        default_calls.append(
+                            (len(cpp_call_list), len(post_parse), ', '.join(cpp_call_list)))
+
+#                    parse_format.append(arg_typedef.PY_format)
+#                    if arg_typedef.PY_PyTypeObject:
+#                        # Expect object of given type
+#                        parse_format.append('!')
+#                        parse_vargs.append('&' + arg_typedef.PY_PyTypeObject)
+#                        arg_name = fmt.py_var
+#                    elif arg_typedef.PY_from_object:
+#                        # Use function to convert object
+#                        parse_format.append('&')
+#                        parse_vargs.append(arg_typedef.PY_from_object)
+
+                    # add argument to call to PyArg_ParseTypleAndKeywords
+#                    parse_vargs.append('&' + arg_name)
+
+#                    cmd_list = py_statements.get('intent_in',{}).get('post_parse',[])
+#                    if cmd_list:
+#                        fmt.cpp_var = 'SH_' + fmt.c_var
+#                        for cmd in cmd_list:
+#                            append_format(post_parse, cmd, fmt)
+
+                if attrs['intent'] in [ 'inout', 'out']:
+                    # output variable must be a pointer
+                    # XXX - fix up for strings
+#                    format, vargs = self.intent_out(arg_typedef, fmt, post_call)
+#                    build_format.append(format)
+#                    build_vargs.append('*' + vargs)
+                    append_format(LUA_push, arg_typedef.LUA_push, fmt)
+                   
+
+                # argument for C++ function
+                lang = 'cpp_type'
+                if arg_typedef.base == 'string':
+                    # C++ will coerce char * to std::string
+                    lang = 'c_type'
+                if attrs.get('reference', False):
+                    # convert a reference to a pointer
+                    ptr = True
+                else:
+                    ptr = False
+
+                if lua_pop:
+                    decl_suffix = ' = {};'.format(lua_pop)
+                else:
+                    decl_suffix = ';'
+                LUA_decl.append(self.std_c_decl(lang, arg, const=False, ptr=ptr) + decl_suffix)
+                
+#                if arg_typedef.PY_PyTypeObject:
+#                    # A Python Object which must be converted to C++ type.
+#                    objtype = arg_typedef.PY_PyObject or 'PyObject'
+#                    LUA_decl.append(objtype + ' * ' + fmt.py_var + ';')
+#                    cpp_call_list.append(fmt.cpp_var)
+#                elif arg_typedef.PY_from_object:
+#                    # already a C++ type
+#                    cpp_call_list.append(fmt.cpp_var)
+#                else:
+                # convert to C++ type
+                fmt.ptr=' *' if arg['attrs'].get('ptr', False) else ''
+                append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
+
+        if cls:
+#                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
+#                fmt_func.C_object = wformat(template, fmt_func)
+            fmt.LUA_this_call = wformat('self->{BBB}->', fmt)  # call method syntax
+        else:
+            fmt.LUA_this_call = ''  # call function syntax
+
+        # call with all arguments
+        default_calls.append(
+            (len(cpp_call_list),  len(post_parse), ', '.join(cpp_call_list)))
+
+        # If multiple calls, declare return value once
+        # Else delare on call line.
+        if found_default:
+            fmt.rv_asgn = 'rv = '
+            LUA_code.append('switch (shroud_nargs) {')
+        else:
+            fmt.rv_asgn = fmt.rv_decl + ' = '
+        need_rv = False
+
+        for nargs, len_post_parse, call_list in default_calls:
+            if found_default:
+                LUA_code.append('case %d:' % nargs)
+                LUA_code.append(1)
+
+            fmt.call_list = call_list
+            LUA_code.extend(post_parse[:len_post_parse])
+
+            if is_dtor:
+                append_format(LUA_code, 'delete self->{BBB};', fmt)
+                append_format(LUA_code, 'self->{BBB} = NULL;', fmt)
+            elif CPP_subprogram == 'subroutine':
+                line = wformat('{LUA_this_call}{function_name}({call_list});', fmt)
+                LUA_code.append(line)
+            else:
+                need_rv = True
+                line = wformat('{rv_asgn}{LUA_this_call}{function_name}({call_list});', fmt)
+                LUA_code.append(line)
+
+#            if 'PY_error_pattern' in node:
+#                lfmt = util.Options(fmt)
+#                lfmt.c_var = fmt.rv
+#                lfmt.cpp_var = fmt.rv
+#                append_format(LUA_code, self.patterns[node['PY_error_pattern']], lfmt)
+
+            if found_default:
+                LUA_code.append('break;')
+                LUA_code.append(-1)
+        if found_default:
+#            LUA_code.append('default:')
+#            LUA_code.append(1)
+#            LUA_code.append('continue;')  # XXX raise internal error
+#            LUA_code.append(-1)
+            LUA_code.append('}')
+        else:
+            need_rv = False
+
+        if need_rv:
+            LUA_decl.append(fmt.rv_decl + ';')
+        if len(LUA_decl):
+            LUA_decl.append('')
+
+        # Compute return value
+        if CPP_subprogram == 'function':
+            fmt.cpp_var = fmt.rv
+            fmt.c_var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
+            append_format(LUA_push, result_typedef.LUA_push, fmt)
+#            format, vargs = self.intent_out(result_typedef, fmt, PY_code)
+#            # Add result to front of result tuple
+#            build_format.insert(0, format)
+#            build_vargs.insert(0, vargs)
+
+#        LUA_code.extend(post_call)
 
 
         body = self.body_lines
@@ -134,8 +321,12 @@ class Wrapl(util.WrapperMixin):
                 '',
                 wformat('static int {LUA_name_impl}(lua_State *L)', fmt),
                 '{',
-                1,
-                'return 0;',
+                1])
+        body.extend(LUA_decl)
+        body.extend(LUA_code)
+        body.extend(LUA_push)    # return values
+        body.extend([
+                'return {};'.format(len(LUA_push)),
                 -1,
                 '}'
                 ])
