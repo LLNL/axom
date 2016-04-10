@@ -211,8 +211,8 @@ class Schema(object):
                 f_type    = 'integer(C_INT)',
                 f_module  = dict(iso_c_binding=['C_INT']),
                 PY_format = 'i',
-                LUA_pop   = 'lua_tointeger({LUA_state}, {LUA_index})',
-                LUA_push  = 'lua_pushinteger({LUA_state}, {c_var})',
+                LUA_pop   = 'lua_tointeger({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushinteger({LUA_state_var}, {c_var})',
                 ),
             long   = util.Typedef('long',
                 c_type    = 'long',
@@ -223,8 +223,8 @@ class Schema(object):
                 f_type    = 'integer(C_LONG)',
                 f_module  = dict(iso_c_binding=['C_LONG']),
                 PY_format = 'l',
-                LUA_pop   = 'lua_tointeger({LUA_state}, {LUA_index})',
-                LUA_push  = 'lua_pushinteger({LUA_state}, {c_var})',
+                LUA_pop   = 'lua_tointeger({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushinteger({LUA_state_var}, {c_var})',
                 ),
             size_t   = util.Typedef('size_t',
                 c_type    = 'size_t',
@@ -236,8 +236,8 @@ class Schema(object):
                 f_type    = 'integer(C_SIZE_T)',
                 f_module  = dict(iso_c_binding=['C_SIZE_T']),
                 PY_ctor   = 'PyInt_FromLong({rv})',
-                LUA_pop   = 'lua_tointeger({LUA_state}, {LUA_index})',
-                LUA_push  = 'lua_pushinteger({LUA_state}, {c_var})',
+                LUA_pop   = 'lua_tointeger({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushinteger({LUA_state_var}, {c_var})',
                 ),
 
             float   = util.Typedef('float',
@@ -249,8 +249,8 @@ class Schema(object):
                 f_type    = 'real(C_FLOAT)',
                 f_module  = dict(iso_c_binding=['C_FLOAT']),
                 PY_format = 'f',
-                LUA_pop   = 'lua_tonumber({LUA_state}, {LUA_index})',
-                LUA_push  = 'lua_pushnumber({LUA_state}, {c_var})',
+                LUA_pop   = 'lua_tonumber({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushnumber({LUA_state_var}, {c_var})',
                 ),
             double   = util.Typedef('double',
                 c_type    = 'double',
@@ -261,8 +261,8 @@ class Schema(object):
                 f_type    = 'real(C_DOUBLE)',
                 f_module  = dict(iso_c_binding=['C_DOUBLE']),
                 PY_format = 'd',
-                LUA_pop   = 'lua_tonumber({LUA_state}, {LUA_index})',
-                LUA_push  = 'lua_pushnumber({LUA_state}, {c_var})',
+                LUA_pop   = 'lua_tonumber({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushnumber({LUA_state_var}, {c_var})',
                 ),
 
             bool   = util.Typedef('bool',
@@ -298,8 +298,8 @@ class Schema(object):
 #XXX            PY_format = 'p',  # Python 3.3 or greater
                 PY_ctor   = 'PyBool_FromLong({rv})',
                 PY_PyTypeObject = 'PyBool_Type',
-                LUA_pop   = 'lua_toboolean({LUA_state}, {LUA_index})',
-                LUA_push  = 'lua_pushboolean({LUA_state}, {c_var})',
+                LUA_pop   = 'lua_toboolean({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushboolean({LUA_state_var}, {c_var})',
                 ),
 
             # implies null terminated string
@@ -344,7 +344,7 @@ class Schema(object):
                         cpp_header = 'shroudrt.hpp',
                         ),
                     ),
-                c_to_cpp  = '{cpp_var}',
+                c_to_cpp  = '{cpp_var}', #???
 
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
@@ -354,8 +354,8 @@ class Schema(object):
 #                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({c_var})',
-                LUA_pop   = 'lua_tostring({LUA_state}, {LUA_index})',
-                LUA_push  = 'lua_pushstring({LUA_state}, {c_var})',
+                LUA_pop   = 'lua_tostring({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushstring({LUA_state_var}, {c_var})',
                 base = 'string',
                 ),
 
@@ -367,7 +367,7 @@ class Schema(object):
 
                 c_type   = 'char',    # XXX - char *
 
-                c_to_cpp  = '{cpp_var}',
+                c_to_cpp  = '{cpp_var}',  #???
 
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character',
@@ -377,8 +377,8 @@ class Schema(object):
 #                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({c_var})',
-                LUA_pop   = 'lua_tostring({LUA_state}, {LUA_index})',
-                LUA_push  = 'lua_pushstring({LUA_state}, {c_var})',
+                LUA_pop   = 'lua_tostring({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushstring({LUA_state_var}, {c_var})',
 ##                base = 'string',
                 ),
 
@@ -413,7 +413,8 @@ class Schema(object):
                         ),
                     ),
 
-                c_to_cpp  = '{cpp_var}',                                  
+                c_to_cpp  = '{cpp_var}',
+#???                c_to_cpp  = 'std::string({c_var})',
 
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
@@ -431,8 +432,8 @@ class Schema(object):
                     ),
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({c_var})',
-                LUA_pop   = 'lua_tostring({LUA_state}, {LUA_index})',
-                LUA_push  = 'lua_pushstring({LUA_state}, {c_var})',
+                LUA_pop   = 'lua_tostring({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushstring({LUA_state_var}, {c_var})',
                 base = 'string',
                 ),
 

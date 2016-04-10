@@ -1,5 +1,6 @@
 // luaTutorialpackage.cpp
 // This is generated code, do not edit
+#include "tutorial.hpp"
 #include "luaTutorialpackage.hpp"
 // splicer begin include
 // splicer end include
@@ -20,18 +21,7 @@ static int l_function2(lua_State *L)
     int arg2 = lua_tointeger(L, 2);
     
     double rv = Function2(arg1, arg2);
-    lua_pushnumber(L, rv)
-    return 1;
-}
-
-static int l_sum(lua_State *L)
-{
-    int len = lua_tointeger(L, 1);
-    int * values = lua_tointeger(L, 2);
-    int * result;
-    
-    Sum(len, values, result);
-    lua_pushinteger(L, result)
+    lua_pushnumber(L, rv);
     return 1;
 }
 
@@ -40,27 +30,27 @@ static int l_function3(lua_State *L)
     bool arg = lua_toboolean(L, 1);
     
     bool rv = Function3(arg);
-    lua_pushboolean(L, rv)
+    lua_pushboolean(L, rv);
     return 1;
 }
 
 static int l_function4a(lua_State *L)
 {
-    char * arg1 = lua_tostring(L, 1);
-    char * arg2 = lua_tostring(L, 2);
+    const char * arg1 = arg1;
+    const char * arg2 = arg2;
     
     const std::string rv = Function4a(arg1, arg2);
-    lua_pushstring(L, rv.c_str())
+    lua_pushstring(L, rv.c_str());
     return 1;
 }
 
 static int l_function4b(lua_State *L)
 {
-    char * arg1 = lua_tostring(L, 1);
-    char * arg2 = lua_tostring(L, 2);
+    const char * arg1 = arg1;
+    const char * arg2 = arg2;
     
     const std::string & rv = Function4b(arg1, arg2);
-    lua_pushstring(L, rv.c_str())
+    lua_pushstring(L, rv.c_str());
     return 1;
 }
 
@@ -72,10 +62,10 @@ static int l_function5_arg1_arg2(lua_State *L)
     double rv;
     
     if (shroud_nargs > 0) {
-        arg1 = lua_tonumber(L, 1)
+        arg1 = lua_tonumber(L, 1);
     }
     if (shroud_nargs > 1) {
-        arg2 = lua_toboolean(L, 2)
+        arg2 = lua_toboolean(L, 2);
     }
     switch (shroud_nargs) {
     case 0:
@@ -88,13 +78,13 @@ static int l_function5_arg1_arg2(lua_State *L)
         rv = Function5(arg1, arg2);
         break;
     }
-    lua_pushnumber(L, rv)
+    lua_pushnumber(L, rv);
     return 1;
 }
 
 static int l_function6_from_name(lua_State *L)
 {
-    char * name = lua_tostring(L, 1);
+    const char * name = name;
     
     Function6(name);
     return 0;
@@ -124,7 +114,7 @@ static int l_function10_0(lua_State *L)
 
 static int l_function10_1(lua_State *L)
 {
-    char * name = lua_tostring(L, 1);
+    const char * name = name;
     double arg2 = lua_tonumber(L, 2);
     
     Function10(name, arg2);
@@ -140,10 +130,10 @@ static int l_overload1_num_offset_stride(lua_State *L)
     int rv;
     
     if (shroud_nargs > 1) {
-        offset = lua_tointeger(L, 2)
+        offset = lua_tointeger(L, 2);
     }
     if (shroud_nargs > 2) {
-        stride = lua_tointeger(L, 3)
+        stride = lua_tointeger(L, 3);
     }
     switch (shroud_nargs) {
     case 1:
@@ -156,7 +146,7 @@ static int l_overload1_num_offset_stride(lua_State *L)
         rv = overload1(num, offset, stride);
         break;
     }
-    lua_pushinteger(L, rv)
+    lua_pushinteger(L, rv);
     return 1;
 }
 
@@ -170,10 +160,10 @@ static int l_overload1_5(lua_State *L)
     int rv;
     
     if (shroud_nargs > 2) {
-        offset = lua_tointeger(L, 3)
+        offset = lua_tointeger(L, 3);
     }
     if (shroud_nargs > 3) {
-        stride = lua_tointeger(L, 4)
+        stride = lua_tointeger(L, 4);
     }
     switch (shroud_nargs) {
     case 2:
@@ -186,7 +176,7 @@ static int l_overload1_5(lua_State *L)
         rv = overload1(type, num, offset, stride);
         break;
     }
-    lua_pushinteger(L, rv)
+    lua_pushinteger(L, rv);
     return 1;
 }
 
@@ -195,29 +185,28 @@ static int l_typefunc(lua_State *L)
     TypeID arg = lua_tointeger(L, 1);
     
     TypeID rv = typefunc(arg);
-    lua_pushinteger(L, rv)
+    lua_pushinteger(L, rv);
     return 1;
 }
 
 static int l_enumfunc(lua_State *L)
 {
-    EnumTypeID arg = lua_tointeger(L, 1);
+    EnumTypeID arg = static_cast<EnumTypeID>(lua_tointeger(L, 1));
     
-    EnumTypeID rv = enumfunc(static_cast<EnumTypeID>(arg));
-    lua_pushinteger(L, static_cast<int>(rv))
+    EnumTypeID rv = enumfunc(arg);
+    lua_pushinteger(L, static_cast<int>(rv));
     return 1;
 }
 
 static int l_last_function_called(lua_State *L)
 {
     const std::string & rv = LastFunctionCalled();
-    lua_pushstring(L, rv.c_str())
+    lua_pushstring(L, rv.c_str());
     return 1;
 }
 static const struct luaL_Reg XXX1 [] = {
     {"Function1", l_function1},
     {"Function2", l_function2},
-    {"Sum", l_sum},
     {"Function3", l_function3},
     {"Function4a", l_function4a},
     {"Function4b", l_function4b},
@@ -235,7 +224,7 @@ static const struct luaL_Reg XXX1 [] = {
     {NULL, NULL}   /*sentinel */
 };
 
-int luaopen_Tutorial (lua_state *L) {
+int luaopen_tutorial (lua_State *L) {
     luaL_newLib(L, XXX1);
     return 1
 }

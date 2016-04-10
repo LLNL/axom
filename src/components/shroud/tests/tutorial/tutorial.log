@@ -112,7 +112,6 @@ Close pyTutorialmodule.cpp
 Close pyTutorialhelper.cpp
 Lua function void Function1()
 Lua function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
-Lua function void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))
 Lua function bool Function3(bool arg+intent(in)+value)
 Lua function const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
 Lua function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
@@ -128,3 +127,4 @@ Lua function TypeID typefunc(TypeID arg+intent(in)+value)
 Lua function EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)
 Lua function const std::string & LastFunctionCalled()+pure
 Close luaTutorialpackage.hpp
+Close luaTutorialpackage.cpp

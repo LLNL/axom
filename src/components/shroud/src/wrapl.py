@@ -42,7 +42,7 @@ class Wrapl(util.WrapperMixin):
         # Format variables
         fmt_library.LUA_prefix        = options.get('LUA_prefix', 'l_')
         fmt_library.LUA_package_name  = fmt_library.library_lower
-        fmt_library.LUA_state = 'L'
+        fmt_library.LUA_state_var = 'L'
         fmt_library.LUA_package_reg = 'XXX1'
         util.eval_template(top, 'LUA_package_filename')
         util.eval_template(top, 'LUA_header_filename')
@@ -153,7 +153,7 @@ class Wrapl(util.WrapperMixin):
         default_calls = []   # each possible default call
         found_default = False
         if '_has_default_arg' in node:
-            append_format(LUA_decl, 'int shroud_nargs = lua_gettop({LUA_state});', fmt)
+            append_format(LUA_decl, 'int shroud_nargs = lua_gettop({LUA_state_var});', fmt)
 
         if True:
             fmt.LUA_index = 1
@@ -170,7 +170,11 @@ class Wrapl(util.WrapperMixin):
                 arg_typedef = self.typedef[arg['type']]
                 LUA_statements = arg_typedef.LUA_statements
                 if attrs['intent'] in [ 'inout', 'in']:
-                    lua_pop = wformat(arg_typedef.LUA_pop, fmt)
+#                    lua_pop = wformat(arg_typedef.LUA_pop, fmt)
+                    # lua_pop is a C++ expression
+                    fmt.c_var = wformat(arg_typedef.LUA_pop, fmt)
+                    lua_pop = wformat(arg_typedef.c_to_cpp, fmt)
+
 #x                    # names to PyArg_ParseTupleAndKeywords
 #X                    arg_names.append(arg_name)
 #X                    arg_offsets.append( '(char *) kwcpp+%d' % offset)
@@ -187,7 +191,7 @@ class Wrapl(util.WrapperMixin):
                         LUA_code.extend([
                                 'if (shroud_nargs > {}) {{'.format(fmt.LUA_index-1),
                                 1,
-                                '{} = {}'.format(fmt.c_var, lua_pop),
+                                '{} = {};'.format(fmt.cpp_var, lua_pop),
                                 -1,
                                 '}'
                                 ])
@@ -220,14 +224,19 @@ class Wrapl(util.WrapperMixin):
 #                    format, vargs = self.intent_out(arg_typedef, fmt, post_call)
 #                    build_format.append(format)
 #                    build_vargs.append('*' + vargs)
-                    append_format(LUA_push, arg_typedef.LUA_push, fmt)
+
+                    #append_format(LUA_push, arg_typedef.LUA_push, fmt)
+                    tmp = wformat(arg_typedef.LUA_push, fmt)
+                    LUA_push.append( tmp + ';' )
                    
 
                 # argument for C++ function
                 lang = 'cpp_type'
+                arg_const = False
                 if arg_typedef.base == 'string':
                     # C++ will coerce char * to std::string
                     lang = 'c_type'
+                    arg_const = True  # lua_tostring is const
                 if attrs.get('reference', False):
                     # convert a reference to a pointer
                     ptr = True
@@ -238,7 +247,7 @@ class Wrapl(util.WrapperMixin):
                     decl_suffix = ' = {};'.format(lua_pop)
                 else:
                     decl_suffix = ';'
-                LUA_decl.append(self.std_c_decl(lang, arg, const=False, ptr=ptr) + decl_suffix)
+                LUA_decl.append(self.std_c_decl(lang, arg, const=arg_const, ptr=ptr) + decl_suffix)
                 
 #                if arg_typedef.PY_PyTypeObject:
 #                    # A Python Object which must be converted to C++ type.
@@ -250,8 +259,9 @@ class Wrapl(util.WrapperMixin):
 #                    cpp_call_list.append(fmt.cpp_var)
 #                else:
                 # convert to C++ type
-                fmt.ptr=' *' if arg['attrs'].get('ptr', False) else ''
-                append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
+#                fmt.ptr=' *' if arg['attrs'].get('ptr', False) else ''
+#                append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
+                cpp_call_list.append(fmt.cpp_var)
 
         if cls:
 #                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
@@ -322,7 +332,9 @@ class Wrapl(util.WrapperMixin):
         if CPP_subprogram == 'function':
             fmt.cpp_var = fmt.rv
             fmt.c_var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
-            append_format(LUA_push, result_typedef.LUA_push, fmt)
+##            append_format(LUA_push, result_typedef.LUA_push, fmt)
+            tmp = wformat(result_typedef.LUA_push, fmt)
+            LUA_push.append( tmp + ';' )
 #            format, vargs = self.intent_out(result_typedef, fmt, PY_code)
 #            # Add result to front of result tuple
 #            build_format.insert(0, format)
@@ -359,7 +371,7 @@ class Wrapl(util.WrapperMixin):
                 '#ifndef %s' % guard,
                 '#define %s' % guard,
                 '#include "lua.h"',
-                wformat('int luaopen_{LUA_package_name} (lua_state *{LUA_state});', fmt),
+                wformat('int luaopen_{LUA_package_name} (lua_State *{LUA_state_var});', fmt),
                 ])
         output.append('#endif  /* %s */' % guard)
         self.write_output_file(fname, self.config.python_dir, output)
@@ -370,7 +382,7 @@ class Wrapl(util.WrapperMixin):
                 'static const struct luaL_Reg {} [] = {{'.format(name),
                 1,
                 ])
-        output.extend(self.lines)
+        output.extend(lines)
         output.extend([
                 '{NULL, NULL}   /*sentinel */',
                 -1,
@@ -387,7 +399,7 @@ class Wrapl(util.WrapperMixin):
 
         if options.cpp_header:
             for include in options.cpp_header.split():
-                output.append('#include "%s"' % include)
+                output.append('#include "{}"'.format(include))
         output.append(wformat('#include "{LUA_header_filename}"', fmt))
         self._create_splicer('include', output)
 
@@ -397,11 +409,11 @@ class Wrapl(util.WrapperMixin):
 
         output.extend(self.body_lines)
 
-        self.append_luaL_Reg(output, fmt.LUA_package_reg, self.lua_Reg_package)
+        self.append_luaL_Reg(output, fmt.LUA_package_reg, self.luaL_Reg_package)
         output.extend([
-                wformat('int luaopen_{LUA_package_name} (lua_state *{LUA_state}) {{', fmt),
+                wformat('int luaopen_{LUA_package_name} (lua_State *{LUA_state_var}) {{', fmt),
                 1,
-                wformat('luaL_newLib({LUA_state}, {LUA_package_reg});', fmt),
+                wformat('luaL_newLib({LUA_state_var}, {LUA_package_reg});', fmt),
                 'return 1',
                 -1,
                 '}'

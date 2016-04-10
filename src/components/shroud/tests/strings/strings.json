@@ -1109,8 +1109,8 @@
             "f_type": "integer"
         }, 
         "bool": {
-            "LUA_pop": "lua_toboolean({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushboolean({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_toboolean({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushboolean({LUA_state_var}, {c_var})", 
             "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
             "c_fortran": "logical(C_BOOL)", 
@@ -1140,8 +1140,8 @@
             }
         }, 
         "char": {
-            "LUA_pop": "lua_tostring({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushstring({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
@@ -1189,8 +1189,8 @@
             "f_type": "character(*)"
         }, 
         "char_scalar": {
-            "LUA_pop": "lua_tostring({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushstring({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -1211,8 +1211,8 @@
             "f_type": "character"
         }, 
         "double": {
-            "LUA_pop": "lua_tonumber({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushnumber({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "PY_format": "d", 
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
@@ -1227,8 +1227,8 @@
             "f_type": "real(C_DOUBLE)"
         }, 
         "float": {
-            "LUA_pop": "lua_tonumber({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushnumber({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "PY_format": "f", 
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
@@ -1243,8 +1243,8 @@
             "f_type": "real(C_FLOAT)"
         }, 
         "int": {
-            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
@@ -1259,8 +1259,8 @@
             "f_type": "integer(C_INT)"
         }, 
         "integer(C_INT)": {
-            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
@@ -1275,8 +1275,8 @@
             "f_type": "integer(C_INT)"
         }, 
         "integer(C_LONG)": {
-            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "PY_format": "l", 
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
@@ -1291,8 +1291,8 @@
             "f_type": "integer(C_LONG)"
         }, 
         "long": {
-            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "PY_format": "l", 
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
@@ -1307,8 +1307,8 @@
             "f_type": "integer(C_LONG)"
         }, 
         "real(C_DOUBLE)": {
-            "LUA_pop": "lua_tonumber({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushnumber({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "PY_format": "d", 
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
@@ -1323,8 +1323,8 @@
             "f_type": "real(C_DOUBLE)"
         }, 
         "real(C_FLOAT)": {
-            "LUA_pop": "lua_tonumber({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushnumber({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "PY_format": "f", 
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
@@ -1339,8 +1339,8 @@
             "f_type": "real(C_FLOAT)"
         }, 
         "size_t": {
-            "LUA_pop": "lua_tointeger({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushinteger({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "PY_ctor": "PyInt_FromLong({rv})", 
             "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
@@ -1356,8 +1356,8 @@
             "f_type": "integer(C_SIZE_T)"
         }, 
         "std::string": {
-            "LUA_pop": "lua_tostring({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushstring({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
@@ -1402,8 +1402,8 @@
             }
         }, 
         "string": {
-            "LUA_pop": "lua_tostring({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushstring({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
@@ -1448,8 +1448,8 @@
             }
         }, 
         "string_result_fstr": {
-            "LUA_pop": "lua_tostring({LUA_state}, {LUA_index})", 
-            "LUA_push": "lua_pushstring({LUA_state}, {c_var})", 
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
