@@ -2380,7 +2380,6 @@
                     ]
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
@@ -2391,6 +2390,7 @@
             "f_type": "character(*)", 
             "py_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "post_parse": [
                         "std::string {cpp_var}({c_var});"
                     ]
@@ -2427,7 +2427,6 @@
                     ]
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
@@ -2438,6 +2437,7 @@
             "f_type": "character(*)", 
             "py_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "post_parse": [
                         "std::string {cpp_var}({c_var});"
                     ]
@@ -2474,7 +2474,6 @@
                     ]
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
@@ -2491,6 +2490,7 @@
             "f_type": "character(*)", 
             "py_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "post_parse": [
                         "std::string {cpp_var}({c_var});"
                     ]

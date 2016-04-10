@@ -365,6 +365,7 @@ return 1;""", fmt)
 
                 arg_typedef = self.typedef[arg['type']]
                 py_statements = arg_typedef.py_statements
+                have_cpp_local_var = False
                 if attrs['intent'] in [ 'inout', 'in']:
                     # names to PyArg_ParseTupleAndKeywords
                     arg_names.append(arg_name)
@@ -394,9 +395,11 @@ return 1;""", fmt)
                     # add argument to call to PyArg_ParseTypleAndKeywords
                     parse_vargs.append('&' + arg_name)
 
+                    have_cpp_local_var = py_statements.get('intent_in',{}).get('cpp_local_var', False)
+                    if have_cpp_local_var:
+                        fmt.cpp_var = 'SH_' + fmt.c_var
                     cmd_list = py_statements.get('intent_in',{}).get('post_parse',[])
                     if cmd_list:
-                        fmt.cpp_var = 'SH_' + fmt.c_var
                         for cmd in cmd_list:
                             append_format(post_parse, cmd, fmt)
 
@@ -426,6 +429,8 @@ return 1;""", fmt)
                     cpp_call_list.append(fmt.cpp_var)
                 elif arg_typedef.PY_from_object:
                     # already a C++ type
+                    cpp_call_list.append(fmt.cpp_var)
+                elif have_cpp_local_var:
                     cpp_call_list.append(fmt.cpp_var)
                 else:
                     # convert to C++ type

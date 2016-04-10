@@ -413,9 +413,6 @@ class Schema(object):
                         ),
                     ),
 
-                c_to_cpp  = '{cpp_var}',
-#???                c_to_cpp  = 'std::string({c_var})',
-
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
 ##                f_args = 'trim({var}) // C_NULL_CHAR',
@@ -425,6 +422,7 @@ class Schema(object):
 
                 py_statements = dict(
                     intent_in = dict(
+                        cpp_local_var = True,
                         post_parse = [
                             'std::string {cpp_var}({c_var});'
                             ],

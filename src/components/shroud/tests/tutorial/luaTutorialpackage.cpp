@@ -36,8 +36,8 @@ static int l_function3(lua_State *L)
 
 static int l_function4a(lua_State *L)
 {
-    const char * arg1 = arg1;
-    const char * arg2 = arg2;
+    const char * arg1 = lua_tostring(L, 1);
+    const char * arg2 = lua_tostring(L, 2);
     
     const std::string rv = Function4a(arg1, arg2);
     lua_pushstring(L, rv.c_str());
@@ -46,8 +46,8 @@ static int l_function4a(lua_State *L)
 
 static int l_function4b(lua_State *L)
 {
-    const char * arg1 = arg1;
-    const char * arg2 = arg2;
+    const char * arg1 = lua_tostring(L, 1);
+    const char * arg2 = lua_tostring(L, 2);
     
     const std::string & rv = Function4b(arg1, arg2);
     lua_pushstring(L, rv.c_str());
@@ -84,7 +84,7 @@ static int l_function5_arg1_arg2(lua_State *L)
 
 static int l_function6_from_name(lua_State *L)
 {
-    const char * name = name;
+    const char * name = lua_tostring(L, 1);
     
     Function6(name);
     return 0;
@@ -114,7 +114,7 @@ static int l_function10_0(lua_State *L)
 
 static int l_function10_1(lua_State *L)
 {
-    const char * name = name;
+    const char * name = lua_tostring(L, 1);
     double arg2 = lua_tonumber(L, 2);
     
     Function10(name, arg2);

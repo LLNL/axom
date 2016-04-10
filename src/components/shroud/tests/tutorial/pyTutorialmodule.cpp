@@ -101,8 +101,8 @@ PY_function3(
     {
         return NULL;
     }
-    SH_arg = PyObject_IsTrue(SH_Py_arg);
-    bool rv = Function3(SH_arg);
+    arg = PyObject_IsTrue(SH_Py_arg);
+    bool rv = Function3(arg);
     PyObject * SH_Py_rv = PyBool_FromLong(rv);
     return (PyObject *) SH_Py_rv;
 // splicer end function.function3
@@ -200,8 +200,8 @@ PY_function5_arg1_arg2(
         rv = Function5(arg1);
         break;
     case 2:
-        SH_arg2 = PyObject_IsTrue(SH_Py_arg2);
-        rv = Function5(arg1, SH_arg2);
+        arg2 = PyObject_IsTrue(SH_Py_arg2);
+        rv = Function5(arg1, arg2);
         break;
     }
     return Py_BuildValue("d", rv);

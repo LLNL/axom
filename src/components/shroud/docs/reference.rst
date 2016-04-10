@@ -528,6 +528,11 @@ py_statement
         Can be use to cleanup after *f_pre_call*
         or to coerce the return value.
 
+        cpp_local_var
+           True if a local C++ variable is created.
+           This is the case when C and C++ are not directly compatible.
+           Usually a C++ constructor is involved.
+
 
 
 
