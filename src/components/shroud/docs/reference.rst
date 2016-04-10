@@ -377,6 +377,14 @@ c_statements
     result
         Code to use when passing result as an argument.
 
+        cpp_header
+           string of blank delimited header names
+
+        cpp_local_var
+           True if a local C++ variable is created.
+           This is the case when C and C++ are not directly compatible.
+           Usually a C++ constructor is involved.
+
 c_return_code
     Fortran code used to call function and assign the return value.
     Defaults to *None*.

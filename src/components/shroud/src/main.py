@@ -312,6 +312,7 @@ class Schema(object):
 
                 c_statements = dict(
                     intent_in = dict(
+                        cpp_local_var = True,
                         pre_call = [
                             'int {c_var_len} = strlen({c_var});',
                             'char * {cpp_var} = new char [{c_var_len} + 1];',
@@ -328,6 +329,7 @@ class Schema(object):
                             ],
                         ),
                     intent_out = dict(
+                        cpp_local_var = True,
                         pre_call = [
                             'char * {cpp_var} = new char [{c_var_num} + 1];',
                             ],
@@ -344,7 +346,6 @@ class Schema(object):
                         cpp_header = 'shroudrt.hpp',
                         ),
                     ),
-                c_to_cpp  = '{cpp_var}', #???
 
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
@@ -366,8 +367,6 @@ class Schema(object):
 #                cpp_to_c = '{cpp_var}.c_str()',  # . or ->
 
                 c_type   = 'char',    # XXX - char *
-
-                c_to_cpp  = '{cpp_var}',  #???
 
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character',
@@ -392,6 +391,7 @@ class Schema(object):
 
                 c_statements = dict(
                     intent_in = dict(
+                        cpp_local_var = True,
                         pre_call = [
                             'std::string {cpp_var}({c_var});'
                             ],

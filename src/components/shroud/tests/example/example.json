@@ -2399,6 +2399,7 @@
             "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "post_call": [
                         "delete [] {cpp_var};"
                     ], 
@@ -2416,6 +2417,7 @@
                 }, 
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
+                    "cpp_local_var": true, 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
                         "delete [] {cpp_var};"
@@ -2431,7 +2433,6 @@
                     ]
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_type": "char", 
             "f_module": {
@@ -2453,7 +2454,6 @@
                     ]
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_type": "char", 
             "f_module": {
@@ -2618,6 +2618,7 @@
             "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "pre_call": [
                         "std::string {cpp_var}({c_var});"
                     ], 
@@ -2664,6 +2665,7 @@
             "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "pre_call": [
                         "std::string {cpp_var}({c_var});"
                     ], 
@@ -2710,6 +2712,7 @@
             "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "pre_call": [
                         "std::string {cpp_var}({c_var});"
                     ], 
