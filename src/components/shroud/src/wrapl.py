@@ -401,6 +401,7 @@ class Wrapl(util.WrapperMixin):
             for include in options.cpp_header.split():
                 output.append('#include "{}"'.format(include))
         output.append(wformat('#include "{LUA_header_filename}"', fmt))
+        output.append('#include "lauxlib.h"')
         self._create_splicer('include', output)
 
         output.append('')
@@ -413,8 +414,8 @@ class Wrapl(util.WrapperMixin):
         output.extend([
                 wformat('int luaopen_{LUA_package_name} (lua_State *{LUA_state_var}) {{', fmt),
                 1,
-                wformat('luaL_newLib({LUA_state_var}, {LUA_package_reg});', fmt),
-                'return 1',
+                wformat('luaL_newlib({LUA_state_var}, {LUA_package_reg});', fmt),
+                'return 1;',
                 -1,
                 '}'
                 ])

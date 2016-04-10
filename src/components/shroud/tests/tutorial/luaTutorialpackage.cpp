@@ -2,6 +2,7 @@
 // This is generated code, do not edit
 #include "tutorial.hpp"
 #include "luaTutorialpackage.hpp"
+#include "lauxlib.h"
 // splicer begin include
 // splicer end include
 
@@ -225,7 +226,7 @@ static const struct luaL_Reg XXX1 [] = {
 };
 
 int luaopen_tutorial (lua_State *L) {
-    luaL_newLib(L, XXX1);
-    return 1
+    luaL_newlib(L, XXX1);
+    return 1;
 }
 }  // namespace tutorial
