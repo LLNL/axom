@@ -370,9 +370,11 @@ class Wrapl(util.WrapperMixin):
         output.extend([
                 '#ifndef %s' % guard,
                 '#define %s' % guard,
-                '#include "lua.h"',
-                wformat('int luaopen_{LUA_package_name} (lua_State *{LUA_state_var});', fmt),
                 ])
+        util.extern_C(output, 'begin')
+        output.append('#include "lua.h"')
+        output.append(wformat('int luaopen_{LUA_package_name}(lua_State *{LUA_state_var});', fmt))
+        util.extern_C(output, 'end')
         output.append('#endif  /* %s */' % guard)
         self.write_output_file(fname, self.config.python_dir, output)
 
@@ -401,7 +403,11 @@ class Wrapl(util.WrapperMixin):
             for include in options.cpp_header.split():
                 output.append('#include "{}"'.format(include))
         output.append(wformat('#include "{LUA_header_filename}"', fmt))
+
+        util.extern_C(output, 'begin')
         output.append('#include "lauxlib.h"')
+        util.extern_C(output, 'end')
+
         self._create_splicer('include', output)
 
         output.append('')
@@ -411,14 +417,16 @@ class Wrapl(util.WrapperMixin):
         output.extend(self.body_lines)
 
         self.append_luaL_Reg(output, fmt.LUA_package_reg, self.luaL_Reg_package)
+        util.extern_C(output, 'begin')
         output.extend([
-                wformat('int luaopen_{LUA_package_name} (lua_State *{LUA_state_var}) {{', fmt),
+                wformat('int luaopen_{LUA_package_name}(lua_State *{LUA_state_var}) {{', fmt),
                 1,
                 wformat('luaL_newlib({LUA_state_var}, {LUA_package_reg});', fmt),
                 'return 1;',
                 -1,
                 '}'
                 ])
+        util.extern_C(output, 'end')
 
         self.namespace(node, 'end', output)
 

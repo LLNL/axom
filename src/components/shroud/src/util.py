@@ -82,6 +82,21 @@ def update(d, u):
             d[k] = u[k]
     return d
 
+def extern_C(output, position):
+    """Create extern "C" guards for C++
+    """
+    if position == 'begin':
+        output.extend([
+                '#ifdef __cplusplus',
+                'extern "C" {',
+                '#endif'
+                ])
+    else:
+        output.extend([
+                '#ifdef __cplusplus',
+                '}',
+                '#endif'
+                ])
 
 class WrapperMixin(object):
     """Methods common to all wrapping classes.

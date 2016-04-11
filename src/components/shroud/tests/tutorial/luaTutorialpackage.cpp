@@ -2,7 +2,13 @@
 // This is generated code, do not edit
 #include "tutorial.hpp"
 #include "luaTutorialpackage.hpp"
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "lauxlib.h"
+#ifdef __cplusplus
+}
+#endif
 // splicer begin include
 // splicer end include
 
@@ -225,8 +231,14 @@ static const struct luaL_Reg XXX1 [] = {
     {NULL, NULL}   /*sentinel */
 };
 
-int luaopen_tutorial (lua_State *L) {
+#ifdef __cplusplus
+extern "C" {
+#endif
+int luaopen_tutorial(lua_State *L) {
     luaL_newlib(L, XXX1);
     return 1;
 }
+#ifdef __cplusplus
+}
+#endif
 }  // namespace tutorial
