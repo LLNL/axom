@@ -329,25 +329,33 @@ void DataBuffer::attachView( DataView * view )
  */
 void DataBuffer::detachView( DataView * view )
 {
+  SLIC_ASSERT(view->m_data_buffer == this);
   //Find new end iterator
   std::vector<DataView *>::iterator pos = std::remove(m_views.begin(),
                                                       m_views.end(),
                                                       view);
-  // check if pos is ok?
-  //Erase the "removed" elements.
-  m_views.erase(pos, m_views.end());
+  SLIC_ASSERT(pos != m_views.end());
+  m_views.erase(pos);
+  view->setBufferViewToEmpty();
+}
 
-#if 0
-  // XXX test
-  if (getNumViews() == 0 )
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to detach data view.
+ *         Avoid calling view->detachBuffer since it calls detachView
+ *         which alters m_views as we're iterating over it.
+ *
+ *************************************************************************
+ */
+void DataBuffer::detachAllViews()
+{
+  for (size_t i = 0 ; i < m_views.size() ; ++i)
   {
-    // No views attached, garbage collect.
-    deallocate();
-    DataStore * ds = view->getOwningGroup()->getDataStore();
-    ds->destroyBuffer( m_index );
+    m_views[i]->setBufferViewToEmpty();
   }
-#endif
 
+  m_views.clear();
 }
 
 /*

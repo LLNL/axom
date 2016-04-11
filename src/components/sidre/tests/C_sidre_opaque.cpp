@@ -129,7 +129,7 @@ TEST(C_sidre_opaque,basic_inout)
 
   SIDRE_dataview * ext2_view = SIDRE_datagroup_create_view_empty(problem_gp,
                                                                  "ext2");
-  ext2_view = SIDRE_dataview_set_external_data_ptr(ext2_view, ext2);
+  SIDRE_dataview_set_external_data_ptr_only(ext2_view, ext2);
 
   bool test_opaque2 = SIDRE_dataview_is_opaque(ext2_view);
   EXPECT_EQ(test_opaque2, true);

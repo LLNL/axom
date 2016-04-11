@@ -60,14 +60,39 @@ void SIDRE_dataview_apply_0(SIDRE_dataview * self)
 // splicer end class.DataView.method.apply_0
 }
 
-void SIDRE_dataview_attach_buffer(SIDRE_dataview * self,
-                                  SIDRE_databuffer * buff)
+void SIDRE_dataview_attach_buffer_only(SIDRE_dataview * self,
+                                       SIDRE_databuffer * buff)
 {
   DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.attach_buffer
+// splicer begin class.DataView.method.attach_buffer_only
   selfobj->attachBuffer(static_cast<DataBuffer *>(static_cast<void *>(buff)));
   return;
-// splicer end class.DataView.method.attach_buffer
+// splicer end class.DataView.method.attach_buffer_only
+}
+
+void SIDRE_dataview_attach_buffer_type(SIDRE_dataview * self, int type,
+                                       SIDRE_SidreLength num_elems,
+                                       SIDRE_databuffer * buff)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.attach_buffer_type
+  selfobj->attachBuffer(getTypeID(type), num_elems,
+                        static_cast<DataBuffer *>(static_cast<void *>(buff)));
+  return;
+// splicer end class.DataView.method.attach_buffer_type
+}
+
+void SIDRE_dataview_attach_buffer_shape(SIDRE_dataview * self, int type,
+                                        int ndims, SIDRE_SidreLength * shape,
+                                        SIDRE_databuffer * buff)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.attach_buffer_shape
+  selfobj->attachBuffer(getTypeID(
+                          type), ndims, shape,
+                        static_cast<DataBuffer *>(static_cast<void *>(buff)));
+  return;
+// splicer end class.DataView.method.attach_buffer_shape
 }
 
 void SIDRE_dataview_apply_nelems(SIDRE_dataview * self,
@@ -258,14 +283,37 @@ void SIDRE_dataview_set_scalar_double(SIDRE_dataview * self, double value)
 // splicer end class.DataView.method.set_scalar_double
 }
 
-SIDRE_dataview * SIDRE_dataview_set_external_data_ptr(SIDRE_dataview * self,
-                                                      void * external_ptr)
+void SIDRE_dataview_set_external_data_ptr_only(SIDRE_dataview * self,
+                                               void * external_ptr)
 {
   DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.set_external_data_ptr
-  DataView * rv = selfobj->setExternalDataPtr(external_ptr);
-  return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataView.method.set_external_data_ptr
+// splicer begin class.DataView.method.set_external_data_ptr_only
+  selfobj->setExternalDataPtr(external_ptr);
+  return;
+// splicer end class.DataView.method.set_external_data_ptr_only
+}
+
+void SIDRE_dataview_set_external_data_ptr_type(SIDRE_dataview * self, int type,
+                                               SIDRE_SidreLength num_elems,
+                                               void * external_ptr)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.set_external_data_ptr_type
+  selfobj->setExternalDataPtr(getTypeID(type), num_elems, external_ptr);
+  return;
+// splicer end class.DataView.method.set_external_data_ptr_type
+}
+
+void SIDRE_dataview_set_external_data_ptr_shape(SIDRE_dataview * self, int type,
+                                                int ndims,
+                                                SIDRE_SidreLength * shape,
+                                                void * external_ptr)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.set_external_data_ptr_shape
+  selfobj->setExternalDataPtr(getTypeID(type), ndims, shape, external_ptr);
+  return;
+// splicer end class.DataView.method.set_external_data_ptr_shape
 }
 
 int SIDRE_dataview_get_data_int(SIDRE_dataview * self)
