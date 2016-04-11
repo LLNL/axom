@@ -600,6 +600,9 @@ TEST(sidre_group,save_restore_api)
   // Call from datastore, pass in group to save
   ds1->save("sidre_save_api3", "conduit", ds1->getRoot());
 
+  // Text output ( for debugging )
+  ds1->save("sidre_save_text_output", "text", ds1->getRoot());
+
   DataStore * ds2 = new DataStore();
   DataStore * ds3 = new DataStore();
   DataStore * ds4 = new DataStore();
@@ -671,6 +674,9 @@ TEST(sidre_group,save_restore_external_data)
   view->apply( asctoolkit::sidre::INT_ID, 100 );
 
   ds->save("sidre_save_external", "conduit");
+
+  // Text output ( for debugging )
+  ds->save("sidre_save_text_output2", "text");
 
   delete ds;
 
