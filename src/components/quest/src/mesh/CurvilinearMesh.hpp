@@ -280,7 +280,7 @@ inline void CurvilinearMesh::getNode(int nodeIdx, double* coordinates) const
 
   for ( int i=0; i < this->getDimension(); ++i ) {
     const double* coords = m_coordinates->getCoordinateArray( i );
-    coordinates[ i ] = coords[ i ];
+    coordinates[ i ] = coords[ nodeIdx ];
   }
 
 }

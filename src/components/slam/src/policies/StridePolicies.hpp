@@ -25,6 +25,8 @@
 #ifndef SLAM_POLICIES_STRIDE_H_
 #define SLAM_POLICIES_STRIDE_H_
 
+#include "common/ATKMacros.hpp"
+
 
 namespace asctoolkit {
 namespace slam {
@@ -80,7 +82,7 @@ namespace policies {
     inline IntType          stride()      const { return INT_VAL; }
     inline IntType operator ()()  const { return stride(); }
 
-    void                    setStride(IntType val)
+    void                    setStride(IntType ATK_DEBUG_PARAM(val))
     {
       SLIC_ASSERT_MSG( val == INT_VAL
           , "SLAM::CompileTimeStrideHolder -- tried to set a compile time stride with value ("
@@ -108,7 +110,7 @@ namespace policies {
     inline const IntType          stride()     const { return DEFAULT_VALUE; }
     inline const IntType operator ()() const { return stride(); }
 
-    void                          setStride(IntType val)
+    void                          setStride(IntType ATK_DEBUG_PARAM(val))
     {
       SLIC_ASSERT_MSG( val == DEFAULT_VALUE
           , "SLAM::StrideOne policy -- tried to set a stride-one StridePolicy with value ("

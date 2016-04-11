@@ -46,14 +46,14 @@ endif()
 # XXX ENABLE_FORTRAN_WRAPPER
 if (ENABLE_FORTRAN)
     list(APPEND slic_headers
-        interface/shroud_api/wrapSLIC.h
+        interface/c_fortran/wrapSLIC.h
     )   
     set(slic_fortran_sources
-        interface/shroud_api/wrapSLIC.cpp
-        interface/shroud_api/shroudrt.cpp
-        interface/shroud_api/wrapfslic.f
+        interface/c_fortran/wrapSLIC.cpp
+        interface/c_fortran/shroudrt.cpp
+        interface/c_fortran/wrapfslic.f
     )
-    add_subdirectory(interface/shroud_api)
+    add_subdirectory(interface)
 
     # Must tell fortran where to look for modules
     include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})

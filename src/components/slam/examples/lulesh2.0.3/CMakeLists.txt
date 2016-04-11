@@ -1,0 +1,44 @@
+####################################
+# Slam (MeshAPI) version of lulesh 2.0
+####################################
+
+
+set(lulesh_lib_headers
+    lulesh.hpp
+    # lulesh_tuple.hpp
+    )
+
+set(lulesh_lib_sources
+    lulesh-comm.cpp
+    lulesh-init.cpp
+    lulesh-util.cpp
+    lulesh-viz.cpp
+    )
+set(lulesh_exe_source
+    lulesh.cpp
+    )
+
+
+## Ignore omp pragmas when openMP is not defined
+if ( NOT ENABLE_OPENMP )
+    set_source_files_properties(${lulesh_lib_sources} ${lulesh_exe_source} 
+        PROPERTIES COMPILE_FLAGS "${ATK_DISABLE_OMP_PRAGMA_WARNINGS}" )
+endif()
+
+make_library( LIBRARY_NAME      slamLuleshLib
+              LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
+              USE_OPENMP ${ENABLE_OPENMP} 
+              ) 
+
+add_dependencies(slamLuleshLib slam)
+target_link_libraries( slamLuleshLib  slam )
+                  
+make_executable( EXECUTABLE_NAME    slam_Lulesh 
+                 EXECUTABLE_SOURCE  ${lulesh_exe_source}
+                 DEPENDS_ON 
+                    slic
+                    slam 
+                    slamLuleshLib
+                  USE_OPENMP ${ENABLE_OPENMP} 
+                  ADD_CTEST IS_EXAMPLE
+                  ) 
