@@ -1,7 +1,7 @@
-// luaTutorialpackage.hpp
+// luaTutorialmodule.hpp
 // This is generated code, do not edit
-#ifndef LUATUTORIALPACKAGE_HPP
-#define LUATUTORIALPACKAGE_HPP
+#ifndef LUATUTORIALMODULE_HPP
+#define LUATUTORIALMODULE_HPP
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -10,4 +10,4 @@ int luaopen_tutorial(lua_State *L);
 #ifdef __cplusplus
 }
 #endif
-#endif  /* LUATUTORIALPACKAGE_HPP */
+#endif  /* LUATUTORIALMODULE_HPP */

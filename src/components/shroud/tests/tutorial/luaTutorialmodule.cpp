@@ -1,7 +1,7 @@
-// luaTutorialpackage.cpp
+// luaTutorialmodule.cpp
 // This is generated code, do not edit
 #include "tutorial.hpp"
-#include "luaTutorialpackage.hpp"
+#include "luaTutorialmodule.hpp"
 #ifdef __cplusplus
 extern "C" {
 #endif

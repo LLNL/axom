@@ -8,8 +8,8 @@ from util import wformat, append_format
 
 def add_templates(options):
     options.update(dict(
-        LUA_package_filename_template = 'lua{library}package.cpp',
-        LUA_header_filename_template = 'lua{library}package.hpp',
+        LUA_module_filename_template = 'lua{library}module.cpp',
+        LUA_header_filename_template = 'lua{library}module.hpp',
 #        LUA_helper_filename_template = 'lua{library}helper.cpp',
 #        LUA_PyTypeObject_template    = '{LUA_prefix}{cpp_class}_Type',
 #        LUA_PyObject_template        = '{LUA_prefix}{cpp_class}',
@@ -41,14 +41,14 @@ class Wrapl(util.WrapperMixin):
 
         # Format variables
         fmt_library.LUA_prefix        = options.get('LUA_prefix', 'l_')
-        fmt_library.LUA_package_name  = fmt_library.library_lower
+        fmt_library.LUA_module_name  = fmt_library.library_lower
         fmt_library.LUA_state_var = 'L'
-        fmt_library.LUA_package_reg = 'XXX1'
-        util.eval_template(top, 'LUA_package_filename')
+        fmt_library.LUA_module_reg = 'XXX1'
+        util.eval_template(top, 'LUA_module_filename')
         util.eval_template(top, 'LUA_header_filename')
 
         # Variables to accumulate output lines
-        self.luaL_Reg_package = []
+        self.luaL_Reg_module = []
         self.body_lines = []
 
         self._push_splicer('class')
@@ -68,7 +68,7 @@ class Wrapl(util.WrapperMixin):
             self._pop_splicer('function')
 
         self.write_header(self.tree)
-        self.write_package(self.tree)
+        self.write_module(self.tree)
 #        self.write_helper()
 
     def wrap_class(self, node):
@@ -267,11 +267,11 @@ class Wrapl(util.WrapperMixin):
 #                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
 #                fmt_func.C_object = wformat(template, fmt_func)
             fmt.LUA_this_call = wformat('self->{BBB}->', fmt)  # call method syntax
-##            if ctor: add to package else add to class meta-table
+##            if ctor: add to module else add to class meta-table
                 
         else:
             fmt.LUA_this_call = ''  # call function syntax
-            self.luaL_Reg_package.append(wformat('{{"{function_name}{function_suffix}", {LUA_name_impl}}},', fmt))
+            self.luaL_Reg_module.append(wformat('{{"{function_name}{function_suffix}", {LUA_name_impl}}},', fmt))
 
         # call with all arguments
         default_calls.append(
@@ -373,7 +373,7 @@ class Wrapl(util.WrapperMixin):
                 ])
         util.extern_C(output, 'begin')
         output.append('#include "lua.h"')
-        output.append(wformat('int luaopen_{LUA_package_name}(lua_State *{LUA_state_var});', fmt))
+        output.append(wformat('int luaopen_{LUA_module_name}(lua_State *{LUA_state_var});', fmt))
         util.extern_C(output, 'end')
         output.append('#endif  /* %s */' % guard)
         self.write_output_file(fname, self.config.python_dir, output)
@@ -392,10 +392,10 @@ class Wrapl(util.WrapperMixin):
                 ''
                 ])
 
-    def write_package(self, node):
+    def write_module(self, node):
         options = node['options']
         fmt = node['fmt']
-        fname = fmt.LUA_package_filename
+        fname = fmt.LUA_module_filename
 
         output = []
 
@@ -416,12 +416,12 @@ class Wrapl(util.WrapperMixin):
 
         output.extend(self.body_lines)
 
-        self.append_luaL_Reg(output, fmt.LUA_package_reg, self.luaL_Reg_package)
+        self.append_luaL_Reg(output, fmt.LUA_module_reg, self.luaL_Reg_module)
         util.extern_C(output, 'begin')
         output.extend([
-                wformat('int luaopen_{LUA_package_name}(lua_State *{LUA_state_var}) {{', fmt),
+                wformat('int luaopen_{LUA_module_name}(lua_State *{LUA_state_var}) {{', fmt),
                 1,
-                wformat('luaL_newlib({LUA_state_var}, {LUA_package_reg});', fmt),
+                wformat('luaL_newlib({LUA_state_var}, {LUA_module_reg});', fmt),
                 'return 1;',
                 -1,
                 '}'
