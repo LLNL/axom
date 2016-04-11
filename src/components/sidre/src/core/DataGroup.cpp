@@ -774,70 +774,57 @@ void DataGroup::printTree( const int nlevels,
 /*
  *************************************************************************
  *
- * Saves data group (including data views and child groups) to a file
- * set named "obase" from this group object.
- *
- * Note: Only valid protocol is "conduit".
+ * Saves data group (including data views and child groups) to a new file
  *
  *************************************************************************
  */
 
-void DataGroup::save( const std::string& obase,
-                      const std::string& protocol,
-                      const DataGroup * group) const
+void DataGroup::save( const std::string& file_path,
+                      const std::string& protocol) const
 {
-  this->getDataStore()->save( obase, protocol, this);
+  this->getDataStore()->save( file_path, protocol, this);
 }
 
 /*
  *************************************************************************
  *
- * Saves data group (including data views and child groups) to an hdf5 file
- * named "obase" from this group object.
- *
- * Note: Only valid protocol is "conduit_hdf5".
+ * Saves data group (including data views and child groups) to an existing
+ * hdf5 file
  *
  *************************************************************************
  */
-void DataGroup::save(const std::string& obase,
-                     const hid_t& h5_file_id,
-                     const DataGroup * group) const
+void DataGroup::save(const hid_t& h5_file_id,
+                     const std::string& internal_hdf5_path) const
 
 {
-  this->getDataStore()->save( obase, h5_file_id, this);
+  this->getDataStore()->save( h5_file_id, internal_hdf5_path, this);
 }
 
 /*
  *************************************************************************
  *
  * Load data group (including data views and child groups) from a file
- * set named "obase" into this group object.
- *
- * Note: Only valid protocol is "conduit".
  *
  *************************************************************************
  */
-void DataGroup::load(const std::string& obase,
+void DataGroup::load(const std::string& file_path,
                      const std::string& protocol)
 {
-  this->getDataStore()->load( obase, protocol, this );
+  this->getDataStore()->load( file_path, protocol, this );
 }
 
 /*
  *************************************************************************
  *
- * Load data group (including data views and child groups) from an hdf5 file
- * named "obase" into this group object.
- *
- * Note: Only valid protocol is "conduit_hdf5".
+ * Load data group (including data views and child groups) from the specified
+ * internal directory in a hdf5 file.
  *
  *************************************************************************
  */
-void DataGroup::load(const std::string& obase,
-                     const std::string& protocol,
-                     const hid_t& h5_file_id)
+void DataGroup::load(const hid_t& h5_file_id,
+                     const std::string& internal_hdf5_path)
 {
-  this->getDataStore()->load( obase, protocol, h5_file_id, this );
+  this->getDataStore()->load( h5_file_id, internal_hdf5_path, this );
 }
 
 
@@ -1096,7 +1083,7 @@ DataGroup * DataGroup::detachGroup(IndexType idx)
  */
 
 void DataGroup::exportTo(conduit::Node& data_holder,
-                          std::set<IndexType>& buffer_indices) const
+                         std::set<IndexType>& buffer_indices) const
 {
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )

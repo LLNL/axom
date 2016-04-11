@@ -591,7 +591,6 @@ TEST(sidre_group,save_restore_api)
   ds1->getRoot()->createViewScalar<int>("i0", 1);
 
   // All three of these should be produce identical files.
-  // (I've diff'ed the output files manually.)
 
   // Call from datastore, no group, defaults to root group
   ds1->save("sidre_save_api1", "conduit");
@@ -600,20 +599,26 @@ TEST(sidre_group,save_restore_api)
   // Call from datastore, pass in group to save
   ds1->save("sidre_save_api3", "conduit", ds1->getRoot());
 
-  // Text output ( for debugging )
-  ds1->save("sidre_save_text_output", "text", ds1->getRoot());
+  // Text output ( for debugging ).  Write support only ( no load ).
+  ds1->save("sidre_save_text_output.txt", "text", ds1->getRoot());
+
+  // HDF5 output
+  ds1->save("sidre_save_hdf5_output","conduit_hdf5");
 
   DataStore * ds2 = new DataStore();
   DataStore * ds3 = new DataStore();
   DataStore * ds4 = new DataStore();
+  DataStore * ds5 = new DataStore();
 
   ds2->load("sidre_save_api1", "conduit");
   ds3->load("sidre_save_api2", "conduit", ds3->getRoot() );
   ds4->getRoot()->load("sidre_save_api3", "conduit");
+  ds5->load("sidre_save_hdf5_output", "conduit_hdf5");
 
-  EXPECT_TRUE( ds1->getRoot()->isEquivalentTo(ds2->getRoot()) );
-  EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(ds3->getRoot()) );
-  EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(ds4->getRoot()) );
+  EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(ds1->getRoot()) );
+  EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(ds1->getRoot()) );
+  EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(ds1->getRoot()) );
+  EXPECT_TRUE( ds5->getRoot()->isEquivalentTo(ds1->getRoot()) );
 
   delete ds1;
   delete ds2;
@@ -674,9 +679,6 @@ TEST(sidre_group,save_restore_external_data)
   view->apply( asctoolkit::sidre::INT_ID, 100 );
 
   ds->save("sidre_save_external", "conduit");
-
-  // Text output ( for debugging )
-  ds->save("sidre_save_text_output2", "text");
 
   delete ds;
 

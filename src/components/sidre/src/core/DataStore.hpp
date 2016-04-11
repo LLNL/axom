@@ -202,38 +202,40 @@ public:
    */
   void print(std::ostream& os) const;
 
+
+  /// Developer notes:
+  /// We should reduce these functions when SPIO is fully available ( in both serial and parallel ).
+  /// We only need one or two simple save functions.  Try to keep this class simple and move the I/O
+  /// interfaces to SPIO.
+
   /*!
    * \brief Save the datastore to a file set named "obase"
    * If a group is provided, only that sub-tree will be saved.
-   *
-   * Note: Only supported protocol currently is "conduit".
    */
-  void save( const std::string& obase,
+  void save( const std::string& file_path,
              const std::string& protocol,
              const DataGroup* group = ATK_NULLPTR ) const;
 
   /*!
-   * \brief Save the datastore to an hdf5 file named "obase"
+   * \brief Save the datastore to an hdf5 file.
    * If a group is provided, only that sub-tree will be saved.
-   * Note: Only supported protocol currently is "conduit_hdf5".
    */
-  void save( const std::string& obase,
-             const hid_t& h5_file_id,
+  void save( const hid_t& h5_file_id,
+             const std::string& hdf5_internal_path,
              const DataGroup* group = ATK_NULLPTR ) const;
 
   /*!
    * \brief TODO
    */
-  void load(const std::string& obase,
+  void load(const std::string& file_path,
             const std::string& protocol,
             DataGroup * group = ATK_NULLPTR);
 
   /*!
    * \brief TODO
    */
-  void load(const std::string& obase,
-            const std::string& protocol,
-            const hid_t& h5_file_id,
+  void load(const hid_t& h5_file_id,
+            const std::string& file_path,
             DataGroup * group = ATK_NULLPTR);
 
   /*!

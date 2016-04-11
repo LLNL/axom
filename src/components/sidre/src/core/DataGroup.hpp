@@ -916,9 +916,8 @@ public:
    *
    * \warning Currently, only valid protocol is "conduit".
    */
-  void save( const std::string& obase,
-             const std::string& protocol,
-             const DataGroup* group = ATK_NULLPTR) const;
+  void save( const std::string& file_path,
+             const std::string& protocol) const;
 
   /*!
    * \brief Save this DataGroup object (including data views and child
@@ -926,9 +925,8 @@ public:
    *
    * \warning Currently, only valid protocol is "conduit_hdf5".
    */
-  void save(const std::string& obase,
-            const hid_t& h5_file_id,
-            const DataGroup * group = ATK_NULLPTR) const;
+  void save(const hid_t& h5_file_id,
+            const std::string& hdf5_interal_path) const;
 
   /*!
    * \brief Load data group (including data views and child groups)
@@ -936,7 +934,7 @@ public:
    *
    * \warning Currently, only valid protocol is "conduit".
    */
-  void load(const std::string& obase,
+  void load(const std::string& file_path,
             const std::string& protocol);
 
   /*!
@@ -945,9 +943,8 @@ public:
    *
    * \warning Currently, only valid protocol is "conduit_hdf5".
    */
-  void load(const std::string& obase,
-            const std::string& protocol,
-            const hid_t& h5_file_id);
+  void load(const hid_t& h5_file_id,
+            const std::string& file_path);
 
 //@}
 

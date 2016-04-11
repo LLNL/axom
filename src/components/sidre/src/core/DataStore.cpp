@@ -336,7 +336,7 @@ void DataStore::print(std::ostream& os) const
 
 /*************************************************************************/
 
-void DataStore::save(const std::string& obase,
+void DataStore::save(const std::string& file_path,
                      const std::string& protocol,
                      const DataGroup* group) const
 {
@@ -346,12 +346,25 @@ void DataStore::save(const std::string& obase,
   if (protocol == "conduit")
   {
     // for debugging call: n.print();
-    conduit::io::save(data_holder, obase);
+    conduit::io::save(data_holder, file_path);
+  }
+  else if (protocol == "conduit_hdf5")
+  {
+    std::string file_path_ext = file_path + ".hdf5";
+    std::string internal_hdf5_path = "sidre";
+    hid_t h5_file_id = H5Fcreate( file_path_ext.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    SLIC_ERROR_IF(h5_file_id < 0, " Unable to create HDF5 file " << file_path_ext);
+
+    save(h5_file_id, internal_hdf5_path, group);
+    herr_t status = H5Fclose(h5_file_id);
+    SLIC_ERROR_IF(status < 0, "Unable to close HDF5 file " << file_path_ext);
+
   }
   else if (protocol == "text")
   {
-    std::ofstream output_file( obase + ".txt" );
-    SLIC_CHECK_MSG(output_file, "Unable to create file " << output_file);
+    std::string file_path_ext = file_path + ".txt"; 
+    std::ofstream output_file( file_path_ext );
+    SLIC_ERROR_IF(!output_file, "Unable to create file " << file_path_ext);
     if (output_file)
     {
       output_file  << data_holder.to_json();
@@ -361,21 +374,14 @@ void DataStore::save(const std::string& obase,
 
 /*************************************************************************/
 
-void DataStore::save(const std::string& obase,
-                     const hid_t& h5_file_id,
+void DataStore::save(const hid_t& h5_file_id,
+                     const std::string& internal_hdf5_path,
                      const DataGroup * group) const
 {
   Node data_holder;
   exportTo(group, data_holder);
 
-  std::string file_path;
-  std::string hdf5_path;
-  conduit::utils::split_string(obase,
-                               std::string(":"),
-                               file_path,
-                               hdf5_path);
-
-  conduit::io::hdf5_write(data_holder, h5_file_id, hdf5_path);
+  conduit::io::hdf5_write(data_holder, h5_file_id, internal_hdf5_path);
 }
 
 /*************************************************************************/
@@ -384,22 +390,34 @@ void DataStore::save(const std::string& obase,
  *************************************************************************
  *
  * Load data group (including data views and child groups) from a file
- * set named "obase" into this group object.
  *
  * Note: Only valid protocol is "conduit".
  *
  *************************************************************************
  */
-void DataStore::load(const std::string& obase,
+void DataStore::load(const std::string& file_path,
                      const std::string& protocol,
                      DataGroup * group)
 {
   if (protocol == "conduit")
   {
     Node node;
-    conduit::io::load(obase, node);
+    conduit::io::load(file_path, node);
     // for debugging call: n.print();
     importFrom( group, node );
+  }
+  else if (protocol == "conduit_hdf5")
+  {
+    std::string file_path_ext = file_path + ".hdf5";
+    std::string internal_hdf5_path = "sidre";
+    hid_t h5_file_id;
+    h5_file_id = H5Fopen( file_path_ext.c_str(),H5F_ACC_RDONLY, H5P_DEFAULT );
+    SLIC_ERROR_IF(h5_file_id < 0, " Unable to open HDF5 file " << file_path_ext);
+
+    load(h5_file_id, internal_hdf5_path, group);
+    herr_t status = H5Fclose(h5_file_id);
+    SLIC_ERROR_IF(status < 0, "Unable to close HDF5 file " << file_path_ext);
+
   }
 }
 
@@ -407,30 +425,17 @@ void DataStore::load(const std::string& obase,
  *************************************************************************
  *
  * Load data group (including data views and child groups) from an hdf5 file
- * named "obase" into this group object.
- *
- * Note: Only valid protocol is "conduit_hdf5".
  *
  *************************************************************************
  */
-void DataStore::load(const std::string& obase,
-                     const std::string& protocol,
-                     const hid_t& h5_file_id,
+void DataStore::load(const hid_t& h5_file_id,
+                     const std::string& internal_hdf5_path,
                      DataGroup * group)
 {
-  if (protocol == "conduit_hdf5")
-  {
-    std::string file_path;
-    std::string hdf5_path;
-    conduit::utils::split_string(obase,
-                                 std::string(":"),
-                                 file_path,
-                                 hdf5_path);
-    Node node;
-    conduit::io::hdf5_read(h5_file_id, hdf5_path, node);
-    // for debugging call: n.print();
-    importFrom( group, node );
-  }
+  Node node;
+  conduit::io::hdf5_read(h5_file_id, internal_hdf5_path, node);
+  // for debugging call: n.print();
+  importFrom( group, node );
 }
 
 
