@@ -63,18 +63,18 @@ static int l_function4b(lua_State *L)
 
 static int l_function5_arg1_arg2(lua_State *L)
 {
-    int shroud_nargs = lua_gettop(L);
+    int SH_nargs = lua_gettop(L);
     double arg1;
     bool arg2;
     double rv;
     
-    if (shroud_nargs > 0) {
+    if (SH_nargs > 0) {
         arg1 = lua_tonumber(L, 1);
     }
-    if (shroud_nargs > 1) {
+    if (SH_nargs > 1) {
         arg2 = lua_toboolean(L, 2);
     }
-    switch (shroud_nargs) {
+    switch (SH_nargs) {
     case 0:
         rv = Function5();
         break;
@@ -130,19 +130,19 @@ static int l_function10_1(lua_State *L)
 
 static int l_overload1_num_offset_stride(lua_State *L)
 {
-    int shroud_nargs = lua_gettop(L);
+    int SH_nargs = lua_gettop(L);
     int num = lua_tointeger(L, 1);
     int offset;
     int stride;
     int rv;
     
-    if (shroud_nargs > 1) {
+    if (SH_nargs > 1) {
         offset = lua_tointeger(L, 2);
     }
-    if (shroud_nargs > 2) {
+    if (SH_nargs > 2) {
         stride = lua_tointeger(L, 3);
     }
-    switch (shroud_nargs) {
+    switch (SH_nargs) {
     case 1:
         rv = overload1(num);
         break;
@@ -159,20 +159,20 @@ static int l_overload1_num_offset_stride(lua_State *L)
 
 static int l_overload1_5(lua_State *L)
 {
-    int shroud_nargs = lua_gettop(L);
+    int SH_nargs = lua_gettop(L);
     double type = lua_tonumber(L, 1);
     int num = lua_tointeger(L, 2);
     int offset;
     int stride;
     int rv;
     
-    if (shroud_nargs > 2) {
+    if (SH_nargs > 2) {
         offset = lua_tointeger(L, 3);
     }
-    if (shroud_nargs > 3) {
+    if (SH_nargs > 3) {
         stride = lua_tointeger(L, 4);
     }
-    switch (shroud_nargs) {
+    switch (SH_nargs) {
     case 2:
         rv = overload1(type, num);
         break;

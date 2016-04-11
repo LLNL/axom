@@ -153,7 +153,7 @@ class Wrapl(util.WrapperMixin):
         default_calls = []   # each possible default call
         found_default = False
         if '_has_default_arg' in node:
-            append_format(LUA_decl, 'int shroud_nargs = lua_gettop({LUA_state_var});', fmt)
+            append_format(LUA_decl, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
 
         if True:
             fmt.LUA_index = 1
@@ -189,7 +189,7 @@ class Wrapl(util.WrapperMixin):
                         default_calls.append(
                             (len(cpp_call_list), len(post_parse), ', '.join(cpp_call_list)))
                         LUA_code.extend([
-                                'if (shroud_nargs > {}) {{'.format(fmt.LUA_index-1),
+                                'if (SH_nargs > {}) {{'.format(fmt.LUA_index-1),
                                 1,
                                 '{} = {};'.format(fmt.cpp_var, lua_pop),
                                 -1,
@@ -281,7 +281,7 @@ class Wrapl(util.WrapperMixin):
         # Else delare on call line.
         if found_default:
             fmt.rv_asgn = 'rv = '
-            LUA_code.append('switch (shroud_nargs) {')
+            LUA_code.append('switch (SH_nargs) {')
         else:
             fmt.rv_asgn = fmt.rv_decl + ' = '
         need_rv = False

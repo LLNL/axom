@@ -231,20 +231,20 @@ PP_exclass2_declare_1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.declare
-    Py_ssize_t shroud_nargs = 0;
+    Py_ssize_t SH_nargs = 0;
     TypeID type;
     SidreLength len;
     const char *kwcpp = "type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (args != NULL) shroud_nargs += PyTuple_Size(args);
-    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    if (args != NULL) SH_nargs += PyTuple_Size(args);
+    if (kwds != NULL) SH_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|l:declare", kw_list,
         &type, &len))
     {
         return NULL;
     }
-    switch (shroud_nargs) {
+    switch (SH_nargs) {
     case 1:
         self->BBB->declare(getTypeID(type));
         break;

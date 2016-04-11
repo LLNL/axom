@@ -342,10 +342,10 @@ return 1;""", fmt)
         default_calls = []   # each possible default call
         found_default = False
         if '_has_default_arg' in node:
-            PY_decl.append('Py_ssize_t shroud_nargs = 0;')
+            PY_decl.append('Py_ssize_t SH_nargs = 0;')
             PY_code.extend([
-                    'if (args != NULL) shroud_nargs += PyTuple_Size(args);',
-                    'if (kwds != NULL) shroud_nargs += PyDict_Size(args);',
+                    'if (args != NULL) SH_nargs += PyTuple_Size(args);',
+                    'if (kwds != NULL) SH_nargs += PyDict_Size(args);',
                     ])
 
         args = node['args']
@@ -469,7 +469,7 @@ return 1;""", fmt)
         # Else delare on call line.
         if found_default:
             fmt.rv_asgn = 'rv = '
-            PY_code.append('switch (shroud_nargs) {')
+            PY_code.append('switch (SH_nargs) {')
         else:
             fmt.rv_asgn = fmt.rv_decl + ' = '
         need_rv = False
@@ -693,19 +693,19 @@ return 1;""", fmt)
 
             body = []
             body.append(1)
-            body.append('Py_ssize_t shroud_nargs = 0;')
+            body.append('Py_ssize_t SH_nargs = 0;')
             body.extend([
-                    'if (args != NULL) shroud_nargs += PyTuple_Size(args);',
-                    'if (kwds != NULL) shroud_nargs += PyDict_Size(args);',
+                    'if (args != NULL) SH_nargs += PyTuple_Size(args);',
+                    'if (kwds != NULL) SH_nargs += PyDict_Size(args);',
                     ])
             body.append('PyObject *rvobj;')
 
 
             for overload in methods:
                 if '_nargs' in overload:
-                    body.append('if (shroud_nargs >= %d && shroud_nargs <= %d) {' % overload['_nargs'])
+                    body.append('if (SH_nargs >= %d && SH_nargs <= %d) {' % overload['_nargs'])
                 else:
-                    body.append('if (shroud_nargs == %d) {' % len(overload['args']))
+                    body.append('if (SH_nargs == %d) {' % len(overload['args']))
                 body.append(1)
                 append_format(body, 'rvobj = {PY_name_impl}(self, args, kwds);', overload['fmt'])
                 body.append('if (!PyErr_Occurred()) {')
