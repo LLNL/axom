@@ -783,7 +783,8 @@ void DataGroup::printTree( const int nlevels,
  */
 
 void DataGroup::save( const std::string& obase,
-                      const std::string& protocol) const
+                      const std::string& protocol,
+                      const DataGroup * group) const
 {
   this->getDataStore()->save( obase, protocol, this);
 }
@@ -799,10 +800,11 @@ void DataGroup::save( const std::string& obase,
  *************************************************************************
  */
 void DataGroup::save(const std::string& obase,
-                     const std::string& protocol,
-                     const hid_t& h5_file_id) const
+                     const hid_t& h5_file_id,
+                     const DataGroup * group) const
+
 {
-  this->getDataStore()->save( obase, protocol, h5_file_id, this);
+  this->getDataStore()->save( obase, h5_file_id, this);
 }
 
 /*

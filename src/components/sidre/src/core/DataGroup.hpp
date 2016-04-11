@@ -52,7 +52,8 @@
 #include <sparsehash/dense_hash_map>
 #endif
 
-#include "conduit_io.hpp"
+// Other externa libraries
+#include "hdf5.h"
 
 // Other CS Toolkit headers
 #include "slic/slic.hpp"
@@ -916,7 +917,8 @@ public:
    * \warning Currently, only valid protocol is "conduit".
    */
   void save( const std::string& obase,
-             const std::string& protocol) const;
+             const std::string& protocol,
+             const DataGroup* group = ATK_NULLPTR) const;
 
   /*!
    * \brief Save this DataGroup object (including data views and child
@@ -925,8 +927,8 @@ public:
    * \warning Currently, only valid protocol is "conduit_hdf5".
    */
   void save(const std::string& obase,
-            const std::string& protocol,
-            const hid_t& h5_file_id) const;
+            const hid_t& h5_file_id,
+            const DataGroup * group = ATK_NULLPTR) const;
 
   /*!
    * \brief Load data group (including data views and child groups)

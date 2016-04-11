@@ -18,6 +18,12 @@
  ******************************************************************************
  */
 
+// Standard C++ headers
+#include <fstream>
+
+#include "conduit.hpp"
+#include "conduit_io.hpp"
+
 // Associated header file
 #include "DataStore.hpp"
 
@@ -32,8 +38,6 @@
 // Other CS Toolkit headers
 #include "slic/slic.hpp"
 #include "slic/GenericOutputStream.hpp"
-
-#include "conduit.hpp"
 
 namespace asctoolkit
 {
@@ -336,37 +340,42 @@ void DataStore::save(const std::string& obase,
                      const std::string& protocol,
                      const DataGroup* group) const
 {
+  Node data_holder;
+  exportTo( group, data_holder);
+
   if (protocol == "conduit")
   {
-    Node data_holder;
-    exportTo( group, data_holder, protocol );
-
     // for debugging call: n.print();
     conduit::io::save(data_holder, obase);
+  }
+  else if (protocol == "text")
+  {
+    std::ofstream output_file( obase + ".txt" );
+    SLIC_CHECK_MSG(output_file, "Unable to create file " << output_file);
+    if (output_file)
+    {
+      output_file  << data_holder.to_json();
+    }
   }
 }
 
 /*************************************************************************/
 
 void DataStore::save(const std::string& obase,
-                     const std::string& protocol,
                      const hid_t& h5_file_id,
                      const DataGroup * group) const
 {
-  if (protocol == "conduit_hdf5")
-  {
-    Node data_holder;
-    exportTo(group, data_holder, protocol);
+  Node data_holder;
+  exportTo(group, data_holder);
 
-    std::string file_path;
-    std::string hdf5_path;
-    conduit::utils::split_string(obase,
-                                 std::string(":"),
-                                 file_path,
-                                 hdf5_path);
+  std::string file_path;
+  std::string hdf5_path;
+  conduit::utils::split_string(obase,
+                               std::string(":"),
+                               file_path,
+                               hdf5_path);
 
-    conduit::io::hdf5_write(data_holder, h5_file_id, hdf5_path);
-  }
+  conduit::io::hdf5_write(data_holder, h5_file_id, hdf5_path);
 }
 
 /*************************************************************************/
@@ -436,19 +445,22 @@ void DataStore::load(const std::string& obase,
  *************************************************************************
  */
 void DataStore::exportTo(const DataGroup * group,
-               conduit::Node& data_holder,
-               const std::string& protocol) const
+               conduit::Node& data_holder) const
 {
   if (group == ATK_NULLPTR)
   {
     group = getRoot();
   }
 
-  //TODO - Use the protocol to choose whether or not we want to save out our
-  // full multiview->buffer connectivity (for restarts), or whether we want
-  // to collapse those and have each view have a copy of the buffer data
-  // ( for exporting to other consumers ).
-
+  // TODO - This implementation will change in the future.  We want to write
+  // out some separate set of conduit nodes:
+  // #1 A set of nodes representing the group and views (hierarchy), with
+  // the data descriptions ( schemas ).
+  // #2 A set of nodes for our data ( buffers, external data, etc ).
+  // On a load, we want to be able to create our datastore tree first,
+  // then call allocate ourself, then have conduit load the data directly
+  // into our allocated memory areas.  Conduit can do this, as long as the
+  // conduit node set is compatible with what's in the file.
   std::set<IndexType> buffer_indices;
 
   // Tell group to add itself and all sub-groups and views to node.

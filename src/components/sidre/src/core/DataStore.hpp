@@ -218,7 +218,6 @@ public:
    * Note: Only supported protocol currently is "conduit_hdf5".
    */
   void save( const std::string& obase,
-             const std::string& protocol,
              const hid_t& h5_file_id,
              const DataGroup* group = ATK_NULLPTR ) const;
 
@@ -241,8 +240,7 @@ public:
    * \brief TODO
    */
   void exportTo( const DataGroup * group,
-                  conduit::Node& data_holder,
-                  const std::string& protocol ) const;
+                  conduit::Node& data_holder ) const;
   /*!
    * \brief TODO
    */
