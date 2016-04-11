@@ -707,10 +707,6 @@ public:
   /*!
    * \brief Returns a copy of the scalar value contained in the view.
    */
-//
-// RDH -- What happens if the view does not hold a scalar?
-//     -- Currently it throws an exception.
-//
   Node::Value getScalar()
   {
     if (m_state == SCALAR)
@@ -719,6 +715,7 @@ public:
     }
     else
     {
+     // TODO - This will throw and exception in the user's code  ATK-704
       return Node().value();
     }
   }
@@ -894,7 +891,7 @@ private:
    *
    *         Used by DataBuffer when detaching from a view.
    */
-  void resetBufferToEmpty()
+  void setBufferViewToEmpty()
   {
     m_data_buffer = ATK_NULLPTR;
     m_state = EMPTY;

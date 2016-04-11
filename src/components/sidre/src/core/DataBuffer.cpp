@@ -334,11 +334,9 @@ void DataBuffer::detachView( DataView * view )
   std::vector<DataView *>::iterator pos = std::remove(m_views.begin(),
                                                       m_views.end(),
                                                       view);
-  // check if pos is ok?
-  //Erase the "removed" element.
+  SLIC_ASSERT(pos != m_views.end());
   m_views.erase(pos);
-
-  view->resetBufferToEmpty();
+  view->setBufferViewToEmpty();
 }
 
 /*
@@ -354,7 +352,7 @@ void DataBuffer::detachAllViews()
 {
   for (size_t i = 0 ; i < m_views.size() ; ++i)
   {
-    m_views[i]->resetBufferToEmpty();
+    m_views[i]->setBufferViewToEmpty();
   }
 
   m_views.clear();
