@@ -294,6 +294,7 @@ TEST(sidre_view,scalar_view)
   s0view->deallocate();
 
   DataView * empty = root->createView("empty");
+#if 0
   try
   {
     int * j = empty->getScalar();
@@ -302,6 +303,7 @@ TEST(sidre_view,scalar_view)
   }
   catch ( conduit::Error e)
   {}
+#endif
   const char * svalue = empty->getString();
   EXPECT_EQ(NULL, svalue);
 
