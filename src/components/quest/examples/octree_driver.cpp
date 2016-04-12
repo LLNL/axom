@@ -561,10 +561,9 @@ int main( int argc, char** argv )
   print_surface_stats(surface_mesh);
   meshBB.scale(1.01);
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
-
-
   testIntersectionOnRegularGrid();
+
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
 
   // STEP 6: Create octree over mesh's bounding box and query a point in space
   SLIC_INFO("-- About to generate the InOutOctree");

@@ -59,7 +59,7 @@ namespace quest
       /**
        * \brief Sets the data associated with this block
        */
-      void setData(int leafID) { m_id = leafID; }
+      void setData(int blockID) { m_id = blockID; }
 
       /**
        * Returns the normalized form of the id for this BlockData instance
