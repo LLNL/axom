@@ -127,11 +127,20 @@ public:
   DataBuffer * createBuffer( TypeID type, SidreLength num_elems );
 
   /*!
-   * \brief Remove data buffer with given index from the datastore and
-   *        destroy it (including its data if data buffer owns it).
+   * \brief Remove data buffer from the datastore and destroy it and
+   *        its data.
    *
-   *   Note that buffer destruction detaches it from all groups and views
-   *   it was associated with.
+   *   Note that buffer destruction detaches it from all views it was
+   *   associated with.
+   */
+  void destroyBuffer( DataBuffer * buff );
+
+  /*!
+   * \brief Remove data buffer with given index from the datastore and
+   *        destroy it and its data.
+   *
+   *   Note that buffer destruction detaches it from all views it was
+   *   associated with.
    */
   void destroyBuffer( IndexType idx );
 
@@ -139,18 +148,10 @@ public:
    * \brief Remove all data buffers from the datastore and destroy them
    *        (including data they own).
    *
-   *   Note that buffer destruction detaches it from all groups and views
-   *   it was associated with.
+   *   Note that buffer destruction detaches it from all views it was
+   *   associated with.
    */
-  void destroyBuffers();
-
-  /*!
-   * \brief Remove data buffer with given index from the datastore, but leave
-   *        it intact.
-   *
-   * \return pointer to DataBuffer object that was datached.
-   */
-  DataBuffer * detachBuffer( IndexType idx );
+  void destroyAllBuffers();
 
   /*!
    * \brief Return number of buffers in the datastore.

@@ -67,10 +67,10 @@ DataView * DataGroup::createView( const std::string& name )
 
   // Want the C++ new operator to return null pointer on failure instead of
   // throwing an exception.
-  DataView * view = new(std::nothrow) DataView( path, this);
+  DataView * view = new(std::nothrow) DataView(path);
   if ( view != ATK_NULLPTR )
   {
-    group->attachView( view );
+    group->attachView(view);
   }
   return view;
 }
@@ -345,6 +345,32 @@ void DataGroup::destroyViews()
 /*
  *************************************************************************
  *
+ * Detach view from group and destroy view.
+ *
+ * Destroy DataBuffer if buffer has no other view attached to it.
+ *
+ *************************************************************************
+ */
+void DataGroup::destroyViewAndData( DataView * view )
+{
+  if ( view != ATK_NULLPTR)
+  {
+    detachView( view->getName() );
+    DataBuffer * const buffer = view->detachBuffer();
+    if ( buffer != ATK_NULLPTR )
+    {
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer);
+      }
+    }
+    delete view;
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Detach view with given name from group and destroy view.
  *
  * Destroy DataBuffer if buffer has no other view attached to it.
@@ -353,22 +379,7 @@ void DataGroup::destroyViews()
  */
 void DataGroup::destroyViewAndData( const std::string& name )
 {
-  SLIC_CHECK_MSG( hasView(name) == true, "name == " << name );
-
-  DataView * view = detachView(name);
-  if ( view != ATK_NULLPTR )
-  {
-    DataBuffer * const buffer = view->getBuffer();
-    if ( buffer != ATK_NULLPTR )
-    {
-      buffer->detachView(view);
-      if (buffer->getNumViews() == 0)
-      {
-        getDataStore()->destroyBuffer(buffer->getIndex());
-      }
-    }
-    delete view;
-  }
+  destroyViewAndData(getView(name));
 }
 
 /*
@@ -382,22 +393,7 @@ void DataGroup::destroyViewAndData( const std::string& name )
  */
 void DataGroup::destroyViewAndData( IndexType idx )
 {
-  SLIC_CHECK_MSG( hasView(idx) == true, "idx == " << idx );
-
-  DataView * view = detachView(idx);
-  if ( view != ATK_NULLPTR )
-  {
-    DataBuffer * const buffer = view->getBuffer();
-    if ( buffer != ATK_NULLPTR )
-    {
-      buffer->detachView(view);
-      if (buffer->getNumViews() == 0)
-      {
-        getDataStore()->destroyBuffer(buffer->getIndex());
-      }
-    }
-    delete view;
-  }
+  destroyViewAndData(getView(idx));
 }
 
 /*
@@ -414,18 +410,7 @@ void DataGroup::destroyViewsAndData()
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
-    DataView * view = this->getView(vidx);
-    DataBuffer * const buffer = view->getBuffer();
-
-    if ( buffer != ATK_NULLPTR )
-    {
-      buffer->detachView(view);
-      if (buffer->getNumViews() == 0)
-      {
-        getDataStore()->destroyBuffer(buffer->getIndex());
-      }
-    }
-    delete view;
+    destroyViewAndData(vidx);
     vidx = getNextValidViewIndex(vidx);
   }
 
@@ -441,29 +426,32 @@ void DataGroup::destroyViewsAndData()
  */
 DataView * DataGroup::moveView(DataView * view)
 {
-  SLIC_CHECK_MSG( view != ATK_NULLPTR,
-                  "Attempting to move view, but given null ptr" );
-  SLIC_CHECK_MSG( hasView(
-                    view->getName()) == false,
-                  "Attempting to move view, but destination group already has a view named " <<
-                  view->getName() );
-
-  if ( view == ATK_NULLPTR || hasView(view->getName()) )
+  if ( view == ATK_NULLPTR )
   {
+    SLIC_CHECK_MSG( view != ATK_NULLPTR,
+                    "Attempting to move view, but given null ptr" );
     return ATK_NULLPTR;
   }
-  else
+
+  DataGroup * curr_group = view->getOwningGroup();
+  if (curr_group == this )
   {
-    // remove this view from its current parent
-    DataGroup * curr_group = view->getOwningGroup();
-
-    curr_group->detachView(view->getName());
-
-    /// finally, attach to this group
-    attachView(view);
-
+    // this group already owns the view
     return view;
   }
+  else if (hasView(view->getName()) )
+  {
+    SLIC_CHECK_MSG( hasView(
+                      view->getName()) == false,
+                    "Attempting to move view, but destination group already has a view named " <<
+                    view->getName() );
+    return ATK_NULLPTR;
+  }
+
+  curr_group->detachView(view);
+  attachView(view);
+
+  return view;
 }
 
 /*
@@ -488,16 +476,10 @@ DataView * DataGroup::copyView(DataView * view)
   {
     return ATK_NULLPTR;
   }
-  else
-  {
-    DataView * res = createView(view->getName(), view->getBuffer());
-    res->describe(view->getSchema().dtype());
-    if (view->isApplied())
-    {
-      res->apply();
-    }
-    return res;
-  }
+
+  DataView * copy = createView(view->getName());
+  view->copyView(copy);
+  return copy;
 }
 
 
@@ -607,22 +589,15 @@ DataGroup * DataGroup::moveGroup(DataGroup * group)
                   "Attempting to move group, but destination group already has a group named " <<
                   group->getName() );
 
-  if ( group == ATK_NULLPTR || hasGroup(group->getName()) )
+  if ( group == ATK_NULLPTR || hasGroup(group->getName()))
   {
     return ATK_NULLPTR;
   }
-  else
-  {
-    // remove this group from its current parent
-    DataGroup * curr_group = group->getParent();
 
-    curr_group->detachGroup(group->getName());
-
-    /// finally, attach to this group
-    attachGroup(group);
-
-    return group;
-  }
+  DataGroup * curr_group = group->getParent();
+  curr_group->detachGroup(group->getName());
+  attachGroup(group);
+  return group;
 }
 
 /*
@@ -975,6 +950,8 @@ DataView * DataGroup::attachView(DataView * view)
   }
   else
   {
+    SLIC_ASSERT(view->m_owning_group == ATK_NULLPTR);
+    view->m_owning_group = this;
     m_view_coll.insertItem(view, view->getName());
     return view;
   }

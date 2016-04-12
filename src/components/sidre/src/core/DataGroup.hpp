@@ -392,6 +392,44 @@ public:
                          SidreLength num_elems );
 
   /*!
+   * \brief createView(name, type, num_elems)->attachBuffer(buff)
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         SidreLength num_elems,
+                         DataBuffer * buff )
+  {
+    DataView * view = createView(name, type, num_elems);
+    if (view != ATK_NULLPTR)
+    {
+      view->attachBuffer(buff);
+    }
+    return view;
+  }
+
+  /*!
+   * \brief createView(name, type, num_elems)->setExternalDataPtr(external_ptr)
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         SidreLength num_elems,
+                         void * external_ptr )
+  {
+    DataView * view = createView(name, type, num_elems);
+    if (view != ATK_NULLPTR)
+    {
+      view->setExternalDataPtr(external_ptr);
+    }
+    return view;
+  }
+
+  /*!
    * \brief Create DataView object with given name and described by data type,
    *        number of dimensions and number of elements per dimension,
    *        and attach new view to this group object.
@@ -410,6 +448,46 @@ public:
                          TypeID type,
                          int ndims,
                          SidreLength * shape );
+
+  /*!
+   * \brief createView(name, type, ndims, shape)->attachBuffer(buff)
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         int ndims,
+                         SidreLength * shape,
+                         DataBuffer * buff )
+  {
+    DataView * view = createView(name, type, ndims, shape);
+    if (view != ATK_NULLPTR)
+    {
+      view->attachBuffer(buff);
+    }
+    return view;
+  }
+
+  /*!
+   * \brief createView(name, type, ndims, shape)->setExternalDataPtr(external_ptr)
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         int ndims,
+                         SidreLength * shape,
+                         void * external_ptr )
+  {
+    DataView * view = createView(name, type, ndims, shape);
+    if (view != ATK_NULLPTR)
+    {
+      view->setExternalDataPtr(external_ptr);
+    }
+    return view;
+  }
 
   /*!
    * \brief Create DataView object with given name and described by
@@ -583,6 +661,12 @@ public:
 //!  @name DataView destruction methods.
 
   /*!
+   * \brief Destroy view in this DataGroup and leave its associated
+   *        data intact.
+   */
+  void destroyView(DataView * view);
+
+  /*!
    * \brief Destroy view in this DataGroup with given name and leave its
    *        associated data intact.
    */
@@ -599,6 +683,15 @@ public:
    *        data intact.
    */
   void destroyViews();
+
+  /*!
+   * \brief Destroy view in this DataGroup.  Destroy it's data also,
+   *        if this is the only view referencing that data.
+   *
+   *        Data will not be destroyed as long as a view still exists that
+   *        references it.
+   */
+  void destroyViewAndData( DataView * view );
 
   /*!
    * \brief Destroy view in this DataGroup with given name.  Destroy it's data
@@ -633,11 +726,13 @@ public:
    * \brief Remove DataView object from its owning group and attach
    *        to this DataGroup object.
    *
+   * If the group already owns this view, method does nothing and returns
+   * pointer to view.
    * If given view pointer is null or group already contains a view with
-   * same name as given view, method does nothing.
+   * same name as given view, method does nothing and returns ATK_NULLPTR.
    *
-   * \return pointer to given DataView object or ATK_NULLPTR if new
-   * view is not moved into this group.
+   * \return pointer to view which is attached to this group or ATK_NULLPTR
+   *         if the view is not attached to this group.
    */
   DataView * moveView(DataView * view);
 
@@ -1001,6 +1096,11 @@ private:
    */
   DataView * attachView(DataView * view);
   ///
+  DataView * detachView(const DataView * view)
+  {
+    return detachView(view->getName());
+  }
+  //
   DataView * detachView(const std::string& name);
   ///
   DataView * detachView(IndexType idx);

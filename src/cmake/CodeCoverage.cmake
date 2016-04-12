@@ -31,11 +31,13 @@
 # 2012-01-31, Lars Bilke
 # - Enable Code Coverage
 #
-# 2013-09-17, Joakim Söderberg
+# 2013-09-17, Joakim Soderberg
 # - Added support for Clang.
 # - Some additional usage instructions.
 # 2015-07-06, Aaron Black
 # - Modified for use by ASC toolkit.
+# 2016-04-04, Kenny Weiss
+# - Removed support for clang; simplified flags
 #
 # USAGE:
 
@@ -47,19 +49,16 @@
 # 2. Add the following line to your CMakeLists.txt:
 #      INCLUDE(CodeCoverage)
 #
-# 3. Set compiler flags to turn off optimization and enable coverage:
-#    SET(CMAKE_CXX_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
-#	 SET(CMAKE_C_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
+#    [The script] sets compiler flags to turn off optimization and enable coverage:
 #
-# 3. Use the function SETUP_TARGET_FOR_COVERAGE to create a custom make target
+# 3. Use the function add_code_coverage_target to create a custom make target
 #    which runs your test executable and produces a lcov code coverage report:
 #    Example:
-#	 SETUP_TARGET_FOR_COVERAGE(
-#				my_coverage_target  # Name for custom target.
+#	 add_code_coverage_target(
+#				my_coverage_target  # Name for custom target -- and for the output directory
 #				test_driver         # Name of the test driver executable that runs the tests.
 #									# NOTE! This should always have a ZERO as exit code
 #									# otherwise the coverage generation will not complete.
-#				coverage            # Name of output directory.
 #				)
 #
 # 4. Build a Debug build:
@@ -72,11 +71,14 @@
 # Check requirements
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-   MESSAGE(FATAL_ERROR "Code coverage not enabled: Requires debug build type.")
+   MESSAGE(FATAL_ERROR "Code coverage requires 'Debug' build type. "
+					   "Current build type is ${CMAKE_BUILD_TYPE}.")
 endif()
 
-if ( NOT (CMAKE_COMPILER_IS_GNUCXX) OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") ) 
-   MESSAGE(FATAL_ERROR "Code coverage: Detected unsupported compiler.  Either set ENABLE_CODECOV=FALSE or change your compiler to gnu or clang.")
+if ( NOT COMPILER_FAMILY_IS_GNU ) 
+   MESSAGE(FATAL_ERROR "Code coverage only supported on gnu compiler. "
+					   "Either set ENABLE_CODECOV=FALSE or change your compiler to gnu. "
+					   "Current CXX compiler is ${CMAKE_CXX_COMPILER_ID}.")
 endif()
 
 
@@ -103,16 +105,26 @@ IF(NOT EXISTS ${GCOV_PATH})
    MESSAGE( FATAL_ERROR "Code coverage: GCOV_PATH is not set.  This must be set in your host-config file.")
 ENDIF()
 
+
+# Set the actual flags for coverage in the COVERAGE_FLAGS variable 
+# Note: '--coverage' is equivalent to '-fprofile-arcs -ftest-coverage' for compiling and '-lgcov' for linking
+# Additional flags that might be useful: 
+#       " -fno-inline -fno-inline-small-functions -fno-default-inline"
+append_custom_compiler_flag(
+        FLAGS_VAR   COVERAGE_FLAGS 
+        DEFAULT     "--coverage"        
+        )
+
 SET(CMAKE_CXX_FLAGS_COVERAGE
-    "-g -O0 -fprofile-arcs -ftest-coverage"
+    "-g -O0 ${COVERAGE_FLAGS}"
     CACHE STRING "Flags used by the C++ compiler during coverage builds."
     FORCE )
 SET(CMAKE_C_FLAGS_COVERAGE
-    "-g -O0 -fprofile-arcs -ftest-coverage"
+    "-g -O0 ${COVERAGE_FLAGS}"
     CACHE STRING "Flags used by the C compiler during coverage builds."
     FORCE )
 SET(CMAKE_EXE_LINKER_FLAGS_COVERAGE
-    "-fprofile-arcs -ftest-coverage"
+    "${COVERAGE_FLAGS}"
     CACHE STRING "Flags used for linking binaries during coverage builds."
     FORCE )
 SET(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
@@ -162,6 +174,7 @@ ENDFUNCTION()
 
 # Add code coverage target
 add_code_coverage_target(coverage make test)
+SET( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_COVERAGE}" )
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}" )
 SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_COVERAGE}" )
 MESSAGE(STATUS "Code coverage: enabled via gcov.")

@@ -289,6 +289,11 @@ private:
   void detachView( DataView * dataView );
 
   /*!
+   * \brief Private method to detach all views to the buffer.
+   */
+  void detachAllViews( );
+
+  /*!
    * \brief Allocate bytes for data in data buffer
    */
   void * allocateBytes(std::size_t num_bytes);

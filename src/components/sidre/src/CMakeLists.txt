@@ -74,7 +74,7 @@ make_library( LIBRARY_NAME
              )
   
              
-set_target_properties(sidre  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
+set_target_properties(sidre  PROPERTIES COMPILE_FLAGS ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS})
 
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 

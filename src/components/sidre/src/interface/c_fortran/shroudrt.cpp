@@ -34,4 +34,3 @@ void FC_GLOBAL(shroud_c_loc,SHROUD_C_LOC)(void * addr, void * * out)
 }
 
 }  // extern "C"
-

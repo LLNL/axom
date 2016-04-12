@@ -375,6 +375,7 @@ contains
   end subroutine group_name_collisions
 
   !------------------------------------------------------------------------------
+! Restore this after copy_move is working. ATK-667
   subroutine view_copy_move
     type(datastore) ds
     type(datagroup) root, flds, subgrp
