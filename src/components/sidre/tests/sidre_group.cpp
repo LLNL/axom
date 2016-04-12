@@ -688,35 +688,30 @@ TEST(sidre_group,save_restore_api)
 
   ds1->getRoot()->createViewScalar<int>("i0", 1);
 
-  // All three of these should be produce identical files.
+  // These should be produce identical files.
 
-  // Call from datastore, no group, defaults to root group
-  ds1->save("sidre_save_api1", "conduit");
-  // Call from group
-  ds1->getRoot()->save("sidre_save_api2", "conduit");
-  // Call from datastore, pass in group to save
-  ds1->save("sidre_save_api3", "conduit", ds1->getRoot());
+  // No group provided, defaults to root group
+  ds1->save("sidre_save_fulltree", "conduit");
+  // Pass in group (example of saving sub-tree).
+  ds1->save("sidre_save_subtree", "conduit", ds1->getRoot());
 
   // Text output ( for debugging ).  Write support only ( no load ).
-  ds1->save("sidre_save_text_output.txt", "text", ds1->getRoot());
+  ds1->save("sidre_save_textoutput", "text", ds1->getRoot());
 
   // HDF5 output
-  ds1->save("sidre_save_hdf5_output","conduit_hdf5");
+  ds1->save("sidre_save_conduithdf5","conduit_hdf5");
 
   DataStore * ds2 = new DataStore();
   DataStore * ds3 = new DataStore();
   DataStore * ds4 = new DataStore();
-  DataStore * ds5 = new DataStore();
 
-  ds2->load("sidre_save_api1", "conduit");
-  ds3->load("sidre_save_api2", "conduit", ds3->getRoot() );
-  ds4->getRoot()->load("sidre_save_api3", "conduit");
-  ds5->load("sidre_save_hdf5_output", "conduit_hdf5");
+  ds2->load("sidre_save_fulltree", "conduit");
+  ds3->load("sidre_save_subtree", "conduit", ds3->getRoot() );
+  ds4->load("sidre_save_conduithdf5", "conduit_hdf5");
 
   EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(ds1->getRoot()) );
   EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(ds1->getRoot()) );
   EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(ds1->getRoot()) );
-  EXPECT_TRUE( ds5->getRoot()->isEquivalentTo(ds1->getRoot()) );
 
   delete ds1;
   delete ds2;
@@ -727,16 +722,13 @@ TEST(sidre_group,save_restore_api)
   // Trying to make sure sub trees are same here.
 #if 0
   DataStore * ds_new = new DataStore();
-  DataGroup * api1 = ds_new->getRoot()->createGroup("api1");
-  DataGroup * api2 = ds_new->getRoot()->createGroup("api2");
-  DataGroup * api3 = ds_new->getRoot()->createGroup("api3");
+  DataGroup * tree1 = ds_new->getRoot()->createGroup("api1");
+  DataGroup * tree2 = ds_new->getRoot()->createGroup("api2");
 
-  api1->load("sidre_save_api1", "conduit");
-  api2->load("sidre_save_api2", "conduit");
-  api3->load("sidre_save_api3", "conduit");
+  api1->load("sidre_save_subtree", "conduit");
+  api2->load("sidre_save_subtree", "conduit");
 
   EXPECT_TRUE( api1->isEquivalentTo( api2) );
-  EXPECT_TRUE( api2->isEquivalentTo( api3) );
 #endif
 
 }

@@ -28,6 +28,7 @@
 
 // SiDRe project headers
 #include "sidre/DataGroup.hpp"
+#include "sidre/DataStore.hpp"
 #include "sidre/SidreTypes.hpp"
 
 #include "conduit_mpi.hpp"
@@ -103,8 +104,10 @@ void IOManager::write(const std::string& file_string, int cycle, const std::stri
                              H5P_DEFAULT); 
       }
 
-      savestream << ":datagroup" << i << "_" << m_my_rank << "/";
-      m_datagroups[i]->save(savestream.str(), protocol, h5_file_id);
+      // TODO - Add calls to HDF5 here to change file handle into appropriate
+      // hdf internal dir.
+//      savestream << ":datagroup" << i << "_" << m_my_rank << "/";
+      m_datagroups[i]->getDataStore()->save(h5_file_id, m_datagroups[i] );
 
       H5Fclose(h5_file_id);
     }
@@ -113,7 +116,7 @@ void IOManager::write(const std::string& file_string, int cycle, const std::stri
       std::ostringstream savestream;
       savestream << file_name << ".group" << i;
       std::string obase = savestream.str();
-      m_datagroups[i]->save(obase, protocol);
+      m_datagroups[i]->getDataStore()->save(obase, protocol, m_datagroups[i]);
     } 
   }
   (void)m_baton.pass();
@@ -141,9 +144,10 @@ void IOManager::read(const std::string& file_string, int cycle, const std::strin
                                  H5F_ACC_RDONLY,
                                  H5P_DEFAULT);
 
-      loadstream << ":datagroup" << i << "_" << m_my_rank << "/";
+      // TODO Add HDF5 call to change hdf5 internal directory to loadstream name.
+//      loadstream << ":datagroup" << i << "_" << m_my_rank << "/";
 
-      m_datagroups[i]->load(loadstream.str(), protocol, h5_file_id);
+      m_datagroups[i]->getDataStore()->load(h5_file_id, m_datagroups[i]);
 
       H5Fclose(h5_file_id);
     }
@@ -152,7 +156,7 @@ void IOManager::read(const std::string& file_string, int cycle, const std::strin
       std::ostringstream loadstream;
       loadstream << file_name << ".group" << i;
       std::string obase = loadstream.str();
-      m_datagroups[i]->load(obase, protocol);
+      m_datagroups[i]->getDataStore()->load(obase, protocol, m_datagroups[i]);
     }
   }
 
