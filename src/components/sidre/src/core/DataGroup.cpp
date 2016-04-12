@@ -746,61 +746,6 @@ void DataGroup::printTree( const int nlevels,
   }
 }
 
-/*
- *************************************************************************
- *
- * Saves data group (including data views and child groups) to a new file
- *
- *************************************************************************
- */
-
-void DataGroup::save( const std::string& file_path,
-                      const std::string& protocol) const
-{
-  this->getDataStore()->save( file_path, protocol, this);
-}
-
-/*
- *************************************************************************
- *
- * Saves data group (including data views and child groups) to an existing
- * hdf5 file
- *
- *************************************************************************
- */
-void DataGroup::save(const hid_t& h5_file_id,
-                     const std::string& internal_hdf5_path) const
-
-{
-  this->getDataStore()->save( h5_file_id, internal_hdf5_path, this);
-}
-
-/*
- *************************************************************************
- *
- * Load data group (including data views and child groups) from a file
- *
- *************************************************************************
- */
-void DataGroup::load(const std::string& file_path,
-                     const std::string& protocol)
-{
-  this->getDataStore()->load( file_path, protocol, this );
-}
-
-/*
- *************************************************************************
- *
- * Load data group (including data views and child groups) from the specified
- * internal directory in a hdf5 file.
- *
- *************************************************************************
- */
-void DataGroup::load(const hid_t& h5_file_id,
-                     const std::string& internal_hdf5_path)
-{
-  this->getDataStore()->load( h5_file_id, internal_hdf5_path, this );
-}
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -808,7 +753,6 @@ void DataGroup::load(const hid_t& h5_file_id,
 // Private methods below
 //
 ////////////////////////////////////////////////////////////////////////
-
 
 /*
  *************************************************************************

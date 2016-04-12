@@ -222,7 +222,6 @@ public:
    * If a group is provided, only that sub-tree will be saved.
    */
   void save( const hid_t& h5_file_id,
-             const std::string& hdf5_internal_path,
              const DataGroup* group = ATK_NULLPTR ) const;
 
   /*!
@@ -236,7 +235,6 @@ public:
    * \brief TODO
    */
   void load(const hid_t& h5_file_id,
-            const std::string& file_path,
             DataGroup * group = ATK_NULLPTR);
 
   /*!

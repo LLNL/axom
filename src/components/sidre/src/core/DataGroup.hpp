@@ -52,9 +52,6 @@
 #include <sparsehash/dense_hash_map>
 #endif
 
-// Other externa libraries
-#include "hdf5.h"
-
 // Other CS Toolkit headers
 #include "slic/slic.hpp"
 
@@ -998,48 +995,6 @@ public:
    *        starting at this DataGroup object to an output stream.
    */
   void printTree( const int nlevels, std::ostream& os ) const;
-
-//@}
-
-
-//@{
-//!  @name DataGroup save and load methods (basic file I/O).
-
-  /*!
-   * \brief Save this DataGroup object (including data views and child
-   *        groups) to a file set named "obase".
-   *
-   * \warning Currently, only valid protocol is "conduit".
-   */
-  void save( const std::string& file_path,
-             const std::string& protocol) const;
-
-  /*!
-   * \brief Save this DataGroup object (including data views and child
-   *        groups) to an hdf5 file.
-   *
-   * \warning Currently, only valid protocol is "conduit_hdf5".
-   */
-  void save(const hid_t& h5_file_id,
-            const std::string& hdf5_interal_path) const;
-
-  /*!
-   * \brief Load data group (including data views and child groups)
-   *        from a file set named "obase" into this DataGroup object.
-   *
-   * \warning Currently, only valid protocol is "conduit".
-   */
-  void load(const std::string& file_path,
-            const std::string& protocol);
-
-  /*!
-   * \brief Load data group (including data views and child groups)
-   *        from an hdf5 file into this DataGroup object.
-   *
-   * \warning Currently, only valid protocol is "conduit_hdf5".
-   */
-  void load(const hid_t& h5_file_id,
-            const std::string& file_path);
 
 //@}
 

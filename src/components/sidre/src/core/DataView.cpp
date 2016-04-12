@@ -874,7 +874,7 @@ bool DataView::isApplyValid() const
  *
  *************************************************************************
  */
-char const * DataView::getStateStringName(State state) const
+char const * DataView::getStateStringName(State state)
 {
   char const * ret_string = NULL;
 

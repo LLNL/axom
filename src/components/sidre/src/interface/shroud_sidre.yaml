@@ -234,8 +234,8 @@ classes:
 #    -  decl: void info(Node &n) const
     -  decl: void print() const
 #    -  decl: void printTree( const int level ) const
-    -  decl: void save(const std::string& obase, const std::string& protocol) const
-    -  decl: void load(const std::string& obase,  const std::string& protocol)
+#   -  decl: void save(const std::string& obase, const std::string& protocol) const
+#   -  decl: void load(const std::string& obase,  const std::string& protocol)
 
     python:
       type: [ init, richcompare ]

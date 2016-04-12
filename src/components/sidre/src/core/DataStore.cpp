@@ -334,11 +334,10 @@ void DataStore::save(const std::string& file_path,
   else if (protocol == "conduit_hdf5")
   {
     std::string file_path_ext = file_path + ".hdf5";
-    std::string internal_hdf5_path = "sidre";
     hid_t h5_file_id = H5Fcreate( file_path_ext.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     SLIC_ERROR_IF(h5_file_id < 0, " Unable to create HDF5 file " << file_path_ext);
 
-    save(h5_file_id, internal_hdf5_path, group);
+    save(h5_file_id, group);
     herr_t status = H5Fclose(h5_file_id);
     SLIC_ERROR_IF(status < 0, "Unable to close HDF5 file " << file_path_ext);
 
@@ -358,13 +357,14 @@ void DataStore::save(const std::string& file_path,
 /*************************************************************************/
 
 void DataStore::save(const hid_t& h5_file_id,
-                     const std::string& internal_hdf5_path,
                      const DataGroup * group) const
 {
   Node data_holder;
   exportTo(group, data_holder);
 
-  conduit::io::hdf5_write(data_holder, h5_file_id, internal_hdf5_path);
+  // Remove the 'foo' when conduit supports write call without needing it.
+  // (Want conduit to just write to whatever hdf5 dir h5_file_id is pointing to.
+  conduit::io::hdf5_write(data_holder, h5_file_id, "foo");
 }
 
 /*************************************************************************/
@@ -392,15 +392,13 @@ void DataStore::load(const std::string& file_path,
   else if (protocol == "conduit_hdf5")
   {
     std::string file_path_ext = file_path + ".hdf5";
-    std::string internal_hdf5_path = "sidre";
     hid_t h5_file_id;
     h5_file_id = H5Fopen( file_path_ext.c_str(),H5F_ACC_RDONLY, H5P_DEFAULT );
     SLIC_ERROR_IF(h5_file_id < 0, " Unable to open HDF5 file " << file_path_ext);
 
-    load(h5_file_id, internal_hdf5_path, group);
+    load(h5_file_id, group);
     herr_t status = H5Fclose(h5_file_id);
     SLIC_ERROR_IF(status < 0, "Unable to close HDF5 file " << file_path_ext);
-
   }
 }
 
@@ -412,11 +410,12 @@ void DataStore::load(const std::string& file_path,
  *************************************************************************
  */
 void DataStore::load(const hid_t& h5_file_id,
-                     const std::string& internal_hdf5_path,
                      DataGroup * group)
 {
   Node node;
-  conduit::io::hdf5_read(h5_file_id, internal_hdf5_path, node);
+  // Remove the 'foo' when conduit supports write call without needing it.
+  // (Want conduit to just write to whatever hdf5 dir h5_file_id is pointing to.
+  conduit::io::hdf5_read(h5_file_id, "foo", node);
   // for debugging call: n.print();
   importFrom( group, node );
 }
