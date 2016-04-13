@@ -7,6 +7,10 @@
 ################################
 if (CONDUIT_DIR)
   include(cmake/thirdparty/FindConduit.cmake)
+  blt_register_library( NAME conduit
+                        INCLUDES ${CONDUIT_INCLUDE_DIRS} )
+  blt_register_library( NAME conduit_io
+                        INCLUDES ${CONDUIT_INCLUDE_DIRS} )
 elseif(NOT CONDUIT_DIR AND ENABLE_SIDRE)
   message(FATAL_ERROR "Sidre requires Conduit. Set CONDUIT_DIR to location of built Conduit.")
 endif()
@@ -17,6 +21,9 @@ endif()
 ################################
 if (HDF5_DIR)
   include(cmake/thirdparty/FindHDF5.cmake)
+  blt_register_library(NAME hdf5
+                       INCLUDES ${HDF5_INCLUDE_DIRS}
+                       LIBRARIES ${HDF5_LIBRARY} )
 endif()
 
 
@@ -25,6 +32,8 @@ endif()
 ################################
 if (SPARSEHASH_DIR)
   include(cmake/thirdparty/FindSparsehash.cmake)
+  blt_register_library(NAME sparsehash
+                       INCLUDES ${SPARSEHASH_INCLUDE_DIRS})
 endif()
 
 
@@ -56,8 +65,10 @@ if (ENABLE_BOOST)
     find_package(Boost
                  1.55
                  REQUIRED)
+    blt_register_library(NAME boost
+                         INCLUDES ${Boost_INCLUDE_DIR})
     MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
-    MESSAGE(STATUS "Boost version: " ${Boost_VERSION} )
+    MESSAGE(STATUS "Boost version: " ${Boost_VERSION})
   else()
     MESSAGE(FATAL_ERROR "ENABLE_BOOST is true, but BOOST_ROOT was not set.  Check your host-config file.")
   endif()

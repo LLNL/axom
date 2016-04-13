@@ -75,6 +75,7 @@ macro(add_component)
 
 endmacro(add_component)
 
+
 ##------------------------------------------------------------------------------
 ## add_target_definitions(TO <target> TARGET_DEFINITIONS [FOO BAR ...])
 ##
@@ -114,8 +115,52 @@ macro(add_target_definitions)
 
 endmacro(add_target_definitions)
 
+
 ##------------------------------------------------------------------------------
-## make_library( NAME <libname> SOURCES [source1 [source2 ...]]
+## blt_register_library( NAME <libname>
+##                       INCLUDE_DIRECTORIES [dir1 ...] 
+##                       LIBRARIES [lib1 ...]] )
+##
+## Registers a library to the project to ease use in other blt macro calls.
+##
+## Stores information about a library in a specific way that is easily recalled
+## in other macros.  For example, after registering gtest, you can add gtest to
+## the DEPENDS_ON in your blt_add_executable call and it will add the INCLUDES
+## and LIBRARIES to that executable.
+##
+## This does not actually build the library.  This is strictly to ease use after
+## discovering it on your system or building it yourself inside your project.
+##
+## Output variables (name = "foo"):
+##  BLT_FOO_INCLUDES
+##  BLT_FOO_LIBRARIES
+##------------------------------------------------------------------------------
+macro(blt_register_library)
+
+    set(singleValueArgs NAME )
+    set(multiValueArgs INCLUDES LIBRARIES)
+
+    ## parse the arguments
+    cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    string(TOUPPER ${arg_NAME} uppercase_name)
+
+    if( arg_INCLUDES )
+        set(BLT_${uppercase_name}_INCLUDES ${arg_INCLUDES})
+    endif()
+
+    if( arg_LIBRARIES )
+        set(BLT_${uppercase_name}_LIBRARIES ${arg_LIBRARIES})
+    endif()
+
+endmacro(blt_register_library)
+
+
+##------------------------------------------------------------------------------
+## make_library( NAME <libname>
+##               SOURCES [source1 [source2 ...]]
+##               HEADERS [header1 [header2 ...]]
 ##               DEPENDS_ON [dep1 ...] 
 ##               USE_OPENMP <TRUE or FALSE (default)> )
 ##
@@ -136,61 +181,53 @@ endmacro(add_target_definitions)
 ## argument is supplied, the openmp compiler flag will be added to the compiler 
 ## command and the -DUSE_OPENMP, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
-macro(make_library)
+macro(blt_add_library)
 
-   set(singleValueArgs NAME USE_OPENMP)
-   set(multiValueArgs SOURCES DEPENDS_ON)
+    set(singleValueArgs NAME USE_OPENMP)
+    set(multiValueArgs SOURCES HEADERS DEPENDS_ON)
 
-   ## parse the arguments
-   cmake_parse_arguments(arg
+    ## parse the arguments
+    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-   # Check for the variable-based options for OpenMP and sanity check
-   if(NOT DEFINED arg_USE_OPENMP)
-      set(arg_USE_OPENMP FALSE)
-   endif()
+    # Check for the variable-based options for OpenMP and sanity check
+    if(NOT DEFINED arg_USE_OPENMP)
+        set(arg_USE_OPENMP FALSE)
+    endif()
 
-   if ( ENABLE_SHARED_LIBS )
-      add_library(${arg_NAME} SHARED ${arg_SOURCES})
-   else()
-      add_library(${arg_NAME} STATIC ${arg_SOURCES})
-   endif()
+    if ( ENABLE_SHARED_LIBS )
+        add_library(${arg_NAME} SHARED ${arg_SOURCES} ${arg_HEADERS})
+    else()
+        add_library(${arg_NAME} STATIC ${arg_SOURCES} ${arg_HEADERS})
+    endif()
 
-    ## handle MPI 
-   setup_mpi_target( BUILD_TARGET ${arg_NAME} )
-   
-   ## handle OpenMP
-   setup_openmp_target( BUILD_TARGET ${arg_NAME}
+    if ( arg_HEADERS )
+        copy_headers_target(${arg_NAME} "${arg_HEADERS}"
+                           ${HEADER_INCLUDES_DIRECTORY}/${arg_NAME})
+    endif()
+
+    blt_setup_target(NAME ${arg_NAME}
+                     DEPENDS_ON ${arg_DEPENDS_ON} )
+
+    # Handle MPI 
+    setup_mpi_target( BUILD_TARGET ${arg_NAME} )
+
+    # Handle OpenMP
+    setup_openmp_target( BUILD_TARGET ${arg_NAME}
                         USE_OPENMP ${arg_USE_OPENMP} )
-   
-   ## update project sources                     
-   update_project_sources( TARGET_SOURCES ${arg_SOURCES})
-   
-   ## setup dependencies
-   if (TARGET "copy_headers_${arg_NAME}")
-      add_dependencies( ${arg_NAME} "copy_headers_${arg_NAME}")
-   endif()
 
-   foreach(dependency ${arg_DEPENDS_ON})
-     
-     if (TARGET ${dependency})
-        target_link_libraries(${arg_NAME} ${dependency})
-     endif()
-     
-     if (TARGET "copy_headers_${dependency}")
-        add_dependencies( ${arg_NAME} "copy_headers_${dependency}" )
-     endif()
-     
-   endforeach()
+    # Update project sources                     
+    update_project_sources( TARGET_SOURCES ${arg_SOURCES} ${arg_HEADERS})
+   
+endmacro(blt_add_library)
 
-endmacro(make_library)
 
 ##------------------------------------------------------------------------------
 ## make_executable( NAME <name>
 ##                  SOURCE <source>
 ##                  DEPENDS_ON [dep1 ...]
-##                  USE_OPENMP < TRUE or FALSE (default)>
-##                  [IS_EXAMPLE] [ADD_CTEST])
+##                  OUTPUT_DIR [dir]
+##                  USE_OPENMP < TRUE or FALSE (default)>)
 ##
 ## Adds an executable to the project.
 ##
@@ -212,146 +249,85 @@ endmacro(make_library)
 ## If IS_EXAMPLE is also set, then the executable will be in the example directory
 ## but it will be run with 'make test'.
 ##------------------------------------------------------------------------------
-macro(make_executable)
+macro(blt_add_executable)
 
-  set(options IS_EXAMPLE ADD_CTEST)
-  set(singleValueArgs NAME USE_OPENMP)
-  set(multiValueArgs SOURCES DEPENDS_ON)
+    set(options )
+    set(singleValueArgs NAME OUTPUT_DIR USE_OPENMP)
+    set(multiValueArgs SOURCES DEPENDS_ON)
 
-  ## parse the arguments to the macro
-  cmake_parse_arguments(arg
-      "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  # Check for the variable-based options for OpenMP and sanity check
-  if ( NOT DEFINED arg_USE_OPENMP )
-    set(arg_USE_OPENMP FALSE)
-  endif()
+    # Check for the variable-based options for OpenMP and sanity check
+    if ( NOT DEFINED arg_USE_OPENMP )
+        set(arg_USE_OPENMP FALSE)
+    endif()
 
-  if( "${arg_NAME}" STREQUAL "" )
-    message(FATAL_ERROR "Must specify executable name with argument NAME <name>")
-  endif()
+    if( "${arg_NAME}" STREQUAL "" )
+        message(FATAL_ERROR "Must specify executable name with argument NAME <name>")
+    endif()
 
-  add_executable( ${arg_NAME} ${arg_SOURCES} )
+    add_executable( ${arg_NAME} ${arg_SOURCES} )
 
-  target_link_libraries(${arg_NAME} ${arg_DEPENDS_ON})
+    blt_setup_target(NAME ${arg_NAME}
+                     DEPENDS_ON ${arg_DEPENDS_ON} )
 
-  ## Add library and header dependencies
-  ##  Want to make this more general as in make_library above
-  ## Problem -- we want to add dependencies that are not targets -- e.g. lib rt
-  # foreach(dependency ${arg_DEPENDS_ON})
-  #  if (TARGET ${dependency})
-  #     target_link_libraries(${arg_NAME} ${dependency})
-  #  endif()
-  #  set(header_target "copy_headers_${dependency}")
-  #  if (TARGET ${header_target})
-  #     add_dependencies( ${arg_NAME} ${header_target} )
-  #  endif()
-  #endforeach()
+    # Handle MPI
+    setup_mpi_target( BUILD_TARGET ${arg_NAME} )
 
-  ## Handle MPI
-  setup_mpi_target( BUILD_TARGET ${arg_NAME} )
+    # Handle OpenMP
+    setup_openmp_target( BUILD_TARGET ${arg_NAME} USE_OPENMP ${arg_USE_OPENMP} ) 
 
-  ## Handle OpenMP
-  setup_openmp_target( BUILD_TARGET ${arg_NAME} USE_OPENMP ${arg_USE_OPENMP} ) 
+    # Set output directory
+    if ( arg_OUTPUT_DIR )
+        set_target_properties(${arg_NAME} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${arg_OUTPUT_DIR} )
+    endif()
 
-  if ( ${arg_IS_EXAMPLE} )
-    set_target_properties(${arg_NAME} PROPERTIES
-       RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUTPUT_DIRECTORY}
-    )
-  endif()
+    # Update project sources
+    update_project_sources( TARGET_SOURCES ${arg_SOURCES} )
 
-  if ( ${arg_ADD_CTEST} )
-    if ( NOT ${arg_IS_EXAMPLE} )
-       set_target_properties(${arg_NAME} PROPERTIES
-           RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
-       )
+endmacro(blt_add_executable)
+
+
+##------------------------------------------------------------------------------
+## blt_add_test( NAME [name] COMMAND [args] NUM_PROCS [n] )
+##
+## Adds a cmake test to the project.
+##------------------------------------------------------------------------------
+macro(blt_add_test)
+
+    set(options )
+    set(singleValueArgs NAME NUM_PROCS)
+    set(multiValueArgs COMMAND)
+
+    # parse the arguments to the macro
+    cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    if (NOT DEFINED arg_NAME)
+        message(FATAL_ERROR "NAME is a required parameter to blt_add_test")
+    endif()
+
+    if (NOT DEFINED arg_COMMAND)
+        message(FATAL_ERROR "COMMAND is a required parameter to blt_add_test")
+    endif()
+
+    # Generate command
+    get_target_property(runtime_output_directory ${arg_NAME} RUNTIME_OUTPUT_DIRECTORY )
+    set(test_command ${runtime_output_directory}/${arg_COMMAND} )
+
+    # Handle mpi
+    if ( ${arg_NUM_PROCS} )
+        set(test_command ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${arg_NUM_PROCS} ${test_command} )
     endif()
 
     add_test( NAME ${arg_NAME}
-              COMMAND ${arg_NAME}
-              WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
-              )
-  endif()
-
-  ## update project sources
-  update_project_sources( TARGET_SOURCES ${arg_SOURCES} )
-
-endmacro(make_executable)
-
-##------------------------------------------------------------------------------
-## add_gtest( TEST_SOURCE testX.cxx DEPENDS_ON [dep1 [dep2 ...]] )
-##
-## Adds a google test to the project.
-##------------------------------------------------------------------------------
-macro(add_gtest)
-
-   set(options)
-   set(singleValueArgs TEST_SOURCE)
-   set(multiValueArgs DEPENDS_ON)
-
-   ## parse the arguments to the macro
-   cmake_parse_arguments(arg
-        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
-
-   get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
-   set(test_name ${test_name_base}_gtest)
-
-   add_executable( ${test_name} ${arg_TEST_SOURCE} )
-
-   set_target_properties(${test_name} PROPERTIES
-       RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY} )
-
-   target_include_directories(${test_name} PRIVATE "${GTEST_INCLUDES}")
-   target_link_libraries( ${test_name} "${GTEST_LIBS}" )
-   target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
-
-   add_test( NAME ${test_name}
-             COMMAND ${test_name}
-             WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+              COMMAND ${test_command} 
              )
 
-   # add any passed source files to the running list for this project
-   update_project_sources( TARGET_SOURCES ${arg_TEST_SOURCE} )
-
-endmacro(add_gtest)
-
-##------------------------------------------------------------------------------
-## add_mpi_gtest( TEST_SOURCE testX.cxx NUM_PROCS [n] 
-##                DEPENDS_ON [dep1 [dep2 ...]] )
-##
-## Adds a google test to the project.
-##------------------------------------------------------------------------------
-macro(add_mpi_gtest)
-
-   set(options)
-   set(singleValueArgs TEST_SOURCE NUM_PROCS)
-   set(multiValueArgs DEPENDS_ON)
-
-   ##  parse the arguments to the macro
-   cmake_parse_arguments(arg
-        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
-
-   get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
-   set(test_name ${test_name_base}_gtest)
-
-   add_executable( ${test_name} ${arg_TEST_SOURCE} )
-
-   setup_mpi_target( BUILD_TARGET ${test_name} )
-
-   target_include_directories( ${test_name} PRIVATE "${GTEST_INCLUDES}" )
-   target_link_libraries( ${test_name} "${GTEST_LIBS}" )
-   target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
-
-   set_target_properties(${test_name} PROPERTIES
-             RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY} )
-
-   # setup custom test command to launch the test via mpi
-   set(test_parameters ${MPIEXEC_NUMPROC_FLAG} ${arg_NUM_PROCS} "./${test_name}")
-   add_test(NAME ${test_name}
-            COMMAND ${MPIEXEC} ${test_parameters}
-            WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY})
-
-endmacro(add_mpi_gtest)
+endmacro(blt_add_test)
 
 
 ##------------------------------------------------------------------------------
@@ -446,42 +422,6 @@ macro(add_fortran_test)
        #TODO: we aren't tracking / grouping fortran sources.
     endif(ENABLE_FORTRAN)
 endmacro(add_fortran_test)
-
-
-##------------------------------------------------------------------------------
-## copy_headers_target( <proj> <hdrs> <dest> )
-##
-## Adds a custom "copy_headers" target for the given project
-##
-## Adds a custom target, <copy_headers_proj>, for the given project. The role
-## of this target is to copy the given list of headers, <hdrs>, to the
-## destination directory <dest>.
-##
-## This macro is used to copy the header of each component in to the build
-## space, under an "includes" directory.
-##------------------------------------------------------------------------------
-macro(copy_headers_target proj hdrs dest)
-
-    add_custom_target(copy_headers_${proj}
-        COMMAND ${CMAKE_COMMAND}
-                 -DHEADER_INCLUDES_DIRECTORY=${dest}
-                 -DLIBHEADERS="${hdrs}"
-                 -P ${CMAKE_SOURCE_DIR}/cmake/copy_headers.cmake
-
-        DEPENDS
-            ${hdrs}
-
-        WORKING_DIRECTORY
-            ${PROJECT_SOURCE_DIR}
-
-        COMMENT
-            "copy headers"
-        )
-
-    update_project_sources( TARGET_SOURCES ${hdrs} )
-
-endmacro(copy_headers_target)
-
 
 
 ##------------------------------------------------------------------------------

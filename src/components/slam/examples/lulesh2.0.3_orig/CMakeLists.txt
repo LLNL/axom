@@ -28,24 +28,23 @@ endif()
 if ( ENABLE_MPI )
     set(luleshExtraCompileFlags "${luleshExtraCompileFlags} -DUSE_MPI=1 ")
 else()
-    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} -DUSE_MPI=0 ")    
+    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} -DUSE_MPI=0 ")
 endif()
 #message(STATUS " luleshExtraCompileFlags is '${luleshExtraCompileFlags}'")
 
-set_source_files_properties(${lulesh_lib_sources} ${lulesh_lib_headers} ${lulesh_exe_source}  
+set_source_files_properties(${lulesh_lib_sources} ${lulesh_lib_headers} ${lulesh_exe_source}
                             PROPERTIES COMPILE_FLAGS " ${luleshExtraCompileFlags} " )
 
-make_library( 
-    NAME slamLuleshOrigLib 
-    SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}"  
-    USE_OPENMP ${ENABLE_OPENMP} 
-   ) 
-   
-make_executable( 
-    NAME slam_OrigLulesh 
-    SOURCES ${lulesh_exe_source} 
-    DEPENDS_ON "slamLuleshOrigLib" 
+blt_add_library(
+    NAME slamLuleshOrigLib
+    SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}"
     USE_OPENMP ${ENABLE_OPENMP}
-    IS_EXAMPLE
-   ) 
-      
+    )
+
+blt_add_executable(
+    NAME slam_OrigLulesh
+    SOURCES ${lulesh_exe_source}
+    OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON "slamLuleshOrigLib"
+    USE_OPENMP ${ENABLE_OPENMP}
+    ) 

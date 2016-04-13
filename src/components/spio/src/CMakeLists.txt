@@ -14,26 +14,19 @@ set(spio_sources
     IOManager.cpp
     )
 
-
-#
-# custom target to copy header files in the "include" folder of the build tree.
-#
-copy_headers_target(  ${PROJECT_NAME}  "${spio_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
-
 #
 # make the library
 #
-make_library( NAME
-                spio
-              SOURCES
-                "${spio_sources}"
-                "${spio_headers}"
-              DEPENDS_ON
-                conduit
-                hdf5
-                sidre
-              WITH_MPI
-            )
+blt_add_library( NAME
+                     spio
+                 SOURCES
+                     "${spio_sources}"
+                 HEADERS
+                     "${spio_headers}"
+                 DEPENDS_ON
+                     conduit
+                     hdf5
+                     sidre
+                )
 
 install(TARGETS spio DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

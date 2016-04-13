@@ -106,19 +106,18 @@ if (ENABLE_FORTRAN)
   include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
 endif()
 
-copy_headers_target( ${PROJECT_NAME} "${quest_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
-                     
-make_library( NAME 
-                quest
+blt_add_library( NAME 
+                    quest
                 
-              SOURCES
-                "${quest_sources}"
-                "${quest_headers}"
+                 SOURCES
+                    "${quest_sources}"
+
+                 HEADERS
+                    "${quest_headers}"
               
-              DEPENDS_ON
-                "${quest_depends_on}"
-             )
+                 DEPENDS_ON
+                    "${quest_depends_on}"
+                 )
 target_include_directories( quest PRIVATE "${CMAKE_SOURCE_DIR}/thirdparty/stla_io" )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )

@@ -8,7 +8,7 @@
 # review from Lawrence Livermore National Laboratory.
 #-------------------------------------------------------------------------------
 
-make_executable(NAME lumberjack_basicExample
-                SOURCES basicExample.cpp
-                DEPENDS_ON lumberjack
-                IS_EXAMPLE )
+blt_add_executable(NAME lumberjack_basicExample
+                   SOURCES basicExample.cpp
+                   OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                   DEPENDS_ON lumberjack )

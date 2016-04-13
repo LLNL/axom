@@ -6,7 +6,7 @@
 # Single source standalone examples
 #
 set(example_sources
-	ShockTube.cpp
+    ShockTube.cpp
     UnstructMeshField.cpp
     TemplateEx.cpp
     )
@@ -18,11 +18,14 @@ set(example_sources
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
-    make_executable(NAME "slam_${example_name}" 
-                    SOURCES ${example_source} 
-                    DEPENDS_ON slam slic
-                    ADD_CTEST IS_EXAMPLE
-                    )
+    blt_add_executable(NAME "slam_${example_name}"
+                       SOURCES ${example_source}
+                       OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                       DEPENDS_ON slam slic
+                       )
+    blt_add_test(NAME slam_${example_name} 
+                 COMMAND slam_${example_name}
+                 )
 endforeach()
 
 

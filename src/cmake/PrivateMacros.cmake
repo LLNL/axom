@@ -38,6 +38,86 @@
 
 ## Internal CMake Macros
 
+
+##------------------------------------------------------------------------------
+## copy_headers_target( <proj> <hdrs> <dest> )
+##
+## Adds a custom "copy_headers" target for the given project
+##
+## Adds a custom target, <copy_headers_proj>, for the given project. The role
+## of this target is to copy the given list of headers, <hdrs>, to the
+## destination directory <dest>.
+##
+## This macro is used to copy the header of each component in to the build
+## space, under an "includes" directory.
+##------------------------------------------------------------------------------
+macro(copy_headers_target proj hdrs dest)
+
+    add_custom_target(copy_headers_${proj}
+        COMMAND ${CMAKE_COMMAND}
+                 -DHEADER_INCLUDES_DIRECTORY=${dest}
+                 -DLIBHEADERS="${hdrs}"
+                 -P ${CMAKE_SOURCE_DIR}/cmake/copy_headers.cmake
+
+        DEPENDS
+            ${hdrs}
+
+        WORKING_DIRECTORY
+            ${PROJECT_SOURCE_DIR}
+
+        COMMENT
+            "copy headers"
+        )
+
+endmacro(copy_headers_target)
+
+
+
+##------------------------------------------------------------------------------
+## blt_setup_target( NAME [name] DEPENDS_ON [dep1 ...] )
+##------------------------------------------------------------------------------
+macro(blt_setup_target)
+    set(options)
+    set(singleValueArgs NAME)
+    set(multiValueArgs DEPENDS_ON)
+
+    # Parse the arguments
+    cmake_parse_arguments(arg "${options}" "${singleValueArgs}" 
+                        "${multiValueArgs}" ${ARGN} )
+                        
+    # Ensure that build target is supplied by the caller
+    if ( NOT DEFINED arg_NAME )
+        message( FATAL_ERROR "Must provide a NAME argument to the macro" )
+    endif()
+
+    # Add it's own copy headers target
+    if (TARGET "copy_headers_${arg_NAME}")
+        add_dependencies( ${arg_NAME} "copy_headers_${arg_NAME}")
+    endif()
+
+    # Add dependency's information
+    foreach( dependency ${arg_DEPENDS_ON} )
+        string(TOUPPER ${dependency} uppercase_dependency )
+
+        if ( DEFINED BLT_${uppercase_dependency}_INCLUDES )
+            target_include_directories( ${arg_NAME} PRIVATE
+                ${BLT_${uppercase_dependency}_INCLUDES} )
+        endif()
+
+        if ( DEFINED BLT_${uppercase_dependency}_LIBRARIES )
+            target_link_libraries( ${arg_NAME}
+                ${BLT_${uppercase_dependency}_LIBRARIES} )
+        else()
+            target_link_libraries( ${arg_NAME} ${dependency} )
+        endif()
+
+        if (TARGET "copy_headers_${dependency}")
+            add_dependencies( ${arg_NAME} "copy_headers_${dependency}" )
+        endif()
+    endforeach()
+
+endmacro(blt_setup_target)
+
 ##------------------------------------------------------------------------------
 ## setup_mpi_target( BUILD_TARGET <target> )
 ##------------------------------------------------------------------------------

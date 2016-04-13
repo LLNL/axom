@@ -52,26 +52,23 @@ if (ENABLE_FORTRAN)
     # Must tell fortran where to look for modules
     include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
 endif()
-#
-# custom target to copy header files in the "include" folder of the build tree.
-#
-copy_headers_target( ${PROJECT_NAME} "${sidre_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
 
 #
 # make the library
 #
-make_library( NAME
-                  sidre
-              SOURCES
-                  "${sidre_sources}"
-                  "${sidre_fortran_sources}"
-              DEPENDS_ON
-                  common
-                  conduit
-                  conduit_io
-                  slic
-             )
+blt_add_library( NAME
+                     sidre
+                 SOURCES
+                     "${sidre_sources}"
+                     "${sidre_fortran_sources}"
+                 HEADERS
+                     "${sidre_headers}"
+                 DEPENDS_ON
+                     common
+                     conduit
+                     conduit_io
+                     slic
+                 )
   
              
 set_target_properties(sidre  PROPERTIES COMPILE_FLAGS ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS})
@@ -98,12 +95,14 @@ if(ENABLE_PYTHON_API)
 
     include_directories(${PYTHON_INCLUDE_DIRS})
 
-    make_library(
+    blt_add_library(
         NAME
             sidre2
         SOURCES
             ${sidre_sources}
             ${sidre_python_sources}
+        HEADERS
+            ${sidre_headers}
         DEPENDS_ON
             common
             conduit
