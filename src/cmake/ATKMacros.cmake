@@ -39,7 +39,7 @@
 include(PrivateMacros)
 
 ##------------------------------------------------------------------------------
-## add_component( COMPONENT_NAME <name> DEFAULT_STATE [ON/OFF] )
+## blt_add_component( COMPONENT_NAME <name> DEFAULT_STATE [ON/OFF] )
 ##
 ## Adds a project component to the build.
 ##
@@ -47,22 +47,22 @@ include(PrivateMacros)
 ## (ON/OFF). This macro also adds an "option" so that the user can control,
 ## which components to build.
 ##------------------------------------------------------------------------------
-macro(add_component)
+macro(blt_add_component)
 
     set(options)
     set(singleValueArgs COMPONENT_NAME DEFAULT_STATE )
     set(multiValueArgs)
 
-    ## parse the arguments to the macro
+    # Parse the arguments to the macro
     cmake_parse_arguments(arg
          "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    ## setup a cmake vars to capture sources added via our macros
+    # Setup a cmake vars to capture sources added via our macros
     set("${arg_COMPONENT_NAME}_ALL_SOURCES" CACHE PATH "" FORCE)
 
-    ## adds an option so that the user can control whether to build this
-    ## component.
-    ## convert the component name to capitals for the ENABLE option.
+    # Adds an option so that the user can control whether to build this
+    # component.
+    # convert the component name to capitals for the ENABLE option.
     string(TOUPPER ${arg_COMPONENT_NAME} COMPONENT_NAME_CAPITALIZED)
 
     option( ENABLE_${COMPONENT_NAME_CAPITALIZED}
@@ -73,11 +73,11 @@ macro(add_component)
         add_subdirectory( ${arg_COMPONENT_NAME} )
     endif()
 
-endmacro(add_component)
+endmacro(blt_add_component)
 
 
 ##------------------------------------------------------------------------------
-## add_target_definitions(TO <target> TARGET_DEFINITIONS [FOO BAR ...])
+## blt_add_target_definitions(TO <target> TARGET_DEFINITIONS [FOO [BAR ...]])
 ##
 ## Adds pre-processor definitions to the given target.
 ##
@@ -89,37 +89,39 @@ endmacro(add_component)
 ## it will pass -DFOO and -DBAR.
 ##
 ## The supplied target must be added via add_executable() or add_library() or
-## with the corresponding make_executable() and make_library() macros.
+## with the corresponding blt_add_executable() and blt_add_library() macros.
 ##
 ## Note, the list of target definitions *SHOULD NOT* include the "-D" flag. This
 ## flag is added internally by cmake.
 ##------------------------------------------------------------------------------
-macro(add_target_definitions)
+macro(blt_add_target_definitions)
 
-   set(options)
-   set(singleValueArgs TO)
-   set(multiValueArgs TARGET_DEFINITIONS)
+    set(options)
+    set(singleValueArgs TO)
+    set(multiValueArgs TARGET_DEFINITIONS)
 
-   ## parse the arguments to the macro
-   cmake_parse_arguments(arg
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  get_target_property(defs ${arg_TO} COMPILE_DEFINITIONS)
-  if (defs MATCHES "NOTFOUND")
-    set(defs "")
-  endif ()
-  foreach (def ${defs} ${arg_TARGET_DEFINITIONS})
-    list(APPEND deflist ${def})
-  endforeach ()
-  set_target_properties(${arg_TO} PROPERTIES COMPILE_DEFINITIONS "${deflist}")
+    get_target_property(defs ${arg_TO} COMPILE_DEFINITIONS)
+    if (defs MATCHES "NOTFOUND")
+        set(defs "")
+    endif ()
 
-endmacro(add_target_definitions)
+    foreach (def ${defs} ${arg_TARGET_DEFINITIONS})
+        list(APPEND deflist ${def})
+    endforeach ()
+
+    set_target_properties(${arg_TO} PROPERTIES COMPILE_DEFINITIONS "${deflist}")
+
+endmacro(blt_add_target_definitions)
 
 
 ##------------------------------------------------------------------------------
 ## blt_register_library( NAME <libname>
-##                       INCLUDE_DIRECTORIES [dir1 ...] 
-##                       LIBRARIES [lib1 ...]] )
+##                       INCLUDES [include1 [include2 ...]] 
+##                       LIBRARIES [lib1 [lib2 ...]] )
 ##
 ## Registers a library to the project to ease use in other blt macro calls.
 ##
@@ -158,11 +160,11 @@ endmacro(blt_register_library)
 
 
 ##------------------------------------------------------------------------------
-## make_library( NAME <libname>
-##               SOURCES [source1 [source2 ...]]
-##               HEADERS [header1 [header2 ...]]
-##               DEPENDS_ON [dep1 ...] 
-##               USE_OPENMP <TRUE or FALSE (default)> )
+## blt_add_library( NAME <libname>
+##                  SOURCES [source1 [source2 ...]]
+##                  HEADERS [header1 [header2 ...]]
+##                  DEPENDS_ON [dep1 ...] 
+##                  USE_OPENMP <TRUE or FALSE (default)> )
 ##
 ## Adds a library to the project composed by the given source files.
 ##
@@ -171,11 +173,16 @@ endmacro(blt_register_library)
 ## ON, in which case, it will create a shared library. By default, a static
 ## library is generated.
 ##
+## If given a HEADERS argument, it creates a "copy_headers_target" for this library
+## and installs them in the include/<component name> folder.
+## 
+## If given a DEPENDS_ON argument, it will add the necessary includes and libraries if they
+## are already registered with blt_register_library.  If not it will add them as a cmake
+## target dependency.
+##
 ## In addition, this macro will add the associated dependencies to the given
 ## library target. Specifically, it will add a dependency to the library's
-## "copy_headers_target" if it exists and has been defined before the call to
-## "make_library", as well as, the corresponding "copy_headers_target" of each
-## of the supplied dependencies.
+## "copy_headers_target" and adds a dependency for each DEPENDS_ON target.
 ##
 ## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this 
 ## argument is supplied, the openmp compiler flag will be added to the compiler 
@@ -191,30 +198,30 @@ macro(blt_add_library)
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
     # Check for the variable-based options for OpenMP and sanity check
-    if(NOT DEFINED arg_USE_OPENMP)
+    if( NOT DEFINED arg_USE_OPENMP )
         set(arg_USE_OPENMP FALSE)
     endif()
 
     if ( ENABLE_SHARED_LIBS )
-        add_library(${arg_NAME} SHARED ${arg_SOURCES} ${arg_HEADERS})
+        add_library( ${arg_NAME} SHARED ${arg_SOURCES} ${arg_HEADERS} )
     else()
-        add_library(${arg_NAME} STATIC ${arg_SOURCES} ${arg_HEADERS})
+        add_library( ${arg_NAME} STATIC ${arg_SOURCES} ${arg_HEADERS} )
     endif()
 
     if ( arg_HEADERS )
-        copy_headers_target(${arg_NAME} "${arg_HEADERS}"
-                           ${HEADER_INCLUDES_DIRECTORY}/${arg_NAME})
+        copy_headers_target( ${arg_NAME} "${arg_HEADERS}"
+                             ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME})
     endif()
 
-    blt_setup_target(NAME ${arg_NAME}
-                     DEPENDS_ON ${arg_DEPENDS_ON} )
+    blt_setup_target( NAME ${arg_NAME}
+                      DEPENDS_ON ${arg_DEPENDS_ON} )
 
     # Handle MPI 
     setup_mpi_target( BUILD_TARGET ${arg_NAME} )
 
     # Handle OpenMP
     setup_openmp_target( BUILD_TARGET ${arg_NAME}
-                        USE_OPENMP ${arg_USE_OPENMP} )
+                         USE_OPENMP ${arg_USE_OPENMP} )
 
     # Update project sources                     
     update_project_sources( TARGET_SOURCES ${arg_SOURCES} ${arg_HEADERS})
@@ -223,31 +230,24 @@ endmacro(blt_add_library)
 
 
 ##------------------------------------------------------------------------------
-## make_executable( NAME <name>
-##                  SOURCE <source>
-##                  DEPENDS_ON [dep1 ...]
-##                  OUTPUT_DIR [dir]
-##                  USE_OPENMP < TRUE or FALSE (default)>)
-##
-## Adds an executable to the project.
+## blt_add_executable( NAME <name>
+##                     SOURCES [source1 [source2 ...]]
+##                     DEPENDS_ON [dep1 [dep2 ...]]
+##                     OUTPUT_DIR [dir]
+##                     USE_OPENMP < TRUE or FALSE (default)>)
 ##
 ## Adds an executable target, called <name>.
 ##
-## In addition, the target will be linked with the given list of library
-## dependencies.
+## If given a DEPENDS_ON argument, it will add the necessary includes and libraries if they
+## are already registered with blt_register_library.  If not it will add them as a cmake
+## target dependency.
 ##
 ## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this 
 ## argument is supplied, the openmp compiler flag will be added to the compiler 
 ## command and the -DUSE_OPENMP, will be included to the compiler definition.
 ##
-## IS_EXAMPLE will add the executable into the example directory.
-##
-## Optionally, "ADD_CTEST" can be supplied as an argument. When this argument
-## is supplied, the executable is added as a ctest with no command line options.
-## If you need command line options for your ctest, add it manually with 
-## ADD_TEST(). The execuable will be created in the test directory.
-## If IS_EXAMPLE is also set, then the executable will be in the example directory
-## but it will be run with 'make test'.
+## The OUTPUT_DIR is used to control the build output directory of this executable.
+## This is used to overwrite the default bin directory.
 ##------------------------------------------------------------------------------
 macro(blt_add_executable)
 
@@ -292,9 +292,18 @@ endmacro(blt_add_executable)
 
 
 ##------------------------------------------------------------------------------
-## blt_add_test( NAME [name] COMMAND [args] NUM_PROCS [n] )
+## blt_add_test( NAME [name] COMMAND [command] NUM_PROCS [n] )
 ##
 ## Adds a cmake test to the project.
+##
+## NAME is used for the name that CTest reports with.
+##
+## COMMANd is the command line that will be used to run the test.  This will have
+## the RUNTIME_OUTPUT_DIRECTORY prepended to it to fully qualify the path.
+##
+## NUM_PROCS indicates this is an MPI test and how many processors to use. The
+## command line will use MPIEXEC and MPIXEC_NUMPROC_FLAG to create the mpi run line.
+## These should be defined in your host-config specific to your platform.
 ##------------------------------------------------------------------------------
 macro(blt_add_test)
 

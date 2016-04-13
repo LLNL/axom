@@ -138,7 +138,7 @@ macro(setup_mpi_target)
   
   if ( ${ENABLE_MPI} )
  
-    add_target_definitions( TO ${arg_BUILD_TARGET} TARGET_DEFINITIONS USE_MPI )
+    blt_add_target_definitions( TO ${arg_BUILD_TARGET} TARGET_DEFINITIONS USE_MPI )
     target_include_directories( ${arg_BUILD_TARGET} 
                                 PUBLIC ${MPI_C_INCLUDE_PATH} )
     target_include_directories( ${arg_BUILD_TARGET} 
@@ -192,7 +192,7 @@ macro(setup_openmp_target)
   
   if ( ${arg_USE_OPENMP} )
 
-    add_target_definitions( TO ${arg_BUILD_TARGET}
+    blt_add_target_definitions( TO ${arg_BUILD_TARGET}
                             TARGET_DEFINITIONS USE_OPENMP )
 
     set_target_properties( ${arg_BUILD_TARGET}
