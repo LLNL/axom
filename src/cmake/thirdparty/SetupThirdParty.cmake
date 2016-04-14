@@ -11,8 +11,6 @@ if (CONDUIT_DIR)
                         INCLUDES ${CONDUIT_INCLUDE_DIRS} )
   blt_register_library( NAME conduit_io
                         INCLUDES ${CONDUIT_INCLUDE_DIRS} )
-elseif(NOT CONDUIT_DIR AND ENABLE_SIDRE)
-  message(FATAL_ERROR "Sidre requires Conduit. Set CONDUIT_DIR to location of built Conduit.")
 endif()
 
 

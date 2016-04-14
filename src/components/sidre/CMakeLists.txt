@@ -4,16 +4,11 @@
 project(sidre)
 
 ################################
-# Add the sparsehash headers include
+# Check necessary dependencies
 ################################
-if(SPARSEHASH_FOUND)
-  include_directories( ${SPARSEHASH_INCLUDE_DIRS} )
+if(NOT CONDUIT_DIR)
+  message(FATAL_ERROR "Sidre requires Conduit. Set CONDUIT_DIR to location of built Conduit.")
 endif()
-
-################################
-# Add the boost headers include
-################################
-include_directories( ${Boost_INCLUDE_DIRS} )
 
 ################################
 # Add the sidre sources
