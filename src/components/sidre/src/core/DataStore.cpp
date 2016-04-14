@@ -362,7 +362,7 @@ void DataStore::save(const hid_t& h5_file_id,
   Node data_holder;
   exportTo(group, data_holder);
 
-  conduit::relay::io::hdf5_write(data_holder, h5_file_id, "foo");
+  conduit::relay::io::hdf5_write(data_holder, h5_file_id, ".");
 }
 
 /*************************************************************************/
@@ -411,7 +411,7 @@ void DataStore::load(const hid_t& h5_file_id,
                      DataGroup * group)
 {
   Node node;
-  conduit::relay::io::hdf5_read(h5_file_id, "foo", node);
+  conduit::relay::io::hdf5_read(h5_file_id, ".", node);
   // for debugging call: n.print();
   importFrom( group, node );
 }

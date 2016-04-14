@@ -31,7 +31,9 @@
 #include "sidre/DataStore.hpp"
 #include "sidre/SidreTypes.hpp"
 
-#include "relay_mpi.hpp"
+//This does not appear to be needed.  TODO - Ask Noah if there are future plans to
+//use it.
+//#include "relay_mpi.hpp"
 
 namespace asctoolkit
 {
