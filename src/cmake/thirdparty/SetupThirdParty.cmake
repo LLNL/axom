@@ -90,5 +90,5 @@ endif(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
 if (LUA_DIR)
     # Set the hint for FindLua
     set (ENV{LUA_DIR}  ${LUA_DIR})
+    find_package(Lua)
 endif()
-find_package(Lua)
