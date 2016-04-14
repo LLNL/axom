@@ -6,7 +6,7 @@ project(sidre)
 ################################
 # Check necessary dependencies
 ################################
-if(NOT CONDUIT_DIR)
+if(NOT CONDUIT_FOUND)
   message(FATAL_ERROR "Sidre requires Conduit. Set CONDUIT_DIR to location of built Conduit.")
 endif()
 
