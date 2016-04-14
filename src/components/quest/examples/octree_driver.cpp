@@ -65,6 +65,12 @@ typedef Octree3D::SpaceVector SpaceVector;
 typedef Octree3D::GridPt GridPt;
 typedef Octree3D::BlockIndex BlockIndex;
 
+#ifdef ATK_DEBUG
+  const int MAX_CONTAINMENT_QUERY_LEVEL = 7;
+#else
+  const int MAX_CONTAINMENT_QUERY_LEVEL = 9;
+#endif
+
 
 //------------------------------------------------------------------------------
 /**
@@ -565,6 +571,7 @@ int main( int argc, char** argv )
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
 
+
   // STEP 6: Create octree over mesh's bounding box and query a point in space
   SLIC_INFO("-- About to generate the InOutOctree");
   Octree3D octree(meshBB, surface_mesh);
@@ -576,7 +583,7 @@ int main( int argc, char** argv )
 
   SLIC_INFO("-- About to query the octree");
   // STEP 7: Insert triangles into the octree
-  for(int i=1; i< 9 ; ++i)
+  for(int i=1; i< MAX_CONTAINMENT_QUERY_LEVEL; ++i)
       testContainmentOnRegularGrid( octree, meshBB, 1<<i);
 
 

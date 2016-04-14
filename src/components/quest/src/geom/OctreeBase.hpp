@@ -658,7 +658,7 @@ public:
           return ancBlk;
         }
       case LeafBlock:       // Already a leaf -- nothing to do
-          return BlockIndex(blk);
+          return blk;
       case InternalBlock:   // An internal block -- no tree leaf can contain it
           return BlockIndex::invalid_index();
       }
