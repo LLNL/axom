@@ -298,7 +298,7 @@ endmacro(blt_add_executable)
 ##
 ## NAME is used for the name that CTest reports with.
 ##
-## COMMANd is the command line that will be used to run the test.  This will have
+## COMMAND is the command line that will be used to run the test.  This will have
 ## the RUNTIME_OUTPUT_DIRECTORY prepended to it to fully qualify the path.
 ##
 ## NUM_PROCS indicates this is an MPI test and how many processors to use. The
@@ -311,20 +311,26 @@ macro(blt_add_test)
     set(singleValueArgs NAME NUM_PROCS)
     set(multiValueArgs COMMAND)
 
-    # parse the arguments to the macro
+    # Parse the arguments to the macro
     cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-    if (NOT DEFINED arg_NAME)
+    if ( NOT DEFINED arg_NAME )
         message(FATAL_ERROR "NAME is a required parameter to blt_add_test")
     endif()
 
-    if (NOT DEFINED arg_COMMAND)
+    if ( NOT DEFINED arg_COMMAND )
         message(FATAL_ERROR "COMMAND is a required parameter to blt_add_test")
     endif()
 
     # Generate command
-    get_target_property(runtime_output_directory ${arg_NAME} RUNTIME_OUTPUT_DIRECTORY )
+    if ( NOT TARGET ${arg_NAME} )
+        # Handle case of running multiple tests against one executable, the NAME will not be the target
+        list(GET arg_COMMAND 0 executable)
+        get_target_property(runtime_output_directory ${executable} RUNTIME_OUTPUT_DIRECTORY )
+    else()
+        get_target_property(runtime_output_directory ${arg_NAME} RUNTIME_OUTPUT_DIRECTORY )
+    endif()
     set(test_command ${runtime_output_directory}/${arg_COMMAND} )
 
     # Handle mpi
@@ -334,7 +340,7 @@ macro(blt_add_test)
 
     add_test( NAME ${arg_NAME}
               COMMAND ${test_command} 
-             )
+              )
 
 endmacro(blt_add_test)
 

@@ -6,7 +6,7 @@ endif(ENABLE_PYTHON_API)
 
 blt_add_component(COMPONENT_NAME shroud DEFAULT_STATE ON)
 
-add_component(COMPONENT_NAME common DEFAULT_STATE ON)
+blt_add_component(COMPONENT_NAME common DEFAULT_STATE ON)
 
 # Lumberjack is an extension to SLIC that supports message filtering and reduction capabilities for parallel (MPI) executables.
 # It is not meant for serial (non-mpi) executables.
