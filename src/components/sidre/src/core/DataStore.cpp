@@ -323,6 +323,9 @@ void DataStore::save(const std::string& file_path,
                      const std::string& protocol,
                      const DataGroup* group) const
 {
+
+  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call save function on group that resides in this datastore.");
+
   Node data_holder;
   exportTo( group, data_holder);
 
@@ -359,6 +362,8 @@ void DataStore::save(const std::string& file_path,
 void DataStore::save(const hid_t& h5_file_id,
                      const DataGroup * group) const
 {
+  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call save function on group that resides in this datastore.");
+
   Node data_holder;
   exportTo(group, data_holder);
 
@@ -380,6 +385,8 @@ void DataStore::load(const std::string& file_path,
                      const std::string& protocol,
                      DataGroup * group)
 {
+  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on group that resides in this datastore.");
+
   if (protocol == "conduit")
   {
     Node node;
@@ -410,6 +417,8 @@ void DataStore::load(const std::string& file_path,
 void DataStore::load(const hid_t& h5_file_id,
                      DataGroup * group)
 {
+  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on group that resides in this datastore.");
+
   Node node;
   conduit::relay::io::hdf5_read(h5_file_id, ".", node);
   // for debugging call: n.print();
