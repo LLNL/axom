@@ -19,7 +19,7 @@ set(lulesh_sources
 set_source_files_properties( ${lulesh_sources} PROPERTIES LANGUAGE "CXX" )
 
 add_executable( sidre_lulesh2  ${lulesh_sources} ${lulesh_headers})
-target_link_libraries( sidre_lulesh2 sidre conduit conduit_io slic )
+target_link_libraries( sidre_lulesh2 sidre conduit conduit_relay slic )
 
 set_target_properties(sidre_lulesh2 PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUTPUT_DIRECTORY}

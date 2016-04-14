@@ -37,7 +37,7 @@ set(fruit_sidre_tests
 # Add gtest C++ based tests
 #
 foreach(test ${gtest_sidre_tests})
-    add_gtest( TEST_SOURCE ${test} DEPENDS_ON sidre conduit conduit_io slic)
+    add_gtest( TEST_SOURCE ${test} DEPENDS_ON sidre conduit conduit_relay slic)
 endforeach()
 
 #
@@ -45,7 +45,7 @@ endforeach()
 #
 if (ENABLE_FORTRAN)
   foreach(test ${gtest_sidre_C_tests})
-      add_gtest( TEST_SOURCE ${test} DEPENDS_ON sidre conduit conduit_io slic)
+      add_gtest( TEST_SOURCE ${test} DEPENDS_ON sidre conduit conduit_relay slic)
   endforeach()
 endif()
 
@@ -56,7 +56,7 @@ if (ENABLE_FORTRAN)
   foreach(test ${fruit_sidre_tests})
       add_fortran_test(
           TEST_SOURCE ${test}
-          DEPENDS_ON fruit sidre slic conduit conduit_io
+          DEPENDS_ON fruit sidre slic conduit conduit_relay
       )
   endforeach()
 endif()

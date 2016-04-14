@@ -22,7 +22,7 @@
 #include <fstream>
 
 #include "conduit.hpp"
-#include "conduit_io.hpp"
+#include "relay.hpp"
 
 // Associated header file
 #include "DataStore.hpp"
@@ -329,7 +329,7 @@ void DataStore::save(const std::string& file_path,
   if (protocol == "conduit")
   {
     // for debugging call: n.print();
-    conduit::io::save(data_holder, file_path);
+    conduit::relay::io::save(data_holder, file_path);
   }
   else if (protocol == "conduit_hdf5")
   {
@@ -362,9 +362,7 @@ void DataStore::save(const hid_t& h5_file_id,
   Node data_holder;
   exportTo(group, data_holder);
 
-  // Remove the 'foo' when conduit supports write call without needing it.
-  // (Want conduit to just write to whatever hdf5 dir h5_file_id is pointing to.
-  conduit::io::hdf5_write(data_holder, h5_file_id, "foo");
+  conduit::relay::io::hdf5_write(data_holder, h5_file_id, "foo");
 }
 
 /*************************************************************************/
@@ -385,7 +383,7 @@ void DataStore::load(const std::string& file_path,
   if (protocol == "conduit")
   {
     Node node;
-    conduit::io::load(file_path, node);
+    conduit::relay::io::load(file_path, node);
     // for debugging call: n.print();
     importFrom( group, node );
   }
@@ -413,9 +411,7 @@ void DataStore::load(const hid_t& h5_file_id,
                      DataGroup * group)
 {
   Node node;
-  // Remove the 'foo' when conduit supports write call without needing it.
-  // (Want conduit to just write to whatever hdf5 dir h5_file_id is pointing to.
-  conduit::io::hdf5_read(h5_file_id, "foo", node);
+  conduit::relay::io::hdf5_read(h5_file_id, "foo", node);
   // for debugging call: n.print();
   importFrom( group, node );
 }

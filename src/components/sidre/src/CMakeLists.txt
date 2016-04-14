@@ -69,7 +69,7 @@ make_library( LIBRARY_NAME
               DEPENDS_ON
                   common
                   conduit
-                  conduit_io
+                  conduit_relay
                   slic
              )
   
