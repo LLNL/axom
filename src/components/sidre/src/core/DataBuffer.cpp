@@ -148,8 +148,6 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
   SidreLength new_size = dtype.total_bytes();
   void * new_data_ptr = allocateBytes(new_size);
 
-  SLIC_CHECK_MSG(new_data_ptr != ATK_NULLPTR,
-                 "Buffer failed to re-allocate with " << new_size << " bytes.");
   if ( new_data_ptr != ATK_NULLPTR )
   {
     m_node.reset();
@@ -336,6 +334,7 @@ void DataBuffer::detachFromView( DataView * view )
                                                       view);
     if ( pos != m_views.end() )
     {
+      SLIC_ASSERT(pos != m_views.end());
       m_views.erase(pos);
       view->setBufferViewToEmpty();
     } 

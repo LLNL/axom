@@ -197,7 +197,7 @@ public:
   DataBuffer * allocate();
 
   /*!
-   * \brief Allocate buffer with type and number of elements.
+   * \brief Allocate buffer with data type and number of elements.
    *
    * This is equivalent to: buff->describe(type, num_elems)->allocate().
    *
@@ -213,7 +213,7 @@ public:
    * This is equivalent to: buff->describe(type, num_elems)->allocate()
    * if the buffer is not allocated.
    *
-   * If given number of elements < 0 or the buffer is not already described
+   * If given number of elements < 0, or the buffer is not already described
    * with type information, this method is a no-op.
    *
    * \return pointer to this DataBuffer object.
@@ -223,7 +223,13 @@ public:
   /*!
    * \brief Deallocate data in a buffer.
    *
-   * If buffer is attached to views, they will be 'un-applied'.
+   * If buffer is attached to views, it will remain attached to those views
+   * and the descriptions will remain intact. However, the view descriptions 
+   * will be 'un-applied' since there is no data to apply them to.
+   *
+   * If the buffer is subsequently redescribed and/or re-allocated, the 
+   * associated views may need to be re-described. They will need to be
+   * re-applied if the views will be used to access the buffer data.
    *
    * If the buffer is not allocated, method is a no-op.
    * 
