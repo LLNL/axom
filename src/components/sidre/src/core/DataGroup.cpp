@@ -1231,7 +1231,7 @@ void DataGroup::copyFromNode(Node& n,
           // copy the data from the node
           void * data = n_buff["data"].element_ptr(0);
           size_t nbytes = n_buff["data"].total_bytes();
-          ds_buff->update(data, nbytes);
+          ds_buff->copyBytesIntoBuffer(data, nbytes);
         }
       }
     }
