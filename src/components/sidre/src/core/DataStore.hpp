@@ -210,40 +210,48 @@ public:
   /// interfaces to SPIO.
 
   /*!
-   * \brief Save the datastore to a file set named "obase"
-   * If a group is provided, only that sub-tree will be saved.
+   * \brief Save the datastore to a new file.
+   * Supported protocols are conduit (binary), conduit_hdf5, and text (for debugging).
+   * If a group is not provided, the root group will be saved.
    */
   void save( const std::string& file_path,
              const std::string& protocol,
              const DataGroup* group = ATK_NULLPTR ) const;
 
   /*!
-   * \brief Save the datastore to an hdf5 file.
-   * If a group is provided, only that sub-tree will be saved.
+   * \brief Save the datastore to an existing hdf5 file.
+   * If a group is not provided, the root group will be saved.
    */
   void save( const hid_t& h5_file_id,
              const DataGroup* group = ATK_NULLPTR ) const;
 
   /*!
-   * \brief TODO
+   * \brief Load the datastore from a file
+   * If a group is not provided, it will be loaded into the root group.
    */
   void load(const std::string& file_path,
             const std::string& protocol,
             DataGroup * group = ATK_NULLPTR);
 
   /*!
-   * \brief TODO
+   * \brief Load the datastore from an hdf5 file.
+   * If a group is not provided, it will be loaded into the root group.
    */
   void load(const hid_t& h5_file_id,
             DataGroup * group = ATK_NULLPTR);
 
   /*!
-   * \brief TODO
+   * \brief Add view description and references to it's data to a conduit tree.
+   */
+
+  /*!
+   * \brief Add the datastore hierarchy and references to it's data to a conduit tree.
+   * This includes the group/view hierarchy and buffers.
    */
   void exportTo( const DataGroup * group,
                   conduit::Node& data_holder ) const;
   /*!
-   * \brief TODO
+   * \brief Restore a datastore hierarchy and data contents (buffers, etc) from a conduit tree.
    */
 
   void importFrom(DataGroup * group,

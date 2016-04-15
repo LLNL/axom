@@ -693,8 +693,6 @@ public:
    */
   const char * getString()
   {
-    //TODO add check that view holds array data.  Will be added in later commit.
-    //If debug, should trigger assert.  If release, issue warning.
     if (m_state == STRING)
     {
       return m_node.as_char8_str();
@@ -876,13 +874,14 @@ private:
   void copyView( DataView * copy ) const;
 
   /*!
-   * \brief TODO
+   * \brief Add view description and references to it's data to a conduit tree.
    */
   void exportTo(conduit::Node& data_holder,
                 std::set<IndexType>& buffer_indices) const;
 
   /*!
-   * \brief TODO
+   * \brief Restore a view's description and data from a conduit tree.
+   * This does not include a view's buffer data, that is done in the buffer
    */
   void importFrom(conduit::Node& data_holder,
                   const std::map<IndexType, IndexType>& buffer_id_map);
