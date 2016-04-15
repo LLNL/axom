@@ -18,6 +18,7 @@
 #ifndef NUMERIC_ARRAY_HXX_
 #define NUMERIC_ARRAY_HXX_
 
+#include "common/ATKMacros.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
@@ -38,7 +39,7 @@ namespace {
      *****************************************************************************
      */
     template<typename T>
-    T clamp(T val, T lower, T upper)
+    T clampVal(T val, T lower, T upper)
     {
         SLIC_ASSERT( lower <= upper);
         return std::min( std::max( val, lower), upper);
@@ -321,6 +322,39 @@ public:
 
  /*!
   *****************************************************************************
+  * \brief Ensures that the highest value of the coordinates is at most upperVal.
+  * \param [in] upperVal The highest possible value
+  * \post forall i, arr[i] <= upperVal
+  * \return A reference to the NumericArray instance after clamping upper
+  *****************************************************************************
+  */
+ NumericArray< T,DIM >& clampUpper( const T& upperVal);
+
+ /*!
+  *****************************************************************************
+  * \brief Ensures that the lowest value of the coordinates is at least lowerVal.
+  * \param [in] lowerVal The lowest possible value
+  * \post forall i, arr[i] >= lowerVal
+  * \return A reference to the NumericArray instance after clamping lower
+  *****************************************************************************
+  */
+ NumericArray< T,DIM >& clampLower( const T& lowerVal);
+
+ /*!
+  *****************************************************************************
+  * \brief Ensures that each coordinate's value is in range [lowerVal,upperVal].
+  * \param [in] lowerVal The lowest possible value
+  * \param [in] upperVal The highest possible value
+  * \pre lowerVal <= upperVal
+  * \post forall i, lowerVal <= arr[i] <= upperVal
+  * \return A reference to the NumericArray instance after clamping
+  *****************************************************************************
+  */
+ NumericArray< T,DIM >& clamp( const T& lowerVal, const T& upperVal);
+
+
+ /*!
+  *****************************************************************************
   * \brief Find the max component.
   * \return The value of the largest component.
   *****************************************************************************
@@ -352,7 +386,10 @@ public:
  int argMin() const;
 
 private:
-  void verifyIndex(int idx) const { SLIC_ASSERT(idx >= 0 && idx < DIM); }
+  void verifyIndex(int ATK_DEBUG_PARAM(idx)) const
+  {
+      SLIC_ASSERT(idx >= 0 && idx < DIM);
+  }
 
 protected:
   T m_components[ DIM ];    /*! The encapsulated array */
@@ -373,7 +410,7 @@ NumericArray< T, DIM >::NumericArray(T val, int sz)
   SLIC_ASSERT( DIM >= 1 );
 
   // Fill first nvals coordinates with val ( 0 <= nvals <= DIM )
-  const int nvals = clamp(sz, 0, DIM);
+  const int nvals = ::clampVal(sz, 0, DIM);
   std::fill( m_components, m_components+nvals, val );
 
   // Fill any remaining coordinates with zero
@@ -389,7 +426,7 @@ NumericArray< T, DIM >::NumericArray(T* vals, int sz)
 {
   SLIC_ASSERT( DIM >= 1 );
 
-  const int nvals = clamp(sz, 0, DIM);
+  const int nvals = ::clampVal(sz, 0, DIM);
 
   // Copy first nvals coordinates from vals array ( 0 <= nvals <= DIM )
   std::copy( vals, vals+nvals, m_components);
@@ -533,6 +570,40 @@ inline NumericArray< T, DIM >& NumericArray< T,DIM >::operator-=(const NumericAr
   return *this;
 }
 
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+inline NumericArray< T, DIM >& NumericArray< T,DIM >::clamp( const T& lowerVal, const T& upperVal)
+{
+    SLIC_ASSERT( lowerVal <= upperVal);
+
+    for ( int i=0; i < DIM; ++i ) {
+        this->m_components[ i ] = std::min( std::max( this->m_components[ i ], lowerVal), upperVal);
+    }
+
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+inline NumericArray< T, DIM >& NumericArray< T,DIM >::clampLower( const T& lowerVal)
+{
+    for ( int i=0; i < DIM; ++i ) {
+        this->m_components[ i ] = std::max( this->m_components[ i ], lowerVal);
+    }
+
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+inline NumericArray< T, DIM >& NumericArray< T,DIM >::clampUpper( const T& upperVal)
+{
+    for ( int i=0; i < DIM; ++i ) {
+        this->m_components[ i ] = std::min( this->m_components[ i ], upperVal);
+    }
+
+    return *this;
+}
 
 //------------------------------------------------------------------------------
 template<typename T, int DIM>

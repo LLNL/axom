@@ -18,6 +18,7 @@ set( quest_headers
     geom/Determinants.hpp
     geom/HyperSphere.hpp
     geom/Intersection.hpp
+    geom/InOutOctree.hpp
     geom/MortonIndex.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp
@@ -50,8 +51,10 @@ set( quest_headers
     mesh/UnstructuredMesh.hpp
     
     ## STL library headers
-    stl/stla_io.hpp
     stl/STLReader.hpp
+    
+    ## quest interface headers
+    interface/quest.hpp
     
    )
    
@@ -72,11 +75,37 @@ set( quest_sources
     mesh/UniformMesh.cpp
     
     ## STL library sources
-    stl/stla_io.cpp
     stl/STLReader.cpp
     
+    ## quest interface sources
+    interface/quest.cpp
+    
    )
-   
+
+set( quest_depends_on 
+     common
+     slic
+     slam
+     )
+
+if (ENABLE_MPI)
+  list(APPEND quest_headers stl/PSTLReader.hpp)
+  list(APPEND quest_sources stl/PSTLReader.cpp)
+endif()
+
+if (ENABLE_FORTRAN)
+  
+  ## append shroud generated headers/sources to corresponding lists
+  list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
+  list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
+  list(APPEND quest_sources interface/c_fortran/shroudrt.cpp)
+  list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
+  
+  add_subdirectory(interface)
+  
+  include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
+endif()
+
 copy_headers_target( ${PROJECT_NAME} "${quest_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
                      
@@ -88,9 +117,8 @@ make_library( LIBRARY_NAME
                 "${quest_headers}"
               
               DEPENDS_ON
-                common
-                slic
-                slam
+                "${quest_depends_on}"
              )
+target_include_directories( quest PRIVATE "${CMAKE_SOURCE_DIR}/thirdparty/stla_io" )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )

@@ -27,20 +27,23 @@ Useful links
 
 Components
 
+  *  Common 
   *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_
   *  Lumberjack (Scalable Message Filtering)
+  *  Quest (Querying on Surfaces Tool)
   *  `Shroud (C++ API to C/Fortran)  <../../shroud_docs/html/index.html>`_
-  *  `SiDRe: Simulation Data Repository (Datastore) <../../sidre_docs/html/index.html>`_
-  *  SLAM (Set-theoretic Lightweight API for Meshes)
-  *  SLIC (Simple Logging Interface Code)
+  *  `Sidre: Simulation Data Repository (Datastore) <../../sidre_docs/html/index.html>`_
+  *  Slam (Set-theoretic Lightweight API for Meshes)
+  *  Slic (Simple Logging Interface Code)
 
 Doxygen
 
   *  `Common <../../../doxygen/common_doxygen/html/index.html>`_
+  *  `Lumberjack <../../../doxygen/lumberjack_doxygen/html/index.html>`_
   *  `Quest <../../../doxygen/quest_doxygen/html/index.html>`_
   *  `Sidre <../../../doxygen/sidre_doxygen/html/index.html>`_
-  *  `SLAM <../../../doxygen/slam_doxygen/html/index.html>`_
-  *  `SLIC <../../../doxygen/slic_doxygen/html/index.html>`_
+  *  `Slam <../../../doxygen/slam_doxygen/html/index.html>`_
+  *  `Slic <../../../doxygen/slic_doxygen/html/index.html>`_
 
 
 

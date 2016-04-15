@@ -14,11 +14,14 @@ add_executable( shroud-run-strings
     ../strings/wrapfstrings.f
     ../strings/wrapstrings.cpp
 )
-target_link_libraries(shroud-run-strings fruit shroudrt)
-set_target_properties(shroud-run-strings PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(shroud-run-strings fruit)
+set_target_properties(shroud-run-strings PROPERTIES
+   LINKER_LANGUAGE Fortran
+   RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
+)
 add_test( NAME shroud-run-strings
           COMMAND shroud-run-strings
-          WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+          WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
 )
 
 #add_fortran_test(
@@ -43,8 +46,7 @@ if(ENABLE_PYTHON_API)
             ../strings/pyClass1type.cpp
             ../strings/pyStringsmodule.cpp
             ../strings/pyStringshelper.cpp
-        DEPENDS_ON
-            shroudrt
+            ../strings/shroudrt.cpp
     )
 
     # Python wants the name to be strings.so

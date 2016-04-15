@@ -11,6 +11,7 @@
 set(quest_tests
     quest_boundingBox.cpp
     quest_bucket_tree.cpp
+    quest_inout_octree.cpp
     quest_intersection.cpp
     quest_mesh_extent.cpp
     quest_morton.cpp
@@ -18,6 +19,7 @@ set(quest_tests
     quest_octree.cpp
     quest_orient.cpp
     quest_point.cpp
+    quest_spatial_octree.cpp
     quest_squared_distance.cpp
     quest_vector.cpp
    )
@@ -45,10 +47,7 @@ set(morton_reproducer_src    quest_morton_clang_repro.cpp)
 
 # Tell the code if optimizations (-O2 and -O3 are enabled)
 set(optsDefine "")
-if(CMAKE_BUILD_TYPE MATCHES Release)
-  set(optsDefine "HAS_OPTS")
-endif()
-if(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+if(CMAKE_BUILD_TYPE MATCHES Release OR CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
   set(optsDefine "HAS_OPTS")
 endif()
 

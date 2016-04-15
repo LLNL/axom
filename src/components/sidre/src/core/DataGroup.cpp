@@ -67,10 +67,10 @@ DataView * DataGroup::createView( const std::string& name )
 
   // Want the C++ new operator to return null pointer on failure instead of
   // throwing an exception.
-  DataView * view = new(std::nothrow) DataView( path, this);
+  DataView * view = new(std::nothrow) DataView(path);
   if ( view != ATK_NULLPTR )
   {
-    group->attachView( view );
+    group->attachView(view);
   }
   return view;
 }
@@ -87,8 +87,9 @@ DataView * DataGroup::createView( const std::string& name,
                                   TypeID type,
                                   SidreLength num_elems )
 {
-  if ( num_elems < 0 )
+  if ( type == NO_TYPE_ID || num_elems < 0 )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK_MSG(num_elems >= 0,
                    "Must define view with number of elems >=0 ");
     return ATK_NULLPTR;
@@ -114,8 +115,9 @@ DataView * DataGroup::createView( const std::string& name,
                                   int ndims,
                                   SidreLength * shape )
 {
-  if ( !(ndims >= 0) )
+  if ( type == NO_TYPE_ID || !(ndims >= 0) )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK_MSG(ndims >= 0,
                    "Must define view with number of ndims >=0 ");
     return ATK_NULLPTR;
@@ -343,6 +345,32 @@ void DataGroup::destroyViews()
 /*
  *************************************************************************
  *
+ * Detach view from group and destroy view.
+ *
+ * Destroy DataBuffer if buffer has no other view attached to it.
+ *
+ *************************************************************************
+ */
+void DataGroup::destroyViewAndData( DataView * view )
+{
+  if ( view != ATK_NULLPTR)
+  {
+    detachView( view->getName() );
+    DataBuffer * const buffer = view->detachBuffer();
+    if ( buffer != ATK_NULLPTR )
+    {
+      if (buffer->getNumViews() == 0)
+      {
+        getDataStore()->destroyBuffer(buffer);
+      }
+    }
+    delete view;
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Detach view with given name from group and destroy view.
  *
  * Destroy DataBuffer if buffer has no other view attached to it.
@@ -351,22 +379,7 @@ void DataGroup::destroyViews()
  */
 void DataGroup::destroyViewAndData( const std::string& name )
 {
-  SLIC_CHECK_MSG( hasView(name) == true, "name == " << name );
-
-  DataView * view = detachView(name);
-  if ( view != ATK_NULLPTR )
-  {
-    DataBuffer * const buffer = view->getBuffer();
-    if ( buffer != ATK_NULLPTR )
-    {
-      buffer->detachView(view);
-      if (buffer->getNumViews() == 0)
-      {
-        getDataStore()->destroyBuffer(buffer->getIndex());
-      }
-    }
-    delete view;
-  }
+  destroyViewAndData(getView(name));
 }
 
 /*
@@ -380,22 +393,7 @@ void DataGroup::destroyViewAndData( const std::string& name )
  */
 void DataGroup::destroyViewAndData( IndexType idx )
 {
-  SLIC_CHECK_MSG( hasView(idx) == true, "idx == " << idx );
-
-  DataView * view = detachView(idx);
-  if ( view != ATK_NULLPTR )
-  {
-    DataBuffer * const buffer = view->getBuffer();
-    if ( buffer != ATK_NULLPTR )
-    {
-      buffer->detachView(view);
-      if (buffer->getNumViews() == 0)
-      {
-        getDataStore()->destroyBuffer(buffer->getIndex());
-      }
-    }
-    delete view;
-  }
+  destroyViewAndData(getView(idx));
 }
 
 /*
@@ -412,18 +410,7 @@ void DataGroup::destroyViewsAndData()
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
-    DataView * view = this->getView(vidx);
-    DataBuffer * const buffer = view->getBuffer();
-
-    if ( buffer != ATK_NULLPTR )
-    {
-      buffer->detachView(view);
-      if (buffer->getNumViews() == 0)
-      {
-        getDataStore()->destroyBuffer(buffer->getIndex());
-      }
-    }
-    delete view;
+    destroyViewAndData(vidx);
     vidx = getNextValidViewIndex(vidx);
   }
 
@@ -439,29 +426,32 @@ void DataGroup::destroyViewsAndData()
  */
 DataView * DataGroup::moveView(DataView * view)
 {
-  SLIC_CHECK_MSG( view != ATK_NULLPTR,
-                  "Attempting to move view, but given null ptr" );
-  SLIC_CHECK_MSG( hasView(
-                    view->getName()) == false,
-                  "Attempting to move view, but destination group already has a view named " <<
-                  view->getName() );
-
-  if ( view == ATK_NULLPTR || hasView(view->getName()) )
+  if ( view == ATK_NULLPTR )
   {
+    SLIC_CHECK_MSG( view != ATK_NULLPTR,
+                    "Attempting to move view, but given null ptr" );
     return ATK_NULLPTR;
   }
-  else
+
+  DataGroup * curr_group = view->getOwningGroup();
+  if (curr_group == this )
   {
-    // remove this view from its current parent
-    DataGroup * curr_group = view->getOwningGroup();
-
-    curr_group->detachView(view->getName());
-
-    /// finally, attach to this group
-    attachView(view);
-
+    // this group already owns the view
     return view;
   }
+  else if (hasView(view->getName()) )
+  {
+    SLIC_CHECK_MSG( hasView(
+                      view->getName()) == false,
+                    "Attempting to move view, but destination group already has a view named " <<
+                    view->getName() );
+    return ATK_NULLPTR;
+  }
+
+  curr_group->detachView(view);
+  attachView(view);
+
+  return view;
 }
 
 /*
@@ -486,16 +476,10 @@ DataView * DataGroup::copyView(DataView * view)
   {
     return ATK_NULLPTR;
   }
-  else
-  {
-    DataView * res = createView(view->getName(), view->getBuffer());
-    res->describe(view->getSchema().dtype());
-    if (view->isApplied())
-    {
-      res->apply();
-    }
-    return res;
-  }
+
+  DataView * copy = createView(view->getName());
+  view->copyView(copy);
+  return copy;
 }
 
 
@@ -605,22 +589,15 @@ DataGroup * DataGroup::moveGroup(DataGroup * group)
                   "Attempting to move group, but destination group already has a group named " <<
                   group->getName() );
 
-  if ( group == ATK_NULLPTR || hasGroup(group->getName()) )
+  if ( group == ATK_NULLPTR || hasGroup(group->getName()))
   {
     return ATK_NULLPTR;
   }
-  else
-  {
-    // remove this group from its current parent
-    DataGroup * curr_group = group->getParent();
 
-    curr_group->detachGroup(group->getName());
-
-    /// finally, attach to this group
-    attachGroup(group);
-
-    return group;
-  }
+  DataGroup * curr_group = group->getParent();
+  curr_group->detachGroup(group->getName());
+  attachGroup(group);
+  return group;
 }
 
 /*
@@ -788,7 +765,35 @@ void DataGroup::save(const std::string& obase,
     Node n;
     copyToNode(n);
     // for debugging call: n.print();
-    n.save(obase);
+    conduit::io::save(n, obase);
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Save this group object (including data views and child groups) to an
+ * hdf5 file named "obase".
+ *
+ * Note: Only valid protocol is "conduit".
+ *
+ *************************************************************************
+ *          */
+void DataGroup::save(const std::string& obase,
+                     const std::string& protocol,
+                     const hid_t& h5_file_id) const
+{
+  if (protocol == "conduit_hdf5")
+  {
+    Node n;
+    copyToNode(n);
+    std::string file_path;
+    std::string hdf5_path;
+    conduit::utils::split_string(obase,
+                                 std::string(":"),
+                                 file_path,
+                                 hdf5_path);
+    conduit::io::hdf5_write(n, h5_file_id, hdf5_path);
   }
 }
 
@@ -810,7 +815,39 @@ void DataGroup::load(const std::string& obase,
     destroyGroups();
     destroyViews();
     Node n;
-    n.load(obase);
+    conduit::io::load(obase, n);
+    // for debugging call: n.print();
+    copyFromNode(n);
+  }
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Load data group (including data views and child groups) from an hdf5 file
+ * named "obase" into this group object.
+ *
+ * Note: Only valid protocol is "conduit_hdf5".
+ *
+ *************************************************************************
+ */
+void DataGroup::load(const std::string& obase,
+                     const std::string& protocol,
+                     const hid_t& h5_file_id)
+{
+  if (protocol == "conduit_hdf5")
+  {
+    destroyGroups();
+    destroyViews();
+    std::string file_path;
+    std::string hdf5_path;
+    conduit::utils::split_string(obase,
+                                 std::string(":"),
+                                 file_path,
+                                 hdf5_path);
+    Node n;
+    conduit::io::hdf5_read(h5_file_id, hdf5_path, n);
     // for debugging call: n.print();
     copyFromNode(n);
   }
@@ -964,6 +1001,8 @@ DataView * DataGroup::attachView(DataView * view)
   }
   else
   {
+    SLIC_ASSERT(view->m_owning_group == ATK_NULLPTR);
+    view->m_owning_group = this;
     m_view_coll.insertItem(view, view->getName());
     return view;
   }
@@ -1004,7 +1043,6 @@ DataView * DataGroup::detachView(IndexType idx)
 
   return view;
 }
-
 
 /*
  *************************************************************************
@@ -1077,7 +1115,9 @@ void DataGroup::copyToNode(Node& n) const
   // save the buffers discovered by buffer_ids
   for (size_t i=0 ; i < buffer_ids.size() ; i++)
   {
-    Node& buff = n["buffers"].append();
+    std::ostringstream oss;
+    oss << "buffer_" << i;
+    Node& buff = n["buffers"].fetch(oss.str());
     IndexType buffer_id = buffer_ids[i];
     DataBuffer * ds_buff =  m_datastore->getBuffer(buffer_id);
     buff["id"].set(buffer_id);
@@ -1191,7 +1231,7 @@ void DataGroup::copyFromNode(Node& n,
           // copy the data from the node
           void * data = n_buff["data"].element_ptr(0);
           size_t nbytes = n_buff["data"].total_bytes();
-          ds_buff->update(data, nbytes);
+          ds_buff->copyBytesIntoBuffer(data, nbytes);
         }
       }
     }
@@ -1240,6 +1280,61 @@ void DataGroup::copyFromNode(Node& n,
     ds_group->copyFromNode(n_group, id_map);
   }
 }
+
+/*
+ *************************************************************************
+ *
+ * Test this DataGroup for equavalence to another DataGroup.
+ *
+ *************************************************************************
+ */
+bool DataGroup::isEquivalentTo(const DataGroup * other) const
+{
+  // Equality of names
+  bool is_equiv = (m_name == other->m_name);
+
+  // Sizes of collections of child items must be equal
+  if (is_equiv)
+  {
+    is_equiv = (m_view_coll.getNumItems() == other->m_view_coll.getNumItems())
+               && (m_group_coll.getNumItems() ==
+                   other->m_group_coll.getNumItems());
+  }
+
+  // Test equivalence of DataViews
+  if (is_equiv)
+  {
+    IndexType vidx = getFirstValidViewIndex();
+    IndexType other_vidx = other->getFirstValidViewIndex();
+    while ( is_equiv && indexIsValid(vidx) && indexIsValid(other_vidx) )
+    {
+      const DataView * view = getView(vidx);
+      const DataView * other_view = other->getView(other_vidx);
+      is_equiv = view->isEquivalentTo(other_view);
+      vidx = getNextValidViewIndex(vidx);
+      other_vidx = getNextValidViewIndex(other_vidx);
+    }
+  }
+
+  // Recursively call this method to test equivalence of child DataGroups
+  if (is_equiv)
+  {
+    IndexType gidx = getFirstValidGroupIndex();
+    IndexType other_gidx = getFirstValidGroupIndex();
+    while ( is_equiv && indexIsValid(gidx) && indexIsValid(other_gidx) )
+    {
+      const DataGroup * group =  getGroup(gidx);
+      const DataGroup * other_group =  other->getGroup(other_gidx);
+      is_equiv = group->isEquivalentTo(other_group);
+      gidx = getNextValidGroupIndex(gidx);
+      other_gidx = getNextValidGroupIndex(other_gidx);
+    }
+  }
+
+  return is_equiv;
+
+}
+
 
 
 /// Character used to denote a path string passed to get/create calls.

@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.1)
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH
+      "${CMAKE_SOURCE_DIR}/cmake/thirdparty"
+      "${CMAKE_SOURCE_DIR}/cmake"
+      ${CMAKE_MODULE_PATH})
 
 ################################
 # ASCTK ToolKit
@@ -29,10 +32,12 @@ add_subdirectory(components)
 ################################
 # Add docs
 ################################
-add_subdirectory(docs)
+if (BUILD_DOCS)
+  add_subdirectory(docs)
+endif()
 
 ################################
 # install targets from build
 ################################s
-install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . )
-install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION .)
+install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . OPTIONAL)
+install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION . OPTIONAL)

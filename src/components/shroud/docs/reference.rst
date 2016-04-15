@@ -1,6 +1,39 @@
 Reference
 =========
 
+Command Line Options
+--------------------
+
+help
+       Show this help message and exit
+
+version
+       Show program's version number and exit
+
+outdir OUTDIR
+       Directory for output files
+
+outdir-c-fortran OUTDIR_C_FORTRAN
+       Directory for C/Fortran wrapper output files, overrides --outdir
+
+outdir-python OUTDIR_PYTHON
+       Directory for Python wrapper output files, overrides --outdir
+
+logdir LOGDIR
+       Directory for log files
+
+cfiles CFILES
+       Output file with list of C and C++ files created
+
+ffiles FFILES
+       Output file with list of Fortran created
+
+path PATH
+       Colon delimited paths to search for splicer files, may
+       be supplied multiple times to create path
+
+
+
 Code
 ----
 
@@ -311,6 +344,7 @@ c_type
 
 c_header
     Name of C header file required for type.
+    This file is included in the interface header.
     Defaults to *None*.
 
 c_to_cpp
@@ -422,6 +456,18 @@ f_statement
 ..         f_attr_len_trim = None,
 ..         f_attr_len = None,
 ..         f_attr_size = None,
+
+f_helper
+    Additional code to add into the module for helper functions.
+
+    private
+       List of names which should be PRIVATE to the module
+
+    interface
+       Code to add to the non-executable part of the module.
+
+    source
+       Code to add in the CONTAINS section of the module.
 
 result_as_arg
     Override fields when result should be treated as an argument.

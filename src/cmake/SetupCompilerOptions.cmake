@@ -2,14 +2,42 @@
 # Setup compiler options
 ############################
 
-# Basic helper modules.
-include(CheckCXXCompilerFlag)
-include(AddCXXCompilerFlag)
-include(CXXFeatureCheck)
+#####################################################
+# Set some variables to simplify determining compiler
+# Compiler string list from: 
+#   https://cmake.org/cmake/help/v3.0/variable/CMAKE_LANG_COMPILER_ID.html
+####################################################3
+
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") 
+    set(COMPILER_FAMILY_IS_GNU 1)
+    message(STATUS "Compiler family is GNU")
+    
+elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang") # For Clang or AppleClang
+    set(COMPILER_FAMILY_IS_CLANG 1)
+    message(STATUS "Compiler family is Clang")
+    
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "XL") 
+    set(COMPILER_FAMILY_IS_XL 1)
+    message(STATUS "Compiler family is XL")    
+    
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel") 
+    set(COMPILER_FAMILY_IS_INTEL 1)
+    message(STATUS "Compiler family is Intel")
+   
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC") 
+    set(COMPILER_FAMILY_IS_MSVC 1)
+    message(STATUS "Compiler family is MSVC")
+    
+endif()
+
+
+
 
 #############################################
 # Support extra compiler flags and defines
 #############################################
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+
 #
 # We don't try to use this approach for CMake generators that support
 # multiple configurations. See: CZ JIRA: ATK-45
@@ -91,33 +119,57 @@ if("${isSystemDir}" STREQUAL "-1")
 endif()
 
 ################################
-# Compiler warnings
-################################
-include(EnableExtraCompilerWarnings)
-if (ENABLE_GLOBALCOMPILERWARNINGS)
-   globally_enable_extra_compiler_warnings()
-   MESSAGE(STATUS  "Enabling extra compiler warnings on all targets.")
-endif()
-
-################################
-# Compiler warnings as errors
-################################
-include(EnableCompilerWarningsAsErrors)
-if (ENABLE_GLOBALCOMPILERWARNINGSASERRORS)
-   globally_enable_compiler_warnings_as_errors()
-   MESSAGE(STATUS  "Treating compiler warnings as errors on all targets.")
-endif()
-
-################################
 # Enable C++11 
 ################################
 if (ENABLE_CXX11)
    add_definitions("-DUSE_CXX11")
-   add_cxx_compiler_flag(-std=c++11)
-   if (NOT HAVE_CXX_FLAG_STD_CXX11)
-      MESSAGE(FATAL_ERROR "This compiler does not support the standard C++11 flag of '-std=c++11'.  Support for it must be added manually in SetupCompilerOptions.cmake.")
-   endif()
+   
+   append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS DEFAULT -std=c++11)
+   set(HAVE_CXX_FLAG_STD_CXX11 TRUE)
+   
+   MESSAGE(STATUS "C++11 support is ON")  
+else()
+   MESSAGE(STATUS "C++11 support if OFF")  
 endif()
+
+##################################################################
+# Additional compiler warnings and treatment of warnings as errors
+##################################################################
+
+set(langFlags "CMAKE_C_FLAGS" "CMAKE_CXX_FLAGS")
+
+if (ENABLE_GLOBALCOMPILERWARNINGS)
+   MESSAGE(STATUS  "Enabling extra compiler warnings on all targets.")
+
+   foreach(flagVar ${langFlags})   
+     append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
+                     DEFAULT "-W -Wall -Wextra"
+                     MSVC "/W4 /Wall /wd4619 /wd4668 /wd4820 /wd4571 /wd4710"
+                     XL ""          # qinfo=<grp> produces additional messages on XL
+                                    # qflag=<x>:<x> defines min severity level to produce messages on XL
+                                    #     where x is i info, w warning, e error, s severe; default is: 
+                                    # (default is  qflag=i:i)
+                     )
+   endforeach()
+endif()
+
+if (ENABLE_GLOBALCOMPILERWARNINGSASERRORS)
+   MESSAGE(STATUS  "Enabling treatment of warnings as errors on all targets.")
+
+   foreach(flagVar ${langFlags})   
+     append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
+                     DEFAULT "-Werror"
+                     MSVC "/WX"
+                     XL "qhalt=w"       # i info, w warning, e error, s severe (default)
+                     )
+   endforeach()
+endif()
+
+
+foreach(flagVar ${langFlags})   
+    message(STATUS "${flagVar} flags are:  ${${flagVar}}")
+endforeach()
+
 
 ################################
 # Enable Fortran
@@ -143,18 +195,38 @@ else()
 endif()
  
 
-#####################################################
-# Some additional default values for compiler options
-# These write to the cmake cache without overwriting existing values
-# Typically, we can define the gcc/clang flags here, 
-# and overwrite then with the correct values for other compilers
-#####################################################
- 
-set(DISABLE_OMP_PRAGMA_WARNINGS " -Wno-unknown-pragmas " CACHE STRING "Flag to disable warning about pragmas when omp is disabled")
-# message(STATUS "value of DISABLE_OMP_PRAGMA_WARNINGS is ${DISABLE_OMP_PRAGMA_WARNINGS} ")
+##############################################################################
+# Setup some additional compiler options that can be useful in various targets
+# These are stored in their own variables.
+# Usage: To add one of these sets of flags to some source files:
+#   get_source_file_property(_origflags <src_file> COMPILE_FLAGS)
+#   set_source_files_properties(<list_of_src_files> 
+#        PROPERTIES COMPILE_FLAGS "${_origFlags} ${<flags_variable}" )
+##############################################################################
 
-# The following can be useful when dealing with third-party sources (e.g. original lulesh) 
-set(DISABLE_UNUSED_PARAMETER_WARNINGS " -Wno-unused-parameter " CACHE STRING "Flag to disable warning about unused function parameters")
- 
+# Flag for disabling warnings about omp pragmas in the code
+append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_OMP_PRAGMA_WARNINGS
+                  DEFAULT "-Wno-unknown-pragmas"
+                  XL      "-qignprag=omp"
+                  INTEL   "-diag-disable 3180"
+                  )
+
+# Flag for disabling warnings about unused parameters.
+# Useful when we include external code.
+append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_PARAMETER_WARNINGS
+                  DEFAULT "-Wno-unused-parameter"
+                  XL      "-qnoinfo=par"
+                  )
+
+# Flag for disabling warnings about unused variables
+# Useful when we include external code.
+append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_VARIABLE_WARNINGS
+                  DEFAULT "-Wno-unused-variable"
+                  XL      "-qnoinfo=use"
+                  )
+
+# message(STATUS "value of ATK_DISABLE_OMP_PRAGMA_WARNINGS is ${ATK_DISABLE_OMP_PRAGMA_WARNINGS} ")
+# message(STATUS "value of ATK_DISABLE_UNUSED_PARAMETER_WARNINGS is ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS} ")
+# message(STATUS "value of ATK_DISABLE_UNUSED_VARIABLE_WARNINGS is ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS} ")
  
  

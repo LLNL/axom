@@ -51,29 +51,6 @@ endif()
 
 
 if(SPHINX_FOUND)
-    #html_theme = 'classic'
-    # new 'default' theme is now called 'alabastor'
-    #html_theme = 'alabaster'
-    # Trying out some others...(I didn't explore options for each)
-    # These are OK:
-    #html_theme = 'bizstyle'
-    #html_theme = 'agogo'
-    #html_theme = 'scrolls'
-    #html_theme = 'sphinx_rtd_theme'  (section highlighting is weird)
-    # I don't like these:
-    #html_theme = 'pyramid'
-    #html_theme = 'nature'
-    #html_theme = 'haiku'
-    #html_theme = 'sphinxdoc'
-    #
-    # Theme options are theme-specific and customize the look and feel of a theme
-    # further.  For a list of options available for each theme, see the
-    # documentation.
-    #html_theme =
-    #
-    # Add any paths that contain custom themes here, relative to this directory.
-    #html_theme_path = []
-
     set(SPHINX_HTML_THEME "
 try:
     import sphinx_rtd_theme
@@ -120,8 +97,7 @@ macro(add_doxygen_target doxygen_target_name)
     install(CODE "execute_process(COMMAND ${CMAKE_BUILD_TOOL} ${doxygen_target_name} WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
 
     install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html" 
-            DESTINATION docs/doxygen/${doxygen_target_name})
-
+            DESTINATION docs/doxygen/${doxygen_target_name} OPTIONAL)
 endmacro(add_doxygen_target)
 
 ##------------------------------------------------------------------------------
@@ -173,7 +149,7 @@ macro(add_sphinx_target sphinx_target_name )
     install(CODE "execute_process(COMMAND ${CMAKE_BUILD_TOOL} ${sphinx_target_name} WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
 
     install(DIRECTORY "${SPHINX_HTML_DIR}" 
-            DESTINATION "docs/sphinx/${sphinx_target_name}")
+            DESTINATION "docs/sphinx/${sphinx_target_name}" OPTIONAL)
 endmacro(add_sphinx_target)
 
 

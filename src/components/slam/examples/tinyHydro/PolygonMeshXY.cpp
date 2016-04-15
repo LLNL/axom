@@ -9,9 +9,11 @@
  */
 
 
+
 #include "PolygonMeshXY.hpp"
+
+#include "common/Timer.hpp"
 #include "slic/slic.hpp"
-#include "myTimer.hpp"
 
 #include <sstream>
 
@@ -144,7 +146,7 @@ namespace tinyHydro {
   {
     VectorXY ret;
 
-    Timer timer;
+    asctoolkit::utilities::Timer timer;
 
     timer.start();
 
@@ -157,7 +159,7 @@ namespace tinyHydro {
 
     timer.stop();
 
-    SLIC_INFO("Elapsed time for averaging was " << timer.getElapsedTime() << " seconds.");
+    SLIC_INFO("Elapsed time for averaging was " << timer.elapsedTimeInSec() << " seconds.");
 
     return ret;
   }

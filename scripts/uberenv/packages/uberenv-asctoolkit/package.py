@@ -10,12 +10,17 @@ class UberenvAsctoolkit(Package):
 
     # hash for dummy tarfile
     version('0.1', '8d378ef62dedc2df5db447b029b71200')
-    
-    # all of theses are custom
-    depends_on("cmake")
+ 
+    homepage = "http://lc.llnl.gov/toolkit"
+    # standard spack packages
     depends_on("doxygen")
     depends_on("python")
-    depends_on("conduit")
+    depends_on("hdf5~shared~zlib")
+    depends_on("uncrustify")
+
+    # custom spack packages
+    depends_on("cmake~ncurses~openssl@3.3.1")
+    depends_on("conduit~shared")
     depends_on("py-sphinx")
     depends_on("py-breathe")
     depends_on("py-pyyaml")
@@ -29,12 +34,9 @@ class UberenvAsctoolkit(Package):
     depends_on("boost-headers")
     depends_on("sparsehash-headers")
 
-    # this was pushed to develop, but not yet in the diy branch
-    depends_on("uncrustify")
-
     # use dummy tarfile to avoid downloads
     def url_for_version(self, version):
-        dummy_tar_path =  os.path.abspath(pjoin(os.path.split(__file__)[0]))
+        dummy_tar_path =  os.path.abspath(pjoin(os.path.dirname(__file__)))
         dummy_tar_path = pjoin(dummy_tar_path,"uberenv-asctoolkit.tar.gz")
         url      = "file://" + dummy_tar_path
         return url
@@ -58,7 +60,7 @@ class UberenvAsctoolkit(Package):
         sphinx_build_exe = pjoin(spec['python'].prefix.bin,"sphinx-build")
         uncrustify_exe   = pjoin(spec['uncrustify'].prefix.bin,"uncrustify")
 
-        host_cfg_fname = "%s-%s-%s.cmake" % (socket.gethostname(),sys_type,spec.compiler)
+        host_cfg_fname = "%s-%s-%s.cmake" % (socket.gethostname().rstrip('1234567890'),sys_type,spec.compiler)
         host_cfg_fname = pjoin(dest_dir,host_cfg_fname)
         cfg = open(host_cfg_fname,"w")
         cfg.write("##################################\n")
@@ -68,7 +70,7 @@ class UberenvAsctoolkit(Package):
         cfg.write("##################################\n\n")
         # show path to cmake for reference
         cfg.write("# cmake from uberenv\n")
-        cfg.write("# cmake exectuable path: %s\n\n" % cmake_exe)
+        cfg.write("# cmake executable path: %s\n\n" % cmake_exe)
 
         # compiler settings
         cfg.write("#######\n")
@@ -86,11 +88,15 @@ class UberenvAsctoolkit(Package):
             cfg.write("# no fortran compiler\n\n")
             cfg.write('set(ENABLE_FORTRAN OFF CACHE PATH "")\n\n')
 
+        cfg.write('set(ENABLE_HDF5 ON CACHE PATH "")\n\n')
+        cfg.write("# hdf5 from uberenv\n")
+        cfg.write('set(HDF5_DIR "%s" CACHE PATH "")\n\n' % spec['hdf5'].prefix)
+
         cfg.write("# conduit from uberenv\n")
         cfg.write('set(CONDUIT_DIR "%s" CACHE PATH "")\n\n' % conduit_dir)
 
         cfg.write("# doxygen from uberenv\n")
-        cfg.write("# doxygen exectuable path: %s\n\n" % doxygen_exe)
+        cfg.write('set(DOXYGEN_EXECUTABLE "%s" CACHE PATH "")\n\n' % doxygen_exe)
 
         cfg.write("# python from uberenv\n")
         cfg.write('set(PYTHON_EXECUTABLE "%s" CACHE PATH "")\n\n' % python_exe)
@@ -113,8 +119,14 @@ class UberenvAsctoolkit(Package):
             cfg.write('set(LCOV_PATH "%s/usr/bin/lcov" CACHE PATH "")\n\n' % spec['lcov'].prefix)
             cfg.write('set(GENHTML_PATH "%s/usr/bin/genhtml" CACHE PATH "")\n\n' % spec['lcov'].prefix)
         else:
-            cfg.write("# lcov and genhtml not build by uberenv\n\n")
+            cfg.write("# lcov and genhtml not built by uberenv\n\n")
 
+
+        # Note (KW 3/2016) -- per ATK-659, we are temporarily disabling CXX11 for default configurations on intel builds 
+        if "intel" in spec.compiler.name:
+            cfg.write("# Temporarily disable CXX11 on intel builds until we resolve issue ATK-619\n")
+            cfg.write('set(ENABLE_CXX11 OFF CACHE PATH "\n')
+            
         cfg.write("##################################\n")
         cfg.write("# end uberenv host-config\n")
         cfg.write("##################################\n")

@@ -19,18 +19,19 @@ using asctoolkit::sidre::IndexType;
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_datastore,detach_buffer)
+TEST(sidre_datastore,destroy_buffer)
 {
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
   IndexType bufferIndex = ds->getFirstValidBufferIndex();
+  EXPECT_EQ(dbuff->getIndex(), bufferIndex);
 
-  EXPECT_TRUE( ds->detachBuffer(bufferIndex) == dbuff );
+  ds->destroyBuffer(bufferIndex);
   // should be no buffers
   EXPECT_TRUE( ds->getFirstValidBufferIndex() == -1 );
 
-  // After detach, that buffer index should be available again, and have been re-used..
+  // After destroy, that buffer index should be available again, and have been re-used..
   DataBuffer * dbuff2 = ds->createBuffer();
   (void)dbuff2;
   std::cerr << ds->getFirstValidBufferIndex() << std::endl;
@@ -39,7 +40,7 @@ TEST(sidre_datastore,detach_buffer)
 
   // check error condition
   IndexType badBufferIndex = 9999;
-  EXPECT_TRUE( ds->detachBuffer(badBufferIndex) == ATK_NULLPTR );
+  ds->destroyBuffer(badBufferIndex);
 
   delete ds;
 }

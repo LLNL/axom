@@ -18,10 +18,14 @@ set(lulesh_sources
 
 set_source_files_properties( ${lulesh_sources} PROPERTIES LANGUAGE "CXX" )
 
-add_executable( sidre_lulesh2_example  ${lulesh_sources} ${lulesh_headers})
-target_link_libraries( sidre_lulesh2_example  sidre  conduit slic )
+add_executable( sidre_lulesh2  ${lulesh_sources} ${lulesh_headers})
+target_link_libraries( sidre_lulesh2 sidre conduit conduit_io slic )
 
-add_test( NAME sidre_lulesh2_example
-          COMMAND sidre_lulesh2_example -s 10
-          WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+set_target_properties(sidre_lulesh2 PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUTPUT_DIRECTORY}
+)
+
+add_test( NAME sidre_lulesh2
+          COMMAND sidre_lulesh2 -s 10
+          WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
         )

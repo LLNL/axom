@@ -25,14 +25,19 @@
 #include "STLReader.hpp"
 
 // ATK includes
+#include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
-#include "quest/stla_io.hpp"
 #include "slic/slic.hpp"
 
+#include "stla_io.hpp"
 
 // C/C++ includes
 #include <cstddef>  // for NULL
+#include <string>   // for STL string
 
+//------------------------------------------------------------------------------
+//      STLReader Implementation
+//------------------------------------------------------------------------------
 namespace quest
 {
 
@@ -124,3 +129,4 @@ void STLReader::getMesh(
 }
 
 } /* namespace quest */
+
