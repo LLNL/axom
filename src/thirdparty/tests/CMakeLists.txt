@@ -25,9 +25,12 @@ if (CONDUIT_FOUND)
                  COMMAND conduit_smoke)
 
     if (ENABLE_FORTRAN)
-        add_fortran_test(
-            TEST_SOURCE f_conduit_smoke.f
-            DEPENDS_ON fruit conduit conduit_fortran)
+        blt_add_executable(NAME f_conduit_smoke
+                           SOURCES f_conduit_smoke.f
+                           OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                           DEPENDS_ON conduit conduit_fortran fruit)
+        blt_add_test(NAME f_conduit_smoke
+                     COMMAND f_conduit_smoke)
   endif()
 endif()
 
@@ -44,10 +47,12 @@ endif()
 # Add fruit tests
 ################
 if (ENABLE_FORTRAN)
-    add_fortran_test(
-      TEST_SOURCE fruit_smoke.f
-      DEPENDS_ON fruit
-  )
+    blt_add_executable(NAME fruit_smoke
+                       SOURCES fruit_smoke.f
+                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                       DEPENDS_ON fruit)
+    blt_add_test(NAME fruit_smoke
+                 COMMAND fruit_smoke)
 endif()
 
 

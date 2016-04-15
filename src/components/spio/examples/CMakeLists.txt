@@ -18,7 +18,7 @@ foreach(example_source ${example_sources})
         NAME spio_${exe_name}
         SOURCES ${example_source}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON spio sidre conduit conduit_io slic ${EXTRA_LIBS}
+        DEPENDS_ON spio sidre conduit conduit_io hdf5 slic ${EXTRA_LIBS}
         )
 endforeach()
 

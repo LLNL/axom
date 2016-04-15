@@ -270,6 +270,16 @@ macro(blt_add_executable)
 
     add_executable( ${arg_NAME} ${arg_SOURCES} )
 
+    # CMake wants to load with C++ if any of the libraries are C++.
+    # Force to load with Fortran if the first file is Fortran.
+    set(_FortranTypes ".f" ".f90" ".F" ".F90")
+    list(GET arg_SOURCES 0 _first)
+    get_filename_component( _ext ${_first} EXT )
+    list(FIND _FortranTypes "${_ext}" _index)
+    if(_index GREATER -1)
+        set_target_properties( ${test_name} PROPERTIES LINKER_LANGUAGE Fortran )
+    endif()
+
     blt_setup_target(NAME ${arg_NAME}
                      DEPENDS_ON ${arg_DEPENDS_ON} )
 
@@ -399,45 +409,6 @@ macro(add_benchmark)
       
    endif(ENABLE_BENCHMARKS)
 endmacro(add_benchmark)
-
-##------------------------------------------------------------------------------
-## - Builds and adds a fortran based test.
-##
-## add_fortran_test( TEST_SOURCE testX.f DEPENDS_ON dep1 dep2... )
-##------------------------------------------------------------------------------
-macro(add_fortran_test)
-    # only add the test if fortran is enabled
-    if(ENABLE_FORTRAN)
-       set(options)
-       set(singleValueArgs TEST_SOURCE)
-       set(multiValueArgs DEPENDS_ON)
-
-       ## parse the arguments to the macro
-       cmake_parse_arguments(arg
-            "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
-
-       get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
-       set(test_name ${test_name_base}_ftest)
-       add_executable( ${test_name} ${arg_TEST_SOURCE} )
-
-       set_target_properties(${test_name} PROPERTIES
-           LINKER_LANGUAGE Fortran
-	   Fortran_FORMAT "FREE"
-           RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
-       )
-
-       target_include_directories( ${test_name} PUBLIC 
-                                   ${CMAKE_Fortran_MODULE_DIRECTORY} )
-       target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
-
-        add_test( NAME ${test_name}
-                  COMMAND ${test_name}
-                  WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
-                  )
-       #TODO: we aren't tracking / grouping fortran sources.
-    endif(ENABLE_FORTRAN)
-endmacro(add_fortran_test)
-
 
 ##------------------------------------------------------------------------------
 ## append_custom_compiler_flag( 
