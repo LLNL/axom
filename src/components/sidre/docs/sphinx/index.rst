@@ -83,6 +83,6 @@ description capabilities of *Conduit* (see https://lc.llnl.gov/confluence/displa
 
    first_example
    core_concepts
-   data_visualization
-   mesh_blueprint
+   file_io
+   sidre_conduit
 
