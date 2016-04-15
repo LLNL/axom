@@ -72,9 +72,6 @@ additional features such as:
 Support for these enhancements and others will be added based on application
 needs and use cases.
 
-Finally, it is worth noting that Sidre internally uses the in-memory data 
-description capabilities of *Conduit* (see https://lc.llnl.gov/confluence/display/CON/Conduit+Home for more information about Conduit). 
-
 
 **Contents:**
 

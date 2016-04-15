@@ -2,7 +2,10 @@
 Sidre Interaction with Conduit
 ******************************************************
 
-Sidre leverages Conduit to enable various capabilities. Describe them here...
+Internally, Sidre uses the in-memory data description capabilities of 
+*Conduit* (see https://lc.llnl.gov/confluence/display/CON/Conduit+Home 
+for more information about Conduit). Sidre also leverages Conduit to 
+enable various capabilities. Describe them here...
 
 Mesh Blueprint
 --------------
