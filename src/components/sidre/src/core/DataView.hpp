@@ -902,7 +902,7 @@ private:
 
 
 //@{
-//!  @name Private method that determine whether some view operations are valid.
+//!  @name Private methods that indicate when certain view operations are valid.
 
   /*!
    *  \brief Private method returns true if data allocation on view is a
