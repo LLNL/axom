@@ -34,6 +34,8 @@
 
 using namespace asctoolkit;
 
+typedef std::vector<double> CoordsVec;
+
 //------------------------------------------------------------------------------
 template < typename T >
 T getRandomDouble( T low, T high )
@@ -42,6 +44,50 @@ T getRandomDouble( T low, T high )
   const T c = static_cast< T >( std::rand() ) / static_cast< T >( RAND_MAX );
   return ( delta*c+low );
 }
+
+
+void runQuestDistance(const std::string& fileName, const CoordsVec& points)
+{
+    const bool useDistance = true;
+    quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, 25, 20 );
+
+    int nPoints = points.size()/3;
+    for(int i=0; i< nPoints; ++i)
+    {
+        const double x = points[i*3];
+        const double y = points[i*3+1];
+        const double z = points[i*3+2];
+
+        const double phi = quest::distance(x,y,z);
+        const int ins = quest::inside( x,y,z );
+
+        SLIC_INFO( "distance(" << x << ", " << y << ", " << z << ") = " << phi );
+        SLIC_INFO( "inside(" << x << ", " << y << ", " << z << ") = " << ins );
+    }
+
+    quest::finalize();
+}
+
+void runQuestContainment(const std::string& fileName, const CoordsVec& points)
+{
+    const bool useDistance = false;
+    const int unusedVar = -1;
+    quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, unusedVar, unusedVar);
+
+    int nPoints = points.size()/3;
+    for(int i=0; i< nPoints; ++i)
+    {
+        const double x = points[i*3];
+        const double y = points[i*3+1];
+        const double z = points[i*3+2];
+        const int ins = quest::inside( x,y,z);
+
+        SLIC_INFO( "inside(" << x << ", " << y << ", " << z << ") = " << ins );
+    }
+
+    quest::finalize();
+}
+
 
 /*!
  *******************************************************************************
@@ -74,24 +120,24 @@ int main( int argc, char**argv )
   slic::addStreamToAllMsgLevels( sstream );
 
   // Initialize quest
-  quest::initialize( MPI_COMM_WORLD, std::string(argv[1]), 3, 25, 10 );
+
+  std::string fileName = std::string(argv[1]);
 
   std::srand( time(NULL) );
-
   const int npoints = 10;
-  for ( int ipnt=0; ipnt < npoints; ++ipnt ) {
+  CoordsVec ptVec;
+  ptVec.reserve(3*npoints);
+  for ( int ipnt=0; ipnt < npoints; ++ipnt )
+  {
+      ptVec.push_back( getRandomDouble( 0.0, 10.0 ) );
+      ptVec.push_back( getRandomDouble( 0.0, 10.0 ) );
+      ptVec.push_back( getRandomDouble( 0.0, 10.0 ) );
+  }
 
-      const double x = getRandomDouble( 0.0, 10.0 );
-      const double y = getRandomDouble( 0.0, 10.0 );
-      const double z = getRandomDouble( 0.0, 10.0 );
+  runQuestDistance(fileName, ptVec);
 
-      const double phi = quest::distance( x, y, z );
-      SLIC_INFO( "distance(" << x << ", " << y << ", " << z << ") = " << phi );
+  runQuestContainment(fileName, ptVec);
 
-  } // END for all points
-
-  // Finalize
-  quest::finalize();
 
   slic::finalize();
 

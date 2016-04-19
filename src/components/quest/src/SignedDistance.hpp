@@ -93,7 +93,7 @@ private:
    *****************************************************************************
    * \brief Computes the sign of the point with respect to the given cell.
    * \param [in] icell the ID of the cell on the surface mesh.
-   * \return sign -1 or 1 depending on whether the point is on the positibe or
+   * \return sign -1 or 1 depending on whether the point is on the positive or
    *  negative side of the oriented cell.
    * \pre m_surfaceMesh != ATK_NULLPTR
    * \pre icell >= 0 && icell < m_surfaceMesh->getMeshNumberOfCells().
