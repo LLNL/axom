@@ -77,9 +77,9 @@ blt_add_executable(
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON slamTinyHydroLib
 )
-blt_add_test(NAME slam_tinyHydro_sedov
-             COMMAND slam_tinyHydro_sedov
-             )
+#blt_add_test(NAME slam_tinyHydro_sedov
+#             COMMAND slam_tinyHydro_sedov
+#             )
 
 
 # Add some extra flags to disable warnings about variables used only for SLIC_ASSERTS
