@@ -36,6 +36,8 @@
 #
 ###############################################################################
 
+include(CMakeParseArguments)
+
 ## Internal CMake Macros
 
 
