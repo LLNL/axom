@@ -1,8 +1,6 @@
 #
 # Specify all headers
 #
-add_subdirectory(interface)
-
 set(sidre_headers
     core/Collections.hpp
     core/DataBuffer.hpp
@@ -24,6 +22,10 @@ set(sidre_sources
     core/DataView.cpp
     core/SidreUtilities.cpp
 )
+
+if(ENABLE_SHROUD)
+    add_subdirectory(interface)
+endif()
 
 # The CAPI is only built to provide a Fortran interface.  If no Fortran,
 # disable CAPI.
@@ -48,9 +50,6 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapfsidre.f
         interface/c_fortran/shroudrt.cpp
     )
-
-    # Must tell fortran where to look for modules
-    include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
 endif()
 
 #

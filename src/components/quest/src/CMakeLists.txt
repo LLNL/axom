@@ -93,17 +93,16 @@ if (ENABLE_MPI)
   list(APPEND quest_sources stl/PSTLReader.cpp)
 endif()
 
+if(ENABLE_SHROUD)
+    add_subdirectory(interface/shroud)
+endif()
+
 if (ENABLE_FORTRAN)
-  
   ## append shroud generated headers/sources to corresponding lists
   list(APPEND quest_headers interface/shroud/wrapQUEST.h)
   list(APPEND quest_sources interface/shroud/wrapQUEST.cpp)
   list(APPEND quest_sources interface/shroud/shroudrt.cpp)
   list(APPEND quest_sources interface/shroud/wrapfquest.f)
-  
-  add_subdirectory(interface/shroud)
-  
-  include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
 endif()
 
 blt_add_library( NAME 

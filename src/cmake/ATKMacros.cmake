@@ -121,6 +121,7 @@ endmacro(blt_add_target_definitions)
 ##------------------------------------------------------------------------------
 ## blt_register_library( NAME <libname>
 ##                       INCLUDES [include1 [include2 ...]] 
+##                       FORTRAN_MODULES [ path1 [ path2 ..]]
 ##                       LIBRARIES [lib1 [lib2 ...]] )
 ##
 ## Registers a library to the project to ease use in other blt macro calls.
@@ -135,12 +136,13 @@ endmacro(blt_add_target_definitions)
 ##
 ## Output variables (name = "foo"):
 ##  BLT_FOO_INCLUDES
+##  BLT_FOO_FORTRAN_MODULES
 ##  BLT_FOO_LIBRARIES
 ##------------------------------------------------------------------------------
 macro(blt_register_library)
 
     set(singleValueArgs NAME )
-    set(multiValueArgs INCLUDES LIBRARIES)
+    set(multiValueArgs INCLUDES FORTRAN_MODULES LIBRARIES)
 
     ## parse the arguments
     cmake_parse_arguments(arg
@@ -150,6 +152,10 @@ macro(blt_register_library)
 
     if( arg_INCLUDES )
         set(BLT_${uppercase_name}_INCLUDES ${arg_INCLUDES})
+    endif()
+
+    if( arg_FORTRAN_MODULES )
+        set(BLT_${uppercase_name}_FORTRAN_MODULES ${arg_INCLUDES})
     endif()
 
     if( arg_LIBRARIES )
@@ -213,6 +219,18 @@ macro(blt_add_library)
                              ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME})
     endif()
 
+    # Must tell fortran where to look for modules
+    # CMAKE_Fortran_MODULE_DIRECTORY is the location of generated modules
+    foreach (_file ${arg_SOURCES})
+        get_source_file_property(_lang ${_file} LANGUAGE)
+        if(_lang STREQUAL Fortran)
+            set(_have_fortran TRUE)
+        endif()
+    endforeach()
+    if(_have_fortran)
+        include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
+    endif()
+
     blt_setup_target( NAME ${arg_NAME}
                       DEPENDS_ON ${arg_DEPENDS_ON} )
 
@@ -272,11 +290,9 @@ macro(blt_add_executable)
 
     # CMake wants to load with C++ if any of the libraries are C++.
     # Force to load with Fortran if the first file is Fortran.
-    set(_FortranTypes ".f" ".f90" ".F" ".F90")
     list(GET arg_SOURCES 0 _first)
-    get_filename_component( _ext ${_first} EXT )
-    list(FIND _FortranTypes "${_ext}" _index)
-    if(_index GREATER -1)
+    get_source_file_property(_lang ${_first} LANGUAGE)
+    if(_lang STREQUAL Fortran)
         set_target_properties( ${test_name} PROPERTIES LINKER_LANGUAGE Fortran )
     endif()
 

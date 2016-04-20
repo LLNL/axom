@@ -43,6 +43,10 @@ if (ENABLE_MPI)
    endif()
 endif()
 
+if(ENABLE_SHROUD)
+    add_subdirectory(interface/shroud_api)
+endif()
+
 # XXX ENABLE_FORTRAN_WRAPPER
 if (ENABLE_FORTRAN)
     list(APPEND slic_headers
@@ -53,10 +57,6 @@ if (ENABLE_FORTRAN)
         interface/shroud_api/shroudrt.cpp
         interface/shroud_api/wrapfslic.f
     )
-    add_subdirectory(interface/shroud_api)
-
-    # Must tell fortran where to look for modules
-    include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
 endif()
 
 #

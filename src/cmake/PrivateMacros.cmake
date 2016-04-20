@@ -104,6 +104,11 @@ macro(blt_setup_target)
                 ${BLT_${uppercase_dependency}_INCLUDES} )
         endif()
 
+        if ( DEFINED BLT_${uppercase_dependency}_FORTRAN_MODULES )
+            target_include_directories( ${arg_NAME} PRIVATE
+                ${BLT_${uppercase_dependency}_FORTRAN_MODULES} )
+        endif()
+
         if ( DEFINED BLT_${uppercase_dependency}_LIBRARIES )
             target_link_libraries( ${arg_NAME}
                 ${BLT_${uppercase_dependency}_LIBRARIES} )
