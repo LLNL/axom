@@ -52,8 +52,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Datastore'
-copyright = u'2014, LLNS'
+project = u'Sidre'
+copyright = u'2016, LLNS'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -175,7 +175,7 @@ pygments_style = 'sphinx'
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Conduitdoc'
+htmlhelp_basename = 'Sidredoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -195,7 +195,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'Conduit.tex', u'Conduit Documentation',
+  ('index', 'Sidre.tex', u'Sidre Documentation',
    u'LLNS', 'manual'),
 ]
 
@@ -225,7 +225,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'conduit', u'Conduit Documentation',
+    ('index', 'sidre', u'Sidre Documentation',
      [u'LLNS'], 1)
 ]
 
@@ -239,8 +239,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Conduit', u'Conduit Documentation',
-   u'LLNS', 'Conduit', 'Scientific Data Exchange Library for HPC Simulations',
+  ('index', 'Sidre', u'Sidre Documentation',
+   u'LLNS', 'Sidre', 'In-core Data Management Component for HPC Simulations',
    'Miscellaneous'),
 ]
 

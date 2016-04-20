@@ -108,3 +108,13 @@ if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
     INSTALL(DIRECTORY DESTINATION ${CMAKE_Python_SITE_PACKAGES})
     INSTALL(CODE " set(ENV\{PYTHONPATH\} ${CMAKE_INSTALL_PREFIX}/${CMAKE_Python_SITE_PACKAGES}) ")
 endif(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
+
+################################
+# Lua
+################################
+
+if (LUA_DIR)
+    # Set the hint for FindLua
+    set (ENV{LUA_DIR}  ${LUA_DIR})
+    find_package(Lua)
+endif()

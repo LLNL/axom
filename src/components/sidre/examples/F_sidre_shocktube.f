@@ -94,15 +94,13 @@ program main
 
 contains
 
-
   subroutine CreateScalarIntBufferViewAndSetVal(grp, name, value)
     type(datagroup) grp
     character(*) name
     integer(C_INT) value
     type(dataview) tmpview
 
-    tmpview = grp%create_view_and_allocate(name, SIDRE_INT_ID, 1)
-    call tmpview%set_scalar(value)
+    tmpview = grp%create_view_scalar(name, value)
   end subroutine CreateScalarIntBufferViewAndSetVal
 
 
@@ -112,8 +110,7 @@ contains
     real(C_DOUBLE) value
     type(dataview) tmpview
 
-    tmpview = grp%create_view_and_allocate(name, SIDRE_DOUBLE_ID, 1)
-    call tmpview%set_scalar(value)
+    tmpview = grp%create_view_scalar(name, value)
   end subroutine CreateScalarFloatBufferViewAndSetVal
 
 !*************************************************************************

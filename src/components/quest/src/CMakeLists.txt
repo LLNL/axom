@@ -94,15 +94,15 @@ if (ENABLE_MPI)
 endif()
 
 if(ENABLE_SHROUD)
-    add_subdirectory(interface/shroud)
+    add_subdirectory(interface)
 endif()
 
 if (ENABLE_FORTRAN)
   ## append shroud generated headers/sources to corresponding lists
-  list(APPEND quest_headers interface/shroud/wrapQUEST.h)
-  list(APPEND quest_sources interface/shroud/wrapQUEST.cpp)
-  list(APPEND quest_sources interface/shroud/shroudrt.cpp)
-  list(APPEND quest_sources interface/shroud/wrapfquest.f)
+  list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
+  list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
+  list(APPEND quest_sources interface/c_fortran/shroudrt.cpp)
+  list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
 endif()
 
 blt_add_library( NAME 

@@ -17,6 +17,7 @@ class UberenvAsctoolkit(Package):
     depends_on("python")
     depends_on("hdf5~shared~zlib")
     depends_on("uncrustify")
+    depends_on("lua@5.1.5")
 
     # custom spack packages
     depends_on("cmake~ncurses~openssl@3.3.1")
@@ -57,6 +58,7 @@ class UberenvAsctoolkit(Package):
         cmake_exe        = pjoin(spec['cmake'].prefix.bin,"cmake")
         doxygen_exe      = pjoin(spec['doxygen'].prefix.bin,"doxygen")
         python_exe       = pjoin(spec['python'].prefix.bin,"python")
+        lua_dir          = spec['lua'].prefix
         sphinx_build_exe = pjoin(spec['python'].prefix.bin,"sphinx-build")
         uncrustify_exe   = pjoin(spec['uncrustify'].prefix.bin,"uncrustify")
 
@@ -101,6 +103,9 @@ class UberenvAsctoolkit(Package):
 
         cfg.write("# python from uberenv\n")
         cfg.write('set(PYTHON_EXECUTABLE "%s" CACHE PATH "")\n\n' % python_exe)
+        
+        cfg.write("# lua from uberenv\n")
+        cfg.write('set(LUA_DIR "%s" CACHE PATH "")\n\n' % lua_dir)
         
         cfg.write("# sphinx from uberenv\n")
         cfg.write('set(SPHINX_EXECUTABLE "%s" CACHE PATH "")\n\n' % sphinx_build_exe)
