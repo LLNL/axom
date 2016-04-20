@@ -179,16 +179,16 @@ endmacro(blt_register_library)
 ## ON, in which case, it will create a shared library. By default, a static
 ## library is generated.
 ##
-## If given a HEADERS argument, it creates a "copy_headers_target" for this library
-## and installs them in the include/<component name> folder.
+## If given a HEADERS argument, it creates a "blt_copy_headers_target" for 
+## this library and installs them in the include/<component name> folder.
 ## 
-## If given a DEPENDS_ON argument, it will add the necessary includes and libraries if they
-## are already registered with blt_register_library.  If not it will add them as a cmake
-## target dependency.
+## If given a DEPENDS_ON argument, it will add the necessary includes and 
+##  libraries if they are already registered with blt_register_library.  If 
+## not it will add them as a cmake target dependency.
 ##
 ## In addition, this macro will add the associated dependencies to the given
 ## library target. Specifically, it will add a dependency to the library's
-## "copy_headers_target" and adds a dependency for each DEPENDS_ON target.
+## "blt_copy_headers_target" and adds a dependency for each DEPENDS_ON target.
 ##
 ## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this 
 ## argument is supplied, the openmp compiler flag will be added to the compiler 
@@ -215,8 +215,8 @@ macro(blt_add_library)
     endif()
 
     if ( arg_HEADERS )
-        copy_headers_target( ${arg_NAME} "${arg_HEADERS}"
-                             ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME})
+        blt_copy_headers_target( ${arg_NAME} "${arg_HEADERS}"
+                                ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME})
     endif()
 
     # Must tell fortran where to look for modules
@@ -235,14 +235,14 @@ macro(blt_add_library)
                       DEPENDS_ON ${arg_DEPENDS_ON} )
 
     # Handle MPI 
-    setup_mpi_target( BUILD_TARGET ${arg_NAME} )
+    blt_setup_mpi_target( BUILD_TARGET ${arg_NAME} )
 
     # Handle OpenMP
-    setup_openmp_target( BUILD_TARGET ${arg_NAME}
-                         USE_OPENMP ${arg_USE_OPENMP} )
+    blt_setup_openmp_target( BUILD_TARGET ${arg_NAME}
+                              USE_OPENMP ${arg_USE_OPENMP} )
 
     # Update project sources                     
-    update_project_sources( TARGET_SOURCES ${arg_SOURCES} ${arg_HEADERS})
+    blt_update_project_sources( TARGET_SOURCES ${arg_SOURCES} ${arg_HEADERS})
    
 endmacro(blt_add_library)
 
@@ -256,16 +256,20 @@ endmacro(blt_add_library)
 ##
 ## Adds an executable target, called <name>.
 ##
-## If given a DEPENDS_ON argument, it will add the necessary includes and libraries if they
-## are already registered with blt_register_library.  If not it will add them as a cmake
-## target dependency.
+## If given a DEPENDS_ON argument, it will add the necessary includes and 
+## libraries if they are already registered with blt_register_library.  If
+## not it will add them as a cmake target dependency.
 ##
 ## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this 
 ## argument is supplied, the openmp compiler flag will be added to the compiler 
 ## command and the -DUSE_OPENMP, will be included to the compiler definition.
 ##
-## The OUTPUT_DIR is used to control the build output directory of this executable.
-## This is used to overwrite the default bin directory.
+## The OUTPUT_DIR is used to control the build output directory of this 
+## executable. This is used to overwrite the default bin directory.
+##
+## If the first entry in SOURCES is a Fortran source file, the fortran linker 
+## is used. (via setting the CMake target property LINKER_LANGUAGE to Fortran )
+##
 ##------------------------------------------------------------------------------
 macro(blt_add_executable)
 
@@ -300,10 +304,11 @@ macro(blt_add_executable)
                      DEPENDS_ON ${arg_DEPENDS_ON} )
 
     # Handle MPI
-    setup_mpi_target( BUILD_TARGET ${arg_NAME} )
+    blt_setup_mpi_target( BUILD_TARGET ${arg_NAME} )
 
     # Handle OpenMP
-    setup_openmp_target( BUILD_TARGET ${arg_NAME} USE_OPENMP ${arg_USE_OPENMP} ) 
+    blt_setup_openmp_target( BUILD_TARGET ${arg_NAME} 
+                             USE_OPENMP ${arg_USE_OPENMP} ) 
 
     # Set output directory
     if ( arg_OUTPUT_DIR )
@@ -312,7 +317,7 @@ macro(blt_add_executable)
     endif()
 
     # Update project sources
-    update_project_sources( TARGET_SOURCES ${arg_SOURCES} )
+    blt_update_project_sources( TARGET_SOURCES ${arg_SOURCES} )
 
 endmacro(blt_add_executable)
 
@@ -351,7 +356,8 @@ macro(blt_add_test)
 
     # Generate command
     if ( NOT TARGET ${arg_NAME} )
-        # Handle case of running multiple tests against one executable, the NAME will not be the target
+        # Handle case of running multiple tests against one executable, 
+        # the NAME will not be the target
         list(GET arg_COMMAND 0 executable)
         get_target_property(runtime_output_directory ${executable} RUNTIME_OUTPUT_DIRECTORY )
     else()
@@ -372,19 +378,19 @@ endmacro(blt_add_test)
 
 
 ##------------------------------------------------------------------------------
-## add_benchmark( TEST_SOURCE testX.cxx TEST_ARGS <commandLineArguments> 
+## blt_add_benchmark( TEST_SOURCE testX.cxx TEST_ARGS <commandLineArguments> 
 ##                DEPENDS_ON [dep1 [dep2 ...]] )
 ##
 ## Adds a (google) benchmark test to the project.
 ## TEST_ARGS is a string containing a space delimited set of command line 
 ## arguments for the test
 ##        
-##  add_benchmark( 
+##  blt_add_benchmark( 
 ##          TEST_SOURCE slamBench.cpp 
 ##          TEST_ARGS "--benchmark_min_time=0.0 --v=3 --benchmark_format=json"
 ##          DEPENDS_ON slic slam )
 ##------------------------------------------------------------------------------
-macro(add_benchmark)
+macro(blt_add_benchmark)
 
    if(ENABLE_BENCHMARKS)
       set(options)
@@ -421,13 +427,13 @@ macro(add_benchmark)
 
       
       # add any passed source files to the running list for this project
-      update_project_sources( TARGET_SOURCES ${arg_TEST_SOURCE} )
+      blt_update_project_sources( TARGET_SOURCES ${arg_TEST_SOURCE} )
       
    endif(ENABLE_BENCHMARKS)
-endmacro(add_benchmark)
+endmacro(blt_add_benchmark)
 
 ##------------------------------------------------------------------------------
-## append_custom_compiler_flag( 
+## blt_append_custom_compiler_flag( 
 ##                    FLAGS_VAR flagsVar     (required)
 ##                    DEFAULT   defaultFlag  (optional)
 ##                    GNU       gnuFlag      (optional)
@@ -442,7 +448,7 @@ endmacro(add_benchmark)
 ## If a custom flag is given for the current compiler, we use that,
 ## Otherwise, we will use the DEFAULT flag (if present)
 ##------------------------------------------------------------------------------
-macro(append_custom_compiler_flag)
+macro(blt_append_custom_compiler_flag)
 
    set(options)
    set(singleValueArgs FLAGS_VAR DEFAULT GNU CLANG INTEL XL MSVC)
@@ -482,5 +488,5 @@ macro(append_custom_compiler_flag)
 
    #message(STATUS "After append -- ${arg_FLAGS_VAR} --- ${${arg_FLAGS_VAR}} ")
 
-endmacro(append_custom_compiler_flag)
+endmacro(blt_append_custom_compiler_flag)
 

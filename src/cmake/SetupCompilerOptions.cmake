@@ -124,7 +124,7 @@ endif()
 if (ENABLE_CXX11)
    add_definitions("-DUSE_CXX11")
    
-   append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS DEFAULT -std=c++11)
+   blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS DEFAULT -std=c++11)
    set(HAVE_CXX_FLAG_STD_CXX11 TRUE)
    
    MESSAGE(STATUS "C++11 support is ON")  
@@ -142,7 +142,7 @@ if (ENABLE_ALL_WARNINGS)
    MESSAGE(STATUS  "Enabling all compiler warnings on all targets.")
 
    foreach(flagVar ${langFlags})   
-     append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
+     blt_append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
                      DEFAULT "-W -Wall -Wextra"
                      MSVC "/W4 /Wall /wd4619 /wd4668 /wd4820 /wd4571 /wd4710"
                      XL ""          # qinfo=<grp> produces additional messages on XL
@@ -205,7 +205,7 @@ endif()
 ##############################################################################
 
 # Flag for disabling warnings about omp pragmas in the code
-append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_OMP_PRAGMA_WARNINGS
+blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_OMP_PRAGMA_WARNINGS
                   DEFAULT "-Wno-unknown-pragmas"
                   XL      "-qignprag=omp"
                   INTEL   "-diag-disable 3180"
@@ -213,14 +213,14 @@ append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_OMP_PRAGMA_WARNINGS
 
 # Flag for disabling warnings about unused parameters.
 # Useful when we include external code.
-append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_PARAMETER_WARNINGS
+blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_PARAMETER_WARNINGS
                   DEFAULT "-Wno-unused-parameter"
                   XL      "-qnoinfo=par"
                   )
 
 # Flag for disabling warnings about unused variables
 # Useful when we include external code.
-append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_VARIABLE_WARNINGS
+blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_VARIABLE_WARNINGS
                   DEFAULT "-Wno-unused-variable"
                   XL      "-qnoinfo=use"
                   )

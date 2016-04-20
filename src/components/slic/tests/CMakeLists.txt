@@ -26,5 +26,5 @@ endforeach()
 
 
 foreach(test ${bench_slic_tests})
-	add_benchmark( TEST_SOURCE ${test} TEST_ARGS "--benchmark_min_time=0.00000001" DEPENDS_ON slic )
+	blt_add_benchmark( TEST_SOURCE ${test} TEST_ARGS "--benchmark_min_time=0.00000001" DEPENDS_ON slic )
 endforeach()

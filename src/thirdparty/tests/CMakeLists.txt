@@ -39,7 +39,7 @@ endif()
 # Test gbenchmark
 ################
 if (ENABLE_BENCHMARKS)
-    add_benchmark( TEST_SOURCE benchmark_smoke.cpp TEST_ARGS "--benchmark_min_time=0.0001")
+    blt_add_benchmark( TEST_SOURCE benchmark_smoke.cpp TEST_ARGS "--benchmark_min_time=0.0001")
 endif()
 
 

@@ -8,7 +8,7 @@ project(slam)
 # To avoid warnings from boost: -Wno-missing-braces  
 # Other: -fno-strict-aliasing -Wextra
 
-append_custom_compiler_flag(
+blt_append_custom_compiler_flag(
             FLAGS_VAR SLAM_VECTORIZER_FLAGS
             GNU "-ftree-vectorize -fdump-tree-vect -ftree-vectorizer-verbose=7 -fdump-tree-optimized-details " #-march=native "
             )

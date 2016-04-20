@@ -42,18 +42,18 @@ include(CMakeParseArguments)
 
 
 ##------------------------------------------------------------------------------
-## copy_headers_target( <proj> <hdrs> <dest> )
+## blt_copy_headers_target( <proj> <hdrs> <dest> )
 ##
 ## Adds a custom "copy_headers" target for the given project
 ##
-## Adds a custom target, <copy_headers_proj>, for the given project. The role
-## of this target is to copy the given list of headers, <hdrs>, to the
-## destination directory <dest>.
+## Adds a custom target, <blt_copy_headers_proj>, for the given project. 
+## The role of this target is to copy the given list of headers, <hdrs>, to 
+## the destination directory <dest>.
 ##
 ## This macro is used to copy the header of each component in to the build
 ## space, under an "includes" directory.
 ##------------------------------------------------------------------------------
-macro(copy_headers_target proj hdrs dest)
+macro(blt_copy_headers_target proj hdrs dest)
 
     add_custom_target(copy_headers_${proj}
         COMMAND ${CMAKE_COMMAND}
@@ -71,7 +71,7 @@ macro(copy_headers_target proj hdrs dest)
             "copy headers"
         )
 
-endmacro(copy_headers_target)
+endmacro(blt_copy_headers_target)
 
 
 
@@ -126,9 +126,9 @@ macro(blt_setup_target)
 endmacro(blt_setup_target)
 
 ##------------------------------------------------------------------------------
-## setup_mpi_target( BUILD_TARGET <target> )
+## blt_setup_mpi_target( BUILD_TARGET <target> )
 ##------------------------------------------------------------------------------
-macro(setup_mpi_target)
+macro(blt_setup_mpi_target)
   
   set(options)
   set(singleValueArgs BUILD_TARGET)
@@ -170,12 +170,12 @@ macro(setup_mpi_target)
     target_link_libraries( ${arg_BUILD_TARGET} ${MPI_Fortran_LIBRARIES} )
   endif()
 
-endmacro(setup_mpi_target)
+endmacro(blt_setup_mpi_target)
 
 ##------------------------------------------------------------------------------
-## setup_openmp_target( TARGET <target> USE_OPENMP <bool> )
+## blt_setup_openmp_target( TARGET <target> USE_OPENMP <bool> )
 ##------------------------------------------------------------------------------
-macro(setup_openmp_target)
+macro(blt_setup_openmp_target)
 
   set(options)
   set(singleValueArgs BUILD_TARGET USE_OPENMP)
@@ -209,12 +209,12 @@ macro(setup_openmp_target)
 
   endif()
 
-endmacro(setup_openmp_target)
+endmacro(blt_setup_openmp_target)
 
 ##------------------------------------------------------------------------------
 ## update_project_sources( TARGET_SOURCES <souces> )
 ##------------------------------------------------------------------------------
-macro(update_project_sources)
+macro(blt_update_project_sources)
 
   set(options)
   set(singleValueArgs)
@@ -242,4 +242,4 @@ macro(update_project_sources)
   set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
        CACHE STRING "" FORCE )
 
-endmacro(update_project_sources)
+endmacro(blt_update_project_sources)
