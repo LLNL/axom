@@ -190,6 +190,7 @@ namespace quest
             return meshBB;
         }
 
+  #ifdef ATK_DEBUG
         /**
          * \brief Utility function to determine if we are in a mode that supports distance queries
          */
@@ -246,6 +247,7 @@ namespace quest
         {
             return m_queryMode == QUERY_MODE_CONTAINMENT || m_queryMode == QUERY_MODE_SIGNED_DISTANCE;
         }
+  #endif
 
     private:
         meshtk::Mesh* m_surface_mesh;

@@ -61,8 +61,9 @@ void runQuestDistance(const std::string& fileName, const CoordsVec& points)
         const double phi = quest::distance(x,y,z);
         const int ins = quest::inside( x,y,z );
 
-        SLIC_INFO( "distance(" << x << ", " << y << ", " << z << ") = " << phi );
-        SLIC_INFO( "inside(" << x << ", " << y << ", " << z << ") = " << ins );
+        SLIC_INFO("Point (" << x << ", " << y << ", " << z << ") "
+                  << "is " << (ins? "inside" : "outside") << " surface."
+                  <<" Distance is " << phi << ".");
     }
 
     quest::finalize();
@@ -82,7 +83,9 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
         const double z = points[i*3+2];
         const int ins = quest::inside( x,y,z);
 
-        SLIC_INFO( "inside(" << x << ", " << y << ", " << z << ") = " << ins );
+        SLIC_INFO("Point (" << x << ", " << y << ", " << z << ") "
+                  << "is " << (ins? "inside" : "outside") << " surface."
+                  );
     }
 
     quest::finalize();
@@ -111,7 +114,7 @@ int main( int argc, char**argv )
 
   // Initialize Logger
   slic::initialize();
-  slic::setLoggingMsgLevel( slic::message::Debug );
+  slic::setLoggingMsgLevel( slic::message::Info );
 
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>";
   slic::SynchronizedStream* sstream =
@@ -125,18 +128,24 @@ int main( int argc, char**argv )
 
   std::srand( time(NULL) );
   const int npoints = 10;
+  const double lb = -4.5;
+  const double ub =  4.5;
   CoordsVec ptVec;
   ptVec.reserve(3*npoints);
   for ( int ipnt=0; ipnt < npoints; ++ipnt )
   {
-      ptVec.push_back( getRandomDouble( 0.0, 10.0 ) );
-      ptVec.push_back( getRandomDouble( 0.0, 10.0 ) );
-      ptVec.push_back( getRandomDouble( 0.0, 10.0 ) );
+      ptVec.push_back( getRandomDouble(lb,ub) );
+      ptVec.push_back( getRandomDouble(lb,ub) );
+      ptVec.push_back( getRandomDouble(lb,ub) );
   }
 
+  SLIC_INFO("**Running distance queries using quest interface...");
   runQuestDistance(fileName, ptVec);
+  SLIC_INFO("--");
 
+  SLIC_INFO("**Running containment queries using quest interface...");
   runQuestContainment(fileName, ptVec);
+  SLIC_INFO("--");
 
 
   slic::finalize();

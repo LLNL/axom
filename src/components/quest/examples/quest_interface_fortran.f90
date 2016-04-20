@@ -133,7 +133,7 @@ program quest_fortran
 
   !...exercise the distance functions in quest module
   if (rank == 0) then
-    write(*,*) "** Running distance queries using quest_fortran API"
+    write(*,*) "** Running distance queries using quest fortran interface"
     write(*,*) "[rank, (x,y,z), dist, within]"
   end if
 
@@ -142,7 +142,7 @@ program quest_fortran
 
   !...exercise the containment functions in quest module
   if (rank == 0) then
-    write(*,*) "** Running containment queries using quest_fortran API"
+    write(*,*) "** Running containment queries using quest fortran interface"
     write(*,*) "[rank, (x,y,z), within]"
   end if
 

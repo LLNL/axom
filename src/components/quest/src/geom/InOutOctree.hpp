@@ -45,7 +45,7 @@
 #endif
 
 #ifndef DUMP_OCTREE_INFO
-    #define DUMP_OCTREE_INFO 1
+//    #define DUMP_OCTREE_INFO 1
 #endif
 
 
@@ -944,7 +944,9 @@ void InOutOctree<DIM>::generateIndex ()
     typedef asctoolkit::utilities::Timer Timer;
 
     // Loop through mesh vertices
-    SLIC_INFO("Generating index on mesh vertices.");
+    SLIC_INFO("  Generating InOutOctree over surface mesh with "
+              << m_meshWrapper.numMeshVertices()  << " vertices and "
+              << m_meshWrapper.numMeshElements() << " elements.");
 
     Timer timer;
 
@@ -957,7 +959,7 @@ void InOutOctree<DIM>::generateIndex ()
     }
     timer.stop();
     m_generationState = INOUTOCTREE_VERTICES_INSERTED;
-    SLIC_INFO("\tInserting vertices took " << timer.elapsed() << " seconds.");
+    SLIC_INFO("\t--Inserting vertices took " << timer.elapsed() << " seconds.");
 
 
 
@@ -966,10 +968,11 @@ void InOutOctree<DIM>::generateIndex ()
     updateSurfaceMeshVertices();
     timer.stop();
     m_generationState = INOUTOCTREE_MESH_REORDERED;
-    SLIC_INFO("After inserting vertices, reindexed mesh has "
+
+    SLIC_INFO("\t--Updating mesh took " << timer.elapsed() << " seconds.");
+    SLIC_INFO("  After inserting vertices, reindexed mesh has "
               << m_meshWrapper.numMeshVertices() << " vertices" << " and "
               << m_meshWrapper.numMeshElements() << " triangles." );
-    SLIC_INFO("\tUpdating mesh took " << timer.elapsed() << " seconds.");
 
 
   #ifdef DUMP_OCTREE_INFO
@@ -986,7 +989,7 @@ void InOutOctree<DIM>::generateIndex ()
     insertMeshTriangles();
     timer.stop();
     m_generationState = INOUTOCTREE_ELEMENTS_INSERTED;
-    SLIC_INFO("\tInserting triangles took " << timer.elapsed() << " seconds.");
+    SLIC_INFO("\t--Inserting triangles took " << timer.elapsed() << " seconds.");
 
 
     // STEP 3 -- Color the blocks of the octree -- Black (in), White(out), Gray(Intersects surface)
@@ -995,7 +998,7 @@ void InOutOctree<DIM>::generateIndex ()
 
     timer.stop();
     m_generationState = INOUTOCTREE_LEAVES_COLORED;
-    SLIC_INFO("\tColoring octree leaves took " << timer.elapsed() << " seconds.");
+    SLIC_INFO("\t--Coloring octree leaves took " << timer.elapsed() << " seconds.");
 
     // -- Print some stats about the octree
   #ifdef DUMP_OCTREE_INFO
@@ -1007,10 +1010,12 @@ void InOutOctree<DIM>::generateIndex ()
 
 
     // CLEANUP -- Finally, fix up the surface mesh after octree operations
-    SLIC_INFO("\tRegenerating the mesh");
+    timer.start();
     m_meshWrapper.regenerateSurfaceMesh();
+    timer.stop();
+    SLIC_INFO("\t--Regenerating the mesh took " << timer.elapsed() << " seconds.");
 
-    SLIC_INFO("\tFinished generating the InOutOctree.");
+    SLIC_INFO("  Finished generating the InOutOctree.");
 }
 
 
