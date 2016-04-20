@@ -67,6 +67,8 @@ class UberenvAsctoolkit(Package):
         cfg = open(host_cfg_fname,"w")
         cfg.write("##################################\n")
         cfg.write("# uberenv host-config\n")
+        cfg.write("#\n")
+        cfg.write("# This is a generated file, edit at own risk.\n")
         cfg.write("##################################\n")
         cfg.write("# %s-%s\n" % (sys_type,spec.compiler))
         cfg.write("##################################\n\n")
@@ -90,7 +92,6 @@ class UberenvAsctoolkit(Package):
             cfg.write("# no fortran compiler\n\n")
             cfg.write('set(ENABLE_FORTRAN OFF CACHE PATH "")\n\n')
 
-        cfg.write('set(ENABLE_HDF5 ON CACHE PATH "")\n\n')
         cfg.write("# hdf5 from uberenv\n")
         cfg.write('set(HDF5_DIR "%s" CACHE PATH "")\n\n' % spec['hdf5'].prefix)
 

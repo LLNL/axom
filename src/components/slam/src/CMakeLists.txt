@@ -1,7 +1,3 @@
-INCLUDE_DIRECTORIES(
-    ${Boost_INCLUDE_DIRS}
-)
-
 ######################################
 # Specify all headers and source files
 ######################################
@@ -61,30 +57,26 @@ set(slam_sources
 #set_source_files_properties(${slam_sources} "${_origflags} -fwhole-program -funroll-loops ")
 
 
-#########################################################################
-# custom target to copy header files in the "include" folder of the build tree.
-#########################################################################
-
-copy_headers_target(  ${PROJECT_NAME}  "${slam_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
-
-
-
-####################################=
+####################################
 # make the library
 ####################################
 
-make_library( LIBRARY_NAME
-                slam
-              LIBRARY_SOURCES
-                "${slam_sources}"
-                "${slam_headers}"
-              DEPENDS_ON
-                slic
-                sidre
-            )
+set(slam_depends_on slic sidre)
+if (ENABLE_BOOST)
+    list(APPEND slam_depends boost)
+endif()
 
-####################################=
+blt_add_library( NAME
+                   slam
+                 SOURCES
+                   "${slam_sources}"
+                 HEADERS
+                   "${slam_headers}"
+                 DEPENDS_ON
+                   ${slam_depends_on}
+               )
+
+####################################
 # install target for slam
 ####################################
 
