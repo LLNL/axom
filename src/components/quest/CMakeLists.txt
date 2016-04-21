@@ -22,14 +22,14 @@ add_subdirectory(src)
 ################################
 # Add examples
 ################################
-if (BUILD_EXAMPLES)
+if (ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
 ################################
 # Add tests
 ################################
-if (BUILD_TESTING)
+if (ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
@@ -39,7 +39,7 @@ endif()
 ################################
 # Add docs
 ################################
-if (BUILD_DOCS)
+if (ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 

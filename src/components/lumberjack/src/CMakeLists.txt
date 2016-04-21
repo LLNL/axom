@@ -39,22 +39,14 @@ set(lumberjack_sources
 #
 # make the library
 #
-make_library( LIBRARY_NAME
-                  lumberjack
-              LIBRARY_SOURCES
-                  "${lumberjack_sources}"
-                  "${lumberjack_headers}"
-              DEPENDS_ON
-                  common
-              )
-
-add_dependencies(lumberjack copy_headers_lumberjack)
-add_dependencies(lumberjack copy_headers_common)
+blt_add_library( NAME
+                     lumberjack
+                 SOURCES
+                     "${lumberjack_sources}"
+                 HEADERS
+                     "${lumberjack_headers}"
+                 DEPENDS_ON
+                     common
+                 )
 
 install(TARGETS lumberjack DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
-
-#
-# custom target to copy header files in the "include" folder of the build tree.
-#
-copy_headers_target(${PROJECT_NAME}  "${lumberjack_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME})

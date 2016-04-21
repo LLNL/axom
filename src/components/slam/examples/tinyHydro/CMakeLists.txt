@@ -23,10 +23,10 @@ set(tinyHydro_lib_sources
 #
 # Build the tinyHydro library
 #
-make_library( 
-    LIBRARY_NAME slamTinyHydroLib 
-    LIBRARY_SOURCES "${tinyHydro_lib_sources}"  "${tinyHydro_lib_headers}"
-    DEPENDS_ON 
+blt_add_library(
+    NAME slamTinyHydroLib
+    SOURCES "${tinyHydro_lib_sources}"  "${tinyHydro_lib_headers}"
+    DEPENDS_ON
         slic
         slam
    ) 
@@ -40,7 +40,15 @@ set(gtest_slam_tinyHydro_tests
 )
 
 foreach(test ${gtest_slam_tinyHydro_tests})
-    add_gtest( TEST_SOURCE ${test} DEPENDS_ON slamTinyHydroLib slic)
+    get_filename_component(test_name ${test} NAME_WE)
+    blt_add_executable(NAME "${test_name}"
+                       SOURCES ${test}
+                       OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                       DEPENDS_ON slamTinyHydroLib slic gtest
+                       )
+    blt_add_test(NAME ${test_name}
+                 COMMAND ${test_name}
+                 )
 endforeach()
 
 
@@ -48,25 +56,30 @@ endforeach()
 #
 # Add the standalone executables for the sod example
 #
-make_executable( 
-    EXECUTABLE_NAME "slam_tinyHydro_sod" 
-    EXECUTABLE_SOURCE tests/slam_tinyHydro_sod1DTwoPart.cpp
+blt_add_executable(
+    NAME slam_tinyHydro_sod
+    SOURCES tests/slam_tinyHydro_sod1DTwoPart.cpp
+    OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON slamTinyHydroLib
-    IS_EXAMPLE
-    ADD_CTEST
 )
+blt_add_test(NAME slam_tinyHydro_sod
+             COMMAND slam_tinyHydro_sod
+             )
+
 
 #
 # Add the standalone executables for the sedov example
 # Note: Not a test since the runtime is a bit high in debug mode
 #
-make_executable(
-    EXECUTABLE_NAME "slam_tinyHydro_sedov" 
-    EXECUTABLE_SOURCE tests/slam_tinyHydro_sedovTwoPart.cpp
+blt_add_executable(
+    NAME slam_tinyHydro_sedov
+    SOURCES tests/slam_tinyHydro_sedovTwoPart.cpp
+    OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON slamTinyHydroLib
-    IS_EXAMPLE
 )
-
+#blt_add_test(NAME slam_tinyHydro_sedov
+#             COMMAND slam_tinyHydro_sedov
+#             )
 
 
 # Add some extra flags to disable warnings about variables used only for SLIC_ASSERTS

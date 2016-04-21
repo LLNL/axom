@@ -9,57 +9,58 @@
 #-------------------------------------------------------------------------------
 
 
-make_executable( EXECUTABLE_SOURCE quest_driver.cpp
-                 DEPENDS_ON 
-                    quest 
-                    common 
-                    slic
-                    slam
-                 IS_EXAMPLE
+blt_add_executable( NAME quest_driver
+                    SOURCES quest_driver.cpp
+                    OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                    DEPENDS_ON 
+                       quest 
+                       common 
+                       slic
+                       slam
                     )
 
-make_executable( EXECUTABLE_NAME quest_sphere 
-                 EXECUTABLE_SOURCE sphere.cpp 
-                 DEPENDS_ON 
-                    quest 
-                    common 
-                    slic 
-                    slam
-                 IS_EXAMPLE
+blt_add_executable( NAME quest_sphere 
+                    SOURCES sphere.cpp
+                    OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                    DEPENDS_ON 
+                       quest 
+                       common 
+                       slic 
+                       slam
                     )
 
-make_executable( EXECUTABLE_NAME quest_octree_driver 
-                 EXECUTABLE_SOURCE octree_driver.cpp 
-                 DEPENDS_ON 
-                    quest 
-                    common 
-                    slic 
-                    slam
-                 IS_EXAMPLE
+blt_add_executable( NAME quest_octree_driver 
+                    SOURCES octree_driver.cpp 
+                    OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                    DEPENDS_ON 
+                       quest 
+                       common 
+                       slic 
+                       slam
                     )
 
 if (ENABLE_MPI)
 
-  make_executable( EXECUTABLE_NAME quest_interface 
-                   EXECUTABLE_SOURCE quest_interface.cpp
-                   DEPENDS_ON 
-                       quest
-                       common
-                       slic
-                   IS_EXAMPLE
+  blt_add_executable( NAME quest_interface 
+                      SOURCES quest_interface.cpp
+                      OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                      DEPENDS_ON 
+                          quest
+                          common
+                          slic
                       )
   # Note (KW 3/2016):  There is a current problem with the fortran MPI module
   #                    on non-intel compilers (see JIRA ticket ATK-649).
   #                    For now, we are only enabling this fortran example on intel.
   if (ENABLE_FORTRAN AND COMPILER_FAMILY_IS_INTEL)                    
-    make_executable( EXECUTABLE_NAME quest_interface_fortran
-                     EXECUTABLE_SOURCE quest_interface_fortran.f90
-                     DEPENDS_ON
-                       quest
-                       common
-                       slic
-                    IS_EXAMPLE
-                       )
+    blt_add_executable( NAME quest_interface_fortran
+                        SOURCES quest_interface_fortran.f90
+                        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                        DEPENDS_ON
+                          quest
+                          common
+                          slic
+                        )
     set_target_properties(quest_interface_fortran 
                           PROPERTIES LINKER_LANGUAGE Fortran)
   endif()

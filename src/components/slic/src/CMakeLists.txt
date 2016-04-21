@@ -43,6 +43,10 @@ if (ENABLE_MPI)
    endif()
 endif()
 
+if(ENABLE_SHROUD)
+    add_subdirectory(interface)
+endif()
+
 # XXX ENABLE_FORTRAN_WRAPPER
 if (ENABLE_FORTRAN)
     list(APPEND slic_headers
@@ -53,18 +57,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/shroudrt.cpp
         interface/c_fortran/wrapfslic.f
     )
-    add_subdirectory(interface)
-
-    # Must tell fortran where to look for modules
-    include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
 endif()
-
-#
-# custom target to copy header files in the "include" folder of the build tree.
-#
-copy_headers_target( ${PROJECT_NAME}
-                     "${slic_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
 
 #
 # make the library
@@ -73,19 +66,21 @@ set(slic_depends_on
     common
 )
 if (ENABLE_LUMBERJACK)
-  list(APPEND slic_depends_on lumberjack)
+    list(APPEND slic_depends_on lumberjack)
 endif()
 
-make_library( LIBRARY_NAME
-                  slic
+blt_add_library( NAME
+                    slic
 
-              LIBRARY_SOURCES
-                  "${slic_sources}"
-                  "${slic_headers}"
-                  "${slic_fortran_sources}"
+                 SOURCES
+                    "${slic_sources}"
+                    "${slic_fortran_sources}"
 
-              DEPENDS_ON
-                  "${slic_depends_on}"
+                 HEADERS
+                    "${slic_headers}"
+
+                 DEPENDS_ON
+                    "${slic_depends_on}"
               )
 
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
