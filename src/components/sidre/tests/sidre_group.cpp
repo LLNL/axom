@@ -682,6 +682,9 @@ TEST(sidre_group,save_restore_simple)
 
   ds->getRoot()->save("out_sidre_group_save_restore_simple","conduit");
 
+  int result = ga->getView("i0")->getScalar();
+  EXPECT_EQ(1, result) << "expected 1";
+
 #if 0
   //ds->print();
 
