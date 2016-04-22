@@ -47,6 +47,11 @@ include(SetupCmakeOptions)
 include(PreventInSourceBuilds)
 
 ################################
+#  macros
+################################
+include(ATKMacros)
+
+################################
 # Setup 3rd Party Libs
 ################################
 include(SetupThirdParty)
@@ -66,8 +71,6 @@ include(SetupGenerate)
 ################################
 include(SetupCodeChecks)
 
-
-include (DartConfig)
 
 # XXX this should move to some better place and be based on compiler
 #set (CMAKE_Fortran_FLAGS_DEBUG   "${CMAKE_Fortran_FLAGS_DEBUG} -fcheck=bounds")
@@ -134,11 +137,6 @@ mark_as_advanced(
      )
 
 ################################
-#  macros
-################################
-include(ATKMacros)
-
-################################
 # Setup compiler options
 # (must be included after HEADER_INCLUDES_DIRECTORY is set)
 ################################
@@ -156,21 +154,22 @@ include(SetupCodeMetrics)
 ################################
 
 include(ExternalProject)
-if (BUILD_TESTING)
+if (ENABLE_TESTS)
+  include(CTest)
 
   ## add google test
   add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gtest-1.7.0)
-  set(GTEST_INCLUDES ${gtest_SOURCE_DIR}/include
-            CACHE INTERNAL "GoogleTest include directories" FORCE)
-  set(GTEST_LIBS gtest_main gtest
-            CACHE INTERNAL "GoogleTest link libraries" FORCE)
+  blt_register_library(NAME gtest
+                       INCLUDES ${gtest_SOURCE_DIR}/include
+                       LIBRARIES gtest_main gtest
+                       )
 
   ## Add Fruit   FortRan UnIT test
   if (ENABLE_FORTRAN)
     add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/fruit-3.3.9)
   endif (ENABLE_FORTRAN)
 
-  if(ENABLE_BENCHMARK)
+  if(ENABLE_BENCHMARKS)
     ## add google benchmark
     add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gbenchmark)
     set(GBENCHMARK_INCLUDES ${benchmark_SOURCE_DIR}/include ${benchmark_SOURCE_DIR}

@@ -52,7 +52,7 @@ DataView * DataView::allocate()
     {
       SLIC_ASSERT( m_data_buffer == ATK_NULLPTR );
       m_data_buffer = m_owning_group->getDataStore()->createBuffer();
-      m_data_buffer->attachView(this);
+      m_data_buffer->attachToView(this);
       m_state = BUFFER;
     }
 
@@ -233,8 +233,8 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
   }
   else if ( m_state == EMPTY && buff != ATK_NULLPTR )
   {
-    buff->attachView(this);
     m_data_buffer = buff;
+    buff->attachToView(this);
     m_state = BUFFER;
     SLIC_ASSERT( m_is_applied == false );
 
@@ -262,7 +262,7 @@ DataBuffer * DataView::detachBuffer()
   if ( m_state == BUFFER)
   {
     buff = m_data_buffer;
-    m_data_buffer->detachView(this);
+    m_data_buffer->detachFromView(this);
   }
 
   return buff;
@@ -656,7 +656,7 @@ DataView::~DataView()
 {
   if (m_data_buffer != ATK_NULLPTR)
   {
-    m_data_buffer->detachView(this);
+    m_data_buffer->detachFromView(this);
   }
 }
 
