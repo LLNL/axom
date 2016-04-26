@@ -18,34 +18,28 @@ namespace tutorial {
 
 static int l_class1_new(lua_State *L)
 {
-    int SH_nresult;
     l_Class1_Type * SH_this = (l_Class1_Type *) lua_newuserdata(L, sizeof(*SH_this));
     SH_this->self = new Class1();
     /* Add the metatable to the stack. */
     luaL_getmetatable(L, "Class1.metatable");
     /* Set the metatable on the userdata. */
     lua_setmetatable(L, -2);
-    SH_nresult = 1;
-    return SH_nresult;
+    return 1;
 }
 
 static int l_class1_delete(lua_State *L)
 {
-    int SH_nresult;
     l_Class1_Type * SH_this = (l_Class1_Type *)luaL_checkudata(L, 1, "Class1.metatable");
     delete SH_this->self;
     SH_this->self = NULL;
-    SH_nresult = 0;
-    return SH_nresult;
+    return 0;
 }
 
 static int l_class1_method1(lua_State *L)
 {
-    int SH_nresult;
     l_Class1_Type * SH_this = (l_Class1_Type *)luaL_checkudata(L, 1, "Class1.metatable");
     SH_this->self->Method1();
-    SH_nresult = 0;
-    return SH_nresult;
+    return 0;
 }
 
 static const struct luaL_Reg l_Class1_Reg [] = {
@@ -56,53 +50,43 @@ static const struct luaL_Reg l_Class1_Reg [] = {
 
 static int l_function1(lua_State *L)
 {
-    int SH_nresult;
     Function1();
-    SH_nresult = 0;
-    return SH_nresult;
+    return 0;
 }
 
 static int l_function2(lua_State *L)
 {
-    int SH_nresult;
     double arg1 = lua_tonumber(L, 1);
     int arg2 = lua_tointeger(L, 2);
     double rv = Function2(arg1, arg2);
     lua_pushnumber(L, rv);
-    SH_nresult = 1;
-    return SH_nresult;
+    return 1;
 }
 
 static int l_function3(lua_State *L)
 {
-    int SH_nresult;
     bool arg = lua_toboolean(L, 1);
     bool rv = Function3(arg);
     lua_pushboolean(L, rv);
-    SH_nresult = 1;
-    return SH_nresult;
+    return 1;
 }
 
 static int l_function4a(lua_State *L)
 {
-    int SH_nresult;
     const char * arg1 = lua_tostring(L, 1);
     const char * arg2 = lua_tostring(L, 2);
     const std::string rv = Function4a(arg1, arg2);
     lua_pushstring(L, rv.c_str());
-    SH_nresult = 1;
-    return SH_nresult;
+    return 1;
 }
 
 static int l_function4b(lua_State *L)
 {
-    int SH_nresult;
     const char * arg1 = lua_tostring(L, 1);
     const char * arg2 = lua_tostring(L, 2);
     const std::string & rv = Function4b(arg1, arg2);
     lua_pushstring(L, rv.c_str());
-    SH_nresult = 1;
-    return SH_nresult;
+    return 1;
 }
 
 static int l_function5_arg1_arg2(lua_State *L)
@@ -175,11 +159,9 @@ static int l_function6_from_name(lua_State *L)
 
 static int l_function9(lua_State *L)
 {
-    int SH_nresult;
     double arg = lua_tonumber(L, 1);
     Function9(arg);
-    SH_nresult = 0;
-    return SH_nresult;
+    return 0;
 }
 
 static int l_function10_0(lua_State *L)
@@ -294,31 +276,25 @@ static int l_overload1_num_offset_stride(lua_State *L)
 
 static int l_typefunc(lua_State *L)
 {
-    int SH_nresult;
     TypeID arg = lua_tointeger(L, 1);
     TypeID rv = typefunc(arg);
     lua_pushinteger(L, rv);
-    SH_nresult = 1;
-    return SH_nresult;
+    return 1;
 }
 
 static int l_enumfunc(lua_State *L)
 {
-    int SH_nresult;
     EnumTypeID arg = static_cast<EnumTypeID>(lua_tointeger(L, 1));
     EnumTypeID rv = enumfunc(arg);
     lua_pushinteger(L, static_cast<int>(rv));
-    SH_nresult = 1;
-    return SH_nresult;
+    return 1;
 }
 
 static int l_last_function_called(lua_State *L)
 {
-    int SH_nresult;
     const std::string & rv = LastFunctionCalled();
     lua_pushstring(L, rv.c_str());
-    SH_nresult = 1;
-    return SH_nresult;
+    return 1;
 }
 
 static const struct luaL_Reg XXX1 [] = {
