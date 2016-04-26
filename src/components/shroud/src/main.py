@@ -184,6 +184,10 @@ class Schema(object):
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.library_upper[:3] + '_')
         fmt_library.F_C_prefix    = def_options['F_C_prefix']
         fmt_library.rv            = 'rv'  # return value
+        if def_options.namespace:
+            fmt_library.namespace_scope = '::'.join(def_options.namespace.split()) + '::'
+        else:
+            fmt_library.namespace_scope = ''
         util.eval_template(node, 'C_header_filename', '_library')
         util.eval_template(node, 'C_impl_filename', '_library')
         self.fmt_stack.append(fmt_library)
@@ -1176,6 +1180,10 @@ class VerifyAttrs(object):
                         ),
                     ),
 #                PY_ctor = 'PyObject_New({PyObject}, &{PyTypeObject})',
+
+                LUA_pop = '({LUA_userdata_struct} *)luaL_checkudata({LUA_state_var}, 1, "{LUA_metadata}")',
+#                LUA_push = None,  # XXX create a userdata object with metatable
+#                LUA_statements={},
 
                 # allow forward declarations to avoid recursive headers
                 forward = name,

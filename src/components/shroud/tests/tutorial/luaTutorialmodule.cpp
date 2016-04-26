@@ -16,6 +16,38 @@ namespace tutorial {
 // splicer begin C_definition
 // splicer end C_definition
 
+static int l_class1_new(lua_State *L)
+{
+    FFF * SH_this = (FFF *) lua_newuserdata(L, sizeof(*SH_this));
+    SH_this->self = new Class1();
+    /* Add the metatable to the stack. */
+    luaL_getmetatable(L, "Class1");
+    /* Set the metatable on the userdata. */
+    lua_setmetatable(L, -2);
+    return 1;
+}
+
+static int l_class1_delete(lua_State *L)
+{
+    FFF * SH_this = (FFF *)luaL_checkudata(L, 1, "Class1");
+    delete SH_this->self;
+    SH_this->self = NULL;
+    return 0;
+}
+
+static int l_class1_method1(lua_State *L)
+{
+    FFF * SH_this = (FFF *)luaL_checkudata(L, 1, "Class1");
+    SH_this->self->Method1();
+    return 0;
+}
+
+static const struct luaL_Reg OOO [] = {
+    {"delete", l_class1_delete},
+    {"Method1", l_class1_method1},
+    {NULL, NULL}   /*sentinel */
+};
+
 static int l_function1(lua_State *L)
 {
     Function1();
@@ -211,7 +243,9 @@ static int l_last_function_called(lua_State *L)
     lua_pushstring(L, rv.c_str());
     return 1;
 }
+
 static const struct luaL_Reg XXX1 [] = {
+    {"Class1", l_class1_new},
     {"Function1", l_function1},
     {"Function2", l_function2},
     {"Function3", l_function3},
@@ -235,6 +269,22 @@ static const struct luaL_Reg XXX1 [] = {
 extern "C" {
 #endif
 int luaopen_tutorial(lua_State *L) {
+    
+    /* Create the metatable and put it on the stack. */
+    luaL_newmetatable(L, "Class1");
+    /* Duplicate the metatable on the stack (We now have 2). */
+    lua_pushvalue(L, -1);
+    /* Pop the first metatable off the stack and assign it to __index
+     * of the second one. We set the metatable for the table to itself.
+     * This is equivalent to the following in lua:
+     * metatable = {}
+     * metatable.__index = metatable
+     */
+    lua_setfield(L, -2, "__index");
+     
+    /* Set the methods to the metatable that should be accessed via object:func */
+    luaL_setfuncs(L, OOO, 0);
+    
     luaL_newlib(L, XXX1);
     return 1;
 }

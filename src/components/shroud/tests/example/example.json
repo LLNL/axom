@@ -1702,6 +1702,7 @@
         "library": "UserLibrary", 
         "library_lower": "userlibrary", 
         "library_upper": "USERLIBRARY", 
+        "namespace_scope": "example::nested::", 
         "overloaded": false, 
         "rv": "rv"
     }, 
@@ -2242,6 +2243,7 @@
     }, 
     "types": {
         "ExClass1": {
+            "LUA_pop": "({LUA_userdata_struct} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
             "PY_PyObject": "PP_ExClass1", 
             "PY_PyTypeObject": "PP_ExClass1_Type", 
             "PY_from_object": "PP_ExClass1_from_Object", 
@@ -2277,6 +2279,7 @@
             }
         }, 
         "ExClass2": {
+            "LUA_pop": "({LUA_userdata_struct} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
             "PY_PyObject": "PP_ExClass2", 
             "PY_PyTypeObject": "PP_ExClass2_Type", 
             "PY_from_object": "PP_ExClass2_from_Object", 

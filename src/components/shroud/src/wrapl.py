@@ -50,6 +50,8 @@ class Wrapl(util.WrapperMixin):
         # Variables to accumulate output lines
         self.luaL_Reg_module = []
         self.body_lines = []
+        self.class_lines = []
+        self.lua_type_structs = []
 
         self._push_splicer('class')
         for node in self.tree['classes']:
@@ -75,9 +77,46 @@ class Wrapl(util.WrapperMixin):
         options = node['options']
         fmt_class = node['fmt']
 
+        fmt_class.LUA_userdata_var = 'SH_this'
+        fmt_class.LUA_userdata_struct = 'FFF'
+        fmt_class.LUA_userdata_member = 'self'
+        fmt_class.LUA_metadata  = node['name']
+        fmt_class.LUA_class_reg = 'OOO'
+        fmt_class.LUA_ctor_name = node['name']
+
+#        self._create_splicer('C_declaration', self.lua_type_structs)
+        self.lua_type_structs.append('')
+        self.lua_type_structs.append('typedef struct {')
+        self.lua_type_structs.append(1)
+        append_format(self.lua_type_structs, '{namespace_scope}{cpp_class} * {LUA_userdata_member};', fmt_class)
+#        self._create_splicer('C_object', self.lua_type_structs)
+        self.lua_type_structs.append(-1)
+        self.lua_type_structs.append(wformat('}} {LUA_userdata_struct};', fmt_class))
+
+        self.luaL_Reg_class = []
+
         # wrap methods
         self._push_splicer('method')
         self.wrap_functions(node, node['methods'])
+        self.append_luaL_Reg(self.body_lines, fmt_class.LUA_class_reg,
+                             self.luaL_Reg_class)
+
+        append_format(self.class_lines, """
+/* Create the metatable and put it on the stack. */
+luaL_newmetatable({LUA_state_var}, "{LUA_metadata}");
+/* Duplicate the metatable on the stack (We now have 2). */
+lua_pushvalue({LUA_state_var}, -1);
+/* Pop the first metatable off the stack and assign it to __index
+ * of the second one. We set the metatable for the table to itself.
+ * This is equivalent to the following in lua:
+ * metatable = {{}}
+ * metatable.__index = metatable
+ */
+lua_setfield({LUA_state_var}, -2, "__index");
+ 
+/* Set the methods to the metatable that should be accessed via object:func */
+luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
+
         self._pop_splicer('method')
 
     def wrap_functions(self, cls, functions):
@@ -147,6 +186,14 @@ class Wrapl(util.WrapperMixin):
         post_parse = []
 
         cpp_call_list = []
+
+        # find class object
+        if cls:
+            cls_typedef = self.typedef[cls['name']]
+            if not is_ctor:
+                fmt.c_var = wformat(cls_typedef.LUA_pop, fmt)
+                LUA_code.append(
+                    wformat('{LUA_userdata_struct} * {LUA_userdata_var} = {c_var};', fmt))
 
         # parse arguments
         # call function based on number of default arguments provided
@@ -266,8 +313,11 @@ class Wrapl(util.WrapperMixin):
         if cls:
 #                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
 #                fmt_func.C_object = wformat(template, fmt_func)
-            fmt.LUA_this_call = wformat('self->{BBB}->', fmt)  # call method syntax
-##            if ctor: add to module else add to class meta-table
+            fmt.LUA_this_call = wformat('{LUA_userdata_var}->{LUA_userdata_member}->', fmt)  # call method syntax
+            if is_ctor:
+                self.luaL_Reg_module.append(wformat('{{"{LUA_ctor_name}{function_suffix}", {LUA_name_impl}}},', fmt))
+            else:
+                self.luaL_Reg_class.append(wformat('{{"{function_name}{function_suffix}", {LUA_name_impl}}},', fmt))
                 
         else:
             fmt.LUA_this_call = ''  # call function syntax
@@ -286,23 +336,34 @@ class Wrapl(util.WrapperMixin):
             fmt.rv_asgn = fmt.rv_decl + ' = '
         need_rv = False
 
-        for nargs, len_post_parse, call_list in default_calls:
+        for nargs, len_post_parse, cpp_call_list in default_calls:
             if found_default:
                 LUA_code.append('case %d:' % nargs)
                 LUA_code.append(1)
 
-            fmt.call_list = call_list
+            fmt.cpp_call_list = cpp_call_list
             LUA_code.extend(post_parse[:len_post_parse])
 
-            if is_dtor:
-                append_format(LUA_code, 'delete self->{BBB};', fmt)
-                append_format(LUA_code, 'self->{BBB} = NULL;', fmt)
+            if is_ctor:
+                LUA_code.extend([
+                        wformat('{LUA_userdata_struct} * {LUA_userdata_var} = ({LUA_userdata_struct} *) lua_newuserdata({LUA_state_var}, sizeof(*{LUA_userdata_var}));', fmt),
+                        wformat('{LUA_userdata_var}->{LUA_userdata_member} = new {cpp_class}({cpp_call_list});', fmt),
+                        '/* Add the metatable to the stack. */',
+                        wformat('luaL_getmetatable(L, "{LUA_metadata}");', fmt),
+                        '/* Set the metatable on the userdata. */',
+                        'lua_setmetatable(L, -2);',
+                        ])
+            elif is_dtor:
+                LUA_code.extend([
+                        wformat('delete {LUA_userdata_var}->{LUA_userdata_member};', fmt),
+                        wformat('{LUA_userdata_var}->{LUA_userdata_member} = NULL;', fmt),
+                        ])
             elif CPP_subprogram == 'subroutine':
-                line = wformat('{LUA_this_call}{function_name}({call_list});', fmt)
+                line = wformat('{LUA_this_call}{function_name}({cpp_call_list});', fmt)
                 LUA_code.append(line)
             else:
                 need_rv = True
-                line = wformat('{rv_asgn}{LUA_this_call}{function_name}({call_list});', fmt)
+                line = wformat('{rv_asgn}{LUA_this_call}{function_name}({cpp_call_list});', fmt)
                 LUA_code.append(line)
 
 #            if 'PY_error_pattern' in node:
@@ -329,7 +390,7 @@ class Wrapl(util.WrapperMixin):
             LUA_decl.append('')
 
         # Compute return value
-        if CPP_subprogram == 'function':
+        if CPP_subprogram == 'function' and not is_ctor:
             fmt.cpp_var = fmt.rv
             fmt.c_var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
 ##            append_format(LUA_push, result_typedef.LUA_push, fmt)
@@ -342,6 +403,10 @@ class Wrapl(util.WrapperMixin):
 
 #        LUA_code.extend(post_call)
 
+        num_return = len(LUA_push)
+        if is_ctor:
+            # ctor uses lua_newuserdata which leaves on stack (no push).
+            num_return += 1
 
         body = self.body_lines
         body.extend([
@@ -353,7 +418,7 @@ class Wrapl(util.WrapperMixin):
         body.extend(LUA_code)
         body.extend(LUA_push)    # return values
         body.extend([
-                'return {};'.format(len(LUA_push)),
+                'return {};'.format(num_return),
                 -1,
                 '}'
                 ])
@@ -372,8 +437,16 @@ class Wrapl(util.WrapperMixin):
                 '#define %s' % guard,
                 ])
         util.extern_C(output, 'begin')
+
+        if options.cpp_header:
+            for include in options.cpp_header.split():
+                output.append('#include "%s"' % include)
+
         output.append('#include "lua.h"')
+        output.extend(self.lua_type_structs)
+        output.append('')
         output.append(wformat('int luaopen_{LUA_module_name}(lua_State *{LUA_state_var});', fmt))
+        output.append('')
         util.extern_C(output, 'end')
         output.append('#endif  /* %s */' % guard)
         self.write_output_file(fname, self.config.python_dir, output)
@@ -381,6 +454,7 @@ class Wrapl(util.WrapperMixin):
     def append_luaL_Reg(self, output, name, lines):
         """Create luaL_Reg struct"""
         output.extend([
+                '',
                 'static const struct luaL_Reg {} [] = {{'.format(name),
                 1,
                 ])
@@ -389,7 +463,6 @@ class Wrapl(util.WrapperMixin):
                 '{NULL, NULL}   /*sentinel */',
                 -1,
                 '};',
-                ''
                 ])
 
     def write_module(self, node):
@@ -417,10 +490,15 @@ class Wrapl(util.WrapperMixin):
         output.extend(self.body_lines)
 
         self.append_luaL_Reg(output, fmt.LUA_module_reg, self.luaL_Reg_module)
+        output.append('')
         util.extern_C(output, 'begin')
         output.extend([
                 wformat('int luaopen_{LUA_module_name}(lua_State *{LUA_state_var}) {{', fmt),
                 1,
+                ])
+        output.extend(self.class_lines)
+        output.extend([
+                '',
                 wformat('luaL_newlib({LUA_state_var}, {LUA_module_reg});', fmt),
                 'return 1;',
                 -1,

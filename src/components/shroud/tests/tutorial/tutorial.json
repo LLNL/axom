@@ -16,6 +16,12 @@
                 "C_type_name": "TUT_class1", 
                 "F_C_prefix": "c_", 
                 "F_derived_name": "class1", 
+                "LUA_class_reg": "OOO", 
+                "LUA_ctor_name": "Class1", 
+                "LUA_metadata": "Class1", 
+                "LUA_userdata_member": "self", 
+                "LUA_userdata_struct": "FFF", 
+                "LUA_userdata_var": "SH_this", 
                 "PY_PyObject": "PY_Class1", 
                 "PY_PyTypeObject": "PY_Class1_Type", 
                 "PY_capsule_name": "PY_Class1_capsule_name", 
@@ -43,6 +49,7 @@
                         "F_name_generic": "new", 
                         "F_name_impl": "class1_new", 
                         "F_name_method": "new", 
+                        "LUA_name_impl": "l_class1_new", 
                         "function_name": "new", 
                         "underscore_name": "new"
                     }, 
@@ -70,6 +77,7 @@
                         "F_name_generic": "delete", 
                         "F_name_impl": "class1_delete", 
                         "F_name_method": "delete", 
+                        "LUA_name_impl": "l_class1_delete", 
                         "PY_name_impl": "PY_class1_delete", 
                         "function_name": "delete", 
                         "underscore_name": "delete"
@@ -94,6 +102,7 @@
                         "F_name_generic": "method1", 
                         "F_name_impl": "class1_method1", 
                         "F_name_method": "method1", 
+                        "LUA_name_impl": "l_class1_method1", 
                         "PY_name_impl": "PY_class1_method1", 
                         "function_name": "Method1", 
                         "underscore_name": "method1"
@@ -107,9 +116,7 @@
                 }
             ], 
             "name": "Class1", 
-            "options": {
-                "wrap_lua": false
-            }
+            "options": {}
         }
     ], 
     "fmt": {
@@ -146,6 +153,7 @@
         "library": "Tutorial", 
         "library_lower": "tutorial", 
         "library_upper": "TUTORIAL", 
+        "namespace_scope": "tutorial::", 
         "overloaded": false, 
         "rv": "rv"
     }, 
@@ -2024,6 +2032,7 @@
     }, 
     "types": {
         "Class1": {
+            "LUA_pop": "({LUA_userdata_struct} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
             "PY_PyObject": "PY_Class1", 
             "PY_PyTypeObject": "PY_Class1_Type", 
             "PY_from_object": "PP_Class1_from_Object", 

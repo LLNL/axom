@@ -117,6 +117,7 @@
         "library": "testnames", 
         "library_lower": "testnames", 
         "library_upper": "TESTNAMES", 
+        "namespace_scope": "", 
         "overloaded": false, 
         "rv": "rv"
     }, 
@@ -309,6 +310,7 @@
             "f_type": "integer"
         }, 
         "Names": {
+            "LUA_pop": "({LUA_userdata_struct} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
             "PY_PyObject": "PY_Names", 
             "PY_PyTypeObject": "PY_Names_Type", 
             "PY_from_object": "PP_Names_from_Object", 
