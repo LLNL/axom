@@ -123,11 +123,32 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
 
     def wrap_functions(self, cls, functions):
         """Wrap functions for a library or class.
+        Create one wrapper for overloaded functions and the
+        different variations of default-arguments
         """
-        for function in functions:
-            self.wrap_function(cls, function)
 
-    def wrap_function(self, cls, node):
+        # Find overloaded functions.
+        # maintain order, but gather overloads together
+        overloaded_methods = {}
+        overloads = []
+        for function in functions:
+            if not function['options'].wrap_lua:
+                continue
+            name = function['result']['name']
+            if name in overloaded_methods:
+                overloaded_methods[name].append(function)
+            else:
+                first = [ function ]
+                overloads.append(first)
+                overloaded_methods[name] = first
+
+        for overload in overloads:
+            self.wrap_function2(cls, overload)
+
+#        for function in functions:
+#            self.wrap_function(cls, function)
+
+    def XXXwrap_function(self, cls, node):
         """Write a Lua wrapper for a C++ function.
 
         cls  - class node or None for functions
@@ -428,6 +449,378 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
                 '}'
                 ])
 
+    def wrap_function2(self, cls, overloads):
+        """Write a Lua wrapper for a C++ function.
+
+        cls  - class node or None for functions
+        overloads - a list of functions to wrap.
+
+        fmt.c_var   - name of variable in PyArg_ParseTupleAndKeywords
+        fmt.cpp_var - name of variable in c++ call.
+        """
+
+        # First overload defines options
+        node = overloads[0]
+
+        function_name = node['result']['name']
+        fmt_func = node['fmt']
+        fmt = util.Options(fmt_func)
+        util.eval_template(node, 'LUA_name')
+        util.eval_template(node, 'LUA_name_impl')
+
+        is_ctor  = node['attrs'].get('constructor', False)
+        is_dtor  = node['attrs'].get('destructor', False)
+        if is_dtor:
+            fmt.LUA_name = '__gc'
+
+        if cls:
+            fmt.LUA_this_call = wformat('{LUA_userdata_var}->{LUA_userdata_member}->', fmt)  # call method syntax
+        else:
+            fmt.LUA_this_call = ''  # call function syntax
+
+        # Loop over all overloads and default argument and
+        # sort by the number of arguments expected.
+
+        # Create lists of input arguments
+        all_calls = []
+        maxargs = 0
+        for function in overloads:
+            nargs = 0
+            in_args = []
+            out_args = []
+            found_default = False
+            for arg in function['args']:
+                arg_typedef = self.typedef[arg['type']]
+                attrs = arg['attrs']
+
+#                # argument for C++ function
+#                lang = 'cpp_type'
+#                arg_const = False
+#                if arg_typedef.base == 'string':
+#                    # C++ will coerce char * to std::string
+#                    lang = 'c_type'
+#                    arg_const = True  # lua_tostring is const
+#                if attrs.get('reference', False):
+#                    # convert a reference to a pointer
+#                    ptr = True
+#                else:
+#                    ptr = False
+
+                nargs += 1 
+#                decl = self.std_c_decl(lang, arg, const=arg_const, ptr=ptr)
+#                in_args.append(decl)
+                in_args.append(arg)
+                if 'default' in attrs:
+                    all_calls.append(lua_function(function, in_args[:], out_args))
+                    found_default = True
+            if not found_default:
+                # no defaults, use all arguments
+                all_calls.append(lua_function(function, in_args[:], out_args))
+            maxargs = max(maxargs, nargs)
+
+
+        # Gather calls by number of arguments
+        by_count = [ [] for i in range(maxargs+1) ]
+        for a_call in all_calls:
+            by_count[ a_call.nargs ].append(a_call)
+
+        body = self.body_lines
+        body.extend([
+                '',
+                wformat('static int {LUA_name_impl}(lua_State *L)', fmt),
+                '{',
+                1,
+                'int SH_nresult;'
+                ])
+
+
+        if len(all_calls) == 1:
+            self.do_function(cls, all_calls[0], fmt)
+        else:
+            itype_vars = []
+            for iarg in range(1,maxargs+1):
+                itype_vars.append('SH_itype{}'.format(iarg))
+                body.append('int {};'.format(itype_vars[-1]))
+            append_format(body, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
+            body.append('switch (SH_nargs) {')
+            for nargs, calls in enumerate(by_count):
+                if len(calls) == 0:
+                    continue
+                body.append('case {}:'.format(nargs))
+                body.append(1)
+                ifelse = 'if'
+
+                # Local variables to hold argument types
+                for iarg in range(nargs):
+                    fmt.itype_var = itype_vars[iarg]
+                    fmt.iarg = iarg + 1
+                    append_format(body, '{itype_var} = lua_type({LUA_state_var}, {iarg});', fmt)
+
+                for call in calls:
+                    checks = []
+                    for iarg, arg in enumerate(call.inargs):
+                        arg_typedef = self.typedef[arg['type']]
+                        fmt.itype_var = itype_vars[iarg]
+                        fmt.itype = arg_typedef.LUA_type
+                        append_format(checks, '{itype_var} == {itype}', fmt)
+                    if nargs == 0:
+                        self.do_function(cls, call, fmt)
+                    elif nargs == 1:
+                        body.append('{} ({}) {{'.format(ifelse, checks[0]))
+                        body.append(1)
+                        self.do_function(cls, call, fmt)
+                        body.append(-1)
+                        body.append('}')
+                    elif nargs == 2:
+                        body.append('{} ({} &&'.format(ifelse, checks[0]))
+                        body.append(1)
+                        body.append('{}) {{'.format(checks[1]))
+                        self.do_function(cls, call, fmt)
+                        body.append(-1)
+                        body.append('}')
+                    else:
+                        body.append('{} ({} &&'.format(ifelse, checks[0]))
+                        body.append(1)
+                        for check in checks[1:-1]:
+                            body.append('{} &&'.format(check))
+                        body.append('{}) {{'.format(checks[-1]))
+                        self.do_function(cls, call, fmt)
+                        body.append(-1)
+                        body.append('}')
+                    ifelse = 'else if'
+                if nargs > 0:
+                    # Trap errors when the argument types do not match
+                    body.append('else {')
+                    body.append(1)
+                    body.append('// raise some error')
+                    body.append(-1)
+                    body.append('}')
+                body.append('break;')
+                body.append(-1)
+            body.append('default:')
+            body.append(1)
+            body.append('break;')
+            body.append(-1)
+            body.append('}')
+
+        body.extend([
+                'return SH_nresult;',
+                -1,
+                '}'
+                ])
+
+        # Save pointer to function
+        if cls:
+            if is_ctor:
+                self.luaL_Reg_module.append(wformat('{{"{LUA_ctor_name}{function_suffix}", {LUA_name_impl}}},', fmt))
+            else:
+                self.luaL_Reg_class.append(wformat('{{"{LUA_name}", {LUA_name_impl}}},', fmt))
+                
+        else:
+            self.luaL_Reg_module.append(wformat('{{"{LUA_name}", {LUA_name_impl}}},', fmt))
+
+
+    def do_function(self, cls, luafcn, fmt):
+        """
+        Wrap a single function/overload/default-argument
+        variation of a function.
+
+        fmt - local format dictionary
+        """
+        node = luafcn.function
+
+        if cls:
+            cls_function = 'method'
+        else:
+            cls_function = 'function'
+        self.log.write("Lua {0} {1[_decl]}\n".format(cls_function, node))
+
+#        fmt_func = node['fmt']
+#        fmt = util.Options(fmt_func)
+#        fmt.doc_string = 'documentation'
+#        util.eval_template(node, 'LUA_name')
+#        util.eval_template(node, 'LUA_name_impl')
+
+        CPP_subprogram = node['_subprogram']
+
+        result = node['result']
+        result_type = result['type']
+        result_is_ptr = result['attrs'].get('ptr', False)
+        result_is_ref = result['attrs'].get('reference', False)
+
+        if node.get('return_this', False):
+            result_type = 'void'
+            result_is_ptr = False
+            CPP_subprogram = 'subroutine'
+
+        result_typedef = self.typedef[result_type]
+        is_ctor  = node['attrs'].get('constructor', False)
+        is_dtor  = node['attrs'].get('destructor', False)
+#        is_const = result['attrs'].get('const', False)
+##-        if is_ctor:   # or is_dtor:
+##-            # XXX - have explicit delete
+##-            # need code in __init__ and __del__
+##-            return
+
+        # XXX if a class, then knock off const since the PyObject
+        # is not const, otherwise, use const from result.
+        if result_typedef.base == 'wrapped':
+            is_const = False
+        else:
+            is_const = None
+        fmt.rv_decl = self.std_c_decl('cpp_type', result, name=fmt.rv, const=is_const)  # return value
+
+        LUA_decl = []  # declare variables and pop values
+        LUA_code = []  # call C++ function
+        LUA_push = []  # push results
+
+        post_parse = []
+
+        cpp_call_list = []
+
+        # find class object
+        if cls:
+            cls_typedef = self.typedef[cls['name']]
+            if not is_ctor:
+                fmt.c_var = wformat(cls_typedef.LUA_pop, fmt)
+                LUA_code.append(
+                    wformat('{LUA_userdata_type} * {LUA_userdata_var} = {c_var};', fmt))
+
+        # parse arguments
+        # call function based on number of default arguments provided
+#        default_calls = []   # each possible default call
+#        found_default = False
+#        if '_has_default_arg' in node:
+#            append_format(LUA_decl, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
+
+        if True:
+            fmt.LUA_index = 1
+            # Only process nargs.
+            # Each variation of default-arguments produces a new call.
+            for iarg in range(luafcn.nargs):
+                arg = node['args'][iarg]
+                arg_name = arg['name']
+                fmt.c_var = arg['name']
+                fmt.cpp_var = fmt.c_var
+                fmt.lua_var = 'SH_Lua_' + fmt.c_var
+                fmt.c_var_len = 'L' + fmt.c_var
+                attrs = arg['attrs']
+
+                lua_pop = None
+
+                arg_typedef = self.typedef[arg['type']]
+                LUA_statements = arg_typedef.LUA_statements
+                if attrs['intent'] in [ 'inout', 'in']:
+#                    lua_pop = wformat(arg_typedef.LUA_pop, fmt)
+                    # lua_pop is a C++ expression
+                    fmt.c_var = wformat(arg_typedef.LUA_pop, fmt)
+                    lua_pop = wformat(arg_typedef.c_to_cpp, fmt)
+                    fmt.LUA_index += 1 
+
+                if attrs['intent'] in [ 'inout', 'out']:
+                    # output variable must be a pointer
+                    # XXX - fix up for strings
+#                    format, vargs = self.intent_out(arg_typedef, fmt, post_call)
+#                    build_format.append(format)
+#                    build_vargs.append('*' + vargs)
+
+                    #append_format(LUA_push, arg_typedef.LUA_push, fmt)
+                    tmp = wformat(arg_typedef.LUA_push, fmt)
+                    LUA_push.append( tmp + ';' )
+
+                # argument for C++ function
+                lang = 'cpp_type'
+                arg_const = False
+                if arg_typedef.base == 'string':
+                    # C++ will coerce char * to std::string
+                    lang = 'c_type'
+                    arg_const = True  # lua_tostring is const
+                if attrs.get('reference', False):
+                    # convert a reference to a pointer
+                    ptr = True
+                else:
+                    ptr = False
+
+                if lua_pop:
+                    decl_suffix = ' = {};'.format(lua_pop)
+                else:
+                    decl_suffix = ';'
+                LUA_decl.append(self.std_c_decl(lang, arg, const=arg_const, ptr=ptr) + decl_suffix)
+                
+                cpp_call_list.append(fmt.cpp_var)
+
+        # call with all arguments
+        nargs = len(cpp_call_list)
+        len_post_parse = len(post_parse)
+        cpp_call_list = ', '.join(cpp_call_list)
+
+        fmt.rv_asgn = fmt.rv_decl + ' = '
+        need_rv = False
+
+        if True:  #for nargs, len_post_parse, cpp_call_list in default_calls:
+            fmt.cpp_call_list = cpp_call_list
+            LUA_code.extend(post_parse[:len_post_parse])
+
+            if is_ctor:
+                LUA_code.extend([
+                        wformat('{LUA_userdata_type} * {LUA_userdata_var} = ({LUA_userdata_type} *) lua_newuserdata({LUA_state_var}, sizeof(*{LUA_userdata_var}));', fmt),
+                        wformat('{LUA_userdata_var}->{LUA_userdata_member} = new {cpp_class}({cpp_call_list});', fmt),
+                        '/* Add the metatable to the stack. */',
+                        wformat('luaL_getmetatable(L, "{LUA_metadata}");', fmt),
+                        '/* Set the metatable on the userdata. */',
+                        'lua_setmetatable(L, -2);',
+                        ])
+            elif is_dtor:
+                LUA_code.extend([
+                        wformat('delete {LUA_userdata_var}->{LUA_userdata_member};', fmt),
+                        wformat('{LUA_userdata_var}->{LUA_userdata_member} = NULL;', fmt),
+                        ])
+            elif CPP_subprogram == 'subroutine':
+                line = wformat('{LUA_this_call}{function_name}({cpp_call_list});', fmt)
+                LUA_code.append(line)
+            else:
+                need_rv = True
+                line = wformat('{rv_asgn}{LUA_this_call}{function_name}({cpp_call_list});', fmt)
+                LUA_code.append(line)
+
+#            if 'PY_error_pattern' in node:
+#                lfmt = util.Options(fmt)
+#                lfmt.c_var = fmt.rv
+#                lfmt.cpp_var = fmt.rv
+#                append_format(LUA_code, self.patterns[node['PY_error_pattern']], lfmt)
+
+        need_rv = False
+
+        if need_rv:
+            LUA_decl.append(fmt.rv_decl + ';')
+#        if len(LUA_decl):
+#            LUA_decl.append('')
+
+        # Compute return value
+        if CPP_subprogram == 'function' and not is_ctor:
+            fmt.cpp_var = fmt.rv
+            fmt.c_var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
+##            append_format(LUA_push, result_typedef.LUA_push, fmt)
+            tmp = wformat(result_typedef.LUA_push, fmt)
+            LUA_push.append( tmp + ';' )
+#            format, vargs = self.intent_out(result_typedef, fmt, PY_code)
+#            # Add result to front of result tuple
+#            build_format.insert(0, format)
+#            build_vargs.insert(0, vargs)
+
+#        LUA_code.extend(post_call)
+
+        num_return = len(LUA_push)
+        if is_ctor:
+            # ctor uses lua_newuserdata which leaves on stack (no push).
+            num_return += 1
+
+        body = self.body_lines
+        body.extend(LUA_decl)
+        body.extend(LUA_code)
+        body.extend(LUA_push)    # return values
+        body.append('SH_nresult = {};'.format(num_return))
+
     def write_header(self, node):
         options = node['options']
         fmt = node['fmt']
@@ -514,3 +907,14 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
         self.namespace(node, 'end', output)
 
         self.write_output_file(fname, self.config.lua_dir, output)
+
+
+class lua_function(object):
+    """Gather information used to write a wrapper for 
+    and overloaded/default-argument function
+    """
+    def __init__(self, function, inargs, outargs):
+        self.function = function
+        self.nargs = len(inargs)
+        self.inargs = inargs
+        self.outargs = outargs

@@ -18,28 +18,34 @@ namespace tutorial {
 
 static int l_class1_new(lua_State *L)
 {
+    int SH_nresult;
     l_Class1_Type * SH_this = (l_Class1_Type *) lua_newuserdata(L, sizeof(*SH_this));
     SH_this->self = new Class1();
     /* Add the metatable to the stack. */
     luaL_getmetatable(L, "Class1.metatable");
     /* Set the metatable on the userdata. */
     lua_setmetatable(L, -2);
-    return 1;
+    SH_nresult = 1;
+    return SH_nresult;
 }
 
 static int l_class1_delete(lua_State *L)
 {
+    int SH_nresult;
     l_Class1_Type * SH_this = (l_Class1_Type *)luaL_checkudata(L, 1, "Class1.metatable");
     delete SH_this->self;
     SH_this->self = NULL;
-    return 0;
+    SH_nresult = 0;
+    return SH_nresult;
 }
 
 static int l_class1_method1(lua_State *L)
 {
+    int SH_nresult;
     l_Class1_Type * SH_this = (l_Class1_Type *)luaL_checkudata(L, 1, "Class1.metatable");
     SH_this->self->Method1();
-    return 0;
+    SH_nresult = 0;
+    return SH_nresult;
 }
 
 static const struct luaL_Reg l_Class1_Reg [] = {
@@ -50,198 +56,269 @@ static const struct luaL_Reg l_Class1_Reg [] = {
 
 static int l_function1(lua_State *L)
 {
+    int SH_nresult;
     Function1();
-    return 0;
+    SH_nresult = 0;
+    return SH_nresult;
 }
 
 static int l_function2(lua_State *L)
 {
+    int SH_nresult;
     double arg1 = lua_tonumber(L, 1);
     int arg2 = lua_tointeger(L, 2);
-    
     double rv = Function2(arg1, arg2);
     lua_pushnumber(L, rv);
-    return 1;
+    SH_nresult = 1;
+    return SH_nresult;
 }
 
 static int l_function3(lua_State *L)
 {
+    int SH_nresult;
     bool arg = lua_toboolean(L, 1);
-    
     bool rv = Function3(arg);
     lua_pushboolean(L, rv);
-    return 1;
+    SH_nresult = 1;
+    return SH_nresult;
 }
 
 static int l_function4a(lua_State *L)
 {
+    int SH_nresult;
     const char * arg1 = lua_tostring(L, 1);
     const char * arg2 = lua_tostring(L, 2);
-    
     const std::string rv = Function4a(arg1, arg2);
     lua_pushstring(L, rv.c_str());
-    return 1;
+    SH_nresult = 1;
+    return SH_nresult;
 }
 
 static int l_function4b(lua_State *L)
 {
+    int SH_nresult;
     const char * arg1 = lua_tostring(L, 1);
     const char * arg2 = lua_tostring(L, 2);
-    
     const std::string & rv = Function4b(arg1, arg2);
     lua_pushstring(L, rv.c_str());
-    return 1;
+    SH_nresult = 1;
+    return SH_nresult;
 }
 
 static int l_function5_arg1_arg2(lua_State *L)
 {
+    int SH_nresult;
+    int SH_itype1;
+    int SH_itype2;
     int SH_nargs = lua_gettop(L);
-    double arg1;
-    bool arg2;
-    double rv;
-    
-    if (SH_nargs > 0) {
-        arg1 = lua_tonumber(L, 1);
-    }
-    if (SH_nargs > 1) {
-        arg2 = lua_toboolean(L, 2);
-    }
     switch (SH_nargs) {
-    case 0:
-        rv = Function5();
-        break;
     case 1:
-        rv = Function5(arg1);
+        SH_itype1 = lua_type(L, 1);
+        if (SH_itype1 == LUA_TNUMBER) {
+            double arg1 = lua_tonumber(L, 1);
+            double rv = Function5(arg1);
+            lua_pushnumber(L, rv);
+            SH_nresult = 1;
+        }
+        else {
+            // raise some error
+        }
         break;
     case 2:
-        rv = Function5(arg1, arg2);
+        SH_itype1 = lua_type(L, 1);
+        SH_itype2 = lua_type(L, 2);
+        if (SH_itype1 == LUA_TNUMBER &&
+            SH_itype2 == LUA_TBOOLEAN) {
+            double arg1 = lua_tonumber(L, 1);
+            bool arg2 = lua_toboolean(L, 2);
+            double rv = Function5(arg1, arg2);
+            lua_pushnumber(L, rv);
+            SH_nresult = 1;
+        }
+        else {
+            // raise some error
+        }
+        break;
+    default:
         break;
     }
-    lua_pushnumber(L, rv);
-    return 1;
+    return SH_nresult;
 }
 
 static int l_function6_from_name(lua_State *L)
 {
-    const char * name = lua_tostring(L, 1);
-    
-    Function6(name);
-    return 0;
-}
-
-static int l_function6_from_index(lua_State *L)
-{
-    int indx = lua_tointeger(L, 1);
-    
-    Function6(indx);
-    return 0;
+    int SH_nresult;
+    int SH_itype1;
+    int SH_nargs = lua_gettop(L);
+    switch (SH_nargs) {
+    case 1:
+        SH_itype1 = lua_type(L, 1);
+        if (SH_itype1 == LUA_TSTRING) {
+            const char * name = lua_tostring(L, 1);
+            Function6(name);
+            SH_nresult = 0;
+        }
+        else if (SH_itype1 == LUA_TNUMBER) {
+            int indx = lua_tointeger(L, 1);
+            Function6(indx);
+            SH_nresult = 0;
+        }
+        else {
+            // raise some error
+        }
+        break;
+    default:
+        break;
+    }
+    return SH_nresult;
 }
 
 static int l_function9(lua_State *L)
 {
+    int SH_nresult;
     double arg = lua_tonumber(L, 1);
-    
     Function9(arg);
-    return 0;
+    SH_nresult = 0;
+    return SH_nresult;
 }
 
 static int l_function10_0(lua_State *L)
 {
-    Function10();
-    return 0;
-}
-
-static int l_function10_1(lua_State *L)
-{
-    const char * name = lua_tostring(L, 1);
-    double arg2 = lua_tonumber(L, 2);
-    
-    Function10(name, arg2);
-    return 0;
+    int SH_nresult;
+    int SH_itype1;
+    int SH_itype2;
+    int SH_nargs = lua_gettop(L);
+    switch (SH_nargs) {
+    case 0:
+        Function10();
+        SH_nresult = 0;
+        break;
+    case 2:
+        SH_itype1 = lua_type(L, 1);
+        SH_itype2 = lua_type(L, 2);
+        if (SH_itype1 == LUA_TSTRING &&
+            SH_itype2 == LUA_TNUMBER) {
+            const char * name = lua_tostring(L, 1);
+            double arg2 = lua_tonumber(L, 2);
+            Function10(name, arg2);
+            SH_nresult = 0;
+        }
+        else {
+            // raise some error
+        }
+        break;
+    default:
+        break;
+    }
+    return SH_nresult;
 }
 
 static int l_overload1_num_offset_stride(lua_State *L)
 {
+    int SH_nresult;
+    int SH_itype1;
+    int SH_itype2;
+    int SH_itype3;
+    int SH_itype4;
     int SH_nargs = lua_gettop(L);
-    int num = lua_tointeger(L, 1);
-    int offset;
-    int stride;
-    int rv;
-    
-    if (SH_nargs > 1) {
-        offset = lua_tointeger(L, 2);
-    }
-    if (SH_nargs > 2) {
-        stride = lua_tointeger(L, 3);
-    }
-    switch (SH_nargs) {
-    case 1:
-        rv = overload1(num);
-        break;
-    case 2:
-        rv = overload1(num, offset);
-        break;
-    case 3:
-        rv = overload1(num, offset, stride);
-        break;
-    }
-    lua_pushinteger(L, rv);
-    return 1;
-}
-
-static int l_overload1_5(lua_State *L)
-{
-    int SH_nargs = lua_gettop(L);
-    double type = lua_tonumber(L, 1);
-    int num = lua_tointeger(L, 2);
-    int offset;
-    int stride;
-    int rv;
-    
-    if (SH_nargs > 2) {
-        offset = lua_tointeger(L, 3);
-    }
-    if (SH_nargs > 3) {
-        stride = lua_tointeger(L, 4);
-    }
     switch (SH_nargs) {
     case 2:
-        rv = overload1(type, num);
+        SH_itype1 = lua_type(L, 1);
+        SH_itype2 = lua_type(L, 2);
+        if (SH_itype1 == LUA_TNUMBER &&
+            SH_itype2 == LUA_TNUMBER) {
+            int num = lua_tointeger(L, 1);
+            int offset = lua_tointeger(L, 2);
+            int rv = overload1(num, offset);
+            lua_pushinteger(L, rv);
+            SH_nresult = 1;
+        }
+        else {
+            // raise some error
+        }
         break;
     case 3:
-        rv = overload1(type, num, offset);
+        SH_itype1 = lua_type(L, 1);
+        SH_itype2 = lua_type(L, 2);
+        SH_itype3 = lua_type(L, 3);
+        if (SH_itype1 == LUA_TNUMBER &&
+            SH_itype2 == LUA_TNUMBER &&
+            SH_itype3 == LUA_TNUMBER) {
+            int num = lua_tointeger(L, 1);
+            int offset = lua_tointeger(L, 2);
+            int stride = lua_tointeger(L, 3);
+            int rv = overload1(num, offset, stride);
+            lua_pushinteger(L, rv);
+            SH_nresult = 1;
+        }
+        else if (SH_itype1 == LUA_TNUMBER &&
+            SH_itype2 == LUA_TNUMBER &&
+            SH_itype3 == LUA_TNUMBER) {
+            double type = lua_tonumber(L, 1);
+            int num = lua_tointeger(L, 2);
+            int offset = lua_tointeger(L, 3);
+            int rv = overload1(type, num, offset);
+            lua_pushinteger(L, rv);
+            SH_nresult = 1;
+        }
+        else {
+            // raise some error
+        }
         break;
     case 4:
-        rv = overload1(type, num, offset, stride);
+        SH_itype1 = lua_type(L, 1);
+        SH_itype2 = lua_type(L, 2);
+        SH_itype3 = lua_type(L, 3);
+        SH_itype4 = lua_type(L, 4);
+        if (SH_itype1 == LUA_TNUMBER &&
+            SH_itype2 == LUA_TNUMBER &&
+            SH_itype3 == LUA_TNUMBER &&
+            SH_itype4 == LUA_TNUMBER) {
+            double type = lua_tonumber(L, 1);
+            int num = lua_tointeger(L, 2);
+            int offset = lua_tointeger(L, 3);
+            int stride = lua_tointeger(L, 4);
+            int rv = overload1(type, num, offset, stride);
+            lua_pushinteger(L, rv);
+            SH_nresult = 1;
+        }
+        else {
+            // raise some error
+        }
+        break;
+    default:
         break;
     }
-    lua_pushinteger(L, rv);
-    return 1;
+    return SH_nresult;
 }
 
 static int l_typefunc(lua_State *L)
 {
+    int SH_nresult;
     TypeID arg = lua_tointeger(L, 1);
-    
     TypeID rv = typefunc(arg);
     lua_pushinteger(L, rv);
-    return 1;
+    SH_nresult = 1;
+    return SH_nresult;
 }
 
 static int l_enumfunc(lua_State *L)
 {
+    int SH_nresult;
     EnumTypeID arg = static_cast<EnumTypeID>(lua_tointeger(L, 1));
-    
     EnumTypeID rv = enumfunc(arg);
     lua_pushinteger(L, static_cast<int>(rv));
-    return 1;
+    SH_nresult = 1;
+    return SH_nresult;
 }
 
 static int l_last_function_called(lua_State *L)
 {
+    int SH_nresult;
     const std::string & rv = LastFunctionCalled();
     lua_pushstring(L, rv.c_str());
-    return 1;
+    SH_nresult = 1;
+    return SH_nresult;
 }
 
 static const struct luaL_Reg XXX1 [] = {
@@ -253,12 +330,9 @@ static const struct luaL_Reg XXX1 [] = {
     {"Function4b", l_function4b},
     {"Function5_arg1_arg2", l_function5_arg1_arg2},
     {"Function6_from_name", l_function6_from_name},
-    {"Function6_from_index", l_function6_from_index},
     {"Function9", l_function9},
     {"Function10_0", l_function10_0},
-    {"Function10_1", l_function10_1},
     {"overload1_num_offset_stride", l_overload1_num_offset_stride},
-    {"overload1_5", l_overload1_5},
     {"typefunc", l_typefunc},
     {"enumfunc", l_enumfunc},
     {"LastFunctionCalled", l_last_function_called},
