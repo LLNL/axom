@@ -36,7 +36,7 @@ namespace quest {
  * \brief Computes the intersection of the given ray, R, with the segment, S.
  * \param [in] R user-supplied ray R.
  * \param [in] S user-supplied segment S.
- * \param [in/out] ip the point of intersection.
+ * \param [in,out] ip the point of intersection.
  * \return status true iff R intersects with S, otherwise, false.
  *******************************************************************************
  */
@@ -98,7 +98,9 @@ namespace {
 
   /**
    * \brief Helper function to find disjoint projections for the AABB-triangle test
-   * \param {d0,d1,d2}  Values defining the test interval
+   * \param d0 The first value defining the test interval
+   * \param d1 The second value defining the test interval
+   * \param d2 The third value defining the test interval
    * \param r Radius of projection
    * \return True of the intervals are disjoint, false otherwise
    */
@@ -156,13 +158,13 @@ bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
     typedef typename BoundingBox<T,3>::VectorType VectorType;
 
     // Extent: vector center to max corner of BB
-    VectorType e = bb.range() / 2.;
+    VectorType e = 0.5 * bb.range();
 
     // Make the AABB center the origin by moving the triangle vertices
-    PointType center = bb.centroid();
-    VectorType v[3] = { VectorType(tri.A().array() - center.array())
-                      , VectorType(tri.B().array() - center.array())
-                      , VectorType(tri.C().array() - center.array()) };
+    PointType center(bb.getMin().array() + e.array());
+    VectorType v[3] = { VectorType(center, tri.A())
+                      , VectorType(center, tri.B())
+                      , VectorType(center, tri.C()) };
 
     // Create the edge vectors of the triangle
     VectorType f[3] = { v[1] - v[0], v[2] - v[1],  v[0] - v[2] };

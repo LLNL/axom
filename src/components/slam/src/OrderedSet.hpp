@@ -175,7 +175,6 @@ namespace slam {
     /**
      * \class
      * \brief An iterator type for an ordered set
-     * \brief Enables iterating through the elements of an ordered set
      * Uses the set's policies for efficient iteration
      */
     template<typename OrderedSet>

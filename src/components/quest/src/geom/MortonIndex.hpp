@@ -22,10 +22,6 @@
  * that can be used as a std::hash for unordered_maps
  */
 
-#if defined(__clang__)
-  #define CIRCUMVENT_CLANG_OPTIMIZATION_BUG
-#endif
-
 namespace quest
 {
     /**
@@ -70,23 +66,7 @@ namespace quest
          */
         static MortonIndex expandBits(MortonIndex x)
         {
-          // NOTE: KW 2/2016
-          //   We are marking the loop variable as 'volatile' in clang
-          //   to circumvent a bug in clang's optimizer for the 3D case.
-          //   We are testing for this in quest/tests/quest_morton_clang_repro.cpp.
-          //
-          //   For simplicity, this 'fix' is currently being applied
-          //   to the 2D case as well (which does not have a compiler bug).
-          //
-          //   If we see a performance impact in 2D, we can use a std::enable_if
-          //    (or tagged dispatch) on the derived dimension to optimize the 2D case
-          //   (the dimension =is actually available at compile time, just not to the preprocessor),
-
-          #if defined(CIRCUMVENT_CLANG_OPTIMIZATION_BUG)
-            for(volatile int i=Derived::MAX_ITER; i >= 0; --i)
-          #else
-            for(int i=Derived::MAX_ITER; i >= 0; --i)
-          #endif
+            for(int i=Derived::EXPAND_MAX_ITER; i >= 0; --i)
             {
                 x = (x | (x << Derived::S[i])) & Derived::B[i];
             }
@@ -105,7 +85,7 @@ namespace quest
          */
         static MortonIndex contractBits(MortonIndex x)
         {
-            for(int i=0; i < Derived::MAX_ITER; ++i)
+            for(int i=0; i < Derived::CONTRACT_MAX_ITER; ++i)
             {
                 x = (x | (x >> Derived::S[i])) & Derived::B[i+1];
             }
@@ -122,7 +102,7 @@ namespace quest
         static int maxSetBit(CoordType x)
         {
             CoordType res = 0;
-            for(int i= Derived::MAX_ITER; i >= 0; --i)
+            for(int i= Derived::CONTRACT_MAX_ITER; i >= 0; --i)
             {
                 if(x & MaxBit_B[i])
                 {
@@ -189,19 +169,27 @@ namespace quest
              */
             MAX_UNIQUE_BITS = (MB_PER_DIM < COORD_BITS) ? MB_PER_DIM : COORD_BITS,
 
+            /** The number of iterations required for converting from MortonIndexes to CoordType
+             *  using the bit interleaving algorithm in MortonBase.
+             *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
+             *  to use fewer iterations.  This is something that might be worth looking into.
+             */
+            CONTRACT_MAX_ITER = 5,
+
             /** The number of iterations required for converting between CoordTypes and MortonIndexes
              *  using the bit interleaving algorithm in MortonBase.
              *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
              *  to use fewer iterations.  This is something that might be worth looking into.
              */
-            MAX_ITER = 5
+            EXPAND_MAX_ITER = 5
         };
 
         /**
          * \brief A function to convert a 2D point to a Morton index
          *
          * Morton indexing interleaves the bits of the point's coordinates
-         * \param [in] x,y The coordinates of the point
+         * \param [in] x The x-coordinate of the point
+         * \param [in] y The y-coordinate of the point
          * \pre CoordType must be an integral type
          * \pre x and y must be positive with value less than \f$ 2^{16} \f$
          * \note These preconditions can easily be relaxed, if desired
@@ -229,13 +217,14 @@ namespace quest
          * \brief A function to convert a Morton index back to a 2D point
          *
          * \param [in] morton The MortonIndex of the desired point
-         * \param [out] x,y The coordinates of the point
+         * \param [out] x The x-coordinate of the point
+         * \param [out] y The y-coordinate of the point
          *  Morton indexing interleaves the bits of the point's coordinates
-         * \return The point's coordinates are in the x and y parameters
+         * \note The point's coordinates are returned in the x and y parameters
          */
         static inline void demortonize(MortonIndex morton, CoordType &x, CoordType & y)
         {
-            const MortonIndex& b0 = B[0];
+            static const MortonIndex b0 = B[0];
 
             x = static_cast<CoordType>( Base::contractBits( morton      & b0));
             y = static_cast<CoordType>( Base::contractBits((morton >>1) & b0));
@@ -296,19 +285,28 @@ namespace quest
              */
             MAX_UNIQUE_BITS = (MB_PER_DIM < COORD_BITS) ? MB_PER_DIM : COORD_BITS,
 
+            /** The number of iterations required for converting from MortonIndexes to CoordType
+             *  using the bit interleaving algorithm in MortonBase.
+             *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
+             *  to use fewer iterations.  This is something that might be worth looking into.
+             */
+            CONTRACT_MAX_ITER = 5,
+
             /** The number of iterations required for converting between CoordTypes and MortonIndexes
              *  using the bit interleaving algorithm in MortonBase.
              *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
              *  to use fewer iterations.  This is something that might be worth looking into.
              */
-            MAX_ITER = 5
+            EXPAND_MAX_ITER = 4
         };
 
         /**
          * \brief A function to convert a 3D point to a Morton index
          *
          *  Morton indexing interleaves the bits of the point's coordinates
-         * \param [in] x,y,z The coordinates of the point
+         * \param [in] x The x-coordinate of the point
+         * \param [in] y The y-coordinate of the point
+         * \param [in] z The z-coordinate of the point
          * \pre CoordType must be an integral type
          * \pre x and y must be positive with value less than \f$ 2^{10} \f$
          * \note These preconditions can easily be relaxed, if desired
@@ -317,9 +315,11 @@ namespace quest
          */
         static inline MortonIndex mortonize(CoordType x, CoordType y, CoordType z)
         {
-            return (  Base::expandBits(x)
-                   | (Base::expandBits(y) << 1)
-                   | (Base::expandBits(z) << 2) );
+            static const MortonIndex b5 = B[5];
+
+            return (  Base::expandBits(x & b5)
+                   | (Base::expandBits(y & b5) << 1)
+                   | (Base::expandBits(z & b5) << 2) );
         }
 
         /**
@@ -328,22 +328,26 @@ namespace quest
          */
         static inline MortonIndex mortonize(const Point<CoordType,NDIM> & pt)
         {
-            return (  Base::expandBits(pt[0])
-                   | (Base::expandBits(pt[1]) << 1)
-                   | (Base::expandBits(pt[2]) << 2) );
+            static const MortonIndex b5 = B[5];
+
+            return (  Base::expandBits(pt[0] & b5)
+                   | (Base::expandBits(pt[1] & b5) << 1)
+                   | (Base::expandBits(pt[2] & b5) << 2) );
         }
 
         /**
          * \brief A function to convert a Morton index back to a 3D point
          *
          * \param [in] morton The MortonIndex of the desired point
-         * \param [out] x,y,z The coordinates of the point
+         * \param [out] x The x-coordinate of the point
+         * \param [out] y The y-coordinate of the point
+         * \param [out] z The z-coordinate of the point
          *  Morton indexing interleaves the bits of the point's coordinates
-         * \return The point's coordinates are in the x, y and z parameters
+         * \note The point's coordinates are returned in the x, y and z parameters
          */
         static inline void demortonize(MortonIndex morton, CoordType &x, CoordType & y, CoordType &z)
         {
-            const MortonIndex& b0 = B[0];
+            static const MortonIndex b0 = B[0];
 
             x = static_cast<CoordType>( Base::contractBits( morton      & b0));
             y = static_cast<CoordType>( Base::contractBits((morton >>1) & b0));
@@ -406,7 +410,7 @@ namespace quest
                         0x00000000FFFFFFFF };     // x32
 
     template<typename CoordType>
-    const int Mortonizer<CoordType,3>::S[] = { 2, 4, 8, 16, 32, 64};
+    const int Mortonizer<CoordType,3>::S[] = { 2, 4, 8, 16, 32, 0};
 
     /**
      * \brief A helper function to convert a 2D point directly to a MortonIndex
@@ -519,10 +523,5 @@ namespace quest
     };
 
 } // end namespace quest
-
-
-#ifdef CIRCUMVENT_CLANG_OPTIMIZATION_BUG
-  #undef CIRCUMVENT_CLANG_OPTIMIZATION_BUG
-#endif
 
 #endif  // MORTON_INDEX_HXX_

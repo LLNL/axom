@@ -51,7 +51,7 @@ namespace slam    {
 
   public:
     DynamicVariableRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet);
-    virtual ~DynamicVariableRelation(){}
+    ~DynamicVariableRelation(){}
 
     RelationVecConstIterator begin(SetPosition fromSetIndex)       const
     {
