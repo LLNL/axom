@@ -10,11 +10,12 @@ def add_templates(options):
     options.update(dict(
         LUA_module_filename_template = 'lua{library}module.cpp',
         LUA_header_filename_template = 'lua{library}module.hpp',
-#        LUA_helper_filename_template = 'lua{library}helper.cpp',
-#        LUA_PyTypeObject_template    = '{LUA_prefix}{cpp_class}_Type',
-#        LUA_PyObject_template        = '{LUA_prefix}{cpp_class}',
-#        LUA_type_filename_template   = 'lua{cpp_class}type.cpp',
-        LUA_name_impl_template       = '{LUA_prefix}{class_name}{underscore_name}{function_suffix}',
+        LUA_userdata_struct_template = '{LUA_prefix}{cpp_class}_Type',
+        LUA_userdata_member_template = 'self',
+        LUA_class_reg_template = '{LUA_prefix}{cpp_class}_Reg',
+        LUA_metadata_template  = '{cpp_class}.metatable',
+        LUA_ctor_name_template = '{cpp_class}',
+        LUA_name_impl_template = '{LUA_prefix}{class_name}{underscore_name}{function_suffix}',
         ))
 
 
@@ -78,11 +79,11 @@ class Wrapl(util.WrapperMixin):
         fmt_class = node['fmt']
 
         fmt_class.LUA_userdata_var = 'SH_this'
-        fmt_class.LUA_userdata_struct = 'FFF'
-        fmt_class.LUA_userdata_member = 'self'
-        fmt_class.LUA_metadata  = node['name']
-        fmt_class.LUA_class_reg = 'OOO'
-        fmt_class.LUA_ctor_name = node['name']
+        util.eval_template(node, 'LUA_userdata_struct')
+        util.eval_template(node, 'LUA_userdata_member')
+        util.eval_template(node, 'LUA_class_reg')
+        util.eval_template(node, 'LUA_metadata')
+        util.eval_template(node, 'LUA_ctor_name')
 
 #        self._create_splicer('C_declaration', self.lua_type_structs)
         self.lua_type_structs.append('')

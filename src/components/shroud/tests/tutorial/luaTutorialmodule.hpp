@@ -10,7 +10,7 @@ extern "C" {
 
 typedef struct {
     tutorial::Class1 * self;
-} FFF;
+} l_Class1_Type;
 
 int luaopen_tutorial(lua_State *L);
 

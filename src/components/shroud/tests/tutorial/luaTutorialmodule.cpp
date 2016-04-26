@@ -18,10 +18,10 @@ namespace tutorial {
 
 static int l_class1_new(lua_State *L)
 {
-    FFF * SH_this = (FFF *) lua_newuserdata(L, sizeof(*SH_this));
+    l_Class1_Type * SH_this = (l_Class1_Type *) lua_newuserdata(L, sizeof(*SH_this));
     SH_this->self = new Class1();
     /* Add the metatable to the stack. */
-    luaL_getmetatable(L, "Class1");
+    luaL_getmetatable(L, "Class1.metatable");
     /* Set the metatable on the userdata. */
     lua_setmetatable(L, -2);
     return 1;
@@ -29,7 +29,7 @@ static int l_class1_new(lua_State *L)
 
 static int l_class1_delete(lua_State *L)
 {
-    FFF * SH_this = (FFF *)luaL_checkudata(L, 1, "Class1");
+    l_Class1_Type * SH_this = (l_Class1_Type *)luaL_checkudata(L, 1, "Class1.metatable");
     delete SH_this->self;
     SH_this->self = NULL;
     return 0;
@@ -37,12 +37,12 @@ static int l_class1_delete(lua_State *L)
 
 static int l_class1_method1(lua_State *L)
 {
-    FFF * SH_this = (FFF *)luaL_checkudata(L, 1, "Class1");
+    l_Class1_Type * SH_this = (l_Class1_Type *)luaL_checkudata(L, 1, "Class1.metatable");
     SH_this->self->Method1();
     return 0;
 }
 
-static const struct luaL_Reg OOO [] = {
+static const struct luaL_Reg l_Class1_Reg [] = {
     {"delete", l_class1_delete},
     {"Method1", l_class1_method1},
     {NULL, NULL}   /*sentinel */
@@ -271,7 +271,7 @@ extern "C" {
 int luaopen_tutorial(lua_State *L) {
     
     /* Create the metatable and put it on the stack. */
-    luaL_newmetatable(L, "Class1");
+    luaL_newmetatable(L, "Class1.metatable");
     /* Duplicate the metatable on the stack (We now have 2). */
     lua_pushvalue(L, -1);
     /* Pop the first metatable off the stack and assign it to __index
@@ -283,7 +283,7 @@ int luaopen_tutorial(lua_State *L) {
     lua_setfield(L, -2, "__index");
      
     /* Set the methods to the metatable that should be accessed via object:func */
-    luaL_setfuncs(L, OOO, 0);
+    luaL_setfuncs(L, l_Class1_Reg, 0);
     
     luaL_newlib(L, XXX1);
     return 1;
