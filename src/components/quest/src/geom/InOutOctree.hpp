@@ -11,8 +11,6 @@
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 #include "quest/SquaredDistance.hpp"
-#include "quest/fuzzy_compare.hpp"
-
 
 #include "slic/slic.hpp"
 
@@ -1605,7 +1603,7 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & pt, const BlockIndex& lea
     SpaceVector norm;
     for(int i=0; i< numTris; ++i)
     {
-        if( asctoolkit::utilities::compareReals(minDistSq, sqDists[i]))
+        if( asctoolkit::utilities::isNearlyEqual(minDistSq, sqDists[i]))
             norm += unitNorms[i];
     }
 

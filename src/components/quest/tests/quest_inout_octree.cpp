@@ -113,7 +113,7 @@ void queryOctahedronMesh(meshtk::Mesh*& mesh, const GeometricBoundingBox& bbox)
         // query point is sufficiently close to the surface
         bool expectInside = absCoordSum < 1.;
         EXPECT_TRUE( octree.within(pt) == expectInside
-                || asctoolkit::utilities::compareReals(absCoordSum, 1.) )
+                || asctoolkit::utilities::isNearlyEqual(absCoordSum, 1.) )
             << "Point " << pt << " was not "
             << (expectInside? "inside" : "outside")
             << " surface of octahedron as expected."

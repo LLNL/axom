@@ -286,7 +286,7 @@ namespace slamLulesh {
           , "Specs state that num cycles should be "  << resultCheckMap[gEdge].first
                                                       << " actual number of cycles was " << locDom.cycle() << "." );
 
-      SLIC_ASSERT_MSG( asctoolkit::utilities::compareRealsRelative( resultCheckMap[gEdge].second, locDom.e(ElemId))
+      SLIC_ASSERT_MSG( asctoolkit::utilities::isNearlyEqualRelative( resultCheckMap[gEdge].second, locDom.e(ElemId))
           , "Specs state that final energy at origin must be "  << resultCheckMap[gEdge].second
                                                                 << " actual energy at origin was " << locDom.e(ElemId) << "."
                                                                 << " Difference was " << std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) )
