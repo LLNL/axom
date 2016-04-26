@@ -27,7 +27,7 @@
 
 
 namespace {
-    const int NUM_PT_TESTS = 10000;
+    const int NUM_PT_TESTS = 50000;
     const int DIM = 3;
 }
 
@@ -175,7 +175,7 @@ int main(int argc, char * argv[])
 
   UnitTestLogger logger;  // create & initialize test logger,
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
 
 
   // finalized when exiting main scope

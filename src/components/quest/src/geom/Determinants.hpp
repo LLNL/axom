@@ -33,10 +33,10 @@ namespace math {
 /*!
  *******************************************************************************
  * \brief Computes a 2X2 determinant of the given matrix.
- * \tparam [in] a00 matrix element
- * \tparam [in] a01 matrix element
- * \tparam [in] a10 matrix element
- * \tparam [in] a11 matrix element
+ * \param [in] a00 matrix element
+ * \param [in] a01 matrix element
+ * \param [in] a10 matrix element
+ * \param [in] a11 matrix element
  * \return det the determinant of the 2X2 matrix
  *******************************************************************************
  */

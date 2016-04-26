@@ -89,7 +89,7 @@ set( quest_depends_on
      )
 
 if (ENABLE_MPI)
-  list(APPEND quest_headers stl/PSTLReader.hpp)
+  list(APPEND quest_headers stl/PSTLReader.hpp)  
   list(APPEND quest_sources stl/PSTLReader.cpp)
 endif()
 
@@ -105,18 +105,13 @@ if (ENABLE_FORTRAN)
   list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
 endif()
 
-blt_add_library( NAME 
-                    quest
-                
-                 SOURCES
-                    "${quest_sources}"
-
-                 HEADERS
-                    "${quest_headers}"
-              
-                 DEPENDS_ON
-                    "${quest_depends_on}"
-                 )
+blt_add_library( 
+    NAME        quest
+    SOURCES     "${quest_sources}"
+    HEADERS     "${quest_headers}"
+    DEPENDS_ON  "${quest_depends_on}"
+    )
+                 
 target_include_directories( quest PRIVATE "${CMAKE_SOURCE_DIR}/thirdparty/stla_io" )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )

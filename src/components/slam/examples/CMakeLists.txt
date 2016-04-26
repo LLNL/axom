@@ -6,10 +6,10 @@
 # Single source standalone examples
 #
 set(example_sources
-    ShockTube.cpp
-    UnstructMeshField.cpp
-    TemplateEx.cpp
-    )
+        ShockTube.cpp
+        UnstructMeshField.cpp
+        TemplateEx.cpp
+        )
 
 
 #set_source_files_properties(TemplateEx.cpp PROPERTIES COMPILE_FLAGS "-S -fverbose-asm " )
@@ -18,14 +18,17 @@ set(example_sources
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
-    blt_add_executable(NAME "slam_${example_name}"
-                       SOURCES ${example_source}
-                       OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                       DEPENDS_ON slam slic
-                       )
-    blt_add_test(NAME slam_${example_name} 
-                 COMMAND slam_${example_name}
-                 )
+    blt_add_executable(
+        NAME        "slam_${example_name}"
+        SOURCES     ${example_source}
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  slam slic
+        )
+        
+    blt_add_test(
+        NAME        slam_${example_name} 
+        COMMAND     slam_${example_name}
+        )
 endforeach()
 
 
