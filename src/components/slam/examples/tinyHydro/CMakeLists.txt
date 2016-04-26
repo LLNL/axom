@@ -25,8 +25,8 @@ set(tinyHydro_lib_sources
 #
 blt_add_library(
     NAME        slamTinyHydroLib
-    SOURCES     "${tinyHydro_lib_sources}"
-                "${tinyHydro_lib_headers}"
+    SOURCES     ${tinyHydro_lib_sources} 
+                ${tinyHydro_lib_headers}
     DEPENDS_ON  slic slam
    ) 
    
