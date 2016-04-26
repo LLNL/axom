@@ -86,12 +86,12 @@ class Wrapl(util.WrapperMixin):
         util.eval_template(node, 'LUA_metadata')
         util.eval_template(node, 'LUA_ctor_name')
 
-#        self._create_splicer('C_declaration', self.lua_type_structs)
+        self._create_splicer('C_declaration', self.lua_type_structs)
         self.lua_type_structs.append('')
         self.lua_type_structs.append('typedef struct {')
         self.lua_type_structs.append(1)
         append_format(self.lua_type_structs, '{namespace_scope}{cpp_class} * {LUA_userdata_member};', fmt_class)
-#        self._create_splicer('C_object', self.lua_type_structs)
+        self._create_splicer('C_object', self.lua_type_structs)
         self.lua_type_structs.append(-1)
         self.lua_type_structs.append(wformat('}} {LUA_userdata_type};', fmt_class))
 
@@ -220,42 +220,37 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
         for a_call in all_calls:
             by_count[ a_call.nargs ].append(a_call)
 
-        body = self.body_lines
-        body.extend([
-                '',
-                wformat('static int {LUA_name_impl}(lua_State *L)', fmt),
-                '{',
-                1,
-                ])
+        self.splicer_lines = []
+        lines = self.splicer_lines
 
         if len(all_calls) == 1:
             call = all_calls[0]
             fmt.nresults = call.nresults
             self.do_function(cls, call, fmt)
-            append_format(body, 'return {nresults};', fmt)
+            append_format(lines, 'return {nresults};', fmt)
         else:
-            body.append('int SH_nresult;')
+            lines.append('int SH_nresult;')
 
             # Find type of each argument
             itype_vars = []
             for iarg in range(1,maxargs+1):
                 itype_vars.append('SH_itype{}'.format(iarg))
-                body.append('int {};'.format(itype_vars[-1]))
+                lines.append('int {};'.format(itype_vars[-1]))
 
-            append_format(body, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
-            body.append('switch (SH_nargs) {')
+            append_format(lines, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
+            lines.append('switch (SH_nargs) {')
             for nargs, calls in enumerate(by_count):
                 if len(calls) == 0:
                     continue
-                body.append('case {}:'.format(nargs))
-                body.append(1)
+                lines.append('case {}:'.format(nargs))
+                lines.append(1)
                 ifelse = 'if'
 
                 # Local variables to hold argument types
                 for iarg in range(nargs):
                     fmt.itype_var = itype_vars[iarg]
                     fmt.iarg = iarg + 1
-                    append_format(body, '{itype_var} = lua_type({LUA_state_var}, {iarg});', fmt)
+                    append_format(lines, '{itype_var} = lua_type({LUA_state_var}, {iarg});', fmt)
 
                 for call in calls:
                     fmt.nresults = call.nresults
@@ -269,49 +264,57 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
                     # Select cases to help with formating of output
                     if nargs == 0:
                         self.do_function(cls, call, fmt)
-                        append_format(body, 'SH_nresult = {nresults};', fmt)
+                        append_format(lines, 'SH_nresult = {nresults};', fmt)
                     elif nargs == 1:
-                        body.append('{} ({}) {{'.format(ifelse, checks[0]))
-                        body.append(1)
+                        lines.append('{} ({}) {{'.format(ifelse, checks[0]))
+                        lines.append(1)
                         self.do_function(cls, call, fmt)
-                        append_format(body, 'SH_nresult = {nresults};', fmt)
-                        body.append(-1)
-                        body.append('}')
+                        append_format(lines, 'SH_nresult = {nresults};', fmt)
+                        lines.append(-1)
+                        lines.append('}')
                     elif nargs == 2:
-                        body.append('{} ({} &&'.format(ifelse, checks[0]))
-                        body.append(1)
-                        body.append('{}) {{'.format(checks[1]))
+                        lines.append('{} ({} &&'.format(ifelse, checks[0]))
+                        lines.append(1)
+                        lines.append('{}) {{'.format(checks[1]))
                         self.do_function(cls, call, fmt)
-                        append_format(body, 'SH_nresult = {nresults};', fmt)
-                        body.append(-1)
-                        body.append('}')
+                        append_format(lines, 'SH_nresult = {nresults};', fmt)
+                        lines.append(-1)
+                        lines.append('}')
                     else:
-                        body.append('{} ({} &&'.format(ifelse, checks[0]))
-                        body.append(1)
+                        lines.append('{} ({} &&'.format(ifelse, checks[0]))
+                        lines.append(1)
                         for check in checks[1:-1]:
-                            body.append('{} &&'.format(check))
-                        body.append('{}) {{'.format(checks[-1]))
+                            lines.append('{} &&'.format(check))
+                        lines.append('{}) {{'.format(checks[-1]))
                         self.do_function(cls, call, fmt)
-                        append_format(body, 'SH_nresult = {nresults};', fmt)
-                        body.append(-1)
-                        body.append('}')
+                        append_format(lines, 'SH_nresult = {nresults};', fmt)
+                        lines.append(-1)
+                        lines.append('}')
                     ifelse = 'else if'
                 if nargs > 0:
                     # Trap errors when the argument types do not match
-                    body.append('else {')
-                    body.append(1)
-                    body.append('// raise some error')
-                    body.append(-1)
-                    body.append('}')
-                body.append('break;')
-                body.append(-1)
-            body.append('default:')
-            body.append(1)
-            body.append('break;')
-            body.append(-1)
-            body.append('}')
-            body.append('return SH_nresult;')
+                    lines.append('else {')
+                    lines.append(1)
+                    lines.append('// raise some error')
+                    lines.append(-1)
+                    lines.append('}')
+                lines.append('break;')
+                lines.append(-1)
+            lines.append('default:')
+            lines.append(1)
+            lines.append('break;')
+            lines.append(-1)
+            lines.append('}')
+            lines.append('return SH_nresult;')
 
+        body = self.body_lines
+        body.extend([
+                '',
+                wformat('static int {LUA_name_impl}(lua_State *L)', fmt),
+                '{',
+                1,
+                ])
+        self._create_splicer(fmt.LUA_name, body, self.splicer_lines)
         body.extend([
                 -1,
                 '}'
@@ -494,10 +497,10 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
             tmp = wformat(result_typedef.LUA_push, fmt)
             LUA_push.append( tmp + ';' )
 
-        body = self.body_lines
-        body.extend(LUA_decl)
-        body.extend(LUA_code)
-        body.extend(LUA_push)    # return values
+        lines = self.splicer_lines
+        lines.extend(LUA_decl)
+        lines.extend(LUA_code)
+        lines.extend(LUA_push)    # return values
 
     def write_header(self, node):
         options = node['options']

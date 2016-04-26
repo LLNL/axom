@@ -18,6 +18,7 @@ namespace tutorial {
 
 static int l_class1_new(lua_State *L)
 {
+    // splicer begin class.Class1.method.new
     l_Class1_Type * SH_this = (l_Class1_Type *) lua_newuserdata(L, sizeof(*SH_this));
     SH_this->self = new Class1();
     /* Add the metatable to the stack. */
@@ -25,21 +26,26 @@ static int l_class1_new(lua_State *L)
     /* Set the metatable on the userdata. */
     lua_setmetatable(L, -2);
     return 1;
+    // splicer end class.Class1.method.new
 }
 
 static int l_class1_delete(lua_State *L)
 {
+    // splicer begin class.Class1.method.__gc
     l_Class1_Type * SH_this = (l_Class1_Type *)luaL_checkudata(L, 1, "Class1.metatable");
     delete SH_this->self;
     SH_this->self = NULL;
     return 0;
+    // splicer end class.Class1.method.__gc
 }
 
 static int l_class1_method1(lua_State *L)
 {
+    // splicer begin class.Class1.method.Method1
     l_Class1_Type * SH_this = (l_Class1_Type *)luaL_checkudata(L, 1, "Class1.metatable");
     SH_this->self->Method1();
     return 0;
+    // splicer end class.Class1.method.Method1
 }
 
 static const struct luaL_Reg l_Class1_Reg [] = {
@@ -50,47 +56,58 @@ static const struct luaL_Reg l_Class1_Reg [] = {
 
 static int l_function1(lua_State *L)
 {
+    // splicer begin function.Function1
     Function1();
     return 0;
+    // splicer end function.Function1
 }
 
 static int l_function2(lua_State *L)
 {
+    // splicer begin function.Function2
     double arg1 = lua_tonumber(L, 1);
     int arg2 = lua_tointeger(L, 2);
     double rv = Function2(arg1, arg2);
     lua_pushnumber(L, rv);
     return 1;
+    // splicer end function.Function2
 }
 
 static int l_function3(lua_State *L)
 {
+    // splicer begin function.Function3
     bool arg = lua_toboolean(L, 1);
     bool rv = Function3(arg);
     lua_pushboolean(L, rv);
     return 1;
+    // splicer end function.Function3
 }
 
 static int l_function4a(lua_State *L)
 {
+    // splicer begin function.Function4a
     const char * arg1 = lua_tostring(L, 1);
     const char * arg2 = lua_tostring(L, 2);
     const std::string rv = Function4a(arg1, arg2);
     lua_pushstring(L, rv.c_str());
     return 1;
+    // splicer end function.Function4a
 }
 
 static int l_function4b(lua_State *L)
 {
+    // splicer begin function.Function4b
     const char * arg1 = lua_tostring(L, 1);
     const char * arg2 = lua_tostring(L, 2);
     const std::string & rv = Function4b(arg1, arg2);
     lua_pushstring(L, rv.c_str());
     return 1;
+    // splicer end function.Function4b
 }
 
 static int l_function5_arg1_arg2(lua_State *L)
 {
+    // splicer begin function.Function5_arg1_arg2
     int SH_nresult;
     int SH_itype1;
     int SH_itype2;
@@ -127,10 +144,12 @@ static int l_function5_arg1_arg2(lua_State *L)
         break;
     }
     return SH_nresult;
+    // splicer end function.Function5_arg1_arg2
 }
 
 static int l_function6_from_name(lua_State *L)
 {
+    // splicer begin function.Function6_from_name
     int SH_nresult;
     int SH_itype1;
     int SH_nargs = lua_gettop(L);
@@ -155,17 +174,21 @@ static int l_function6_from_name(lua_State *L)
         break;
     }
     return SH_nresult;
+    // splicer end function.Function6_from_name
 }
 
 static int l_function9(lua_State *L)
 {
+    // splicer begin function.Function9
     double arg = lua_tonumber(L, 1);
     Function9(arg);
     return 0;
+    // splicer end function.Function9
 }
 
 static int l_function10_0(lua_State *L)
 {
+    // splicer begin function.Function10_0
     int SH_nresult;
     int SH_itype1;
     int SH_itype2;
@@ -193,10 +216,12 @@ static int l_function10_0(lua_State *L)
         break;
     }
     return SH_nresult;
+    // splicer end function.Function10_0
 }
 
 static int l_overload1_num_offset_stride(lua_State *L)
 {
+    // splicer begin function.overload1_num_offset_stride
     int SH_nresult;
     int SH_itype1;
     int SH_itype2;
@@ -272,29 +297,36 @@ static int l_overload1_num_offset_stride(lua_State *L)
         break;
     }
     return SH_nresult;
+    // splicer end function.overload1_num_offset_stride
 }
 
 static int l_typefunc(lua_State *L)
 {
+    // splicer begin function.typefunc
     TypeID arg = lua_tointeger(L, 1);
     TypeID rv = typefunc(arg);
     lua_pushinteger(L, rv);
     return 1;
+    // splicer end function.typefunc
 }
 
 static int l_enumfunc(lua_State *L)
 {
+    // splicer begin function.enumfunc
     EnumTypeID arg = static_cast<EnumTypeID>(lua_tointeger(L, 1));
     EnumTypeID rv = enumfunc(arg);
     lua_pushinteger(L, static_cast<int>(rv));
     return 1;
+    // splicer end function.enumfunc
 }
 
 static int l_last_function_called(lua_State *L)
 {
+    // splicer begin function.LastFunctionCalled
     const std::string & rv = LastFunctionCalled();
     lua_pushstring(L, rv.c_str());
     return 1;
+    // splicer end function.LastFunctionCalled
 }
 
 static const struct luaL_Reg XXX1 [] = {
