@@ -125,15 +125,18 @@ class WrapperMixin(object):
         else:
             self.splicer_path = ''
 
-    def _create_splicer(self, name, out, override=None, default=[]):
+    def _create_splicer(self, name, out, default=[]):
+        """Insert a splicer with *name* into list *out*.
+        Use the splicer from the splicer_stack if it exists.
+        This allows the user to replace the default text.
+        TODO:
+          Option to ignore splicer stack to generate original code
+        """
         # The prefix is needed when two different sets of output are being create
         # and they are not in sync.
         # Creating methods and derived types together.
         out.append('%s splicer begin %s%s' % (self.comment, self.splicer_path, name))
-        if override:
-            out.extend(override)
-        else:
-            out.extend(self.splicer_stack[-1].get(name, default))
+        out.extend(self.splicer_stack[-1].get(name, default))
         out.append('%s splicer end %s%s' % (self.comment, self.splicer_path, name))
 
 #####

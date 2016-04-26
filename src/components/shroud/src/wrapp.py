@@ -184,7 +184,7 @@ return rv;""", fmt)
         self.py_helper_functions.append(proto)
         self.py_helper_functions.append('{')
         self.py_helper_functions.append(1)
-        self._create_splicer('to_object', self.py_helper_functions, default=to_object)
+        self._create_splicer('to_object', self.py_helper_functions, to_object)
         self.py_helper_functions.append(-1)
         self.py_helper_functions.append('}')
 
@@ -205,7 +205,7 @@ return 1;""", fmt)
         self.py_helper_functions.append(proto)
         self.py_helper_functions.append('{')
         self.py_helper_functions.append(1)
-        self._create_splicer('from_object', self.py_helper_functions, default=from_object)
+        self._create_splicer('from_object', self.py_helper_functions, from_object)
         self.py_helper_functions.append(-1)
         self.py_helper_functions.append('}')
 
@@ -591,9 +591,9 @@ return 1;""", fmt)
 # use function_suffix in splicer name since a single C++ function may
 # produce several methods.
 # XXX - make splicer name customizable?
-#        self._create_splicer(fmt.function_name, self.PyMethodBody, default=PY_impl)
+#        self._create_splicer(fmt.function_name, self.PyMethodBody, PY_impl)
         self._create_splicer(fmt.underscore_name + fmt.function_suffix,
-                             self.PyMethodBody, default=PY_impl)
+                             self.PyMethodBody, PY_impl)
         self.PyMethodBody.append('}')
 
         if expose is True:
@@ -631,7 +631,7 @@ return 1;""", fmt)
             output.append('{')
             default = default_body.get(typename, self.not_implemented_error)
             default = default(typename, tup[2])
-            self._create_splicer(typename, output, default=default)
+            self._create_splicer(typename, output, default)
             output.append('}')
         self._pop_splicer('type')
 
