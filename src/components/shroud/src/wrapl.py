@@ -10,7 +10,7 @@ def add_templates(options):
     options.update(dict(
         LUA_module_filename_template = 'lua{library}module.cpp',
         LUA_header_filename_template = 'lua{library}module.hpp',
-        LUA_userdata_struct_template = '{LUA_prefix}{cpp_class}_Type',
+        LUA_userdata_type_template = '{LUA_prefix}{cpp_class}_Type',
         LUA_userdata_member_template = 'self',
         LUA_class_reg_template = '{LUA_prefix}{cpp_class}_Reg',
         LUA_metadata_template  = '{cpp_class}.metatable',
@@ -79,7 +79,7 @@ class Wrapl(util.WrapperMixin):
         fmt_class = node['fmt']
 
         fmt_class.LUA_userdata_var = 'SH_this'
-        util.eval_template(node, 'LUA_userdata_struct')
+        util.eval_template(node, 'LUA_userdata_type')
         util.eval_template(node, 'LUA_userdata_member')
         util.eval_template(node, 'LUA_class_reg')
         util.eval_template(node, 'LUA_metadata')
@@ -92,7 +92,7 @@ class Wrapl(util.WrapperMixin):
         append_format(self.lua_type_structs, '{namespace_scope}{cpp_class} * {LUA_userdata_member};', fmt_class)
 #        self._create_splicer('C_object', self.lua_type_structs)
         self.lua_type_structs.append(-1)
-        self.lua_type_structs.append(wformat('}} {LUA_userdata_struct};', fmt_class))
+        self.lua_type_structs.append(wformat('}} {LUA_userdata_type};', fmt_class))
 
         self.luaL_Reg_class = []
 
@@ -194,7 +194,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
             if not is_ctor:
                 fmt.c_var = wformat(cls_typedef.LUA_pop, fmt)
                 LUA_code.append(
-                    wformat('{LUA_userdata_struct} * {LUA_userdata_var} = {c_var};', fmt))
+                    wformat('{LUA_userdata_type} * {LUA_userdata_var} = {c_var};', fmt))
 
         # parse arguments
         # call function based on number of default arguments provided
@@ -347,7 +347,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
 
             if is_ctor:
                 LUA_code.extend([
-                        wformat('{LUA_userdata_struct} * {LUA_userdata_var} = ({LUA_userdata_struct} *) lua_newuserdata({LUA_state_var}, sizeof(*{LUA_userdata_var}));', fmt),
+                        wformat('{LUA_userdata_type} * {LUA_userdata_var} = ({LUA_userdata_type} *) lua_newuserdata({LUA_state_var}, sizeof(*{LUA_userdata_var}));', fmt),
                         wformat('{LUA_userdata_var}->{LUA_userdata_member} = new {cpp_class}({cpp_call_list});', fmt),
                         '/* Add the metatable to the stack. */',
                         wformat('luaL_getmetatable(L, "{LUA_metadata}");', fmt),

@@ -284,7 +284,7 @@
         "LUA_module_filename_template": "lua{library}module.cpp", 
         "LUA_name_impl_template": "{LUA_prefix}{class_name}{underscore_name}{function_suffix}", 
         "LUA_userdata_member_template": "self", 
-        "LUA_userdata_struct_template": "{LUA_prefix}{cpp_class}_Type", 
+        "LUA_userdata_type_template": "{LUA_prefix}{cpp_class}_Type", 
         "PY_PyObject_template": "{PY_prefix}{cpp_class}", 
         "PY_PyTypeObject_template": "{PY_prefix}{cpp_class}_Type", 
         "PY_header_filename_template": "py{library}module.hpp", 
@@ -315,7 +315,7 @@
             "f_type": "integer"
         }, 
         "Names": {
-            "LUA_pop": "({LUA_userdata_struct} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
+            "LUA_pop": "({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
             "PY_PyObject": "PY_Names", 
             "PY_PyTypeObject": "PY_Names_Type", 
             "PY_from_object": "PP_Names_from_Object", 

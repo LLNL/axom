@@ -1181,7 +1181,7 @@ class VerifyAttrs(object):
                     ),
 #                PY_ctor = 'PyObject_New({PyObject}, &{PyTypeObject})',
 
-                LUA_pop = '({LUA_userdata_struct} *)luaL_checkudata({LUA_state_var}, 1, "{LUA_metadata}")',
+                LUA_pop = '({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, "{LUA_metadata}")',
 #                LUA_push = None,  # XXX create a userdata object with metatable
 #                LUA_statements={},
 

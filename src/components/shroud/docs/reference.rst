@@ -242,7 +242,7 @@ LUA_module_filename_template
 LUA_header_filename_template
     ``lua{library}module.hpp``
 
-LUA_userdata_struct_template
+LUA_userdata_type_template
     ``{LUA_prefix}{cpp_class}_Type``
 
 LUA_userdata_member_template
