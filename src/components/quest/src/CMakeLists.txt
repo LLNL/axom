@@ -107,9 +107,9 @@ endif()
 
 blt_add_library( 
     NAME        quest
-    SOURCES     "${quest_sources}"
-    HEADERS     "${quest_headers}"
-    DEPENDS_ON  "${quest_depends_on}"
+    SOURCES     ${quest_sources}
+    HEADERS     ${quest_headers}
+    DEPENDS_ON  ${quest_depends_on}
     )
                  
 target_include_directories( quest PRIVATE "${CMAKE_SOURCE_DIR}/thirdparty/stla_io" )

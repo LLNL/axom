@@ -42,7 +42,7 @@ namespace utilities {
  * \return \c true if the absolute value of the difference is less than thresh and false otherwise
  */
   template<typename RealType>
-  bool compareReals(RealType a, RealType b, RealType thresh = 1.0e-8)
+  bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
   {
     return std::fabs(a-b) <= thresh;
   }
@@ -58,7 +58,7 @@ namespace utilities {
  *         and the relative difference (relThresh times the absolute max of a and b)
  */
   template<typename RealType>
-  bool compareRealsRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
+  bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
                             RealType absThresh = 1.0e-8)
   {
     RealType maxFabs = std::max(std::fabs(a), std::fabs(b) );
