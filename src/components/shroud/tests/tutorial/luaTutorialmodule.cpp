@@ -43,7 +43,7 @@ static int l_class1_method1(lua_State *L)
 }
 
 static const struct luaL_Reg l_Class1_Reg [] = {
-    {"delete", l_class1_delete},
+    {"__gc", l_class1_delete},
     {"Method1", l_class1_method1},
     {NULL, NULL}   /*sentinel */
 };

@@ -262,6 +262,10 @@ LUA_ctor_name_template
     Added to the library's table.
     ``{cpp_class}``
 
+LUA_name_template
+    Name of function as know by Lua.
+    ``{function_name}{function_suffix}``
+
 LUA_name_impl_template
     ``{LUA_prefix}{class_name}{underscore_name}{function_suffix}``
 
@@ -690,6 +694,11 @@ F_name_instance_set
     Name of method to set ``type(C_PTR)`` instance pointer in wrapped class.
     Defaults to *set_instance*.
     If the name is blank, no function is generated.
+
+LUA_name
+    Name of function as known by LUA.
+    Defaults to option *LUA_name_template*.
+
 
 Annotations
 -----------

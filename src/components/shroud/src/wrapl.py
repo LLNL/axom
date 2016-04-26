@@ -15,6 +15,7 @@ def add_templates(options):
         LUA_class_reg_template = '{LUA_prefix}{cpp_class}_Reg',
         LUA_metadata_template  = '{cpp_class}.metatable',
         LUA_ctor_name_template = '{cpp_class}',
+        LUA_name_template = '{function_name}{function_suffix}',
         LUA_name_impl_template = '{LUA_prefix}{class_name}{underscore_name}{function_suffix}',
         ))
 
@@ -149,6 +150,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
         fmt.doc_string = 'documentation'
+        util.eval_template(node, 'LUA_name')
         util.eval_template(node, 'LUA_name_impl')
 
         CPP_subprogram = node['_subprogram']
@@ -171,6 +173,8 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
 ##-            # XXX - have explicit delete
 ##-            # need code in __init__ and __del__
 ##-            return
+        if is_dtor:
+            fmt.LUA_name = '__gc'
 
         # XXX if a class, then knock off const since the PyObject
         # is not const, otherwise, use const from result.
@@ -318,11 +322,11 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
             if is_ctor:
                 self.luaL_Reg_module.append(wformat('{{"{LUA_ctor_name}{function_suffix}", {LUA_name_impl}}},', fmt))
             else:
-                self.luaL_Reg_class.append(wformat('{{"{function_name}{function_suffix}", {LUA_name_impl}}},', fmt))
+                self.luaL_Reg_class.append(wformat('{{"{LUA_name}", {LUA_name_impl}}},', fmt))
                 
         else:
             fmt.LUA_this_call = ''  # call function syntax
-            self.luaL_Reg_module.append(wformat('{{"{function_name}{function_suffix}", {LUA_name_impl}}},', fmt))
+            self.luaL_Reg_module.append(wformat('{{"{LUA_name}", {LUA_name_impl}}},', fmt))
 
         # call with all arguments
         default_calls.append(
