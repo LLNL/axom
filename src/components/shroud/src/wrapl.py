@@ -382,8 +382,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
         LUA_code = []  # call C++ function
         LUA_push = []  # push results
 
-        post_parse = []
-
+#        post_parse = []
         cpp_call_list = []
 
         # find class object
@@ -456,15 +455,10 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
             
             cpp_call_list.append(fmt.cpp_var)
 
-        # call with all arguments
-        nargs = len(cpp_call_list)
-        len_post_parse = len(post_parse)
-        cpp_call_list = ', '.join(cpp_call_list)
-
+        # call with arguments
+        fmt.cpp_call_list = ', '.join(cpp_call_list)
         fmt.rv_asgn = fmt.rv_decl + ' = '
-
-        fmt.cpp_call_list = cpp_call_list
-        LUA_code.extend(post_parse[:len_post_parse])
+#        LUA_code.extend(post_parse)
 
         if is_ctor:
             LUA_code.extend([
