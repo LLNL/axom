@@ -27,7 +27,7 @@
 
 
 namespace {
-    const int NUM_PT_TESTS = 10000;
+    const int NUM_PT_TESTS = 50000;
     const int DIM = 3;
 }
 
@@ -113,7 +113,7 @@ void queryOctahedronMesh(meshtk::Mesh*& mesh, const GeometricBoundingBox& bbox)
         // query point is sufficiently close to the surface
         bool expectInside = absCoordSum < 1.;
         EXPECT_TRUE( octree.within(pt) == expectInside
-                || asctoolkit::utilities::compareReals(absCoordSum, 1.) )
+                || asctoolkit::utilities::isNearlyEqual(absCoordSum, 1.) )
             << "Point " << pt << " was not "
             << (expectInside? "inside" : "outside")
             << " surface of octahedron as expected."
@@ -175,7 +175,7 @@ int main(int argc, char * argv[])
 
   UnitTestLogger logger;  // create & initialize test logger,
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
 
 
   // finalized when exiting main scope

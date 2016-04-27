@@ -796,7 +796,7 @@ namespace slamLulesh {
     testProcs = Int_t(cbrt(Real_t(numRanks)) + 0.5);
     if (testProcs * testProcs * testProcs != numRanks)
     {
-      printf("Num processors must be a cube of an integer (1, 8, 27, ...)\n");
+      SLIC_WARNING("Num processors must be a cube of an integer (1, 8, 27, ...)");
 #ifdef USE_MPI
       MPI_Abort(MPI_COMM_WORLD, -1);
 #else
@@ -805,7 +805,7 @@ namespace slamLulesh {
     }
     if (sizeof(Real_t) != 4 && sizeof(Real_t) != 8)
     {
-      printf("MPI operations only support float and double right now...\n");
+      SLIC_WARNING("MPI operations only support float and double right now...");
 #ifdef USE_MPI
       MPI_Abort(MPI_COMM_WORLD, -1);
 #else
@@ -814,7 +814,7 @@ namespace slamLulesh {
     }
     if (MAX_FIELDS_PER_MPI_COMM > CACHE_COHERENCE_PAD_REAL)
     {
-      printf("corner element comm buffers too small.  Fix code.\n");
+      SLIC_WARNING("Corner element comm buffers too small.  Fix code.");
 #ifdef USE_MPI
       MPI_Abort(MPI_COMM_WORLD, -1);
 #else
@@ -829,7 +829,7 @@ namespace slamLulesh {
     // temporary test
     if (dx * dy * dz != numRanks)
     {
-      printf("error -- must have as many domains as procs\n");
+      SLIC_WARNING("Error -- must have as many domains as procs.");
 #ifdef USE_MPI
       MPI_Abort(MPI_COMM_WORLD, -1);
 #else

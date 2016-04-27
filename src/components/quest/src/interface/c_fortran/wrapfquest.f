@@ -21,24 +21,26 @@ module quest_mod
     
     interface
         
-        subroutine c_initialize(comm, fileName, ndims, maxElements, maxLevels) &
+        subroutine c_initialize(comm, fileName, requiresDistance, ndims, maxElements, maxLevels) &
                 bind(C, name="QUEST_initialize")
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: comm
             character(kind=C_CHAR), intent(IN) :: fileName(*)
+            logical(C_BOOL), value, intent(IN) :: requiresDistance
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_INT), value, intent(IN) :: maxElements
             integer(C_INT), value, intent(IN) :: maxLevels
         end subroutine c_initialize
         
-        subroutine c_initialize_bufferify(comm, fileName, LfileName, ndims, maxElements, maxLevels) &
+        subroutine c_initialize_bufferify(comm, fileName, LfileName, requiresDistance, ndims, maxElements, maxLevels) &
                 bind(C, name="QUEST_initialize_bufferify")
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: comm
             character(kind=C_CHAR), intent(IN) :: fileName(*)
             integer(C_INT), value, intent(IN) :: LfileName
+            logical(C_BOOL), value, intent(IN) :: requiresDistance
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_INT), value, intent(IN) :: maxElements
             integer(C_INT), value, intent(IN) :: maxLevels
@@ -78,19 +80,23 @@ module quest_mod
 
 contains
     
-    subroutine quest_initialize(comm, fileName, ndims, maxElements, maxLevels)
+    subroutine quest_initialize(comm, fileName, requiresDistance, ndims, maxElements, maxLevels)
         use iso_c_binding
         implicit none
         integer, value, intent(IN) :: comm
         character(*), intent(IN) :: fileName
+        logical, value, intent(IN) :: requiresDistance
+        logical(C_BOOL) tmp_requiresDistance
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_INT), value, intent(IN) :: maxElements
         integer(C_INT), value, intent(IN) :: maxLevels
+        tmp_requiresDistance = requiresDistance  ! coerce to C_BOOL
         ! splicer begin initialize
         call c_initialize_bufferify(  &
             comm,  &
             fileName,  &
             len_trim(fileName, kind=C_INT),  &
+            tmp_requiresDistance,  &
             ndims,  &
             maxElements,  &
             maxLevels)

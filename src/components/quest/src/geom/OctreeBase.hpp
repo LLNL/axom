@@ -59,7 +59,7 @@ namespace quest
       /**
        * \brief Sets the data associated with this block
        */
-      void setData(int leafID) { m_id = leafID; }
+      void setData(int blockID) { m_id = blockID; }
 
       /**
        * Returns the normalized form of the id for this BlockData instance
@@ -68,9 +68,7 @@ namespace quest
       int getID() const { return isLeaf()? m_id : ~m_id; }
 
       /**
-       * \brief Predicate to determine if this BlockData is associated with a leaf block
-       * or internal block of the octree.
-       * \return True, if the associated block is internal, false otherwise
+       * \brief Sets the block type to internal
        */
       void setInternal() { if(isLeaf()) { m_id = ~m_id; } }
 
@@ -490,7 +488,7 @@ public:
   /**
    * \brief Determine whether the octree contains a leaf block associated with grid point pt at level lev
    * \param [in] pt The grid point to check
-   * \param [in] level The level of the grid point
+   * \param [in] lev The level of the grid point
    * \returns true if the associated block is a leaf in the octree, false otherwise
    */
   bool isLeaf(const GridPt& pt, int lev) const
@@ -512,7 +510,7 @@ public:
   /**
    * \brief Determine whether the octree contains an internal block associated with grid point pt at level lev
    * \param [in] pt The grid point to check
-   * \param [in] level The level of the grid point
+   * \param [in] lev The level of the grid point
    * \returns true if the associated block is an internal block of the octree, false otherwise
    */
   bool isInternal(const GridPt& pt, int lev) const
@@ -533,7 +531,7 @@ public:
   /**
    * \brief Determine whether the octree contains a block (internal or leaf) associated with grid point pt at level lev
    * \param [in] pt The grid point to check
-   * \param [in] level The level of the grid point
+   * \param [in] lev The level of the grid point
    * \returns true if the associated block is in the octree, false otherwise
    */
   bool hasBlock(const GridPt& pt, int lev) const
@@ -601,7 +599,7 @@ public:
     const int numChildren = ChildIndexSet().size();
     for(int childIdx=0; childIdx < numChildren; ++childIdx)
     {
-        childLevelMap[ leafBlock.childPt(childIdx) ] = BlockDataType();
+        childLevelMap.insert( std::make_pair( leafBlock.childPt(childIdx), BlockDataType()));
     }
   }
 
@@ -636,40 +634,45 @@ public:
   /**
    * \brief Finds the finest octree leaf covering BlockIndex blk
    * \param blk A BlockIndex, not necessarily in the octree
+   * \param checkInBounds A flag to determine if we should check that
+   *        the block lies within the octree bounds (default=true)
    * \post The returned block, if valid, is blk or one of its ancestor blocks.
    * \return The blockIndex of the finest octree leaf covering blk, if it exists,
    *    BlockIndex::invalid_index otherwise (e.g. blk is out of bounds)
    */
-  BlockIndex coveringLeafBlock(BlockIndex blk) const
+  BlockIndex coveringLeafBlock(const BlockIndex& blk, bool checkInBounds = true) const
   {
       // Check that point is in bounds
-      if(!this->inBounds(blk))
+      if(checkInBounds && !this->inBounds(blk))
           return BlockIndex::invalid_index();
 
       switch( blockStatus(blk) )
       {
-      case LeafBlock:       // Already a leaf -- nothing to do
-          break;
-      case InternalBlock:   // An internal block -- no tree leaf can contain it
-          blk = BlockIndex::invalid_index();
-          break;
       case BlockNotInTree:  // Find its nearest ancestor in the tree (it will be a leaf)
-          do {
-              blk = blk.parent();
-          } while( ! this-> hasBlock(blk));
+        {
+          BlockIndex ancBlk = blk.parent();
+          while( ! this-> hasBlock(ancBlk))
+              ancBlk = ancBlk.parent();
 
-          SLIC_ASSERT( this->isLeaf(blk));
-          break;
+          SLIC_ASSERT( this->isLeaf(ancBlk));
+          return ancBlk;
+        }
+      case LeafBlock:       // Already a leaf -- nothing to do
+          return blk;
+      case InternalBlock:   // An internal block -- no tree leaf can contain it
+          return BlockIndex::invalid_index();
       }
 
-      return blk;
+      SLIC_ASSERT_MSG(false, "OctreeBase::coveringLeafBlock -- Should never get past the switch statement.  "
+                      <<" Perhaps a new case was added to the TreeBlock enum");
+      return BlockIndex::invalid_index();
   }
 
 protected:
   /**
    * \brief Helper enumeration for status of a BlockIndex within an octree instance
    */
-  enum TreeBlock { BlockNotInTree, InternalBlock, LeafBlock};
+  enum TreeBlock { BlockNotInTree, LeafBlock, InternalBlock};
 
 
   /**

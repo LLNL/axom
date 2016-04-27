@@ -66,15 +66,12 @@ if (ENABLE_BOOST)
     list(APPEND slam_depends boost)
 endif()
 
-blt_add_library( NAME
-                   slam
-                 SOURCES
-                   "${slam_sources}"
-                 HEADERS
-                   "${slam_headers}"
-                 DEPENDS_ON
-                   ${slam_depends_on}
-               )
+blt_add_library( 
+    NAME        slam
+    SOURCES     ${slam_sources}
+    HEADERS     ${slam_headers}
+    DEPENDS_ON  ${slam_depends_on}
+    )
 
 ####################################
 # install target for slam

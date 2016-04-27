@@ -473,7 +473,7 @@ int main()
 
     // Some error checking based on precomputed values
     SLIC_ASSERT_MSG(
-      asctoolkit::utilities::compareReals(errVal, expectedResults[res]), "Error differed from expected value."
+      asctoolkit::utilities::isNearlyEqual(errVal, expectedResults[res]), "Error differed from expected value."
       << "\n\texpected: " << expectedResults[res]
       << "\n\tactual: "   << errVal
       << "\n\tdiff: "     << (errVal - expectedResults[res]));
