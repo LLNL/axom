@@ -228,14 +228,16 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
             append_format(lines, 'return {nresults};', fmt)
         else:
             lines.append('int SH_nresult;')
+            append_format(lines, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
 
             # Find type of each argument
             itype_vars = []
             for iarg in range(1,maxargs+1):
                 itype_vars.append('SH_itype{}'.format(iarg))
-                lines.append('int {};'.format(itype_vars[-1]))
+                fmt.itype_var = itype_vars[-1]
+                fmt.iarg = iarg
+                append_format(lines, 'int {itype_var} = lua_type({LUA_state_var}, {iarg});', fmt)
 
-            append_format(lines, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
             lines.append('switch (SH_nargs) {')
             for nargs, calls in enumerate(by_count):
                 if len(calls) == 0:
@@ -243,12 +245,6 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
                 lines.append('case {}:'.format(nargs))
                 lines.append(1)
                 ifelse = 'if'
-
-                # Local variables to hold argument types
-                for iarg in range(nargs):
-                    fmt.itype_var = itype_vars[iarg]
-                    fmt.iarg = iarg + 1
-                    append_format(lines, '{itype_var} = lua_type({LUA_state_var}, {iarg});', fmt)
 
                 for call in calls:
                     fmt.nresults = call.nresults
@@ -271,30 +267,36 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
                                 -1,
                                 '}'])
                     elif nargs == 1:
-                        lines.append('{} ({}) {{'.format(ifelse, checks[0]))
-                        lines.append(1)
+                        lines.extend([
+                                '{} ({}) {{'.format(ifelse, checks[0]),
+                                1])
                         self.do_function(cls, call, fmt)
-                        append_format(lines, 'SH_nresult = {nresults};', fmt)
-                        lines.append(-1)
-                        lines.append('}')
+                        lines.extend([
+                                wformat('SH_nresult = {nresults};', fmt),
+                                -1,
+                                '}'])
                     elif nargs == 2:
-                        lines.append('{} ({} &&'.format(ifelse, checks[0]))
-                        lines.append(1)
+                        lines.extend([
+                                '{} ({} &&'.format(ifelse, checks[0]),
+                                1])
                         lines.append('{}) {{'.format(checks[1]))
                         self.do_function(cls, call, fmt)
-                        append_format(lines, 'SH_nresult = {nresults};', fmt)
-                        lines.append(-1)
-                        lines.append('}')
+                        lines.extend([
+                                wformat('SH_nresult = {nresults};', fmt),
+                                -1,
+                                '}'])
                     else:
-                        lines.append('{} ({} &&'.format(ifelse, checks[0]))
-                        lines.append(1)
+                        lines.extend([
+                                '{} ({} &&'.format(ifelse, checks[0]),
+                                1])
                         for check in checks[1:-1]:
                             lines.append('{} &&'.format(check))
                         lines.append('{}) {{'.format(checks[-1]))
                         self.do_function(cls, call, fmt)
-                        append_format(lines, 'SH_nresult = {nresults};', fmt)
-                        lines.append(-1)
-                        lines.append('}')
+                        lines.extend([
+                                wformat('SH_nresult = {nresults};', fmt),
+                                -1,
+                                '}'])
                     ifelse = 'else if'
                 if nargs > 0:
                     # Trap errors when the argument types do not match

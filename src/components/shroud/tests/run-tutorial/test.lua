@@ -11,6 +11,9 @@ print(tutorial.LastFunctionCalled(), rv_double)
 
 rv_int = tutorial.overload1(10)
 print(tutorial.LastFunctionCalled(), rv_int)
+-- This should call overload (double type, int num)
+-- but instead calls (int num, int offset)
+-- since there is only one number type
 rv_int = tutorial.overload1(1.0, 10)
 print(tutorial.LastFunctionCalled(), rv_int)
 

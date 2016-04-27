@@ -109,9 +109,9 @@ static int l_function5(lua_State *L)
 {
     // splicer begin function.Function5
     int SH_nresult;
-    int SH_itype1;
-    int SH_itype2;
     int SH_nargs = lua_gettop(L);
+    int SH_itype1 = lua_type(L, 1);
+    int SH_itype2 = lua_type(L, 2);
     switch (SH_nargs) {
     case 0:
         {
@@ -121,7 +121,6 @@ static int l_function5(lua_State *L)
         }
         break;
     case 1:
-        SH_itype1 = lua_type(L, 1);
         if (SH_itype1 == LUA_TNUMBER) {
             double arg1 = lua_tonumber(L, 1);
             double rv = Function5(arg1);
@@ -133,8 +132,6 @@ static int l_function5(lua_State *L)
         }
         break;
     case 2:
-        SH_itype1 = lua_type(L, 1);
-        SH_itype2 = lua_type(L, 2);
         if (SH_itype1 == LUA_TNUMBER &&
             SH_itype2 == LUA_TBOOLEAN) {
             double arg1 = lua_tonumber(L, 1);
@@ -159,11 +156,10 @@ static int l_function6(lua_State *L)
 {
     // splicer begin function.Function6
     int SH_nresult;
-    int SH_itype1;
     int SH_nargs = lua_gettop(L);
+    int SH_itype1 = lua_type(L, 1);
     switch (SH_nargs) {
     case 1:
-        SH_itype1 = lua_type(L, 1);
         if (SH_itype1 == LUA_TSTRING) {
             const char * name = lua_tostring(L, 1);
             Function6(name);
@@ -199,9 +195,9 @@ static int l_function10(lua_State *L)
 {
     // splicer begin function.Function10
     int SH_nresult;
-    int SH_itype1;
-    int SH_itype2;
     int SH_nargs = lua_gettop(L);
+    int SH_itype1 = lua_type(L, 1);
+    int SH_itype2 = lua_type(L, 2);
     switch (SH_nargs) {
     case 0:
         {
@@ -210,8 +206,6 @@ static int l_function10(lua_State *L)
         }
         break;
     case 2:
-        SH_itype1 = lua_type(L, 1);
-        SH_itype2 = lua_type(L, 2);
         if (SH_itype1 == LUA_TSTRING &&
             SH_itype2 == LUA_TNUMBER) {
             const char * name = lua_tostring(L, 1);
@@ -235,14 +229,13 @@ static int l_overload1(lua_State *L)
 {
     // splicer begin function.overload1
     int SH_nresult;
-    int SH_itype1;
-    int SH_itype2;
-    int SH_itype3;
-    int SH_itype4;
     int SH_nargs = lua_gettop(L);
+    int SH_itype1 = lua_type(L, 1);
+    int SH_itype2 = lua_type(L, 2);
+    int SH_itype3 = lua_type(L, 3);
+    int SH_itype4 = lua_type(L, 4);
     switch (SH_nargs) {
     case 1:
-        SH_itype1 = lua_type(L, 1);
         if (SH_itype1 == LUA_TNUMBER) {
             int num = lua_tointeger(L, 1);
             int rv = overload1(num);
@@ -254,8 +247,6 @@ static int l_overload1(lua_State *L)
         }
         break;
     case 2:
-        SH_itype1 = lua_type(L, 1);
-        SH_itype2 = lua_type(L, 2);
         if (SH_itype1 == LUA_TNUMBER &&
             SH_itype2 == LUA_TNUMBER) {
             int num = lua_tointeger(L, 1);
@@ -277,9 +268,6 @@ static int l_overload1(lua_State *L)
         }
         break;
     case 3:
-        SH_itype1 = lua_type(L, 1);
-        SH_itype2 = lua_type(L, 2);
-        SH_itype3 = lua_type(L, 3);
         if (SH_itype1 == LUA_TNUMBER &&
             SH_itype2 == LUA_TNUMBER &&
             SH_itype3 == LUA_TNUMBER) {
@@ -305,10 +293,6 @@ static int l_overload1(lua_State *L)
         }
         break;
     case 4:
-        SH_itype1 = lua_type(L, 1);
-        SH_itype2 = lua_type(L, 2);
-        SH_itype3 = lua_type(L, 3);
-        SH_itype4 = lua_type(L, 4);
         if (SH_itype1 == LUA_TNUMBER &&
             SH_itype2 == LUA_TNUMBER &&
             SH_itype3 == LUA_TNUMBER &&
