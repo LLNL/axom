@@ -8,12 +8,15 @@ LUA = /home/taylor16/testzzz-ets-4.6.3-4.3f
 # location of Shroud generated files
 VPATH = ../tutorial
 
-CPPFLAGS = -I. -I.. -I${LUA}/include  -Wall -fPIC
+CPPFLAGS = -g -I. -I.. -I../tutorial -I${LUA}/include  -Wall -fPIC
 
 tutorial.so : tutorial.o luaTutorialmodule.o
 	gcc -shared -o $@ $^ -lstdc++
 
+simple : testlua.o tutorial.o luaTutorialmodule.o
+	g++ -o $@ $^ -L${LUA}/lib -llua -ldl
+
 clean :
-	rm -f *.so *.o
+	rm -f *.so *.o simple
 .PHONY : clean
 

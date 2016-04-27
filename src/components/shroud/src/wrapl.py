@@ -15,8 +15,8 @@ def add_templates(options):
         LUA_class_reg_template = '{LUA_prefix}{cpp_class}_Reg',
         LUA_metadata_template  = '{cpp_class}.metatable',
         LUA_ctor_name_template = '{cpp_class}',
-        LUA_name_template = '{function_name}{function_suffix}',
-        LUA_name_impl_template = '{LUA_prefix}{class_name}{underscore_name}{function_suffix}',
+        LUA_name_template = '{function_name}',
+        LUA_name_impl_template = '{LUA_prefix}{class_name}{underscore_name}',
         ))
 
 
@@ -295,13 +295,14 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
                     # Trap errors when the argument types do not match
                     lines.append('else {')
                     lines.append(1)
-                    lines.append('// raise some error')
+                    lines.append(wformat('luaL_error({LUA_state_var}, "error with arguments");', fmt))
                     lines.append(-1)
                     lines.append('}')
                 lines.append('break;')
                 lines.append(-1)
             lines.append('default:')
             lines.append(1)
+            lines.append(wformat('luaL_error({LUA_state_var}, "error with arguments");', fmt))
             lines.append('break;')
             lines.append(-1)
             lines.append('}')
@@ -500,6 +501,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
         lines = self.splicer_lines
         lines.extend(LUA_decl)
         lines.extend(LUA_code)
+        # int lua_checkstack (lua_State *L, int extra)
         lines.extend(LUA_push)    # return values
 
     def write_header(self, node):

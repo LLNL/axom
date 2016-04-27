@@ -105,9 +105,9 @@ static int l_function4b(lua_State *L)
     // splicer end function.Function4b
 }
 
-static int l_function5_arg1_arg2(lua_State *L)
+static int l_function5(lua_State *L)
 {
-    // splicer begin function.Function5_arg1_arg2
+    // splicer begin function.Function5
     int SH_nresult;
     int SH_itype1;
     int SH_itype2;
@@ -122,7 +122,7 @@ static int l_function5_arg1_arg2(lua_State *L)
             SH_nresult = 1;
         }
         else {
-            // raise some error
+            luaL_error(L, "error with arguments");
         }
         break;
     case 2:
@@ -137,19 +137,20 @@ static int l_function5_arg1_arg2(lua_State *L)
             SH_nresult = 1;
         }
         else {
-            // raise some error
+            luaL_error(L, "error with arguments");
         }
         break;
     default:
+        luaL_error(L, "error with arguments");
         break;
     }
     return SH_nresult;
-    // splicer end function.Function5_arg1_arg2
+    // splicer end function.Function5
 }
 
-static int l_function6_from_name(lua_State *L)
+static int l_function6(lua_State *L)
 {
-    // splicer begin function.Function6_from_name
+    // splicer begin function.Function6
     int SH_nresult;
     int SH_itype1;
     int SH_nargs = lua_gettop(L);
@@ -167,14 +168,15 @@ static int l_function6_from_name(lua_State *L)
             SH_nresult = 0;
         }
         else {
-            // raise some error
+            luaL_error(L, "error with arguments");
         }
         break;
     default:
+        luaL_error(L, "error with arguments");
         break;
     }
     return SH_nresult;
-    // splicer end function.Function6_from_name
+    // splicer end function.Function6
 }
 
 static int l_function9(lua_State *L)
@@ -186,9 +188,9 @@ static int l_function9(lua_State *L)
     // splicer end function.Function9
 }
 
-static int l_function10_0(lua_State *L)
+static int l_function10(lua_State *L)
 {
-    // splicer begin function.Function10_0
+    // splicer begin function.Function10
     int SH_nresult;
     int SH_itype1;
     int SH_itype2;
@@ -209,19 +211,20 @@ static int l_function10_0(lua_State *L)
             SH_nresult = 0;
         }
         else {
-            // raise some error
+            luaL_error(L, "error with arguments");
         }
         break;
     default:
+        luaL_error(L, "error with arguments");
         break;
     }
     return SH_nresult;
-    // splicer end function.Function10_0
+    // splicer end function.Function10
 }
 
-static int l_overload1_num_offset_stride(lua_State *L)
+static int l_overload1(lua_State *L)
 {
-    // splicer begin function.overload1_num_offset_stride
+    // splicer begin function.overload1
     int SH_nresult;
     int SH_itype1;
     int SH_itype2;
@@ -241,7 +244,7 @@ static int l_overload1_num_offset_stride(lua_State *L)
             SH_nresult = 1;
         }
         else {
-            // raise some error
+            luaL_error(L, "error with arguments");
         }
         break;
     case 3:
@@ -269,7 +272,7 @@ static int l_overload1_num_offset_stride(lua_State *L)
             SH_nresult = 1;
         }
         else {
-            // raise some error
+            luaL_error(L, "error with arguments");
         }
         break;
     case 4:
@@ -290,14 +293,15 @@ static int l_overload1_num_offset_stride(lua_State *L)
             SH_nresult = 1;
         }
         else {
-            // raise some error
+            luaL_error(L, "error with arguments");
         }
         break;
     default:
+        luaL_error(L, "error with arguments");
         break;
     }
     return SH_nresult;
-    // splicer end function.overload1_num_offset_stride
+    // splicer end function.overload1
 }
 
 static int l_typefunc(lua_State *L)
@@ -336,11 +340,11 @@ static const struct luaL_Reg XXX1 [] = {
     {"Function3", l_function3},
     {"Function4a", l_function4a},
     {"Function4b", l_function4b},
-    {"Function5_arg1_arg2", l_function5_arg1_arg2},
-    {"Function6_from_name", l_function6_from_name},
+    {"Function5", l_function5},
+    {"Function6", l_function6},
     {"Function9", l_function9},
-    {"Function10_0", l_function10_0},
-    {"overload1_num_offset_stride", l_overload1_num_offset_stride},
+    {"Function10", l_function10},
+    {"overload1", l_overload1},
     {"typefunc", l_typefunc},
     {"enumfunc", l_enumfunc},
     {"LastFunctionCalled", l_last_function_called},

@@ -264,10 +264,15 @@ LUA_ctor_name_template
 
 LUA_name_template
     Name of function as know by Lua.
-    ``{function_name}{function_suffix}``
+    All overloaded function use the same Lua wrapper so 
+    *function_suffix* is not needed.
+    ``{function_name}``
 
 LUA_name_impl_template
-    ``{LUA_prefix}{class_name}{underscore_name}{function_suffix}``
+    Name of implementation function.
+    All overloaded function use the same Lua wrapper so 
+    *function_suffix* is not needed.
+    ``{LUA_prefix}{class_name}{underscore_name}``
 
 
 
