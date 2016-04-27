@@ -113,6 +113,13 @@ static int l_function5(lua_State *L)
     int SH_itype2;
     int SH_nargs = lua_gettop(L);
     switch (SH_nargs) {
+    case 0:
+        {
+            double rv = Function5();
+            lua_pushnumber(L, rv);
+            SH_nresult = 1;
+        }
+        break;
     case 1:
         SH_itype1 = lua_type(L, 1);
         if (SH_itype1 == LUA_TNUMBER) {
@@ -197,8 +204,10 @@ static int l_function10(lua_State *L)
     int SH_nargs = lua_gettop(L);
     switch (SH_nargs) {
     case 0:
-        Function10();
-        SH_nresult = 0;
+        {
+            Function10();
+            SH_nresult = 0;
+        }
         break;
     case 2:
         SH_itype1 = lua_type(L, 1);
@@ -232,6 +241,18 @@ static int l_overload1(lua_State *L)
     int SH_itype4;
     int SH_nargs = lua_gettop(L);
     switch (SH_nargs) {
+    case 1:
+        SH_itype1 = lua_type(L, 1);
+        if (SH_itype1 == LUA_TNUMBER) {
+            int num = lua_tointeger(L, 1);
+            int rv = overload1(num);
+            lua_pushinteger(L, rv);
+            SH_nresult = 1;
+        }
+        else {
+            luaL_error(L, "error with arguments");
+        }
+        break;
     case 2:
         SH_itype1 = lua_type(L, 1);
         SH_itype2 = lua_type(L, 2);
@@ -240,6 +261,14 @@ static int l_overload1(lua_State *L)
             int num = lua_tointeger(L, 1);
             int offset = lua_tointeger(L, 2);
             int rv = overload1(num, offset);
+            lua_pushinteger(L, rv);
+            SH_nresult = 1;
+        }
+        else if (SH_itype1 == LUA_TNUMBER &&
+            SH_itype2 == LUA_TNUMBER) {
+            double type = lua_tonumber(L, 1);
+            int num = lua_tointeger(L, 2);
+            int rv = overload1(type, num);
             lua_pushinteger(L, rv);
             SH_nresult = 1;
         }

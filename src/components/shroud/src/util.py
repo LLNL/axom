@@ -327,7 +327,7 @@ class Typedef(object):
         py_statements={},
 
         # Lua
-        LUA_type = 'LUA_TNIL',
+        LUA_type = 'LUA_TNONE',
         LUA_pop = 'POP',
         LUA_push = 'PUSH',
         LUA_statements={},

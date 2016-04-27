@@ -204,15 +204,13 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
             for arg in function['args']:
                 arg_typedef = self.typedef[arg['type']]
                 attrs = arg['attrs']
-                nargs += 1 
-                in_args.append(arg)
                 if 'default' in attrs:
                     all_calls.append(lua_function(function, CPP_subprogram, in_args[:], out_args))
                     found_default = True
-            if not found_default:
-                # no defaults, use all arguments
-                all_calls.append(lua_function(function, CPP_subprogram, in_args[:], out_args))
-            maxargs = max(maxargs, nargs)
+                in_args.append(arg)
+            # no defaults, use all arguments
+            all_calls.append(lua_function(function, CPP_subprogram, in_args[:], out_args))
+            maxargs = max(maxargs, len(in_args))
 
 
         # Gather calls by number of arguments
@@ -263,8 +261,15 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
 
                     # Select cases to help with formating of output
                     if nargs == 0:
+                        # put within a compound statement to scope local variables
+                        lines.extend([
+                                '{',
+                                1])
                         self.do_function(cls, call, fmt)
                         append_format(lines, 'SH_nresult = {nresults};', fmt)
+                        lines.extend([
+                                -1,
+                                '}'])
                     elif nargs == 1:
                         lines.append('{} ({}) {{'.format(ifelse, checks[0]))
                         lines.append(1)
