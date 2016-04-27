@@ -48,9 +48,14 @@ static int l_class1_method1(lua_State *L)
     // splicer end class.Class1.method.Method1
 }
 
+// splicer begin class.Class1.additional_functions
+// splicer end class.Class1.additional_functions
+
 static const struct luaL_Reg l_Class1_Reg [] = {
     {"__gc", l_class1_delete},
     {"Method1", l_class1_method1},
+    // splicer begin class.Class1.register
+    // splicer end class.Class1.register
     {NULL, NULL}   /*sentinel */
 };
 
@@ -346,7 +351,10 @@ static int l_last_function_called(lua_State *L)
     // splicer end function.LastFunctionCalled
 }
 
-static const struct luaL_Reg XXX1 [] = {
+// splicer begin additional_functions
+// splicer end additional_functions
+
+static const struct luaL_Reg l_Tutorial_Reg [] = {
     {"Class1", l_class1_new},
     {"Function1", l_function1},
     {"Function2", l_function2},
@@ -361,6 +369,8 @@ static const struct luaL_Reg XXX1 [] = {
     {"typefunc", l_typefunc},
     {"enumfunc", l_enumfunc},
     {"LastFunctionCalled", l_last_function_called},
+    // splicer begin register
+    // splicer end register
     {NULL, NULL}   /*sentinel */
 };
 
@@ -384,7 +394,7 @@ int luaopen_tutorial(lua_State *L) {
     /* Set the methods to the metatable that should be accessed via object:func */
     luaL_setfuncs(L, l_Class1_Reg, 0);
     
-    luaL_newlib(L, XXX1);
+    luaL_newlib(L, l_Tutorial_Reg);
     return 1;
 }
 #ifdef __cplusplus

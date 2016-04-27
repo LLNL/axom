@@ -12,6 +12,7 @@ def add_templates(options):
         LUA_header_filename_template = 'lua{library}module.hpp',
         LUA_userdata_type_template = '{LUA_prefix}{cpp_class}_Type',
         LUA_userdata_member_template = 'self',
+        LUA_module_reg_template = '{LUA_prefix}{library}_Reg',
         LUA_class_reg_template = '{LUA_prefix}{cpp_class}_Reg',
         LUA_metadata_template  = '{cpp_class}.metatable',
         LUA_ctor_name_template = '{cpp_class}',
@@ -45,7 +46,7 @@ class Wrapl(util.WrapperMixin):
         fmt_library.LUA_prefix        = options.get('LUA_prefix', 'l_')
         fmt_library.LUA_module_name  = fmt_library.library_lower
         fmt_library.LUA_state_var = 'L'
-        fmt_library.LUA_module_reg = 'XXX1'
+        util.eval_template(top, 'LUA_module_reg')
         util.eval_template(top, 'LUA_module_filename')
         util.eval_template(top, 'LUA_header_filename')
 
@@ -100,6 +101,7 @@ class Wrapl(util.WrapperMixin):
         # wrap methods
         self._push_splicer('method')
         self.wrap_functions(node, node['methods'])
+        self._pop_splicer('method')
         self.append_luaL_Reg(self.body_lines, fmt_class.LUA_class_reg,
                              self.luaL_Reg_class)
 
@@ -118,8 +120,6 @@ lua_setfield({LUA_state_var}, -2, "__index");
  
 /* Set the methods to the metatable that should be accessed via object:func */
 luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
-
-        self._pop_splicer('method')
 
     def wrap_functions(self, cls, functions):
         """Wrap functions for a library or class.
@@ -541,12 +541,15 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
 
     def append_luaL_Reg(self, output, name, lines):
         """Create luaL_Reg struct"""
+        output.append('')
+        self._create_splicer('additional_functions', output)
         output.extend([
                 '',
                 'static const struct luaL_Reg {} [] = {{'.format(name),
                 1,
                 ])
         output.extend(lines)
+        self._create_splicer('register', output)
         output.extend([
                 '{NULL, NULL}   /*sentinel */',
                 -1,

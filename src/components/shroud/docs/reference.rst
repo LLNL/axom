@@ -250,8 +250,12 @@ LUA_userdata_member_template
     ``self``
 
 LUA_class_reg_template
-    Name of `luaL_Reg` array of function names.
+    Name of `luaL_Reg` array of function names for a class.
     ``{LUA_prefix}{cpp_class}_Reg``
+
+LUA_module_reg_template
+    Name of `luaL_Reg` array of function names for a library.
+    ``{LUA_prefix}{library}_Reg``
 
 LUA_metadata_template
     Name of metatable for a class.
