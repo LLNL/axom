@@ -31,14 +31,34 @@ int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
 
+  SLIC_ASSERT(argc == 2);
+
   DataStore * ds = new DataStore();
+  SLIC_ASSERT(ds);
   DataGroup * root = ds->getRoot();
 
   size_t num_files = 0;
-  std::string file_base;
-  if (argc == 3) {
-    num_files = static_cast<size_t>(atoi(argv[1]));
-    file_base = argv[2];
+  std::string root_file;
+  if (argc == 2) {
+    root_file = argv[1];
+    hid_t root_file_id = H5Fopen(root_file.c_str(),
+                                 H5F_ACC_RDWR,
+                                 H5P_DEFAULT);
+    SLIC_ASSERT(root_file_id >= 0);
+
+    hid_t num_files_id = H5Dopen(root_file_id, "num_files", H5P_DEFAULT);
+    SLIC_ASSERT(num_files_id >= 0);
+
+    int tmp_num_files;
+    herr_t errv = H5Dread(num_files_id,
+            H5T_NATIVE_INT,
+            H5S_ALL,
+            H5S_ALL,
+            H5P_DEFAULT,
+            &tmp_num_files);
+    SLIC_ASSERT(errv >= 0);
+    SLIC_ASSERT(tmp_num_files >= 0);
+    num_files = static_cast<size_t>(tmp_num_files);
   } else {
     return 0;
   }
@@ -47,7 +67,7 @@ int main(int argc, char * argv[])
   groups.push_back(root);
 
   IOManager reader(MPI_COMM_WORLD, &(groups[0]), groups.size(), num_files);
-  reader.read(file_base, 0, "conduit_hdf5");
+  reader.read(root_file, "conduit_hdf5");
 
   delete ds;
 

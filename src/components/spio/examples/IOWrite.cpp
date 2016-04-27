@@ -31,6 +31,7 @@ using asctoolkit::spio::IOManager;
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
+  SLIC_ASSERT(argc == 3);
 
   size_t num_files = 0;
   std::string file_base;
@@ -45,6 +46,7 @@ int main(int argc, char * argv[])
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
   DataStore * ds = new DataStore();
+  SLIC_ASSERT(ds); 
   DataGroup * root = ds->getRoot();
 
   DataGroup * flds = root->createGroup("fields");
