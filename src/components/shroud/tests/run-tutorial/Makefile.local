@@ -10,6 +10,8 @@ VPATH = ../tutorial
 
 CPPFLAGS = -g -I. -I.. -I../tutorial -I${LUA}/include  -Wall -fPIC
 
+all : tutorial.so simple
+
 tutorial.so : tutorial.o luaTutorialmodule.o
 	gcc -shared -o $@ $^ -lstdc++
 
