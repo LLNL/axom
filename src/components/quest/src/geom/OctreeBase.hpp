@@ -328,6 +328,27 @@ public:
             return bValid;
         }
 
+        /**
+         * \brief Predicate to determine if the block instance is a descendant of ancestor block
+         * \param ancestor The potential ancestor of the block
+         * \note A block is an ancestor of another block if neither block is an invalid_index()
+         *      and the block's are equivalent after 0 or more calls to BlockIndex::parent()
+         *  \return True, if the block instance is a descendant of the ancestor block
+         */
+        bool isDescendantOf(const BlockIndex & ancestor) const
+        {
+            if(m_lev < ancestor.level() || m_lev < 0 || ancestor.level() < 0)
+                return false;
+
+            BlockIndex blk(*this);
+            while( blk.level() > ancestor.level() )
+                blk = blk.parent();
+
+            SLIC_ASSERT(blk.level() == ancestor.level());
+            return blk == ancestor;
+        }
+
+
         std::ostream& print(std::ostream& os) const
         {
             os << "{grid pt: " << m_pt
