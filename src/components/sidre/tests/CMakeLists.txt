@@ -74,7 +74,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre conduit conduit_io hdf5 slic fruit
+                            DEPENDS_ON sidre conduit conduit_relay hdf5 slic fruit
                             )
         blt_add_test( NAME ${test_name} 
                       COMMAND ${test_name}
