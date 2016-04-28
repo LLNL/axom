@@ -1,14 +1,13 @@
 #
-#  Compile the tutorial locally
+#  Compile the lua tutorial locally
 #
 
-PYTHON = /home/taylor16/testzzz-ets-4.6.3-4.3f
 LUA = /home/taylor16/testzzz-ets-4.6.3-4.3f
 
-# location of Shroud generated files
-VPATH = ../tutorial
+# location of Shroud generated files and tutorial library
+VPATH = .. ../../tutorial
 
-CPPFLAGS = -g -I. -I.. -I../tutorial -I${LUA}/include  -Wall -fPIC
+CPPFLAGS = -g -I. -I.. -I../../tutorial -I${LUA}/include  -Wall -fPIC
 
 all : tutorial.so simple
 
