@@ -297,7 +297,7 @@ macro(blt_add_executable)
     list(GET arg_SOURCES 0 _first)
     get_source_file_property(_lang ${_first} LANGUAGE)
     if(_lang STREQUAL Fortran)
-        set_target_properties( ${test_name} PROPERTIES LINKER_LANGUAGE Fortran )
+        set_target_properties( ${arg_NAME} PROPERTIES LINKER_LANGUAGE Fortran )
     endif()
 
     blt_setup_target(NAME ${arg_NAME}
