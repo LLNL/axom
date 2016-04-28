@@ -5,31 +5,55 @@
 ################################
 # Conduit
 ################################
-include(cmake/thirdparty/FindConduit.cmake)
+if (CONDUIT_DIR)
+  include(cmake/thirdparty/FindConduit.cmake)
+  blt_register_library( NAME conduit
+                        INCLUDES ${CONDUIT_INCLUDE_DIRS} )
+  blt_register_library( NAME conduit_io
+                        INCLUDES ${CONDUIT_INCLUDE_DIRS} )
+endif()
 
 
 ################################
 # HDF5
 ################################
-include(cmake/thirdparty/FindHDF5.cmake)
+if (HDF5_DIR)
+  include(cmake/thirdparty/FindHDF5.cmake)
+  blt_register_library(NAME hdf5
+                       INCLUDES ${HDF5_INCLUDE_DIRS}
+                       LIBRARIES ${HDF5_LIBRARY} )
+endif()
 
 
 ################################
 # Sparsehash
 ################################
-include(cmake/thirdparty/FindSparsehash.cmake)
+if (SPARSEHASH_DIR)
+  include(cmake/thirdparty/FindSparsehash.cmake)
+  blt_register_library(NAME sparsehash
+                       INCLUDES ${SPARSEHASH_INCLUDE_DIRS})
+endif()
+
 
 ################################
 # Documentation Packages
 ################################
+if (DOXYGEN_EXECUTABLE)
+  find_package(Doxygen)
+endif()
 
-find_package(Doxygen)
-include(cmake/thirdparty/FindSphinx.cmake)
+if (SPHINX_EXECUTABLE)
+  include(cmake/thirdparty/FindSphinx.cmake)
+endif()
+
 
 ################################
 # linting via Uncrustify
 ################################
-include(cmake/thirdparty/FindUncrustify.cmake)
+if (UNCRUSTIFY_EXECUTABLE)
+  include(cmake/thirdparty/FindUncrustify.cmake)
+endif()
+
 
 ################################
 # Find boost headers
@@ -39,8 +63,10 @@ if (ENABLE_BOOST)
     find_package(Boost
                  1.55
                  REQUIRED)
+    blt_register_library(NAME boost
+                         INCLUDES ${Boost_INCLUDE_DIR})
     MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
-    MESSAGE(STATUS "Boost version: " ${Boost_VERSION} )
+    MESSAGE(STATUS "Boost version: " ${Boost_VERSION})
   else()
     MESSAGE(FATAL_ERROR "ENABLE_BOOST is true, but BOOST_ROOT was not set.  Check your host-config file.")
   endif()
@@ -82,3 +108,13 @@ if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
     INSTALL(DIRECTORY DESTINATION ${CMAKE_Python_SITE_PACKAGES})
     INSTALL(CODE " set(ENV\{PYTHONPATH\} ${CMAKE_INSTALL_PREFIX}/${CMAKE_Python_SITE_PACKAGES}) ")
 endif(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
+
+################################
+# Lua
+################################
+
+if (LUA_DIR)
+    # Set the hint for FindLua
+    set (ENV{LUA_DIR}  ${LUA_DIR})
+    find_package(Lua)
+endif()

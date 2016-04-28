@@ -31,7 +31,7 @@ functions:
 - options:
     # Change the default template for Fortran functions to include the library name.
     F_name_impl_template: "{library_lower}_{class_name}{underscore_name}{function_suffix}"
-- decl: void initialize( MPI_Comm comm, const std::string& fileName,int ndims, int maxElements, int maxLevels )
+- decl: void initialize( MPI_Comm comm, const std::string& fileName, bool requiresDistance, int ndims, int maxElements, int maxLevels )
 - decl: void finalize()
 
 - decl: double distance( double x, double y, double z )

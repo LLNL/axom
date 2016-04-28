@@ -4,20 +4,18 @@
 ####################################
 
 
-set(lulesh_lib_headers
-    lulesh.h
-    #lulesh_tuple.hpp
-    )
+set(lulesh_headers
+        lulesh.h
+        #lulesh_tuple.hpp
+        )
 
-set(lulesh_lib_sources
-    lulesh-comm.cc
-    lulesh-init.cc
-    lulesh-util.cc
-    lulesh-viz.cc
-    )
-set(lulesh_exe_source
-    lulesh.cc
-    )
+set(lulesh_sources
+        lulesh.cc
+        lulesh-comm.cc
+        lulesh-init.cc
+        lulesh-util.cc
+        lulesh-viz.cc
+        )
 
 # Add some extra configuration flags for MPI, OpenMP and allowing unused parameters (in 3rd party source code)
 set(luleshExtraCompileFlags ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS})
@@ -28,24 +26,17 @@ endif()
 if ( ENABLE_MPI )
     set(luleshExtraCompileFlags "${luleshExtraCompileFlags} -DUSE_MPI=1 ")
 else()
-    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} -DUSE_MPI=0 ")    
+    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} -DUSE_MPI=0 ")
 endif()
 #message(STATUS " luleshExtraCompileFlags is '${luleshExtraCompileFlags}'")
 
-set_source_files_properties(${lulesh_lib_sources} ${lulesh_lib_headers} ${lulesh_exe_source}  
-                            PROPERTIES COMPILE_FLAGS " ${luleshExtraCompileFlags} " )
+set_source_files_properties(${lulesh_sources} ${lulesh_headers} 
+    PROPERTIES COMPILE_FLAGS " ${luleshExtraCompileFlags} " )
 
-make_library( 
-    LIBRARY_NAME slamLuleshOrigLib 
-    LIBRARY_SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}"  
-    USE_OPENMP ${ENABLE_OPENMP} 
-   ) 
-   
-make_executable( 
-    EXECUTABLE_NAME slam_OrigLulesh 
-    EXECUTABLE_SOURCE ${lulesh_exe_source} 
-    DEPENDS_ON "slamLuleshOrigLib" 
-    USE_OPENMP ${ENABLE_OPENMP}
-    IS_EXAMPLE
-   ) 
-      
+
+blt_add_executable(
+    NAME        slam_lulesh_orig
+    SOURCES     ${lulesh_sources} ${lulesh_headers}
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    USE_OPENMP  ${ENABLE_OPENMP}
+    ) 

@@ -42,19 +42,19 @@
    -v              : Output viz file (requires compiling with -DVIZ_MESH
    -h              : This message
 
-   printf("Usage: %s [opts]\n", execname);
-      printf(" where [opts] is one or more of:\n");
-      printf(" -q              : quiet mode - suppress all stdout\n");
-      printf(" -i <iterations> : number of cycles to run\n");
-      printf(" -s <size>       : length of cube mesh along side\n");
-      printf(" -r <numregions> : Number of distinct regions (def: 11)\n");
-      printf(" -b <balance>    : Load balance between regions of a domain (def: 1)\n");
-      printf(" -c <cost>       : Extra cost of more expensive regions (def: 1)\n");
-      printf(" -f <numfiles>   : Number of files to split viz dump into (def: (np+10)/9)\n");
-      printf(" -p              : Print out progress\n");
-      printf(" -v              : Output viz file (requires compiling with -DVIZ_MESH\n");
-      printf(" -h              : This message\n");
-      printf("\n\n");
+    SLIC_INFO( "Usage: " << execname << " [opts]\n"
+          << " where [opts] is one or more of:\n"
+          << " -q              : quiet mode - suppress all stdout\n"
+          << " -i <iterations> : number of cycles to run\n"
+          << " -s <size>       : length of cube mesh along side\n"
+          << " -r <numregions> : Number of distinct regions (def: 11)\n"
+          << " -b <balance>    : Load balance between regions of a domain (def: 1)\n"
+          << " -c <cost>       : Extra cost of more expensive regions (def: 1)\n"
+          << " -f <numfiles>   : Number of files to split viz dump into (def: (np+10)/9)\n"
+          << " -p              : Print out progress\n"
+          << " -v              : Output viz file (requires compiling with -DVIZ_MESH\n"
+          << " -h              : This message\n"
+          << "\n\n");
 
  * Notable changes in LULESH 2.0
 
@@ -1870,8 +1870,8 @@ namespace slamLulesh {
         break;
       case XI_M_FREE: delvm = Real_t(0.0);
         break;
-      default:          fprintf(stderr, "Error in switch at %s line %d\n",
-            __FILE__, __LINE__);
+      default:
+        SLIC_WARNING("Error in switch on bcMask for XI_M");
         delvm = 0;     /* ERROR - but quiets the compiler */
         break;
       }
@@ -1883,8 +1883,8 @@ namespace slamLulesh {
         break;
       case XI_P_FREE: delvp = Real_t(0.0);
         break;
-      default:          fprintf(stderr, "Error in switch at %s line %d\n",
-            __FILE__, __LINE__);
+      default:
+        SLIC_WARNING("Error in switch on bcMask for XI_P");
         delvp = 0;     /* ERROR - but quiets the compiler */
         break;
       }
@@ -1918,8 +1918,8 @@ namespace slamLulesh {
         break;
       case ETA_M_FREE: delvm = Real_t(0.0);
         break;
-      default:          fprintf(stderr, "Error in switch at %s line %d\n",
-            __FILE__, __LINE__);
+      default:
+        SLIC_WARNING("Error in switch on bcMask for ETA_M");
         delvm = 0;     /* ERROR - but quiets the compiler */
         break;
       }
@@ -1931,8 +1931,8 @@ namespace slamLulesh {
         break;
       case ETA_P_FREE: delvp = Real_t(0.0);
         break;
-      default:          fprintf(stderr, "Error in switch at %s line %d\n",
-            __FILE__, __LINE__);
+      default:
+        SLIC_WARNING("Error in switch on bcMask for ETA_P");
         delvp = 0;     /* ERROR - but quiets the compiler */
         break;
       }
@@ -1965,8 +1965,8 @@ namespace slamLulesh {
         break;
       case ZETA_M_FREE: delvm = Real_t(0.0);
         break;
-      default:          fprintf(stderr, "Error in switch at %s line %d\n",
-            __FILE__, __LINE__);
+      default:
+        SLIC_WARNING("Error in switch on bcMask for ZETA_M");
         delvm = 0;     /* ERROR - but quiets the compiler */
         break;
       }
@@ -1978,8 +1978,8 @@ namespace slamLulesh {
         break;
       case ZETA_P_FREE: delvp = Real_t(0.0);
         break;
-      default:          fprintf(stderr, "Error in switch at %s line %d\n",
-            __FILE__, __LINE__);
+      default:
+        SLIC_WARNING("Error in switch on bcMask for ZETA_P");
         delvp = 0;     /* ERROR - but quiets the compiler */
         break;
       }
@@ -2879,19 +2879,21 @@ int main(int argc, char *argv[])
 
   if ((myRank == 0) && (opts.quiet == 0))
   {
-    printf( "Running problem size %d^3 per domain until completion\n",  opts.nx);
-    printf( "Num processors: %d\n",                                     numRanks);
+    SLIC_INFO( "Running problem size "<< opts.nx <<"^3 per domain until completion"
+             <<"\n\tNum processors: " << numRanks
 #if _OPENMP
-    printf( "Num threads: %d\n",                                        omp_get_max_threads());
+             <<"\n\tNum threads: " << omp_get_max_threads()
 #endif
-    printf( "Total number of elements: %lld\n\n",                       (long long int)(numRanks * opts.nx * opts.nx * opts.nx));
-    printf( "To run other sizes, use -s <integer>.\n");
-    printf( "To run a fixed number of iterations, use -i <integer>.\n");
-    printf( "To run a more or less balanced region set, use -b <integer>.\n");
-    printf( "To change the relative costs of regions, use -c <integer>.\n");
-    printf( "To print out progress, use -p\n");
-    printf( "To write an output file for VisIt, use -v\n");
-    printf( "See help (-h) for more options\n\n");
+             <<"\n\tTotal number of elements: " << (numRanks * opts.nx * opts.nx * opts.nx));
+
+    SLIC_INFO( "To run other sizes, use -s <integer>."
+        << "\n\tTo run a fixed number of iterations, use -i <integer>."
+        << "\n\tTo run a more or less balanced region set, use -b <integer>."
+        << "\n\tTo change the relative costs of regions, use -c <integer>."
+        << "\n\tTo print out progress, use -p"
+        << "\n\tTo write an output file for VisIt, use -v"
+        << "\n\tSee help (-h) for more options"
+        <<"\n");
   }
 
   // Set up the mesh and decompose. Assumes regular cubes for now
@@ -2928,7 +2930,7 @@ int main(int argc, char *argv[])
 #endif
 //debug to see region sizes
 //   for(Int_t i = 0; i < locDom->numReg(); i++)
-//      std::cout << "region" << i + 1<< "size" << locDom->regElemSize(i) <<std::endl;
+//      SLIC_INFO("region " << (i + 1) << "size: " << locDom->regElemSize(i) );
   while((locDom->time() < locDom->stoptime()) && (locDom->cycle() < opts.its))
   {
 
@@ -2937,8 +2939,8 @@ int main(int argc, char *argv[])
 
     if ((opts.showProg != 0) && (opts.quiet == 0) && (myRank == 0))
     {
-      printf("cycle = %d, time = %e, dt=%e\n", locDom->cycle(), double(locDom->time()), double(locDom->deltatime()) );
-      fflush(stdout);
+      SLIC_INFO("cycle = " << locDom->cycle() << ", time = " << locDom->time() << ", dt= " << locDom->deltatime());
+      asctoolkit::slic::flushStreams();
     }
   }
 

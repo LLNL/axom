@@ -113,10 +113,10 @@ public:
   /*!
    *****************************************************************************
    * \brief Copy constructor.
-   * \param [in] rhs
+   * \param [in] other The point to copy
    *****************************************************************************
    */
-  Point( const Point& rhs ) : m_components( rhs.m_components) {}
+  Point( const Point& other) : m_components( other.m_components) {}
 
   /*!
    *****************************************************************************

@@ -85,9 +85,9 @@ namespace slam {
 
     /**
      * \brief Random access to the entities of the set
-     * \param pos The index of the desired element
+     * \param The index of the desired element
      * \return The value of the element at the given position
-     * \pre pos must be less than the number of elements in the set ( size() )
+     * \pre The position must be less than the number of elements in the set ( size() )
      * \note Concrete realizations of Set also support subscript operator -- operator[].
      * \note How are we planning to handle indexes that are out or range (accidentally)?
      *       Are we planning to handle indexes that are intentionally out of range

@@ -132,12 +132,12 @@ public:
             switch( this->blockStatus(gridPt,lev) )
             {
             case BaseOctree::BlockNotInTree:
-                // Block must be in coarser levels -- update bounds
+                // Block must be in coarser levels -- update upper bound
                 maxLev = lev-1;
                 lev = (maxLev + minLev)>>1;
                 break;
             case BaseOctree::InternalBlock:
-                // Block must be in deeper levels -- update bounds
+                // Block must be in deeper levels -- update lower bound
                 minLev = lev+1;
                 lev = (maxLev + minLev)>>1;
                 break;

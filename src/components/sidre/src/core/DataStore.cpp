@@ -27,13 +27,9 @@
 // Associated header file
 #include "DataStore.hpp"
 
-// Other toolkit component headers
-#include "common/CommonTypes.hpp"
-
-// SiDRe project headers
+// Sidre project headers
 #include "DataBuffer.hpp"
 #include "DataGroup.hpp"
-#include "SidreTypes.hpp"
 
 // Other CS Toolkit headers
 #include "slic/slic.hpp"
@@ -67,10 +63,9 @@ void DataStoreConduitErrorHandler( const std::string& message,
  *************************************************************************
  */
 DataStore::DataStore()
-  : m_i_initialized_slic(false)
+  : m_need_to_finalize_slic(false)
 {
 
-  // Initialize SLIC loggin environement, if not initialized already.
   if ( !slic::isInitialized() )
   {
     slic::initialize();
@@ -87,7 +82,7 @@ DataStore::DataStore()
     slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout,
                                                                  format) );
 
-    m_i_initialized_slic = true;
+    m_need_to_finalize_slic = true;
   }
 
   // Provide SLIC error handler function to Conduit to log
@@ -112,7 +107,7 @@ DataStore::~DataStore()
   delete m_RootGroup;
   destroyAllBuffers();
 
-  if ( m_i_initialized_slic )
+  if ( m_need_to_finalize_slic )
   {
     slic::finalize();
   }
@@ -122,7 +117,7 @@ DataStore::~DataStore()
 /*
  *************************************************************************
  *
- * Return non-cost pointer to buffer with given index or null ptr.
+ * Return non-const pointer to buffer with given index or null ptr.
  *
  *************************************************************************
  */
@@ -197,7 +192,7 @@ void DataStore::destroyBuffer( DataBuffer * buff )
 {
   if ( buff != ATK_NULLPTR )
   {
-    buff->detachAllViews();
+    buff->detachFromAllViews();
     IndexType idx = buff->getIndex();
     delete buff;
     SLIC_ASSERT( m_data_buffers[idx] != ATK_NULLPTR);

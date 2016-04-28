@@ -107,10 +107,10 @@ This is declared at the top of the 'cmake' configuration, and provides a central
 +-------------------------------------+-------------------------------+--------+
 |OPTION                               |   Description                 | Default| 
 +=====================================+===============================+========+
-|BUILD_SHARED_LIBS                    |Build shared libraries.        |        |
+|ENABLE_SHARED_LIBS                   |Build shared libraries.        |        |
 |                                     |Default is Static libraries    |  OFF   |
 +-------------------------------------+-------------------------------+--------+
-|BUILD_TESTING                        |Builds unit tests              |  ON    |
+|ENABLE_TESTS                         |Builds unit tests              |  ON    |
 +-------------------------------------+-------------------------------+--------+
 |ENABLE_BOOST                         |Enable Boost                   |  OFF   |
 +-------------------------------------+-------------------------------+--------+
@@ -121,17 +121,17 @@ This is declared at the top of the 'cmake' configuration, and provides a central
 |ENABLE_FORTRAN                       |Enables Fortran compiler       |  ON    |
 |                                     |support                        |        |
 +-------------------------------------+-------------------------------+--------+
-|ENABLE_GLOBALCOMPILERWARNINGS        |Enable extra compiler warnings |        | 
+|ENABLE_ALL_WARNINGS                  |Enable extra compiler warnings |        | 
 |                                     |in all build targets           |  ON    |
 +-------------------------------------+-------------------------------+--------+
-|ENABLE_GLOBALCOMPILERWARNINGSASERRORS|Compiler warnings treated as   |        |
+|ENABLE_WARNINGS_AS_ERRORS            |Compiler warnings treated as   |        |
 |                                     |errors.                        | OFF    |
 +-------------------------------------+-------------------------------+--------+
 |ENABLE_MPI                           |ENABLE MPI                     | OFF    |
 +-------------------------------------+-------------------------------+--------+
 |ENABLE_OPENMP                        |ENABLE OpenMP                  | OFF    |
 +-------------------------------------+-------------------------------+--------+
-|ENABLE_BENCHMARK                     |ENABLE google benchmark        | OFF    |
+|ENABLE_BENCHMARKS                    |ENABLE google benchmark        | OFF    |
 +-------------------------------------+-------------------------------+--------+
 
 

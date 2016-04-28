@@ -8,7 +8,7 @@ project(slam)
 # To avoid warnings from boost: -Wno-missing-braces  
 # Other: -fno-strict-aliasing -Wextra
 
-append_custom_compiler_flag(
+blt_append_custom_compiler_flag(
             FLAGS_VAR SLAM_VECTORIZER_FLAGS
             GNU "-ftree-vectorize -fdump-tree-vect -ftree-vectorizer-verbose=7 -fdump-tree-optimized-details " #-march=native "
             )
@@ -21,16 +21,16 @@ add_subdirectory(src)
 ################################
 # Add examples
 ################################
-if (BUILD_EXAMPLES)
+if (ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
 ################################
 # Add tests and benchmarks
 ################################
-if (BUILD_TESTING)
+if (ENABLE_TESTS)
   add_subdirectory(tests)
-  if (ENABLE_BENCHMARK)
+  if (ENABLE_BENCHMARKS)
     add_subdirectory(benchmarks)
   endif()
 endif()
@@ -41,7 +41,7 @@ add_code_check_targets(uncrustify.cfg)
 ################################
 # Add docs
 ################################
-if (BUILD_DOCS)
+if (ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 

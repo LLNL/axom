@@ -12,7 +12,7 @@ add_subdirectory(src)
 ################################
 # Add tests
 ################################
-if (BUILD_TESTING)
+if (ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
@@ -22,7 +22,7 @@ add_code_check_targets(uncrustify.cfg)
 ################################
 # Add docs
 ################################
-if (BUILD_DOCS)
+if (ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 

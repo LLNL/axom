@@ -89,36 +89,29 @@ set( quest_depends_on
      )
 
 if (ENABLE_MPI)
-  list(APPEND quest_headers stl/PSTLReader.hpp)
+  list(APPEND quest_headers stl/PSTLReader.hpp)  
   list(APPEND quest_sources stl/PSTLReader.cpp)
 endif()
 
+if(ENABLE_SHROUD)
+    add_subdirectory(interface)
+endif()
+
 if (ENABLE_FORTRAN)
-  
   ## append shroud generated headers/sources to corresponding lists
   list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
   list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
   list(APPEND quest_sources interface/c_fortran/shroudrt.cpp)
   list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
-  
-  add_subdirectory(interface)
-  
-  include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
 endif()
 
-copy_headers_target( ${PROJECT_NAME} "${quest_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
-                     
-make_library( LIBRARY_NAME 
-                quest
-                
-              LIBRARY_SOURCES
-                "${quest_sources}"
-                "${quest_headers}"
-              
-              DEPENDS_ON
-                "${quest_depends_on}"
-             )
+blt_add_library( 
+    NAME        quest
+    SOURCES     ${quest_sources}
+    HEADERS     ${quest_headers}
+    DEPENDS_ON  ${quest_depends_on}
+    )
+                 
 target_include_directories( quest PRIVATE "${CMAKE_SOURCE_DIR}/thirdparty/stla_io" )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )

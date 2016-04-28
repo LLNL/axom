@@ -1,4 +1,3 @@
-if(ENABLE_SHROUD)
 add_shroud( YAML_INPUT_FILE shroud_sidre.yaml
             C_FORTRAN_OUTPUT_DIR c_fortran
             PYTHON_OUTOUT_DIR python
@@ -15,4 +14,3 @@ add_custom_command(
             ${CMAKE_CURRENT_SOURCE_DIR}/c_fortran/genfsidresplicer.py fortran > 
             ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
 )
-endif()

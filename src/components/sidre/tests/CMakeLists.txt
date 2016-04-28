@@ -37,27 +37,48 @@ set(fruit_sidre_tests
 # Add gtest C++ based tests
 #
 foreach(test ${gtest_sidre_tests})
-    add_gtest( TEST_SOURCE ${test} DEPENDS_ON sidre conduit conduit_relay slic)
+    get_filename_component( test_name ${test} NAME_WE )
+    blt_add_executable( NAME ${test_name}
+                        SOURCES ${test}
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
+                        )
+    blt_add_test( NAME ${test_name} 
+                  COMMAND ${test_name}
+                  )
 endforeach()
 
 #
 # Add gtest C based tests
 #
 if (ENABLE_FORTRAN)
-  foreach(test ${gtest_sidre_C_tests})
-      add_gtest( TEST_SOURCE ${test} DEPENDS_ON sidre conduit conduit_relay slic)
-  endforeach()
+    foreach(test ${gtest_sidre_C_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        blt_add_executable( NAME ${test_name}
+                            SOURCES ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
+                            )
+        blt_add_test( NAME ${test_name} 
+                      COMMAND ${test_name}
+                      )
+    endforeach()
 endif()
 
 #
 # Add fortran tests
 #
 if (ENABLE_FORTRAN)
-  foreach(test ${fruit_sidre_tests})
-      add_fortran_test(
-          TEST_SOURCE ${test}
-          DEPENDS_ON fruit sidre slic conduit conduit_relay
-      )
-  endforeach()
+    foreach(test ${fruit_sidre_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        blt_add_executable( NAME ${test_name}
+                            SOURCES ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON sidre conduit conduit_io hdf5 slic fruit
+                            )
+        blt_add_test( NAME ${test_name} 
+                      COMMAND ${test_name}
+                      )
+    endforeach()
 endif()
 

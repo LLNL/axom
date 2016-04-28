@@ -32,7 +32,7 @@ add_subdirectory(components)
 ################################
 # Add docs
 ################################
-if (BUILD_DOCS)
+if (ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 
