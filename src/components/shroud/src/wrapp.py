@@ -743,16 +743,16 @@ return 1;""", fmt)
                 '#define %s' % guard,
                 ])
 
-        if options.cpp_header:
-            for include in options.cpp_header.split():
-                output.append('#include "%s"' % include)
-
         output.extend([
                 '#include <Python.h>',
                 '#if PY_MAJOR_VERSION >= 3',
                 '#define IS_PY3K',
                 '#endif'])
         
+        if options.cpp_header:
+            for include in options.cpp_header.split():
+                output.append('#include "%s"' % include)
+
         self._push_splicer('header')
         self._create_splicer('include', output)
         self.namespace(node, 'begin', output)
