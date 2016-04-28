@@ -176,10 +176,10 @@ public:
   /*!
    *****************************************************************************
    * \brief Copy Constructor.
-   * \param [in] rhs
+   * \param [in] other The bounding box to copy
    *****************************************************************************
    */
-  BoundingBox( const BoundingBox& rhs ) { *this = rhs; };
+  BoundingBox( const BoundingBox& other ) { *this = other; };
 
   /*!
    *****************************************************************************
@@ -366,8 +366,8 @@ public:
    * \brief Subdivides this bounding box instance into two sub-boxes by
    *  splitting along the given dimension. If a dimension is not provided, this
    *  method will split the bounding box along the longest dimension.
-   * \param [in/out] right the right sub-box.
-   * \param [in/out] left  the left sub-box.
+   * \param [in,out] right the right sub-box.
+   * \param [in,out] left  the left sub-box.
    * \param [in] dimension the dimension to split along (optional)
    * \pre dimension >= -1 && dimension < DIM
    * \note if dimension==-1, the bounding box is split along its longest edge.

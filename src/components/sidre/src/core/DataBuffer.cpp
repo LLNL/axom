@@ -25,14 +25,9 @@
 #include <algorithm>
 #include <cstring> // for std::memcpy
 
-// Other CS Toolkit headers
-#include "common/CommonTypes.hpp"
-#include "slic/slic.hpp"
-
-// SiDRe project headers
+// Sidre project headers
 #include "DataGroup.hpp"
 #include "DataView.hpp"
-#include "SidreTypes.hpp"
 
 namespace asctoolkit
 {
@@ -42,33 +37,16 @@ namespace sidre
 /*
  *************************************************************************
  *
- * Return non-cost pointer to view with given index or null ptr.
- *
- *************************************************************************
- */
-DataView * DataBuffer::getView( IndexType idx )
-{
-  if ( !hasView(idx) )
-  {
-    SLIC_CHECK_MSG(hasView(idx), "Buffer has no view with index " << idx);
-    return ATK_NULLPTR;
-  }
-
-  return m_views[idx];
-}
-
-/*
- *************************************************************************
- *
- * Describe buffer to hold data of given type and number of elements.
+ * Describe buffer with given data type and number of elements.
  *
  *************************************************************************
  */
 DataBuffer * DataBuffer::describe(TypeID type, SidreLength num_elems)
 {
-  if ( num_elems < 0 )
+  if ( isAllocated() || num_elems < 0 )
   {
-    SLIC_CHECK_MSG(num_elems >= 0, "Must describe number of elements >=0");
+    SLIC_CHECK_MSG(!isAllocated(), "Cannot describe an allocated buffer");
+    SLIC_CHECK_MSG(num_elems >= 0, "Must describe buffer with num elems >= 0");
     return this;
   }
 
@@ -88,10 +66,9 @@ DataBuffer * DataBuffer::describe(TypeID type, SidreLength num_elems)
  */
 DataBuffer * DataBuffer::allocate()
 {
-  if (!isDescribed() || isAllocated() )
+  if ( !isDescribed() || isAllocated() )
   {
-    SLIC_CHECK_MSG(isDescribed(),
-                   "Buffer has no data description, unable to allocate.");
+    SLIC_CHECK_MSG(isDescribed(), "Buffer is not described, cannot allocate.");
     SLIC_CHECK_MSG(!isAllocated(), "Buffer is already allocated.");
 
     return this;
@@ -102,6 +79,7 @@ DataBuffer * DataBuffer::allocate()
   SLIC_CHECK_MSG( data != ATK_NULLPTR,
                   "Buffer failed to allocate memory of size " <<
                   getTotalBytes() );
+
   if (data != ATK_NULLPTR)
   {
     m_node.set_external( DataType( m_node.dtype() ), data );
@@ -118,12 +96,13 @@ DataBuffer * DataBuffer::allocate()
  */
 DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
 {
-  if ( num_elems < 0 )
+  if (isAllocated())
   {
-    SLIC_CHECK_MSG(num_elems >= 0, "Must allocate number of elements >=0");
+    SLIC_CHECK_MSG(!isAllocated(), "Buffer is already allocated.");
+
     return this;
   }
-
+ 
   describe(type, num_elems);
   allocate();
 
@@ -139,22 +118,25 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
  */
 DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 {
-  // If buffer not allocated just call allocate.
   if (!isAllocated())
   {
-    SLIC_CHECK_MSG(isDescribed(),
-                   "Can't re-allocate, no data description in buffer.");
-    if (isDescribed() )
+    if (isDescribed())
     {
       allocate();
+    } 
+    else
+    {
+       SLIC_CHECK_MSG(isDescribed(),
+                      "Can't re-allocate buffer with no type description.");
     }
+
     return this;
   }
 
   if ( num_elems < 0 )
   {
     SLIC_CHECK_MSG(num_elems >= 0,
-                   "Must re-allocate with number of elements >=0");
+                   "Cannot re-allocate with number of elements < 0");
     return this;
   }
 
@@ -166,14 +148,17 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
   SidreLength new_size = dtype.total_bytes();
   void * new_data_ptr = allocateBytes(new_size);
 
-  SLIC_CHECK_MSG(new_data_ptr != ATK_NULLPTR,
-                 "Buffer failed to re-allocate with " << new_size << " bytes.");
   if ( new_data_ptr != ATK_NULLPTR )
   {
     m_node.reset();
     m_node.set_external(dtype, new_data_ptr);
-    update(old_data_ptr, std::min(old_size, new_size) );
+    copyBytesIntoBuffer(old_data_ptr, std::min(old_size, new_size) );
     releaseBytes( old_data_ptr);
+  } 
+  else 
+  {
+     SLIC_CHECK_MSG(new_data_ptr != ATK_NULLPTR,
+                    "Buffer re-allocate failed with " << new_size << " bytes.");
   }
 
   return this;
@@ -207,17 +192,23 @@ DataBuffer * DataBuffer::deallocate()
 /*
  *************************************************************************
  *
- * Update contents of buffer from src and which is nbytes long.
+ * Update contents of buffer by copying nbytes of data into the buffer 
+ * from src.
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::update(const void * src, SidreLength nbytes)
+DataBuffer * DataBuffer::copyBytesIntoBuffer(const void * src, 
+                                             SidreLength nbytes)
 {
-  if ( nbytes > getTotalBytes() )
+  if ( src == ATK_NULLPTR || nbytes < 0 || nbytes > getTotalBytes() )
   {
-    SLIC_CHECK_MSG(
-      nbytes <= getTotalBytes(),
-      "Unable to copy data into buffer, size exceeds available # bytes in buffer.");
+    SLIC_CHECK_MSG(src != ATK_NULLPTR, 
+      "Cannot copy data into buffer from null pointer.");
+    SLIC_CHECK_MSG(nbytes >= 0, "Cannot copy < 0 bytes of data into buffer.");
+    SLIC_CHECK_MSG(nbytes <= getTotalBytes(),
+      "Unable to copy " << nbytes << " bytes of data into buffer with " << 
+      getTotalBytes() << " bytes allocated.");
+
     return this;
   }
 
@@ -311,57 +302,60 @@ DataBuffer::~DataBuffer()
 /*
  *************************************************************************
  *
- * PRIVATE method to attach data view.
+ * PRIVATE method to attach buffer to view (buffer bookkeeping).
  *
  *************************************************************************
  */
-void DataBuffer::attachView( DataView * view )
+void DataBuffer::attachToView( DataView * view )
 {
-  m_views.push_back( view );
+  SLIC_ASSERT(view->m_data_buffer == this);
+
+  if (view->m_data_buffer == this) 
+  {
+    m_views.push_back( view );
+  }
 }
 
 /*
  *************************************************************************
  *
- * PRIVATE method to detach data view.
+ * PRIVATE method to buffer from view (buffer bookkeeping).
  *
  *************************************************************************
  */
-void DataBuffer::detachView( DataView * view )
+void DataBuffer::detachFromView( DataView * view )
 {
-  //Find new end iterator
-  std::vector<DataView *>::iterator pos = std::remove(m_views.begin(),
+  SLIC_ASSERT(view->m_data_buffer == this);
+
+  if (view->m_data_buffer == this)
+  {
+    std::vector<DataView *>::iterator pos = std::find(m_views.begin(),
                                                       m_views.end(),
                                                       view);
-  // check if pos is ok?
-  //Erase the "removed" elements.
-  m_views.erase(pos, m_views.end());
-
-#if 0
-  // XXX test
-  if (getNumViews() == 0 )
-  {
-    // No views attached, garbage collect.
-    deallocate();
-    DataStore * ds = view->getOwningGroup()->getDataStore();
-    ds->destroyBuffer( m_index );
+    if ( pos != m_views.end() )
+    {
+      SLIC_ASSERT(pos != m_views.end());
+      m_views.erase(pos);
+      view->setBufferViewToEmpty();
+    } 
   }
-#endif
-
 }
 
 /*
  *************************************************************************
  *
- * PRIVATE copyBytes
- * Encapsulated our memory copying routine in private function in case
- * developers want to compare different implementations.
+ * PRIVATE method to detach buffer from all views (buffer bookkeeping).
  *
  *************************************************************************
  */
-void DataBuffer::copyBytes( const void * src, void * dst, size_t num_bytes )
+void DataBuffer::detachFromAllViews()
 {
-  std::memcpy( dst, src, num_bytes );
+  for (size_t i = 0 ; i < m_views.size() ; ++i)
+  {
+    m_views[i]->setBufferViewToEmpty();
+  }
+
+  m_views.clear();
 }
 
 /*
@@ -369,11 +363,24 @@ void DataBuffer::copyBytes( const void * src, void * dst, size_t num_bytes )
  *
  * PRIVATE allocateBytes
  * Note: We allow a zero bytes allocation ( since it's legal for new() ).
+ *
  *************************************************************************
  */
 void * DataBuffer::allocateBytes(std::size_t num_bytes)
 {
   return new(std::nothrow) detail::sidre_int8[num_bytes];
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE copyBytes
+ *
+ *************************************************************************
+ */
+void DataBuffer::copyBytes( const void * src, void * dst, size_t num_bytes )
+{
+  std::memcpy( dst, src, num_bytes );
 }
 
 /*

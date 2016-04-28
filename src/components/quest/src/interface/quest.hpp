@@ -27,16 +27,20 @@ namespace quest
  * \brief Initializes quest.
  * \param [in] comm communicator to use (if running in parallel)
  * \param [in] fileName the name of the file to read in the surface.
+ * \param [in] requiresDistance flag to determine which structure to build.
  * \param [in] maxElements max elements per bucket.
  * \param [in] maxLevel max levels of subdivision.
+ * \note If requiresDistance is true, we will build a structure that supports
+ *       signed distance queries in addition to containment queries.
+ *       Otherwise, we build a structure that only supports containment queries.
  *******************************************************************************
  */
 #ifdef USE_MPI
 void initialize( MPI_Comm comm, const std::string& fileName,
-                 int ndims, int maxElements, int maxLevels );
+                 bool requiresDistance, int ndims, int maxElements, int maxLevels );
 #else
 void initialize( const std::string& fileName, int ndims,
-                 int maxElements, int maxLevels );
+                 bool requiresDistance, int maxElements, int maxLevels );
 #endif
 
 /*!
@@ -45,6 +49,7 @@ void initialize( const std::string& fileName, int ndims,
  * \param [in] x the x-coordinate of the point in query.
  * \param [in] y the y-coordinate of the point in query.
  * \param [in] z the z-coordinate of the point in query.
+ * \note This function is only valid when initialized with requiresDistance=true
  * \return dist the signed distance function.
  *******************************************************************************
  */
@@ -56,6 +61,7 @@ double distance(double x, double y, double z=0.0);
  * \param [in]  xyz user-supplied array of coordinates.
  * \param [out] dist user-supplied array where to store the signed distance.
  * \param [in]  npoints total number of points.
+ * \note This function is only valid when initialized with requiresDistance=true
  * \pre xyz  != ATK_NULLPTR
  * \pre dist != ATK_NULLPTR
  * \pre npoints >= 0
@@ -69,7 +75,7 @@ void distance( const double* xyz, double* dist, int npoints);
  * \param [in] x the x-coordinate of the point in query.
  * \param [in] y the y-coordinate of the point in query.
  * \param [in] z the z-coordinate of the point in query.
- * \return return_value a return value of -1 indicates inside, +1 otherwise.
+ * \return return_value a return value of 1 indicates inside, 0 otherwise.
  *******************************************************************************
  */
 int inside(double x, double y, double z=0.0);

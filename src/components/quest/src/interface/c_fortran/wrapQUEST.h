@@ -29,9 +29,9 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
-void QUEST_initialize(MPI_Fint comm, const char * fileName, int ndims, int maxElements, int maxLevels);
+void QUEST_initialize(MPI_Fint comm, const char * fileName, bool requiresDistance, int ndims, int maxElements, int maxLevels);
 
-void QUEST_initialize_bufferify(MPI_Fint comm, const char * fileName, int LfileName, int ndims, int maxElements, int maxLevels);
+void QUEST_initialize_bufferify(MPI_Fint comm, const char * fileName, int LfileName, bool requiresDistance, int ndims, int maxElements, int maxLevels);
 
 void QUEST_finalize();
 

@@ -1,44 +1,38 @@
-####################################
+######################################
 # Slam (MeshAPI) version of lulesh 2.0
-####################################
+######################################
 
 
-set(lulesh_lib_headers
+set(lulesh_headers
     lulesh.hpp
     # lulesh_tuple.hpp
     )
 
-set(lulesh_lib_sources
+set(lulesh_sources
+    lulesh.cpp
     lulesh-comm.cpp
     lulesh-init.cpp
     lulesh-util.cpp
     lulesh-viz.cpp
     )
-set(lulesh_exe_source
-    lulesh.cpp
-    )
 
 
-## Ignore omp pragmas when openMP is not defined
+# Ignore omp pragmas when openMP is not defined
 if ( NOT ENABLE_OPENMP )
-    set_source_files_properties(${lulesh_lib_sources} ${lulesh_exe_source} 
+    set_source_files_properties(${lulesh_sources} 
         PROPERTIES COMPILE_FLAGS "${ATK_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
-make_library( LIBRARY_NAME      slamLuleshLib
-              LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
-              USE_OPENMP ${ENABLE_OPENMP} 
-              ) 
 
-add_dependencies(slamLuleshLib slam)
-target_link_libraries( slamLuleshLib  slam )
-                  
-make_executable( EXECUTABLE_NAME    slam_Lulesh 
-                 EXECUTABLE_SOURCE  ${lulesh_exe_source}
-                 DEPENDS_ON 
-                    slic
-                    slam 
-                    slamLuleshLib
-                  USE_OPENMP ${ENABLE_OPENMP} 
-                  ADD_CTEST IS_EXAMPLE
-                  ) 
+blt_add_executable( 
+    NAME        slam_lulesh
+    SOURCES     ${lulesh_sources} ${lulesh_headers}
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  slic slam
+    USE_OPENMP  ${ENABLE_OPENMP}
+    )
+
+blt_add_test(
+    NAME        slam_lulesh
+    COMMAND     slam_lulesh
+    )

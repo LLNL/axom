@@ -25,11 +25,10 @@
 #include <vector>
 #include <stack>
 
-// Other CS Toolkit headers
+// Other toolkit component headers
 #include "common/CommonTypes.hpp"
-#include "slic/slic.hpp"
 
-// SiDRe project headers
+// Sidre project headers
 #include "SidreTypes.hpp"
 
 
@@ -50,13 +49,11 @@ class DataGroup;
  * \class DataStore
  *
  * \brief DataStore is the main interface for creating and accessing
- *        DataBuffer objects.
+ *        buffer objects.
  *
- * It maintains a collection of DataBuffer objects and owns the "root"
- * DataGroup, called "/". A DataGroup hierachy (a tree) is created by
- * creating (sub) DataGroups withing the root group and (sub) DataGroups
- * within child DataGroups.
- *
+ * It maintains a collection of buffer objects and owns the "root"
+ * group, called "/". A group hierachy (a tree) is created by
+ * creating child groups within other group.
  */
 class DataStore
 {
@@ -64,6 +61,9 @@ public:
 
   /*!
    * \brief Default ctor initializes datastore object and creates root group.
+   *
+   * Ctor also initializes SLIC logging environment if it is not already 
+   * initialized.
    */
   DataStore();
 
@@ -74,7 +74,7 @@ public:
   ~DataStore();
 
   /*!
-   * \brief Return pointer to the root DataGroup.
+   * \brief Return pointer to the root group.
    */
   DataGroup * getRoot()
   {
@@ -83,10 +83,18 @@ public:
 
 
 //@{
-//!  @name DataBuffer methods
+//!  @name Methods to query, access, create, and destroy buffers.
 
   /*!
-   * \brief Return true if DataStore owns a DataBuffer with given index;
+   * \brief Return number of buffers in the datastore.
+   */
+  size_t getNumBuffers() const
+  {
+    return m_data_buffers.size() - m_free_buffer_ids.size();
+  }
+
+  /*!
+   * \brief Return true if DataStore owns a buffer with given index;
    *        else false.
    */
   bool hasBuffer( IndexType idx ) const
@@ -103,96 +111,88 @@ public:
 
   /*!
    * \brief Create an undescribed data buffer object and return a pointer to it.
-   *    When allocating, the type and number of elements must be provided
-   *    in the allocate call.
    *
-   *    The buffer object is assigned a unique index when created and the
-   *    buffer object is owned by the data store.
+   *        The buffer must be described before it can be allocated.
+   *
+   *        The buffer object is assigned a unique index when created and the
+   *        buffer object is owned by the data store object.
    */
   DataBuffer * createBuffer();
 
   /*!
    * \brief Create a data buffer object with specified type and number of
-   *    elements and return a pointer to it.
+   *        elements and return a pointer to it.
    *
-   *    The buffer object is assigned a unique index when created and the
-   *    buffer object is owned by the data store.
+   *        See the DataBuffer::describe() method for valid data description.
+   *
+   *        The buffer object is assigned a unique index when created and the
+   *        buffer object is owned by the data store object.
    */
   DataBuffer * createBuffer( TypeID type, SidreLength num_elems );
 
   /*!
-   * \brief Remove data buffer with given index from the datastore and
-   *        destroy it (including its data if data buffer owns it).
+   * \brief Remove data buffer from the datastore and destroy it and
+   *        its data.
    *
-   *   Note that buffer destruction detaches it from all groups and views
-   *   it was associated with.
+   *        Note that buffer destruction detaches it from all views to
+   *        which it is attached.
+   */
+  void destroyBuffer( DataBuffer * buff );
+
+  /*!
+   * \brief Remove data buffer with given index from the datastore and
+   *        destroy it and its data.
+   *
+   *        Note that buffer destruction detaches it from all views to
+   *        which it is attached.
    */
   void destroyBuffer( IndexType idx );
 
   /*!
    * \brief Remove all data buffers from the datastore and destroy them
-   *        (including data they own).
+   *        and their data.
    *
-   *   Note that buffer destruction detaches it from all groups and views
-   *   it was associated with.
+   *        Note that buffer destruction detaches it from all views to
+   *        which it is attached.
    */
-  void destroyBuffers();
-
-  /*!
-   * \brief Remove data buffer with given index from the datastore, but leave
-   *        it intact.
-   *
-   * \return pointer to DataBuffer object that was datached.
-   */
-  DataBuffer * detachBuffer( IndexType idx );
-
-  /*!
-   * \brief Return number of buffers in the datastore.
-   */
-  size_t getNumBuffers() const
-  {
-    return m_data_buffers.size() - m_free_buffer_ids.size();
-  }
+  void destroyAllBuffers();
 
 //@}
 
 //@{
-//!  @name DataBuffer iteration methods
+//!  @name Methods useful for iterating over buffers in DataStore
 
   /*!
-   * \brief Return first valid DataBuffer index (i.e., smallest index
-   *        over all DataBuffers).
+   * \brief Return first valid buffer index.
    *
-   * sidre::InvalidIndex is returned if group has no buffers.
+   *        sidre::InvalidIndex is returned if group has no buffers.
    */
   IndexType getFirstValidBufferIndex() const;
 
   /*!
-   * \brief Return next valid DataBuffer index after given index (i.e.,
-   *        smallest index over all buffer indices larger than given one).
+   * \brief Return next valid buffer index after given index.
    *
-   * sidre::InvalidIndex is returned if there is no valid index greater
-   * than given one.
+   *        sidre::InvalidIndex is returned if there is no valid next index.
    */
   IndexType getNextValidBufferIndex(IndexType idx) const;
 
 //@}
 
   /*!
-   * \brief Copy buffer descriptions and group tree, starting at root,
-   *        to given Conduit node.
+   * \brief Copy DataStore Group hierarchy (starting at root) and buffer 
+   *        descriptions to given Conduit node.
    */
   void info(Node& n) const;
 
   /*!
-   * \brief Print JSON description of data buffers and group tree,
-   *        starting at root, to stdout.
+   * \brief Print JSON description of DataStore Group hierarchy (starting at 
+   *        root) and buffer descriptions to std::cout.
    */
   void print() const;
 
   /*!
-   * \brief Print JSON description of data buffers and group tree,
-   *        starting at root, to an ostream.
+   * \brief Print JSON description of DataStore Group hierarchy (starting at
+   *        root) and buffer descriptions to given output stream.
    */
   void print(std::ostream& os) const;
 
@@ -212,17 +212,17 @@ private:
   DataStore& operator=( const DataStore& );
 #endif
 
-  /// Root data group, created when DataStore instance is created.
+  /// Root data group, created when DataStore object is created.
   DataGroup * m_RootGroup;
 
-  /// Collection of DataBuffers holding data in DataStore instance.
+  /// Collection of buffers in DataStore instance.
   std::vector<DataBuffer *> m_data_buffers;
 
   /// Collection of unused unique buffer indices (they can be recycled).
   std::stack< IndexType > m_free_buffer_ids;
 
   /// Flag indicating whether SLIC logging environment was initialized in ctor.
-  bool m_i_initialized_slic;
+  bool m_need_to_finalize_slic;
 };
 
 

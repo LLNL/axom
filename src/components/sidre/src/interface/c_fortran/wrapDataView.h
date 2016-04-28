@@ -46,8 +46,16 @@ void SIDRE_dataview_reallocate(SIDRE_dataview * self,
 
 void SIDRE_dataview_apply_0(SIDRE_dataview * self);
 
-void SIDRE_dataview_attach_buffer(SIDRE_dataview * self,
-                                  SIDRE_databuffer * buff);
+void SIDRE_dataview_attach_buffer_only(SIDRE_dataview * self,
+                                       SIDRE_databuffer * buff);
+
+void SIDRE_dataview_attach_buffer_type(SIDRE_dataview * self, int type,
+                                       SIDRE_SidreLength num_elems,
+                                       SIDRE_databuffer * buff);
+
+void SIDRE_dataview_attach_buffer_shape(SIDRE_dataview * self, int type,
+                                        int ndims, SIDRE_SidreLength * shape,
+                                        SIDRE_databuffer * buff);
 
 void SIDRE_dataview_apply_nelems(SIDRE_dataview * self,
                                  SIDRE_SidreLength num_elems);
@@ -102,8 +110,17 @@ void SIDRE_dataview_set_scalar_float(SIDRE_dataview * self, float value);
 
 void SIDRE_dataview_set_scalar_double(SIDRE_dataview * self, double value);
 
-SIDRE_dataview * SIDRE_dataview_set_external_data_ptr(SIDRE_dataview * self,
-                                                      void * external_ptr);
+void SIDRE_dataview_set_external_data_ptr_only(SIDRE_dataview * self,
+                                               void * external_ptr);
+
+void SIDRE_dataview_set_external_data_ptr_type(SIDRE_dataview * self, int type,
+                                               SIDRE_SidreLength num_elems,
+                                               void * external_ptr);
+
+void SIDRE_dataview_set_external_data_ptr_shape(SIDRE_dataview * self, int type,
+                                                int ndims,
+                                                SIDRE_SidreLength * shape,
+                                                void * external_ptr);
 
 int SIDRE_dataview_get_data_int(SIDRE_dataview * self);
 

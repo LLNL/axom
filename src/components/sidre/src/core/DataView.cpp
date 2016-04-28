@@ -52,7 +52,7 @@ DataView * DataView::allocate()
     {
       SLIC_ASSERT( m_data_buffer == ATK_NULLPTR );
       m_data_buffer = m_owning_group->getDataStore()->createBuffer();
-      m_data_buffer->attachView(this);
+      m_data_buffer->attachToView(this);
       m_state = BUFFER;
     }
 
@@ -74,8 +74,9 @@ DataView * DataView::allocate()
  */
 DataView * DataView::allocate( TypeID type, SidreLength num_elems)
 {
-  if ( num_elems < 0 )
+  if ( type == NO_TYPE_ID || num_elems < 0 )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK(num_elems >= 0);
     return this;
   }
@@ -224,16 +225,16 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
 {
   if ( m_state == BUFFER && buff == ATK_NULLPTR)
   {
-    // Detach existing buffer.
-    m_data_buffer->detachView(this);
-    m_data_buffer = ATK_NULLPTR;
-    m_state = EMPTY;
-    unapply();
+    DataBuffer * old_buffer = detachBuffer();
+    if (old_buffer->getNumViews() == 0)
+    {
+      getOwningGroup()->getDataStore()->destroyBuffer(old_buffer);
+    }
   }
   else if ( m_state == EMPTY && buff != ATK_NULLPTR )
   {
-    buff->attachView(this);
     m_data_buffer = buff;
+    buff->attachToView(this);
     m_state = BUFFER;
     SLIC_ASSERT( m_is_applied == false );
 
@@ -245,6 +246,26 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
   }
 
   return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Detach buffer from view.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataView::detachBuffer()
+{
+  DataBuffer * buff = ATK_NULLPTR;
+
+  if ( m_state == BUFFER)
+  {
+    buff = m_data_buffer;
+    m_data_buffer->detachFromView(this);
+  }
+
+  return buff;
 }
 
 /*
@@ -293,11 +314,9 @@ DataView * DataView::apply(SidreLength num_elems,
                            SidreLength offset,
                            SidreLength stride)
 {
-  if ( num_elems < 0 || offset < 0 )
+  if ( num_elems < 0 )
   {
     SLIC_CHECK(num_elems >= 0);
-    SLIC_CHECK(offset >= 0);
-
     return this;
   }
 
@@ -329,11 +348,10 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
                            SidreLength offset,
                            SidreLength stride)
 {
-  if ( num_elems < 0 || offset < 0)
+  if ( type == NO_TYPE_ID || num_elems < 0 )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK(num_elems >= 0);
-    SLIC_CHECK(offset >= 0);
-
     return this;
   }
 
@@ -361,8 +379,9 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
  */
 DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
 {
-  if ( ndims < 1 || shape == ATK_NULLPTR )
+  if ( type == NO_TYPE_ID || ndims < 1 || shape == ATK_NULLPTR )
   {
+    SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK(ndims >= 1);
     SLIC_CHECK(shape != ATK_NULLPTR);
 
@@ -470,6 +489,12 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
         apply();
       }
     }
+  }
+  else
+  {
+    SLIC_CHECK_MSG( m_state == EMPTY || m_state == EXTERNAL,
+                    "Calling setExternalDataPtr on a view with " <<
+                    getStateStringName(m_state) << " data is not allowed.");
   }
 
   return this;
@@ -608,10 +633,9 @@ void DataView::info(Node &n) const
  *
  *************************************************************************
  */
-DataView::DataView( const std::string& name,
-                    DataGroup * const owning_group)
+DataView::DataView( const std::string& name)
   :   m_name(name),
-  m_owning_group(owning_group),
+  m_owning_group(ATK_NULLPTR),
   m_data_buffer(ATK_NULLPTR),
   m_schema(),
   m_node(),
@@ -632,7 +656,7 @@ DataView::~DataView()
 {
   if (m_data_buffer != ATK_NULLPTR)
   {
-    m_data_buffer->detachView(this);
+    m_data_buffer->detachFromView(this);
   }
 }
 
@@ -640,18 +664,12 @@ DataView::~DataView()
  *************************************************************************
  *
  * PRIVATE method to describe data view with type and number of elements.
+ *         Caller has already checked arguments.
  *
  *************************************************************************
  */
 void DataView::describe(TypeID type, SidreLength num_elems)
 {
-  if ( num_elems < 0 )
-  {
-    SLIC_CHECK_MSG(num_elems >= 0,
-                   "Describe: must give number of elements >= 0");
-    return;
-  }
-
   DataType dtype = conduit::DataType::default_dtype(type);
   dtype.set_number_of_elements(num_elems);
   m_schema.set(dtype);
@@ -664,18 +682,12 @@ void DataView::describe(TypeID type, SidreLength num_elems)
  *
  * PRIVATE method to describe data view with type, number of dimensions,
  *         and number of elements per dimension.
+ *         Caller has already checked arguments.
  *
  *************************************************************************
  */
 void DataView::describe(TypeID type, int ndims, SidreLength * shape)
 {
-  if ( ndims < 0 || shape == ATK_NULLPTR)
-  {
-    SLIC_CHECK(ndims >= 0);
-    SLIC_CHECK(shape != ATK_NULLPTR);
-    return;
-  }
-
   SidreLength num_elems = 0;
   if (ndims > 0)
   {
@@ -694,19 +706,12 @@ void DataView::describe(TypeID type, int ndims, SidreLength * shape)
  *************************************************************************
  *
  * PRIVATE method to describe data view with a Conduit data type object.
+ *         Caller has already checked arguments.
  *
  *************************************************************************
  */
 void DataView::describe(const DataType& dtype)
 {
-  if ( dtype.is_empty() )
-  {
-    SLIC_CHECK_MSG(
-      !dtype.is_empty(),
-      "Unable to set description in View, datatype parameter is empty.");
-    return;
-  }
-
   m_schema.set(dtype);
   describeShape();
   m_is_applied = false;
@@ -745,6 +750,44 @@ void DataView::describeShape(int ndims, SidreLength * shape)
 /*
  *************************************************************************
  *
+ * PRIVATE method copy the contents of this into a undescribed EMPTY view.
+ *
+ *************************************************************************
+ */
+void DataView::copyView( DataView * copy ) const
+{
+  SLIC_ASSERT( copy->m_state == EMPTY && !copy->isDescribed());
+
+  if (isDescribed())
+  {
+    copy->describe(m_schema.dtype());
+  }
+
+  switch (m_state)
+  {
+  case EMPTY:
+    // Nothing more to do
+    break;
+  case STRING:
+  case SCALAR:
+    copy->m_node = m_node;
+    copy->m_state = m_state;
+    copy->m_is_applied = true;
+    break;
+  case EXTERNAL:
+    copy->setExternalDataPtr(m_external_ptr);
+    break;
+  case BUFFER:
+    copy->attachBuffer( m_data_buffer );
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * PRIVATE method returns true if view can allocate data; else false.
  *
  * This method does not need to emit the view state as part of it's
@@ -769,7 +812,7 @@ bool DataView::isAllocateValid() const
                     getStateStringName(m_state) << "view");
     break;
   case BUFFER:
-      rv = isDescribed() && m_data_buffer->getNumViews() == 1;
+    rv = isDescribed() && m_data_buffer->getNumViews() == 1;
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
@@ -815,7 +858,7 @@ bool DataView::isApplyValid() const
     break;
   case BUFFER:
     rv = 0 < getTotalBytes() &&
-         getTotalBytes() <= m_data_buffer->getTotalBytes();
+         getTotalBytes() <= m_data_buffer->getTotalBytes();;
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");

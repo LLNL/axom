@@ -37,7 +37,7 @@ void BinaryTreeCommunicator::initialize(MPI_Comm comm, int ranksLimit)
     m_ranksLimit = ranksLimit;
 
     // Calculate tree information about this rank
-    m_treeHeight = log2(m_mpiCommSize) + 1;
+    m_treeHeight = int(log2(m_mpiCommSize) + 1);
     m_parentRank = (m_mpiCommRank - 1) >> 1;
     m_leftChildRank = (m_mpiCommRank * 2) + 1;
     m_rightChildRank = (m_mpiCommRank * 2) + 2;

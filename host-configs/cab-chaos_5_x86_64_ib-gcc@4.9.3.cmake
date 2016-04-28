@@ -22,8 +22,6 @@ set(ENABLE_FORTRAN ON CACHE PATH "")
 
 set(CMAKE_Fortran_COMPILER  "/usr/apps/gnu/4.9.3/bin/gfortran" CACHE PATH "")
 
-set(ENABLE_HDF5 ON CACHE PATH "")
-
 # hdf5 from uberenv
 set(HDF5_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/hdf5-1.8.16-msbowehgkgvhlnl62fy6tb7bvefbr7h4" CACHE PATH "")
 

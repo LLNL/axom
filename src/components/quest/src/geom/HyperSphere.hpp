@@ -73,10 +73,10 @@ public:
    /*!
     ****************************************************************************
     * \brief Copy constructor.
-    * \param [in] h
+    * \param [in] other The hypersphere to copy
     ****************************************************************************
     */
-   HyperSphere( const HyperSphere<T,NDIMS>& h ) { *this = h; };
+   HyperSphere( const HyperSphere<T,NDIMS>& other ) { *this = other; };
 
    /*!
     ****************************************************************************

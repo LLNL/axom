@@ -136,6 +136,14 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Copy constructor
+   * \param [in] other The vector to copy
+   *****************************************************************************
+   */
+  Vector(const Vector<T,DIM> & other) : m_components( other.array() ) {}
+
+  /*!
+   *****************************************************************************
    * \brief Constructs a vector from point A to point B.
    * \param [in] A origin point of the vector.
    * \param [in] B destination point of the vector.
