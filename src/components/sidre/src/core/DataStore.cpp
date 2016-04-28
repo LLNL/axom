@@ -331,29 +331,24 @@ void DataStore::save(const std::string& file_path,
 
   if (protocol == "conduit")
   {
-    // for debugging call: n.print();
     conduit::relay::io::save(data_holder, file_path);
   }
   else if (protocol == "conduit_hdf5")
   {
-    std::string file_path_ext = file_path + ".hdf5";
-    hid_t h5_file_id = H5Fcreate( file_path_ext.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    SLIC_ERROR_IF(h5_file_id < 0, " Unable to create HDF5 file " << file_path_ext);
-
-    save(h5_file_id, group);
-    herr_t status = H5Fclose(h5_file_id);
-    SLIC_ERROR_IF(status < 0, "Unable to close HDF5 file " << file_path_ext);
-
+    conduit::relay::io::hdf5_write( data_holder, file_path );
   }
   else if (protocol == "text")
   {
-    std::string file_path_ext = file_path + ".txt"; 
-    std::ofstream output_file( file_path_ext );
-    SLIC_ERROR_IF(!output_file, "Unable to create file " << file_path_ext);
+    std::ofstream output_file( file_path );
+    SLIC_ERROR_IF(!output_file, "Unable to create file " << file_path);
     if (output_file)
     {
       output_file  << data_holder.to_json();
     }
+  }
+  else
+  {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
   }
 }
 
@@ -367,7 +362,7 @@ void DataStore::save(const hid_t& h5_file_id,
   Node data_holder;
   exportTo(group, data_holder);
 
-  conduit::relay::io::hdf5_write(data_holder, h5_file_id, ".");
+  conduit::relay::io::hdf5_write(data_holder, h5_file_id);
 }
 
 /*************************************************************************/
@@ -377,8 +372,6 @@ void DataStore::save(const hid_t& h5_file_id,
  *
  * Load data group (including data views and child groups) from a file
  *
- * Note: Only valid protocol is "conduit".
- *
  *************************************************************************
  */
 void DataStore::load(const std::string& file_path,
@@ -387,24 +380,23 @@ void DataStore::load(const std::string& file_path,
 {
   SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on group that resides in this datastore.");
 
+  Node node;
+
   if (protocol == "conduit")
   {
-    Node node;
     conduit::relay::io::load(file_path, node);
-    // for debugging call: n.print();
-    importFrom( group, node );
   }
   else if (protocol == "conduit_hdf5")
   {
-    std::string file_path_ext = file_path + ".hdf5";
-    hid_t h5_file_id;
-    h5_file_id = H5Fopen( file_path_ext.c_str(),H5F_ACC_RDONLY, H5P_DEFAULT );
-    SLIC_ERROR_IF(h5_file_id < 0, " Unable to open HDF5 file " << file_path_ext);
-
-    load(h5_file_id, group);
-    herr_t status = H5Fclose(h5_file_id);
-    SLIC_ERROR_IF(status < 0, "Unable to close HDF5 file " << file_path_ext);
+    conduit::relay::io::hdf5_read( file_path, node);
   }
+  else
+  {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+  }
+
+  importFrom( group, node );
+
 }
 
 /*
