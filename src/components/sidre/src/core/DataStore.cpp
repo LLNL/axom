@@ -284,6 +284,20 @@ void DataStore::copyToConduitNode(Node& n) const
   }
 }
 
+
+/*
+ *************************************************************************
+ *
+ * Copy DataStore native layout, starting at root, to given Conduit node.
+ *
+ *************************************************************************
+ */
+void DataStore::createNativeLayout(Node& n) const
+{
+    m_RootGroup->createNativeLayout(n);
+}
+
+
 /*
  *************************************************************************
  *
