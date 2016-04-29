@@ -117,4 +117,52 @@ if (LUA_DIR)
     # Set the hint for FindLua
     set (ENV{LUA_DIR}  ${LUA_DIR})
     find_package(Lua)
+
+    set(CMAKE_Lua_MODULE_DIRECTORY
+        "${PROJECT_BINARY_DIR}/lib/lua"
+        CACHE PATH
+        "Directory where all Lua modules will go in the build tree"
+    )
+
+    set(LUA_EXECUTABLE ${LUA_DIR}/bin/lua)
 endif()
+
+##------------------------------------------------------------------------------
+## blt_add_lua_module
+##
+## Creates a shared library to be used as a Lua module.
+## All options to blt_add_library may be used.
+##
+## The library is created in CMAKE_Lua_MODULE_DIRECTORY
+## by default. OUTPUT_DIR can be used to change the location.
+##
+## NAME is the name of the Lua module.
+## The target name will be ${arg_NAME}-lua-module and the
+## library is named ${arg_NAME}.so.
+## This allow lib${arg_NAME}.a to also be created by using
+## blt_add_library directly.
+## 
+##------------------------------------------------------------------------------
+macro(blt_add_lua_module)
+    include_directories(${LUA_INCLUDE_DIR})
+
+    set(singleValueArgs NAME )
+    ## parse the arguments
+    ## only parse NAME, blt_add_library will do the real work
+    cmake_parse_arguments(arg_module
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    # Force shard libraries
+    blt_add_library(
+        OUTPUT_DIR ${CMAKE_Lua_MODULE_DIRECTORY}
+        ${ARGV}
+        NAME ${arg_module_NAME}-lua-module
+        SHARED
+    )
+
+    # Lua wants the name to be 'name.so', without leading 'lib'
+    set_target_properties(${arg_module_NAME}-lua-module PROPERTIES
+        PREFIX ""
+	OUTPUT_NAME ${arg_module_NAME}
+    )
+endmacro(blt_add_lua_module)

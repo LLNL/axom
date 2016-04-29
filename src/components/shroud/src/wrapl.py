@@ -119,7 +119,12 @@ lua_pushvalue({LUA_state_var}, -1);
 lua_setfield({LUA_state_var}, -2, "__index");
  
 /* Set the methods to the metatable that should be accessed via object:func */
-luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
+#if LUA_VERSION_NUM < 502
+luaL_register({LUA_state_var}, NULL, {LUA_class_reg});
+#else
+luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
+#endif
+""", fmt_class)
 
     def wrap_functions(self, cls, functions):
         """Wrap functions for a library or class.
@@ -590,7 +595,11 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);""", fmt_class)
         output.extend(self.class_lines)
         output.extend([
                 '',
+                '#if LUA_VERSION_NUM < 502',
+                wformat('luaL_register({LUA_state_var}, "{LUA_module_name}", {LUA_module_reg});', fmt),
+                '#else',
                 wformat('luaL_newlib({LUA_state_var}, {LUA_module_reg});', fmt),
+                '#endif',
                 'return 1;',
                 -1,
                 '}'
