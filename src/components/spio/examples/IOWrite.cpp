@@ -54,10 +54,8 @@ int main(int argc, char * argv[])
 
   DataGroup * ga = flds->createGroup("a");
   DataGroup * gb = flds2->createGroup("b");
-  ga->createView("i0")->allocate(DataType::c_int());
-  ga->getView("i0")->setScalar(my_rank + 101);
-  gb->createView("i1")->allocate(DataType::c_int());
-  gb->getView("i1")->setScalar(4*my_rank*my_rank + 404);
+  ga->createViewScalar<int>("i0", my_rank + 101);
+  gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
 
   std::vector<DataGroup *> groups;
   groups.push_back(root);
