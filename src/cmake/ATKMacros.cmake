@@ -170,6 +170,7 @@ endmacro(blt_register_library)
 ##                  SOURCES [source1 [source2 ...]]
 ##                  HEADERS [header1 [header2 ...]]
 ##                  DEPENDS_ON [dep1 ...] 
+##                  OUTPUT_DIR [dir]
 ##                  USE_OPENMP <TRUE or FALSE (default)>
 ##                  SHARED
 ##                 )
@@ -192,6 +193,9 @@ endmacro(blt_register_library)
 ## library target. Specifically, it will add a dependency to the library's
 ## "blt_copy_headers_target" and adds a dependency for each DEPENDS_ON target.
 ##
+## The OUTPUT_DIR is used to control the build output directory of this 
+## library. This is used to overwrite the default lib directory.
+##
 ## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this 
 ## argument is supplied, the openmp compiler flag will be added to the compiler 
 ## command and the -DUSE_OPENMP, will be included to the compiler definition.
@@ -199,7 +203,7 @@ endmacro(blt_register_library)
 macro(blt_add_library)
 
     set(options SHARED)
-    set(singleValueArgs NAME USE_OPENMP SHARED)
+    set(singleValueArgs NAME OUTPUT_DIR USE_OPENMP SHARED)
     set(multiValueArgs SOURCES HEADERS DEPENDS_ON)
 
     ## parse the arguments
@@ -245,6 +249,12 @@ macro(blt_add_library)
     # Handle OpenMP
     blt_setup_openmp_target( BUILD_TARGET ${arg_NAME}
                               USE_OPENMP ${arg_USE_OPENMP} )
+
+    # Set output directory
+    if ( arg_OUTPUT_DIR )
+        set_target_properties(${arg_NAME} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${arg_OUTPUT_DIR} )
+    endif()
 
     # Update project sources                     
     blt_update_project_sources( TARGET_SOURCES ${arg_SOURCES} ${arg_HEADERS})

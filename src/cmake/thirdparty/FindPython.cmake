@@ -157,17 +157,20 @@ ENDFUNCTION(PYTHON_ADD_DISTUTILS_SETUP)
 ## All options to blt_add_library may be used.
 ##
 ## The library is created in CMAKE_Python_MODULE_DIRECTORY
+## by default. OUTPUT_DIR can be used to change the location.
 ##------------------------------------------------------------------------------
 macro(blt_add_python_module)
     include_directories(${PYTHON_INCLUDE_DIR})
 
     # Force shard libraries
-    blt_add_library(${ARGV} SHARED)
+    blt_add_library(
+        OUTPUT_DIR ${CMAKE_Python_MODULE_DIRECTORY}
+        ${ARGV}
+        SHARED
+    )
 
     # Python wants the name to be 'name.so', without leading 'lib'
-    set_target_properties(${arg_NAME}
-        PROPERTIES
-          PREFIX ""
-          LIBRARY_OUTPUT_DIRECTORY ${CMAKE_Python_MODULE_DIRECTORY}
+    set_target_properties(${arg_NAME} PROPERTIES
+        PREFIX ""
     )
 endmacro(blt_add_python_module)
