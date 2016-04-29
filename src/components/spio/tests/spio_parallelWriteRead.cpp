@@ -43,8 +43,7 @@ int main(int argc, char** argv)
 
   DataGroup * ga = flds->createGroup("a");
   DataGroup * gb = flds2->createGroup("b");
-  ga->createView("i0")->allocate(DataType::c_int());
-  ga->getView("i0")->setScalar(101*my_rank);
+  ga->createViewScalar<int>("i0", 101*my_rank);
   gb->createView("i1")->allocate(DataType::c_int(10));
   int * i1_vals = gb->getView("i1")->getData();
 
