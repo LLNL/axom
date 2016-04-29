@@ -26,10 +26,9 @@ blt_add_test(
 #
 # Make Python module library
 #
+#if(PYTHONINTERP_FOUND)
 if(ENABLE_PYTHON_API)
-    include_directories(${PYTHON_INCLUDE_DIRS})
-
-    make_library(
+    blt_add_python_module(
         NAME
             tutorial
         SOURCES
@@ -39,17 +38,4 @@ if(ENABLE_PYTHON_API)
 	        ../tutorial/pyTutorialmodule.cpp
             ../tutorial/pyTutorialhelper.cpp
     )
-
-    # Python wants the name to be tutorial.so
-    set_target_properties(tutorial
-        PROPERTIES
-          PREFIX ""
-    )
-
-#    add_custom_command(
-#        TARGET tutorial POST_BUILD
-#        WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
-#        COMMAND ln -sf libtutorial.so tutorial.so
-#    )
-
-endif(ENABLE_PYTHON_API)
+endif()

@@ -149,3 +149,25 @@ ENDFUNCTION(PYTHON_ADD_DISTUTILS_SETUP)
 #    )
 #
 #ENDFUNCTION(PYTHON_ADD_HYBRID_MODULE)
+
+##------------------------------------------------------------------------------
+## blt_add_python_module
+##
+## Creates a shared library to be used as a Python module.
+## All options to blt_add_library may be used.
+##
+## The library is created in CMAKE_Python_MODULE_DIRECTORY
+##------------------------------------------------------------------------------
+macro(blt_add_python_module)
+    include_directories(${PYTHON_INCLUDE_DIR})
+
+    # Force shard libraries
+    blt_add_library(${ARGV} SHARED)
+
+    # Python wants the name to be 'name.so', without leading 'lib'
+    set_target_properties(${arg_NAME}
+        PROPERTIES
+          PREFIX ""
+          LIBRARY_OUTPUT_DIRECTORY ${CMAKE_Python_MODULE_DIRECTORY}
+    )
+endmacro(blt_add_python_module)

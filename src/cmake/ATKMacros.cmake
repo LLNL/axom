@@ -170,14 +170,16 @@ endmacro(blt_register_library)
 ##                  SOURCES [source1 [source2 ...]]
 ##                  HEADERS [header1 [header2 ...]]
 ##                  DEPENDS_ON [dep1 ...] 
-##                  USE_OPENMP <TRUE or FALSE (default)> )
+##                  USE_OPENMP <TRUE or FALSE (default)>
+##                  SHARED
+##                 )
 ##
 ## Adds a library to the project composed by the given source files.
 ##
 ## Adds a library target, called <libname>, to be built from the given sources.
 ## This macro internally checks if the global option "ENABLE_SHARED_LIBS" is
 ## ON, in which case, it will create a shared library. By default, a static
-## library is generated.
+## library is generated unless the SHARED option is added.
 ##
 ## If given a HEADERS argument, it creates a "blt_copy_headers_target" for 
 ## this library and installs them in the include/<component name> folder.
@@ -196,7 +198,8 @@ endmacro(blt_register_library)
 ##------------------------------------------------------------------------------
 macro(blt_add_library)
 
-    set(singleValueArgs NAME USE_OPENMP)
+    set(options SHARED)
+    set(singleValueArgs NAME USE_OPENMP SHARED)
     set(multiValueArgs SOURCES HEADERS DEPENDS_ON)
 
     ## parse the arguments
@@ -208,7 +211,9 @@ macro(blt_add_library)
         set(arg_USE_OPENMP FALSE)
     endif()
 
-    if ( ENABLE_SHARED_LIBS )
+    if (${arg_SHARED})
+        add_library( ${arg_NAME} SHARED ${arg_SOURCES} ${arg_HEADERS} )
+    elseif ( ENABLE_SHARED_LIBS )
         add_library( ${arg_NAME} SHARED ${arg_SOURCES} ${arg_HEADERS} )
     else()
         add_library( ${arg_NAME} STATIC ${arg_SOURCES} ${arg_HEADERS} )
