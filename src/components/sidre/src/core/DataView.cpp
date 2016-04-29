@@ -874,7 +874,7 @@ bool DataView::isApplyValid() const
  *
  *************************************************************************
  */
-char const * DataView::getStateStringName(State state) const
+char const * DataView::getStateStringName(State state)
 {
   char const * ret_string = NULL;
 
@@ -902,6 +902,91 @@ char const * DataView::getStateStringName(State state) const
   return ret_string;
 }
 
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to copy view data to given Conduit node using
+ * given set of ids to maintain correct association of data buffers
+ * to data views.
+ *
+ *************************************************************************
+ */
+void DataView::exportTo(conduit::Node& data_holder,
+                        std::set<IndexType>& buffer_indices) const
+{
+  data_holder["schema"] = m_schema.to_json();
+  data_holder["node"] = getNode();
+  data_holder["state"] = static_cast<unsigned int>(m_state);
+  data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
+
+  if (m_state == BUFFER)
+  {
+    IndexType buffer_id = getBuffer()->getIndex();
+    data_holder["buffer_id"] = buffer_id;
+    buffer_indices.insert(buffer_id);
+  }
+
+  // TODO - take this out when CON-131 resolved ( can't write out empty node ).
+  if ( data_holder["node"].dtype().is_empty() )
+  {
+    data_holder["node"].set_string("empty");
+  }
+
+}
+
+/*
+ *************************************************************************
+ * TODO
+ *
+ *************************************************************************
+ */
+void DataView::importFrom(conduit::Node& data_holder,
+                          const std::map<IndexType, IndexType>& buffer_id_map)
+{
+  m_state = static_cast<State>(data_holder["state"].as_unsigned_int());
+  bool is_applied = data_holder["is_applied"].as_unsigned_char();
+  conduit::Schema schema( data_holder["schema"].as_string() );
+
+  // If view has a buffer, the easiest way to restore it is to use a series of
+  // API calls.
+  if ( m_state == BUFFER )
+  {
+    // Start from scratch
+    m_state = EMPTY;
+
+    IndexType old_buffer_id = data_holder["buffer_id"].as_int();
+
+    SLIC_ASSERT_MSG( buffer_id_map.find(old_buffer_id) != buffer_id_map.end(),
+                     "Buffer id map is old-new id entry for buffer " << old_buffer_id );
+
+    DataBuffer * buffer = m_owning_group->getDataStore()->getBuffer( buffer_id_map.at(old_buffer_id) );
+    if ( !schema.dtype().is_empty() )
+    {
+        describe( schema.dtype() );
+    }
+    attachBuffer( buffer );
+    if ( is_applied )
+    {
+      apply();
+    }
+  }
+  // For the other cases, the view state is simpler and the data is kept
+  // internally in the view's buffer.
+  // Note: This is all going to change for the external data case when we add the two-step support...
+  else
+  {
+    m_schema.set( data_holder["schema"].as_string() );
+    m_node = data_holder["node"];
+    m_is_applied = is_applied;
+  }
+
+  // We don't save the shape vector, just call this to set it after the schema
+  // has been restored..
+  // TODO - Check with Lee to see if this is sufficient.  We might need to save
+  // /restore the shape vector.
+  describeShape();
+
+}
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */

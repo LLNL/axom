@@ -26,6 +26,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <set>
 
 #ifndef USE_UNORDERED_MAP
 #define USE_UNORDERED_MAP
@@ -50,8 +51,6 @@
 #if defined(USE_DENSE_HASH_MAP)
 #include <sparsehash/dense_hash_map>
 #endif
-
-#include "conduit_io.hpp"
 
 // Other CS Toolkit headers
 #include "slic/slic.hpp"
@@ -999,50 +998,6 @@ public:
 
 //@}
 
-
-//@{
-//!  @name DataGroup save and load methods (basic file I/O).
-
-  /*!
-   * \brief Save this DataGroup object (including data views and child
-   *        groups) to a file set named "obase".
-   *
-   * \warning Currently, only valid protocol is "conduit".
-   */
-  void save(const std::string& obase,
-            const std::string& protocol) const;
-
-  /*!
-   * \brief Save this DataGroup object (including data views and child
-   *        groups) to an hdf5 file.
-   *
-   * \warning Currently, only valid protocol is "conduit_hdf5".
-   */
-  void save(const std::string& obase,
-            const std::string& protocol,
-            const hid_t& h5_file_id) const;
-
-  /*!
-   * \brief Load data group (including data views and child groups)
-   *        from a file set named "obase" into this DataGroup object.
-   *
-   * \warning Currently, only valid protocol is "conduit".
-   */
-  void load(const std::string& obase,
-            const std::string& protocol);
-
-  /*!
-   * \brief Load data group (including data views and child groups)
-   *        from an hdf5 file into this DataGroup object.
-   *
-   * \warning Currently, only valid protocol is "conduit_hdf5".
-   */
-  void load(const std::string& obase,
-            const std::string& protocol,
-            const hid_t& h5_file_id);
-
-//@}
-
   /*!
    * \brief Copy data group description to given Conduit node.
    */
@@ -1136,34 +1091,28 @@ private:
    */
   DataGroup * walkPath(std::string& path, bool create_on_demand );
 
-
 //@{
 //!  @name Private DataGroup methods for interacting with Conduit Nodes.
 
   /*!
-   * \brief Private methods to copy DataGroup to/from Conduit Node.
-   */
-  void copyToNode(Node& n) const;
-  ///
-  void copyFromNode(Node& n);
-
-  /*!
    * \brief Private methods to copy DataGroup to Conduit Node.
    *
-   * Vector of ids is used to maintain correct association of DataBuffers
-   * to DataViews......???? punt!
+   * \param buffer_indices Used to track what buffers are referenced
+   * by the views in this group and sub-groups.
    */
-  void copyToNode(Node& n,
-                  std::vector<IndexType>& buffer_ids) const;
+  void exportTo(conduit::Node& data_holder,
+                std::set<IndexType>& buffer_indicies) const;
 
   /*!
    * \brief Private methods to copy DataGroup from Conduit Node.
    *
-   * Vector of ids is used to maintain correct association of DataBuffers
-   * to DataViews......???? punt!
+   * Map of buffer indices tracks old buffer ids in the file to the
+   * new buffer ids in the datastore.  Buffer ids are not guaranteed
+   * to remain the same when a tree is restored.
+   *
    */
-  void copyFromNode(Node& n,
-                    std::map<IndexType, IndexType>& id_map);
+  void importFrom(conduit::Node& node,
+                  const std::map<IndexType, IndexType>& buffer_id_map);
 
 //@}
 

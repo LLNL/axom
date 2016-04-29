@@ -28,9 +28,12 @@
 
 // SiDRe project headers
 #include "sidre/DataGroup.hpp"
+#include "sidre/DataStore.hpp"
 #include "sidre/SidreTypes.hpp"
 
-#include "conduit_mpi.hpp"
+//This does not appear to be needed.  TODO - Ask Noah if there are future plans to
+//use it.
+//#include "relay_mpi.hpp"
 
 namespace asctoolkit
 {
@@ -106,34 +109,42 @@ void IOManager::write(const std::string& file_string, int cycle, const std::stri
 
     SLIC_ASSERT(root_file_id >= 0);
 
-    herr_t errv;
+    herr_t status;
 
     for (int i = 0; i < m_num_datagroups; ++i) {
 
       std::string hdf5_name = getHDF5FileName(root_file_id, group_id, i);
 
-      hid_t h5_file_id;
+      hid_t h5_file_id, h5_group_id;
       if (m_baton.isFirstInGroup()) {
         h5_file_id = H5Fcreate(hdf5_name.c_str(),
                                H5F_ACC_TRUNC,
                                H5P_DEFAULT,
                                H5P_DEFAULT);   
+        // TODO - Ask Noah about adding a SLIC check here, make sure file create succeeded.
       } else {
         h5_file_id = H5Fopen(hdf5_name.c_str(),
                              H5F_ACC_RDWR,
                              H5P_DEFAULT); 
+        // TODO - Ask Noah about adding a SLIC check here, make sure file create succeeded.
       }
       SLIC_ASSERT(h5_file_id >= 0);
 
-      std::ostringstream savestream;
-      savestream << hdf5_name << ":datagroup" << i << "_" << m_my_rank << "/";
-      m_datagroups[i]->save(savestream.str(), protocol, h5_file_id);
+      std::ostringstream group_stream;
+      group_stream << "datagroup" << i << "_" << m_my_rank;
+      std::string group_name = group_stream.str();
+      h5_group_id = H5Gcreate(h5_file_id, group_name.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      SLIC_ASSERT(h5_group_id >= 0);
 
-      errv = H5Fclose(h5_file_id);
-      SLIC_ASSERT(errv >= 0);
+      m_datagroups[i]->getDataStore()->save(h5_group_id, m_datagroups[i] );
+
+      status = H5Gclose(h5_group_id);
+      SLIC_ASSERT(status >= 0);
+      status = H5Fclose(h5_file_id);
+      SLIC_ASSERT(status >= 0);
     }
-    errv = H5Fclose(root_file_id);
-    SLIC_ASSERT(errv >= 0);
+    status = H5Fclose(root_file_id);
+    SLIC_ASSERT(status >= 0);
 
 
   } else if (protocol == "conduit") {
@@ -141,7 +152,7 @@ void IOManager::write(const std::string& file_string, int cycle, const std::stri
       std::ostringstream savestream;
       savestream << file_name << ".group" << i;
       std::string obase = savestream.str();
-      m_datagroups[i]->save(obase, protocol);
+      m_datagroups[i]->getDataStore()->save(obase, protocol, m_datagroups[i]);
     } 
   }
   (void)m_baton.pass();
@@ -182,10 +193,13 @@ void IOManager::read(const std::string& file_string, int cycle, const std::strin
                                  H5P_DEFAULT);
       SLIC_ASSERT(h5_file_id >= 0);
 
-      std::ostringstream loadstream;
-      loadstream << hdf5_name << ":datagroup" << i << "_" << m_my_rank << "/";
-
-      m_datagroups[i]->load(loadstream.str(), protocol, h5_file_id);
+      // TODO Add HDF5 call to change hdf5 internal directory to loadstream name.
+      std::ostringstream groupstream;
+      groupstream << "datagroup" << i << "_" << m_my_rank;
+      std::string group_name = groupstream.str();
+      hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
+      SLIC_ASSERT(h5_file_id >= 0);
+      m_datagroups[i]->getDataStore()->load(h5_group_id, m_datagroups[i]);
 
       errv = H5Fclose(h5_file_id);
       SLIC_ASSERT(errv >= 0);
@@ -200,7 +214,7 @@ void IOManager::read(const std::string& file_string, int cycle, const std::strin
       std::ostringstream loadstream;
       loadstream << file_name << ".group" << i;
       std::string obase = loadstream.str();
-      m_datagroups[i]->load(obase, protocol);
+      m_datagroups[i]->getDataStore()->load(obase, protocol, m_datagroups[i]);
     }
   }
 
@@ -228,10 +242,12 @@ void IOManager::read(const std::string& root_file, const std::string& protocol)
                                H5P_DEFAULT);
     SLIC_ASSERT(h5_file_id >= 0);
 
-    std::ostringstream loadstream;
-    loadstream << hdf5_name << ":datagroup" << i << "_" << m_my_rank << "/";
-
-    m_datagroups[i]->load(loadstream.str(), protocol, h5_file_id);
+    std::ostringstream groupstream;
+    groupstream << "datagroup" << i << "_" << m_my_rank;
+    std::string group_name = groupstream.str();
+    hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
+    SLIC_ASSERT(h5_group_id >= 0);
+    m_datagroups[i]->getDataStore()->load(h5_group_id, m_datagroups[i]);
 
     errv = H5Fclose(h5_file_id);
     SLIC_ASSERT(errv >= 0);

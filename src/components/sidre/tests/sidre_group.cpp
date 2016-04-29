@@ -9,6 +9,7 @@
  */
 
 #include "gtest/gtest.h"
+#include <cstring>
 
 #include "sidre/sidre.hpp"
 
@@ -662,46 +663,142 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
   delete ds;
 }
 
-
-
-
 //------------------------------------------------------------------------------
-TEST(sidre_group,save_restore_simple)
+TEST(sidre_group,save_restore_empty)
 {
   DataStore * ds = new DataStore();
-  DataGroup * flds = ds->getRoot()->createGroup("fields");
 
-  DataGroup * ga = flds->createGroup("a");
+  ds->save("sidre_empty_datastore", "conduit");
 
-  ga->createViewScalar("i0", 1);
+  delete ds;
 
-  EXPECT_TRUE(ds->getRoot()->hasGroup("fields"));
-  EXPECT_TRUE(ds->getRoot()->getGroup("fields")->hasGroup("a"));
-  EXPECT_TRUE(ds->getRoot()->getGroup("fields")->getGroup("a")->hasView("i0"));
+  ds = new DataStore();
+  ds->load("sidre_empty_datastore", "conduit");
 
+  EXPECT_TRUE(ds->getNumBuffers() == 0 );
+  EXPECT_TRUE(ds->getRoot()->getNumGroups() == 0 );
+  EXPECT_TRUE(ds->getRoot()->getNumViews() == 0 );
 
-  ds->getRoot()->save("out_sidre_group_save_restore_simple","conduit");
+}
 
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_restore_api)
+{
+  DataStore * ds1 = new DataStore();
+
+  ds1->getRoot()->createViewScalar<int>("i0", 1);
+
+  // These should be produce identical files.
+
+  // No group provided, defaults to root group
+  ds1->save("sidre_save_fulltree", "conduit");
+  // Pass in group (example of saving sub-tree).
+  ds1->save("sidre_save_subtree", "conduit", ds1->getRoot());
+
+  // Text output ( for debugging ).  Write support only ( no load ).
+  ds1->save("sidre_save_textoutput", "text", ds1->getRoot());
+
+  // HDF5 output
+  ds1->save("sidre_save_conduithdf5","conduit_hdf5");
+
+  DataStore * ds2 = new DataStore();
+  DataStore * ds3 = new DataStore();
+  DataStore * ds4 = new DataStore();
+
+  ds2->load("sidre_save_fulltree", "conduit");
+  ds3->load("sidre_save_subtree", "conduit", ds3->getRoot() );
+  ds4->load("sidre_save_conduithdf5", "conduit_hdf5");
+
+  EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(ds1->getRoot()) );
+  EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(ds1->getRoot()) );
+  EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(ds1->getRoot()) );
+
+  delete ds1;
+  delete ds2;
+  delete ds3;
+  delete ds4;
+
+  // Why don't these pass??? Need to ask Noah about this...
+  // Trying to make sure sub trees are same here.
 #if 0
-  //ds->print();
+  DataStore * ds_new = new DataStore();
+  DataGroup * tree1 = ds_new->getRoot()->createGroup("api1");
+  DataGroup * tree2 = ds_new->getRoot()->createGroup("api2");
+
+  api1->load("sidre_save_subtree", "conduit");
+  api2->load("sidre_save_subtree", "conduit");
+
+  EXPECT_TRUE( api1->isEquivalentTo( api2) );
+#endif
+
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_restore_scalars_and_strings)
+{
+  DataStore * ds1 = new DataStore();
+
+  ds1->getRoot()->createViewScalar<int>("i0", 1);
+  ds1->getRoot()->createViewScalar<float>("f0", 1.0);
+  ds1->getRoot()->createViewScalar<double>("d0", 10.0);
+
+  ds1->save("sidre_save_scalars_and_strings", "conduit");
 
   DataStore * ds2 = new DataStore();
 
-  ds2->getRoot()->load("out_sidre_group_save_restore_simple","conduit");
+  ds2->load("sidre_save_scalars_and_strings", "conduit");
 
-  //ds2->print();
+  EXPECT_TRUE( ds1->getRoot()->isEquivalentTo( ds2->getRoot()) );
 
-  flds = ds2->getRoot()->getGroup("fields");
-  // check that all sub groups exist
-  EXPECT_TRUE(flds->hasGroup("a"));
-  int testvalue = flds->getGroup("a")->getView("i0")->getData();
-  EXPECT_EQ(testvalue,1);
+  delete ds1;
+  delete ds2;
+}
 
-  //ds2->print();
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_restore_external_data)
+{
+  int foo[100];
+  for (int i =0; i < 100; ++i)
+  {
+    foo[i] = i;
+  }
+
+  DataStore * ds = new DataStore();
+
+  DataView * view = ds->getRoot()->createView("external_array", &foo[0] );
+  view->apply( asctoolkit::sidre::INT_ID, 100 );
+
+  ds->save("sidre_save_external", "conduit");
 
   delete ds;
-  delete ds2;
-#endif
+
+  // Now load back in.
+  ds = new DataStore();
+  ds->load("sidre_save_external", "conduit");
+
+  // All this code should change after we re-write how we handle restoring external data.
+  // Right now, the external data is coming back in the view's node and we have to do extra work to
+  // restore it to the user's pointer.
+  view = ds->getRoot()->getView("external_array");
+
+  int* new_data_pointer = new int[100];
+
+  EXPECT_TRUE( view->getTotalBytes() == sizeof( int[100] ) );
+
+  std::memcpy(&new_data_pointer[0], view->getVoidPtr(), view->getTotalBytes() );
+
+  // Will set view back to EMPTY and reset node.  Will leave description alone.
+  view->setExternalDataPtr( ATK_NULLPTR );
+
+  view->setExternalDataPtr( new_data_pointer );
+
+  for (int i = 0; i < 100; ++i)
+  {
+    EXPECT_TRUE( static_cast<int*>( view->getVoidPtr() )[i] == i );
+  }
+
+  delete[] new_data_pointer;
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -714,45 +811,53 @@ TEST(sidre_group,save_restore_complex)
   DataGroup * gb = flds->createGroup("b");
   DataGroup * gc = flds->createGroup("c");
 
-  ga->createViewScalar("i0", 1);
-  // Be careful on floats vs doubles.  It's best to be explicit on the type,
-  // or the compiler will cast floats up to doubles.
-  gb->createViewScalar<float>("f0", 100.0);
-  gc->createViewScalar<double>("d0", 3000.00);
+  ga->createViewScalar<int>("i0", 100.0);
+  ga->createViewScalar<double>("d0", 3000.00);
+  gb->createViewString("s0", "foo");
 
-  // check that all sub groups exist
-  EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_TRUE(flds->hasGroup("b"));
-  EXPECT_TRUE(flds->hasGroup("c"));
+  gc->createViewAndAllocate("int100", asctoolkit::sidre::INT_ID, 100);
+  int* data_ptr = gc->getView("int100")->getArray();
+  for (int i =0; i < 100; ++i)
+  {
+    data_ptr[i] = i;
+  }
 
-  //ds->print();
+  ds->save("sidre_mixed_types","conduit");
 
-  ds->getRoot()->save("out_sidre_group_save_restore_complex","conduit");
-
-#if 0
   DataStore * ds2 = new DataStore();
 
+  ds2->load("sidre_mixed_types","conduit");
 
-  ds2->getRoot()->load("out_sidre_group_save_restore_complex","conduit");
+  EXPECT_TRUE( ds->getRoot()->isEquivalentTo(ds2->getRoot()) );
+
+  delete ds;
 
   flds = ds2->getRoot()->getGroup("fields");
+
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
   EXPECT_TRUE(flds->hasGroup("b"));
   EXPECT_TRUE(flds->hasGroup("c"));
 
-  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getData<int>(),1);
-  EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getData<float>(),100.0,
-              1e-12);
-  EXPECT_NEAR(flds->getGroup("c")->getView(
-                "d0")->getData<double>(),3000.0, 1e-12);
+  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getData<int>(),100.0);
+  EXPECT_NEAR(flds->getGroup("a")->getView("d0")->getData<double>(),3000.0, 1e-12);
+
+  int* new_data_ptr = flds->getGroup("c")->getView("int100")->getArray();
+  for (int i = 0; i < 100; ++i)
+  {
+    EXPECT_TRUE( new_data_ptr[i] == i);
+  }
+
+  // TODO - Figure out the right way to get the string value our of conduit node!!
+  //char * char_ptr = flds->getGroup("b")->getView("s0")->getString();
+  //EXPECT_TRUE( std::string(char_ptr) == "foo" );
+
+
 
   //ds2->print();
 
-  delete ds;
   delete ds2;
-#endif
-}
+  }
 
 //------------------------------------------------------------------------------
 // isEquivalentTo()
@@ -777,12 +882,12 @@ TEST(sidre_group,is_equivalent_to)
   DataGroup * gb2 = flds2->createGroup("b");
   DataGroup * gc2 = flds2->createGroup("c");
 
-  ga1->createViewAndAllocate("i0", DataType::c_int());
-  gb1->createViewAndAllocate("f0", DataType::c_float());
-  gc1->createViewAndAllocate("d0", DataType::c_double());
-  ga2->createViewAndAllocate("i0", DataType::c_int());
-  gb2->createViewAndAllocate("f0", DataType::c_float());
-  gc2->createViewAndAllocate("d0", DataType::c_double());
+  ga1->createViewScalar("i0", 1 );
+  gb1->createViewScalar("f0", 100.0f );
+  gc1->createViewScalar("d0", 3000.00);
+  ga2->createViewScalar("i0", 1);
+  gb2->createViewScalar("f0", 100.0f);
+  gc2->createViewScalar("d0", 3000.00);
 
   ga1->getView("i0")->setScalar(1);
   gb1->getView("f0")->setScalar( 100.0f );

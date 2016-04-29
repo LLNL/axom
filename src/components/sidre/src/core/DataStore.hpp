@@ -25,14 +25,14 @@
 #include <vector>
 #include <stack>
 
-// Other toolkit component headers
+#include "relay.hpp"
+
+// Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
+#include "slic/slic.hpp"
 
 // Sidre project headers
 #include "SidreTypes.hpp"
-
-
-
 
 namespace asctoolkit
 {
@@ -81,6 +81,13 @@ public:
     return m_RootGroup;
   };
 
+  /*!
+   * \brief Return pointer to the root DataGroup.
+   */
+  const DataGroup * getRoot() const
+  {
+    return m_RootGroup;
+  };
 
 //@{
 //!  @name Methods to query, access, create, and destroy buffers.
@@ -196,6 +203,59 @@ public:
    */
   void print(std::ostream& os) const;
 
+
+  /// Developer notes:
+  /// We should reduce these functions when SPIO is fully available ( in both serial and parallel ).
+  /// We only need one or two simple save functions.  Try to keep this class simple and move the I/O
+  /// interfaces to SPIO.
+
+  /*!
+   * \brief Save the datastore to a new file.
+   * Supported protocols are conduit (binary), conduit_hdf5, and text (for debugging).
+   * If a group is not provided, the root group will be saved.
+   */
+  void save( const std::string& file_path,
+             const std::string& protocol,
+             const DataGroup* group = ATK_NULLPTR ) const;
+
+  /*!
+   * \brief Save the datastore to an existing hdf5 file.
+   * If a group is not provided, the root group will be saved.
+   */
+  void save( const hid_t& h5_file_id,
+             const DataGroup* group = ATK_NULLPTR ) const;
+
+  /*!
+   * \brief Load the datastore from a file
+   * If a group is not provided, it will be loaded into the root group.
+   */
+  void load(const std::string& file_path,
+            const std::string& protocol,
+            DataGroup * group = ATK_NULLPTR);
+
+  /*!
+   * \brief Load the datastore from an hdf5 file.
+   * If a group is not provided, it will be loaded into the root group.
+   */
+  void load(const hid_t& h5_file_id,
+            DataGroup * group = ATK_NULLPTR);
+
+  /*!
+   * \brief Add view description and references to it's data to a conduit tree.
+   */
+
+  /*!
+   * \brief Add the datastore hierarchy and references to it's data to a conduit tree.
+   * This includes the group/view hierarchy and buffers.
+   */
+  void exportTo( const DataGroup * group,
+                  conduit::Node& data_holder ) const;
+  /*!
+   * \brief Restore a datastore hierarchy and data contents (buffers, etc) from a conduit tree.
+   */
+
+  void importFrom(DataGroup * group,
+                  conduit::Node& data_holder);
 
 private:
   /*!

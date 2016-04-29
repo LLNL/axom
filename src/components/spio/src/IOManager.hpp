@@ -23,6 +23,8 @@
 
 #include "mpi.h"
 
+#include "hdf5.h"
+
 // Other CS Toolkit headers
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"

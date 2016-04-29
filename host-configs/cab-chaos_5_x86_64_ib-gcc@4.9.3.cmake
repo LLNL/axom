@@ -6,7 +6,6 @@
 
 # cmake from uberenv
 # cmake executable path: /usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/cmake-3.3.1-3gc4unffj5rqcq35gecg4wv3roecpldt/bin/cmake
-
 #######
 # using gcc@4.9.3 compiler spec
 #######
@@ -23,10 +22,10 @@ set(ENABLE_FORTRAN ON CACHE PATH "")
 set(CMAKE_Fortran_COMPILER  "/usr/apps/gnu/4.9.3/bin/gfortran" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/hdf5-1.8.16-msbowehgkgvhlnl62fy6tb7bvefbr7h4" CACHE PATH "")
+set(HDF5_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/hdf5-1.8.16-yekrjrclnt4kzdzzvcx7heo43tb3ffz2" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/conduit-github-xss6r4ckani3ir6g6iziirkk5zfgfwm3" CACHE PATH "")
+set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/conduit-github-qr33wv6jqfmsj3ho45m53j5rkftfgqg6" CACHE PATH "")
 
 # doxygen from uberenv
 set(DOXYGEN_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/stable/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/doxygen-1.8.10-aqqpsfyxqv4yjo5nc7ruvmsyeix2xdr2/bin/doxygen" CACHE PATH "")

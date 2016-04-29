@@ -265,6 +265,17 @@ public:
    */
   void print(std::ostream& os) const;
 
+  /*!
+   * \brief Exports buffer's state to a conduit node.
+   */
+  void exportTo( conduit::Node& data_holder );
+
+  /*!
+   * \brief Import buffer's state from a conduit node.
+   */
+  void importFrom( conduit::Node& data_holder );
+
+
 
 private:
 

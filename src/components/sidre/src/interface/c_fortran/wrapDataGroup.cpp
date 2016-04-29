@@ -894,56 +894,6 @@ void SIDRE_datagroup_print(SIDRE_datagroup * self)
 // splicer end class.DataGroup.method.print
 }
 
-void SIDRE_datagroup_save(SIDRE_datagroup * self, const char * obase,
-                          const char * protocol)
-{
-  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.save
-  std::string SH_obase(obase);
-  std::string SH_protocol(protocol);
-  selfobj->save(SH_obase, SH_protocol);
-  return;
-// splicer end class.DataGroup.method.save
-}
-
-void SIDRE_datagroup_save_bufferify(SIDRE_datagroup * self, const char * obase,
-                                    int Lobase, const char * protocol,
-                                    int Lprotocol)
-{
-  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.save_bufferify
-  std::string SH_obase(obase, Lobase);
-  std::string SH_protocol(protocol, Lprotocol);
-  selfobj->save(SH_obase, SH_protocol);
-  return;
-// splicer end class.DataGroup.method.save_bufferify
-}
-
-void SIDRE_datagroup_load(SIDRE_datagroup * self, const char * obase,
-                          const char * protocol)
-{
-  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.load
-  std::string SH_obase(obase);
-  std::string SH_protocol(protocol);
-  selfobj->load(SH_obase, SH_protocol);
-  return;
-// splicer end class.DataGroup.method.load
-}
-
-void SIDRE_datagroup_load_bufferify(SIDRE_datagroup * self, const char * obase,
-                                    int Lobase, const char * protocol,
-                                    int Lprotocol)
-{
-  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.load_bufferify
-  std::string SH_obase(obase, Lobase);
-  std::string SH_protocol(protocol, Lprotocol);
-  selfobj->load(SH_obase, SH_protocol);
-  return;
-// splicer end class.DataGroup.method.load_bufferify
-}
-
 // splicer begin class.DataGroup.additional_functions
 // splicer end class.DataGroup.additional_functions
 
