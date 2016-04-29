@@ -203,7 +203,7 @@ endmacro(blt_register_library)
 macro(blt_add_library)
 
     set(options SHARED)
-    set(singleValueArgs NAME OUTPUT_DIR USE_OPENMP SHARED)
+    set(singleValueArgs NAME OUTPUT_DIR USE_OPENMP)
     set(multiValueArgs SOURCES HEADERS DEPENDS_ON)
 
     ## parse the arguments

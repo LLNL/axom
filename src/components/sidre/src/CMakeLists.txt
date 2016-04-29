@@ -98,7 +98,7 @@ if(ENABLE_PYTHON_API)
 
     blt_add_python_module(
         NAME
-            sidre2
+            sidre
         SOURCES
             ${sidre_sources}
             ${sidre_python_sources}
@@ -112,7 +112,6 @@ if(ENABLE_PYTHON_API)
             hdf5
             slic
     )
-    set_target_properties(sidre2 PROPERTIES OUTPUT_NAME sidre)
 
 #http://stackoverflow.com/questions/2152077/is-it-possible-to-get-cmake-to-build-both-a-static-and-shared-version-of-the-sam
 # object library to avoid compile files twice

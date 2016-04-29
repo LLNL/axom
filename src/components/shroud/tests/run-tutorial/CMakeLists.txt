@@ -26,8 +26,8 @@ blt_add_test(
 #
 # Make Python module library
 #
-#if(PYTHONINTERP_FOUND)
-if(ENABLE_PYTHON_API)
+if(PYTHONINTERP_FOUND)
+#if(ENABLE_PYTHON_API)
     blt_add_python_module(
         NAME
             tutorial
