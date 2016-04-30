@@ -8,6 +8,7 @@ from util import wformat, append_format
 
 def add_templates(options):
     options.update(dict(
+        LUA_module_name_template = '{library_lower}',
         LUA_module_filename_template = 'lua{library}module.cpp',
         LUA_header_filename_template = 'lua{library}module.hpp',
         LUA_userdata_type_template = '{LUA_prefix}{cpp_class}_Type',
@@ -44,8 +45,8 @@ class Wrapl(util.WrapperMixin):
 
         # Format variables
         fmt_library.LUA_prefix        = options.get('LUA_prefix', 'l_')
-        fmt_library.LUA_module_name  = fmt_library.library_lower
         fmt_library.LUA_state_var = 'L'
+        util.eval_template(top, 'LUA_module_name')
         util.eval_template(top, 'LUA_module_reg')
         util.eval_template(top, 'LUA_module_filename')
         util.eval_template(top, 'LUA_header_filename')

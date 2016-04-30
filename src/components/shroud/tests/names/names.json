@@ -4,6 +4,7 @@
     "F_impl_filename": "top.f", 
     "F_module_dependencies": [], 
     "F_module_name": "top_module", 
+    "LUA_module_name": "lua_module_name", 
     "classes": [
         {
             "C_header_filename": "foo.h", 
@@ -282,6 +283,7 @@
         "LUA_header_filename_template": "lua{library}module.hpp", 
         "LUA_metadata_template": "{cpp_class}.metatable", 
         "LUA_module_filename_template": "lua{library}module.cpp", 
+        "LUA_module_name_template": "{library_lower}", 
         "LUA_module_reg_template": "{LUA_prefix}{library}_Reg", 
         "LUA_name_impl_template": "{LUA_prefix}{class_name}{underscore_name}", 
         "LUA_name_template": "{function_name}", 

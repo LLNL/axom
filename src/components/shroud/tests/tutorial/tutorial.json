@@ -2021,6 +2021,7 @@
         "LUA_header_filename_template": "lua{library}module.hpp", 
         "LUA_metadata_template": "{cpp_class}.metatable", 
         "LUA_module_filename_template": "lua{library}module.cpp", 
+        "LUA_module_name_template": "{library_lower}", 
         "LUA_module_reg_template": "{LUA_prefix}{library}_Reg", 
         "LUA_name_impl_template": "{LUA_prefix}{class_name}{underscore_name}", 
         "LUA_name_template": "{function_name}", 

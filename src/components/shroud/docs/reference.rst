@@ -253,6 +253,10 @@ LUA_class_reg_template
     Name of `luaL_Reg` array of function names for a class.
     ``{LUA_prefix}{cpp_class}_Reg``
 
+LUA_module_name
+    Name of Lua module for library.
+    ``{library_lower}``
+
 LUA_module_reg_template
     Name of `luaL_Reg` array of function names for a library.
     ``{LUA_prefix}{library}_Reg``
