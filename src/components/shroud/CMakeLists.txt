@@ -83,8 +83,6 @@ if(BUILD_TESTING)
         COMMAND ${CMAKE_CURRENT_BINARY_DIR}/do-test
     )
 
-    if(ENABLE_FORTRAN)
-        add_subdirectory(tests/run-tutorial)
-        add_subdirectory(tests/run-strings)
-    endif()
+    add_subdirectory(tests/run-tutorial)
+    add_subdirectory(tests/run-strings)
 endif()
