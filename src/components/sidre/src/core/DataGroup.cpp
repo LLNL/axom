@@ -22,12 +22,10 @@
 #include "DataGroup.hpp"
 
 // Other toolkit component headers
-#include "common/CommonTypes.hpp"
 
 // SiDRe project headers
 #include "DataBuffer.hpp"
 #include "DataStore.hpp"
-#include "DataView.hpp"
 #include "SidreUtilities.hpp"
 
 namespace asctoolkit

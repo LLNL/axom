@@ -55,6 +55,7 @@
 
 // Other CS Toolkit headers
 #include "slic/slic.hpp"
+#include "common/CommonTypes.hpp"
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
@@ -146,6 +147,22 @@ public:
   }
 
   /*!
+   * \brief Return number of (child) DataGroups in this DataGroup.
+   */
+  size_t getNumGroups() const
+  {
+    return m_group_coll.getNumItems();
+  }
+
+  /*!
+   * \brief Return number of DataViews owned in this DataGroup.
+   */
+  size_t getNumViews() const
+  {
+    return m_view_coll.getNumItems();
+  }
+
+  /*!
    * \brief Return pointer to non-const DataStore that owns group hierarchy
    *        to which DataGroup instance belongs.
    */
@@ -161,22 +178,6 @@ public:
   const DataStore * getDataStore() const
   {
     return m_datastore;
-  }
-
-  /*!
-   * \brief Return number of DataViews contained in this DataGroup.
-   */
-  size_t getNumViews() const
-  {
-    return m_view_coll.getNumItems();
-  }
-
-  /*!
-   * \brief Return number of (child) DataGroups contained in this DataGroup.
-   */
-  size_t getNumGroups() const
-  {
-    return m_group_coll.getNumItems();
   }
 
 //@}
@@ -210,9 +211,9 @@ public:
    */
   IndexType getViewIndex(const std::string& name) const
   {
-    SLIC_CHECK_MSG( !name.empty() && hasView(name),
-                    "Group " << this->getName() << " does not have view with name '" << name <<
-                    "'");
+    SLIC_CHECK_MSG( hasView(name),
+                    "Group " << this->getName() 
+                    << " has no view with name '" << name << "'");
 
     return m_view_coll.getItemIndex(name);
   }
@@ -225,20 +226,11 @@ public:
   const std::string& getViewName(IndexType idx) const
   {
     SLIC_CHECK_MSG( hasView(idx),
-                    "Group " << this->getName() << " does not have view with index " <<
-                    idx);
+                    "Group " << this->getName() 
+                    << " has no view with index " << idx);
 
     return m_view_coll.getItemName(idx);
   }
-
-  /*!
-   * \brief Return boolean telling if two DataGroups are equivalent.
-   *
-   * To be equivalent they must have identical hierarchy structures with
-   * the same names for all child DataGroups and DataViews, and the DataViews
-   * must all pass DataView's equivalence test.
-   */
-  bool isEquivalentTo(const DataGroup * other) const;
 
 //@}
 
@@ -246,7 +238,7 @@ public:
 //@{
 //!  @name DataView access and iteration methods.
 //!
-//!  Some of these methods support a path syntax for input.  When a path is
+//!  Methods that methods support a path syntax for input.  When a path is
 //!  provided the method will retrieve the last item in the path.  All
 //!  items in the path must exist.
 //!
@@ -969,6 +961,15 @@ public:
   DataGroup * copyGroup(DataGroup * group);
 
 //@}
+
+  /*!
+   * \brief Return boolean telling if two DataGroups are equivalent.
+   *
+   * To be equivalent they must have identical hierarchy structures with
+   * the same names for all child DataGroups and DataViews, and the DataViews
+   * must all pass DataView's equivalence test.
+   */
+  bool isEquivalentTo(const DataGroup * other) const;
 
 
 //@{
