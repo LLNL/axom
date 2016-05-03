@@ -215,9 +215,7 @@ macro(blt_add_library)
         set(arg_USE_OPENMP FALSE)
     endif()
 
-    if (${arg_SHARED})
-        add_library( ${arg_NAME} SHARED ${arg_SOURCES} ${arg_HEADERS} )
-    elseif ( ENABLE_SHARED_LIBS )
+    if ( arg_SHARED OR ENABLE_SHARED_LIBS )
         add_library( ${arg_NAME} SHARED ${arg_SOURCES} ${arg_HEADERS} )
     else()
         add_library( ${arg_NAME} STATIC ${arg_SOURCES} ${arg_HEADERS} )
@@ -261,6 +259,85 @@ macro(blt_add_library)
    
 endmacro(blt_add_library)
 
+##------------------------------------------------------------------------------
+## blt_add_python_module
+##
+## Creates a shared library to be used as a Python module.
+## All options to blt_add_library may be used.
+##
+## The library is created in BLT_Python_MODULE_DIRECTORY
+## by default. OUTPUT_DIR can be used to change the location.
+##
+## NAME is the name of the Python module.
+## The target name will be ${arg_NAME}-python-module and the
+## library is named ${arg_NAME}.so.
+## This allow lib${arg_NAME}.a to also be created by using
+## blt_add_library directly.
+## 
+##------------------------------------------------------------------------------
+macro(blt_add_python_module)
+    set(singleValueArgs NAME )
+    set(multiValueArgs DEPENDS_ON)
+    ## parse the arguments
+    ## only parse NAME, blt_add_library will do the real work
+    cmake_parse_arguments(arg_module
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    # Force shard libraries
+    blt_add_library(
+        OUTPUT_DIR ${BLT_Python_MODULE_DIRECTORY}
+        ${ARGV}
+        NAME ${arg_module_NAME}-python-module
+        DEPENDS_ON ${arg_DEPENDS_ON} python
+        SHARED
+    )
+
+    # Python wants the name to be 'name.so', without leading 'lib'
+    set_target_properties(${arg_module_NAME}-python-module PROPERTIES
+        PREFIX ""
+	OUTPUT_NAME ${arg_module_NAME}
+    )
+endmacro(blt_add_python_module)
+
+##------------------------------------------------------------------------------
+## blt_add_lua_module
+##
+## Creates a shared library to be used as a Lua module.
+## All options to blt_add_library may be used.
+##
+## The library is created in CMAKE_Lua_MODULE_DIRECTORY
+## by default. OUTPUT_DIR can be used to change the location.
+##
+## NAME is the name of the Lua module.
+## The target name will be ${arg_NAME}-lua-module and the
+## library is named ${arg_NAME}.so.
+## This allow lib${arg_NAME}.a to also be created by using
+## blt_add_library directly.
+## 
+##------------------------------------------------------------------------------
+macro(blt_add_lua_module)
+    set(singleValueArgs NAME )
+    set(multiValueArgs DEPENDS_ON)
+    ## parse the arguments
+    ## only parse NAME, blt_add_library will do the real work
+    cmake_parse_arguments(arg_module
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    # Force shard libraries
+    blt_add_library(
+        OUTPUT_DIR ${BLT_Lua_MODULE_DIRECTORY}
+        ${ARGV}
+        NAME ${arg_module_NAME}-lua-module
+        DEPENDS_ON ${arg_DEPENDS_ON} lua
+        SHARED
+    )
+
+    # Lua wants the name to be 'name.so', without leading 'lib'
+    set_target_properties(${arg_module_NAME}-lua-module PROPERTIES
+        PREFIX ""
+	OUTPUT_NAME ${arg_module_NAME}
+    )
+endmacro(blt_add_lua_module)
 
 ##------------------------------------------------------------------------------
 ## blt_add_executable( NAME <name>

@@ -26,11 +26,8 @@ endif()
 #
 # Make Python module library
 #
-if(FALSE)
-#if(PYTHONINTERP_FOUND)
-#if(ENABLE_PYTHON_API)
-    include_directories(${PYTHON_INCLUDE_DIRS})
-
+if(FALSE)  # Test does not pass yet
+#if(PYTHON_FOUND)
     blt_add_python_module(
         NAME
             strings

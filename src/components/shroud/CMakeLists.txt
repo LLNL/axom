@@ -3,12 +3,12 @@
 #
 project(shroud)
 
-if (BUILD_DOCS)
+if (ENABLE_DOCS)
     add_subdirectory(docs)
 endif()
 
 # Make sure Python and required modules are available
-if(PYTHON_EXECUTABLE)
+if(PYTHON_FOUND)
     execute_process(
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_python.py
         RESULT_VARIABLE HAVE_PYTHON_MODULES
@@ -61,7 +61,7 @@ file(REMOVE ${tmp_file})
 # Write the test script
 # configure into CMakeFiles directory, because it must be in a different directory
 # since file(COPY) does rename files
-if(BUILD_TESTING)
+if(ENABLE_TESTS)
     set(tmp_file ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/do-test)
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/do-test.in

@@ -28,8 +28,7 @@ endif()
 #
 # Make Python module library
 #
-if(PYTHONINTERP_FOUND)
-#if(ENABLE_PYTHON_API)
+if(PYTHON_FOUND)
     blt_add_python_module(
         NAME
             tutorial
@@ -55,7 +54,6 @@ endif()
 # Make Lua module library
 #
 if(LUA_FOUND)
-#if(ENABLE_LUA_API)
     blt_add_lua_module(
         NAME
             tutorial
