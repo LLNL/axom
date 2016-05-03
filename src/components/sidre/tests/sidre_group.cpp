@@ -670,8 +670,8 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_empty)
 {
-  DataStore * ds1 = new DataStore();
   const std::string file_path_base("sidre_empty_datastore_");
+  DataStore * ds1 = new DataStore();
 
   for (int i = 0; i < nprotocols; ++i) {
       if ( protocols[i] == "conduit_hdf5")
@@ -703,9 +703,9 @@ TEST(sidre_group,save_restore_empty)
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_api)
 {
+  const std::string file_path_base("sidre_save_subtree_");
   DataStore * ds1 = new DataStore();
   DataGroup * root1 = ds1->getRoot();
-  const std::string file_path_base("sidre_save_subtree_");
 
   root1->createViewScalar<int>("i0", 1);
 
@@ -754,9 +754,9 @@ TEST(sidre_group,save_restore_api)
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_scalars_and_strings)
 {
+  const std::string file_path_base("sidre_save_scalars_and_strings_");
   DataStore * ds1 = new DataStore();
   DataGroup * root1 = ds1->getRoot();
-  const std::string file_path_base("sidre_save_scalars_and_strings_");
 
   root1->createViewScalar<int>("i0", 1);
   root1->createViewScalar<float>("f0", 1.0);
@@ -791,6 +791,8 @@ TEST(sidre_group,save_restore_scalars_and_strings)
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_external_data)
 {
+  const std::string file_path_base("sidre_save_external_");
+
   int nfoo = 10;
   int foo[nfoo];
   for (int i = 0; i < nfoo; ++i)
@@ -800,7 +802,6 @@ TEST(sidre_group,save_restore_external_data)
 
   DataStore * ds1 = new DataStore();
   DataGroup * root1 = ds1->getRoot();
-  const std::string file_path_base("sidre_save_external_");
 
   DataView * view = root1->createView("external_array", foo );
   view->apply( asctoolkit::sidre::INT_ID, nfoo );
@@ -852,60 +853,67 @@ TEST(sidre_group,save_restore_external_data)
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_complex)
 {
-  DataStore * ds = new DataStore();
-  DataGroup * flds = ds->getRoot()->createGroup("fields");
+  const std::string file_path_base("sidre_mixed_types_");
+  DataStore * ds1 = new DataStore();
+  DataGroup * flds = ds1->getRoot()->createGroup("fields");
 
   DataGroup * ga = flds->createGroup("a");
   DataGroup * gb = flds->createGroup("b");
   DataGroup * gc = flds->createGroup("c");
+  int ndata = 10;
 
   ga->createViewScalar<int>("i0", 100.0);
   ga->createViewScalar<double>("d0", 3000.00);
   gb->createViewString("s0", "foo");
 
-  gc->createViewAndAllocate("int100", asctoolkit::sidre::INT_ID, 100);
-  int* data_ptr = gc->getView("int100")->getArray();
-  for (int i = 0; i < 100; ++i)
+  gc->createViewAndAllocate("int10", asctoolkit::sidre::INT_ID, ndata);
+  int* data_ptr = gc->getView("int10")->getArray();
+  for (int i = 0; i < ndata; ++i)
   {
     data_ptr[i] = i;
   }
 
-  ds->save("sidre_mixed_types","conduit");
-
-  DataStore * ds2 = new DataStore();
-
-  ds2->load("sidre_mixed_types","conduit");
-
-  EXPECT_TRUE( ds->getRoot()->isEquivalentTo(ds2->getRoot()) );
-
-  delete ds;
-
-  flds = ds2->getRoot()->getGroup("fields");
-
-  // check that all sub groups exist
-  EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_TRUE(flds->hasGroup("b"));
-  EXPECT_TRUE(flds->hasGroup("c"));
-
-  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getData<int>(),100.0);
-  EXPECT_NEAR(flds->getGroup("a")->getView("d0")->getData<double>(),3000.0, 1e-12);
-
-  int* new_data_ptr = flds->getGroup("c")->getView("int100")->getArray();
-  for (int i = 0; i < 100; ++i)
-  {
-    EXPECT_TRUE( new_data_ptr[i] == i);
+  for (int i = 0; i < nprotocols; ++i) {
+      const std::string file_path = file_path_base + protocols[i];
+      ds1->save(file_path, protocols[i]);
   }
 
-  // TODO - Figure out the right way to get the string value our of conduit node!!
-  //char * char_ptr = flds->getGroup("b")->getView("s0")->getString();
-  //EXPECT_TRUE( std::string(char_ptr) == "foo" );
+  // Only restore conduit protocol for now
+  for (int i = 0; i < 1; ++i) {
+      const std::string file_path = file_path_base + protocols[i];
 
+      DataStore * ds2 = new DataStore();
 
+      ds2->load(file_path, protocols[i]);
 
-  //ds2->print();
+      EXPECT_TRUE( ds1->getRoot()->isEquivalentTo(ds2->getRoot()) );
 
-  delete ds2;
+      flds = ds2->getRoot()->getGroup("fields");
+
+      // check that all sub groups exist
+      EXPECT_TRUE(flds->hasGroup("a"));
+      EXPECT_TRUE(flds->hasGroup("b"));
+      EXPECT_TRUE(flds->hasGroup("c"));
+
+      EXPECT_EQ(flds->getGroup("a")->getView("i0")->getData<int>(),100.0);
+      EXPECT_NEAR(flds->getGroup("a")->getView("d0")->getData<double>(),3000.0, 1e-12);
+
+      int* new_data_ptr = flds->getGroup("c")->getView("int10")->getArray();
+      for (int i = 0; i < ndata; ++i)
+	  {
+	      EXPECT_TRUE( new_data_ptr[i] == i);
+	  }
+
+      const char * char_ptr = flds->getView("b/s0")->getString();
+      EXPECT_TRUE( std::string(char_ptr) == "foo" );
+
+      //ds2->print();
+
+      delete ds2;
   }
+
+  delete ds1;
+}
 
 //------------------------------------------------------------------------------
 // isEquivalentTo()
