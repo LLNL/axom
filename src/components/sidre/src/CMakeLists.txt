@@ -82,40 +82,37 @@ install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 #endif()
 
 
-if(ENABLE_PYTHON_API)
+if(FALSE)  # The Python module is not create yet.
+#if(ENABLE_PYTHON_API)
     set(sidre_python_sources
         interface/python/pyDataStoretype.cpp
         interface/python/pyDataGrouptype.cpp
         interface/python/pyDataBuffertype.cpp
         interface/python/pyDataViewtype.cpp
-        interface/python/pySidremodule.hpp
         interface/python/pySidremodule.cpp
         interface/python/pySidrehelper.cpp
     )
+    set(sidre_python_headers
+        interface/python/pySidremodule.hpp
+    )
 
-    include_directories(${PYTHON_INCLUDE_DIRS})
-
-    blt_add_library(
+    blt_add_python_module(
         NAME
-            sidre2
+            sidre
         SOURCES
             ${sidre_sources}
             ${sidre_python_sources}
         HEADERS
             ${sidre_headers}
+            ${sidre_python_headers}
         DEPENDS_ON
             common
             conduit
+            conduit_io
+            hdf5
             slic
     )
 
-    # Python wants the name without leading 'lib'
-    set_target_properties(sidre2
-        PROPERTIES
-          PREFIX ""
-    )
-    set_target_properties(sidre2 PROPERTIES OUTPUT_NAME sidre)
-
 #http://stackoverflow.com/questions/2152077/is-it-possible-to-get-cmake-to-build-both-a-static-and-shared-version-of-the-sam
 # object library to avoid compile files twice
-endif(ENABLE_PYTHON_API)
+endif()

@@ -29,6 +29,7 @@ import splicer
 import wrapc
 import wrapf
 import wrapp
+import wrapl
 
 # char functions cannot be wrapped directly in intel 15.  Instead the result is passed down
 # as an argument from the Fortran wrapper to the C wrapper.
@@ -130,6 +131,7 @@ class Schema(object):
             wrap_c       = True,
             wrap_fortran = True,
             wrap_python  = False,
+            wrap_lua     = False,
 
             doxygen = True,       # create doxygen comments
 
@@ -165,6 +167,7 @@ class Schema(object):
 
             )
         wrapp.add_templates(def_options)
+        wrapl.add_templates(def_options)
 
         if 'options' in node:
             def_options.update(node['options'])
@@ -181,6 +184,10 @@ class Schema(object):
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.library_upper[:3] + '_')
         fmt_library.F_C_prefix    = def_options['F_C_prefix']
         fmt_library.rv            = 'rv'  # return value
+        if def_options.namespace:
+            fmt_library.namespace_scope = '::'.join(def_options.namespace.split()) + '::'
+        else:
+            fmt_library.namespace_scope = ''
         util.eval_template(node, 'C_header_filename', '_library')
         util.eval_template(node, 'C_impl_filename', '_library')
         self.fmt_stack.append(fmt_library)
@@ -208,6 +215,9 @@ class Schema(object):
                 f_type    = 'integer(C_INT)',
                 f_module  = dict(iso_c_binding=['C_INT']),
                 PY_format = 'i',
+                LUA_type  = 'LUA_TNUMBER',
+                LUA_pop   = 'lua_tointeger({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushinteger({LUA_state_var}, {c_var})',
                 ),
             long   = util.Typedef('long',
                 c_type    = 'long',
@@ -218,6 +228,9 @@ class Schema(object):
                 f_type    = 'integer(C_LONG)',
                 f_module  = dict(iso_c_binding=['C_LONG']),
                 PY_format = 'l',
+                LUA_type  = 'LUA_TNUMBER',
+                LUA_pop   = 'lua_tointeger({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushinteger({LUA_state_var}, {c_var})',
                 ),
             size_t   = util.Typedef('size_t',
                 c_type    = 'size_t',
@@ -229,6 +242,9 @@ class Schema(object):
                 f_type    = 'integer(C_SIZE_T)',
                 f_module  = dict(iso_c_binding=['C_SIZE_T']),
                 PY_ctor   = 'PyInt_FromLong({rv})',
+                LUA_type  = 'LUA_TNUMBER',
+                LUA_pop   = 'lua_tointeger({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushinteger({LUA_state_var}, {c_var})',
                 ),
 
             float   = util.Typedef('float',
@@ -240,6 +256,9 @@ class Schema(object):
                 f_type    = 'real(C_FLOAT)',
                 f_module  = dict(iso_c_binding=['C_FLOAT']),
                 PY_format = 'f',
+                LUA_type  = 'LUA_TNUMBER',
+                LUA_pop   = 'lua_tonumber({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushnumber({LUA_state_var}, {c_var})',
                 ),
             double   = util.Typedef('double',
                 c_type    = 'double',
@@ -250,6 +269,9 @@ class Schema(object):
                 f_type    = 'real(C_DOUBLE)',
                 f_module  = dict(iso_c_binding=['C_DOUBLE']),
                 PY_format = 'd',
+                LUA_type  = 'LUA_TNUMBER',
+                LUA_pop   = 'lua_tonumber({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushnumber({LUA_state_var}, {c_var})',
                 ),
 
             bool   = util.Typedef('bool',
@@ -285,6 +307,9 @@ class Schema(object):
 #XXX            PY_format = 'p',  # Python 3.3 or greater
                 PY_ctor   = 'PyBool_FromLong({rv})',
                 PY_PyTypeObject = 'PyBool_Type',
+                LUA_type  = 'LUA_TBOOLEAN',
+                LUA_pop   = 'lua_toboolean({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushboolean({LUA_state_var}, {c_var})',
                 ),
 
             # implies null terminated string
@@ -297,6 +322,7 @@ class Schema(object):
 
                 c_statements = dict(
                     intent_in = dict(
+                        cpp_local_var = True,
                         pre_call = [
                             'int {c_var_len} = strlen({c_var});',
                             'char * {cpp_var} = new char [{c_var_len} + 1];',
@@ -313,6 +339,7 @@ class Schema(object):
                             ],
                         ),
                     intent_out = dict(
+                        cpp_local_var = True,
                         pre_call = [
                             'char * {cpp_var} = new char [{c_var_num} + 1];',
                             ],
@@ -329,7 +356,6 @@ class Schema(object):
                         cpp_header = 'shroudrt.hpp',
                         ),
                     ),
-                c_to_cpp  = '{cpp_var}',
 
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
@@ -339,6 +365,9 @@ class Schema(object):
 #                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({c_var})',
+                LUA_type  = 'LUA_TSTRING',
+                LUA_pop   = 'lua_tostring({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushstring({LUA_state_var}, {c_var})',
                 base = 'string',
                 ),
 
@@ -350,8 +379,6 @@ class Schema(object):
 
                 c_type   = 'char',    # XXX - char *
 
-                c_to_cpp  = '{cpp_var}',
-
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character',
 ##                f_args = 'trim({var}) // C_NULL_CHAR',
@@ -360,6 +387,9 @@ class Schema(object):
 #                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({c_var})',
+                LUA_type  = 'LUA_TSTRING',
+                LUA_pop   = 'lua_tostring({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushstring({LUA_state_var}, {c_var})',
 ##                base = 'string',
                 ),
 
@@ -373,6 +403,7 @@ class Schema(object):
 
                 c_statements = dict(
                     intent_in = dict(
+                        cpp_local_var = True,
                         pre_call = [
                             'std::string {cpp_var}({c_var});'
                             ],
@@ -394,8 +425,6 @@ class Schema(object):
                         ),
                     ),
 
-                c_to_cpp  = '{cpp_var}',                                  
-
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
 ##                f_args = 'trim({var}) // C_NULL_CHAR',
@@ -405,6 +434,7 @@ class Schema(object):
 
                 py_statements = dict(
                     intent_in = dict(
+                        cpp_local_var = True,
                         post_parse = [
                             'std::string {cpp_var}({c_var});'
                             ],
@@ -412,6 +442,9 @@ class Schema(object):
                     ),
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({c_var})',
+                LUA_type  = 'LUA_TSTRING',
+                LUA_pop   = 'lua_tostring({LUA_state_var}, {LUA_index})',
+                LUA_push  = 'lua_pushstring({LUA_state_var}, {c_var})',
                 base = 'string',
                 ),
 
@@ -707,6 +740,7 @@ class GenFunctions(object):
                 options.wrap_c = True
                 options.wrap_fortran = True
                 options.wrap_python = False
+                options.wrap_lua = False
                 # Convert typename to type
                 fmt.CPP_template = '<%s>' %  type
                 if new['result']['type'] == typename:
@@ -722,6 +756,7 @@ class GenFunctions(object):
         options.wrap_c = False
         options.wrap_fortran = False
         options.wrap_python = False
+        options.wrap_lua = False
 
     def generic_function(self, node, ordered_functions):
         """ Create overloaded functions for each generic method.
@@ -746,6 +781,7 @@ class GenFunctions(object):
                 options.wrap_c = False
                 options.wrap_fortran = True
                 options.wrap_python = False
+                options.wrap_lua = False
                 # Convert typename to type
                 for arg in new['args']:
                     if arg['name'] == argname:
@@ -796,6 +832,7 @@ class GenFunctions(object):
             options.wrap_c = True
             options.wrap_fortran = True
             options.wrap_python = False
+            options.wrap_lua = False
             fmt = new['fmt']
             try:
                 fmt.function_suffix = default_arg_suffix[ndefault]
@@ -903,6 +940,7 @@ class GenFunctions(object):
         options.wrap_c = True
         options.wrap_fortran = False
         options.wrap_python = False
+        options.wrap_lua = False
         C_new['_PTR_C_CPP_index'] = node['_function_index']
 
         newargs = []
@@ -954,6 +992,7 @@ class GenFunctions(object):
             options.wrap_c       = False
             options.wrap_fortran = True
             options.wrap_python = False
+            options.wrap_lua = False
 
             # Do not wrap original function (Has a different result type)
             node['options'].wrap_fortran = False
@@ -971,6 +1010,7 @@ class GenFunctions(object):
             options.wrap_c       = False
             options.wrap_fortran = True
             options.wrap_python = False
+            options.wrap_lua = False
             # Do not add '_bufferify'
             F_new['fmt'].function_suffix = node['fmt'].function_suffix
 
@@ -1149,6 +1189,11 @@ class VerifyAttrs(object):
                         ),
                     ),
 #                PY_ctor = 'PyObject_New({PyObject}, &{PyTypeObject})',
+
+                LUA_type  = 'LUA_TUSERDATA',
+                LUA_pop = '({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, "{LUA_metadata}")',
+#                LUA_push = None,  # XXX create a userdata object with metatable
+#                LUA_statements={},
 
                 # allow forward declarations to avoid recursive headers
                 forward = name,
@@ -1350,6 +1395,10 @@ def main():
                         dest='outdir_python',
                         help='Directory for Python wrapper output files, ' +
                         'overrides --outdir')
+    parser.add_argument('--outdir-lua', default='',
+                        dest='outdir_lua',
+                        help='Directory for Lua wrapper output files, ' +
+                        'overrides --outdir')
     parser.add_argument('--logdir', default='',
                         help='Directory for log files')
     parser.add_argument('--cfiles', default='',
@@ -1369,9 +1418,11 @@ def main():
     if args.outdir and not os.path.isdir(args.outdir):
         raise SystemExit("outdir %s does not exist" % args.outdir)
     if args.outdir_c_fortran and not os.path.isdir(args.outdir_c_fortran):
-        raise SystemExit("outdir-fortran %s does not exist" % args.outdir)
+        raise SystemExit("outdir-fortran %s does not exist" % args.outdir_c_fortran)
     if args.outdir_python and not os.path.isdir(args.outdir_python):
-        raise SystemExit("outdir-python %s does not exist" % args.outdir)
+        raise SystemExit("outdir-python %s does not exist" % args.outdir_python)
+    if args.outdir_lua and not os.path.isdir(args.outdir_lua):
+        raise SystemExit("outdir-luan %s does not exist" % args.outdir_lua)
     if args.logdir and not os.path.isdir(args.logdir):
         raise SystemExit("logdir %s does not exist" % args.logdir)
 
@@ -1391,13 +1442,14 @@ def main():
     config = Config()
     config.c_fortran_dir = args.outdir_c_fortran or args.outdir
     config.python_dir = args.outdir_python or args.outdir
+    config.lua_dir = args.outdir_lua or args.outdir
     config.log = log
     config.cfiles = []  # list of C/C++ files created
     config.ffiles = []  # list of Fortran files created
 
     # accumulated input
     all = {}
-    splicers = dict(c={}, f={}, py={})
+    splicers = dict(c={}, f={}, py={}, lua={})
 
     for filename in args.filename:
         root, ext = os.path.splitext(filename)
@@ -1425,7 +1477,7 @@ def main():
     if 'splicer' in all:
         # read splicer files defined in input yaml file
         for suffix, names in all['splicer'].items():
-            # suffix = 'c', 'f', 'py'
+            # suffix = 'c', 'f', 'py', 'lua'
             subsplicer = splicers.setdefault(suffix, {})
             for name in names:
                 for pth in search_path:
@@ -1449,6 +1501,9 @@ def main():
 
     if all['options'].wrap_python:
         wrapp.Wrapp(all, config, splicers['py']).wrap_library()
+
+    if all['options'].wrap_lua:
+        wrapl.Wrapl(all, config, splicers['lua']).wrap_library()
 
     # when dumping json, remove function_index to avoid duplication
     del all['function_index']

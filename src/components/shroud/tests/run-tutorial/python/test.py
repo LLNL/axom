@@ -3,53 +3,70 @@
 # test the tutorial module
 #
 
+import unittest
 import tutorial
 
 class NotTrue:
     """Test bool arguments errors"""
     def __bool__(self):
         raise NotImplementedError
+ 
+class Tutorial(unittest.TestCase):
+    """Test tutorial problem"""
+     
+    def XXsetUp(self):
+        """ Setting up for the test """
+        print "FooTest:setUp_:begin"
+        ## do something...
+        print "FooTest:setUp_:end"
+     
+    def XXtearDown(self):
+        """Cleaning up after the test"""
+        print "FooTest:tearDown_:begin"
+        ## do something...
+        print "FooTest:tearDown_:end"
+     
+    # test routine A
+    def testFunction1(self):
+        tutorial.Function1()
 
+    def testFunction2(self):
+        rv_double = tutorial.Function2(1.0, 4)
+        self.assertEqual(rv_double, 5.0)#, "A is not equal to B")
 
-tutorial.Function1()
+    def testFunction3(self):
+        rv_logical = tutorial.Function3(False)
+        self.assertTrue(rv_logical)
 
-rv_double = tutorial.Function2(1.0, 4)
-print rv_double
-
-rv_logical = tutorial.Function3(False)
-print rv_logical
-try:
-    rv_logical = tutorial.Function3(0)
-except TypeError as e:
-    print e
+        self.assertRaises(TypeError, tutorial.Function3, 0)
 #rv_logical = tutorial.Function3(NotTrue())
 
-rv_char = tutorial.Function4a("dog", "cat")
-print rv_char
+    def testFunction4a(self):
+        rv_char = tutorial.Function4a("dog", "cat")
+        self.assertEqual(rv_char, "dogcat")
 #
 #    call function4b("dog", "cat", rv_char)
 #    call assert_true( rv_char == "dogcat")
 #
-rv_double = tutorial.Function5()
-print rv_double
-# 13.1415
-rv_double = tutorial.Function5(1.0)
-print rv_double
-# 11.0
-# XXX fix bool argument
-rv_double = tutorial.Function5(1.0, False)
-print rv_double
+    def testFunction5(self):
+        rv_double = tutorial.Function5()
+        self.assertAlmostEqual(rv_double, 13.1415)
+        rv_double = tutorial.Function5(1.0)
+        self.assertAlmostEqual(rv_double, 11.0)
+
+        # XXX fix bool argument
+        rv_double = tutorial.Function5(1.0, False)
+        self.assertAlmostEqual(rv_double, 1.0)
 #, 1.d0)
 #
-tutorial.Function6("name")
-#    call assert_true(last_function_called() == "Function6(string)")
-tutorial.Function6(1)
-#    call assert_true(last_function_called() == "Function6(int)")
+    def testFunction6(self):
+        tutorial.Function6("name")
+        self.assertEqual(tutorial.LastFunctionCalled(), "Function6(string)")
 
-try:
-    tutorial.Function6(1.)
-except TypeError as e:
-    print e
+        tutorial.Function6(1)
+        self.assertEqual(tutorial.LastFunctionCalled(), "Function6(int)")
+
+        self.assertRaises(TypeError, tutorial.Function6, 1.0)
 
 
 #
@@ -110,3 +127,12 @@ except TypeError as e:
 #    call assert_true(.not. c_associated(obj%voidptr), "class1_delete")
 #  end subroutine test_class1
 #
+
+# creating a new test suite
+newSuite = unittest.TestSuite()
+ 
+# adding a test case
+newSuite.addTest(unittest.makeSuite(Tutorial))
+
+if __name__ == "__main__":
+    unittest.main()

@@ -131,20 +131,20 @@ PP_testoptional_2(
   PyObject *kwds)
 {
 // splicer begin function.testoptional
-    Py_ssize_t shroud_nargs = 0;
+    Py_ssize_t SH_nargs = 0;
     int i;
     long j;
     const char *kwcpp = "i\0j";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+2, NULL };
     
-    if (args != NULL) shroud_nargs += PyTuple_Size(args);
-    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    if (args != NULL) SH_nargs += PyTuple_Size(args);
+    if (kwds != NULL) SH_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|il:testoptional", kw_list,
         &i, &j))
     {
         return NULL;
     }
-    switch (shroud_nargs) {
+    switch (SH_nargs) {
     case 0:
         testoptional();
         break;
@@ -195,11 +195,11 @@ PP_test_names(
   PyObject *kwds)
 {
 // splicer begin function.test_names
-    Py_ssize_t shroud_nargs = 0;
-    if (args != NULL) shroud_nargs += PyTuple_Size(args);
-    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    Py_ssize_t SH_nargs = 0;
+    if (args != NULL) SH_nargs += PyTuple_Size(args);
+    if (kwds != NULL) SH_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    if (shroud_nargs == 1) {
+    if (SH_nargs == 1) {
         rvobj = PP_test_names(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -208,7 +208,7 @@ PP_test_names(
         }
         PyErr_Clear();
     }
-    if (shroud_nargs == 2) {
+    if (SH_nargs == 2) {
         rvobj = PP_test_names_flag(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
