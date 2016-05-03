@@ -82,8 +82,8 @@ install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 #endif()
 
 
-#if(PYTHONINTERP_FOUND)
-if(ENABLE_PYTHON_API)
+if(FALSE)  # The Python module is not create yet.
+#if(ENABLE_PYTHON_API)
     set(sidre_python_sources
         interface/python/pyDataStoretype.cpp
         interface/python/pyDataGrouptype.cpp
