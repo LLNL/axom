@@ -27,6 +27,10 @@ using asctoolkit::sidre::DataType;
 using asctoolkit::sidre::INT_ID;
 using asctoolkit::sidre::FLOAT64_ID;
 
+// Test protocols
+int nprotocols = 3;
+std::string const protocols[] = { "conduit", "conduit_hdf5", "text" };
+
 // API coverage tests
 // Each test should be documented with the interface functions being tested
 
@@ -666,18 +670,33 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_empty)
 {
-  DataStore * ds = new DataStore();
+  DataStore * ds1 = new DataStore();
+  const std::string file_path_base("sidre_empty_datastore_");
 
-  ds->save("sidre_empty_datastore", "conduit");
+  for (int i = 0; i < nprotocols; ++i) {
+      if ( protocols[i] == "conduit_hdf5")
+	  continue;   // XXX - Does not work
+      const std::string file_path = file_path_base + protocols[i];
+      ds1->save(file_path, protocols[i]);
+  }
 
-  delete ds;
+  delete ds1;
 
-  ds = new DataStore();
-  ds->load("sidre_empty_datastore", "conduit");
+  // Only restore conduit protocol for now
+  for (int i = 0; i < 1; ++i) {
+      const std::string file_path = file_path_base + protocols[i];
 
-  EXPECT_TRUE(ds->getNumBuffers() == 0 );
-  EXPECT_TRUE(ds->getRoot()->getNumGroups() == 0 );
-  EXPECT_TRUE(ds->getRoot()->getNumViews() == 0 );
+      DataStore * ds2 = new DataStore();
+      DataGroup * root2 = ds2->getRoot();
+
+      ds2->load(file_path, protocols[i]);
+
+      EXPECT_TRUE(ds2->getNumBuffers() == 0 );
+      EXPECT_TRUE(root2->getNumGroups() == 0 );
+      EXPECT_TRUE(root2->getNumViews() == 0 );
+
+      delete ds2;
+  }
 
 }
 
@@ -685,33 +704,32 @@ TEST(sidre_group,save_restore_empty)
 TEST(sidre_group,save_restore_api)
 {
   DataStore * ds1 = new DataStore();
+  DataGroup * root1 = ds1->getRoot();
+  const std::string file_path_base("sidre_save_subtree_");
 
-  ds1->getRoot()->createViewScalar<int>("i0", 1);
+  root1->createViewScalar<int>("i0", 1);
 
   // These should be produce identical files.
 
   // No group provided, defaults to root group
-  ds1->save("sidre_save_fulltree", "conduit");
-  // Pass in group (example of saving sub-tree).
-  ds1->save("sidre_save_subtree", "conduit", ds1->getRoot());
+  ds1->save("sidre_save_fulltree_conduit", "conduit");
 
-  // Text output ( for debugging ).  Write support only ( no load ).
-  ds1->save("sidre_save_textoutput", "text", ds1->getRoot());
-
-  // HDF5 output
-  ds1->save("sidre_save_conduithdf5","conduit_hdf5");
+  for (int i = 0; i < nprotocols; ++i) {
+      const std::string file_path = file_path_base + protocols[i];
+      ds1->save(file_path, protocols[i], root1);
+  }
 
   DataStore * ds2 = new DataStore();
   DataStore * ds3 = new DataStore();
   DataStore * ds4 = new DataStore();
 
-  ds2->load("sidre_save_fulltree", "conduit");
-  ds3->load("sidre_save_subtree", "conduit", ds3->getRoot() );
-  ds4->load("sidre_save_conduithdf5", "conduit_hdf5");
+  ds2->load("sidre_save_fulltree_conduit", "conduit");
+  ds3->load("sidre_save_subtree_conduit", "conduit", ds3->getRoot() );
+  ds4->load("sidre_save_subtree_conduit_hdf5", "conduit_hdf5");
 
-  EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(ds1->getRoot()) );
-  EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(ds1->getRoot()) );
-  EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(ds1->getRoot()) );
+  EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(root1) );
+  EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(root1) );
+  EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(root1) );
 
   delete ds1;
   delete ds2;
@@ -737,68 +755,98 @@ TEST(sidre_group,save_restore_api)
 TEST(sidre_group,save_restore_scalars_and_strings)
 {
   DataStore * ds1 = new DataStore();
+  DataGroup * root1 = ds1->getRoot();
+  const std::string file_path_base("sidre_save_scalars_and_strings_");
 
-  ds1->getRoot()->createViewScalar<int>("i0", 1);
-  ds1->getRoot()->createViewScalar<float>("f0", 1.0);
-  ds1->getRoot()->createViewScalar<double>("d0", 10.0);
+  root1->createViewScalar<int>("i0", 1);
+  root1->createViewScalar<float>("f0", 1.0);
+  root1->createViewScalar<double>("d0", 10.0);
+  root1->createViewString("s0", "I am a string");
 
-  ds1->save("sidre_save_scalars_and_strings", "conduit");
+  for (int i = 0; i < nprotocols; ++i) {
+      //      if ( protocols[i] == "conduit_hdf5")
+      //	  continue;   // XXX - Does not work
+      const std::string file_path = file_path_base + protocols[i];
+      ds1->save(file_path, protocols[i]);
+  }
 
-  DataStore * ds2 = new DataStore();
 
-  ds2->load("sidre_save_scalars_and_strings", "conduit");
+  // Only restore conduit protocol for now
+  for (int i = 0; i < 1; ++i) {
+      const std::string file_path = file_path_base + protocols[i];
 
-  EXPECT_TRUE( ds1->getRoot()->isEquivalentTo( ds2->getRoot()) );
+      DataStore * ds2 = new DataStore();
+      DataGroup * root2 = ds2->getRoot();
+
+      ds2->load(file_path, protocols[i]);
+
+      EXPECT_TRUE( root1->isEquivalentTo( root2 ));
+
+      delete ds2;
+  }
 
   delete ds1;
-  delete ds2;
 }
 
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_external_data)
 {
-  int foo[100];
-  for (int i =0; i < 100; ++i)
+  int nfoo = 10;
+  int foo[nfoo];
+  for (int i = 0; i < nfoo; ++i)
   {
     foo[i] = i;
   }
 
-  DataStore * ds = new DataStore();
+  DataStore * ds1 = new DataStore();
+  DataGroup * root1 = ds1->getRoot();
+  const std::string file_path_base("sidre_save_external_");
 
-  DataView * view = ds->getRoot()->createView("external_array", &foo[0] );
-  view->apply( asctoolkit::sidre::INT_ID, 100 );
+  DataView * view = root1->createView("external_array", foo );
+  view->apply( asctoolkit::sidre::INT_ID, nfoo );
 
-  ds->save("sidre_save_external", "conduit");
-
-  delete ds;
-
-  // Now load back in.
-  ds = new DataStore();
-  ds->load("sidre_save_external", "conduit");
-
-  // All this code should change after we re-write how we handle restoring external data.
-  // Right now, the external data is coming back in the view's node and we have to do extra work to
-  // restore it to the user's pointer.
-  view = ds->getRoot()->getView("external_array");
-
-  int* new_data_pointer = new int[100];
-
-  EXPECT_TRUE( view->getTotalBytes() == sizeof( int[100] ) );
-
-  std::memcpy(&new_data_pointer[0], view->getVoidPtr(), view->getTotalBytes() );
-
-  // Will set view back to EMPTY and reset node.  Will leave description alone.
-  view->setExternalDataPtr( ATK_NULLPTR );
-
-  view->setExternalDataPtr( new_data_pointer );
-
-  for (int i = 0; i < 100; ++i)
-  {
-    EXPECT_TRUE( static_cast<int*>( view->getVoidPtr() )[i] == i );
+  for (int i = 0; i < nprotocols; ++i) {
+      const std::string file_path = file_path_base + protocols[i];
+      ds1->save(file_path, protocols[i]);
   }
 
-  delete[] new_data_pointer;
-  delete ds;
+  delete ds1;
+
+  // Now load back in.
+  // Only restore conduit protocol for now
+  for (int i = 0; i < 1; ++i) {
+      const std::string file_path = file_path_base + protocols[i];
+
+      DataStore * ds2 = new DataStore();
+      DataGroup * root2 = ds2->getRoot();
+
+      ds2->load(file_path, protocols[i]);
+
+      // All this code should change after we re-write how we handle restoring external data.
+      // Right now, the external data is coming back in the view's node and we have to do extra work to
+      // restore it to the user's pointer.
+      view = root2->getView("external_array");
+
+      int* new_data_pointer = new int[nfoo];
+
+      EXPECT_TRUE( view->getTotalBytes() == static_cast<SidreLength>(sizeof(foo)) );
+
+      std::memcpy(&new_data_pointer[0], view->getVoidPtr(), view->getTotalBytes() );
+
+      // Will set view back to EMPTY and reset node.  Will leave description alone.
+      view->setExternalDataPtr( ATK_NULLPTR );
+
+      view->setExternalDataPtr( new_data_pointer );
+
+      for (int i = 0; i < nfoo; ++i)
+	  {
+	      EXPECT_TRUE( static_cast<int*>( view->getVoidPtr() )[i] == i );
+	  }
+
+      delete[] new_data_pointer;
+
+      delete ds2;
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -817,7 +865,7 @@ TEST(sidre_group,save_restore_complex)
 
   gc->createViewAndAllocate("int100", asctoolkit::sidre::INT_ID, 100);
   int* data_ptr = gc->getView("int100")->getArray();
-  for (int i =0; i < 100; ++i)
+  for (int i = 0; i < 100; ++i)
   {
     data_ptr[i] = i;
   }
