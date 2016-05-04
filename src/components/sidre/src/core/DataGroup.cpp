@@ -35,7 +35,51 @@ namespace sidre
 
 ////////////////////////////////////////////////////////////////////////
 //
-//  Methods for creating DataView object in DataGroup
+// View access methods.
+//
+////////////////////////////////////////////////////////////////////////
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to non-const view with given name or path if it exists.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::getView( const std::string& name )
+{
+  std::string path = name;
+  DataGroup * group = walkPath( path, false );
+
+  SLIC_CHECK_MSG( !path.empty() && group->hasView(name),
+                  "Group " << getName() << 
+                  " has no view with name '" << path << "'");
+
+  return group->m_view_coll.getItem(path);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to const view with given name or path if it exists.
+ *
+ *************************************************************************
+ */
+const DataView * DataGroup::getView( const std::string& name ) const
+{
+// XXXX: Add path implementation
+  SLIC_CHECK_MSG( !name.empty() && hasView(name),
+                  "Group " << getName() << 
+                  " has no view with name '" << name << "'");
+
+  return m_view_coll.getItem(name);
+}
+
+
+
+////////////////////////////////////////////////////////////////////////
+//
+//  View creation methods.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -478,6 +522,51 @@ DataView * DataGroup::copyView(DataView * view)
   DataView * copy = createView(view->getName());
   view->copyView(copy);
   return copy;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////
+//
+// Child group access methods.
+//
+////////////////////////////////////////////////////////////////////////
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to non-const child group with given name or path 
+ * if it exists.
+ *
+ *************************************************************************
+ */
+DataGroup * DataGroup::getGroup( const std::string& name )
+{
+  std::string path = name;
+  DataGroup * group = walkPath( path, false );
+
+  SLIC_CHECK_MSG( !path.empty() && group->hasGroup(name),
+                  "Group " << getName() << 
+                  " has no child group with name '" << path << "'");
+
+  return group->m_group_coll.getItem(path);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to const child group with given name or path if it exists.
+ *
+ *************************************************************************
+ */
+const DataGroup * DataGroup::getGroup( const std::string& name ) const
+{
+// XXXX: Add path implementation
+  SLIC_CHECK_MSG( !name.empty() && hasGroup(name),
+                  "Group " << getName() << 
+                  " has no child group with name '" << name << "'");
+
+  return m_group_coll.getItem(name);
 }
 
 

@@ -101,6 +101,26 @@ class DataStore;
  * Note that DataViews and child DataGroups within a group can be accessed
  * by name or index.
  *
+ * Note that certain methods for creating, accessing, etc. DataGroups and 
+ * DataViews that take a string name accept either the name of a child group 
+ * or view within a group object or a path syntax. When a path is given, the 
+ * last item in the path indicates the item to be created, accessed, etc. So, 
+ * for example,
+ * 
+ * \verbatim
+ *
+ *    DataView* view = group->createView("foo/bar/baz");
+ *
+ *    is equivalent to:
+ *
+ *    DataView* view = 
+ *      group->createGroup("foo")->createGroup("bar")->createView("baz"); 
+ *
+ * \endverbatim
+ *
+ * In particular, intermediate groups "foo" and "bar" will be created in 
+ * this case if they don't already exist.
+ *
  * IMPORTANT: when views or groups are created, destroyed, copied, or moved,
  * indices of other views and groups in associated DataGroup objects may
  * become invalid. This is analogous to iterator invalidation for STL
@@ -122,7 +142,7 @@ public:
 //!  @name Basic query and accessor methods.
 
   /*!
-   * \brief Return const reference to name of DataGroup instance.
+   * \brief Return const reference to name of group object.
    */
   const std::string& getName() const
   {
@@ -130,7 +150,10 @@ public:
   }
 
   /*!
-   * \brief Return pointer to non-const DataGroup parent of group.
+   * \brief Return pointer to non-const parent group of a group.
+   *
+   * Note that if this method is called on the root group in a
+   * DataStore, ATK_NULLPTR is returned.
    */
   DataGroup * getParent()
   {
@@ -138,7 +161,10 @@ public:
   }
 
   /*!
-   * \brief Return pointer to const DataGroup parent of group.
+   * \brief Return pointer to const parent group of a group.
+   *
+   * Note that if this method is called on the root group in a
+   * DataStore, ATK_NULLPTR is returned.
    */
   const DataGroup * getParent() const
   {
@@ -146,7 +172,7 @@ public:
   }
 
   /*!
-   * \brief Return number of (child) DataGroups in this DataGroup.
+   * \brief Return number of child groups in a group object.
    */
   size_t getNumGroups() const
   {
@@ -154,7 +180,7 @@ public:
   }
 
   /*!
-   * \brief Return number of DataViews owned in this DataGroup.
+   * \brief Return number of views owned by a group object.
    */
   size_t getNumViews() const
   {
@@ -162,8 +188,8 @@ public:
   }
 
   /*!
-   * \brief Return pointer to non-const DataStore that owns group hierarchy
-   *        to which DataGroup instance belongs.
+   * \brief Return pointer to non-const DataStore object that owns a 
+   * object.
    */
   DataStore * getDataStore()
   {
@@ -171,8 +197,8 @@ public:
   }
 
   /*!
-   * \brief Return pointer to const DataStore that owns group hierarchy
-   *        to which DataGroup instance belongs.
+   * \brief Return pointer to const DataStore object that owns a 
+   * object.
    */
   const DataStore * getDataStore() const
   {
@@ -183,11 +209,11 @@ public:
 
 
 //@{
-//!  @name DataView query methods.
+//!  @name View query methods.
 
   /*!
-   * \brief Return true if DataGroup owns a DataView with given name;
-   *        else false.
+   * \brief Return true if group owns a view with given name or path; 
+   * else false.
    */
   bool hasView( const std::string& name ) const
   {
@@ -195,8 +221,7 @@ public:
   }
 
   /*!
-   * \brief Return true if DataGroup owns a DataView with given index;
-   *        else false.
+   * \brief Return true if group owns a view with given index; else false.
    */
   bool hasView( IndexType idx ) const
   {
@@ -204,29 +229,29 @@ public:
   }
 
   /*!
-   * \brief Return the index of DataView with given name.
+   * \brief Return index of view with given name owned by group object.
    *
-   *        If none, return sidre::InvalidIndex;
+   *        If no such view exists, return sidre::InvalidIndex;
    */
   IndexType getViewIndex(const std::string& name) const
   {
-    SLIC_CHECK_MSG( hasView(name),
-                    "Group " << this->getName() 
-                    << " has no view with name '" << name << "'");
+    SLIC_CHECK_MSG(hasView(name),
+                   "Group " << this->getName() << 
+                   " has no view with name '" << name << "'");
 
     return m_view_coll.getItemIndex(name);
   }
 
   /*!
-   * \brief Return the name of DataView with given index.
+   * \brief Return name of view with given index owned by group object.
    *
-   *        If none, return sidre::InvalidName.
+   *        If no such view exists, return sidre::InvalidName.
    */
   const std::string& getViewName(IndexType idx) const
   {
-    SLIC_CHECK_MSG( hasView(idx),
-                    "Group " << this->getName() 
-                    << " has no view with index " << idx);
+    SLIC_CHECK_MSG(hasView(idx),
+                   "Group " << this->getName() << 
+                   " has no view with index " << idx);
 
     return m_view_coll.getItemName(idx);
   }
@@ -235,82 +260,58 @@ public:
 
 
 //@{
-//!  @name DataView access and iteration methods.
-//!
-//!  Methods that methods support a path syntax for input.  When a path is
-//!  provided the method will retrieve the last item in the path.  All
-//!  items in the path must exist.
-//!
-//!  Example:
-//!  getView("foo/bar/baz")
-//!  is equivalent to
-//!  getGroup("foo")->getGroup("bar")->getView("baz")
-//!
-
+//!  @name View access and iteration methods.
 
   /*!
 
-   * \brief Return (non-const) pointer to DataView with given name or path.
-   * This algorithm requires that all groups in the path are already created.
-   * Example:
-   * getView("foo/bar/baz")
-   * is equivalent to
-   * getGroup("foo")->getGroup("bar")->getView("baz")
+   * \brief Return pointer to non-const view with given name or path.
+   *
+   * Thie method requires that all groups in the path exist if a path is given.
+   *
+   * If no such view exists, ATK_NULLPTR is returned.
    */
-  DataView * getView( const std::string& name )
-  {
-    std::string path = name;
-    DataGroup * group = walkPath( path, false );
-
-    SLIC_CHECK_MSG( !path.empty() && group->hasView(
-                      name),
-                    "Group " << group->getName() << " can't retrieve view with name '" << path <<
-                    "'");
-
-    return group->m_view_coll.getItem(path);
-  }
+  DataView * getView( const std::string& name );
 
   /*!
-   * \brief Return (const) pointer to DataView with given name.
+   * \brief Return pointer to const view with given name or path.
+   *
+   * Thie method requires that all groups in the path exist if a path is given.
+   *
+   * If no such view exists, ATK_NULLPTR is returned.
    */
-  // TODO - Add path support to const function version.
-  const DataView * getView( const std::string& name ) const
-  {
-    SLIC_CHECK_MSG( !name.empty() && hasView(name),
-                    "Group " << this->getName() << " can't retrieve view with name '" << name <<
-                    "'");
-
-    return m_view_coll.getItem(name);
-  }
+  const DataView * getView( const std::string& name ) const;
 
   /*!
-   * \brief Return (non-const) pointer to DataView with given index.
+   * \brief Return pointer to non-const view with given index.
+   *
+   * If no such view exists, ATK_NULLPTR is returned.
    */
   DataView * getView( IndexType idx )
   {
     SLIC_CHECK_MSG( hasView(idx),
-                    "Group " << this->getName() << " does not have view with index " <<
-                    idx);
+                    "Group " << this->getName() 
+                    << " has no view with index " << idx);
 
     return m_view_coll.getItem(idx);
   }
 
   /*!
-   * \brief Return (const) pointer to DataView with given index.
+   * \brief Return pointer to const view with given index.
+   *
+   * If no such view exists, ATK_NULLPTR is returned.
    */
-  // TODO - Add path support to const function version.
   const DataView * getView( IndexType idx ) const
   {
     SLIC_CHECK_MSG( hasView(idx),
-                    "Group " << this->getName() << " does not have view with index " <<
-                    idx);
+                    "Group " << this->getName() 
+                    << " has no view with index " << idx);
 
     return m_view_coll.getItem(idx);
   }
 
   /*!
-   * \brief Return first valid DataView index (i.e., smallest index
-   *        over all DataViews).
+   * \brief Return first valid view index index in group object
+   *        (i.e., smallest index over all views).
    *
    * sidre::InvalidIndex is returned if group has no views.
    */
@@ -320,8 +321,8 @@ public:
   }
 
   /*!
-   * \brief Return next valid DataView index after given index (i.e.,
-   *        smallest index over all view indices larger than given one).
+   * \brief Return next valid view index in group object after given index 
+   *        (i.e., smallest index over all view indices larger than given one).
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
@@ -333,19 +334,8 @@ public:
 
 //@}
 
-  //@{
-  //!  @name Methods to create a DataView
-  //!
-  //!  These methods support a path syntax for input.  When a path is provided
-  //!  the method will traverse down to the last group in the path before
-  //!  executing the called operation.  Creation methods will automatically
-  //!  create a chain of groups if they are not already present.
-  //!
-  //!  Example:
-  //!  createView("foo/bar/baz")
-  //!  is equivalent to
-  //!  createGroup("foo")->createGroup("bar")->createView("baz")
-  //!
+//@{
+//!  @name View creation methods.
 
   /*!
    * \brief Create and attach an undescribed (i.e., empty) DataView object
@@ -536,14 +526,11 @@ public:
   DataView * createView( const std::string& name,
                          void * external_ptr );
 
-  //@}
-
+//@}
 
 
 //@{
-//!  @name DataView creation methods that also describe and allocate data.
-//!
-//!  These methods support a path syntax for input.  When a path is provided
+//!  @name Methods to create DataViews and allocate their data.
 //!  the method will traverse down to the last group in the path before
 //!  executing the called operation.  Creation methods will automatically
 //!  create a chain of groups if they are not already present.
@@ -745,15 +732,19 @@ public:
 
 
 //@{
-//!  @name (child) DataGroup query methods.
+//!  @name Child Group query methods.
 
+  /*!
+   * \brief Return true if group has an immediate child group with given 
+   * name; else false.
+   */
   bool hasGroup( const std::string& name ) const
   {
     return m_group_coll.hasItem(name);
   }
 
   /*!
-   * \brief Return true if DataGroup has an (immediate) child DataGroup
+   * \brief Return true if group has an immediate child group
    *        with given index; else false.
    */
   bool hasGroup( IndexType idx ) const
@@ -762,29 +753,29 @@ public:
   }
 
   /*!
-   * \brief Return the index of child DataGroup with given name.
+   * \brief Return the index of immediate child group with given name.
    *
-   *        If none, return sidre::InvalidIndex;
+   *        If no such child group exists, return sidre::InvalidIndex;
    */
   IndexType getGroupIndex(const std::string& name) const
   {
-    SLIC_CHECK_MSG( !name.empty() && hasGroup(name),
-                    "Group " << this->getName() << " does not have group with name '" << name <<
-                    "'");
+    SLIC_CHECK_MSG(hasGroup(name),
+                   "Group " << this->getName() << 
+                   " has no child group with name '" << name << "'");
 
     return m_group_coll.getItemIndex(name);
   }
 
   /*!
-   * \brief Return the name of child DataGroup with given index.
+   * \brief Return the name of immediate child group with given index.
    *
-   *        If none, return sidre::InvalidName.
+   *        If no such child group exists, return sidre::InvalidName.
    */
   const std::string& getGroupName(IndexType idx) const
   {
-    SLIC_CHECK_MSG( hasGroup(idx),
-                    "Group " << this->getName() << " does not have group with index " <<
-                    idx);
+    SLIC_CHECK_MSG(hasGroup(idx),
+                   "Group " << this->getName() << 
+                   " has no child group with index " << idx);
 
     return m_group_coll.getItemName(idx);
   }
@@ -793,73 +784,57 @@ public:
 
 
 //@{
-//!  @name (child) DataGroup access and iteration methods.
-//!
-//!  Some of these methods support a path syntax for input.  When a path is
-//!  provided the method will retrieve the last item in the path.  All
-//!  items in the path must exist.
-//!
-//!  Example:
-//!  getGroup("foo/bar/baz")
-//!  is equivalent to
-//!  getGroup("foo")->getGroup("bar")->getGroup("baz")
-//!
+//!  @name Access and iteration methods for child Groups.
 
   /*!
-   * \brief Return (non-const) pointer to child DataGroup with given name.
+   * \brief Return pointer to non-const child group with given name or path.
+   *
+   * Thie method requires that all groups in the path exist if a path is given.
+   *
+   * If no such group exists, ATK_NULLPTR is returned.
    */
-  DataGroup * getGroup( const std::string& name )
-  {
-    std::string path = name;
-    DataGroup * group = walkPath( path, false );
-
-    SLIC_CHECK_MSG( !path.empty() && group->hasGroup(
-                      path),
-                    "Group " << group->getName() << " does not have group with name '" << path <<
-                    "'");
-
-    return group->m_group_coll.getItem(path);
-  }
+  DataGroup * getGroup( const std::string& name );
 
   /*!
-   * \brief Return (const) pointer to to child DataGroup with given name.
+   * \brief Return pointer to const child group with given name or path.
+   *
+   * Thie method requires that all groups in the path exist if a path is given.
+   *
+   * If no such group exists, ATK_NULLPTR is returned.
    */
-  DataGroup const * getGroup( const std::string& name ) const
-  {
-    SLIC_CHECK_MSG( !name.empty() && hasGroup(name),
-                    "Group " << getName() << " does not have group with name '" << name <<
-                    "'");
-
-    return m_group_coll.getItem(name);
-  }
+  DataGroup const * getGroup( const std::string& name ) const;
 
   /*!
-   * \brief Return (non-const) pointer to child DataGroup with given index.
+   * \brief Return pointer to non-const immediate child group with given index.
+   * 
+   * If no such group exists, ATK_NULLPTR is returned.
    */
   DataGroup * getGroup( IndexType idx )
   {
-    SLIC_CHECK_MSG( hasGroup(idx),
-                    "Group " << this->getName() << " does not have group with index " <<
-                    idx);
+    SLIC_CHECK_MSG(hasGroup(idx),
+                   "Group " << this->getName() << 
+                   " has no child group with index " << idx);
 
     return m_group_coll.getItem(idx);
   }
 
   /*!
-   * \brief Return (const) pointer to child DataGroup with given index.
+   * \brief Return pointer to const immediate child gr
+   * 
+   * If no such group exists, ATK_NULLPTR is returned.oup with given index.
    */
   const DataGroup * getGroup( IndexType idx ) const
   {
-    SLIC_CHECK_MSG( hasGroup(idx),
-                    "Group " << this->getName() << " does not have group with index " <<
-                    idx);
+    SLIC_CHECK_MSG(hasGroup(idx),
+                   "Group " << this->getName() << 
+                   " has no child group with index " << idx);
 
     return m_group_coll.getItem(idx);
   }
 
   /*!
-   * \brief Return first valid (child) DataGroup index (i.e., smallest
-   *        index over all (child) DataGroups).
+   * \brief Return first valid child group index (i.e., smallest
+   *        index over all child groups).
    *
    * sidre::InvalidIndex is returned if group has no child groups.
    */
@@ -869,8 +844,8 @@ public:
   }
 
   /*!
-   * \brief Return next valid (child) DataGroup index after given index
-   *        (i.e., smallest index over all chid group indices larger
+   * \brief Return next valid child group index after given index
+   *        (i.e., smallest index over all child group indices larger
    *        than given one).
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
@@ -885,21 +860,13 @@ public:
 
 
 //@{
-//!  @name (child) DataGroup create and destroy methods.
-//!  The creation methods support a path syntax for input.  When a path is
-//!  provided the method will create all groups in the method (if not already
-//!  present).
-//!  Example:
-//!  createGroup("foo/bar/baz")
-//!  is equivalent to
-//!  createGroup("foo")->createGroup("bar")->createGroup("baz")
+//!  @name Child Group creation and destruction methods.
 
   /*!
-   * \brief Create a DataGroup object with given name and attach as a
-   * child group of this group.
+   * \brief Create a child Group with given name or patch for this Group.
    *
    * If name is an empty string or group already has a child group with
-   * given name, method does nothing.
+   * given name, method is a no-op.
    *
    * \return pointer to created DataGroup object or ATK_NULLPTR if new
    * group is not created.
@@ -907,20 +874,23 @@ public:
   DataGroup * createGroup( const std::string& name );
 
   /*!
-   * \brief Destroy child group in this DataGroup with given name.
+   * \brief Destroy child Group with given name or path.
+   * 
+   * If no such group exists, method is a no-op.
    */
   void destroyGroup(const std::string& name);
 
   /*!
-   * \brief Destroy child group in this DataGroup with given index.
+   * \brief Destroy child Group in this Group with given index.
+   * 
+   * If no such group exists, method is a no-op.
    */
   void destroyGroup(IndexType idx);
 
   /*!
-   * \brief Destroy all DataGroups in this DataGroup.
+   * \brief Destroy all child Groups of this Group object..
    *
-   * Note that this will recrusively destroy all child groups of the
-   * child groups in this DataGroup.
+   * Note that this will recrusively destroy all children this group.
    */
   void destroyGroups();
 
