@@ -29,7 +29,7 @@ echo "Installing docs to web space..."
 echo "-----------------------------------------------------------------------"
 # Is there a way to terminate if the make docs above failed?  So we don't try to copy over the
 # files if that failed.
-mv /usr/global/web-pages/lc/www/toolkit/docs/ /usr/global/web-pges/lc/www/toolkit/docs_old
+mv /usr/global/web-pages/lc/www/toolkit/docs/ /usr/global/web-pages/lc/www/toolkit/docs_old
 rm -rf /usr/global/web-pages/lc/www/toolkit/docs
 cp -R ./docs /usr/global/web-pages/lc/www/toolkit/
 chgrp -R toolkit /usr/global/web-pages/lc/www/toolkit/docs/
