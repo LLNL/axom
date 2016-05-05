@@ -96,7 +96,7 @@ if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
     )
     # build site-packages
     set(BLT_Python_MODULE_DIRECTORY
-        "${PROJECT_BINARY_DIR}/${CMAKE_Python_SITE_PACKAGES}"
+        "${PROJECT_BINARY_DIR}/${BLT_Python_SITE_PACKAGES}"
         CACHE PATH
         "Directory where all Python modules will go in the build tree"
     )
@@ -104,8 +104,8 @@ if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
     file(MAKE_DIRECTORY ${BLT_Python_MODULE_DIRECTORY})
     set(ENV{PYTHONPATH} ${BLT_Python_MODULE_DIRECTORY})
 
-    INSTALL(DIRECTORY DESTINATION ${CMAKE_Python_SITE_PACKAGES})
-    INSTALL(CODE " set(ENV\{PYTHONPATH\} ${CMAKE_INSTALL_PREFIX}/${CMAKE_Python_SITE_PACKAGES}) ")
+    INSTALL(DIRECTORY DESTINATION ${BLT_Python_SITE_PACKAGES})
+    INSTALL(CODE " set(ENV\{PYTHONPATH\} ${CMAKE_INSTALL_PREFIX}/${BLT_Python_SITE_PACKAGES}) ")
 
     blt_register_library(
         NAME python

@@ -170,8 +170,11 @@ endmacro(blt_register_library)
 ##                  SOURCES [source1 [source2 ...]]
 ##                  HEADERS [header1 [header2 ...]]
 ##                  DEPENDS_ON [dep1 ...] 
+##                  OUTPUT_NAME [name]
 ##                  OUTPUT_DIR [dir]
 ##                  USE_OPENMP <TRUE or FALSE (default)>
+##                  PYTHON_MODULE
+##                  LUA_MODULE
 ##                  SHARED
 ##                 )
 ##
@@ -196,14 +199,26 @@ endmacro(blt_register_library)
 ## The OUTPUT_DIR is used to control the build output directory of this 
 ## library. This is used to overwrite the default lib directory.
 ##
+## OUTPUT_NAME is the name of the output file.  It defaults to NAME.
+## It's useful when multiple libraries with the same name need to be created
+## by different targets. NAME is the target name, OUTPUT_NAME is the library name.
+##
 ## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this 
 ## argument is supplied, the openmp compiler flag will be added to the compiler 
 ## command and the -DUSE_OPENMP, will be included to the compiler definition.
+##
+## The PYTHON_MODULE option customizes arguments for a Python module.
+## The target created will be NAME-python-module and the library will be NAME.so.
+## In addition, python is added to DEPENDS_ON and OUTPUT_DIR is defaulted to
+## BLT_Python_MODULE_DIRECTORY.
+## Likewise, LUA_MODULE helps create a module for Lua.
+
 ##------------------------------------------------------------------------------
 macro(blt_add_library)
 
-    set(options SHARED)
-    set(singleValueArgs NAME OUTPUT_DIR USE_OPENMP)
+    set(arg_CLEAR_PREFIX FALSE)
+    set(options SHARED PYTHON_MODULE LUA_MODULE)
+    set(singleValueArgs NAME OUTPUT_NAME OUTPUT_DIR USE_OPENMP)
     set(multiValueArgs SOURCES HEADERS DEPENDS_ON)
 
     ## parse the arguments
@@ -213,6 +228,28 @@ macro(blt_add_library)
     # Check for the variable-based options for OpenMP and sanity check
     if( NOT DEFINED arg_USE_OPENMP )
         set(arg_USE_OPENMP FALSE)
+    endif()
+
+    if(arg_PYTHON_MODULE)
+        set(arg_SHARED TRUE)
+        if( NOT arg_OUTPUT_DIR )
+            set(arg_OUTPUT_DIR ${BLT_Python_MODULE_DIRECTORY})
+        endif()
+        set(arg_DEPENDS_ON "${arg_DEPENDS_ON};python")
+        set(arg_OUTPUT_NAME ${arg_NAME})
+        set(arg_NAME "${arg_NAME}-python-module")
+        set(arg_CLEAR_PREFIX TRUE)
+    endif()
+
+    if(arg_LUA_MODULE)
+        set(arg_SHARED TRUE)
+        if( NOT arg_OUTPUT_DIR )
+            set(arg_OUTPUT_DIR ${BLT_Lua_MODULE_DIRECTORY})
+        endif()
+        set(arg_DEPENDS_ON "${arg_DEPENDS_ON};lua")
+        set(arg_OUTPUT_NAME ${arg_NAME})
+        set(arg_NAME "${arg_NAME}-lua-module")
+        set(arg_CLEAR_PREFIX TRUE)
     endif()
 
     if ( arg_SHARED OR ENABLE_SHARED_LIBS )
@@ -254,90 +291,20 @@ macro(blt_add_library)
             LIBRARY_OUTPUT_DIRECTORY ${arg_OUTPUT_DIR} )
     endif()
 
+    if (arg_OUTPUT_NAME)
+        set_target_properties(${arg_NAME} PROPERTIES
+            OUTPUT_NAME ${arg_OUTPUT_NAME} )
+    endif()
+
+    if (arg_CLEAR_PREFIX)
+        set_target_properties(${arg_NAME} PROPERTIES
+            PREFIX "" )
+    endif()
+   
     # Update project sources                     
     blt_update_project_sources( TARGET_SOURCES ${arg_SOURCES} ${arg_HEADERS})
-   
+
 endmacro(blt_add_library)
-
-##------------------------------------------------------------------------------
-## blt_add_python_module
-##
-## Creates a shared library to be used as a Python module.
-## All options to blt_add_library may be used.
-##
-## The library is created in BLT_Python_MODULE_DIRECTORY
-## by default. OUTPUT_DIR can be used to change the location.
-##
-## NAME is the name of the Python module.
-## The target name will be ${arg_NAME}-python-module and the
-## library is named ${arg_NAME}.so.
-## This allow lib${arg_NAME}.a to also be created by using
-## blt_add_library directly.
-## 
-##------------------------------------------------------------------------------
-macro(blt_add_python_module)
-    set(singleValueArgs NAME )
-    set(multiValueArgs DEPENDS_ON)
-    ## parse the arguments
-    ## only parse NAME, blt_add_library will do the real work
-    cmake_parse_arguments(arg_module
-        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
-
-    # Force shard libraries
-    blt_add_library(
-        OUTPUT_DIR ${BLT_Python_MODULE_DIRECTORY}
-        ${ARGV}
-        NAME ${arg_module_NAME}-python-module
-        DEPENDS_ON ${arg_DEPENDS_ON} python
-        SHARED
-    )
-
-    # Python wants the name to be 'name.so', without leading 'lib'
-    set_target_properties(${arg_module_NAME}-python-module PROPERTIES
-        PREFIX ""
-	OUTPUT_NAME ${arg_module_NAME}
-    )
-endmacro(blt_add_python_module)
-
-##------------------------------------------------------------------------------
-## blt_add_lua_module
-##
-## Creates a shared library to be used as a Lua module.
-## All options to blt_add_library may be used.
-##
-## The library is created in CMAKE_Lua_MODULE_DIRECTORY
-## by default. OUTPUT_DIR can be used to change the location.
-##
-## NAME is the name of the Lua module.
-## The target name will be ${arg_NAME}-lua-module and the
-## library is named ${arg_NAME}.so.
-## This allow lib${arg_NAME}.a to also be created by using
-## blt_add_library directly.
-## 
-##------------------------------------------------------------------------------
-macro(blt_add_lua_module)
-    set(singleValueArgs NAME )
-    set(multiValueArgs DEPENDS_ON)
-    ## parse the arguments
-    ## only parse NAME, blt_add_library will do the real work
-    cmake_parse_arguments(arg_module
-        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
-
-    # Force shard libraries
-    blt_add_library(
-        OUTPUT_DIR ${BLT_Lua_MODULE_DIRECTORY}
-        ${ARGV}
-        NAME ${arg_module_NAME}-lua-module
-        DEPENDS_ON ${arg_DEPENDS_ON} lua
-        SHARED
-    )
-
-    # Lua wants the name to be 'name.so', without leading 'lib'
-    set_target_properties(${arg_module_NAME}-lua-module PROPERTIES
-        PREFIX ""
-	OUTPUT_NAME ${arg_module_NAME}
-    )
-endmacro(blt_add_lua_module)
 
 ##------------------------------------------------------------------------------
 ## blt_add_executable( NAME <name>
