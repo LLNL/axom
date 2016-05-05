@@ -564,10 +564,8 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
   std::string viewName1("viewBuffer1");
   std::string viewName2("viewBuffer2");
 
-  DataView * view1 = grp->createViewAndAllocate(viewName1,
-                                                asctoolkit::sidre::INT_ID, 1);
-  DataView * view2 = grp->createViewAndAllocate(viewName2,
-                                                asctoolkit::sidre::INT_ID, 1);
+  DataView * view1 = grp->createViewAndAllocate(viewName1, INT_ID, 1);
+  DataView * view2 = grp->createViewAndAllocate(viewName2, INT_ID, 1);
 
   EXPECT_TRUE(grp->hasView(viewName1));
   EXPECT_EQ( grp->getView(viewName1), view1 );
@@ -794,17 +792,17 @@ TEST(sidre_group,save_restore_external_data)
   const std::string file_path_base("sidre_save_external_");
 
   int nfoo = 10;
-  int foo[nfoo];
+  int foo1[nfoo], foo2[nfoo];
   for (int i = 0; i < nfoo; ++i)
   {
-    foo[i] = i;
+    foo1[i] = i;
+    foo2[i] = 0;
   }
 
   DataStore * ds1 = new DataStore();
   DataGroup * root1 = ds1->getRoot();
 
-  DataView * view = root1->createView("external_array", foo );
-  view->apply( asctoolkit::sidre::INT_ID, nfoo );
+  root1->createView("external_array", INT_ID, nfoo, foo1 );
 
   for (int i = 0; i < nprotocols; ++i) {
       const std::string file_path = file_path_base + protocols[i];
@@ -823,10 +821,11 @@ TEST(sidre_group,save_restore_external_data)
 
       ds2->load(file_path, protocols[i]);
 
+#if 0
       // All this code should change after we re-write how we handle restoring external data.
       // Right now, the external data is coming back in the view's node and we have to do extra work to
       // restore it to the user's pointer.
-      view = root2->getView("external_array");
+      DataView * view = root2->getView("external_array");
 
       int* new_data_pointer = new int[nfoo];
 
@@ -845,7 +844,15 @@ TEST(sidre_group,save_restore_external_data)
 	  }
 
       delete[] new_data_pointer;
+#else
 
+      // Reallocate external data
+      DataView * view = root2->getView("external_array");
+      view->setExternalDataPtr(foo2);
+
+      // Read external data into views
+
+#endif
       delete ds2;
   }
 }
@@ -866,7 +873,7 @@ TEST(sidre_group,save_restore_complex)
   ga->createViewScalar<double>("d0", 3000.00);
   gb->createViewString("s0", "foo");
 
-  gc->createViewAndAllocate("int10", asctoolkit::sidre::INT_ID, ndata);
+  gc->createViewAndAllocate("int10", INT_ID, ndata);
   int* data_ptr = gc->getView("int10")->getArray();
   for (int i = 0; i < ndata; ++i)
   {

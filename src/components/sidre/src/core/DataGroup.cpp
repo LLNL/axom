@@ -1004,25 +1004,33 @@ DataGroup * DataGroup::detachGroup(IndexType idx)
  */
 
 void DataGroup::exportTo(conduit::Node& data_holder,
-                         std::set<IndexType>& buffer_indices) const
+                         std::set<IndexType>& buffer_indices,
+			 conduit::Node& export_holder) const
 {
-  IndexType vidx = getFirstValidViewIndex();
-  while ( indexIsValid(vidx) )
-  {
-    const DataView * view = getView(vidx);
-    Node& n_view = data_holder["views"].fetch(view->getName());
-    view->exportTo( n_view, buffer_indices );
-    vidx = getNextValidViewIndex(vidx);
+  if (getNumViews() > 0) {
+    Node & vnode = data_holder["views"];
+    IndexType vidx = getFirstValidViewIndex();
+    while ( indexIsValid(vidx) )
+    {
+      const DataView * view = getView(vidx);
+      Node& n_view = vnode.fetch(view->getName());
+      view->exportTo( n_view, buffer_indices, export_holder );
+      vidx = getNextValidViewIndex(vidx);
+    }
   }
 
-  IndexType gidx = getFirstValidGroupIndex();
-  while ( indexIsValid(gidx) )
-  {
-    const DataGroup * group =  getGroup(gidx);
-    Node& n_group = data_holder["groups"].fetch(group->getName());
-    group->exportTo(n_group, buffer_indices);
+  if (getNumGroups() > 0) {
+    Node & gnode = data_holder["groups"];
+    IndexType gidx = getFirstValidGroupIndex();
+    while ( indexIsValid(gidx) )
+    {
+      const DataGroup * group =  getGroup(gidx);
+      Node& n_group = gnode.fetch(group->getName());
+      Node& n_external = export_holder.fetch(group->getName());
+      group->exportTo(n_group, buffer_indices, n_external);
 
-    gidx = getNextValidGroupIndex(gidx);
+      gidx = getNextValidGroupIndex(gidx);
+    }
   }
 
   // TODO - take this out when CON-131 resolved ( can't write out empty node ).

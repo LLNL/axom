@@ -912,26 +912,34 @@ char const * DataView::getStateStringName(State state)
  *************************************************************************
  */
 void DataView::exportTo(conduit::Node& data_holder,
-                        std::set<IndexType>& buffer_indices) const
+                        std::set<IndexType>& buffer_indices,
+			conduit::Node& export_holder) const
 {
   data_holder["schema"] = m_schema.to_json();
-  data_holder["node"] = getNode();
   data_holder["state"] = static_cast<unsigned int>(m_state);
   data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
 
-  if (m_state == BUFFER)
-  {
-    IndexType buffer_id = getBuffer()->getIndex();
-    data_holder["buffer_id"] = buffer_id;
-    buffer_indices.insert(buffer_id);
-  }
-
-  // TODO - take this out when CON-131 resolved ( can't write out empty node ).
-  if ( data_holder["node"].dtype().is_empty() )
-  {
+  switch (m_state) {
+  case BUFFER:
+    {
+      IndexType buffer_id = getBuffer()->getIndex();
+      data_holder["buffer_id"] = buffer_id;
+      buffer_indices.insert(buffer_id);
+    }
+    break;
+  case EXTERNAL:
+    export_holder[m_name].set_external(m_node.schema(),
+				       const_cast<void *>(m_node.element_ptr(0)));
+    break;
+  case EMPTY:
+    // TODO - take this out when CON-131 resolved ( can't write out empty node ).
+    data_holder["node"] = getNode();
     data_holder["node"].set_string("empty");
+    break;
+  default:
+    data_holder["node"] = getNode();
+    break;
   }
-
 }
 
 /*

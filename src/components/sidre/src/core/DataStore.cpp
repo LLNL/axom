@@ -322,6 +322,7 @@ void DataStore::save(const std::string& file_path,
   SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call save function on group that resides in this datastore.");
 
   Node data_holder;
+  data_holder.set_dtype(DataType::object());
   exportTo( group, data_holder);
 
   if (protocol == "conduit")
@@ -442,21 +443,29 @@ void DataStore::exportTo(const DataGroup * group,
   // conduit node set is compatible with what's in the file.
   std::set<IndexType> buffer_indices;
 
+  // Create Conduit object to hold external views
+  Node& external_holder = data_holder["external"];
+  external_holder.set_dtype(DataType::object());
+
   // Tell group to add itself and all sub-groups and views to node.
   // Any buffers referenced by those views will be tracked in the
   // buffer_indices
-  group->exportTo(data_holder, buffer_indices);
+  group->exportTo(data_holder, buffer_indices, external_holder);
 
-  // Now, add all those referenced buffers to the node.
-  for (std::set<IndexType>::iterator s_it = buffer_indices.begin();
-       s_it != buffer_indices.end(); ++s_it)
+  if (! buffer_indices.empty())
   {
-    // Use a dictionary layout here instead of conduit list.
-    // Conduit IO HDF5 doesn't support conduit list objects.
-    std::ostringstream oss;
-    oss << "buffer_id_" << *s_it;
-    Node& buffer_holder = data_holder["buffers"].fetch( oss.str() );
-    getBuffer( *s_it )->exportTo(buffer_holder);
+    // Now, add all the referenced buffers to the node.
+    Node & bnode = data_holder["buffers"];
+    for (std::set<IndexType>::iterator s_it = buffer_indices.begin();
+         s_it != buffer_indices.end(); ++s_it)
+    {
+      // Use a dictionary layout here instead of conduit list.
+      // Conduit IO HDF5 doesn't support conduit list objects.
+      std::ostringstream oss;
+      oss << "buffer_id_" << *s_it;
+      Node& buffer_holder = bnode.fetch( oss.str() );
+      getBuffer( *s_it )->exportTo(buffer_holder);
+    }
   }
 }
 

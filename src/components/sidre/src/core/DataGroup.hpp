@@ -1101,7 +1101,8 @@ private:
    * by the views in this group and sub-groups.
    */
   void exportTo(conduit::Node& data_holder,
-                std::set<IndexType>& buffer_indicies) const;
+                std::set<IndexType>& buffer_indices,
+		conduit::Node& export_holder) const;
 
   /*!
    * \brief Private methods to copy DataGroup from Conduit Node.
