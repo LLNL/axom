@@ -170,14 +170,17 @@ endmacro(blt_register_library)
 ##                  SOURCES [source1 [source2 ...]]
 ##                  HEADERS [header1 [header2 ...]]
 ##                  DEPENDS_ON [dep1 ...] 
-##                  USE_OPENMP <TRUE or FALSE (default)> )
+##                  OUTPUT_DIR [dir]
+##                  USE_OPENMP <TRUE or FALSE (default)>
+##                  SHARED
+##                 )
 ##
 ## Adds a library to the project composed by the given source files.
 ##
 ## Adds a library target, called <libname>, to be built from the given sources.
 ## This macro internally checks if the global option "ENABLE_SHARED_LIBS" is
 ## ON, in which case, it will create a shared library. By default, a static
-## library is generated.
+## library is generated unless the SHARED option is added.
 ##
 ## If given a HEADERS argument, it creates a "blt_copy_headers_target" for 
 ## this library and installs them in the include/<component name> folder.
@@ -190,13 +193,17 @@ endmacro(blt_register_library)
 ## library target. Specifically, it will add a dependency to the library's
 ## "blt_copy_headers_target" and adds a dependency for each DEPENDS_ON target.
 ##
+## The OUTPUT_DIR is used to control the build output directory of this 
+## library. This is used to overwrite the default lib directory.
+##
 ## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this 
 ## argument is supplied, the openmp compiler flag will be added to the compiler 
 ## command and the -DUSE_OPENMP, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(blt_add_library)
 
-    set(singleValueArgs NAME USE_OPENMP)
+    set(options SHARED)
+    set(singleValueArgs NAME OUTPUT_DIR USE_OPENMP)
     set(multiValueArgs SOURCES HEADERS DEPENDS_ON)
 
     ## parse the arguments
@@ -208,7 +215,7 @@ macro(blt_add_library)
         set(arg_USE_OPENMP FALSE)
     endif()
 
-    if ( ENABLE_SHARED_LIBS )
+    if ( arg_SHARED OR ENABLE_SHARED_LIBS )
         add_library( ${arg_NAME} SHARED ${arg_SOURCES} ${arg_HEADERS} )
     else()
         add_library( ${arg_NAME} STATIC ${arg_SOURCES} ${arg_HEADERS} )
@@ -241,11 +248,96 @@ macro(blt_add_library)
     blt_setup_openmp_target( BUILD_TARGET ${arg_NAME}
                               USE_OPENMP ${arg_USE_OPENMP} )
 
+    # Set output directory
+    if ( arg_OUTPUT_DIR )
+        set_target_properties(${arg_NAME} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${arg_OUTPUT_DIR} )
+    endif()
+
     # Update project sources                     
     blt_update_project_sources( TARGET_SOURCES ${arg_SOURCES} ${arg_HEADERS})
    
 endmacro(blt_add_library)
 
+##------------------------------------------------------------------------------
+## blt_add_python_module
+##
+## Creates a shared library to be used as a Python module.
+## All options to blt_add_library may be used.
+##
+## The library is created in BLT_Python_MODULE_DIRECTORY
+## by default. OUTPUT_DIR can be used to change the location.
+##
+## NAME is the name of the Python module.
+## The target name will be ${arg_NAME}-python-module and the
+## library is named ${arg_NAME}.so.
+## This allow lib${arg_NAME}.a to also be created by using
+## blt_add_library directly.
+## 
+##------------------------------------------------------------------------------
+macro(blt_add_python_module)
+    set(singleValueArgs NAME )
+    set(multiValueArgs DEPENDS_ON)
+    ## parse the arguments
+    ## only parse NAME, blt_add_library will do the real work
+    cmake_parse_arguments(arg_module
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    # Force shard libraries
+    blt_add_library(
+        OUTPUT_DIR ${BLT_Python_MODULE_DIRECTORY}
+        ${ARGV}
+        NAME ${arg_module_NAME}-python-module
+        DEPENDS_ON ${arg_DEPENDS_ON} python
+        SHARED
+    )
+
+    # Python wants the name to be 'name.so', without leading 'lib'
+    set_target_properties(${arg_module_NAME}-python-module PROPERTIES
+        PREFIX ""
+	OUTPUT_NAME ${arg_module_NAME}
+    )
+endmacro(blt_add_python_module)
+
+##------------------------------------------------------------------------------
+## blt_add_lua_module
+##
+## Creates a shared library to be used as a Lua module.
+## All options to blt_add_library may be used.
+##
+## The library is created in CMAKE_Lua_MODULE_DIRECTORY
+## by default. OUTPUT_DIR can be used to change the location.
+##
+## NAME is the name of the Lua module.
+## The target name will be ${arg_NAME}-lua-module and the
+## library is named ${arg_NAME}.so.
+## This allow lib${arg_NAME}.a to also be created by using
+## blt_add_library directly.
+## 
+##------------------------------------------------------------------------------
+macro(blt_add_lua_module)
+    set(singleValueArgs NAME )
+    set(multiValueArgs DEPENDS_ON)
+    ## parse the arguments
+    ## only parse NAME, blt_add_library will do the real work
+    cmake_parse_arguments(arg_module
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    # Force shard libraries
+    blt_add_library(
+        OUTPUT_DIR ${BLT_Lua_MODULE_DIRECTORY}
+        ${ARGV}
+        NAME ${arg_module_NAME}-lua-module
+        DEPENDS_ON ${arg_DEPENDS_ON} lua
+        SHARED
+    )
+
+    # Lua wants the name to be 'name.so', without leading 'lib'
+    set_target_properties(${arg_module_NAME}-lua-module PROPERTIES
+        PREFIX ""
+	OUTPUT_NAME ${arg_module_NAME}
+    )
+endmacro(blt_add_lua_module)
 
 ##------------------------------------------------------------------------------
 ## blt_add_executable( NAME <name>
@@ -297,7 +389,7 @@ macro(blt_add_executable)
     list(GET arg_SOURCES 0 _first)
     get_source_file_property(_lang ${_first} LANGUAGE)
     if(_lang STREQUAL Fortran)
-        set_target_properties( ${test_name} PROPERTIES LINKER_LANGUAGE Fortran )
+        set_target_properties( ${arg_NAME} PROPERTIES LINKER_LANGUAGE Fortran )
     endif()
 
     blt_setup_target(NAME ${arg_NAME}

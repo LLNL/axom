@@ -95,11 +95,11 @@ PY_function3a(
   PyObject *kwds)
 {
 // splicer begin function.function3a
-    Py_ssize_t shroud_nargs = 0;
-    if (args != NULL) shroud_nargs += PyTuple_Size(args);
-    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    Py_ssize_t SH_nargs = 0;
+    if (args != NULL) SH_nargs += PyTuple_Size(args);
+    if (kwds != NULL) SH_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    if (shroud_nargs == 1) {
+    if (SH_nargs == 1) {
         rvobj = PY_function3a_0(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -108,7 +108,7 @@ PY_function3a(
         }
         PyErr_Clear();
     }
-    if (shroud_nargs == 1) {
+    if (SH_nargs == 1) {
         rvobj = PY_function3a_1(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;

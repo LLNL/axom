@@ -247,8 +247,8 @@ PP_exclass1_has_addr(
     {
         return NULL;
     }
-    SH_in = PyObject_IsTrue(SH_Py_in);
-    bool rv = self->BBB->hasAddr(SH_in);
+    in = PyObject_IsTrue(SH_Py_in);
+    bool rv = self->BBB->hasAddr(in);
     PyObject * SH_Py_rv = PyBool_FromLong(rv);
     return (PyObject *) SH_Py_rv;
 // splicer end class.ExClass1.method.has_addr
@@ -281,11 +281,11 @@ PP_exclass1_get_value(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.get_value
-    Py_ssize_t shroud_nargs = 0;
-    if (args != NULL) shroud_nargs += PyTuple_Size(args);
-    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    Py_ssize_t SH_nargs = 0;
+    if (args != NULL) SH_nargs += PyTuple_Size(args);
+    if (kwds != NULL) SH_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    if (shroud_nargs == 1) {
+    if (SH_nargs == 1) {
         rvobj = PP_exclass1_get_value_from_int(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -294,7 +294,7 @@ PP_exclass1_get_value(
         }
         PyErr_Clear();
     }
-    if (shroud_nargs == 1) {
+    if (SH_nargs == 1) {
         rvobj = PP_exclass1_get_value_1(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;

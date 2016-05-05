@@ -32,6 +32,7 @@
 #include <vector>
 
 #include "slic/slic.hpp"
+
 #include "slam/NullSet.hpp"
 #include "slam/RangeSet.hpp"
 #include "slam/IndirectionSet.hpp"

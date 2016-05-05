@@ -241,7 +241,10 @@ namespace slam    {
     }
     inline void         verifyPosition(SetPosition ATK_DEBUG_PARAM(fromSetIndex))    const
     {
-        SLIC_ASSERT( fromSetIndex >= 0 && fromSetIndex < m_fromSet->size() );
+        SLIC_ASSERT_MSG( fromSetIndex >= 0 && fromSetIndex < m_fromSet->size()
+                       , "Failed verify position with position " << fromSetIndex
+                       << ". Valid positions are integers between 0 and " << (m_fromSet->size()-1)
+                         );
     }
     inline SetPosition  toSetBeginIndex(SetPosition fromSetIndex)   const { return stride() * (fromSetIndex); }
     inline SetPosition  toSetEndIndex(SetPosition fromSetIndex)     const { return stride() * (fromSetIndex + 1); }

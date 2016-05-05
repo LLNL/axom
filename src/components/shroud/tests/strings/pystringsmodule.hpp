@@ -2,11 +2,11 @@
 // This is generated code, do not edit
 #ifndef PYSTRINGSMODULE_HPP
 #define PYSTRINGSMODULE_HPP
-#include "strings.hpp"
 #include <Python.h>
 #if PY_MAJOR_VERSION >= 3
 #define IS_PY3K
 #endif
+#include "strings.hpp"
 // splicer begin header.include
 // splicer end header.include
 // splicer begin header.C_declaration

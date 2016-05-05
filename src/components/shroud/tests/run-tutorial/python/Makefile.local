@@ -1,0 +1,30 @@
+#
+#  Compile the python tutorial locally
+#
+
+PYTHON = /home/taylor16/testzzz-ets-4.6.3-4.3f
+
+# location of Shroud generated files and tutorial library
+VPATH = .. ../../tutorial
+
+CPPFLAGS = -g -I. -I.. -I../../tutorial -I${PYTHON}/include/python2.7  -Wall -fPIC
+
+OBJS = \
+    tutorial.o \
+    pyTutorialmodule.o \
+    pyClass1type.o \
+    pyTutorialhelper.o
+
+
+all : tutorial.so simple
+
+tutorial.so : ${OBJS}
+	gcc -shared -o $@ $^ -lstdc++
+
+simple : testpython.o ${OBJS}
+	g++ -pthread -o $@ $^ -L${PYTHON}/lib/python2.7/config -lpython2.7 -ldl -lutil
+
+clean :
+	rm -f *.so *.o simple
+.PHONY : clean
+

@@ -134,7 +134,7 @@ public:
    * \brief Logs the given message to all registered streams.
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
-   * \param [in] filter_dulicates optional parameter that indicates whether
+   * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
    *****************************************************************************
@@ -148,7 +148,7 @@ public:
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] tagName user-supplied tag to associated with the given message.
-   * \param [in] filter_dulicates optional parameter that indicates whether
+   * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
    *****************************************************************************
@@ -165,7 +165,7 @@ public:
    * \param [in] message the user-supplied message to log.
    * \param [in] fileName name of the file this call is made from.
    * \param [in] line line within the file that this call is made from.
-   * \param [in] filter_dulicates optional parameter that indicates whether
+   * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
    *****************************************************************************
@@ -184,7 +184,7 @@ public:
    * \param [in] tagName user-supplied tag to associated with the given message.
    * \param [in] fileName name of the file this call is made from.
    * \param [in] line line within the file that this call is made from.
-   * \param [in] filter_dulicates optional parameter that indicates whether
+   * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
    *****************************************************************************

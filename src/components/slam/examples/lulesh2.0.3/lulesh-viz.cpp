@@ -121,7 +121,7 @@ namespace slamLulesh {
       DumpMultiblockObjects(db, basename, numRanks);
     }
     else {
-      printf("Error writing out viz file - rank %d\n", myRank);
+      SLIC_WARNING("Error writing out viz file - rank " << myRank);
     }
 
 #endif
@@ -277,7 +277,7 @@ namespace slamLulesh {
 
     if (ok != 0)
     {
-      printf("Error writing out viz file - rank %d\n", myRank);
+      SLIC_WARNING("Error writing out viz file - rank " << myRank);
     }
   }
 
@@ -397,7 +397,7 @@ namespace slamLulesh {
 
     if (ok != 0)
     {
-      printf("Error writing out multiXXX objs to viz file - rank 0\n");
+      SLIC_WARNING("Error writing out multiXXX objs to viz file - rank 0");
     }
   }
 
@@ -472,7 +472,7 @@ namespace slamLulesh {
   {
     if (myRank == 0)
     {
-      printf("Must enable -DVIZ_MESH at compile time to call DumpDomain\n");
+      SLIC_WARNING("Must enable -DVIZ_MESH at compile time to call DumpDomain\n");
     }
   }
 
