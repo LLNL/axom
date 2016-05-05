@@ -50,7 +50,7 @@ void verifyEmptyGroupNamed( DataGroup * dg, std::string name )
 {
   EXPECT_EQ( name, dg->getName() );
  
-  EXPECT_EQ( 0, dg->getNumGroups() );
+  EXPECT_EQ( 0UL, dg->getNumGroups() );
   EXPECT_FALSE( dg->hasGroup( -1 ) );
   EXPECT_FALSE( dg->hasGroup(  0 ) );
   EXPECT_FALSE( dg->hasGroup(  1 ) );
@@ -60,7 +60,7 @@ void verifyEmptyGroupNamed( DataGroup * dg, std::string name )
   EXPECT_EQ( asctoolkit::sidre::InvalidIndex, dg->getNextValidGroupIndex(0) );
   EXPECT_EQ( asctoolkit::sidre::InvalidIndex, dg->getNextValidGroupIndex(4) );
 
-  EXPECT_EQ( 0, dg->getNumViews() );
+  EXPECT_EQ( 0UL, dg->getNumViews() );
   EXPECT_FALSE( dg->hasView( -1 ) );
   EXPECT_FALSE( dg->hasView(  0 ) );
   EXPECT_FALSE( dg->hasView(  1 ) );
@@ -122,23 +122,37 @@ TEST(sidre_datastore,create_destroy_buffers)
   ds->destroyBuffer(bufferIndex);
   // should be no buffers
   EXPECT_EQ( 0, ds->getNumBuffers() );
-  EXPECT_TRUE( ds->getFirstValidBufferIndex() == -1 );
+  EXPECT_EQ( asctoolkit::sidre::InvalidIndex, ds->getFirstValidBufferIndex() );
 
   // After destroy, that buffer index should be available again, and have been re-used..
   DataBuffer * dbuff2 = ds->createBuffer( asctoolkit::sidre::FLOAT32_ID, 16 );
-  (void)dbuff2;
-  std::cerr << ds->getFirstValidBufferIndex() << std::endl;
-  std::cerr << bufferIndex << std::endl;
-  EXPECT_TRUE( ds->getFirstValidBufferIndex() == bufferIndex );
+  IndexType d2Index = dbuff2->getIndex();
+  EXPECT_EQ(bufferIndex, ds->getFirstValidBufferIndex());
+  EXPECT_EQ(bufferIndex, d2Index);
+  EXPECT_TRUE(ds->hasBuffer(d2Index));
+
   DataBuffer * dbuff3 = ds->createBuffer();
+  IndexType d3Index = dbuff3->getIndex();
   EXPECT_EQ( 2, ds->getNumBuffers() );
+  EXPECT_TRUE(ds->hasBuffer(d3Index));
+
   ds->destroyBuffer(ds->getFirstValidBufferIndex());
   EXPECT_EQ( 1, ds->getNumBuffers() );
-  (void)ds->createBuffer();
-  (void)ds->createBuffer();
+  EXPECT_FALSE(ds->hasBuffer(d3Index));
+
+  DataBuffer * dbuff4 = ds->createBuffer();
+  DataBuffer * dbuff5 = ds->createBuffer();
+  IndexType d4Index = dbuff4->getIndex();
+  IndexType d5Index = dbuff5->getIndex();
   EXPECT_EQ( 3, ds->getNumBuffers() );
-  ds->DestroyAllBuffers();
+  EXPECT_TRUE(ds->hasBuffer(d4Index));
+  EXPECT_TRUE(ds->hasBuffer(d5Index));
+
+  ds->destroyAllBuffers();
   EXPECT_EQ( 0, ds->getNumBuffers() );
+  EXPECT_FALSE(ds->hasBuffer(d2Index));
+  EXPECT_FALSE(ds->hasBuffer(d4Index));
+  EXPECT_FALSE(ds->hasBuffer(d5Index));
 
   // check error condition
   IndexType badBufferIndex = 9999;
