@@ -96,9 +96,9 @@ if(FALSE)  # The Python module is not create yet.
         interface/python/pySidremodule.hpp
     )
 
-    blt_add_python_module(
-        NAME
-            sidre
+    blt_add_library(
+        NAME sidre
+        PYTHON_MODULE
         SOURCES
             ${sidre_sources}
             ${sidre_python_sources}
