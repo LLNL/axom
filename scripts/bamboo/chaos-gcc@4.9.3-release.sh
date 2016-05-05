@@ -27,8 +27,10 @@ echo "-----------------------------------------------------------------------"
 
 echo "Installing docs to web space..."
 echo "-----------------------------------------------------------------------"
-# Add commands to copy out docs to web area, or make a separate script to do it and call that here.
 # Is there a way to terminate if the make docs above failed?  So we don't try to copy over the
 # files if that failed.
+mv /usr/global/web-pages/lc/www/toolkit/docs/ /usr/global/web-pges/lc/www/toolkit/docs_old
+rm -rf /usr/global/web-pages/lc/www/toolkit/docs
+cp -R ./docs /usr/global/web-pages/lc/www/toolkit/
 chgrp -R toolkit /usr/global/web-pages/lc/www/toolkit/docs/
 echo "-----------------------------------------------------------------------"
