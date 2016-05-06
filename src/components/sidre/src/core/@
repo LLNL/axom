@@ -54,8 +54,7 @@ const char DataGroup::s_path_delimiter = '/';
 DataView * DataGroup::getView( const std::string& name )
 {
   std::string path = name;
-  bool create_groups_in_path = false;
-  DataGroup * group = walkPath( path, create_groups_in_path );
+  DataGroup * group = walkPath( path, false );
 
   SLIC_CHECK_MSG( !path.empty() && group->hasView(name),
                   "Group " << getName() << 
@@ -99,8 +98,7 @@ const DataView * DataGroup::getView( const std::string& name ) const
 DataView * DataGroup::createView( const std::string& name )
 {
   std::string path = name;
-  bool create_groups_in_path = true;
-  DataGroup * group = walkPath( path, create_groups_in_path );
+  DataGroup * group = walkPath( path, true );
 
   if ( group == ATK_NULLPTR )
   {
@@ -675,8 +673,7 @@ DataView * DataGroup::copyView(DataView * view)
 DataGroup * DataGroup::getGroup( const std::string& name )
 {
   std::string path = name;
-  bool create_groups_in_path = false;
-  DataGroup * group = walkPath( path, create_groups_in_path );
+  DataGroup * group = walkPath( path, false );
 
   SLIC_CHECK_MSG( !path.empty() && group->hasGroup(name),
                   "Group " << getName() << 
@@ -720,8 +717,7 @@ const DataGroup * DataGroup::getGroup( const std::string& name ) const
 DataGroup * DataGroup::createGroup( const std::string& name )
 {
   std::string path = name;
-  bool create_groups_in_path = true;
-  DataGroup * group = walkPath( path, create_groups_in_path );
+  DataGroup * group = walkPath( path, true );
 
   if ( group == ATK_NULLPTR )
   {
@@ -1298,6 +1294,9 @@ void DataGroup::importFrom(conduit::Node& data_holder,
  *
  * PRIVATE method to walk down a path to the next-to-last entry.
  *
+ * If an empty path or a path with just a single entry, 'foo', is passed
+ * in, then this routine will simply return the current group.
+ *
  * If an error is encoutered, this private function will return ATK_NULLPTR
  *
  *************************************************************************
@@ -1305,6 +1304,12 @@ void DataGroup::importFrom(conduit::Node& data_holder,
 DataGroup * DataGroup::walkPath( std::string& path, 
                                  bool create_groups_in_path )
 {
+  // TODO - write tests that pass in some error conditions and verify code for:
+  // path = ""
+  // path = "foo"
+  // these should result in just getting back the same group you just called this
+  // routine from and issue a warning, but not cause a code crash.
+
   DataGroup * group_ptr = this;
 
   std::string::size_type pos = detail::find_exclusive( path, s_path_delimiter);
@@ -1335,8 +1340,10 @@ DataGroup * DataGroup::walkPath( std::string& path,
       }
       else
       {
-        SLIC_ERROR( "Invalid path, group '" << group_ptr->getName() << 
-                    "' has no group with name '" << *iter << "'");
+//        SLIC_CHECK_MSG(false, "Path is invalid, group " << group_ptr->getName() << " does not have group with name " << *iter);
+        SLIC_ERROR(
+          "Path is invalid, group " << group_ptr->getName() << " does not have group with name " <<
+          *iter);
       }
     }
     path = tokens.back();

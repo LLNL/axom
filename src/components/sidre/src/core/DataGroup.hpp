@@ -1027,6 +1027,20 @@ public:
 
 private:
 
+  /*!
+   *  Unimplemented ctors and copy-assignment operators.
+   */
+#ifdef USE_CXX11
+  DataGroup( const DataGroup& source ) = delete;
+  DataGroup( DataGroup&& source ) = delete;
+
+  DataGroup& operator=( const DataGroup& rhs ) = delete;
+  DataGroup& operator=( const DataGroup&& rhs ) = delete;
+#else
+  DataGroup( const DataGroup& source );
+  DataGroup& operator=( const DataGroup& rhs );
+#endif
+
 //@{
 //!  @name Private Group ctors and dtors
 //!        (callable only by DataStore and DataGroup methods).
@@ -1042,20 +1056,6 @@ private:
    *         in the given DataStore root group.
    */
   DataGroup(const std::string& name, DataStore * datastore);
-
-  //
-  // Unimplemented copy ctors and copy-assignment operators.
-  //
-#ifdef USE_CXX11
-  DataGroup( const DataGroup& source ) = delete;
-  DataGroup( DataGroup&& source ) = delete;
-
-  DataGroup& operator=( const DataGroup& rhs ) = delete;
-  DataGroup& operator=( const DataGroup&& rhs ) = delete;
-#else
-  DataGroup( const DataGroup& source );
-  DataGroup& operator=( const DataGroup& rhs );
-#endif
 
   /*!
    * \brief Destructor destroys all views and child groups.
@@ -1106,32 +1106,25 @@ private:
 
 
 //@{
-//!  @name DataGroup (child) group manipulation methods.
+//!  @name Private (child) Group manipulation methods.
 
   /*!
-   * \brief Private methods to attach/detach DataGroup object to DataGroup.
+   * \brief Attach Group to this Group as a child.
    */
   DataGroup * attachGroup(DataGroup * group);
-  ///
+
+  /*!
+   * \brief Detaich child Group with given name from this Group.
+   */
   DataGroup * detachGroup(const std::string& name);
-  ///
+
+  /*!
+   * \brief Detaich child Group with given index from this Group.
+   */
   DataGroup * detachGroup(IndexType idx);
 
 //@}
 
-  /*!
-   * \brief Private method to retrieve the next-to-last entry in a path.  This
-   * entry is usually the one that needs to perform an action, such as creating or
-   * retrieving a group or view.
-   *
-   * path - The path to traverse.  This parameter is modified during algorithm
-   * execution.  Upon completion it will contain the last entry in the path.  This
-   * is typically a name of a group or view that needs to be created or retrieved.
-   *
-   * create_on_demand - This controls whether any missing groups should be created
-   * while traversing a path.
-   */
-  DataGroup * walkPath(std::string& path, bool create_on_demand );
 
 //@{
 //!  @name Private DataGroup methods for interacting with Conduit Nodes.
@@ -1157,6 +1150,25 @@ private:
                   const std::map<IndexType, IndexType>& buffer_id_map);
 
 //@}
+
+  /*!
+   * \brief Private method that returns the Group that is the next-to-last 
+   * entry in a slash-deliminated ("/") path string.
+   *
+   * The string before the last "/" character, if there is one, is the 
+   * next-to-last path entry. In this case, the return value is that group
+   * in the path. 
+   *
+   * If there is no "/" in the given path, the entire string is considered 
+   * the next-to-last path entry. In this case, the erturn value is this
+   * group.
+   *
+   * The path argument is modified while walking the path. Its value when 
+   * the method returns is the last entry in the path, either the string
+   * following the last "/" in the input (if there is one) or the entire
+   * input path string if it contains no "/".
+   */
+  DataGroup * walkPath(std::string& path, bool create_groups_in_path );
 
 
   /// Name of this DataGroup object.
