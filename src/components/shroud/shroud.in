@@ -9,5 +9,5 @@
 #    lib/pythonX.Y/site-packages
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-export PYTHONPATH=$DIR/../@CMAKE_Python_SITE_PACKAGES@
-@PYTHON_EXECUTABLE@ $DIR//../@CMAKE_Python_SITE_PACKAGES@/shroud/main.py "$@"
+export PYTHONPATH=$DIR/../@BLT_Python_SITE_PACKAGES@
+@PYTHON_EXECUTABLE@ $DIR//../@BLT_Python_SITE_PACKAGES@/shroud/main.py "$@"
