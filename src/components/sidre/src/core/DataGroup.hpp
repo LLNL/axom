@@ -334,6 +334,7 @@ public:
 
 //@}
 
+
 //@{
 //!  @name View creation methods.
 
@@ -530,16 +531,7 @@ public:
 
 
 //@{
-//!  @name Methods to create DataViews and allocate their data.
-//!  the method will traverse down to the last group in the path before
-//!  executing the called operation.  Creation methods will automatically
-//!  create a chain of groups if they are not already present.
-//!
-//!  Example:
-//!  createView("foo/bar/baz")
-//!  is equivalent to
-//!  createGroup("foo")->createGroup("bar")->createView("baz")
-
+//!  @name Methods that create Views and allocate their data.
 
   /*!
    * \brief Create DataView object with given name, data type, and
@@ -696,35 +688,32 @@ public:
 
 
 //@{
-//!  @name DataView move and copy methods.
+//!  @name View move and copy methods.
 
   /*!
-   * \brief Remove DataView object from its owning group and attach
-   *        to this DataGroup object.
+   * \brief Remove given view object from its owning group and move it
+   *        to this group.
    *
-   * If the group already owns this view, method does nothing and returns
-   * pointer to view.
-   * If given view pointer is null or group already contains a view with
-   * same name as given view, method does nothing and returns ATK_NULLPTR.
+   * If given view pointer is null or group already has a view with
+   * same name as given view, method is a no-op.
    *
-   * \return pointer to view which is attached to this group or ATK_NULLPTR
-   *         if the view is not attached to this group.
+   * \return pointer to given argument view object or ATK_NULLPTR if view
+   * is not moved into this group.
    */
   DataView * moveView(DataView * view);
 
   /*!
-   * \brief Create a copy of given DataView object and attach
-   *        to this DataGroup object.
+   * \brief Create a copy of given view object and add it to this group.
    *
-   * Note that this is a "shallow" copy; the data associated with
+   * Note that view copying is a "shallow" copy; the data associated with
    * the view is not copied. The new view object is associated with
-   * the same data.
+   * the same data as the original.
    *
-   * If given view pointer is null or group already contains a view with
-   * same name as given view, method does nothing.
+   * If given group pointer is null or group already has a child group with
+   * same name as given group, method is a no-op.
    *
-   * \return pointer to given DataView object or ATK_NULLPTR if new
-   * view is not copied into this group.
+   * \return pointer to given argument group object or ATK_NULLPTR if group
+   * is not moved into this group.
    */
   DataView * copyView(DataView * view);
 
@@ -784,7 +773,7 @@ public:
 
 
 //@{
-//!  @name Access and iteration methods for child Groups.
+//!  @name Group access and iteration methods.
 
   /*!
    * \brief Return pointer to non-const child group with given name or path.
@@ -819,9 +808,9 @@ public:
   }
 
   /*!
-   * \brief Return pointer to const immediate child gr
+   * \brief Return pointer to const immediate child group with given index.
    * 
-   * If no such group exists, ATK_NULLPTR is returned.oup with given index.
+   * If no such group exists, ATK_NULLPTR is returned.
    */
   const DataGroup * getGroup( IndexType idx ) const
   {
@@ -898,57 +887,50 @@ public:
 
 
 //@{
-//!  @name (child) DataGroup move and copy methods.
+//!  @name Group move and copy methods.
 
   /*!
-   * \brief Remove DataGroup object from its parent group and attach
-   *        to this DataGroup object.
+   * \brief Remove given group object from its parent group and make it 
+   *        a child of this group.
    *
-   * If given group pointer is null or group already contains a group with
-   * same name as given group, method does nothing.
+   * If given group pointer is null or group already has a child group with
+   * same name as given group, method is a no-op.
    *
-   * \return pointer to given DataGroup object or ATK_NULLPTR if group
+   * \return pointer to given argument group object or ATK_NULLPTR if group
    * is not moved into this group.
    */
   DataGroup * moveGroup(DataGroup * group);
 
   /*!
-   * \brief Create a copy of given DataGroup object (including all of its
-   *        DataViews and child DataGroups) and attach to this DataGroup
-   *        object.
+   * \brief Create a copy of group hierarchy rooted at given group and make it 
+   *        a child of this group.
    *
-   * Note that DataGroup copying is a "shallow" copy; the data associated
-   * with views in a group are not copied. The new DataGroup is associated
-   * with the same data as the given group.
+   * Note that all views in the group hierarchy are copied as well.
    *
-   * If given group pointer is null or group already contains a group with
-   * same name as given group, method does nothing.
+   * Note that group copying is a "shallow" copy; the data associated
+   * with views in a group are not copied. In particular, the new group
+   * hierachy and all its views is associated with the same data as the 
+   * given group.
    *
-   * \return pointer to new DataGroup object in this group or ATK_NULLPTR if
-   * new group is not created.
+   * If given group pointer is null or group already has a child group with
+   * same name as given group, method is a no-op.
+   *
+   * \return pointer to given argument group object or ATK_NULLPTR if group
+   * is not moved into this group.
    */
   DataGroup * copyGroup(DataGroup * group);
 
 //@}
 
-  /*!
-   * \brief Return boolean telling if two DataGroups are equivalent.
-   *
-   * To be equivalent they must have identical hierarchy structures with
-   * the same names for all child DataGroups and DataViews, and the DataViews
-   * must all pass DataView's equivalence test.
-   */
-  bool isEquivalentTo(const DataGroup * other) const;
-
 
 //@{
-//!  @name DataGroup print methods.
+//!  @name Group print methods.
 
   /*!
    * \brief Print JSON description of data group to stdout.
    *
    * Note that this will recursively print entire group (sub) tree
-   * starting at this DataGroup object.
+   * starting at this group object.
    */
   void print() const;
 
@@ -956,23 +938,38 @@ public:
    * \brief Print JSON description of data group to an ostream.
    *
    * Note that this will recursively print entire group (sub) tree
-   * starting at this DataGroup object.
+   * starting at this group object.
    */
   void print(std::ostream& os) const;
 
 
   /*!
    * \brief Print given number of levels of group (sub) tree
-   *        starting at this DataGroup object to an output stream.
+   *        starting at this group object to an output stream.
    */
   void printTree( const int nlevels, std::ostream& os ) const;
 
 //@}
 
   /*!
-   * \brief Copy data group description to given Conduit node.
+   * \brief Copy description of group hierarchy rooted at this group to 
+   * given Conduit node.
+   *
+   * The description includes views of this group and all of its children
+   * recursively.
    */
   void info(Node& n) const;
+
+  /*!
+   * \brief Return true if this group is equivalent to given group; else false. 
+   *
+   * Two groups are equivalent if they are the root groups of identical 
+   * group hierarchy structures with the same names for all views and 
+   * groups in the hierarchy, and the views are also equivalent.
+   *
+   * \sa DataView::isEquivalentTo
+   */
+  bool isEquivalentTo(const DataGroup * other) const;
 
 private:
 
@@ -1098,7 +1095,7 @@ private:
   DataStore * m_datastore;
 
   /// Character used to denote a path string passed to get/create calls.
-  static const char m_path_delimiter;
+  static const char s_path_delimiter;
 
   ///
   /// Typedefs for view and shild group containers. They are here to

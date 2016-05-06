@@ -33,6 +33,11 @@ namespace asctoolkit
 namespace sidre
 {
 
+// Initialization of static path delimiter character for methods that 
+// support path syntax.
+const char DataGroup::s_path_delimiter = '/';
+
+
 ////////////////////////////////////////////////////////////////////////
 //
 // View access methods.
@@ -470,23 +475,22 @@ DataView * DataGroup::moveView(DataView * view)
 {
   if ( view == ATK_NULLPTR )
   {
-    SLIC_CHECK_MSG( view != ATK_NULLPTR,
-                    "Attempting to move view, but given null ptr" );
+    SLIC_CHECK( view != ATK_NULLPTR );
     return ATK_NULLPTR;
   }
 
   DataGroup * curr_group = view->getOwningGroup();
-  if (curr_group == this )
+  if (curr_group == this)
   {
     // this group already owns the view
     return view;
   }
-  else if (hasView(view->getName()) )
+  else if (hasView(view->getName()))
   {
-    SLIC_CHECK_MSG( hasView(
-                      view->getName()) == false,
-                    "Attempting to move view, but destination group already has a view named " <<
-                    view->getName() );
+    SLIC_CHECK_MSG(!hasView(view->getName()),
+                   "Group '" << getName() <<
+                   "' already has a view named'" << view->getName() <<
+                   "' so view move operation cannot happen");
     return ATK_NULLPTR;
   }
 
@@ -507,15 +511,14 @@ DataView * DataGroup::moveView(DataView * view)
  */
 DataView * DataGroup::copyView(DataView * view)
 {
-  SLIC_CHECK_MSG( view != ATK_NULLPTR,
-                  "Attempting to copy view, but given null ptr" );
-  SLIC_CHECK_MSG( hasView(
-                    view->getName()) == false,
-                  "Attempting to copy view, but destination group already has a view named " <<
-                  view->getName() );
-
   if ( view == ATK_NULLPTR || hasView(view->getName()) )
   {
+    SLIC_CHECK( view != ATK_NULLPTR );
+    SLIC_CHECK_MSG(!hasView(view->getName()),
+                   "Group '" << getName() <<
+                   "' already has a view named'" << view->getName() <<
+                   "' so view copy operation cannot happen");
+
     return ATK_NULLPTR;
   }
 
@@ -669,15 +672,14 @@ void DataGroup::destroyGroups()
  */
 DataGroup * DataGroup::moveGroup(DataGroup * group)
 {
-  SLIC_CHECK_MSG( group != ATK_NULLPTR,
-                  "Attempting to move group, but given null ptr" );
-  SLIC_CHECK_MSG( hasGroup(
-                    group->getName()) == false,
-                  "Attempting to move group, but destination group already has a group named " <<
-                  group->getName() );
-
   if ( group == ATK_NULLPTR || hasGroup(group->getName()))
   {
+    SLIC_CHECK( group != ATK_NULLPTR );
+    SLIC_CHECK_MSG(!hasGroup(group->getName()),
+                   "Group '" << getName() << 
+                   "' already has a child group named'" << group->getName() <<
+                   "' so group move operation cannot happen");
+
     return ATK_NULLPTR;
   }
 
@@ -698,15 +700,14 @@ DataGroup * DataGroup::moveGroup(DataGroup * group)
  */
 DataGroup * DataGroup::copyGroup(DataGroup * group)
 {
-  SLIC_CHECK_MSG( group != ATK_NULLPTR,
-                  "Attempting to move group, but given null ptr" );
-  SLIC_CHECK_MSG( hasGroup(
-                    group->getName()) == false,
-                  "Attempting to move group, but destination group already has a group named " <<
-                  group->getName() );
-
   if ( group == ATK_NULLPTR || hasGroup(group->getName()) )
   {
+    SLIC_CHECK( group != ATK_NULLPTR );
+    SLIC_CHECK_MSG(!hasGroup(group->getName()),
+                   "Group '" << getName() << 
+                   "' already has a child group named'" << group->getName() <<
+                   "' so group copy operation cannot happen");
+
     return ATK_NULLPTR;
   }
   else
@@ -730,38 +731,6 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
     }
 
     return res;
-  }
-}
-
-/*
- *************************************************************************
- *
- * Copy data group description to given Conduit node.
- *
- *************************************************************************
- */
-void DataGroup::info(Node& n) const
-{
-  n["name"] = m_name;
-
-  IndexType vidx = getFirstValidViewIndex();
-  while ( indexIsValid(vidx) )
-  {
-    const DataView * view = getView(vidx);
-    Node& v = n["views"].fetch(view->getName());
-    view->info(v);
-
-    vidx = getNextValidViewIndex(vidx);
-  }
-
-  IndexType gidx = getFirstValidGroupIndex();
-  while ( indexIsValid(gidx) )
-  {
-    const DataGroup * group =  getGroup(gidx);
-    Node& g = n["groups"].fetch(group->getName());
-    group->info(g);
-
-    gidx = getNextValidGroupIndex(gidx);
   }
 }
 
@@ -831,6 +800,91 @@ void DataGroup::printTree( const int nlevels,
 
     gidx = getNextValidGroupIndex(gidx);
   }
+}
+
+/*
+ *************************************************************************
+ *
+ * Copy data group description to given Conduit node.
+ *
+ *************************************************************************
+ */
+void DataGroup::info(Node& n) const
+{
+  n["name"] = m_name;
+
+  IndexType vidx = getFirstValidViewIndex();
+  while ( indexIsValid(vidx) )
+  {
+    const DataView * view = getView(vidx);
+    Node& v = n["views"].fetch(view->getName());
+    view->info(v);
+
+    vidx = getNextValidViewIndex(vidx);
+  }
+
+  IndexType gidx = getFirstValidGroupIndex();
+  while ( indexIsValid(gidx) )
+  {
+    const DataGroup * group =  getGroup(gidx);
+    Node& g = n["groups"].fetch(group->getName());
+    group->info(g);
+
+    gidx = getNextValidGroupIndex(gidx);
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Test this DataGroup for equavalence to another DataGroup.
+ *
+ *************************************************************************
+ */
+bool DataGroup::isEquivalentTo(const DataGroup * other) const
+{
+  // Equality of names
+  bool is_equiv = (m_name == other->m_name);
+
+  // Sizes of collections of child items must be equal
+  if (is_equiv)
+  {
+    is_equiv = (m_view_coll.getNumItems() == other->m_view_coll.getNumItems())
+               && (m_group_coll.getNumItems() ==
+                   other->m_group_coll.getNumItems());
+  }
+
+  // Test equivalence of DataViews
+  if (is_equiv)
+  {
+    IndexType vidx = getFirstValidViewIndex();
+    IndexType other_vidx = other->getFirstValidViewIndex();
+    while ( is_equiv && indexIsValid(vidx) && indexIsValid(other_vidx) )
+    {
+      const DataView * view = getView(vidx);
+      const DataView * other_view = other->getView(other_vidx);
+      is_equiv = view->isEquivalentTo(other_view);
+      vidx = getNextValidViewIndex(vidx);
+      other_vidx = getNextValidViewIndex(other_vidx);
+    }
+  }
+
+  // Recursively call this method to test equivalence of child DataGroups
+  if (is_equiv)
+  {
+    IndexType gidx = getFirstValidGroupIndex();
+    IndexType other_gidx = getFirstValidGroupIndex();
+    while ( is_equiv && indexIsValid(gidx) && indexIsValid(other_gidx) )
+    {
+      const DataGroup * group =  getGroup(gidx);
+      const DataGroup * other_group =  other->getGroup(other_gidx);
+      is_equiv = group->isEquivalentTo(other_group);
+      gidx = getNextValidGroupIndex(gidx);
+      other_gidx = getNextValidGroupIndex(other_gidx);
+    }
+  }
+
+  return is_equiv;
 }
 
 
@@ -926,11 +980,11 @@ DataGroup * DataGroup::walkPath( std::string& path, bool create_on_demand )
 
   DataGroup * group_ptr = this;
 
-  std::string::size_type pos = detail::find_exclusive( path, m_path_delimiter);
+  std::string::size_type pos = detail::find_exclusive( path, s_path_delimiter);
   if (pos != std::string::npos)
   {
     std::vector<std::string> tokens =
-      detail::split(path, m_path_delimiter, pos);
+      detail::split(path, s_path_delimiter, pos);
     std::vector<std::string>::iterator stop = tokens.end() - 1;
 
     // Navigate path down to desired group.
@@ -1162,64 +1216,6 @@ void DataGroup::importFrom(conduit::Node& data_holder,
   }
 }
 
-/*
- *************************************************************************
- *
- * Test this DataGroup for equavalence to another DataGroup.
- *
- *************************************************************************
- */
-bool DataGroup::isEquivalentTo(const DataGroup * other) const
-{
-  // Equality of names
-  bool is_equiv = (m_name == other->m_name);
-
-  // Sizes of collections of child items must be equal
-  if (is_equiv)
-  {
-    is_equiv = (m_view_coll.getNumItems() == other->m_view_coll.getNumItems())
-               && (m_group_coll.getNumItems() ==
-                   other->m_group_coll.getNumItems());
-  }
-
-  // Test equivalence of DataViews
-  if (is_equiv)
-  {
-    IndexType vidx = getFirstValidViewIndex();
-    IndexType other_vidx = other->getFirstValidViewIndex();
-    while ( is_equiv && indexIsValid(vidx) && indexIsValid(other_vidx) )
-    {
-      const DataView * view = getView(vidx);
-      const DataView * other_view = other->getView(other_vidx);
-      is_equiv = view->isEquivalentTo(other_view);
-      vidx = getNextValidViewIndex(vidx);
-      other_vidx = getNextValidViewIndex(other_vidx);
-    }
-  }
-
-  // Recursively call this method to test equivalence of child DataGroups
-  if (is_equiv)
-  {
-    IndexType gidx = getFirstValidGroupIndex();
-    IndexType other_gidx = getFirstValidGroupIndex();
-    while ( is_equiv && indexIsValid(gidx) && indexIsValid(other_gidx) )
-    {
-      const DataGroup * group =  getGroup(gidx);
-      const DataGroup * other_group =  other->getGroup(other_gidx);
-      is_equiv = group->isEquivalentTo(other_group);
-      gidx = getNextValidGroupIndex(gidx);
-      other_gidx = getNextValidGroupIndex(other_gidx);
-    }
-  }
-
-  return is_equiv;
-
-}
-
-
-
-/// Character used to denote a path string passed to get/create calls.
-const char DataGroup::m_path_delimiter = '/';
 
 
 } /* end namespace sidre */
