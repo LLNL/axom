@@ -326,52 +326,49 @@ DataView * DataGroup::createViewString( const std::string& name,
   return view;
 }
 
-////////////////////////////////////////////////////////////////////////
-//
-//  Methods for deleting, detaching, copying, or moving DataView object
-//  in a DataGroup
-//
-////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////
+//
+//  Methods for destroying Views and their data.
+//
+////////////////////////////////////////////////////////////////////////
 
 /*
  *************************************************************************
  *
- * Detach view with given name from group and destroy view.
- *
- * Data buffer remains intact in DataStore.
+ * Destroy view with given name and leave its data intact.
  *
  *************************************************************************
  */
 void DataGroup::destroyView( const std::string& name )
 {
-  SLIC_CHECK_MSG( hasView(name) == true, "name == " << name );
-
-  delete detachView(name);
+  DataView* view = detachView(name);
+  if ( view != ATK_NULLPTR ) 
+  {
+     delete view;
+  }
 }
 
 /*
  *************************************************************************
  *
- * Detach view with given index from group and destroy view.
- *
- * Data buffer remains intact in DataStore.
+ * Destroy view with given index and leave its data intact.
  *
  *************************************************************************
  */
 void DataGroup::destroyView( IndexType idx )
 {
-  SLIC_CHECK_MSG( hasView(idx) == true, "idx == " << idx );
-
-  delete detachView(idx);
+  DataView* view = detachView(idx);
+  if ( view != ATK_NULLPTR ) 
+  {
+     delete view;
+  }
 }
 
 /*
  *************************************************************************
  *
- * Detach all views from group and destroy them.
- *
- * Data buffers remain intact in DataStore.
+ * Destroy all views in group and leave their data intact.
  *
  *************************************************************************
  */
@@ -380,8 +377,11 @@ void DataGroup::destroyViews()
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
-    DataView * view = this->getView(vidx);
-    delete view;
+    DataView * view = detachView(vidx);
+    if ( view != ATK_NULLPTR )
+    {
+      delete view;
+    }
 
     vidx = getNextValidViewIndex(vidx);
   }
@@ -392,35 +392,8 @@ void DataGroup::destroyViews()
 /*
  *************************************************************************
  *
- * Detach view from group and destroy view.
- *
- * Destroy DataBuffer if buffer has no other view attached to it.
- *
- *************************************************************************
- */
-void DataGroup::destroyViewAndData( DataView * view )
-{
-  if ( view != ATK_NULLPTR)
-  {
-    detachView( view->getName() );
-    DataBuffer * const buffer = view->detachBuffer();
-    if ( buffer != ATK_NULLPTR )
-    {
-      if (buffer->getNumViews() == 0)
-      {
-        getDataStore()->destroyBuffer(buffer);
-      }
-    }
-    delete view;
-  }
-}
-
-/*
- *************************************************************************
- *
- * Detach view with given name from group and destroy view.
- *
- * Destroy DataBuffer if buffer has no other view attached to it.
+ * Destroy view with given name and its data if it's the only view 
+ * associated with that data.
  *
  *************************************************************************
  */
@@ -432,9 +405,8 @@ void DataGroup::destroyViewAndData( const std::string& name )
 /*
  *************************************************************************
  *
- * Detach view with given index from group and destroy view.
- *
- * Destroy DataBuffer if buffer has no other view attached to it.
+ * Destroy view with given index and its data if it's the only view 
+ * associated with that data.
  *
  *************************************************************************
  */
@@ -446,9 +418,8 @@ void DataGroup::destroyViewAndData( IndexType idx )
 /*
  *************************************************************************
  *
- * Detach all views from group and destroy them.
- *
- * DataBuffers in DataStore are destroyed.
+ * Destroy all views in group as well as the data for each view when it's
+ * the only view associated with that data.
  *
  *************************************************************************
  */
@@ -463,6 +434,13 @@ void DataGroup::destroyViewsAndData()
 
   m_view_coll.removeAllItems();
 }
+
+
+////////////////////////////////////////////////////////////////////////
+//
+//  Methods for moving and copying View objects from one Group to another.
+//
+////////////////////////////////////////////////////////////////////////
 
 /*
  *************************************************************************
@@ -1084,6 +1062,27 @@ DataView * DataGroup::detachView(IndexType idx)
   }
 
   return view;
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to destroy view in this group and its data.
+ *
+ *************************************************************************
+ */
+void DataGroup::destroyViewAndData( DataView * view )
+{
+  if ( view != ATK_NULLPTR )
+  {
+    detachView( view->getName() );
+    DataBuffer * const buffer = view->detachBuffer();
+    if ( buffer != ATK_NULLPTR && buffer->getNumViews() == 0 )
+    {
+      getDataStore()->destroyBuffer(buffer);
+    }
+    delete view;
+  }
 }
 
 /*

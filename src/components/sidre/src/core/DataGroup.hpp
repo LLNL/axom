@@ -626,61 +626,51 @@ public:
 
 
 //@{
-//!  @name DataView destruction methods.
+//!  @name View destruction methods.
 
   /*!
-   * \brief Destroy view in this DataGroup and leave its associated
-   *        data intact.
-   */
-  void destroyView(DataView * view);
-
-  /*!
-   * \brief Destroy view in this DataGroup with given name and leave its
-   *        associated data intact.
+   * \brief Destroy view with given name owned by this group, but leave
+   * its data intect.
+   *
+   * If no such view exists, method is a no-op.
    */
   void destroyView(const std::string& name);
 
   /*!
-   * \brief Destroy view in this DataGroup with given index and leave its
-   *        associated data intact.
+   * \brief Destroy view with given index owned by this group, but leave
+   * its data intect.
+   *
+   * If no such view exists, method is a no-op.
    */
   void destroyView(IndexType idx);
 
   /*!
-   * \brief Destroy all views in this DataGroup and leave all associated
+   * \brief Destroy all views owned by this group, but leave all their
    *        data intact.
    */
   void destroyViews();
 
   /*!
-   * \brief Destroy view in this DataGroup.  Destroy it's data also,
-   *        if this is the only view referencing that data.
+   * \brief Destroy view with given name owned by this group and deallocate
+   * its data if it's the only view associated with that data.
    *
-   *        Data will not be destroyed as long as a view still exists that
-   *        references it.
-   */
-  void destroyViewAndData( DataView * view );
-
-  /*!
-   * \brief Destroy view in this DataGroup with given name.  Destroy it's data
-   *        also, if this is the only view referencing that data.
-   *
-   *        Data will not be destroyed as long as a view still exists that
-   *        references it.
+   * If no such view exists, method is a no-op.
    */
   void destroyViewAndData(const std::string& name);
 
   /*!
-   * \brief Destroy view in this DataGroup with given index.  Destroy it's data
-   *        also, if this is the only view referencing that data.
+   * \brief Destroy view with given index owned by this group and deallocate
+   * its data if it's the only view associated with that data.
    *
-   *        Data will not be destroyed as long as a view still exists that
-   *        references it.
+   * If no such view exists, method is a no-op.
    */
   void destroyViewAndData(IndexType idx);
 
   /*!
-   * \brief Calls destroyViewAndData on all views in this group.
+   * \brief Destroy all views owned by this group and deallocate
+   * data for each view when it's the only view associated with that data.
+   *
+   * If group has no views, method is a no-op.
    */
   void destroyViewsAndData();
 
@@ -975,7 +965,7 @@ public:
 private:
 
 //@{
-//!  @name Private DataGroup ctors and dtors
+//!  @name Private Group ctors and dtors
 //!        (callable only by DataStore and DataGroup methods).
 
   /*!
@@ -1013,21 +1003,41 @@ private:
 
 
 //@{
-//!  @name Private DataGroup view and buffer manipulation methods.
+//!  @name Private Group view manipulation methods.
 
   /*!
-   * \brief Private methods to attach/detach DataView object to DataGroup.
+   * \brief Attach View object to this Group.
    */
   DataView * attachView(DataView * view);
-  ///
+
+  /*!
+   * \brief Detach View object from this Group.
+   */
   DataView * detachView(const DataView * view)
   {
     return detachView(view->getName());
   }
-  //
+
+  /*!
+   * \brief Detach View with given name from this Group.
+   */
   DataView * detachView(const std::string& name);
-  ///
+
+  /*!
+   * \brief Detach View with given index from this Group.
+   */
   DataView * detachView(IndexType idx);
+
+  /*!
+   * \brief Destroy view and its data if its data is not shared with any
+   * other view.
+   *
+   * Data will not be destroyed as long as a view still exists that
+   * references it.
+   *
+   * IMPORTANT: this method assumes view is owned by this group.
+   */
+  void destroyViewAndData( DataView * view );
 
 //@}
 
