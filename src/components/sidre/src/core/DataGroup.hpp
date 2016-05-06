@@ -696,24 +696,20 @@ public:
 //@}
 
 
-
-
 //@{
 //!  @name View destruction methods.
+//!
+//! Each of these methods is a no-op if the specified view does not exist.
 
   /*!
    * \brief Destroy view with given name owned by this group, but leave
    * its data intect.
-   *
-   * If no such view exists, method is a no-op.
    */
   void destroyView(const std::string& name);
 
   /*!
    * \brief Destroy view with given index owned by this group, but leave
    * its data intect.
-   *
-   * If no such view exists, method is a no-op.
    */
   void destroyView(IndexType idx);
 
@@ -726,24 +722,18 @@ public:
   /*!
    * \brief Destroy view with given name owned by this group and deallocate
    * its data if it's the only view associated with that data.
-   *
-   * If no such view exists, method is a no-op.
    */
   void destroyViewAndData(const std::string& name);
 
   /*!
    * \brief Destroy view with given index owned by this group and deallocate
    * its data if it's the only view associated with that data.
-   *
-   * If no such view exists, method is a no-op.
    */
   void destroyViewAndData(IndexType idx);
 
   /*!
    * \brief Destroy all views owned by this group and deallocate
    * data for each view when it's the only view associated with that data.
-   *
-   * If group has no views, method is a no-op.
    */
   void destroyViewsAndData();
 
