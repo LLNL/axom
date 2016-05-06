@@ -589,7 +589,6 @@ const DataGroup * DataGroup::getGroup( const std::string& name ) const
  */
 DataGroup * DataGroup::createGroup( const std::string& name )
 {
-
   std::string path = name;
   DataGroup * group = walkPath( path, true );
 
@@ -598,15 +597,19 @@ DataGroup * DataGroup::createGroup( const std::string& name )
     SLIC_CHECK( group != ATK_NULLPTR );
     return ATK_NULLPTR;
   }
-  else if ( path.empty() || group->hasGroup(name) )
+  else if ( path.empty() || group->hasGroup(path) )
   {
     SLIC_CHECK( !path.empty() );
-    SLIC_CHECK_MSG( !group->hasGroup(name), "name == " << name );
+    SLIC_CHECK_MSG( !group->hasGroup(path), 
+                    "Cannot create group with name '" << path <<
+                    " in group '" << getName() << 
+                    " since it already has a group with that name" );
 
     return ATK_NULLPTR;
   }
 
-  DataGroup * new_group = new(std::nothrow) DataGroup( name, this);
+// XXXX: Is this correct? If name is a path, this looks wrong?
+  DataGroup * new_group = new(std::nothrow) DataGroup( path, this);
   if ( new_group == ATK_NULLPTR )
   {
     return ATK_NULLPTR;
@@ -623,9 +626,12 @@ DataGroup * DataGroup::createGroup( const std::string& name )
  */
 void DataGroup::destroyGroup( const std::string& name )
 {
-  SLIC_CHECK_MSG( hasGroup(name) == true, "name == " << name );
-
-  delete detachGroup(name);
+// XXXX: Add path implementation
+  DataGroup* group = detachGroup(name); 
+  if ( group != ATK_NULLPTR ) 
+  {
+    delete group;
+  }
 }
 
 /*
@@ -637,9 +643,11 @@ void DataGroup::destroyGroup( const std::string& name )
  */
 void DataGroup::destroyGroup( IndexType idx )
 {
-  SLIC_CHECK_MSG( hasGroup(idx) == true, "idx == " << idx );
-
-  delete detachGroup(idx);
+  DataGroup* group = detachGroup(idx); 
+  if ( group != ATK_NULLPTR ) 
+  {
+    delete group;
+  }
 }
 
 /*

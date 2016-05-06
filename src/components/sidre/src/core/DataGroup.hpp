@@ -852,10 +852,10 @@ public:
 //!  @name Child Group creation and destruction methods.
 
   /*!
-   * \brief Create a child Group with given name or patch for this Group.
+   * \brief Create a child group within this group with given name or path.
    *
    * If name is an empty string or group already has a child group with
-   * given name, method is a no-op.
+   * given name or path, method is a no-op.
    *
    * \return pointer to created DataGroup object or ATK_NULLPTR if new
    * group is not created.
@@ -863,23 +863,24 @@ public:
   DataGroup * createGroup( const std::string& name );
 
   /*!
-   * \brief Destroy child Group with given name or path.
+   * \brief Destroy child group in this group with given name or path.
    * 
    * If no such group exists, method is a no-op.
    */
   void destroyGroup(const std::string& name);
 
   /*!
-   * \brief Destroy child Group in this Group with given index.
+   * \brief Destroy child group within this group with given index.
    * 
    * If no such group exists, method is a no-op.
    */
   void destroyGroup(IndexType idx);
 
   /*!
-   * \brief Destroy all child Groups of this Group object..
+   * \brief Destroy all child groups in this group.
    *
-   * Note that this will recrusively destroy all children this group.
+   * Note that this will recrusively destroy entire group sub-tree below 
+   * this group.
    */
   void destroyGroups();
 
