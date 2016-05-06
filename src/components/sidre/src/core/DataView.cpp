@@ -340,7 +340,7 @@ DataView * DataView::apply(SidreLength num_elems,
 /*
  *************************************************************************
  *
- * Apply given type, # elems, offset, stride desscription to data view.
+ * Apply given type, # elems, offset, stride description to data view.
  *
  *************************************************************************
  */

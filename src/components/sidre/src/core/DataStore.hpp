@@ -52,7 +52,7 @@ class DataGroup;
  *        Buffer objects.
  *
  * It maintains a collection of Buffer objects and owns the "root"
- * Group, called "/". A Group hierachy (a tree) is created by
+ * Group, called "/". A Group hierarchy (a tree) is created by
  * creating child Groups of Groups.
  */
 class DataStore
