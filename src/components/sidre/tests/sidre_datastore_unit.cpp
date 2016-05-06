@@ -123,6 +123,7 @@ TEST(sidre_datastore,create_destroy_buffers)
   // should be no buffers
   EXPECT_EQ( 0, ds->getNumBuffers() );
   EXPECT_EQ( asctoolkit::sidre::InvalidIndex, ds->getFirstValidBufferIndex() );
+  EXPECT_FALSE(ds->hasBuffer(bufferIndex));
 
   // After destroy, that buffer index should be available again, and have been re-used..
   DataBuffer * dbuff2 = ds->createBuffer( asctoolkit::sidre::FLOAT32_ID, 16 );
@@ -136,18 +137,30 @@ TEST(sidre_datastore,create_destroy_buffers)
   EXPECT_EQ( 2, ds->getNumBuffers() );
   EXPECT_TRUE(ds->hasBuffer(d3Index));
 
+  // Try destroying the first one; see if we have the correct count and indices
   ds->destroyBuffer(ds->getFirstValidBufferIndex());
   EXPECT_EQ( 1, ds->getNumBuffers() );
-  EXPECT_FALSE(ds->hasBuffer(d3Index));
+  EXPECT_FALSE(ds->hasBuffer(d2Index));
+  EXPECT_TRUE(ds->hasBuffer(d3Index));
 
+  // Add some more buffers, then try destroying the second one; see if we have
+  // the correct count and indices
   DataBuffer * dbuff4 = ds->createBuffer();
   DataBuffer * dbuff5 = ds->createBuffer();
   IndexType d4Index = dbuff4->getIndex();
   IndexType d5Index = dbuff5->getIndex();
   EXPECT_EQ( 3, ds->getNumBuffers() );
+  EXPECT_TRUE(ds->hasBuffer(d3Index));
   EXPECT_TRUE(ds->hasBuffer(d4Index));
   EXPECT_TRUE(ds->hasBuffer(d5Index));
 
+  ds->destroyBuffer(d4Index);
+  EXPECT_EQ( 2, ds->getNumBuffers() );
+  EXPECT_TRUE(ds->hasBuffer(d3Index));
+  EXPECT_FALSE(ds->hasBuffer(d4Index));
+  EXPECT_TRUE(ds->hasBuffer(d5Index));
+
+  // Can we destroy all buffers?
   ds->destroyAllBuffers();
   EXPECT_EQ( 0, ds->getNumBuffers() );
   EXPECT_FALSE(ds->hasBuffer(d2Index));
