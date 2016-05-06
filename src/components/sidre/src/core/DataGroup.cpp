@@ -81,17 +81,17 @@ const DataView * DataGroup::getView( const std::string& name ) const
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////
 //
-//  View creation methods.
+//  Methods to create a view that has no associated data.
 //
 ////////////////////////////////////////////////////////////////////////
 
 /*
  *************************************************************************
  *
- * Create view with given name, but no data description.
+ * Create empty view (i.e., no data description) with given name or path 
+ * in this group.
  *
  *************************************************************************
  */
@@ -108,12 +108,13 @@ DataView * DataGroup::createView( const std::string& name )
   else if ( path.empty() || group->hasView(path) )
   {
     SLIC_CHECK( !path.empty() );
-    SLIC_CHECK( !group->hasView(path) );
+    SLIC_CHECK_MSG( !group->hasView(path),
+                    "Cannot create view with name '" << path <<
+                    "' in group '" << getName() <<
+                    " since it already has a view with that name" );
     return ATK_NULLPTR;
   }
 
-  // Want the C++ new operator to return null pointer on failure instead of
-  // throwing an exception.
   DataView * view = new(std::nothrow) DataView(path);
   if ( view != ATK_NULLPTR )
   {
@@ -125,8 +126,8 @@ DataView * DataGroup::createView( const std::string& name )
 /*
  *************************************************************************
  *
- * Create view with given name, and data description using type and
- * number of elements.
+ * Create described view (type and # elems) with given name or path in 
+ * this group.
  *
  *************************************************************************
  */
@@ -136,9 +137,12 @@ DataView * DataGroup::createView( const std::string& name,
 {
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
-    SLIC_CHECK(type != NO_TYPE_ID);
+    SLIC_CHECK_MSG(type != NO_TYPE_ID, 
+                   "Cannot create view with name '" << name <<
+                   "' in group '" << getName() << " without a valid type" );  
     SLIC_CHECK_MSG(num_elems >= 0,
-                   "Must define view with number of elems >=0 ");
+                   "Cannot create view with name '" << name <<
+                   "' in group '" << getName() << " with # elems < 0" );  
     return ATK_NULLPTR;
   }
 
@@ -153,7 +157,8 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view with given name, and data description using type and shape.
+ * Create described view (type and shape) with given name or path in this 
+ * group.
  *
  *************************************************************************
  */
@@ -162,11 +167,17 @@ DataView * DataGroup::createView( const std::string& name,
                                   int ndims,
                                   SidreLength * shape )
 {
-  if ( type == NO_TYPE_ID || !(ndims >= 0) )
+  if ( type == NO_TYPE_ID || ndims < 0 || shape == ATK_NULLPTR )
   {
-    SLIC_CHECK(type != NO_TYPE_ID);
+    SLIC_CHECK_MSG(type != NO_TYPE_ID,
+                   "Cannot create view with name '" << name <<
+                   "' in group '" << getName() << " without a valid type" );  
     SLIC_CHECK_MSG(ndims >= 0,
-                   "Must define view with number of ndims >=0 ");
+                   "Cannot create view with name '" << name <<
+                   "' in group '" << getName() << " with ndims < 0" );  
+    SLIC_CHECK_MSG(shape != ATK_NULLPTR,
+                   "Cannot create view with name '" << name <<
+                   "' in group '" << getName() << " with null shape ptr" );  
     return ATK_NULLPTR;
   }
 
@@ -181,8 +192,7 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view with given name, and data description using a conduit
- * Datatype class.
+ * Create view with given name and data described by a conduit Datatype object.
  *
  *************************************************************************
  */
@@ -198,16 +208,23 @@ DataView * DataGroup::createView( const std::string& name,
   return view;
 }
 
+
+////////////////////////////////////////////////////////////////////////
+//
+//  Methods to create a view and attach a buffer to it.
+//
+////////////////////////////////////////////////////////////////////////
+
 /*
  *************************************************************************
  *
- * Create view with given name, but no data description.  Attach provided
- * buffer to view.
+ * Create an undescribed view with given name or path in
+ * this group and attach buffer to it.
  *
  *************************************************************************
  */
 DataView * DataGroup::createView( const std::string& name,
-                                  DataBuffer * buff)
+                                  DataBuffer * buff )
 {
   DataView * view = createView(name);
   if ( view != ATK_NULLPTR )
@@ -220,7 +237,79 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view with given name, pointing to undescribed external data.
+ * Create described view (type and # elems) with given name or path in 
+ * this group and attach buffer to it.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  TypeID type,
+                                  SidreLength num_elems,
+                                  DataBuffer * buff )
+{
+  DataView * view = createView(name, type, num_elems);
+  if (view != ATK_NULLPTR)
+  {
+    view->attachBuffer(buff);
+  }
+  return view;
+}
+
+/*
+ *************************************************************************
+ *
+ * Create described view (type and shape) with given name or path in
+ * this group and attach buffer to it.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  TypeID type,
+                                  int ndims,
+                                  SidreLength * shape,
+                                  DataBuffer * buff )
+{
+  DataView * view = createView(name, type, ndims, shape);
+  if (view != ATK_NULLPTR)
+  {
+    view->attachBuffer(buff);
+  }
+  return view;
+}
+
+/*
+ *************************************************************************
+ *
+ * Create described view (Conduit DataType) with given name or path in
+ * this group and attach buffer to it.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  const DataType& dtype,
+                                  DataBuffer * buff )
+{
+  DataView * view = createView(name, dtype);
+  if (view != ATK_NULLPTR)
+  {
+    view->attachBuffer(buff);
+  }
+
+  return view;
+}
+
+
+////////////////////////////////////////////////////////////////////////
+//
+//  Methods to create a view and attach external data to it.
+//
+////////////////////////////////////////////////////////////////////////
+
+/*
+ *************************************************************************
+ *
+ * Create an undescribed view with given name or path in
+ * this group and attach external data ptr to it.
  *
  *************************************************************************
  */
@@ -238,11 +327,78 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view with given name, and data description using type and
- * number of elements.
+ * Create described view (type and # elems) with given name or path in 
+ * this group and attach external data ptr to it.
  *
- * In addition, create an associated buffer, allocate the data, and attach
- * view to new buffer.
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  TypeID type,
+                                  SidreLength num_elems,
+                                  void * external_ptr )
+{
+  DataView * view = createView(name, type, num_elems);
+  if (view != ATK_NULLPTR)
+  {
+    view->setExternalDataPtr(external_ptr);
+  }
+  return view;
+}
+
+/*
+ *************************************************************************
+ *
+ * Create described view (type and shape) with given name or path in
+ * this group and attach external data ptr to it.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  TypeID type,
+                                  int ndims,
+                                  SidreLength * shape,
+                                  void * external_ptr )
+{
+  DataView * view = createView(name, type, ndims, shape);
+  if (view != ATK_NULLPTR)
+  {
+    view->setExternalDataPtr(external_ptr);
+  }
+  return view;
+}
+
+/*
+ *************************************************************************
+ *
+ * Create described view (Conduit DataType) with given name or path in
+ * this group and attach external data ptr to it.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  const DataType& dtype,
+                                  void * external_ptr )
+{
+  DataView * view = createView(name, dtype);
+  if (view != ATK_NULLPTR)
+  {
+    view->setExternalDataPtr(external_ptr);
+  }
+  return view;
+}
+
+
+////////////////////////////////////////////////////////////////////////
+//
+//  Methods to create a view and allocate its data. 
+//
+////////////////////////////////////////////////////////////////////////
+
+/*
+ *************************************************************************
+ *
+ * Create described view (type and # elems) with given name or path in 
+ * this group and allocate its data.
  *
  *************************************************************************
  */
@@ -250,7 +406,6 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
                                              TypeID type,
                                              SidreLength num_elems )
 {
-  // createView will verify args.
   DataView * view = createView(name, type, num_elems);
   if ( view != ATK_NULLPTR )
   {
@@ -262,11 +417,8 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view with given name, and data description using type,
- * number of dimnesions, and number of elements per dimension.
- *
- * In addition, create an associated buffer, allocate the data, and attach
- * view to new buffer.
+ * Create described view (type and shape) with given name or path in
+ * this group and allocate its data.
  *
  *************************************************************************
  */
@@ -275,7 +427,6 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
                                              int ndims,
                                              SidreLength * shape )
 {
-  // createView will verify args.
   DataView * view = createView(name, type, ndims, shape);
   if ( view != ATK_NULLPTR )
   {
@@ -287,18 +438,14 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view with given name, and data description using a conduit
- * Datatype class.
- *
- * In addition, create an associated buffer, allocate the data, and attach
- * view to new buffer.
+ * Create described view (Conduit DataType) with given name or path in
+ * this group and allocate its data.
  *
  *************************************************************************
  */
 DataView * DataGroup::createViewAndAllocate( const std::string& name,
                                              const DataType& dtype)
 {
-  // createView will verify args.
   DataView * view = createView(name, dtype);
   if ( view != ATK_NULLPTR )
   {
@@ -310,7 +457,7 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view with given name for a string.
+ * Create view with given name or path and set its data to given string.
  *
  *************************************************************************
  */
@@ -586,8 +733,7 @@ DataGroup * DataGroup::createGroup( const std::string& name )
     return ATK_NULLPTR;
   }
 
-// XXXX: Is this correct? If name is a path, this looks wrong?
-  DataGroup * new_group = new(std::nothrow) DataGroup( path, this);
+  DataGroup * new_group = new(std::nothrow) DataGroup(path, this);
   if ( new_group == ATK_NULLPTR )
   {
     return ATK_NULLPTR;

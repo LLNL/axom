@@ -336,93 +336,48 @@ public:
 
 
 //@{
-//!  @name View creation methods.
+//!  @name Methods to create a View that has no associated data.
+//!
+//! IMPORTANT: These methods do not allocate data or associate a view
+//! with data. Thus, to do anything useful with a view created by one
+//! of these methods, the view should be allocated, attached to a buffer
+//! or attached to externally-owned data.
+//! 
+//! Each of these methods is a no-op if the given view name is an
+//! empty string or the group already has a view with given name or path.
+//!
+//! Additional conditions under which a method can be a no-op are described
+//! for each method.
 
   /*!
-   * \brief Create and attach an undescribed (i.e., empty) DataView object
-   *  with given name or path.
+   * \brief Create an undescribed (i.e., empty) View object with given name 
+   * or path in this group.
    *
-   * IMPORTANT: To do anything useful with the view, it has to be described
-   * and associated with data; for example, attach it to a data buffer and
-   * apply a data description, describe it and allocate it, etc.
-   *
-   * If name is an empty string or group already has a view with given
-   * name method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
    */
   DataView * createView( const std::string& name );
 
   /*!
-   * \brief Create DataView object with given name and described by data type
-   *        and number of elements, and attach new view to this group object.
+   * \brief Create View object with given name or path in this group that
+   *  has a data description with data type and number of elements.
    *
-   * IMPORTANT: This method does not allocate data or associate the view
-   * with data.
+   * If given data type is undefined, or given number of elements is < 0,
+   * method is a no-op.
    *
-   * If name is an empty string, or group already has a view with given
-   * name, or given number of elements is < 0 method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
    */
   DataView * createView( const std::string& name,
                          TypeID type,
                          SidreLength num_elems );
 
   /*!
-   * \brief createView(name, type, num_elems)->attachBuffer(buff)
+   * \brief Create View object with given name or path in this group that
+   *  has a data description with data type and shape.
    *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         TypeID type,
-                         SidreLength num_elems,
-                         DataBuffer * buff )
-  {
-    DataView * view = createView(name, type, num_elems);
-    if (view != ATK_NULLPTR)
-    {
-      view->attachBuffer(buff);
-    }
-    return view;
-  }
-
-  /*!
-   * \brief createView(name, type, num_elems)->setExternalDataPtr(external_ptr)
+   * If given data type is undefined, or given number of dimensions is < 0,
+   * or given shape ptr is null, method is a no-op.
    *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         TypeID type,
-                         SidreLength num_elems,
-                         void * external_ptr )
-  {
-    DataView * view = createView(name, type, num_elems);
-    if (view != ATK_NULLPTR)
-    {
-      view->setExternalDataPtr(external_ptr);
-    }
-    return view;
-  }
-
-  /*!
-   * \brief Create DataView object with given name and described by data type,
-   *        number of dimensions and number of elements per dimension,
-   *        and attach new view to this group object.
-   *
-   * IMPORTANT: This method does not allocate data or associate the view
-   * with data.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given number of dimensions is < 0, or total number of elements
-   * is < 0 method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
    */
   DataView * createView( const std::string& name,
                          TypeID type,
@@ -430,138 +385,252 @@ public:
                          SidreLength * shape );
 
   /*!
-   * \brief createView(name, type, ndims, shape)->attachBuffer(buff)
+   * \brief Create View object with given name or path in this group that
+   *  is described by a Conduit DataType object.
    *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         TypeID type,
-                         int ndims,
-                         SidreLength * shape,
-                         DataBuffer * buff )
-  {
-    DataView * view = createView(name, type, ndims, shape);
-    if (view != ATK_NULLPTR)
-    {
-      view->attachBuffer(buff);
-    }
-    return view;
-  }
-
-  /*!
-   * \brief createView(name, type, ndims, shape)->setExternalDataPtr(external_ptr)
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         TypeID type,
-                         int ndims,
-                         SidreLength * shape,
-                         void * external_ptr )
-  {
-    DataView * view = createView(name, type, ndims, shape);
-    if (view != ATK_NULLPTR)
-    {
-      view->setExternalDataPtr(external_ptr);
-    }
-    return view;
-  }
-
-  /*!
-   * \brief Create DataView object with given name and described by
-   *        Conduit DataType, and attach new view to this group object.
-   *
-   * IMPORTANT: This method does not allocate data or associated the view
-   * with data.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
    */
   DataView * createView( const std::string& name,
                          const DataType& dtype);
 
+//@}
+
+
+//@{
+//!  @name Methods to create a View with a data buffer attached.
+//!
+//! IMPORTANT: The buffer passed to each of these methods may or may not 
+//! be allocated. Thus, to do anything useful with a view created by one
+//! of these methods, the buffer must be allocated and it must be compatible 
+//! with the view data description.
+//! 
+//! Each of these methods is a no-op if the given view name is an
+//! empty string or the group already has a view with given name or path.
+//! 
+//! Also, calling one of these methods with a null buffer pointer is 
+//! similar to creating a view with no data association.
+//!
+//! Additional conditions under which a method can be a no-op are described
+//! for each method.
+
   /*!
-   * \brief Create DataView object with given name, attach it to given buffer,
-   *        and attach new view to this group object.
-   *
-   * This is equivalent to calling: createView(name)->attachBuffer(buff);
+   * \brief Create an undescribed View object with given name or path in 
+   * this group and attach given buffer to it.
    *
    * IMPORTANT: The view cannot be used to access data in buffer until it
    * is described by calling a DataView::apply() method.
    *
-   * If name is an empty string, or group already has a view with given
-   * name, or given buffer pointer is null, method does nothing.
+   * This method is equivalent to: 
+   * group->createView(name)->attachBuffer(buff).
    *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::attachBuffer
    */
   DataView * createView( const std::string& name,
                          DataBuffer * buff );
 
   /*!
-   * \brief Create DataView object with given name to hold external data
-   *        and attach new view to this group object.
+   * \brief Create View object with given name or path in this group that
+   * has a data description with data type and number of elements and
+   * attach given buffer to it.
    *
-   * This is equivalent to calling:
-   * createView(name)->setExternalDataPtr(external_ptr);
+   * If given data type is undefined, or given number of elements is < 0,
+   * method is a no-op.
+   *
+   * This method is equivalent to: 
+   * group->createView(name, type, num_elems)->attachBuffer(buff), or
+   * group->createView(name)->attachBuffer(buff)->apply(type, num_elems).
+   *
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::attachBuffer
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         SidreLength num_elems,
+                         DataBuffer * buff );
+
+  /*!
+   * \brief Create View object with given name or path in this group that
+   * has a data description with data type and shape and attach given 
+   * buffer to it.
+   *
+   * If given data type is undefined, or given number of dimensions is < 0,
+   * or given shape ptr is null, method is a no-op.
+   *
+   * This method is equivalent to: 
+   * group->createView(name, type, ndims, shape)->attachBuffer(buff), or
+   * group->createView(name)->attachBuffer(buff)->apply(type, ndims, shape).
+   *
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::attachBuffer
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         int ndims,
+                         SidreLength * shape,
+                         DataBuffer * buff );
+
+  /*!
+   * \brief Create View object with given name or path in this group that
+   *  is described by a Conduit DataType object and attach given buffer to it.
+   *
+   * This method is equivalent to: 
+   * group->createView(name, dtype)->attachBuffer(buff), or
+   * group->createView(name)->attachBuffer(buff)->apply(dtype).
+   *
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::attachBuffer
+   */
+  DataView * createView( const std::string& name,
+                         const DataType& dtype, 
+                         DataBuffer * buff );
+
+//@}
+
+
+//@{
+//!  @name Methods to create a View with externally-owned data attached.
+//!
+//! IMPORTANT: To do anything useful with a view created by one of these 
+//! methods, the external data must be allocated and compatible with the
+//! view description. 
+//! 
+//! Each of these methods is a no-op if the given view name is an
+//! empty string or the group already has a view with given name or path.
+//!
+//! Additional conditions under which a method can be a no-op are described
+//! for each method.
+
+  /*!
+   * \brief Create View object with given name with given name or path in
+   * this group and attach external data ptr to it.
    *
    * IMPORTANT: Note that the view is "opaque" (it has no knowledge of
    * the type or structure of the data) until a DataView::apply() method
    * is called.
    *
-   * If name is an empty string, or group already has a view with given
-   * name, or given data pointer is null, method does nothing.
-     //
-     // RDH -- If a null data ptr is passed, should this be the same as creating
-     //        an empty view?
-     //
+   * This method is equivalent to: 
+   * group->createView(name)->setExternalDataPtr(external_ptr).
    *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::setExternalDataPtr
    */
   DataView * createView( const std::string& name,
+                         void * external_ptr );
+
+  /*!
+   * Create View object with given name or path in this group that
+   * has a data description with data type and number of elements and
+   * attach externally-owned data to it.
+   *
+   * If given data type is undefined, or given number of elements is < 0,
+   * method is a no-op.
+   *
+   * This method is equivalent to: 
+   * group->createView(name, type, num_elems)->setExternalDataPtr(external_ptr),
+   * or group->createView(name)->setExternalDataPtr(external_ptr)->
+   *           apply(type, num_elems).
+   *
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::setExternalDataPtr
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         SidreLength num_elems,
+                         void * external_ptr );
+
+
+  /*!
+   * \brief Create View object with given name or path in this group that
+   * has a data description with data type and shape and attach 
+   * externally-owned data to it.
+   *
+   * If given data type is undefined, or given number of dimensions is < 0,
+   * or given shape ptr is null, method is a no-op.
+   *
+   * This method is equivalent to:
+   * group->createView(name, type, ndims, shape)->
+   *        setExternalDataPtr(external_ptr), or
+   * group->createView(name)->setExternalDataPtr(external_ptr)->
+   *        apply(type, ndims, shape).
+   *
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::setExternalDataPtr
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type,
+                         int ndims,
+                         SidreLength * shape,
+                         void * external_ptr );
+  /*!
+   * \brief Create View object with given name or path in this group that
+   * is described by a Conduit DataType object and attach externally-owned 
+   * data to it.
+   *
+   * This method is equivalent to:
+   * group->createView(name, dtype)->setExternalDataPtr(external_ptr), or
+   * group->createView(name)->setExternalDataPtr(external_ptr)->apply(dtype).
+   *
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::attachBuffer
+   */
+  DataView * createView( const std::string& name,
+                         const DataType& dtype,
                          void * external_ptr );
 
 //@}
 
 
 //@{
-//!  @name Methods that create Views and allocate their data.
+//!  @name Methods to create a View and allocate data for it.
+//! 
+//! Each of these methods is a no-op if the given view name is an
+//! empty string or the group already has a view with given name or path.
+//!
+//! Additional conditions under which a method can be a no-op are described
+//! for each method.
 
   /*!
-   * \brief Create DataView object with given name, data type, and
-   *        number of elements, allocate the data, and attach new
-   *        view to this group object.
+   * \brief Create View object with given name or path in this group that
+   * has a data description with data type and number of elements and
+   * allocate data for it.
    *
-   * This is equivalent to calling: createView(name)->allocate(type, num_elems);
+   * If given data type is undefined, or given number of elements is < 0,
+   * method is a no-op.
+   * 
+   * This is equivalent to: createView(name)->allocate(type, num_elems), or
+   * createView(name, type, num_elems)->allocate()
    *
-   * If name is an empty string, or group already has a view with given
-   * name, or given number of elements is < 0 method does nothing.
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
    *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
+   * \sa DataView::allocate
    */
   DataView * createViewAndAllocate( const std::string& name,
                                     TypeID type,
                                     SidreLength num_elems );
 
   /*!
-   * \brief Create DataView object with given name, data type,
-   *        number of dimensions, and number of elements per dimension,
-   *        allocate the data, and attach new view to this group object.
+   * \brief Create View object with given name or path in this group that
+   * has a data description with data type and shape and allocate data for it.
    *
-   * This is equivalent to calling: createView(name)->allocate(type, ndims, shape);
+   * If given data type is undefined, or given number of dimensions is < 0,
+   * or given shape ptr is null, method is a no-op.
    *
-   * If name is an empty string, or group already has a view with given
-   * name, or given number of elements is < 0 method does nothing.
+   * This method is equivalent to:
+   * group->createView(name)->allocate(type, ndims, shape), or
+   * createView(name, type, ndims, shape)->allocate().
    *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::allocate
    */
   DataView * createViewAndAllocate( const std::string& name,
                                     TypeID type,
@@ -569,30 +638,33 @@ public:
                                     SidreLength * shape );
 
   /*!
-   * \brief Create DataView object with given name and Conduit DataType,
-   *        allocate the data, and attach new view to this group object.
+   * \brief Create View object with given name or path in this group that
+   * is described by a Conduit DataType object and allocate data for it.
    *
-   * This is equivalent to calling: createView(name)->allocate(dtype);
+   * This method is equivalent to:
+   * group->createView(name)->allocate(dtype), or 
+   * group->createView(name, dtype)->allocate().
    *
-   * If name is an empty string, or group already has a view with given
-   * name, method does nothing.
+   * If given data type object is empty, data will not be allocated.
    *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::allocate
    */
   DataView * createViewAndAllocate( const std::string& name,
                                     const DataType& dtype);
 
   /*!
-   * \brief Create DataView object with given name for a scalar value.
+   * \brief Create View object with given name or path in this group 
+   * set its data to given scalar value. 
    *
-   * This is equivalent to calling: createView(name)->setScalar(value);
+   * This is equivalent to: createView(name)->setScalar(value);
    *
-   * If name is an empty string, or group already has a view with given
-   * name, method does nothing.
+   * If given data type object is empty, data will not be allocated.
    *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::setScalar
    */
   template<typename ScalarType>
   DataView * createViewScalar( const std::string& name, ScalarType value)
@@ -607,15 +679,16 @@ public:
   }
 
   /*!
-   * \brief Create DataView object with given name for a string value.
+   * \brief Create View object with given name or path in this group
+   * set its data to given string.
    *
-   * This is equivalent to calling: createView(name)->setString(value);
+   * This is equivalent to: createView(name)->setScalar(value);
    *
-   * If name is an empty string, or group already has a view with given
-   * name, method does nothing.
+   * If given data type object is empty, data will not be allocated.
    *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
+   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   *
+   * \sa DataView::setString
    */
   DataView * createViewString( const std::string& name,
                                const std::string& value);
