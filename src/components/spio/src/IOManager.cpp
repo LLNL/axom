@@ -121,19 +121,21 @@ void IOManager::write(const std::string& file_string, int cycle, const std::stri
                                H5F_ACC_TRUNC,
                                H5P_DEFAULT,
                                H5P_DEFAULT);   
-        // TODO - Ask Noah about adding a SLIC check here, make sure file create succeeded.
       } else {
         h5_file_id = H5Fopen(hdf5_name.c_str(),
                              H5F_ACC_RDWR,
                              H5P_DEFAULT); 
-        // TODO - Ask Noah about adding a SLIC check here, make sure file create succeeded.
       }
       SLIC_ASSERT(h5_file_id >= 0);
 
       std::ostringstream group_stream;
       group_stream << "datagroup" << i << "_" << m_my_rank;
       std::string group_name = group_stream.str();
-      h5_group_id = H5Gcreate(h5_file_id, group_name.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      h5_group_id = H5Gcreate(h5_file_id,
+                              group_name.c_str(),
+                              H5P_DEFAULT,
+                              H5P_DEFAULT,
+                              H5P_DEFAULT);
       SLIC_ASSERT(h5_group_id >= 0);
 
       m_datagroups[i]->getDataStore()->save(h5_group_id, m_datagroups[i] );
