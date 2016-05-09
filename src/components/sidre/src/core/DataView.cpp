@@ -606,7 +606,7 @@ void DataView::print() const
 void DataView::print(std::ostream& os) const
 {
   Node n;
-  info(n);
+  copyToConduitNode(n);
   n.to_json_stream(os);
 }
 
@@ -617,7 +617,7 @@ void DataView::print(std::ostream& os) const
  *
  *************************************************************************
  */
-void DataView::info(Node &n) const
+void DataView::copyToConduitNode(Node &n) const
 {
   n["name"] = m_name;
   n["schema"] = m_schema.to_json();

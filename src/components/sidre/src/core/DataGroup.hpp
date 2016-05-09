@@ -83,11 +83,11 @@ class DataStore;
  * The DataGroup class has the following properties:
  *
  *    - DataGroups can be organized into a (tree) hierachy by creating
- *      child groups from the root group owned by a DataStore object.
+ *      child Groups from the root Group owned by a DataStore object.
  *    - A DataGroup object can only be created by another DataGroup; the
  *      DataGroup ctor is not visible externally. A DataGroup is owned
  *      by the DataGroup that creates it (its parent) and becomes a child
- *      group of the parent.
+ *      Group of the parent.
  *    - A DataGroup object has a unique name (string) within its parent
  *      DataGroup.
  *    - A DataGroup object maintains a pointer to its parent DataGroup.
@@ -98,12 +98,12 @@ class DataStore;
  *      that owns it.
  *    - A DataView object can be moved or copied to another DataGroup.
  *
- * Note that DataViews and child DataGroups within a group can be accessed
+ * Note that DataViews and child DataGroups within a Group can be accessed
  * by name or index.
  *
  * Note that certain methods for creating, accessing, etc. DataGroups and 
- * DataViews that take a string name accept either the name of a child group 
- * or view within a group object or a path syntax. When a path is given, the 
+ * DataViews that take a string name accept either the name of a child Group 
+ * or View within a Group object or a path syntax. When a path is given, the 
  * last item in the path indicates the item to be created, accessed, etc. So, 
  * for example,
  * 
@@ -118,11 +118,11 @@ class DataStore;
  *
  * \endverbatim
  *
- * In particular, intermediate groups "foo" and "bar" will be created in 
+ * In particular, intermediate Groups "foo" and "bar" will be created in 
  * this case if they don't already exist.
  *
- * IMPORTANT: when views or groups are created, destroyed, copied, or moved,
- * indices of other views and groups in associated DataGroup objects may
+ * IMPORTANT: when Views or Groups are created, destroyed, copied, or moved,
+ * indices of other Views and Groups in associated DataGroup objects may
  * become invalid. This is analogous to iterator invalidation for STL
  * containers when the container contents change.
  *
@@ -142,7 +142,7 @@ public:
 //!  @name Basic query and accessor methods.
 
   /*!
-   * \brief Return const reference to name of group object.
+   * \brief Return const reference to name of Group object.
    */
   const std::string& getName() const
   {
@@ -150,9 +150,9 @@ public:
   }
 
   /*!
-   * \brief Return pointer to non-const parent group of a group.
+   * \brief Return pointer to non-const parent Group of a Group.
    *
-   * Note that if this method is called on the root group in a
+   * Note that if this method is called on the root Group in a
    * DataStore, ATK_NULLPTR is returned.
    */
   DataGroup * getParent()
@@ -161,9 +161,9 @@ public:
   }
 
   /*!
-   * \brief Return pointer to const parent group of a group.
+   * \brief Return pointer to const parent Group of a Group.
    *
-   * Note that if this method is called on the root group in a
+   * Note that if this method is called on the root Group in a
    * DataStore, ATK_NULLPTR is returned.
    */
   const DataGroup * getParent() const
@@ -172,7 +172,7 @@ public:
   }
 
   /*!
-   * \brief Return number of child groups in a group object.
+   * \brief Return number of child Groups in a Group object.
    */
   size_t getNumGroups() const
   {
@@ -180,7 +180,7 @@ public:
   }
 
   /*!
-   * \brief Return number of views owned by a group object.
+   * \brief Return number of Views owned by a Group object.
    */
   size_t getNumViews() const
   {
@@ -212,7 +212,7 @@ public:
 //!  @name View query methods.
 
   /*!
-   * \brief Return true if group owns a view with given name or path; 
+   * \brief Return true if Group owns a View with given name or path; 
    * else false.
    */
   bool hasView( const std::string& name ) const
@@ -221,7 +221,7 @@ public:
   }
 
   /*!
-   * \brief Return true if group owns a view with given index; else false.
+   * \brief Return true if Group owns a View with given index; else false.
    */
   bool hasView( IndexType idx ) const
   {
@@ -229,29 +229,29 @@ public:
   }
 
   /*!
-   * \brief Return index of view with given name owned by group object.
+   * \brief Return index of View with given name owned by Group object.
    *
-   *        If no such view exists, return sidre::InvalidIndex;
+   *        If no such View exists, return sidre::InvalidIndex;
    */
   IndexType getViewIndex(const std::string& name) const
   {
     SLIC_CHECK_MSG(hasView(name),
                    "Group " << this->getName() << 
-                   " has no view with name '" << name << "'");
+                   " has no View with name '" << name << "'");
 
     return m_view_coll.getItemIndex(name);
   }
 
   /*!
-   * \brief Return name of view with given index owned by group object.
+   * \brief Return name of View with given index owned by Group object.
    *
-   *        If no such view exists, return sidre::InvalidName.
+   *        If no such View exists, return sidre::InvalidName.
    */
   const std::string& getViewName(IndexType idx) const
   {
     SLIC_CHECK_MSG(hasView(idx),
                    "Group " << this->getName() << 
-                   " has no view with index " << idx);
+                   " has no View with index " << idx);
 
     return m_view_coll.getItemName(idx);
   }
@@ -264,56 +264,56 @@ public:
 
   /*!
 
-   * \brief Return pointer to non-const view with given name or path.
+   * \brief Return pointer to non-const View with given name or path.
    *
-   * Thie method requires that all groups in the path exist if a path is given.
+   * This method requires that all groups in the path exist if a path is given.
    *
-   * If no such view exists, ATK_NULLPTR is returned.
+   * If no such View exists, ATK_NULLPTR is returned.
    */
   DataView * getView( const std::string& name );
 
   /*!
-   * \brief Return pointer to const view with given name or path.
+   * \brief Return pointer to const View with given name or path.
    *
-   * Thie method requires that all groups in the path exist if a path is given.
+   * This method requires that all Groups in the path exist if a path is given.
    *
-   * If no such view exists, ATK_NULLPTR is returned.
+   * If no such View exists, ATK_NULLPTR is returned.
    */
   const DataView * getView( const std::string& name ) const;
 
   /*!
-   * \brief Return pointer to non-const view with given index.
+   * \brief Return pointer to non-const View with given index.
    *
-   * If no such view exists, ATK_NULLPTR is returned.
+   * If no such View exists, ATK_NULLPTR is returned.
    */
   DataView * getView( IndexType idx )
   {
     SLIC_CHECK_MSG( hasView(idx),
                     "Group " << this->getName() 
-                    << " has no view with index " << idx);
+                    << " has no View with index " << idx);
 
     return m_view_coll.getItem(idx);
   }
 
   /*!
-   * \brief Return pointer to const view with given index.
+   * \brief Return pointer to const View with given index.
    *
-   * If no such view exists, ATK_NULLPTR is returned.
+   * If no such View exists, ATK_NULLPTR is returned.
    */
   const DataView * getView( IndexType idx ) const
   {
     SLIC_CHECK_MSG( hasView(idx),
                     "Group " << this->getName() 
-                    << " has no view with index " << idx);
+                    << " has no View with index " << idx);
 
     return m_view_coll.getItem(idx);
   }
 
   /*!
-   * \brief Return first valid view index index in group object
-   *        (i.e., smallest index over all views).
+   * \brief Return first valid View index in Group object
+   *        (i.e., smallest index over all Views).
    *
-   * sidre::InvalidIndex is returned if group has no views.
+   * sidre::InvalidIndex is returned if Group has no Views.
    */
   IndexType getFirstValidViewIndex() const
   {
@@ -321,8 +321,8 @@ public:
   }
 
   /*!
-   * \brief Return next valid view index in group object after given index 
-   *        (i.e., smallest index over all view indices larger than given one).
+   * \brief Return next valid View index in Group object after given index 
+   *        (i.e., smallest index over all View indices larger than given one).
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
@@ -338,27 +338,27 @@ public:
 //@{
 //!  @name Methods to create a View that has no associated data.
 //!
-//! IMPORTANT: These methods do not allocate data or associate a view
-//! with data. Thus, to do anything useful with a view created by one
-//! of these methods, the view should be allocated, attached to a buffer
+//! IMPORTANT: These methods do not allocate data or associate a View
+//! with data. Thus, to do anything useful with a View created by one
+//! of these methods, the View should be allocated, attached to a Buffer
 //! or attached to externally-owned data.
 //! 
-//! Each of these methods is a no-op if the given view name is an
-//! empty string or the group already has a view with given name or path.
+//! Each of these methods is a no-op if the given View name is an
+//! empty string or the Group already has a View with given name or path.
 //!
 //! Additional conditions under which a method can be a no-op are described
 //! for each method.
 
   /*!
    * \brief Create an undescribed (i.e., empty) View object with given name 
-   * or path in this group.
+   * or path in this Group.
    *
    * \return pointer to new View object or ATK_NULLPTR if one is not created.
    */
   DataView * createView( const std::string& name );
 
   /*!
-   * \brief Create View object with given name or path in this group that
+   * \brief Create View object with given name or path in this Group that
    *  has a data description with data type and number of elements.
    *
    * If given data type is undefined, or given number of elements is < 0,
@@ -371,7 +371,7 @@ public:
                          SidreLength num_elems );
 
   /*!
-   * \brief Create View object with given name or path in this group that
+   * \brief Create View object with given name or path in this Group that
    *  has a data description with data type and shape.
    *
    * If given data type is undefined, or given number of dimensions is < 0,
@@ -385,7 +385,7 @@ public:
                          SidreLength * shape );
 
   /*!
-   * \brief Create View object with given name or path in this group that
+   * \brief Create View object with given name or path in this Group that
    *  is described by a Conduit DataType object.
    *
    * \return pointer to new View object or ATK_NULLPTR if one is not created.
@@ -397,27 +397,27 @@ public:
 
 
 //@{
-//!  @name Methods to create a View with a data buffer attached.
+//!  @name Methods to create a View with a Buffer attached.
 //!
-//! IMPORTANT: The buffer passed to each of these methods may or may not 
-//! be allocated. Thus, to do anything useful with a view created by one
-//! of these methods, the buffer must be allocated and it must be compatible 
-//! with the view data description.
+//! IMPORTANT: The Buffer passed to each of these methods may or may not 
+//! be allocated. Thus, to do anything useful with a View created by one
+//! of these methods, the Buffer must be allocated and it must be compatible 
+//! with the View data description.
 //! 
-//! Each of these methods is a no-op if the given view name is an
-//! empty string or the group already has a view with given name or path.
+//! Each of these methods is a no-op if the given View name is an
+//! empty string or the Group already has a View with given name or path.
 //! 
-//! Also, calling one of these methods with a null buffer pointer is 
-//! similar to creating a view with no data association.
+//! Also, calling one of these methods with a null Buffer pointer is 
+//! similar to creating a View with no data association.
 //!
 //! Additional conditions under which a method can be a no-op are described
 //! for each method.
 
   /*!
    * \brief Create an undescribed View object with given name or path in 
-   * this group and attach given buffer to it.
+   * this Group and attach given Buffer to it.
    *
-   * IMPORTANT: The view cannot be used to access data in buffer until it
+   * IMPORTANT: The View cannot be used to access data in Buffer until it
    * is described by calling a DataView::apply() method.
    *
    * This method is equivalent to: 
@@ -431,9 +431,9 @@ public:
                          DataBuffer * buff );
 
   /*!
-   * \brief Create View object with given name or path in this group that
+   * \brief Create View object with given name or path in this Group that
    * has a data description with data type and number of elements and
-   * attach given buffer to it.
+   * attach given Buffer to it.
    *
    * If given data type is undefined, or given number of elements is < 0,
    * method is a no-op.
@@ -452,9 +452,9 @@ public:
                          DataBuffer * buff );
 
   /*!
-   * \brief Create View object with given name or path in this group that
+   * \brief Create View object with given name or path in this Group that
    * has a data description with data type and shape and attach given 
-   * buffer to it.
+   * Buffer to it.
    *
    * If given data type is undefined, or given number of dimensions is < 0,
    * or given shape ptr is null, method is a no-op.
@@ -474,8 +474,8 @@ public:
                          DataBuffer * buff );
 
   /*!
-   * \brief Create View object with given name or path in this group that
-   *  is described by a Conduit DataType object and attach given buffer to it.
+   * \brief Create View object with given name or path in this Group that
+   *  is described by a Conduit DataType object and attach given Buffer to it.
    *
    * This method is equivalent to: 
    * group->createView(name, dtype)->attachBuffer(buff), or
@@ -495,21 +495,21 @@ public:
 //@{
 //!  @name Methods to create a View with externally-owned data attached.
 //!
-//! IMPORTANT: To do anything useful with a view created by one of these 
+//! IMPORTANT: To do anything useful with a View created by one of these 
 //! methods, the external data must be allocated and compatible with the
-//! view description. 
+//! View description. 
 //! 
-//! Each of these methods is a no-op if the given view name is an
-//! empty string or the group already has a view with given name or path.
+//! Each of these methods is a no-op if the given View name is an
+//! empty string or the Group already has a View with given name or path.
 //!
 //! Additional conditions under which a method can be a no-op are described
 //! for each method.
 
   /*!
    * \brief Create View object with given name with given name or path in
-   * this group and attach external data ptr to it.
+   * this Group and attach external data ptr to it.
    *
-   * IMPORTANT: Note that the view is "opaque" (it has no knowledge of
+   * IMPORTANT: Note that the View is "opaque" (it has no knowledge of
    * the type or structure of the data) until a DataView::apply() method
    * is called.
    *
@@ -524,7 +524,7 @@ public:
                          void * external_ptr );
 
   /*!
-   * Create View object with given name or path in this group that
+   * \brief Create View object with given name or path in this Group that
    * has a data description with data type and number of elements and
    * attach externally-owned data to it.
    *
@@ -547,7 +547,7 @@ public:
 
 
   /*!
-   * \brief Create View object with given name or path in this group that
+   * \brief Create View object with given name or path in this Group that
    * has a data description with data type and shape and attach 
    * externally-owned data to it.
    *
@@ -570,7 +570,7 @@ public:
                          SidreLength * shape,
                          void * external_ptr );
   /*!
-   * \brief Create View object with given name or path in this group that
+   * \brief Create View object with given name or path in this Group that
    * is described by a Conduit DataType object and attach externally-owned 
    * data to it.
    *
@@ -592,14 +592,14 @@ public:
 //@{
 //!  @name Methods to create a View and allocate data for it.
 //! 
-//! Each of these methods is a no-op if the given view name is an
-//! empty string or the group already has a view with given name or path.
+//! Each of these methods is a no-op if the given View name is an
+//! empty string or the Group already has a View with given name or path.
 //!
 //! Additional conditions under which a method can be a no-op are described
 //! for each method.
 
   /*!
-   * \brief Create View object with given name or path in this group that
+   * \brief Create View object with given name or path in this Group that
    * has a data description with data type and number of elements and
    * allocate data for it.
    *
@@ -618,7 +618,7 @@ public:
                                     SidreLength num_elems );
 
   /*!
-   * \brief Create View object with given name or path in this group that
+   * \brief Create View object with given name or path in this Group that
    * has a data description with data type and shape and allocate data for it.
    *
    * If given data type is undefined, or given number of dimensions is < 0,
@@ -638,7 +638,7 @@ public:
                                     SidreLength * shape );
 
   /*!
-   * \brief Create View object with given name or path in this group that
+   * \brief Create View object with given name or path in this Group that
    * is described by a Conduit DataType object and allocate data for it.
    *
    * This method is equivalent to:
@@ -655,7 +655,7 @@ public:
                                     const DataType& dtype);
 
   /*!
-   * \brief Create View object with given name or path in this group 
+   * \brief Create View object with given name or path in this Group 
    * set its data to given scalar value. 
    *
    * This is equivalent to: createView(name)->setScalar(value);
@@ -679,10 +679,10 @@ public:
   }
 
   /*!
-   * \brief Create View object with given name or path in this group
+   * \brief Create View object with given name or path in this Group
    * set its data to given string.
    *
-   * This is equivalent to: createView(name)->setScalar(value);
+   * This is equivalent to: createView(name)->setString(value);
    *
    * If given data type object is empty, data will not be allocated.
    *
@@ -699,41 +699,41 @@ public:
 //@{
 //!  @name View destruction methods.
 //!
-//! Each of these methods is a no-op if the specified view does not exist.
+//! Each of these methods is a no-op if the specified View does not exist.
 
   /*!
-   * \brief Destroy view with given name owned by this group, but leave
+   * \brief Destroy View with given name owned by this Group, but leave
    * its data intect.
    */
   void destroyView(const std::string& name);
 
   /*!
-   * \brief Destroy view with given index owned by this group, but leave
+   * \brief Destroy View with given index owned by this Group, but leave
    * its data intect.
    */
   void destroyView(IndexType idx);
 
   /*!
-   * \brief Destroy all views owned by this group, but leave all their
+   * \brief Destroy all Views owned by this Group, but leave all their
    *        data intact.
    */
   void destroyViews();
 
   /*!
-   * \brief Destroy view with given name owned by this group and deallocate
-   * its data if it's the only view associated with that data.
+   * \brief Destroy View with given name owned by this Group and deallocate
+   * its data if it's the only View associated with that data.
    */
   void destroyViewAndData(const std::string& name);
 
   /*!
-   * \brief Destroy view with given index owned by this group and deallocate
-   * its data if it's the only view associated with that data.
+   * \brief Destroy View with given index owned by this Group and deallocate
+   * its data if it's the only View associated with that data.
    */
   void destroyViewAndData(IndexType idx);
 
   /*!
-   * \brief Destroy all views owned by this group and deallocate
-   * data for each view when it's the only view associated with that data.
+   * \brief Destroy all Views owned by this Group and deallocate
+   * data for each View when it's the only View associated with that data.
    */
   void destroyViewsAndData();
 
@@ -744,29 +744,29 @@ public:
 //!  @name View move and copy methods.
 
   /*!
-   * \brief Remove given view object from its owning group and move it
-   *        to this group.
+   * \brief Remove given View object from its owning Group and move it
+   *        to this Group.
    *
-   * If given view pointer is null or group already has a view with
-   * same name as given view, method is a no-op.
+   * If given View pointer is null or Group already has a View with
+   * same name as given View, method is a no-op.
    *
-   * \return pointer to given argument view object or ATK_NULLPTR if view
-   * is not moved into this group.
+   * \return pointer to given argument View object or ATK_NULLPTR if View
+   * is not moved into this Group.
    */
   DataView * moveView(DataView * view);
 
   /*!
-   * \brief Create a copy of given view object and add it to this group.
+   * \brief Create a copy of given View object and add it to this Group.
    *
-   * Note that view copying is a "shallow" copy; the data associated with
-   * the view is not copied. The new view object is associated with
+   * Note that View copying is a "shallow" copy; the data associated with
+   * the View is not copied. The new View object is associated with
    * the same data as the original.
    *
-   * If given group pointer is null or group already has a child group with
-   * same name as given group, method is a no-op.
+   * If given Group pointer is null or Group already has a child Group with
+   * same name as given Group, method is a no-op.
    *
-   * \return pointer to given argument group object or ATK_NULLPTR if group
-   * is not moved into this group.
+   * \return pointer to given argument Group object or ATK_NULLPTR if Group
+   * is not moved into this Group.
    */
   DataView * copyView(DataView * view);
 
@@ -777,7 +777,7 @@ public:
 //!  @name Child Group query methods.
 
   /*!
-   * \brief Return true if group has an immediate child group with given 
+   * \brief Return true if Group has an immediate child Group with given 
    * name; else false.
    */
   bool hasGroup( const std::string& name ) const
@@ -786,7 +786,7 @@ public:
   }
 
   /*!
-   * \brief Return true if group has an immediate child group
+   * \brief Return true if Group has an immediate child Group
    *        with given index; else false.
    */
   bool hasGroup( IndexType idx ) const
@@ -795,29 +795,29 @@ public:
   }
 
   /*!
-   * \brief Return the index of immediate child group with given name.
+   * \brief Return the index of immediate child Group with given name.
    *
-   *        If no such child group exists, return sidre::InvalidIndex;
+   *        If no such child Group exists, return sidre::InvalidIndex;
    */
   IndexType getGroupIndex(const std::string& name) const
   {
     SLIC_CHECK_MSG(hasGroup(name),
                    "Group " << this->getName() << 
-                   " has no child group with name '" << name << "'");
+                   " has no child Group with name '" << name << "'");
 
     return m_group_coll.getItemIndex(name);
   }
 
   /*!
-   * \brief Return the name of immediate child group with given index.
+   * \brief Return the name of immediate child Group with given index.
    *
-   *        If no such child group exists, return sidre::InvalidName.
+   *        If no such child Group exists, return sidre::InvalidName.
    */
   const std::string& getGroupName(IndexType idx) const
   {
     SLIC_CHECK_MSG(hasGroup(idx),
                    "Group " << this->getName() << 
-                   " has no child group with index " << idx);
+                   " has no child Group with index " << idx);
 
     return m_group_coll.getItemName(idx);
   }
@@ -829,56 +829,56 @@ public:
 //!  @name Group access and iteration methods.
 
   /*!
-   * \brief Return pointer to non-const child group with given name or path.
+   * \brief Return pointer to non-const child Group with given name or path.
    *
-   * Thie method requires that all groups in the path exist if a path is given.
+   * This method requires that all Groups in the path exist if a path is given.
    *
-   * If no such group exists, ATK_NULLPTR is returned.
+   * If no such Group exists, ATK_NULLPTR is returned.
    */
   DataGroup * getGroup( const std::string& name );
 
   /*!
-   * \brief Return pointer to const child group with given name or path.
+   * \brief Return pointer to const child Group with given name or path.
    *
-   * Thie method requires that all groups in the path exist if a path is given.
+   * This method requires that all Groups in the path exist if a path is given.
    *
-   * If no such group exists, ATK_NULLPTR is returned.
+   * If no such Group exists, ATK_NULLPTR is returned.
    */
   DataGroup const * getGroup( const std::string& name ) const;
 
   /*!
-   * \brief Return pointer to non-const immediate child group with given index.
+   * \brief Return pointer to non-const immediate child Group with given index.
    * 
-   * If no such group exists, ATK_NULLPTR is returned.
+   * If no such Group exists, ATK_NULLPTR is returned.
    */
   DataGroup * getGroup( IndexType idx )
   {
     SLIC_CHECK_MSG(hasGroup(idx),
                    "Group " << this->getName() << 
-                   " has no child group with index " << idx);
+                   " has no child Group with index " << idx);
 
     return m_group_coll.getItem(idx);
   }
 
   /*!
-   * \brief Return pointer to const immediate child group with given index.
+   * \brief Return pointer to const immediate child Group with given index.
    * 
-   * If no such group exists, ATK_NULLPTR is returned.
+   * If no such Group exists, ATK_NULLPTR is returned.
    */
   const DataGroup * getGroup( IndexType idx ) const
   {
     SLIC_CHECK_MSG(hasGroup(idx),
                    "Group " << this->getName() << 
-                   " has no child group with index " << idx);
+                   " has no child Group with index " << idx);
 
     return m_group_coll.getItem(idx);
   }
 
   /*!
-   * \brief Return first valid child group index (i.e., smallest
-   *        index over all child groups).
+   * \brief Return first valid child Group index (i.e., smallest
+   *        index over all child Groups).
    *
-   * sidre::InvalidIndex is returned if group has no child groups.
+   * sidre::InvalidIndex is returned if Group has no child Groups.
    */
   IndexType getFirstValidGroupIndex() const
   {
@@ -886,8 +886,8 @@ public:
   }
 
   /*!
-   * \brief Return next valid child group index after given index
-   *        (i.e., smallest index over all child group indices larger
+   * \brief Return next valid child Group index after given index
+   *        (i.e., smallest index over all child Group indices larger
    *        than given one).
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
@@ -905,35 +905,35 @@ public:
 //!  @name Child Group creation and destruction methods.
 
   /*!
-   * \brief Create a child group within this group with given name or path.
+   * \brief Create a child Group within this Group with given name or path.
    *
-   * If name is an empty string or group already has a child group with
+   * If name is an empty string or Group already has a child Group with
    * given name or path, method is a no-op.
    *
    * \return pointer to created DataGroup object or ATK_NULLPTR if new
-   * group is not created.
+   * Group is not created.
    */
   DataGroup * createGroup( const std::string& name );
 
   /*!
-   * \brief Destroy child group in this group with given name or path.
+   * \brief Destroy child Group in this Group with given name or path.
    * 
-   * If no such group exists, method is a no-op.
+   * If no such Group exists, method is a no-op.
    */
   void destroyGroup(const std::string& name);
 
   /*!
-   * \brief Destroy child group within this group with given index.
+   * \brief Destroy child Group within this Group with given index.
    * 
-   * If no such group exists, method is a no-op.
+   * If no such Group exists, method is a no-op.
    */
   void destroyGroup(IndexType idx);
 
   /*!
-   * \brief Destroy all child groups in this group.
+   * \brief Destroy all child Groups in this Group.
    *
-   * Note that this will recrusively destroy entire group sub-tree below 
-   * this group.
+   * Note that this will recursively destroy entire Group sub-tree below 
+   * this Group.
    */
   void destroyGroups();
 
@@ -944,33 +944,33 @@ public:
 //!  @name Group move and copy methods.
 
   /*!
-   * \brief Remove given group object from its parent group and make it 
-   *        a child of this group.
+   * \brief Remove given Group object from its parent Group and make it 
+   *        a child of this Group.
    *
-   * If given group pointer is null or group already has a child group with
-   * same name as given group, method is a no-op.
+   * If given Group pointer is null or Group already has a child Group with
+   * same name as given Group, method is a no-op.
    *
-   * \return pointer to given argument group object or ATK_NULLPTR if group
-   * is not moved into this group.
+   * \return pointer to given argument Group object or ATK_NULLPTR if Group
+   * is not moved into this Group.
    */
   DataGroup * moveGroup(DataGroup * group);
 
   /*!
-   * \brief Create a copy of group hierarchy rooted at given group and make it 
-   *        a child of this group.
+   * \brief Create a copy of Group hierarchy rooted at given Group and make it 
+   *        a child of this Group.
    *
-   * Note that all views in the group hierarchy are copied as well.
+   * Note that all Views in the Group hierarchy are copied as well.
    *
-   * Note that group copying is a "shallow" copy; the data associated
-   * with views in a group are not copied. In particular, the new group
-   * hierachy and all its views is associated with the same data as the 
-   * given group.
+   * Note that Group copying is a "shallow" copy; the data associated
+   * with Views in a Group are not copied. In particular, the new Group
+   * hierachy and all its Views is associated with the same data as the 
+   * given Group.
    *
-   * If given group pointer is null or group already has a child group with
-   * same name as given group, method is a no-op.
+   * If given Group pointer is null or Group already has a child Group with
+   * same name as given Group, method is a no-op.
    *
-   * \return pointer to given argument group object or ATK_NULLPTR if group
-   * is not moved into this group.
+   * \return pointer to given argument Group object or ATK_NULLPTR if Group
+   * is not moved into this Group.
    */
   DataGroup * copyGroup(DataGroup * group);
 
@@ -981,45 +981,45 @@ public:
 //!  @name Group print methods.
 
   /*!
-   * \brief Print JSON description of data group to stdout.
+   * \brief Print JSON description of data Group to stdout.
    *
-   * Note that this will recursively print entire group (sub) tree
-   * starting at this group object.
+   * Note that this will recursively print entire Group sub-tree
+   * starting at this Group object.
    */
   void print() const;
 
   /*!
-   * \brief Print JSON description of data group to an ostream.
+   * \brief Print JSON description of data Group to an ostream.
    *
-   * Note that this will recursively print entire group (sub) tree
-   * starting at this group object.
+   * Note that this will recursively print entire Group sub-tree
+   * starting at this Group object.
    */
   void print(std::ostream& os) const;
 
 
   /*!
-   * \brief Print given number of levels of group (sub) tree
-   *        starting at this group object to an output stream.
+   * \brief Print given number of levels of Group sub-tree
+   *        starting at this Group object to an output stream.
    */
   void printTree( const int nlevels, std::ostream& os ) const;
 
 //@}
 
   /*!
-   * \brief Copy description of group hierarchy rooted at this group to 
+   * \brief Copy description of Group hierarchy rooted at this Group to 
    * given Conduit node.
    *
-   * The description includes views of this group and all of its children
+   * The description includes Views of this Group and all of its children
    * recursively.
    */
-  void info(Node& n) const;
+  void copyToConduitNode(Node& n) const;
 
   /*!
-   * \brief Return true if this group is equivalent to given group; else false. 
+   * \brief Return true if this Group is equivalent to given Group; else false. 
    *
-   * Two groups are equivalent if they are the root groups of identical 
-   * group hierarchy structures with the same names for all views and 
-   * groups in the hierarchy, and the views are also equivalent.
+   * Two Groups are equivalent if they are the root Groups of identical 
+   * Group hierarchy structures with the same names for all Views and 
+   * Groups in the hierarchy, and the Views are also equivalent.
    *
    * \sa DataView::isEquivalentTo
    */
@@ -1047,18 +1047,18 @@ private:
 
   /*!
    *  \brief Private ctor that creates a Group with given name
-   *         in given parent group.
+   *         in given parent Group.
    */
   DataGroup(const std::string& name, DataGroup * parent);
 
   /*!
    *  \brief Private ctor that creates a Group with given name
-   *         in the given DataStore root group.
+   *         in the given DataStore root Group.
    */
   DataGroup(const std::string& name, DataStore * datastore);
 
   /*!
-   * \brief Destructor destroys all views and child groups.
+   * \brief Destructor destroys all Views and child Groups.
    */
   ~DataGroup();
 
@@ -1066,7 +1066,7 @@ private:
 
 
 //@{
-//!  @name Private Group view manipulation methods.
+//!  @name Private Group View manipulation methods.
 
   /*!
    * \brief Attach View object to this Group.
@@ -1092,13 +1092,13 @@ private:
   DataView * detachView(IndexType idx);
 
   /*!
-   * \brief Destroy view and its data if its data is not shared with any
-   * other view.
+   * \brief Destroy View and its data if its data is not shared with any
+   * other View.
    *
-   * Data will not be destroyed as long as a view still exists that
+   * Data will not be destroyed as long as a View still exists that
    * references it.
    *
-   * IMPORTANT: this method assumes view is owned by this group.
+   * IMPORTANT: this method assumes View is owned by this Group.
    */
   void destroyViewAndData( DataView * view );
 
@@ -1132,8 +1132,8 @@ private:
   /*!
    * \brief Private methods to copy DataGroup to Conduit Node.
    *
-   * \param buffer_indices Used to track what buffers are referenced
-   * by the views in this group and sub-groups.
+   * \param Buffer_indices Used to track what Buffers are referenced
+   * by the Views in this Group and Groups in the sub-tree below it.
    */
   void exportTo(conduit::Node& data_holder,
                 std::set<IndexType>& buffer_indicies) const;
@@ -1141,8 +1141,8 @@ private:
   /*!
    * \brief Private methods to copy DataGroup from Conduit Node.
    *
-   * Map of buffer indices tracks old buffer ids in the file to the
-   * new buffer ids in the datastore.  Buffer ids are not guaranteed
+   * Map of Buffer indices tracks old Buffer ids in the file to the
+   * new Buffer ids in the datastore.  Buffer ids are not guaranteed
    * to remain the same when a tree is restored.
    *
    */
@@ -1156,12 +1156,12 @@ private:
    * entry in a slash-deliminated ("/") path string.
    *
    * The string before the last "/" character, if there is one, is the 
-   * next-to-last path entry. In this case, the return value is that group
+   * next-to-last path entry. In this case, the return value is that Group
    * in the path. 
    *
    * If there is no "/" in the given path, the entire string is considered 
    * the next-to-last path entry. In this case, the erturn value is this
-   * group.
+   * Group.
    *
    * The path argument is modified while walking the path. Its value when 
    * the method returns is the last entry in the path, either the string
@@ -1184,7 +1184,7 @@ private:
   static const char s_path_delimiter;
 
   ///
-  /// Typedefs for view and shild group containers. They are here to
+  /// Typedefs for View and shild Group containers. They are here to
   /// avoid propagating specific type names in the DataGroup class
   /// implementation when we experiment with different containers.
   ///
@@ -1240,10 +1240,10 @@ private:
   //
 #endif
 
-  /// Collection of DataViews
+  /// Collection of Views
   DataViewCollection m_view_coll;
 
-  /// Collection of child DataGroups
+  /// Collection of child Groups
   DataGroupCollection m_group_coll;
 
 };

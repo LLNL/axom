@@ -47,7 +47,7 @@ const char DataGroup::s_path_delimiter = '/';
 /*
  *************************************************************************
  *
- * Return pointer to non-const view with given name or path if it exists.
+ * Return pointer to non-const View with given name or path if it exists.
  *
  *************************************************************************
  */
@@ -59,7 +59,7 @@ DataView * DataGroup::getView( const std::string& name )
 
   SLIC_CHECK_MSG( !path.empty() && group->hasView(name),
                   "Group " << getName() << 
-                  " has no view with name '" << path << "'");
+                  " has no View with name '" << path << "'");
 
   return group->m_view_coll.getItem(path);
 }
@@ -67,7 +67,7 @@ DataView * DataGroup::getView( const std::string& name )
 /*
  *************************************************************************
  *
- * Return pointer to const view with given name or path if it exists.
+ * Return pointer to const View with given name or path if it exists.
  *
  *************************************************************************
  */
@@ -76,7 +76,7 @@ const DataView * DataGroup::getView( const std::string& name ) const
 // XXXX: Add path implementation
   SLIC_CHECK_MSG( !name.empty() && hasView(name),
                   "Group " << getName() << 
-                  " has no view with name '" << name << "'");
+                  " has no View with name '" << name << "'");
 
   return m_view_coll.getItem(name);
 }
@@ -84,15 +84,15 @@ const DataView * DataGroup::getView( const std::string& name ) const
 
 ////////////////////////////////////////////////////////////////////////
 //
-//  Methods to create a view that has no associated data.
+//  Methods to create a View that has no associated data.
 //
 ////////////////////////////////////////////////////////////////////////
 
 /*
  *************************************************************************
  *
- * Create empty view (i.e., no data description) with given name or path 
- * in this group.
+ * Create empty View (i.e., no data description) with given name or path 
+ * in this Group.
  *
  *************************************************************************
  */
@@ -111,9 +111,9 @@ DataView * DataGroup::createView( const std::string& name )
   {
     SLIC_CHECK( !path.empty() );
     SLIC_CHECK_MSG( !group->hasView(path),
-                    "Cannot create view with name '" << path <<
-                    "' in group '" << getName() <<
-                    " since it already has a view with that name" );
+                    "Cannot create View with name '" << path <<
+                    "' in Group '" << getName() <<
+                    " since it already has a View with that name" );
     return ATK_NULLPTR;
   }
 
@@ -128,8 +128,8 @@ DataView * DataGroup::createView( const std::string& name )
 /*
  *************************************************************************
  *
- * Create described view (type and # elems) with given name or path in 
- * this group.
+ * Create described View (type and # elems) with given name or path in 
+ * this Group.
  *
  *************************************************************************
  */
@@ -140,11 +140,11 @@ DataView * DataGroup::createView( const std::string& name,
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
     SLIC_CHECK_MSG(type != NO_TYPE_ID, 
-                   "Cannot create view with name '" << name <<
-                   "' in group '" << getName() << " without a valid type" );  
+                   "Cannot create View with name '" << name <<
+                   "' in Group '" << getName() << " without a valid type" );  
     SLIC_CHECK_MSG(num_elems >= 0,
-                   "Cannot create view with name '" << name <<
-                   "' in group '" << getName() << " with # elems < 0" );  
+                   "Cannot create View with name '" << name <<
+                   "' in Group '" << getName() << " with # elems < 0" );  
     return ATK_NULLPTR;
   }
 
@@ -159,8 +159,8 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create described view (type and shape) with given name or path in this 
- * group.
+ * Create described View (type and shape) with given name or path in this 
+ * Group.
  *
  *************************************************************************
  */
@@ -172,14 +172,14 @@ DataView * DataGroup::createView( const std::string& name,
   if ( type == NO_TYPE_ID || ndims < 0 || shape == ATK_NULLPTR )
   {
     SLIC_CHECK_MSG(type != NO_TYPE_ID,
-                   "Cannot create view with name '" << name <<
-                   "' in group '" << getName() << " without a valid type" );  
+                   "Cannot create View with name '" << name <<
+                   "' in Group '" << getName() << " without a valid type" );  
     SLIC_CHECK_MSG(ndims >= 0,
-                   "Cannot create view with name '" << name <<
-                   "' in group '" << getName() << " with ndims < 0" );  
+                   "Cannot create View with name '" << name <<
+                   "' in Group '" << getName() << " with ndims < 0" );  
     SLIC_CHECK_MSG(shape != ATK_NULLPTR,
-                   "Cannot create view with name '" << name <<
-                   "' in group '" << getName() << " with null shape ptr" );  
+                   "Cannot create View with name '" << name <<
+                   "' in Group '" << getName() << " with null shape ptr" );  
     return ATK_NULLPTR;
   }
 
@@ -194,7 +194,7 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view with given name and data described by a conduit Datatype object.
+ * Create View with given name and data described by a conduit Datatype object.
  *
  *************************************************************************
  */
@@ -213,15 +213,15 @@ DataView * DataGroup::createView( const std::string& name,
 
 ////////////////////////////////////////////////////////////////////////
 //
-//  Methods to create a view and attach a buffer to it.
+//  Methods to create a View and attach a Buffer to it.
 //
 ////////////////////////////////////////////////////////////////////////
 
 /*
  *************************************************************************
  *
- * Create an undescribed view with given name or path in
- * this group and attach buffer to it.
+ * Create an undescribed View with given name or path in
+ * this Group and attach Buffer to it.
  *
  *************************************************************************
  */
@@ -239,8 +239,8 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create described view (type and # elems) with given name or path in 
- * this group and attach buffer to it.
+ * Create described View (type and # elems) with given name or path in 
+ * this Group and attach Buffer to it.
  *
  *************************************************************************
  */
@@ -260,8 +260,8 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create described view (type and shape) with given name or path in
- * this group and attach buffer to it.
+ * Create described View (type and shape) with given name or path in
+ * this Group and attach Buffer to it.
  *
  *************************************************************************
  */
@@ -282,8 +282,8 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create described view (Conduit DataType) with given name or path in
- * this group and attach buffer to it.
+ * Create described View (Conduit DataType) with given name or path in
+ * this Group and attach Buffer to it.
  *
  *************************************************************************
  */
@@ -303,15 +303,15 @@ DataView * DataGroup::createView( const std::string& name,
 
 ////////////////////////////////////////////////////////////////////////
 //
-//  Methods to create a view and attach external data to it.
+//  Methods to create a View and attach external data to it.
 //
 ////////////////////////////////////////////////////////////////////////
 
 /*
  *************************************************************************
  *
- * Create an undescribed view with given name or path in
- * this group and attach external data ptr to it.
+ * Create an undescribed View with given name or path in
+ * this Group and attach external data ptr to it.
  *
  *************************************************************************
  */
@@ -329,8 +329,8 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create described view (type and # elems) with given name or path in 
- * this group and attach external data ptr to it.
+ * Create described View (type and # elems) with given name or path in 
+ * this Group and attach external data ptr to it.
  *
  *************************************************************************
  */
@@ -350,8 +350,8 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create described view (type and shape) with given name or path in
- * this group and attach external data ptr to it.
+ * Create described View (type and shape) with given name or path in
+ * this Group and attach external data ptr to it.
  *
  *************************************************************************
  */
@@ -372,8 +372,8 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create described view (Conduit DataType) with given name or path in
- * this group and attach external data ptr to it.
+ * Create described View (Conduit DataType) with given name or path in
+ * this Group and attach external data ptr to it.
  *
  *************************************************************************
  */
@@ -392,15 +392,15 @@ DataView * DataGroup::createView( const std::string& name,
 
 ////////////////////////////////////////////////////////////////////////
 //
-//  Methods to create a view and allocate its data. 
+//  Methods to create a View and allocate its data. 
 //
 ////////////////////////////////////////////////////////////////////////
 
 /*
  *************************************************************************
  *
- * Create described view (type and # elems) with given name or path in 
- * this group and allocate its data.
+ * Create described View (type and # elems) with given name or path in 
+ * this Group and allocate its data.
  *
  *************************************************************************
  */
@@ -419,8 +419,8 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 /*
  *************************************************************************
  *
- * Create described view (type and shape) with given name or path in
- * this group and allocate its data.
+ * Create described View (type and shape) with given name or path in
+ * this Group and allocate its data.
  *
  *************************************************************************
  */
@@ -440,8 +440,8 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 /*
  *************************************************************************
  *
- * Create described view (Conduit DataType) with given name or path in
- * this group and allocate its data.
+ * Create described View (Conduit DataType) with given name or path in
+ * this Group and allocate its data.
  *
  *************************************************************************
  */
@@ -459,7 +459,7 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view with given name or path and set its data to given string.
+ * Create View with given name or path and set its data to given string.
  *
  *************************************************************************
  */
@@ -485,7 +485,7 @@ DataView * DataGroup::createViewString( const std::string& name,
 /*
  *************************************************************************
  *
- * Destroy view with given name and leave its data intact.
+ * Destroy View with given name and leave its data intact.
  *
  *************************************************************************
  */
@@ -502,7 +502,7 @@ void DataGroup::destroyView( const std::string& name )
 /*
  *************************************************************************
  *
- * Destroy view with given index and leave its data intact.
+ * Destroy View with given index and leave its data intact.
  *
  *************************************************************************
  */
@@ -518,7 +518,7 @@ void DataGroup::destroyView( IndexType idx )
 /*
  *************************************************************************
  *
- * Destroy all views in group and leave their data intact.
+ * Destroy all Views in Group and leave their data intact.
  *
  *************************************************************************
  */
@@ -542,7 +542,7 @@ void DataGroup::destroyViews()
 /*
  *************************************************************************
  *
- * Destroy view with given name and its data if it's the only view 
+ * Destroy View with given name and its data if it's the only View 
  * associated with that data.
  *
  *************************************************************************
@@ -556,7 +556,7 @@ void DataGroup::destroyViewAndData( const std::string& name )
 /*
  *************************************************************************
  *
- * Destroy view with given index and its data if it's the only view 
+ * Destroy View with given index and its data if it's the only View 
  * associated with that data.
  *
  *************************************************************************
@@ -569,8 +569,8 @@ void DataGroup::destroyViewAndData( IndexType idx )
 /*
  *************************************************************************
  *
- * Destroy all views in group as well as the data for each view when it's
- * the only view associated with that data.
+ * Destroy all Views in Group as well as the data for each View when it's
+ * the only View associated with that data.
  *
  *************************************************************************
  */
@@ -596,7 +596,7 @@ void DataGroup::destroyViewsAndData()
 /*
  *************************************************************************
  *
- * Remove given view from its owning group and attach to this group.
+ * Remove given View from its owning Group and attach to this Group.
  *
  *************************************************************************
  */
@@ -611,15 +611,15 @@ DataView * DataGroup::moveView(DataView * view)
   DataGroup * curr_group = view->getOwningGroup();
   if (curr_group == this)
   {
-    // this group already owns the view
+    // this Group already owns the View
     return view;
   }
   else if (hasView(view->getName()))
   {
     SLIC_CHECK_MSG(!hasView(view->getName()),
                    "Group '" << getName() <<
-                   "' already has a view named'" << view->getName() <<
-                   "' so view move operation cannot happen");
+                   "' already has a View named'" << view->getName() <<
+                   "' so View move operation cannot happen");
     return ATK_NULLPTR;
   }
 
@@ -632,9 +632,9 @@ DataView * DataGroup::moveView(DataView * view)
 /*
  *************************************************************************
  *
- * Create a copy of given view and attach to this group.
+ * Create a copy of given View and attach to this Group.
  *
- * Copying a view does not perform a deep copy of its data buffer.
+ * Copying a View does not perform a deep copy of its data Buffer.
  *
  *************************************************************************
  */
@@ -645,8 +645,8 @@ DataView * DataGroup::copyView(DataView * view)
     SLIC_CHECK( view != ATK_NULLPTR );
     SLIC_CHECK_MSG(!hasView(view->getName()),
                    "Group '" << getName() <<
-                   "' already has a view named'" << view->getName() <<
-                   "' so view copy operation cannot happen");
+                   "' already has a View named'" << view->getName() <<
+                   "' so View copy operation cannot happen");
 
     return ATK_NULLPTR;
   }
@@ -660,14 +660,14 @@ DataView * DataGroup::copyView(DataView * view)
 
 ////////////////////////////////////////////////////////////////////////
 //
-// Child group access methods.
+// Child Group access methods.
 //
 ////////////////////////////////////////////////////////////////////////
 
 /*
  *************************************************************************
  *
- * Return pointer to non-const child group with given name or path 
+ * Return pointer to non-const child Group with given name or path 
  * if it exists.
  *
  *************************************************************************
@@ -680,7 +680,7 @@ DataGroup * DataGroup::getGroup( const std::string& name )
 
   SLIC_CHECK_MSG( !path.empty() && group->hasGroup(name),
                   "Group " << getName() << 
-                  " has no child group with name '" << path << "'");
+                  " has no child Group with name '" << path << "'");
 
   return group->m_group_coll.getItem(path);
 }
@@ -688,7 +688,7 @@ DataGroup * DataGroup::getGroup( const std::string& name )
 /*
  *************************************************************************
  *
- * Return pointer to const child group with given name or path if it exists.
+ * Return pointer to const child Group with given name or path if it exists.
  *
  *************************************************************************
  */
@@ -697,7 +697,7 @@ const DataGroup * DataGroup::getGroup( const std::string& name ) const
 // XXXX: Add path implementation
   SLIC_CHECK_MSG( !name.empty() && hasGroup(name),
                   "Group " << getName() << 
-                  " has no child group with name '" << name << "'");
+                  " has no child Group with name '" << name << "'");
 
   return m_group_coll.getItem(name);
 }
@@ -713,7 +713,7 @@ const DataGroup * DataGroup::getGroup( const std::string& name ) const
 /*
  *************************************************************************
  *
- * Create group with given name and make it a child of this group.
+ * Create Group with given name and make it a child of this Group.
  *
  *************************************************************************
  */
@@ -732,9 +732,9 @@ DataGroup * DataGroup::createGroup( const std::string& name )
   {
     SLIC_CHECK( !path.empty() );
     SLIC_CHECK_MSG( !group->hasGroup(path), 
-                    "Cannot create group with name '" << path <<
-                    " in group '" << getName() << 
-                    " since it already has a group with that name" );
+                    "Cannot create Group with name '" << path <<
+                    " in Group '" << getName() << 
+                    " since it already has a Group with that name" );
 
     return ATK_NULLPTR;
   }
@@ -750,7 +750,7 @@ DataGroup * DataGroup::createGroup( const std::string& name )
 /*
  *************************************************************************
  *
- * Detach child group with given name and destroy it.
+ * Detach child Group with given name and destroy it.
  *
  *************************************************************************
  */
@@ -767,7 +767,7 @@ void DataGroup::destroyGroup( const std::string& name )
 /*
  *************************************************************************
  *
- * Detach child group with given index and destroy it.
+ * Detach child Group with given index and destroy it.
  *
  *************************************************************************
  */
@@ -783,7 +783,7 @@ void DataGroup::destroyGroup( IndexType idx )
 /*
  *************************************************************************
  *
- * Detach all child groups and destroy them.
+ * Detach all child Groups and destroy them.
  *
  *************************************************************************
  */
@@ -804,7 +804,7 @@ void DataGroup::destroyGroups()
 /*
  *************************************************************************
  *
- * Remove given group from its owning group and make it a child of this group.
+ * Remove given Group from its owning Group and make it a child of this Group.
  *
  *************************************************************************
  */
@@ -815,8 +815,8 @@ DataGroup * DataGroup::moveGroup(DataGroup * group)
     SLIC_CHECK( group != ATK_NULLPTR );
     SLIC_CHECK_MSG(!hasGroup(group->getName()),
                    "Group '" << getName() << 
-                   "' already has a child group named'" << group->getName() <<
-                   "' so group move operation cannot happen");
+                   "' already has a child Group named'" << group->getName() <<
+                   "' so Group move operation cannot happen");
 
     return ATK_NULLPTR;
   }
@@ -830,9 +830,9 @@ DataGroup * DataGroup::moveGroup(DataGroup * group)
 /*
  *************************************************************************
  *
- * Create a copy of given group and make it a child of this group.
+ * Create a copy of given Group and make it a child of this Group.
  *
- * Copying a group does not perform a deep copy of any of its buffers.
+ * Copying a Group does not perform a deep copy of any of its Buffers.
  *
  *************************************************************************
  */
@@ -843,8 +843,8 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
     SLIC_CHECK( group != ATK_NULLPTR );
     SLIC_CHECK_MSG(!hasGroup(group->getName()),
                    "Group '" << getName() << 
-                   "' already has a child group named'" << group->getName() <<
-                   "' so group copy operation cannot happen");
+                   "' already has a child Group named'" << group->getName() <<
+                   "' so Group copy operation cannot happen");
 
     return ATK_NULLPTR;
   }
@@ -852,7 +852,7 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
   {
     DataGroup * res = createGroup(group->getName());
 
-    // copy subgroups to new group
+    // copy child Groups to new Group
     IndexType gidx = group->getFirstValidGroupIndex();
     while ( indexIsValid(gidx) )
     {
@@ -860,7 +860,7 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
       gidx = group->getNextValidGroupIndex(gidx);
     }
 
-    // copy views to new group
+    // copy Views to new Group
     IndexType vidx = group->getFirstValidViewIndex();
     while ( indexIsValid(vidx) )
     {
@@ -875,7 +875,7 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
 /*
  *************************************************************************
  *
- * Print JSON description of data group to stdout.
+ * Print JSON description of data Group to stdout.
  *
  *************************************************************************
  */
@@ -887,22 +887,22 @@ void DataGroup::print() const
 /*
  *************************************************************************
  *
- * Print JSON description of data group to an ostream.
+ * Print JSON description of data Group to an ostream.
  *
  *************************************************************************
  */
 void DataGroup::print(std::ostream& os) const
 {
   Node n;
-  info(n);
+  copyToConduitNode(n);
   n.to_json_stream(os);
 }
 
 /*
  *************************************************************************
  *
- * Print given number of levels of group (sub) tree starting at this
- * group to stdout.
+ * Print given number of levels of Group sub-tree rooted at this
+ * Group to stdout.
  *
  *************************************************************************
  */
@@ -913,7 +913,7 @@ void DataGroup::printTree( const int nlevels,
   {
     os <<"    ";
   }
-  os <<"DataGroup "<<this->getName()<<std::endl;
+  os << "Group "<< this->getName() <<std::endl;
 
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
@@ -924,7 +924,7 @@ void DataGroup::printTree( const int nlevels,
     {
       os <<"    ";
     }
-    os << "DataView " << view->getName() << std::endl;
+    os << "View " << view->getName() << std::endl;
 
     vidx = getNextValidViewIndex(vidx);
   }
@@ -943,11 +943,11 @@ void DataGroup::printTree( const int nlevels,
 /*
  *************************************************************************
  *
- * Copy data group description to given Conduit node.
+ * Copy data Group description to given Conduit node.
  *
  *************************************************************************
  */
-void DataGroup::info(Node& n) const
+void DataGroup::copyToConduitNode(Node& n) const
 {
   n["name"] = m_name;
 
@@ -956,7 +956,7 @@ void DataGroup::info(Node& n) const
   {
     const DataView * view = getView(vidx);
     Node& v = n["views"].fetch(view->getName());
-    view->info(v);
+    view->copyToConduitNode(v);
 
     vidx = getNextValidViewIndex(vidx);
   }
@@ -966,7 +966,7 @@ void DataGroup::info(Node& n) const
   {
     const DataGroup * group =  getGroup(gidx);
     Node& g = n["groups"].fetch(group->getName());
-    group->info(g);
+    group->copyToConduitNode(g);
 
     gidx = getNextValidGroupIndex(gidx);
   }
@@ -975,7 +975,7 @@ void DataGroup::info(Node& n) const
 /*
  *************************************************************************
  *
- * Test this DataGroup for equavalence to another DataGroup.
+ * Test this Group for equavalence to another Group.
  *
  *************************************************************************
  */
@@ -992,7 +992,7 @@ bool DataGroup::isEquivalentTo(const DataGroup * other) const
                    other->m_group_coll.getNumItems());
   }
 
-  // Test equivalence of DataViews
+  // Test equivalence of Views
   if (is_equiv)
   {
     IndexType vidx = getFirstValidViewIndex();
@@ -1036,7 +1036,7 @@ bool DataGroup::isEquivalentTo(const DataGroup * other) const
 /*
  *************************************************************************
  *
- * PRIVATE ctor makes group with given name and make it a child of parent.
+ * PRIVATE ctor makes Group with given name and make it a child of parent.
  *
  *************************************************************************
  */
@@ -1050,8 +1050,8 @@ DataGroup::DataGroup(const std::string& name,
 /*
  *************************************************************************
  *
- * PRIVATE ctor makes group with given name and make it a child of
- * root group in datastore.
+ * PRIVATE ctor makes Group with given name and make it a child of
+ * root Group in datastore.
  *
  *************************************************************************
  */
@@ -1065,7 +1065,7 @@ DataGroup::DataGroup(const std::string& name,
 /*
  *************************************************************************
  *
- * PRIVATE dtor destroys group and all its contents.
+ * PRIVATE dtor destroys Group and all its contents.
  *
  *************************************************************************
  */
@@ -1078,7 +1078,7 @@ DataGroup::~DataGroup()
 /*
  *************************************************************************
  *
- * PRIVATE method to attach given view to group.
+ * PRIVATE method to attach given View to Group.
  *
  *************************************************************************
  */
@@ -1100,7 +1100,7 @@ DataView * DataGroup::attachView(DataView * view)
 /*
  *************************************************************************
  *
- * PRIVATE method to detach given with given name from group.
+ * PRIVATE method to detach View with given name from Group.
  *
  *************************************************************************
  */
@@ -1118,7 +1118,7 @@ DataView * DataGroup::detachView(const std::string& name )
 /*
  *************************************************************************
  *
- * PRIVATE method to detach view with given index from group.
+ * PRIVATE method to detach View with given index from Group.
  *
  *************************************************************************
  */
@@ -1136,7 +1136,7 @@ DataView * DataGroup::detachView(IndexType idx)
 /*
  *************************************************************************
  *
- * PRIVATE method to destroy view in this group and its data.
+ * PRIVATE method to destroy View in this Group and its data.
  *
  *************************************************************************
  */
@@ -1157,7 +1157,7 @@ void DataGroup::destroyViewAndData( DataView * view )
 /*
  *************************************************************************
  *
- * PRIVATE method to make given group a child of this group.
+ * PRIVATE method to make given Group a child of this Group.
  *
  *************************************************************************
  */
@@ -1177,7 +1177,7 @@ DataGroup * DataGroup::attachGroup(DataGroup * group)
 /*
  *************************************************************************
  *
- * PRIVATE method to detach child group with given name from group.
+ * PRIVATE method to detach child Group with given name from Group.
  *
  *************************************************************************
  */
@@ -1195,7 +1195,7 @@ DataGroup * DataGroup::detachGroup(const std::string& name )
 /*
  *************************************************************************
  *
- * PRIVATE method to detach child group with given index from group.
+ * PRIVATE method to detach child Group with given index from Group.
  *
  *************************************************************************
  */
@@ -1213,9 +1213,9 @@ DataGroup * DataGroup::detachGroup(IndexType idx)
 /*
  *************************************************************************
  *
- * PRIVATE method to copy from group to given Conduit node using
- * given set of ids to maintain correct association of data buffers
- * to data views.
+ * PRIVATE method to copy from Group to given Conduit node using
+ * given set of ids to maintain correct association of data Buffers
+ * to data Views.
  *
  *************************************************************************
  */
@@ -1253,8 +1253,8 @@ void DataGroup::exportTo(conduit::Node& data_holder,
 /*
  *************************************************************************
  *
- * PRIVATE method to copy from given Conduit node to this group using
- * given map of ids to indicate association of buffer ids in node to
+ * PRIVATE method to copy from given Conduit node to this Group using
+ * given map of ids to indicate association of Buffer ids in node to
  * those in datastore.
  *
  *************************************************************************
@@ -1262,13 +1262,13 @@ void DataGroup::exportTo(conduit::Node& data_holder,
 void DataGroup::importFrom(conduit::Node& data_holder,
                            const std::map<IndexType, IndexType>& buffer_id_map)
 {
-// If the group is empty, conduit will complain if you call 'has_path'.
+// If the Group is empty, conduit will complain if you call 'has_path'.
 
   // Added CON-132 ticket asking if has_path can just return false if node 
   // is empty or not an object type.
   if ( data_holder.dtype().is_object() && data_holder.has_path("views") )
   {
-    // create the views
+    // create the Views
     conduit::NodeIterator views_itr = data_holder["views"].children();
     while (views_itr.has_next())
     {
@@ -1281,7 +1281,7 @@ void DataGroup::importFrom(conduit::Node& data_holder,
   }
   if ( data_holder.dtype().is_object() && data_holder.has_path("groups") )
   {
-    // create the child groups
+    // create the child Groups
     conduit::NodeIterator groups_itr = data_holder["groups"].children();
     while (groups_itr.has_next())
     {
@@ -1314,7 +1314,7 @@ DataGroup * DataGroup::walkPath( std::string& path,
       detail::split(path, s_path_delimiter, pos);
     std::vector<std::string>::iterator stop = tokens.end() - 1;
 
-    // Navigate path down to desired group.
+    // Navigate path down to desired Group
     for (std::vector<std::string>::const_iterator iter = tokens.begin() ;
          iter < stop ; ++iter)
     {
@@ -1335,8 +1335,8 @@ DataGroup * DataGroup::walkPath( std::string& path,
       }
       else
       {
-        SLIC_ERROR( "Invalid path, group '" << group_ptr->getName() << 
-                    "' has no group with name '" << *iter << "'");
+        SLIC_ERROR( "Invalid path, Group '" << group_ptr->getName() << 
+                    "' has no Group with name '" << *iter << "'");
       }
     }
     path = tokens.back();
