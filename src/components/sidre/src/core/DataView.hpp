@@ -781,7 +781,7 @@ public:
   /*!
    * \brief Copy data view description to given Conduit node.
    */
-  void info(Node& n) const;
+  void copyToConduitNode(Node& n) const;
 
 private:
 

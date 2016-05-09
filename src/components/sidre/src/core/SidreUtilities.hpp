@@ -8,8 +8,8 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
-#ifndef UTILITIES_HPP_
-#define UTILITIES_HPP_
+#ifndef SIDREUTILITIES_HPP_
+#define SIDREUTILITIES_HPP_
 
 // Standard C++ headers
 #include <string>
@@ -21,14 +21,14 @@ namespace sidre
 {
 namespace detail
 {
+  std::vector<std::string> split(const std::string& s, char c, 
+                                 std::string::size_type pos);
 
-	std::vector<std::string> split(const std::string& s, char c, std::string::size_type pos);
+  std::string::size_type find_exclusive( const std::string& s, char c);
 
-	std::string::size_type find_exclusive( const std::string& s, char c);
+} // end namespace detail
 
-} //end namespace detail
-
-} //end namespace sidre
+} // end namespace sidre
 
 } // end namespace asctoolkit
 
