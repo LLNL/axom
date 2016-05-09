@@ -86,6 +86,7 @@ classes:
 #    -  decl: void info(Node &) const
     -  decl: void print() const
 #    -  decl: void print(std::ostream& os) const
+#    - decl: void createNativeLayout(Node &) const
 
     python:
       type: [ init, richcompare ]
@@ -234,6 +235,8 @@ classes:
 #    -  decl: void info(Node &n) const
     -  decl: void print() const
 #    -  decl: void printTree( const int level ) const
+#    - decl: void createNativeLayout(Node &) const
+
 #   -  decl: void save(const std::string& obase, const std::string& protocol) const
 #   -  decl: void load(const std::string& obase,  const std::string& protocol)
 
@@ -398,6 +401,7 @@ classes:
     - decl: int getShape(int ndims, SidreLength * shape+dimension) const
 #    - decl: void info(Node& n) const
     - decl: void print() const
+#    - decl: void createNativeLayout(Node &) const
 
     python:
       type: [ init, richcompare ]

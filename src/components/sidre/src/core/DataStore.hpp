@@ -52,7 +52,7 @@ class DataGroup;
  *        Buffer objects.
  *
  * It maintains a collection of Buffer objects and owns the "root"
- * Group, called "/". A Group hierachy (a tree) is created by
+ * Group, called "/". A Group hierarchy (a tree) is created by
  * creating child Groups of Groups.
  */
 class DataStore
@@ -190,6 +190,17 @@ public:
    *        descriptions to given Conduit node.
    */
   void copyToConduitNode(Node& n) const;
+
+
+  /*!
+   * \brief Copy DataStore native layout (starting at root) to given Conduit node.
+   *
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
+   * externally to the Sidre View data so that it can be filled in from the data
+   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   */
+  void createNativeLayout(Node& n) const;
+
 
   /*!
    * \brief Print JSON description of DataStore Group hierarchy (starting at 
