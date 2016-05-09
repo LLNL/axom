@@ -57,7 +57,7 @@ DataView * DataGroup::getView( const std::string& name )
   bool create_groups_in_path = false;
   DataGroup * group = walkPath( path, create_groups_in_path );
 
-  SLIC_CHECK_MSG( !path.empty() && group->hasView(name),
+  SLIC_CHECK_MSG( !path.empty() && group->hasView(path),
                   "Group " << getName() << 
                   " has no View with name '" << path << "'");
 
@@ -678,7 +678,7 @@ DataGroup * DataGroup::getGroup( const std::string& name )
   bool create_groups_in_path = false;
   DataGroup * group = walkPath( path, create_groups_in_path );
 
-  SLIC_CHECK_MSG( !path.empty() && group->hasGroup(name),
+  SLIC_CHECK_MSG( !path.empty() && group->hasGroup(path),
                   "Group " << getName() << 
                   " has no child Group with name '" << path << "'");
 
@@ -869,6 +869,40 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
     }
 
     return res;
+  }
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Copy Group native layout to given Conduit node.
+ *
+ *************************************************************************
+ */
+void DataGroup::createNativeLayout(Node& n) const
+{
+  // Dump the group's views
+  IndexType vidx = getFirstValidViewIndex();
+  while ( indexIsValid(vidx) )
+  {
+    const DataView * view = getView(vidx);
+
+    // Check that the view's name is not also a child group name
+    SLIC_CHECK_MSG( !hasGroup(view->getName())
+                  , view->getName() << " is the name of a groups and a view");
+
+    view->createNativeLayout( n[view->getName()] );
+    vidx = getNextValidViewIndex(vidx);
+  }
+
+  // Recursively dump the child groups
+  IndexType gidx = getFirstValidGroupIndex();
+  while ( indexIsValid(gidx) )
+  {
+    const DataGroup * group =  getGroup(gidx);
+    group->createNativeLayout(n[group->getName()]);
+    gidx = getNextValidGroupIndex(gidx);
   }
 }
 
@@ -1298,7 +1332,7 @@ void DataGroup::importFrom(conduit::Node& data_holder,
  *
  * PRIVATE method to walk down a path to the next-to-last entry.
  *
- * If an error is encoutered, this private function will return ATK_NULLPTR
+ * If an error is encountered, this private function will return ATK_NULLPTR
  *
  *************************************************************************
  */
