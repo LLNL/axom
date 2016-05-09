@@ -67,7 +67,7 @@ int main(int argc, char * argv[])
   groups.push_back(root);
 
   IOManager reader(MPI_COMM_WORLD, &(groups[0]), groups.size(), num_files);
-  reader.read(root_file, "conduit_hdf5");
+  reader.read(root_file);
 
   delete ds;
 

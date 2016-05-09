@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 
   IOManager writer2(MPI_COMM_WORLD, &(groups2[0]), groups2.size(), num_files);
 
-  writer2.read("out_spio_parallel_write_read", 0, "conduit_hdf5");
+  writer2.read("out_spio_parallel_write_read0.root");
 
   int return_val = 0;
   if (!ds2->getRoot()->isEquivalentTo(root)) {

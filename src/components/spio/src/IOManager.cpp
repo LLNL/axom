@@ -163,11 +163,14 @@ void IOManager::write(const std::string& file_string, int cycle, const std::stri
 /*
  *************************************************************************
  *
- * Read from file
+ * Read from files
  *
  *************************************************************************
  */
-void IOManager::read(const std::string& file_string, int cycle, const std::string& protocol)
+void IOManager::read(
+  const std::string& file_string,
+  int cycle,
+  const std::string& protocol)
 {
   int group_id = m_baton.wait();
   std::ostringstream namestream;
@@ -223,9 +226,15 @@ void IOManager::read(const std::string& file_string, int cycle, const std::strin
   (void)m_baton.pass();
 }
 
-void IOManager::read(const std::string& root_file, const std::string& protocol)
+/*
+ *************************************************************************
+ *
+ * Read based on HDF5 root file.
+ *
+ *************************************************************************
+ */
+void IOManager::read(const std::string& root_file)
 {
-  (void)protocol;
   int group_id = m_baton.wait();
 
   hid_t root_file_id = H5Fopen(root_file.c_str(),
@@ -262,6 +271,13 @@ void IOManager::read(const std::string& root_file, const std::string& protocol)
   (void)m_baton.pass();
 }
 
+/*
+ *************************************************************************
+ *
+ * Create a root file. 
+ *
+ *************************************************************************
+ */
 void IOManager::createRootFile(const std::string& root_name,
                                const std::string& file_base,
                                int cycle)
@@ -363,6 +379,13 @@ void IOManager::createRootFile(const std::string& root_name,
 
 }
 
+/*
+ *************************************************************************
+ *
+ * Get file name for a file holding DataGroup data.
+ *
+ *************************************************************************
+ */
 std::string IOManager::getHDF5FileName(
   hid_t root_file_id,
   int rankgroup_id,

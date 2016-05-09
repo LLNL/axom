@@ -82,9 +82,9 @@ public:
              const std::string& protocol);
 
   /*!
-   * \brief read
+   * \brief read from input files
    *
-   * \param file_string   base name of input file
+   * \param file_string   base name of input files
    * \param cycle         cycle counter
    * \param protocol      identifies I/O protocol
    */
@@ -92,7 +92,12 @@ public:
             int cycle,
             const std::string& protocol);
 
-  void read(const std::string& root_file, const std::string& protocol);
+  /*!
+   * \brief read from a root file
+   *
+   * \param root_file     root file containing input data
+   */
+  void read(const std::string& root_file);
 
 private:
 
