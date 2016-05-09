@@ -58,7 +58,7 @@ void DataStoreConduitErrorHandler( const std::string& message,
 /*
  *************************************************************************
  *
- * Datastore ctor creates root group.
+ * DataStore ctor creates root Group.
  *
  *************************************************************************
  */
@@ -97,13 +97,13 @@ DataStore::DataStore()
 /*
  *************************************************************************
  *
- * Datastore dtor destroys all contents.
+ * DataStore dtor destroys all contents.
  *
  *************************************************************************
  */
 DataStore::~DataStore()
 {
-  // clean up groups and views before we destroy buffers
+  // clean up Groups and Views before we destroy Buffers
   delete m_RootGroup;
   destroyAllBuffers();
 
@@ -117,7 +117,7 @@ DataStore::~DataStore()
 /*
  *************************************************************************
  *
- * Return non-const pointer to buffer with given index or null ptr.
+ * Return non-const pointer to Buffer with given index or null ptr.
  *
  *************************************************************************
  */
@@ -126,7 +126,7 @@ DataBuffer * DataStore::getBuffer( IndexType idx ) const
   if ( !hasBuffer(idx) )
   {
     SLIC_CHECK_MSG(hasBuffer(idx),
-                   "Datastore has no buffer with index == " << idx);
+                   "DataStore has no Buffer with index == " << idx);
     return ATK_NULLPTR;
   }
 
@@ -136,7 +136,7 @@ DataBuffer * DataStore::getBuffer( IndexType idx ) const
 /*
  *************************************************************************
  *
- * Create new data buffer and assign unique id.
+ * Create new Buffer and assign unique id.
  *
  *************************************************************************
  */
@@ -164,7 +164,7 @@ DataBuffer * DataStore::createBuffer()
 /*
  *************************************************************************
  *
- * Create new data buffer and assign unique id.
+ * Create new Buffer and assign unique id.
  *
  *************************************************************************
  */
@@ -183,7 +183,7 @@ DataBuffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
 /*
  *************************************************************************
  *
- * Remove data buffer from the datastore and destroy it, recover its
+ * Remove Buffer from the DataStore and destroy it, recover its
  * id for reuse.
  *
  *************************************************************************
@@ -204,7 +204,7 @@ void DataStore::destroyBuffer( DataBuffer * buff )
 /*
  *************************************************************************
  *
- * Remove data buffer with given index from the datastore and destroy it,
+ * Remove Buffer with given index from the DataStore and destroy it,
  * recover its id for reuse.
  *
  *************************************************************************
@@ -217,7 +217,7 @@ void DataStore::destroyBuffer( IndexType idx )
 /*
  *************************************************************************
  *
- * Destroy all buffers in datastore and reclaim indices.
+ * Destroy all Buffers in DataStore and reclaim indices.
  *
  *************************************************************************
  */
@@ -234,7 +234,7 @@ void DataStore::destroyAllBuffers()
 /*
  *************************************************************************
  *
- * Return first valid buffer index, or InvalidIndex if there is none.
+ * Return first valid Buffer index, or InvalidIndex if there is none.
  *
  *************************************************************************
  */
@@ -246,7 +246,7 @@ IndexType DataStore::getFirstValidBufferIndex() const
 /*
  *************************************************************************
  *
- * Return first valid buffer index, or InvalidIndex if there is none.
+ * Return first valid Buffer index, or InvalidIndex if there is none.
  *
  *************************************************************************
  */
@@ -265,20 +265,20 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
 /*
  *************************************************************************
  *
- * Copy buffer descriptions and group tree, starting at root, to given
+ * Copy Buffer descriptions and Group tree, starting at root, to given
  * Conduit node.
  *
  *************************************************************************
  */
-void DataStore::info(Node& n) const
+void DataStore::copyToConduitNode(Node& n) const
 {
-  m_RootGroup->info(n["DataStore/root"]);
+  m_RootGroup->copyToConduitNode(n["DataStore/root"]);
 
   IndexType bidx = getFirstValidBufferIndex();
   while ( indexIsValid(bidx) )
   {
     Node& b = n["DataStore/buffers"].append();
-    m_data_buffers[bidx]->info(b);
+    m_data_buffers[bidx]->copyToConduitNode(b);
 
     bidx = getNextValidBufferIndex(bidx);
   }
@@ -287,7 +287,7 @@ void DataStore::info(Node& n) const
 /*
  *************************************************************************
  *
- * Print JSON description of data buffers and group tree, starting at root,
+ * Print JSON description of Buffers and Group tree, starting at root,
  * to stdout.
  *
  *************************************************************************
@@ -300,7 +300,7 @@ void DataStore::print() const
 /*
  *************************************************************************
  *
- * Print JSON description of data buffers and group tree, starting at root,
+ * Print JSON description of Buffers and Group tree, starting at root,
  * to an ostream.
  *
  *************************************************************************
@@ -308,7 +308,7 @@ void DataStore::print() const
 void DataStore::print(std::ostream& os) const
 {
   Node n;
-  info(n);
+  copyToConduitNode(n);
   n.to_json_stream(os);
 }
 
@@ -319,7 +319,8 @@ void DataStore::save(const std::string& file_path,
                      const DataGroup* group) const
 {
 
-  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call save function on group that resides in this datastore.");
+  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, 
+                "Cannot call save method on Group not owned by this DataStore.");
 
   Node data_holder;
   exportTo( group, data_holder);
@@ -352,7 +353,7 @@ void DataStore::save(const std::string& file_path,
 void DataStore::save(const hid_t& h5_file_id,
                      const DataGroup * group) const
 {
-  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call save function on group that resides in this datastore.");
+  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call save function on Group that resides in this DataStore.");
 
   Node data_holder;
   exportTo(group, data_holder);
@@ -365,7 +366,7 @@ void DataStore::save(const hid_t& h5_file_id,
 /*
  *************************************************************************
  *
- * Load data group (including data views and child groups) from a file
+ * Load Group (including Views and child Groups) from a file
  *
  *************************************************************************
  */
@@ -373,7 +374,7 @@ void DataStore::load(const std::string& file_path,
                      const std::string& protocol,
                      DataGroup * group)
 {
-  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on group that resides in this datastore.");
+  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on Group that resides in this DataStore.");
 
   Node node;
 
@@ -397,14 +398,14 @@ void DataStore::load(const std::string& file_path,
 /*
  *************************************************************************
  *
- * Load data group (including data views and child groups) from an hdf5 file
+ * Load Group (including Views and child Groups) from an hdf5 file
  *
  *************************************************************************
  */
 void DataStore::load(const hid_t& h5_file_id,
                      DataGroup * group)
 {
-  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on group that resides in this datastore.");
+  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on Group that resides in this DataStore.");
 
   Node node;
   conduit::relay::io::hdf5_read(h5_file_id, ".", node);
@@ -416,10 +417,10 @@ void DataStore::load(const hid_t& h5_file_id,
 /*
  *************************************************************************
  *
- * Serialize tree identified by a group into a conduit node.  Include
- * any buffers attached to views in that tree.
+ * Serialize tree identified by a Group into a conduit node.  Include
+ * any Buffers attached to Views in that tree.
  *
- * If group is not specified, the datastore root group will be used.
+ * If Group is not specified, the DataStore root group will be used.
  *
  *************************************************************************
  */
@@ -433,21 +434,21 @@ void DataStore::exportTo(const DataGroup * group,
 
   // TODO - This implementation will change in the future.  We want to write
   // out some separate set of conduit nodes:
-  // #1 A set of nodes representing the group and views (hierarchy), with
+  // #1 A set of nodes representing the Group and Views (hierarchy), with
   // the data descriptions ( schemas ).
-  // #2 A set of nodes for our data ( buffers, external data, etc ).
-  // On a load, we want to be able to create our datastore tree first,
+  // #2 A set of nodes for our data ( Buffers, external data, etc ).
+  // On a load, we want to be able to create our DataStore tree first,
   // then call allocate ourself, then have conduit load the data directly
   // into our allocated memory areas.  Conduit can do this, as long as the
   // conduit node set is compatible with what's in the file.
   std::set<IndexType> buffer_indices;
 
-  // Tell group to add itself and all sub-groups and views to node.
-  // Any buffers referenced by those views will be tracked in the
+  // Tell Group to add itself and all sub-Groups and Views to node.
+  // Any Buffers referenced by those Views will be tracked in the
   // buffer_indices
   group->exportTo(data_holder, buffer_indices);
 
-  // Now, add all those referenced buffers to the node.
+  // Now, add all those referenced Buffers to the node.
   for (std::set<IndexType>::iterator s_it = buffer_indices.begin();
        s_it != buffer_indices.end(); ++s_it)
   {
@@ -463,10 +464,10 @@ void DataStore::exportTo(const DataGroup * group,
 /*
  *************************************************************************
  *
- * Imports tree from a conduit node into datastore.  Includes
- * any buffers attached to views in that tree.
+ * Imports tree from a conduit node into DataStore.  Includes
+ * any Buffers attached to Views in that tree.
  *
- * If group is not specified, the datastore root group will be used.
+ * If Group is not specified, the DataStore root Group will be used.
  *
  *************************************************************************
  */
@@ -476,7 +477,7 @@ void DataStore::importFrom(DataGroup * group,
 {
   // TODO - May want to put in a little meta-data into these files like a 'version'
   // or tag identifying the data.  We don't want someone giving us a file that
-  // doesn't have our full multiview->buffer connectivity in there.
+  // doesn't have our full multiView->buffer connectivity in there.
 
   if (group == ATK_NULLPTR)
   {
@@ -486,7 +487,7 @@ void DataStore::importFrom(DataGroup * group,
   group->destroyGroups();
   group->destroyViews();
 
-  // First - Import buffers into the datastore.
+  // First - Import Buffers into the DataStore.
   std::map<IndexType, IndexType> buffer_indices_map;
 
   // Added CON-132 ticket asking if has_path can just return false if node is empty or not an object type.
@@ -500,17 +501,17 @@ void DataStore::importFrom(DataGroup * group,
 
       DataBuffer * buffer = createBuffer();
 
-      // track change of old buffer id to new buffer id
+      // track change of old Buffer id to new Buffer id
       buffer_indices_map[ old_buffer_id ] = buffer->getIndex();
 
-      // populate the new buffer's state
+      // populate the new Buffer's state
       buffer->importFrom(buffer_data_holder);
     }
   }
 
-  // Next - import tree of groups, sub-groups, views into the datastore.
-  // Use the mapping of old to new buffer ids to connect the views to the
-  // right buffers.
+  // Next - import tree of Groups, sub-Groups, Views into the DataStore.
+  // Use the mapping of old to new Buffer ids to connect the Views to the
+  // right Buffers.
   group->importFrom(data_holder, buffer_indices_map);
 
 }
