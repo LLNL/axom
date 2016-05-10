@@ -82,3 +82,38 @@ if (ENABLE_MPI)
                  NUM_PROCS 2)
 endif()
 
+################################################################################
+# BLT compiler flag tests
+# Tests should fail if we have the wrong warning disabler set for the
+# given compiler/configuration.  Flags are defined in blt's SetupCompilerOptions.
+################################################################################
+
+# Test for ATK_DISABLE_UNINITIALIZED_WARNINGS flag
+set( BLT_SMOKE_TESTS
+        blt_uninitialized.cpp
+        blt_unused_param.cpp
+        blt_unused_var.cpp
+        blt_nopragma.cpp
+        )
+
+foreach(test ${BLT_SMOKE_TESTS})
+    get_filename_component( test_name ${test} NAME_WE )
+    blt_add_executable( 
+        NAME ${test_name}
+        SOURCES ${test}
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        USE_OPENMP False
+        )
+    blt_add_test( 
+        NAME ${test_name} 
+        COMMAND ${test_name} 
+        )
+endforeach()
+
+set( BLT_SMOKE_FLAGS "${ATK_TREAT_WARNINGS_AS_ERRORS} ${ATK_ENABLE_ALL_WARNINGS}")
+set_target_properties(blt_uninitialized PROPERTIES COMPILE_FLAGS "${BLT_SMOKE_FLAGS} ${ATK_DISABLE_UNINITIALIZED_WARNINGS}")
+set_target_properties(blt_unused_param PROPERTIES COMPILE_FLAGS "${BLT_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS}")
+set_target_properties(blt_unused_var PROPERTIES COMPILE_FLAGS "${BLT_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS}")
+set_target_properties(blt_nopragma PROPERTIES COMPILE_FLAGS "${BLT_SMOKE_FLAGS} ${ATK_DISABLE_OMP_PRAGMA_WARNINGS}")
+
+
