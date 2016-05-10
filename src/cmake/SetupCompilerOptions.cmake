@@ -229,8 +229,16 @@ blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_VARIABLE_WARNINGS
                   XL      "-qnoinfo=use"
                   )
 
+# Flag for disabling warnings about variables that may be uninitialized.
+# Useful when we are using compiler generated interface code (e.g. in shroud)
+blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNINITIALIZED_WARNINGS
+                  DEFAULT "-Wno-uninitialized"
+                  XL      "-qsuppress=1540-1102"
+                  )
+
 # message(STATUS "value of ATK_DISABLE_OMP_PRAGMA_WARNINGS is ${ATK_DISABLE_OMP_PRAGMA_WARNINGS} ")
 # message(STATUS "value of ATK_DISABLE_UNUSED_PARAMETER_WARNINGS is ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS} ")
 # message(STATUS "value of ATK_DISABLE_UNUSED_VARIABLE_WARNINGS is ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS} ")
+# message(STATUS "value of ATK_DISABLE_UNINITIALIZED_WARNINGS is ${ATK_DISABLE_UNINITIALIZED_WARNINGS} ")
  
  

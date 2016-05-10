@@ -48,6 +48,10 @@ if(PYTHON_FOUND)
     )
     set_tests_properties(shroud-run-tutorial-python PROPERTIES
         ENVIRONMENT PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/python)
+        
+    set_target_properties(tutorial-python-module 
+        PROPERTIES COMPILE_FLAGS "${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS} ${ATK_DISABLE_UNINITIALIZED_WARNINGS}")
+    
 endif()
 
 #
