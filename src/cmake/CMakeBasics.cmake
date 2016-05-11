@@ -39,181 +39,51 @@
 ################################
 # Setup build options and their default values
 ################################
-include(SetupCmakeOptions)
-
-################################
-# Prevent in-source builds
-################################
-include(PreventInSourceBuilds)
-
-################################
-#  macros
-################################
-include(ATKMacros)
-
-################################
-# Setup 3rd Party Libs
-################################
-include(SetupThirdParty)
-
-################################
-# Setup toolkit docs targets
-################################
-include(SetupDocs)
+include(cmake/ATKOptions.cmake)
 
 ################################
 # Setup toolkit generate targets
 ################################
-include(SetupGenerate)
+include(cmake/SetupShroud.cmake)
+
 
 ################################
-# Setup toolkit source checks
+# Setup toolkit generate targets
 ################################
-include(SetupCodeChecks)
+include(cmake/thirdparty/SetupATKThirdParty.cmake)
 
 
-# XXX this should move to some better place and be based on compiler
-#set (CMAKE_Fortran_FLAGS_DEBUG   "${CMAKE_Fortran_FLAGS_DEBUG} -fcheck=bounds")
+##############################################################################
+# Setup some additional compiler options that can be useful in various targets
+# These are stored in their own variables.
+# Usage: To add one of these sets of flags to some source files:
+#   get_source_file_property(_origflags <src_file> COMPILE_FLAGS)
+#   set_source_files_properties(<list_of_src_files> 
+#        PROPERTIES COMPILE_FLAGS "${_origFlags} ${<flags_variable}" )
+##############################################################################
 
-################################
-# Standard Build Layout
-################################
+# Flag for disabling warnings about omp pragmas in the code
+blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_OMP_PRAGMA_WARNINGS
+                  DEFAULT "-Wno-unknown-pragmas"
+                  XL      "-qignprag=omp"
+                  INTEL   "-diag-disable 3180"
+                  )
 
-##
-## Defines the layout of the build directory. Namely,
-## it indicates the location where the various header files should go,
-## where to store libraries (static or shared), the location of the
-## bin directory for all executables and the location for fortran moudules.
-##
+# Flag for disabling warnings about unused parameters.
+# Useful when we include external code.
+blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_PARAMETER_WARNINGS
+                  DEFAULT "-Wno-unused-parameter"
+                  XL      "-qnoinfo=par"
+                  )
 
-## Set the path where all the header will be stored
- set(HEADER_INCLUDES_DIRECTORY
-     ${PROJECT_BINARY_DIR}/include/
-     CACHE PATH
-     "Directory where all headers will go in the build tree"
-     )
- include_directories(${HEADER_INCLUDES_DIRECTORY})
+# Flag for disabling warnings about unused variables
+# Useful when we include external code.
+blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_VARIABLE_WARNINGS
+                  DEFAULT "-Wno-unused-variable"
+                  XL      "-qnoinfo=use"
+                  )
 
- ## Set the path where all the libraries will be stored
- set(LIBRARY_OUTPUT_PATH
-     ${PROJECT_BINARY_DIR}/lib
-     CACHE PATH
-     "Directory where compiled libraries will go in the build tree"
-     )
-
- ## Set the path where all the install executables will go
- set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/bin
-     CACHE PATH
-     "Directory where executables will go in the build tree"
-     )
-
-## Set the path were all test executables will go
- set(TEST_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/test
-     CACHE PATH
-     "Directory where test executables will go in the build tree"
-     )
-
-## Set the path were all example test executables will go
- set(EXAMPLE_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/example
-     CACHE PATH
-     "Directory where example executables will go in the build tree"
-     )
-
- ## Set the Fortran module directory
- set(CMAKE_Fortran_MODULE_DIRECTORY
-     ${PROJECT_BINARY_DIR}/lib/fortran
-     CACHE PATH
-     "Directory where all Fortran modules will go in the build tree"
-     )
-
-## Set the Lua module directory
- set(BLT_Lua_MODULE_DIRECTORY
-     "${PROJECT_BINARY_DIR}/lib/lua"
-     CACHE PATH
-     "Directory where all Lua modules will go in the build tree"
- )
-
-## Mark as advanced
-mark_as_advanced(
-     LIBRARY_OUTPUT_PATH
-     CMAKE_RUNTIME_OUTPUT_DIRECTORY
-     CMAKE_Fortran_MODULE_DIRECTORY
-     )
-
-################################
-# Setup compiler options
-# (must be included after HEADER_INCLUDES_DIRECTORY is set)
-################################
-include(SetupCompilerOptions)
-
-################################
-# Setup code metrics -
-# profiling, code coverage, etc.
-# (must be included after SetupCompilerOptions)
-################################
-include(SetupCodeMetrics)
-
-################################
-# Standard CMake Options
-################################
-
-include(ExternalProject)
-if (ENABLE_TESTS)
-  include(CTest)
-
-  ## add google test
-  add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gtest-1.7.0)
-  blt_register_library(NAME gtest
-                       INCLUDES ${gtest_SOURCE_DIR}/include
-                       LIBRARIES gtest_main gtest
-                       )
-
-  ## Add Fruit   FortRan UnIT test
-  if (ENABLE_FORTRAN)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/fruit-3.3.9)
-  endif (ENABLE_FORTRAN)
-
-  if(ENABLE_BENCHMARKS)
-    ## add google benchmark
-    add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gbenchmark)
-    set(GBENCHMARK_INCLUDES ${benchmark_SOURCE_DIR}/include ${benchmark_SOURCE_DIR}
-            CACHE INTERNAL "Google Benchmark include directories" FORCE)
-    set(GBENCHMARK_LIBS benchmark
-            CACHE INTERNAL "Google Benchmark link libraries" FORCE)
-
-    #message(STATUS "Google benchmark -- \n\t inc -- ${GBENCHMARK_INCLUDES} -- \n\t lib -- ${GBENCHMARK_LIBS} ")
-  
-    # This sets up a target to run the benchmarks
-    add_custom_target(run_benchmarks COMMAND ctest -C Benchmark -VV -R benchmark)
-
-  endif()
-
-  enable_testing()
-  
-#  add_dependencies(test run_benchmarks)
-
-endif()
-
-################################
-# MPI
-################################
-message(STATUS "MPI Support is ${ENABLE_MPI}")
-if (ENABLE_MPI)
-  find_package(MPI REQUIRED)
-  message(STATUS "MPI C Compile Flags: ${MPI_C_COMPILE_FLAGS}")
-  message(STATUS "MPI C Include Path: ${MPI_C_INCLUDE_PATH}")
-  message(STATUS "MPI C Link Flags: ${MPI_C_LINK_FLAGS}")
-  message(STATUS "MPI C Libraries: ${MPI_C_LIBRARIES}")
-endif()
-
-################################
-# OpenMP
-################################
-message(STATUS "OpenMP Support is ${ENABLE_OPENMP}")
-if(ENABLE_OPENMP)
-    find_package(OpenMP REQUIRED)
-    message(STATUS "OpenMP CXX Flags: ${OpenMP_CXX_FLAGS}")
-endif()
+# message(STATUS "value of ATK_DISABLE_OMP_PRAGMA_WARNINGS is ${ATK_DISABLE_OMP_PRAGMA_WARNINGS} ")
+# message(STATUS "value of ATK_DISABLE_UNUSED_PARAMETER_WARNINGS is ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS} ")
+# message(STATUS "value of ATK_DISABLE_UNUSED_VARIABLE_WARNINGS is ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS} ")
+ 

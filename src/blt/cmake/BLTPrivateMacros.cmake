@@ -59,7 +59,7 @@ macro(blt_copy_headers_target proj hdrs dest)
         COMMAND ${CMAKE_COMMAND}
                  -DHEADER_INCLUDES_DIRECTORY=${dest}
                  -DLIBHEADERS="${hdrs}"
-                 -P ${CMAKE_SOURCE_DIR}/cmake/copy_headers.cmake
+                 -P ${CMAKE_SOURCE_DIR}/blt/cmake/copy_headers.cmake
 
         DEPENDS
             ${hdrs}

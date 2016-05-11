@@ -179,8 +179,6 @@ endforeach()
 # Enable Fortran
 ################################
 if(ENABLE_FORTRAN)
-    add_definitions(-DATK_ENABLE_FORTRAN)
-
     # if enabled but no fortran compiler, halt the configure
     if(CMAKE_Fortran_COMPILER)
         MESSAGE(STATUS  "Fortran support enabled.")
@@ -199,38 +197,5 @@ else()
 endif()
  
 
-##############################################################################
-# Setup some additional compiler options that can be useful in various targets
-# These are stored in their own variables.
-# Usage: To add one of these sets of flags to some source files:
-#   get_source_file_property(_origflags <src_file> COMPILE_FLAGS)
-#   set_source_files_properties(<list_of_src_files> 
-#        PROPERTIES COMPILE_FLAGS "${_origFlags} ${<flags_variable}" )
-##############################################################################
 
-# Flag for disabling warnings about omp pragmas in the code
-blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_OMP_PRAGMA_WARNINGS
-                  DEFAULT "-Wno-unknown-pragmas"
-                  XL      "-qignprag=omp"
-                  INTEL   "-diag-disable 3180"
-                  )
-
-# Flag for disabling warnings about unused parameters.
-# Useful when we include external code.
-blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_PARAMETER_WARNINGS
-                  DEFAULT "-Wno-unused-parameter"
-                  XL      "-qnoinfo=par"
-                  )
-
-# Flag for disabling warnings about unused variables
-# Useful when we include external code.
-blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_VARIABLE_WARNINGS
-                  DEFAULT "-Wno-unused-variable"
-                  XL      "-qnoinfo=use"
-                  )
-
-# message(STATUS "value of ATK_DISABLE_OMP_PRAGMA_WARNINGS is ${ATK_DISABLE_OMP_PRAGMA_WARNINGS} ")
-# message(STATUS "value of ATK_DISABLE_UNUSED_PARAMETER_WARNINGS is ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS} ")
-# message(STATUS "value of ATK_DISABLE_UNUSED_VARIABLE_WARNINGS is ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS} ")
- 
  
