@@ -225,14 +225,14 @@ blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_OMP_PRAGMA_WARNINGS
 # Useful when we include external code.
 blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_PARAMETER_WARNINGS
                   DEFAULT "-Wno-unused-parameter"
-                  XL      "-qnoinfo=par"
+                  XL      "-qinfo=nopar"
                   )
 
 # Flag for disabling warnings about unused variables
 # Useful when we include external code.
 blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_VARIABLE_WARNINGS
                   DEFAULT "-Wno-unused-variable"
-                  XL      "-qnoinfo=use"
+                  XL      "-qinfo=nouse"
                   )
 
 # Flag for disabling warnings about variables that may be uninitialized.
@@ -240,6 +240,13 @@ blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_VARIABLE_WARNINGS
 blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNINITIALIZED_WARNINGS
                   DEFAULT "-Wno-uninitialized"
                   XL      "-qsuppress=1540-1102"
+                  )
+
+# Flag for disabling warnings about strict aliasing.
+# Useful when we are using compiler generated interface code (e.g. in shroud)
+blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_ALIASING_WARNINGS
+                  DEFAULT "-Wno-strict-aliasing"
+                  XL      ""
                   )
 
 # message(STATUS "value of ATK_DISABLE_OMP_PRAGMA_WARNINGS is ${ATK_DISABLE_OMP_PRAGMA_WARNINGS} ")
