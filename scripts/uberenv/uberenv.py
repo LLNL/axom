@@ -56,6 +56,7 @@ import shutil
 import socket
 import platform
 import json
+import datetime
 
 from optparse import OptionParser
 
@@ -110,10 +111,10 @@ def parse_args():
                       help="force rebuild of uberenv packages")
     # a file that holds settings for a specific project 
     # using uberenv.py 
-    parser.add_option("--package-json",
-                      dest="package_json",
-                      default=pjoin(uberenv_script_dir(),"uberenv_package.json"),
-                      help="uberenv package info json file")
+    parser.add_option("--options-json",
+                      dest="options_json",
+                      default=pjoin(uberenv_script_dir(),"uberenv_options.json"),
+                      help="uberenv options json file")
 
     # parse args
     opts, extras = parser.parse_args()
@@ -122,13 +123,14 @@ def parse_args():
     opts = vars(opts)
     return opts, extras
 
+
 def uberenv_script_dir():
     # returns the directory of the uberenv.py script
     return os.path.dirname(os.path.abspath(__file__))
 
-def uberenv_package_info(package_json):
-    # reads package info from json file
-    return json.load(open(package_json))
+def uberenv_options_json(options_json):
+    # reads uberenv options from json file
+    return json.load(open(options_json))
 
 def spack_package_is_installed(pkg,spec):
     # TODO: We need a better way to check this
@@ -212,9 +214,9 @@ def main():
     # parse args from command line
     opts, extras = parse_args()
     
-    pkg_info = uberenv_package_info(opts["package_json"])
-    print pkg_info
-    uberenv_pkg_name = pkg_info["uberenv_package_name"]
+    uberenv_opts  = uberenv_options_json(opts["options_json"])
+    print uberenv_opts
+    uberenv_pkg_name = uberenv_opts["uberenv_package_name"]
     
     # setup osx deployment target
     print "[uberenv options: %s]" % str(opts)
@@ -236,6 +238,7 @@ def main():
     # setup destination paths
     dest_dir = os.path.abspath(opts["prefix"])
     dest_spack = pjoin(dest_dir,"spack")
+    print "[installing to: %s]" % dest_dir
     # print a warning if the dest path already exists
     if not os.path.isdir(dest_dir):
         os.mkdir(dest_dir)
@@ -245,23 +248,30 @@ def main():
         print "[info: destination '%s' already exists]"  % dest_spack
     compilers_yaml = uberenv_compilers_yaml_file()
     if not os.path.isdir("spack"):
-        print "[info: cloning spack from github]"
+        print "[info: cloning spack develop branch from github]"
         os.chdir(dest_dir)
         # clone spack into the dest path
         sexe("git clone -b develop https://github.com/llnl/spack.git")
+        if "spack_develop_commit" in uberenv_opts:
+            sha1 = uberenv_opts["spack_develop_commit"]
+            print "[info: using spack develop %s]" % sha1
+            os.chdir(pjoin(dest_dir,"spack"))
+            sexe("git reset --hard %s" % sha1)
     else:
-        print "[info: updating spack from github]"
-        # if we already have a checkout, clean and update it
+        print "[info: cleaning spack instance]"
+        # if we already have a checkout, clean it
         os.chdir(pjoin(dest_dir,"spack"))
         sexe("git clean -f")
-        sexe("git pull origin develop")
     os.chdir(dest_dir)
     # twist spack's arms 
     patch_spack(dest_spack,compilers_yaml,pkgs)
+    # if force is enabled 
+    # uninstall all related packages for this spec
     if opts["force"]:
         deps = spack_package_deps(uberenv_pkg_name,opts["spec"])
         for dep in deps:
             spack_uninstall_and_clean(dep)
+    # if our main package is already installed, uninstall it
     if spack_package_is_installed(uberenv_pkg_name,opts["spec"]):
         spack_uninstall_and_clean(uberenv_pkg_name + opts["spec"])
 
