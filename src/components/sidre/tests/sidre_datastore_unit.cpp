@@ -14,6 +14,7 @@
 
 
 using asctoolkit::sidre::DataStore;
+using asctoolkit::sidre::DataView;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::IndexType;
@@ -143,6 +144,7 @@ TEST(sidre_datastore,create_destroy_buffers)
   EXPECT_EQ( 1, ds->getNumBuffers() );
 
   IndexType bufferIndex = ds->getFirstValidBufferIndex();
+  EXPECT_EQ( 0, dbuff->getIndex());
   EXPECT_EQ( dbuff->getIndex(), bufferIndex);
   EXPECT_EQ( InvalidIndex, ds->getNextValidBufferIndex(bufferIndex) );
 
@@ -190,11 +192,53 @@ TEST(sidre_datastore,create_destroy_buffers)
   EXPECT_TRUE(ds->hasBuffer(d4Index));
   EXPECT_TRUE(ds->hasBuffer(d5Index));
 
+  DataBuffer * dbuff6 = ds->createBuffer();
+  IndexType d6Index = dbuff6->getIndex();
+
+  EXPECT_EQ(dbuff3, ds->getBuffer(d3Index));
+  EXPECT_EQ(dbuff4, ds->getBuffer(d4Index));
+  EXPECT_EQ(dbuff5, ds->getBuffer(d5Index));
+  EXPECT_EQ(dbuff6, ds->getBuffer(d6Index));
+
+  // Create and verify views referencing buffers
+  DataView *vA = ds->getRoot()->createView("vA", dbuff3);
+  DataView *vB = ds->getRoot()->createView("vB", dbuff3);
+  DataView *vC = ds->getRoot()->createView("vC", dbuff4);
+  DataView *vD = ds->getRoot()->createView("vD", dbuff6);
+  EXPECT_EQ(dbuff3, vA->getBuffer());
+  EXPECT_EQ(dbuff3, vB->getBuffer());
+  EXPECT_EQ(2, dbuff3->getNumViews());
+  EXPECT_EQ(dbuff4, vC->getBuffer());
+  EXPECT_EQ(dbuff6, vD->getBuffer());
+
   ds->destroyBuffer(d4Index);
-  EXPECT_EQ( 2, ds->getNumBuffers() );
+  EXPECT_EQ( 3, ds->getNumBuffers() );
   EXPECT_TRUE(ds->hasBuffer(d3Index));
   EXPECT_FALSE(ds->hasBuffer(d4Index));
   EXPECT_TRUE(ds->hasBuffer(d5Index));
+  // Does destroying a buffer detach it from the view?
+  EXPECT_EQ(dbuff3, vA->getBuffer());
+  EXPECT_EQ(dbuff3, vB->getBuffer());
+  EXPECT_FALSE(vC->hasBuffer());
+  EXPECT_EQ(dbuff6, vD->getBuffer());
+
+  // Detaching the buffer from its last view should not destroy the buffer.
+  vD->detachBuffer();
+  EXPECT_FALSE(vD->hasBuffer());
+  EXPECT_TRUE(ds->hasBuffer(d6Index));
+  EXPECT_EQ(0, dbuff6->getNumViews());
+  vA->attachBuffer(ATK_NULLPTR);
+  EXPECT_FALSE(vA->hasBuffer());
+  EXPECT_TRUE(ds->hasBuffer(d3Index));
+  EXPECT_EQ(dbuff3, vB->getBuffer());
+  EXPECT_EQ(1, dbuff3->getNumViews());
+  // But attach(NULL) on the last view of a buffer should destroy that buffer.
+  vB->attachBuffer(ATK_NULLPTR);
+  EXPECT_FALSE(ds->hasBuffer(d3Index));
+  EXPECT_EQ(2, ds->getNumBuffers());
+
+  vC->attachBuffer(dbuff6);
+  EXPECT_TRUE(vC->hasBuffer());
 
   // Can we destroy all buffers?
   ds->destroyAllBuffers();
@@ -202,11 +246,35 @@ TEST(sidre_datastore,create_destroy_buffers)
   EXPECT_FALSE(ds->hasBuffer(d2Index));
   EXPECT_FALSE(ds->hasBuffer(d4Index));
   EXPECT_FALSE(ds->hasBuffer(d5Index));
+  EXPECT_FALSE(vC->hasBuffer());
+
+  // Verify the buffers are detached from the views
 
   // check error condition
   ds->destroyBuffer(badBufferIndex);
 
+
   delete ds;
+}
+
+int psrand(int min, int max)
+{
+  // Returns a pseudorandom int in [min, max].  Note the closed interval.
+  // Assumes the PRNG has been initialized
+  int range = max - min + 1;
+  return min + int(range * rand()/(RAND_MAX + 1.0));
+}
+
+int irhall(int n)
+{
+  int retval = 0;
+
+  for (int i = 0; i < n; ++i)
+  {
+    retval += psrand(-5, 5);
+  }
+
+  return retval;
 }
 
 // Test iteration through buffers, as well as proper index and buffer behavior
@@ -222,6 +290,18 @@ TEST(sidre_datastore,iterate_buffers)
   EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(0));
   EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(badBufferIndex));
   EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(InvalidIndex));
+
+  // Create one data buffer, verify its index is zero, and that iterators behave as expected
+  DataBuffer *initial = ds->createBuffer();
+  EXPECT_EQ(0, initial->getIndex());
+  EXPECT_EQ(1, ds->getNumBuffers() );
+  EXPECT_EQ(0, ds->getFirstValidBufferIndex());
+  EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(0));
+  // Destroy the data buffer, verify that iterators behave as expected
+  ds->destroyBuffer(initial);
+  EXPECT_EQ( 0, ds->getNumBuffers() );
+  EXPECT_EQ(InvalidIndex, ds->getFirstValidBufferIndex());
+  EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(0));
 
   std::map<IndexType, DataBuffer *> bs;
   int bufcount = 0;
@@ -275,15 +355,11 @@ TEST(sidre_datastore,iterate_buffers)
   }
 
   {
-    SCOPED_TRACE("random ");
+    SCOPED_TRACE("random");
     ds->destroyAllBuffers();
     bs.clear();
     std::vector<int> idxlist;
     int initbufcount = 50;
-
-    std::random_device rd;     // only used once to initialise (seed) engine
-    std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
-    std::poisson_distribution<int> poi(3);
 
     for (int i = 0; i < initbufcount; ++i)
     {
@@ -299,37 +375,39 @@ TEST(sidre_datastore,iterate_buffers)
       SCOPED_TRACE(round);
 
       {
-        SCOPED_TRACE("remove");
-        // Remove a few 
-        int rmvcount = poi(rng);
-        if (rmvcount > bs.size()) rmvcount = bs.size();
-        for (int i = 0; i < rmvcount; ++i)
-        {
-          std::uniform_int_distribution<int> uni(0, idxlist.size()-1);
-          int rmvidx = uni(rng);
-          int rmvid = idxlist[rmvidx];
-          EXPECT_TRUE(ds->hasBuffer(rmvid));
-          EXPECT_TRUE(bs.count(rmvid) == 1);
-          ds->destroyBuffer(rmvid);
-          bs.erase(rmvid);
-          idxlist.erase(idxlist.begin() + rmvidx);
-          EXPECT_FALSE(ds->hasBuffer(rmvid));
-          EXPECT_FALSE(bs.count(rmvid) == 1);
-        }
-      }
+        int delta = irhall(5);
+        SCOPED_TRACE(delta);
 
-      {
-        SCOPED_TRACE("add");
-        // Add a few 
-        int addcount = poi(rng);
-        for (int i = 0; i < addcount; ++i)
+        if (delta < 0)
         {
-          DataBuffer *buf = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400);
-          int addid = buf->getIndex();
-          EXPECT_TRUE(ds->hasBuffer(addid));
-          EXPECT_TRUE(bs.count(addid) < 1);
-          bs[addid] = buf;
-          idxlist.push_back(addid);
+          // Remove a few 
+          int rmvcount = abs(delta);
+          if (rmvcount > bs.size()) rmvcount = bs.size();
+          for (int i = 0; i < rmvcount; ++i)
+          {
+            int rmvidx = psrand(0, idxlist.size()-1);
+            int rmvid = idxlist[rmvidx];
+            EXPECT_TRUE(ds->hasBuffer(rmvid));
+            EXPECT_TRUE(bs.count(rmvid) == 1);
+            ds->destroyBuffer(rmvid);
+            bs.erase(rmvid);
+            idxlist.erase(idxlist.begin() + rmvidx);
+            EXPECT_FALSE(ds->hasBuffer(rmvid));
+            EXPECT_FALSE(bs.count(rmvid) == 1);
+          }
+        }
+        else if (delta > 0)
+        {
+          int addcount = delta;
+          for (int i = 0; i < addcount; ++i)
+          {
+            DataBuffer *buf = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400);
+            int addid = buf->getIndex();
+            EXPECT_TRUE(ds->hasBuffer(addid));
+            EXPECT_TRUE(bs.count(addid) < 1);
+            bs[addid] = buf;
+            idxlist.push_back(addid);
+          }
         }
       }
 
