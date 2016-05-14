@@ -50,17 +50,22 @@ def set_toolkit_fs_perms(prefix):
 
 def install_spec(prefix,spec):
     cmd = "python ../uberenv.py --prefix %s --spec %s " % (prefix,spec)
-    sexe(cmd,echo=True)
+    return sexe(cmd,echo=True)
 
 
 def main():
     prefix = "/usr/gapps/asctoolkit/thirdparty_libs/builds/" + timestamp()
-    specs = ["clang@3.5.0",
-             "gcc@4.7.1",
-             "gcc@4.9.3",
-             "intel@15.0.187",
-             "intel@16.0.109"]
+    specs = ["%clang@3.5.0",
+             "%gcc@4.7.1",
+             "%gcc@4.9.3",
+             "%intel@15.0.187",
+             "%intel@16.0.109"]
     for spec in specs:
         install_spec(prefix,spec)
     set_toolkit_fs_perms(prefix)
+
+
+if __name__ == "__main__":
+    main()
+
 

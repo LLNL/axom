@@ -109,6 +109,15 @@ def parse_args():
                       default=False,
                       action='store_true',
                       help="force rebuild of uberenv packages")
+    # spack compiler settings file
+    # we disable spack's reading of a user-level compiler settings
+    # this option allows a user to explicitly to select any compilers.yaml 
+    # file
+    parser.add_option("--compilers-yaml",
+                      dest="compilers_yaml",
+                      default=pjoin(uberenv_script_dir(),"compilers.yaml"),
+                      help="spack compiler settings file")
+
     # a file that holds settings for a specific project 
     # using uberenv.py 
     parser.add_option("--options-json",
@@ -162,10 +171,9 @@ def spack_uninstall_and_clean(pkg):
     sexe("spack/bin/spack uninstall -f %s" % pkg,echo=True)
     sexe("spack/bin/spack clean %s" % pkg,echo=True)
 
-def uberenv_compilers_yaml_file():
+def uberenv_compilers_yaml_file(opts):
     # path to compilers.yaml, which we will for compiler setup for spack
-    compilers_yaml = pjoin(uberenv_script_dir(),
-                           "compilers.yaml")
+    compilers_yaml = opts["compilers_yaml"]
     if not os.path.isfile(compilers_yaml):
         print "[failed to find uberenv 'compilers.yaml' file]"
         sys.exit(-1)
@@ -246,7 +254,7 @@ def main():
         print "[info: destination '%s' already exists]"  % dest_dir
     if os.path.isdir(dest_spack):
         print "[info: destination '%s' already exists]"  % dest_spack
-    compilers_yaml = uberenv_compilers_yaml_file()
+    compilers_yaml = uberenv_compilers_yaml_file(opts)
     if not os.path.isdir("spack"):
         print "[info: cloning spack develop branch from github]"
         os.chdir(dest_dir)
@@ -265,15 +273,20 @@ def main():
     os.chdir(dest_dir)
     # twist spack's arms 
     patch_spack(dest_spack,compilers_yaml,pkgs)
+
+    ########################################################
+    # disable force and uninstall, newer versions of
+    # spack added interactive prompt that could undermine us
+    ########################################################
     # if force is enabled 
     # uninstall all related packages for this spec
-    if opts["force"]:
-        deps = spack_package_deps(uberenv_pkg_name,opts["spec"])
-        for dep in deps:
-            spack_uninstall_and_clean(dep)
-    # if our main package is already installed, uninstall it
-    if spack_package_is_installed(uberenv_pkg_name,opts["spec"]):
-        spack_uninstall_and_clean(uberenv_pkg_name + opts["spec"])
+    # if opts["force"]:
+    #         deps = spack_package_deps(uberenv_pkg_name,opts["spec"])
+    #         for dep in deps:
+    #             spack_uninstall_and_clean(dep)
+    #         # if our main package is already installed, uninstall it
+    #         if spack_package_is_installed(uberenv_pkg_name,opts["spec"]):
+    #             spack_uninstall_and_clean(uberenv_pkg_name + opts["spec"])
 
     # Set up mirror if it does not already exist.
     mirror_name = uberenv_pkg_name
