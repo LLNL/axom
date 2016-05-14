@@ -15,7 +15,7 @@ class UberenvAsctoolkit(Package):
     # standard spack packages
     depends_on("doxygen")
     depends_on("python")
-    depends_on("hdf5~shared~zlib")
+    depends_on("hdf5~shared~zlib~fortran")
     depends_on("uncrustify")
     depends_on("lua@5.1.5")
 
