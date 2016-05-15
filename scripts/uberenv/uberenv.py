@@ -120,10 +120,10 @@ def parse_args():
 
     # a file that holds settings for a specific project 
     # using uberenv.py 
-    parser.add_option("--options-json",
-                      dest="options_json",
-                      default=pjoin(uberenv_script_dir(),"uberenv_options.json"),
-                      help="uberenv options json file")
+    parser.add_option("--project-json",
+                      dest="project_json",
+                      default=pjoin(uberenv_script_dir(),"project.json"),
+                      help="uberenv project settings json file")
 
     # parse args
     opts, extras = parser.parse_args()
@@ -137,9 +137,9 @@ def uberenv_script_dir():
     # returns the directory of the uberenv.py script
     return os.path.dirname(os.path.abspath(__file__))
 
-def uberenv_options_json(options_json):
-    # reads uberenv options from json file
-    return json.load(open(options_json))
+def load_json_file(json_file):
+    # reads json file
+    return json.load(open(json_file))
 
 def spack_package_is_installed(pkg,spec):
     # TODO: We need a better way to check this
@@ -222,9 +222,9 @@ def main():
     # parse args from command line
     opts, extras = parse_args()
     
-    uberenv_opts  = uberenv_options_json(opts["options_json"])
-    print uberenv_opts
-    uberenv_pkg_name = uberenv_opts["uberenv_package_name"]
+    project_opts  = load_json_file(opts["project_json"])
+    print project_opts
+    uberenv_pkg_name = project_opts["uberenv_package_name"]
     
     # setup osx deployment target
     print "[uberenv options: %s]" % str(opts)
@@ -260,16 +260,19 @@ def main():
         os.chdir(dest_dir)
         # clone spack into the dest path
         sexe("git clone -b develop https://github.com/llnl/spack.git")
-        if "spack_develop_commit" in uberenv_opts:
-            sha1 = uberenv_opts["spack_develop_commit"]
+        if "spack_develop_commit" in project_opts:
+            sha1 = project_opts["spack_develop_commit"]
             print "[info: using spack develop %s]" % sha1
             os.chdir(pjoin(dest_dir,"spack"))
             sexe("git reset --hard %s" % sha1)
-    else:
-        print "[info: cleaning spack instance]"
-        # if we already have a checkout, clean it
-        os.chdir(pjoin(dest_dir,"spack"))
-        sexe("git clean -f")
+    ###########################################################
+    # disable git clean, since we aren't doing any git updates
+    ###########################################################
+    # else:
+    #     print "[info: cleaning spack instance]"
+    #     # if we already have a checkout, clean it
+    #     os.chdir(pjoin(dest_dir,"spack"))
+    #     sexe("git clean -f")
     os.chdir(dest_dir)
     # twist spack's arms 
     patch_spack(dest_spack,compilers_yaml,pkgs)
