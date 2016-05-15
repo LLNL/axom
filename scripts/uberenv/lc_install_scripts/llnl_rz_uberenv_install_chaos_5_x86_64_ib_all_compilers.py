@@ -8,7 +8,7 @@
 
  description: 
   uses uberenv to install tpls for the set of compilers we want
-  for llnl cz chaos 5 platforms.
+  for llnl rz chaos 5 platforms.
 
 """
 
@@ -46,7 +46,7 @@ def install_tpls(prefix,spec):
 
 
 def main():
-    prefix = "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/" + timestamp()
+    prefix = "/usr/workspace/wsrzc/toolkit/thirdparty_libs/builds/" + timestamp()
     specs = ["%clang@3.5.0",
              "%gcc@4.7.1",
              "%gcc@4.9.3",
