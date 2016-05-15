@@ -11,6 +11,7 @@
 
 """
 
+import sys
 import subprocess
 
 def sexe(cmd,ret_output=False,echo = False):
@@ -41,7 +42,7 @@ def set_toolkit_perms(fdir):
 
 
 def main():
-    if len(sys.argv) <1:
+    if len(sys.argv) < 2:
         print "usage: llnl_lc_set_toolkit_perms.py [directory]"
         sys.exit(-1)
     fdir = sys.argv[1]
