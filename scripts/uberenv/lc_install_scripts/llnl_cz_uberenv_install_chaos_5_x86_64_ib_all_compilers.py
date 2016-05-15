@@ -12,52 +12,25 @@
 
 """
 
-import subprocess
-import datetime
-
-from llnl_lc_set_toolkit_perms import set_toolkit_perms
-
-def sexe(cmd,ret_output=False,echo = False):
-    """ Helper for executing shell commands. """
-    if echo:
-        print "[exe: %s]" % cmd
-    if ret_output:
-        p = subprocess.Popen(cmd,
-                             shell=True,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
-        res =p.communicate()[0]
-        return p.returncode,res
-    else:
-        return subprocess.call(cmd,shell=True)
-
-def timestamp(t=None,sep="_"):
-    """ Creates a timestamp that can easily be included in a filename. """
-    if t is None:
-        t = datetime.datetime.now()
-    sargs = (t.year,t.month,t.day,t.hour,t.minute,t.second)
-    sbase = "".join(["%04d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d"])
-    return  sbase % sargs
-
-
-def install_tpls(prefix,spec):
-    cmd = "python ../uberenv.py --prefix %s --spec %s " % (prefix,spec)
-    return sexe(cmd,echo=True)
-
+from llnl_lc_uberenv_install_tools import *
 
 def main():
+    # install loc for cz
     prefix = "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/" + timestamp()
+    # spack specs for the cz chaos systems
     specs = ["%clang@3.5.0",
              "%gcc@4.7.1",
              "%gcc@4.9.3",
              "%intel@15.0.187",
              "%intel@16.0.109"]
+    # use uberenv to install for all specs
     for spec in specs:
-        install_tpls(prefix,spec)
-    set_toolkit_perms(prefix)
+        uberenv_install_tpls(prefix,spec)
+    # set proper perms for installed tpls
+    set_toolkit_group_and_perms(prefix)
+    # look for host config files as a sanity check
+    check_host_configs(prefix)
 
 
 if __name__ == "__main__":
     main()
-
-
