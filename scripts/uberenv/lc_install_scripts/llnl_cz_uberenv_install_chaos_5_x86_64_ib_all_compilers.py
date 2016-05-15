@@ -54,7 +54,7 @@ def install_spec(prefix,spec):
 
 
 def main():
-    prefix = "/usr/gapps/asctoolkit/thirdparty_libs/builds/" + timestamp()
+    prefix = "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/" + timestamp()
     specs = ["%clang@3.5.0",
              "%gcc@4.7.1",
              "%gcc@4.9.3",
