@@ -28,7 +28,8 @@ set(CMAKE_Fortran_COMPILER  "/home/taylor16/gapps/gcc-4.9.3/bin/gfortran" CACHE 
 set(HDF5_DIR "/home/taylor16/tpl/v7mpi/spack/opt/spack/x86_64/gcc-4.9.3/hdf5-1.8.16-vhefrjw2f57yhjzb77fuvhlaowx66dht" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "/home/taylor16/tpl/v7mpi/spack/opt/spack/x86_64/gcc-4.9.3/conduit-github-sfgmvgy7nlranrdldpoqrfkrcwv3bvid" CACHE PATH "")
+#set(CONDUIT_DIR "/home/taylor16/tpl/v7mpi/spack/opt/spack/x86_64/gcc-4.9.3/conduit-github-sfgmvgy7nlranrdldpoqrfkrcwv3bvid" CACHE PATH "")
+set(CONDUIT_DIR "/home/taylor16/conduit/debug-install" CACHE PATH "")
 
 # doxygen from uberenv
 set(DOXYGEN_EXECUTABLE "/home/taylor16/tpl/v7mpi/spack/opt/spack/x86_64/gcc-4.9.3/doxygen-1.8.10-7qxnjx5i5cyy2nbygrdihsdgzrnfvs77/bin/doxygen" CACHE PATH "")

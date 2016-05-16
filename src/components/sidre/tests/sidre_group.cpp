@@ -813,7 +813,7 @@ TEST(sidre_group,save_restore_external_data)
 
   // Now load back in.
   // Only restore conduit protocol for now
-  for (int i = 0; i < 1; ++i) {
+  for (int i = 1; i < 2; ++i) {
       const std::string file_path = file_path_base + protocols[i];
 
       DataStore * ds2 = new DataStore();
