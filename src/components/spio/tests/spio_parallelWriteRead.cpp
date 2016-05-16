@@ -34,6 +34,12 @@ int main(int argc, char** argv)
     num_output = 1;
   }
 
+  /*
+   * Create a DataStore and give it a small hierarchy of groups and views.
+   *
+   * The views are filled with repeatable nonsense data that will vary based
+   * on rank.
+   */
   DataStore * ds = new DataStore();
 
   DataGroup * root = ds->getRoot();
@@ -55,19 +61,32 @@ int main(int argc, char** argv)
   std::vector<DataGroup *> groups;
   groups.push_back(root);
 
+  /*
+   * Contents of the DataStore written to files with IOManager.
+   */
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD, &(groups[0]), groups.size(), num_files);
 
   writer.write("out_spio_parallel_write_read", 0, "conduit_hdf5");
 
+  /*
+   * Create another DataStore than holds nothing but the root group.
+   */
   DataStore * ds2 = new DataStore();
   std::vector<DataGroup *> groups2;
   groups2.push_back(ds2->getRoot());
 
+  /*
+   * Read from the files that were written above.
+   */
   IOManager reader(MPI_COMM_WORLD, &(groups2[0]), groups2.size(), num_files);
 
   reader.read("out_spio_parallel_write_read0.root");
 
+
+  /*
+   * Verify that the contents of ds2 match those written from ds.
+   */
   int return_val = 0;
   if (!ds2->getRoot()->isEquivalentTo(root)) {
     return_val = 1; 
