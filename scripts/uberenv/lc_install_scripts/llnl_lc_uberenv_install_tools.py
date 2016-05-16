@@ -16,6 +16,7 @@ import sys
 import subprocess
 import datetime
 import glob
+import json
 
 from os.path import join as pjoin
 
@@ -44,11 +45,42 @@ def timestamp(t=None,sep="_"):
     sbase = "".join(["%04d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d"])
     return  sbase % sargs
 
-def uberenv_install_tpls(prefix,spec):
+def build_info():
+    res = {}
+    res["built_by"] = os.environ["USER"]
+    res["built_from_branch"] = "unknown"
+    res["built_from_sha1"]   = "unknown"
+    rc, out = sexe('git branch -a | grep \"*\"',ret_output=True)
+    out = out.strip()
+    if rc == 0 and out != "":
+        res["built_from_branch"]  = out.split()[1]
+    rc,out = sexe('git rev-parse --verify HEAD',ret_output=True)
+    out = out.strip()
+    if rc == 0 and out != "":
+        res["built_from_sha1"] = out
+    return res
+
+def write_build_info(ofile):
+    print "[build info]"
+    binfo_str = json.dumps(build_info(),indent=2)
+    print binfo_str
+    open(ofile,"w").write(binfo_str)
+
+def uberenv_create_mirror(prefix,mirror_path):
+    """
+    Calls uberenv to create a spack mirror.
+    """
+    cmd = "python ../uberenv.py --prefix %s --mirror %s --create-mirror " % (prefix,mirror_path)
+    return sexe(cmd,echo=True)
+
+
+def uberenv_install_tpls(prefix,spec,mirror = None):
     """
     Calls uberenv to install tpls for a given spec to given prefix.
     """
     cmd = "python ../uberenv.py --prefix %s --spec %s " % (prefix,spec)
+    if not mirror is None:
+        cmd += "--mirror %s" % mirror
     return sexe(cmd,echo=True)
 
 def check_host_configs(prefix):

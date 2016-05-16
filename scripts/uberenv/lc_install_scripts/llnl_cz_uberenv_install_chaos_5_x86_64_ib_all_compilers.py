@@ -15,8 +15,14 @@
 from llnl_lc_uberenv_install_tools import *
 
 def main():
-    # install loc for cz
-    prefix = "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/" + timestamp()
+    builds_dir = "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/"
+    mirror_dir = pjoin(builds_dir,"mirror")
+    # unique install location
+    prefix =  pjoin(builds_dir,timestamp())
+    # write info about this build
+    write_build_info(pjoin(prefix,"info.json"))
+    # create a mirror
+    uberenv_create_mirror(prefix,mirror_dir)
     # spack specs for the cz chaos systems
     specs = ["%clang@3.5.0",
              "%gcc@4.7.1",

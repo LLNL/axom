@@ -92,25 +92,17 @@ def parse_args():
                       dest="spec",
                       default=None,
                       help="spack compiler spec")
-    # Flag to create mirror
+    # optional location of spack mirror
+    parser.add_option("--mirror",
+                      dest="mirror",
+                      default=None,
+                      help="spack mirror directory")
+    # flag to create mirror
     parser.add_option("--create-mirror",
                       action="store_true",
                       dest="create_mirror",
                       default=False,
                       help="Create spack mirror")
-    # location of mirror
-    parser.add_option("--mirror",
-                      dest="mirror",
-                      default=None,
-                      help="spack mirror directory")
-    # force rebuild of these packages
-    parser.add_option("--force",
-                      dest="force",
-                      default=False,
-                      action='store_true',
-                      help="force rebuild of uberenv packages")
-    # spack compiler settings file
-    # we disable spack's reading of a user-level compiler settings
     # this option allows a user to explicitly to select any compilers.yaml 
     # file
     parser.add_option("--compilers-yaml",
@@ -124,6 +116,17 @@ def parse_args():
                       dest="project_json",
                       default=pjoin(uberenv_script_dir(),"project.json"),
                       help="uberenv project settings json file")
+    #########################
+    # disabled options
+    #########################
+    # # force rebuild of these packages
+    # parser.add_option("--force",
+    #                   dest="force",
+    #                   default=False,
+    #                   action='store_true',
+    #                   help="force rebuild of uberenv packages")
+    # spack compiler settings file
+    # we disable spack's reading of a user-level compiler settings
 
     # parse args
     opts, extras = parser.parse_args()
@@ -141,30 +144,37 @@ def load_json_file(json_file):
     # reads json file
     return json.load(open(json_file))
 
-def spack_package_is_installed(pkg,spec):
-    # TODO: We need a better way to check this
-    # the term colors are undermining me 
-    # ( I was trying to check for z installed pacakges, with z > 0
-    rcode, output = sexe("spack/bin/spack find " + pkg + spec,
-                         ret_output=True,echo=True)
-    lines = output.split("\n")
-    return len(lines) > 1
+#################################################################
+#
+# these functions to inspect spakc state are very fragile to 
+# spack interface changes -- if we truly  need them, we should 
+# try to  use spack's internal db class
+#################################################################
 
-def spack_package_deps(pkg,spec):
-    # TODO: In the future, we will can use uninstall by hash
-    # and we won't need this
-    rcode, output = sexe("spack/bin/spack find --deps %s %s" % (pkg,spec),
-                         ret_output=True,
-                         echo=True)
-    lines = [ l.strip() for l in output.split("\n") if l.strip() != ""] 
-    lines = [ l[1:] for l in lines if l.startswith("^")]
-    # remove term colors that spack uses
-    lines = [ l.replace("\x1b[0;36m","") for l in lines]
-    lines = [ l.replace("\x1b[0;94m","") for l in lines]
-    lines = [ l.replace("\x1b[0m","") for l in lines]
-    pkgs = set(lines)
-    res = [ pkg + spec for pkg in pkgs]
-    return res    
+# def spack_package_is_installed(pkg,spec):
+#     # TODO: We need a better way to check this
+#     # the term colors are undermining me
+#     # ( I was trying to check for z installed pacakges, with z > 0
+#     rcode, output = sexe("spack/bin/spack find " + pkg + spec,
+#                          ret_output=True,echo=True)
+#     lines = output.split("\n")
+#     return len(lines) > 1
+#
+# def spack_package_deps(pkg,spec):
+#     # TODO: In the future, we will can use uninstall by hash
+#     # and we won't need this
+#     rcode, output = sexe("spack/bin/spack find --deps %s %s" % (pkg,spec),
+#                          ret_output=True,
+#                          echo=True)
+#     lines = [ l.strip() for l in output.split("\n") if l.strip() != ""]
+#     lines = [ l[1:] for l in lines if l.startswith("^")]
+#     # remove term colors that spack uses
+#     lines = [ l.replace("\x1b[0;36m","") for l in lines]
+#     lines = [ l.replace("\x1b[0;94m","") for l in lines]
+#     lines = [ l.replace("\x1b[0m","") for l in lines]
+#     pkgs = set(lines)
+#     res = [ pkg + spec for pkg in pkgs]
+#     return res
 
 def spack_uninstall_and_clean(pkg):
     print "[forcing uninstall of %s]" % pkg
@@ -199,9 +209,22 @@ def patch_spack(spack_dir,compilers_yaml,pkgs):
     # hot-copy our packages into spack
     sexe("cp -Rf %s %s" % (pkgs,dest_spack_pkgs))
 
+
+def create_spack_mirror(mirror_path,pkg_name):
+    """
+    Creates a spack mirror for pkg_name at mirror_path.
+    """
+    if not mirror_path:
+        print "[--create-mirror requires a mirror directory]"
+        sys.exit(-1)
+    mirror_path = os.path.abspath(mirror_path)
+    sexe("spack/bin/spack mirror create -d {} --dependencies {}".format(
+            mirror_path, pkg_name),echo=True)
+
 def find_spack_mirror(spack_dir, mirror_name):
-    """Return path of uberenv's spack mirror
-    Mirrors can be created with:
+    """
+    Returns the path of a site scoped spack mirror with the 
+    given name, or None if no mirror exists.
     """
     rv, res = sexe("spack/bin/spack mirror list", ret_output=True)
     mirror_path = None
@@ -212,6 +235,31 @@ def find_spack_mirror(spack_dir, mirror_name):
                 mirror_path = parts[1]
     return mirror_path
 
+
+def use_spack_mirror(spack_dir,
+                     mirror_name,
+                     mirror_path):
+    """
+    Configures spack to use mirror at a given path.
+    """
+    mirror_path = os.path.abspath(mirror_path)
+    existing_mirror_path = find_spack_mirror(spack_dir, mirror_name)
+    if existing_mirror_path and mirror_path != existing_mirror_path:
+        # Existing mirror has different URL, error out
+        print "[removing existing spack mirror `%s` @ %s]" % (mirror_name,
+                                                              existing_mirror_path)
+        #
+        # Note: In this case, spack says it removes the mirror, but we still 
+        # get errors when we try to add a new one, sounds like a bug
+        #
+        sexe("spack/bin/spack mirror remove --scope=site {} ".format(
+                mirror_name), echo=True)
+        existing_mirror_path = None
+    if not existing_mirror_path:
+        # Add if not already there
+        sexe("spack/bin/spack mirror add --scope=site {} {}".format(
+                mirror_name, mirror_path), echo=True)
+        print "[using mirror %s]" % mirror_path
 
 def main():
     """
@@ -255,7 +303,7 @@ def main():
     if os.path.isdir(dest_spack):
         print "[info: destination '%s' already exists]"  % dest_spack
     compilers_yaml = uberenv_compilers_yaml_file(opts)
-    if not os.path.isdir("spack"):
+    if not os.path.isdir(dest_spack):
         print "[info: cloning spack develop branch from github]"
         os.chdir(dest_dir)
         # clone spack into the dest path
@@ -265,6 +313,7 @@ def main():
             print "[info: using spack develop %s]" % sha1
             os.chdir(pjoin(dest_dir,"spack"))
             sexe("git reset --hard %s" % sha1)
+
     ###########################################################
     # disable git clean, since we aren't doing any git updates
     ###########################################################
@@ -291,40 +340,27 @@ def main():
     #         if spack_package_is_installed(uberenv_pkg_name,opts["spec"]):
     #             spack_uninstall_and_clean(uberenv_pkg_name + opts["spec"])
 
-    # Set up mirror if it does not already exist.
-    mirror_name = uberenv_pkg_name
-    if opts["mirror"]:
-        new_mirror = 'file://' + opts["mirror"]
-        mirror_path = find_spack_mirror(dest_spack, mirror_name)
-        if mirror_path and mirror_path != new_mirror:
-            # Existing mirror has different URL, so remove
-            sexe("spack/bin/spack mirror remove --scope=site {}".format(
-                    mirror_name))
-            mirror_path = None
-        if not mirror_path:
-            # Add if not already there
-            sexe("spack/bin/spack mirror add --scope=site {} {}".format(
-                    mirror_name, new_mirror), echo=True)
-
-    # Report mirror if defined
-    mirror_path = find_spack_mirror(dest_spack, mirror_name)
-    if mirror_path:
-            print "[using mirror %s]" % mirror_path
-
+    ##########################################################
+    # we now have an instance of spack configured how we 
+    # need it to build our tpls at this point there are two
+    # possible next steps:
+    #
+    # *) create a mirror of the packages 
+    #   OR
+    # *) build
+    # 
+    ##########################################################
     if opts["create_mirror"]:
-        if not mirror_path:
-            print "[--create-mirror requires a mirror directory]"
-            sys.exit(-1)
-        if not mirror_path.startswith('file://'):
-            print "[--create-mirror must be a local directory]"
-            sys.exit(-1)
-        mirror_dir = mirror_path[7:]
-        sexe("spack/bin/spack mirror create -d {} --dependencies {}".format(
-                mirror_dir, uberenv_pkg_name))
-
-    # use the uberenv package to trigger the right builds and build an host-config.cmake file
-    sexe("spack/bin/spack install " + uberenv_pkg_name + opts["spec"],echo=True)
-
+        create_spack_mirror(opts["mirror"],uberenv_pkg_name)
+    else:
+        if not opts["mirror"] is None:
+            use_spack_mirror(dest_spack,
+                             uberenv_pkg_name,
+                             opts["mirror"])
+        # use the uberenv package to trigger the right builds 
+        # and build an host-config.cmake file
+        sexe("spack/bin/spack install " + uberenv_pkg_name + opts["spec"],
+             echo=True)
 
 if __name__ == "__main__":
     main()
