@@ -30,7 +30,7 @@ def main():
              "%intel@16.0.109"]
     # use uberenv to install for all specs
     for spec in specs:
-        uberenv_install_tpls(prefix,spec,mirror)
+        uberenv_install_tpls(prefix,spec,mirror_dir)
     # set proper perms for installed tpls
     set_toolkit_group_and_perms(prefix)
     # look for host config files as a sanity check
