@@ -19,10 +19,10 @@ def main():
     mirror_dir = pjoin(builds_dir,"mirror")
     # unique install location
     prefix =  pjoin(builds_dir,timestamp())
-    # write info about this build
-    write_build_info(pjoin(prefix,"info.json"))
     # create a mirror
     uberenv_create_mirror(prefix,mirror_dir)
+    # write info about this build
+    write_build_info(pjoin(prefix,"info.json"))
     # spack specs for the cz chaos systems
     specs = ["%clang@3.5.0",
              "%gcc@4.7.1",
