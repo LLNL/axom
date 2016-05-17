@@ -83,9 +83,14 @@ if (ENABLE_MPI)
 endif()
 
 ################################################################################
-# BLT compiler flag tests
-# Tests should fail if we have the wrong warning disabler set for the
+# Add compiler flag tests.
+#
+# Test whether compiler flag actually work as desired on all compilers.
+# E.g. if we intend to disable a warning, that the warning is actually disabled. 
+# These tests should fail if we have the wrong warning disabler set for the
 # given compiler/configuration.  Flags are defined in blt's SetupCompilerOptions.
+# The tests enable all warnings, treat warnings as errors and add the desired 
+# warning disabling flag.
 ################################################################################
 
 # Test for ATK_DISABLE_UNINITIALIZED_WARNINGS flag
