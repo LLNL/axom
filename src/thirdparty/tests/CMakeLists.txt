@@ -98,7 +98,7 @@ set( BLT_SMOKE_TESTS
         compiler_flag_uninitialized.cpp
         compiler_flag_unused_param.cpp
         compiler_flag_unused_var.cpp
-        compiler_flag_nopragma.cpp
+        compiler_flag_omp_pragma.cpp
         compiler_flag_strict_aliasing.cpp
         )
 
@@ -124,7 +124,7 @@ set_target_properties(compiler_flag_unused_param
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 set_target_properties(compiler_flag_unused_var 
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS}")
-set_target_properties(compiler_flag_nopragma 
+set_target_properties(compiler_flag_omp_pragma 
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_OMP_PRAGMA_WARNINGS}")
     
 # the aliasing test requires optimization, set this up as custom compiler flag
