@@ -95,11 +95,11 @@ endif()
 
 # Test for ATK_DISABLE_UNINITIALIZED_WARNINGS flag
 set( BLT_SMOKE_TESTS
-        blt_uninitialized.cpp
-        blt_unused_param.cpp
-        blt_unused_var.cpp
-        blt_nopragma.cpp
-        blt_strict_aliasing.cpp
+        compiler_flag_uninitialized.cpp
+        compiler_flag_unused_param.cpp
+        compiler_flag_unused_var.cpp
+        compiler_flag_nopragma.cpp
+        compiler_flag_strict_aliasing.cpp
         )
 
 foreach(test ${BLT_SMOKE_TESTS})
@@ -116,21 +116,21 @@ foreach(test ${BLT_SMOKE_TESTS})
         )
 endforeach()
 
-set( BLT_SMOKE_FLAGS "${ATK_TREAT_WARNINGS_AS_ERRORS} ${ATK_ENABLE_ALL_WARNINGS}")
+set( ADDL_SMOKE_FLAGS "${ATK_TREAT_WARNINGS_AS_ERRORS} ${ATK_ENABLE_ALL_WARNINGS}")
 
-set_target_properties(blt_uninitialized 
-    PROPERTIES COMPILE_FLAGS "${BLT_SMOKE_FLAGS} ${ATK_DISABLE_UNINITIALIZED_WARNINGS}")
-set_target_properties(blt_unused_param 
-    PROPERTIES COMPILE_FLAGS "${BLT_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS}")
-set_target_properties(blt_unused_var 
-    PROPERTIES COMPILE_FLAGS "${BLT_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS}")
-set_target_properties(blt_nopragma 
-    PROPERTIES COMPILE_FLAGS "${BLT_SMOKE_FLAGS} ${ATK_DISABLE_OMP_PRAGMA_WARNINGS}")
+set_target_properties(compiler_flag_uninitialized 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNINITIALIZED_WARNINGS}")
+set_target_properties(compiler_flag_unused_param 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS}")
+set_target_properties(compiler_flag_unused_var 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS}")
+set_target_properties(compiler_flag_nopragma 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_OMP_PRAGMA_WARNINGS}")
     
 # the aliasing test requires optimization, set this up as custom compiler flag
 # in case we need more flexibility for this flag (e.g. for MSVC)
 blt_append_custom_compiler_flag(FLAGS_VAR TMP_OPT_FLAG DEFAULT "-O2")
-set_target_properties(blt_strict_aliasing 
-    PROPERTIES COMPILE_FLAGS "${BLT_SMOKE_FLAGS} ${TMP_OPT_FLAG} ${ATK_DISABLE_ALIASING_WARNINGS}")
+set_target_properties(compiler_flag_strict_aliasing 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${TMP_OPT_FLAG} ${ATK_DISABLE_ALIASING_WARNINGS}")
 
 
