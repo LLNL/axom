@@ -132,13 +132,14 @@ TEST(sidre_datastore,default_ctor)
 }
 
 // The dtor destroys all buffers and deletes the root group.
-// I suppose I can get pointers to the root group and some buffers, but how do I
-// test to see if the pointer is invalid?  
+// An outside tool (valgrind) is used to check for proper memory cleanup.
 
-TEST(sidre_datastore,create_destroy_buffers)
+TEST(sidre_datastore,create_destroy_buffers_basic)
 {
   DataStore * ds = new DataStore();
   EXPECT_EQ( 0, ds->getNumBuffers() );
+
+  // Basic tests
 
   DataBuffer * dbuff = ds->createBuffer();
   EXPECT_EQ( 1, ds->getNumBuffers() );
@@ -161,22 +162,35 @@ TEST(sidre_datastore,create_destroy_buffers)
   EXPECT_EQ(ATK_NULLPTR, ds->getBuffer(bufferIndex));
   EXPECT_EQ(ATK_NULLPTR, ds->getBuffer(badBufferIndex));
 
-  // After destroy, that buffer index should be available again, and have been re-used..
+  delete ds;
+}
+
+TEST(sidre_datastore,create_destroy_buffers_order)
+{
+  DataStore * ds = new DataStore();
+  EXPECT_EQ( 0, ds->getNumBuffers() );
+
+  DataBuffer * dbuff = ds->createBuffer();
+  EXPECT_EQ( 1, ds->getNumBuffers() );
+
+  IndexType bufferIndex = ds->getFirstValidBufferIndex();
+  ds->destroyBuffer(dbuff);
+
+  // After destroy, test that buffer index should be available again for reuse.
   DataBuffer * dbuff2 = ds->createBuffer( asctoolkit::sidre::FLOAT32_ID, 16 );
   IndexType d2Index = dbuff2->getIndex();
   EXPECT_EQ(bufferIndex, ds->getFirstValidBufferIndex());
   EXPECT_EQ(bufferIndex, d2Index);
   EXPECT_TRUE(ds->hasBuffer(d2Index));
   EXPECT_EQ(dbuff2, ds->getBuffer(bufferIndex));
-  EXPECT_EQ(ATK_NULLPTR, ds->getBuffer(badBufferIndex));
 
   DataBuffer * dbuff3 = ds->createBuffer();
   IndexType d3Index = dbuff3->getIndex();
   EXPECT_EQ( 2, ds->getNumBuffers() );
   EXPECT_TRUE(ds->hasBuffer(d3Index));
 
-  // Try destroying the first one; see if we have the correct count and indices
-  ds->destroyBuffer(ds->getFirstValidBufferIndex());
+  // Try destroying the first valid buffer; see if we have the correct count and indices
+  ds->destroyBuffer(bufferIndex);
   EXPECT_EQ( 1, ds->getNumBuffers() );
   EXPECT_FALSE(ds->hasBuffer(d2Index));
   EXPECT_TRUE(ds->hasBuffer(d3Index));
@@ -188,10 +202,38 @@ TEST(sidre_datastore,create_destroy_buffers)
   IndexType d4Index = dbuff4->getIndex();
   IndexType d5Index = dbuff5->getIndex();
   EXPECT_EQ( 3, ds->getNumBuffers() );
+  EXPECT_EQ(d4Index, bufferIndex);    // dbuff4 should have recycled index 0
   EXPECT_TRUE(ds->hasBuffer(d3Index));
   EXPECT_TRUE(ds->hasBuffer(d4Index));
   EXPECT_TRUE(ds->hasBuffer(d5Index));
 
+  ds->destroyBuffer(d3Index);  // Destroy dbuff3 (not dbuff4) because we already tested destroying index 0
+  EXPECT_EQ( 2, ds->getNumBuffers() );
+  EXPECT_FALSE(ds->hasBuffer(d3Index));
+  EXPECT_TRUE(ds->hasBuffer(d4Index));
+  EXPECT_TRUE(ds->hasBuffer(d5Index));
+
+  // Can we destroy all buffers?
+  ds->destroyAllBuffers();
+  EXPECT_EQ( 0, ds->getNumBuffers() );
+  EXPECT_FALSE(ds->hasBuffer(d2Index));
+  EXPECT_FALSE(ds->hasBuffer(d4Index));
+  EXPECT_FALSE(ds->hasBuffer(d5Index));
+
+  delete ds;
+}
+
+TEST(sidre_datastore,create_destroy_buffers_views)
+{
+  DataStore * ds = new DataStore();
+  EXPECT_EQ( 0, ds->getNumBuffers() );
+
+  DataBuffer * dbuff3 = ds->createBuffer();
+  IndexType d3Index = dbuff3->getIndex();
+  DataBuffer * dbuff4 = ds->createBuffer();
+  IndexType d4Index = dbuff4->getIndex();
+  DataBuffer * dbuff5 = ds->createBuffer();
+  IndexType d5Index = dbuff5->getIndex();
   DataBuffer * dbuff6 = ds->createBuffer();
   IndexType d6Index = dbuff6->getIndex();
 
@@ -205,54 +247,56 @@ TEST(sidre_datastore,create_destroy_buffers)
   DataView *vB = ds->getRoot()->createView("vB", dbuff3);
   DataView *vC = ds->getRoot()->createView("vC", dbuff4);
   DataView *vD = ds->getRoot()->createView("vD", dbuff6);
+  DataView *vE = ds->getRoot()->createView("vE", dbuff6);
   EXPECT_EQ(dbuff3, vA->getBuffer());
   EXPECT_EQ(dbuff3, vB->getBuffer());
   EXPECT_EQ(2, dbuff3->getNumViews());
   EXPECT_EQ(dbuff4, vC->getBuffer());
   EXPECT_EQ(dbuff6, vD->getBuffer());
+  EXPECT_EQ(dbuff6, vE->getBuffer());
+  EXPECT_EQ(2, dbuff6->getNumViews());
 
+  // Destroying a buffer should detach it from the view
   ds->destroyBuffer(d4Index);
   EXPECT_EQ( 3, ds->getNumBuffers() );
   EXPECT_TRUE(ds->hasBuffer(d3Index));
   EXPECT_FALSE(ds->hasBuffer(d4Index));
   EXPECT_TRUE(ds->hasBuffer(d5Index));
-  // Does destroying a buffer detach it from the view?
+  EXPECT_TRUE(ds->hasBuffer(d6Index));
   EXPECT_EQ(dbuff3, vA->getBuffer());
   EXPECT_EQ(dbuff3, vB->getBuffer());
   EXPECT_FALSE(vC->hasBuffer());
   EXPECT_EQ(dbuff6, vD->getBuffer());
+  EXPECT_EQ(dbuff6, vE->getBuffer());
 
-  // Detaching the buffer from its last view should not destroy the buffer.
-  vD->detachBuffer();
-  EXPECT_FALSE(vD->hasBuffer());
-  EXPECT_TRUE(ds->hasBuffer(d6Index));
-  EXPECT_EQ(0, dbuff6->getNumViews());
-  vA->attachBuffer(ATK_NULLPTR);
-  EXPECT_FALSE(vA->hasBuffer());
-  EXPECT_TRUE(ds->hasBuffer(d3Index));
-  EXPECT_EQ(dbuff3, vB->getBuffer());
-  EXPECT_EQ(1, dbuff3->getNumViews());
-  // But attach(NULL) on the last view of a buffer should destroy that buffer.
-  vB->attachBuffer(ATK_NULLPTR);
+  // Destroying a buffer should detach it from all of its views
+  ds->destroyBuffer(d3Index);
+  EXPECT_EQ( 2, ds->getNumBuffers() );
   EXPECT_FALSE(ds->hasBuffer(d3Index));
-  EXPECT_EQ(2, ds->getNumBuffers());
+  EXPECT_FALSE(ds->hasBuffer(d4Index));
+  EXPECT_TRUE(ds->hasBuffer(d5Index));
+  EXPECT_TRUE(ds->hasBuffer(d6Index));
+  EXPECT_FALSE(vA->hasBuffer());
+  EXPECT_FALSE(vB->hasBuffer());
+  EXPECT_FALSE(vC->hasBuffer());
+  EXPECT_EQ(dbuff6, vD->getBuffer());
+  EXPECT_EQ(dbuff6, vE->getBuffer());
 
-  vC->attachBuffer(dbuff6);
-  EXPECT_TRUE(vC->hasBuffer());
-
-  // Can we destroy all buffers?
+  // Destroying all buffers should detach them from all of their views
+  dbuff3 = ds->createBuffer();
+  dbuff4 = ds->createBuffer();
+  vA->attachBuffer(dbuff3);
+  vB->attachBuffer(dbuff3);
+  vC->attachBuffer(dbuff4);
   ds->destroyAllBuffers();
   EXPECT_EQ( 0, ds->getNumBuffers() );
-  EXPECT_FALSE(ds->hasBuffer(d2Index));
-  EXPECT_FALSE(ds->hasBuffer(d4Index));
-  EXPECT_FALSE(ds->hasBuffer(d5Index));
+  EXPECT_FALSE(vA->hasBuffer());
+  EXPECT_FALSE(vB->hasBuffer());
   EXPECT_FALSE(vC->hasBuffer());
+  EXPECT_FALSE(vD->hasBuffer());
+  EXPECT_FALSE(vE->hasBuffer());
 
-  // Verify the buffers are detached from the views
-
-  // check error condition
-  ds->destroyBuffer(badBufferIndex);
-
+  // More tests will be found in sidre_datagroup_unit.cpp.
 
   delete ds;
 }
@@ -260,13 +304,14 @@ TEST(sidre_datastore,create_destroy_buffers)
 int psrand(int min, int max)
 {
   // Returns a pseudorandom int in [min, max].  Note the closed interval.
-  // Assumes the PRNG has been initialized
   int range = max - min + 1;
   return min + int(range * rand()/(RAND_MAX + 1.0));
 }
 
 int irhall(int n)
 {
+  // Approximates the Irwin-Hall distribution, a sum of uniformly-distributed
+  // samples that approaches Gaussian distribution
   int retval = 0;
 
   for (int i = 0; i < n; ++i)
