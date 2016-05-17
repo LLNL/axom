@@ -23,6 +23,8 @@
 
 #include "mpi.h"
 
+#include "hdf5.h"
+
 // Other CS Toolkit headers
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
@@ -80,9 +82,9 @@ public:
              const std::string& protocol);
 
   /*!
-   * \brief read
+   * \brief read from input files
    *
-   * \param file_string   base name of input file
+   * \param file_string   base name of input files
    * \param cycle         cycle counter
    * \param protocol      identifies I/O protocol
    */
@@ -90,9 +92,22 @@ public:
             int cycle,
             const std::string& protocol);
 
+  /*!
+   * \brief read from a root file
+   *
+   * \param root_file     root file containing input data
+   */
+  void read(const std::string& root_file);
+
 private:
 
   DISABLE_COPY_AND_ASSIGNMENT( IOManager );
+
+  void createRootFile(const std::string& root_name,
+                      const std::string& file_base,
+                      int cycle);
+
+  std::string getHDF5FileName(hid_t root_file_id, int rankgroup_id, int datagroup_id);
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
@@ -101,7 +116,9 @@ private:
 
   sidre::DataGroup ** m_datagroups;
   int m_num_datagroups;
+  int m_num_files;
 
+  MPI_Comm m_mpi_comm;
 };
 
 
