@@ -675,6 +675,9 @@ TEST(sidre_group,save_restore_simple)
 
   ga->createViewScalar("i0", 1);
 
+  int result = ga->getView("i0")->getScalar();
+  EXPECT_EQ(1, result) << "expected 1";
+
   EXPECT_TRUE(ds->getRoot()->hasGroup("fields"));
   EXPECT_TRUE(ds->getRoot()->getGroup("fields")->hasGroup("a"));
   EXPECT_TRUE(ds->getRoot()->getGroup("fields")->getGroup("a")->hasView("i0"));
