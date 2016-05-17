@@ -337,15 +337,17 @@ public:
          */
         bool isDescendantOf(const BlockIndex & ancestor) const
         {
-            if(m_lev < ancestor.level() || m_lev < 0 || ancestor.level() < 0)
+            const int ancestorLevel = ancestor.level();
+            const int levelDiff = m_lev - ancestorLevel;
+            if(levelDiff < 0 || m_lev < 0 || ancestorLevel < 0)
                 return false;
 
             BlockIndex blk(*this);
-            while( blk.level() > ancestor.level() )
+            for(int i=0; i< levelDiff; ++i)
                 blk = blk.parent();
 
-            SLIC_ASSERT(blk.level() == ancestor.level());
-            return blk == ancestor;
+            SLIC_ASSERT(blk.level() == ancestorLevel);
+            return blk.pt() == ancestor.pt();
         }
 
 
