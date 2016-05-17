@@ -324,7 +324,7 @@ int irhall(int n)
 
 // Test iteration through buffers, as well as proper index and buffer behavior
 // while buffers are created and deleted
-TEST(sidre_datastore,iterate_buffers)
+TEST(sidre_datastore,iterate_buffers_basic)
 {
   DataStore * ds = new DataStore();
   EXPECT_EQ( 0, ds->getNumBuffers() );
@@ -348,116 +348,129 @@ TEST(sidre_datastore,iterate_buffers)
   EXPECT_EQ(InvalidIndex, ds->getFirstValidBufferIndex());
   EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(0));
 
+  delete ds;
+}
+
+// Test a few buffers: can we create them and iterate?
+TEST(sidre_datastore,iterate_buffers_simple)
+{
+  DataStore * ds = new DataStore();
+  EXPECT_EQ( 0, ds->getNumBuffers() );
+
   std::map<IndexType, DataBuffer *> bs;
-  int bufcount = 0;
+  int bufcount = 20;
 
+  for (int i = 0; i < bufcount; ++i)
   {
-    SCOPED_TRACE("simple 1");
-    ds->destroyAllBuffers();
-    bs.clear();
-    bufcount = 20;
+    DataBuffer *b = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400*i);
+    IndexType idx = b->getIndex();
+    bs[idx] = b;
+  }
 
-    for (int i = 0; i < bufcount; ++i)
+  verifyBufferIdentity(ds, bs);
+  delete ds;
+}
+
+// Test creating and allocating buffers, then destroying several of them
+TEST(sidre_datastore,create_delete_buffers_iterate)
+{
+  DataStore * ds = new DataStore();
+  EXPECT_EQ( 0, ds->getNumBuffers() );
+
+  std::map<IndexType, DataBuffer *> bs;
+  int bufcount = 50;  // Arbitrary number of buffers
+
+  // Initially, create some buffers of varying size
+  for (int i = 0; i < bufcount; ++i)
+  {
+    DataBuffer *b = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400*i % 10000)->allocate();
+    IndexType idx = b->getIndex();
+    bs[idx] = b;
+  }
+
+  int i = 0;
+  std::map<IndexType, DataBuffer *> nbs;
+  std::map<IndexType, DataBuffer *>::iterator bsit = bs.begin(), bsend = bs.end();
+  for (; bsit != bsend; ++bsit)
+  {
+    // Eliminate some buffers (arbitrarily chosen)
+    if (i % 5 && i % 7)
     {
-      DataBuffer *b = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400*i);
-      IndexType idx = b->getIndex();
-      bs[idx] = b;
+      nbs[bsit->first] = bsit->second;
+    }
+    else
+    {
+      ds->destroyBuffer(bsit->first);
+    }
+    i += 1;
+  }
+
+  verifyBufferIdentity(ds, nbs);
+  delete ds;
+}
+
+// Test creating+allocating buffers, then destroying several of them, repeatedly
+TEST(sidre_datastore,loop_create_delete_buffers_iterate)
+{
+  DataStore * ds = new DataStore();
+  EXPECT_EQ( 0, ds->getNumBuffers() );
+
+  std::map<IndexType, DataBuffer *> bs;
+  std::vector<int> idxlist;
+  int initbufcount = 50;  // Arbitrary number of buffers
+
+  // Initially, create some buffers of varying size
+  for (int i = 0; i < initbufcount; ++i)
+  {
+    DataBuffer *b = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400*i % 10000)->allocate();
+    IndexType idx = b->getIndex();
+    bs[idx] = b;
+    idxlist.push_back(idx);
+  }
+
+  int totalrounds = 100;  // Arbitrary number of rounds
+  for (int round = 0; round < totalrounds; ++round)
+  {
+    SCOPED_TRACE(round);
+
+    // In each round, choose a random number of buffers to delete or create
+    {
+      int delta = irhall(5);  // Arbitrary argument to Irwin-Hall distribution
+      SCOPED_TRACE(delta);
+
+      if (delta < 0)
+      {
+        int rmvcount = abs(delta);
+        if (rmvcount > bs.size()) rmvcount = bs.size();
+        for (int i = 0; i < rmvcount; ++i)
+        {
+          int rmvidx = psrand(0, idxlist.size()-1);
+          int rmvid = idxlist[rmvidx];
+          EXPECT_TRUE(ds->hasBuffer(rmvid));
+          EXPECT_TRUE(bs.count(rmvid) == 1);
+          ds->destroyBuffer(rmvid);
+          bs.erase(rmvid);
+          idxlist.erase(idxlist.begin() + rmvidx);
+          EXPECT_FALSE(ds->hasBuffer(rmvid));
+          EXPECT_FALSE(bs.count(rmvid) == 1);
+        }
+      }
+      else if (delta > 0)
+      {
+        int addcount = delta;
+        for (int i = 0; i < addcount; ++i)
+        {
+          DataBuffer *buf = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400)->allocate();
+          int addid = buf->getIndex();
+          EXPECT_TRUE(ds->hasBuffer(addid));
+          EXPECT_TRUE(bs.count(addid) < 1);
+          bs[addid] = buf;
+          idxlist.push_back(addid);
+        }
+      }
     }
 
     verifyBufferIdentity(ds, bs);
-  }
-
-  {
-    SCOPED_TRACE("simple 2");
-    ds->destroyAllBuffers();
-    bs.clear();
-    bufcount = 50;
-
-    for (int i = 0; i < bufcount; ++i)
-    {
-      DataBuffer *b = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400*i % 10000);
-      IndexType idx = b->getIndex();
-      bs[idx] = b;
-    }
-
-    int i = 0;
-    std::map<IndexType, DataBuffer *> nbs;
-    std::map<IndexType, DataBuffer *>::iterator bsit = bs.begin(), bsend = bs.end();
-    for (; bsit != bsend; ++bsit)
-    {
-      if (i % 5 && i % 7)
-      {
-        nbs[bsit->first] = bsit->second;
-      }
-      else
-      {
-	ds->destroyBuffer(bsit->first);
-      }
-      i += 1;
-    }
-
-    verifyBufferIdentity(ds, nbs);
-  }
-
-  {
-    SCOPED_TRACE("random");
-    ds->destroyAllBuffers();
-    bs.clear();
-    std::vector<int> idxlist;
-    int initbufcount = 50;
-
-    for (int i = 0; i < initbufcount; ++i)
-    {
-      DataBuffer *b = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400*i % 10000);
-      IndexType idx = b->getIndex();
-      bs[idx] = b;
-      idxlist.push_back(idx);
-    }
-
-    int totalrounds = 100;
-    for (int round = 0; round < totalrounds; ++round)
-    {
-      SCOPED_TRACE(round);
-
-      {
-        int delta = irhall(5);
-        SCOPED_TRACE(delta);
-
-        if (delta < 0)
-        {
-          // Remove a few 
-          int rmvcount = abs(delta);
-          if (rmvcount > bs.size()) rmvcount = bs.size();
-          for (int i = 0; i < rmvcount; ++i)
-          {
-            int rmvidx = psrand(0, idxlist.size()-1);
-            int rmvid = idxlist[rmvidx];
-            EXPECT_TRUE(ds->hasBuffer(rmvid));
-            EXPECT_TRUE(bs.count(rmvid) == 1);
-            ds->destroyBuffer(rmvid);
-            bs.erase(rmvid);
-            idxlist.erase(idxlist.begin() + rmvidx);
-            EXPECT_FALSE(ds->hasBuffer(rmvid));
-            EXPECT_FALSE(bs.count(rmvid) == 1);
-          }
-        }
-        else if (delta > 0)
-        {
-          int addcount = delta;
-          for (int i = 0; i < addcount; ++i)
-          {
-            DataBuffer *buf = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400);
-            int addid = buf->getIndex();
-            EXPECT_TRUE(ds->hasBuffer(addid));
-            EXPECT_TRUE(bs.count(addid) < 1);
-            bs[addid] = buf;
-            idxlist.push_back(addid);
-          }
-        }
-      }
-
-      verifyBufferIdentity(ds, bs);
-    }
   }
 
   delete ds;
