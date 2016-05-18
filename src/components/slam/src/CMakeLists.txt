@@ -61,7 +61,7 @@ set(slam_sources
 # make the library
 ####################################
 
-set(slam_depends_on slic sidre)
+set(slam_depends_on common slic)
 if (ENABLE_BOOST)
     list(APPEND slam_depends boost)
 endif()
