@@ -11,6 +11,7 @@
   for llnl rz chaos 5 platforms.
 
 """
+
 from llnl_lc_uberenv_install_tools import *
 
 def main():
@@ -18,7 +19,6 @@ def main():
     mirror_dir = pjoin(builds_dir,"mirror")
     # unique install location
     prefix =  pjoin(builds_dir,timestamp())
-    os.mkdir(prefix)
     # create a mirror
     uberenv_create_mirror(prefix,mirror_dir)
     # write info about this build

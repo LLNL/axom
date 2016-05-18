@@ -10,31 +10,36 @@ import argparse
 import platform
 import shutil
 
+
+##########
+# to remove
+##########
 # Helper function to get SYS_TYPE on LC systems.
-def get_systype():
-    import os
-    lc_home_config_filename = "/etc/home.config"
-    if os.path.exists(lc_home_config_filename):
-        file_handle = open(lc_home_config_filename, "r")
-        content = file_handle.readlines()
-        for line in content:
-            if line.startswith("SYS_TYPE"):
-                return line.split(" ")[1].strip()
-    return None
+# def get_systype():
+#     import os
+#     lc_home_config_filename = "/etc/home.config"
+#     if os.path.exists(lc_home_config_filename):
+#         file_handle = open(lc_home_config_filename, "r")
+#         content = file_handle.readlines()
+#         for line in content:
+#             if line.startswith("SYS_TYPE"):
+#                 return line.split(" ")[1].strip()
+#     return None
 
 def extract_cmake_location(file_path):
-    cmake_line_prefix = "# cmake executable path: "
+    print file_path
     if os.path.exists(file_path):
+        cmake_line_prefix = "# cmake executable path: "
         file_handle = open(file_path, "r")
         content = file_handle.readlines()
         for line in content:
             if line.startswith(cmake_line_prefix):
                 return line.split(" ")[4].strip()
         print "Could not find a cmake entry in host config file."
-        return None
+    return None
 
 
-default_compiler = "gcc@4.9.3"
+# default_compiler = "gcc@4.9.3"
 
 parser = argparse.ArgumentParser(description="Configure cmake build.")
 
@@ -48,12 +53,6 @@ parser.add_argument("-ip",
                     "--installpath", 
                     type=str, default="",
                     help="specify path for installation directory.  If not specified, will create one under current directory.")
-
-parser.add_argument("-c",
-                    "--compiler",
-                    type=str,
-                    default=default_compiler,
-                    help="compiler to use.")
 
 parser.add_argument("-bt",
                     "--buildtype",
@@ -83,6 +82,19 @@ parser.add_argument("-hc",
                     type=str,
                     help="select a specific host-config file to initalize CMake's cache")
 
+####################################
+# options to remove:
+####################################
+#
+# this option is only useful for the magic we have on LC systems, we can only use --compiler if the sys type is set. 
+#
+# parser.add_argument("-c",
+#                     "--compiler",
+#                     type=str,
+#                     default=default_compiler,
+#                     help="compiler to use.")
+#
+
 args, unknown_args = parser.parse_known_args()
 if unknown_args:
     print "Passing unknown arguments to cmake... %s" % unknown_args
@@ -92,7 +104,7 @@ if unknown_args:
 ########################
 platform_info = ""
 scriptsdir = os.path.dirname( os.path.abspath(sys.argv[0]) )
-systype = get_systype()
+# systype = get_systype()
 
 if args.hostconfig != "":
     cachefile = os.path.abspath(args.hostconfig)
@@ -101,20 +113,34 @@ if args.hostconfig != "":
         platform_info = platform_info[:-6]
     print "Using user specified host config file: '%s'." % cachefile
 else:
+    # look for a host-config that exactly matches platform.node()
+    platform_info = platform.node()
+    # note: i removed "other" from the path, lets try a flat file structure
+    cachefile = os.path.join(scriptsdir.replace("scripts","host-configs"),
+                             "%s.cmake" % platform_info )
+    ######################################################################################
+    # sys type magic will not longer work, SYS_TYPE is ambiguous when we have specific configs for the rz and cz 
+    ######################################################################################
     # If not specified, then check for a host-config file for this SYS_TYPE with default compiler.
-    cachefile = scriptsdir.replace("scripts","host-configs")
-    if systype:
-        platform_info = systype.split("_")[0]
-        import glob
-        names = glob.glob(cachefile + "/*" + systype + "-" + args.compiler + ".cmake")
-        assert len(names) <= 1, "Could not determine correct host-config file for SYS_TYPE %s, more than one file matched this SYS_TYPE and compiler." % systype
-        assert len(names) > 0, "Could not find host-config file for SYS_TYPE %s and compiler %s" % (systype, args.compiler)
-        cachefile = os.path.join( cachefile, names[0] )
-        print "Found host config file for SYS_TYPE %s, compiler %s: %s" % (systype, args.compiler, cachefile)
-    else:
-        platform_info = platform.node()
-        cachefile = os.path.join(cachefile, "other", "%s.cmake" % platform_info )
-        print "No /etc/home.config file found, must not be a LC system.  Using hostname config file: '%s'" % ( cachefile )
+    #cachefile = scriptsdir.replace("scripts","host-configs")
+    # if systype:
+    #     platform_info = systype.split("_")[0]
+    #     import glob
+    #     names = glob.glob(cachefile + "/*" + systype + "-" + args.compiler + ".cmake")
+    #     assert len(names) <= 1, "Could not determine correct host-config file for SYS_TYPE %s, more than one file matched this SYS_TYPE and compiler." % systype
+    #     assert len(names) > 0, "Could not find host-config file for SYS_TYPE %s and compiler %s" % (systype, args.compiler)
+    #     cachefile = os.path.join( cachefile, names[0] )
+    #     print "Found host config file for SYS_TYPE %s, compiler %s: %s" % (systype, args.compiler, cachefile)
+    # else:
+    #
+    #   platform_info = platform.node()
+    #   cachefile = os.path.join(cachefile, "other", "%s.cmake" % platform_info )
+    #    
+    ##########
+        ##########
+        # what is the message, we don't even look for /etc/home.config anywhere?
+        ##########
+        # print "No /etc/home.config file found, must not be a LC system.  Using hostname config file: '%s'" % ( cachefile )
 
 assert os.path.exists( cachefile ), "Could not find cmake cache file '%s'." % cachefile
 
@@ -125,12 +151,9 @@ assert os.path.exists( cachefile ), "Could not find cmake cache file '%s'." % ca
 if args.buildpath != "":
     # use explicit build path
     buildpath = args.buildpath
-elif args.hostconfig != "":
-    # use host config name (via platform_info) as build dir base
-    buildpath = "-".join(["build",platform_info,args.buildtype.lower()])    
-elif args.buildpath == "":
-    # Generate build directory name based on platform, buildtype, compiler
-    buildpath = "-".join(["build",platform_info, args.compiler, args.buildtype.lower()])
+else:
+    # use platform info & build type
+    buildpath = "-".join(["build",platform_info,args.buildtype.lower()])
 
 buildpath = os.path.abspath(buildpath)
 
@@ -147,12 +170,9 @@ os.makedirs(buildpath)
 # For install directory, we will clean up old ones, but we don't need to create it, cmake will do that.
 if args.installpath != "":
     installpath = os.path.abspath(args.installpath)
-elif args.hostconfig != "":
-    # use host config name (via platform_info) as install dir base
-    installpath = "-".join(["install",platform_info,args.buildtype.lower()]).replace("@","-")
 else:
-    # Generate install directory name based on platform, buildtype, compiler
-    installpath = "-".join(["install",platform_info, args.compiler, args.buildtype.lower()]).replace("@","-")
+    # use platform info & build type
+    installpath = "-".join(["install",platform_info,args.buildtype.lower()])
 
 installpath = os.path.abspath(installpath)
 
