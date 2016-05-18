@@ -8,9 +8,11 @@
 if (CONDUIT_DIR)
   include(cmake/thirdparty/FindConduit.cmake)
   blt_register_library( NAME conduit
-                        INCLUDES ${CONDUIT_INCLUDE_DIRS} )
+                        INCLUDES ${CONDUIT_INCLUDE_DIRS} 
+                        LIBRARIES  conduit)
   blt_register_library( NAME conduit_io
-                        INCLUDES ${CONDUIT_INCLUDE_DIRS} )
+                        INCLUDES ${CONDUIT_INCLUDE_DIRS}
+                        LIBRARIES  conduit_io)
 endif()
 
 

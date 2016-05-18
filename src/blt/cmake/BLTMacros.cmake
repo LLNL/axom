@@ -160,6 +160,8 @@ macro(blt_register_library)
 
     if( arg_LIBRARIES )
         set(BLT_${uppercase_name}_LIBRARIES ${arg_LIBRARIES} CACHE PATH "" FORCE)
+    else()
+        set(BLT_${uppercase_name}_LIBRARIES "BLT_NO_LIBRARIES" CACHE PATH "" FORCE)
     endif()
 
 endmacro(blt_register_library)
