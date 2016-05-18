@@ -10,22 +10,6 @@ import argparse
 import platform
 import shutil
 
-
-##########
-# to remove
-##########
-# Helper function to get SYS_TYPE on LC systems.
-# def get_systype():
-#     import os
-#     lc_home_config_filename = "/etc/home.config"
-#     if os.path.exists(lc_home_config_filename):
-#         file_handle = open(lc_home_config_filename, "r")
-#         content = file_handle.readlines()
-#         for line in content:
-#             if line.startswith("SYS_TYPE"):
-#                 return line.split(" ")[1].strip()
-#     return None
-
 def extract_cmake_location(file_path):
     print file_path
     if os.path.exists(file_path):
@@ -39,7 +23,6 @@ def extract_cmake_location(file_path):
     return None
 
 
-# default_compiler = "gcc@4.9.3"
 
 parser = argparse.ArgumentParser(description="Configure cmake build.")
 
@@ -82,19 +65,6 @@ parser.add_argument("-hc",
                     type=str,
                     help="select a specific host-config file to initalize CMake's cache")
 
-####################################
-# options to remove:
-####################################
-#
-# this option is only useful for the magic we have on LC systems, we can only use --compiler if the sys type is set. 
-#
-# parser.add_argument("-c",
-#                     "--compiler",
-#                     type=str,
-#                     default=default_compiler,
-#                     help="compiler to use.")
-#
-
 args, unknown_args = parser.parse_known_args()
 if unknown_args:
     print "Passing unknown arguments to cmake... %s" % unknown_args
@@ -118,29 +88,6 @@ else:
     # note: i removed "other" from the path, lets try a flat file structure
     cachefile = os.path.join(scriptsdir.replace("scripts","host-configs"),
                              "%s.cmake" % platform_info )
-    ######################################################################################
-    # sys type magic will not longer work, SYS_TYPE is ambiguous when we have specific configs for the rz and cz 
-    ######################################################################################
-    # If not specified, then check for a host-config file for this SYS_TYPE with default compiler.
-    #cachefile = scriptsdir.replace("scripts","host-configs")
-    # if systype:
-    #     platform_info = systype.split("_")[0]
-    #     import glob
-    #     names = glob.glob(cachefile + "/*" + systype + "-" + args.compiler + ".cmake")
-    #     assert len(names) <= 1, "Could not determine correct host-config file for SYS_TYPE %s, more than one file matched this SYS_TYPE and compiler." % systype
-    #     assert len(names) > 0, "Could not find host-config file for SYS_TYPE %s and compiler %s" % (systype, args.compiler)
-    #     cachefile = os.path.join( cachefile, names[0] )
-    #     print "Found host config file for SYS_TYPE %s, compiler %s: %s" % (systype, args.compiler, cachefile)
-    # else:
-    #
-    #   platform_info = platform.node()
-    #   cachefile = os.path.join(cachefile, "other", "%s.cmake" % platform_info )
-    #    
-    ##########
-        ##########
-        # what is the message, we don't even look for /etc/home.config anywhere?
-        ##########
-        # print "No /etc/home.config file found, must not be a LC system.  Using hostname config file: '%s'" % ( cachefile )
 
 assert os.path.exists( cachefile ), "Could not find cmake cache file '%s'." % cachefile
 
