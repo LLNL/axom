@@ -7,10 +7,12 @@ set(gtest_sidre_tests
    sidre_buffer.cpp
    sidre_class.cpp
    sidre_datastore.cpp
+   sidre_datastore_unit.cpp
    sidre_external.cpp
    sidre_group.cpp
    sidre_opaque.cpp
    sidre_view.cpp
+   sidre_native_layout.cpp
    )
 
 set(gtest_sidre_C_tests
@@ -41,7 +43,7 @@ foreach(test ${gtest_sidre_tests})
     blt_add_executable( NAME ${test_name}
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON sidre conduit conduit_io hdf5 slic gtest
+                        DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
                         )
     blt_add_test( NAME ${test_name} 
                   COMMAND ${test_name}
@@ -57,7 +59,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre conduit conduit_io hdf5 slic gtest
+                            DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
                             )
         blt_add_test( NAME ${test_name} 
                       COMMAND ${test_name}
@@ -74,7 +76,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre conduit conduit_io hdf5 slic fruit
+                            DEPENDS_ON sidre conduit conduit_relay hdf5 slic fruit
                             )
         blt_add_test( NAME ${test_name} 
                       COMMAND ${test_name}

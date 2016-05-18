@@ -25,14 +25,14 @@
 #include <vector>
 #include <stack>
 
-// Other toolkit component headers
+#include "relay.hpp"
+
+// Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
+#include "slic/slic.hpp"
 
 // Sidre project headers
 #include "SidreTypes.hpp"
-
-
-
 
 namespace asctoolkit
 {
@@ -49,18 +49,18 @@ class DataGroup;
  * \class DataStore
  *
  * \brief DataStore is the main interface for creating and accessing
- *        buffer objects.
+ *        Buffer objects.
  *
- * It maintains a collection of buffer objects and owns the "root"
- * group, called "/". A group hierachy (a tree) is created by
- * creating child groups within other group.
+ * It maintains a collection of Buffer objects and owns the "root"
+ * Group, called "/". A Group hierarchy (a tree) is created by
+ * creating child Groups of Groups.
  */
 class DataStore
 {
 public:
 
   /*!
-   * \brief Default ctor initializes datastore object and creates root group.
+   * \brief Default ctor initializes DataStore object and creates root Group.
    *
    * Ctor also initializes SLIC logging environment if it is not already 
    * initialized.
@@ -68,25 +68,32 @@ public:
   DataStore();
 
   /*!
-   * \brief Dtor destroys all contents of the datastore, including data held
-   *        in buffers if owned by the buffers.
+   * \brief Dtor destroys all contents of the DataStore, including data held
+   *        in Buffers.
    */
   ~DataStore();
 
   /*!
-   * \brief Return pointer to the root group.
+   * \brief Return pointer to the root Group.
    */
   DataGroup * getRoot()
   {
     return m_RootGroup;
   };
 
+  /*!
+   * \brief Return pointer to the root DataGroup.
+   */
+  const DataGroup * getRoot() const
+  {
+    return m_RootGroup;
+  };
 
 //@{
-//!  @name Methods to query, access, create, and destroy buffers.
+//!  @name Methods to query, access, create, and destroy Buffers.
 
   /*!
-   * \brief Return number of buffers in the datastore.
+   * \brief Return number of Buffers in the DataStore.
    */
   size_t getNumBuffers() const
   {
@@ -94,7 +101,7 @@ public:
   }
 
   /*!
-   * \brief Return true if DataStore owns a buffer with given index;
+   * \brief Return true if DataStore owns a Buffer with given index;
    *        else false.
    */
   bool hasBuffer( IndexType idx ) const
@@ -104,55 +111,55 @@ public:
   }
 
   /*!
-   * \brief Return (non-const) pointer to data buffer object with given index,
+   * \brief Return (non-const) pointer to Buffer object with given index,
    *        or ATK_NULLPTR if none exists.
    */
   DataBuffer * getBuffer( IndexType idx ) const;
 
   /*!
-   * \brief Create an undescribed data buffer object and return a pointer to it.
+   * \brief Create an undescribed Buffer object and return a pointer to it.
    *
-   *        The buffer must be described before it can be allocated.
+   *        The Buffer must be described before it can be allocated.
    *
-   *        The buffer object is assigned a unique index when created and the
-   *        buffer object is owned by the data store object.
+   *        The Buffer object is assigned a unique index when created and the
+   *        Buffer object is owned by the DataStore object.
    */
   DataBuffer * createBuffer();
 
   /*!
-   * \brief Create a data buffer object with specified type and number of
+   * \brief Create a Buffer object with specified type and number of
    *        elements and return a pointer to it.
    *
    *        See the DataBuffer::describe() method for valid data description.
    *
-   *        The buffer object is assigned a unique index when created and the
-   *        buffer object is owned by the data store object.
+   *        The Buffer object is assigned a unique index when created and the
+   *        Buffer object is owned by the DataStore object.
    */
   DataBuffer * createBuffer( TypeID type, SidreLength num_elems );
 
   /*!
-   * \brief Remove data buffer from the datastore and destroy it and
+   * \brief Remove Buffer from the DataStore and destroy it and
    *        its data.
    *
-   *        Note that buffer destruction detaches it from all views to
+   *        Note that Buffer destruction detaches it from all Views to
    *        which it is attached.
    */
   void destroyBuffer( DataBuffer * buff );
 
   /*!
-   * \brief Remove data buffer with given index from the datastore and
+   * \brief Remove Buffer with given index from the DataStore and
    *        destroy it and its data.
    *
-   *        Note that buffer destruction detaches it from all views to
+   *        Note that Buffer destruction detaches it from all Views to
    *        which it is attached.
    */
   void destroyBuffer( IndexType idx );
 
   /*!
-   * \brief Remove all data buffers from the datastore and destroy them
+   * \brief Remove all Buffers from the DataStore and destroy them
    *        and their data.
    *
-   *        Note that buffer destruction detaches it from all views to
+   *        Note that Buffer destruction detaches it from all Views to
    *        which it is attached.
    */
   void destroyAllBuffers();
@@ -160,17 +167,17 @@ public:
 //@}
 
 //@{
-//!  @name Methods useful for iterating over buffers in DataStore
+//!  @name Methods for iterating over Buffers in DataStore
 
   /*!
-   * \brief Return first valid buffer index.
+   * \brief Return first valid Buffer index.
    *
-   *        sidre::InvalidIndex is returned if group has no buffers.
+   *        sidre::InvalidIndex is returned if Group has no Buffers.
    */
   IndexType getFirstValidBufferIndex() const;
 
   /*!
-   * \brief Return next valid buffer index after given index.
+   * \brief Return next valid Buffer index after given index.
    *
    *        sidre::InvalidIndex is returned if there is no valid next index.
    */
@@ -179,23 +186,83 @@ public:
 //@}
 
   /*!
-   * \brief Copy DataStore Group hierarchy (starting at root) and buffer 
+   * \brief Copy DataStore Group hierarchy (starting at root) and Buffer 
    *        descriptions to given Conduit node.
    */
-  void info(Node& n) const;
+  void copyToConduitNode(Node& n) const;
+
+
+  /*!
+   * \brief Copy DataStore native layout (starting at root) to given Conduit node.
+   *
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
+   * externally to the Sidre View data so that it can be filled in from the data
+   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   */
+  void createNativeLayout(Node& n) const;
+
 
   /*!
    * \brief Print JSON description of DataStore Group hierarchy (starting at 
-   *        root) and buffer descriptions to std::cout.
+   *        root) and Buffer descriptions to std::cout.
    */
   void print() const;
 
   /*!
    * \brief Print JSON description of DataStore Group hierarchy (starting at
-   *        root) and buffer descriptions to given output stream.
+   *        root) and Buffer descriptions to given output stream.
    */
   void print(std::ostream& os) const;
 
+
+  /// Developer notes:
+  /// We should reduce these functions when SPIO is fully available ( in both serial and parallel ).
+  /// We only need one or two simple save functions.  Try to keep this class simple and move the I/O
+  /// interfaces to SPIO.
+
+  /*!
+   * \brief Save the DataStore to a new file.
+   * Supported protocols are conduit (binary), conduit_hdf5, and text (for debugging).
+   * If a Group is not provided, the root Group will be saved.
+   */
+  void save( const std::string& file_path,
+             const std::string& protocol,
+             const DataGroup* group = ATK_NULLPTR ) const;
+
+  /*!
+   * \brief Save the DataStore to an existing hdf5 file.
+   * If a Group is not provided, the root Group will be saved.
+   */
+  void save( const hid_t& h5_file_id,
+             const DataGroup* group = ATK_NULLPTR ) const;
+
+  /*!
+   * \brief Load the DataStore from a file
+   * If a Group is not provided, it will be loaded into the root Group.
+   */
+  void load(const std::string& file_path,
+            const std::string& protocol,
+            DataGroup * group = ATK_NULLPTR);
+
+  /*!
+   * \brief Load the DataStore from an hdf5 file.
+   * If a Group is not provided, it will be loaded into the root Group.
+   */
+  void load(const hid_t& h5_file_id,
+            DataGroup * group = ATK_NULLPTR);
+
+  /*!
+   * \brief Add the DataStore hierarchy and references to it's data to a conduit tree.
+   * This includes the Group/View hierarchy and Buffers.
+   */
+  void exportTo( const DataGroup * group,
+                  conduit::Node& data_holder ) const;
+
+  /*!
+   * \brief Restore a DataStore hierarchy and data contents (Buffers, etc) from a conduit tree.
+   */
+  void importFrom(DataGroup * group,
+                  conduit::Node& data_holder);
 
 private:
   /*!
@@ -212,13 +279,13 @@ private:
   DataStore& operator=( const DataStore& );
 #endif
 
-  /// Root data group, created when DataStore object is created.
+  /// Root Group, created when DataStore object is created.
   DataGroup * m_RootGroup;
 
-  /// Collection of buffers in DataStore instance.
+  /// Collection of Buffers in DataStore instance.
   std::vector<DataBuffer *> m_data_buffers;
 
-  /// Collection of unused unique buffer indices (they can be recycled).
+  /// Collection of unused unique Buffer indices (they can be recycled).
   std::stack< IndexType > m_free_buffer_ids;
 
   /// Flag indicating whether SLIC logging environment was initialized in ctor.

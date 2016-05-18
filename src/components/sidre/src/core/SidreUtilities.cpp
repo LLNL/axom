@@ -52,7 +52,6 @@ std::vector<std::string> split(const std::string& s, char c,
   while (pos != std::string::npos)
   {
     v.push_back(s.substr(i, pos-i));
-    std::cerr << "pushed back " << v.back() << std::endl;
     i = ++pos;
     pos = s.find(c, pos);
 

@@ -142,8 +142,6 @@ module sidre_mod
         procedure :: destroy_group_index => datagroup_destroy_group_index
         procedure :: move_group => datagroup_move_group
         procedure :: print => datagroup_print
-        procedure :: save => datagroup_save
-        procedure :: load => datagroup_load
         procedure :: get_instance => datagroup_get_instance
         procedure :: set_instance => datagroup_set_instance
         procedure :: associated => datagroup_associated
@@ -1295,46 +1293,6 @@ module sidre_mod
             implicit none
             type(C_PTR), value, intent(IN) :: self
         end subroutine c_datagroup_print
-        
-        subroutine c_datagroup_save(self, obase, protocol) &
-                bind(C, name="SIDRE_datagroup_save")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: obase(*)
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine c_datagroup_save
-        
-        subroutine c_datagroup_save_bufferify(self, obase, Lobase, protocol, Lprotocol) &
-                bind(C, name="SIDRE_datagroup_save_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: obase(*)
-            integer(C_INT), value, intent(IN) :: Lobase
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine c_datagroup_save_bufferify
-        
-        subroutine c_datagroup_load(self, obase, protocol) &
-                bind(C, name="SIDRE_datagroup_load")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: obase(*)
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine c_datagroup_load
-        
-        subroutine c_datagroup_load_bufferify(self, obase, Lobase, protocol, Lprotocol) &
-                bind(C, name="SIDRE_datagroup_load_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: obase(*)
-            integer(C_INT), value, intent(IN) :: Lobase
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine c_datagroup_load_bufferify
         
         ! splicer begin class.DataGroup.additional_interfaces
         ! splicer end class.DataGroup.additional_interfaces
@@ -2679,38 +2637,6 @@ contains
         call c_datagroup_print(obj%voidptr)
         ! splicer end class.DataGroup.method.print
     end subroutine datagroup_print
-    
-    subroutine datagroup_save(obj, obase, protocol)
-        use iso_c_binding
-        implicit none
-        class(datagroup) :: obj
-        character(*), intent(IN) :: obase
-        character(*), intent(IN) :: protocol
-        ! splicer begin class.DataGroup.method.save
-        call c_datagroup_save_bufferify(  &
-            obj%voidptr,  &
-            obase,  &
-            len_trim(obase, kind=C_INT),  &
-            protocol,  &
-            len_trim(protocol, kind=C_INT))
-        ! splicer end class.DataGroup.method.save
-    end subroutine datagroup_save
-    
-    subroutine datagroup_load(obj, obase, protocol)
-        use iso_c_binding
-        implicit none
-        class(datagroup) :: obj
-        character(*), intent(IN) :: obase
-        character(*), intent(IN) :: protocol
-        ! splicer begin class.DataGroup.method.load
-        call c_datagroup_load_bufferify(  &
-            obj%voidptr,  &
-            obase,  &
-            len_trim(obase, kind=C_INT),  &
-            protocol,  &
-            len_trim(protocol, kind=C_INT))
-        ! splicer end class.DataGroup.method.load
-    end subroutine datagroup_load
     
     function datagroup_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR

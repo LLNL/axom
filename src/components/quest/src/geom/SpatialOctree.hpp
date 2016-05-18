@@ -53,7 +53,7 @@ public:
         , m_boundingBox(bb)
     {
         // Cache the extents of a grid cell at each level of resolution
-        SpaceVector bbRange = bb.range();
+        const SpaceVector bbRange = m_boundingBox.range();
         for(int lev = 0; lev < this->m_levels.size(); ++lev)
         {
             m_deltaLevelMap[lev] = bbRange / static_cast<double>(1<<lev);

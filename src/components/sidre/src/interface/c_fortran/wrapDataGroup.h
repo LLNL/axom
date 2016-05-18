@@ -279,20 +279,6 @@ SIDRE_datagroup * SIDRE_datagroup_move_group(SIDRE_datagroup * self,
 
 void SIDRE_datagroup_print(SIDRE_datagroup * self);
 
-void SIDRE_datagroup_save(SIDRE_datagroup * self, const char * obase,
-                          const char * protocol);
-
-void SIDRE_datagroup_save_bufferify(SIDRE_datagroup * self, const char * obase,
-                                    int Lobase, const char * protocol,
-                                    int Lprotocol);
-
-void SIDRE_datagroup_load(SIDRE_datagroup * self, const char * obase,
-                          const char * protocol);
-
-void SIDRE_datagroup_load_bufferify(SIDRE_datagroup * self, const char * obase,
-                                    int Lobase, const char * protocol,
-                                    int Lprotocol);
-
 #ifdef __cplusplus
 }
 #endif

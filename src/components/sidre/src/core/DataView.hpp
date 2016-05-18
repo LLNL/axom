@@ -23,6 +23,7 @@
 
 // Standard C++ headers
 #include <string>
+#include <set>
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
@@ -692,8 +693,6 @@ public:
    */
   const char * getString()
   {
-    //TODO add check that view holds array data.  Will be added in later commit.
-    //If debug, should trigger assert.  If release, issue warning.
     if (m_state == STRING)
     {
       return m_node.as_char8_str();
@@ -782,7 +781,16 @@ public:
   /*!
    * \brief Copy data view description to given Conduit node.
    */
-  void info(Node& n) const;
+  void copyToConduitNode(Node& n) const;
+
+  /*!
+   * \brief Copy data view native layout to given Conduit node.
+   *
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
+   * externally to the Sidre View data so that it can be filled in from the data
+   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   */
+  void createNativeLayout(Node& n) const;
 
 private:
 
@@ -875,6 +883,20 @@ private:
   void copyView( DataView * copy ) const;
 
   /*!
+   * \brief Add view description and references to it's data to a conduit tree.
+   */
+  void exportTo(conduit::Node& data_holder,
+                std::set<IndexType>& buffer_indices) const;
+
+  /*!
+   * \brief Restore a view's description and data from a conduit tree.
+   * This does not include a view's buffer data, that is done in the buffer
+   */
+  void importFrom(conduit::Node& data_holder,
+                  const std::map<IndexType, IndexType>& buffer_id_map);
+
+
+  /*!
    *  \brief Private method to remove any applied description;
    *         but preserves user provided description.
    *
@@ -943,7 +965,7 @@ private:
   /*!
    *  \brief Private method returns string name of given view state enum value.
    */
-  char const * getStateStringName(State state) const;
+  static char const * getStateStringName(State state);
 
   /// Name of this DataView object.
   std::string m_name;

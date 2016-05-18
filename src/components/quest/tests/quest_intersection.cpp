@@ -260,6 +260,47 @@ TEST( quest_intersection, triangle_aabb_intersection_fromData2 )
     asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
 
+TEST( quest_intersection, triangle_aabb_intersection_boundaryFace )
+{
+    static int const DIM = 3;
+    typedef quest::Point< double,DIM >   PointType;
+    typedef quest::Triangle< double,DIM > TriangleType;
+    typedef quest::BoundingBox< double,DIM > BoundingBoxType;
+
+    TriangleType tri(PointType::make_point(0,5,0), PointType::make_point(0,5,5), PointType::make_point(0,5,5));
+
+    BoundingBoxType box0(PointType::make_point(-10,-10,-10), PointType::make_point(0,10,10));
+    BoundingBoxType box1(PointType::make_point(0,-10,-10), PointType::make_point(10,10,10));
+
+    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+
+
+    SLIC_INFO("Testing point bounding box: " << box0 << " against triangle " << tri );
+    EXPECT_TRUE( quest::intersect(tri, box0));
+
+    SLIC_INFO("Testing point bounding box: " << box1 << " against triangle " << tri );
+    EXPECT_TRUE( quest::intersect(tri, box1));
+
+    // ---
+
+    // Airfoil triangle 206
+    TriangleType tri2(PointType::make_point(0.0340691,-1,0.0236411)
+                    , PointType::make_point(0.028589,-1,0.0221062)
+                    , PointType::make_point(0.0207793,-1,-0.0295674));
+    // Block: (134,128,310) @ level 9
+    BoundingBoxType box2( PointType::make_point(0.0230077,-1,-0.0208459)
+                        , PointType::make_point(0.0268708,-0.992188,-0.0201394));
+
+    SLIC_INFO("Testing point bounding box: " << box2
+           << " against triangle " << tri2
+           << "\n\t -- intersects? " << (quest::intersect(tri2, box2) ? "yes":"no")
+           //<< "\n\t -- distance: " << (quest::distance(tri2, box2) ? "yes":"no")
+           );
+    //EXPECT_TRUE( quest::intersect(tri, box1));
+
+    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+}
+
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------

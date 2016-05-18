@@ -103,7 +103,8 @@ contains
     call iview%print()
     call dview%print()
 
-    call root%save("out_sidre_external_save_restore_external_view", "conduit")
+!  TODO - fix wrapping, change to datastore save call
+    !call root%save("out_sidre_external_save_restore_external_view", "conduit")
 
     call ds%print()
 
@@ -111,7 +112,8 @@ contains
     ds2 = datastore_new()
     root2 = ds2%get_root()
 
-    call root2%load("out_sidre_external_save_restore_external_view","conduit")
+! TODO - fix wrapping change to datastore load call
+    !call root2%load("out_sidre_external_save_restore_external_view","conduit")
 
     call ds2%print()
 
