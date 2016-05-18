@@ -217,6 +217,60 @@ TEST( quest_octree, octree_coveringLeafBlocks)
 
 }
 
+//------------------------------------------------------------------------------
+TEST( quest_octree, octree_block_is_descendant)
+{
+  SLIC_INFO("*** This test exercises the isDescendantOf() function of OctreeBase::BlockIndex");
+
+  static const int DIM = 2;
+  typedef quest::BlockData LeafNodeType;
+  typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
+  typedef OctreeType::BlockIndex BlockIndex;
+
+  OctreeType octree;
+
+  BlockIndex rootBlock = octree.root();
+  SLIC_INFO("Root block of octree is " << rootBlock );
+
+
+  EXPECT_TRUE( rootBlock.isDescendantOf(rootBlock));
+  EXPECT_FALSE( rootBlock.isDescendantOf( BlockIndex::invalid_index() ));
+  EXPECT_FALSE( BlockIndex::invalid_index().isDescendantOf( rootBlock ));
+
+
+  SLIC_INFO("-- checking children of root");
+  octree.refineLeaf( rootBlock );
+  int numChildren  = BlockIndex::numChildren();
+  for(int i = 0; i < numChildren; ++i)
+  {
+    BlockIndex blk = octree.child(rootBlock, i);
+
+    EXPECT_TRUE( blk.isDescendantOf( rootBlock) );
+    EXPECT_FALSE( rootBlock.isDescendantOf( blk) );
+
+    EXPECT_FALSE( blk.isDescendantOf( octree.child(rootBlock, (i + 1) % numChildren) ));
+
+  }
+
+  BlockIndex child3 = octree.child(rootBlock, 3);
+  octree.refineLeaf( child3 );
+
+  for(int i = 0; i < numChildren; ++i)
+  {
+      BlockIndex grandchild = child3.child(i);
+      EXPECT_TRUE(grandchild.isDescendantOf( grandchild));
+      EXPECT_TRUE(grandchild.isDescendantOf( child3));
+      EXPECT_TRUE(grandchild.isDescendantOf( rootBlock));
+
+      if(i != 3)
+          EXPECT_FALSE( grandchild.isDescendantOf( rootBlock.child(i)));
+
+      EXPECT_FALSE( grandchild.isDescendantOf( BlockIndex::invalid_index() ));
+      EXPECT_FALSE( BlockIndex::invalid_index().isDescendantOf( grandchild ));
+  }
+
+}
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
