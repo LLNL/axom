@@ -58,14 +58,11 @@ int main(int argc, char** argv)
     i1_vals[i] = (i+10) * (404-my_rank-i);
   }
 
-  std::vector<DataGroup *> groups;
-  groups.push_back(root);
-
   /*
    * Contents of the DataStore written to files with IOManager.
    */
   int num_files = num_output;
-  IOManager writer(MPI_COMM_WORLD, &(groups[0]), groups.size(), num_files);
+  IOManager writer(MPI_COMM_WORLD, root, num_files);
 
   writer.write("out_spio_parallel_write_read", 0, "conduit_hdf5");
 
@@ -73,13 +70,11 @@ int main(int argc, char** argv)
    * Create another DataStore than holds nothing but the root group.
    */
   DataStore * ds2 = new DataStore();
-  std::vector<DataGroup *> groups2;
-  groups2.push_back(ds2->getRoot());
 
   /*
    * Read from the files that were written above.
    */
-  IOManager reader(MPI_COMM_WORLD, &(groups2[0]), groups2.size(), num_files);
+  IOManager reader(MPI_COMM_WORLD, ds2->getRoot(), num_files);
 
   reader.read("out_spio_parallel_write_read0.root");
 

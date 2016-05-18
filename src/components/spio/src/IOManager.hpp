@@ -56,13 +56,11 @@ public:
    * \brief Constructor
    *
    * \param com               MPI communicator
-   * \param groups            Array of pointers to DataGroups.
-   * \param num_datagroups    Size of the groups array
+   * \param group            Pointer to a DataGroup holding data for I/O
    * \param num_files         Number of files for I/O
    */
   IOManager(MPI_Comm com,
-            sidre::DataGroup ** groups,
-            int num_datagroups,
+            sidre::DataGroup * group,
             int num_files);
 
   /*!
@@ -107,15 +105,14 @@ private:
                       const std::string& file_base,
                       int cycle);
 
-  std::string getHDF5FileName(hid_t root_file_id, int rankgroup_id, int datagroup_id);
+  std::string getHDF5FileName(hid_t root_file_id, int rankgroup_id);
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
 
   IOBaton m_baton;
 
-  sidre::DataGroup ** m_datagroups;
-  int m_num_datagroups;
+  sidre::DataGroup * m_datagroup;
   int m_num_files;
 
   MPI_Comm m_mpi_comm;
