@@ -14,15 +14,16 @@
 ! NOTE: assumes a "sphere.stl" file exists in the working directory.
 !-------------------------------------------------------------------------------
 
-
 module quest_fortran_usage
 
-  use mpi
   use quest_mod
+  implicit none
+
+  include 'mpif.h'
 
   real*8 :: default_lb = -4.5
   real*8 :: default_ub = 4.5
-  integer :: num_pts = 10
+  integer :: num_pts = 10, rank, nprocs, ierr
   character(LEN=40) :: FileName = "sphere.stl"
   integer :: dim = 3
 
@@ -44,6 +45,17 @@ contains
 
   end function random_double
 
+  subroutine init_mpi()
+    !...initialize MPI
+    call mpi_init( ierr )
+    call mpi_comm_rank( MPI_COMM_WORLD, rank, ierr )
+    call mpi_comm_size( MPI_COMM_WORLD, nprocs, ierr )
+  end subroutine init_mpi
+
+  subroutine finalize_mpi()
+    !... finalize MPI
+    call mpi_finalize( ierr )
+  end subroutine finalize_mpi
 
   !-------------------------------------------------------------------------------
   ! run_distance_queries( rank )
@@ -119,17 +131,11 @@ end module
 !-------------------------------------------------------------------------------
 program quest_fortran
 
-  use mpi
   use quest_fortran_usage
 
   implicit none
 
-  integer :: i, ierr, nprocs, rank
-
-  !...initialize MPI
-  call mpi_init( ierr )
-  call mpi_comm_rank( MPI_COMM_WORLD, rank, ierr )
-  call mpi_comm_size( MPI_COMM_WORLD, nprocs, ierr )
+  call init_mpi()
 
   !...exercise the distance functions in quest module
   if (rank == 0) then
@@ -137,8 +143,8 @@ program quest_fortran
     write(*,*) "[rank, (x,y,z), dist, within]"
   end if
 
-  call run_distance_queries( rank )
 
+  call run_distance_queries( rank )
 
   !...exercise the containment functions in quest module
   if (rank == 0) then
@@ -148,8 +154,5 @@ program quest_fortran
 
   call run_containment_queries( rank )
 
-
-  !... finalize MPI
-  call mpi_finalize( ierr )
-
+  call finalize_mpi()
 end program
