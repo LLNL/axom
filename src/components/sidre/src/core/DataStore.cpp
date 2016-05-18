@@ -301,6 +301,19 @@ void DataStore::createNativeLayout(Node& n) const
 /*
  *************************************************************************
  *
+ * Copy DataStore native external layout, starting at root, to given Conduit node.
+ *
+ *************************************************************************
+ */
+void DataStore::createExternalLayout(Node& n) const
+{
+    m_RootGroup->createExternalLayout(n);
+}
+
+
+/*
+ *************************************************************************
+ *
  * Print JSON description of Buffers and Group tree, starting at root,
  * to stdout.
  *
@@ -342,7 +355,7 @@ void DataStore::save(const std::string& file_path,
 
   Node external_holder;
   data_holder.set_dtype(DataType::object());
-  createNativeLayout(external_holder);
+  createExternalLayout(external_holder);
 
   Node two_part;
   two_part["sidre"] = data_holder;

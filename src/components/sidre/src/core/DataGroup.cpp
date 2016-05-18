@@ -909,6 +909,39 @@ void DataGroup::createNativeLayout(Node& n) const
 /*
  *************************************************************************
  *
+ * Copy Group native layout to given Conduit node.
+ *
+ *************************************************************************
+ */
+void DataGroup::createExternalLayout(Node& n) const
+{
+  // Dump the group's views
+  IndexType vidx = getFirstValidViewIndex();
+  while ( indexIsValid(vidx) )
+  {
+    const DataView * view = getView(vidx);
+
+    // Check that the view's name is not also a child group name
+    SLIC_CHECK_MSG( !hasGroup(view->getName())
+                  , view->getName() << " is the name of a groups and a view");
+
+    view->createExternalLayout( n );// 
+    vidx = getNextValidViewIndex(vidx);
+  }
+
+  // Recursively dump the child groups
+  IndexType gidx = getFirstValidGroupIndex();
+  while ( indexIsValid(gidx) )
+  {
+    const DataGroup * group =  getGroup(gidx);
+    group->createExternalLayout(n[group->getName()]);
+    gidx = getNextValidGroupIndex(gidx);
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Print JSON description of data Group to stdout.
  *
  *************************************************************************
