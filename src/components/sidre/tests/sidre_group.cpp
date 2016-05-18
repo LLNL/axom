@@ -702,6 +702,7 @@ TEST(sidre_group,save_restore_empty)
 
   delete ds1;
 
+#if 0
   // Only restore conduit protocol for now
   for (int i = 0; i < 1; ++i) {
       const std::string file_path = file_path_base + protocols[i];
@@ -717,7 +718,7 @@ TEST(sidre_group,save_restore_empty)
 
       delete ds2;
   }
-
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -739,22 +740,24 @@ TEST(sidre_group,save_restore_api)
       ds1->save(file_path, protocols[i], root1);
   }
 
+#if 0
   DataStore * ds2 = new DataStore();
-  DataStore * ds3 = new DataStore();
-  DataStore * ds4 = new DataStore();
-
   ds2->load("sidre_save_fulltree_conduit", "conduit");
-  ds3->load("sidre_save_subtree_conduit", "conduit", ds3->getRoot() );
-  ds4->load("sidre_save_subtree_conduit_hdf5", "conduit_hdf5");
-
   EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(root1) );
+  delete ds2;
+
+  DataStore * ds3 = new DataStore();
+  ds3->load("sidre_save_subtree_conduit", "conduit", ds3->getRoot() );
   EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(root1) );
+  delete ds3;
+#endif
+
+  DataStore * ds4 = new DataStore();
+  ds4->load("sidre_save_subtree_conduit_hdf5", "conduit_hdf5");
   EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(root1) );
+  delete ds4;
 
   delete ds1;
-  delete ds2;
-  delete ds3;
-  delete ds4;
 
   // Why don't these pass??? Need to ask Noah about this...
   // Trying to make sure sub trees are same here.
@@ -791,8 +794,8 @@ TEST(sidre_group,save_restore_scalars_and_strings)
   }
 
 
-  // Only restore conduit protocol for now
-  for (int i = 0; i < 1; ++i) {
+  // Only restore conduit_hdf
+  for (int i = 1; i < 2; ++i) {
       const std::string file_path = file_path_base + protocols[i];
 
       DataStore * ds2 = new DataStore();
@@ -834,7 +837,7 @@ TEST(sidre_group,save_restore_external_data)
   delete ds1;
 
   // Now load back in.
-  // Only restore conduit protocol for now
+  // Only restore conduit protocol_hdf5
   for (int i = 1; i < 2; ++i) {
       const std::string file_path = file_path_base + protocols[i];
 
@@ -907,8 +910,8 @@ TEST(sidre_group,save_restore_complex)
       ds1->save(file_path, protocols[i]);
   }
 
-  // Only restore conduit protocol for now
-  for (int i = 0; i < 1; ++i) {
+  // Only restore conduit_hdf5 protocol
+  for (int i = 1; i < 2; ++i) {
       const std::string file_path = file_path_base + protocols[i];
 
       DataStore * ds2 = new DataStore();

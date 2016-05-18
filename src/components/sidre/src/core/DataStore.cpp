@@ -340,13 +340,16 @@ void DataStore::save(const std::string& file_path,
   data_holder.set_dtype(DataType::object());
   exportTo( group, data_holder);
 
+  Node two_part;
+  two_part["sidre"] = data_holder;
+
   if (protocol == "conduit")
   {
-    conduit::relay::io::save(data_holder, file_path);
+    conduit::relay::io::save(two_part, file_path);
   }
   else if (protocol == "conduit_hdf5")
   {
-    conduit::relay::io::hdf5_write( data_holder, file_path );
+    conduit::relay::io::hdf5_write( two_part, file_path );
   }
   else if (protocol == "text")
   {
@@ -354,7 +357,7 @@ void DataStore::save(const std::string& file_path,
     SLIC_ERROR_IF(!output_file, "Unable to create file " << file_path);
     if (output_file)
     {
-      output_file  << data_holder.to_json();
+      output_file  << two_part.to_json();
     }
   }
   else
@@ -395,11 +398,12 @@ void DataStore::load(const std::string& file_path,
 
   if (protocol == "conduit")
   {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
     conduit::relay::io::load(file_path, node);
   }
   else if (protocol == "conduit_hdf5")
   {
-    conduit::relay::io::hdf5_read( file_path, node);
+    conduit::relay::io::hdf5_read( file_path + ":sidre", node);
   }
   else
   {
