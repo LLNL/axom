@@ -53,6 +53,22 @@ include(cmake/SetupShroud.cmake)
 include(cmake/thirdparty/SetupATKThirdParty.cmake)
 
 
+#
+# We don't try to use this approach for CMake generators that support
+# multiple configurations. See: CZ JIRA: ATK-45
+#
+if(NOT CMAKE_CONFIGURATION_TYPES)
+    ######################################################
+    # Add define we can use when debug builds are enabled
+    ######################################################
+    if( (CMAKE_BUILD_TYPE MATCHES Debug)
+        OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo )
+      )
+        add_definitions(-DATK_DEBUG)
+    endif()
+
+endif()
+
 ##############################################################################
 # Setup some additional compiler options that can be useful in various targets
 # These are stored in their own variables.

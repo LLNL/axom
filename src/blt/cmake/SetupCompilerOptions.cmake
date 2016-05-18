@@ -43,16 +43,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 # multiple configurations. See: CZ JIRA: ATK-45
 #
 if(NOT CMAKE_CONFIGURATION_TYPES)
-
-    ######################################################
-    # Add define we can use when debug builds are enabled
-    ######################################################
-    if( (CMAKE_BUILD_TYPE MATCHES Debug)
-        OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo )
-      )
-        add_definitions(-DATK_DEBUG)
-    endif()
-
     ##########################################
     # Support Extra Flags for the C compiler.
     ##########################################
