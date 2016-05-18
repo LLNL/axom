@@ -63,8 +63,8 @@ int main(int argc, char * argv[])
     return 0;
   }
 
-  IOManager reader(MPI_COMM_WORLD, root, num_files);
-  reader.read(root_file);
+  IOManager reader(MPI_COMM_WORLD, num_files);
+  reader.read(root, root_file);
 
   delete ds;
 

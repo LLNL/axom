@@ -62,9 +62,9 @@ int main(int argc, char** argv)
    * Contents of the DataStore written to files with IOManager.
    */
   int num_files = num_output;
-  IOManager writer(MPI_COMM_WORLD, root, num_files);
+  IOManager writer(MPI_COMM_WORLD, num_files);
 
-  writer.write("out_spio_parallel_write_read", 0, "conduit_hdf5");
+  writer.write(root, "out_spio_parallel_write_read", 0, "conduit_hdf5");
 
   /*
    * Create another DataStore than holds nothing but the root group.
@@ -74,9 +74,9 @@ int main(int argc, char** argv)
   /*
    * Read from the files that were written above.
    */
-  IOManager reader(MPI_COMM_WORLD, ds2->getRoot(), num_files);
+  IOManager reader(MPI_COMM_WORLD, num_files);
 
-  reader.read("out_spio_parallel_write_read0.root");
+  reader.read(ds2->getRoot(), "out_spio_parallel_write_read0.root");
 
 
   /*

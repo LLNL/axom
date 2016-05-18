@@ -57,8 +57,8 @@ int main(int argc, char * argv[])
   ga->createViewScalar<int>("i0", my_rank + 101);
   gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
 
-  IOManager writer(MPI_COMM_WORLD, root, num_files);
-  writer.write(file_base, 0, "conduit_hdf5");
+  IOManager writer(MPI_COMM_WORLD, num_files);
+  writer.write(root, file_base, 0, "conduit_hdf5");
 
   delete ds;
 

@@ -60,7 +60,6 @@ public:
    * \param num_files         Number of files for I/O
    */
   IOManager(MPI_Comm com,
-            sidre::DataGroup * group,
             int num_files);
 
   /*!
@@ -71,31 +70,36 @@ public:
   /*!
    * \brief write
    *
+   * \param group         DataGroup to write to output
    * \param file_string   base name for output file
    * \param cycle         cycle counter
    * \param protocol      identifies I/O protocol (format, e
    */
-  void write(const std::string& file_string,
+  void write(sidre::DataGroup * group,
+             const std::string& file_string,
              int cycle,
              const std::string& protocol);
 
   /*!
    * \brief read from input files
    *
+   * \param group         DataGroup to fill with input data
    * \param file_string   base name of input files
    * \param cycle         cycle counter
    * \param protocol      identifies I/O protocol
    */
-  void read(const std::string& file_string,
+  void read(sidre::DataGroup * group,
+            const std::string& file_string,
             int cycle,
             const std::string& protocol);
 
   /*!
    * \brief read from a root file
    *
+   * \param group         DataGroup to fill with input data
    * \param root_file     root file containing input data
    */
-  void read(const std::string& root_file);
+  void read(sidre::DataGroup * group, const std::string& root_file);
 
 private:
 
@@ -112,7 +116,6 @@ private:
 
   IOBaton m_baton;
 
-  sidre::DataGroup * m_datagroup;
   int m_num_files;
 
   MPI_Comm m_mpi_comm;

@@ -35,15 +35,15 @@ int main(int argc, char** argv)
   gb->createViewScalar<int>("i1", 404);
 
   int num_files = 1;
-  IOManager writer(MPI_COMM_WORLD, root, num_files);
+  IOManager writer(MPI_COMM_WORLD, num_files);
 
-  writer.write("out_spio_basic_write_read", 0, "conduit_hdf5");
+  writer.write(root, "out_spio_basic_write_read", 0, "conduit_hdf5");
 
   DataStore * ds2 = new DataStore();
 
-  IOManager reader(MPI_COMM_WORLD, ds2->getRoot(), num_files);
+  IOManager reader(MPI_COMM_WORLD, num_files);
 
-  reader.read("out_spio_basic_write_read0.root");
+  reader.read(ds2->getRoot(), "out_spio_basic_write_read0.root");
 
   int return_val = 0;
   if (!ds2->getRoot()->isEquivalentTo(root)) {

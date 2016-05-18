@@ -49,12 +49,10 @@ namespace spio
  *************************************************************************
  */
 IOManager::IOManager(MPI_Comm comm,
-  sidre::DataGroup * group,
   int num_files)
 : m_comm_size(1),
   m_my_rank(0),
   m_baton(comm, num_files),
-  m_datagroup(group),
   m_num_files(num_files),
   m_mpi_comm(comm)
 {
@@ -82,7 +80,7 @@ IOManager::~IOManager()
  *
  *************************************************************************
  */
-void IOManager::write(const std::string& file_string, int cycle, const std::string& protocol)
+void IOManager::write(sidre::DataGroup * datagroup, const std::string& file_string, int cycle, const std::string& protocol)
 {
 
   std::ostringstream rootstream;
@@ -134,7 +132,7 @@ void IOManager::write(const std::string& file_string, int cycle, const std::stri
                             H5P_DEFAULT);
     SLIC_ASSERT(h5_group_id >= 0);
 
-    m_datagroup->getDataStore()->save(h5_group_id, m_datagroup);
+    datagroup->getDataStore()->save(h5_group_id, datagroup);
 
     status = H5Gclose(h5_group_id);
     SLIC_ASSERT(status >= 0);
@@ -149,7 +147,7 @@ void IOManager::write(const std::string& file_string, int cycle, const std::stri
     std::ostringstream savestream;
     savestream << file_name << ".group";
     std::string obase = savestream.str();
-    m_datagroup->getDataStore()->save(obase, protocol, m_datagroup);
+    datagroup->getDataStore()->save(obase, protocol, datagroup);
   }
   (void)m_baton.pass();
 }
@@ -162,6 +160,7 @@ void IOManager::write(const std::string& file_string, int cycle, const std::stri
  *************************************************************************
  */
 void IOManager::read(
+  sidre::DataGroup * datagroup,
   const std::string& file_string,
   int cycle,
   const std::string& protocol)
@@ -196,7 +195,7 @@ void IOManager::read(
     std::string group_name = groupstream.str();
     hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
     SLIC_ASSERT(h5_file_id >= 0);
-    m_datagroup->getDataStore()->load(h5_group_id, m_datagroup);
+    datagroup->getDataStore()->load(h5_group_id, datagroup);
 
     errv = H5Fclose(h5_file_id);
     SLIC_ASSERT(errv >= 0);
@@ -208,7 +207,7 @@ void IOManager::read(
     std::ostringstream loadstream;
     loadstream << file_name << ".group";
     std::string obase = loadstream.str();
-    m_datagroup->getDataStore()->load(obase, protocol, m_datagroup);
+    datagroup->getDataStore()->load(obase, protocol, datagroup);
   }
 
   (void)m_baton.pass();
@@ -221,7 +220,7 @@ void IOManager::read(
  *
  *************************************************************************
  */
-void IOManager::read(const std::string& root_file)
+void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
 {
   int group_id = m_baton.wait();
 
@@ -245,7 +244,7 @@ void IOManager::read(const std::string& root_file)
   std::string group_name = groupstream.str();
   hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
   SLIC_ASSERT(h5_group_id >= 0);
-  m_datagroup->getDataStore()->load(h5_group_id, m_datagroup);
+  datagroup->getDataStore()->load(h5_group_id, datagroup);
 
   errv = H5Fclose(h5_file_id);
   SLIC_ASSERT(errv >= 0);
