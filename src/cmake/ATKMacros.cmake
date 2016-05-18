@@ -170,14 +170,20 @@ endmacro(blt_register_library)
 ##                  SOURCES [source1 [source2 ...]]
 ##                  HEADERS [header1 [header2 ...]]
 ##                  DEPENDS_ON [dep1 ...] 
-##                  USE_OPENMP <TRUE or FALSE (default)> )
+##                  OUTPUT_NAME [name]
+##                  OUTPUT_DIR [dir]
+##                  USE_OPENMP <TRUE or FALSE (default)>
+##                  PYTHON_MODULE
+##                  LUA_MODULE
+##                  SHARED
+##                 )
 ##
 ## Adds a library to the project composed by the given source files.
 ##
 ## Adds a library target, called <libname>, to be built from the given sources.
 ## This macro internally checks if the global option "ENABLE_SHARED_LIBS" is
 ## ON, in which case, it will create a shared library. By default, a static
-## library is generated.
+## library is generated unless the SHARED option is added.
 ##
 ## If given a HEADERS argument, it creates a "blt_copy_headers_target" for 
 ## this library and installs them in the include/<component name> folder.
@@ -190,13 +196,29 @@ endmacro(blt_register_library)
 ## library target. Specifically, it will add a dependency to the library's
 ## "blt_copy_headers_target" and adds a dependency for each DEPENDS_ON target.
 ##
+## The OUTPUT_DIR is used to control the build output directory of this 
+## library. This is used to overwrite the default lib directory.
+##
+## OUTPUT_NAME is the name of the output file.  It defaults to NAME.
+## It's useful when multiple libraries with the same name need to be created
+## by different targets. NAME is the target name, OUTPUT_NAME is the library name.
+##
 ## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this 
 ## argument is supplied, the openmp compiler flag will be added to the compiler 
 ## command and the -DUSE_OPENMP, will be included to the compiler definition.
+##
+## The PYTHON_MODULE option customizes arguments for a Python module.
+## The target created will be NAME-python-module and the library will be NAME.so.
+## In addition, python is added to DEPENDS_ON and OUTPUT_DIR is defaulted to
+## BLT_Python_MODULE_DIRECTORY.
+## Likewise, LUA_MODULE helps create a module for Lua.
+
 ##------------------------------------------------------------------------------
 macro(blt_add_library)
 
-    set(singleValueArgs NAME USE_OPENMP)
+    set(arg_CLEAR_PREFIX FALSE)
+    set(options SHARED PYTHON_MODULE LUA_MODULE)
+    set(singleValueArgs NAME OUTPUT_NAME OUTPUT_DIR USE_OPENMP)
     set(multiValueArgs SOURCES HEADERS DEPENDS_ON)
 
     ## parse the arguments
@@ -208,7 +230,29 @@ macro(blt_add_library)
         set(arg_USE_OPENMP FALSE)
     endif()
 
-    if ( ENABLE_SHARED_LIBS )
+    if(arg_PYTHON_MODULE)
+        set(arg_SHARED TRUE)
+        if( NOT arg_OUTPUT_DIR )
+            set(arg_OUTPUT_DIR ${BLT_Python_MODULE_DIRECTORY})
+        endif()
+        set(arg_DEPENDS_ON "${arg_DEPENDS_ON};python")
+        set(arg_OUTPUT_NAME ${arg_NAME})
+        set(arg_NAME "${arg_NAME}-python-module")
+        set(arg_CLEAR_PREFIX TRUE)
+    endif()
+
+    if(arg_LUA_MODULE)
+        set(arg_SHARED TRUE)
+        if( NOT arg_OUTPUT_DIR )
+            set(arg_OUTPUT_DIR ${BLT_Lua_MODULE_DIRECTORY})
+        endif()
+        set(arg_DEPENDS_ON "${arg_DEPENDS_ON};lua")
+        set(arg_OUTPUT_NAME ${arg_NAME})
+        set(arg_NAME "${arg_NAME}-lua-module")
+        set(arg_CLEAR_PREFIX TRUE)
+    endif()
+
+    if ( arg_SHARED OR ENABLE_SHARED_LIBS )
         add_library( ${arg_NAME} SHARED ${arg_SOURCES} ${arg_HEADERS} )
     else()
         add_library( ${arg_NAME} STATIC ${arg_SOURCES} ${arg_HEADERS} )
@@ -241,11 +285,26 @@ macro(blt_add_library)
     blt_setup_openmp_target( BUILD_TARGET ${arg_NAME}
                               USE_OPENMP ${arg_USE_OPENMP} )
 
+    # Set output directory
+    if ( arg_OUTPUT_DIR )
+        set_target_properties(${arg_NAME} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${arg_OUTPUT_DIR} )
+    endif()
+
+    if (arg_OUTPUT_NAME)
+        set_target_properties(${arg_NAME} PROPERTIES
+            OUTPUT_NAME ${arg_OUTPUT_NAME} )
+    endif()
+
+    if (arg_CLEAR_PREFIX)
+        set_target_properties(${arg_NAME} PROPERTIES
+            PREFIX "" )
+    endif()
+   
     # Update project sources                     
     blt_update_project_sources( TARGET_SOURCES ${arg_SOURCES} ${arg_HEADERS})
-   
-endmacro(blt_add_library)
 
+endmacro(blt_add_library)
 
 ##------------------------------------------------------------------------------
 ## blt_add_executable( NAME <name>
@@ -297,7 +356,7 @@ macro(blt_add_executable)
     list(GET arg_SOURCES 0 _first)
     get_source_file_property(_lang ${_first} LANGUAGE)
     if(_lang STREQUAL Fortran)
-        set_target_properties( ${test_name} PROPERTIES LINKER_LANGUAGE Fortran )
+        set_target_properties( ${arg_NAME} PROPERTIES LINKER_LANGUAGE Fortran )
     endif()
 
     blt_setup_target(NAME ${arg_NAME}

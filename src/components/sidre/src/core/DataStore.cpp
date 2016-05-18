@@ -63,7 +63,7 @@ void DataStoreConduitErrorHandler( const std::string& message,
  *************************************************************************
  */
 DataStore::DataStore()
-  : m_need_to_finalize_slic(false)
+  : m_RootGroup(ATK_NULLPTR), m_need_to_finalize_slic(false)
 {
 
   if ( !slic::isInitialized() )

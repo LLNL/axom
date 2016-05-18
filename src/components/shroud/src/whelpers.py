@@ -59,8 +59,7 @@ void FC_GLOBAL(shroud_c_loc,SHROUD_C_LOC)(void * addr, void * * out)
   *out = addr;
 }
 
-}  // extern "C"
-"""
+}  // extern \"C\""""
 
 #
 # Fortran helper functions which may be added to a module.

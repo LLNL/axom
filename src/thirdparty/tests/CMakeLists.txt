@@ -82,3 +82,55 @@ if (ENABLE_MPI)
                  NUM_PROCS 2)
 endif()
 
+################################################################################
+# Add compiler flag tests.
+#
+# Test whether compiler flag actually work as desired on all compilers.
+# E.g. if we intend to disable a warning, that the warning is actually disabled. 
+# These tests should fail if we have the wrong warning disabler set for the
+# given compiler/configuration.  Flags are defined in blt's SetupCompilerOptions.
+# The tests enable all warnings, treat warnings as errors and add the desired 
+# warning disabling flag.
+################################################################################
+
+# Test for ATK_DISABLE_UNINITIALIZED_WARNINGS flag
+set( BLT_SMOKE_TESTS
+        compiler_flag_uninitialized.cpp
+        compiler_flag_unused_param.cpp
+        compiler_flag_unused_var.cpp
+        compiler_flag_omp_pragma.cpp
+        compiler_flag_strict_aliasing.cpp
+        )
+
+foreach(test ${BLT_SMOKE_TESTS})
+    get_filename_component( test_name ${test} NAME_WE )
+    blt_add_executable( 
+        NAME ${test_name}
+        SOURCES ${test}
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        USE_OPENMP False
+        )
+    blt_add_test( 
+        NAME ${test_name} 
+        COMMAND ${test_name} 
+        )
+endforeach()
+
+set( ADDL_SMOKE_FLAGS "${ATK_TREAT_WARNINGS_AS_ERRORS} ${ATK_ENABLE_ALL_WARNINGS}")
+
+set_target_properties(compiler_flag_uninitialized 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNINITIALIZED_WARNINGS}")
+set_target_properties(compiler_flag_unused_param 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS}")
+set_target_properties(compiler_flag_unused_var 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS}")
+set_target_properties(compiler_flag_omp_pragma 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_OMP_PRAGMA_WARNINGS}")
+    
+# the aliasing test requires optimization, set this up as custom compiler flag
+# in case we need more flexibility for this flag (e.g. for MSVC)
+blt_append_custom_compiler_flag(FLAGS_VAR TMP_OPT_FLAG DEFAULT "-O2")
+set_target_properties(compiler_flag_strict_aliasing 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${TMP_OPT_FLAG} ${ATK_DISABLE_ALIASING_WARNINGS}")
+
+

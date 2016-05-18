@@ -129,6 +129,13 @@ include(SetupCodeChecks)
      "Directory where all Fortran modules will go in the build tree"
      )
 
+## Set the Lua module directory
+ set(BLT_Lua_MODULE_DIRECTORY
+     "${PROJECT_BINARY_DIR}/lib/lua"
+     CACHE PATH
+     "Directory where all Lua modules will go in the build tree"
+ )
+
 ## Mark as advanced
 mark_as_advanced(
      LIBRARY_OUTPUT_PATH

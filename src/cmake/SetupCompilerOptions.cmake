@@ -136,23 +136,34 @@ endif()
 # Additional compiler warnings and treatment of warnings as errors
 ##################################################################
 
+
+blt_append_custom_compiler_flag(
+    FLAGS_VAR ATK_ENABLE_ALL_WARNINGS
+     DEFAULT "-Wall -Wextra"
+     CLANG   "-Wall -Wextra" 
+                    # Additional  possibilities for clang include: 
+                    #       "-Wdocumentation -Wdeprecated -Weverything"
+     MSVC    "/W4 /Wall /wd4619 /wd4668 /wd4820 /wd4571 /wd4710"
+     XL      ""     # qinfo=<grp> produces additional messages on XL
+                    # qflag=<x>:<x> defines min severity level to produce messages on XL
+                    #     where x is i info, w warning, e error, s severe; default is: 
+                    # (default is  qflag=i:i)
+     )
+
+blt_append_custom_compiler_flag(
+    FLAGS_VAR ATK_TREAT_WARNINGS_AS_ERRORS
+     DEFAULT  "-Werror"
+     MSVC     "/WX"
+     XL       "qhalt=w"       # i info, w warning, e error, s severe (default)
+     )
+
 set(langFlags "CMAKE_C_FLAGS" "CMAKE_CXX_FLAGS")
 
 if (ENABLE_ALL_WARNINGS)
    MESSAGE(STATUS  "Enabling all compiler warnings on all targets.")
 
-   foreach(flagVar ${langFlags})   
-     blt_append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
-                     DEFAULT "-Wall -Wextra"
-                     CLANG   "-Wall -Wextra" 
-									# Additional  possibilities for clang include: 
-									# 		"-Wdocumentation -Wdeprecated -Weverything"
-                     MSVC    "/W4 /Wall /wd4619 /wd4668 /wd4820 /wd4571 /wd4710"
-                     XL      ""     # qinfo=<grp> produces additional messages on XL
-                                    # qflag=<x>:<x> defines min severity level to produce messages on XL
-                                    #     where x is i info, w warning, e error, s severe; default is: 
-                                    # (default is  qflag=i:i)
-                     )
+   foreach(flagVar ${langFlags})
+     set(${flagVar} "${${flagVar}} ${ATK_ENABLE_ALL_WARNINGS}") 
    endforeach()
 endif()
 
@@ -160,12 +171,7 @@ if (ENABLE_WARNINGS_AS_ERRORS)
    MESSAGE(STATUS  "Enabling treatment of warnings as errors on all targets.")
 
    foreach(flagVar ${langFlags})   
-     append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
-                     DEFAULT  "-Werror"
-                     MSVC     "/WX"
-                     XL       "qhalt=w"       
-                                    # i info, w warning, e error, s severe (default)
-                     )
+     set(${flagVar} "${${flagVar}} ${ATK_TREAT_WARNINGS_AS_ERRORS}") 
    endforeach()
 endif()
 
@@ -219,18 +225,33 @@ blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_OMP_PRAGMA_WARNINGS
 # Useful when we include external code.
 blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_PARAMETER_WARNINGS
                   DEFAULT "-Wno-unused-parameter"
-                  XL      "-qnoinfo=par"
+                  XL      "-qinfo=nopar"
                   )
 
 # Flag for disabling warnings about unused variables
 # Useful when we include external code.
 blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_VARIABLE_WARNINGS
                   DEFAULT "-Wno-unused-variable"
-                  XL      "-qnoinfo=use"
+                  XL      "-qinfo=nouse"
+                  )
+
+# Flag for disabling warnings about variables that may be uninitialized.
+# Useful when we are using compiler generated interface code (e.g. in shroud)
+blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNINITIALIZED_WARNINGS
+                  DEFAULT "-Wno-uninitialized"
+                  XL      "-qsuppress=1540-1102"
+                  )
+
+# Flag for disabling warnings about strict aliasing.
+# Useful when we are using compiler generated interface code (e.g. in shroud)
+blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_ALIASING_WARNINGS
+                  DEFAULT "-Wno-strict-aliasing"
+                  XL      ""
                   )
 
 # message(STATUS "value of ATK_DISABLE_OMP_PRAGMA_WARNINGS is ${ATK_DISABLE_OMP_PRAGMA_WARNINGS} ")
 # message(STATUS "value of ATK_DISABLE_UNUSED_PARAMETER_WARNINGS is ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS} ")
 # message(STATUS "value of ATK_DISABLE_UNUSED_VARIABLE_WARNINGS is ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS} ")
+# message(STATUS "value of ATK_DISABLE_UNINITIALIZED_WARNINGS is ${ATK_DISABLE_UNINITIALIZED_WARNINGS} ")
  
  

@@ -14,7 +14,7 @@
 // splicer begin C_init_body
 PyModule_AddIntConstant(m, "InvalidIndex", -1);
 
-PyModule_AddIntConstant(m, "EMPTY_ID", SIDRE_EMPTY_ID);
+PyModule_AddIntConstant(m, "NO_TYPE_ID", SIDRE_NO_TYPE_ID);
 PyModule_AddIntConstant(m, "INT8_ID ", SIDRE_INT8_ID);
 PyModule_AddIntConstant(m, "INT16_ID", SIDRE_INT16_ID);
 PyModule_AddIntConstant(m, "INT32_ID", SIDRE_INT32_ID);
