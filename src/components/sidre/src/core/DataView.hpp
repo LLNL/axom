@@ -781,7 +781,16 @@ public:
   /*!
    * \brief Copy data view description to given Conduit node.
    */
-  void info(Node& n) const;
+  void copyToConduitNode(Node& n) const;
+
+  /*!
+   * \brief Copy data view native layout to given Conduit node.
+   *
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
+   * externally to the Sidre View data so that it can be filled in from the data
+   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   */
+  void createNativeLayout(Node& n) const;
 
 private:
 

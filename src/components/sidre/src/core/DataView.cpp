@@ -340,7 +340,7 @@ DataView * DataView::apply(SidreLength num_elems,
 /*
  *************************************************************************
  *
- * Apply given type, # elems, offset, stride desscription to data view.
+ * Apply given type, # elems, offset, stride description to data view.
  *
  *************************************************************************
  */
@@ -606,7 +606,7 @@ void DataView::print() const
 void DataView::print(std::ostream& os) const
 {
   Node n;
-  info(n);
+  copyToConduitNode(n);
   n.to_json_stream(os);
 }
 
@@ -617,7 +617,7 @@ void DataView::print(std::ostream& os) const
  *
  *************************************************************************
  */
-void DataView::info(Node &n) const
+void DataView::copyToConduitNode(Node &n) const
 {
   n["name"] = m_name;
   n["schema"] = m_schema.to_json();
@@ -625,6 +625,27 @@ void DataView::info(Node &n) const
   n["state"] = getStateStringName(m_state);
   n["is_applied"] = m_is_applied;
 }
+
+/*
+ *************************************************************************
+ *
+ * Copy data view native layout to given Conduit node.
+ *
+ *************************************************************************
+ */
+void DataView::createNativeLayout(Node &n) const
+{
+  // TODO: Need to handle cases where the view is not described
+  // TODO: Need to handle cases where the view is not allocated
+  // TODO: Need to handle cases where the view is not applied
+
+  // Note: We are using conduit's pointer rather than the DataView pointer
+  //    since the conduit pointer handles offsetting
+  // Note: const_cast the pointer to satisfy conduit's interface
+  void* data_ptr = const_cast<void*>(m_node.data_ptr());
+  n.set_external( m_node.schema(), data_ptr);
+}
+
 
 /*
  *************************************************************************

@@ -1,0 +1,27 @@
+#
+#  Compile the lua tutorial locally
+#
+
+LUA = /home/taylor16/testzzz-ets-4.6.3-4.3f
+
+# location of Shroud generated files and tutorial library
+VPATH = .. ../../tutorial
+
+CPPFLAGS = -g -I. -I.. -I../../tutorial -I${LUA}/include  -Wall -fPIC
+
+OBJS = \
+    tutorial.o \
+    luaTutorialmodule.o
+
+all : tutorial.so simple
+
+tutorial.so : ${OBJS}
+	gcc -shared -o $@ $^ -lstdc++
+
+simple : testlua.o ${OBJS}
+	g++ -o $@ $^ -L${LUA}/lib -llua -ldl
+
+clean :
+	rm -f *.so *.o simple
+.PHONY : clean
+

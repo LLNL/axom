@@ -37,7 +37,7 @@ namespace sidre
 /*
  *************************************************************************
  *
- * Describe buffer with given data type and number of elements.
+ * Describe Buffer with given data type and number of elements.
  *
  *************************************************************************
  */
@@ -45,8 +45,8 @@ DataBuffer * DataBuffer::describe(TypeID type, SidreLength num_elems)
 {
   if ( isAllocated() || num_elems < 0 )
   {
-    SLIC_CHECK_MSG(!isAllocated(), "Cannot describe an allocated buffer");
-    SLIC_CHECK_MSG(num_elems >= 0, "Must describe buffer with num elems >= 0");
+    SLIC_CHECK_MSG(!isAllocated(), "Cannot describe an allocated Buffer");
+    SLIC_CHECK_MSG(num_elems >= 0, "Must describe Buffer with num elems >= 0");
     return this;
   }
 
@@ -127,7 +127,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
     else
     {
        SLIC_CHECK_MSG(isDescribed(),
-                      "Can't re-allocate buffer with no type description.");
+                      "Can't re-allocate Buffer with no type description.");
     }
 
     return this;
@@ -167,7 +167,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 /*
  *************************************************************************
  *
- * Deallocate data in a buffer.
+ * Deallocate data in a Buffer.
  *
  *************************************************************************
  */
@@ -192,7 +192,7 @@ DataBuffer * DataBuffer::deallocate()
 /*
  *************************************************************************
  *
- * Update contents of buffer by copying nbytes of data into the buffer 
+ * Update contents of Buffer by copying nbytes of data into the Buffer 
  * from src.
  *
  *************************************************************************
@@ -203,10 +203,10 @@ DataBuffer * DataBuffer::copyBytesIntoBuffer(const void * src,
   if ( src == ATK_NULLPTR || nbytes < 0 || nbytes > getTotalBytes() )
   {
     SLIC_CHECK_MSG(src != ATK_NULLPTR, 
-      "Cannot copy data into buffer from null pointer.");
-    SLIC_CHECK_MSG(nbytes >= 0, "Cannot copy < 0 bytes of data into buffer.");
+      "Cannot copy data into Buffer from null pointer.");
+    SLIC_CHECK_MSG(nbytes >= 0, "Cannot copy < 0 bytes of data into Buffer.");
     SLIC_CHECK_MSG(nbytes <= getTotalBytes(),
-      "Unable to copy " << nbytes << " bytes of data into buffer with " << 
+      "Unable to copy " << nbytes << " bytes of data into Buffer with " << 
       getTotalBytes() << " bytes allocated.");
 
     return this;
@@ -220,11 +220,11 @@ DataBuffer * DataBuffer::copyBytesIntoBuffer(const void * src,
 /*
  *************************************************************************
  *
- * Copy data buffer description to given Conduit node.
+ * Copy data Buffer description to given Conduit node.
  *
  *************************************************************************
  */
-void DataBuffer::info(Node &n) const
+void DataBuffer::copyToConduitNode(Node &n) const
 {
   n["index"].set(m_index);
   n["node"].set(m_node.to_json());
@@ -233,7 +233,7 @@ void DataBuffer::info(Node &n) const
 /*
  *************************************************************************
  *
- * Print JSON description of data buffer to stdout.
+ * Print JSON description of data Buffer to stdout.
  *
  *************************************************************************
  */
@@ -245,14 +245,14 @@ void DataBuffer::print() const
 /*
  *************************************************************************
  *
- * Print JSON description of data buffer to an ostream.
+ * Print JSON description of data Buffer to an ostream.
  *
  *************************************************************************
  */
 void DataBuffer::print(std::ostream& os) const
 {
   Node n;
-  info(n);
+  copyToConduitNode(n);
   n.to_json_stream(os);
 }
 
@@ -302,7 +302,7 @@ DataBuffer::~DataBuffer()
 /*
  *************************************************************************
  *
- * PRIVATE method to attach buffer to view (buffer bookkeeping).
+ * PRIVATE method to attach Buffer to View (Buffer bookkeeping).
  *
  *************************************************************************
  */
@@ -319,7 +319,7 @@ void DataBuffer::attachToView( DataView * view )
 /*
  *************************************************************************
  *
- * PRIVATE method to buffer from view (buffer bookkeeping).
+ * PRIVATE method to Buffer from View (Buffer bookkeeping).
  *
  *************************************************************************
  */
@@ -344,7 +344,7 @@ void DataBuffer::detachFromView( DataView * view )
 /*
  *************************************************************************
  *
- * PRIVATE method to detach buffer from all views (buffer bookkeeping).
+ * PRIVATE method to detach Buffer from all Views (Buffer bookkeeping).
  *
  *************************************************************************
  */
@@ -400,7 +400,7 @@ void DataBuffer::releaseBytes( void * ptr)
  *************************************************************************
  *
  * PRIVATE exportTo
- * Serializes buffer state to a conduit node
+ * Serializes Buffer state to a conduit node
  *
  *************************************************************************
  */
@@ -409,14 +409,14 @@ void DataBuffer::exportTo( conduit::Node& data_holder)
   data_holder["id"] = m_index;
   data_holder["schema_json"] = m_node.schema().to_json();
 
-  // If buffer is allocated, export it's node's data
+  // If Buffer is allocated, export it's node's data
   if ( isAllocated() )
   {
     // Do this instead of using the node copy constructor ( keep it zero-copy ).
     data_holder["data"].set_external( m_node.schema(), getVoidPtr() );
 
     // TODO - Ask Cyrus why he had following way previously.  Are we creating a default dtype
-    // to remove any striding, offset?  Our buffer does not allow those, only type and length.
+    // to remove any striding, offset?  Our Buffer does not allow those, only type and length.
     // DataType& dtype = conduit::DataType::default_dtype(ds_buff->getTypeID());
     // dtype.set_number_of_elements(ds_buff->getNumElements());
   }
@@ -426,7 +426,7 @@ void DataBuffer::exportTo( conduit::Node& data_holder)
  *************************************************************************
  *
  * PRIVATE importFrom
- * Import buffer state from a conduit node
+ * Import Buffer state from a conduit node
  *
  *************************************************************************
  */
@@ -438,7 +438,7 @@ void DataBuffer::importFrom( conduit::Node& buffer_holder)
 
   describe(type, num_elems);
 
-  // If buffer was allocated, the conduit node will have the entry "data".
+  // If Buffer was allocated, the conduit node will have the entry "data".
   // Allocate and copy in that data.
   if (buffer_holder.has_path("data"))
   {

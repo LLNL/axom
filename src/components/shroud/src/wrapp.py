@@ -43,7 +43,7 @@ class Wrapp(util.WrapperMixin):
     def XXX_end_output_file(self):
         pass
 
-    def _begin_class(self):
+    def XXX_begin_class(self):
         pass
 
     def reset_file(self):
@@ -55,12 +55,15 @@ class Wrapp(util.WrapperMixin):
         options = self.tree['options']
         fmt_library = self.tree['fmt']
 
+        # Format variables
         fmt_library.PY_prefix          = options.get('PY_prefix', 'PY_')
         fmt_library.PY_module_name     = fmt_library.library_lower
         util.eval_template(top, 'PY_module_filename')
         util.eval_template(top, 'PY_header_filename')
         util.eval_template(top, 'PY_helper_filename')
         fmt_library.BBB = 'BBB'   # name of cpp class pointer in PyObject
+
+        # Variables to accumulate output lines
         self.py_type_object_creation = []
         self.py_type_extern = []
         self.py_type_structs = []
@@ -99,7 +102,7 @@ class Wrapp(util.WrapperMixin):
         self.reset_file()
         if self.tree['functions']:
             self._push_splicer('function')
-            self._begin_class()
+#            self._begin_class()
             self.wrap_functions(None, self.tree['functions'])
             self._pop_splicer('function')
 
@@ -181,7 +184,7 @@ return rv;""", fmt)
         self.py_helper_functions.append(proto)
         self.py_helper_functions.append('{')
         self.py_helper_functions.append(1)
-        self._create_splicer('to_object', self.py_helper_functions, default=to_object)
+        self._create_splicer('to_object', self.py_helper_functions, to_object)
         self.py_helper_functions.append(-1)
         self.py_helper_functions.append('}')
 
@@ -202,7 +205,7 @@ return 1;""", fmt)
         self.py_helper_functions.append(proto)
         self.py_helper_functions.append('{')
         self.py_helper_functions.append(1)
-        self._create_splicer('from_object', self.py_helper_functions, default=from_object)
+        self._create_splicer('from_object', self.py_helper_functions, from_object)
         self.py_helper_functions.append(-1)
         self.py_helper_functions.append('}')
 
@@ -339,10 +342,10 @@ return 1;""", fmt)
         default_calls = []   # each possible default call
         found_default = False
         if '_has_default_arg' in node:
-            PY_decl.append('Py_ssize_t shroud_nargs = 0;')
+            PY_decl.append('Py_ssize_t SH_nargs = 0;')
             PY_code.extend([
-                    'if (args != NULL) shroud_nargs += PyTuple_Size(args);',
-                    'if (kwds != NULL) shroud_nargs += PyDict_Size(args);',
+                    'if (args != NULL) SH_nargs += PyTuple_Size(args);',
+                    'if (kwds != NULL) SH_nargs += PyDict_Size(args);',
                     ])
 
         args = node['args']
@@ -353,7 +356,7 @@ return 1;""", fmt)
             arg_names = []
             arg_offsets  = []
             offset = 0
-            for arg in node['args']:
+            for arg in args:
                 arg_name = arg['name']
                 fmt.c_var = arg['name']
                 fmt.cpp_var = fmt.c_var
@@ -362,6 +365,7 @@ return 1;""", fmt)
 
                 arg_typedef = self.typedef[arg['type']]
                 py_statements = arg_typedef.py_statements
+                have_cpp_local_var = False
                 if attrs['intent'] in [ 'inout', 'in']:
                     # names to PyArg_ParseTupleAndKeywords
                     arg_names.append(arg_name)
@@ -391,9 +395,11 @@ return 1;""", fmt)
                     # add argument to call to PyArg_ParseTypleAndKeywords
                     parse_vargs.append('&' + arg_name)
 
+                    have_cpp_local_var = py_statements.get('intent_in',{}).get('cpp_local_var', False)
+                    if have_cpp_local_var:
+                        fmt.cpp_var = 'SH_' + fmt.c_var
                     cmd_list = py_statements.get('intent_in',{}).get('post_parse',[])
                     if cmd_list:
-                        fmt.cpp_var = 'SH_' + fmt.c_var
                         for cmd in cmd_list:
                             append_format(post_parse, cmd, fmt)
 
@@ -423,6 +429,8 @@ return 1;""", fmt)
                     cpp_call_list.append(fmt.cpp_var)
                 elif arg_typedef.PY_from_object:
                     # already a C++ type
+                    cpp_call_list.append(fmt.cpp_var)
+                elif have_cpp_local_var:
                     cpp_call_list.append(fmt.cpp_var)
                 else:
                     # convert to C++ type
@@ -461,7 +469,7 @@ return 1;""", fmt)
         # Else delare on call line.
         if found_default:
             fmt.rv_asgn = 'rv = '
-            PY_code.append('switch (shroud_nargs) {')
+            PY_code.append('switch (SH_nargs) {')
         else:
             fmt.rv_asgn = fmt.rv_decl + ' = '
         need_rv = False
@@ -508,6 +516,7 @@ return 1;""", fmt)
         if len(PY_decl):
             PY_decl.append('')
 
+        # Compute return value
         if CPP_subprogram == 'function':
             fmt.c_var = fmt.rv
             fmt.cpp_var = fmt.rv
@@ -582,9 +591,9 @@ return 1;""", fmt)
 # use function_suffix in splicer name since a single C++ function may
 # produce several methods.
 # XXX - make splicer name customizable?
-#        self._create_splicer(fmt.function_name, self.PyMethodBody, default=PY_impl)
+#        self._create_splicer(fmt.function_name, self.PyMethodBody, PY_impl)
         self._create_splicer(fmt.underscore_name + fmt.function_suffix,
-                             self.PyMethodBody, default=PY_impl)
+                             self.PyMethodBody, PY_impl)
         self.PyMethodBody.append('}')
 
         if expose is True:
@@ -622,7 +631,7 @@ return 1;""", fmt)
             output.append('{')
             default = default_body.get(typename, self.not_implemented_error)
             default = default(typename, tup[2])
-            self._create_splicer(typename, output, default=default)
+            self._create_splicer(typename, output, default)
             output.append('}')
         self._pop_splicer('type')
 
@@ -684,19 +693,19 @@ return 1;""", fmt)
 
             body = []
             body.append(1)
-            body.append('Py_ssize_t shroud_nargs = 0;')
+            body.append('Py_ssize_t SH_nargs = 0;')
             body.extend([
-                    'if (args != NULL) shroud_nargs += PyTuple_Size(args);',
-                    'if (kwds != NULL) shroud_nargs += PyDict_Size(args);',
+                    'if (args != NULL) SH_nargs += PyTuple_Size(args);',
+                    'if (kwds != NULL) SH_nargs += PyDict_Size(args);',
                     ])
             body.append('PyObject *rvobj;')
 
 
             for overload in methods:
                 if '_nargs' in overload:
-                    body.append('if (shroud_nargs >= %d && shroud_nargs <= %d) {' % overload['_nargs'])
+                    body.append('if (SH_nargs >= %d && SH_nargs <= %d) {' % overload['_nargs'])
                 else:
-                    body.append('if (shroud_nargs == %d) {' % len(overload['args']))
+                    body.append('if (SH_nargs == %d) {' % len(overload['args']))
                 body.append(1)
                 append_format(body, 'rvobj = {PY_name_impl}(self, args, kwds);', overload['fmt'])
                 body.append('if (!PyErr_Occurred()) {')
@@ -734,16 +743,16 @@ return 1;""", fmt)
                 '#define %s' % guard,
                 ])
 
-        if options.cpp_header:
-            for include in options.cpp_header.split():
-                output.append('#include "%s"' % include)
-
         output.extend([
                 '#include <Python.h>',
                 '#if PY_MAJOR_VERSION >= 3',
                 '#define IS_PY3K',
                 '#endif'])
         
+        if options.cpp_header:
+            for include in options.cpp_header.split():
+                output.append('#include "%s"' % include)
+
         self._push_splicer('header')
         self._create_splicer('include', output)
         self.namespace(node, 'begin', output)

@@ -110,7 +110,7 @@ ENDIF()
 # Note: '--coverage' is equivalent to '-fprofile-arcs -ftest-coverage' for compiling and '-lgcov' for linking
 # Additional flags that might be useful: 
 #       " -fno-inline -fno-inline-small-functions -fno-default-inline"
-append_custom_compiler_flag(
+blt_append_custom_compiler_flag(
         FLAGS_VAR   COVERAGE_FLAGS 
         DEFAULT     "--coverage"        
         )
