@@ -886,8 +886,7 @@ private:
    * \brief Add view description and references to it's data to a conduit tree.
    */
   void exportTo(conduit::Node& data_holder,
-                std::set<IndexType>& buffer_indices,
-		conduit::Node& export_holder) const;
+                std::set<IndexType>& buffer_indices) const;
 
   /*!
    * \brief Restore a view's description and data from a conduit tree.

@@ -340,8 +340,13 @@ void DataStore::save(const std::string& file_path,
   data_holder.set_dtype(DataType::object());
   exportTo( group, data_holder);
 
+  Node external_holder;
+  data_holder.set_dtype(DataType::object());
+  createNativeLayout(external_holder);
+
   Node two_part;
   two_part["sidre"] = data_holder;
+  two_part["external"] = external_holder;
 
   if (protocol == "conduit")
   {
@@ -462,14 +467,10 @@ void DataStore::exportTo(const DataGroup * group,
   // conduit node set is compatible with what's in the file.
   std::set<IndexType> buffer_indices;
 
-  // Create Conduit object to hold external views
-  Node& external_holder = data_holder["external"];
-  external_holder.set_dtype(DataType::object());
-
   // Tell Group to add itself and all sub-Groups and Views to node.
   // Any Buffers referenced by those Views will be tracked in the
   // buffer_indices
-  group->exportTo(data_holder, buffer_indices, external_holder);
+  group->exportTo(data_holder, buffer_indices);
 
   if (! buffer_indices.empty())
   {

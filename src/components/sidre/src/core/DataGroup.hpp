@@ -1142,12 +1142,11 @@ private:
   /*!
    * \brief Private methods to copy DataGroup to Conduit Node.
    *
-   * \param Buffer_indices Used to track what Buffers are referenced
+   * \param buffer_indices Used to track what Buffers are referenced
    * by the Views in this Group and Groups in the sub-tree below it.
    */
   void exportTo(conduit::Node& data_holder,
-                std::set<IndexType>& buffer_indices,
-		conduit::Node& export_holder) const;
+                std::set<IndexType>& buffer_indices) const;
 
   /*!
    * \brief Private methods to copy DataGroup from Conduit Node.
