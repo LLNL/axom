@@ -144,8 +144,29 @@ mark_as_advanced(
      )
 
 ################################
+# MPI
+################################
+message(STATUS "MPI Support is ${ENABLE_MPI}")
+if (ENABLE_MPI)
+  find_package(MPI REQUIRED)
+  message(STATUS "MPI C Compile Flags: ${MPI_C_COMPILE_FLAGS}")
+  message(STATUS "MPI C Include Path: ${MPI_C_INCLUDE_PATH}")
+  message(STATUS "MPI C Link Flags: ${MPI_C_LINK_FLAGS}")
+  message(STATUS "MPI C Libraries: ${MPI_C_LIBRARIES}")
+endif()
+
+################################
+# OpenMP
+################################
+message(STATUS "OpenMP Support is ${ENABLE_OPENMP}")
+if(ENABLE_OPENMP)
+    find_package(OpenMP REQUIRED)
+    message(STATUS "OpenMP CXX Flags: ${OpenMP_CXX_FLAGS}")
+endif()
+
+################################
 # Setup compiler options
-# (must be included after HEADER_INCLUDES_DIRECTORY is set)
+# (must be included after HEADER_INCLUDES_DIRECTORY and MPI variables are set)
 ################################
 include(SetupCompilerOptions)
 
@@ -195,25 +216,4 @@ if (ENABLE_TESTS)
   
 #  add_dependencies(test run_benchmarks)
 
-endif()
-
-################################
-# MPI
-################################
-message(STATUS "MPI Support is ${ENABLE_MPI}")
-if (ENABLE_MPI)
-  find_package(MPI REQUIRED)
-  message(STATUS "MPI C Compile Flags: ${MPI_C_COMPILE_FLAGS}")
-  message(STATUS "MPI C Include Path: ${MPI_C_INCLUDE_PATH}")
-  message(STATUS "MPI C Link Flags: ${MPI_C_LINK_FLAGS}")
-  message(STATUS "MPI C Libraries: ${MPI_C_LIBRARIES}")
-endif()
-
-################################
-# OpenMP
-################################
-message(STATUS "OpenMP Support is ${ENABLE_OPENMP}")
-if(ENABLE_OPENMP)
-    find_package(OpenMP REQUIRED)
-    message(STATUS "OpenMP CXX Flags: ${OpenMP_CXX_FLAGS}")
 endif()

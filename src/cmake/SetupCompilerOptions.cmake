@@ -200,6 +200,22 @@ if(ENABLE_FORTRAN)
     # Create macros for Fortran name mangling
     include(FortranCInterface)
     FortranCInterface_HEADER(${HEADER_INCLUDES_DIRECTORY}/common/FC.h MACRO_NAMESPACE "FC_")
+
+    # Determine if we should use fortran mpif.h header or fortran mpi module
+    find_path(mpif_path
+        NAMES "mpif.h"
+        PATHS ${MPI_Fortran_INCLUDE_PATH}
+        NO_DEFAULT_PATH
+        )
+    
+    if(mpif_path)
+        set(MPI_Fortran_USE_MPIF ON CACHE PATH "")
+        message(STATUS "Using MPI Fortran header: mpif.h")
+    else()
+        set(MPI_Fortran_USE_MPIF OFF CACHE PATH "")
+        message(STATUS "Using MPI Fortran module: mpi.mod")
+    endif()
+    
 else()
     MESSAGE(STATUS  "Fortran support disabled.")
 endif()

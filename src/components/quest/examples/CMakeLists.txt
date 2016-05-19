@@ -46,9 +46,6 @@ if (ENABLE_MPI)
     DEPENDS_ON  ${quest_example_depends}
     )
     
-  # Note (KW 3/2016):  There is a current problem with the fortran MPI module
-  #                    on non-intel compilers (see JIRA ticket ATK-649).
-  #                    For now, we are only enabling this fortran example on intel.
   if (ENABLE_FORTRAN)                    
     blt_add_executable( 
         NAME        quest_interface_fortran
@@ -59,6 +56,14 @@ if (ENABLE_MPI)
         
     set_target_properties(quest_interface_fortran 
                           PROPERTIES LINKER_LANGUAGE Fortran)
+                          
+    set_target_properties(quest_interface_fortran 
+        PROPERTIES COMPILE_FLAGS "-cpp")
+                              
+    if(MPI_Fortran_USE_MPIF)
+        blt_add_target_definitions(TO quest_interface_fortran TARGET_DEFINITIONS "USE_MPIF_HEADER")
+    endif()                              
+                          
   endif()
                       
 endif()
