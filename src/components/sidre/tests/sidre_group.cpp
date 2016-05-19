@@ -694,17 +694,14 @@ TEST(sidre_group,save_restore_empty)
   DataStore * ds1 = new DataStore();
 
   for (int i = 0; i < nprotocols; ++i) {
-      if ( protocols[i] == "conduit_hdf5")
-	  continue;   // XXX - Does not work
       const std::string file_path = file_path_base + protocols[i];
       ds1->save(file_path, protocols[i]);
   }
 
   delete ds1;
 
-#if 0
-  // Only restore conduit protocol for now
-  for (int i = 0; i < 1; ++i) {
+  // Only restore conduit_hdf5
+  for (int i = 1; i < 2; ++i) {
       const std::string file_path = file_path_base + protocols[i];
 
       DataStore * ds2 = new DataStore();
@@ -718,7 +715,6 @@ TEST(sidre_group,save_restore_empty)
 
       delete ds2;
   }
-#endif
 }
 
 //------------------------------------------------------------------------------
@@ -846,38 +842,22 @@ TEST(sidre_group,save_restore_external_data)
 
       ds2->load(file_path, protocols[i]);
 
-#if 0
-      // All this code should change after we re-write how we handle restoring external data.
-      // Right now, the external data is coming back in the view's node and we have to do extra work to
-      // restore it to the user's pointer.
+      // load has set the type and size of the view.
+      // Now set the external address before calling loadExternal.
       DataView * view = root2->getView("external_array");
-
-      int* new_data_pointer = new int[nfoo];
-
-      EXPECT_TRUE( view->getTotalBytes() == static_cast<SidreLength>(sizeof(foo)) );
-
-      std::memcpy(&new_data_pointer[0], view->getVoidPtr(), view->getTotalBytes() );
-
-      // Will set view back to EMPTY and reset node.  Will leave description alone.
-      view->setExternalDataPtr( ATK_NULLPTR );
-
-      view->setExternalDataPtr( new_data_pointer );
-
-      for (int i = 0; i < nfoo; ++i)
-	  {
-	      EXPECT_TRUE( static_cast<int*>( view->getVoidPtr() )[i] == i );
-	  }
-
-      delete[] new_data_pointer;
-#else
-
-      // Reallocate external data
-      DataView * view = root2->getView("external_array");
+      EXPECT_TRUE(view->isExternal());
+      EXPECT_TRUE(view->isDescribed());
+      EXPECT_EQ(view->getNumElements(), nfoo);
       view->setExternalDataPtr(foo2);
 
       // Read external data into views
+      ds2->loadExternal(file_path, protocols[i]);
 
-#endif
+      for (int i = 0; i < nfoo; ++i)
+      {
+        EXPECT_TRUE( foo1[i] == foo2[i] );
+      }
+
       delete ds2;
   }
 }

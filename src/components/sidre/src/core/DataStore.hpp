@@ -261,6 +261,21 @@ public:
             DataGroup * group = ATK_NULLPTR);
 
   /*!
+   * \brief Load the DataStore from a file
+   * If a Group is not provided, it will be loaded into the root Group.
+   */
+  void loadExternal(const std::string& file_path,
+            const std::string& protocol,
+            DataGroup * group = ATK_NULLPTR);
+
+  /*!
+   * \brief Load the DataStore from an hdf5 file.
+   * If a Group is not provided, it will be loaded into the root Group.
+   */
+  void loadExternal(const hid_t& h5_file_id,
+            DataGroup * group = ATK_NULLPTR);
+
+  /*!
    * \brief Add the DataStore hierarchy and references to it's data to a conduit tree.
    * This includes the Group/View hierarchy and Buffers.
    */

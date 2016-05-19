@@ -354,7 +354,7 @@ void DataStore::save(const std::string& file_path,
   exportTo( group, data_holder);
 
   Node external_holder;
-  data_holder.set_dtype(DataType::object());
+  external_holder.set_dtype(DataType::object());
   createExternalLayout(external_holder);
 
   Node two_part;
@@ -448,6 +448,58 @@ void DataStore::load(const hid_t& h5_file_id,
   conduit::relay::io::hdf5_read(h5_file_id, ".", node);
   // for debugging call: n.print();
   importFrom( group, node );
+}
+
+/*
+ *************************************************************************
+ *
+ * Load External Views from a file
+ *
+ *************************************************************************
+ */
+void DataStore::loadExternal(const std::string& file_path,
+                     const std::string& protocol,
+                     DataGroup * group)
+{
+  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on Group that resides in this DataStore.");
+
+  Node external_holder;
+  external_holder.set_dtype(DataType::object());
+  createExternalLayout(external_holder);
+
+  if (protocol == "conduit")
+  {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+    conduit::relay::io::load(file_path, external_holder);
+  }
+  else if (protocol == "conduit_hdf5")
+  {
+    conduit::relay::io::hdf5_read( file_path + ":external", external_holder);
+  }
+  else
+  {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Load External Views from an hdf5 file
+ *
+ *************************************************************************
+ */
+void DataStore::loadExternal(const hid_t& h5_file_id,
+                     DataGroup * group)
+{
+  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on Group that resides in this DataStore.");
+
+  Node external_holder;
+  external_holder.set_dtype(DataType::object());
+  createExternalLayout(external_holder);
+
+  conduit::relay::io::hdf5_read(h5_file_id, "external", external_holder);
+  // for debugging call: n.print();
 }
 
 
