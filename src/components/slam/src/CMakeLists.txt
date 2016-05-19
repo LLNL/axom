@@ -63,7 +63,7 @@ set(slam_sources
 
 set(slam_depends_on common slic)
 if (ENABLE_BOOST)
-    list(APPEND slam_depends boost)
+    list(APPEND slam_depends_on boost)
 endif()
 
 blt_add_library( 

@@ -36,7 +36,7 @@
 #
 ###############################################################################
 
-include(PrivateMacros)
+include(blt/cmake/BLTPrivateMacros.cmake)
 
 ##------------------------------------------------------------------------------
 ## blt_add_component( COMPONENT_NAME <name> DEFAULT_STATE [ON/OFF] )
@@ -151,15 +151,17 @@ macro(blt_register_library)
     string(TOUPPER ${arg_NAME} uppercase_name)
 
     if( arg_INCLUDES )
-        set(BLT_${uppercase_name}_INCLUDES ${arg_INCLUDES})
+        set(BLT_${uppercase_name}_INCLUDES ${arg_INCLUDES} CACHE PATH "" FORCE)
     endif()
 
     if( arg_FORTRAN_MODULES )
-        set(BLT_${uppercase_name}_FORTRAN_MODULES ${arg_INCLUDES})
+        set(BLT_${uppercase_name}_FORTRAN_MODULES ${arg_INCLUDES} CACHE PATH "" FORCE)
     endif()
 
     if( arg_LIBRARIES )
-        set(BLT_${uppercase_name}_LIBRARIES ${arg_LIBRARIES})
+        set(BLT_${uppercase_name}_LIBRARIES ${arg_LIBRARIES} CACHE PATH "" FORCE)
+    else()
+        set(BLT_${uppercase_name}_LIBRARIES "BLT_NO_LIBRARIES" CACHE PATH "" FORCE)
     endif()
 
 endmacro(blt_register_library)
