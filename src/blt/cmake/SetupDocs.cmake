@@ -49,7 +49,9 @@ if(DOXYGEN_FOUND)
     add_dependencies(docs doxygen_docs)
 endif()
 
-
+###
+# TODO: (CYRUS's note: why is this here?)
+###
 if(SPHINX_FOUND)
     set(SPHINX_HTML_THEME "
 try:

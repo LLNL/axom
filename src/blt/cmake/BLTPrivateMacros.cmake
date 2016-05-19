@@ -59,7 +59,7 @@ macro(blt_copy_headers_target proj hdrs dest)
         COMMAND ${CMAKE_COMMAND}
                  -DHEADER_INCLUDES_DIRECTORY=${dest}
                  -DLIBHEADERS="${hdrs}"
-                 -P ${CMAKE_SOURCE_DIR}/cmake/copy_headers.cmake
+                 -P ${CMAKE_SOURCE_DIR}/blt/cmake/copy_headers.cmake
 
         DEPENDS
             ${hdrs}
@@ -111,9 +111,11 @@ macro(blt_setup_target)
                 ${BLT_${uppercase_dependency}_FORTRAN_MODULES} )
         endif()
 
-        if ( DEFINED BLT_${uppercase_dependency}_LIBRARIES )
-            target_link_libraries( ${arg_NAME}
-                ${BLT_${uppercase_dependency}_LIBRARIES} )
+        if ( DEFINED BLT_${uppercase_dependency}_LIBRARIES)
+            if(NOT "${BLT_${uppercase_dependency}_LIBRARIES}" STREQUAL "BLT_NO_LIBRARIES" )
+                target_link_libraries( ${arg_NAME}
+                    ${BLT_${uppercase_dependency}_LIBRARIES} )
+            endif()
         else()
             target_link_libraries( ${arg_NAME} ${dependency} )
         endif()
