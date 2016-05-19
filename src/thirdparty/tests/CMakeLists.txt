@@ -85,15 +85,14 @@ endif()
 ################################################################################
 # Add compiler flag tests.
 #
-# Test whether compiler flag actually work as desired on all compilers.
-# E.g. if we intend to disable a warning, that the warning is actually disabled. 
-# These tests should fail if we have the wrong warning disabler set for the
-# given compiler/configuration.  Flags are defined in blt's SetupCompilerOptions.
-# The tests enable all warnings, treat warnings as errors and add the desired 
-# warning disabling flag.
+# Test whether custom compiler flags actually work as expected on all compilers.
+# E.g. if we intend to disable a warning, the warning is actually disabled. 
+#
+# These tests enable all warnings, treat warnings as errors and add the desired 
+# flag. They should fail if we have the wrong flag set for the given configuration.  
+# Flag variables are defined in blt's SetupCompilerOptions.cmake
 ################################################################################
 
-# Test for ATK_DISABLE_UNINITIALIZED_WARNINGS flag
 set( BLT_SMOKE_TESTS
         compiler_flag_uninitialized.cpp
         compiler_flag_unused_param.cpp
@@ -101,6 +100,10 @@ set( BLT_SMOKE_TESTS
         compiler_flag_omp_pragma.cpp
         compiler_flag_strict_aliasing.cpp
         )
+if (ENABLE_FORTRAN)                    
+    list(APPEND BLT_SMOKE_TESTS compiler_flag_fortran_preprocessor.f90)
+endif()
+
 
 foreach(test ${BLT_SMOKE_TESTS})
     get_filename_component( test_name ${test} NAME_WE )
@@ -133,4 +136,11 @@ blt_append_custom_compiler_flag(FLAGS_VAR TMP_OPT_FLAG DEFAULT "-O2")
 set_target_properties(compiler_flag_strict_aliasing 
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${TMP_OPT_FLAG} ${ATK_DISABLE_ALIASING_WARNINGS}")
 
+if(ENABLE_FORTRAN)
+    set_target_properties(compiler_flag_fortran_preprocessor 
+                          PROPERTIES LINKER_LANGUAGE Fortran)
+
+    set_target_properties(compiler_flag_fortran_preprocessor 
+        PROPERTIES COMPILE_FLAGS "${ATK_PREPROCESS_FORTRAN}")
+endif()
 
