@@ -303,6 +303,10 @@ namespace slamLulesh {
       double relMaxFabs = 1.0e-6 * maxFabs;
       double relMaxFabsWithAbsolute = relMaxFabs + 1.0e-8;
 
+      ATK_DEBUG_VAR(diff);
+      ATK_DEBUG_VAR(maxFabs);
+      ATK_DEBUG_VAR(relMaxFabs);
+      ATK_DEBUG_VAR(relMaxFabsWithAbsolute);
       SLIC_DEBUG("**  comparing " << resultCheckMap[gEdge].second << " with " << locDom.e(ElemId)
                 << "\n\tfabs difference: " << diff
                 << "\n\tmaxFabs * rel (1e-6): " <<  relMaxFabs

@@ -65,7 +65,7 @@ blt_add_library( NAME
                  DEPENDS_ON
                      common
                      conduit
-                     conduit_io
+                     conduit_relay
                      hdf5
                      slic
                  )

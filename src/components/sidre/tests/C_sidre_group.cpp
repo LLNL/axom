@@ -583,7 +583,8 @@ TEST(C_sidre_group,save_restore_simple)
                                                                    "fields"),
                                          "a"), "i0"));
 
-  SIDRE_datagroup_save(root, "C_out_sidre_group_save_restore_simple","conduit");
+// TODO - fix wrapping, change to datastore save call.
+//  SIDRE_datagroup_save(root, "C_out_sidre_group_save_restore_simple","conduit");
 
   SIDRE_datastore_print(ds);
 
@@ -633,8 +634,9 @@ TEST(C_sidre_group,save_restore_complex)
   EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "b"));
   EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "c"));
 
-  SIDRE_datagroup_save(root, "C_out_sidre_group_save_restore_complex",
-                       "conduit");
+// TODO - Fix wrapping, change save call to use datastore class
+//  SIDRE_datagroup_save(root, "C_out_sidre_group_save_restore_complex",
+//                       "conduit");
 
   SIDRE_datastore_print(ds);
 

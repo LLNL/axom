@@ -14,15 +14,21 @@
 ! NOTE: assumes a "sphere.stl" file exists in the working directory.
 !-------------------------------------------------------------------------------
 
-
 module quest_fortran_usage
 
+#ifndef USE_MPIF_HEADER
   use mpi
+#endif
   use quest_mod
+  implicit none
+
+#ifdef USE_MPIF_HEADER
+  include 'mpif.h'
+#endif
 
   real*8 :: default_lb = -4.5
   real*8 :: default_ub = 4.5
-  integer :: num_pts = 10
+  integer :: num_pts = 10, rank, nprocs, ierr
   character(LEN=40) :: FileName = "sphere.stl"
   integer :: dim = 3
 
@@ -44,20 +50,37 @@ contains
 
   end function random_double
 
+  subroutine init_mpi()
+    !...initialize MPI
+    call mpi_init( ierr )
+    call mpi_comm_rank( MPI_COMM_WORLD, rank, ierr )
+    call mpi_comm_size( MPI_COMM_WORLD, nprocs, ierr )
+  end subroutine init_mpi
+
+  subroutine finalize_mpi()
+    !... finalize MPI
+    call mpi_finalize( ierr )
+  end subroutine finalize_mpi
 
   !-------------------------------------------------------------------------------
   ! run_distance_queries( rank )
   !
   ! Exercises the distance query functionality of quest on a given mpi rank
   !-------------------------------------------------------------------------------
-  subroutine run_distance_queries( rank )
+  subroutine run_distance_queries()
     implicit none
-    integer, intent(in) :: rank
+
     integer :: i, ins
     real*8  :: x, y, z, phi
     integer :: bucket_size = 25
     integer :: depth = 10
     character(LEN=40) :: Format = "(I2, F6.2, F6.2, F6.2, F6.2, I3)"
+
+    if (rank == 0) then
+      write(*,*) "** Running distance queries using quest fortran interface"
+      write(*,*) "[rank, (x,y,z), dist, within]"
+    end if
+
 
     !...initialize quest
     call quest_initialize( MPI_COMM_WORLD, FileName, .true., dim, bucket_size, depth )
@@ -85,13 +108,19 @@ contains
   !
   ! Exercises the containment query functionality of quest on a given mpi rank
   !-------------------------------------------------------------------------------
-  subroutine run_containment_queries( rank )
+  subroutine run_containment_queries()
     implicit none
-    integer, intent(in) :: rank
+
     integer :: i, ins
     real*8  :: x, y, z
     integer :: unused = -1
     character(LEN=40) :: Format = "(I2, F6.2, F6.2, F6.2, I3)"
+
+    if (rank == 0) then
+      write(*,*) "** Running containment queries using quest fortran interface"
+      write(*,*) "[rank, (x,y,z), within]"
+    end if
+
 
     !...initialize quest
     call quest_initialize( MPI_COMM_WORLD, FileName, .false., dim, unused, unused )
@@ -119,37 +148,18 @@ end module
 !-------------------------------------------------------------------------------
 program quest_fortran
 
-  use mpi
   use quest_fortran_usage
 
   implicit none
 
-  integer :: i, ierr, nprocs, rank
-
-  !...initialize MPI
-  call mpi_init( ierr )
-  call mpi_comm_rank( MPI_COMM_WORLD, rank, ierr )
-  call mpi_comm_size( MPI_COMM_WORLD, nprocs, ierr )
+  call init_mpi()
 
   !...exercise the distance functions in quest module
-  if (rank == 0) then
-    write(*,*) "** Running distance queries using quest fortran interface"
-    write(*,*) "[rank, (x,y,z), dist, within]"
-  end if
-
-  call run_distance_queries( rank )
-
+  call run_distance_queries()
 
   !...exercise the containment functions in quest module
-  if (rank == 0) then
-    write(*,*) "** Running containment queries using quest fortran interface"
-    write(*,*) "[rank, (x,y,z), within]"
-  end if
+  call run_containment_queries()
 
-  call run_containment_queries( rank )
-
-
-  !... finalize MPI
-  call mpi_finalize( ierr )
+  call finalize_mpi()
 
 end program

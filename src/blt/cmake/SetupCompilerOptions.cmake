@@ -126,23 +126,34 @@ endif()
 # Additional compiler warnings and treatment of warnings as errors
 ##################################################################
 
+
+blt_append_custom_compiler_flag(
+    FLAGS_VAR ATK_ENABLE_ALL_WARNINGS
+     DEFAULT "-Wall -Wextra"
+     CLANG   "-Wall -Wextra" 
+                    # Additional  possibilities for clang include: 
+                    #       "-Wdocumentation -Wdeprecated -Weverything"
+     MSVC    "/W4 /Wall /wd4619 /wd4668 /wd4820 /wd4571 /wd4710"
+     XL      ""     # qinfo=<grp> produces additional messages on XL
+                    # qflag=<x>:<x> defines min severity level to produce messages on XL
+                    #     where x is i info, w warning, e error, s severe; default is: 
+                    # (default is  qflag=i:i)
+     )
+
+blt_append_custom_compiler_flag(
+    FLAGS_VAR ATK_TREAT_WARNINGS_AS_ERRORS
+     DEFAULT  "-Werror"
+     MSVC     "/WX"
+     XL       "qhalt=w"       # i info, w warning, e error, s severe (default)
+     )
+
 set(langFlags "CMAKE_C_FLAGS" "CMAKE_CXX_FLAGS")
 
 if (ENABLE_ALL_WARNINGS)
    MESSAGE(STATUS  "Enabling all compiler warnings on all targets.")
 
-   foreach(flagVar ${langFlags})   
-     blt_append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
-                     DEFAULT "-Wall -Wextra"
-                     CLANG   "-Wall -Wextra" 
-									# Additional  possibilities for clang include: 
-									# 		"-Wdocumentation -Wdeprecated -Weverything"
-                     MSVC    "/W4 /Wall /wd4619 /wd4668 /wd4820 /wd4571 /wd4710"
-                     XL      ""     # qinfo=<grp> produces additional messages on XL
-                                    # qflag=<x>:<x> defines min severity level to produce messages on XL
-                                    #     where x is i info, w warning, e error, s severe; default is: 
-                                    # (default is  qflag=i:i)
-                     )
+   foreach(flagVar ${langFlags})
+     set(${flagVar} "${${flagVar}} ${ATK_ENABLE_ALL_WARNINGS}") 
    endforeach()
 endif()
 
@@ -150,12 +161,7 @@ if (ENABLE_WARNINGS_AS_ERRORS)
    MESSAGE(STATUS  "Enabling treatment of warnings as errors on all targets.")
 
    foreach(flagVar ${langFlags})   
-     append_custom_compiler_flag(FLAGS_VAR ${flagVar} 
-                     DEFAULT  "-Werror"
-                     MSVC     "/WX"
-                     XL       "qhalt=w"       
-                                    # i info, w warning, e error, s severe (default)
-                     )
+     set(${flagVar} "${${flagVar}} ${ATK_TREAT_WARNINGS_AS_ERRORS}") 
    endforeach()
 endif()
 
@@ -175,17 +181,6 @@ if(ENABLE_FORTRAN)
     else()
         MESSAGE(FATAL_ERROR "Fortran support selected, but no Fortran compiler was found.")
     endif()
-
-    # default property to free form
-    set(CMAKE_Fortran_FORMAT FREE)
-
-    # Create macros for Fortran name mangling
-    include(FortranCInterface)
-    FortranCInterface_HEADER(${HEADER_INCLUDES_DIRECTORY}/common/FC.h MACRO_NAMESPACE "FC_")
 else()
     MESSAGE(STATUS  "Fortran support disabled.")
 endif()
- 
-
-
- 

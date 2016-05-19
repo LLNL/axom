@@ -340,8 +340,11 @@ int main( int argc, char** argv )
 
   }
 
+  quest::BoundingBox< double,3 > queryBounds = meshBB;
+  // queryBounds.scale(2.);
+
   double h[3];
-  const quest::Vector< double,3 >& bbDiff = meshBB.range();
+  const quest::Vector< double,3 >& bbDiff = queryBounds.range();
   h[0] = bbDiff[0] / nx;
   h[1] = bbDiff[1] / ny;
   h[2] = bbDiff[2] / nz;
@@ -357,7 +360,7 @@ int main( int argc, char** argv )
 
   // STEP 8: Construct uniform mesh
   meshtk::UniformMesh* umesh =
-          new meshtk::UniformMesh(3, meshBB.getMin().data(), h, node_ext);
+          new meshtk::UniformMesh(3, queryBounds.getMin().data(), h, node_ext);
 
   // STEP 9: Compute the distance field on the uniform mesh
   SLIC_INFO( "computing distance field..." );

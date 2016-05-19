@@ -85,7 +85,7 @@ parser.add_argument("-hc",
 
 args, unknown_args = parser.parse_known_args()
 if unknown_args:
-    print "Passing unknown arguments to cmake... %s" % unknown_args
+    print "[config-build]: Passing the following unknown arguments directly to cmake... %s" % unknown_args
 
 ########################
 # Find CMake Cache File
