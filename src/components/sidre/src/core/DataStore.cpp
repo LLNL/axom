@@ -340,6 +340,7 @@ void DataStore::print(std::ostream& os) const
 }
 
 /*************************************************************************/
+// see ATK-735 - Add ability to control saving buffers/externals with save  
 
 void DataStore::save(const std::string& file_path,
                      const std::string& protocol,
@@ -453,11 +454,11 @@ void DataStore::load(const hid_t& h5_file_id,
 /*
  *************************************************************************
  *
- * Load External Views from a file
+ * Load External Data from a file
  *
  *************************************************************************
  */
-void DataStore::loadExternal(const std::string& file_path,
+void DataStore::loadExternalData(const std::string& file_path,
                      const std::string& protocol,
                      DataGroup * group)
 {
@@ -485,11 +486,11 @@ void DataStore::loadExternal(const std::string& file_path,
 /*
  *************************************************************************
  *
- * Load External Views from an hdf5 file
+ * Load External Data from an hdf5 file
  *
  *************************************************************************
  */
-void DataStore::loadExternal(const hid_t& h5_file_id,
+void DataStore::loadExternalData(const hid_t& h5_file_id,
                      DataGroup * group)
 {
   SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on Group that resides in this DataStore.");

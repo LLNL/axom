@@ -635,6 +635,7 @@ void DataView::copyToConduitNode(Node &n) const
  */
 void DataView::createNativeLayout(Node &n) const
 {
+  // see ATK-726 - Handle undescribed and unallocated views in Sidre's createNativeLayout()
   // TODO: Need to handle cases where the view is not described
   // TODO: Need to handle cases where the view is not allocated
   // TODO: Need to handle cases where the view is not applied
@@ -655,6 +656,7 @@ void DataView::createNativeLayout(Node &n) const
  */
 void DataView::createExternalLayout(Node &parent) const
 {
+  // see ATK-726 - Handle undescribed and unallocated views in Sidre's createNativeLayout()
   // TODO: Need to handle cases where the view is not described
   // TODO: Need to handle cases where the view is not allocated
   // TODO: Need to handle cases where the view is not applied

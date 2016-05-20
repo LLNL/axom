@@ -851,7 +851,7 @@ TEST(sidre_group,save_restore_external_data)
       view->setExternalDataPtr(foo2);
 
       // Read external data into views
-      ds2->loadExternal(file_path, protocols[i]);
+      ds2->loadExternalData(file_path, protocols[i]);
 
       for (int i = 0; i < nfoo; ++i)
       {

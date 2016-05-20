@@ -882,6 +882,8 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
  */
 void DataGroup::createNativeLayout(Node& n) const
 {
+  n.reset();
+
   // Dump the group's views
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
@@ -912,9 +914,12 @@ void DataGroup::createNativeLayout(Node& n) const
  * Copy Group native layout to given Conduit node.
  *
  *************************************************************************
+ * see ATK-786 - Improvements to createNativeLayout and createExternalLayout
  */
 void DataGroup::createExternalLayout(Node& n) const
 {
+  n.reset();
+
   // Dump the group's views
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
@@ -925,7 +930,7 @@ void DataGroup::createExternalLayout(Node& n) const
     SLIC_CHECK_MSG( !hasGroup(view->getName())
                   , view->getName() << " is the name of a groups and a view");
 
-    view->createExternalLayout( n );// 
+    view->createExternalLayout( n );
     vidx = getNextValidViewIndex(vidx);
   }
 
