@@ -100,7 +100,7 @@ def patch_host_configs(prefix):
     fs = glob.glob(pjoin(prefix,"*.cmake"))
     print "[found %d host config files @ %s]" % (len(fs),prefix)
     for f in fs:
-        print "[ -> %s is %d bytes ]" %  (f,os.path.getsize(f))
+        print "[ -> %s  ]" %  f
         for me_key in manual_edits.keys():
             # see if the key matches
             if f.count(me_key) == 1:
@@ -108,6 +108,7 @@ def patch_host_configs(prefix):
                 txt = manual_edits[me_key]
                 if not txt in open(f).read():
                     # append the manual edits
+                    print "[patching %s with manual edits from %s]" % (f,me_key)
                     open(f,"wa").write(txt)
 
 
