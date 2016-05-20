@@ -83,15 +83,33 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
         cmd += "--mirror %s" % mirror
     return sexe(cmd,echo=True)
 
-def check_host_configs(prefix):
+def patch_host_configs(prefix):
     """
     Sanity check that looks for host config files generated at 
     the given prefix. 
     """
+    # load manual edits into a dict with keys that we can compare to 
+    # generated host config names
+    manual_edits_pattern = os.path.abspath(pjoin("../../../host-configs/*manual.edits.txt"))
+    manual_edits_files = glob.glob(manual_edits_pattern)
+    manual_edits = {}
+    for f in manual_edits_files:
+        base = os.path.basename(f)[:-(len("manual.edits.txt")+1)]
+        manual_edits[base] = open(f).read()
+    # loop over 
     fs = glob.glob(pjoin(prefix,"*.cmake"))
     print "[found %d host config files @ %s]" % (len(fs),prefix)
     for f in fs:
         print "[ -> %s is %d bytes ]" %  (f,os.path.getsize(f))
+        for me_key in manual_edits.keys():
+            # see if the key matches
+            if f.count(me_key) == 1:
+                # make sure the text wasn't already appended
+                txt = manual_edits[me_key]
+                if not txt in open(f).read():
+                    # append the manual edits
+                    open(f,"wa").write(txt)
+
 
 def set_toolkit_group_and_perms(directory):
     """

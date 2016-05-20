@@ -33,8 +33,8 @@ def main():
         uberenv_install_tpls(prefix,spec,mirror_dir)
     # set proper perms for installed tpls
     set_toolkit_group_and_perms(prefix)
-    # look for host config files as a sanity check
-    check_host_configs(prefix)
+    # patch manual edits into host config files
+    patch_host_configs(prefix)
 
 
 if __name__ == "__main__":
