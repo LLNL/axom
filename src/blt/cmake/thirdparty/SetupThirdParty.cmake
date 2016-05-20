@@ -13,11 +13,10 @@ if (SPHINX_EXECUTABLE)
   include(blt/cmake/thirdparty/FindSphinx.cmake)
 endif()
 
-
-if (SPHINX_EXECUTABLE)
-  include(blt/cmake/thirdparty/FindValgrind.cmake)
-endif()
-
+################################
+# Valgrind
+################################
+include(blt/cmake/thirdparty/FindValgrind.cmake)
 
 ################################
 # linting via Uncrustify
