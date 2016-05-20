@@ -105,21 +105,21 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # the RPATH to be used when installing, but only if it's not a system directory
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")
-   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
 ################################
 # Enable C++11 
 ################################
 if (ENABLE_CXX11)
-   add_definitions("-DUSE_CXX11")
+    add_definitions("-DUSE_CXX11")
    
-   blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS DEFAULT -std=c++11)
-   set(HAVE_CXX_FLAG_STD_CXX11 TRUE)
+    blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS DEFAULT -std=c++11)
+    set(HAVE_CXX_FLAG_STD_CXX11 TRUE)
    
-   MESSAGE(STATUS "C++11 support is ON")  
+    MESSAGE(STATUS "C++11 support is ON")  
 else()
-   MESSAGE(STATUS "C++11 support is OFF")  
+    MESSAGE(STATUS "C++11 support is OFF")  
 endif()
 
 ##################################################################
@@ -150,19 +150,19 @@ blt_append_custom_compiler_flag(
 set(langFlags "CMAKE_C_FLAGS" "CMAKE_CXX_FLAGS")
 
 if (ENABLE_ALL_WARNINGS)
-   MESSAGE(STATUS  "Enabling all compiler warnings on all targets.")
+    MESSAGE(STATUS  "Enabling all compiler warnings on all targets.")
 
-   foreach(flagVar ${langFlags})
-     set(${flagVar} "${${flagVar}} ${ATK_ENABLE_ALL_WARNINGS}") 
-   endforeach()
+    foreach(flagVar ${langFlags})
+        set(${flagVar} "${${flagVar}} ${ATK_ENABLE_ALL_WARNINGS}") 
+    endforeach()
 endif()
 
 if (ENABLE_WARNINGS_AS_ERRORS)
-   MESSAGE(STATUS  "Enabling treatment of warnings as errors on all targets.")
+    MESSAGE(STATUS  "Enabling treatment of warnings as errors on all targets.")
 
-   foreach(flagVar ${langFlags})   
-     set(${flagVar} "${${flagVar}} ${ATK_TREAT_WARNINGS_AS_ERRORS}") 
-   endforeach()
+    foreach(flagVar ${langFlags})   
+        set(${flagVar} "${${flagVar}} ${ATK_TREAT_WARNINGS_AS_ERRORS}") 
+    endforeach()
 endif()
 
 
@@ -181,6 +181,10 @@ if(ENABLE_FORTRAN)
     else()
         MESSAGE(FATAL_ERROR "Fortran support selected, but no Fortran compiler was found.")
     endif()
+
+    # default property to free form
+    set(CMAKE_Fortran_FORMAT FREE)
+
 else()
     MESSAGE(STATUS  "Fortran support disabled.")
 endif()

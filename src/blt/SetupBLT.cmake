@@ -41,7 +41,6 @@
 ################################
 include(blt/cmake/PreventInSourceBuilds.cmake)
 
-
 ################################
 # Setup build options and their default values
 ################################
@@ -54,14 +53,34 @@ if(ENABLE_TESTS)
   enable_testing()
 endif()
 
-
 ################################
 #  macros
 ################################
 include(blt/cmake/BLTMacros.cmake)
 
 ################################
-# standard tpl support
+# MPI
+################################
+message(STATUS "MPI Support is ${ENABLE_MPI}")
+if (ENABLE_MPI)
+  find_package(MPI REQUIRED)
+  message(STATUS "MPI C Compile Flags: ${MPI_C_COMPILE_FLAGS}")
+  message(STATUS "MPI C Include Path:  ${MPI_C_INCLUDE_PATH}")
+  message(STATUS "MPI C Link Flags:    ${MPI_C_LINK_FLAGS}")
+  message(STATUS "MPI C Libraries:     ${MPI_C_LIBRARIES}")
+endif()
+
+################################
+# OpenMP
+################################
+message(STATUS "OpenMP Support is ${ENABLE_OPENMP}")
+if(ENABLE_OPENMP)
+    find_package(OpenMP REQUIRED)
+    message(STATUS "OpenMP CXX Flags: ${OpenMP_CXX_FLAGS}")
+endif()
+
+################################
+# Standard tpl support
 ################################
 include(blt/cmake/thirdparty/SetupThirdParty.cmake)
 
@@ -87,56 +106,56 @@ include(blt/cmake/SetupCodeChecks.cmake)
 ##
 
 ## Set the path where all the header will be stored
- set(HEADER_INCLUDES_DIRECTORY
-     ${PROJECT_BINARY_DIR}/include/
-     CACHE PATH
-     "Directory where all headers will go in the build tree"
-     )
- include_directories(${HEADER_INCLUDES_DIRECTORY})
+set(HEADER_INCLUDES_DIRECTORY
+    ${PROJECT_BINARY_DIR}/include/
+    CACHE PATH
+    "Directory where all headers will go in the build tree"
+    )
+include_directories(${HEADER_INCLUDES_DIRECTORY})
 
- ## Set the path where all the libraries will be stored
- set(LIBRARY_OUTPUT_PATH
-     ${PROJECT_BINARY_DIR}/lib
-     CACHE PATH
-     "Directory where compiled libraries will go in the build tree"
-     )
+## Set the path where all the libraries will be stored
+set(LIBRARY_OUTPUT_PATH
+    ${PROJECT_BINARY_DIR}/lib
+    CACHE PATH
+    "Directory where compiled libraries will go in the build tree"
+    )
 
- ## Set the path where all the install executables will go
- set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/bin
-     CACHE PATH
-     "Directory where executables will go in the build tree"
-     )
+## Set the path where all the install executables will go
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
+    ${PROJECT_BINARY_DIR}/bin
+    CACHE PATH
+    "Directory where executables will go in the build tree"
+    )
 
 ## Set the path were all test executables will go
- set(TEST_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/tests
-     CACHE PATH
-     "Directory where test executables will go in the build tree"
-     )
+set(TEST_OUTPUT_DIRECTORY
+    ${PROJECT_BINARY_DIR}/tests
+    CACHE PATH
+    "Directory where test executables will go in the build tree"
+    )
 
 ## Set the path were all example test executables will go
- set(EXAMPLE_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/examples
-     CACHE PATH
-     "Directory where example executables will go in the build tree"
-     )
+set(EXAMPLE_OUTPUT_DIRECTORY
+    ${PROJECT_BINARY_DIR}/examples
+    CACHE PATH
+    "Directory where example executables will go in the build tree"
+    )
 
- ## Set the Fortran module directory
- set(CMAKE_Fortran_MODULE_DIRECTORY
-     ${PROJECT_BINARY_DIR}/lib/fortran
-     CACHE PATH
-     "Directory where all Fortran modules will go in the build tree"
-     )
+## Set the Fortran module directory
+set(CMAKE_Fortran_MODULE_DIRECTORY
+    ${PROJECT_BINARY_DIR}/lib/fortran
+    CACHE PATH
+    "Directory where all Fortran modules will go in the build tree"
+    )
 #
 # TODO: (Cyrus's Note I don't think this should be here?)
 #
 ## Set the Lua module directory
- set(BLT_Lua_MODULE_DIRECTORY
-     "${PROJECT_BINARY_DIR}/lib/lua"
-     CACHE PATH
-     "Directory where all Lua modules will go in the build tree"
- )
+set(BLT_Lua_MODULE_DIRECTORY
+    "${PROJECT_BINARY_DIR}/lib/lua"
+    CACHE PATH
+    "Directory where all Lua modules will go in the build tree"
+)
 
 ## Mark as advanced
 mark_as_advanced(
@@ -147,7 +166,7 @@ mark_as_advanced(
 
 ################################
 # Setup compiler options
-# (must be included after HEADER_INCLUDES_DIRECTORY is set)
+# (must be included after HEADER_INCLUDES_DIRECTORY and MPI variables are set)
 ################################
 include(blt/cmake/SetupCompilerOptions.cmake)
 
@@ -167,7 +186,3 @@ add_subdirectory(blt/thirdparty_builtin)
 # blt smoke tests
 ################################
 add_subdirectory(blt/tests)
-
-
-
-
