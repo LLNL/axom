@@ -44,7 +44,7 @@ set( BLT_SMOKE_TESTS
         compiler_flag_strict_aliasing.cpp
         )
 if (ENABLE_FORTRAN)                    
-    list(APPEND BLT_SMOKE_TESTS compiler_flag_fortran_preprocessor.f90)
+    list(APPEND BLT_SMOKE_TESTS compiler_flag_fortran_preprocessor.f)
 endif()
 
 
