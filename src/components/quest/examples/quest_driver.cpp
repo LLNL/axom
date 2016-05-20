@@ -341,7 +341,7 @@ int main( int argc, char** argv )
   }
 
   quest::BoundingBox< double,3 > queryBounds = meshBB;
-  // queryBounds.scale(2.);
+  queryBounds.scale(2.);
 
   double h[3];
   const quest::Vector< double,3 >& bbDiff = queryBounds.range();

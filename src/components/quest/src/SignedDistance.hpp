@@ -24,8 +24,8 @@
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 
-#include "quest/BoundingBox.hpp"
 #include "quest/BVHTree.hpp"
+#include "quest/BoundingBox.hpp"
 #include "quest/Field.hpp"
 #include "quest/FieldData.hpp"
 #include "quest/FieldVariable.hpp"
@@ -33,6 +33,8 @@
 #include "quest/Orientation.hpp"
 #include "quest/Point.hpp"
 #include "quest/Triangle.hpp"
+#include "quest/Vector.hpp"
+#include "quest/fuzzy_compare.hpp"
 
 // C/C++ includes
 #include <cmath> // for std::sqrt()
@@ -44,6 +46,7 @@ class SignedDistance
 {
 public:
   typedef Point< double,NDIMS > PointType;
+  typedef Vector< double,NDIMS > VectorType;
   typedef Triangle< double,NDIMS > TriangleType;
   typedef BoundingBox< double,NDIMS > BoxType;
   typedef BVHTree< int,NDIMS > BVHTreeType;
@@ -106,15 +109,23 @@ private:
    *****************************************************************************
    * \brief Updates the minimum squared distance of the point to the given cell.
    * \param [in] pt the query point.
-   * \param [in] icell the cell on the surface mesh.
+   * \param [in] icell ID of the cell on the surface mesh.
    * \param [in,out] minSqDist the minimum squared distance.
-   * \param [in,out] closest_cell ID of the cell closest cell.
+   * \param [in,out] closest_cell ID of the cell closest to the query point.
+   * \param [in,out] count number of cells the query point is close to
+   * \param [in,out] closest_pt closest point on the surface.
+   * \param [in,out] normal sum of normals from all the cells close to pt.
    * \pre m_surfaceMesh != ATK_NULLPTR.
    * \pre icell >= 0 && icell < m_surfaceMesh->getMeshNumberOfCells().
    *****************************************************************************
    */
-  void updateMinSquaredDistance( const PointType& pt, int icell,
-                             double& minSqDist, int& closest_cell ) const;
+  void updateMinSquaredDistance( const PointType& pt,
+                                 int icell,
+                                 double& minSqDist,
+                                 int& closest_cell,
+                                 int& count,
+                                 PointType& closest_pt,
+                                 VectorType& normal ) const;
 
   /*!
    *****************************************************************************
@@ -138,7 +149,8 @@ private:
 private:
 
   meshtk::Mesh* m_surfaceMesh;   /*!< User-supplied surface mesh. */
-  BVHTreeType* m_bvhTree;  /*!< Spatial acceleration data-structure. */
+  BoxType m_boxDomain;           /*!< bounding box containing surface mesh */
+  BVHTreeType* m_bvhTree;        /*!< Spatial acceleration data-structure. */
 
   DISABLE_COPY_AND_ASSIGNMENT( SignedDistance );
 
@@ -163,6 +175,15 @@ SignedDistance< NDIMS >::SignedDistance(
 
   m_surfaceMesh    = surfaceMesh;
   const int ncells = m_surfaceMesh->getMeshNumberOfCells();
+  const int nnodes = m_surfaceMesh->getMeshNumberOfNodes();
+
+  // compute bounding box of surface mesh
+  // NOTE: this should be changed to an oriented bounding box in the future.
+  PointType pt;
+  for ( int inode=0; inode < nnodes; ++inode ) {
+     m_surfaceMesh->getMeshNode( inode, pt.data() );
+     m_boxDomain.addPoint( pt );
+  }
 
   // Initialize BucketTree with the surface elements.
   m_bvhTree  = new BVHTreeType( ncells, maxLevels );
@@ -191,8 +212,11 @@ SignedDistance< NDIMS >::computeDistance( const PointType& pt ) const
   SLIC_ASSERT( m_surfaceMesh != ATK_NULLPTR );
   SLIC_ASSERT( m_bvhTree != ATK_NULLPTR );
 
+  PointType closest_pt;
+  VectorType normal;
+  int count        = 0;
+  int closest_cell = -1;
   double minSqDist = std::numeric_limits< double >::max();
-  int closestCell  = -1;
 
   std::vector< int > candidate_buckets;
   m_bvhTree->find( pt, candidate_buckets );
@@ -211,13 +235,32 @@ SignedDistance< NDIMS >::computeDistance( const PointType& pt ) const
         SLIC_ASSERT( (cellIdx >= 0) &&
                      (cellIdx < m_surfaceMesh->getMeshNumberOfCells()) );
 
-        this->updateMinSquaredDistance( pt, cellIdx, minSqDist, closestCell );
+        this->updateMinSquaredDistance( pt,
+                                        cellIdx,
+                                        minSqDist,
+                                        count,
+                                        closest_cell,
+                                        closest_pt,
+                                        normal
+                                        );
      } // END for all iobjects
 
   } // END for all buckets
 
-  const int sign = this->computeSign( pt, closestCell );
-  return ( sign*std::sqrt(minSqDist) );
+  double sign = 0.0;
+  if ( !m_boxDomain.contains( pt ) ) {
+
+    sign = 1.0; // outside
+
+  } else {
+
+    // calculate the sign based on the computed pseudo-normal
+    VectorType cpt_vector( closest_pt, pt );
+    sign = (VectorType::dot_product(cpt_vector,normal) >= 0.0)? 1.0 : -1.0;
+
+  }
+
+  return ( sign*std::sqrt( minSqDist ) );
 }
 
 //------------------------------------------------------------------------------
@@ -255,7 +298,13 @@ inline int SignedDistance< NDIMS >::computeSign(
 //------------------------------------------------------------------------------
 template < int NDIMS >
 inline void SignedDistance< NDIMS >::updateMinSquaredDistance(
-   const PointType& pt, int icell, double& minSqDist, int& closest_cell ) const
+   const PointType& pt,
+   int icell,
+   double& minSqDist,
+   int& count,
+   int& closest_cell,
+   PointType& closest_pt,
+   VectorType& normal ) const
 {
   // Sanity checks
   SLIC_ASSERT( m_surfaceMesh != ATK_NULLPTR );
@@ -280,13 +329,26 @@ inline void SignedDistance< NDIMS >::updateMinSquaredDistance(
   m_surfaceMesh->getMeshNode( cellIds[1], surfTri.B().data() );
   m_surfaceMesh->getMeshNode( cellIds[2], surfTri.C().data() );
 
-  const double sqDist = quest::squared_distance( pt, surfTri );
-  if ( sqDist < minSqDist ) {
+  const double TOL    = 1.e-12;
+  const PointType cpt = quest::closest_point( pt, surfTri );
+  const double sqDist = quest::squared_distance( pt, cpt );
+  bool fuzzy = math::fuzzy_compare(squared_distance( cpt,closest_pt ),0.0,TOL);
+
+  if ( sqDist < minSqDist && !fuzzy ) {
 
     minSqDist    = sqDist;
+    closest_pt   = cpt;
+    normal       = surfTri.normal();
+    count        = 1;
     closest_cell = icell;
 
-  } // END if
+  } else if ( fuzzy ) {
+
+     SLIC_ASSERT( count > 0 );
+     normal += surfTri.normal();
+     ++count;
+
+  }
 
 }
 
