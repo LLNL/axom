@@ -88,6 +88,10 @@ set( quest_depends_on
      slam
      )
 
+if (ENABLE_BOOST)
+    list(APPEND quest_depends_on boost)
+endif()
+
 if (ENABLE_MPI)
   list(APPEND quest_headers stl/PSTLReader.hpp)  
   list(APPEND quest_sources stl/PSTLReader.cpp)
@@ -97,7 +101,7 @@ if(ENABLE_SHROUD)
     add_subdirectory(interface)
 endif()
 
-if (ENABLE_FORTRAN)
+if (ENABLE_FORTRAN AND ENABLE_MPI)
   ## append shroud generated headers/sources to corresponding lists
   list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
   list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
