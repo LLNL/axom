@@ -46,117 +46,10 @@ include(cmake/ATKOptions.cmake)
 ################################
 include(cmake/SetupShroud.cmake)
 
-
 ################################
-<<<<<<< HEAD
-# Setup toolkit generate targets
-=======
-# Standard Build Layout
-################################
-
-##
-## Defines the layout of the build directory. Namely,
-## it indicates the location where the various header files should go,
-## where to store libraries (static or shared), the location of the
-## bin directory for all executables and the location for fortran moudules.
-##
-
-## Set the path where all the header will be stored
- set(HEADER_INCLUDES_DIRECTORY
-     ${PROJECT_BINARY_DIR}/include/
-     CACHE PATH
-     "Directory where all headers will go in the build tree"
-     )
- include_directories(${HEADER_INCLUDES_DIRECTORY})
-
- ## Set the path where all the libraries will be stored
- set(LIBRARY_OUTPUT_PATH
-     ${PROJECT_BINARY_DIR}/lib
-     CACHE PATH
-     "Directory where compiled libraries will go in the build tree"
-     )
-
- ## Set the path where all the install executables will go
- set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/bin
-     CACHE PATH
-     "Directory where executables will go in the build tree"
-     )
-
-## Set the path were all test executables will go
- set(TEST_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/test
-     CACHE PATH
-     "Directory where test executables will go in the build tree"
-     )
-
-## Set the path were all example test executables will go
- set(EXAMPLE_OUTPUT_DIRECTORY
-     ${PROJECT_BINARY_DIR}/example
-     CACHE PATH
-     "Directory where example executables will go in the build tree"
-     )
-
- ## Set the Fortran module directory
- set(CMAKE_Fortran_MODULE_DIRECTORY
-     ${PROJECT_BINARY_DIR}/lib/fortran
-     CACHE PATH
-     "Directory where all Fortran modules will go in the build tree"
-     )
-
-## Set the Lua module directory
- set(BLT_Lua_MODULE_DIRECTORY
-     "${PROJECT_BINARY_DIR}/lib/lua"
-     CACHE PATH
-     "Directory where all Lua modules will go in the build tree"
- )
-
-## Mark as advanced
-mark_as_advanced(
-     LIBRARY_OUTPUT_PATH
-     CMAKE_RUNTIME_OUTPUT_DIRECTORY
-     CMAKE_Fortran_MODULE_DIRECTORY
-     )
-
-################################
-# MPI
-################################
-message(STATUS "MPI Support is ${ENABLE_MPI}")
-if (ENABLE_MPI)
-  find_package(MPI REQUIRED)
-  message(STATUS "MPI C Compile Flags: ${MPI_C_COMPILE_FLAGS}")
-  message(STATUS "MPI C Include Path: ${MPI_C_INCLUDE_PATH}")
-  message(STATUS "MPI C Link Flags: ${MPI_C_LINK_FLAGS}")
-  message(STATUS "MPI C Libraries: ${MPI_C_LIBRARIES}")
-endif()
-
-################################
-# OpenMP
-################################
-message(STATUS "OpenMP Support is ${ENABLE_OPENMP}")
-if(ENABLE_OPENMP)
-    find_package(OpenMP REQUIRED)
-    message(STATUS "OpenMP CXX Flags: ${OpenMP_CXX_FLAGS}")
-endif()
-
-################################
-# Setup compiler options
-# (must be included after HEADER_INCLUDES_DIRECTORY and MPI variables are set)
-################################
-include(SetupCompilerOptions)
-
-################################
-# Setup code metrics -
-# profiling, code coverage, etc.
-# (must be included after SetupCompilerOptions)
-################################
-include(SetupCodeMetrics)
-
-################################
-# Standard CMake Options
+# ATK's Third party library setup
 ################################
 include(cmake/thirdparty/SetupATKThirdParty.cmake)
-
 
 #
 # We don't try to use this approach for CMake generators that support
@@ -171,16 +64,12 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
       )
         add_definitions(-DATK_DEBUG)
     endif()
-
 endif()
 
 ################################
 # Fortran Configuration
 ################################
 if(ENABLE_FORTRAN)
-    # default property to free form
-    set(CMAKE_Fortran_FORMAT FREE)
-
     # Create macros for Fortran name mangling
     include(FortranCInterface)
     FortranCInterface_HEADER(${HEADER_INCLUDES_DIRECTORY}/common/FC.h MACRO_NAMESPACE "FC_")
