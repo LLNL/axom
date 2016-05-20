@@ -635,6 +635,7 @@ void DataView::copyToConduitNode(Node &n) const
  */
 void DataView::createNativeLayout(Node &n) const
 {
+  // see ATK-726 - Handle undescribed and unallocated views in Sidre's createNativeLayout()
   // TODO: Need to handle cases where the view is not described
   // TODO: Need to handle cases where the view is not allocated
   // TODO: Need to handle cases where the view is not applied
@@ -644,6 +645,31 @@ void DataView::createNativeLayout(Node &n) const
   // Note: const_cast the pointer to satisfy conduit's interface
   void* data_ptr = const_cast<void*>(m_node.data_ptr());
   n.set_external( m_node.schema(), data_ptr);
+}
+
+/*
+ *************************************************************************
+ *
+ * Copy data view native layout to given Conduit node.
+ *
+ *************************************************************************
+ */
+void DataView::createExternalLayout(Node &parent) const
+{
+  // see ATK-726 - Handle undescribed and unallocated views in Sidre's createNativeLayout()
+  // TODO: Need to handle cases where the view is not described
+  // TODO: Need to handle cases where the view is not allocated
+  // TODO: Need to handle cases where the view is not applied
+
+  // Note: We are using conduit's pointer rather than the DataView pointer
+  //    since the conduit pointer handles offsetting
+  // Note: const_cast the pointer to satisfy conduit's interface
+  if (isExternal())
+  {
+    Node & n = parent[ m_name ];
+    void* data_ptr = const_cast<void*>(m_node.data_ptr());
+    n.set_external( m_node.schema(), data_ptr);
+  }
 }
 
 
@@ -936,23 +962,31 @@ void DataView::exportTo(conduit::Node& data_holder,
                         std::set<IndexType>& buffer_indices) const
 {
   data_holder["schema"] = m_schema.to_json();
-  data_holder["node"] = getNode();
   data_holder["state"] = static_cast<unsigned int>(m_state);
   data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
 
-  if (m_state == BUFFER)
-  {
-    IndexType buffer_id = getBuffer()->getIndex();
-    data_holder["buffer_id"] = buffer_id;
-    buffer_indices.insert(buffer_id);
-  }
-
-  // TODO - take this out when CON-131 resolved ( can't write out empty node ).
-  if ( data_holder["node"].dtype().is_empty() )
-  {
+  switch (m_state) {
+  case EMPTY:
+    // TODO - take this out when CON-131 resolved ( can't write out empty node ).
+    data_holder["node"] = getNode();
     data_holder["node"].set_string("empty");
+    break;
+  case BUFFER:
+    {
+      IndexType buffer_id = getBuffer()->getIndex();
+      data_holder["buffer_id"] = buffer_id;
+      buffer_indices.insert(buffer_id);
+    }
+    break;
+  case EXTERNAL:
+    break;
+  case SCALAR:
+  case STRING:
+    data_holder["node"] = getNode();
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
-
 }
 
 /*
