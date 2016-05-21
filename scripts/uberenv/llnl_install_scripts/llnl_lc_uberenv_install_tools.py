@@ -20,7 +20,10 @@ import json
 
 from os.path import join as pjoin
 
-def sexe(cmd,ret_output=False,echo = False):
+def sexe(cmd,
+         ret_output=False,
+         out_file = None,
+         echo = False):
     """ Helper for executing shell commands. """
     if echo:
         print "[exe: %s]" % cmd
@@ -110,6 +113,36 @@ def patch_host_configs(prefix):
                     # append the manual edits
                     print "[patching %s with manual edits from %s]" % (f,me_key)
                     open(f,"wa").write(txt)
+
+############################################################
+# helpers for testing a set of host configs
+############################################################
+
+def build_and_test_host_config(test_root,host_config):
+    host_config_root = os.path.splitext(os.path.basename(host_config))[0]
+    # setup build and install dirs
+    build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
+    install_dir = pjoin(test_root,"install-%s" % host_config_root)
+    # configure
+    sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),echo=True)
+    # build
+    sexe("cd %s && make -j 8 > log.make.txt" % build_dir,echo=True)
+    sexe("cd %s && make test > log.make.test.txt " % build_dir,echo=True)
+    sexe("cd %s && make install > log.make.install.txt" % build_dir,echo=True)
+    # check for results in make install?
+
+
+def build_and_test_host_configs(prefix):
+    host_configs = glob.glob(pjoin(prefix,"*.cmake"))
+    if len(host_configs) > 0:
+        test_root =  pjoin(prefix,"_asctk_build_and_test_%s" % timestamp())
+        os.mkdir(test_root)
+        write_build_info(pjoin(test_root,"info.json")) 
+        for host_config in host_configs:
+            build_and_test_host_config(test_root,host_config)
+        set_toolkit_group_and_perms(test_root)
+    else:
+        print "[error no host configs found at %s]" % prefix
 
 
 def set_toolkit_group_and_perms(directory):
