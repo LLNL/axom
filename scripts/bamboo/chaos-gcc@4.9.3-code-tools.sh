@@ -47,16 +47,29 @@ cd build-chaos-gcc@4.9.3-debug
     popd
     cp -R ./coverage /usr/global/web-pages/lc/www/toolkit
     if [ $? -ne 0 ]; then
-        echo "Error: 'cp' failed"
+        echo "Error: 'cp' of coverage directory failed"
         exit 1
     fi
+    
+    chgrp -R toolkit /usr/global/web-pages/lc/www/toolkit/coverage/
+    if [ $? -ne 0 ]; then
+        echo "Error: 'chgrp' on coverage directory failed"
+        exit 1
+    fi
+
+    chmod -R g+r+w+X /usr/global/web-pages/lc/www/toolkit/coverage/
+    if [ $? -ne 0 ]; then
+        echo "Error: 'chmod' on coverage directory failed"
+        exit 1
+    fi
+    
     echo "-----------------------------------------------------------------------"
 
     echo "Running valgrind..."
     echo "-----------------------------------------------------------------------"
     make test ARGS=" -E mpi -D ExperimentalMemCheck --output-on-failure"
     if [ $? -ne 0 ]; then
-        echo "Error: 'make test' failed"
+        echo "Error: 'make test' with valgrind failed"
         exit 1
     fi
     echo "-----------------------------------------------------------------------"
