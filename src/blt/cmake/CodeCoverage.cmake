@@ -77,7 +77,7 @@ endif()
 
 if ( NOT COMPILER_FAMILY_IS_GNU ) 
    MESSAGE(FATAL_ERROR "Code coverage only supported on gnu compiler. "
-					   "Either set ENABLE_CODECOV=FALSE or change your compiler to gnu. "
+					   "Either set ENABLE_COVERAGE=FALSE or change your compiler to gnu. "
 					   "Current CXX compiler is ${CMAKE_CXX_COMPILER_ID}.")
 endif()
 

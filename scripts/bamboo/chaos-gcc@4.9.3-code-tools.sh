@@ -2,7 +2,7 @@
 
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c gcc@4.9.3 --buildtype Debug -DENABLE_CODECOV=TRUE 
+./scripts/config-build.py -c gcc@4.9.3 --buildtype Debug -DENABLE_COVERAGE=TRUE 
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1
