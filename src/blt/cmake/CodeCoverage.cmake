@@ -123,6 +123,14 @@ SET(CMAKE_C_FLAGS_COVERAGE
     "-g -O0 ${COVERAGE_FLAGS}"
     CACHE STRING "Flags used by the C compiler during coverage builds."
     FORCE )
+    
+if(ENABLE_FORTRAN)
+    SET(CMAKE_Fortran_FLAGS_COVERAGE
+        "-g -O0 ${COVERAGE_FLAGS}"
+        CACHE STRING "Flags used by the Fortran compiler during coverage builds."
+        FORCE )
+endif()
+
 SET(CMAKE_EXE_LINKER_FLAGS_COVERAGE
     "${COVERAGE_FLAGS}"
     CACHE STRING "Flags used for linking binaries during coverage builds."
@@ -136,6 +144,10 @@ MARK_AS_ADVANCED(
     CMAKE_C_FLAGS_COVERAGE
     CMAKE_EXE_LINKER_FLAGS_COVERAGE
     CMAKE_SHARED_LINKER_FLAGS_COVERAGE )
+
+if(ENABLE_FORTRAN)
+    MARK_AS_ADVANCED(CMAKE_Fortran_FLAGS_COVERAGE)
+endif()
 
 # Param _targetname     The name of new the custom make target and output file name.
 # Param _testrunner     The name of the target which runs the tests.
@@ -177,4 +189,9 @@ add_code_coverage_target(coverage make test)
 SET( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_COVERAGE}" )
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}" )
 SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_COVERAGE}" )
+
+if(ENABLE_FORTRAN)
+    SET( CMAKE_Fortran_FLAGS  "${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_COVERAGE}" )
+endif()
+
 MESSAGE(STATUS "Code coverage: enabled via gcov.")
