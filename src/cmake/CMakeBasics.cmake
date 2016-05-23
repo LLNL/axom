@@ -73,7 +73,8 @@ if(ENABLE_FORTRAN)
     # Create macros for Fortran name mangling
     include(FortranCInterface)
     FortranCInterface_HEADER(${HEADER_INCLUDES_DIRECTORY}/common/FC.h MACRO_NAMESPACE "FC_")
-
+    FortranCInterface_VERIFY()
+    
     if (ENABLE_MPI)
         # Determine if we should use fortran mpif.h header or fortran mpi module
         find_path(mpif_path
