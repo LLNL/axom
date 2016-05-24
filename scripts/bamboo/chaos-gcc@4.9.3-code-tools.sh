@@ -2,7 +2,7 @@
 
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c gcc@4.9.3 --buildtype Debug -DENABLE_CODECOV=TRUE 
+./scripts/config-build.py -c gcc@4.9.3 --buildtype Debug -DENABLE_COVERAGE=TRUE 
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1
@@ -38,25 +38,39 @@ cd build-chaos-gcc@4.9.3-debug
 
     echo "Install code coverage report to web space..."
     echo "-----------------------------------------------------------------------"
-    pushd /usr/global/web-pages/lc/www/toolkit
-        rm -rf ./coverage
+    if [ -d /usr/global/web-pages/lc/www/toolkit/coverage ]; then
+        rm -rf /usr/global/web-pages/lc/www/toolkit/coverage
         if [ $? -ne 0 ]; then
-            echo "Error: 'rm' failed"
-            exit 1
+            echo "Error: 'rm' of coverage directory failed"
+            #exit 1
         fi
-    popd
+    fi
+
     cp -R ./coverage /usr/global/web-pages/lc/www/toolkit
     if [ $? -ne 0 ]; then
-        echo "Error: 'cp' failed"
+        echo "Error: 'cp' of coverage directory failed"
         exit 1
     fi
+    
+    chgrp -R toolkitd /usr/global/web-pages/lc/www/toolkit/coverage/
+    if [ $? -ne 0 ]; then
+        echo "Error: 'chgrp' on coverage directory failed"
+        exit 1
+    fi
+
+    chmod -R ug+rwX /usr/global/web-pages/lc/www/toolkit/coverage/
+    if [ $? -ne 0 ]; then
+        echo "Error: 'chmod' on coverage directory failed"
+        exit 1
+    fi
+    
     echo "-----------------------------------------------------------------------"
 
     echo "Running valgrind..."
     echo "-----------------------------------------------------------------------"
     make test ARGS=" -E mpi -D ExperimentalMemCheck --output-on-failure"
     if [ $? -ne 0 ]; then
-        echo "Error: 'make test' failed"
+        echo "Error: 'make test' with valgrind failed"
         exit 1
     fi
     echo "-----------------------------------------------------------------------"

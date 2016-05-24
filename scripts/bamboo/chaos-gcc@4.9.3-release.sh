@@ -49,16 +49,20 @@ cd ..
 
 echo "Installing docs to web space..."
 echo "-----------------------------------------------------------------------"
-rm -rf /usr/global/web-pages/lc/www/toolkit/docs_old
-if [ $? -ne 0 ]; then
-    echo "Error: 'rm' failed"
-    exit 1
+if [ -d /usr/global/web-pages/lc/www/toolkit/docs_old ]; then
+    rm -rf /usr/global/web-pages/lc/www/toolkit/docs_old
+    if [ $? -ne 0 ]; then
+        echo "Error: 'rm' of docs_old failed"
+        #exit 1
+    fi
 fi
 
-mv /usr/global/web-pages/lc/www/toolkit/docs /usr/global/web-pages/lc/www/toolkit/docs_old
-if [ $? -ne 0 ]; then
-    echo "Error: 'mv' failed"
-    exit 1
+if [ -d /usr/global/web-pages/lc/www/toolkit/docs ]; then
+    mv /usr/global/web-pages/lc/www/toolkit/docs /usr/global/web-pages/lc/www/toolkit/docs_old
+    if [ $? -ne 0 ]; then
+        echo "Error: 'mv' docs to docs_old failed"
+        # exit 1
+    fi
 fi
 
 cp -R ./install-chaos-release/docs /usr/global/web-pages/lc/www/toolkit/
