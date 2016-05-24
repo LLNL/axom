@@ -129,25 +129,25 @@ if(ENABLE_FORTRAN)
         "-g -O0 ${COVERAGE_FLAGS}"
         CACHE STRING "Flags used by the Fortran compiler during coverage builds."
         FORCE )
+    MARK_AS_ADVANCED(CMAKE_Fortran_FLAGS_COVERAGE)
 endif()
 
 SET(CMAKE_EXE_LINKER_FLAGS_COVERAGE
     "${COVERAGE_FLAGS}"
     CACHE STRING "Flags used for linking binaries during coverage builds."
     FORCE )
+    
 SET(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
     ""
     CACHE STRING "Flags used by the shared libraries linker during coverage builds."
     FORCE )
+    
 MARK_AS_ADVANCED(
     CMAKE_CXX_FLAGS_COVERAGE
     CMAKE_C_FLAGS_COVERAGE
     CMAKE_EXE_LINKER_FLAGS_COVERAGE
     CMAKE_SHARED_LINKER_FLAGS_COVERAGE )
 
-if(ENABLE_FORTRAN)
-    MARK_AS_ADVANCED(CMAKE_Fortran_FLAGS_COVERAGE)
-endif()
 
 # Param _targetname     The name of new the custom make target and output file name.
 # Param _testrunner     The name of the target which runs the tests.
