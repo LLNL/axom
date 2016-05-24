@@ -128,7 +128,7 @@ endif()
 
 
 blt_append_custom_compiler_flag(
-    FLAGS_VAR ATK_ENABLE_ALL_WARNINGS
+    FLAGS_VAR BLT_ENABLE_ALL_WARNINGS_FLAG
      DEFAULT "-Wall -Wextra"
      CLANG   "-Wall -Wextra" 
                     # Additional  possibilities for clang include: 
@@ -141,7 +141,7 @@ blt_append_custom_compiler_flag(
      )
 
 blt_append_custom_compiler_flag(
-    FLAGS_VAR ATK_TREAT_WARNINGS_AS_ERRORS
+    FLAGS_VAR BLT_WARNINGS_AS_ERRORS_FLAG
      DEFAULT  "-Werror"
      MSVC     "/WX"
      XL       "qhalt=w"       # i info, w warning, e error, s severe (default)
@@ -153,7 +153,7 @@ if (ENABLE_ALL_WARNINGS)
     MESSAGE(STATUS  "Enabling all compiler warnings on all targets.")
 
     foreach(flagVar ${langFlags})
-        set(${flagVar} "${${flagVar}} ${ATK_ENABLE_ALL_WARNINGS}") 
+        set(${flagVar} "${${flagVar}} ${BLT_ENABLE_ALL_WARNINGS_FLAG}") 
     endforeach()
 endif()
 
@@ -161,7 +161,7 @@ if (ENABLE_WARNINGS_AS_ERRORS)
     MESSAGE(STATUS  "Enabling treatment of warnings as errors on all targets.")
 
     foreach(flagVar ${langFlags})   
-        set(${flagVar} "${${flagVar}} ${ATK_TREAT_WARNINGS_AS_ERRORS}") 
+        set(${flagVar} "${${flagVar}} ${BLT_WARNINGS_AS_ERRORS_FLAG}") 
     endforeach()
 endif()
 
