@@ -14,11 +14,5 @@ set(MPI_CXX_COMPILER "/usr/local/tools/mvapich2-intel-2.0/bin/mpicxx" CACHE PATH
 set(MPI_Fortran_COMPILER  "/usr/local/tools/mvapich2-intel-2.0/bin/mpif90" CACHE PATH "")
 
 ##############################################################################
-# (KW 3/2016) Temporarily disable CXX11 on intel builds until we resolve 
-# issue ATK-619
-##############################################################################
-set(ENABLE_CXX11 OFF CACHE PATH "")
-
-##############################################################################
 # !---------------------------------------------------------------------------
 ##############################################################################
