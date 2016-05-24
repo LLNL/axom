@@ -108,11 +108,15 @@ def patch_host_configs(prefix):
             # see if the key matches
             if f.count(me_key) == 1:
                 # make sure the text wasn't already appended
-                txt = manual_edits[me_key]
-                if not txt in open(f).read():
+                patch_txt = manual_edits[me_key]
+                host_cfg_txt = open(f).read()
+                if not patch_txt in host_cfg_txt:
                     # append the manual edits
-                    print "[patching %s with manual edits from %s]" % (f,me_key)
-                    open(f,"wa").write(txt)
+                    print "[patching %s with manual edits for %s]" % (f,me_key)
+                    ofile = open(f,"w")
+                    ofile.write(host_cfg_txt)
+                    ofile.write(patch_txt)
+                    ofile.write("\n")
 
 ############################################################
 # helpers for testing a set of host configs
@@ -125,11 +129,16 @@ def build_and_test_host_config(test_root,host_config):
     install_dir = pjoin(test_root,"install-%s" % host_config_root)
     # configure
     sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),echo=True)
-    # build
+    # build, test, and install
     sexe("cd %s && make -j 8 > log.make.txt" % build_dir,echo=True)
     sexe("cd %s && make test > log.make.test.txt " % build_dir,echo=True)
     sexe("cd %s && make install > log.make.install.txt" % build_dir,echo=True)
-    # check for results in make install?
+    # simple sanity check for make install
+    print "[checking install dir %s]" % install_dir 
+    sexe("ls %s/bin" % install_dir,echo=True)
+    sexe("ls %s/docs" % install_dir,echo=True)
+    sexe("ls %s/include" % install_dir,echo=True)
+    sexe("ls %s/lib" % install_dir,echo=True)
 
 
 def build_and_test_host_configs(prefix):
