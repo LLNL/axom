@@ -44,7 +44,7 @@ set( BLT_SMOKE_TESTS
         compiler_flag_strict_aliasing.cpp
         )
 if (ENABLE_FORTRAN)                    
-    list(APPEND BLT_SMOKE_TESTS compiler_flag_fortran_preprocessor.f)
+    list(APPEND BLT_SMOKE_TESTS compiler_flag_fortran_preprocessor.F)
 endif()
 
 
@@ -79,11 +79,10 @@ blt_append_custom_compiler_flag(FLAGS_VAR TMP_OPT_FLAG DEFAULT "-O2")
 set_target_properties(compiler_flag_strict_aliasing 
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${TMP_OPT_FLAG} ${ATK_DISABLE_ALIASING_WARNINGS}")
 
+
+# The following test checks that the C preprocessor is invoked on Fortran files with extension *.F 
 if(ENABLE_FORTRAN)
     set_target_properties(compiler_flag_fortran_preprocessor 
                           PROPERTIES LINKER_LANGUAGE Fortran)
-
-    set_target_properties(compiler_flag_fortran_preprocessor 
-        PROPERTIES COMPILE_FLAGS "${ATK_PREPROCESS_FORTRAN}")
 endif()
 

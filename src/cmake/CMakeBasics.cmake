@@ -144,16 +144,6 @@ blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_ALIASING_WARNINGS
                   )
 list(APPEND custom_compiler_flags_list ATK_DISABLE_ALIASING_WARNINGS)
 
-# Flag for enabling the C preprocessor in fortran.
-# (Note KW 5/2016) The XL flag only applies to *.f files -- I could not find a more general solution.   
-#       xlf only allows one file remapping at a time. If you have *.f90 files, '-qsuffix=cpp=f90' should work on XLF.
-#       Alternatively, you can rename the file's extension to automatically invoke the preprocessor (e.g. *.f ->  *.F)
-blt_append_custom_compiler_flag(FLAGS_VAR ATK_PREPROCESS_FORTRAN
-                  DEFAULT "-cpp"
-                  XL      "-qsuffix=cpp=f"  # Note: Invokes the C preprocessor on files with extension *.f
-                  )
-list(APPEND custom_compiler_flags_list ATK_PREPROCESS_FORTRAN)
-
    
 # message(STATUS "Custom compiler flags:")
 # foreach(flag ${custom_compiler_flags_list})
