@@ -65,10 +65,10 @@ namespace {
       T* nD = static_cast<T*>(node.element_ptr(0));
 
       asctoolkit::sidre::DataView* view = rootGroup->getView(path);
-      EXPECT_NE(ATK_NULLPTR, view);
+      EXPECT_TRUE(ATK_NULLPTR != view);
 
       T* vD = view->getData<T*>();
-      EXPECT_NE(ATK_NULLPTR, vD);
+      EXPECT_TRUE(ATK_NULLPTR != vD);
 
       EXPECT_EQ(nD, vD)
               << "Error when comparing pointer address between "
@@ -98,7 +98,7 @@ namespace {
       std::string nD = node.as_string();
 
       asctoolkit::sidre::DataView* view = rootGroup->getView(path);
-      EXPECT_NE(ATK_NULLPTR, view);
+      EXPECT_TRUE(ATK_NULLPTR != view);
       EXPECT_TRUE(view->isString());
 
       std::string vD(view->getString());
