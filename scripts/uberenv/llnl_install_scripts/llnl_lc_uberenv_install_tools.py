@@ -34,7 +34,7 @@ def sexe(cmd,
                              stderr=subprocess.STDOUT)
         res =p.communicate()[0]
         return p.returncode,res
-    elif out_file != None:
+    elif output_file != None:
         ofile = open(output_file,"w")
         p = subprocess.Popen(cmd,
                              shell=True,
