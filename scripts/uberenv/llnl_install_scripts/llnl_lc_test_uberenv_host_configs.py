@@ -33,6 +33,7 @@ def main():
         print "[error %s is not a valid directory]" % prefix
         sys.exit(-1)
     build_and_test_host_configs(prefix)
+    set_toolkit_group_and_perms(prefix)
 
 
 if __name__ == "__main__":

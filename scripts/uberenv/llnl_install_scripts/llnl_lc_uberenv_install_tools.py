@@ -22,7 +22,7 @@ from os.path import join as pjoin
 
 def sexe(cmd,
          ret_output=False,
-         out_file = None,
+         output_file = None,
          echo = False):
     """ Helper for executing shell commands. """
     if echo:
@@ -34,6 +34,14 @@ def sexe(cmd,
                              stderr=subprocess.STDOUT)
         res =p.communicate()[0]
         return p.returncode,res
+    elif out_file != None:
+        ofile = open(output_file,"w")
+        p = subprocess.Popen(cmd,
+                             shell=True,
+                             stdout= ofile,
+                             stderr=subprocess.STDOUT)
+        res =p.communicate()[0]
+        return p.returncode
     else:
         rcode = subprocess.call(cmd,shell=True)
         if rcode != 0:
@@ -128,17 +136,29 @@ def build_and_test_host_config(test_root,host_config):
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
     install_dir = pjoin(test_root,"install-%s" % host_config_root)
     # configure
-    sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),echo=True)
+    sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
+         echo=True)
+    ####
     # build, test, and install
-    sexe("cd %s && make -j 8 > log.make.txt" % build_dir,echo=True)
-    sexe("cd %s && make test > log.make.test.txt " % build_dir,echo=True)
-    sexe("cd %s && make install > log.make.install.txt" % build_dir,echo=True)
+    ####
+    sexe("cd %s && make -j 8 " % build_dir,
+         output_file = pjoin(build_dir,"output.log.make.txt"),
+         echo=True)
+
+    sexe("cd %s && make test " % build_dir,
+         output_file = pjoin(build_dir,"output.log.make.test.txt"),
+         echo=True)
+
+    sexe("cd %s && make install " % build_dir,
+         output_file = pjoin(build_dir,"output.log.make.install.txt"),
+         echo=True)
+
     # simple sanity check for make install
     print "[checking install dir %s]" % install_dir 
-    sexe("ls %s/bin" % install_dir,echo=True)
-    sexe("ls %s/docs" % install_dir,echo=True)
-    sexe("ls %s/include" % install_dir,echo=True)
-    sexe("ls %s/lib" % install_dir,echo=True)
+    sexe("ls %s/bin" %     install_dir, echo=True)
+    sexe("ls %s/docs" %    install_dir, echo=True)
+    sexe("ls %s/include" % install_dir, echo=True)
+    sexe("ls %s/lib" %     install_dir, echo=True)
 
 
 def build_and_test_host_configs(prefix):
@@ -149,7 +169,6 @@ def build_and_test_host_configs(prefix):
         write_build_info(pjoin(test_root,"info.json")) 
         for host_config in host_configs:
             build_and_test_host_config(test_root,host_config)
-        set_toolkit_group_and_perms(test_root)
     else:
         print "[error no host configs found at %s]" % prefix
 
