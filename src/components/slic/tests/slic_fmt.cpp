@@ -26,6 +26,9 @@ using asctoolkit::slic::UnitTestLogger;
 //-----------------------------------------------------------------------------
 TEST(slic_fmt, basic_use)
 {
+    SLIC_INFO( "Formatting with C++ streams and with "
+            << fmt::format("the '{}' string formatting library", "fmt")
+            << " can be used together in slic macros." );
 
     // Style similar to Python format
     SLIC_INFO( fmt::format("{1} {0}", "world", "Hello") );
@@ -47,6 +50,7 @@ TEST(slic_fmt, basic_use)
     // sprintf style
     SLIC_INFO( fmt::sprintf("Two significant digits: %.2f", 1.234567) );
     EXPECT_EQ( "1.23", fmt::sprintf("%.2f", 1.234567));
+
 }
 
 
