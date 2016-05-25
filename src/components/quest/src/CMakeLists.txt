@@ -60,7 +60,7 @@ set( quest_headers
    
 set( quest_sources
     
-    ## CG Sources
+    ## Geometry Sources
     # <nothing yet>
         
     ## Mesh Library Sources
@@ -86,6 +86,7 @@ set( quest_depends_on
      common
      slic
      slam
+     stla_io
      )
 
 if (ENABLE_BOOST)
@@ -115,7 +116,5 @@ blt_add_library(
     HEADERS     ${quest_headers}
     DEPENDS_ON  ${quest_depends_on}
     )
-                 
-target_include_directories( quest PRIVATE "${CMAKE_SOURCE_DIR}/thirdparty/stla_io" )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )
