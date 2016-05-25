@@ -27,6 +27,7 @@ def main():
     specs = ["%clang@3.5.0",
              "%gcc@4.7.1",
              "%gcc@4.9.3",
+             "%intel@15.0.187",
              "%intel@16.0.109"]
     # use uberenv to install for all specs
     for spec in specs:
