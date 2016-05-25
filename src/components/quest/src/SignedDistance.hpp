@@ -94,19 +94,6 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Computes the sign of the point with respect to the given cell.
-   * \param [in] icell the ID of the cell on the surface mesh.
-   * \return sign -1 or 1 depending on whether the point is on the positive or
-   *  negative side of the oriented cell.
-   * \pre m_surfaceMesh != ATK_NULLPTR
-   * \pre icell >= 0 && icell < m_surfaceMesh->getMeshNumberOfCells().
-   * \see quest::orientation
-   *****************************************************************************
-   */
-  int computeSign( const PointType& pt, int icell ) const;
-
-  /*!
-   *****************************************************************************
    * \brief Updates the minimum squared distance of the point to the given cell.
    * \param [in] pt the query point.
    * \param [in] icell ID of the cell on the surface mesh.
@@ -261,38 +248,6 @@ SignedDistance< NDIMS >::computeDistance( const PointType& pt ) const
   }
 
   return ( sign*std::sqrt( minSqDist ) );
-}
-
-//------------------------------------------------------------------------------
-template < int NDIMS >
-inline int SignedDistance< NDIMS >::computeSign(
-        const PointType& pt, int icell ) const
-{
-  // Sanity checks
-  SLIC_ASSERT( m_surfaceMesh != ATK_NULLPTR );
-  SLIC_ASSERT( icell >= 0 && icell < m_surfaceMesh->getMeshNumberOfCells() );
-
-  // Get the cell type, for now we support linear triangle,quad in 3-D and
-  // line segments in 2-D.
-  const int cellType = m_surfaceMesh->getMeshCellType( icell );
-  ATK_DEBUG_VAR(cellType);
-
-  // TODO: for now we assume a triangle mesh, the squared_distance() must be
-  // updated to support, quad, etc., punting it for now...
-  SLIC_ASSERT( cellType==meshtk::LINEAR_TRIANGLE );
-  //  const int nnodes = meshtk::cell::num_nodes[ cellType ];
-
-  // Get the cell node IDs that make up the cell
-  int cellIds[3];
-  m_surfaceMesh->getMeshCell( icell, cellIds );
-
-  TriangleType surfTri;
-  m_surfaceMesh->getMeshNode( cellIds[0], surfTri.A().data() );
-  m_surfaceMesh->getMeshNode( cellIds[1], surfTri.B().data() );
-  m_surfaceMesh->getMeshNode( cellIds[2], surfTri.C().data() );
-
-  bool onNegSide = quest::orientation( pt, surfTri )==quest::ON_NEGATIVE_SIDE;
-  return( ( onNegSide )? -1.0 : 1.0 );
 }
 
 //------------------------------------------------------------------------------
