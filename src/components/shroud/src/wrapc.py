@@ -314,14 +314,16 @@ class Wrapc(util.WrapperMixin):
 #
 #
 #
+        fmt_arg = util.Options(fmt)
         for arg in node['args']:
             c_attrs = arg['attrs']
             arg_typedef = self.typedef[arg['type']]
             c_statements = arg_typedef.c_statements
-            fmt.c_var = arg['name']
-            fmt.c_var_len = 'L' + fmt.c_var
-            fmt.c_var_num = 'N' + fmt.c_var
-            fmt.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
+            fmt_arg.c_var = arg['name']
+            fmt_arg.c_var_len = 'L' + fmt_arg.c_var
+            fmt_arg.c_var_num = 'N' + fmt_arg.c_var
+            fmt_arg.C_const = 'const ' if arg['attrs'].get('const', False) else ''
+            fmt_arg.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
 
             if c_attrs.get('_is_result', False):
                 arg_call = False
@@ -329,7 +331,7 @@ class Wrapc(util.WrapperMixin):
                 slist = [ 'result' ]
             else:
                 arg_call = arg
-                fmt.cpp_var = fmt.c_var      # name in c++ call.
+                fmt_arg.cpp_var = fmt_arg.c_var      # name in c++ call.
                 slist = [ ]
                 if c_attrs['intent'] in [ 'inout', 'in']:
                     slist.append('intent_in')
@@ -340,15 +342,15 @@ class Wrapc(util.WrapperMixin):
 
             len_trim = arg['attrs'].get('len_trim', False)
             if len_trim:
-                fmt.c_var_trim = len_trim
-                append_format(proto_list, 'int {c_var_trim}', fmt)
+                fmt_arg.c_var_trim = len_trim
+                append_format(proto_list, 'int {c_var_trim}', fmt_arg)
             len_arg = arg['attrs'].get('len', False)
             if len_arg:
-                fmt.len_arg = len_arg
-                fmt.c_var_len = len_arg
-                append_format(proto_list, 'int {c_var_len}', fmt)
+                fmt_arg.len_arg = len_arg
+                fmt_arg.c_var_len = len_arg
+                append_format(proto_list, 'int {c_var_len}', fmt_arg)
 #            else:
-#                fmt.c_var_len = 'NNNN' + fmt.c_var
+#                fmt_arg.c_var_len = 'NNNN' + fmt_arg.c_var
 
             # Add any code needed for intent(IN).
             # Usually to convert types. For example, convert char * to std::string
@@ -358,7 +360,7 @@ class Wrapc(util.WrapperMixin):
                 have_cpp_local_var = have_cpp_local_var or \
                     c_statements.get(intent,{}).get('cpp_local_var', False)
             if have_cpp_local_var:
-                fmt.cpp_var = 'SH_' + fmt.c_var
+                fmt_arg.cpp_var = 'SH_' + fmt_arg.c_var
 
             for intent in slist:
 #                pre_call.append('// intent=%s' % intent)
@@ -368,17 +370,17 @@ class Wrapc(util.WrapperMixin):
                     cmd_list = c_statements.get(intent,{}).get('pre_call',[])
                 if cmd_list:
                     for cmd in cmd_list:
-                        append_format(pre_call, cmd, fmt)
+                        append_format(pre_call, cmd, fmt_arg)
 
                 cmd_list = c_statements.get(intent,{}).get('post_call',[])
                 if cmd_list:
                     # pick up c_str() from cpp_to_c
                     if intent == 'result':
-                        fmt.cpp_var = fmt.rv
-                    fmt.cpp_val = wformat(arg_typedef.cpp_to_c, fmt)
-#                    append_format(post_call, '// c_var={c_var}  cpp_var={cpp_var}  cpp_val={cpp_val}', fmt)
+                        fmt_arg.cpp_var = fmt_arg.rv
+                    fmt_arg.cpp_val = wformat(arg_typedef.cpp_to_c, fmt_arg)
+#                    append_format(post_call, '// c_var={c_var}  cpp_var={cpp_var}  cpp_val={cpp_val}', fmt_arg)
                     for cmd in cmd_list:
-                        append_format(post_call, cmd, fmt)
+                        append_format(post_call, cmd, fmt_arg)
 
                 cpp_header = c_statements.get(intent,{}).get('cpp_header',None)
                 if cpp_header:
@@ -387,10 +389,10 @@ class Wrapc(util.WrapperMixin):
 
             if arg_call:
                 if have_cpp_local_var:
-                    call_list.append(fmt.cpp_var)
+                    call_list.append(fmt_arg.cpp_var)
                 else:
                     # convert C argument to C++
-                    append_format(call_list, arg_typedef.c_to_cpp, fmt)
+                    append_format(call_list, arg_typedef.c_to_cpp, fmt_arg)
 
             if arg_typedef.c_header:
                 # include any dependent header in generated header

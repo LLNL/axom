@@ -54,7 +54,7 @@ return rv;
 void AA_test_names(const char * name)
 {
 // splicer begin function.test_names
-std::string SH_name(name);
+const std::string SH_name(name);
 test_names(SH_name);
 return;
 // splicer end function.test_names
@@ -65,7 +65,7 @@ return;
 void AA_test_names_bufferify(const char * name, int Lname)
 {
 // splicer begin function.test_names_bufferify
-std::string SH_name(name, Lname);
+const std::string SH_name(name, Lname);
 test_names(SH_name);
 return;
 // splicer end function.test_names_bufferify
@@ -76,7 +76,7 @@ return;
 void AA_test_names_flag(const char * name, int flag)
 {
 // splicer begin function.test_names_flag
-std::string SH_name(name);
+const std::string SH_name(name);
 test_names(SH_name, flag);
 return;
 // splicer end function.test_names_flag
@@ -87,7 +87,7 @@ return;
 void AA_test_names_flag_bufferify(const char * name, int Lname, int flag)
 {
 // splicer begin function.test_names_flag_bufferify
-std::string SH_name(name, Lname);
+const std::string SH_name(name, Lname);
 test_names(SH_name, flag);
 return;
 // splicer end function.test_names_flag_bufferify

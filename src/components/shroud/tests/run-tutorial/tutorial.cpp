@@ -158,6 +158,12 @@ EnumTypeID enumfunc(EnumTypeID arg)
     }
 }
 
+void useclass(const Class1 *arg)
+{
+    last_function_called = "useclass";
+    (void)arg;  // "use" argument
+}
+
 //----------------------------------------------------------------------
 
 void Class1::Method1()

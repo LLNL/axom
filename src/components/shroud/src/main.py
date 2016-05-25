@@ -405,10 +405,10 @@ class Schema(object):
                     intent_in = dict(
                         cpp_local_var = True,
                         pre_call = [
-                            'std::string {cpp_var}({c_var});'
+                            '{C_const}std::string {cpp_var}({c_var});'
                             ],
                         pre_call_trim = [
-                            'std::string {cpp_var}({c_var}, {c_var_trim});'
+                            '{C_const}std::string {cpp_var}({c_var}, {c_var_trim});'
                             ],
                     ),
                     intent_out = dict(
@@ -436,7 +436,7 @@ class Schema(object):
                     intent_in = dict(
                         cpp_local_var = True,
                         post_parse = [
-                            'std::string {cpp_var}({c_var});'
+                            '{C_const}std::string {cpp_var}({c_var});'
                             ],
                         ),
                     ),

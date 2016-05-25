@@ -202,7 +202,7 @@ PP_exclass2_get_class1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.get_class1
-    ExClass1 * in;
+    const ExClass1 * in;
     PP_ExClass1 * SH_Py_in;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
