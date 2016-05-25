@@ -4,10 +4,18 @@
 # be used
 #
 
+set(FMT_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/fmt )
+blt_register_library( 
+    NAME fmt
+    INCLUDES ${FMT_INCLUDE_DIRS}
+    )
+
+
 ################################
 # Add tests
 ################################
 if (ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
+
 
