@@ -20,7 +20,10 @@ import json
 
 from os.path import join as pjoin
 
-def sexe(cmd,ret_output=False,echo = False):
+def sexe(cmd,
+         ret_output=False,
+         output_file = None,
+         echo = False):
     """ Helper for executing shell commands. """
     if echo:
         print "[exe: %s]" % cmd
@@ -31,6 +34,14 @@ def sexe(cmd,ret_output=False,echo = False):
                              stderr=subprocess.STDOUT)
         res =p.communicate()[0]
         return p.returncode,res
+    elif output_file != None:
+        ofile = open(output_file,"w")
+        p = subprocess.Popen(cmd,
+                             shell=True,
+                             stdout= ofile,
+                             stderr=subprocess.STDOUT)
+        res =p.communicate()[0]
+        return p.returncode
     else:
         rcode = subprocess.call(cmd,shell=True)
         if rcode != 0:
@@ -100,15 +111,66 @@ def patch_host_configs(prefix):
     fs = glob.glob(pjoin(prefix,"*.cmake"))
     print "[found %d host config files @ %s]" % (len(fs),prefix)
     for f in fs:
-        print "[ -> %s is %d bytes ]" %  (f,os.path.getsize(f))
+        print "[ -> %s  ]" %  f
         for me_key in manual_edits.keys():
             # see if the key matches
             if f.count(me_key) == 1:
                 # make sure the text wasn't already appended
-                txt = manual_edits[me_key]
-                if not txt in open(f).read():
+                patch_txt = manual_edits[me_key]
+                host_cfg_txt = open(f).read()
+                if not patch_txt in host_cfg_txt:
                     # append the manual edits
-                    open(f,"wa").write(txt)
+                    print "[patching %s with manual edits for %s]" % (f,me_key)
+                    ofile = open(f,"w")
+                    ofile.write(host_cfg_txt)
+                    ofile.write(patch_txt)
+                    ofile.write("\n")
+
+############################################################
+# helpers for testing a set of host configs
+############################################################
+
+def build_and_test_host_config(test_root,host_config):
+    host_config_root = os.path.splitext(os.path.basename(host_config))[0]
+    # setup build and install dirs
+    build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
+    install_dir = pjoin(test_root,"install-%s" % host_config_root)
+    # configure
+    sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
+         echo=True)
+    ####
+    # build, test, and install
+    ####
+    sexe("cd %s && make -j 8 " % build_dir,
+         output_file = pjoin(build_dir,"output.log.make.txt"),
+         echo=True)
+
+    sexe("cd %s && make test " % build_dir,
+         output_file = pjoin(build_dir,"output.log.make.test.txt"),
+         echo=True)
+
+    sexe("cd %s && make install " % build_dir,
+         output_file = pjoin(build_dir,"output.log.make.install.txt"),
+         echo=True)
+
+    # simple sanity check for make install
+    print "[checking install dir %s]" % install_dir 
+    sexe("ls %s/bin" %     install_dir, echo=True)
+    sexe("ls %s/docs" %    install_dir, echo=True)
+    sexe("ls %s/include" % install_dir, echo=True)
+    sexe("ls %s/lib" %     install_dir, echo=True)
+
+
+def build_and_test_host_configs(prefix):
+    host_configs = glob.glob(pjoin(prefix,"*.cmake"))
+    if len(host_configs) > 0:
+        test_root =  pjoin(prefix,"_asctk_build_and_test_%s" % timestamp())
+        os.mkdir(test_root)
+        write_build_info(pjoin(test_root,"info.json")) 
+        for host_config in host_configs:
+            build_and_test_host_config(test_root,host_config)
+    else:
+        print "[error no host configs found at %s]" % prefix
 
 
 def set_toolkit_group_and_perms(directory):

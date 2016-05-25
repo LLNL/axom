@@ -8,9 +8,11 @@
 if (CONDUIT_DIR)
   include(cmake/thirdparty/FindConduit.cmake)
   blt_register_library( NAME conduit
-                        INCLUDES ${CONDUIT_INCLUDE_DIRS} )
+                        INCLUDES ${CONDUIT_INCLUDE_DIRS} 
+                        LIBRARIES  conduit)
   blt_register_library( NAME conduit_io
-                        INCLUDES ${CONDUIT_INCLUDE_DIRS} )
+                        INCLUDES ${CONDUIT_INCLUDE_DIRS}
+                        LIBRARIES  conduit_io)
 endif()
 
 
@@ -32,26 +34,6 @@ if (SPARSEHASH_DIR)
   include(cmake/thirdparty/FindSparsehash.cmake)
   blt_register_library(NAME sparsehash
                        INCLUDES ${SPARSEHASH_INCLUDE_DIRS})
-endif()
-
-
-################################
-# Documentation Packages
-################################
-if (DOXYGEN_EXECUTABLE)
-  find_package(Doxygen)
-endif()
-
-if (SPHINX_EXECUTABLE)
-  include(cmake/thirdparty/FindSphinx.cmake)
-endif()
-
-
-################################
-# linting via Uncrustify
-################################
-if (UNCRUSTIFY_EXECUTABLE)
-  include(cmake/thirdparty/FindUncrustify.cmake)
 endif()
 
 
@@ -80,7 +62,7 @@ if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
     ################################
     # Setup includes for Python & Numpy
     ################################
-    include(FindPython)
+    include(cmake/thirdparty/FindPython.cmake)
     message(STATUS "Using Python Include: ${PYTHON_INCLUDE_DIRS}")
     # if we don't find python, throw a fatal error
     if(NOT PYTHON_FOUND)
