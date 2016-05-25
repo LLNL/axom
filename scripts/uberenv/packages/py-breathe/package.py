@@ -1,4 +1,5 @@
 from spack import *
+from spack.hooks.sbang import filter_shebang
 
 class PyBreathe(Package):
     """Breathe provides a bridge between the Sphinx and Doxygen documentation systems."""
