@@ -37,6 +37,9 @@ def main():
     build_and_test_host_configs(prefix)
     # set proper perms for installed tpls
     set_toolkit_group_and_perms(prefix)
+    # set proper perms for the mirror files
+    set_toolkit_group_and_perms(mirror_dir)
+
 
 if __name__ == "__main__":
     main()
