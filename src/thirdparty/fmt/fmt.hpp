@@ -1,7 +1,13 @@
 #ifndef FMT_TPL_H_
 #define FMT_TPL_H_
 
-// customize the format library for the ASC toolkit project
+// Note (KW 5/2016): 
+//      This file customizes the format library with some compiler defines 
+//      for use with the ASC toolkit project.
+//
+//      Include this file in ASC toolkit code rather than 
+//      the original format.h file in the fmt/ subdirectory
+
 
 // Don't use exceptions
 #undef MUST_UNDEF_FMT_EXCEPTIONS
@@ -18,7 +24,7 @@
 #endif
 
 
-#include "detail/format.h"
+#include "fmt/format.h"
 
 
 // Undef the defines above
