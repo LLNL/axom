@@ -34,7 +34,8 @@
 #include "quest/Point.hpp"
 #include "quest/Triangle.hpp"
 #include "quest/Vector.hpp"
-#include "quest/fuzzy_compare.hpp"
+
+#include "common/Utilities.hpp"
 
 // C/C++ includes
 #include <cmath> // for std::sqrt()
@@ -287,7 +288,8 @@ inline void SignedDistance< NDIMS >::updateMinSquaredDistance(
   const double TOL    = 1.e-12;
   const PointType cpt = quest::closest_point( pt, surfTri );
   const double sqDist = quest::squared_distance( pt, cpt );
-  bool fuzzy = math::fuzzy_compare(squared_distance( cpt,closest_pt ),0.0,TOL);
+  bool fuzzy = asctoolkit::utilities::isNearlyEqual(
+          squared_distance( cpt,closest_pt ),0.0,TOL);
 
   if ( sqDist < minSqDist && !fuzzy ) {
 

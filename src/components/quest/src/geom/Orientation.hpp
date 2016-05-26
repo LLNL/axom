@@ -31,12 +31,13 @@
 
 
 #include "quest/Determinants.hpp"
-#include "quest/fuzzy_compare.hpp"
 #include "quest/Point.hpp"
 #include "quest/Segment.hpp"
 #include "quest/Triangle.hpp"
 
 #include "slic/slic.hpp"
+
+#include "common/Utilities.hpp"
 
 namespace quest
 {
@@ -80,7 +81,7 @@ int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
 
    int orient = -1;
 
-   if ( math::fuzzy_compare( det, 0.0, 1.0e-9 ) ) {
+   if ( asctoolkit::utilities::isNearlyEqual( det, 0.0, 1.0e-9 ) ) {
 
        orient = ON_BOUNDARY;
 
@@ -130,7 +131,7 @@ int orientation( const Point< T,2 >& p, const Segment< T,2 >& seg )
 
    int orient = -1;
 
-   if ( math::fuzzy_compare( det, 0.0 ) ) {
+   if ( asctoolkit::utilities::isNearlyEqual( det, 0.0 ) ) {
 
       // collinear
       orient = ON_BOUNDARY;

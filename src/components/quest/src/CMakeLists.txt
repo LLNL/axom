@@ -31,7 +31,6 @@ set( quest_headers
     geom/Triangle.hpp
     geom/Vector.hpp
     geom/closest_point.hpp
-    geom/fuzzy_compare.hpp
     
     ## Mesh Library Headers
     mesh/CellConnectivity.hpp
