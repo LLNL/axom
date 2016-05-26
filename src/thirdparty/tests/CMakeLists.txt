@@ -23,6 +23,18 @@ if (CONDUIT_FOUND)
   endif()
 endif()
 
+################
+# Test fmt thirdparty library
+################
+blt_add_executable(
+    NAME fmt_smoke
+    SOURCES fmt_smoke.cpp
+    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+    DEPENDS_ON fmt gtest)
+blt_add_test(NAME fmt_smoke COMMAND fmt_smoke)
+
+
+
 
 
 ################################################################################
