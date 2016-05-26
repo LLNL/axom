@@ -13,12 +13,12 @@ set( quest_headers
     SignedDistance.hpp
 
     ## Geometry Headers
-    geom/BoundingBox.hpp
     geom/BVHTree.hpp
+    geom/BoundingBox.hpp
     geom/Determinants.hpp
     geom/HyperSphere.hpp
-    geom/Intersection.hpp
     geom/InOutOctree.hpp
+    geom/Intersection.hpp
     geom/MortonIndex.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp
@@ -30,7 +30,7 @@ set( quest_headers
     geom/SquaredDistance.hpp
     geom/Triangle.hpp
     geom/Vector.hpp
-    geom/fuzzy_compare.hpp
+    geom/closest_point.hpp
     
     ## Mesh Library Headers
     mesh/CellConnectivity.hpp
