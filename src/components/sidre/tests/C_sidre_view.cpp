@@ -254,9 +254,9 @@ TEST(sidre_view,int_array_view_attach_buffer)
   SIDRE_databuffer_print(dbuff);
 
   // attach field views to buffer and apply offsets into buffer
-  SIDRE_dataview_attach_buffer(field0, dbuff);
+  SIDRE_dataview_attach_buffer_only(field0, dbuff);
   SIDRE_dataview_apply_nelems_offset(field0, field_nelems, 0 * field_nelems);
-  SIDRE_dataview_attach_buffer(field1, dbuff);
+  SIDRE_dataview_attach_buffer_only(field1, dbuff);
   SIDRE_dataview_apply_nelems_offset(field1, field_nelems, 1 * field_nelems);
 
   EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 2u);

@@ -1,6 +1,5 @@
 # 
 # Build lulesh example
-# NOTE: This should use a standard macro so we can enable features like C++11, MPI, OpenMP etc...
 #
 
 set(lulesh_headers
@@ -16,16 +15,12 @@ set(lulesh_sources
     lulesh-viz.cc
     )
 
-set_source_files_properties( ${lulesh_sources} PROPERTIES LANGUAGE "CXX" )
-
-add_executable( sidre_lulesh2  ${lulesh_sources} ${lulesh_headers})
-target_link_libraries( sidre_lulesh2 sidre conduit conduit_io slic )
-
-set_target_properties(sidre_lulesh2 PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUTPUT_DIRECTORY}
-)
-
-add_test( NAME sidre_lulesh2
-          COMMAND sidre_lulesh2 -s 10
-          WORKING_DIRECTORY ${TEST_OUTPUT_DIRECTORY}
-        )
+blt_add_executable(
+    NAME sidre_lulesh2
+    SOURCES ${lulesh_sources} ${lulesh_headers}
+    OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON sidre conduit conduit_relay hdf5 slic
+    )
+blt_add_test( NAME sidre_lulesh2
+              COMMAND sidre_lulesh2 -s 10
+              )

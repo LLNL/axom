@@ -82,6 +82,21 @@ def update(d, u):
             d[k] = u[k]
     return d
 
+def extern_C(output, position):
+    """Create extern "C" guards for C++
+    """
+    if position == 'begin':
+        output.extend([
+                '#ifdef __cplusplus',
+                'extern "C" {',
+                '#endif'
+                ])
+    else:
+        output.extend([
+                '#ifdef __cplusplus',
+                '}',
+                '#endif'
+                ])
 
 class WrapperMixin(object):
     """Methods common to all wrapping classes.
@@ -110,15 +125,18 @@ class WrapperMixin(object):
         else:
             self.splicer_path = ''
 
-    def _create_splicer(self, name, out, override=None, default=[]):
+    def _create_splicer(self, name, out, default=[]):
+        """Insert a splicer with *name* into list *out*.
+        Use the splicer from the splicer_stack if it exists.
+        This allows the user to replace the default text.
+        TODO:
+          Option to ignore splicer stack to generate original code
+        """
         # The prefix is needed when two different sets of output are being create
         # and they are not in sync.
         # Creating methods and derived types together.
         out.append('%s splicer begin %s%s' % (self.comment, self.splicer_path, name))
-        if override:
-            out.extend(override)
-        else:
-            out.extend(self.splicer_stack[-1].get(name, default))
+        out.extend(self.splicer_stack[-1].get(name, default))
         out.append('%s splicer end %s%s' % (self.comment, self.splicer_path, name))
 
 #####
@@ -294,9 +312,11 @@ class Typedef(object):
         f_cast = '{var}',     # Expression to convert to type
                               # e.g. intrinsics such as int and real
         f_statements={},
+        f_helper={},          # helper functions to insert into module as PRIVATE
 
         result_as_arg = None, # override fields when result should be treated as an argument
 
+        # Python
         PY_format='O',        # 'format unit' for PyArg_Parse
         PY_PyTypeObject=None, # variable name of PyTypeObject instance
         PY_PyObject=None,     # typedef name of PyObject instance
@@ -305,6 +325,12 @@ class Typedef(object):
         PY_to_object=None,    # PyBuild - object = converter(address)
         PY_from_object=None,  # PyArg_Parse - status = converter(object, address);
         py_statements={},
+
+        # Lua
+        LUA_type = 'LUA_TNONE',
+        LUA_pop = 'POP',
+        LUA_push = 'PUSH',
+        LUA_statements={},
         )
 
     def __init__(self, name, **kw):

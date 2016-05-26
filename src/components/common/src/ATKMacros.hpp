@@ -39,6 +39,54 @@
  */
 #define ATK_NOT_USED(x)
 
+
+
+
+/*!
+ *******************************************************************************
+ * \def ATK_DEBUG_VAR(x)
+ * \brief Macro used to silence compiler warnings about variables
+ *        that are defined but not used.
+ * \note The intent is to use this macro for variables that are only used
+ *       for debugging purposes (e.g. in debug assertions). For example:
+ * \code
+ *
+ *  double myVar = ...
+ *  ATK_DEBUG_VAR(myVar);       // code will emit the following warning in release builds
+ *                              // if extra warnings are enabled and macro is not called
+ *                              // warning: unused variable 'myVar' [-Wunused-variable]
+ *  SLIC_ASSERT(myVar > 0)
+ *
+ * \endcode
+ *******************************************************************************
+ */
+#define ATK_DEBUG_VAR(_x)   static_cast<void>(_x)
+
+
+/*!
+ *******************************************************************************
+ * \def ATK_DEBUG_PARAM(x)
+ * \brief Macro used to silence compiler warnings about parameters
+ *        that are used in debug code but not in release code.
+ * \note Default values are ok
+ * \code
+ *
+ *  void my_function(int x, int ATK_DEBUG_PARAM(y))
+ *  {
+ *    // my implementation
+ *    SLIC_ASSERT(y > 0)
+ *  }
+ *
+ * \endcode
+ *******************************************************************************
+ */
+#ifdef ATK_DEBUG
+ #define ATK_DEBUG_PARAM(_x)  _x
+#else
+ #define ATK_DEBUG_PARAM(_x)
+#endif
+
+
 /*!
  *******************************************************************************
  * \def DISABLE_COPY_AND_ASSIGNMENT(className)
@@ -66,11 +114,11 @@
 #ifdef USE_CXX11
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
   className( const className & ) = delete;                                     \
-  className& operator=(const className&) = delete;
+  className& operator=(const className&) = delete
 #else
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
   className( const className & );                                              \
-  className& operator=( const className& );
+  className& operator=( const className& )
 #endif
 
 

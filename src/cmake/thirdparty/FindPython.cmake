@@ -98,11 +98,11 @@ FUNCTION(PYTHON_ADD_DISTUTILS_SETUP target_name)
     set(timestamp ${CMAKE_CURRENT_BINARY_DIR}/${target_name}.time)
     add_custom_command(
         OUTPUT  ${timestamp}
-        COMMAND PYTHONPATH=${CMAKE_Python_MODULE_DIRECTORY}
+        COMMAND PYTHONPATH=${BLT_Python_MODULE_DIRECTORY}
             ${PYTHON_EXECUTABLE} setup.py -v
             build
             install
-              --install-purelib=${CMAKE_Python_MODULE_DIRECTORY}
+              --install-purelib=${BLT_Python_MODULE_DIRECTORY}
               --install-scripts=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
             COMMAND ${CMAKE_COMMAND} -E touch ${timestamp}
             DEPENDS  ${setup_file} ${ARGN}

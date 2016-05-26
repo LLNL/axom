@@ -28,7 +28,7 @@
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
-// SiDRe project headers
+// Sidre project headers
 #include "SidreTypes.hpp"
 
 namespace asctoolkit
@@ -45,22 +45,22 @@ class DataView;
 /*!
  * \class DataBuffer
  *
- * \brief DataBuffer holds a data object, which it owns (and allocates!)
+ * \brief DataBuffer is a container that describes and holds data in memory.
  *
  * The DataBuffer class has the following properties:
  *
- *    - DataBuffer objects can only be created via the DataStore interface,
- *      not directly.
+ *    - DataBuffer objects can only be created using the DataStore 
+ *      createBuffer() methods. The DataBuffer ctor is private.
  *    - A DataBuffer object has a unique identifier within a DataStore,
- *      which is assigned by the DataStore when the buffer is created.
- *    - The data object owned by a DataBuffer is unique to that DataBuffer
- *      object; i.e.,  DataBuffers that own data do not share their data.
+ *      which is assigned by the DataStore when the Buffer is created.
+ *    - The data owned by a DataBuffer is unique to that DataBuffer
+ *      object; i.e.,  DataBuffers do not share their data.
  *    - Typical usage is to describe the data a DataBuffer will hold and then
  *      allocate it by calling one of the DataBuffer allocate or
  *      reallocate methods.
  *    - A DataBuffer object maintains a collection of DataViews that
- *      refer to its data.
- *
+ *      refer to its data. These references are created when a DataBuffer
+ *      object is attached to a DataView.
  */
 class DataBuffer
 {
@@ -76,10 +76,10 @@ public:
   friend class DataView;
 
 //@{
-//!  @name Accessor methods
+//!  @name Basic query and accessor methods
 
   /*!
-   * \brief Return the unique index of this buffer object.
+   * \brief Return the unique index of this Buffer object.
    */
   IndexType getIndex() const
   {
@@ -87,15 +87,21 @@ public:
   }
 
   /*!
-   * \brief Return number of views attached to this buffer.
+   * \brief Return number of Views this Buffer is attached to.
    */
   IndexType getNumViews() const
   {
     return m_views.size();
   }
 
+//@}
+
+
+//@{
+//!  @name Methods to query and access Buffer data
+
   /*!
-   * \brief Return void-pointer to data held by DataBuffer.
+   * \brief Return void-pointer to data held by Buffer.
    */
   void * getVoidPtr()
   {
@@ -103,7 +109,11 @@ public:
   }
 
   /*!
-   * \brief Returns data held by node (or pointer to data if array).
+   * \brief Return data held by Buffer (return type is type caller assigns 
+   *        return value to).
+   *
+   *        Note that if Buffer is not allocated, an empty Conduit 
+   *        Node::Value is returned.
    */
   Node::Value getData()
   {
@@ -117,7 +127,7 @@ public:
   }
 
   /*!
-   * \brief Return type of data for this DataBuffer object.
+   * \brief Return type of data owned by this Buffer object.
    */
   TypeID getTypeID() const
   {
@@ -125,7 +135,8 @@ public:
   }
 
   /*!
-   * \brief Return total number of elements allocated by this DataBuffer object.
+   * \brief Return total number of data elements (of its type) owned by 
+   *        this Buffer object.
    */
   SidreLength getNumElements() const
   {
@@ -133,16 +144,16 @@ public:
   }
 
   /*!
-   * \brief Return total number of bytes associated with this DataBuffer object.
+   * \brief Return total number of bytes of data owned by this Buffer object.
    */
   SidreLength getTotalBytes() const
   {
     return m_node.dtype().total_bytes();
   }
-  //@}
+
 
   /*!
-   * \brief Return true if buffer contains allocated data of > 0 bytes.
+   * \brief Return true if Buffer contains allocated data of > 0 bytes.
    */
   bool isAllocated() const
   {
@@ -158,55 +169,39 @@ public:
     return !m_node.dtype().is_empty();
   }
 
-  /*
-   * \brief Return true if DataBuffer has an associated DataView with given
-   *        index; else false.
-   */
-  bool hasView( IndexType idx ) const
-  {
-    return ( 0 <= idx && static_cast<unsigned>(idx) < m_views.size() &&
-             m_views[idx] != ATK_NULLPTR );
-  }
-
-  /*!
-   * \brief Return (non-const) pointer to data view object with given index
-   *        associated with buffer, or ATK_NULLPTR if none exists.
-   */
-  DataView * getView( IndexType idx);
-
 //@}
 
+
 //@{
-//!  @name Data declaration and allocation methods
+//!  @name Data description and allocation methods
 
   /*!
-   * \brief Describe a buffer with data given type and number of elements.
+   * \brief Describe a Buffer with data given data type and number of elements.
    *
-   * To use the buffer, the data must be allocated by calling allocate().
+   * To use the Buffer, the data must be allocated by calling allocate().
    *
-   * If given number of elements is < 0, method does nothing.
+   * If Buffer is already allocated or given number of elements is < 0, 
+   * method is a no-op.
    *
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * describe(TypeID type, SidreLength num_elems);
 
   /*!
-   * \brief Allocate data previously described using a describe() method.
+   * \brief Allocate data for a Buffer.
    *
-   * It is the responsibility of the caller to make sure that the buffer
-   * object was previously described.  If the the buffer is already
-   * holding data that it owns, that data will be deallocated and new data
-   * will be allocated according to the current described state.
+   * If the Buffer is not described or already allocated the method is a no-op.
    *
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * allocate();
 
   /*!
-   * \brief Describe and allocate data described by type and number of elements.
+   * \brief Allocate Buffer with data type and number of elements.
    *
-   * This is equivalent to calling describe(type, num_elems), then allocate().
-   * on this DataBuffer object.
+   * This is equivalent to: buff->describe(type, num_elems)->allocate().
+   *
+   * Method is a no-op under the same conditions as either of those methods.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -215,103 +210,74 @@ public:
   /*!
    * \brief Reallocate data to given number of elements.
    *
-   *        Equivalent to calling describe(type), then allocate().
+   * This is equivalent to: buff->describe(type, num_elems)->allocate()
+   * if the Buffer is not allocated.
    *
-   * If given number of elements < 0, this method does nothing.
+   * If given number of elements < 0, or the Buffer is not already described
+   * with type information, this method is a no-op.
    *
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * reallocate(SidreLength num_elems);
 
   /*!
-   * \brief Deallocate data in a buffer.
+   * \brief Deallocate data in a Buffer.
    *
-   * If the buffer has no data, the routine does nothing.
-   * All attached views will continue to be attached;
-   * however, their data address will be set to ATK_NULLPTR
-   * with a data length of 0.
+   * If Buffer is attached to Views, it will remain attached to those Views
+   * and the descriptions will remain intact. However, the View descriptions 
+   * will be 'un-applied' since there is no data to apply them to.
    *
+   * If the Buffer is subsequently redescribed and/or re-allocated, the 
+   * associated Views may need to be re-described. They will need to be
+   * re-applied if the Views will be used to access the Buffer data.
+   *
+   * If the Buffer is not allocated, method is a no-op.
+   * 
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * deallocate();
 
+//@}
+
+
   /*!
-   * \brief Update contents of buffer memory.
+   * \brief Copy given number of bytes of data from source into Buffer.
    *
-   * This will copy nbytes of data into the buffer.  nbytes must be greater
-   * than 0 and less than getTotalBytes().
-   *
-   * If given pointer is null, this method does nothing.
+   * If nbytes < 0 or nbytes > getTotalBytes(), or give ptr is null,
+   * method is a no-op.
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * update(const void * src, SidreLength nbytes);
-
-  //@}
+  DataBuffer * copyBytesIntoBuffer(const void * src, SidreLength nbytes);
 
   /*!
-   * \brief Copy data buffer description to given Conduit node.
+   * \brief Copy Buffer description to given Conduit node.
    */
-  void info(Node& n) const;
+  void copyToConduitNode(Node& n) const;
 
   /*!
-   * \brief Print JSON description of data buffer to stdout.
+   * \brief Print JSON description of Buffer to std::cout.
    */
   void print() const;
 
   /*!
-   * \brief Print JSON description of data buffer to an ostream.
+   * \brief Print JSON description of Buffer to given output stream.
    */
   void print(std::ostream& os) const;
 
+  /*!
+   * \brief Exports Buffer's state to a conduit node.
+   */
+  void exportTo( conduit::Node& data_holder );
+
+  /*!
+   * \brief Import Buffer's state from a conduit node.
+   */
+  void importFrom( conduit::Node& data_holder );
+
+
 
 private:
-
-  /*!
-   *  \brief Private ctor that assigns unique id.
-   */
-  DataBuffer( IndexType uid );
-
-  /*!
-   * \brief Private copy ctor.
-   */
-  DataBuffer(const DataBuffer& source );
-
-  /*!
-   * \brief Private dtor.
-   */
-  ~DataBuffer();
-
-  /*!
-   * \brief Private methods to attach/detach data view to buffer.
-   */
-  void attachView( DataView * dataView );
-  ///
-  void detachView( DataView * dataView );
-
-  /*!
-   * \brief Allocate bytes for data in data buffer
-   */
-  void * allocateBytes(std::size_t num_bytes);
-
-  /*!
-   * \brief Copy bytes from one memory location to another.
-   */
-  void copyBytes( const void * src, void * dst, size_t num_bytes );
-
-  /*!
-   * \brief Release any allocated bytes pointed to by ptr.
-   */
-  void  releaseBytes(void * ptr);
-
-  /// Index Identifier - unique within a dataStore.
-  IndexType m_index;
-
-  /// Container of DataViews attached to this buffer.
-  std::vector<DataView *> m_views;
-
-  /// Conduit Node that holds buffer data.
-  Node m_node;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.
@@ -326,6 +292,66 @@ private:
   DataBuffer();
   DataBuffer& operator=( const DataBuffer& );
 #endif
+
+  /*!
+   *  \brief Private ctor assigns id generated by DataStore (must be 
+   *         unique among Buffers in DataStore.
+   */
+  DataBuffer( IndexType uid );
+
+  /*!
+   * \brief Private copy ctor.
+   */
+  DataBuffer(const DataBuffer& source );
+
+  /*!
+   * \brief Private dtor.
+   */
+  ~DataBuffer();
+
+  /*!
+   * \brief Private method to attach Buffer to View. 
+   *
+   * Note: If View's Buffer pointer does not match 'this', method is a no-op.
+   */
+  void attachToView( DataView * view );
+
+  /*!
+   * \brief Private method to detach Buffer from View. 
+   *
+   * Note: If View's Buffer pointer does not match 'this', method is a no-op.
+   */
+  void detachFromView( DataView * view );
+
+  /*!
+   * \brief Private method to detach Buffer from all Views it is attached to.
+   */
+  void detachFromAllViews( );
+
+  /*!
+   * \brief Private method to allocate num_bytes bytes of data and
+   * return void-pointer to allocation.
+   */
+  void * allocateBytes(std::size_t num_bytes);
+
+  /*!
+   * \brief Private method to copy num_bytes of data from src to dst.
+   */
+  void copyBytes( const void * src, void * dst, size_t num_bytes );
+
+  /*!
+   * \brief Private method to delete data referenced by pointer.
+   */
+  void  releaseBytes(void * ptr);
+
+  /// Buffer's unique index within DataStore object that created it.
+  IndexType m_index;
+
+  /// Container of Views attached to this Buffer.
+  std::vector<DataView *> m_views;
+
+  /// Conduit Node that holds Buffer data.
+  Node m_node;
 
 };
 

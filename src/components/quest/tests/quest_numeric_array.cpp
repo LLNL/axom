@@ -14,6 +14,9 @@
 
 #include "quest/NumericArray.hpp"
 
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
 //------------------------------------------------------------------------------
 TEST( quest_numeric_array, constructors)
 {
@@ -83,8 +86,6 @@ TEST( quest_numeric_array, num_array_to_array)
       EXPECT_EQ(arrCopy[i], valsArr[i] );
       EXPECT_EQ(arrCopy[i], arrArr.data()[i] );
   }
-
-
 
 }
 
@@ -175,15 +176,59 @@ TEST( quest_numeric_array, component_min_max)
 
   EXPECT_EQ( duArr.min(), 2);
   EXPECT_EQ( duArr.argMin(), 1);
+}
+
+//------------------------------------------------------------------------------
+TEST( quest_numeric_array, clamping)
+{
+  static const int DIM = 3;
+  typedef int CoordType;
+  typedef quest::NumericArray<CoordType, DIM> QArray;
+
+  CoordType seq[]           = { 15, 4, 2};
+  CoordType seqClampUp7[]   = { 7, 4, 2};
+  CoordType seqClampLow3[]  = { 15, 4, 3};
+  CoordType seqClamp37[]    = { 7, 4, 3};
+
+  // testing component-wise clamping functions
+  QArray seqUp(seq);
+  EXPECT_EQ( seqUp.max(), 15);
+  EXPECT_EQ( seqUp.clampUpper(7).max(), 7);
+  EXPECT_EQ( seqUp, QArray(seqClampUp7));
+
+  QArray seqLow(seq);
+  EXPECT_EQ( seqLow.min(), 2);
+  EXPECT_EQ( seqLow.clampLower(3).min(), 3);
+  EXPECT_EQ( seqLow, QArray(seqClampLow3));
+
+  QArray seqBoth(seq);
+  seqBoth.clamp(3,7);
+  EXPECT_EQ( seqBoth.min(), 3);
+  EXPECT_EQ( seqBoth.max(), 7);
+  EXPECT_EQ( seqBoth, QArray(seqClamp37));
+
+  // Test that order of clamping doesn't matter
+  EXPECT_EQ( seqBoth, seqLow.clampUpper(7));
+  EXPECT_EQ( seqBoth, seqUp.clampLower(3));
+
+  EXPECT_EQ( QArray(seq).clamp(3,7), QArray(seq).clampUpper(7).clampLower(3));
+  EXPECT_EQ( QArray(seq).clamp(3,7), QArray(seq).clampLower(3).clampUpper(7));
+
+
+#ifdef ATK_DEBUG
+  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+  SLIC_INFO("Checking that clamping with ill-formed range throws an assert.");
+
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  ASSERT_DEATH( QArray(seq).clamp( 7, 3), "" );
+
+#endif
 
 
 }
 
-
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

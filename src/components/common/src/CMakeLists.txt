@@ -8,7 +8,10 @@ set(common_headers
     StringUtilities.hpp
     Timer.hpp
     Utilities.hpp
-    cstdint_wrapper.hpp
+    
+    detail/ChronoTimer.hpp
+    detail/TimeofdayTimer.hpp
+    detail/cstdint_wrapper.hpp
     )
 
 #
@@ -17,24 +20,17 @@ set(common_headers
 set(common_sources
     FileUtilities.cpp
     StringUtilities.cpp
-    Timer.cpp
     Utilities.cpp
     )
 
 #
-# custom target to copy header files in the "include" folder of the build tree.
-#
-copy_headers_target( ${PROJECT_NAME} "${common_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
-
-#
 # make the library
 #
-make_library( LIBRARY_NAME
-                  common
-              LIBRARY_SOURCES
-                  "${common_sources}"
-                  "${common_headers}" )
+blt_add_library( NAME
+                    common
+                 SOURCES
+                    "${common_sources}"
+                 HEADERS
+                    "${common_headers}" )
 
 install(TARGETS common DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
-

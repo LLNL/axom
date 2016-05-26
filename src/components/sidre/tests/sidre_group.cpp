@@ -9,6 +9,7 @@
  */
 
 #include "gtest/gtest.h"
+#include <cstring>
 
 #include "sidre/sidre.hpp"
 
@@ -23,6 +24,8 @@ using asctoolkit::sidre::InvalidIndex;
 using asctoolkit::sidre::nameIsValid;
 using asctoolkit::sidre::indexIsValid;
 using asctoolkit::sidre::DataType;
+using asctoolkit::sidre::INT_ID;
+using asctoolkit::sidre::FLOAT64_ID;
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -45,16 +48,27 @@ TEST(sidre_group,get_name)
 //------------------------------------------------------------------------------
 // getNameWithPath()
 //------------------------------------------------------------------------------
-TEST(sidre_group,get_name_with_path)
+TEST(sidre_group,get_group_with_path)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
+  // Test full path access when building incrementally
   DataGroup * group =
     root->createGroup("test1")->createGroup("test2")->createGroup("test3");
   DataGroup * group2 = root->getGroup("test1/test2/test3");
 
+  EXPECT_NE(ATK_NULLPTR, group2);
   EXPECT_EQ(group, group2);
+
+  // Test incremental access when building full path
+  DataGroup * groupP = root->createGroup("testA/testB/testC");
+  DataGroup * groupP2 =
+    root->getGroup("testA")->getGroup("testB")->getGroup("testC");
+
+  EXPECT_NE(ATK_NULLPTR, groupP2);
+  EXPECT_EQ(groupP, groupP2);
+
 
   // Now verify that code will not create missing groups.
   // TODO - improve error handling so this isn't fatal.
@@ -147,11 +161,22 @@ TEST(sidre_group,get_view_with_path)
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
+  // Test with full path access when building incrementally
   DataView * view =
     root->createGroup("group1")->createGroup("group2")->createView("view1");
   DataView * view2 = root->getView("group1/group2/view1");
 
+  EXPECT_NE(ATK_NULLPTR, view2);
   EXPECT_EQ( view, view2 );
+
+
+  // Test incremental access when building with full path
+  DataView * viewP = root->createView("groupA/groupB/viewA");
+  DataView * viewP2 =
+    root->getGroup("groupA")->getGroup("groupB")->getView("viewA");
+
+  EXPECT_NE(ATK_NULLPTR, viewP2);
+  EXPECT_EQ( viewP, viewP2 );
 
   delete ds;
 }
@@ -284,30 +309,41 @@ TEST(sidre_group,create_destroy_has_view)
   DataView * view = group->createView("view");
   EXPECT_TRUE( group->getParent() == root );
   EXPECT_FALSE( view->hasBuffer() );
-
   EXPECT_TRUE( group->hasView("view") );
+  IndexType iview = group->getViewIndex("view");
+  EXPECT_EQ(0, iview);
+
   // try creating view again, should be a no-op.
   EXPECT_TRUE( group->createView("view") == ATK_NULLPTR );
 
+  // Create another view to make sure destroyView only destroys one view
+  group->createView("viewfiller");
+  EXPECT_EQ(2u, group->getNumViews());
+  IndexType iviewfiller = group->getViewIndex("viewfiller");
+  EXPECT_EQ(1, iviewfiller);
+
   group->destroyView("view");
+  EXPECT_EQ(1u, group->getNumViews());
+  // Check if index changed
+  EXPECT_EQ(iviewfiller, group->getViewIndex("viewfiller"));
+
   // destroy already destroyed group.  Should be a no-op, not a failure
   group->destroyView("view");
-
+  EXPECT_EQ(1u, group->getNumViews());
   EXPECT_FALSE( group->hasView("view") );
 
   // try api call that specifies specific type and length
-  group->createViewAndAllocate( "viewWithLength1",
-                                asctoolkit::sidre::FLOAT_ID, 50 );
+  group->createViewAndAllocate( "viewWithLength1",INT_ID, 50 );
+  IndexType iview2 = group->getViewIndex("viewWithLength1");
+  EXPECT_EQ(iview, iview2);  // reuse slot
 
   // error condition check - try again with duplicate name, should be a no-op
-  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1",
-                                             asctoolkit::sidre::FLOAT64_ID,
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1", FLOAT64_ID,
                                              50 ) == ATK_NULLPTR );
   group->destroyViewAndData("viewWithLength1");
   EXPECT_FALSE( group->hasView("viewWithLength1") );
 
-  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen",
-                                             asctoolkit::sidre::FLOAT64_ID,
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen", FLOAT64_ID,
                                              -1 ) == ATK_NULLPTR );
 
   // try api call that specifies data type in another way
@@ -315,8 +351,17 @@ TEST(sidre_group,create_destroy_has_view)
   EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2",
                                              DataType::float64(
                                                50) ) == ATK_NULLPTR );
-  // destroy this view using index
-  group->destroyViewAndData( group->getFirstValidViewIndex() );
+  // destroy view and its buffer using index
+  IndexType indx = group->getFirstValidViewIndex();
+  IndexType bindx = group->getView( indx )->getBuffer()->getIndex();
+  group->destroyViewAndData( indx );
+  EXPECT_TRUE( ds->getBuffer(bindx) == NULL );
+
+  // Destroy view but not the buffer
+  view = group->createViewAndAllocate( "viewWithLength2", INT_ID, 50 );
+  DataBuffer * buff = view->getBuffer();
+  group->destroyView("viewWithLength2");
+  EXPECT_TRUE( buff->isAllocated() );
 
   delete ds;
 }
@@ -370,53 +415,128 @@ TEST(sidre_group,group_name_collisions)
   delete ds;
 }
 //------------------------------------------------------------------------------
-#if 0
+
 TEST(sidre_group,view_copy_move)
 {
   DataStore * ds = new DataStore();
   DataGroup * flds = ds->getRoot()->createGroup("fields");
+  int * buffdata;
+  int extdata[10];
 
-  flds->createViewAndAllocate("i0", DataType::c_int());
-  flds->createViewAndAllocate("f0", DataType::c_float());
-  flds->createViewAndAllocate("d0", DataType::c_double());
+  DataView * views[6];
+  std::string names[6];
 
-  flds->getView("i0")->setScalar(1);
-  flds->getView("f0")->setScalar(100.0);
-  flds->getView("d0")->setScalar(3000.0);
+  // Create view in different states
+  views[0] = flds->createView("empty0");
+  views[1] = flds->createView("empty1", INT_ID, 10);
+  views[2] = flds->createViewAndAllocate("buffer", INT_ID, 10);
+  views[3] = flds->createView("external", INT_ID, 10)->setExternalDataPtr(
+    extdata);
+  views[4] = flds->createViewScalar("scalar", 25);
+  views[5] = flds->createViewString("string", "I am string");
 
-  EXPECT_TRUE(flds->hasView("i0"));
-  EXPECT_TRUE(flds->hasView("f0"));
-  EXPECT_TRUE(flds->hasView("d0"));
+  buffdata = flds->getView("buffer")->getData();
+  for (int i=0 ; i < 10 ; ++i)
+  {
+    extdata[i] = i;
+    buffdata[i] = i + 100;
+  }
 
-  // test moving a view from flds to sub
-  flds->createGroup("sub")->moveView(flds->getView("d0"));
+  for (int i = 0 ; i < 6 ; ++i)
+  {
+    names[i] = views[i]->getName();
+    EXPECT_TRUE(flds->hasView(names[i]));
+  }
+
+  // test moving a view from flds to sub1
+  DataGroup * sub1 = flds->createGroup("sub1");
+
   // flds->print();
-  EXPECT_FALSE(flds->hasView("d0"));
-  EXPECT_TRUE(flds->hasGroup("sub"));
-  EXPECT_TRUE(flds->getGroup("sub")->hasView("d0"));
 
-  // check the data value
-  double * d0_data =  flds->getGroup("sub")->getView("d0")->getData();
-  EXPECT_NEAR(d0_data[0],3000.0,1e-12);
+  for (int i = 0 ; i < 6 ; ++i)
+  {
+    sub1->moveView(views[i]);
+    EXPECT_FALSE(flds->hasView(names[i]));
+    EXPECT_TRUE(sub1->hasView(names[i]));
 
-  // test copying a view from flds to sub
-  flds->getGroup("sub")->copyView(flds->getView("i0"));
+    // moving to same group is a no-op
+    sub1->moveView(views[i]);
+    EXPECT_TRUE(sub1->hasView(names[i]));
+  }
 
   // flds->print();
 
-  EXPECT_TRUE(flds->hasView("i0"));
-  EXPECT_TRUE(flds->getGroup("sub")->hasView("i0"));
+  DataGroup * sub2 = flds->createGroup("sub2");
 
-  // we expect the data pointers to be the same
-  int * i0_ptr = flds->getView("i0")->getData();
-  int * sub_io0_ptr = flds->getGroup("sub")->getView("i0")->getData();
-  EXPECT_EQ(i0_ptr, sub_io0_ptr);
+  for (int i = 0 ; i < 6 ; ++i)
+  {
+    sub2->copyView(views[i]);
+    EXPECT_TRUE(sub1->hasView(names[i]));
+    EXPECT_TRUE(sub2->hasView(names[i]));
+  }
+
+  // Check copies
+  DataView * view1 = sub1->getView("empty0");
+  DataView * view2 = sub2->getView("empty0");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->isEmpty());
+  EXPECT_FALSE(view2->isDescribed());
+  EXPECT_FALSE(view2->isAllocated());
+  EXPECT_FALSE(view2->isApplied());
+
+  view1 = sub1->getView("empty1");
+  view2 = sub2->getView("empty1");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->isEmpty());
+  EXPECT_TRUE(view2->isDescribed());
+  EXPECT_FALSE(view2->isAllocated());
+  EXPECT_FALSE(view2->isApplied());
+
+  view1 = sub1->getView("buffer");
+  view2 = sub2->getView("buffer");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->hasBuffer());
+  EXPECT_TRUE(view2->isDescribed());
+  EXPECT_TRUE(view2->isAllocated());
+  EXPECT_TRUE(view2->isApplied());
+  EXPECT_TRUE(view1->getBuffer() == view2->getBuffer());
+  EXPECT_EQ(2, view1->getBuffer()->getNumViews());
+
+  view1 = sub1->getView("external");
+  view2 = sub2->getView("external");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->isExternal());
+  EXPECT_TRUE(view2->isDescribed());
+  EXPECT_TRUE(view2->isAllocated());
+  EXPECT_TRUE(view2->isApplied());
+  EXPECT_EQ(view1->getVoidPtr(), view2->getVoidPtr());
+
+  view1 = sub1->getView("scalar");
+  view2 = sub2->getView("scalar");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->isScalar());
+  EXPECT_TRUE(view2->isDescribed());
+  EXPECT_TRUE(view2->isAllocated());
+  EXPECT_TRUE(view2->isApplied());
+  EXPECT_EQ( view1->getData<int>(), view2->getData<int>());
+
+  view1 = sub1->getView("string");
+  view2 = sub2->getView("string");
+  EXPECT_NE(view1, view2);
+  EXPECT_TRUE(view2->isString());
+  EXPECT_TRUE(view2->isDescribed());
+  EXPECT_TRUE(view2->isAllocated());
+  EXPECT_TRUE(view2->isApplied());
+  const char * svalue = view1->getString();
+  EXPECT_TRUE(strcmp("I am string", svalue) == 0);
+
+  // flds->print();
 
   delete ds;
 }
-#endif
+
 //------------------------------------------------------------------------------
-#if 0
+
 TEST(sidre_group,groups_move_copy)
 {
   DataStore * ds = new DataStore();
@@ -452,7 +572,7 @@ TEST(sidre_group,groups_move_copy)
 
   delete ds;
 }
-#endif
+
 //------------------------------------------------------------------------------
 TEST(sidre_group,create_destroy_view_and_buffer2)
 {
@@ -565,47 +685,142 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
   delete ds;
 }
 
-
-
-
 //------------------------------------------------------------------------------
-TEST(sidre_group,save_restore_simple)
+TEST(sidre_group,save_restore_empty)
 {
   DataStore * ds = new DataStore();
-  DataGroup * flds = ds->getRoot()->createGroup("fields");
 
-  DataGroup * ga = flds->createGroup("a");
+  ds->save("sidre_empty_datastore", "conduit");
 
-  ga->createView("i0")->allocate(DataType::c_int());
+  delete ds;
 
-  ga->getView("i0")->setScalar(1);
+  ds = new DataStore();
+  ds->load("sidre_empty_datastore", "conduit");
 
-  EXPECT_TRUE(ds->getRoot()->hasGroup("fields"));
-  EXPECT_TRUE(ds->getRoot()->getGroup("fields")->hasGroup("a"));
-  EXPECT_TRUE(ds->getRoot()->getGroup("fields")->getGroup("a")->hasView("i0"));
+  EXPECT_TRUE(ds->getNumBuffers() == 0 );
+  EXPECT_TRUE(ds->getRoot()->getNumGroups() == 0 );
+  EXPECT_TRUE(ds->getRoot()->getNumViews() == 0 );
 
+}
 
-  ds->getRoot()->save("out_sidre_group_save_restore_simple","conduit");
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_restore_api)
+{
+  DataStore * ds1 = new DataStore();
 
-  //ds->print();
+  ds1->getRoot()->createViewScalar<int>("i0", 1);
+
+  // These should be produce identical files.
+
+  // No group provided, defaults to root group
+  ds1->save("sidre_save_fulltree", "conduit");
+  // Pass in group (example of saving sub-tree).
+  ds1->save("sidre_save_subtree", "conduit", ds1->getRoot());
+
+  // Text output ( for debugging ).  Write support only ( no load ).
+  ds1->save("sidre_save_textoutput", "text", ds1->getRoot());
+
+  // HDF5 output
+  ds1->save("sidre_save_conduithdf5","conduit_hdf5");
+
+  DataStore * ds2 = new DataStore();
+  DataStore * ds3 = new DataStore();
+  DataStore * ds4 = new DataStore();
+
+  ds2->load("sidre_save_fulltree", "conduit");
+  ds3->load("sidre_save_subtree", "conduit", ds3->getRoot() );
+  ds4->load("sidre_save_conduithdf5", "conduit_hdf5");
+
+  EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(ds1->getRoot()) );
+  EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(ds1->getRoot()) );
+  EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(ds1->getRoot()) );
+
+  delete ds1;
+  delete ds2;
+  delete ds3;
+  delete ds4;
+
+  // Why don't these pass??? Need to ask Noah about this...
+  // Trying to make sure sub trees are same here.
+#if 0
+  DataStore * ds_new = new DataStore();
+  DataGroup * tree1 = ds_new->getRoot()->createGroup("api1");
+  DataGroup * tree2 = ds_new->getRoot()->createGroup("api2");
+
+  api1->load("sidre_save_subtree", "conduit");
+  api2->load("sidre_save_subtree", "conduit");
+
+  EXPECT_TRUE( api1->isEquivalentTo( api2) );
+#endif
+
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_restore_scalars_and_strings)
+{
+  DataStore * ds1 = new DataStore();
+
+  ds1->getRoot()->createViewScalar<int>("i0", 1);
+  ds1->getRoot()->createViewScalar<float>("f0", 1.0);
+  ds1->getRoot()->createViewScalar<double>("d0", 10.0);
+
+  ds1->save("sidre_save_scalars_and_strings", "conduit");
 
   DataStore * ds2 = new DataStore();
 
-  ds2->getRoot()->load("out_sidre_group_save_restore_simple","conduit");
+  ds2->load("sidre_save_scalars_and_strings", "conduit");
 
-  //ds2->print();
+  EXPECT_TRUE( ds1->getRoot()->isEquivalentTo( ds2->getRoot()) );
 
-  flds = ds2->getRoot()->getGroup("fields");
-  // check that all sub groups exist
-  EXPECT_TRUE(flds->hasGroup("a"));
-  int testvalue = flds->getGroup("a")->getView("i0")->getData();
-  EXPECT_EQ(testvalue,1);
+  delete ds1;
+  delete ds2;
+}
 
-  //ds2->print();
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_restore_external_data)
+{
+  int foo[100];
+  for (int i =0; i < 100; ++i)
+  {
+    foo[i] = i;
+  }
+
+  DataStore * ds = new DataStore();
+
+  DataView * view = ds->getRoot()->createView("external_array", &foo[0] );
+  view->apply( asctoolkit::sidre::INT_ID, 100 );
+
+  ds->save("sidre_save_external", "conduit");
 
   delete ds;
-  delete ds2;
 
+  // Now load back in.
+  ds = new DataStore();
+  ds->load("sidre_save_external", "conduit");
+
+  // All this code should change after we re-write how we handle restoring external data.
+  // Right now, the external data is coming back in the view's node and we have to do extra work to
+  // restore it to the user's pointer.
+  view = ds->getRoot()->getView("external_array");
+
+  int* new_data_pointer = new int[100];
+
+  EXPECT_TRUE( view->getTotalBytes() == sizeof( int[100] ) );
+
+  std::memcpy(&new_data_pointer[0], view->getVoidPtr(), view->getTotalBytes() );
+
+  // Will set view back to EMPTY and reset node.  Will leave description alone.
+  view->setExternalDataPtr( ATK_NULLPTR );
+
+  view->setExternalDataPtr( new_data_pointer );
+
+  for (int i = 0; i < 100; ++i)
+  {
+    EXPECT_TRUE( static_cast<int*>( view->getVoidPtr() )[i] == i );
+  }
+
+  delete[] new_data_pointer;
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -618,50 +833,53 @@ TEST(sidre_group,save_restore_complex)
   DataGroup * gb = flds->createGroup("b");
   DataGroup * gc = flds->createGroup("c");
 
-  ga->createViewAndAllocate("i0", DataType::c_int());
-  gb->createViewAndAllocate("f0", DataType::c_float());
-  gc->createViewAndAllocate("d0", DataType::c_double());
+  ga->createViewScalar<int>("i0", 100.0);
+  ga->createViewScalar<double>("d0", 3000.00);
+  gb->createViewString("s0", "foo");
 
-  ga->getView("i0")->setScalar(1);
-  // Be careful on floats.  If you just hand it 100.0, the compiler will assume you want a double.
-  // Either cast the value to float, or be explicit on the template argument.
-  gb->getView("f0")->setScalar( 100.0f );
-  // this would have worked equally well also.
-  // gb->getView("f0")->setScalar<float>(100.0);
-  gc->getView("d0")->setScalar(3000.00);
+  gc->createViewAndAllocate("int100", asctoolkit::sidre::INT_ID, 100);
+  int* data_ptr = gc->getView("int100")->getArray();
+  for (int i =0; i < 100; ++i)
+  {
+    data_ptr[i] = i;
+  }
 
-  // check that all sub groups exist
-  EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_TRUE(flds->hasGroup("b"));
-  EXPECT_TRUE(flds->hasGroup("c"));
-
-  //ds->print();
-
-  ds->getRoot()->save("out_sidre_group_save_restore_complex","conduit");
+  ds->save("sidre_mixed_types","conduit");
 
   DataStore * ds2 = new DataStore();
 
+  ds2->load("sidre_mixed_types","conduit");
 
-  ds2->getRoot()->load("out_sidre_group_save_restore_complex","conduit");
+  EXPECT_TRUE( ds->getRoot()->isEquivalentTo(ds2->getRoot()) );
+
+  delete ds;
 
   flds = ds2->getRoot()->getGroup("fields");
+
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
   EXPECT_TRUE(flds->hasGroup("b"));
   EXPECT_TRUE(flds->hasGroup("c"));
 
-  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getData<int>(),1);
-  EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getData<float>(),100.0,
-              1e-12);
-  EXPECT_NEAR(flds->getGroup("c")->getView(
-                "d0")->getData<double>(),3000.0, 1e-12);
+  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getData<int>(),100.0);
+  EXPECT_NEAR(flds->getGroup("a")->getView("d0")->getData<double>(),3000.0, 1e-12);
+
+  int* new_data_ptr = flds->getGroup("c")->getView("int100")->getArray();
+  for (int i = 0; i < 100; ++i)
+  {
+    EXPECT_TRUE( new_data_ptr[i] == i);
+  }
+
+  // TODO - Figure out the right way to get the string value our of conduit node!!
+  //char * char_ptr = flds->getGroup("b")->getView("s0")->getString();
+  //EXPECT_TRUE( std::string(char_ptr) == "foo" );
+
+
 
   //ds2->print();
 
-  delete ds;
   delete ds2;
-
-}
+  }
 
 //------------------------------------------------------------------------------
 // isEquivalentTo()
@@ -686,12 +904,12 @@ TEST(sidre_group,is_equivalent_to)
   DataGroup * gb2 = flds2->createGroup("b");
   DataGroup * gc2 = flds2->createGroup("c");
 
-  ga1->createViewAndAllocate("i0", DataType::c_int());
-  gb1->createViewAndAllocate("f0", DataType::c_float());
-  gc1->createViewAndAllocate("d0", DataType::c_double());
-  ga2->createViewAndAllocate("i0", DataType::c_int());
-  gb2->createViewAndAllocate("f0", DataType::c_float());
-  gc2->createViewAndAllocate("d0", DataType::c_double());
+  ga1->createViewScalar("i0", 1 );
+  gb1->createViewScalar("f0", 100.0f );
+  gc1->createViewScalar("d0", 3000.00);
+  ga2->createViewScalar("i0", 1);
+  gb2->createViewScalar("f0", 100.0f);
+  gc2->createViewScalar("d0", 3000.00);
 
   ga1->getView("i0")->setScalar(1);
   gb1->getView("f0")->setScalar( 100.0f );

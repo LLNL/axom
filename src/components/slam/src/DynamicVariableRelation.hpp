@@ -51,7 +51,7 @@ namespace slam    {
 
   public:
     DynamicVariableRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet);
-    virtual ~DynamicVariableRelation(){}
+    ~DynamicVariableRelation(){}
 
     RelationVecConstIterator begin(SetPosition fromSetIndex)       const
     {
@@ -126,7 +126,11 @@ namespace slam    {
     /// \}
 
   private:
-    inline void               verifyPosition(SetPosition fromSetIndex)        const { SLIC_ASSERT( fromSetIndex < static_cast<SetPosition>(m_fromSet->size() ) ); }
+    inline void               verifyPosition(SetPosition ATK_DEBUG_PARAM(fromSetIndex))        const
+    {
+      SLIC_ASSERT( fromSetIndex >= 0 && fromSetIndex < static_cast<SetPosition>(m_fromSet->size() ) );
+    }
+
     inline RelationVec &      fromSetRelationsVec(SetPosition fromSetIndex)         { return m_relationsVec[fromSetIndex]; }
     inline RelationVec const& fromSetRelationsVec(SetPosition fromSetIndex)   const { return m_relationsVec[fromSetIndex]; }
 

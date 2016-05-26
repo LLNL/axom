@@ -29,7 +29,9 @@
 
 //#include <iostream>
 
+#include "common/ATKMacros.hpp"
 #include "slic/slic.hpp"
+
 #include "slam/OrderedSet.hpp"
 #include "slam/Relation.hpp"
 #include "slam/PolicyTraits.hpp"
@@ -237,7 +239,13 @@ namespace slam    {
       verifyPosition(fromSetIndex);
       return stride();
     }
-    inline void         verifyPosition(SetPosition fromSetIndex)    const { SLIC_ASSERT( fromSetIndex < m_fromSet->size() ); }
+    inline void         verifyPosition(SetPosition ATK_DEBUG_PARAM(fromSetIndex))    const
+    {
+        SLIC_ASSERT_MSG( fromSetIndex >= 0 && fromSetIndex < m_fromSet->size()
+                       , "Failed verify position with position " << fromSetIndex
+                       << ". Valid positions are integers between 0 and " << (m_fromSet->size()-1)
+                         );
+    }
     inline SetPosition  toSetBeginIndex(SetPosition fromSetIndex)   const { return stride() * (fromSetIndex); }
     inline SetPosition  toSetEndIndex(SetPosition fromSetIndex)     const { return stride() * (fromSetIndex + 1); }
 

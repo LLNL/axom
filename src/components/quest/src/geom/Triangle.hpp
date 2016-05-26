@@ -26,15 +26,28 @@
 #define TRIANGLE_HPP_
 
 #include "quest/Point.hpp"
+#include "quest/Vector.hpp"
 
 namespace quest
 {
+
+// Forward declare the templated classes and operator functions
+template<typename T, int DIM> class Triangle;
+
+/*!
+ * \brief Overloaded output operator for triangles
+ */
+template<typename T, int DIM>
+std::ostream& operator<<(std::ostream & os, const Triangle<T,DIM> & tri);
+
+
 
 template < typename T, int DIM >
 class Triangle
 {
 public:
-    typedef Point<T,DIM> PointType;
+    typedef Point<T,DIM>  PointType;
+    typedef Vector<T,DIM> VectorType;
 
 public:
 
@@ -55,7 +68,9 @@ public:
    */
   Triangle( const PointType& A,
             const PointType& B,
-            const PointType& C ): m_A (A), m_B(B), m_C(C)  { }
+            const PointType& C )
+        : m_A (A), m_B(B), m_C(C)    {}
+
 
   /*!
    *****************************************************************************
@@ -118,12 +133,56 @@ public:
    */
   const PointType& C() const { return m_C; };
 
+
+  /*!
+   * \brief Returns the normal of the triangle (not normalized)
+   * \pre This function is only valid when DIM = 3
+   * \return The normal vector to the triangle (when DIM==3), the zero vector otherwise
+   */
+  VectorType normal() const
+  {
+      SLIC_CHECK_MSG(DIM==3, "quest::Triangle::normal() is only valid when dimension is 3.");
+
+      return (DIM==3)
+              ? VectorType::cross_product( VectorType(m_A,m_B), VectorType(m_A,m_C))
+              : VectorType();
+  }
+
+
+  /*!
+   * \brief Simple formatted print of a triangle instance
+   * \param os The output stream to write to
+   * \return A reference to the modified ostream
+   */
+  std::ostream& print(std::ostream& os) const
+  {
+      os <<"{"
+         << m_A <<" "
+         << m_B <<" "
+         << m_C <<"}";
+
+      return os;
+  }
+
+
 private:
 
   PointType m_A;
   PointType m_B;
   PointType m_C;
 };
+
+//------------------------------------------------------------------------------
+/// Free functions implementing Triangle's operators
+//------------------------------------------------------------------------------
+
+template<typename T, int DIM>
+std::ostream& operator<<(std::ostream & os, const Triangle<T,DIM> & tri)
+{
+    tri.print(os);
+    return os;
+}
+
 
 } /* namespace quest */
 

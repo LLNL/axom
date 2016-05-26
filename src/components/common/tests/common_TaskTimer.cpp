@@ -20,7 +20,6 @@
 #include "gtest/gtest.h"
 
 #include "common/Timer.hpp"
-#include "slic/slic.hpp"
 
 #ifdef WIN32
 #include "windows.h"
@@ -32,36 +31,43 @@ void sleep(int numSeconds)
 #include <unistd.h> // for sleep()
 #endif
 
-TEST(gtest_common_TaskTimer, timer_check )
+TEST(gtest_common_Timer, timer_check )
+{
+  asctoolkit::utilities::Timer t;
+
+  std::cout << "Checking that a newly constructed timer indicates 0 time elapsed" << std::endl;
+  EXPECT_EQ(0., t.elapsed());
+
+  t.start();
+
+  sleep( 1 );
+
+  t.stop();
+
+  std::cout << "Simple test for elapsed time in different units." << std::endl;
+  EXPECT_GT( t.elapsedTimeInMicroSec(), t.elapsedTimeInMilliSec() );
+  EXPECT_GT( t.elapsedTimeInMilliSec(), t.elapsedTimeInSec() );
+  EXPECT_EQ( t.elapsed(), t.elapsedTimeInSec() );
+
+
+  std::cout <<  "Testing that reset() indicates zero elapsed time." << std::endl;
+  t.reset();
+  ASSERT_DOUBLE_EQ( 0., t.elapsed());
+}
+
+
+TEST(gtest_common_Timer, timer_check_duration )
 {
   asctoolkit::utilities::Timer t;
   t.start();
 
-  sleep( 2 );
+  sleep( 1 );
 
   t.stop();
   double e = t.elapsed();
-  SLIC_INFO( "Elapsed: " << e );
+  std::cout << "Elapsed: " << e << std::endl;
 
-  EXPECT_GE( e, 2.0 );
-  EXPECT_LT( e, 3.0 );
+  EXPECT_GE( e, 1.0 );
+  EXPECT_LT( e, 2.0 );
 }
 
-//------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
-
-int main(int argc, char * argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
-}

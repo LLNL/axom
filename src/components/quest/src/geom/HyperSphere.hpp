@@ -28,8 +28,9 @@
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "quest/Orientation.hpp"
-#include "quest/fuzzy_compare.hpp"
 #include "slic/slic.hpp"
+
+#include "common/Utilities.hpp"
 
 // C/C++ includes
 #include <cstddef>
@@ -73,10 +74,10 @@ public:
    /*!
     ****************************************************************************
     * \brief Copy constructor.
-    * \param [in] h
+    * \param [in] other The hypersphere to copy
     ****************************************************************************
     */
-   HyperSphere( const HyperSphere<T,NDIMS>& h ) { *this = h; };
+   HyperSphere( const HyperSphere<T,NDIMS>& other ) { *this = other; };
 
    /*!
     ****************************************************************************
@@ -215,7 +216,7 @@ int HyperSphere< T,NDIMS >::getOrientation( T* q )
 
    int orient = -1;
 
-   if ( math::fuzzy_compare( signed_distance, 0.0, 1.0e-9) ) {
+   if ( asctoolkit::utilities::isNearlyEqual( signed_distance, 0.0, 1.0e-9) ) {
 
        orient = ON_BOUNDARY;
 

@@ -44,21 +44,22 @@
 from spack import *
 
 class Conduit(Package):
-    homepage = "http://scalability-llnl.github.io/conduit/"
-    url      = "http://scalability-llnl.github.io/conduit/"
+    homepage = "http://software.llnl.gov/conduit/"
+    url      = "https://github.com/LLNL/conduit/"
 
-    version('github', 
-            git='https://github.com/scalability-llnl/conduit.git')
+    version('github', git='https://github.com/LLNL/conduit.git')
 
-    depends_on("cmake")
-    depends_on("hdf5")
+
+    variant('shared', default=True, description="Build shared libraries.")
+
+    depends_on("cmake~ncurses~openssl@3.3.1")
+    depends_on("hdf5~shared~zlib")
 
     def install(self, spec, prefix):
         with working_dir('spack-build', create=True):
             hdf5_dir = spec['hdf5'].prefix
             cmake_args = ["../src"]
             cmake_args.extend(std_cmake_args)
-            cmake_args.append("-DENABLE_HDF5=ON")
             cmake_args.append("-DHDF5_DIR=%s" % hdf5_dir);
  
             # see if we should enable fortran support
@@ -69,6 +70,11 @@ class Conduit(Package):
             # see if we should enable mpi support
             mpicc  = which("mpicc")
             mpif90 = which("mpif90")
+
+            if "+shared" in spec:
+                cmake_args.append("-DBUILD_SHARED_LIBS=ON")
+            else:
+                cmake_args.append("-DBUILD_SHARED_LIBS=OFF")
 
             if not mpicc is None:
                 cmake_args.append("-DENABLE_MPI=ON")

@@ -2,6 +2,22 @@
 # Specify list of tests
 #
 
-make_executable(ADD_CTEST
-                EXECUTABLE_SOURCE spio_basicWriteRead.cpp
-                DEPENDS_ON spio )
+blt_add_executable(NAME spio_basicWriteRead
+                   SOURCES spio_basicWriteRead.cpp
+                   OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                   DEPENDS_ON spio conduit hdf5
+                   )
+blt_add_test(NAME spio_basicWriteRead
+             COMMAND spio_basicWriteRead
+             )
+if (ENABLE_MPI)
+   blt_add_executable(NAME spio_parallelWriteRead
+                      SOURCES spio_parallelWriteRead.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON spio conduit hdf5
+                      )
+   blt_add_test(NAME spio_parallelWriteRead
+                COMMAND spio_parallelWriteRead
+                NUM_PROCS 4
+                )
+endif()

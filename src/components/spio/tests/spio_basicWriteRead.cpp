@@ -31,10 +31,8 @@ int main(int argc, char** argv)
 
   DataGroup * ga = flds->createGroup("a");
   DataGroup * gb = flds2->createGroup("b");
-  ga->createView("i0")->allocate(DataType::c_int());
-  ga->getView("i0")->setScalar(101);
-  gb->createView("i1")->allocate(DataType::c_int());
-  gb->getView("i1")->setScalar(404);
+  ga->createViewScalar<int>("i0", 101);
+  gb->createViewScalar<int>("i1", 404);
 
   std::vector<DataGroup *> groups;
   groups.push_back(root);
@@ -48,9 +46,9 @@ int main(int argc, char** argv)
   std::vector<DataGroup *> groups2;
   groups2.push_back(ds2->getRoot());
 
-  IOManager writer2(MPI_COMM_WORLD, &(groups2[0]), groups2.size(), num_files);
+  IOManager reader(MPI_COMM_WORLD, &(groups2[0]), groups2.size(), num_files);
 
-  writer2.read("out_spio_basic_write_read", 0, "conduit_hdf5");
+  reader.read("out_spio_basic_write_read0.root");
 
   int return_val = 0;
   if (!ds2->getRoot()->isEquivalentTo(root)) {

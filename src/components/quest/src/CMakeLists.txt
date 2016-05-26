@@ -13,10 +13,11 @@ set( quest_headers
     SignedDistance.hpp
 
     ## Geometry Headers
-    geom/BoundingBox.hpp
     geom/BVHTree.hpp
+    geom/BoundingBox.hpp
     geom/Determinants.hpp
     geom/HyperSphere.hpp
+    geom/InOutOctree.hpp
     geom/Intersection.hpp
     geom/MortonIndex.hpp
     geom/NumericArray.hpp
@@ -29,7 +30,7 @@ set( quest_headers
     geom/SquaredDistance.hpp
     geom/Triangle.hpp
     geom/Vector.hpp
-    geom/fuzzy_compare.hpp
+    geom/closest_point.hpp
     
     ## Mesh Library Headers
     mesh/CellConnectivity.hpp
@@ -59,7 +60,7 @@ set( quest_headers
    
 set( quest_sources
     
-    ## CG Sources
+    ## Geometry Sources
     # <nothing yet>
         
     ## Mesh Library Sources
@@ -85,41 +86,35 @@ set( quest_depends_on
      common
      slic
      slam
+     stla_io
      )
 
+if (ENABLE_BOOST)
+    list(APPEND quest_depends_on boost)
+endif()
+
 if (ENABLE_MPI)
-  list(APPEND quest_headers stl/PSTLReader.hpp)
+  list(APPEND quest_headers stl/PSTLReader.hpp)  
   list(APPEND quest_sources stl/PSTLReader.cpp)
 endif()
 
-if (ENABLE_FORTRAN)
-  
-  ## append shroud generated headers/sources to corresponding lists
-  list(APPEND quest_headers interface/shroud/wrapQUEST.h)
-  list(APPEND quest_sources interface/shroud/wrapQUEST.cpp)
-  list(APPEND quest_sources interface/shroud/wrapfquest.f)
-  
-  add_subdirectory(interface/shroud)
-  
-  include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
-  
-  list(APPEND quest_depends_on shroudrt)
-  
+if(ENABLE_SHROUD)
+    add_subdirectory(interface)
 endif()
 
-copy_headers_target( ${PROJECT_NAME} "${quest_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
-                     
-make_library( LIBRARY_NAME 
-                quest
-                
-              LIBRARY_SOURCES
-                "${quest_sources}"
-                "${quest_headers}"
-              
-              DEPENDS_ON
-                "${quest_depends_on}"
-             )
-target_include_directories( quest PRIVATE "${CMAKE_SOURCE_DIR}/thirdparty/stla_io" )
+if (ENABLE_FORTRAN AND ENABLE_MPI)
+  ## append shroud generated headers/sources to corresponding lists
+  list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
+  list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
+  list(APPEND quest_sources interface/c_fortran/shroudrt.cpp)
+  list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
+endif()
+
+blt_add_library( 
+    NAME        quest
+    SOURCES     ${quest_sources}
+    HEADERS     ${quest_headers}
+    DEPENDS_ON  ${quest_depends_on}
+    )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )

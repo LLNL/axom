@@ -75,6 +75,7 @@ public:
          };
 
     typedef Point<T,DIM> PointType;
+    typedef T CoordType;
 
 public:
 
@@ -96,7 +97,7 @@ public:
    * \param [in] arr The numeric array to copy from
    *****************************************************************************
    */
-  explicit Point(const NumericArray<T,DIM>& arr) : m_components(arr) {}
+  Point(const NumericArray<T,DIM>& arr) : m_components(arr) {}
 
   /*!
    *****************************************************************************
@@ -112,10 +113,10 @@ public:
   /*!
    *****************************************************************************
    * \brief Copy constructor.
-   * \param [in] rhs
+   * \param [in] other The point to copy
    *****************************************************************************
    */
-  Point( const Point& rhs ) : m_components( rhs.m_components) {}
+  Point( const Point& other) : m_components( other.m_components) {}
 
   /*!
    *****************************************************************************
@@ -131,7 +132,7 @@ public:
    * \post d >= 1.
    *****************************************************************************
    */
-  int dimension() const { return DIM; };
+  static int dimension() { return DIM; };
 
   /*!
    *****************************************************************************
@@ -202,6 +203,7 @@ public:
    *****************************************************************************
    */
   std::ostream& print(std::ostream& os) const;
+
   /*!
    *****************************************************************************
    * \brief Utility function to constructs a Point with the given coordinates.

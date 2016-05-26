@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
 
-set(CMAKE_MODULE_PATH
-      "${CMAKE_SOURCE_DIR}/cmake/thirdparty"
-      "${CMAKE_SOURCE_DIR}/cmake"
-      ${CMAKE_MODULE_PATH})
-
 ################################
 # ASCTK ToolKit
 ################################
@@ -15,9 +10,14 @@ if (ENABLE_FORTRAN)
 endif()
 
 ################################
+# Include blt
+################################
+include(blt/SetupBLT.cmake)
+
+################################
 # Include standard build system logic and options
 ################################
-include(CMakeBasics)
+include(cmake/CMakeBasics.cmake)
 
 ################################
 # Add Thirdparty Builtin Libs
@@ -32,10 +32,12 @@ add_subdirectory(components)
 ################################
 # Add docs
 ################################
-add_subdirectory(docs)
+if (ENABLE_DOCS)
+  add_subdirectory(docs)
+endif()
 
 ################################
 # install targets from build
 ################################s
-install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . )
-install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION .)
+install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . OPTIONAL)
+install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION . OPTIONAL)

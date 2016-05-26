@@ -23,6 +23,7 @@
 
 // Standard C++ headers
 #include <string>
+#include <set>
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
@@ -91,6 +92,7 @@ public:
   // private members.
   //
   friend class DataGroup;
+  friend class DataBuffer;
 
 
 //@{
@@ -179,6 +181,14 @@ public:
   }
 
   /*!
+   * \brief Return true if view is empty.
+   */
+  bool isEmpty() const
+  {
+    return m_state == EMPTY;
+  }
+
+  /*!
    * \brief Convenience function that returns true if view is opaque
    *        (i.e., has access to data but has no knowledge of the data
    *        type or structure); false otherwise.
@@ -193,7 +203,7 @@ public:
    */
   bool isScalar() const
   {
-    return (m_state == SCALAR);
+    return m_state == SCALAR;
   }
 
   /*!
@@ -201,15 +211,23 @@ public:
    */
   bool isString() const
   {
-    return (m_state == STRING);
+    return m_state == STRING;
   }
 
   /*!
    * \brief Return type of data for this DataView object.
+   *        Return NO_TYPE_ID for an undescribed view.
    */
   TypeID getTypeID() const
   {
-    return static_cast<TypeID>(m_node.dtype().id());
+    if (isDescribed())
+    {
+      return static_cast<TypeID>(m_schema.dtype().id());
+    }
+    else
+    {
+      return NO_TYPE_ID;
+    }
   }
 
   /*!
@@ -307,8 +325,9 @@ public:
    * \brief Allocate data for view given type and number of elements.
    *
    * NOTE: The allocate() method describes conditions where view
-   *       allocation is allowed. If none of those is true, or given number
-   *       of elements is < 0, this method does nothing.
+   *       allocation is allowed. If none of those is true, or given
+   *       a type of NO_TYPE_ID or number of elements is < 0,
+   *       this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -371,6 +390,9 @@ public:
   /*!
    * \brief Attach DataBuffer object to data view.
    *
+   * If the view has no description, then the buffer's description
+   * is copied into the view.
+   *
    * Note that, in general, the view cannot be used to access data in
    * buffer until one of the apply() methods is called. However, if
    * the view has a valid data description with a total number of bytes
@@ -380,10 +402,53 @@ public:
    * If data view already has a buffer, or it is an external view,
    * a scalar view, or a string view, this method does nothing.
    *
+   * If data view already has a buffer and buff is NULL, the attached
+   * buffer will be detached. After the view is detached from the
+   * buffer, if the buffer has no views attached to it, then it will
+   * be destroyed.
+   *
    * \return pointer to this DataView object.
    */
   DataView * attachBuffer( DataBuffer * buff );
 
+  /*!
+   * \brief Describe the data view and attach DataBuffer object.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * attachBuffer( TypeID type,
+                           SidreLength num_elems,
+                           DataBuffer * buff )
+  {
+    describe(type, num_elems);
+    attachBuffer(buff);
+    return this;
+  }
+
+  /*!
+   * \brief Describe the data view and attach DataBuffer object.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * attachBuffer( TypeID type,
+                           int ndims,
+                           SidreLength * shape,
+                           DataBuffer * buff )
+  {
+    describe(type, ndims, shape);
+    attachBuffer(buff);
+    return this;
+  }
+
+
+  /*!
+   * \brief Detach this view from its DataBuffer.
+   *
+   * If the view has no buffer, the method does nothing.
+   *
+   * \return pointer to detached buffer.
+   */
+  DataBuffer * detachBuffer();
 
 //@{
 //!  @name Methods to apply DataView description to data.
@@ -432,8 +497,8 @@ public:
    * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
-   * If view holds a scalar or a string, or given number of elements < 0,
-   * or offset < 0, the method does nothing.
+   * If view holds a scalar or a string, or type is NO_TYPE_ID,
+   * or given number of elements < 0, or offset < 0, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -450,8 +515,9 @@ public:
    * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
-   * If view holds a scalar or a string, or given number of dimensions < 0,
-   * or pointer to shape is null, the method does nothing.
+   * If view holds a scalar or a string, or type is NO_TYPE_ID,
+   * or given number of dimensions < 0, or pointer to shape is null,
+   * the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -480,29 +546,38 @@ public:
   template<typename ScalarType>
   DataView * setScalar(ScalarType value)
   {
-//
-// RDH -- This will change when scalar pool is added. Also, the following
-//        check will not be needed because a scalar view will not have
-//        allocated data.
-//
-    // Check that parameter type provided matches what type is stored in the node.
+    // If this view already contains a scalar, issue a warning if the user is
+    // changing the underlying type ( ie: integer -> float ).
 #if defined(ATK_DEBUG)
-    if (m_state != EMPTY)
+    if (m_state == SCALAR)
     {
       DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
-      SLIC_CHECK_MSG( arg_id == m_node.dtype().id(),
-                      "Mismatch between setScalar()" <<
-                      DataType::id_to_name(
-                        arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() <<
-                      ").");
+      SLIC_CHECK_MSG(
+        arg_id == m_node.dtype().id(),
+        "You are setting a scalar value in view " << m_name  <<
+        " which has changed the underlying data type." << "Old type = "
+        << m_node.dtype().name() << ", new type ="
+        <<  DataType::id_to_name( arg_id ) << ".");
     }
 #endif
 
-    m_node.set(value);
-    m_schema.set(m_node.schema());
-    m_is_applied = true;
-    m_state = SCALAR;
-    describeShape();
+    // Note: most of these calls that set the view class members are
+    //       unnecessary if the view already holds a scalar.  May be
+    //       a future optimization opportunity to split the
+    if (m_state == EMPTY || m_state == SCALAR)
+    {
+      m_node.set(value);
+      m_schema.set(m_node.schema());
+      m_state = SCALAR;
+      m_is_applied = true;
+      describeShape();
+    }
+    else
+    {
+      SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
+        "Unable to set scalar value on view " << m_name << " with state: " <<
+        getStateStringName(m_state)  );
+    }
     return this;
   }
 
@@ -516,11 +591,23 @@ public:
  */
   DataView * setString(const std::string& value)
   {
-    m_node.set_string(value);
-    m_schema.set(m_node.schema());
-    m_state = STRING;
-    m_is_applied = true;
-    describeShape();
+    // Note: most of these calls that set the view class members are
+    //       unnecessary if the view already holds a string.  May be
+    //       a future optimization opportunity to split the
+    if (m_state == EMPTY || m_state == STRING)
+    {
+      m_node.set_string(value);
+      m_schema.set(m_node.schema());
+      m_state = STRING;
+      m_is_applied = true;
+      describeShape();
+    }
+    else
+    {
+      SLIC_CHECK_MSG(m_state == EMPTY || m_state == STRING,
+        "Unable to set string value on view " << m_name << " with state: " <<
+         getStateStringName(m_state)  );
+    }
     return this;
   };
 
@@ -530,9 +617,45 @@ public:
    * Data is undescribed (i.e., view is opaque) until an apply methods
    * is called on the view.
    *
+   * If external_ptr is NULL, the view will be EMPTY.
+   * Any existing description is unchanged.
+   *
    * \return pointer to this DataView object.
    */
   DataView * setExternalDataPtr(void * external_ptr);
+
+  /*!
+   * \brief Set view to hold described external data.
+   *
+   * If external_ptr is NULL, the view will be EMPTY.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * setExternalDataPtr(TypeID type,
+                                SidreLength num_elems,
+                                void * external_ptr)
+  {
+    describe(type, num_elems);
+    setExternalDataPtr(external_ptr);
+    return this;
+  }
+
+  /*!
+   * \brief Set view to hold described external data.
+   *
+   * If external_ptr is NULL, the view will be EMPTY.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * setExternalDataPtr(TypeID type,
+                                int ndims,
+                                SidreLength * shape,
+                                void * external_ptr)
+  {
+    describe(type, ndims, shape);
+    setExternalDataPtr(external_ptr);
+    return this;
+  }
 
 //@}
 
@@ -559,31 +682,41 @@ public:
   }
 
   /*!
-   * \brief Returns a copy of the string contained in the view.
+   * \brief Returns a pointer to the string contained in the view.
+   *
+   *  If the view is not a STRING, then ATK_NULLPTR is returned.
      //
      // RDH -- Should we also provide an overload that returns a const char *?
      //        It seems excessive to create copies of strings for most usage.
+     //        Conduit also provides a as_string() method.
      //
    */
-//
-// RDH -- What happens if the view does not hold a scalar?
-//
-  Node::Value getString()
+  const char * getString()
   {
-    //TODO add check that view holds array data.  Will be added in later commit.
-    //If debug, should trigger assert.  If release, issue warning.
-    return getData();
+    if (m_state == STRING)
+    {
+      return m_node.as_char8_str();
+    }
+    else
+    {
+      return ATK_NULLPTR;
+    }
   }
 
   /*!
    * \brief Returns a copy of the scalar value contained in the view.
    */
-//
-// RDH -- What happens if the view does not hold a scalar?
-//
   Node::Value getScalar()
   {
-    return getData();
+    if (m_state == SCALAR)
+    {
+      return getData();
+    }
+    else
+    {
+     // TODO - This will throw and exception in the user's code  ATK-704
+      return Node().value();
+    }
   }
 
   /*!
@@ -648,7 +781,16 @@ public:
   /*!
    * \brief Copy data view description to given Conduit node.
    */
-  void info(Node& n) const;
+  void copyToConduitNode(Node& n) const;
+
+  /*!
+   * \brief Copy data view native layout to given Conduit node.
+   *
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
+   * externally to the Sidre View data so that it can be filled in from the data
+   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   */
+  void createNativeLayout(Node& n) const;
 
 private:
 
@@ -658,10 +800,9 @@ private:
 
   /*!
    *  \brief Private ctor that creates a DataView with given name
-   *         in given parent group and which has no data associated with it.
+   *         which has no data associated with it.
    */
-  DataView( const std::string& name,
-            DataGroup * const owning_group );
+  DataView( const std::string& name );
 
   /*!
    * \brief Private copy ctor.
@@ -688,7 +829,8 @@ private:
    *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
-   * If given number of elements < 0, or view is opaque, method does nothing.
+   * If given type of NO_TYPE_ID, or number of elements < 0, or view is opaque,
+   * method does nothing.
    *
    */
   void describe( TypeID type, SidreLength num_elems);
@@ -702,8 +844,8 @@ private:
    *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
-   * If given number of dimensions or total number of elements < 0,
-   * or view is opaque, method does nothing.
+   * If given type of NO_TYPE_ID, or number of dimensions or total
+   * number of elements < 0, or view is opaque, method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -732,29 +874,63 @@ private:
    */
   void describeShape(int ndims, SidreLength * shape);
 
+  /*!
+   * \brief Copy view contents into an undescribed EMPTY view.
+   *
+   * For SCALAR and STRING the data is copied; EXTERNAL,
+   * data pointer is copied; BUFFER attaches the buffer.
+   */
+  void copyView( DataView * copy ) const;
+
+  /*!
+   * \brief Add view description and references to it's data to a conduit tree.
+   */
+  void exportTo(conduit::Node& data_holder,
+                std::set<IndexType>& buffer_indices) const;
+
+  /*!
+   * \brief Restore a view's description and data from a conduit tree.
+   * This does not include a view's buffer data, that is done in the buffer
+   */
+  void importFrom(conduit::Node& data_holder,
+                  const std::map<IndexType, IndexType>& buffer_id_map);
+
+
+  /*!
+   *  \brief Private method to remove any applied description;
+   *         but preserves user provided description.
+   *
+   *  Note: The description is stored in m_schema.
+   */
+  void unapply()
+  {
+    m_node.reset();
+    m_is_applied = false;
+  }
+
+  /*!
+   *  \brief Private method to reset a view from BUFFER to EMPTY.
+   *
+   *         Used by DataBuffer when detaching from a view.
+   */
+  void setBufferViewToEmpty()
+  {
+    m_data_buffer = ATK_NULLPTR;
+    m_state = EMPTY;
+    unapply();
+  }
+
 //@}
 
 
 //@{
-//!  @name Private method that determine whether some view operations are valid.
+//!  @name Private methods that indicate when certain view operations are valid.
 
   /*!
    *  \brief Private method returns true if data allocation on view is a
    *         valid operation; else false
    */
   bool isAllocateValid() const;
-
-  /*!
-   *  \brief Private method returns true if attaching buffer to view is a
-   *         valid operation; else false
-   */
-  bool isAttachBufferValid() const;
-
-  /*!
-   *  \brief Private method returns true if setting external data pointer is
-             on view is a valid operation; else false
-   */
-  bool isSetExternalDataPtrValid() const;
 
   /*!
    *  \brief Private method returns true if apply is a valid operation on
@@ -768,7 +944,7 @@ private:
   ///
   /// Enum with constants that identify the state of a view.
   ///
-  /// Note that these states are not mutually-exclusive. These constants
+  /// Note that these states are mutually-exclusive. These constants
   /// combined with the boolean m_is_applied uniquely identify the view
   /// state, or how it was created and defined.
   ///
@@ -776,11 +952,7 @@ private:
   {
     EMPTY,           // View created with name only :
                      //    has no data or data description
-    DESCRIBED,       // View created with name and data description :
-                     //    applied is false
-    ALLOCATED,       // View created, described, and allocated (by view) :
-                     //    applied is true
-    BUFFER_ATTACHED, // View has a buffer attached explicitly. :
+    BUFFER,          // View has a buffer attached explicitly. :
                      //    applied may be true or false
     EXTERNAL,        // View holds pointer to external data (no buffer) :
                      //    applied may be true or false
@@ -793,7 +965,7 @@ private:
   /*!
    *  \brief Private method returns string name of given view state enum value.
    */
-  char const * getStateStringName(State state) const;
+  static char const * getStateStringName(State state);
 
   /// Name of this DataView object.
   std::string m_name;

@@ -14,6 +14,10 @@
 #include "common/CommonTypes.hpp"
 #include "quest/STLReader.hpp"
 #include "quest/SignedDistance.hpp"
+
+#include "quest/BoundingBox.hpp"
+#include "quest/InOutOctree.hpp"
+
 #include "slic/slic.hpp"
 
 #ifdef USE_MPI
@@ -22,73 +26,322 @@
 
 namespace quest
 {
+    // NOTE: supporting just one region/surface for now
+    // Note: Define everything in a local namespace
+  namespace
+  {
+    typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+    enum QueryMode { QUERY_MODE_NONE, QUERY_MODE_CONTAINMENT, QUERY_MODE_SIGNED_DISTANCE };
 
-// NOTE: supporting just one region/surface for now
-static int NDIMS = 3;
-static SignedDistance< 3 >* region = ATK_NULLPTR;
-static meshtk::Mesh* surface_mesh  = ATK_NULLPTR;
+    /**
+     * \struct
+     * \brief A simple struct to encapsulate knowledge about which acceleration structure we are using
+     *        -- the SignedDistance or the InOutOctree
+     */
+    template<int DIM>
+    struct QuestAccelerator
+    {
+        typedef BoundingBox< double, DIM> GeometricBoundingBox;
+        typedef Point< double, DIM> SpacePt;
 
-typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+        /** \brief Default constructor */
+        QuestAccelerator()
+            : m_surface_mesh(ATK_NULLPTR)
+            , m_region(ATK_NULLPTR)
+            , m_containmentTree(ATK_NULLPTR)
+            , m_queryMode(QUERY_MODE_NONE) {}
+
+        /**
+         * \brief Initializes the containment tree mode
+         * \param surface_mesh The surface mesh
+         * \pre Assumes that we are not yet initialized
+         */
+        void initializeContainmentTree(meshtk::Mesh* surface_mesh)
+        {
+            SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
+            SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
+
+            m_surface_mesh = surface_mesh;
+
+            GeometricBoundingBox meshBB = meshBoundingBox( m_surface_mesh );
+            meshBB.scale(1.01);
+
+            m_containmentTree = new InOutOctree<DIM>( meshBB, m_surface_mesh );
+            m_containmentTree->generateIndex();
+            m_queryMode = QUERY_MODE_CONTAINMENT;
+        }
+
+        /**
+         * \brief Initializes the signed distance mode
+         * \param surface_mesh The surface mesh
+         * \pre Assumes that we are not yet initialized
+         */
+        void initializeSignedDistance(meshtk::Mesh* surface_mesh, int maxElements, int maxLevels)
+        {
+            SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
+            SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
+
+            m_surface_mesh = surface_mesh;
+            m_region = new SignedDistance<DIM>( m_surface_mesh, maxElements, maxLevels );
+            m_queryMode = QUERY_MODE_SIGNED_DISTANCE;
+        }
+
+        /**
+         * \brief Deallocates all memory and sets the state to uninitialized
+         */
+        void finalize()
+        {
+            if ( m_region != ATK_NULLPTR ) {
+               delete m_region;
+               m_region = ATK_NULLPTR;
+            }
+
+            if( m_containmentTree != ATK_NULLPTR )
+            {
+                delete m_containmentTree;
+                m_containmentTree = ATK_NULLPTR;
+            }
+            m_queryMode = QUERY_MODE_NONE;
+
+            if ( m_surface_mesh != ATK_NULLPTR ) {
+
+               delete m_surface_mesh;
+               m_surface_mesh = ATK_NULLPTR;
+            }
+        }
+
+
+        /**
+         * \brief Performs the distance query with the 3D point (x, y, z)
+         * \param x The x-coordinate of the point
+         * \param y The y-coordinate of the point
+         * \param z The z-coordinate of the point
+         * \return The signed distance from the point to the closest point on the surface
+         * \note Positive distances are outside the surface, negative distances are inside.
+         */
+        double distance(double x, double y, double z)
+        {
+            SLIC_ASSERT_MSG( supportsDistanceQuery()
+                           , "Distance queries only supported when Quest is initialized with "
+                             << " requiresDistance = true." );
+
+            SpacePt pt = SpacePt::make_point(x,y,z);
+            return m_region->computeDistance( pt );
+        }
+
+        /**
+         * \brief Performs the containment query with the 3D point (x, y, z)
+         * \param x The x-coordinate of the point
+         * \param y The y-coordinate of the point
+         * \param z The z-coordinate of the point
+         * \return 1 if the point is inside the surface, 0 otherwise
+         */
+        int inside(double x, double y, double z)
+        {
+            SLIC_ASSERT( supportsContainmentQuery() );
+
+            // TOOD: assume 3-D for now
+            SpacePt pt = SpacePt::make_point(x,y,z);
+
+            int sign = -1;
+            switch( m_queryMode )
+            {
+            case QUERY_MODE_CONTAINMENT:
+              sign = m_containmentTree->within(pt) ? 1 : 0;
+              break;
+            case QUERY_MODE_SIGNED_DISTANCE:
+              {
+                const quest::SignedDistance<3>::BVHTreeType* tree = m_region->getBVHTree();
+                SLIC_ASSERT( tree != ATK_NULLPTR );
+
+                if ( !tree->contains( pt ) ) {
+                  sign = 0;
+                } else {
+                  sign = ( m_region->computeDistance( pt ) < 0.0f )? 1 : 0;
+                }
+              }
+              break;
+            case QUERY_MODE_NONE:
+              break;
+            }
+
+            return( sign );
+        }
+
+        /**
+         * \brief Utility function to compute the bounding box of the mesh
+         */
+
+        GeometricBoundingBox meshBoundingBox(meshtk::Mesh* mesh)
+        {
+            SLIC_ASSERT( mesh != ATK_NULLPTR );
+
+            GeometricBoundingBox meshBB;
+            SpacePt pt;
+
+            for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i )
+            {
+                mesh->getMeshNode( i, pt.data() );
+                meshBB.addPoint( pt );
+            }
+
+            SLIC_ASSERT( meshBB.isValid() );
+
+            return meshBB;
+        }
+
+  #ifdef ATK_DEBUG
+        /**
+         * \brief Utility function to determine if we are in a mode that supports distance queries
+         */
+        bool supportsDistanceQuery()
+        {
+            bool isValid = true;
+
+            switch(m_queryMode)
+            {
+            case QUERY_MODE_CONTAINMENT:
+                isValid = false;
+                break;
+            case QUERY_MODE_SIGNED_DISTANCE:
+                if( m_region == ATK_NULLPTR)
+                    isValid = false;
+                break;
+            case QUERY_MODE_NONE:
+                isValid = false;
+                break;
+            }
+
+            return isValid;
+        }
+
+        /**
+         * \brief Utility function to determine if we are in a mode that supports containment queries
+         */
+        bool supportsContainmentQuery()
+        {
+            bool isValid = true;
+
+            switch(m_queryMode)
+            {
+            case QUERY_MODE_CONTAINMENT:
+                if( m_containmentTree == ATK_NULLPTR)
+                    isValid = false;
+                break;
+            case QUERY_MODE_SIGNED_DISTANCE:
+                if( m_region == ATK_NULLPTR)
+                    isValid = false;
+                break;
+            case QUERY_MODE_NONE:
+                isValid = false;
+                break;
+            }
+
+            return isValid;
+        }
+
+        /**
+         * \brief Utility function to determine if an acceleration structure has been initialized
+         */
+        bool isInitialized()
+        {
+            return m_queryMode == QUERY_MODE_CONTAINMENT || m_queryMode == QUERY_MODE_SIGNED_DISTANCE;
+        }
+  #endif
+
+    private:
+        meshtk::Mesh* m_surface_mesh;
+        SignedDistance< DIM >* m_region;
+        InOutOctree< DIM >* m_containmentTree;
+        QueryMode m_queryMode;
+    };
+
+    /**
+     * \brief A static instance of the acceleration structure in 3D
+     * \note In this initial release, we assume a single static accelerator.
+     *       Eventually, we will expand on this to support multiple structures in 2D and 3D.
+     *       We will probably use Sidre to hold pointers to these structures.
+     */
+    static QuestAccelerator<3> accelerator3D;
+}
+
 
 //------------------------------------------------------------------------------
 #ifdef USE_MPI
 void initialize( MPI_Comm comm, const std::string& fileName,
-                 int ndims, int maxElements, int maxLevels )
+                 bool requiresDistance, int ndims, int maxElements, int maxLevels )
 {
+  SLIC_ASSERT( ! accelerator3D.isInitialized() );
   SLIC_ASSERT( comm != MPI_COMM_NULL );
-  SLIC_ASSERT( region == ATK_NULLPTR );
 
-  NDIMS = ndims;
-  SLIC_ASSERT( NDIMS==2 || NDIMS==3 );
+  ATK_DEBUG_VAR(ndims);
+  SLIC_ASSERT( ndims==2 || ndims==3 );
 
+  // In the future, we will also support 2D, but we currently only support 3D
+  SLIC_ASSERT_MSG(ndims==3, "Quest currently only supports 3D triangle meshes.");
+
+  // Read in the mesh
   quest::PSTLReader* reader = new quest::PSTLReader( comm );
   reader->setFileName( fileName );
   reader->read();
 
-  surface_mesh = new TriangleMesh( 3 );
+  meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
   delete reader;
 
-  region = new SignedDistance< 3 >( surface_mesh, maxElements, maxLevels );
+  // Initialize the appropriate acceleration structure
+  if(requiresDistance)
+  {
+      accelerator3D.initializeSignedDistance(surface_mesh, maxElements, maxLevels);
+  }
+  else
+  {
+      accelerator3D.initializeContainmentTree(surface_mesh);
+  }
 }
 #else
 //------------------------------------------------------------------------------
 void initialize( const std::string& fileName,
-                 int ndims, int maxElements, int maxLevels )
+                 bool requireDistance, int ndims, int maxElements, int maxLevels )
 {
-  SLIC_ASSERT( region == ATK_NULLPTR );
+  SLIC_ASSERT( ! accelerator3D.isInitialized() );
 
-  NDIMS = ndims;
+  int NDIMS = ndims;
   SLIC_ASSERT( NDIMS==2 || NDIMS==3 );
 
+  // In the future, we will also support 2D, but we currently only support 3D
+  SLIC_ASSERT_MSG(NDIMS==3, "Quest currently only supports 3D triangle meshes.");
+
+  // Read in the mesh
   quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( fileName );
   reader->read();
 
-  surface_mesh = new TriangleMesh( 3 );
+  meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
   delete reader;
 
-  region = new SignedDistance< 3 >( surface_mesh, maxElements, maxLevels );
+  // Initialize the appropriate acceleration structure
+  if(requireDistance)
+  {
+    accelerator3D.initializeSignedDistance(surface_mesh, maxElements, maxLevels );
+  }
+  else
+  {
+    accelerator3D.initializeContainmentTree(surface_mesh);
+  }
 }
 #endif
 
 //------------------------------------------------------------------------------
 double distance( double x, double y, double z )
 {
-  SLIC_ASSERT( region != ATK_NULLPTR );
-
   // TODO: assume 3-D for now
-  Point< double,3 > pt;
-  pt[0] = x;
-  pt[1] = y;
-  pt[2] = z;
-
-  return( region->computeDistance( pt ) );
+  return accelerator3D.distance(x,y,z);
 }
 
 //------------------------------------------------------------------------------
@@ -96,20 +349,13 @@ void distance( const double* xyz, double* dist, int npoints )
 {
   SLIC_ASSERT( xyz != ATK_NULLPTR );
   SLIC_ASSERT( dist != ATK_NULLPTR );
-  SLIC_ASSERT( region != ATK_NULLPTR );
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
   for ( int i=0; i < npoints; ++i ) {
-
      // TODO: assume 3-D for now
-     Point< double,3 > pt;
-     pt[0] = xyz[i*3];
-     pt[1] = xyz[i*3+1];
-     pt[2] = xyz[i*3+2];
-
-     dist[ i ] = region->computeDistance( pt );
+     dist[ i ] = accelerator3D.distance(xyz[i*3], xyz[i*3+1], xyz[i*3+2]);
   }
 
 }
@@ -117,29 +363,8 @@ void distance( const double* xyz, double* dist, int npoints )
 //------------------------------------------------------------------------------
 int inside( double x, double y, double z )
 {
-  SLIC_ASSERT( region != ATK_NULLPTR );
-
-  // TOOD: assume 3-D for now
-  Point< double,3 > pt;
-  pt[0] = x;
-  pt[1] = y;
-  pt[2] = z;
-
-  int sign = -1;
-  const quest::SignedDistance<3>::BVHTreeType* tree = region->getBVHTree();
-  SLIC_ASSERT( tree != ATK_NULLPTR );
-
-  if ( !tree->contains( pt ) ) {
-
-    sign = 1;
-
-  } else {
-
-    sign = ( region->computeDistance( pt ) < 0.0f )? -1 : 1;
-
-  }
-
-  return( sign );
+  // TODO: assume 3-D for now
+  return accelerator3D.inside(x,y,z);
 }
 
 //------------------------------------------------------------------------------
@@ -147,33 +372,20 @@ void inside( const double* xyz, int* in, int npoints )
 {
   SLIC_ASSERT( xyz != ATK_NULLPTR );
   SLIC_ASSERT( in != ATK_NULLPTR );
-  SLIC_ASSERT( region != ATK_NULLPTR );
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
   for ( int i=0; i < npoints; ++i ) {
      // TODO: assume 3-D for now
-     in[ i ] = quest::inside( xyz[i*3], xyz[i*3+1], xyz[i*3+2] );
+     in[ i ] = accelerator3D.inside( xyz[i*3], xyz[i*3+1], xyz[i*3+2] );
   }
 }
 
 //------------------------------------------------------------------------------
 void finalize()
 {
-  if ( region != ATK_NULLPTR ) {
-
-     delete region;
-     region = ATK_NULLPTR;
-
-  } // END if
-
-  if ( surface_mesh != ATK_NULLPTR ) {
-
-     delete surface_mesh;
-     surface_mesh = ATK_NULLPTR;
-  }
-
+  accelerator3D.finalize();
 }
 
 } /* end namespace quest */

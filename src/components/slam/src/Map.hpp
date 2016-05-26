@@ -23,8 +23,10 @@
 #include <sstream>
 #include <iostream>
 
+#include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
+
 #include "slam/Set.hpp"
 #include "slam/NullSet.hpp"
 
@@ -140,7 +142,11 @@ namespace slam    {
     /// \}
 
   private:
-    inline void verifyPosition(SetPosition setIndex)       const { SLIC_ASSERT( setIndex < m_set->size()  ); }
+    inline void verifyPosition(SetPosition ATK_DEBUG_PARAM(setIndex))       const
+    {
+        SLIC_ASSERT_MSG( setIndex >= 0 && setIndex < m_set->size()
+                       , "Attempted to access element " << setIndex << " but map's set has size " <<   m_set->size() );
+    }
 
   private:
     const Set *  m_set;

@@ -1,6 +1,39 @@
 Reference
 =========
 
+Command Line Options
+--------------------
+
+help
+       Show this help message and exit
+
+version
+       Show program's version number and exit
+
+outdir OUTDIR
+       Directory for output files
+
+outdir-c-fortran OUTDIR_C_FORTRAN
+       Directory for C/Fortran wrapper output files, overrides --outdir
+
+outdir-python OUTDIR_PYTHON
+       Directory for Python wrapper output files, overrides --outdir
+
+logdir LOGDIR
+       Directory for log files
+
+cfiles CFILES
+       Output file with list of C and C++ files created
+
+ffiles FFILES
+       Output file with list of Fortran created
+
+path PATH
+       Colon delimited paths to search for splicer files, may
+       be supplied multiple times to create path
+
+
+
 Code
 ----
 
@@ -142,6 +175,9 @@ wrap_python
   If *true*, create Python wrappers.
   Defaults to *false*.
 
+wrap_lua
+  If *true*, create Lua wrappers.
+  Defaults to *false*.
 
 
 Option Templates
@@ -151,19 +187,19 @@ Templates are set in options then expanded to assign to the format
 dictionary.
 
 C_name_template
-    {C_prefix}{class_name}_{underscore_name}{function_suffix}
+    ``{C_prefix}{class_name}_{underscore_name}{function_suffix}``
 
 F_C_name_template
-    {F_C_prefix}{class_name}{underscore_name}{function_suffix}
+    ``{F_C_prefix}{class_name}{underscore_name}{function_suffix}``
 
 F_name_generic_template
-    {underscore_name}
+    ``{underscore_name}``
 
 F_name_impl_template
-    {class_name}{underscore_name}{function_suffix}
+    ``{class_name}{underscore_name}{function_suffix}``
 
 F_name_method_template
-    {underscore_name}{function_suffix}
+    ``{underscore_name}{function_suffix}``
 
 PY_name_impl
     PY_class1_method1
@@ -172,33 +208,79 @@ PY_name_impl
 
 
 C_header_filename_library_template
-   'wrap{library}.h'
+   ``wrap{library}.h``
 
 C_impl_filename_library_template
-    'wrap{library}.cpp'
+    ``wrap{library}.cpp``
 
 C_header_filename_class_template
-    'wrap{cpp_class}.h'
+    ``wrap{cpp_class}.h``
 
 C_impl_filename_class_template
-    'wrap{cpp_class}.cpp'
+    ``wrap{cpp_class}.cpp``
 
 
 F_module_name_library_template
-    {lower_library}_mod
+    ``{lower_library}_mod``
 
 F_impl_filename_library_template
-    wrapf{lower_library}.f
+    ``wrapf{lower_library}.f``
 
 F_module_name_class_template
-    {class_lower}_mod
+    ``{class_lower}_mod``
 
 F_impl_filename_class_template
-    wrapf{cpp_class}.f
+    ``wrapf{cpp_class}.f``
 
 F_name_impl_template
-    {name_class}{underscore_name}{function_suffix}
+    ``{name_class}{underscore_name}{function_suffix}``
 
+
+LUA_module_filename_template
+    ``lua{library}module.cpp``
+
+LUA_header_filename_template
+    ``lua{library}module.hpp``
+
+LUA_userdata_type_template
+    ``{LUA_prefix}{cpp_class}_Type``
+
+LUA_userdata_member_template
+    Name of pointer to class instance in userdata.
+    ``self``
+
+LUA_class_reg_template
+    Name of `luaL_Reg` array of function names for a class.
+    ``{LUA_prefix}{cpp_class}_Reg``
+
+LUA_module_name
+    Name of Lua module for library.
+    ``{library_lower}``
+
+LUA_module_reg_template
+    Name of `luaL_Reg` array of function names for a library.
+    ``{LUA_prefix}{library}_Reg``
+
+LUA_metadata_template
+    Name of metatable for a class.
+    ``{cpp_class}.metatable``
+
+LUA_ctor_name_template
+    Name of constructor for a class.
+    Added to the library's table.
+    ``{cpp_class}``
+
+LUA_name_template
+    Name of function as know by Lua.
+    All overloaded function use the same Lua wrapper so 
+    *function_suffix* is not needed.
+    ``{function_name}``
+
+LUA_name_impl_template
+    Name of implementation function.
+    All overloaded function use the same Lua wrapper so 
+    *function_suffix* is not needed.
+    ``{LUA_prefix}{class_name}{underscore_name}``
 
 
 
@@ -344,6 +426,14 @@ c_statements
     result
         Code to use when passing result as an argument.
 
+        cpp_header
+           string of blank delimited header names
+
+        cpp_local_var
+           True if a local C++ variable is created.
+           This is the case when C and C++ are not directly compatible.
+           Usually a C++ constructor is involved.
+
 c_return_code
     Fortran code used to call function and assign the return value.
     Defaults to *None*.
@@ -424,6 +514,18 @@ f_statement
 ..         f_attr_len = None,
 ..         f_attr_size = None,
 
+f_helper
+    Additional code to add into the module for helper functions.
+
+    private
+       List of names which should be PRIVATE to the module
+
+    interface
+       Code to add to the non-executable part of the module.
+
+    source
+       Code to add in the CONTAINS section of the module.
+
 result_as_arg
     Override fields when result should be treated as an argument.
     Defaults to *None*.
@@ -474,6 +576,11 @@ py_statement
         Statement to execute after call.
         Can be use to cleanup after *f_pre_call*
         or to coerce the return value.
+
+        cpp_local_var
+           True if a local C++ variable is created.
+           This is the case when C and C++ are not directly compatible.
+           Usually a C++ constructor is involved.
 
 
 
@@ -600,6 +707,11 @@ F_name_instance_set
     Name of method to set ``type(C_PTR)`` instance pointer in wrapped class.
     Defaults to *set_instance*.
     If the name is blank, no function is generated.
+
+LUA_name
+    Name of function as known by LUA.
+    Defaults to option *LUA_name_template*.
+
 
 Annotations
 -----------

@@ -59,6 +59,55 @@ template<typename T, int DIM>
 std::ostream& operator<<(std::ostream & os, const BoundingBox<T,DIM> & pt);
 
 
+/**
+ * \brief Type trait to find the highest and lowest values for a given numeric type
+ *
+ * \note numeric_limits::max() always provides the highest possible value for all numeric type.
+ * \note For integral types, numeric_limits ::min() provides the lowest value,
+ *       but for float and double, it provides the smallest positive number.
+ *       This was fixed in cxx11 with the function numeric_limits::lowest()
+ */
+template<typename T>
+struct ValueRange
+{
+    /** \brief Returns the highest representable value of type T */
+    static T highest() { return std::numeric_limits<T>::max(); }
+
+    /** \brief Returns the lowest representable value of type T */
+    static T lowest() {
+        #ifdef USE_CXX11
+            return std::numeric_limits<T>::lowest();
+        #else
+            return std::numeric_limits<T>::min();
+        #endif
+    }
+};
+
+#ifndef USE_CXX11
+
+/**
+ * \brief Template specialization of ValueRange for float types
+ * \note Only necessary for pre-CXX11
+ */
+template<> struct ValueRange<float>
+{
+    typedef float T;
+    static T highest() { return std::numeric_limits<T>::max(); }
+    static T lowest()  { return -std::numeric_limits<T>::max(); }
+};
+
+/**
+ * \brief Template specialization of ValueRange for double types
+ * \note Only necessary for pre-CXX11
+ */
+template<> struct ValueRange<double>
+{
+    typedef double T;
+    static T highest() { return std::numeric_limits<T>::max(); }
+    static T lowest()  { return -std::numeric_limits<T>::max(); }
+};
+#endif
+
 
 /*!
  *******************************************************************************
@@ -98,8 +147,8 @@ public:
    *****************************************************************************
    */
   BoundingBox()
-    : m_min( PointType( std::numeric_limits< CoordType>::max() ) )
-    , m_max( PointType( (-1.0)*std::numeric_limits< CoordType>::max() ) ) {}
+    : m_min( PointType( ValueRange< CoordType>::highest() ) )
+    , m_max( PointType( ValueRange< CoordType>::lowest() ) ) {}
 
 
   /*!
@@ -127,10 +176,10 @@ public:
   /*!
    *****************************************************************************
    * \brief Copy Constructor.
-   * \param [in] rhs
+   * \param [in] other The bounding box to copy
    *****************************************************************************
    */
-  BoundingBox( const BoundingBox& rhs ) { *this = rhs; };
+  BoundingBox( const BoundingBox& other ) { *this = other; };
 
   /*!
    *****************************************************************************
@@ -164,13 +213,22 @@ public:
    */
   const PointType& getMax() const { return m_max; };
 
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the centroid (midpoint) of the bounding box.
+   * \return Point at the bounding box centroid.
+   *****************************************************************************
+   */
+  PointType centroid() const { return PointType::midpoint(m_min, m_max); }
+
   /*!
    *****************************************************************************
    * \brief Returns a vector from the min to the max points of the bounding box
    * \return Vector from min point to max point of bounding box.
    *****************************************************************************
    */
-  VectorType range() const { return VectorType(getMin(), getMax()); };
+  VectorType range() const { return VectorType(m_min, m_max); };
 
   /*!
    *****************************************************************************
@@ -190,14 +248,6 @@ public:
    */
   template<typename OtherType>
   void addBox(const BoundingBox<OtherType,DIM>& bbox);
-
-  /*!
-   *****************************************************************************
-   * \brief Computes the centroid of this bounding box instance.
-   * \return pt point at the bounding box centroid.
-   *****************************************************************************
-   */
-  PointType centroid() const;
 
   /*!
    *****************************************************************************
@@ -228,30 +278,34 @@ public:
    * max point expansionAmount away from center (component-wise).
    * This function checks to ensure that the bounding box is valid after expansion.
    * \note If expansionAmount is negative, the bounding box will contract
+   * \return A reference to the bounding box after it has been expanded
    *****************************************************************************
    */
-  void expand(CoordType expansionAmount);
+  BoundingBox& expand(CoordType expansionAmount);
+
 
   /*!
    *****************************************************************************
-   * \brief Scales the bounding box towards its center by a given amount.
+   * \brief Scales the bounding box about its center by a given amount.
    * \param [in] scaleFactor the multiplicative factor by which to scale
    * \note Checks to ensure that the bounding box is valid after inflation.
    * \note If scaleFactor is less than 1, the bounding box will shrink.
    * \note If scaleFactor is 0, the bounding box will shrink to its midpoint
    * \note The sign of the shrinkFactor has no effect since we are shrinking
    *  towards the center, and we fix the bounds after shrinking
+   *  \return A reference to the bounding box after it has been scaled
    *****************************************************************************
    */
-  void scale(double scaleFactor);
+  BoundingBox& scale(double scaleFactor);
 
   /*!
    *****************************************************************************
    * \brief Shifts the bounding box by a fixed displacement.
    * \param [in] displacement the amount with which to move the bounding box
+   * \return A reference to the bounding box after it has been shifted
    *****************************************************************************
    */
-  void shift(const VectorType& displacement);
+  BoundingBox& shift(const VectorType& displacement);
 
   /*!
    *****************************************************************************
@@ -267,6 +321,10 @@ public:
    * \brief Checks whether the box contains the point
    * \param [in] otherPt the point that we are checking
    * \return status true if point inside the box, else false.
+   *
+   * \note This function assumes all intervals are closed
+   * (i.e. contain their boundaries).  We may need to deal with open
+   * and half open boundaries in the future.
    *****************************************************************************
    */
   template<typename OtherType>
@@ -274,7 +332,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Checks whether the box contains another bounding box
+   * \brief Checks whether the box fully contains another bounding box
    * \param [in] otherBB the bounding box that we are checking
    * \return status true if bb is inside the box, else false.
    * \note We are allowing the other bounding box to have a different coordinate
@@ -312,8 +370,8 @@ public:
    * \brief Subdivides this bounding box instance into two sub-boxes by
    *  splitting along the given dimension. If a dimension is not provided, this
    *  method will split the bounding box along the longest dimension.
-   * \param [in/out] right the right sub-box.
-   * \param [in/out] left  the left sub-box.
+   * \param [in,out] right the right sub-box.
+   * \param [in,out] left  the left sub-box.
    * \param [in] dimension the dimension to split along (optional)
    * \pre dimension >= -1 && dimension < DIM
    * \note if dimension==-1, the bounding box is split along its longest edge.
@@ -468,6 +526,7 @@ template < typename OtherType  >
 bool BoundingBox< CoordType,DIM >::intersects(
         const BoundingBox< OtherType, DIM >& otherBB ) const
 {
+  // AABBs cannot intersect if they are separated along any dimension
   for ( int i=0; i < DIM; ++i ) {
 
      if ( (m_max[ i ] < otherBB.m_min[ i ]) ||
@@ -526,22 +585,6 @@ void BoundingBox<CoordType, DIM>::addBox(
 
 //------------------------------------------------------------------------------
 template< typename CoordType, int DIM >
-quest::Point< CoordType, DIM > BoundingBox< CoordType,DIM >::centroid() const
-{
-  SLIC_ASSERT( this->isValid() );
-
-  PointType pt;
-  for ( int i=0; i < DIM; ++i ) {
-
-      pt[ i ] = 0.5 * ( m_min[ i ] + m_max[ i ] );
-
-  }
-
-  return( pt );
-}
-
-//------------------------------------------------------------------------------
-template< typename CoordType, int DIM >
 int BoundingBox<CoordType,DIM>::getLongestDimension() const
 {
   SLIC_ASSERT( this->isValid() );
@@ -563,7 +606,7 @@ int BoundingBox<CoordType,DIM>::getLongestDimension() const
 
 //------------------------------------------------------------------------------
 template<typename CoordType, int DIM>
-void BoundingBox<CoordType, DIM>::expand(CoordType expansionAmount)
+BoundingBox<CoordType, DIM>& BoundingBox<CoordType, DIM>::expand(CoordType expansionAmount)
 {
     for (int dim=0; dim < DIM; ++dim ) {
         m_min[dim] -= expansionAmount;
@@ -571,29 +614,35 @@ void BoundingBox<CoordType, DIM>::expand(CoordType expansionAmount)
     }
 
     checkAndFixBounds();
+
+    return *this;
 }
 
 
 //------------------------------------------------------------------------------
 template<typename CoordType, int DIM>
-void BoundingBox<CoordType, DIM>::scale(double scaleFactor)
+BoundingBox<CoordType, DIM>& BoundingBox<CoordType, DIM>::scale(double scaleFactor)
 {
-    const PointType midpoint = PointType::midpoint(getMin(), getMax());
+    const PointType midpoint = centroid();
     const VectorType r = scaleFactor * 0.5 * range();
 
     m_min = PointType( midpoint.array() - r.array());
     m_max = PointType( midpoint.array() + r.array());
 
     checkAndFixBounds();
+
+    return *this;
 }
 
 
 //------------------------------------------------------------------------------
 template<typename CoordType, int DIM>
-void BoundingBox<CoordType, DIM>::shift(const VectorType& displacement)
+BoundingBox<CoordType, DIM>& BoundingBox<CoordType, DIM>::shift(const VectorType& displacement)
 {
     m_min.array() += displacement.array();
     m_max.array() += displacement.array();
+
+    return *this;
 }
 
 //------------------------------------------------------------------------------
@@ -611,8 +660,8 @@ void BoundingBox<CoordType, DIM>::checkAndFixBounds ()
 template<typename CoordType, int DIM>
 void BoundingBox<CoordType, DIM>::clear()
 {
-    m_min = PointType( std::numeric_limits< CoordType>::max() );
-    m_max = PointType( std::numeric_limits< CoordType>::min() );
+    m_min = PointType( ValueRange< CoordType>::highest() );
+    m_max = PointType( ValueRange< CoordType>::lowest() );
 }
 
 //------------------------------------------------------------------------------

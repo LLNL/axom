@@ -23,8 +23,20 @@ set(gtest_lumberjack_tests
 # Add gtest based tests
 #
 foreach(test ${gtest_lumberjack_tests})
-    add_gtest(TEST_SOURCE ${test} DEPENDS_ON lumberjack)
+    get_filename_component( test_name ${test} NAME_WE )
+    blt_add_executable( NAME ${test_name}
+                        SOURCES ${test}
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON lumberjack gtest )
+    blt_add_test( NAME ${test_name} 
+                  COMMAND ${test_name} )
 endforeach()
 
-make_executable(EXECUTABLE_SOURCE lumberjack_speedTest.cpp
-                DEPENDS_ON lumberjack )
+blt_add_executable(NAME lumberjack_speedTest
+                   SOURCES lumberjack_speedTest.cpp
+                   OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                   DEPENDS_ON lumberjack )
+blt_add_test( NAME lumberjack_speedTest_binary
+              COMMAND lumberjack_speedTest b 10 ${lumberjack_SOURCE_DIR}/tests/sampleInput/loremIpsum02)
+blt_add_test( NAME lumberjack_speedTest_root
+              COMMAND lumberjack_speedTest r 10 ${lumberjack_SOURCE_DIR}/tests/sampleInput/loremIpsum02)

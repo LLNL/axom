@@ -19,6 +19,8 @@
 #ifndef SLAM_NULL_SET_H_
 #define SLAM_NULL_SET_H_
 
+#include "common/ATKMacros.hpp"
+
 #include "slic/slic.hpp"
 #include "slam/Set.hpp"
 
@@ -55,7 +57,7 @@ namespace slam {
     // iterator_pair range();
 
   private:
-    void verifyPosition(PositionType pos) const
+    void verifyPosition(PositionType ATK_DEBUG_PARAM(pos)) const
     {
       SLIC_ASSERT_MSG(false,"Subscripting on NullSet is never valid."
           << "\n\tAttempted to access item at index " << pos << ".");

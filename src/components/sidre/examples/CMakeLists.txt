@@ -24,21 +24,27 @@ endif()
 #
 foreach(example_source ${example_sources})
     get_filename_component(exe_name ${example_source} NAME_WE)
-    make_executable(
-        EXECUTABLE_NAME   "${exe_name}"
-        EXECUTABLE_SOURCE ${example_source}
-        DEPENDS_ON sidre conduit conduit_io slic ${EXTRA_LIBS}
-        ADD_CTEST)
+    blt_add_executable(
+        NAME ${exe_name}
+        SOURCES ${example_source}
+        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
+    blt_add_test(
+        NAME ${exe_name}
+        COMMAND ${exe_name})
 endforeach()
 
 if(ENABLE_FORTRAN)
     foreach(example_source ${F_example_sources})
         get_filename_component(exe_name ${example_source} NAME_WE)
-        make_executable(
-            EXECUTABLE_NAME   ${exe_name}
-            EXECUTABLE_SOURCE ${example_source}
-            DEPENDS_ON sidre conduit conduit_io slic shroudrt ${EXTRA_LIBS}
-            ADD_CTEST)
+        blt_add_executable(
+            NAME ${exe_name}
+            SOURCES ${example_source}
+            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORy}
+            DEPENDS_ON sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
+        blt_add_test(
+            NAME ${exe_name}
+            COMMAND ${exe_name})
     endforeach()
     set_target_properties(${exe_name} PROPERTIES LINKER_LANGUAGE Fortran)
 #   set_target_properties(${exe_name} PROPERTIES Fortran_FORMAT "FREE")

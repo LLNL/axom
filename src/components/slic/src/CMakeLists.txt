@@ -37,60 +37,50 @@ set(slic_sources
 if (ENABLE_MPI)
    list(APPEND slic_headers streams/SynchronizedStream.hpp)
    list(APPEND slic_sources streams/SynchronizedStream.cpp)
-   if (ENABLE_lumberjack)
+   if (ENABLE_LUMBERJACK)
       list(APPEND slic_headers streams/LumberjackStream.hpp)
       list(APPEND slic_sources streams/LumberjackStream.cpp)
    endif()
 endif()
 
+if(ENABLE_SHROUD)
+    add_subdirectory(interface)
+endif()
+
 # XXX ENABLE_FORTRAN_WRAPPER
 if (ENABLE_FORTRAN)
     list(APPEND slic_headers
-        interface/shroud_api/wrapSLIC.h
+        interface/c_fortran/wrapSLIC.h
     )   
     set(slic_fortran_sources
-        interface/shroud_api/wrapSLIC.cpp
-        interface/shroud_api/wrapfslic.f
+        interface/c_fortran/wrapSLIC.cpp
+        interface/c_fortran/shroudrt.cpp
+        interface/c_fortran/wrapfslic.f
     )
-    add_subdirectory(interface/shroud_api)
-
-    # wrappers depend on shroud runtime library
-    set(wrapper_depends_on
-        shroudrt
-    )
-
-    # Must tell fortran where to look for modules
-    include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
 endif()
-
-#
-# custom target to copy header files in the "include" folder of the build tree.
-#
-copy_headers_target( ${PROJECT_NAME}
-                     "${slic_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
 
 #
 # make the library
 #
 set(slic_depends_on
     common
-    ${wrapper_depends_on}
 )
-if (ENABLE_lumberjack)
-  list(APPEND slic_depends_on lumberjack)
+if (ENABLE_LUMBERJACK)
+    list(APPEND slic_depends_on lumberjack)
 endif()
 
-make_library( LIBRARY_NAME
-                  slic
+blt_add_library( NAME
+                    slic
 
-              LIBRARY_SOURCES
-                  "${slic_sources}"
-                  "${slic_headers}"
-                  "${slic_fortran_sources}"
+                 SOURCES
+                    "${slic_sources}"
+                    "${slic_fortran_sources}"
 
-              DEPENDS_ON
-                  "${slic_depends_on}"
+                 HEADERS
+                    "${slic_headers}"
+
+                 DEPENDS_ON
+                    "${slic_depends_on}"
               )
 
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

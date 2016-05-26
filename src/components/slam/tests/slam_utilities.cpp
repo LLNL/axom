@@ -54,7 +54,8 @@ TEST(gtest_slam_utilities,findingAncestorPaths)
   std::string ps1 = findFileInAncestorDirs(path1);
 
   std::ifstream fileStreamP1( ps1.c_str() );
-  EXPECT_TRUE( fileStreamP1);
+  // 
+  EXPECT_TRUE( fileStreamP1.is_open());
   fileStreamP1.close();
   std::cout << "For file: " << path1 << " valid path was: " << ps1 << std::endl;
 
@@ -64,7 +65,7 @@ TEST(gtest_slam_utilities,findingAncestorPaths)
   std::string ps2 = findFileInAncestorDirs(path2);
 
   std::ifstream fileStreamP2( ps2.c_str() );
-  EXPECT_TRUE( fileStreamP2);
+  EXPECT_TRUE( fileStreamP2.is_open());
   fileStreamP2.close();
   std::cout << "For file: " << path2 << " valid path was: " << ps2 << std::endl;
 
@@ -73,7 +74,7 @@ TEST(gtest_slam_utilities,findingAncestorPaths)
   std::string ps3 = findFileInAncestorDirs(path3);
 
   std::ifstream fileStreamP3( ps3.c_str() );
-  EXPECT_TRUE( fileStreamP3);
+  EXPECT_TRUE( fileStreamP3.is_open());
   fileStreamP3.close();
   std::cout << "For file: " << path3 << " valid path was: " << ps3 << std::endl;
 
@@ -91,7 +92,7 @@ TEST(gtest_slam_utilities,findingAncestorPaths)
   EXPECT_EQ( path4, ps4);
 
   std::ifstream fileStreamP4( ps4.c_str() );
-  EXPECT_FALSE( fileStreamP4);
+  EXPECT_FALSE( fileStreamP4.is_open());
   fileStreamP4.close();
   std::cout << "There was no valid path for file: " << path4 << ".\n"
             << "Function returned: " << ps4 << std::endl;

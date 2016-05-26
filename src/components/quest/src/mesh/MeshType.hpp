@@ -60,6 +60,7 @@ static const int mesh_of_cell_type[] = {
     UNDEFINED_MESH,                 // LINEAR_PRISM,
     UNDEFINED_MESH,                 // LINEAR_PYRAMID,
 
+    UNSTRUCTURED_MIXED_ELEMENT_MESH, // MIXED
 };
 
 static const bool explicit_coordinates[] = {

@@ -25,7 +25,7 @@
 
 
 #ifndef SLAM_USE_COUNTING_ITERATOR
-//    #define SLAM_USE_COUNTING_ITERATOR
+//=    #define SLAM_USE_COUNTING_ITERATOR
 #endif
 
 #ifdef SLAM_USE_COUNTING_ITERATOR
@@ -175,7 +175,6 @@ namespace slam {
     /**
      * \class
      * \brief An iterator type for an ordered set
-     * \brief Enables iterating through the elements of an ordered set
      * Uses the set's policies for efficient iteration
      */
     template<typename OrderedSet>
@@ -284,7 +283,7 @@ namespace slam {
     {
       verifyPositionImpl(pos);
     }
-    inline void verifyPositionImpl(PositionType pos)       const
+    inline void verifyPositionImpl(PositionType ATK_DEBUG_PARAM(pos))       const
     {
       SLIC_ASSERT_MSG( isValidIndex(pos)
           , "SLAM::OrderedSet -- requested out-of-range element at position "

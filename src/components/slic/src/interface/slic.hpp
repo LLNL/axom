@@ -413,7 +413,7 @@ void addStreamToAllMsgLevels( LogStream* ls );
  * \brief Logs the given message to all registered streams.
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
- * \param [in] filter_dulicates optional parameter that indicates whether
+ * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
  *******************************************************************************
@@ -428,7 +428,7 @@ void logMessage( message::Level level,
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] tag user-supplied associated with this message.
- * \param [in] filter_dulicates optional parameter that indicates whether
+ * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
  *******************************************************************************
@@ -445,7 +445,7 @@ void logMessage( message::Level level,
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file this message is logged.
- * \param [in] filter_dulicates optional parameter that indicates whether
+ * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
  *******************************************************************************
@@ -464,7 +464,7 @@ void logMessage( message::Level level,
  * \param [in] tag user-supplied tag associated with the message.
  * \param [in] fileName the name of the file this message is logged form.
  * \param [in] line the line number within the file this message is logged.
- * \param [in] filter_dulicates optional parameter that indicates whether
+ * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
  *******************************************************************************

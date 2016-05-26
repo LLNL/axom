@@ -5,7 +5,6 @@
 !! \brief Shroud generated wrapper for Names class
 !<
 module name_module
-    use fstr_mod
     ! splicer begin class.Names.module_use
     ! splicer end class.Names.module_use
     implicit none
