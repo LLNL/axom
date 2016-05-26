@@ -26,12 +26,13 @@
 
 
 #include <cstdio>                       // defines FILENAME_MAX
+
 #ifdef WINDOWS
     #include <direct.h>
     #include <sys/stat.h>
-
-    #define GetCurrentDir _getcwd       // Warning: not tested
-    #define Stat _stat                  // Warning: not tested
+    // Warning: not yet tested on windows
+    #define GetCurrentDir _getcwd
+    #define Stat _stat
 #else
     #include <unistd.h>                 // for getcwd
     #include <sys/stat.h>               // for stat
