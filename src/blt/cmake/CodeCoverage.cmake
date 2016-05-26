@@ -77,7 +77,7 @@ endif()
 
 if ( NOT COMPILER_FAMILY_IS_GNU ) 
    MESSAGE(FATAL_ERROR "Code coverage only supported on gnu compiler. "
-					   "Either set ENABLE_CODECOV=FALSE or change your compiler to gnu. "
+					   "Either set ENABLE_COVERAGE=FALSE or change your compiler to gnu. "
 					   "Current CXX compiler is ${CMAKE_CXX_COMPILER_ID}.")
 endif()
 
@@ -123,19 +123,31 @@ SET(CMAKE_C_FLAGS_COVERAGE
     "-g -O0 ${COVERAGE_FLAGS}"
     CACHE STRING "Flags used by the C compiler during coverage builds."
     FORCE )
+    
+if(ENABLE_FORTRAN)
+    SET(CMAKE_Fortran_FLAGS_COVERAGE
+        "-g -O0 ${COVERAGE_FLAGS}"
+        CACHE STRING "Flags used by the Fortran compiler during coverage builds."
+        FORCE )
+    MARK_AS_ADVANCED(CMAKE_Fortran_FLAGS_COVERAGE)
+endif()
+
 SET(CMAKE_EXE_LINKER_FLAGS_COVERAGE
     "${COVERAGE_FLAGS}"
     CACHE STRING "Flags used for linking binaries during coverage builds."
     FORCE )
+    
 SET(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
     ""
     CACHE STRING "Flags used by the shared libraries linker during coverage builds."
     FORCE )
+    
 MARK_AS_ADVANCED(
     CMAKE_CXX_FLAGS_COVERAGE
     CMAKE_C_FLAGS_COVERAGE
     CMAKE_EXE_LINKER_FLAGS_COVERAGE
     CMAKE_SHARED_LINKER_FLAGS_COVERAGE )
+
 
 # Param _targetname     The name of new the custom make target and output file name.
 # Param _testrunner     The name of the target which runs the tests.
@@ -177,4 +189,9 @@ add_code_coverage_target(coverage make test)
 SET( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_COVERAGE}" )
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}" )
 SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_COVERAGE}" )
+
+if(ENABLE_FORTRAN)
+    SET( CMAKE_Fortran_FLAGS  "${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_COVERAGE}" )
+endif()
+
 MESSAGE(STATUS "Code coverage: enabled via gcov.")

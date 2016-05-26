@@ -23,6 +23,18 @@ if (CONDUIT_FOUND)
   endif()
 endif()
 
+################
+# Test fmt thirdparty library
+################
+blt_add_executable(
+    NAME fmt_smoke
+    SOURCES fmt_smoke.cpp
+    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+    DEPENDS_ON fmt gtest)
+blt_add_test(NAME fmt_smoke COMMAND fmt_smoke)
+
+
+
 
 
 ################################################################################
@@ -44,7 +56,7 @@ set( BLT_SMOKE_TESTS
         compiler_flag_strict_aliasing.cpp
         )
 if (ENABLE_FORTRAN)                    
-    list(APPEND BLT_SMOKE_TESTS compiler_flag_fortran_preprocessor.f90)
+    list(APPEND BLT_SMOKE_TESTS compiler_flag_fortran_preprocessor.F)
 endif()
 
 
@@ -62,7 +74,7 @@ foreach(test ${BLT_SMOKE_TESTS})
         )
 endforeach()
 
-set( ADDL_SMOKE_FLAGS "${ATK_TREAT_WARNINGS_AS_ERRORS} ${ATK_ENABLE_ALL_WARNINGS}")
+set( ADDL_SMOKE_FLAGS "${BLT_WARNINGS_AS_ERRORS_FLAG} ${BLT_ENABLE_ALL_WARNINGS_FLAG}")
 
 set_target_properties(compiler_flag_uninitialized 
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNINITIALIZED_WARNINGS}")
@@ -79,11 +91,10 @@ blt_append_custom_compiler_flag(FLAGS_VAR TMP_OPT_FLAG DEFAULT "-O2")
 set_target_properties(compiler_flag_strict_aliasing 
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${TMP_OPT_FLAG} ${ATK_DISABLE_ALIASING_WARNINGS}")
 
+
+# The following test checks that the C preprocessor is invoked on Fortran files with extension *.F 
 if(ENABLE_FORTRAN)
     set_target_properties(compiler_flag_fortran_preprocessor 
                           PROPERTIES LINKER_LANGUAGE Fortran)
-
-    set_target_properties(compiler_flag_fortran_preprocessor 
-        PROPERTIES COMPILE_FLAGS "${ATK_PREPROCESS_FORTRAN}")
 endif()
 

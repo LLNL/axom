@@ -73,7 +73,8 @@ if(ENABLE_FORTRAN)
     # Create macros for Fortran name mangling
     include(FortranCInterface)
     FortranCInterface_HEADER(${HEADER_INCLUDES_DIRECTORY}/common/FC.h MACRO_NAMESPACE "FC_")
-
+    FortranCInterface_VERIFY()
+    
     if (ENABLE_MPI)
         # Determine if we should use fortran mpif.h header or fortran mpi module
         find_path(mpif_path
@@ -143,16 +144,6 @@ blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_ALIASING_WARNINGS
                   XL      ""
                   )
 list(APPEND custom_compiler_flags_list ATK_DISABLE_ALIASING_WARNINGS)
-
-# Flag for enabling the C preprocessor in fortran.
-# (Note KW 5/2016) The XL flag only applies to *.f90 files -- I could not find a more general solution.   
-#     xlf only allows one file remapping at a time. If you have *.f files, '-qsuffix=cpp=f' should work.
-#     Alternatively, you can rename the file's extension to automatically invoke the preprocessor (e.g. *.f90 ->  *.F90)
-blt_append_custom_compiler_flag(FLAGS_VAR ATK_PREPROCESS_FORTRAN
-                  DEFAULT "-cpp"
-                  XL      "-qsuffix=cpp=f90"  # Note: only invokes the preprocessor on files with extension *.f90
-                  )
-list(APPEND custom_compiler_flags_list ATK_PREPROCESS_FORTRAN)
 
    
 # message(STATUS "Custom compiler flags:")

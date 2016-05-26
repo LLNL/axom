@@ -23,7 +23,7 @@ set(tinyHydro_lib_sources
 
 # blt_add_executable depends_on handles our include dir settings
 # these teste are using boost so boost needs to be a dep
-set(slam_tiny_hydro_lib_depends_on slam slic sidre gtest)
+set(slam_tiny_hydro_lib_depends_on common slam slic gtest)
 if (ENABLE_BOOST)
     list(APPEND slam_tiny_hydro_lib_depends_on boost)
 endif()
