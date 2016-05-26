@@ -882,7 +882,7 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
  */
 void DataGroup::createNativeLayout(Node& n) const
 {
-  n.reset();
+    //  n.reset();
 
   // Dump the group's views
   IndexType vidx = getFirstValidViewIndex();
@@ -918,7 +918,7 @@ void DataGroup::createNativeLayout(Node& n) const
  */
 void DataGroup::createExternalLayout(Node& n) const
 {
-  n.reset();
+    // n.reset();
 
   // Dump the group's views
   IndexType vidx = getFirstValidViewIndex();
