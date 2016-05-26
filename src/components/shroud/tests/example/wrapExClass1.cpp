@@ -27,7 +27,7 @@ AA_exclass1 * AA_exclass1_new(const char * name)
 {
 
 // splicer begin class.ExClass1.method.new
-std::string SH_name(name);
+const std::string SH_name(name);
 ExClass1 * rv = new ExClass1(SH_name);
 return static_cast<AA_exclass1 *>(static_cast<void *>(rv));
 // splicer end class.ExClass1.method.new
@@ -47,7 +47,7 @@ AA_exclass1 * AA_exclass1_new_bufferify(const char * name, int Lname)
 {
 
 // splicer begin class.ExClass1.method.new_bufferify
-std::string SH_name(name, Lname);
+const std::string SH_name(name, Lname);
 ExClass1 * rv = new ExClass1(SH_name);
 return static_cast<AA_exclass1 *>(static_cast<void *>(rv));
 // splicer end class.ExClass1.method.new_bufferify

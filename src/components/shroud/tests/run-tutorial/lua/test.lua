@@ -69,3 +69,4 @@ local obj = tutorial.Class1()
 obj:Method1()
 print(tutorial.LastFunctionCalled())
 
+--XXX    tutorial.useclass(obj)

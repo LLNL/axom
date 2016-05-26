@@ -62,6 +62,8 @@ public:
     void Method1();
 };
 
+void useclass(const Class1 *arg);
+
 } /* end namespace tutorial */
 
 #endif // TUTORIAL_HPP

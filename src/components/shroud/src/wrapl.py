@@ -417,16 +417,17 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 #        if '_has_default_arg' in node:
 #            append_format(LUA_decl, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
 
-        fmt.LUA_index = 1
         # Only process nargs.
         # Each variation of default-arguments produces a new call.
+        fmt_arg = util.Options(fmt)
+        fmt_arg.LUA_index = 1
         for iarg in range(luafcn.nargs):
             arg = node['args'][iarg]
             arg_name = arg['name']
-            fmt.c_var = arg['name']
-            fmt.cpp_var = fmt.c_var
-            fmt.lua_var = 'SH_Lua_' + fmt.c_var
-            fmt.c_var_len = 'L' + fmt.c_var
+            fmt_arg.c_var = arg['name']
+            fmt_arg.cpp_var = fmt_arg.c_var
+            fmt_arg.lua_var = 'SH_Lua_' + fmt_arg.c_var
+            fmt_arg.c_var_len = 'L' + fmt_arg.c_var
             attrs = arg['attrs']
 
             lua_pop = None
@@ -434,21 +435,21 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             arg_typedef = self.typedef[arg['type']]
             LUA_statements = arg_typedef.LUA_statements
             if attrs['intent'] in [ 'inout', 'in']:
-#                lua_pop = wformat(arg_typedef.LUA_pop, fmt)
+#                lua_pop = wformat(arg_typedef.LUA_pop, fmt_arg)
                 # lua_pop is a C++ expression
-                fmt.c_var = wformat(arg_typedef.LUA_pop, fmt)
-                lua_pop = wformat(arg_typedef.c_to_cpp, fmt)
-                fmt.LUA_index += 1 
+                fmt_arg.c_var = wformat(arg_typedef.LUA_pop, fmt_arg)
+                lua_pop = wformat(arg_typedef.c_to_cpp, fmt_arg)
+                fmt_arg.LUA_index += 1 
 
             if attrs['intent'] in [ 'inout', 'out']:
                 # output variable must be a pointer
                 # XXX - fix up for strings
-#                format, vargs = self.intent_out(arg_typedef, fmt, post_call)
+#                format, vargs = self.intent_out(arg_typedef, fmt_arg, post_call)
 #                build_format.append(format)
 #                build_vargs.append('*' + vargs)
 
-                #append_format(LUA_push, arg_typedef.LUA_push, fmt)
-                tmp = wformat(arg_typedef.LUA_push, fmt)
+                #append_format(LUA_push, arg_typedef.LUA_push, fmt_arg)
+                tmp = wformat(arg_typedef.LUA_push, fmt_arg)
                 LUA_push.append( tmp + ';' )
 
             # argument for C++ function
@@ -470,7 +471,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                 decl_suffix = ';'
             LUA_decl.append(self.std_c_decl(lang, arg, const=arg_const, ptr=ptr) + decl_suffix)
             
-            cpp_call_list.append(fmt.cpp_var)
+            cpp_call_list.append(fmt_arg.cpp_var)
 
         # call with arguments
         fmt.cpp_call_list = ', '.join(cpp_call_list)
