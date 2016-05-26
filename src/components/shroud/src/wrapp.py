@@ -356,11 +356,13 @@ return 1;""", fmt)
             arg_names = []
             arg_offsets  = []
             offset = 0
+            fmt_arg = util.Options(fmt)
             for arg in args:
                 arg_name = arg['name']
-                fmt.c_var = arg['name']
-                fmt.cpp_var = fmt.c_var
-                fmt.py_var = 'SH_Py_' + fmt.c_var
+                fmt_arg.c_var = arg['name']
+                fmt_arg.cpp_var = fmt_arg.c_var
+                fmt_arg.py_var = 'SH_Py_' + fmt_arg.c_var
+                fmt_arg.C_const = 'const ' if arg['attrs'].get('const', False) else ''
                 attrs = arg['attrs']
 
                 arg_typedef = self.typedef[arg['type']]
@@ -386,7 +388,7 @@ return 1;""", fmt)
                         # Expect object of given type
                         parse_format.append('!')
                         parse_vargs.append('&' + arg_typedef.PY_PyTypeObject)
-                        arg_name = fmt.py_var
+                        arg_name = fmt_arg.py_var
                     elif arg_typedef.PY_from_object:
                         # Use function to convert object
                         parse_format.append('&')
@@ -397,16 +399,16 @@ return 1;""", fmt)
 
                     have_cpp_local_var = py_statements.get('intent_in',{}).get('cpp_local_var', False)
                     if have_cpp_local_var:
-                        fmt.cpp_var = 'SH_' + fmt.c_var
+                        fmt_arg.cpp_var = 'SH_' + fmt_arg.c_var
                     cmd_list = py_statements.get('intent_in',{}).get('post_parse',[])
                     if cmd_list:
                         for cmd in cmd_list:
-                            append_format(post_parse, cmd, fmt)
+                            append_format(post_parse, cmd, fmt_arg)
 
                 if attrs['intent'] in [ 'inout', 'out']:
                     # output variable must be a pointer
                     # XXX - fix up for strings
-                    format, vargs = self.intent_out(arg_typedef, fmt, post_call)
+                    format, vargs = self.intent_out(arg_typedef, fmt_arg, post_call)
                     build_format.append(format)
                     build_vargs.append('*' + vargs)
 
@@ -420,22 +422,22 @@ return 1;""", fmt)
                     ptr = True
                 else:
                     ptr = False
-                PY_decl.append(self.std_c_decl(lang, arg, const=False, ptr=ptr) + ';')
+                PY_decl.append(self.std_c_decl(lang, arg, ptr=ptr) + ';')
                 
                 if arg_typedef.PY_PyTypeObject:
                     # A Python Object which must be converted to C++ type.
                     objtype = arg_typedef.PY_PyObject or 'PyObject'
-                    PY_decl.append(objtype + ' * ' + fmt.py_var + ';')
-                    cpp_call_list.append(fmt.cpp_var)
+                    PY_decl.append(objtype + ' * ' + fmt_arg.py_var + ';')
+                    cpp_call_list.append(fmt_arg.cpp_var)
                 elif arg_typedef.PY_from_object:
                     # already a C++ type
-                    cpp_call_list.append(fmt.cpp_var)
+                    cpp_call_list.append(fmt_arg.cpp_var)
                 elif have_cpp_local_var:
-                    cpp_call_list.append(fmt.cpp_var)
+                    cpp_call_list.append(fmt_arg.cpp_var)
                 else:
                     # convert to C++ type
-                    fmt.ptr=' *' if arg['attrs'].get('ptr', False) else ''
-                    append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
+                    fmt_arg.ptr=' *' if arg['attrs'].get('ptr', False) else ''
+                    append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt_arg)
 
 
             if True:

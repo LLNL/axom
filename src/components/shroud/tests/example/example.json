@@ -2648,10 +2648,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -2679,7 +2679,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
@@ -2696,10 +2696,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -2727,7 +2727,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
@@ -2744,10 +2744,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -2781,7 +2781,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }

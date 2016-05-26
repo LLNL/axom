@@ -268,8 +268,8 @@ computed using ``len``::
         const char * arg2, int Larg2,
         char * SH_F_rv, int LSH_F_rv)
     {
-        std::string SH_arg1(arg1, Larg1);
-        std::string SH_arg2(arg2, Larg2);
+        const std::string SH_arg1(arg1, Larg1);
+        const std::string SH_arg2(arg2, Larg2);
         const std::string rv = Function4a(SH_arg1, SH_arg2);
         asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
         return rv;
@@ -427,7 +427,8 @@ The generated C wrappers uses the mangled name::
 
     void TUT_function6_from_name(const char * name)
     {
-        Function6(name);
+        const std::string SH_name(name);
+        Function6(SH_name);
         return;
     }
 

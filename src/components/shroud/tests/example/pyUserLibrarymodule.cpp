@@ -42,7 +42,7 @@ PP_is_name_valid(
   PyObject *kwds)
 {
 // splicer begin function.is_name_valid
-    char * name;
+    const char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -51,7 +51,7 @@ PP_is_name_valid(
     {
         return NULL;
     }
-    std::string SH_name(name);
+    const std::string SH_name(name);
     bool rv = isNameValid(SH_name);
     PyObject * SH_Py_rv = PyBool_FromLong(rv);
     return (PyObject *) SH_Py_rv;
@@ -82,7 +82,7 @@ PP_test_names(
   PyObject *kwds)
 {
 // splicer begin function.test_names
-    char * name;
+    const char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -91,7 +91,7 @@ PP_test_names(
     {
         return NULL;
     }
-    std::string SH_name(name);
+    const std::string SH_name(name);
     test_names(SH_name);
     Py_RETURN_NONE;
 // splicer end function.test_names
@@ -104,7 +104,7 @@ PP_test_names_flag(
   PyObject *kwds)
 {
 // splicer begin function.test_names_flag
-    char * name;
+    const char * name;
     int flag;
     const char *kwcpp = "name\0flag";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
@@ -114,7 +114,7 @@ PP_test_names_flag(
     {
         return NULL;
     }
-    std::string SH_name(name);
+    const std::string SH_name(name);
     test_names(SH_name, flag);
     Py_RETURN_NONE;
 // splicer end function.test_names_flag

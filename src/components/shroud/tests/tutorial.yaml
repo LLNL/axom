@@ -122,6 +122,10 @@ functions:
 - decl: TypeID typefunc(TypeID arg)
 - decl: EnumTypeID enumfunc(EnumTypeID arg)
 
+- decl: void useclass(const Class1 *arg1) 
+  options:
+    wrap_lua: False
+
 
 ##################################################
 
