@@ -63,11 +63,8 @@ int main(int argc, char * argv[])
     return 0;
   }
 
-  std::vector<DataGroup *> groups;
-  groups.push_back(root);
-
-  IOManager reader(MPI_COMM_WORLD, &(groups[0]), groups.size(), num_files);
-  reader.read(root_file);
+  IOManager reader(MPI_COMM_WORLD, num_files);
+  reader.read(root, root_file);
 
   delete ds;
 

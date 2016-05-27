@@ -56,13 +56,10 @@ public:
    * \brief Constructor
    *
    * \param com               MPI communicator
-   * \param groups            Array of pointers to DataGroups.
-   * \param num_datagroups    Size of the groups array
+   * \param group            Pointer to a DataGroup holding data for I/O
    * \param num_files         Number of files for I/O
    */
   IOManager(MPI_Comm com,
-            sidre::DataGroup ** groups,
-            int num_datagroups,
             int num_files);
 
   /*!
@@ -73,31 +70,36 @@ public:
   /*!
    * \brief write
    *
+   * \param group         DataGroup to write to output
    * \param file_string   base name for output file
    * \param cycle         cycle counter
    * \param protocol      identifies I/O protocol (format, e
    */
-  void write(const std::string& file_string,
+  void write(sidre::DataGroup * group,
+             const std::string& file_string,
              int cycle,
              const std::string& protocol);
 
   /*!
    * \brief read from input files
    *
+   * \param group         DataGroup to fill with input data
    * \param file_string   base name of input files
    * \param cycle         cycle counter
    * \param protocol      identifies I/O protocol
    */
-  void read(const std::string& file_string,
+  void read(sidre::DataGroup * group,
+            const std::string& file_string,
             int cycle,
             const std::string& protocol);
 
   /*!
    * \brief read from a root file
    *
+   * \param group         DataGroup to fill with input data
    * \param root_file     root file containing input data
    */
-  void read(const std::string& root_file);
+  void read(sidre::DataGroup * group, const std::string& root_file);
 
 private:
 
@@ -107,15 +109,13 @@ private:
                       const std::string& file_base,
                       int cycle);
 
-  std::string getHDF5FileName(hid_t root_file_id, int rankgroup_id, int datagroup_id);
+  std::string getHDF5FileName(hid_t root_file_id, int rankgroup_id);
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
 
   IOBaton m_baton;
 
-  sidre::DataGroup ** m_datagroups;
-  int m_num_datagroups;
   int m_num_files;
 
   MPI_Comm m_mpi_comm;
