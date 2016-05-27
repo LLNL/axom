@@ -279,6 +279,9 @@ SIDRE_datagroup * SIDRE_datagroup_move_group(SIDRE_datagroup * self,
 
 void SIDRE_datagroup_print(SIDRE_datagroup * self);
 
+bool SIDRE_datagroup_is_equivalent_to(SIDRE_datagroup * self,
+                                      const SIDRE_datagroup * other);
+
 #ifdef __cplusplus
 }
 #endif

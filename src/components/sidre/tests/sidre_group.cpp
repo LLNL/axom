@@ -813,17 +813,21 @@ TEST(sidre_group,save_restore_external_data)
   const std::string file_path_base("sidre_save_external_");
 
   int nfoo = 10;
-  int foo1[nfoo], foo2[nfoo];
+  int foo1[nfoo], foo2[nfoo], *foo3;
   for (int i = 0; i < nfoo; ++i)
   {
     foo1[i] = i;
     foo2[i] = 0;
   }
+  foo3 = NULL;
 
   DataStore * ds1 = new DataStore();
   DataGroup * root1 = ds1->getRoot();
 
-  root1->createView("external_array", INT_ID, nfoo, foo1 );
+  root1->createView("external_array", INT_ID, nfoo, foo1);
+  root1->createView("empty_array", INT_ID, nfoo, foo3);
+  // XXX this falls into createView(name, type, ndims, shape)
+  // root1->createView("empty_array", INT_ID, nfoo, NULL);
 
   for (int i = 0; i < nprotocols; ++i) {
       const std::string file_path = file_path_base + protocols[i];
@@ -844,18 +848,28 @@ TEST(sidre_group,save_restore_external_data)
 
       // load has set the type and size of the view.
       // Now set the external address before calling loadExternal.
-      DataView * view = root2->getView("external_array");
-      EXPECT_TRUE(view->isExternal());
-      EXPECT_TRUE(view->isDescribed());
-      EXPECT_EQ(view->getNumElements(), nfoo);
-      view->setExternalDataPtr(foo2);
+      DataView * view1 = root2->getView("external_array");
+      EXPECT_TRUE(view1->isExternal());
+      EXPECT_TRUE(view1->isDescribed());
+      EXPECT_EQ(view1->getNumElements(), nfoo);
+      EXPECT_TRUE(view1->getVoidPtr() == ATK_NULLPTR);
+      view1->setExternalDataPtr(foo2);
+
+      DataView * view2 = root2->getView("empty_array");
+      EXPECT_TRUE(view2->isEmpty());
+      EXPECT_TRUE(view2->getVoidPtr() == ATK_NULLPTR);
+      view2->setExternalDataPtr(foo3);
 
       // Read external data into views
       ds2->loadExternalData(file_path, protocols[i]);
 
-      for (int i = 0; i < nfoo; ++i)
+      // Make sure addresses have not changed
+      EXPECT_TRUE(view1->getVoidPtr() == static_cast<void *>(foo2));
+      EXPECT_TRUE(view2->getVoidPtr() == static_cast<void *>(foo3));  // ATK_NULLPTR
+
+      for (int j = 0; i < nfoo; ++i)
       {
-        EXPECT_TRUE( foo1[i] == foo2[i] );
+        EXPECT_TRUE( foo1[j] == foo2[j] );
       }
 
       delete ds2;

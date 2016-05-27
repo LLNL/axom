@@ -199,6 +199,24 @@ bool SIDRE_dataview_is_applied(SIDRE_dataview * self)
 // splicer end class.DataView.method.is_applied
 }
 
+bool SIDRE_dataview_is_described(SIDRE_dataview * self)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.is_described
+  bool rv = selfobj->isDescribed();
+  return rv;
+// splicer end class.DataView.method.is_described
+}
+
+bool SIDRE_dataview_is_empty(SIDRE_dataview * self)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.is_empty
+  bool rv = selfobj->isEmpty();
+  return rv;
+// splicer end class.DataView.method.is_empty
+}
+
 bool SIDRE_dataview_is_opaque(SIDRE_dataview * self)
 {
   DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));

@@ -894,6 +894,19 @@ void SIDRE_datagroup_print(SIDRE_datagroup * self)
 // splicer end class.DataGroup.method.print
 }
 
+bool SIDRE_datagroup_is_equivalent_to(SIDRE_datagroup * self,
+                                      const SIDRE_datagroup * other)
+{
+  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.is_equivalent_to
+  bool rv =
+    selfobj->isEquivalentTo(static_cast<const DataGroup *>(static_cast<const
+                                                                       void *>(
+                                                             other)));
+  return rv;
+// splicer end class.DataGroup.method.is_equivalent_to
+}
+
 // splicer begin class.DataGroup.additional_functions
 // splicer end class.DataGroup.additional_functions
 

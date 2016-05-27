@@ -132,7 +132,7 @@ contains
     ext2 = Extent(0, 2 * ihi_val)
 
     ext2_view = problem_gp%create_view_empty("ext2")
-    call ext2_view%set_external_data_ptr_only( c_loc(ext2) )
+    call ext2_view%set_external_data_ptr( c_loc(ext2) )
 
     call assert_equals(ext2_view%is_opaque(), .true.)
 

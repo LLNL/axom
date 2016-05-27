@@ -18,6 +18,10 @@ module sidre_group
   use slic_mod
   implicit none
 
+  ! Test protocols
+  integer, parameter :: nprotocols = 3
+  character(12) :: protocols(nprotocols) = [ "conduit     ", "conduit_hdf5", "text        " ]
+
 contains
 
   !------------------------------------------------------------------------------
@@ -587,6 +591,151 @@ contains
   end subroutine create_view_of_buffer_with_datatype
 
   !------------------------------------------------------------------------------
+  subroutine save_restore_empty
+    character(24) :: file_path_base = "F_sidre_empty_datastore_"
+    character(80) file_path
+    integer i
+    type(datastore) ds1, ds2
+    type(datagroup) root2
+
+    call set_case_name("save_restore_empty")
+
+    ds1 = datastore_new()
+
+    do i = 1, nprotocols
+       file_path = file_path_base //  protocols(i)
+       call ds1%save(file_path, protocols(i))
+    enddo
+
+    call ds1%delete()
+
+    ! Only restore conduit_hdf5
+    do i = 2,2
+       file_path = file_path_base //  protocols(i)
+
+       ds2 = datastore_new()
+       root2 = ds2%get_root()
+
+       call ds2%load(file_path, protocols(i))
+
+       call assert_true(ds2%get_num_buffers() == 0 )
+       call assert_true(root2%get_num_groups() == 0 )
+       call assert_true(root2%get_num_views() == 0 )
+
+       call ds2%delete()
+    enddo
+  end subroutine save_restore_empty
+
+  !------------------------------------------------------------------------------
+
+  subroutine save_restore_scalars_and_strings
+    character(33) :: file_path_base = "F_sidre_save_scalars_and_strings_"
+    character(80) file_path
+    integer i
+    type(datastore) ds1, ds2
+    type(datagroup) root1, root2
+    type(dataview) view
+
+    call set_case_name("save_restore_scalars_and_strings")
+
+    ds1 = datastore_new()
+    root1 = ds1%get_root()
+
+    view = root1%create_view_scalar_int("i0", 1)
+    view = root1%create_view_scalar_float("f0", 1.e0)
+    view = root1%create_view_scalar_double("d0", 10.d0)
+    view = root1%create_view_string("s0", "I am a string")
+
+    do i = 1, nprotocols
+       file_path = file_path_base // protocols(i)
+       call ds1%save(file_path, protocols(i))
+    enddo
+
+    ! only restore conduit_hdf
+    do i = 2,2
+       file_path = file_path_base //  protocols(i)
+
+       ds2 = datastore_new()
+       root2 = ds2%get_root()
+
+       call ds2%load(file_path, protocols(i))
+
+       call assert_true( root1%is_equivalent_to( root2 ))
+
+       call ds2%delete()
+    enddo
+
+    call ds1%delete()
+  end subroutine save_restore_scalars_and_strings
+
+  !------------------------------------------------------------------------------
+  subroutine save_restore_external_data
+    character(22) :: file_path_base = "F_sidre_save_external_"
+    character(80) file_path
+    integer i, j
+    integer, parameter :: nfoo = 10
+    integer foo1(nfoo), foo2(nfoo)
+    integer, pointer :: foo3 => null()
+    type(datastore) ds1, ds2
+    type(datagroup) root1, root2
+    type(dataview) view1, view2
+
+    call set_case_name("save_restore_external_data")
+
+    do i = 1, nfoo
+       foo1(i) = i - 1   ! -1 to match C++
+       foo2(i) = 0
+    enddo
+
+    ds1 = datastore_new()
+    root1 = ds1%get_root()
+
+    view1 = root1%create_array_view("external_array", foo1)
+    view2 = root1%create_array_view("empty_array", foo3)
+
+    do i = 1, nprotocols
+       file_path = file_path_base //  protocols(i)
+       call ds1%save(file_path, protocols(i))
+    enddo
+
+    call ds1%delete()
+    
+    ! now load back in.
+    ! only restore conduit protocol_hdf5
+    do i = 2, 2
+       file_path = file_path_base //  protocols(i)
+
+       ds2 = datastore_new()
+       root2 = ds2%get_root()
+
+       call ds2%load(file_path, protocols(i))
+
+       ! load has set the type and size of the view.
+       ! now set the external address before calling load_external.
+       view1 = root2%get_view("external_array")
+       call assert_true(view1%is_external())
+       call assert_true(view1%is_described())
+       call assert_true(view1%get_num_elements() == nfoo)
+       call view1%set_array_data_ptr(foo2)
+
+       view2 = root2%get_view("empty_array");
+       call assert_true(view2%is_empty())
+!       call view2%set_array_data_ptr(foo3)
+       call root2%set_array_data_ptr("empty_array", foo3)
+
+       ! read external data into views
+       call ds2%load_external_data(file_path, protocols(i))
+
+       do j = 1, nfoo
+          call assert_true( foo1(j) == foo2(j) )
+       enddo
+
+       call ds2%delete()
+    enddo
+   
+   end subroutine save_restore_external_data
+
+  !------------------------------------------------------------------------------
   subroutine save_restore_simple
     type(datastore) ds, ds2
     type(datagroup) root, root2, flds, ga
@@ -718,6 +867,9 @@ program fortran_test
   call create_destroy_view_and_data
   call create_destroy_alloc_view_and_data
   call create_view_of_buffer_with_datatype
+  call save_restore_empty
+  call save_restore_scalars_and_strings
+  call save_restore_external_data
 ! TODO - redo these, the C++ tests were heavily rewritten
 !  call save_restore_simple
 !  call save_restore_complex
