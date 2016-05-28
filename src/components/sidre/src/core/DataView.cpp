@@ -961,24 +961,23 @@ char const * DataView::getStateStringName(State state)
 void DataView::exportTo(conduit::Node& data_holder,
                         std::set<IndexType>& buffer_indices) const
 {
-  data_holder["schema"] = m_schema.to_json();
   data_holder["state"] = static_cast<unsigned int>(m_state);
-  data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
 
   switch (m_state) {
   case EMPTY:
-    // TODO - take this out when CON-131 resolved ( can't write out empty node ).
-    data_holder["node"] = getNode();
-    data_holder["node"].set_string("empty");
     break;
   case BUFFER:
     {
       IndexType buffer_id = getBuffer()->getIndex();
       data_holder["buffer_id"] = buffer_id;
+      data_holder["schema"] = m_schema.to_json();
+      data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
       buffer_indices.insert(buffer_id);
     }
     break;
   case EXTERNAL:
+    data_holder["schema"] = m_schema.to_json();
+    data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
     break;
   case SCALAR:
   case STRING:
@@ -999,17 +998,19 @@ void DataView::importFrom(conduit::Node& data_holder,
                           const std::map<IndexType, IndexType>& buffer_id_map)
 {
   m_state = static_cast<State>(data_holder["state"].as_unsigned_int());
-  bool is_applied = data_holder["is_applied"].as_unsigned_char();
-  conduit::Schema schema( data_holder["schema"].as_string() );
 
-  // If view has a buffer, the easiest way to restore it is to use a series of
-  // API calls.
-  if ( m_state == BUFFER )
-  {
+  switch (m_state) {
+  case EMPTY:
+    break;
+  case BUFFER: {
+    // If view has a buffer, the easiest way to restore it is to use a series of
+    // API calls.
     // Start from scratch
     m_state = EMPTY;
 
     IndexType old_buffer_id = data_holder["buffer_id"].as_int();
+    conduit::Schema schema( data_holder["schema"].as_string() );
+    bool is_applied = data_holder["is_applied"].as_unsigned_char();
 
     SLIC_ASSERT_MSG( buffer_id_map.find(old_buffer_id) != buffer_id_map.end(),
                      "Buffer id map is old-new id entry for buffer " << old_buffer_id );
@@ -1024,15 +1025,22 @@ void DataView::importFrom(conduit::Node& data_holder,
     {
       apply();
     }
-  }
-  // For the other cases, the view state is simpler and the data is kept
-  // internally in the view's buffer.
-  // Note: This is all going to change for the external data case when we add the two-step support...
-  else
-  {
+    }
+    break;
+  case EXTERNAL:
+    // Note that m_is_applied is set but m_external_ptr is NULL resulting
+    // in an inconsistent state until DataStore::loadExternalData is called.
     m_schema.set( data_holder["schema"].as_string() );
+    m_is_applied = data_holder["is_applied"].as_unsigned_char();
+    break;
+  case SCALAR:
+  case STRING:
     m_node = data_holder["node"];
-    m_is_applied = is_applied;
+    m_schema.set(m_node.schema());
+    m_is_applied = true;
+    break;
+  default:
+    SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
 
   // We don't save the shape vector, just call this to set it after the schema
