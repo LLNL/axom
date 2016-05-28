@@ -828,6 +828,7 @@ TEST(sidre_group,save_restore_external_data)
   root1->createView("empty_array", INT_ID, nfoo, foo3);
   // XXX this falls into createView(name, type, ndims, shape)
   // root1->createView("empty_array", INT_ID, nfoo, NULL);
+  root1->createView("external_undescribed")->setExternalDataPtr(foo1);
 
   for (int i = 0; i < nprotocols; ++i) {
       const std::string file_path = file_path_base + protocols[i];
@@ -857,8 +858,18 @@ TEST(sidre_group,save_restore_external_data)
 
       DataView * view2 = root2->getView("empty_array");
       EXPECT_TRUE(view2->isEmpty());
+      EXPECT_TRUE(view2->isDescribed());
       EXPECT_TRUE(view2->getVoidPtr() == ATK_NULLPTR);
       view2->setExternalDataPtr(foo3);
+
+      DataView * view3 = root2->getView("external_undescribed");
+      EXPECT_TRUE(view3->isEmpty());
+      EXPECT_FALSE(view3->isDescribed());
+      EXPECT_TRUE(view3->getVoidPtr() == ATK_NULLPTR);
+      // Set "external_array" and "external_undescribed" to the same external array
+      // since it was created that way.  However, "external_undescribed" was not
+      // written to the dump sice it is undescribed.
+      view3->setExternalDataPtr(foo2);
 
       // Read external data into views
       ds2->loadExternalData(file_path, protocols[i]);
@@ -866,6 +877,7 @@ TEST(sidre_group,save_restore_external_data)
       // Make sure addresses have not changed
       EXPECT_TRUE(view1->getVoidPtr() == static_cast<void *>(foo2));
       EXPECT_TRUE(view2->getVoidPtr() == static_cast<void *>(foo3));  // ATK_NULLPTR
+      EXPECT_TRUE(view3->getVoidPtr() == static_cast<void *>(foo2));
 
       for (int j = 0; i < nfoo; ++i)
       {

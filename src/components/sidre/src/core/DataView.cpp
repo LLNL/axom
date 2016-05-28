@@ -664,7 +664,7 @@ void DataView::createExternalLayout(Node &parent) const
   // Note: We are using conduit's pointer rather than the DataView pointer
   //    since the conduit pointer handles offsetting
   // Note: const_cast the pointer to satisfy conduit's interface
-  if (isExternal())
+  if (isExternal() && isDescribed())
   {
     Node & n = parent[ m_name ];
     void* data_ptr = const_cast<void*>(m_node.data_ptr());
@@ -976,15 +976,23 @@ void DataView::exportTo(conduit::Node& data_holder,
       data_holder["buffer_id"] = buffer_id;
       if (isDescribed())
       {
-	data_holder["schema"] = m_schema.to_json();
+        data_holder["schema"] = m_schema.to_json();
       }
       data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
       buffer_indices.insert(buffer_id);
     }
     break;
   case EXTERNAL:
-    data_holder["schema"] = m_schema.to_json();
-    data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
+    if (isDescribed())
+    {
+      data_holder["schema"] = m_schema.to_json();
+      data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
+    }
+    else
+    {
+      // If there is no description, make it an EMPTY view
+      data_holder["state"] = static_cast<unsigned int>(EMPTY);
+    }
     break;
   case SCALAR:
   case STRING:

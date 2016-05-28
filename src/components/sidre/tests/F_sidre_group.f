@@ -675,7 +675,7 @@ contains
     integer i, j
     integer, parameter :: nfoo = 10
     integer foo1(nfoo), foo2(nfoo)
-    integer, pointer :: foo3 => null()
+    integer, pointer :: foo3(:) => null()
     type(datastore) ds1, ds2
     type(datagroup) root1, root2
     type(dataview) view1, view2
@@ -692,6 +692,8 @@ contains
 
     view1 = root1%create_array_view("external_array", foo1)
     view2 = root1%create_array_view("empty_array", foo3)
+    ! "external_undescribed" is impossible to create with create_array_view, so skip test
+    ! Could munge with set_external_data_ptr(C_LOC(array))
 
     do i = 1, nprotocols
        file_path = file_path_base //  protocols(i)
@@ -720,6 +722,8 @@ contains
 
        view2 = root2%get_view("empty_array");
        call assert_true(view2%is_empty())
+       ! This should actually be false (undescribed) since foo3 is unassociated - ATK-744
+       call assert_true(view2%is_described())
 !       call view2%set_array_data_ptr(foo3)
        call root2%set_array_data_ptr("empty_array", foo3)
 
