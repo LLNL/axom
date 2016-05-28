@@ -965,12 +965,19 @@ void DataView::exportTo(conduit::Node& data_holder,
 
   switch (m_state) {
   case EMPTY:
+    if (isDescribed())
+    {
+      data_holder["schema"] = m_schema.to_json();
+    }
     break;
   case BUFFER:
     {
       IndexType buffer_id = getBuffer()->getIndex();
       data_holder["buffer_id"] = buffer_id;
-      data_holder["schema"] = m_schema.to_json();
+      if (isDescribed())
+      {
+	data_holder["schema"] = m_schema.to_json();
+      }
       data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
       buffer_indices.insert(buffer_id);
     }
@@ -1001,6 +1008,11 @@ void DataView::importFrom(conduit::Node& data_holder,
 
   switch (m_state) {
   case EMPTY:
+    if (data_holder.has_path("schema"))
+    {
+      conduit::Schema schema( data_holder["schema"].as_string() );
+      describe( schema.dtype() );
+    }
     break;
   case BUFFER: {
     // If view has a buffer, the easiest way to restore it is to use a series of
@@ -1009,16 +1021,17 @@ void DataView::importFrom(conduit::Node& data_holder,
     m_state = EMPTY;
 
     IndexType old_buffer_id = data_holder["buffer_id"].as_int();
-    conduit::Schema schema( data_holder["schema"].as_string() );
     bool is_applied = data_holder["is_applied"].as_unsigned_char();
 
     SLIC_ASSERT_MSG( buffer_id_map.find(old_buffer_id) != buffer_id_map.end(),
                      "Buffer id map is old-new id entry for buffer " << old_buffer_id );
 
     DataBuffer * buffer = m_owning_group->getDataStore()->getBuffer( buffer_id_map.at(old_buffer_id) );
-    if ( !schema.dtype().is_empty() )
+
+    if (data_holder.has_path("schema"))
     {
-        describe( schema.dtype() );
+      conduit::Schema schema( data_holder["schema"].as_string() );
+      describe( schema.dtype() );
     }
     attachBuffer( buffer );
     if ( is_applied )

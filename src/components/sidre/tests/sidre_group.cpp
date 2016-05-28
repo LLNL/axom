@@ -877,6 +877,165 @@ TEST(sidre_group,save_restore_external_data)
 }
 
 //------------------------------------------------------------------------------
+
+// Check the association between views and buffers to make sure it is what we expect.
+// This checks more than isEquivalentTo.
+
+static void save_restore_buffer_association(const std::string & msg, DataStore * ds)
+{
+  const SidreLength len = 10;
+
+  SCOPED_TRACE(msg);
+
+  // Make sure all buffers were created
+  if (ds->getNumBuffers() != 4u)
+  {
+    EXPECT_EQ(ds->getNumBuffers(), 4u);
+    return;
+  }
+
+  DataGroup * root = ds->getRoot();
+
+  // Get all views and their buffers
+  DataView * view1 = root->getView("undescribed_attached_buffer");
+  ASSERT_TRUE(view1->hasBuffer());
+  DataBuffer * buff1a = view1->getBuffer();
+  ASSERT_FALSE(buff1a->isDescribed());
+  ASSERT_FALSE(buff1a->isAllocated());
+
+  DataView * view2 = root->getView("unallocated_attached_buffer");
+  ASSERT_TRUE(view2->hasBuffer());
+  DataBuffer * buff2a = view2->getBuffer();
+  ASSERT_TRUE(buff2a->isDescribed());
+  ASSERT_FALSE(buff2a->isAllocated());
+
+  DataView * view3 = root->getView("undescribed_view_described_buffer");
+  ASSERT_TRUE(view3->hasBuffer());
+  DataBuffer * buff3a = view3->getBuffer();
+  ASSERT_TRUE(buff3a->isDescribed());
+  ASSERT_TRUE(buff3a->isAllocated());
+
+  DataView * view4 = root->getView("describe_view_described_buffer");
+  ASSERT_TRUE(view4->hasBuffer());
+  DataBuffer * buff3b = view4->getBuffer();
+
+  DataView * view5 = root->getView("even");
+  ASSERT_TRUE(view5->hasBuffer());
+  DataBuffer * buff3c = view5->getBuffer();
+
+  DataView * view6 = root->getView("odd");
+  ASSERT_TRUE(view6->hasBuffer());
+  DataBuffer * buff3d = view6->getBuffer();
+
+  DataView * view7 = root->getView("empty_described");
+  ASSERT_FALSE(view7->hasBuffer());
+  ASSERT_TRUE(view7->isEmpty());
+
+  DataView * view8 = root->getView("allocated");
+  ASSERT_TRUE(view8->hasBuffer());
+  DataBuffer * buff4a = view8->getBuffer();
+  ASSERT_TRUE(buff4a->isDescribed());
+  ASSERT_TRUE(buff4a->isAllocated());
+
+  // Check shared buffer  3a == 3b == 3c == 3d
+  ASSERT_EQ(buff3a, buff3b);
+  ASSERT_EQ(buff3b, buff3c);
+  ASSERT_EQ(buff3c, buff3d);
+
+  // Check unique buffers
+  ASSERT_NE(buff1a, buff2a);
+  ASSERT_NE(buff1a, buff3a);
+  ASSERT_NE(buff1a, buff4a);
+
+  ASSERT_NE(buff2a, buff3a);
+  ASSERT_NE(buff2a, buff4a);
+
+  ASSERT_NE(buff3a, buff4a);
+
+  // Check contents of buffers
+  ASSERT_EQ(buff3a->getNumElements(), len);
+  int * idata = buff3a->getData();
+  for (int ii = 0 ; ii < len ; ++ii)
+  {
+    ASSERT_EQ(idata[ii], ii + 100);
+  }
+  
+  ASSERT_EQ(buff4a->getNumElements(), len);
+  idata = buff4a->getData();
+  for (int ii = 0 ; ii < len ; ++ii)
+  {
+    ASSERT_EQ(idata[ii], ii + 200);
+  }
+  
+}
+
+TEST(sidre_group,save_restore_buffer)
+{
+  const std::string file_path_base("sidre_save_buffer_");
+  const SidreLength len = 10;
+
+  DataStore * ds1 = new DataStore();
+  DataGroup * root1 = ds1->getRoot();
+  DataBuffer * buff1 = ds1->createBuffer();
+  DataBuffer * buff2 = ds1->createBuffer(INT_ID, len);
+  DataBuffer * buff3 = ds1->createBuffer(INT_ID, len)->allocate();
+
+  int * idata = buff3->getData();
+  for (int ii = 0 ; ii < len ; ++ii)
+  {
+    idata[ii] = ii + 100;
+  }
+
+  root1->createView("undescribed_attached_buffer", buff1);
+  root1->createView("unallocated_attached_buffer", buff2);
+
+  // These views share a buffer
+  root1->createView("undescribed_view_described_buffer", buff3);
+  root1->createView("describe_view_described_buffer", INT_ID, len, buff3);
+  root1->createView("even", buff3)->apply(INT_ID, 5, 0, 2);
+  root1->createView("odd", buff3)->apply(INT_ID, 5, 1, 2);
+
+  root1->createView("empty_described", INT_ID, len);
+  DataView * view = root1->createViewAndAllocate("allocated", INT_ID, len);
+
+  idata = view->getData();
+  for (int ii = 0 ; ii < len ; ++ii)
+  {
+    idata[ii] = ii + 200;
+  }
+
+  save_restore_buffer_association("original datastore", ds1);
+
+  for (int i = 0; i < nprotocols; ++i) {
+      const std::string file_path = file_path_base + protocols[i];
+      ds1->save(file_path, protocols[i]);
+  }
+
+  // Now load back in.
+  // Only restore conduit protocol_hdf5
+  for (int i = 1; i < 2; ++i) {
+      const std::string file_path = file_path_base + protocols[i];
+
+      DataStore * ds2 = new DataStore();
+      DataGroup * root2 = ds2->getRoot();
+
+      ds2->load(file_path, protocols[i]);
+
+      bool isequivalent = root1->isEquivalentTo(root2);
+      EXPECT_TRUE( isequivalent );
+      if (isequivalent)
+      {
+	save_restore_buffer_association("loaded datastore", ds2);
+      }
+
+      delete ds2;
+  }
+
+  delete ds1;
+
+}
+
+//------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_complex)
 {
   const std::string file_path_base("sidre_mixed_types_");
