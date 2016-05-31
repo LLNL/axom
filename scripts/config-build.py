@@ -11,7 +11,7 @@ import platform
 import shutil
 
 def extract_cmake_location(file_path):
-    print file_path
+    # print "Extracting cmake entry from host config file ", file_path
     if os.path.exists(file_path):
         cmake_line_prefix = "# cmake executable path: "
         file_handle = open(file_path, "r")
@@ -30,12 +30,12 @@ parser.add_argument("-bp",
                     "--buildpath",
                     type=str,
                     default="",
-                    help="specify path for build directory.  If not specified, will create one under current directory.")
+                    help="specify path for build directory.  If not specified, will create in current directory.")
 
 parser.add_argument("-ip",
                     "--installpath", 
                     type=str, default="",
-                    help="specify path for installation directory.  If not specified, will create one under current directory.")
+                    help="specify path for installation directory.  If not specified, will create in current directory.")
 
 parser.add_argument("-bt",
                     "--buildtype",
@@ -57,11 +57,11 @@ parser.add_argument("-x",
 parser.add_argument("-ecc",
                     "--exportcompilercommands",
                     action='store_true',
-	                help="generate a compilation database.  Can be used by the clang tools such as clang-modernize.  Will create a file called 'compile_commands.json' in your build directory.")
+	                help="generate a compilation database.  Can be used by the clang tools such as clang-modernize.  Will create a file called 'compile_commands.json' in build directory.")
 
 parser.add_argument("-hc",
                     "--hostconfig",
-                    default="",
+                    required=True,
                     type=str,
                     help="select a specific host-config file to initalize CMake's cache")
 
@@ -74,23 +74,14 @@ if unknown_args:
 ########################
 platform_info = ""
 scriptsdir = os.path.dirname( os.path.abspath(sys.argv[0]) )
-# systype = get_systype()
 
-if args.hostconfig != "":
-    cachefile = os.path.abspath(args.hostconfig)
-    platform_info = os.path.split(cachefile)[1]
-    if platform_info.endswith(".cmake"):
-        platform_info = platform_info[:-6]
-    print "Using user specified host config file: '%s'." % cachefile
-else:
-    # look for a host-config that exactly matches platform.node()
-    platform_info = platform.node()
-    # note: i removed "other" from the path, lets try a flat file structure
-    cachefile = os.path.join(scriptsdir.replace("scripts","host-configs"),
-                             "%s.cmake" % platform_info )
-
+cachefile = os.path.abspath(args.hostconfig)
+platform_info = os.path.split(cachefile)[1]
+if platform_info.endswith(".cmake"):
+    platform_info = platform_info[:-6]
+    
 assert os.path.exists( cachefile ), "Could not find cmake cache file '%s'." % cachefile
-
+print "Using host config file: '%s'." % cachefile
 
 #####################
 # Setup Build Dir
