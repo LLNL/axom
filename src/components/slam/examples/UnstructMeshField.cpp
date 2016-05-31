@@ -449,8 +449,11 @@ int main(int argc, char** argv)
   // Parse command line for data directory, with fallback
   const std::string DEFAULT_DATA_DIR = "../src/components/slam/data";
   std::string dataDir;
-  if(argc > 0)
+
+  if(argc > 1)
+  {
     dataDir = std::string(argv[1]);
+  }
   else
   {
     dataDir = DEFAULT_DATA_DIR;

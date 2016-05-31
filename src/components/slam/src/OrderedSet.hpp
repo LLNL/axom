@@ -62,18 +62,19 @@ namespace slam {
  * \brief Models a set whose elements can be defined as strided offsets of the position, possibly with a level of indirection.
  * \details Specifically, the element at position pos can be defined as:  static_cast<ElementType>( indirection[ pos * stride + offset ] )
  */
-  template< typename SizePolicy          = policies::RuntimeSizeHolder<Set::PositionType>
-  , typename OffsetPolicy        = policies::ZeroOffset<Set::PositionType>
-  , typename StridePolicy        = policies::StrideOne<Set::PositionType>
-  , typename IndirectionPolicy   = policies::NoIndirection<Set::PositionType, Set::ElementType>
-  , typename SubsettingPolicy    = policies::NoSubset
+  template<
+    typename SizePolicy          = policies::RuntimeSizeHolder<Set::PositionType>,
+    typename OffsetPolicy        = policies::ZeroOffset<Set::PositionType>,
+    typename StridePolicy        = policies::StrideOne<Set::PositionType>,
+    typename IndirectionPolicy   = policies::NoIndirection<Set::PositionType, Set::ElementType>,
+    typename SubsettingPolicy    = policies::NoSubset
   >
-  struct OrderedSet : public Set
-                      , SizePolicy
-                      , OffsetPolicy
-                      , StridePolicy
-                      , IndirectionPolicy
-                      , SubsettingPolicy
+  struct OrderedSet : public Set,
+                          SizePolicy,
+                          OffsetPolicy,
+                          StridePolicy,
+                          IndirectionPolicy,
+                          SubsettingPolicy
   {
   public:
 
