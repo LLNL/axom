@@ -986,7 +986,6 @@ void DataView::exportTo(conduit::Node& data_holder,
     if (isDescribed())
     {
       data_holder["schema"] = m_schema.to_json();
-      data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
     }
     else
     {
@@ -1049,10 +1048,7 @@ void DataView::importFrom(conduit::Node& data_holder,
     }
     break;
   case EXTERNAL:
-    // Note that m_is_applied is set but m_external_ptr is NULL resulting
-    // in an inconsistent state until DataStore::loadExternalData is called.
     m_schema.set( data_holder["schema"].as_string() );
-    m_is_applied = data_holder["is_applied"].as_unsigned_char();
     break;
   case SCALAR:
   case STRING:
