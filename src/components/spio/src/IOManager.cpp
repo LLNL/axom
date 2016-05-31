@@ -48,12 +48,10 @@ namespace spio
  *
  *************************************************************************
  */
-IOManager::IOManager(MPI_Comm comm,
-  int num_files)
+IOManager::IOManager(MPI_Comm comm)
 : m_comm_size(1),
   m_my_rank(0),
-  m_baton(comm, num_files),
-  m_num_files(num_files),
+  m_baton(0),
   m_mpi_comm(comm)
 {
   MPI_Comm_size(comm, &m_comm_size);
@@ -70,6 +68,9 @@ IOManager::IOManager(MPI_Comm comm,
  */
 IOManager::~IOManager()
 {
+  if (m_baton) {
+    delete m_baton;
+  }
 }
 
 
@@ -80,21 +81,31 @@ IOManager::~IOManager()
  *
  *************************************************************************
  */
-void IOManager::write(sidre::DataGroup * datagroup, const std::string& file_string, int cycle, const std::string& protocol)
+void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::string& file_string, const std::string& protocol)
 {
+  if (m_baton) {
+    if (m_baton->getNumFiles() != num_files) {
+      delete m_baton;
+      m_baton = 0;
+    }
+  }
+ 
+  if (!m_baton) {
+    m_baton = new IOBaton(m_mpi_comm, num_files);
+  }
 
   std::ostringstream rootstream;
-  rootstream << file_string << cycle << ".root";
+  rootstream << file_string << ".root";
   std::string root_name = rootstream.str();
 
   if (m_my_rank == 0 && protocol == "conduit_hdf5") {
-     createRootFile(root_name, file_string, cycle);
+     createRootFile(root_name, file_string, num_files);
   }
   MPI_Barrier(m_mpi_comm);
-  int group_id = m_baton.wait();
+  int group_id = m_baton->wait();
 
   std::ostringstream namestream;
-  namestream << file_string << "_" << group_id << "_" << cycle;
+  namestream << file_string << "_" << group_id;
   std::string file_name = namestream.str();
 
   if (protocol == "conduit_hdf5") {
@@ -110,7 +121,7 @@ void IOManager::write(sidre::DataGroup * datagroup, const std::string& file_stri
     std::string hdf5_name = getHDF5FileName(root_file_id, group_id);
 
     hid_t h5_file_id, h5_group_id;
-    if (m_baton.isFirstInGroup()) {
+    if (m_baton->isFirstInGroup()) {
       h5_file_id = H5Fcreate(hdf5_name.c_str(),
                              H5F_ACC_TRUNC,
                              H5P_DEFAULT,
@@ -149,7 +160,7 @@ void IOManager::write(sidre::DataGroup * datagroup, const std::string& file_stri
     std::string obase = savestream.str();
     datagroup->getDataStore()->save(obase, protocol, datagroup);
   }
-  (void)m_baton.pass();
+  (void)m_baton->pass();
 }
 
 /*
@@ -162,17 +173,16 @@ void IOManager::write(sidre::DataGroup * datagroup, const std::string& file_stri
 void IOManager::read(
   sidre::DataGroup * datagroup,
   const std::string& file_string,
-  int cycle,
   const std::string& protocol)
 {
-  int group_id = m_baton.wait();
+  int group_id = m_baton->wait();
   std::ostringstream namestream;
-  namestream << file_string << "_" <<  group_id << "_" << cycle;
+  namestream << file_string << "_" <<  group_id;
   std::string file_name = namestream.str();
   if (protocol == "conduit_hdf5") {
 
     std::ostringstream rootstream;
-    rootstream << file_string << cycle << ".root";
+    rootstream << file_string << ".root";
     std::string root_name = rootstream.str();
 
     hid_t root_file_id = H5Fopen(root_name.c_str(),
@@ -210,7 +220,7 @@ void IOManager::read(
     datagroup->getDataStore()->load(obase, protocol, datagroup);
   }
 
-  (void)m_baton.pass();
+  (void)m_baton->pass();
 }
 
 /*
@@ -222,7 +232,42 @@ void IOManager::read(
  */
 void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
 {
-  int group_id = m_baton.wait();
+  int read_num_files = 0;
+  if (m_my_rank == 0) {
+
+    hid_t root_file_id = H5Fopen(root_file.c_str(),
+                                 H5F_ACC_RDWR,
+                                 H5P_DEFAULT);
+
+    SLIC_ASSERT(root_file_id >= 0);
+
+
+    hid_t filesset = H5Dopen(root_file_id, "num_files", H5P_DEFAULT);
+    SLIC_ASSERT(filesset >= 0);
+
+    herr_t errv = H5Dread(filesset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
+      H5P_DEFAULT, &read_num_files);
+    SLIC_ASSERT(errv >= 0);
+
+    errv = H5Fclose(root_file_id);
+    SLIC_ASSERT(errv >= 0);
+  }
+
+  int num_files;
+  MPI_Allreduce(&read_num_files, &num_files, 1, MPI_INT, MPI_SUM, m_mpi_comm);
+
+  if (m_baton) {
+    if (m_baton->getNumFiles() != num_files) {
+      delete m_baton;
+      m_baton = 0;
+    }
+  }
+    
+  if (!m_baton) {
+    m_baton = new IOBaton(m_mpi_comm, num_files);
+  }
+
+  int group_id = m_baton->wait();
 
   hid_t root_file_id = H5Fopen(root_file.c_str(),
                                H5F_ACC_RDWR,
@@ -252,7 +297,7 @@ void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
   errv = H5Fclose(root_file_id);
   SLIC_ASSERT(errv >= 0);
 
-  (void)m_baton.pass();
+  (void)m_baton->pass();
 }
 
 /*
@@ -264,7 +309,7 @@ void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
  */
 void IOManager::createRootFile(const std::string& root_name,
                                const std::string& file_base,
-                               int cycle)
+                               int num_files)
 {
   hid_t root_file_id;
 
@@ -283,7 +328,7 @@ void IOManager::createRootFile(const std::string& root_name,
   SLIC_ASSERT(filesset >= 0);
 
   herr_t errv = H5Dwrite(filesset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
-    H5P_DEFAULT, &m_num_files);
+    H5P_DEFAULT, &num_files);
   SLIC_ASSERT(errv >= 0);
 
   hid_t ranksset = H5Dcreate(root_file_id, "num_ranks", H5T_NATIVE_INT,
@@ -294,14 +339,6 @@ void IOManager::createRootFile(const std::string& root_name,
     H5P_DEFAULT, &m_comm_size);
   SLIC_ASSERT(errv >= 0);
 
-  hid_t cycleset = H5Dcreate(root_file_id, "cycle", H5T_NATIVE_INT,
-    int_space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-  SLIC_ASSERT(cycleset >= 0);
-
-  errv = H5Dwrite(cycleset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
-    H5P_DEFAULT, &cycle);
-  SLIC_ASSERT(errv >= 0);
-
   hid_t files_group_id = H5Gcreate2(root_file_id,
                                     "files",
                                     H5P_DEFAULT,
@@ -309,9 +346,9 @@ void IOManager::createRootFile(const std::string& root_name,
                                     H5P_DEFAULT);
   SLIC_ASSERT(files_group_id >= 0);
 
-  for (int i = 0; i < m_num_files; ++i) {
+  for (int i = 0; i < num_files; ++i) {
     std::ostringstream basestream;
-    basestream << file_base << "_" << i << "_" << cycle;
+    basestream << file_base << "_" << i;
     std::string base_name = basestream.str();
 
     std::ostringstream savestream;
