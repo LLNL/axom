@@ -51,7 +51,7 @@ namespace spio
 IOManager::IOManager(MPI_Comm comm)
 : m_comm_size(1),
   m_my_rank(0),
-  m_baton(0),
+  m_baton(ATK_NULLPTR),
   m_mpi_comm(comm)
 {
   MPI_Comm_size(comm, &m_comm_size);
@@ -86,7 +86,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
   if (m_baton) {
     if (m_baton->getNumFiles() != num_files) {
       delete m_baton;
-      m_baton = 0;
+      m_baton = ATK_NULLPTR;
     }
   }
  
@@ -232,6 +232,9 @@ void IOManager::read(
  */
 void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
 {
+  /*
+   * Read num_files from rootfile on rank 0.
+   */
   int read_num_files = 0;
   if (m_my_rank == 0) {
 
@@ -248,18 +251,23 @@ void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
     herr_t errv = H5Dread(filesset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
       H5P_DEFAULT, &read_num_files);
     SLIC_ASSERT(errv >= 0);
+    SLIC_ASSERT(read_num_files > 0);
 
     errv = H5Fclose(root_file_id);
     SLIC_ASSERT(errv >= 0);
   }
 
+  /*
+   * Reduction sets num_files on all ranks.
+   */
   int num_files;
   MPI_Allreduce(&read_num_files, &num_files, 1, MPI_INT, MPI_SUM, m_mpi_comm);
+  SLIC_ASSERT(num_files > 0);
 
   if (m_baton) {
     if (m_baton->getNumFiles() != num_files) {
       delete m_baton;
-      m_baton = 0;
+      m_baton = ATK_NULLPTR;
     }
   }
     
