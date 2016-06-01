@@ -73,6 +73,9 @@ def get_splicer_based_on_suffix(name, out):
         elif fileExtension in [ '.py' ]:
             d = out.setdefault('py', {})
             get_splicers(config, name, d)
+        elif fileExtension in [ '.lua' ]:
+            d = out.setdefault('lua', {})
+            get_splicers(config, name, d)
 
 
 #def print_tree(out):

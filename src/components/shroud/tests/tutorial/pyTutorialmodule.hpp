@@ -2,11 +2,11 @@
 // This is generated code, do not edit
 #ifndef PYTUTORIALMODULE_HPP
 #define PYTUTORIALMODULE_HPP
-#include "tutorial.hpp"
 #include <Python.h>
 #if PY_MAJOR_VERSION >= 3
 #define IS_PY3K
 #endif
+#include "tutorial.hpp"
 // splicer begin header.include
 // splicer end header.include
 namespace tutorial {

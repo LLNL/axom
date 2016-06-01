@@ -87,12 +87,12 @@ contains
 
     rv_int = overload1(10)
     call assert_true(rv_int .eq. 10)
-    rv_int = overload1(1d0, 10)
+    rv_int = overload1(1.0d0, 10)
     call assert_true(rv_int .eq. 10)
 
     rv_int = overload1(10, 11, 12)
     call assert_true(rv_int .eq. 142)
-    rv_int = overload1(1d0, 10, 11, 12)
+    rv_int = overload1(1.0d0, 10, 11, 12)
     call assert_true(rv_int .eq. 142)
 
     rv_int = typefunc(2)
@@ -113,6 +113,8 @@ contains
 
     call obj%method1()
     call assert_true(.true.)
+
+    call useclass(obj)
 
     call obj%delete()
     call assert_true(.not. c_associated(obj%get_instance()), "class1_delete")

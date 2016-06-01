@@ -16,6 +16,12 @@
                 "C_type_name": "TUT_class1", 
                 "F_C_prefix": "c_", 
                 "F_derived_name": "class1", 
+                "LUA_class_reg": "l_Class1_Reg", 
+                "LUA_ctor_name": "Class1", 
+                "LUA_metadata": "Class1.metatable", 
+                "LUA_userdata_member": "self", 
+                "LUA_userdata_type": "l_Class1_Type", 
+                "LUA_userdata_var": "SH_this", 
                 "PY_PyObject": "PY_Class1", 
                 "PY_PyTypeObject": "PY_Class1_Type", 
                 "PY_capsule_name": "PY_Class1_capsule_name", 
@@ -43,6 +49,8 @@
                         "F_name_generic": "new", 
                         "F_name_impl": "class1_new", 
                         "F_name_method": "new", 
+                        "LUA_name": "new", 
+                        "LUA_name_impl": "l_class1_new", 
                         "function_name": "new", 
                         "underscore_name": "new"
                     }, 
@@ -70,6 +78,8 @@
                         "F_name_generic": "delete", 
                         "F_name_impl": "class1_delete", 
                         "F_name_method": "delete", 
+                        "LUA_name": "delete", 
+                        "LUA_name_impl": "l_class1_delete", 
                         "PY_name_impl": "PY_class1_delete", 
                         "function_name": "delete", 
                         "underscore_name": "delete"
@@ -94,6 +104,8 @@
                         "F_name_generic": "method1", 
                         "F_name_impl": "class1_method1", 
                         "F_name_method": "method1", 
+                        "LUA_name": "Method1", 
+                        "LUA_name_impl": "l_class1_method1", 
                         "PY_name_impl": "PY_class1_method1", 
                         "function_name": "Method1", 
                         "underscore_name": "method1"
@@ -127,6 +139,12 @@
         "F_result": "rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
+        "LUA_header_filename": "luaTutorialmodule.hpp", 
+        "LUA_module_filename": "luaTutorialmodule.cpp", 
+        "LUA_module_name": "tutorial", 
+        "LUA_module_reg": "l_Tutorial_Reg", 
+        "LUA_prefix": "l_", 
+        "LUA_state_var": "L", 
         "PY_header_filename": "pyTutorialmodule.hpp", 
         "PY_helper_filename": "pyTutorialhelper.cpp", 
         "PY_library_doc": "library documentation", 
@@ -138,6 +156,7 @@
         "library": "Tutorial", 
         "library_lower": "tutorial", 
         "library_upper": "TUTORIAL", 
+        "namespace_scope": "tutorial::", 
         "overloaded": false, 
         "rv": "rv"
     }, 
@@ -155,6 +174,8 @@
                 "F_name_generic": "function1", 
                 "F_name_impl": "function1", 
                 "F_name_method": "function1", 
+                "LUA_name": "Function1", 
+                "LUA_name_impl": "l_function1", 
                 "PY_name_impl": "PY_function1", 
                 "function_name": "Function1", 
                 "underscore_name": "function1"
@@ -196,6 +217,8 @@
                 "F_name_generic": "function2", 
                 "F_name_impl": "function2", 
                 "F_name_method": "function2", 
+                "LUA_name": "Function2", 
+                "LUA_name_impl": "l_function2", 
                 "PY_name_impl": "PY_function2", 
                 "function_name": "Function2", 
                 "underscore_name": "function2"
@@ -252,7 +275,9 @@
                 "function_name": "Sum", 
                 "underscore_name": "sum"
             }, 
-            "options": {}, 
+            "options": {
+                "wrap_lua": false
+            }, 
             "result": {
                 "attrs": {}, 
                 "name": "Sum", 
@@ -281,6 +306,8 @@
                 "F_name_generic": "function3", 
                 "F_name_impl": "function3", 
                 "F_name_method": "function3", 
+                "LUA_name": "Function3", 
+                "LUA_name_impl": "l_function3", 
                 "PY_name_impl": "PY_function3", 
                 "function_name": "Function3", 
                 "underscore_name": "function3"
@@ -293,7 +320,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 32, 
+            "_PTR_F_C_index": 33, 
             "_decl": "const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
             "_function_index": 7, 
             "_subprogram": "function", 
@@ -325,6 +352,8 @@
                 "F_name_generic": "function4a", 
                 "F_name_impl": "function4a", 
                 "F_name_method": "function4a", 
+                "LUA_name": "Function4a", 
+                "LUA_name_impl": "l_function4a", 
                 "PY_name_impl": "PY_function4a", 
                 "function_name": "Function4a", 
                 "underscore_name": "function4a"
@@ -345,7 +374,7 @@
             "_PTR_C_CPP_index": 7, 
             "_decl": "void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(LSH_F_rv))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 32, 
+            "_function_index": 33, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -394,6 +423,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -438,6 +468,8 @@
             "fmt": {
                 "C_name": "TUT_function4b", 
                 "F_C_name": "c_function4b", 
+                "LUA_name": "Function4b", 
+                "LUA_name_impl": "l_function4b", 
                 "PY_name_impl": "PY_function4b", 
                 "function_name": "Function4b", 
                 "underscore_name": "function4b"
@@ -459,7 +491,7 @@
             "_PTR_C_CPP_index": 8, 
             "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 33, 
+            "_function_index": 34, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -507,6 +539,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -521,10 +554,10 @@
         }, 
         {
             "_PTR_C_CPP_index": 8, 
-            "_PTR_F_C_index": 33, 
+            "_PTR_F_C_index": 34, 
             "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 34, 
+            "_function_index": 35, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -573,6 +606,7 @@
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -587,7 +621,7 @@
         }, 
         {
             "_decl": "double Function5()", 
-            "_function_index": 22, 
+            "_function_index": 23, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "function", 
@@ -610,6 +644,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -620,7 +655,7 @@
         }, 
         {
             "_decl": "double Function5(double arg1+default(3.1415)+intent(in)+value)", 
-            "_function_index": 23, 
+            "_function_index": 24, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "function", 
@@ -653,6 +688,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -664,8 +700,8 @@
         {
             "_decl": "double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)", 
             "_default_funcs": [
-                22, 
-                23
+                23, 
+                24
             ], 
             "_function_index": 9, 
             "_has_default_arg": true, 
@@ -708,6 +744,8 @@
                 "F_name_generic": "function5", 
                 "F_name_impl": "function5_arg1_arg2", 
                 "F_name_method": "function5_arg1_arg2", 
+                "LUA_name": "Function5", 
+                "LUA_name_impl": "l_function5", 
                 "PY_name_impl": "PY_function5_arg1_arg2", 
                 "function_name": "Function5", 
                 "function_suffix": "_arg1_arg2", 
@@ -721,7 +759,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 35, 
+            "_PTR_F_C_index": 36, 
             "_cpp_overload": [
                 10, 
                 11
@@ -750,6 +788,8 @@
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_name", 
                 "F_name_method": "function6_from_name", 
+                "LUA_name": "Function6", 
+                "LUA_name_impl": "l_function6", 
                 "PY_name_impl": "PY_function6_from_name", 
                 "function_name": "Function6", 
                 "function_suffix": "_from_name", 
@@ -771,7 +811,7 @@
             ], 
             "_decl": "void Function6(const std::string & name+intent(in)+len_trim(Lname))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 35, 
+            "_function_index": 36, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -799,6 +839,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -877,6 +918,7 @@
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": false, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -887,7 +929,7 @@
         }, 
         {
             "_decl": "void Function7(int arg+intent(in)+value)", 
-            "_function_index": 24, 
+            "_function_index": 25, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -915,6 +957,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -925,7 +968,7 @@
         }, 
         {
             "_decl": "void Function7(double arg+intent(in)+value)", 
-            "_function_index": 25, 
+            "_function_index": 26, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -953,6 +996,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -982,6 +1026,7 @@
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": false, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -992,7 +1037,7 @@
         }, 
         {
             "_decl": "int Function8()", 
-            "_function_index": 26, 
+            "_function_index": 27, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
             "_subprogram": "function", 
@@ -1012,6 +1057,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1022,7 +1068,7 @@
         }, 
         {
             "_decl": "double Function8()", 
-            "_function_index": 27, 
+            "_function_index": 28, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
             "_subprogram": "function", 
@@ -1042,6 +1088,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1070,6 +1117,8 @@
             "fmt": {
                 "C_name": "TUT_function9", 
                 "F_C_name": "c_function9", 
+                "LUA_name": "Function9", 
+                "LUA_name_impl": "l_function9", 
                 "PY_name_impl": "PY_function9", 
                 "function_name": "Function9", 
                 "underscore_name": "function9"
@@ -1092,7 +1141,7 @@
         {
             "_PTR_F_C_index": 14, 
             "_decl": "void Function9(float arg+intent(in)+value)", 
-            "_function_index": 39, 
+            "_function_index": 40, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -1117,6 +1166,7 @@
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1128,7 +1178,7 @@
         {
             "_PTR_F_C_index": 14, 
             "_decl": "void Function9(double arg+intent(in)+value)", 
-            "_function_index": 40, 
+            "_function_index": 41, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -1153,6 +1203,7 @@
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1179,6 +1230,8 @@
                 "F_name_generic": "function10", 
                 "F_name_impl": "function10_0", 
                 "F_name_method": "function10_0", 
+                "LUA_name": "Function10", 
+                "LUA_name_impl": "l_function10", 
                 "PY_name_impl": "PY_function10_0", 
                 "function_name": "Function10", 
                 "function_suffix": "_0", 
@@ -1192,7 +1245,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 36, 
+            "_PTR_F_C_index": 37, 
             "_cpp_overload": [
                 15, 
                 16
@@ -1254,7 +1307,7 @@
                 16
             ], 
             "_decl": "void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)", 
-            "_function_index": 41, 
+            "_function_index": 42, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -1289,6 +1342,7 @@
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1304,7 +1358,7 @@
                 16
             ], 
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
-            "_function_index": 42, 
+            "_function_index": 43, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -1339,6 +1393,7 @@
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1355,7 +1410,7 @@
             ], 
             "_decl": "void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 36, 
+            "_function_index": 37, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -1396,6 +1451,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1410,7 +1466,7 @@
                 18
             ], 
             "_decl": "int overload1(int num+intent(in)+value)", 
-            "_function_index": 28, 
+            "_function_index": 29, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "function", 
@@ -1442,6 +1498,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1456,7 +1513,7 @@
                 18
             ], 
             "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
-            "_function_index": 29, 
+            "_function_index": 30, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "function", 
@@ -1497,6 +1554,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1512,8 +1570,8 @@
             ], 
             "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
             "_default_funcs": [
-                28, 
-                29
+                29, 
+                30
             ], 
             "_function_index": 17, 
             "_has_default_arg": true, 
@@ -1564,6 +1622,8 @@
                 "F_name_generic": "overload1", 
                 "F_name_impl": "overload1_num_offset_stride", 
                 "F_name_method": "overload1_num_offset_stride", 
+                "LUA_name": "overload1", 
+                "LUA_name_impl": "l_overload1", 
                 "PY_name_impl": "PY_overload1_num_offset_stride", 
                 "function_name": "overload1", 
                 "function_suffix": "_num_offset_stride", 
@@ -1582,7 +1642,7 @@
                 18
             ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value)", 
-            "_function_index": 30, 
+            "_function_index": 31, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "function", 
@@ -1617,6 +1677,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1631,7 +1692,7 @@
                 18
             ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
-            "_function_index": 31, 
+            "_function_index": 32, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "function", 
@@ -1675,6 +1736,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1690,8 +1752,8 @@
             ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
             "_default_funcs": [
-                30, 
-                31
+                31, 
+                32
             ], 
             "_function_index": 18, 
             "_has_default_arg": true, 
@@ -1779,6 +1841,8 @@
                 "F_name_generic": "typefunc", 
                 "F_name_impl": "typefunc", 
                 "F_name_method": "typefunc", 
+                "LUA_name": "typefunc", 
+                "LUA_name_impl": "l_typefunc", 
                 "PY_name_impl": "PY_typefunc", 
                 "function_name": "typefunc", 
                 "underscore_name": "typefunc"
@@ -1812,6 +1876,8 @@
                 "F_name_generic": "enumfunc", 
                 "F_name_impl": "enumfunc", 
                 "F_name_method": "enumfunc", 
+                "LUA_name": "enumfunc", 
+                "LUA_name_impl": "l_enumfunc", 
                 "PY_name_impl": "PY_enumfunc", 
                 "function_name": "enumfunc", 
                 "underscore_name": "enumfunc"
@@ -1824,8 +1890,45 @@
             }
         }, 
         {
-            "_decl": "const std::string & LastFunctionCalled()+pure", 
+            "_decl": "void useclass(const Class1 * arg1+intent(in)+value)", 
             "_function_index": 21, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "ptr": true, 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "Class1"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void useclass(const Class1 *arg1)", 
+            "fmt": {
+                "C_name": "TUT_useclass", 
+                "F_C_name": "c_useclass", 
+                "F_name_generic": "useclass", 
+                "F_name_impl": "useclass", 
+                "F_name_method": "useclass", 
+                "PY_name_impl": "PY_useclass", 
+                "function_name": "useclass", 
+                "underscore_name": "useclass"
+            }, 
+            "options": {
+                "wrap_lua": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "useclass", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "const std::string & LastFunctionCalled()+pure", 
+            "_function_index": 22, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {
@@ -1835,6 +1938,8 @@
             "fmt": {
                 "C_name": "TUT_last_function_called", 
                 "F_C_name": "c_last_function_called", 
+                "LUA_name": "LastFunctionCalled", 
+                "LUA_name_impl": "l_last_function_called", 
                 "PY_name_impl": "PY_last_function_called", 
                 "function_name": "LastFunctionCalled", 
                 "underscore_name": "last_function_called"
@@ -1852,10 +1957,10 @@
             }
         }, 
         {
-            "_PTR_C_CPP_index": 21, 
+            "_PTR_C_CPP_index": 22, 
             "_decl": "void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 37, 
+            "_function_index": 38, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -1883,6 +1988,7 @@
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1896,9 +2002,9 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 21, 
+            "_PTR_F_C_index": 22, 
             "_decl": "const string_result_fstr & LastFunctionCalled()+pure", 
-            "_function_index": 38, 
+            "_function_index": 39, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {
@@ -1913,6 +2019,7 @@
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": true, 
+                "wrap_lua": false, 
                 "wrap_python": false
             }, 
             "result": {
@@ -1946,6 +2053,17 @@
         "F_name_instance_set": "set_instance", 
         "F_name_method_template": "{underscore_name}{function_suffix}", 
         "F_string_len_trim": true, 
+        "LUA_class_reg_template": "{LUA_prefix}{cpp_class}_Reg", 
+        "LUA_ctor_name_template": "{cpp_class}", 
+        "LUA_header_filename_template": "lua{library}module.hpp", 
+        "LUA_metadata_template": "{cpp_class}.metatable", 
+        "LUA_module_filename_template": "lua{library}module.cpp", 
+        "LUA_module_name_template": "{library_lower}", 
+        "LUA_module_reg_template": "{LUA_prefix}{library}_Reg", 
+        "LUA_name_impl_template": "{LUA_prefix}{class_name}{underscore_name}", 
+        "LUA_name_template": "{function_name}", 
+        "LUA_userdata_member_template": "self", 
+        "LUA_userdata_type_template": "{LUA_prefix}{cpp_class}_Type", 
         "PY_PyObject_template": "{PY_prefix}{cpp_class}", 
         "PY_PyTypeObject_template": "{PY_prefix}{cpp_class}_Type", 
         "PY_header_filename_template": "py{library}module.hpp", 
@@ -1961,6 +2079,7 @@
         "namespace": "tutorial", 
         "wrap_c": true, 
         "wrap_fortran": true, 
+        "wrap_lua": true, 
         "wrap_python": true
     }, 
     "patterns": [], 
@@ -1971,6 +2090,8 @@
     }, 
     "types": {
         "Class1": {
+            "LUA_pop": "({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
+            "LUA_type": "LUA_TUSERDATA", 
             "PY_PyObject": "PY_Class1", 
             "PY_PyTypeObject": "PY_Class1_Type", 
             "PY_from_object": "PP_Class1_from_Object", 
@@ -2006,6 +2127,9 @@
             }
         }, 
         "EnumTypeID": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
             "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_to_cpp": "static_cast<EnumTypeID>({c_var})", 
@@ -2032,6 +2156,9 @@
             "f_type": "integer"
         }, 
         "TypeID": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
             "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
@@ -2047,6 +2174,9 @@
             "typedef": "int"
         }, 
         "bool": {
+            "LUA_pop": "lua_toboolean({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushboolean({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TBOOLEAN", 
             "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
             "c_fortran": "logical(C_BOOL)", 
@@ -2076,12 +2206,16 @@
             }
         }, 
         "char": {
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TSTRING", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "post_call": [
                         "delete [] {cpp_var};"
                     ], 
@@ -2099,6 +2233,7 @@
                 }, 
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
+                    "cpp_local_var": true, 
                     "post_call": [
                         "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
                         "delete [] {cpp_var};"
@@ -2114,7 +2249,6 @@
                     ]
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_type": "char", 
             "f_module": {
@@ -2123,6 +2257,9 @@
             "f_type": "character(*)"
         }, 
         "char_scalar": {
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TSTRING", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -2134,7 +2271,6 @@
                     ]
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_type": "char", 
             "f_module": {
@@ -2143,6 +2279,9 @@
             "f_type": "character"
         }, 
         "double": {
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
             "PY_format": "d", 
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
@@ -2157,6 +2296,9 @@
             "f_type": "real(C_DOUBLE)"
         }, 
         "float": {
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
             "PY_format": "f", 
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
@@ -2171,6 +2313,9 @@
             "f_type": "real(C_FLOAT)"
         }, 
         "int": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
             "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
@@ -2185,6 +2330,9 @@
             "f_type": "integer(C_INT)"
         }, 
         "integer(C_INT)": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
             "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
@@ -2199,6 +2347,9 @@
             "f_type": "integer(C_INT)"
         }, 
         "integer(C_LONG)": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
             "PY_format": "l", 
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
@@ -2213,6 +2364,9 @@
             "f_type": "integer(C_LONG)"
         }, 
         "long": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
             "PY_format": "l", 
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
@@ -2227,6 +2381,9 @@
             "f_type": "integer(C_LONG)"
         }, 
         "real(C_DOUBLE)": {
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
             "PY_format": "d", 
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
@@ -2241,6 +2398,9 @@
             "f_type": "real(C_DOUBLE)"
         }, 
         "real(C_FLOAT)": {
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
             "PY_format": "f", 
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
@@ -2255,6 +2415,9 @@
             "f_type": "real(C_FLOAT)"
         }, 
         "size_t": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
             "PY_ctor": "PyInt_FromLong({rv})", 
             "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
@@ -2270,17 +2433,21 @@
             "f_type": "integer(C_SIZE_T)"
         }, 
         "std::string": {
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TSTRING", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "pre_call": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -2296,7 +2463,6 @@
                     ]
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
@@ -2307,24 +2473,29 @@
             "f_type": "character(*)", 
             "py_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "post_parse": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
         }, 
         "string": {
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TSTRING", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "pre_call": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -2340,7 +2511,6 @@
                     ]
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
@@ -2351,24 +2521,29 @@
             "f_type": "character(*)", 
             "py_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "post_parse": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
         }, 
         "string_result_fstr": {
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TSTRING", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "pre_call": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -2384,7 +2559,6 @@
                     ]
                 }
             }, 
-            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
@@ -2401,8 +2575,9 @@
             "f_type": "character(*)", 
             "py_statements": {
                 "intent_in": {
+                    "cpp_local_var": true, 
                     "post_parse": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }

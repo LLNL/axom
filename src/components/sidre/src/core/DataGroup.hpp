@@ -1023,6 +1023,17 @@ public:
    */
   void createNativeLayout(Node& n) const;
 
+  /*!
+   * \brief Copy data Group native layout to given Conduit node.
+   *
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
+   * externally to the Sidre View data so that it can be filled in from the data
+   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   *
+   * Only the Views which have external data are added to the node. 
+   */
+  void createExternalLayout(Node& n) const;
+
 
   /*!
    * \brief Return true if this Group is equivalent to given Group; else false. 
@@ -1142,11 +1153,11 @@ private:
   /*!
    * \brief Private methods to copy DataGroup to Conduit Node.
    *
-   * \param Buffer_indices Used to track what Buffers are referenced
+   * \param buffer_indices Used to track what Buffers are referenced
    * by the Views in this Group and Groups in the sub-tree below it.
    */
   void exportTo(conduit::Node& data_holder,
-                std::set<IndexType>& buffer_indicies) const;
+                std::set<IndexType>& buffer_indices) const;
 
   /*!
    * \brief Private methods to copy DataGroup from Conduit Node.

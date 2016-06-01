@@ -101,8 +101,8 @@ PY_function3(
     {
         return NULL;
     }
-    SH_arg = PyObject_IsTrue(SH_Py_arg);
-    bool rv = Function3(SH_arg);
+    arg = PyObject_IsTrue(SH_Py_arg);
+    bool rv = Function3(arg);
     PyObject * SH_Py_rv = PyBool_FromLong(rv);
     return (PyObject *) SH_Py_rv;
 // splicer end function.function3
@@ -119,8 +119,8 @@ PY_function4a(
   PyObject *kwds)
 {
 // splicer begin function.function4a
-    char * arg1;
-    char * arg2;
+    const char * arg1;
+    const char * arg2;
     const char *kwcpp = "arg1\0arg2";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
@@ -129,8 +129,8 @@ PY_function4a(
     {
         return NULL;
     }
-    std::string SH_arg1(arg1);
-    std::string SH_arg2(arg2);
+    const std::string SH_arg1(arg1);
+    const std::string SH_arg2(arg2);
     const std::string rv = Function4a(SH_arg1, SH_arg2);
     PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
     return (PyObject *) SH_Py_rv;
@@ -148,8 +148,8 @@ PY_function4b(
   PyObject *kwds)
 {
 // splicer begin function.function4b
-    char * arg1;
-    char * arg2;
+    const char * arg1;
+    const char * arg2;
     const char *kwcpp = "arg1\0arg2";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
@@ -158,8 +158,8 @@ PY_function4b(
     {
         return NULL;
     }
-    std::string SH_arg1(arg1);
-    std::string SH_arg2(arg2);
+    const std::string SH_arg1(arg1);
+    const std::string SH_arg2(arg2);
     const std::string & rv = Function4b(SH_arg1, SH_arg2);
     PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
     return (PyObject *) SH_Py_rv;
@@ -177,7 +177,7 @@ PY_function5_arg1_arg2(
   PyObject *kwds)
 {
 // splicer begin function.function5
-    Py_ssize_t shroud_nargs = 0;
+    Py_ssize_t SH_nargs = 0;
     double arg1;
     bool arg2;
     PyObject * SH_Py_arg2;
@@ -185,14 +185,14 @@ PY_function5_arg1_arg2(
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     double rv;
     
-    if (args != NULL) shroud_nargs += PyTuple_Size(args);
-    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    if (args != NULL) SH_nargs += PyTuple_Size(args);
+    if (kwds != NULL) SH_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|dO!:Function5", kw_list,
         &arg1, &PyBool_Type, &SH_Py_arg2))
     {
         return NULL;
     }
-    switch (shroud_nargs) {
+    switch (SH_nargs) {
     case 0:
         rv = Function5();
         break;
@@ -200,8 +200,8 @@ PY_function5_arg1_arg2(
         rv = Function5(arg1);
         break;
     case 2:
-        SH_arg2 = PyObject_IsTrue(SH_Py_arg2);
-        rv = Function5(arg1, SH_arg2);
+        arg2 = PyObject_IsTrue(SH_Py_arg2);
+        rv = Function5(arg1, arg2);
         break;
     }
     return Py_BuildValue("d", rv);
@@ -215,7 +215,7 @@ PY_function6_from_name(
   PyObject *kwds)
 {
 // splicer begin function.function6_from_name
-    char * name;
+    const char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -224,7 +224,7 @@ PY_function6_from_name(
     {
         return NULL;
     }
-    std::string SH_name(name);
+    const std::string SH_name(name);
     Function6(SH_name);
     Py_RETURN_NONE;
 // splicer end function.function6_from_name
@@ -295,7 +295,7 @@ PY_function10_1(
   PyObject *kwds)
 {
 // splicer begin function.function10_1
-    char * name;
+    const char * name;
     double arg2;
     const char *kwcpp = "name\0arg2";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
@@ -305,7 +305,7 @@ PY_function10_1(
     {
         return NULL;
     }
-    std::string SH_name(name);
+    const std::string SH_name(name);
     Function10(SH_name, arg2);
     Py_RETURN_NONE;
 // splicer end function.function10_1
@@ -318,7 +318,7 @@ PY_overload1_num_offset_stride(
   PyObject *kwds)
 {
 // splicer begin function.overload1_num_offset_stride
-    Py_ssize_t shroud_nargs = 0;
+    Py_ssize_t SH_nargs = 0;
     int num;
     int offset;
     int stride;
@@ -326,14 +326,14 @@ PY_overload1_num_offset_stride(
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4,(char *) kwcpp+11, NULL };
     int rv;
     
-    if (args != NULL) shroud_nargs += PyTuple_Size(args);
-    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    if (args != NULL) SH_nargs += PyTuple_Size(args);
+    if (kwds != NULL) SH_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|ii:overload1", kw_list,
         &num, &offset, &stride))
     {
         return NULL;
     }
-    switch (shroud_nargs) {
+    switch (SH_nargs) {
     case 1:
         rv = overload1(num);
         break;
@@ -355,7 +355,7 @@ PY_overload1_5(
   PyObject *kwds)
 {
 // splicer begin function.overload1_5
-    Py_ssize_t shroud_nargs = 0;
+    Py_ssize_t SH_nargs = 0;
     double type;
     int num;
     int offset;
@@ -364,14 +364,14 @@ PY_overload1_5(
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+9,(char *) kwcpp+16, NULL };
     int rv;
     
-    if (args != NULL) shroud_nargs += PyTuple_Size(args);
-    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    if (args != NULL) SH_nargs += PyTuple_Size(args);
+    if (kwds != NULL) SH_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "di|ii:overload1", kw_list,
         &type, &num, &offset, &stride))
     {
         return NULL;
     }
-    switch (shroud_nargs) {
+    switch (SH_nargs) {
     case 2:
         rv = overload1(type, num);
         break;
@@ -436,6 +436,33 @@ PY_enumfunc(
 // splicer end function.enumfunc
 }
 
+static char PY_useclass__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_useclass(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.useclass
+    const Class1 * arg1;
+    PY_Class1 * SH_Py_arg1;
+    const char *kwcpp = "arg1";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:useclass", kw_list,
+        &PY_Class1_Type, &SH_Py_arg1))
+    {
+        return NULL;
+    }
+    arg1 = SH_Py_arg1 ? SH_Py_arg1->BBB : NULL;
+    useclass(arg1);
+    Py_RETURN_NONE;
+// splicer end function.useclass
+}
+
 static char PY_last_function_called__doc__[] =
 "documentation"
 ;
@@ -464,11 +491,11 @@ PY_function10(
   PyObject *kwds)
 {
 // splicer begin function.function10
-    Py_ssize_t shroud_nargs = 0;
-    if (args != NULL) shroud_nargs += PyTuple_Size(args);
-    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    Py_ssize_t SH_nargs = 0;
+    if (args != NULL) SH_nargs += PyTuple_Size(args);
+    if (kwds != NULL) SH_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    if (shroud_nargs == 0) {
+    if (SH_nargs == 0) {
         rvobj = PY_function10_0(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -477,7 +504,7 @@ PY_function10(
         }
         PyErr_Clear();
     }
-    if (shroud_nargs == 2) {
+    if (SH_nargs == 2) {
         rvobj = PY_function10_1(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -502,11 +529,11 @@ PY_function6(
   PyObject *kwds)
 {
 // splicer begin function.function6
-    Py_ssize_t shroud_nargs = 0;
-    if (args != NULL) shroud_nargs += PyTuple_Size(args);
-    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    Py_ssize_t SH_nargs = 0;
+    if (args != NULL) SH_nargs += PyTuple_Size(args);
+    if (kwds != NULL) SH_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    if (shroud_nargs == 1) {
+    if (SH_nargs == 1) {
         rvobj = PY_function6_from_name(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -515,7 +542,7 @@ PY_function6(
         }
         PyErr_Clear();
     }
-    if (shroud_nargs == 1) {
+    if (SH_nargs == 1) {
         rvobj = PY_function6_from_index(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -540,11 +567,11 @@ PY_overload1(
   PyObject *kwds)
 {
 // splicer begin function.overload1
-    Py_ssize_t shroud_nargs = 0;
-    if (args != NULL) shroud_nargs += PyTuple_Size(args);
-    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    Py_ssize_t SH_nargs = 0;
+    if (args != NULL) SH_nargs += PyTuple_Size(args);
+    if (kwds != NULL) SH_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    if (shroud_nargs >= 1 && shroud_nargs <= 3) {
+    if (SH_nargs >= 1 && SH_nargs <= 3) {
         rvobj = PY_overload1_num_offset_stride(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -553,7 +580,7 @@ PY_overload1(
         }
         PyErr_Clear();
     }
-    if (shroud_nargs >= 2 && shroud_nargs <= 4) {
+    if (SH_nargs >= 2 && SH_nargs <= 4) {
         rvobj = PY_overload1_5(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -577,6 +604,7 @@ static PyMethodDef PY_methods[] = {
 {"Function9", (PyCFunction)PY_function9, METH_VARARGS|METH_KEYWORDS, PY_function9__doc__},
 {"typefunc", (PyCFunction)PY_typefunc, METH_VARARGS|METH_KEYWORDS, PY_typefunc__doc__},
 {"enumfunc", (PyCFunction)PY_enumfunc, METH_VARARGS|METH_KEYWORDS, PY_enumfunc__doc__},
+{"useclass", (PyCFunction)PY_useclass, METH_VARARGS|METH_KEYWORDS, PY_useclass__doc__},
 {"LastFunctionCalled", (PyCFunction)PY_last_function_called, METH_NOARGS, PY_last_function_called__doc__},
 {"Function10", (PyCFunction)PY_function10, METH_VARARGS|METH_KEYWORDS, PY_function10__doc__},
 {"Function6", (PyCFunction)PY_function6, METH_VARARGS|METH_KEYWORDS, PY_function6__doc__},

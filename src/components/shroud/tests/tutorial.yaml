@@ -8,6 +8,7 @@ options:
   namespace: tutorial
   F_module_per_class: False
   wrap_python: True
+  wrap_lua: True
 
 
 types:
@@ -27,6 +28,9 @@ functions:
 - decl: double Function2(double arg1, int arg2)
 - decl: void Sum(int len, int *values+dimension+intent(in),
                  int *result+intent(out))
+  options:
+    # unable to deal with dimension
+    wrap_lua: False
 - decl: bool Function3(bool arg)
 - decl: const std::string Function4a+len(30)(
     const std::string& arg1,
@@ -117,6 +121,10 @@ functions:
 # TypeID and DataTypeId must be define in types
 - decl: TypeID typefunc(TypeID arg)
 - decl: EnumTypeID enumfunc(EnumTypeID arg)
+
+- decl: void useclass(const Class1 *arg1) 
+  options:
+    wrap_lua: False
 
 
 ##################################################

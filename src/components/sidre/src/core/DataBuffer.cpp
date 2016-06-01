@@ -407,7 +407,11 @@ void DataBuffer::releaseBytes( void * ptr)
 void DataBuffer::exportTo( conduit::Node& data_holder)
 {
   data_holder["id"] = m_index;
-  data_holder["schema_json"] = m_node.schema().to_json();
+
+  if ( isDescribed() )
+  {
+    data_holder["schema"] = m_node.schema().to_json();
+  }
 
   // If Buffer is allocated, export it's node's data
   if ( isAllocated() )
@@ -432,11 +436,13 @@ void DataBuffer::exportTo( conduit::Node& data_holder)
  */
 void DataBuffer::importFrom( conduit::Node& buffer_holder)
 {
-  Schema schema( buffer_holder["schema_json"].as_string() );
-  TypeID type = static_cast<TypeID>( schema.dtype().id() );
-  SidreLength num_elems = schema.dtype().number_of_elements();
-
-  describe(type, num_elems);
+  if (buffer_holder.has_path("schema"))
+  {
+    Schema schema( buffer_holder["schema"].as_string() );
+    TypeID type = static_cast<TypeID>( schema.dtype().id() );
+    SidreLength num_elems = schema.dtype().number_of_elements();
+    describe(type, num_elems);
+  }
 
   // If Buffer was allocated, the conduit node will have the entry "data".
   // Allocate and copy in that data.
@@ -446,10 +452,6 @@ void DataBuffer::importFrom( conduit::Node& buffer_holder)
     conduit::Node& buffer_data_holder = buffer_holder["data"];
     copyBytesIntoBuffer(buffer_data_holder.element_ptr(0),
            buffer_data_holder.total_bytes() );
-  }
-  else
-  {
-    std::cerr << "NO PATH??" << std::endl;
   }
 }
 

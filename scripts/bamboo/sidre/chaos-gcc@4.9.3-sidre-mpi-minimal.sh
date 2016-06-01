@@ -7,7 +7,7 @@
 
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c gcc@4.9.3 --buildtype RelWithDebInfo -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DENABLE_QUEST=OFF -DENABLE_SLAM=OFF -DENABLE_SHROUD=OFF -DENABLE_PYTHON=OFF -DENABLE_MPI=ON
+./scripts/config-build.py -c gcc@4.9.3 --buildtype RelWithDebInfo -DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_QUEST=OFF -DENABLE_SLAM=OFF -DENABLE_SHROUD=OFF -DENABLE_PYTHON=OFF -DENABLE_MPI=ON
 cd build-chaos-gcc@4.9.3-relwithdebinfo
 echo "-----------------------------------------------------------------------"
 

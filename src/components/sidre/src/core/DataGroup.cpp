@@ -882,6 +882,8 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
  */
 void DataGroup::createNativeLayout(Node& n) const
 {
+    //  n.reset();
+
   // Dump the group's views
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
@@ -902,6 +904,42 @@ void DataGroup::createNativeLayout(Node& n) const
   {
     const DataGroup * group =  getGroup(gidx);
     group->createNativeLayout(n[group->getName()]);
+    gidx = getNextValidGroupIndex(gidx);
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Copy Group native layout to given Conduit node.
+ *
+ *************************************************************************
+ * see ATK-786 - Improvements to createNativeLayout and createExternalLayout
+ */
+void DataGroup::createExternalLayout(Node& n) const
+{
+    // n.reset();
+
+  // Dump the group's views
+  IndexType vidx = getFirstValidViewIndex();
+  while ( indexIsValid(vidx) )
+  {
+    const DataView * view = getView(vidx);
+
+    // Check that the view's name is not also a child group name
+    SLIC_CHECK_MSG( !hasGroup(view->getName())
+                  , view->getName() << " is the name of a groups and a view");
+
+    view->createExternalLayout( n );
+    vidx = getNextValidViewIndex(vidx);
+  }
+
+  // Recursively dump the child groups
+  IndexType gidx = getFirstValidGroupIndex();
+  while ( indexIsValid(gidx) )
+  {
+    const DataGroup * group =  getGroup(gidx);
+    group->createExternalLayout(n[group->getName()]);
     gidx = getNextValidGroupIndex(gidx);
   }
 }
@@ -1257,23 +1295,29 @@ DataGroup * DataGroup::detachGroup(IndexType idx)
 void DataGroup::exportTo(conduit::Node& data_holder,
                          std::set<IndexType>& buffer_indices) const
 {
-  IndexType vidx = getFirstValidViewIndex();
-  while ( indexIsValid(vidx) )
-  {
-    const DataView * view = getView(vidx);
-    Node& n_view = data_holder["views"].fetch(view->getName());
-    view->exportTo( n_view, buffer_indices );
-    vidx = getNextValidViewIndex(vidx);
+  if (getNumViews() > 0) {
+    Node & vnode = data_holder["views"];
+    IndexType vidx = getFirstValidViewIndex();
+    while ( indexIsValid(vidx) )
+    {
+      const DataView * view = getView(vidx);
+      Node& n_view = vnode.fetch(view->getName());
+      view->exportTo( n_view, buffer_indices );
+      vidx = getNextValidViewIndex(vidx);
+    }
   }
 
-  IndexType gidx = getFirstValidGroupIndex();
-  while ( indexIsValid(gidx) )
-  {
-    const DataGroup * group =  getGroup(gidx);
-    Node& n_group = data_holder["groups"].fetch(group->getName());
-    group->exportTo(n_group, buffer_indices);
+  if (getNumGroups() > 0) {
+    Node & gnode = data_holder["groups"];
+    IndexType gidx = getFirstValidGroupIndex();
+    while ( indexIsValid(gidx) )
+    {
+      const DataGroup * group =  getGroup(gidx);
+      Node& n_group = gnode.fetch(group->getName());
+      group->exportTo(n_group, buffer_indices);
 
-    gidx = getNextValidGroupIndex(gidx);
+      gidx = getNextValidGroupIndex(gidx);
+    }
   }
 
   // TODO - take this out when CON-131 resolved ( can't write out empty node ).
