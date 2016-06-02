@@ -62,7 +62,7 @@ TEST(sidre_group,get_group_with_path)
     root->createGroup("test1")->createGroup("test2")->createGroup("test3");
   DataGroup * group2 = root->getGroup("test1/test2/test3");
 
-  EXPECT_NE(ATK_NULLPTR, group2);
+  EXPECT_TRUE(ATK_NULLPTR != group2);
   EXPECT_EQ(group, group2);
 
   // Test incremental access when building full path
@@ -70,7 +70,7 @@ TEST(sidre_group,get_group_with_path)
   DataGroup * groupP2 =
     root->getGroup("testA")->getGroup("testB")->getGroup("testC");
 
-  EXPECT_NE(ATK_NULLPTR, groupP2);
+  EXPECT_TRUE(ATK_NULLPTR != groupP2);
   EXPECT_EQ(groupP, groupP2);
 
 
@@ -170,7 +170,7 @@ TEST(sidre_group,get_view_with_path)
     root->createGroup("group1")->createGroup("group2")->createView("view1");
   DataView * view2 = root->getView("group1/group2/view1");
 
-  EXPECT_NE(ATK_NULLPTR, view2);
+  EXPECT_TRUE(ATK_NULLPTR != view2);
   EXPECT_EQ( view, view2 );
 
 
@@ -179,7 +179,7 @@ TEST(sidre_group,get_view_with_path)
   DataView * viewP2 =
     root->getGroup("groupA")->getGroup("groupB")->getView("viewA");
 
-  EXPECT_NE(ATK_NULLPTR, viewP2);
+  EXPECT_TRUE(ATK_NULLPTR != viewP2);
   EXPECT_EQ( viewP, viewP2 );
 
   delete ds;

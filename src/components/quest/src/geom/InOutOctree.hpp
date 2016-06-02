@@ -32,16 +32,14 @@
 #include <vector>   // For InOutLeafData triangle lists -- TODO replace with SLAM DynamicVariableRelation...
 #include <iterator> // For back_inserter
 #include <limits>   // numeric_limits traits
-#include <ostream>
-
-
+#include <sstream>
 
 
 #define DEBUG_VERT_IDX  -2
 #define DEBUG_TRI_IDX   -2
 
-#define DEBUG_BLOCK_1  BlockIndex::invalid_index()
 #define DEBUG_BLOCK_2  BlockIndex::invalid_index()
+#define DEBUG_BLOCK_1  BlockIndex::invalid_index()
 
 #ifndef DUMP_VTK_MESH
 //    #define DUMP_VTK_MESH
@@ -51,7 +49,12 @@
 //    #define DUMP_OCTREE_INFO 1
 #endif
 
-#if 0 and defined(ATK_DEBUG)
+
+#ifndef DEBUG_OCTREE_ACTIVE
+    //#define DEBUG_OCTREE_ACTIVE
+#endif
+
+#if defined(DEBUG_OCTREE_ACTIVE) and defined(ATK_DEBUG)
   #define QUEST_OCTREE_DEBUG_LOG_IF( _cond, _msg)  if( _cond ) SLIC_DEBUG( _msg )
 #else
   #define QUEST_OCTREE_DEBUG_LOG_IF( _cond, _msg)  ( (void)0 )
@@ -775,9 +778,11 @@ public:
     /**
      * \brief Construct an InOutOctree to handle containment queries on a surface mesh
      * \param [in] bb The spatial extent covered by the octree
+     * \note We slightly scale the bounding box so all mesh elements are guaranteed
+     *       to be enclosed by the octree
      */
     InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh*& meshPtr)
-        : SpatialOctreeType(bb)
+        : SpatialOctreeType( GeometricBoundingBox(bb).scale(1.0001) )
         , m_meshWrapper(meshPtr)
         , m_vertexToBlockMap(&m_meshWrapper.vertexSet())
         //
@@ -1196,6 +1201,13 @@ void InOutOctree<DIM>::insertMeshTriangles ()
             bool isInternal = !dynamicLeafData.isLeaf();
             bool isLeafThatMustRefine = !isInternal && ! allTrianglesIncidentInCommonVertex(blk, dynamicLeafData);
 
+            QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk
+                 , "Attempting to insert triangles from block" << blk << "."
+                 << "\n\tDynamic data: " << dynamicLeafData
+                 << "\n\tBlock data: " << blkData
+                 << "\n\tAbout to finalize? " << (!isInternal && !isLeafThatMustRefine  ? " yes" : "no" )
+                );
+
 
             // Leaf blocks that don't refine are 'finalized' -- add  them to the current level's relations
             if( !isInternal && !isLeafThatMustRefine )
@@ -1214,8 +1226,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                              , std::back_inserter(geIndRelData));
                     geSizeRelData.push_back( geIndRelData.size());
 
-                    QUEST_OCTREE_DEBUG_LOG_IF(blk == DEBUG_BLOCK_1
-                         , "Added block" << blk << " into tree as a gray leaf."
+                    QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk
+                         , "[Added block" << blk << " into tree as a gray leaf]."
                          << "\n\tDynamic data: " << dynamicLeafData
                          << "\n\tBlock data: " << blkData );
                 }
@@ -1292,6 +1304,13 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                                 : intersect(tBB, childBB[j])
                                 ;
 
+                        QUEST_OCTREE_DEBUG_LOG_IF( DEBUG_BLOCK_1 == childBlk[j]
+                                                || DEBUG_BLOCK_2 == childBlk[j]  //&& tIdx == DEBUG_TRI_IDX
+                             , "Attempting to insert triangle " << tIdx <<" @ " << spaceTri << " w/ BB " << tBB
+                             << "\n\t into block" << childBlk[j] << " w/ BB " << childBB[j] << " and data " << *childDataPtr[j]
+                             << "\n\tShould add? " << (shouldAddTriangle  ? " yes" : "no" )
+                            );
+
                         if(shouldAddTriangle)
                         {
                             // Place the DynamicGrayBlockData in the array before adding its data
@@ -1309,7 +1328,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
 
                             childDataPtr[j]->addTriangle(tIdx);
 
-                            QUEST_OCTREE_DEBUG_LOG_IF(childBlk[j] == DEBUG_BLOCK_1
+                            QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == childBlk[j]
+                                                   || DEBUG_BLOCK_2 == childBlk[j] //&& tIdx == DEBUG_TRI_IDX
                                  ,"Added triangle " << tIdx
                                  <<" @ " << spaceTri
                                  << " with verts " << m_meshWrapper.triangleVertexIndices(tIdx)
@@ -1390,7 +1410,11 @@ void InOutOctree<DIM>::colorOctreeLeaves()
                     uncoloredBlocks.push_back( *it);
             }
 
-            SLIC_ASSERT( static_cast<int>(uncoloredBlocks.size()) < prevCount);
+            SLIC_ASSERT_MSG( static_cast<int>(uncoloredBlocks.size()) < prevCount
+                , "Problem coloring leaf blocks at level " << lev
+                << ". There are  " << uncoloredBlocks.size() << " blocks that are still not colored."
+                << " First problem block is: " << BlockIndex( uncoloredBlocks[0], lev)
+                );
         }
 
         if(! levelLeafMap.empty() )
@@ -1407,13 +1431,8 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
 {
     bool isColored = leafData.isColored();
 
-#ifdef ATK_DEBUG
-    if(leafBlk == DEBUG_BLOCK_1 || leafBlk == DEBUG_BLOCK_2)
-    {
-        SLIC_DEBUG("Trying to color " << leafBlk << " with data: " << leafData);
-    }
-#endif
-
+    QUEST_OCTREE_DEBUG_LOG_IF(leafBlk == DEBUG_BLOCK_1 || leafBlk == DEBUG_BLOCK_2
+                              , "Trying to color " << leafBlk << " with data: " << leafData );
 
 
     if( ! isColored )
@@ -1426,7 +1445,9 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
             {
                 const InOutBlockData& neighborData = (*this)[neighborBlk];
 
-                QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk
+                QUEST_OCTREE_DEBUG_LOG_IF(
+                        DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk
+                         || DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk
                      ,"Spreading color to block " << leafBlk << " with data " <<  leafData
                      << " and bounding box " << this->blockBoundingBox(leafBlk)
                      << " -- midpoint " << this->blockBoundingBox(leafBlk).centroid()
@@ -1473,7 +1494,9 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                 InOutBlockData& neighborData = (*this)[neighborBlk];
                 if (! neighborData.isColored() )
                 {
-                    QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk
+                    QUEST_OCTREE_DEBUG_LOG_IF(
+                            DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk
+                             || DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk
                          , "Spreading color from block " << leafBlk << " with data " <<  leafData
                          << " and bounding box " << this->blockBoundingBox(leafBlk)
                          << " -- midpoint " << this->blockBoundingBox(leafBlk).centroid()
@@ -1876,7 +1899,7 @@ void InOutOctree<DIM>::printOctreeStats() const
 
     SLIC_INFO( octreeStatsStr.str() );
 
-    if(m_generationState >= INOUTOCTREE_LEAVES_COLORED)
+    if(m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED)
     {
         if(DEBUG_TRI_IDX >= 0)
         {
@@ -2270,11 +2293,12 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
     // Allocate Slam Maps for the field data
     asctoolkit::slam::PositionSet leafSet(totalLeaves);
     typedef asctoolkit::slam::Map<VertexIndex> LeafVertMap;
-    typedef asctoolkit::slam::Map<int> LeafTriCountMap;
+    typedef asctoolkit::slam::Map<int> LeafIntMap;
     LeafVertMap leafVertID(&leafSet);
     LeafVertMap leafVertID_unique(&leafSet);
-    LeafTriCountMap leafTriCount(&leafSet);
-    LeafTriCountMap leafColors(&leafSet);
+    LeafIntMap leafTriCount(&leafSet);
+    LeafIntMap leafColors(&leafSet);
+    LeafIntMap leafLevel(&leafSet);
 
 
     // Iterate through blocks -- and set the field data
@@ -2312,6 +2336,8 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
             int vIdx = leafData.hasData() ? leafVertex(block, leafData) :  MeshWrapper::NO_VERTEX;
             leafVertID[leafCount] = vIdx;
 
+            leafLevel[leafCount] = lev;
+
             if(hasTriangles)
             {
                 leafVertID_unique[leafCount] = blockIndexesVertex(vIdx, block) ? vIdx : MeshWrapper::NO_VERTEX;
@@ -2327,43 +2353,53 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
         }
     }
 
-    // Add the fields to the mesh
-    meshtk::FieldData* CD = debugMesh->getCellFieldData();
-
-    CD->addField( new meshtk::FieldVariable< VertexIndex >("vertID", leafSet.size()) );
-    VertexIndex* vertID = CD->getField( "vertID" )->getIntPtr();
-    SLIC_ASSERT( vertID != ATK_NULLPTR );
-
-    for ( int i=0; i < leafSet.size(); ++i )
-        vertID[i] = leafVertID[i];
-
-    if(hasTriangles)
+    if(totalLeaves > 0)
     {
-        CD->addField( new meshtk::FieldVariable< VertexIndex >("uniqVertID", leafSet.size()) );
-        VertexIndex* uniqVertID = hasTriangles ? CD->getField( "uniqVertID" )->getIntPtr(): ATK_NULLPTR;
-        SLIC_ASSERT( uniqVertID != ATK_NULLPTR );
+        // Add the fields to the mesh
+        meshtk::FieldData* CD = debugMesh->getCellFieldData();
 
-        CD->addField( new meshtk::FieldVariable< int >("triCount", leafSet.size()) );
-        int* triCount = hasTriangles ? CD->getField( "triCount" )->getIntPtr() : ATK_NULLPTR;
-        SLIC_ASSERT( triCount != ATK_NULLPTR );
+        CD->addField( new meshtk::FieldVariable< VertexIndex >("vertID", leafSet.size()) );
+        VertexIndex* vertID = CD->getField( "vertID" )->getIntPtr();
+        SLIC_ASSERT( vertID != ATK_NULLPTR );
+
+        CD->addField( new meshtk::FieldVariable< VertexIndex >("level", leafSet.size()) );
+        VertexIndex* lLevel = CD->getField( "level" )->getIntPtr();
+        SLIC_ASSERT( lLevel != ATK_NULLPTR );
 
         for ( int i=0; i < leafSet.size(); ++i )
         {
-            uniqVertID[i] = leafVertID_unique[i];
-            triCount[i] = leafTriCount[i];
+            vertID[i] = leafVertID[i];
+            lLevel[i] = leafLevel[i];
         }
-    }
 
-    if(hasColors)
-    {
-        CD->addField( new meshtk::FieldVariable< int >("colors", leafSet.size()) );
-        int* colors = hasColors ? CD->getField( "colors" )->getIntPtr() : ATK_NULLPTR;
-        SLIC_ASSERT( !hasColors || colors != ATK_NULLPTR );
-        for ( int i=0; i < leafSet.size(); ++i )
-            colors[i] = leafColors[i];
-    }
+        if(hasTriangles)
+        {
+            CD->addField( new meshtk::FieldVariable< VertexIndex >("uniqVertID", leafSet.size()) );
+            VertexIndex* uniqVertID = hasTriangles ? CD->getField( "uniqVertID" )->getIntPtr(): ATK_NULLPTR;
+            SLIC_ASSERT( uniqVertID != ATK_NULLPTR );
 
-    debugMesh->toVtkFile(name);
+            CD->addField( new meshtk::FieldVariable< int >("triCount", leafSet.size()) );
+            int* triCount = hasTriangles ? CD->getField( "triCount" )->getIntPtr() : ATK_NULLPTR;
+            SLIC_ASSERT( triCount != ATK_NULLPTR );
+
+            for ( int i=0; i < leafSet.size(); ++i )
+            {
+                uniqVertID[i] = leafVertID_unique[i];
+                triCount[i] = leafTriCount[i];
+            }
+        }
+
+        if(hasColors)
+        {
+            CD->addField( new meshtk::FieldVariable< int >("colors", leafSet.size()) );
+            int* colors = hasColors ? CD->getField( "colors" )->getIntPtr() : ATK_NULLPTR;
+            SLIC_ASSERT( !hasColors || colors != ATK_NULLPTR );
+            for ( int i=0; i < leafSet.size(); ++i )
+                colors[i] = leafColors[i];
+        }
+
+        debugMesh->toVtkFile(name);
+    }
 
     delete debugMesh;
     debugMesh = ATK_NULLPTR;
@@ -2381,9 +2417,14 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
     typedef typename OctreeBaseType::MapType LeavesLevelMap;
     typedef typename LeavesLevelMap::const_iterator LeavesIterator;
 
+    if( m_generationState <= INOUTOCTREE_LEAVES_COLORED)
+    {
+        SLIC_INFO("Need to generate octree colors before visualizing them.");
+        return;
+    }
+
     DebugMesh* debugMesh= new DebugMesh(3);
 
-    typedef std::vector<GridPt> PtVec;
     std::vector<int> colorsField;
     std::vector<int> debugIdxField;
 
@@ -2497,7 +2538,7 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
     int* debIdx = CD->getField( "debugIdx" )->getIntPtr();
     SLIC_ASSERT(colors != ATK_NULLPTR );
     SLIC_ASSERT(debIdx != ATK_NULLPTR );
-    for ( int i=0; i < colorsField.size(); ++i )
+    for ( std::size_t i=0; i < colorsField.size(); ++i )
     {
       debIdx[i] = debugIdxField[i];
       colors[i] = colorsField[i];

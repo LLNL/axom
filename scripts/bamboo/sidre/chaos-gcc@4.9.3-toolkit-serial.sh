@@ -1,21 +1,38 @@
-#!/bin/sh
+#!/bin/bash
+
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
 ./scripts/config-build.py -c gcc@4.9.3 --buildtype RelWithDebInfo -DENABLE_MPI=OFF
+if [ $? -ne 0 ]; then
+    echo "Error: config-build.py failed"
+    exit 1
+fi
+echo "-----------------------------------------------------------------------"
+
 cd build-chaos-gcc@4.9.3-relwithdebinfo
-echo "-----------------------------------------------------------------------"
+    echo "Generating C/Fortran binding..."
+    make VERBOSE=1 generate
+    if [ $? -ne 0 ]; then
+        echo "Error: 'make generate' failed"
+        exit 1
+    fi
+    echo "-----------------------------------------------------------------------"
 
-echo "-----------------------------------------------------------------------"
-echo "Generating C/Fortran binding..."
-make generate
-echo "-----------------------------------------------------------------------"
+    echo "Building..."
+    echo "-----------------------------------------------------------------------"
+    make VERBOSE=1 -j16
+    if [ $? -ne 0 ]; then
+        echo "Error: 'make' failed"
+        exit 1
+    fi
+    echo "-----------------------------------------------------------------------"
 
-echo "Building..."
-echo "-----------------------------------------------------------------------"
-make -j16
-echo "-----------------------------------------------------------------------"
-
-echo "Run tests"
-echo "-----------------------------------------------------------------------"
-make test ARGS="-T Test -E 'mpi|parallel'"
-echo "-----------------------------------------------------------------------"
+    echo "Run tests"
+    echo "-----------------------------------------------------------------------"
+    make test ARGS="-T Test -E 'mpi|parallel'"
+    if [ $? -ne 0 ]; then
+        echo "Error: 'make test' failed"
+        exit 1
+    fi
+    echo "-----------------------------------------------------------------------"
+cd ..

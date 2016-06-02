@@ -121,7 +121,7 @@ TEST(sidre_datastore,default_ctor)
 
   DataGroup * dg = ds->getRoot();
   
-  ASSERT_NE( ATK_NULLPTR, dg );
+  EXPECT_FALSE( ATK_NULLPTR == dg );
   EXPECT_EQ( ATK_NULLPTR, dg->getParent() );
   EXPECT_EQ( ds, dg->getDataStore() );
 

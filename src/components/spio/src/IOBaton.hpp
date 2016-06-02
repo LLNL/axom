@@ -102,6 +102,14 @@ public:
      return (m_rank_after_me == s_invalid_rank_id); 
   }
 
+  /*!
+   * \brief Get the number of files involved in the I/O operation.
+   */
+  bool getNumFiles() const
+  {
+     return m_num_groups;
+  }
+
 private:
 
   DISABLE_COPY_AND_ASSIGNMENT( IOBaton );

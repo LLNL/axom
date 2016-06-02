@@ -3,17 +3,6 @@
 #
 
 ################
-# Add gtest tests
-################
-blt_add_executable(NAME gtest_smoke
-                   SOURCES gtest_smoke.cpp
-                   OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                   DEPENDS_ON gtest)
-blt_add_test( NAME gtest_smoke
-              COMMAND gtest_smoke)
-
-
-################
 # Test conduit tests
 ################
 if (CONDUIT_FOUND)
@@ -34,66 +23,31 @@ if (CONDUIT_FOUND)
   endif()
 endif()
 
-
 ################
-# Test gbenchmark
+# Test fmt thirdparty library
 ################
-if (ENABLE_BENCHMARKS)
-    blt_add_benchmark( TEST_SOURCE benchmark_smoke.cpp TEST_ARGS "--benchmark_min_time=0.0001")
-endif()
-
-
-################
-# Add fruit tests
-################
-if (ENABLE_FORTRAN)
-    blt_add_executable(NAME fruit_smoke
-                       SOURCES fruit_smoke.f
-                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON fruit)
-    blt_add_test(NAME fruit_smoke
-                 COMMAND fruit_smoke)
-endif()
+blt_add_executable(
+    NAME fmt_smoke
+    SOURCES fmt_smoke.cpp
+    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+    DEPENDS_ON fmt gtest)
+blt_add_test(NAME fmt_smoke COMMAND fmt_smoke)
 
 
-################
-# Add OpenMP tests
-################
-if (ENABLE_OPENMP)
-    blt_add_executable(NAME openmp_smoke 
-                       SOURCES openmp_smoke.cpp 
-                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       USE_OPENMP TRUE )
-    blt_add_test(NAME openmp_smoke
-                 COMMAND openmp_smoke
-                 NUM_PROCS 2)
-endif()
 
 
-################
-# Add MPI tests
-################
-if (ENABLE_MPI)
-    blt_add_executable(NAME mpi_smoke
-                       SOURCES mpi_smoke.cpp
-                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY} )
-    blt_add_test(NAME mpi_smoke
-                 COMMAND mpi_smoke
-                 NUM_PROCS 2)
-endif()
 
 ################################################################################
 # Add compiler flag tests.
 #
-# Test whether compiler flag actually work as desired on all compilers.
-# E.g. if we intend to disable a warning, that the warning is actually disabled. 
-# These tests should fail if we have the wrong warning disabler set for the
-# given compiler/configuration.  Flags are defined in blt's SetupCompilerOptions.
-# The tests enable all warnings, treat warnings as errors and add the desired 
-# warning disabling flag.
+# Test whether custom compiler flags actually work as expected on all compilers.
+# E.g. if we intend to disable a warning, the warning is actually disabled. 
+#
+# These tests enable all warnings, treat warnings as errors and add the desired 
+# flag. They should fail if we have the wrong flag set for the given configuration.  
+# Flag variables are defined in blt's SetupCompilerOptions.cmake
 ################################################################################
 
-# Test for ATK_DISABLE_UNINITIALIZED_WARNINGS flag
 set( BLT_SMOKE_TESTS
         compiler_flag_uninitialized.cpp
         compiler_flag_unused_param.cpp
@@ -101,6 +55,10 @@ set( BLT_SMOKE_TESTS
         compiler_flag_omp_pragma.cpp
         compiler_flag_strict_aliasing.cpp
         )
+if (ENABLE_FORTRAN)                    
+    list(APPEND BLT_SMOKE_TESTS compiler_flag_fortran_preprocessor.F)
+endif()
+
 
 foreach(test ${BLT_SMOKE_TESTS})
     get_filename_component( test_name ${test} NAME_WE )
@@ -116,7 +74,7 @@ foreach(test ${BLT_SMOKE_TESTS})
         )
 endforeach()
 
-set( ADDL_SMOKE_FLAGS "${ATK_TREAT_WARNINGS_AS_ERRORS} ${ATK_ENABLE_ALL_WARNINGS}")
+set( ADDL_SMOKE_FLAGS "${BLT_WARNINGS_AS_ERRORS_FLAG} ${BLT_ENABLE_ALL_WARNINGS_FLAG}")
 
 set_target_properties(compiler_flag_uninitialized 
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNINITIALIZED_WARNINGS}")
@@ -133,4 +91,10 @@ blt_append_custom_compiler_flag(FLAGS_VAR TMP_OPT_FLAG DEFAULT "-O2")
 set_target_properties(compiler_flag_strict_aliasing 
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${TMP_OPT_FLAG} ${ATK_DISABLE_ALIASING_WARNINGS}")
 
+
+# The following test checks that the C preprocessor is invoked on Fortran files with extension *.F 
+if(ENABLE_FORTRAN)
+    set_target_properties(compiler_flag_fortran_preprocessor 
+                          PROPERTIES LINKER_LANGUAGE Fortran)
+endif()
 

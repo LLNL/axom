@@ -45,7 +45,6 @@
 #include "quest/UniformMesh.hpp"
 #include "quest/UnstructuredMesh.hpp"
 #include "quest/Vector.hpp"
-#include "quest/fuzzy_compare.hpp"
 #include "quest/SignedDistance.hpp"
 
 

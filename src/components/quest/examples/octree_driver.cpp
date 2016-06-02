@@ -308,10 +308,10 @@ void testIntersectionOnRegularGrid()
 
 
 void testContainmentOnRegularGrid(const Octree3D& inOutOctree
-           , const GeometricBoundingBox& meshBounds
+           , const GeometricBoundingBox& queryBounds
            , int gridRes)
 {
-    SpaceVector h( meshBounds.getMin(), meshBounds.getMax());
+    SpaceVector h( queryBounds.getMin(), queryBounds.getMax());
     for(int i=0; i<3; ++i)
         h[i] /= gridRes;
 
@@ -320,7 +320,7 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
     ext[1] = ext[3] = ext[5] = gridRes;
 
     meshtk::UniformMesh* umesh =
-            new meshtk::UniformMesh(3,meshBounds.getMin().data(),h.data(),ext);
+            new meshtk::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
 
 
     const int nnodes = umesh->getNumberOfNodes();
@@ -565,7 +565,6 @@ int main( int argc, char** argv )
   GeometricBoundingBox meshBB = compute_bounds( surface_mesh);
   SLIC_INFO( "Mesh bounding box: " << meshBB );
   print_surface_stats(surface_mesh);
-  meshBB.scale(1.01);
 
   testIntersectionOnRegularGrid();
 
@@ -582,9 +581,23 @@ int main( int argc, char** argv )
   write_vtk(surface_mesh, "meldedTriMesh.vtk");
 
   SLIC_INFO("-- About to query the octree");
-  // STEP 7: Insert triangles into the octree
+
+  // Query on a slightly expanded bounding box
+  GeometricBoundingBox queryBB
+          = octree.boundingBox();
+
+          // Bounding box for a problematic region on the plane_simp.stl model
+          // = GeometricBoundingBox(  SpacePt::make_point(68.326,740.706,187.349)
+          //                     , SpacePt::make_point(68.5329,740.923,187.407));
+
+// We can scale the query region here
+//  queryBB.scale(1.1);
+
+
+
+  // STEP 7: Query the mesh
   for(int i=1; i< MAX_CONTAINMENT_QUERY_LEVEL; ++i)
-      testContainmentOnRegularGrid( octree, meshBB, 1<<i);
+      testContainmentOnRegularGrid( octree, queryBB, 1<<i);
 
 
   //
