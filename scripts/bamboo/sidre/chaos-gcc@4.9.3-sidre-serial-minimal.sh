@@ -4,16 +4,29 @@
 
 # This version is serial (no mpi).
 
+if [[ $HOSTNAME == rz* ]]; then
+    HC="host-configs/rzmerl-chaos_5_x86_64_ib-gcc@4.9.3.cmake"
+else
+    HC="host-configs/surface-chaos_5_x86_64_ib-gcc@4.9.3.cmake"
+fi
+
+BT="RelWithDebInfo"
+BP="build-chaos-gcc@4.9.3-sidre-serial-minimal"
+IP="install-chaos-gcc@4.9.3-sidre-serial-minimal"
+COMP_OPT="-DENABLE_QUEST=OFF -DENABLE_SLAM=OFF -DENABLE_SHROUD=OFF"
+BUILD_OPT="-DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_PYTHON=OFF -DENABLE_MPI=OFF"
+
+
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c gcc@4.9.3 --buildtype RelWithDebInfo -DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_QUEST=OFF -DENABLE_SLAM=OFF -DENABLE_SHROUD=OFF -DENABLE_PYTHON=OFF -DENABLE_MPI=OFF
+./scripts/config-build.py -ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT    
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1
 fi
 echo "-----------------------------------------------------------------------"
 
-cd build-chaos-gcc@4.9.3-relwithdebinfo
+cd $BP
 	echo "Building..."
 	echo "-----------------------------------------------------------------------"
 	make VERBOSE=1 -j16
