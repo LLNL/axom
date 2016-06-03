@@ -13,12 +13,12 @@ set( quest_headers
     SignedDistance.hpp
 
     ## Geometry Headers
-    geom/BoundingBox.hpp
     geom/BVHTree.hpp
+    geom/BoundingBox.hpp
     geom/Determinants.hpp
     geom/HyperSphere.hpp
-    geom/Intersection.hpp
     geom/InOutOctree.hpp
+    geom/Intersection.hpp
     geom/MortonIndex.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp
@@ -30,7 +30,7 @@ set( quest_headers
     geom/SquaredDistance.hpp
     geom/Triangle.hpp
     geom/Vector.hpp
-    geom/fuzzy_compare.hpp
+    geom/closest_point.hpp
     
     ## Mesh Library Headers
     mesh/CellConnectivity.hpp
@@ -60,7 +60,7 @@ set( quest_headers
    
 set( quest_sources
     
-    ## CG Sources
+    ## Geometry Sources
     # <nothing yet>
         
     ## Mesh Library Sources
@@ -86,7 +86,12 @@ set( quest_depends_on
      common
      slic
      slam
+     stla_io
      )
+
+if (ENABLE_BOOST)
+    list(APPEND quest_depends_on boost)
+endif()
 
 if (ENABLE_MPI)
   list(APPEND quest_headers stl/PSTLReader.hpp)  
@@ -97,7 +102,7 @@ if(ENABLE_SHROUD)
     add_subdirectory(interface)
 endif()
 
-if (ENABLE_FORTRAN)
+if (ENABLE_FORTRAN AND ENABLE_MPI)
   ## append shroud generated headers/sources to corresponding lists
   list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
   list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
@@ -111,7 +116,5 @@ blt_add_library(
     HEADERS     ${quest_headers}
     DEPENDS_ON  ${quest_depends_on}
     )
-                 
-target_include_directories( quest PRIVATE "${CMAKE_SOURCE_DIR}/thirdparty/stla_io" )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )

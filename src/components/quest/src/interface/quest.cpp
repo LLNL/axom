@@ -274,11 +274,11 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   SLIC_ASSERT( ! accelerator3D.isInitialized() );
   SLIC_ASSERT( comm != MPI_COMM_NULL );
 
-  int NDIMS = ndims;
-  SLIC_ASSERT( NDIMS==2 || NDIMS==3 );
+  ATK_DEBUG_VAR(ndims);
+  SLIC_ASSERT( ndims==2 || ndims==3 );
 
   // In the future, we will also support 2D, but we currently only support 3D
-  SLIC_ASSERT_MSG(NDIMS==3, "Quest currently only supports 3D triangle meshes.");
+  SLIC_ASSERT_MSG(ndims==3, "Quest currently only supports 3D triangle meshes.");
 
   // Read in the mesh
   quest::PSTLReader* reader = new quest::PSTLReader( comm );

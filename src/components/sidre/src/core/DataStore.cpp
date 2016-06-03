@@ -372,8 +372,8 @@ void DataStore::save(const std::string& file_path,
   }
   else if (protocol == "text")
   {
-    std::ofstream output_file( file_path );
-    SLIC_ERROR_IF(!output_file, "Unable to create file " << file_path);
+    std::ofstream output_file( file_path.c_str() );
+    SLIC_ERROR_IF(!output_file.is_open(), "Unable to create file " << file_path);
     if (output_file)
     {
       output_file  << two_part.to_json();

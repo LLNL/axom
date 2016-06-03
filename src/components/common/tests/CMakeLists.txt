@@ -17,7 +17,7 @@ foreach(test ${gtest_common_tests})
     blt_add_executable( NAME ${test_name}
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON common slic gtest )
+                        DEPENDS_ON common gtest )
     blt_add_test( NAME ${test_name} 
                   COMMAND ${test_name} )
 endforeach()

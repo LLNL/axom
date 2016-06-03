@@ -34,21 +34,16 @@ int main(int argc, char** argv)
   ga->createViewScalar<int>("i0", 101);
   gb->createViewScalar<int>("i1", 404);
 
-  std::vector<DataGroup *> groups;
-  groups.push_back(root);
-
   int num_files = 1;
-  IOManager writer(MPI_COMM_WORLD, &(groups[0]), groups.size(), num_files);
+  IOManager writer(MPI_COMM_WORLD);
 
-  writer.write("out_spio_basic_write_read", 0, "conduit_hdf5");
+  writer.write(root, num_files, "out_spio_basic_write_read", "conduit_hdf5");
 
   DataStore * ds2 = new DataStore();
-  std::vector<DataGroup *> groups2;
-  groups2.push_back(ds2->getRoot());
 
-  IOManager reader(MPI_COMM_WORLD, &(groups2[0]), groups2.size(), num_files);
+  IOManager reader(MPI_COMM_WORLD);
 
-  reader.read("out_spio_basic_write_read0.root");
+  reader.read(ds2->getRoot(), "out_spio_basic_write_read.root");
 
   int return_val = 0;
   if (!ds2->getRoot()->isEquivalentTo(root)) {
