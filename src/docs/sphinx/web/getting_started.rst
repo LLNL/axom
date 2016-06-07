@@ -20,7 +20,11 @@ If you've never used git/Stash, you will need to create an `SSH key <https://con
 
      cd asctoolkit
 
-2.  Then checkout the branch you wish to use. For example, the *"develop"* branch is currently the most robust and tested branch. Toolkit development work is pushed to it regularly.::
+2.  Run the "setup-for-development" script, which will ensure that Git is configured correctly and client-side hooks are installed:::
+
+            ./scripts/setup-for-development
+
+3.  Then checkout the branch you wish to use. For example, the *"develop"* branch is currently the most robust and tested branch. Toolkit development work is pushed to it regularly.::
 
             git checkout develop
 
