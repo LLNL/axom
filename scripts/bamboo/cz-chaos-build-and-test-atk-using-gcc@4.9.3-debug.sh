@@ -1,15 +1,32 @@
 #!/bin/bash
 
+
+COMPILER="gcc@4.9.3"
+
+if [[ $HOSTNAME == rz* ]]; then
+    HC="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"
+else
+    HC="host-configs/surface-chaos_5_x86_64_ib-${COMPILER}.cmake"
+fi
+
+BT="Debug"
+BP="atk_build"
+IP="atk_install"
+COMP_OPT=""
+BUILD_OPT=""
+
+
+
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -hc host-configs/surface-chaos_5_x86_64_ib-gcc\@4.9.3.cmake   --buildtype Debug --buildpath atk_build --installpath atk_install
+./scripts/config-build.py -ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT    
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1
 fi
 echo "-----------------------------------------------------------------------"
 
-cd atk_build
+cd $BP
     echo "Building..."
     echo "-----------------------------------------------------------------------"
     make VERBOSE=1 -j16
