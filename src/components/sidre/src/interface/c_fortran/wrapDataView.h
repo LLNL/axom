@@ -91,6 +91,10 @@ bool SIDRE_dataview_is_external(SIDRE_dataview * self);
 
 bool SIDRE_dataview_is_applied(SIDRE_dataview * self);
 
+bool SIDRE_dataview_is_described(SIDRE_dataview * self);
+
+bool SIDRE_dataview_is_empty(SIDRE_dataview * self);
+
 bool SIDRE_dataview_is_opaque(SIDRE_dataview * self);
 
 const char * SIDRE_dataview_get_name(const SIDRE_dataview * self);

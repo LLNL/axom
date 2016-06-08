@@ -73,6 +73,12 @@ module sidre_mod
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_num_buffers => datastore_get_num_buffers
         procedure :: print => datastore_print
+        procedure :: save_0 => datastore_save_0
+        procedure :: save_1 => datastore_save_1
+        procedure :: load_0 => datastore_load_0
+        procedure :: load_1 => datastore_load_1
+        procedure :: load_external_data_0 => datastore_load_external_data_0
+        procedure :: load_external_data_1 => datastore_load_external_data_1
         procedure :: get_instance => datastore_get_instance
         procedure :: set_instance => datastore_set_instance
         procedure :: associated => datastore_associated
@@ -82,6 +88,21 @@ module sidre_mod
             create_buffer_empty,  &
             create_buffer_from_type_int,  &
             create_buffer_from_type_long
+        generic :: load => &
+            ! splicer begin class.DataStore.generic.load
+            ! splicer end class.DataStore.generic.load
+            load_0,  &
+            load_1
+        generic :: load_external_data => &
+            ! splicer begin class.DataStore.generic.load_external_data
+            ! splicer end class.DataStore.generic.load_external_data
+            load_external_data_0,  &
+            load_external_data_1
+        generic :: save => &
+            ! splicer begin class.DataStore.generic.save
+            ! splicer end class.DataStore.generic.save
+            save_0,  &
+            save_1
         ! splicer begin class.DataStore.type_bound_procedure_part
         ! splicer end class.DataStore.type_bound_procedure_part
     end type datastore
@@ -142,6 +163,7 @@ module sidre_mod
         procedure :: destroy_group_index => datagroup_destroy_group_index
         procedure :: move_group => datagroup_move_group
         procedure :: print => datagroup_print
+        procedure :: is_equivalent_to => datagroup_is_equivalent_to
         procedure :: get_instance => datagroup_get_instance
         procedure :: set_instance => datagroup_set_instance
         procedure :: associated => datagroup_associated
@@ -193,35 +215,84 @@ module sidre_mod
         procedure :: create_array_view_int_1d => datagroup_create_array_view_int_1d
         procedure :: create_array_view_int_2d => datagroup_create_array_view_int_2d
         procedure :: create_array_view_int_3d => datagroup_create_array_view_int_3d
+        procedure :: create_array_view_int_4d => datagroup_create_array_view_int_4d
         procedure :: create_array_view_long_scalar => datagroup_create_array_view_long_scalar
         procedure :: create_array_view_long_1d => datagroup_create_array_view_long_1d
         procedure :: create_array_view_long_2d => datagroup_create_array_view_long_2d
         procedure :: create_array_view_long_3d => datagroup_create_array_view_long_3d
+        procedure :: create_array_view_long_4d => datagroup_create_array_view_long_4d
         procedure :: create_array_view_float_scalar => datagroup_create_array_view_float_scalar
         procedure :: create_array_view_float_1d => datagroup_create_array_view_float_1d
         procedure :: create_array_view_float_2d => datagroup_create_array_view_float_2d
         procedure :: create_array_view_float_3d => datagroup_create_array_view_float_3d
+        procedure :: create_array_view_float_4d => datagroup_create_array_view_float_4d
         procedure :: create_array_view_double_scalar => datagroup_create_array_view_double_scalar
         procedure :: create_array_view_double_1d => datagroup_create_array_view_double_1d
         procedure :: create_array_view_double_2d => datagroup_create_array_view_double_2d
         procedure :: create_array_view_double_3d => datagroup_create_array_view_double_3d
+        procedure :: create_array_view_double_4d => datagroup_create_array_view_double_4d
         generic :: create_array_view => &
             create_array_view_int_scalar,  &
             create_array_view_int_1d,  &
             create_array_view_int_2d,  &
             create_array_view_int_3d,  &
+            create_array_view_int_4d,  &
             create_array_view_long_scalar,  &
             create_array_view_long_1d,  &
             create_array_view_long_2d,  &
             create_array_view_long_3d,  &
+            create_array_view_long_4d,  &
             create_array_view_float_scalar,  &
             create_array_view_float_1d,  &
             create_array_view_float_2d,  &
             create_array_view_float_3d,  &
+            create_array_view_float_4d,  &
             create_array_view_double_scalar,  &
             create_array_view_double_1d,  &
             create_array_view_double_2d,  &
-            create_array_view_double_3d
+            create_array_view_double_3d,  &
+            create_array_view_double_4d
+        procedure :: set_array_data_ptr_int_scalar => datagroup_set_array_data_ptr_int_scalar
+        procedure :: set_array_data_ptr_int_1d => datagroup_set_array_data_ptr_int_1d
+        procedure :: set_array_data_ptr_int_2d => datagroup_set_array_data_ptr_int_2d
+        procedure :: set_array_data_ptr_int_3d => datagroup_set_array_data_ptr_int_3d
+        procedure :: set_array_data_ptr_int_4d => datagroup_set_array_data_ptr_int_4d
+        procedure :: set_array_data_ptr_long_scalar => datagroup_set_array_data_ptr_long_scalar
+        procedure :: set_array_data_ptr_long_1d => datagroup_set_array_data_ptr_long_1d
+        procedure :: set_array_data_ptr_long_2d => datagroup_set_array_data_ptr_long_2d
+        procedure :: set_array_data_ptr_long_3d => datagroup_set_array_data_ptr_long_3d
+        procedure :: set_array_data_ptr_long_4d => datagroup_set_array_data_ptr_long_4d
+        procedure :: set_array_data_ptr_float_scalar => datagroup_set_array_data_ptr_float_scalar
+        procedure :: set_array_data_ptr_float_1d => datagroup_set_array_data_ptr_float_1d
+        procedure :: set_array_data_ptr_float_2d => datagroup_set_array_data_ptr_float_2d
+        procedure :: set_array_data_ptr_float_3d => datagroup_set_array_data_ptr_float_3d
+        procedure :: set_array_data_ptr_float_4d => datagroup_set_array_data_ptr_float_4d
+        procedure :: set_array_data_ptr_double_scalar => datagroup_set_array_data_ptr_double_scalar
+        procedure :: set_array_data_ptr_double_1d => datagroup_set_array_data_ptr_double_1d
+        procedure :: set_array_data_ptr_double_2d => datagroup_set_array_data_ptr_double_2d
+        procedure :: set_array_data_ptr_double_3d => datagroup_set_array_data_ptr_double_3d
+        procedure :: set_array_data_ptr_double_4d => datagroup_set_array_data_ptr_double_4d
+        generic :: set_array_data_ptr => &
+            set_array_data_ptr_int_scalar,  &
+            set_array_data_ptr_int_1d,  &
+            set_array_data_ptr_int_2d,  &
+            set_array_data_ptr_int_3d,  &
+            set_array_data_ptr_int_4d,  &
+            set_array_data_ptr_long_scalar,  &
+            set_array_data_ptr_long_1d,  &
+            set_array_data_ptr_long_2d,  &
+            set_array_data_ptr_long_3d,  &
+            set_array_data_ptr_long_4d,  &
+            set_array_data_ptr_float_scalar,  &
+            set_array_data_ptr_float_1d,  &
+            set_array_data_ptr_float_2d,  &
+            set_array_data_ptr_float_3d,  &
+            set_array_data_ptr_float_4d,  &
+            set_array_data_ptr_double_scalar,  &
+            set_array_data_ptr_double_1d,  &
+            set_array_data_ptr_double_2d,  &
+            set_array_data_ptr_double_3d,  &
+            set_array_data_ptr_double_4d
         ! splicer end class.DataGroup.type_bound_procedure_part
     end type datagroup
     
@@ -298,6 +369,8 @@ module sidre_mod
         procedure :: has_buffer => dataview_has_buffer
         procedure :: is_external => dataview_is_external
         procedure :: is_applied => dataview_is_applied
+        procedure :: is_described => dataview_is_described
+        procedure :: is_empty => dataview_is_empty
         procedure :: is_opaque => dataview_is_opaque
         procedure :: get_name => dataview_get_name
         procedure :: get_buffer => dataview_get_buffer
@@ -372,35 +445,84 @@ module sidre_mod
         procedure :: get_data_int_1d_ptr => dataview_get_data_int_1d_ptr
         procedure :: get_data_int_2d_ptr => dataview_get_data_int_2d_ptr
         procedure :: get_data_int_3d_ptr => dataview_get_data_int_3d_ptr
+        procedure :: get_data_int_4d_ptr => dataview_get_data_int_4d_ptr
         procedure :: get_data_long_scalar_ptr => dataview_get_data_long_scalar_ptr
         procedure :: get_data_long_1d_ptr => dataview_get_data_long_1d_ptr
         procedure :: get_data_long_2d_ptr => dataview_get_data_long_2d_ptr
         procedure :: get_data_long_3d_ptr => dataview_get_data_long_3d_ptr
+        procedure :: get_data_long_4d_ptr => dataview_get_data_long_4d_ptr
         procedure :: get_data_float_scalar_ptr => dataview_get_data_float_scalar_ptr
         procedure :: get_data_float_1d_ptr => dataview_get_data_float_1d_ptr
         procedure :: get_data_float_2d_ptr => dataview_get_data_float_2d_ptr
         procedure :: get_data_float_3d_ptr => dataview_get_data_float_3d_ptr
+        procedure :: get_data_float_4d_ptr => dataview_get_data_float_4d_ptr
         procedure :: get_data_double_scalar_ptr => dataview_get_data_double_scalar_ptr
         procedure :: get_data_double_1d_ptr => dataview_get_data_double_1d_ptr
         procedure :: get_data_double_2d_ptr => dataview_get_data_double_2d_ptr
         procedure :: get_data_double_3d_ptr => dataview_get_data_double_3d_ptr
+        procedure :: get_data_double_4d_ptr => dataview_get_data_double_4d_ptr
         generic :: get_data => &
             get_data_int_scalar_ptr,  &
             get_data_int_1d_ptr,  &
             get_data_int_2d_ptr,  &
             get_data_int_3d_ptr,  &
+            get_data_int_4d_ptr,  &
             get_data_long_scalar_ptr,  &
             get_data_long_1d_ptr,  &
             get_data_long_2d_ptr,  &
             get_data_long_3d_ptr,  &
+            get_data_long_4d_ptr,  &
             get_data_float_scalar_ptr,  &
             get_data_float_1d_ptr,  &
             get_data_float_2d_ptr,  &
             get_data_float_3d_ptr,  &
+            get_data_float_4d_ptr,  &
             get_data_double_scalar_ptr,  &
             get_data_double_1d_ptr,  &
             get_data_double_2d_ptr,  &
-            get_data_double_3d_ptr
+            get_data_double_3d_ptr,  &
+            get_data_double_4d_ptr
+        procedure :: set_array_data_ptr_int_scalar => dataview_set_array_data_ptr_int_scalar
+        procedure :: set_array_data_ptr_int_1d => dataview_set_array_data_ptr_int_1d
+        procedure :: set_array_data_ptr_int_2d => dataview_set_array_data_ptr_int_2d
+        procedure :: set_array_data_ptr_int_3d => dataview_set_array_data_ptr_int_3d
+        procedure :: set_array_data_ptr_int_4d => dataview_set_array_data_ptr_int_4d
+        procedure :: set_array_data_ptr_long_scalar => dataview_set_array_data_ptr_long_scalar
+        procedure :: set_array_data_ptr_long_1d => dataview_set_array_data_ptr_long_1d
+        procedure :: set_array_data_ptr_long_2d => dataview_set_array_data_ptr_long_2d
+        procedure :: set_array_data_ptr_long_3d => dataview_set_array_data_ptr_long_3d
+        procedure :: set_array_data_ptr_long_4d => dataview_set_array_data_ptr_long_4d
+        procedure :: set_array_data_ptr_float_scalar => dataview_set_array_data_ptr_float_scalar
+        procedure :: set_array_data_ptr_float_1d => dataview_set_array_data_ptr_float_1d
+        procedure :: set_array_data_ptr_float_2d => dataview_set_array_data_ptr_float_2d
+        procedure :: set_array_data_ptr_float_3d => dataview_set_array_data_ptr_float_3d
+        procedure :: set_array_data_ptr_float_4d => dataview_set_array_data_ptr_float_4d
+        procedure :: set_array_data_ptr_double_scalar => dataview_set_array_data_ptr_double_scalar
+        procedure :: set_array_data_ptr_double_1d => dataview_set_array_data_ptr_double_1d
+        procedure :: set_array_data_ptr_double_2d => dataview_set_array_data_ptr_double_2d
+        procedure :: set_array_data_ptr_double_3d => dataview_set_array_data_ptr_double_3d
+        procedure :: set_array_data_ptr_double_4d => dataview_set_array_data_ptr_double_4d
+        generic :: set_array_data_ptr => &
+            set_array_data_ptr_int_scalar,  &
+            set_array_data_ptr_int_1d,  &
+            set_array_data_ptr_int_2d,  &
+            set_array_data_ptr_int_3d,  &
+            set_array_data_ptr_int_4d,  &
+            set_array_data_ptr_long_scalar,  &
+            set_array_data_ptr_long_1d,  &
+            set_array_data_ptr_long_2d,  &
+            set_array_data_ptr_long_3d,  &
+            set_array_data_ptr_long_4d,  &
+            set_array_data_ptr_float_scalar,  &
+            set_array_data_ptr_float_1d,  &
+            set_array_data_ptr_float_2d,  &
+            set_array_data_ptr_float_3d,  &
+            set_array_data_ptr_float_4d,  &
+            set_array_data_ptr_double_scalar,  &
+            set_array_data_ptr_double_1d,  &
+            set_array_data_ptr_double_2d,  &
+            set_array_data_ptr_double_3d,  &
+            set_array_data_ptr_double_4d
         ! splicer end class.DataView.type_bound_procedure_part
     end type dataview
     
@@ -498,6 +620,132 @@ module sidre_mod
             implicit none
             type(C_PTR), value, intent(IN) :: self
         end subroutine c_datastore_print
+        
+        subroutine c_datastore_save_0(self, file_path, protocol) &
+                bind(C, name="SIDRE_datastore_save_0")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+        end subroutine c_datastore_save_0
+        
+        subroutine c_datastore_save_0_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+                bind(C, name="SIDRE_datastore_save_0_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            integer(C_INT), value, intent(IN) :: Lfile_path
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+        end subroutine c_datastore_save_0_bufferify
+        
+        subroutine c_datastore_save_1(self, file_path, protocol, group) &
+                bind(C, name="SIDRE_datastore_save_1")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            type(C_PTR), value, intent(IN) :: group
+        end subroutine c_datastore_save_1
+        
+        subroutine c_datastore_save_1_bufferify(self, file_path, Lfile_path, protocol, Lprotocol, group) &
+                bind(C, name="SIDRE_datastore_save_1_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            integer(C_INT), value, intent(IN) :: Lfile_path
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+            type(C_PTR), value, intent(IN) :: group
+        end subroutine c_datastore_save_1_bufferify
+        
+        subroutine c_datastore_load_0(self, file_path, protocol) &
+                bind(C, name="SIDRE_datastore_load_0")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+        end subroutine c_datastore_load_0
+        
+        subroutine c_datastore_load_0_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+                bind(C, name="SIDRE_datastore_load_0_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            integer(C_INT), value, intent(IN) :: Lfile_path
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+        end subroutine c_datastore_load_0_bufferify
+        
+        subroutine c_datastore_load_1(self, file_path, protocol, group) &
+                bind(C, name="SIDRE_datastore_load_1")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            type(C_PTR), value, intent(IN) :: group
+        end subroutine c_datastore_load_1
+        
+        subroutine c_datastore_load_1_bufferify(self, file_path, Lfile_path, protocol, Lprotocol, group) &
+                bind(C, name="SIDRE_datastore_load_1_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            integer(C_INT), value, intent(IN) :: Lfile_path
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+            type(C_PTR), value, intent(IN) :: group
+        end subroutine c_datastore_load_1_bufferify
+        
+        subroutine c_datastore_load_external_data_0(self, file_path, protocol) &
+                bind(C, name="SIDRE_datastore_load_external_data_0")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+        end subroutine c_datastore_load_external_data_0
+        
+        subroutine c_datastore_load_external_data_0_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+                bind(C, name="SIDRE_datastore_load_external_data_0_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            integer(C_INT), value, intent(IN) :: Lfile_path
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+        end subroutine c_datastore_load_external_data_0_bufferify
+        
+        subroutine c_datastore_load_external_data_1(self, file_path, protocol, group) &
+                bind(C, name="SIDRE_datastore_load_external_data_1")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            type(C_PTR), value, intent(IN) :: group
+        end subroutine c_datastore_load_external_data_1
+        
+        subroutine c_datastore_load_external_data_1_bufferify(self, file_path, Lfile_path, protocol, Lprotocol, group) &
+                bind(C, name="SIDRE_datastore_load_external_data_1_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            integer(C_INT), value, intent(IN) :: Lfile_path
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+            type(C_PTR), value, intent(IN) :: group
+        end subroutine c_datastore_load_external_data_1_bufferify
         
         ! splicer begin class.DataStore.additional_interfaces
         ! splicer end class.DataStore.additional_interfaces
@@ -1294,6 +1542,16 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine c_datagroup_print
         
+        pure function c_datagroup_is_equivalent_to(self, other) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_is_equivalent_to")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: other
+            logical(C_BOOL) :: rv
+        end function c_datagroup_is_equivalent_to
+        
         ! splicer begin class.DataGroup.additional_interfaces
         ! splicer end class.DataGroup.additional_interfaces
         
@@ -1547,6 +1805,24 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             logical(C_BOOL) :: rv
         end function c_dataview_is_applied
+        
+        pure function c_dataview_is_described(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_is_described")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            logical(C_BOOL) :: rv
+        end function c_dataview_is_described
+        
+        pure function c_dataview_is_empty(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_is_empty")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            logical(C_BOOL) :: rv
+        end function c_dataview_is_empty
         
         pure function c_dataview_is_opaque(self) &
                 result(rv) &
@@ -1896,6 +2172,108 @@ contains
         call c_datastore_print(obj%voidptr)
         ! splicer end class.DataStore.method.print
     end subroutine datastore_print
+    
+    subroutine datastore_save_0(obj, file_path, protocol)
+        use iso_c_binding
+        implicit none
+        class(datastore) :: obj
+        character(*), intent(IN) :: file_path
+        character(*), intent(IN) :: protocol
+        ! splicer begin class.DataStore.method.save_0
+        call c_datastore_save_0_bufferify(  &
+            obj%voidptr,  &
+            file_path,  &
+            len_trim(file_path, kind=C_INT),  &
+            protocol,  &
+            len_trim(protocol, kind=C_INT))
+        ! splicer end class.DataStore.method.save_0
+    end subroutine datastore_save_0
+    
+    subroutine datastore_save_1(obj, file_path, protocol, group)
+        use iso_c_binding
+        implicit none
+        class(datastore) :: obj
+        character(*), intent(IN) :: file_path
+        character(*), intent(IN) :: protocol
+        type(datagroup), value, intent(IN) :: group
+        ! splicer begin class.DataStore.method.save_1
+        call c_datastore_save_1_bufferify(  &
+            obj%voidptr,  &
+            file_path,  &
+            len_trim(file_path, kind=C_INT),  &
+            protocol,  &
+            len_trim(protocol, kind=C_INT),  &
+            group%voidptr)
+        ! splicer end class.DataStore.method.save_1
+    end subroutine datastore_save_1
+    
+    subroutine datastore_load_0(obj, file_path, protocol)
+        use iso_c_binding
+        implicit none
+        class(datastore) :: obj
+        character(*), intent(IN) :: file_path
+        character(*), intent(IN) :: protocol
+        ! splicer begin class.DataStore.method.load_0
+        call c_datastore_load_0_bufferify(  &
+            obj%voidptr,  &
+            file_path,  &
+            len_trim(file_path, kind=C_INT),  &
+            protocol,  &
+            len_trim(protocol, kind=C_INT))
+        ! splicer end class.DataStore.method.load_0
+    end subroutine datastore_load_0
+    
+    subroutine datastore_load_1(obj, file_path, protocol, group)
+        use iso_c_binding
+        implicit none
+        class(datastore) :: obj
+        character(*), intent(IN) :: file_path
+        character(*), intent(IN) :: protocol
+        type(datagroup), value, intent(IN) :: group
+        ! splicer begin class.DataStore.method.load_1
+        call c_datastore_load_1_bufferify(  &
+            obj%voidptr,  &
+            file_path,  &
+            len_trim(file_path, kind=C_INT),  &
+            protocol,  &
+            len_trim(protocol, kind=C_INT),  &
+            group%voidptr)
+        ! splicer end class.DataStore.method.load_1
+    end subroutine datastore_load_1
+    
+    subroutine datastore_load_external_data_0(obj, file_path, protocol)
+        use iso_c_binding
+        implicit none
+        class(datastore) :: obj
+        character(*), intent(IN) :: file_path
+        character(*), intent(IN) :: protocol
+        ! splicer begin class.DataStore.method.load_external_data_0
+        call c_datastore_load_external_data_0_bufferify(  &
+            obj%voidptr,  &
+            file_path,  &
+            len_trim(file_path, kind=C_INT),  &
+            protocol,  &
+            len_trim(protocol, kind=C_INT))
+        ! splicer end class.DataStore.method.load_external_data_0
+    end subroutine datastore_load_external_data_0
+    
+    subroutine datastore_load_external_data_1(obj, file_path, protocol, group)
+        use iso_c_binding
+        implicit none
+        class(datastore) :: obj
+        character(*), intent(IN) :: file_path
+        character(*), intent(IN) :: protocol
+        type(datagroup), value, intent(IN) :: group
+        ! splicer begin class.DataStore.method.load_external_data_1
+        call c_datastore_load_external_data_1_bufferify(  &
+            obj%voidptr,  &
+            file_path,  &
+            len_trim(file_path, kind=C_INT),  &
+            protocol,  &
+            len_trim(protocol, kind=C_INT),  &
+            group%voidptr)
+        ! splicer end class.DataStore.method.load_external_data_1
+    end subroutine datastore_load_external_data_1
     
     function datastore_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
@@ -2638,6 +3016,19 @@ contains
         ! splicer end class.DataGroup.method.print
     end subroutine datagroup_print
     
+    function datagroup_is_equivalent_to(obj, other) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        type(datagroup), value, intent(IN) :: other
+        logical :: rv
+        ! splicer begin class.DataGroup.method.is_equivalent_to
+        rv = c_datagroup_is_equivalent_to(  &
+            obj%voidptr,  &
+            other%voidptr)
+        ! splicer end class.DataGroup.method.is_equivalent_to
+    end function datagroup_is_equivalent_to
+    
     function datagroup_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
         implicit none
@@ -2753,6 +3144,28 @@ contains
     end function datagroup_create_array_view_int_3d
     
     ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_int_4d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_INT), target, intent(IN) :: value(:,:,:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(4)
+        integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        rv%voidptr = c_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+    end function datagroup_create_array_view_int_4d
+    
+    ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_long_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
@@ -2839,6 +3252,28 @@ contains
             group%voidptr, name, lname, addr)
         call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end function datagroup_create_array_view_long_3d
+    
+    ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_long_4d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_LONG), target, intent(IN) :: value(:,:,:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(4)
+        integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        rv%voidptr = c_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+    end function datagroup_create_array_view_long_4d
     
     ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_float_scalar(group, name, value) result(rv)
@@ -2929,6 +3364,28 @@ contains
     end function datagroup_create_array_view_float_3d
     
     ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_float_4d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_FLOAT), target, intent(IN) :: value(:,:,:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(4)
+        integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        rv%voidptr = c_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+    end function datagroup_create_array_view_float_4d
+    
+    ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_double_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
@@ -3015,6 +3472,528 @@ contains
             group%voidptr, name, lname, addr)
         call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end function datagroup_create_array_view_double_3d
+    
+    ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_double_4d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_DOUBLE), target, intent(IN) :: value(:,:,:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(4)
+        integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        rv%voidptr = c_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+    end function datagroup_create_array_view_double_4d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_int_scalar(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        integer(C_INT), target, intent(IN) :: value
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents(1) = 1_SIDRE_LENGTH
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_int_scalar
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_int_1d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        integer(C_INT), target, intent(IN) :: value(:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_int_1d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_int_2d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        integer(C_INT), target, intent(IN) :: value(:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(2)
+    !    integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_int_2d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_int_3d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        integer(C_INT), target, intent(IN) :: value(:,:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(3)
+    !    integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_int_3d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_int_4d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        integer(C_INT), target, intent(IN) :: value(:,:,:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(4)
+    !    integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_int_4d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_long_scalar(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        integer(C_LONG), target, intent(IN) :: value
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents(1) = 1_SIDRE_LENGTH
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_long_scalar
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_long_1d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        integer(C_LONG), target, intent(IN) :: value(:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_long_1d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_long_2d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        integer(C_LONG), target, intent(IN) :: value(:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(2)
+    !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_long_2d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_long_3d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        integer(C_LONG), target, intent(IN) :: value(:,:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(3)
+    !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_long_3d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_long_4d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        integer(C_LONG), target, intent(IN) :: value(:,:,:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(4)
+    !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_long_4d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_float_scalar(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        real(C_FLOAT), target, intent(IN) :: value
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents(1) = 1_SIDRE_LENGTH
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_float_scalar
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_float_1d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        real(C_FLOAT), target, intent(IN) :: value(:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_float_1d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_float_2d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        real(C_FLOAT), target, intent(IN) :: value(:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(2)
+    !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_float_2d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_float_3d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        real(C_FLOAT), target, intent(IN) :: value(:,:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(3)
+    !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_float_3d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_float_4d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        real(C_FLOAT), target, intent(IN) :: value(:,:,:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(4)
+    !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_float_4d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_double_scalar(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        real(C_DOUBLE), target, intent(IN) :: value
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents(1) = 1_SIDRE_LENGTH
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_double_scalar
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_double_1d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        real(C_DOUBLE), target, intent(IN) :: value(:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_double_1d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_double_2d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        real(C_DOUBLE), target, intent(IN) :: value(:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(2)
+    !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_double_2d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_double_3d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        real(C_DOUBLE), target, intent(IN) :: value(:,:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(3)
+    !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_double_3d
+    
+    ! Generated by genfsidresplicer.py
+    ! This function does nothing if view name does not exist in group.
+    subroutine datagroup_set_array_data_ptr_double_4d(group, name, value)
+        use iso_c_binding
+        implicit none
+    
+        class(datagroup), intent(IN) :: group
+        character(len=*), intent(IN) :: name
+        real(C_DOUBLE), target, intent(IN) :: value(:,:,:,:)
+        integer(C_INT) :: lname
+        type(C_ptr) view
+    !    integer(SIDRE_LENGTH) :: extents(4)
+    !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        if (c_associated(view)) then
+            call SHROUD_C_LOC(value, addr)
+            call c_dataview_set_external_data_ptr_only(view, addr)
+    !        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+        endif
+    end subroutine datagroup_set_array_data_ptr_double_4d
     ! splicer end class.DataGroup.additional_functions
     
     function databuffer_get_index(obj) result(rv)
@@ -3470,6 +4449,26 @@ contains
         ! splicer end class.DataView.method.is_applied
     end function dataview_is_applied
     
+    function dataview_is_described(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin class.DataView.method.is_described
+        rv = c_dataview_is_described(obj%voidptr)
+        ! splicer end class.DataView.method.is_described
+    end function dataview_is_described
+    
+    function dataview_is_empty(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin class.DataView.method.is_empty
+        rv = c_dataview_is_empty(obj%voidptr)
+        ! splicer end class.DataView.method.is_empty
+    end function dataview_is_empty
+    
     function dataview_is_opaque(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -3821,6 +4820,21 @@ contains
     end subroutine dataview_get_data_int_3d_ptr
     
     ! Generated by genfsidresplicer.py
+    subroutine dataview_get_data_int_4d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        integer(C_INT), pointer, intent(OUT) :: value(:,:,:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(4)
+    
+        cptr = view%get_void_ptr()
+        rank = view%get_shape(4, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_data_int_4d_ptr
+    
+    ! Generated by genfsidresplicer.py
     subroutine dataview_get_data_long_scalar_ptr(view, value)
         use iso_c_binding
         implicit none
@@ -3876,6 +4890,21 @@ contains
         rank = view%get_shape(3, extents)
         call c_f_pointer(cptr, value, extents)
     end subroutine dataview_get_data_long_3d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_data_long_4d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        integer(C_LONG), pointer, intent(OUT) :: value(:,:,:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(4)
+    
+        cptr = view%get_void_ptr()
+        rank = view%get_shape(4, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_data_long_4d_ptr
     
     ! Generated by genfsidresplicer.py
     subroutine dataview_get_data_float_scalar_ptr(view, value)
@@ -3935,6 +4964,21 @@ contains
     end subroutine dataview_get_data_float_3d_ptr
     
     ! Generated by genfsidresplicer.py
+    subroutine dataview_get_data_float_4d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        real(C_FLOAT), pointer, intent(OUT) :: value(:,:,:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(4)
+    
+        cptr = view%get_void_ptr()
+        rank = view%get_shape(4, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_data_float_4d_ptr
+    
+    ! Generated by genfsidresplicer.py
     subroutine dataview_get_data_double_scalar_ptr(view, value)
         use iso_c_binding
         implicit none
@@ -3990,6 +5034,381 @@ contains
         rank = view%get_shape(3, extents)
         call c_f_pointer(cptr, value, extents)
     end subroutine dataview_get_data_double_3d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_data_double_4d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        real(C_DOUBLE), pointer, intent(OUT) :: value(:,:,:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(4)
+    
+        cptr = view%get_void_ptr()
+        rank = view%get_shape(4, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_data_double_4d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_int_scalar(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        integer(C_INT), target, intent(IN) :: value
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents(1) = 1_SIDRE_LENGTH
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
+    end subroutine dataview_set_array_data_ptr_int_scalar
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_int_1d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        integer(C_INT), target, intent(IN) :: value(:)
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
+    end subroutine dataview_set_array_data_ptr_int_1d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_int_2d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        integer(C_INT), target, intent(IN) :: value(:,:)
+    !    integer(SIDRE_LENGTH) :: extents(2)
+    !    integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
+    end subroutine dataview_set_array_data_ptr_int_2d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_int_3d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        integer(C_INT), target, intent(IN) :: value(:,:,:)
+    !    integer(SIDRE_LENGTH) :: extents(3)
+    !    integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
+    end subroutine dataview_set_array_data_ptr_int_3d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_int_4d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        integer(C_INT), target, intent(IN) :: value(:,:,:,:)
+    !    integer(SIDRE_LENGTH) :: extents(4)
+    !    integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+    end subroutine dataview_set_array_data_ptr_int_4d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_long_scalar(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        integer(C_LONG), target, intent(IN) :: value
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents(1) = 1_SIDRE_LENGTH
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
+    end subroutine dataview_set_array_data_ptr_long_scalar
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_long_1d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        integer(C_LONG), target, intent(IN) :: value(:)
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
+    end subroutine dataview_set_array_data_ptr_long_1d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_long_2d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        integer(C_LONG), target, intent(IN) :: value(:,:)
+    !    integer(SIDRE_LENGTH) :: extents(2)
+    !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
+    end subroutine dataview_set_array_data_ptr_long_2d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_long_3d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        integer(C_LONG), target, intent(IN) :: value(:,:,:)
+    !    integer(SIDRE_LENGTH) :: extents(3)
+    !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
+    end subroutine dataview_set_array_data_ptr_long_3d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_long_4d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        integer(C_LONG), target, intent(IN) :: value(:,:,:,:)
+    !    integer(SIDRE_LENGTH) :: extents(4)
+    !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+    end subroutine dataview_set_array_data_ptr_long_4d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_float_scalar(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        real(C_FLOAT), target, intent(IN) :: value
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents(1) = 1_SIDRE_LENGTH
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
+    end subroutine dataview_set_array_data_ptr_float_scalar
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_float_1d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        real(C_FLOAT), target, intent(IN) :: value(:)
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
+    end subroutine dataview_set_array_data_ptr_float_1d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_float_2d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        real(C_FLOAT), target, intent(IN) :: value(:,:)
+    !    integer(SIDRE_LENGTH) :: extents(2)
+    !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
+    end subroutine dataview_set_array_data_ptr_float_2d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_float_3d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        real(C_FLOAT), target, intent(IN) :: value(:,:,:)
+    !    integer(SIDRE_LENGTH) :: extents(3)
+    !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
+    end subroutine dataview_set_array_data_ptr_float_3d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_float_4d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        real(C_FLOAT), target, intent(IN) :: value(:,:,:,:)
+    !    integer(SIDRE_LENGTH) :: extents(4)
+    !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+    end subroutine dataview_set_array_data_ptr_float_4d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_double_scalar(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        real(C_DOUBLE), target, intent(IN) :: value
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents(1) = 1_SIDRE_LENGTH
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
+    end subroutine dataview_set_array_data_ptr_double_scalar
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_double_1d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        real(C_DOUBLE), target, intent(IN) :: value(:)
+    !    integer(SIDRE_LENGTH) :: extents(1)
+    !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
+    end subroutine dataview_set_array_data_ptr_double_1d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_double_2d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        real(C_DOUBLE), target, intent(IN) :: value(:,:)
+    !    integer(SIDRE_LENGTH) :: extents(2)
+    !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
+    end subroutine dataview_set_array_data_ptr_double_2d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_double_3d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        real(C_DOUBLE), target, intent(IN) :: value(:,:,:)
+    !    integer(SIDRE_LENGTH) :: extents(3)
+    !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
+    end subroutine dataview_set_array_data_ptr_double_3d
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_set_array_data_ptr_double_4d(view, value)
+        use iso_c_binding
+        implicit none
+    
+        class(dataview), intent(IN) :: view
+        real(C_DOUBLE), target, intent(IN) :: value(:,:,:,:)
+    !    integer(SIDRE_LENGTH) :: extents(4)
+    !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+    !    lname = len_trim(name)
+    !    extents = shape(value, kind=SIDRE_LENGTH)
+        call SHROUD_C_LOC(value, addr)
+        call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
+    !    call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
+    end subroutine dataview_set_array_data_ptr_double_4d
     ! splicer end class.DataView.additional_functions
     
     function name_is_valid(name) result(rv)

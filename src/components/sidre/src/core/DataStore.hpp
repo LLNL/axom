@@ -201,6 +201,15 @@ public:
    */
   void createNativeLayout(Node& n) const;
 
+  /*!
+   * \brief Copy DataStore native layout (starting at root) to given Conduit node.
+   *
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
+   * externally to the Sidre View data so that it can be filled in from the data
+   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   */
+  void createExternalLayout(Node& n) const;
+
 
   /*!
    * \brief Print JSON description of DataStore Group hierarchy (starting at 
@@ -222,7 +231,7 @@ public:
 
   /*!
    * \brief Save the DataStore to a new file.
-   * Supported protocols are conduit (binary), conduit_hdf5, and text (for debugging).
+   * Supported protocols are "conduit" (binary), "conduit_hdf5", and "text" (for debugging).
    * If a Group is not provided, the root Group will be saved.
    */
   void save( const std::string& file_path,
@@ -249,6 +258,21 @@ public:
    * If a Group is not provided, it will be loaded into the root Group.
    */
   void load(const hid_t& h5_file_id,
+            DataGroup * group = ATK_NULLPTR);
+
+  /*!
+   * \brief Load the DataStore external data from a file
+   * If a Group is not provided, it will be loaded into the root Group.
+   */
+  void loadExternalData(const std::string& file_path,
+            const std::string& protocol,
+            DataGroup * group = ATK_NULLPTR);
+
+  /*!
+   * \brief Load the DataStore external data from an hdf5 file.
+   * If a Group is not provided, it will be loaded into the root Group.
+   */
+  void loadExternalData(const hid_t& h5_file_id,
             DataGroup * group = ATK_NULLPTR);
 
   /*!

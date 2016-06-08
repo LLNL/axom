@@ -114,6 +114,8 @@ contains
     call obj%method1()
     call assert_true(.true.)
 
+    call useclass(obj)
+
     call obj%delete()
     call assert_true(.not. c_associated(obj%get_instance()), "class1_delete")
   end subroutine test_class1
