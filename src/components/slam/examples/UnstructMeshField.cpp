@@ -40,7 +40,7 @@
 #include "slam/Map.hpp"
 #include "slam/Utilities.hpp"
 
-#include "fmt.hpp"
+#include "fmt/fmt.hpp"
 
 
 #ifndef USE_CONSTANT_RELATION

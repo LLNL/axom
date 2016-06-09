@@ -117,7 +117,7 @@ int main(int argc, char * argv[])
   UnitTestLogger logger;  // create & initialize test logger,
 
   // Change the directory to one that we know will contain the desired file
-  SLIC_ERROR_IF(!argc ==2, "slam_utilities requires a parameter for the working directory");
+  SLIC_ERROR_IF(argc !=2, "slam_utilities requires a parameter for the working directory");
   ChangeCurrentDir( argv[1] );
 
   result = RUN_ALL_TESTS();
