@@ -20,7 +20,7 @@ namespace quest {
 void QUEST_initialize(MPI_Fint comm, const char * fileName, bool requiresDistance, int ndims, int maxElements, int maxLevels)
 {
 // splicer begin function.initialize
-std::string SH_fileName(fileName);
+const std::string SH_fileName(fileName);
 initialize(MPI_Comm_f2c(comm), SH_fileName, requiresDistance, ndims, maxElements, maxLevels);
 return;
 // splicer end function.initialize
@@ -29,7 +29,7 @@ return;
 void QUEST_initialize_bufferify(MPI_Fint comm, const char * fileName, int LfileName, bool requiresDistance, int ndims, int maxElements, int maxLevels)
 {
 // splicer begin function.initialize_bufferify
-std::string SH_fileName(fileName, LfileName);
+const std::string SH_fileName(fileName, LfileName);
 initialize(MPI_Comm_f2c(comm), SH_fileName, requiresDistance, ndims, maxElements, maxLevels);
 return;
 // splicer end function.initialize_bufferify

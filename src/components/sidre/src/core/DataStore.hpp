@@ -62,7 +62,7 @@ public:
   /*!
    * \brief Default ctor initializes DataStore object and creates root Group.
    *
-   * Ctor also initializes SLIC logging environment if it is not already 
+   * Ctor also initializes SLIC logging environment if it is not already
    * initialized.
    */
   DataStore();
@@ -186,7 +186,7 @@ public:
 //@}
 
   /*!
-   * \brief Copy DataStore Group hierarchy (starting at root) and Buffer 
+   * \brief Copy DataStore Group hierarchy (starting at root) and Buffer
    *        descriptions to given Conduit node.
    */
   void copyToConduitNode(Node& n) const;
@@ -201,9 +201,18 @@ public:
    */
   void createNativeLayout(Node& n) const;
 
+  /*!
+   * \brief Copy DataStore native layout (starting at root) to given Conduit node.
+   *
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
+   * externally to the Sidre View data so that it can be filled in from the data
+   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   */
+  void createExternalLayout(Node& n) const;
+
 
   /*!
-   * \brief Print JSON description of DataStore Group hierarchy (starting at 
+   * \brief Print JSON description of DataStore Group hierarchy (starting at
    *        root) and Buffer descriptions to std::cout.
    */
   void print() const;
@@ -222,19 +231,19 @@ public:
 
   /*!
    * \brief Save the DataStore to a new file.
-   * Supported protocols are conduit (binary), conduit_hdf5, and text (for debugging).
+   * Supported protocols are "conduit" (binary), "conduit_hdf5", and "text" (for debugging).
    * If a Group is not provided, the root Group will be saved.
    */
   void save( const std::string& file_path,
              const std::string& protocol,
-             const DataGroup* group = ATK_NULLPTR ) const;
+             const DataGroup * group = ATK_NULLPTR ) const;
 
   /*!
    * \brief Save the DataStore to an existing hdf5 file.
    * If a Group is not provided, the root Group will be saved.
    */
   void save( const hid_t& h5_file_id,
-             const DataGroup* group = ATK_NULLPTR ) const;
+             const DataGroup * group = ATK_NULLPTR ) const;
 
   /*!
    * \brief Load the DataStore from a file
@@ -252,11 +261,26 @@ public:
             DataGroup * group = ATK_NULLPTR);
 
   /*!
+   * \brief Load the DataStore external data from a file
+   * If a Group is not provided, it will be loaded into the root Group.
+   */
+  void loadExternalData(const std::string& file_path,
+                        const std::string& protocol,
+                        DataGroup * group = ATK_NULLPTR);
+
+  /*!
+   * \brief Load the DataStore external data from an hdf5 file.
+   * If a Group is not provided, it will be loaded into the root Group.
+   */
+  void loadExternalData(const hid_t& h5_file_id,
+                        DataGroup * group = ATK_NULLPTR);
+
+  /*!
    * \brief Add the DataStore hierarchy and references to it's data to a conduit tree.
    * This includes the Group/View hierarchy and Buffers.
    */
   void exportTo( const DataGroup * group,
-                  conduit::Node& data_holder ) const;
+                 conduit::Node& data_holder ) const;
 
   /*!
    * \brief Restore a DataStore hierarchy and data contents (Buffers, etc) from a conduit tree.

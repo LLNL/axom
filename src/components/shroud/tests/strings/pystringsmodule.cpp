@@ -64,7 +64,7 @@ PY_pass_char_ptr(
 {
 // splicer begin function.pass_char_ptr
     char * dest;
-    char * src;
+    const char * src;
     const char *kwcpp = "src";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -192,7 +192,7 @@ PY_accept_string_const_reference(
   PyObject *kwds)
 {
 // splicer begin function.accept_string_const_reference
-    char * arg1;
+    const char * arg1;
     const char *kwcpp = "arg1";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -201,7 +201,7 @@ PY_accept_string_const_reference(
     {
         return NULL;
     }
-    std::string SH_arg1(arg1);
+    const std::string SH_arg1(arg1);
     acceptStringConstReference(SH_arg1);
     Py_RETURN_NONE;
 // splicer end function.accept_string_const_reference

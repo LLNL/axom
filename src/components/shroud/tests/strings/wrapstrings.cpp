@@ -307,7 +307,7 @@ return;
 void STR_accept_string_const_reference(const char * arg1)
 {
 // splicer begin function.accept_string_const_reference
-std::string SH_arg1(arg1);
+const std::string SH_arg1(arg1);
 acceptStringConstReference(SH_arg1);
 return;
 // splicer end function.accept_string_const_reference
@@ -325,7 +325,7 @@ return;
 void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1)
 {
 // splicer begin function.accept_string_const_reference_bufferify
-std::string SH_arg1(arg1, Larg1);
+const std::string SH_arg1(arg1, Larg1);
 acceptStringConstReference(SH_arg1);
 return;
 // splicer end function.accept_string_const_reference_bufferify
