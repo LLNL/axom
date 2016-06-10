@@ -68,7 +68,7 @@ macro(blt_copy_headers_target proj hdrs dest)
             ${PROJECT_SOURCE_DIR}
 
         COMMENT
-            "copy headers"
+            "copy headers ${proj}"
         )
 
 endmacro(blt_copy_headers_target)

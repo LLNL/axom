@@ -64,7 +64,6 @@ namespace quest
             m_surface_mesh = surface_mesh;
 
             GeometricBoundingBox meshBB = meshBoundingBox( m_surface_mesh );
-            meshBB.scale(1.01);
 
             m_containmentTree = new InOutOctree<DIM>( meshBB, m_surface_mesh );
             m_containmentTree->generateIndex();
