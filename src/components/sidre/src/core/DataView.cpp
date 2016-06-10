@@ -643,7 +643,7 @@ void DataView::createNativeLayout(Node &n) const
   // Note: We are using conduit's pointer rather than the DataView pointer
   //    since the conduit pointer handles offsetting
   // Note: const_cast the pointer to satisfy conduit's interface
-  void* data_ptr = const_cast<void*>(m_node.data_ptr());
+  void * data_ptr = const_cast<void *>(m_node.data_ptr());
   n.set_external( m_node.schema(), data_ptr);
 }
 
@@ -667,7 +667,7 @@ void DataView::createExternalLayout(Node &parent) const
   if (isExternal() && isDescribed())
   {
     Node & n = parent[ m_name ];
-    void* data_ptr = const_cast<void*>(m_node.data_ptr());
+    void * data_ptr = const_cast<void *>(m_node.data_ptr());
     n.set_external( m_node.schema(), data_ptr);
   }
 }
@@ -963,25 +963,25 @@ void DataView::exportTo(conduit::Node& data_holder,
 {
   data_holder["state"] = static_cast<unsigned int>(m_state);
 
-  switch (m_state) {
+  switch (m_state)
+  {
   case EMPTY:
     if (isDescribed())
     {
       data_holder["schema"] = m_schema.to_json();
     }
     break;
-  case BUFFER:
+  case BUFFER: {
+    IndexType buffer_id = getBuffer()->getIndex();
+    data_holder["buffer_id"] = buffer_id;
+    if (isDescribed())
     {
-      IndexType buffer_id = getBuffer()->getIndex();
-      data_holder["buffer_id"] = buffer_id;
-      if (isDescribed())
-      {
-        data_holder["schema"] = m_schema.to_json();
-      }
-      data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
-      buffer_indices.insert(buffer_id);
+      data_holder["schema"] = m_schema.to_json();
     }
+    data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
+    buffer_indices.insert(buffer_id);
     break;
+  }
   case EXTERNAL:
     if (isDescribed())
     {
@@ -1013,7 +1013,8 @@ void DataView::importFrom(conduit::Node& data_holder,
 {
   m_state = static_cast<State>(data_holder["state"].as_unsigned_int());
 
-  switch (m_state) {
+  switch (m_state)
+  {
   case EMPTY:
     if (data_holder.has_path("schema"))
     {
@@ -1030,10 +1031,13 @@ void DataView::importFrom(conduit::Node& data_holder,
     IndexType old_buffer_id = data_holder["buffer_id"].as_int();
     bool is_applied = data_holder["is_applied"].as_unsigned_char();
 
-    SLIC_ASSERT_MSG( buffer_id_map.find(old_buffer_id) != buffer_id_map.end(),
-                     "Buffer id map is old-new id entry for buffer " << old_buffer_id );
+    SLIC_ASSERT_MSG( buffer_id_map.find(old_buffer_id) !=
+                     buffer_id_map.end(),
+                     "Buffer id map is old-new id entry for buffer " <<
+                     old_buffer_id );
 
-    DataBuffer * buffer = m_owning_group->getDataStore()->getBuffer( buffer_id_map.at(old_buffer_id) );
+    DataBuffer * buffer = m_owning_group->getDataStore()->
+                          getBuffer( buffer_id_map.at(old_buffer_id) );
 
     if (data_holder.has_path("schema"))
     {
@@ -1045,8 +1049,8 @@ void DataView::importFrom(conduit::Node& data_holder,
     {
       apply();
     }
-    }
     break;
+  }
   case EXTERNAL:
     m_schema.set( data_holder["schema"].as_string() );
     break;
