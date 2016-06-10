@@ -20,4 +20,13 @@ if (ENABLE_MPI)
                 COMMAND spio_parallelWriteRead
                 NUM_PROCS 4
                 )
+   blt_add_executable(NAME spio_irregularWriteRead
+                      SOURCES spio_irregularWriteRead.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON spio conduit hdf5
+                      )
+   blt_add_test(NAME spio_irregularWriteRead
+                COMMAND spio_irregularWriteRead
+                NUM_PROCS 4
+                )
 endif()

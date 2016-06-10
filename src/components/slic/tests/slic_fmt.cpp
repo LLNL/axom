@@ -15,7 +15,7 @@
 ///
 //-----------------------------------------------------------------------------
 
-#include "fmt.hpp"
+#include "fmt/fmt.hpp"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
