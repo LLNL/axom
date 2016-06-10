@@ -1,15 +1,30 @@
 #!/bin/bash
 
+COMPILER="gcc@4.7.1"
+
+if [[ $HOSTNAME == rz* ]]; then
+    HC="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"
+else
+    HC="host-configs/surface-chaos_5_x86_64_ib-${COMPILER}.cmake"
+fi
+
+BT="RelWithDebInfo"
+BP="build-chaos-${COMPILER}-${BT,,}"
+IP="install-chaos-${COMPILER}-${BT,,}"
+COMP_OPT=""
+BUILD_OPT="-DENABLE_CXX11=FALSE"
+
+
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c gcc@4.7.1 --buildtype RelWithDebInfo -DENABLE_CXX11=FALSE
+./scripts/config-build.py -ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1
 fi
 echo "-----------------------------------------------------------------------"
 
-cd build-chaos-gcc@4.7.1-relwithdebinfo
+cd $BP
     echo "Generating C/Fortran binding..."
     make VERBOSE=1 generate
     if [ $? -ne 0 ]; then
