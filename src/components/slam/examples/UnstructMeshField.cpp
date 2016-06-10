@@ -40,7 +40,7 @@
 #include "slam/Map.hpp"
 #include "slam/Utilities.hpp"
 
-#include "fmt.hpp"
+#include "fmt/fmt.hpp"
 
 
 #ifndef USE_CONSTANT_RELATION
@@ -212,7 +212,7 @@ namespace slamUnstructuredHex {
       SLIC_ASSERT_MSG( numZones * (HexMesh::NODES_PER_ZONE) == numNodeZoneIndices
            ,  "Error while reading mesh!\n"
            << fmt::format(" numZones = {0}; numZones*{1} = {2}; numNodeZoneIndices = {3}"
-                          , numZones, HexMesh::NODES_PER_ZONE
+                          , numZones, static_cast<int>(HexMesh::NODES_PER_ZONE)
                           , numZones * (HexMesh::NODES_PER_ZONE), numNodeZoneIndices ));
       SLIC_INFO("-- Number of zones: " << numZones );
 
