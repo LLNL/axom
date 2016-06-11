@@ -157,7 +157,11 @@ subroutine dataview_get_data_{typename}_{nd}{suffix}(view, value)
     type(C_PTR) cptr
 
     cptr = view%get_void_ptr()
-    call c_f_pointer(cptr, value)
+    if (c_associated(cptr)) then
+      call c_f_pointer(cptr, value)
+    else
+      nullify(value)
+    endif
 end subroutine dataview_get_data_{typename}_{nd}{suffix}""".format(**d)
 
     else:
@@ -173,8 +177,12 @@ subroutine dataview_get_data_{typename}_{nd}{suffix}(view, value)
     integer(SIDRE_LENGTH) extents({rank})
 
     cptr = view%get_void_ptr()
-    rank = view%get_shape({rank}, extents)
-    call c_f_pointer(cptr, value, extents)
+    if (c_associated(cptr)) then
+      rank = view%get_shape({rank}, extents)
+      call c_f_pointer(cptr, value, extents)
+    else
+      nullify(value)
+    endif
 end subroutine dataview_get_data_{typename}_{nd}{suffix}""".format(**d)
 
 

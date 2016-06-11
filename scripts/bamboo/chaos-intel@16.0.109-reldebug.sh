@@ -29,7 +29,7 @@ cd $BP
     echo "Generating C/Fortran binding..."
     make VERBOSE=1 generate
     if [ $? -ne 0 ]; then
-        echo "Error: 'make test' failed"
+        echo "Error: 'make generate' failed"
         exit 1
     fi
     echo "-----------------------------------------------------------------------"
