@@ -49,8 +49,12 @@ function datagroup_create_array_view_{typename}_{nd}(group, name, value) result(
     type(C_PTR) addr
 
     lname = len_trim(name)
-    {extents_asgn}
     call SHROUD_C_LOC(value, addr)
+    if (c_associated(addr)) then
+      {extents_asgn}
+    else
+      extents = 0
+    endif
     rv%voidptr = c_datagroup_create_view_external_bufferify( &
         group%voidptr, name, lname, addr)
     call c_dataview_apply_type_shape(rv%voidptr, type, {rank}, extents)
