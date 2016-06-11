@@ -105,17 +105,19 @@ int main(int argc, char** argv)
   if (view_i1_restored->getNumElements() != num_elems) {
     return_val = 1;
   }
+  else
+  {
+    int * i1_orig = view_i1_orig->getData();
+    int * i1_restored = view_i1_restored->getData();
 
-  int * i1_orig = view_i1_orig->getData();
-  int * i1_restored = view_i1_restored->getData();
-
-  for (int i = 0; i < num_elems; ++i) {
-    if (return_val != 1) {
-      if (i1_orig[i] != i1_restored[i]) {
-        return_val = 1;
+    for (int i = 0; i < num_elems; ++i) {
+      if (return_val != 1) {
+	if (i1_orig[i] != i1_restored[i]) {
+	  return_val = 1;
+	}
       }
-    }
-  } 
+    } 
+  }
 
   delete ds;
   delete ds2;

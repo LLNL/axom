@@ -18,11 +18,12 @@ program spio_basis_write_read
 
   integer mpierr
   integer num_files
+  integer testvalue1, testvalue2
   integer return_val
 
-  type(datastore) ds, ds2
-  type(datagroup) root, root2
-  type(datagroup) flds, flds2
+  type(datastore) ds1, ds2
+  type(datagroup) root1, root2
+  type(datagroup) flds1, flds2
   type(datagroup) ga, gb
   type(dataview)  view1, view2
 
@@ -30,13 +31,13 @@ program spio_basis_write_read
 
   call mpi_init(mpierr)
 
-  ds = datastore_new()
-  root = ds%get_root()
+  ds1 = datastore_new()
+  root1 = ds1%get_root()
 
-  flds = root%create_group("fields")
-  flds2 = root%create_group("fields2")
+  flds1 = root1%create_group("fields")
+  flds2 = root1%create_group("fields2")
 
-  ga = flds%create_group("a")
+  ga = flds1%create_group("a")
   gb = flds2%create_group("b")
 
   view1 = ga%create_view_scalar_int("i0", 101)
@@ -45,7 +46,7 @@ program spio_basis_write_read
   num_files = 1
   writer = iomanager_new(MPI_COMM_WORLD)
 
-  call writer%write(root, num_files, "F_out_spio_basic_write_read", "conduit_hdf5")
+  call writer%write(root1, num_files, "F_out_spio_basic_write_read", "conduit_hdf5")
 
   ds2 = datastore_new()
 
@@ -55,29 +56,29 @@ program spio_basis_write_read
   call reader%read(root2, "F_out_spio_basic_write_read.root")
 
   return_val = 0
-  if (.not. root2%is_equivalent_to(root)) then
+  if (.not. root2%is_equivalent_to(root1)) then
      return_val = 1 
   endif
 
-!  int testvalue =
-!    call ds%get_root()%get_group("fields")%get_group("a")%get_view("i0")%get_data()
-!  int testvalue2 =
-!    call ds2%get_root()%get_group("fields")%get_group("a")%get_view("i0")%get_data()
-!
-!  if (testvalue != testvalue2) {
-!    return_val = 1
-!  }
-!
-!  testvalue =
-!    call ds%get_root()%get_group("fields2")%get_group("b")%get_view("i1")%get_data()
-!  testvalue2 =
-!    call ds2%get_root()%get_group("fields2")%get_group("b")%get_view("i1")%get_data()
-!
-!  if (testvalue != testvalue2) {
-!    return_val = 1
-!  }
+  view1 = root1%get_view("fields/a/i0")
+  testvalue1 = view1%get_data_int()
+  view2 = root2%get_view("fields/a/i0")
+  testvalue2 = view1%get_data_int()
 
-  call ds%delete()
+  if (testvalue1 .ne. testvalue2) then
+     return_val = 1
+  endif
+
+  view1 = root1%get_view("fields2/b/i1")
+  testvalue1 = view1%get_data_int()
+  view2 = root2%get_view("fields2/b/i1")
+  testvalue2 = view1%get_data_int()
+
+  if (testvalue1 .ne. testvalue2) then
+     return_val = 1
+  endif
+
+  call ds1%delete()
   call ds2%delete()
 
   call mpi_finalize(mpierr)

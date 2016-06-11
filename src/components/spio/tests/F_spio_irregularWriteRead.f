@@ -22,14 +22,16 @@ program spio_irregularWriteRead
   integer return_val
   integer my_rank, num_ranks, num_output
   integer num_fields, num_subgroups
-  integer, pointer :: vals(:)
+  integer num_elems1, num_elems2
+  integer testvalue1, testvalue2
+  integer, pointer :: vals1(:), vals2(:)
   character(80) name
 
-  type(datastore) ds, ds2
-  type(datagroup) root, root2
-  type(datagroup) flds, flds2
-  type(datagroup) sg
-  type(dataview)  view
+  type(datastore) ds1, ds2
+  type(datagroup) root1, root2
+  type(datagroup) flds1, flds2
+  type(datagroup) sg1, sg2
+  type(dataview)  view1, view2
 
   type(iomanager) writer, reader
 
@@ -47,29 +49,29 @@ program spio_irregularWriteRead
 !
 ! the views are filled with repeatable nonsense data that will vary based
 ! on rank.
-  ds = datastore_new()
-  root = ds%get_root()
+  ds1 = datastore_new()
+  root1 = ds1%get_root()
 
   num_fields = my_rank + 2
 
   do f = 0, num_fields-1
      write(name, "(a,i0)") "fields", f
-     flds = root%create_group(name)
+     flds1 = root1%create_group(name)
 
      num_subgroups = mod(f+my_rank,3) + 1
      do g = 0, num_subgroups-1
         write(name, "(a,i0)") "subgroup", g
-        sg = flds%create_group(name)
+        sg1 = flds1%create_group(name)
 
         write(name, "(a,i0)") "view", g
         if (mod(g, 2) .ne. 0) then
-           view = sg%create_view_and_allocate(name, SIDRE_INT_ID, 10+my_rank)
-           call view%get_data(vals)
+           view1 = sg1%create_view_and_allocate(name, SIDRE_INT_ID, 10+my_rank)
+           call view1%get_data(vals1)
            do i = 0, 9+my_rank
-              vals(i+1) = (i+10) * (404-my_rank-i-g-f)
+              vals1(i+1) = (i+10) * (404-my_rank-i-g-f)
            enddo
         else
-           view = sg%create_view_scalar_int(name, 101*my_rank*(f+g+1))
+           view1 = sg1%create_view_scalar_int(name, 101*my_rank*(f+g+1))
         endif
      enddo
   enddo
@@ -78,7 +80,7 @@ program spio_irregularWriteRead
   num_files = num_output
   writer = iomanager_new(MPI_COMM_WORLD)
 
-  call writer%write(root, num_files, "F_out_spio_irregular_write_read", "conduit_hdf5")
+  call writer%write(root1, num_files, "F_out_spio_irregular_write_read", "conduit_hdf5")
 
   ! create another datastore that holds nothing but the root group.
   ds2 = datastore_new()
@@ -91,66 +93,50 @@ program spio_irregularWriteRead
 
   ! verify that the contents of ds2 match those written from ds.
   return_val = 0
-  if (.not. root2%is_equivalent_to(root)) then
+  if (.not. root2%is_equivalent_to(root1)) then
      return_val = 1
   endif
 
-!--  for (int f = 0 f < num_fields ++f) {
-!--    std::ostringstream ostream
-!--    ostream << "fields" << f
-!--    type(datagroup) flds
-!--    flds = ds%get_root()%get_group(ostream.str())
-!--    type(datagroup) flds2
-!--    flds2 = ds2%get_root()%get_group(ostream.str())
-!--
-!--    int num_subgroups = mod(f+my_rank,3) + 1
-!--    for (int g = 0 g < num_subgroups ++g) {
-!--      std::ostringstream gstream
-!--      gstream << "subgroup" << g
-!--      type(datagroup) sg
-!--      sg = flds%get_group(gstream.str())
-!--      type(datagroup) sg2
-!--      sg2 = flds2%get_group(gstream.str())
-!--
-!--      std::ostringstream vstream
-!--      vstream << "view" << g
-!--      if (mod(g,2) .ne. 0) then
-!--
-!--        type(dataview) view_orig
-!--        view_orig = sg%get_view(vstream.str())
-!--        type(dataview) view_restored
-!--        view_restored = sg2%get_view(vstream.str())
-!--
-!--        int num_elems = view_orig%get_num_elements()
-!--        if (view_restored%get_num_elements() != num_elems) {
-!--          return_val = 1 
-!--        }
-!--
-!--        type(int) vals_orig
-!--        vals_orig = view_orig%get_data()
-!--        type(int) vals_restored
-!--        vals_restored = view_restored%get_data()
-!--
-!--        for (int i = 0 i < num_elems ++i) {
-!--          if (return_val != 1) {
-!--            if (vals_orig(i) != vals_restored(i)) {
-!--              return_val = 1
-!--            }
-!--          }
-!--        }
-!--
-!--      } else {
-!--        int testvalue = sg%get_view(vstream.str())%get_data()
-!--        int testvalue2 = sg2%get_view(vstream.str())%get_data()
-!--
-!--        if (testvalue != testvalue2) {
-!--          return_val = 1
-!--        }
-!--      }
-!--    }
-!--  } 
+  do f = 0, num_fields-1
+     write(name, "(a,i0)") "fields", f
+     flds1 = root1%get_group(name)
+     flds2 = root2%get_group(name)
 
-  call ds%delete()
+     num_subgroups = mod(f+my_rank,3) + 1
+     do g = 0, num_subgroups-1
+        write(name, "(a,i0)") "subgroup", g
+        sg1 = flds1%get_group(name)
+        sg2 = flds2%get_group(name)
+
+        write(name, "(a,i0)") "view", g
+        if (mod(g, 2) .ne. 0) then
+           view1 = sg1%get_view(name)
+           view2 = sg2%get_view(name)
+
+           num_elems1 = view1%get_num_elements()
+           num_elems2 = view2%get_num_elements()
+           if (num_elems1 .ne. num_elems2) then
+              return_val = 1 
+           else
+              call view1%get_data(vals1)
+              call view2%get_data(vals2)
+              if (any(vals1.ne.vals2)) then
+                 return_val = 1
+              endif
+           endif
+        else
+           view1 = sg1%get_view(name)
+           view2 = sg2%get_view(name)
+           testvalue1 = view1%get_data_int()
+           testvalue2 = view1%get_data_int()
+           if (testvalue1 .ne. testvalue2) then
+              return_val = 1
+           endif
+        endif
+     enddo
+  enddo
+
+  call ds1%delete()
   call ds2%delete()
 
   call mpi_finalize(mpierr)

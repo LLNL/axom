@@ -19,12 +19,14 @@ program spio_parallel_write_read
   integer i
   integer mpierr
   integer num_files
+  integer testvalue1, testvalue2
+  integer num_elems1, num_elems2
   integer return_val
   integer my_rank, num_ranks, num_output
-  integer, pointer :: i1_vals(:)
+  integer, pointer :: i1_vals(:), i2_vals(:)
 
-  type(datastore) ds, ds2
-  type(datagroup) root, root2
+  type(datastore) ds1, ds2
+  type(datagroup) root1, root2
   type(datagroup) flds, flds2
   type(datagroup) ga, gb
   type(dataview)  view1, view2
@@ -45,11 +47,11 @@ program spio_parallel_write_read
 !
 ! the views are filled with repeatable nonsense data that will vary based
 ! on rank.
-  ds = datastore_new()
-  root = ds%get_root()
+  ds1 = datastore_new()
+  root1 = ds1%get_root()
 
-  flds = root%create_group("fields")
-  flds2 = root%create_group("fields2")
+  flds = root1%create_group("fields")
+  flds2 = root1%create_group("fields2")
 
   ga = flds%create_group("a")
   gb = flds2%create_group("b")
@@ -67,7 +69,7 @@ program spio_parallel_write_read
   num_files = num_output
   writer = iomanager_new(MPI_COMM_WORLD)
 
-  call writer%write(root, num_files, "F_out_spio_parallel_write_read", "conduit_hdf5")
+  call writer%write(root1, num_files, "F_out_spio_parallel_write_read", "conduit_hdf5")
 
   ! create another datastore that holds nothing but the root group.
   ds2 = datastore_new()
@@ -80,43 +82,35 @@ program spio_parallel_write_read
 
   ! verify that the contents of ds2 match those written from ds.
   return_val = 0
-  if (.not. root2%is_equivalent_to(root)) then
+  if (.not. root2%is_equivalent_to(root1)) then
      return_val = 1 
   endif
 
-!--  int testvalue =
-!--    call ds%get_root()%get_group("fields")%get_group("a")%get_view("i0")%get_data()
-!--  int testvalue2 =
-!--    call ds2%get_root()%get_group("fields")%get_group("a")%get_view("i0")%get_data()
-!--
-!--  if (testvalue .ne. testvalue2) then
-!--     return_val = 1
-!--  endif
-!--
-!--  type(dataview) view_i1_orig
-!--  view_i1_orig = call ds%get_root()%get_group("fields2")%get_group("b")%get_view("i1")
-!--  type(dataview) view_i1_restored
-!--  view_i1_restored = call ds2%get_root()%get_group("fields2")%get_group("b")%get_view("i1")
-!--
-!--  int num_elems = view_i1_orig%get_num_elements()
-!--  if (view_i1_restored%get_num_elements() != num_elems) then
-!--     return_val = 1
-!--  endif
-!--
-!--  type(int) i1_orig
-!--  i1_orig = view_i1_orig%get_data()
-!--  type(int) i1_restored
-!--  i1_restored = view_i1_restored%get_data()
-!--
-!--  do i = 1, num_elemes
-!--     if (return_val .ne. 1) then
-!--        if (i1_orig(i) .ne. i1_restored(i)) then
-!--           return_val = 1
-!--        endif
-!--     endif
-!--  enddo
+  view1 = root1%get_view("fields/a/i0")
+  view2 = root2%get_view("fields/a/i0")
+  testvalue1 = view1%get_data_int()
+  testvalue2 = view1%get_data_int()
 
-  call ds%delete()
+  if (testvalue1 .ne. testvalue2) then
+     return_val = 1
+  endif
+
+  view1 = root1%get_view("fields2/b/i1")
+  view2 = root2%get_view("fields2/b/i1")
+
+  num_elems1 = view1%get_num_elements()
+  num_elems2 = view2%get_num_elements()
+  if (num_elems1 .ne. num_elems2) then
+     return_val = 1
+  else
+     call view1%get_data(i1_vals)
+     call view2%get_data(i2_vals)
+     if (any(i1_vals.ne.i2_vals)) then
+        return_val = 1
+     endif
+  endif
+
+  call ds1%delete()
   call ds2%delete()
 
   call mpi_finalize(mpierr)
