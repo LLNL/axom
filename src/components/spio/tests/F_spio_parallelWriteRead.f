@@ -1,0 +1,126 @@
+! F_spio_parallelWriteRead.f
+!
+! copyright (c) 2015, lawrence livermore national security, llc.
+! produced at the lawrence livermore national laboratory.
+!
+! all rights reserved.
+!
+! this source code cannot be distributed without permission and
+! further review from lawrence livermore national laboratory.
+!
+
+program spio_parallel_write_read
+  use sidre_mod
+  use spio_mod
+  implicit none
+
+  include 'mpif.h'
+
+  integer i
+  integer mpierr
+  integer num_files
+  integer return_val
+  integer my_rank, num_ranks, num_output
+  integer, pointer :: i1_vals(:)
+
+  type(datastore) ds, ds2
+  type(datagroup) root, root2
+  type(datagroup) flds, flds2
+  type(datagroup) ga, gb
+  type(dataview)  view1, view2
+
+  type(iomanager) writer, reader
+
+  call mpi_init(mpierr)
+
+  call mpi_comm_rank(MPI_COMM_WORLD, my_rank, mpierr)
+  call mpi_comm_size(MPI_COMM_WORLD, num_ranks, mpierr)
+
+  num_output = num_ranks / 2 
+  if (num_output == 0) then
+     num_output = 1
+  endif
+
+! create a datastore and give it a small hierarchy of groups and views.
+!
+! the views are filled with repeatable nonsense data that will vary based
+! on rank.
+  ds = datastore_new()
+  root = ds%get_root()
+
+  flds = root%create_group("fields")
+  flds2 = root%create_group("fields2")
+
+  ga = flds%create_group("a")
+  gb = flds2%create_group("b")
+  
+  view1 = ga%create_view_scalar_int("i0", 101*my_rank)
+  view2 = gb%create_view_and_allocate("i1", SIDRE_INT_ID, 10)
+
+  call view2%get_data(i1_vals)
+
+  do i = 0, 9
+     i1_vals(i+1) = (i+10) * (404-my_rank-i)
+  enddo
+
+  ! contents of the datastore written to files with io_manager.
+  num_files = num_output
+  writer = iomanager_new(MPI_COMM_WORLD)
+
+  call writer%write(root, num_files, "F_out_spio_parallel_write_read", "conduit_hdf5")
+
+  ! create another datastore that holds nothing but the root group.
+  ds2 = datastore_new()
+
+  ! read from the files that were written above.
+  reader = iomanager_new(MPI_COMM_WORLD)
+
+  root2 = ds2%get_root()
+  call reader%read(root2, "F_out_spio_parallel_write_read.root")
+
+  ! verify that the contents of ds2 match those written from ds.
+  return_val = 0
+  if (.not. root2%is_equivalent_to(root)) then
+     return_val = 1 
+  endif
+
+!--  int testvalue =
+!--    call ds%get_root()%get_group("fields")%get_group("a")%get_view("i0")%get_data()
+!--  int testvalue2 =
+!--    call ds2%get_root()%get_group("fields")%get_group("a")%get_view("i0")%get_data()
+!--
+!--  if (testvalue .ne. testvalue2) then
+!--     return_val = 1
+!--  endif
+!--
+!--  type(dataview) view_i1_orig
+!--  view_i1_orig = call ds%get_root()%get_group("fields2")%get_group("b")%get_view("i1")
+!--  type(dataview) view_i1_restored
+!--  view_i1_restored = call ds2%get_root()%get_group("fields2")%get_group("b")%get_view("i1")
+!--
+!--  int num_elems = view_i1_orig%get_num_elements()
+!--  if (view_i1_restored%get_num_elements() != num_elems) then
+!--     return_val = 1
+!--  endif
+!--
+!--  type(int) i1_orig
+!--  i1_orig = view_i1_orig%get_data()
+!--  type(int) i1_restored
+!--  i1_restored = view_i1_restored%get_data()
+!--
+!--  do i = 1, num_elemes
+!--     if (return_val .ne. 1) then
+!--        if (i1_orig(i) .ne. i1_restored(i)) then
+!--           return_val = 1
+!--        endif
+!--     endif
+!--  enddo
+
+  call ds%delete()
+  call ds2%delete()
+
+  call mpi_finalize(mpierr)
+
+  call exit(return_val)
+end program spio_parallel_write_read
+

@@ -67,7 +67,7 @@ int main(int argc, char** argv)
   writer.write(root, num_files, "out_spio_parallel_write_read", "conduit_hdf5");
 
   /*
-   * Create another DataStore than holds nothing but the root group.
+   * Create another DataStore that holds nothing but the root group.
    */
   DataStore * ds2 = new DataStore();
 

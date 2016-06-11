@@ -81,10 +81,10 @@ int main(int argc, char** argv)
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root, num_files, "out_spio_parallel_write_read", "conduit_hdf5");
+  writer.write(root, num_files, "out_spio_irregular_write_read", "conduit_hdf5");
 
   /*
-   * Create another DataStore than holds nothing but the root group.
+   * Create another DataStore that holds nothing but the root group.
    */
   DataStore * ds2 = new DataStore();
 
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
    */
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(ds2->getRoot(), "out_spio_parallel_write_read.root");
+  reader.read(ds2->getRoot(), "out_spio_irregular_write_read.root");
 
 
   /*
