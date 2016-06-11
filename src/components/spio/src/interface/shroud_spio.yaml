@@ -29,6 +29,7 @@ options:
 types:
   DataGroup:
     cpp_header: sidre/DataGroup.hpp
+    cpp_type: asctoolkit::sidre::DataGroup
     f_type: type(datagroup)
     f_module:
       sidre_mod: [ datagroup ]
@@ -36,7 +37,8 @@ types:
     c_header: sidre/wrapDataGroup.h
     c_fortran: type(C_PTR)
     f_to_c: '{f_var}%get_instance()'
-    c_to_cpp: static_cast<{C_const}asctoolkit::sidre::DataGroup{ptr}>(static_cast<{C_const}void *>({c_var}))
+    cpp_local_var: True
+    c_to_cpp: static_cast<{C_const}{cpp_type}{ptr}>(static_cast<{C_const}void *>({c_var}))
 
 
 classes:

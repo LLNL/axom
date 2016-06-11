@@ -1736,7 +1736,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 50, 
+            "_PTR_F_C_index": 52, 
             "_decl": "bool isNameValid(const std::string & name+intent(in))", 
             "_function_index": 42, 
             "_subprogram": "function", 
@@ -1778,7 +1778,7 @@
             "_PTR_C_CPP_index": 42, 
             "_decl": "bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 50, 
+            "_function_index": 52, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "function", 
             "args": [
@@ -1838,7 +1838,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 51, 
+            "_PTR_F_C_index": 53, 
             "_cpp_overload": [
                 44, 
                 45
@@ -1888,7 +1888,7 @@
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 51, 
+            "_function_index": 53, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -1926,7 +1926,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 52, 
+            "_PTR_F_C_index": 54, 
             "_cpp_overload": [
                 44, 
                 45
@@ -1984,7 +1984,7 @@
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 52, 
+            "_function_index": 54, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -2031,7 +2031,7 @@
         }, 
         {
             "_decl": "void testoptional()", 
-            "_function_index": 48, 
+            "_function_index": 50, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -2060,7 +2060,7 @@
         }, 
         {
             "_decl": "void testoptional(int i+default(1)+intent(in)+value)", 
-            "_function_index": 49, 
+            "_function_index": 51, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -2100,8 +2100,8 @@
         {
             "_decl": "void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)", 
             "_default_funcs": [
-                48, 
-                49
+                50, 
+                51
             ], 
             "_function_index": 46, 
             "_has_default_arg": true, 
@@ -2183,6 +2183,75 @@
                 "name": "testmpi", 
                 "type": "void"
             }
+        }, 
+        {
+            "_decl": "void testgroup1(DataGroup * grp+intent(in)+value)", 
+            "_function_index": 48, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "ptr": true, 
+                        "value": true
+                    }, 
+                    "name": "grp", 
+                    "type": "DataGroup"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void testgroup1(DataGroup * grp)", 
+            "fmt": {
+                "C_name": "AA_testgroup1", 
+                "F_C_name": "c_testgroup1", 
+                "F_name_generic": "testgroup1", 
+                "F_name_impl": "testgroup1", 
+                "F_name_method": "testgroup1", 
+                "PY_name_impl": "PP_testgroup1", 
+                "function_name": "testgroup1", 
+                "underscore_name": "testgroup1"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "testgroup1", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "void testgroup2(const DataGroup * grp+intent(in)+value)", 
+            "_function_index": 49, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "ptr": true, 
+                        "value": true
+                    }, 
+                    "name": "grp", 
+                    "type": "DataGroup"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void testgroup2(const DataGroup * grp)", 
+            "fmt": {
+                "C_name": "AA_testgroup2", 
+                "F_C_name": "c_testgroup2", 
+                "F_name_generic": "testgroup2", 
+                "F_name_impl": "testgroup2", 
+                "F_name_method": "testgroup2", 
+                "PY_name_impl": "PP_testgroup2", 
+                "function_name": "testgroup2", 
+                "underscore_name": "testgroup2"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "testgroup2", 
+                "type": "void"
+            }
         }
     ], 
     "options": {
@@ -2253,6 +2322,23 @@
         ]
     }, 
     "types": {
+        "DataGroup": {
+            "PY_PyTypeObject": "FillInTypeForGroup", 
+            "c_fortran": "type(C_PTR)", 
+            "c_header": "sidre/wrapDataGroup.h", 
+            "c_to_cpp": "static_cast<{C_const}{cpp_type}{ptr}>(static_cast<{C_const}void *>({c_var}))", 
+            "c_type": "SIDRE_datagroup", 
+            "cpp_header": "sidre/DataGroup.hpp", 
+            "cpp_local_var": true, 
+            "cpp_type": "asctoolkit::sidre::DataGroup", 
+            "f_module": {
+                "sidre_mod": [
+                    "datagroup"
+                ]
+            }, 
+            "f_to_c": "{f_var}%get_instance()", 
+            "f_type": "type(datagroup)"
+        }, 
         "ExClass1": {
             "LUA_pop": "({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
             "LUA_type": "LUA_TUSERDATA", 

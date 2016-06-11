@@ -292,6 +292,7 @@ class Typedef(object):
         cpp_to_c='{cpp_var}', # Expression to convert from C++ to C
         cpp_header=None,      # Name of C++ header file required for implementation
                               # For example, if cpp_to_c was a function
+        cpp_local_var=False,
 
         c_type=None,          # Name of type in C
         c_header=None,        # Name of C header file required for type

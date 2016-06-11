@@ -40,9 +40,10 @@ void SPIO_iomanager_write(SPIO_iomanager * self, SIDRE_datagroup * group, int nu
 {
 IOManager *selfobj = static_cast<IOManager *>(static_cast<void *>(self));
 // splicer begin class.IOManager.method.write
+asctoolkit::sidre::DataGroup * SH_group = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group));
 const std::string SH_file_string(file_string);
 const std::string SH_protocol(protocol);
-selfobj->write(static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group)), num_files, SH_file_string, SH_protocol);
+selfobj->write(SH_group, num_files, SH_file_string, SH_protocol);
 return;
 // splicer end class.IOManager.method.write
 }
@@ -51,9 +52,10 @@ void SPIO_iomanager_write_bufferify(SPIO_iomanager * self, SIDRE_datagroup * gro
 {
 IOManager *selfobj = static_cast<IOManager *>(static_cast<void *>(self));
 // splicer begin class.IOManager.method.write_bufferify
+asctoolkit::sidre::DataGroup * SH_group = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group));
 const std::string SH_file_string(file_string, Lfile_string);
 const std::string SH_protocol(protocol, Lprotocol);
-selfobj->write(static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group)), num_files, SH_file_string, SH_protocol);
+selfobj->write(SH_group, num_files, SH_file_string, SH_protocol);
 return;
 // splicer end class.IOManager.method.write_bufferify
 }
@@ -62,9 +64,10 @@ void SPIO_iomanager_read_0(SPIO_iomanager * self, SIDRE_datagroup * group, const
 {
 IOManager *selfobj = static_cast<IOManager *>(static_cast<void *>(self));
 // splicer begin class.IOManager.method.read_0
+asctoolkit::sidre::DataGroup * SH_group = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group));
 const std::string SH_file_string(file_string);
 const std::string SH_protocol(protocol);
-selfobj->read(static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group)), SH_file_string, SH_protocol);
+selfobj->read(SH_group, SH_file_string, SH_protocol);
 return;
 // splicer end class.IOManager.method.read_0
 }
@@ -73,9 +76,10 @@ void SPIO_iomanager_read_0_bufferify(SPIO_iomanager * self, SIDRE_datagroup * gr
 {
 IOManager *selfobj = static_cast<IOManager *>(static_cast<void *>(self));
 // splicer begin class.IOManager.method.read_0_bufferify
+asctoolkit::sidre::DataGroup * SH_group = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group));
 const std::string SH_file_string(file_string, Lfile_string);
 const std::string SH_protocol(protocol, Lprotocol);
-selfobj->read(static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group)), SH_file_string, SH_protocol);
+selfobj->read(SH_group, SH_file_string, SH_protocol);
 return;
 // splicer end class.IOManager.method.read_0_bufferify
 }
@@ -84,8 +88,9 @@ void SPIO_iomanager_read_1(SPIO_iomanager * self, SIDRE_datagroup * group, const
 {
 IOManager *selfobj = static_cast<IOManager *>(static_cast<void *>(self));
 // splicer begin class.IOManager.method.read_1
+asctoolkit::sidre::DataGroup * SH_group = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group));
 const std::string SH_root_file(root_file);
-selfobj->read(static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group)), SH_root_file);
+selfobj->read(SH_group, SH_root_file);
 return;
 // splicer end class.IOManager.method.read_1
 }
@@ -94,8 +99,9 @@ void SPIO_iomanager_read_1_bufferify(SPIO_iomanager * self, SIDRE_datagroup * gr
 {
 IOManager *selfobj = static_cast<IOManager *>(static_cast<void *>(self));
 // splicer begin class.IOManager.method.read_1_bufferify
+asctoolkit::sidre::DataGroup * SH_group = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group));
 const std::string SH_root_file(root_file, Lroot_file);
-selfobj->read(static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group)), SH_root_file);
+selfobj->read(SH_group, SH_root_file);
 return;
 // splicer end class.IOManager.method.read_1_bufferify
 }

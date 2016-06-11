@@ -734,6 +734,7 @@ class Wrapf(util.WrapperMixin):
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_args, fmt)
             elif arg_typedef.f_to_c:
+                need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_to_c, fmt)
             elif f_arg and c_arg['type'] != f_arg['type']:
                 need_wrapper = True

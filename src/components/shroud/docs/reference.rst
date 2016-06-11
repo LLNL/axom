@@ -387,6 +387,18 @@ cpp_header
     For example, if cpp_to_c was a function.
     Defaults to *None*.
 
+cpp_local_var
+    If true then a local variable will be created instead of passing the argument
+    directly to the function.
+    The variable will be assigned a value using *c_to_cpp*.
+    If *c_to_cpp* is a large expression it is sometimes convient to have a local variable
+    for debugging purposes.
+    It can also be used to create cleaner code when *c_to_cpp* will generate a very long statement.
+    When *c_to_cpp* is not sufficient to assign a value, *c_statements* can be used to 
+    add multiple statements into the wrapper.  *c_statements* and *cpp_local_var* cannot
+    be used together.
+..  {C_const}{cpp_type}{ptr} = c_to_cpp ;
+
 c_type
     name of type in C.
     Defaults to *None*.

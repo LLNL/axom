@@ -2110,7 +2110,7 @@ contains
     end function datastore_create_buffer_empty
     
     function datastore_create_buffer_from_type_int(obj, type, num_elems) result(rv)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datastore) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -2443,7 +2443,7 @@ contains
     end function datagroup_get_next_valid_view_index
     
     function datagroup_create_view_and_allocate_nelems_int(obj, name, type, num_elems) result(rv)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2594,7 +2594,7 @@ contains
     end function datagroup_create_view_empty
     
     function datagroup_create_view_from_type_int(obj, name, type, num_elems) result(rv)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2630,7 +2630,7 @@ contains
     end function datagroup_create_view_from_type_long
     
     function datagroup_create_view_from_type_and_buffer_int(obj, name, type, num_elems, buff) result(rv)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2670,7 +2670,7 @@ contains
     end function datagroup_create_view_from_type_and_buffer_long
     
     function datagroup_create_view_from_type_external_int(obj, name, type, num_elems, external_ptr) result(rv)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -4007,7 +4007,7 @@ contains
     end function databuffer_get_num_views
     
     subroutine databuffer_describe_int(obj, type, num_elems)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(databuffer) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4043,7 +4043,7 @@ contains
     end subroutine databuffer_allocate_existing
     
     subroutine databuffer_allocate_from_type_int(obj, type, num_elems)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(databuffer) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4071,7 +4071,7 @@ contains
     end subroutine databuffer_allocate_from_type_long
     
     subroutine databuffer_reallocate_int(obj, num_elems)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(databuffer) :: obj
         integer(C_INT), value, intent(IN) :: num_elems
@@ -4177,7 +4177,7 @@ contains
     end subroutine dataview_allocate_simple
     
     subroutine dataview_allocate_from_type_int(obj, type, num_elems)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4205,7 +4205,7 @@ contains
     end subroutine dataview_allocate_from_type_long
     
     subroutine dataview_reallocate_int(obj, num_elems)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: num_elems
@@ -4248,7 +4248,7 @@ contains
     end subroutine dataview_attach_buffer_only
     
     subroutine dataview_attach_buffer_type_int(obj, type, num_elems, buff)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4554,7 +4554,7 @@ contains
     end subroutine dataview_set_external_data_ptr_only
     
     subroutine dataview_set_external_data_ptr_type_int(obj, type, num_elems, external_ptr)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
