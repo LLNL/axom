@@ -2061,7 +2061,6 @@ module sidre_mod
 contains
     
     function datastore_new() result(rv)
-        use iso_c_binding
         implicit none
         type(datastore) :: rv
         ! splicer begin class.DataStore.method.new
@@ -2070,7 +2069,7 @@ contains
     end function datastore_new
     
     subroutine datastore_delete(obj)
-        use iso_c_binding
+        use iso_c_binding, only : C_NULL_PTR
         implicit none
         class(datastore) :: obj
         ! splicer begin class.DataStore.method.delete
@@ -2080,7 +2079,6 @@ contains
     end subroutine datastore_delete
     
     function datastore_get_root(obj) result(rv)
-        use iso_c_binding
         implicit none
         class(datastore) :: obj
         type(datagroup) :: rv
@@ -2090,7 +2088,7 @@ contains
     end function datastore_get_root
     
     function datastore_get_buffer(obj, idx) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         integer(C_INT), value, intent(IN) :: idx
@@ -2103,7 +2101,6 @@ contains
     end function datastore_get_buffer
     
     function datastore_create_buffer_empty(obj) result(rv)
-        use iso_c_binding
         implicit none
         class(datastore) :: obj
         type(databuffer) :: rv
@@ -2113,7 +2110,7 @@ contains
     end function datastore_create_buffer_empty
     
     function datastore_create_buffer_from_type_int(obj, type, num_elems) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -2128,7 +2125,7 @@ contains
     end function datastore_create_buffer_from_type_int
     
     function datastore_create_buffer_from_type_long(obj, type, num_elems) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datastore) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -2143,7 +2140,7 @@ contains
     end function datastore_create_buffer_from_type_long
     
     subroutine datastore_destroy_buffer(obj, id)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         integer(C_INT), value, intent(IN) :: id
@@ -2155,7 +2152,7 @@ contains
     end subroutine datastore_destroy_buffer
     
     function datastore_get_num_buffers(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_SIZE_T
         implicit none
         class(datastore) :: obj
         integer(C_SIZE_T) :: rv
@@ -2165,7 +2162,6 @@ contains
     end function datastore_get_num_buffers
     
     subroutine datastore_print(obj)
-        use iso_c_binding
         implicit none
         class(datastore) :: obj
         ! splicer begin class.DataStore.method.print
@@ -2174,7 +2170,7 @@ contains
     end subroutine datastore_print
     
     subroutine datastore_save_0(obj, file_path, protocol)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         character(*), intent(IN) :: file_path
@@ -2190,7 +2186,7 @@ contains
     end subroutine datastore_save_0
     
     subroutine datastore_save_1(obj, file_path, protocol, group)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         character(*), intent(IN) :: file_path
@@ -2208,7 +2204,7 @@ contains
     end subroutine datastore_save_1
     
     subroutine datastore_load_0(obj, file_path, protocol)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         character(*), intent(IN) :: file_path
@@ -2224,7 +2220,7 @@ contains
     end subroutine datastore_load_0
     
     subroutine datastore_load_1(obj, file_path, protocol, group)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         character(*), intent(IN) :: file_path
@@ -2242,7 +2238,7 @@ contains
     end subroutine datastore_load_1
     
     subroutine datastore_load_external_data_0(obj, file_path, protocol)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         character(*), intent(IN) :: file_path
@@ -2258,7 +2254,7 @@ contains
     end subroutine datastore_load_external_data_0
     
     subroutine datastore_load_external_data_1(obj, file_path, protocol, group)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         character(*), intent(IN) :: file_path
@@ -2303,7 +2299,7 @@ contains
     ! splicer end class.DataStore.additional_functions
     
     function datagroup_get_name(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_CHAR, C_INT
         implicit none
         class(datagroup) :: obj
         character(kind=C_CHAR, len=(MAXNAMESIZE)) :: rv
@@ -2316,7 +2312,6 @@ contains
     end function datagroup_get_name
     
     function datagroup_get_parent(obj) result(rv)
-        use iso_c_binding
         implicit none
         class(datagroup) :: obj
         type(datagroup) :: rv
@@ -2326,7 +2321,6 @@ contains
     end function datagroup_get_parent
     
     function datagroup_get_data_store(obj) result(rv)
-        use iso_c_binding
         implicit none
         class(datagroup) :: obj
         type(datastore) :: rv
@@ -2336,7 +2330,7 @@ contains
     end function datagroup_get_data_store
     
     function datagroup_get_num_views(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_SIZE_T
         implicit none
         class(datagroup) :: obj
         integer(C_SIZE_T) :: rv
@@ -2346,7 +2340,7 @@ contains
     end function datagroup_get_num_views
     
     function datagroup_get_num_groups(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_SIZE_T
         implicit none
         class(datagroup) :: obj
         integer(C_SIZE_T) :: rv
@@ -2356,7 +2350,7 @@ contains
     end function datagroup_get_num_groups
     
     function datagroup_has_view(obj, name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2370,7 +2364,7 @@ contains
     end function datagroup_has_view
     
     function datagroup_get_view_from_name(obj, name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2384,7 +2378,7 @@ contains
     end function datagroup_get_view_from_name
     
     function datagroup_get_view_from_index(obj, idx) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
@@ -2397,7 +2391,7 @@ contains
     end function datagroup_get_view_from_index
     
     function datagroup_get_view_index(obj, name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2411,7 +2405,7 @@ contains
     end function datagroup_get_view_index
     
     function datagroup_get_view_name(obj, idx) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_CHAR, C_INT
         implicit none
         class(datagroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
@@ -2426,7 +2420,7 @@ contains
     end function datagroup_get_view_name
     
     function datagroup_get_first_valid_view_index(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         integer(C_INT) :: rv
@@ -2436,7 +2430,7 @@ contains
     end function datagroup_get_first_valid_view_index
     
     function datagroup_get_next_valid_view_index(obj, idx) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
@@ -2449,7 +2443,7 @@ contains
     end function datagroup_get_next_valid_view_index
     
     function datagroup_create_view_and_allocate_nelems_int(obj, name, type, num_elems) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2467,7 +2461,7 @@ contains
     end function datagroup_create_view_and_allocate_nelems_int
     
     function datagroup_create_view_and_allocate_nelems_long(obj, name, type, num_elems) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2485,7 +2479,7 @@ contains
     end function datagroup_create_view_and_allocate_nelems_long
     
     function datagroup_create_view_and_allocate_shape(obj, name, type, ndims, shape) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2505,7 +2499,7 @@ contains
     end function datagroup_create_view_and_allocate_shape
     
     function datagroup_create_view_scalar_int(obj, name, value) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2521,7 +2515,7 @@ contains
     end function datagroup_create_view_scalar_int
     
     function datagroup_create_view_scalar_long(obj, name, value) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2537,7 +2531,7 @@ contains
     end function datagroup_create_view_scalar_long
     
     function datagroup_create_view_scalar_float(obj, name, value) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT, C_FLOAT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2553,7 +2547,7 @@ contains
     end function datagroup_create_view_scalar_float
     
     function datagroup_create_view_scalar_double(obj, name, value) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT, C_DOUBLE
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2569,7 +2563,7 @@ contains
     end function datagroup_create_view_scalar_double
     
     function datagroup_create_view_string(obj, name, value) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2586,7 +2580,7 @@ contains
     end function datagroup_create_view_string
     
     function datagroup_create_view_empty(obj, name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2600,7 +2594,7 @@ contains
     end function datagroup_create_view_empty
     
     function datagroup_create_view_from_type_int(obj, name, type, num_elems) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2618,7 +2612,7 @@ contains
     end function datagroup_create_view_from_type_int
     
     function datagroup_create_view_from_type_long(obj, name, type, num_elems) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2636,7 +2630,7 @@ contains
     end function datagroup_create_view_from_type_long
     
     function datagroup_create_view_from_type_and_buffer_int(obj, name, type, num_elems, buff) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2656,7 +2650,7 @@ contains
     end function datagroup_create_view_from_type_and_buffer_int
     
     function datagroup_create_view_from_type_and_buffer_long(obj, name, type, num_elems, buff) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2676,7 +2670,7 @@ contains
     end function datagroup_create_view_from_type_and_buffer_long
     
     function datagroup_create_view_from_type_external_int(obj, name, type, num_elems, external_ptr) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2696,7 +2690,7 @@ contains
     end function datagroup_create_view_from_type_external_int
     
     function datagroup_create_view_from_type_external_long(obj, name, type, num_elems, external_ptr) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2716,7 +2710,7 @@ contains
     end function datagroup_create_view_from_type_external_long
     
     function datagroup_create_view_from_shape(obj, name, type, ndims, shape) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2736,7 +2730,7 @@ contains
     end function datagroup_create_view_from_shape
     
     function datagroup_create_view_from_shape_and_buffer(obj, name, type, ndims, shape, buff) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2758,7 +2752,7 @@ contains
     end function datagroup_create_view_from_shape_and_buffer
     
     function datagroup_create_view_from_shape_external(obj, name, type, ndims, shape, external_ptr) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2780,7 +2774,7 @@ contains
     end function datagroup_create_view_from_shape_external
     
     function datagroup_create_view_into_buffer(obj, name, buff) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2796,7 +2790,7 @@ contains
     end function datagroup_create_view_into_buffer
     
     function datagroup_create_view_external(obj, name, external_ptr) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2812,7 +2806,7 @@ contains
     end function datagroup_create_view_external
     
     subroutine datagroup_destroy_view(obj, name)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2825,7 +2819,7 @@ contains
     end subroutine datagroup_destroy_view
     
     subroutine datagroup_destroy_view_and_data_name(obj, name)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2838,7 +2832,7 @@ contains
     end subroutine datagroup_destroy_view_and_data_name
     
     subroutine datagroup_destroy_view_and_data_index(obj, idx)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
@@ -2850,7 +2844,6 @@ contains
     end subroutine datagroup_destroy_view_and_data_index
     
     function datagroup_move_view(obj, view) result(rv)
-        use iso_c_binding
         implicit none
         class(datagroup) :: obj
         type(dataview), value, intent(IN) :: view
@@ -2863,7 +2856,6 @@ contains
     end function datagroup_move_view
     
     function datagroup_copy_view(obj, view) result(rv)
-        use iso_c_binding
         implicit none
         class(datagroup) :: obj
         type(dataview), value, intent(IN) :: view
@@ -2876,7 +2868,7 @@ contains
     end function datagroup_copy_view
     
     function datagroup_has_group(obj, name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL, C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2890,7 +2882,7 @@ contains
     end function datagroup_has_group
     
     function datagroup_get_group(obj, name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2904,7 +2896,7 @@ contains
     end function datagroup_get_group
     
     function datagroup_get_group_index(obj, name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2918,7 +2910,7 @@ contains
     end function datagroup_get_group_index
     
     function datagroup_get_group_name(obj, idx) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_CHAR, C_INT
         implicit none
         class(datagroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
@@ -2933,7 +2925,7 @@ contains
     end function datagroup_get_group_name
     
     function datagroup_get_first_valid_group_index(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         integer(C_INT) :: rv
@@ -2943,7 +2935,7 @@ contains
     end function datagroup_get_first_valid_group_index
     
     function datagroup_get_next_valid_group_index(obj, idx) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
@@ -2956,7 +2948,7 @@ contains
     end function datagroup_get_next_valid_group_index
     
     function datagroup_create_group(obj, name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2970,7 +2962,7 @@ contains
     end function datagroup_create_group
     
     subroutine datagroup_destroy_group_name(obj, name)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
@@ -2983,7 +2975,7 @@ contains
     end subroutine datagroup_destroy_group_name
     
     subroutine datagroup_destroy_group_index(obj, idx)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
@@ -2995,7 +2987,6 @@ contains
     end subroutine datagroup_destroy_group_index
     
     function datagroup_move_group(obj, grp) result(rv)
-        use iso_c_binding
         implicit none
         class(datagroup) :: obj
         type(datagroup), value, intent(IN) :: grp
@@ -3008,7 +2999,6 @@ contains
     end function datagroup_move_group
     
     subroutine datagroup_print(obj)
-        use iso_c_binding
         implicit none
         class(datagroup) :: obj
         ! splicer begin class.DataGroup.method.print
@@ -3017,7 +3007,7 @@ contains
     end subroutine datagroup_print
     
     function datagroup_is_equivalent_to(obj, other) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         class(datagroup) :: obj
         type(datagroup), value, intent(IN) :: other
@@ -3997,7 +3987,7 @@ contains
     ! splicer end class.DataGroup.additional_functions
     
     function databuffer_get_index(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(databuffer) :: obj
         integer(C_INT) :: rv
@@ -4007,7 +3997,7 @@ contains
     end function databuffer_get_index
     
     function databuffer_get_num_views(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_SIZE_T
         implicit none
         class(databuffer) :: obj
         integer(C_SIZE_T) :: rv
@@ -4017,7 +4007,7 @@ contains
     end function databuffer_get_num_views
     
     subroutine databuffer_describe_int(obj, type, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(databuffer) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4031,7 +4021,7 @@ contains
     end subroutine databuffer_describe_int
     
     subroutine databuffer_describe_long(obj, type, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(databuffer) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4045,7 +4035,6 @@ contains
     end subroutine databuffer_describe_long
     
     subroutine databuffer_allocate_existing(obj)
-        use iso_c_binding
         implicit none
         class(databuffer) :: obj
         ! splicer begin class.DataBuffer.method.allocate_existing
@@ -4054,7 +4043,7 @@ contains
     end subroutine databuffer_allocate_existing
     
     subroutine databuffer_allocate_from_type_int(obj, type, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(databuffer) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4068,7 +4057,7 @@ contains
     end subroutine databuffer_allocate_from_type_int
     
     subroutine databuffer_allocate_from_type_long(obj, type, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(databuffer) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4082,7 +4071,7 @@ contains
     end subroutine databuffer_allocate_from_type_long
     
     subroutine databuffer_reallocate_int(obj, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(databuffer) :: obj
         integer(C_INT), value, intent(IN) :: num_elems
@@ -4094,7 +4083,7 @@ contains
     end subroutine databuffer_reallocate_int
     
     subroutine databuffer_reallocate_long(obj, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG
         implicit none
         class(databuffer) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
@@ -4106,7 +4095,6 @@ contains
     end subroutine databuffer_reallocate_long
     
     function databuffer_get_void_ptr(obj) result(rv)
-        use iso_c_binding
         implicit none
         class(databuffer) :: obj
         type(C_PTR) :: rv
@@ -4116,7 +4104,7 @@ contains
     end function databuffer_get_void_ptr
     
     function databuffer_get_type_id(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(databuffer) :: obj
         integer(C_INT) :: rv
@@ -4126,7 +4114,7 @@ contains
     end function databuffer_get_type_id
     
     function databuffer_get_num_elements(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_SIZE_T
         implicit none
         class(databuffer) :: obj
         integer(C_SIZE_T) :: rv
@@ -4136,7 +4124,7 @@ contains
     end function databuffer_get_num_elements
     
     function databuffer_get_total_bytes(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_SIZE_T
         implicit none
         class(databuffer) :: obj
         integer(C_SIZE_T) :: rv
@@ -4146,7 +4134,6 @@ contains
     end function databuffer_get_total_bytes
     
     subroutine databuffer_print(obj)
-        use iso_c_binding
         implicit none
         class(databuffer) :: obj
         ! splicer begin class.DataBuffer.method.print
@@ -4182,7 +4169,6 @@ contains
     ! splicer end class.DataBuffer.additional_functions
     
     subroutine dataview_allocate_simple(obj)
-        use iso_c_binding
         implicit none
         class(dataview) :: obj
         ! splicer begin class.DataView.method.allocate_simple
@@ -4191,7 +4177,7 @@ contains
     end subroutine dataview_allocate_simple
     
     subroutine dataview_allocate_from_type_int(obj, type, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4205,7 +4191,7 @@ contains
     end subroutine dataview_allocate_from_type_int
     
     subroutine dataview_allocate_from_type_long(obj, type, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4219,7 +4205,7 @@ contains
     end subroutine dataview_allocate_from_type_long
     
     subroutine dataview_reallocate_int(obj, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: num_elems
@@ -4231,7 +4217,7 @@ contains
     end subroutine dataview_reallocate_int
     
     subroutine dataview_reallocate_long(obj, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG
         implicit none
         class(dataview) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
@@ -4243,7 +4229,6 @@ contains
     end subroutine dataview_reallocate_long
     
     subroutine dataview_apply_0(obj)
-        use iso_c_binding
         implicit none
         class(dataview) :: obj
         ! splicer begin class.DataView.method.apply_0
@@ -4252,7 +4237,6 @@ contains
     end subroutine dataview_apply_0
     
     subroutine dataview_attach_buffer_only(obj, buff)
-        use iso_c_binding
         implicit none
         class(dataview) :: obj
         type(databuffer), value, intent(IN) :: buff
@@ -4264,7 +4248,7 @@ contains
     end subroutine dataview_attach_buffer_only
     
     subroutine dataview_attach_buffer_type_int(obj, type, num_elems, buff)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4280,7 +4264,7 @@ contains
     end subroutine dataview_attach_buffer_type_int
     
     subroutine dataview_attach_buffer_type_long(obj, type, num_elems, buff)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4296,7 +4280,7 @@ contains
     end subroutine dataview_attach_buffer_type_long
     
     subroutine dataview_attach_buffer_shape(obj, type, ndims, shape, buff)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4314,7 +4298,7 @@ contains
     end subroutine dataview_attach_buffer_shape
     
     subroutine dataview_apply_nelems(obj, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG
         implicit none
         class(dataview) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
@@ -4326,7 +4310,7 @@ contains
     end subroutine dataview_apply_nelems
     
     subroutine dataview_apply_nelems_offset(obj, num_elems, offset)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG
         implicit none
         class(dataview) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
@@ -4340,7 +4324,7 @@ contains
     end subroutine dataview_apply_nelems_offset
     
     subroutine dataview_apply_nelems_offset_stride(obj, num_elems, offset, stride)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG
         implicit none
         class(dataview) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
@@ -4356,7 +4340,7 @@ contains
     end subroutine dataview_apply_nelems_offset_stride
     
     subroutine dataview_apply_type_nelems(obj, type, num_elems)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4370,7 +4354,7 @@ contains
     end subroutine dataview_apply_type_nelems
     
     subroutine dataview_apply_type_nelems_offset(obj, type, num_elems, offset)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4386,7 +4370,7 @@ contains
     end subroutine dataview_apply_type_nelems_offset
     
     subroutine dataview_apply_type_nelems_offset_stride(obj, type, num_elems, offset, stride)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4404,7 +4388,7 @@ contains
     end subroutine dataview_apply_type_nelems_offset_stride
     
     subroutine dataview_apply_type_shape(obj, type, ndims, shape)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4420,7 +4404,7 @@ contains
     end subroutine dataview_apply_type_shape
     
     function dataview_has_buffer(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         class(dataview) :: obj
         logical :: rv
@@ -4430,7 +4414,7 @@ contains
     end function dataview_has_buffer
     
     function dataview_is_external(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         class(dataview) :: obj
         logical :: rv
@@ -4440,7 +4424,7 @@ contains
     end function dataview_is_external
     
     function dataview_is_applied(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         class(dataview) :: obj
         logical :: rv
@@ -4450,7 +4434,7 @@ contains
     end function dataview_is_applied
     
     function dataview_is_described(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         class(dataview) :: obj
         logical :: rv
@@ -4460,7 +4444,7 @@ contains
     end function dataview_is_described
     
     function dataview_is_empty(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         class(dataview) :: obj
         logical :: rv
@@ -4470,7 +4454,7 @@ contains
     end function dataview_is_empty
     
     function dataview_is_opaque(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         class(dataview) :: obj
         logical :: rv
@@ -4480,7 +4464,7 @@ contains
     end function dataview_is_opaque
     
     function dataview_get_name(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_CHAR, C_INT
         implicit none
         class(dataview) :: obj
         character(kind=C_CHAR, len=(MAXNAMESIZE)) :: rv
@@ -4493,7 +4477,6 @@ contains
     end function dataview_get_name
     
     function dataview_get_buffer(obj) result(rv)
-        use iso_c_binding
         implicit none
         class(dataview) :: obj
         type(databuffer) :: rv
@@ -4503,7 +4486,6 @@ contains
     end function dataview_get_buffer
     
     function dataview_get_void_ptr(obj) result(rv)
-        use iso_c_binding
         implicit none
         class(dataview) :: obj
         type(C_PTR) :: rv
@@ -4513,7 +4495,7 @@ contains
     end function dataview_get_void_ptr
     
     subroutine dataview_set_scalar_int(obj, value)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: value
@@ -4525,7 +4507,7 @@ contains
     end subroutine dataview_set_scalar_int
     
     subroutine dataview_set_scalar_long(obj, value)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG
         implicit none
         class(dataview) :: obj
         integer(C_LONG), value, intent(IN) :: value
@@ -4537,7 +4519,7 @@ contains
     end subroutine dataview_set_scalar_long
     
     subroutine dataview_set_scalar_float(obj, value)
-        use iso_c_binding
+        use iso_c_binding, only : C_FLOAT
         implicit none
         class(dataview) :: obj
         real(C_FLOAT), value, intent(IN) :: value
@@ -4549,7 +4531,7 @@ contains
     end subroutine dataview_set_scalar_float
     
     subroutine dataview_set_scalar_double(obj, value)
-        use iso_c_binding
+        use iso_c_binding, only : C_DOUBLE
         implicit none
         class(dataview) :: obj
         real(C_DOUBLE), value, intent(IN) :: value
@@ -4561,7 +4543,6 @@ contains
     end subroutine dataview_set_scalar_double
     
     subroutine dataview_set_external_data_ptr_only(obj, external_ptr)
-        use iso_c_binding
         implicit none
         class(dataview) :: obj
         type(C_PTR), value, intent(IN) :: external_ptr
@@ -4573,7 +4554,7 @@ contains
     end subroutine dataview_set_external_data_ptr_only
     
     subroutine dataview_set_external_data_ptr_type_int(obj, type, num_elems, external_ptr)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4589,7 +4570,7 @@ contains
     end subroutine dataview_set_external_data_ptr_type_int
     
     subroutine dataview_set_external_data_ptr_type_long(obj, type, num_elems, external_ptr)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4605,7 +4586,7 @@ contains
     end subroutine dataview_set_external_data_ptr_type_long
     
     subroutine dataview_set_external_data_ptr_shape(obj, type, ndims, shape, external_ptr)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4623,7 +4604,7 @@ contains
     end subroutine dataview_set_external_data_ptr_shape
     
     function dataview_get_data_int(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: rv
@@ -4633,7 +4614,7 @@ contains
     end function dataview_get_data_int
     
     function dataview_get_data_long(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG
         implicit none
         class(dataview) :: obj
         integer(C_LONG) :: rv
@@ -4643,7 +4624,7 @@ contains
     end function dataview_get_data_long
     
     function dataview_get_data_float(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_FLOAT
         implicit none
         class(dataview) :: obj
         real(C_FLOAT) :: rv
@@ -4653,7 +4634,7 @@ contains
     end function dataview_get_data_float
     
     function dataview_get_data_double(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_DOUBLE
         implicit none
         class(dataview) :: obj
         real(C_DOUBLE) :: rv
@@ -4663,7 +4644,6 @@ contains
     end function dataview_get_data_double
     
     function dataview_get_owning_group(obj) result(rv)
-        use iso_c_binding
         implicit none
         class(dataview) :: obj
         type(datagroup) :: rv
@@ -4673,7 +4653,7 @@ contains
     end function dataview_get_owning_group
     
     function dataview_get_type_id(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: rv
@@ -4683,7 +4663,7 @@ contains
     end function dataview_get_type_id
     
     function dataview_get_total_bytes(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_SIZE_T
         implicit none
         class(dataview) :: obj
         integer(C_SIZE_T) :: rv
@@ -4693,7 +4673,7 @@ contains
     end function dataview_get_total_bytes
     
     function dataview_get_num_elements(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_SIZE_T
         implicit none
         class(dataview) :: obj
         integer(C_SIZE_T) :: rv
@@ -4703,7 +4683,7 @@ contains
     end function dataview_get_num_elements
     
     function dataview_get_num_dimensions(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: rv
@@ -4713,7 +4693,7 @@ contains
     end function dataview_get_num_dimensions
     
     function dataview_get_shape(obj, ndims, shape) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: ndims
@@ -4728,7 +4708,6 @@ contains
     end function dataview_get_shape
     
     subroutine dataview_print(obj)
-        use iso_c_binding
         implicit none
         class(dataview) :: obj
         ! splicer begin class.DataView.method.print
@@ -5412,7 +5391,7 @@ contains
     ! splicer end class.DataView.additional_functions
     
     function name_is_valid(name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         character(*), intent(IN) :: name
         logical :: rv

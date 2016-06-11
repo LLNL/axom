@@ -5,6 +5,7 @@
 !! \brief Shroud generated wrapper for Names class
 !<
 module name_module
+    use iso_c_binding, only : C_PTR
     ! splicer begin class.Names.module_use
     ! splicer end class.Names.module_use
     implicit none
@@ -61,7 +62,6 @@ contains
     ! void method1()
     ! function_index=0
     subroutine names_method1(obj)
-        use iso_c_binding
         implicit none
         class(names) :: obj
         ! splicer begin class.Names.method.type_method1
@@ -72,7 +72,6 @@ contains
     ! void method2()
     ! function_index=1
     subroutine names_method2(obj)
-        use iso_c_binding
         implicit none
         class(names) :: obj
         ! splicer begin class.Names.method.method2

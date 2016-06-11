@@ -304,12 +304,13 @@ class Typedef(object):
         f_c_argdecl=None,     # List of declarations to F_C routine
 
         f_type=None,          # Name of type in Fortran
+        f_to_c=None,          # Expression to convert from Fortran to C
         f_derived_type=None,  # Fortran derived type name
         f_args=None,          # Argument in Fortran wrapper to call C.
         f_module=None,        # Fortran modules needed for type  (dictionary)
         f_return_code=None,
         f_kind = None,        # Fortran kind of type
-        f_cast = '{var}',     # Expression to convert to type
+        f_cast = '{f_var}',   # Expression to convert to type
                               # e.g. intrinsics such as int and real
         f_statements={},
         f_helper={},          # helper functions to insert into module as PRIVATE

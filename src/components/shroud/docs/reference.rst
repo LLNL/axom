@@ -483,9 +483,16 @@ f_cast
     This is used when creating a Fortran generic functions which
     accept several type but call a single C function which expects
     a specific type.
-    For example, type ``int`` is defined as ``int({var}, C_INT)``.
-    This expression converts *var* to a ``integer(C_INT)``.
-    Defaults to *{var}*  i.e. no conversion.
+    For example, type ``int`` is defined as ``int({f_var}, C_INT)``.
+    This expression converts *f_var* to a ``integer(C_INT)``.
+    Defaults to *{f_var}*  i.e. no conversion.
+
+..  See tutorial function9 for example.  f_cast is only used if the types are different.
+
+f_to_c
+    Expression to convert Fortran type to C type.
+    If this field is set, it will be used before f_cast.
+    Defaults to *None*.
 
 f_statement
     A nested dictionary of code template to add.

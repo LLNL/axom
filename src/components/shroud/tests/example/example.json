@@ -18,8 +18,10 @@
                 [
                     "iso_c_binding", 
                     [
+                        "C_BOOL", 
                         "C_INT", 
-                        "C_LONG"
+                        "C_LONG", 
+                        "C_PTR"
                     ]
                 ]
             ], 
@@ -728,7 +730,8 @@
                         "C_DOUBLE", 
                         "C_FLOAT", 
                         "C_INT", 
-                        "C_LONG"
+                        "C_LONG", 
+                        "C_PTR"
                     ]
                 ]
             ], 
@@ -2384,6 +2387,11 @@
             "c_type": "bool", 
             "cpp_type": "bool", 
             "f_kind": "C_BOOL", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_BOOL"
+                ]
+            }, 
             "f_statements": {
                 "intent_in": {
                     "declare": [

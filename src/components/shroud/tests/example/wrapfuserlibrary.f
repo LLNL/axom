@@ -129,7 +129,7 @@ contains
     ! string_to_buffer_and_len
     ! function_index=42
     function is_name_valid(name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL, C_INT
         implicit none
         character(*), intent(IN) :: name
         logical :: rv
@@ -141,7 +141,7 @@ contains
     ! bool isInitialized()
     ! function_index=43
     function is_initialized() result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         logical :: rv
         ! splicer begin is_initialized
@@ -153,7 +153,7 @@ contains
     ! string_to_buffer_and_len
     ! function_index=44
     subroutine test_names(name)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(IN) :: name
         ! splicer begin test_names
@@ -167,7 +167,7 @@ contains
     ! string_to_buffer_and_len
     ! function_index=45
     subroutine test_names_flag(name, flag)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(IN) :: name
         integer(C_INT), value, intent(IN) :: flag
@@ -183,7 +183,6 @@ contains
     ! has_default_arg
     ! function_index=48
     subroutine testoptional_0()
-        use iso_c_binding
         implicit none
         ! splicer begin testoptional_0
         call c_testoptional_0()
@@ -194,7 +193,7 @@ contains
     ! has_default_arg
     ! function_index=49
     subroutine testoptional_1(i)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         integer(C_INT), value, intent(IN) :: i
         ! splicer begin testoptional_1
@@ -205,7 +204,7 @@ contains
     ! void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
     ! function_index=46
     subroutine testoptional_2(i, j)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         integer(C_INT), value, intent(IN) :: i
         integer(C_LONG), value, intent(IN) :: j

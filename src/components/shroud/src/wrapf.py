@@ -100,6 +100,8 @@ class Wrapf(util.WrapperMixin):
         intent = attrs.get('intent', None)
 
         typ = typedef.c_fortran
+        if typ is None:
+            raise RuntimeError("Type {} has no value for c_fortran".format(arg['type']))
         t.append(typ)
         if attrs.get('value', False):
             t.append('value')
@@ -444,6 +446,44 @@ class Wrapf(util.WrapperMixin):
         if options.wrap_c:
             self.wrap_function_interface(cls, node)
 
+    def update_f_module(self, modules, f_module):
+        """aggragate the information from f_module into modules.
+        modules is a dictionary of dictionaries:
+            modules['iso_c_bindings']['C_INT'] = True
+        f_module is a dictionary of lists:
+            dict(iso_c_binding=['C_INT'])
+        """
+        if f_module is not None:
+            for mname, only in f_module.items():
+                module = modules.setdefault(mname, {})
+                if only:  # Empty list means no ONLY clause
+                    for oname in only:
+                        module[oname] = True
+
+    def set_f_module(self, modules, mname, *only):
+        """Add a module to modules.
+        """
+        module = modules.setdefault(mname, {})
+        if only:  # Empty list means no ONLY clause
+            for oname in only:
+                module[oname] = True
+
+    def sort_module_info(self, modules, module_name):
+        """Return USE statements based on modules.
+        Skip module_name.  Usually the current module.
+        """
+        arg_f_use = []
+        for mname in sorted(modules):
+            if mname == module_name:
+                continue
+            only = modules[mname]
+            if only:
+                arg_f_use.append('use %s, only : %s' % (
+                        mname, ', '.join(only)))
+            else:
+                arg_f_use.append('use %s' % mname)
+        return arg_f_use
+
     def wrap_function_interface(self, cls, node):
         """
         Write Fortran interface for C function
@@ -611,7 +651,7 @@ class Wrapf(util.WrapperMixin):
 
         arg_f_names = [ ]
         arg_f_decl = [ ]
-        arg_f_use  = [ 'use iso_c_binding' ]  # XXX totally brain dead for now
+        modules = {}   # indexed as [module][variable]
 
         if subprogram == 'function':
             fmt.F_result_clause = ' result(%s)' % fmt.F_result
@@ -680,6 +720,8 @@ class Wrapf(util.WrapperMixin):
                         for cmd in cmd_list:
                             append_format(pre_call, cmd, fmt)
 
+                    self.update_f_module(modules, arg_typedef.f_module)
+
             # Now C function arguments
             # May have different types, like generic
             # or different attributes, like adding +len to string args
@@ -691,9 +733,12 @@ class Wrapf(util.WrapperMixin):
             if arg_typedef.f_args:
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_args, fmt)
+            elif arg_typedef.f_to_c:
+                append_format(arg_c_call, arg_typedef.f_to_c, fmt)
             elif f_arg and c_arg['type'] != f_arg['type']:
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_cast, fmt)
+                self.update_f_module(modules, arg_typedef.f_module)
             else:
                 append_format(arg_c_call, '{c_var}', fmt)
 
@@ -701,10 +746,12 @@ class Wrapf(util.WrapperMixin):
             if len_trim:
                 need_wrapper = True
                 append_format(arg_c_call, 'len_trim({f_var}, kind=C_INT)', fmt)
+                self.set_f_module(modules, 'iso_c_binding', 'C_INT')
             len_arg = c_arg['attrs'].get('len', None)
             if len_arg:
                 need_wrapper = True
                 append_format(arg_c_call, 'len({f_var}, kind=C_INT)', fmt)
+                self.set_f_module(modules, 'iso_c_binding', 'C_INT')
 
         fmt.F_arg_c_call = ', '.join(arg_c_call)
         fmt.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call) # use tabs to insert continuations
@@ -726,8 +773,10 @@ class Wrapf(util.WrapperMixin):
                 fmt.rvlen = wformat(rvlen, fmt)
                 line1 = wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}', fmt)
                 self.append_method_arguments(arg_f_decl, line1)
+                self.set_f_module(modules, 'iso_c_binding', 'C_CHAR')
             else:
                 arg_f_decl.append(self._f_decl(result, name=fmt.F_result))
+            self.update_f_module(modules, result_typedef.f_module)
 
         if not is_ctor:
             # Add method to derived type
@@ -779,6 +828,9 @@ class Wrapf(util.WrapperMixin):
 #                append_format(F_code, result_typedef.f_post_call, fmt)
             if is_dtor:
                 F_code.append(wformat('{F_this}%{F_derived_member} = C_NULL_PTR', fmt))
+                self.set_f_module(modules, 'iso_c_binding', 'C_NULL_PTR')
+
+        arg_f_use  = self.sort_module_info(modules, fmt.F_module_name)
 
         if need_wrapper:
             impl = self.impl
@@ -823,9 +875,9 @@ class Wrapf(util.WrapperMixin):
 
     def write_module(self, node, cls=False):
         options = node['options']
-        fmt_class = node['fmt']
-        fname = fmt_class.F_impl_filename
-        module_name = fmt_class.F_module_name
+        fmt_node = node['fmt']
+        fname = fmt_node.F_impl_filename
+        module_name = fmt_node.F_module_name
 
         output = []
 

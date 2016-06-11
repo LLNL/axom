@@ -54,7 +54,10 @@ class Wrapc(util.WrapperMixin):
             raise RuntimeError("No such type %s" % arg['type'])
         if arg['attrs'].get('const', False):
             t.append('const')
-        t.append(getattr(typedef, lang))
+        typ = getattr(typedef, lang)
+        if typ is None:
+            raise RuntimeError("Type {} has no value for {}".format(arg['type'], lang))
+        t.append(typ)
         if arg['attrs'].get('ptr', False):
             t.append('*')
         elif arg['attrs'].get('reference', False):

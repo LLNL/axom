@@ -10,6 +10,16 @@ blt_add_executable(NAME spio_basicWriteRead
 blt_add_test(NAME spio_basicWriteRead
              COMMAND spio_basicWriteRead
              )
+
+blt_add_executable(NAME F_spio_basicWriteRead
+                   SOURCES F_spio_basicWriteRead.f
+                   OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                   DEPENDS_ON spio conduit hdf5
+                   )
+#blt_add_test(NAME F_spio_basicWriteRead
+#             COMMAND F_spio_basicWriteRead
+#             )
+
 if (ENABLE_MPI)
    blt_add_executable(NAME spio_parallelWriteRead
                       SOURCES spio_parallelWriteRead.cpp
