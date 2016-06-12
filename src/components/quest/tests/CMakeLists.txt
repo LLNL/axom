@@ -24,14 +24,14 @@ set(quest_tests
     quest_vector.cpp
    )
 
-set(quest_tests_depends_on
+set(quest_tests_depends
     quest
     slic
     gtest
    )
 
 if (ENABLE_BOOST)
-    list(APPEND quest_tests_depends_on boost)
+    list(APPEND quest_tests_depends boost)
 endif()
 
 foreach(test ${quest_tests})
@@ -40,7 +40,7 @@ foreach(test ${quest_tests})
         NAME ${test_name}
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends_on}
+        DEPENDS_ON ${quest_tests_depends}
     )
     blt_add_test( 
         NAME ${test_name} 
