@@ -24,13 +24,23 @@ set(quest_tests
     quest_vector.cpp
    )
 
+set(quest_tests_depends_on
+    quest
+    slic
+    gtest
+   )
+
+if (ENABLE_BOOST)
+    list(APPEND quest_tests_depends_on boost)
+endif()
+
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable( 
         NAME ${test_name}
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON quest slic gtest
+        DEPENDS_ON ${quest_tests_depends_on}
     )
     blt_add_test( 
         NAME ${test_name} 
