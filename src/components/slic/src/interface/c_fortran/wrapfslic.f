@@ -119,7 +119,7 @@ module slic_mod
 contains
     
     function slic_is_initialized() result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         logical :: rv
         ! splicer begin is_initialized
@@ -128,7 +128,7 @@ contains
     end function slic_is_initialized
     
     subroutine slic_create_logger(name, imask)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(IN) :: name
         character, value, intent(IN) :: imask
@@ -141,7 +141,7 @@ contains
     end subroutine slic_create_logger
     
     subroutine slic_activate_logger(name)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(IN) :: name
         ! splicer begin activate_logger
@@ -152,7 +152,7 @@ contains
     end subroutine slic_activate_logger
     
     subroutine slic_get_active_logger_name(name)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(OUT) :: name
         ! splicer begin get_active_logger_name
@@ -163,7 +163,7 @@ contains
     end subroutine slic_get_active_logger_name
     
     subroutine slic_log_message(level, message, fileName, line, filter)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL, C_INT
         implicit none
         integer(C_INT), value, intent(IN) :: level
         character(*), intent(IN) :: message

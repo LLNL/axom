@@ -198,7 +198,7 @@ The wrapper convert the logical's value before calling the C wrapper::
     end interface
 
     function function3(arg) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         logical, value, intent(IN) :: arg
         logical :: rv
@@ -282,15 +282,15 @@ filled by FccCopy.
 The Fortran wrapper::
 
     function function4a(arg1, arg2) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_CHAR, C_INT
         implicit none
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
         character(kind=C_CHAR, len=(30)) :: rv
         call c_function4a_bufferify(  &
-            arg1, len_trim(arg1),  &
-            arg2, len_trim(arg2),  &
-            rv, len(rv)))
+            arg1, len_trim(arg1, kind=C_INT),  &
+            arg2, len_trim(arg2, kind=C_INT),  &
+            rv, len(rv, kind=C_INT)))
     end function function4a
 
 The function is called as::
@@ -355,14 +355,14 @@ Fortran wrapper::
     contains
 
     function function5() result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_DOUBLE
         implicit none
         real(C_DOUBLE) :: rv
         rv = c_function5()
     end function function5
     
     function function5_arg1(arg1) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_DOUBLE
         implicit none
         real(C_DOUBLE), value, intent(IN) :: arg1
         real(C_DOUBLE) :: rv
@@ -370,7 +370,7 @@ Fortran wrapper::
     end function function5_arg1
     
     function function5_arg1_arg2(arg1, arg2) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL, C_DOUBLE
         implicit none
         real(C_DOUBLE), value, intent(IN) :: arg1
         logical, value, intent(IN) :: arg2
@@ -599,14 +599,14 @@ block.  Each wrapper will coerce the argument to the correct type::
     end interface function9
 
     subroutine function9_float(arg)
-        use iso_c_binding
+        use iso_c_binding, only : C_DOUBLE, C_FLOAT
         implicit none
         real(C_FLOAT), value, intent(IN) :: arg
         call c_function9(real(arg, C_DOUBLE))
     end subroutine function9_float
     
     subroutine function9_double(arg)
-        use iso_c_binding
+        use iso_c_binding, only : C_DOUBLE
         implicit none
         real(C_DOUBLE), value, intent(IN) :: arg
         call c_function9(arg)

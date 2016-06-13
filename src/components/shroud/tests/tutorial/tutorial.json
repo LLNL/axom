@@ -4,6 +4,12 @@
         {
             "F_module_dependencies": [
                 [
+                    "iso_c_binding", 
+                    [
+                        "C_PTR"
+                    ]
+                ], 
+                [
                     "tutorial_mod", 
                     [
                         "class1"
@@ -2183,6 +2189,11 @@
             "c_type": "bool", 
             "cpp_type": "bool", 
             "f_kind": "C_BOOL", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_BOOL"
+                ]
+            }, 
             "f_statements": {
                 "intent_in": {
                     "declare": [
