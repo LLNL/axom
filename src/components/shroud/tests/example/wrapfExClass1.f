@@ -9,7 +9,7 @@
 !<
 module exclass1_mod
     use exclass2_mod, only : exclass2
-    use iso_c_binding, only : C_INT, C_LONG
+    use iso_c_binding, only : C_BOOL, C_INT, C_LONG, C_PTR
     ! splicer begin class.ExClass1.module_use
     ! splicer end class.ExClass1.module_use
     implicit none
@@ -233,7 +233,7 @@ contains
     !! \return return new instance
     !<
     function exclass1_new(name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(IN) :: name
         type(exclass1) :: rv
@@ -250,7 +250,7 @@ contains
     !! longer description joined with previous line
     !<
     subroutine exclass1_delete(obj)
-        use iso_c_binding
+        use iso_c_binding, only : C_NULL_PTR
         implicit none
         class(exclass1) :: obj
         ! splicer begin class.ExClass1.method.delete
@@ -262,7 +262,7 @@ contains
     ! int incrementCount(int incr+intent(in)+value)
     ! function_index=2
     function exclass1_increment_count(obj, incr) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(exclass1) :: obj
         integer(C_INT), value, intent(IN) :: incr
@@ -278,7 +278,7 @@ contains
     ! string_to_buffer_and_len
     ! function_index=3
     function exclass1_get_name(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_CHAR, C_INT
         implicit none
         class(exclass1) :: obj
         character(kind=C_CHAR, len=aa_exclass1_get_name_length(obj%voidptr)) :: rv
@@ -297,7 +297,7 @@ contains
     !!
     !<
     function exclass1_get_name_length(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(exclass1) :: obj
         integer(C_INT) :: rv
@@ -310,7 +310,7 @@ contains
     ! string_to_buffer_and_len
     ! function_index=5
     function exclass1_get_name_error_check(obj) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_CHAR, C_INT
         implicit none
         class(exclass1) :: obj
         character(kind=C_CHAR, len=strlen_ptr(c_exclass1_get_name_error_check_bufferify(  &
@@ -329,7 +329,7 @@ contains
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=17
     subroutine exclass1_get_name_arg(obj, name)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(exclass1) :: obj
         character(*), intent(OUT) :: name
@@ -344,7 +344,7 @@ contains
     ! ExClass2 * getRoot()
     ! function_index=7
     function exclass1_get_root(obj) result(rv)
-        use iso_c_binding
+        use exclass2_mod, only : exclass2
         implicit none
         class(exclass1) :: obj
         type(exclass2) :: rv
@@ -356,7 +356,7 @@ contains
     ! int getValue(int value+intent(in)+value)
     ! function_index=8
     function exclass1_get_value_from_int(obj, value) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         class(exclass1) :: obj
         integer(C_INT), value, intent(IN) :: value
@@ -371,7 +371,7 @@ contains
     ! long getValue(long value+intent(in)+value)
     ! function_index=9
     function exclass1_get_value_1(obj, value) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG
         implicit none
         class(exclass1) :: obj
         integer(C_LONG), value, intent(IN) :: value
@@ -386,7 +386,6 @@ contains
     ! void * getAddr()
     ! function_index=10
     function exclass1_get_addr(obj) result(rv)
-        use iso_c_binding
         implicit none
         class(exclass1) :: obj
         type(C_PTR) :: rv
@@ -398,7 +397,7 @@ contains
     ! bool hasAddr(bool in+intent(in)+value)
     ! function_index=11
     function exclass1_has_addr(obj, in) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         class(exclass1) :: obj
         logical, value, intent(IN) :: in
@@ -415,7 +414,6 @@ contains
     ! void SplicerSpecial()
     ! function_index=12
     subroutine exclass1_splicer_special(obj)
-        use iso_c_binding
         implicit none
         class(exclass1) :: obj
         ! splicer begin class.ExClass1.method.splicer_special

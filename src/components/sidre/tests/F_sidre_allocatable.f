@@ -33,29 +33,28 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    call assert_false(allocated(iarray))
+    call assert_false(allocated(iarray), "iarray is not allocated")
 
     view = root%create_array_view("iarray", iarray)
 
-    call assert_true(view%is_empty())
+    call assert_true(view%is_empty(), "view is empty")
 
     type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID)
+    call assert_equals(type, SIDRE_INT_ID, "check type")
 
     num_elements = view%get_num_elements()
-    call assert_equals(num_elements, size(iarray))
+    call assert_equals(num_elements, 0, "check size")
 
     rank = view%get_num_dimensions()
-    call assert_equals(rank, 1)
+    call assert_equals(rank, 1, "check dimensions")
 
-!  ATK-744
-!    rank = view%get_shape(7, extents)
-!    call assert_equals(rank, 1)
-!    call assert_true(extents(1) == size(iarray, 1))
+    rank = view%get_shape(7, extents)
+    call assert_equals(rank, 1, "check rank")
+    call assert_true(extents(1) == 0, "check extents")
 
     ! get array via a pointer
     call view%get_data(ipointer)
-    call assert_false(associated(ipointer))
+    call assert_false(associated(ipointer), "check association")
 
     call ds%delete()
 

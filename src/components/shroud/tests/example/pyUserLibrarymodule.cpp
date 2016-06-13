@@ -184,6 +184,60 @@ PP_testmpi(
 // splicer end function.testmpi
 }
 
+static char PP_testgroup1__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_testgroup1(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.testgroup1
+    asctoolkit::sidre::DataGroup * grp;
+    PyObject * SH_Py_grp;
+    const char *kwcpp = "grp";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:testgroup1", kw_list,
+        &FillInTypeForGroup, &SH_Py_grp))
+    {
+        return NULL;
+    }
+    asctoolkit::sidre::DataGroup * SH_grp = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(grp));
+    testgroup1(SH_grp);
+    Py_RETURN_NONE;
+// splicer end function.testgroup1
+}
+
+static char PP_testgroup2__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_testgroup2(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.testgroup2
+    const asctoolkit::sidre::DataGroup * grp;
+    PyObject * SH_Py_grp;
+    const char *kwcpp = "grp";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:testgroup2", kw_list,
+        &FillInTypeForGroup, &SH_Py_grp))
+    {
+        return NULL;
+    }
+    const asctoolkit::sidre::DataGroup * SH_grp = static_cast<const asctoolkit::sidre::DataGroup *>(static_cast<const void *>(grp));
+    testgroup2(SH_grp);
+    Py_RETURN_NONE;
+// splicer end function.testgroup2
+}
+
 static char PP_test_names__doc__[] =
 "documentation"
 ;
@@ -227,6 +281,8 @@ static PyMethodDef PP_methods[] = {
 {"isInitialized", (PyCFunction)PP_is_initialized, METH_NOARGS, PP_is_initialized__doc__},
 {"testoptional", (PyCFunction)PP_testoptional_2, METH_VARARGS|METH_KEYWORDS, PP_testoptional_2__doc__},
 {"testmpi", (PyCFunction)PP_testmpi, METH_VARARGS|METH_KEYWORDS, PP_testmpi__doc__},
+{"testgroup1", (PyCFunction)PP_testgroup1, METH_VARARGS|METH_KEYWORDS, PP_testgroup1__doc__},
+{"testgroup2", (PyCFunction)PP_testgroup2, METH_VARARGS|METH_KEYWORDS, PP_testgroup2__doc__},
 {"test_names", (PyCFunction)PP_test_names, METH_VARARGS|METH_KEYWORDS, PP_test_names__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
