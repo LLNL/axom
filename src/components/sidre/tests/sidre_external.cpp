@@ -53,15 +53,15 @@ TEST(sidre_external, create_external_view)
       break;
     case 1:
       view = root->createView("data1", INT_ID, len)
-                 ->setExternalDataPtr(idata);
+             ->setExternalDataPtr(idata);
       break;
     case 2:
       view = root->createView("data2")
-                 ->setExternalDataPtr(INT_ID, len, idata);
+             ->setExternalDataPtr(INT_ID, len, idata);
       break;
     case 3:
       view = root->createView("data3", idata)
-                 ->apply(INT_ID, len);
+             ->apply(INT_ID, len);
       break;
 
     case 4:
@@ -69,15 +69,15 @@ TEST(sidre_external, create_external_view)
       break;
     case 5:
       view = root->createView("data5", INT_ID, ndims, shape)
-                 ->setExternalDataPtr(idata);
+             ->setExternalDataPtr(idata);
       break;
     case 6:
       view = root->createView("data6")
-                 ->setExternalDataPtr(INT_ID, ndims, shape, idata);
+             ->setExternalDataPtr(INT_ID, ndims, shape, idata);
       break;
     case 7:
       view = root->createView("data7", idata)
-                 ->apply(INT_ID, ndims, shape);
+             ->apply(INT_ID, ndims, shape);
       break;
     }
 

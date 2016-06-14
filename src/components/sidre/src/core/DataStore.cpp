@@ -294,7 +294,7 @@ void DataStore::copyToConduitNode(Node& n) const
  */
 void DataStore::createNativeLayout(Node& n) const
 {
-    m_RootGroup->createNativeLayout(n);
+  m_RootGroup->createNativeLayout(n);
 }
 
 
@@ -307,7 +307,7 @@ void DataStore::createNativeLayout(Node& n) const
  */
 void DataStore::createExternalLayout(Node& n) const
 {
-    m_RootGroup->createExternalLayout(n);
+  m_RootGroup->createExternalLayout(n);
 }
 
 
@@ -340,14 +340,14 @@ void DataStore::print(std::ostream& os) const
 }
 
 /*************************************************************************/
-// see ATK-735 - Add ability to control saving buffers/externals with save  
+// see ATK-735 - Add ability to control saving buffers/externals with save
 
 void DataStore::save(const std::string& file_path,
                      const std::string& protocol,
-                     const DataGroup* group) const
+                     const DataGroup * group) const
 {
 
-  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, 
+  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this,
                 "Cannot call save method on Group not owned by this DataStore.");
 
   Node data_holder;
@@ -373,10 +373,11 @@ void DataStore::save(const std::string& file_path,
   else if (protocol == "text")
   {
     std::ofstream output_file( file_path.c_str() );
-    SLIC_ERROR_IF(!output_file.is_open(), "Unable to create file " << file_path);
+    SLIC_ERROR_IF(!output_file.is_open(),
+                  "Unable to create file " << file_path);
     if (output_file)
     {
-      output_file  << two_part.to_json();
+      output_file << two_part.to_json();
     }
   }
   else
@@ -390,7 +391,9 @@ void DataStore::save(const std::string& file_path,
 void DataStore::save(const hid_t& h5_file_id,
                      const DataGroup * group) const
 {
-  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call save function on Group that resides in this DataStore.");
+  SLIC_ERROR_IF(
+    group != ATK_NULLPTR && group->getDataStore() != this,
+    "Must call save function on Group that resides in this DataStore.");
 
   Node data_holder;
   exportTo(group, data_holder);
@@ -411,7 +414,9 @@ void DataStore::load(const std::string& file_path,
                      const std::string& protocol,
                      DataGroup * group)
 {
-  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on Group that resides in this DataStore.");
+  SLIC_ERROR_IF(
+    group != ATK_NULLPTR && group->getDataStore() != this,
+    "Must call load function on Group that resides in this DataStore.");
 
   Node node;
 
@@ -443,7 +448,9 @@ void DataStore::load(const std::string& file_path,
 void DataStore::load(const hid_t& h5_file_id,
                      DataGroup * group)
 {
-  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on Group that resides in this DataStore.");
+  SLIC_ERROR_IF(
+    group != ATK_NULLPTR && group->getDataStore() != this,
+    "Must call load function on Group that resides in this DataStore.");
 
   Node node;
   conduit::relay::io::hdf5_read(h5_file_id, ".", node);
@@ -459,10 +466,12 @@ void DataStore::load(const hid_t& h5_file_id,
  *************************************************************************
  */
 void DataStore::loadExternalData(const std::string& file_path,
-                     const std::string& protocol,
-                     DataGroup * group)
+                                 const std::string& protocol,
+                                 DataGroup * group)
 {
-  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on Group that resides in this DataStore.");
+  SLIC_ERROR_IF(
+    group != ATK_NULLPTR && group->getDataStore() != this,
+    "Must call load function on Group that resides in this DataStore.");
 
   Node external_holder;
   external_holder.set_dtype(DataType::object());
@@ -491,9 +500,11 @@ void DataStore::loadExternalData(const std::string& file_path,
  *************************************************************************
  */
 void DataStore::loadExternalData(const hid_t& h5_file_id,
-                     DataGroup * group)
+                                 DataGroup * group)
 {
-  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this, "Must call load function on Group that resides in this DataStore.");
+  SLIC_ERROR_IF(
+    group != ATK_NULLPTR && group->getDataStore() != this,
+    "Must call load function on Group that resides in this DataStore.");
 
   Node external_holder;
   external_holder.set_dtype(DataType::object());
@@ -515,7 +526,7 @@ void DataStore::loadExternalData(const hid_t& h5_file_id,
  *************************************************************************
  */
 void DataStore::exportTo(const DataGroup * group,
-               conduit::Node& data_holder) const
+                         conduit::Node& data_holder) const
 {
   if (group == ATK_NULLPTR)
   {
@@ -538,12 +549,12 @@ void DataStore::exportTo(const DataGroup * group,
   // buffer_indices
   group->exportTo(data_holder, buffer_indices);
 
-  if (! buffer_indices.empty())
+  if (!buffer_indices.empty())
   {
     // Now, add all the referenced buffers to the node.
     Node & bnode = data_holder["buffers"];
-    for (std::set<IndexType>::iterator s_it = buffer_indices.begin();
-         s_it != buffer_indices.end(); ++s_it)
+    for (std::set<IndexType>::iterator s_it = buffer_indices.begin() ;
+         s_it != buffer_indices.end() ; ++s_it)
     {
       // Use a dictionary layout here instead of conduit list.
       // Conduit IO HDF5 doesn't support conduit list objects.
