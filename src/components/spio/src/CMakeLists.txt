@@ -36,16 +36,20 @@ endif()
 #
 blt_add_library( NAME
                      spio
+
                  SOURCES
                      "${spio_sources}"
                      "${spio_fortran_sources}"
+
                  HEADERS
                      "${spio_headers}"
                      "${spio_fortran_headers}"
+
+                 HEADERS_OUTPUT_SUBDIR
+                     spio
+
                  DEPENDS_ON
                      hdf5
                      conduit
                      sidre
                 )
-
-install(TARGETS spio DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

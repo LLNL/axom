@@ -114,7 +114,6 @@ blt_add_library(
     NAME        quest
     SOURCES     ${quest_sources}
     HEADERS     ${quest_headers}
+    HEADERS_OUTPUT_SUBDIR quest
     DEPENDS_ON  ${quest_depends_on}
     )
-             
-install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )

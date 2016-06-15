@@ -79,8 +79,9 @@ blt_add_library( NAME
                  HEADERS
                     "${slic_headers}"
 
+                 HEADERS_OUTPUT_SUBDIR
+                     slic
+
                  DEPENDS_ON
                     "${slic_depends_on}"
               )
-
-install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
