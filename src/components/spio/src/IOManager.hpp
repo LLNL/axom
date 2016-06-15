@@ -107,6 +107,8 @@ private:
 
   std::string getHDF5FileName(hid_t root_file_id, int rankgroup_id);
 
+  int getNumFilesFromRoot(const std::string& root_file);
+
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
 
