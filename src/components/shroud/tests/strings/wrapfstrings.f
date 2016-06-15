@@ -210,7 +210,7 @@ contains
     !!
     !<
     function return_char() result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character :: rv
         ! splicer begin return_char
@@ -230,7 +230,7 @@ contains
     !! This avoid a copy-in on dest.
     !<
     subroutine pass_char_ptr(dest, src)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(OUT) :: dest
         character(*), intent(IN) :: src
@@ -250,7 +250,7 @@ contains
     !!
     !<
     function get_char1() result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_CHAR
         implicit none
         character(kind=C_CHAR, len=strlen_ptr(c_get_char1())) :: rv
         ! splicer begin get_char1
@@ -266,7 +266,7 @@ contains
     !!
     !<
     function get_char2() result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_CHAR, C_INT
         implicit none
         character(kind=C_CHAR, len=30) :: rv
         ! splicer begin get_char2
@@ -284,7 +284,7 @@ contains
     !!
     !<
     subroutine get_char3(output)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(OUT) :: output
         ! splicer begin get_char3
@@ -301,7 +301,7 @@ contains
     !!
     !<
     function get_string1() result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_CHAR
         implicit none
         character(kind=C_CHAR, len=strlen_ptr(c_get_string1())) :: rv
         ! splicer begin get_string1
@@ -317,7 +317,7 @@ contains
     !!
     !<
     function get_string2() result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_CHAR, C_INT
         implicit none
         character(kind=C_CHAR, len=30) :: rv
         ! splicer begin get_string2
@@ -335,7 +335,7 @@ contains
     !!
     !<
     subroutine get_string3(output)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(OUT) :: output
         ! splicer begin get_string3
@@ -356,7 +356,7 @@ contains
     !! Will copy in.
     !<
     subroutine accept_string_const_reference(arg1)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(IN) :: arg1
         ! splicer begin accept_string_const_reference
@@ -377,7 +377,7 @@ contains
     !! Must copy in and copy out.
     !<
     subroutine accept_string_reference(arg1)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(INOUT) :: arg1
         ! splicer begin accept_string_reference

@@ -363,11 +363,13 @@ return 1;""", fmt)
                 fmt_arg.cpp_var = fmt_arg.c_var
                 fmt_arg.py_var = 'SH_Py_' + fmt_arg.c_var
                 fmt_arg.C_const = 'const ' if arg['attrs'].get('const', False) else ''
+                fmt_arg.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
                 attrs = arg['attrs']
 
                 arg_typedef = self.typedef[arg['type']]
+                fmt_arg.cpp_type = arg_typedef.cpp_type
                 py_statements = arg_typedef.py_statements
-                have_cpp_local_var = False
+                have_cpp_local_var = arg_typedef.cpp_local_var
                 if attrs['intent'] in [ 'inout', 'in']:
                     # names to PyArg_ParseTupleAndKeywords
                     arg_names.append(arg_name)
@@ -397,7 +399,8 @@ return 1;""", fmt)
                     # add argument to call to PyArg_ParseTypleAndKeywords
                     parse_vargs.append('&' + arg_name)
 
-                    have_cpp_local_var = py_statements.get('intent_in',{}).get('cpp_local_var', False)
+                    have_cpp_local_var = have_cpp_local_var or \
+                        py_statements.get('intent_in',{}).get('cpp_local_var', False)
                     if have_cpp_local_var:
                         fmt_arg.cpp_var = 'SH_' + fmt_arg.c_var
                     cmd_list = py_statements.get('intent_in',{}).get('post_parse',[])
@@ -424,6 +427,13 @@ return 1;""", fmt)
                     ptr = False
                 PY_decl.append(self.std_c_decl(lang, arg, ptr=ptr) + ';')
                 
+                if arg_typedef.cpp_local_var:
+                    # cpp_local_var should only be set if c_statements are not used
+                    if py_statements:
+                        raise RuntimeError("py_statements and cpp_local_var are both defined for {}".format(arg_typedef.name))
+                    append_format(post_parse, '{C_const}{cpp_type}{ptr} {cpp_var} = ' + 
+                                  arg_typedef.c_to_cpp + ';', fmt_arg)
+
                 if arg_typedef.PY_PyTypeObject:
                     # A Python Object which must be converted to C++ type.
                     objtype = arg_typedef.PY_PyObject or 'PyObject'

@@ -81,7 +81,7 @@ module quest_mod
 contains
     
     subroutine quest_initialize(comm, fileName, requiresDistance, ndims, maxElements, maxLevels)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL, C_INT
         implicit none
         integer, value, intent(IN) :: comm
         character(*), intent(IN) :: fileName

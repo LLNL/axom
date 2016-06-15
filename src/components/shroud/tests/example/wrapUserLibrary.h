@@ -13,6 +13,7 @@
 #define WRAPUSERLIBRARY_H
 
 #include "mpi.h"
+#include "sidre/wrapDataGroup.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,6 +47,10 @@ void AA_testoptional_1(int i);
 void AA_testoptional_2(int i, long j);
 
 void AA_testmpi(MPI_Fint comm);
+
+void AA_testgroup1(SIDRE_datagroup * grp);
+
+void AA_testgroup2(const SIDRE_datagroup * grp);
 
 #ifdef __cplusplus
 }

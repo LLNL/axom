@@ -428,11 +428,13 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             fmt_arg.cpp_var = fmt_arg.c_var
             fmt_arg.lua_var = 'SH_Lua_' + fmt_arg.c_var
             fmt_arg.c_var_len = 'L' + fmt_arg.c_var
+            fmt_arg.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
             attrs = arg['attrs']
 
             lua_pop = None
 
             arg_typedef = self.typedef[arg['type']]
+            fmt_arg.cpp_type = arg_typedef.cpp_type
             LUA_statements = arg_typedef.LUA_statements
             if attrs['intent'] in [ 'inout', 'in']:
 #                lua_pop = wformat(arg_typedef.LUA_pop, fmt_arg)

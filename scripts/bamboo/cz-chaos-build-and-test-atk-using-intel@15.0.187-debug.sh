@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-COMPILER="intel@16.0.109"
+COMPILER="intel@15.0.187"
 
 if [[ $HOSTNAME == rz* ]]; then
     HC="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"
@@ -9,11 +9,12 @@ else
     HC="host-configs/surface-chaos_5_x86_64_ib-${COMPILER}.cmake"
 fi
 
-BT="RelWithDebInfo"
-BP="build-chaos-${COMPILER}-${BT,,}"
-IP="install-chaos-${COMPILER}-${BT,,}"
+BT="Debug"
+BP="atk_build"
+IP="atk_install"
 COMP_OPT=""
-BUILD_OPT="-DENABLE_CXX11=FALSE"
+BUILD_OPT=""
+
 
 
 echo "Configuring..."
@@ -26,14 +27,6 @@ fi
 echo "-----------------------------------------------------------------------"
 
 cd $BP
-    echo "Generating C/Fortran binding..."
-    make VERBOSE=1 generate
-    if [ $? -ne 0 ]; then
-        echo "Error: 'make generate' failed"
-        exit 1
-    fi
-    echo "-----------------------------------------------------------------------"
-
     echo "Building..."
     echo "-----------------------------------------------------------------------"
     make VERBOSE=1 -j16
@@ -43,7 +36,7 @@ cd $BP
     fi
     echo "-----------------------------------------------------------------------"
 
-    echo "Run tests"
+    echo "Running tests..."
     echo "-----------------------------------------------------------------------"
     make test ARGS="-T Test"
     if [ $? -ne 0 ]; then
@@ -51,4 +44,13 @@ cd $BP
         exit 1
     fi
     echo "-----------------------------------------------------------------------"
-cd ..
+
+    echo "Installing files..."
+    echo "-----------------------------------------------------------------------"
+    make VERBOSE=1 install
+    if [ $? -ne 0 ]; then
+        echo "Error: 'make install' failed"
+        exit 1
+    fi
+    echo "-----------------------------------------------------------------------"
+

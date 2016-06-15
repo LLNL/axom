@@ -14,7 +14,10 @@ set(quest_example_depends
         slam
         quest 
         )
-
+	
+if (ENABLE_BOOST)
+    list(APPEND quest_example_depends boost)
+endif()
 
 blt_add_executable( 
     NAME        quest_driver
