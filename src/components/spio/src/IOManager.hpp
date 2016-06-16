@@ -95,7 +95,15 @@ public:
    * \param root_file     root file containing input data
    */
   void read(sidre::DataGroup * group, const std::string& root_file);
-  void loadExternalData(sidre::DataGroup * group, const std::string& root_file);
+
+  /*!
+   * \brief load external data into a group
+   *
+   * \param group         DataGroup to fill with external data from input
+   * \param root_fil      root file containing input data
+   */
+  void loadExternalData(sidre::DataGroup * group,
+                        const std::string& root_file);
 
 private:
 
