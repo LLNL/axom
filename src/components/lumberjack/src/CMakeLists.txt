@@ -45,8 +45,8 @@ blt_add_library( NAME
                      "${lumberjack_sources}"
                  HEADERS
                      "${lumberjack_headers}"
+                 HEADERS_OUTPUT_SUBDIR
+                     lumberjack
                  DEPENDS_ON
                      common
                  )
-
-install(TARGETS lumberjack DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

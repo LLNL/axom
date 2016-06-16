@@ -31,6 +31,6 @@ blt_add_library( NAME
                  SOURCES
                     "${common_sources}"
                  HEADERS
-                    "${common_headers}" )
-
-install(TARGETS common DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
+                    "${common_headers}"
+                 HEADERS_OUTPUT_SUBDIR
+                    common )
