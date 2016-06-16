@@ -15,7 +15,6 @@ module sidre_group
   use iso_c_binding
   use fruit
   use sidre_mod
-  use slic_mod
   implicit none
 
   ! Test protocols

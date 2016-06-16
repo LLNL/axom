@@ -49,8 +49,12 @@ function datagroup_create_array_view_{typename}_{nd}(group, name, value) result(
     type(C_PTR) addr
 
     lname = len_trim(name)
-    {extents_asgn}
     call SHROUD_C_LOC(value, addr)
+    if (c_associated(addr)) then
+      {extents_asgn}
+    else
+      extents = 0
+    endif
     rv%voidptr = c_datagroup_create_view_external_bufferify( &
         group%voidptr, name, lname, addr)
     call c_dataview_apply_type_shape(rv%voidptr, type, {rank}, extents)
@@ -157,7 +161,11 @@ subroutine dataview_get_data_{typename}_{nd}{suffix}(view, value)
     type(C_PTR) cptr
 
     cptr = view%get_void_ptr()
-    call c_f_pointer(cptr, value)
+    if (c_associated(cptr)) then
+      call c_f_pointer(cptr, value)
+    else
+      nullify(value)
+    endif
 end subroutine dataview_get_data_{typename}_{nd}{suffix}""".format(**d)
 
     else:
@@ -173,8 +181,12 @@ subroutine dataview_get_data_{typename}_{nd}{suffix}(view, value)
     integer(SIDRE_LENGTH) extents({rank})
 
     cptr = view%get_void_ptr()
-    rank = view%get_shape({rank}, extents)
-    call c_f_pointer(cptr, value, extents)
+    if (c_associated(cptr)) then
+      rank = view%get_shape({rank}, extents)
+      call c_f_pointer(cptr, value, extents)
+    else
+      nullify(value)
+    endif
 end subroutine dataview_get_data_{typename}_{nd}{suffix}""".format(**d)
 
 
