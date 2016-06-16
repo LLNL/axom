@@ -396,9 +396,19 @@ void DataStore::save(const hid_t& h5_file_id,
     "Must call save function on Group that resides in this DataStore.");
 
   Node data_holder;
-  exportTo(group, data_holder);
+  data_holder.set_dtype(DataType::object());
+  exportTo( group, data_holder);
 
-  conduit::relay::io::hdf5_write(data_holder, h5_file_id);
+  Node external_holder;
+  external_holder.set_dtype(DataType::object());
+  createExternalLayout(external_holder);
+
+  Node two_part;
+  two_part.set_dtype(DataType::object());
+  two_part["sidre"] = data_holder;
+  two_part["external"] = external_holder;
+
+  conduit::relay::io::hdf5_write(two_part, h5_file_id);
 }
 
 /*************************************************************************/
@@ -453,7 +463,7 @@ void DataStore::load(const hid_t& h5_file_id,
     "Must call load function on Group that resides in this DataStore.");
 
   Node node;
-  conduit::relay::io::hdf5_read(h5_file_id, ".", node);
+  conduit::relay::io::hdf5_read(h5_file_id, "sidre", node);
   // for debugging call: n.print();
   importFrom( group, node );
 }

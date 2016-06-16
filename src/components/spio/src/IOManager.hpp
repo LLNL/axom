@@ -96,6 +96,15 @@ public:
    */
   void read(sidre::DataGroup * group, const std::string& root_file);
 
+  /*!
+   * \brief load external data into a group
+   *
+   * \param group         DataGroup to fill with external data from input
+   * \param root_fil      root file containing input data
+   */
+  void loadExternalData(sidre::DataGroup * group,
+                        const std::string& root_file);
+
 private:
 
   DISABLE_COPY_AND_ASSIGNMENT( IOManager );
@@ -105,6 +114,8 @@ private:
                       int num_files);
 
   std::string getHDF5FileName(hid_t root_file_id, int rankgroup_id);
+
+  int getNumFilesFromRoot(const std::string& root_file);
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
