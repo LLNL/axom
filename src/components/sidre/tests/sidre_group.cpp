@@ -1144,23 +1144,23 @@ TEST(sidre_group,is_equivalent_to)
   DataGroup * ga1 = flds1->createGroup("a");
   DataGroup * gb1 = flds1->createGroup("b");
   DataGroup * gc1 = flds1->createGroup("c");
-  DataGroup * ga2 = flds2->createGroup("a");
+
+  DataGroup * gc2 = flds2->createGroup("c");    // Note: flds2 groups added in different order
   DataGroup * gb2 = flds2->createGroup("b");
-  DataGroup * gc2 = flds2->createGroup("c");
+  DataGroup * ga2 = flds2->createGroup("a");
 
   ga1->createViewScalar("i0", 1 );
   gb1->createViewScalar("f0", 100.0f );
   gc1->createViewScalar("d0", 3000.00);
+  gc1->createViewScalar("d1", 6000.00);
+  gc1->createViewScalar("d2", 9000.00);
+
   ga2->createViewScalar("i0", 1);
   gb2->createViewScalar("f0", 100.0f);
+  gc2->createViewScalar("d2", 9000.00);         // Note: views of gc2 added in different order
+  gc2->createViewScalar("d1", 6000.00);
   gc2->createViewScalar("d0", 3000.00);
 
-  ga1->getView("i0")->setScalar(1);
-  gb1->getView("f0")->setScalar( 100.0f );
-  gc1->getView("d0")->setScalar(3000.00);
-  ga2->getView("i0")->setScalar(1);
-  gb2->getView("f0")->setScalar( 100.0f );
-  gc2->getView("d0")->setScalar(3000.00);
 
   // Groups were created identically, so should be equivalent.
   EXPECT_TRUE(flds1->isEquivalentTo(flds2));

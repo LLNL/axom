@@ -1047,7 +1047,7 @@ void DataGroup::copyToConduitNode(Node& n) const
 /*
  *************************************************************************
  *
- * Test this Group for equavalence to another Group.
+ * Test this Group for equivalence to another Group.
  *
  *************************************************************************
  */
@@ -1068,14 +1068,15 @@ bool DataGroup::isEquivalentTo(const DataGroup * other) const
   if (is_equiv)
   {
     IndexType vidx = getFirstValidViewIndex();
-    IndexType other_vidx = other->getFirstValidViewIndex();
-    while ( is_equiv && indexIsValid(vidx) && indexIsValid(other_vidx) )
+    while ( is_equiv && indexIsValid(vidx) )
     {
       const DataView * view = getView(vidx);
-      const DataView * other_view = other->getView(other_vidx);
-      is_equiv = view->isEquivalentTo(other_view);
+      const std::string& name = view->getName();
+
+      is_equiv = other->hasView( name )
+              && view->isEquivalentTo( other->getView( name ) );
+
       vidx = getNextValidViewIndex(vidx);
-      other_vidx = getNextValidViewIndex(other_vidx);
     }
   }
 
@@ -1083,14 +1084,15 @@ bool DataGroup::isEquivalentTo(const DataGroup * other) const
   if (is_equiv)
   {
     IndexType gidx = getFirstValidGroupIndex();
-    IndexType other_gidx = getFirstValidGroupIndex();
-    while ( is_equiv && indexIsValid(gidx) && indexIsValid(other_gidx) )
+    while ( is_equiv && indexIsValid(gidx) )
     {
       const DataGroup * group =  getGroup(gidx);
-      const DataGroup * other_group =  other->getGroup(other_gidx);
-      is_equiv = group->isEquivalentTo(other_group);
+      const std::string& name = group->getName();
+
+      is_equiv = other->hasGroup( name )
+              && group->isEquivalentTo( other->getGroup( name ));
+
       gidx = getNextValidGroupIndex(gidx);
-      other_gidx = getNextValidGroupIndex(other_gidx);
     }
   }
 
