@@ -11,6 +11,11 @@ fi
 ## shortcut for git config
 gconf="git config"
 
+## Usage: git pullall
+##
+## Pulls latest including the latest submodules
+${gconf} alias.pullall "!bash -c \"git pull && git submodule update --init --recursive\""
+
 ## Usage: git unstage <file>
 ## 
 ## Unstages the given file.
