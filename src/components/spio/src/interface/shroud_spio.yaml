@@ -51,3 +51,4 @@ classes:
     - decl: void write(DataGroup * group, int num_files, const std::string& file_string, const std::string& protocol)
     - decl: void read(DataGroup * group, const std::string& file_string, const std::string& protocol)
     - decl: void read(DataGroup * group, const std::string& root_file)
+    - decl: void loadExternalData(DataGroup * group, const std::string& root_file)

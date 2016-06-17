@@ -106,6 +106,28 @@ return;
 // splicer end class.IOManager.method.read_1_bufferify
 }
 
+void SPIO_iomanager_load_external_data(SPIO_iomanager * self, SIDRE_datagroup * group, const char * root_file)
+{
+IOManager *selfobj = static_cast<IOManager *>(static_cast<void *>(self));
+// splicer begin class.IOManager.method.load_external_data
+asctoolkit::sidre::DataGroup * SH_group = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group));
+const std::string SH_root_file(root_file);
+selfobj->loadExternalData(SH_group, SH_root_file);
+return;
+// splicer end class.IOManager.method.load_external_data
+}
+
+void SPIO_iomanager_load_external_data_bufferify(SPIO_iomanager * self, SIDRE_datagroup * group, const char * root_file, int Lroot_file)
+{
+IOManager *selfobj = static_cast<IOManager *>(static_cast<void *>(self));
+// splicer begin class.IOManager.method.load_external_data_bufferify
+asctoolkit::sidre::DataGroup * SH_group = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group));
+const std::string SH_root_file(root_file, Lroot_file);
+selfobj->loadExternalData(SH_group, SH_root_file);
+return;
+// splicer end class.IOManager.method.load_external_data_bufferify
+}
+
 // splicer begin class.IOManager.additional_functions
 // splicer end class.IOManager.additional_functions
 
