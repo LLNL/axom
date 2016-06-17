@@ -19,6 +19,9 @@ using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::IndexType;
 using asctoolkit::sidre::InvalidIndex;
+using asctoolkit::sidre::DataTypeId;
+
+using asctoolkit::sidre::getTypeID;
 
 #include <map>
 
@@ -61,7 +64,7 @@ TEST(sidre_databuffer, buffer_create)
 }
 
 void verifyDescribedBuffer(DataBuffer * buf, bool isDescribed, 
-			   asctoolkit::sidre::DataTypeId tid, int eltsize, int eltcount)
+			   DataTypeId tid, int eltsize, int eltcount)
 {
   EXPECT_FALSE(buf->isAllocated());
   EXPECT_EQ(isDescribed, buf->isDescribed());
@@ -71,7 +74,7 @@ void verifyDescribedBuffer(DataBuffer * buf, bool isDescribed,
   EXPECT_EQ(ATK_NULLPTR, buf->getVoidPtr());
 }
 
-void verifyAllocatedBuffer(DataBuffer * buf, asctoolkit::sidre::DataTypeId tid, int eltsize, int eltcount)
+void verifyAllocatedBuffer(DataBuffer * buf, DataTypeId tid, int eltsize, int eltcount)
 {
   EXPECT_TRUE(buf->isAllocated());
   EXPECT_TRUE(buf->isDescribed());
@@ -86,59 +89,77 @@ TEST(sidre_databuffer,buffer_describe)
 {
   DataStore * ds = new DataStore();
 
+  bool isDescribed = false;
+  DataTypeId tid = getTypeID(SIDRE_NO_TYPE_ID);
+  int eltsize = 0;
+  int eltcount = 0;
+
   DataBuffer * buf1 = ds->createBuffer();
   {
     SCOPED_TRACE("created undescribed");
-    verifyDescribedBuffer(buf1, false, asctoolkit::sidre::NO_TYPE_ID, 0, 0);
+    verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
   }
 
   // invalid number of elements (not yet described)
-  buf1->describe(asctoolkit::sidre::INT32_ID, -3);
+  buf1->describe(getTypeID(SIDRE_INT_ID), -3);
   {
     SCOPED_TRACE("wrong desc, not yet described, no change");
-    verifyDescribedBuffer(buf1, false, asctoolkit::sidre::NO_TYPE_ID, 0, 0);
+    verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
   }
 
   // Describe to some arbitrary specification
-  buf1->describe(asctoolkit::sidre::INT32_ID, 200);
+  isDescribed = true;
+  tid = getTypeID(SIDRE_INT_ID);
+  eltsize = sizeof(int);
+  eltcount = 200;
+  buf1->describe(tid, eltcount);
   {
     SCOPED_TRACE("described");
-    verifyDescribedBuffer(buf1, true, asctoolkit::sidre::INT32_ID, 4, 200);
+    verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
   }
 
   // invalid number of elements (already described)
-  buf1->describe(asctoolkit::sidre::INT32_ID, -3);
+  buf1->describe(getTypeID(SIDRE_INT_ID), -3);
   {
     SCOPED_TRACE("wrong desc, already described, no change");
-    verifyDescribedBuffer(buf1, true, asctoolkit::sidre::INT32_ID, 4, 200);
+    verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
   }
 
   // change something legal; it should change (because we haven't allocated the buffer yet)
-  buf1->describe(asctoolkit::sidre::FLOAT64_ID, 27);
+  tid = getTypeID(SIDRE_DOUBLE_ID);
+  eltsize = sizeof(double);
+  eltcount = 27;
+  buf1->describe(tid, eltcount);
   {
     SCOPED_TRACE("legal change");
-    verifyDescribedBuffer(buf1, true, asctoolkit::sidre::FLOAT64_ID, 8, 27);
+    verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
   }
 
   //  Repeat all tests on buffer created with some arbitrary description
-  DataBuffer * buf2 = ds->createBuffer(asctoolkit::sidre::UINT16_ID, 45);
+  tid = getTypeID(SIDRE_FLOAT_ID);
+  eltsize = sizeof(float);
+  eltcount = 45;
+  DataBuffer * buf2 = ds->createBuffer(tid, eltcount);
   {
     SCOPED_TRACE("created described");
-    verifyDescribedBuffer(buf2, true, asctoolkit::sidre::UINT16_ID, 2, 45);
+    verifyDescribedBuffer(buf2, isDescribed, tid, eltsize, eltcount);
   }
 
   // invalid number of elements
-  buf2->describe(asctoolkit::sidre::INT32_ID, -1);
+  buf2->describe(getTypeID(SIDRE_INT_ID), -1);
   {
     SCOPED_TRACE("wrong desc 2, no change");
-    verifyDescribedBuffer(buf2, true, asctoolkit::sidre::UINT16_ID, 2, 45);
+    verifyDescribedBuffer(buf2, isDescribed, tid, eltsize, eltcount);
   }
 
   // change something legal; it should change (because we haven't allocated the buffer yet)
-  buf2->describe(asctoolkit::sidre::FLOAT32_ID, 56);
+  tid = getTypeID(SIDRE_INT_ID);
+  eltsize = sizeof(int);
+  eltcount = 56;
+  buf2->describe(tid, eltcount);
   {
     SCOPED_TRACE("legal change 2");
-    verifyDescribedBuffer(buf2, true, asctoolkit::sidre::FLOAT32_ID, 4, 56);
+    verifyDescribedBuffer(buf2, isDescribed, tid, eltsize, eltcount);
   }
 
   delete ds;
@@ -149,48 +170,67 @@ TEST(sidre_databuffer,buffer_allocate)
 {
   DataStore * ds = new DataStore();
 
+  bool isDescribed = false;
+  DataTypeId tid = getTypeID(SIDRE_NO_TYPE_ID);
+  int eltsize = 0;
+  int eltcount = 0;
+
   DataBuffer * buf1 = ds->createBuffer();
-  verifyDescribedBuffer(buf1, false, asctoolkit::sidre::NO_TYPE_ID, 0, 0);
+  verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
 
   // Call allocate and reallocate on a non-described buffer: should be no-op
   {
     SCOPED_TRACE("not described: no-op allocate");
     buf1->allocate();
-    verifyDescribedBuffer(buf1, false, asctoolkit::sidre::NO_TYPE_ID, 0, 0);
+    verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
   }
 
   // Describe to some arbitrary specification
+  isDescribed = true;
+  tid = getTypeID(SIDRE_INT_ID);
+  eltsize = sizeof(int);
+  eltcount = 200;
+  buf1->describe(tid, eltcount);
   {
     SCOPED_TRACE("describe, allocate");
-    buf1->describe(asctoolkit::sidre::INT32_ID, 200);
-    verifyDescribedBuffer(buf1, true, asctoolkit::sidre::INT32_ID, 4, 200);
+    verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
     buf1->allocate();
-    verifyAllocatedBuffer(buf1, asctoolkit::sidre::INT32_ID, 4, 200);
+    verifyAllocatedBuffer(buf1, tid, eltsize, eltcount);
   }
 
   {
     SCOPED_TRACE("no-op second call to describe");
 
     // attempt to re-describe an allocated Buffer: should be no-op.
-    buf1->describe(asctoolkit::sidre::UINT32_ID, 76);
-    verifyAllocatedBuffer(buf1, asctoolkit::sidre::INT32_ID, 4, 200);
+    buf1->describe(getTypeID(SIDRE_INT_ID), 76);
+    verifyAllocatedBuffer(buf1, tid, eltsize, eltcount);
   }
 
   // Allocate a buffer that was created with a description
+  tid = getTypeID(SIDRE_UINT_ID);
+  eltsize = sizeof(unsigned int);
+  eltcount = 65;
+  DataBuffer * buf2 = ds->createBuffer(tid, eltcount);
   {
     SCOPED_TRACE("allocate buffer created with description");
-    DataBuffer * buf2 = ds->createBuffer(asctoolkit::sidre::INT16_ID, 65);
-    verifyDescribedBuffer(buf2, true, asctoolkit::sidre::INT16_ID, 2, 65);
+    verifyDescribedBuffer(buf2, isDescribed, tid, eltsize, eltcount);
     buf2->allocate();
-    verifyAllocatedBuffer(buf2, asctoolkit::sidre::INT16_ID, 2, 65);
+    verifyAllocatedBuffer(buf2, tid, eltsize, eltcount);
   }
 
+  tid = getTypeID(SIDRE_FLOAT_ID);
+  eltsize = sizeof(float);
+  eltcount = 41;
+  DataBuffer * buf3 = ds->createBuffer(tid, eltcount);
   {
     SCOPED_TRACE("alloc-describe buffer created with description");
-    DataBuffer * buf3 = ds->createBuffer(asctoolkit::sidre::INT16_ID, 41);
-    verifyDescribedBuffer(buf3, true, asctoolkit::sidre::INT16_ID, 2, 41);
-    buf3->allocate(asctoolkit::sidre::FLOAT64_ID, 7);
-    verifyAllocatedBuffer(buf3, asctoolkit::sidre::FLOAT64_ID, 4, 7);
+    verifyDescribedBuffer(buf3, isDescribed, tid, eltsize, eltcount);
+    
+    tid = getTypeID(SIDRE_DOUBLE_ID);
+    eltsize = sizeof(double);
+    eltcount = 7;
+    buf3->allocate(tid, eltcount);
+    verifyAllocatedBuffer(buf3, tid, eltsize, eltcount);
   }
 
   delete ds;
@@ -201,56 +241,68 @@ TEST(sidre_databuffer,buffer_reallocate)
 {
   DataStore * ds = new DataStore();
 
+  bool isDescribed = false;
+  DataTypeId tid = getTypeID(SIDRE_NO_TYPE_ID);
+  int eltsize = 0;
+  int eltcount = 0;
+
   DataBuffer * buf1 = ds->createBuffer();
-  verifyDescribedBuffer(buf1, false, asctoolkit::sidre::NO_TYPE_ID, 0, 0);
+  verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
 
   {
     SCOPED_TRACE("not described: no-op reallocate(45)");
     buf1->reallocate(45);
-    verifyDescribedBuffer(buf1, false, asctoolkit::sidre::NO_TYPE_ID, 0, 0);
+    verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
   }
   {
     SCOPED_TRACE("not described: no-op reallocate(-2)");
     buf1->reallocate(-2);
-    verifyDescribedBuffer(buf1, false, asctoolkit::sidre::NO_TYPE_ID, 0, 0);
+    verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
   }
   {
     SCOPED_TRACE("not described: no-op reallocate(0)");
     buf1->reallocate(0);
-    verifyDescribedBuffer(buf1, false, asctoolkit::sidre::NO_TYPE_ID, 0, 0);
+    verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
   }
 
   // Describe to some arbitrary specification
+  isDescribed = true;
+  tid = getTypeID(SIDRE_INT_ID);
+  eltsize = sizeof(int);
+  eltcount = 200;
+  buf1->describe(tid, eltcount);
   {
     SCOPED_TRACE("describe, allocate");
-    buf1->describe(asctoolkit::sidre::INT32_ID, 200);
-    verifyDescribedBuffer(buf1, true, asctoolkit::sidre::INT32_ID, 4, 200);
+    verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
     buf1->allocate();
-    verifyAllocatedBuffer(buf1, asctoolkit::sidre::INT32_ID, 4, 200);
+    verifyAllocatedBuffer(buf1, tid, eltsize, eltcount);
   }
 
   {
     SCOPED_TRACE("reallocate with negative count");
     // reallocation with negative number of elements should not work
     buf1->reallocate(-1);
-    verifyAllocatedBuffer(buf1, asctoolkit::sidre::INT32_ID, 4, 200);
+    verifyAllocatedBuffer(buf1, tid, eltsize, eltcount);
   }
 
   // but with zero or more, reallocation should work
+  eltcount = 45;
+  buf1->reallocate(eltcount);
   {
     SCOPED_TRACE("reallocate(45)");
-    buf1->reallocate(45);
-    verifyAllocatedBuffer(buf1, asctoolkit::sidre::INT32_ID, 4, 45);
+    verifyAllocatedBuffer(buf1, tid, eltsize, eltcount);
   }
+  eltcount = 0;
+  buf1->reallocate(eltcount);
   {
-    SCOPED_TRACE("reallocate(0)");  // ???
-    buf1->reallocate(0);
-    verifyAllocatedBuffer(buf1, asctoolkit::sidre::INT32_ID, 4, 0);
+    SCOPED_TRACE("reallocate(0)");
+    verifyAllocatedBuffer(buf1, tid, eltsize, eltcount);
   }
+  eltcount = 3;
+  buf1->reallocate(eltcount);
   {
     SCOPED_TRACE("reallocate(3)");
-    buf1->reallocate(3);
-    verifyAllocatedBuffer(buf1, asctoolkit::sidre::INT32_ID, 4, 3);
+    verifyAllocatedBuffer(buf1, tid, eltsize, eltcount);
   }
 }
 
@@ -260,21 +312,26 @@ TEST(sidre_databuffer,buffer_delete_view_detach)
   DataStore * ds = new DataStore();
 
   int vAtest[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-  int vB1test[] = { 1, 3, 5, 7 };
+  int vB1test[] = { 1, 2, 3, 4, 5, 6, 7 };
   int vB2test[] = { 16, 15, 14, -2 };
 
+  DataTypeId tid = getTypeID(SIDRE_INT_ID);
+  int eltsize = sizeof(int);
+  int Acount = 8;
+  int Bcount = 7;
+
   // Create a buffer bA, fill with dummy data, attach two views vA and vB
-  DataBuffer * bA = ds->createBuffer(asctoolkit::sidre::INT32_ID, 8)->allocate();
-  bA->copyBytesIntoBuffer(vAtest, 8 * sizeof(int));
-  DataView *vA = ds->getRoot()->createView("vA", bA)->apply(asctoolkit::sidre::INT32_ID, 8);
-  DataView *vB = ds->getRoot()->createView("vB", bA)->apply(asctoolkit::sidre::INT32_ID, 4, 1, 2);
+  DataBuffer * bA = ds->createBuffer(tid, Acount)->allocate();
+  bA->copyBytesIntoBuffer(vAtest, Acount * eltsize);
+  DataView *vA = ds->getRoot()->createView("vA", bA)->apply(tid, Acount);
+  DataView *vB = ds->getRoot()->createView("vB", bA)->apply(tid, Bcount, 1, 1);
 
   // Verify vA and vB are attached to bA, and we can see the data
   EXPECT_EQ(2, bA->getNumViews());
   EXPECT_EQ(bA, vA->getBuffer());
-  EXPECT_EQ(0, countMismatch(8, vAtest, vA->getArray()));
+  EXPECT_EQ(0, countMismatch(Acount, vAtest, vA->getArray()));
   EXPECT_EQ(bA, vB->getBuffer());
-  // EXPECT_EQ(0, countMismatch(4, vB1test, vB->getArray(), true));
+  EXPECT_EQ(0, countMismatch(Bcount, vB1test, vB->getArray(), true));
 
   // Detach buffer bA from view vB
   EXPECT_EQ(bA, vB->detachBuffer());
@@ -286,7 +343,15 @@ TEST(sidre_databuffer,buffer_delete_view_detach)
   EXPECT_EQ(ATK_NULLPTR, vB->getBuffer());
 
   // Make a new buffer bB and attach to vB; verify we can see the data in bB
-  // Detach bA from vA; verify that vA nas no buffer and bA is destroyed
+  DataBuffer *bB = ds->createBuffer(tid, Bcount)->allocate();
+  bB->copyBytesIntoBuffer(vB1test, Bcount * eltsize);
+  vB->attachBuffer(tid, Bcount, bB);
+  
+  // Detach bA from vA using attach(NULL); verify that vA nas no buffer and bA is destroyed
+  IndexType aidx = bA->getIndex();
+  vA->attachBuffer(ATK_NULLPTR);
+  //  EXPECT_FALSE(vA->isAttached());
+  EXPECT_FALSE(ds->hasBuffer(aidx));
   // Destroy bB; verify that vB now has no buffer and cannot access data
 
 
