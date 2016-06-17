@@ -818,11 +818,12 @@ TEST(sidre_group,save_restore_external_data)
   const std::string file_path_base("sidre_save_external_");
 
   int nfoo = 10;
-  int foo1[nfoo], foo2[nfoo], * foo3;
+  int foo1[nfoo], foo2[nfoo], * foo3, foo4[nfoo];
   for (int i = 0 ; i < nfoo ; ++i)
   {
     foo1[i] = i;
     foo2[i] = 0;
+    foo4[i] = i;
   }
   foo3 = NULL;
 
@@ -833,7 +834,7 @@ TEST(sidre_group,save_restore_external_data)
   root1->createView("empty_array", INT_ID, nfoo, foo3);
   // XXX this falls into createView(name, type, ndims, shape)
   // root1->createView("empty_array", INT_ID, nfoo, NULL);
-  root1->createView("external_undescribed")->setExternalDataPtr(foo1);
+  root1->createView("external_undescribed")->setExternalDataPtr(foo4);
 
   for (int i = 0 ; i < nprotocols ; ++i)
   {

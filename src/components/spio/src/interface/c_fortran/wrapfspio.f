@@ -36,6 +36,7 @@ module spio_mod
         procedure :: write => iomanager_write
         procedure :: read_0 => iomanager_read_0
         procedure :: read_1 => iomanager_read_1
+        procedure :: load_external_data => iomanager_load_external_data
         procedure :: get_instance => iomanager_get_instance
         procedure :: set_instance => iomanager_set_instance
         procedure :: associated => iomanager_associated
@@ -140,6 +141,25 @@ module spio_mod
             integer(C_INT), value, intent(IN) :: Lroot_file
         end subroutine c_iomanager_read_1_bufferify
         
+        subroutine c_iomanager_load_external_data(self, group, root_file) &
+                bind(C, name="SPIO_iomanager_load_external_data")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: group
+            character(kind=C_CHAR), intent(IN) :: root_file(*)
+        end subroutine c_iomanager_load_external_data
+        
+        subroutine c_iomanager_load_external_data_bufferify(self, group, root_file, Lroot_file) &
+                bind(C, name="SPIO_iomanager_load_external_data_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: group
+            character(kind=C_CHAR), intent(IN) :: root_file(*)
+            integer(C_INT), value, intent(IN) :: Lroot_file
+        end subroutine c_iomanager_load_external_data_bufferify
+        
         ! splicer begin class.IOManager.additional_interfaces
         ! splicer end class.IOManager.additional_interfaces
     end interface
@@ -220,6 +240,22 @@ contains
             len_trim(root_file, kind=C_INT))
         ! splicer end class.IOManager.method.read_1
     end subroutine iomanager_read_1
+    
+    subroutine iomanager_load_external_data(obj, group, root_file)
+        use iso_c_binding, only : C_INT
+        use sidre_mod, only : datagroup
+        implicit none
+        class(iomanager) :: obj
+        type(datagroup), value, intent(IN) :: group
+        character(*), intent(IN) :: root_file
+        ! splicer begin class.IOManager.method.load_external_data
+        call c_iomanager_load_external_data_bufferify(  &
+            obj%voidptr,  &
+            group%get_instance(),  &
+            root_file,  &
+            len_trim(root_file, kind=C_INT))
+        ! splicer end class.IOManager.method.load_external_data
+    end subroutine iomanager_load_external_data
     
     function iomanager_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR

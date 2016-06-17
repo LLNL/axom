@@ -70,5 +70,14 @@ if(ENABLE_FORTRAN)
                    COMMAND F_spio_irregularWriteRead
                    NUM_PROCS 4
                    )
+      blt_add_executable(NAME F_spio_externalWriteRead
+                         SOURCES F_spio_externalWriteRead.f
+                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                         DEPENDS_ON spio conduit hdf5
+                         )
+      blt_add_test(NAME F_spio_externalWriteRead
+                   COMMAND F_spio_externalWriteRead
+                   NUM_PROCS 4
+                   )
    endif()
 endif()
