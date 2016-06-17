@@ -176,6 +176,23 @@ TEST(sidre_databuffer,buffer_allocate)
     verifyAllocatedBuffer(buf1, asctoolkit::sidre::INT32_ID, 4, 200);
   }
 
+  // Allocate a buffer that was created with a description
+  {
+    SCOPED_TRACE("allocate buffer created with description");
+    DataBuffer * buf2 = ds->createBuffer(asctoolkit::sidre::INT16_ID, 65);
+    verifyDescribedBuffer(buf2, true, asctoolkit::sidre::INT16_ID, 2, 65);
+    buf2->allocate();
+    verifyAllocatedBuffer(buf2, asctoolkit::sidre::INT16_ID, 2, 65);
+  }
+
+  {
+    SCOPED_TRACE("alloc-describe buffer created with description");
+    DataBuffer * buf3 = ds->createBuffer(asctoolkit::sidre::INT16_ID, 41);
+    verifyDescribedBuffer(buf3, true, asctoolkit::sidre::INT16_ID, 2, 41);
+    buf3->allocate(asctoolkit::sidre::FLOAT64_ID, 7);
+    verifyAllocatedBuffer(buf3, asctoolkit::sidre::FLOAT64_ID, 4, 7);
+  }
+
   delete ds;
 }
 
