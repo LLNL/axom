@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+##-----------------------------------------------------------------------
+## commit-msg hook that validates the format of the commit message.
+##
+## The script ensures that:
+## (1) subject line is at most 50 characters
+## (2) subject and main body are seperated by a blank line
+## (3) main body is wrapped to 78 characters
+##-----------------------------------------------------------------------
+reset=$(tput sgr0)
+bold=$(tput bold)
+
+SUBJECT_LINE_MAX=50
+LINE_MAX=78
+
+# Prepare a copy of the message:
+#  - strip comment lines
+#  - stop at "diff --git" (git commit -v)
+commit_msg="$GIT_DIR/COMMIT_MSG"
+sed -n -e '/^#/d' -e '/^diff --git/q' -e 'p;d' "$1" > "$commit_msg"
+
+die_advice='
+To continue editing, run the command
+  git commit -e -F '"$commit_msg"'
+(assuming your working directory is at the top).'
+
+##-----------------------------------------------------------------------
+## Helper method used to dump an error and exit with non-zero status
+##-----------------------------------------------------------------------
+die() 
+{
+  echo "$bold [POLICY]: $reset $@" 1>&2
+  test -n "$die_advice" && echo "$die_advice" 1>&2
+  exit 1
+}
+
+##-----------------------------------------------------------------------
+## Helper method to check if the given commit is a merge commit
+## NOTE: subject line length constraints do not apply for merge commits
+##-----------------------------------------------------------------------
+merge_msg() 
+{
+  echo "$line" | grep "^Merge " >/dev/null 2>&1 
+}
+
+##-----------------------------------------------------------------------
+## Helper method to check if the given commit is a revert commit
+## NOTE: subject line length constraints do not apply for revert commits
+##-----------------------------------------------------------------------
+revert_msg() 
+{ 
+  echo "$line" | grep "^Revert " >/dev/null 2>&1 
+}
+
+##-----------------------------------------------------------------------
+## Helper method to check if a line has leading white space
+##-----------------------------------------------------------------------
+has_leading_whitespace()
+{
+  echo "$line" | grep "^[[ \t]]*" >/dev/null 2>&1
+}
+
+##-----------------------------------------------------------------------
+## Helper method to check if a line has trailing white space
+##-----------------------------------------------------------------------
+has_trailing_whitespace()
+{
+  echo "$line" | grep "[[ \t]]*$" >/dev/null 2>&1
+}
+
+##-----------------------------------------------------------------------
+## Method to check the subject line of the commit message
+##-----------------------------------------------------------------------
+chk_subject() 
+{
+  len=$(echo -n "$line" | wc -c)
+  if test $len -eq 0; then
+      die 'subject line cannot be empty!'
+  elif test $len -lt 8; then
+      die 'subject line cannot be less than 8 characters!'
+  elif test $len -gt $SUBJECT_LINE_MAX && !merge_msg && !revert_msg; then
+      die 'subject line can be at most '$SUBJECT_LINE_MAX' characters!'
+  elif has_leading_whitespace; then 
+      die 'subject line cannot have leading white space!'
+  elif has_trailing_whitespace; then
+      die 'subject line cannot have trailing white space!'
+  else
+    state=second_line;
+  fi
+
+}
+
+##-----------------------------------------------------------------------
+## Method to check the 2nd line of the commit message
+##-----------------------------------------------------------------------
+chk_second_line()
+{
+  if test "x$line" != "x"; then
+    die 'second line of the commit message must be empty!'
+  else
+    state=main_body
+  fi
+}
+
+##-----------------------------------------------------------------------
+## Method to check the main body of the commit message
+##-----------------------------------------------------------------------
+chk_main_body()
+{
+   len=$(echo -n "$line" | wc -c)
+   if test $len -gt $LINE_MAX; then
+     die "line $bold $ln $reset is longer than $LINE_MAX!"
+   fi
+}
+
+echo "$bold Validating commit message...$reset"
+
+state=subject
+ln=0
+cat "$commit_msg" |
+while IFS='' read -r line
+do
+  ((ln++))
+  chk_$state || break
+done &&
+rm -f "$commit_msg" || exit 1
+
+echo "$bold [DONE] $reset"
+exit 0
+

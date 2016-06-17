@@ -23,11 +23,12 @@
 
 #include "quest/BoundingBox.hpp"
 #include "quest/Determinants.hpp"
-#include "quest/fuzzy_compare.hpp"
 #include "quest/Point.hpp"
 #include "quest/Ray.hpp"
 #include "quest/Segment.hpp"
 #include "quest/Triangle.hpp"
+
+#include "common/Utilities.hpp"
 
 namespace quest {
 
@@ -57,7 +58,7 @@ bool intersect( const Ray<T,2>& R, const Segment<T,2>& S, Point<T,2>& ip )
 
    // STEP 2: if denom is zero, the system is singular, which implies that the
    // ray and the segment are parallel
-   if ( math::fuzzy_compare( denom, 0.0, 1.0e-9 ) ) {
+   if ( asctoolkit::utilities::isNearlyEqual( denom, 0.0, 1.0e-9 ) ) {
 
        // ray and segment are parallel
        return false;

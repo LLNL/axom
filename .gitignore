@@ -5,6 +5,7 @@ install-
 .settings
 build-*
 install-*
+*.pyc
 *.orig
 *.uncrustify
 *.*~

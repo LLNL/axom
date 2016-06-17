@@ -24,11 +24,19 @@ if ( NOT ENABLE_OPENMP )
 endif()
 
 
+# blt_add_executable depends_on handles our include dir settings
+# these teste are using boost so boost needs to be a dep
+set(slam_tests_depends_on common slic slam)
+if (ENABLE_BOOST)
+    list(APPEND slam_tests_depends_on boost)
+endif()
+
+
 blt_add_executable( 
     NAME        slam_lulesh
     SOURCES     ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  slic slam
+    DEPENDS_ON  ${slam_tests_depends_on}
     USE_OPENMP  ${ENABLE_OPENMP}
     )
 

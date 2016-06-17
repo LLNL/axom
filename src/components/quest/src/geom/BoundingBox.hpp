@@ -278,9 +278,11 @@ public:
    * max point expansionAmount away from center (component-wise).
    * This function checks to ensure that the bounding box is valid after expansion.
    * \note If expansionAmount is negative, the bounding box will contract
+   * \return A reference to the bounding box after it has been expanded
    *****************************************************************************
    */
-  void expand(CoordType expansionAmount);
+  BoundingBox& expand(CoordType expansionAmount);
+
 
   /*!
    *****************************************************************************
@@ -291,17 +293,19 @@ public:
    * \note If scaleFactor is 0, the bounding box will shrink to its midpoint
    * \note The sign of the shrinkFactor has no effect since we are shrinking
    *  towards the center, and we fix the bounds after shrinking
+   *  \return A reference to the bounding box after it has been scaled
    *****************************************************************************
    */
-  void scale(double scaleFactor);
+  BoundingBox& scale(double scaleFactor);
 
   /*!
    *****************************************************************************
    * \brief Shifts the bounding box by a fixed displacement.
    * \param [in] displacement the amount with which to move the bounding box
+   * \return A reference to the bounding box after it has been shifted
    *****************************************************************************
    */
-  void shift(const VectorType& displacement);
+  BoundingBox& shift(const VectorType& displacement);
 
   /*!
    *****************************************************************************
@@ -602,7 +606,7 @@ int BoundingBox<CoordType,DIM>::getLongestDimension() const
 
 //------------------------------------------------------------------------------
 template<typename CoordType, int DIM>
-void BoundingBox<CoordType, DIM>::expand(CoordType expansionAmount)
+BoundingBox<CoordType, DIM>& BoundingBox<CoordType, DIM>::expand(CoordType expansionAmount)
 {
     for (int dim=0; dim < DIM; ++dim ) {
         m_min[dim] -= expansionAmount;
@@ -610,12 +614,14 @@ void BoundingBox<CoordType, DIM>::expand(CoordType expansionAmount)
     }
 
     checkAndFixBounds();
+
+    return *this;
 }
 
 
 //------------------------------------------------------------------------------
 template<typename CoordType, int DIM>
-void BoundingBox<CoordType, DIM>::scale(double scaleFactor)
+BoundingBox<CoordType, DIM>& BoundingBox<CoordType, DIM>::scale(double scaleFactor)
 {
     const PointType midpoint = centroid();
     const VectorType r = scaleFactor * 0.5 * range();
@@ -624,15 +630,19 @@ void BoundingBox<CoordType, DIM>::scale(double scaleFactor)
     m_max = PointType( midpoint.array() + r.array());
 
     checkAndFixBounds();
+
+    return *this;
 }
 
 
 //------------------------------------------------------------------------------
 template<typename CoordType, int DIM>
-void BoundingBox<CoordType, DIM>::shift(const VectorType& displacement)
+BoundingBox<CoordType, DIM>& BoundingBox<CoordType, DIM>::shift(const VectorType& displacement)
 {
     m_min.array() += displacement.array();
     m_max.array() += displacement.array();
+
+    return *this;
 }
 
 //------------------------------------------------------------------------------
