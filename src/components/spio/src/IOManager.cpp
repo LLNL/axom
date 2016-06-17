@@ -232,36 +232,7 @@ void IOManager::read(
  */
 void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
 {
-  /*
-   * Read num_files from rootfile on rank 0.
-   */
-  int read_num_files = 0;
-  if (m_my_rank == 0) {
-
-    hid_t root_file_id = H5Fopen(root_file.c_str(),
-                                 H5F_ACC_RDWR,
-                                 H5P_DEFAULT);
-
-    SLIC_ASSERT(root_file_id >= 0);
-
-
-    hid_t filesset = H5Dopen(root_file_id, "num_files", H5P_DEFAULT);
-    SLIC_ASSERT(filesset >= 0);
-
-    herr_t errv = H5Dread(filesset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
-      H5P_DEFAULT, &read_num_files);
-    SLIC_ASSERT(errv >= 0);
-    SLIC_ASSERT(read_num_files > 0);
-
-    errv = H5Fclose(root_file_id);
-    SLIC_ASSERT(errv >= 0);
-  }
-
-  /*
-   * Reduction sets num_files on all ranks.
-   */
-  int num_files;
-  MPI_Allreduce(&read_num_files, &num_files, 1, MPI_INT, MPI_SUM, m_mpi_comm);
+  int num_files = getNumFilesFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
 
   if (m_baton) {
@@ -297,7 +268,59 @@ void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
   std::string group_name = groupstream.str();
   hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
   SLIC_ASSERT(h5_group_id >= 0);
+
   datagroup->getDataStore()->load(h5_group_id, datagroup);
+
+  errv = H5Fclose(h5_file_id);
+  SLIC_ASSERT(errv >= 0);
+
+  errv = H5Fclose(root_file_id);
+  SLIC_ASSERT(errv >= 0);
+
+  (void)m_baton->pass();
+}
+
+
+void IOManager::loadExternalData(sidre::DataGroup * datagroup, const std::string& root_file)
+{
+  int num_files = getNumFilesFromRoot(root_file);
+  SLIC_ASSERT(num_files > 0);
+
+  if (m_baton) {
+    if (m_baton->getNumFiles() != num_files) {
+      delete m_baton;
+      m_baton = ATK_NULLPTR;
+    }
+  }
+
+  if (!m_baton) {
+    m_baton = new IOBaton(m_mpi_comm, num_files);
+  }
+
+  int group_id = m_baton->wait();
+
+  hid_t root_file_id = H5Fopen(root_file.c_str(),
+                               H5F_ACC_RDWR,
+                               H5P_DEFAULT);
+
+  SLIC_ASSERT(root_file_id >= 0);
+
+  herr_t errv;
+
+  std::string hdf5_name = getHDF5FileName(root_file_id, group_id);
+
+  hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
+                             H5F_ACC_RDONLY,
+                             H5P_DEFAULT);
+  SLIC_ASSERT(h5_file_id >= 0);
+
+  std::ostringstream groupstream;
+  groupstream << "datagroup_" << m_my_rank;
+  std::string group_name = groupstream.str();
+  hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
+  SLIC_ASSERT(h5_group_id >= 0);
+
+  datagroup->getDataStore()->loadExternalData(h5_group_id, datagroup);
 
   errv = H5Fclose(h5_file_id);
   SLIC_ASSERT(errv >= 0);
@@ -441,6 +464,50 @@ std::string IOManager::getHDF5FileName(
   delete[] h5_name_buf;
 
   return hdf5_name;
+}
+
+/*
+ *************************************************************************
+ *
+ * Query the rootfile for the number of input files.
+ *
+ *************************************************************************
+ */
+int IOManager::getNumFilesFromRoot(const std::string& root_file)
+{
+  /*
+   * Read num_files from rootfile on rank 0.
+   */
+  int read_num_files = 0;
+  if (m_my_rank == 0) {
+
+    hid_t root_file_id = H5Fopen(root_file.c_str(),
+                                 H5F_ACC_RDWR,
+                                 H5P_DEFAULT);
+
+    SLIC_ASSERT(root_file_id >= 0);
+
+
+    hid_t filesset = H5Dopen(root_file_id, "num_files", H5P_DEFAULT);
+    SLIC_ASSERT(filesset >= 0);
+
+    herr_t errv = H5Dread(filesset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
+      H5P_DEFAULT, &read_num_files);
+    SLIC_ASSERT(errv >= 0);
+    SLIC_ASSERT(read_num_files > 0);
+
+    errv = H5Fclose(root_file_id);
+    SLIC_ASSERT(errv >= 0);
+  }
+
+  /*
+   * Reduction sets num_files on all ranks.
+   */
+  int num_files;
+  MPI_Allreduce(&read_num_files, &num_files, 1, MPI_INT, MPI_SUM, m_mpi_comm);
+  SLIC_ASSERT(num_files > 0);
+
+  return num_files;
 }
 
 

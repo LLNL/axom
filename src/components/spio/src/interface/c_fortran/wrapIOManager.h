@@ -48,6 +48,10 @@ void SPIO_iomanager_read_1(SPIO_iomanager * self, SIDRE_datagroup * group, const
 
 void SPIO_iomanager_read_1_bufferify(SPIO_iomanager * self, SIDRE_datagroup * group, const char * root_file, int Lroot_file);
 
+void SPIO_iomanager_load_external_data(SPIO_iomanager * self, SIDRE_datagroup * group, const char * root_file);
+
+void SPIO_iomanager_load_external_data_bufferify(SPIO_iomanager * self, SIDRE_datagroup * group, const char * root_file, int Lroot_file);
+
 #ifdef __cplusplus
 }
 #endif

@@ -62,6 +62,8 @@ blt_add_library( NAME
                      "${sidre_fortran_sources}"
                  HEADERS
                      "${sidre_headers}"
+                 HEADERS_OUTPUT_SUBDIR
+                     sidre
                  DEPENDS_ON
                      common
                      conduit
@@ -72,8 +74,6 @@ blt_add_library( NAME
   
              
 set_target_properties(sidre  PROPERTIES COMPILE_FLAGS ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS})
-
-install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
 # Only needed if building the Fortran interface
 # XXX this can be used to automatically generate the files
