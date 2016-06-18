@@ -40,17 +40,17 @@ typedef struct s_SIDRE_dataview SIDRE_dataview;
 
 const char * SIDRE_datagroup_get_name(const SIDRE_datagroup * self);
 
-void SIDRE_datagroup_get_name_bufferify(SIDRE_datagroup * self, char * SH_F_rv,
-                                        int LSH_F_rv);
+void SIDRE_datagroup_get_name_bufferify(const SIDRE_datagroup * self,
+                                        char * SH_F_rv, int LSH_F_rv);
 
 const SIDRE_datagroup * SIDRE_datagroup_get_parent(const SIDRE_datagroup * self);
 
 const SIDRE_datastore * SIDRE_datagroup_get_data_store(
   const SIDRE_datagroup * self);
 
-size_t SIDRE_datagroup_get_num_views(SIDRE_datagroup * self);
+size_t SIDRE_datagroup_get_num_views(const SIDRE_datagroup * self);
 
-size_t SIDRE_datagroup_get_num_groups(SIDRE_datagroup * self);
+size_t SIDRE_datagroup_get_num_groups(const SIDRE_datagroup * self);
 
 bool SIDRE_datagroup_has_view(SIDRE_datagroup * self, const char * name);
 
@@ -66,25 +66,24 @@ SIDRE_dataview * SIDRE_datagroup_get_view_from_name_bufferify(
 SIDRE_dataview * SIDRE_datagroup_get_view_from_index(SIDRE_datagroup * self,
                                                      const SIDRE_IndexType idx);
 
-SIDRE_IndexType SIDRE_datagroup_get_view_index(SIDRE_datagroup * self,
+SIDRE_IndexType SIDRE_datagroup_get_view_index(const SIDRE_datagroup * self,
                                                const char * name);
 
-SIDRE_IndexType SIDRE_datagroup_get_view_index_bufferify(SIDRE_datagroup * self,
-                                                         const char * name,
-                                                         int Lname);
+SIDRE_IndexType SIDRE_datagroup_get_view_index_bufferify(
+  const SIDRE_datagroup * self, const char * name, int Lname);
 
 const char * SIDRE_datagroup_get_view_name(const SIDRE_datagroup * self,
                                            SIDRE_IndexType idx);
 
-void SIDRE_datagroup_get_view_name_bufferify(SIDRE_datagroup * self,
+void SIDRE_datagroup_get_view_name_bufferify(const SIDRE_datagroup * self,
                                              SIDRE_IndexType idx,
                                              char * SH_F_rv, int LSH_F_rv);
 
 SIDRE_IndexType SIDRE_datagroup_get_first_valid_view_index(
-  SIDRE_datagroup * self);
+  const SIDRE_datagroup * self);
 
 SIDRE_IndexType SIDRE_datagroup_get_next_valid_view_index(
-  SIDRE_datagroup * self, SIDRE_IndexType idx);
+  const SIDRE_datagroup * self, SIDRE_IndexType idx);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_nelems(
   SIDRE_datagroup * self, const char * name, int type,
@@ -239,24 +238,24 @@ SIDRE_datagroup * SIDRE_datagroup_get_group_bufferify(SIDRE_datagroup * self,
                                                       const char * name,
                                                       int Lname);
 
-SIDRE_IndexType SIDRE_datagroup_get_group_index(SIDRE_datagroup * self,
+SIDRE_IndexType SIDRE_datagroup_get_group_index(const SIDRE_datagroup * self,
                                                 const char * name);
 
 SIDRE_IndexType SIDRE_datagroup_get_group_index_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname);
+  const SIDRE_datagroup * self, const char * name, int Lname);
 
 const char * SIDRE_datagroup_get_group_name(const SIDRE_datagroup * self,
                                             SIDRE_IndexType idx);
 
-void SIDRE_datagroup_get_group_name_bufferify(SIDRE_datagroup * self,
+void SIDRE_datagroup_get_group_name_bufferify(const SIDRE_datagroup * self,
                                               SIDRE_IndexType idx,
                                               char * SH_F_rv, int LSH_F_rv);
 
 SIDRE_IndexType SIDRE_datagroup_get_first_valid_group_index(
-  SIDRE_datagroup * self);
+  const SIDRE_datagroup * self);
 
 SIDRE_IndexType SIDRE_datagroup_get_next_valid_group_index(
-  SIDRE_datagroup * self, SIDRE_IndexType idx);
+  const SIDRE_datagroup * self, SIDRE_IndexType idx);
 
 SIDRE_datagroup * SIDRE_datagroup_create_group(SIDRE_datagroup * self,
                                                const char * name);
@@ -277,9 +276,9 @@ void SIDRE_datagroup_destroy_group_index(SIDRE_datagroup * self,
 SIDRE_datagroup * SIDRE_datagroup_move_group(SIDRE_datagroup * self,
                                              SIDRE_datagroup * grp);
 
-void SIDRE_datagroup_print(SIDRE_datagroup * self);
+void SIDRE_datagroup_print(const SIDRE_datagroup * self);
 
-bool SIDRE_datagroup_is_equivalent_to(SIDRE_datagroup * self,
+bool SIDRE_datagroup_is_equivalent_to(const SIDRE_datagroup * self,
                                       const SIDRE_datagroup * other);
 
 #ifdef __cplusplus

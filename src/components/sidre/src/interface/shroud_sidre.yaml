@@ -397,6 +397,10 @@ classes:
        return_this: True
        function_suffix: _shape
 
+    -  decl: const char * getString+len(MAXNAMESIZE)()
+       options:
+         F_string_result_as_arg: name
+
 #           template<typename DataType>
     - decl: DataType getData()
       cpp_template:

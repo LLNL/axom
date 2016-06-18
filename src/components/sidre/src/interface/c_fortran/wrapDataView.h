@@ -85,26 +85,26 @@ void SIDRE_dataview_apply_type_nelems_offset_stride(SIDRE_dataview * self,
 void SIDRE_dataview_apply_type_shape(SIDRE_dataview * self, int type, int ndims,
                                      SIDRE_SidreLength * shape);
 
-bool SIDRE_dataview_has_buffer(SIDRE_dataview * self);
+bool SIDRE_dataview_has_buffer(const SIDRE_dataview * self);
 
-bool SIDRE_dataview_is_external(SIDRE_dataview * self);
+bool SIDRE_dataview_is_external(const SIDRE_dataview * self);
 
-bool SIDRE_dataview_is_applied(SIDRE_dataview * self);
+bool SIDRE_dataview_is_applied(const SIDRE_dataview * self);
 
-bool SIDRE_dataview_is_described(SIDRE_dataview * self);
+bool SIDRE_dataview_is_described(const SIDRE_dataview * self);
 
-bool SIDRE_dataview_is_empty(SIDRE_dataview * self);
+bool SIDRE_dataview_is_empty(const SIDRE_dataview * self);
 
-bool SIDRE_dataview_is_opaque(SIDRE_dataview * self);
+bool SIDRE_dataview_is_opaque(const SIDRE_dataview * self);
 
 const char * SIDRE_dataview_get_name(const SIDRE_dataview * self);
 
-void SIDRE_dataview_get_name_bufferify(SIDRE_dataview * self, char * SH_F_rv,
-                                       int LSH_F_rv);
+void SIDRE_dataview_get_name_bufferify(const SIDRE_dataview * self,
+                                       char * SH_F_rv, int LSH_F_rv);
 
 SIDRE_databuffer * SIDRE_dataview_get_buffer(SIDRE_dataview * self);
 
-void * SIDRE_dataview_get_void_ptr(SIDRE_dataview * self);
+void * SIDRE_dataview_get_void_ptr(const SIDRE_dataview * self);
 
 void SIDRE_dataview_set_scalar_int(SIDRE_dataview * self, int value);
 
@@ -126,6 +126,11 @@ void SIDRE_dataview_set_external_data_ptr_shape(SIDRE_dataview * self, int type,
                                                 SIDRE_SidreLength * shape,
                                                 void * external_ptr);
 
+const char * SIDRE_dataview_get_string(SIDRE_dataview * self);
+
+void SIDRE_dataview_get_string_bufferify(SIDRE_dataview * self, char * name,
+                                         int Lname);
+
 int SIDRE_dataview_get_data_int(SIDRE_dataview * self);
 
 long SIDRE_dataview_get_data_long(SIDRE_dataview * self);
@@ -136,18 +141,18 @@ double SIDRE_dataview_get_data_double(SIDRE_dataview * self);
 
 SIDRE_datagroup * SIDRE_dataview_get_owning_group(SIDRE_dataview * self);
 
-int SIDRE_dataview_get_type_id(SIDRE_dataview * self);
+int SIDRE_dataview_get_type_id(const SIDRE_dataview * self);
 
-size_t SIDRE_dataview_get_total_bytes(SIDRE_dataview * self);
+size_t SIDRE_dataview_get_total_bytes(const SIDRE_dataview * self);
 
-size_t SIDRE_dataview_get_num_elements(SIDRE_dataview * self);
+size_t SIDRE_dataview_get_num_elements(const SIDRE_dataview * self);
 
-int SIDRE_dataview_get_num_dimensions(SIDRE_dataview * self);
+int SIDRE_dataview_get_num_dimensions(const SIDRE_dataview * self);
 
-int SIDRE_dataview_get_shape(SIDRE_dataview * self, int ndims,
+int SIDRE_dataview_get_shape(const SIDRE_dataview * self, int ndims,
                              SIDRE_SidreLength * shape);
 
-void SIDRE_dataview_print(SIDRE_dataview * self);
+void SIDRE_dataview_print(const SIDRE_dataview * self);
 
 #ifdef __cplusplus
 }

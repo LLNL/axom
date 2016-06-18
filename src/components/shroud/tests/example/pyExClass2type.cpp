@@ -175,6 +175,57 @@ PP_exclass2_get_name(
 // splicer end class.ExClass2.method.get_name
 }
 
+static char PP_exclass2_get_name2__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_exclass2_get_name2(
+  PP_ExClass2 *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.ExClass2.method.get_name2
+    const std::string & rv = self->BBB->getName2();
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
+// splicer end class.ExClass2.method.get_name2
+}
+
+static char PP_exclass2_get_name3__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_exclass2_get_name3(
+  PP_ExClass2 *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.ExClass2.method.get_name3
+    std::string & rv = self->BBB->getName3();
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
+// splicer end class.ExClass2.method.get_name3
+}
+
+static char PP_exclass2_get_name4__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_exclass2_get_name4(
+  PP_ExClass2 *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.ExClass2.method.get_name4
+    std::string & rv = self->BBB->getName4();
+    PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
+    return (PyObject *) SH_Py_rv;
+// splicer end class.ExClass2.method.get_name4
+}
+
 static char PP_exclass2_get_name_length__doc__[] =
 "documentation"
 ;
@@ -292,6 +343,9 @@ PP_exclass2_get_type_id(
 static PyMethodDef PP_ExClass2_methods[] = {
 {"delete", (PyCFunction)PP_exclass2_delete, METH_NOARGS, PP_exclass2_delete__doc__},
 {"getName", (PyCFunction)PP_exclass2_get_name, METH_NOARGS, PP_exclass2_get_name__doc__},
+{"getName2", (PyCFunction)PP_exclass2_get_name2, METH_NOARGS, PP_exclass2_get_name2__doc__},
+{"getName3", (PyCFunction)PP_exclass2_get_name3, METH_NOARGS, PP_exclass2_get_name3__doc__},
+{"getName4", (PyCFunction)PP_exclass2_get_name4, METH_NOARGS, PP_exclass2_get_name4__doc__},
 {"GetNameLength", (PyCFunction)PP_exclass2_get_name_length, METH_NOARGS, PP_exclass2_get_name_length__doc__},
 {"get_class1", (PyCFunction)PP_exclass2_get_class1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_class1__doc__},
 {"declare", (PyCFunction)PP_exclass2_declare_1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_declare_1__doc__},

@@ -85,28 +85,31 @@ void SIDRE_datastore_destroy_buffer(SIDRE_datastore * self, SIDRE_IndexType id)
 // splicer end class.DataStore.method.destroy_buffer
 }
 
-size_t SIDRE_datastore_get_num_buffers(SIDRE_datastore * self)
+size_t SIDRE_datastore_get_num_buffers(const SIDRE_datastore * self)
 {
-  DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
+  const DataStore * selfobj =
+    static_cast<const DataStore *>(static_cast<const void *>(self));
 // splicer begin class.DataStore.method.get_num_buffers
   size_t rv = selfobj->getNumBuffers();
   return rv;
 // splicer end class.DataStore.method.get_num_buffers
 }
 
-void SIDRE_datastore_print(SIDRE_datastore * self)
+void SIDRE_datastore_print(const SIDRE_datastore * self)
 {
-  DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
+  const DataStore * selfobj =
+    static_cast<const DataStore *>(static_cast<const void *>(self));
 // splicer begin class.DataStore.method.print
   selfobj->print();
   return;
 // splicer end class.DataStore.method.print
 }
 
-void SIDRE_datastore_save_0(SIDRE_datastore * self, const char * file_path,
-                            const char * protocol)
+void SIDRE_datastore_save_0(const SIDRE_datastore * self,
+                            const char * file_path, const char * protocol)
 {
-  DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
+  const DataStore * selfobj =
+    static_cast<const DataStore *>(static_cast<const void *>(self));
 // splicer begin class.DataStore.method.save_0
   const std::string SH_file_path(file_path);
   const std::string SH_protocol(protocol);
@@ -115,11 +118,12 @@ void SIDRE_datastore_save_0(SIDRE_datastore * self, const char * file_path,
 // splicer end class.DataStore.method.save_0
 }
 
-void SIDRE_datastore_save_0_bufferify(SIDRE_datastore * self,
+void SIDRE_datastore_save_0_bufferify(const SIDRE_datastore * self,
                                       const char * file_path, int Lfile_path,
                                       const char * protocol, int Lprotocol)
 {
-  DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
+  const DataStore * selfobj =
+    static_cast<const DataStore *>(static_cast<const void *>(self));
 // splicer begin class.DataStore.method.save_0_bufferify
   const std::string SH_file_path(file_path, Lfile_path);
   const std::string SH_protocol(protocol, Lprotocol);
@@ -128,11 +132,12 @@ void SIDRE_datastore_save_0_bufferify(SIDRE_datastore * self,
 // splicer end class.DataStore.method.save_0_bufferify
 }
 
-void SIDRE_datastore_save_1(SIDRE_datastore * self, const char * file_path,
-                            const char * protocol,
+void SIDRE_datastore_save_1(const SIDRE_datastore * self,
+                            const char * file_path, const char * protocol,
                             const SIDRE_datagroup * group)
 {
-  DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
+  const DataStore * selfobj =
+    static_cast<const DataStore *>(static_cast<const void *>(self));
 // splicer begin class.DataStore.method.save_1
   const std::string SH_file_path(file_path);
   const std::string SH_protocol(protocol);
@@ -142,12 +147,13 @@ void SIDRE_datastore_save_1(SIDRE_datastore * self, const char * file_path,
 // splicer end class.DataStore.method.save_1
 }
 
-void SIDRE_datastore_save_1_bufferify(SIDRE_datastore * self,
+void SIDRE_datastore_save_1_bufferify(const SIDRE_datastore * self,
                                       const char * file_path, int Lfile_path,
                                       const char * protocol, int Lprotocol,
                                       const SIDRE_datagroup * group)
 {
-  DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
+  const DataStore * selfobj =
+    static_cast<const DataStore *>(static_cast<const void *>(self));
 // splicer begin class.DataStore.method.save_1_bufferify
   const std::string SH_file_path(file_path, Lfile_path);
   const std::string SH_protocol(protocol, Lprotocol);
