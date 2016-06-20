@@ -383,6 +383,7 @@ module sidre_mod
         procedure :: set_external_data_ptr_type_int => dataview_set_external_data_ptr_type_int
         procedure :: set_external_data_ptr_type_long => dataview_set_external_data_ptr_type_long
         procedure :: set_external_data_ptr_shape => dataview_set_external_data_ptr_shape
+        procedure :: get_string => dataview_get_string
         procedure :: get_data_int => dataview_get_data_int
         procedure :: get_data_long => dataview_get_data_long
         procedure :: get_data_float => dataview_get_data_float
@@ -1929,6 +1930,24 @@ module sidre_mod
             integer(C_LONG), intent(IN) :: shape(*)
             type(C_PTR), value, intent(IN) :: external_ptr
         end subroutine c_dataview_set_external_data_ptr_shape
+        
+        function c_dataview_get_string(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_get_string")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR) rv
+        end function c_dataview_get_string
+        
+        subroutine c_dataview_get_string_bufferify(self, name, Lname) &
+                bind(C, name="SIDRE_dataview_get_string_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(OUT) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine c_dataview_get_string_bufferify
         
         function c_dataview_get_data_int(self) &
                 result(rv) &
@@ -4682,6 +4701,19 @@ contains
             external_ptr)
         ! splicer end class.DataView.method.set_external_data_ptr_shape
     end subroutine dataview_set_external_data_ptr_shape
+    
+    subroutine dataview_get_string(obj, name)
+        use iso_c_binding, only : C_INT
+        implicit none
+        class(dataview) :: obj
+        character(*), intent(OUT) :: name
+        ! splicer begin class.DataView.method.get_string
+        call c_dataview_get_string_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len(name, kind=C_INT))
+        ! splicer end class.DataView.method.get_string
+    end subroutine dataview_get_string
     
     function dataview_get_data_int(obj) result(rv)
         use iso_c_binding, only : C_INT

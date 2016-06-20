@@ -32,9 +32,9 @@ typedef struct s_SIDRE_databuffer SIDRE_databuffer;
 // splicer begin class.DataBuffer.C_definition
 // splicer end class.DataBuffer.C_definition
 
-SIDRE_IndexType SIDRE_databuffer_get_index(SIDRE_databuffer * self);
+SIDRE_IndexType SIDRE_databuffer_get_index(const SIDRE_databuffer * self);
 
-size_t SIDRE_databuffer_get_num_views(SIDRE_databuffer * self);
+size_t SIDRE_databuffer_get_num_views(const SIDRE_databuffer * self);
 
 void SIDRE_databuffer_describe(SIDRE_databuffer * self, int type,
                                SIDRE_SidreLength num_elems);
@@ -49,13 +49,13 @@ void SIDRE_databuffer_reallocate(SIDRE_databuffer * self,
 
 void * SIDRE_databuffer_get_void_ptr(SIDRE_databuffer * self);
 
-int SIDRE_databuffer_get_type_id(SIDRE_databuffer * self);
+int SIDRE_databuffer_get_type_id(const SIDRE_databuffer * self);
 
-size_t SIDRE_databuffer_get_num_elements(SIDRE_databuffer * self);
+size_t SIDRE_databuffer_get_num_elements(const SIDRE_databuffer * self);
 
-size_t SIDRE_databuffer_get_total_bytes(SIDRE_databuffer * self);
+size_t SIDRE_databuffer_get_total_bytes(const SIDRE_databuffer * self);
 
-void SIDRE_databuffer_print(SIDRE_databuffer * self);
+void SIDRE_databuffer_print(const SIDRE_databuffer * self);
 
 #ifdef __cplusplus
 }

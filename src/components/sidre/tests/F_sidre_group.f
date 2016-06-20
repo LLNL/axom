@@ -635,6 +635,11 @@ contains
     type(datagroup) root1, root2
     type(dataview) view
 
+    integer(C_INT) :: i0
+    real(C_FLOAT) :: f0
+    real(C_DOUBLE) :: d0
+    character(80) :: s0
+
     call set_case_name("save_restore_scalars_and_strings")
 
     ds1 = datastore_new()
@@ -660,6 +665,22 @@ contains
        call ds2%load(file_path, protocols(i))
 
        call assert_true( root1%is_equivalent_to( root2 ))
+
+       view = root2%get_view("i0")
+       i0 = view%get_data_int()
+       call assert_equals(i0, 1)
+
+       view = root2%get_view("f0")
+       f0 = view%get_data_float()
+       call assert_equals(f0, 1.0)
+
+       view = root2%get_view("d0")
+       d0 = view%get_data_double()
+       call assert_equals(d0, 10.0d0)
+
+       view = root2%get_view("s0")
+       call view%get_string(s0)
+       call assert_equals(s0, "I am a string")
 
        call ds2%delete()
     enddo

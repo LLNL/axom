@@ -28,6 +28,12 @@ C method ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+con
 C method void delete()+destructor
 C method const string & getName() const
 C method void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+C method const string & getName2()
+C method void getName2(string & SH_F_rv+intent(out)+len(LSH_F_rv))
+C method string & getName3() const
+C method void getName3(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+C method string & getName4()
+C method void getName4(string & SH_F_rv+intent(out)+len(LSH_F_rv))
 C method const int GetNameLength()
 C method ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
 C method void * declare(TypeID type+intent(in)+value)
@@ -86,6 +92,12 @@ C-interface method ExClass2 * ExClass2(const string * name+intent(in)+len_trim(L
 C-interface, Fortran method void delete()+destructor
 C-interface, Fortran method const string & getName() const
 C-interface method void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+C-interface, Fortran method const string & getName2()
+C-interface method void getName2(string & SH_F_rv+intent(out)+len(LSH_F_rv))
+C-interface, Fortran method string & getName3() const
+C-interface method void getName3(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+C-interface, Fortran method string & getName4()
+C-interface method void getName4(string & SH_F_rv+intent(out)+len(LSH_F_rv))
 C-interface, Fortran method const int GetNameLength()
 C-interface, Fortran method ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
 C-interface method void * declare(TypeID type+intent(in)+value)
@@ -137,6 +149,9 @@ class ExClass2
 Python method ExClass2 * ExClass2(const string * name+intent(in))+constructor
 Python method void delete()+destructor
 Python method const string & getName() const
+Python method const string & getName2()
+Python method string & getName3() const
+Python method string & getName4()
 Python method const int GetNameLength()
 Python method ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
 Python method void * declare(TypeID type+intent(in)+value, SidreLength len+default(1)+intent(in)+value)

@@ -806,6 +806,16 @@ TEST(sidre_group,save_restore_scalars_and_strings)
 
     EXPECT_TRUE( root1->isEquivalentTo( root2 ));
 
+    int i0 = root2->getView("i0")->getScalar();
+    float f0 = root2->getView("f0")->getScalar();
+    double d0 = root2->getView("d0")->getScalar();
+    const char * s0 = root2->getView("s0")->getString();
+
+    EXPECT_EQ( 1, i0);
+    EXPECT_EQ( 1.0, f0);
+    EXPECT_EQ( 10.0, d0);
+    EXPECT_EQ( std::string(s0), "I am a string");
+
     delete ds2;
   }
 

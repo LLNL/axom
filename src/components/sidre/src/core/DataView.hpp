@@ -717,7 +717,7 @@ public:
     }
     else
     {
-      // TODO - This will throw and exception in the user's code  ATK-704
+      // TODO - This will throw an exception in the user's code  ATK-704
       return Node().value();
     }
   }
