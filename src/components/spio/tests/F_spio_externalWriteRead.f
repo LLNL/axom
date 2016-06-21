@@ -84,7 +84,8 @@ program spio_external_write_read
 
   restored_vals1(:) = -1
   restored_vals2(:) = -1
-  call root2%set_array_data_ptr("fields/a/external_array", restored_vals1)
+  view1 = root2%get_view("fields/a/external_array")
+  call view1%set_array_data_ptr(restored_vals1)
 
   view2 = root2%get_view("fields2/b/external_undescribed")
   call view2%set_external_data_ptr(c_loc(restored_vals2))
@@ -100,7 +101,7 @@ program spio_external_write_read
      return_val = 1
   else if (any(orig_vals1 .ne. restored_vals1)) then
      return_val = 1
-  else if (any(orig_vals2 .ne. -1)) then
+  else if (any(-1 .ne. restored_vals2)) then
      ! external_undescribed was not written to disk (since it is undescribed)
      ! make sure it was not read in.
      return_val = 1
