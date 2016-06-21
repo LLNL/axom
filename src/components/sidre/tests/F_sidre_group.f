@@ -737,21 +737,23 @@ contains
        ! load has set the type and size of the view.
        ! now set the external address before calling load_external.
        view1 = root2%get_view("external_array")
-       call assert_true(view1%is_external())
-       call assert_true(view1%is_described())
-       call assert_true(view1%get_num_elements() == nfoo)
+       call assert_true(view1%is_external(), "external_array is_external")
+       call assert_true(view1%is_described(), "external_array is_described")
+       call assert_equals(view1%get_type_id(), SIDRE_INT_ID, "external_array get_type_id")
+       call assert_true(view1%get_num_elements() == nfoo, "external_array get_num_elements")
        call view1%set_array_data_ptr(foo2)
 
        view2 = root2%get_view("empty_array");
-       call assert_true(view2%is_empty())
-       ! This should actually be false (undescribed) since foo3 is unassociated - ATK-744
-       call assert_true(view2%is_described())
+       call assert_true(view2%is_empty(), "empty_array is_empty")
+       call assert_true(view2%is_described(), "empty_array is_described")
+       call assert_equals(view2%get_type_id(), SIDRE_INT_ID, "empty_array get_type_id")
+       call assert_true(view2%get_num_elements() == 0, "empty_array get_num_elements")
 !       call view2%set_array_data_ptr(foo3)
        call root2%set_array_data_ptr("empty_array", foo3)
 
        view3 = root2%get_view("external_undescribed");
-       call assert_true(view3%is_empty(), "external_undescribed is empty")
-       call assert_false(view3%is_described(), "external_undescribed is not described")
+       call assert_true(view3%is_empty(), "external_undescribed is_empty")
+       call assert_false(view3%is_described(), "external_undescribed is_described")
 
        ! read external data into views
        call ds2%load_external_data(file_path, protocols(i))

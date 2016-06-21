@@ -52,12 +52,13 @@ function datagroup_create_array_view_{typename}_{nd}(group, name, value) result(
     call SHROUD_C_LOC(value, addr)
     if (c_associated(addr)) then
       {extents_asgn}
+      rv%voidptr = c_datagroup_create_view_external_bufferify( &
+          group%voidptr, name, lname, addr)
+      call c_dataview_apply_type_shape(rv%voidptr, type, {rank}, extents)
     else
-      extents = 0
+      rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+          group%voidptr, name, lname, type, 0_C_LONG)
     endif
-    rv%voidptr = c_datagroup_create_view_external_bufferify( &
-        group%voidptr, name, lname, addr)
-    call c_dataview_apply_type_shape(rv%voidptr, type, {rank}, extents)
 end function datagroup_create_array_view_{typename}_{nd}""".format(
         extents_decl=extents_decl,
         extents_asgn=extents_asgn, **d)
