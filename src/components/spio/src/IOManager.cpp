@@ -118,7 +118,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
 
     herr_t status;
 
-    std::string hdf5_name = getHDF5FileName(root_file_id, group_id);
+    std::string hdf5_name = getHDF5FileName(root_name, root_file_id, group_id);
 
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup()) {
@@ -192,7 +192,7 @@ void IOManager::read(
 
     herr_t errv;
 
-    std::string hdf5_name = getHDF5FileName(root_file_id, group_id);
+    std::string hdf5_name = getHDF5FileName(root_name, root_file_id, group_id);
 
     hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
                                H5F_ACC_RDONLY,
@@ -256,7 +256,7 @@ void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
 
   herr_t errv;
 
-  std::string hdf5_name = getHDF5FileName(root_file_id, group_id);
+  std::string hdf5_name = getHDF5FileName(root_file, root_file_id, group_id);
 
   hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
                              H5F_ACC_RDONLY,
@@ -307,7 +307,7 @@ void IOManager::loadExternalData(sidre::DataGroup * datagroup, const std::string
 
   herr_t errv;
 
-  std::string hdf5_name = getHDF5FileName(root_file_id, group_id);
+  std::string hdf5_name = getHDF5FileName(root_file, root_file_id, group_id);
 
   hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
                              H5F_ACC_RDONLY,
@@ -377,9 +377,17 @@ void IOManager::createRootFile(const std::string& root_name,
                                     H5P_DEFAULT);
   SLIC_ASSERT(files_group_id >= 0);
 
+  // If there is a full path given, get the name at the end of the path.
+  std::string local_file_base;
+  std::string next;
+  std::string slash = "/";
+  conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
+  SLIC_ASSERT(!local_file_base.empty());
+
   for (int i = 0; i < num_files; ++i) {
+
     std::ostringstream basestream;
-    basestream << file_base << "_" << i;
+    basestream << local_file_base << "_" << i;
     std::string base_name = basestream.str();
 
     std::ostringstream savestream;
@@ -436,6 +444,7 @@ void IOManager::createRootFile(const std::string& root_name,
  *************************************************************************
  */
 std::string IOManager::getHDF5FileName(
+  const std::string& root_name,
   hid_t root_file_id,
   int rankgroup_id)
 {
@@ -462,6 +471,17 @@ std::string IOManager::getHDF5FileName(
 
   std::string hdf5_name(h5_name_buf);
   delete[] h5_name_buf;
+
+  //If the root file was given as a path, find the directory and add it to
+  //hdf5_name.
+  std::string curr;
+  std::string root_dir;
+  std::string slash = "/";
+  conduit::utils::rsplit_string(root_name, slash, curr, root_dir);
+
+  if (!root_dir.empty()) {
+    hdf5_name = root_dir + slash + hdf5_name;
+  }
 
   return hdf5_name;
 }
