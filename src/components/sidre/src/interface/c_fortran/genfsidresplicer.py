@@ -323,53 +323,42 @@ def foreach_type(lines, fcn, scalar=False, **kwargs):
                 d['lower_bound'] = '(' + ','.join(lbound[:nd]) + ')'
                 lines.append(fcn(d))
 
-def XXXprint_lines(printer, fcn, **kwargs):
-    """Print output using printer function.
-    [Used with cog]
-    """
-    lines = []
-    foreach_type(lines, fcn, **kwargs)
-    for line in lines:
-        printer(line)
-
 #----------------------------------------------------------------------
 
-def XXXprint_switch(printer, calls):
-    """Print a switch statement on type and rank.
-    Caller must set fileds in d:
-      prefix = call or assignment
-                  'call foo'
-                  'nitems = foo'
-      args   = arguments to function, must include parens.
-                  '(args)'
-                  ''           -- subroutine with no arguments
+def group_string():
+    """Text for functions with get and set strings for a group.
+
+    get_string  =>   grp->getView(name)->getString()
+    set_string  =>   grp->getView(name)->setString()
     """
-    d = {}
-    printer('  switch(type)')
-    printer('  {')
-    for typetuple in types:
-        d['typename'], f_type, sidre_type = typetuple
-        printer('  case %s:' % sidre_type)
-        printer('    switch(rank)')
-        printer('    {')
-        for nd in range(0,maxdims+1):
-            if nd == 0:
-                d['nd'] = 'scalar'
-            else:
-                d['nd'] = '%dd' % nd
-            printer('    case %d:' % nd)
-            for ca in calls:
-                d['prefix'] = ca[0]
-                d['macro'] = '{prefix}_{typename}{nd}'.format(**d).upper()
-                printer('      ' + ca[1].format(**d) + ';')
-            printer('      break;')
-        printer('    default:')
-        printer('      break;')
-        printer('    }')
-        printer('    break;')
-    printer('  default:')
-    printer('    break;')
-    printer('  }')
+    return """
+subroutine datagroup_get_string(group, name, value)
+    use iso_c_binding
+    class(datagroup), intent(IN) :: group
+    character(*), intent(IN) :: name
+    character(*), intent(OUT) :: value
+    integer(C_INT) :: lname
+    type(C_PTR) view
+
+    lname = len_trim(name)
+    view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+    call c_dataview_get_string_bufferify(view, value, len(value, kind=C_INT))
+end subroutine datagroup_get_string
+
+subroutine datagroup_set_string(group, name, value)
+    use iso_c_binding
+    class(datagroup), intent(IN) :: group
+    character(*), intent(IN) :: name
+    character(*), intent(IN) :: value
+    integer(C_INT) :: lname
+    type(C_PTR) view
+
+    lname = len_trim(name)
+    view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+    call c_dataview_set_string_bufferify(view, value, len_trim(value, kind=C_INT))
+end subroutine datagroup_set_string
+"""
+
 
 #----------------------------------------------------------------------
 
@@ -388,6 +377,8 @@ def gen_fortran():
     print('! splicer begin class.DataGroup.type_bound_procedure_part')
     for line in t.gen_type_bound():
         print(line)
+    print('procedure :: get_string => datagroup_get_string')
+    print('procedure :: set_string => datagroup_set_string')
     print('! splicer end class.DataGroup.type_bound_procedure_part')
 
     print()
@@ -397,6 +388,7 @@ def gen_fortran():
     print('! splicer begin class.DataGroup.additional_functions')
     for line in t.gen_body():
         print(line)
+    print(group_string())
     print('! splicer end class.DataGroup.additional_functions')
 
 

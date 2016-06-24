@@ -311,6 +311,8 @@ module sidre_mod
             set_array_data_ptr_double_2d,  &
             set_array_data_ptr_double_3d,  &
             set_array_data_ptr_double_4d
+        procedure :: get_string => datagroup_get_string
+        procedure :: set_string => datagroup_set_string
         ! splicer end class.DataGroup.type_bound_procedure_part
     end type datagroup
     
@@ -4281,6 +4283,33 @@ contains
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
         endif
     end subroutine datagroup_set_array_data_ptr_double_4d
+    
+    subroutine datagroup_get_string(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        character(*), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_get_string_bufferify(view, value, len(value, kind=C_INT))
+    end subroutine datagroup_get_string
+    
+    subroutine datagroup_set_string(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        character(*), intent(IN) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_set_string_bufferify(view, value, len_trim(value, kind=C_INT))
+    end subroutine datagroup_set_string
+    
     ! splicer end class.DataGroup.additional_functions
     
     function databuffer_get_index(obj) result(rv)

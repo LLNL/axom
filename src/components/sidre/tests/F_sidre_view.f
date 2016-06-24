@@ -145,9 +145,11 @@ contains
 
     s1 = "Group string"
     s2 = " "
-!    call root%set_string("s0", s1)
-!    call root%get_string("s0", s2)
-!    call assert_equals(s1, s2)
+    ! TODO This is crashing in Conduit if s0 is reused
+    s0view = root%create_view("s0a")
+    call root%set_string("s0a", s1)
+    call root%get_string("s0a", s2)
+    call assert_equals(s1, s2)
 
     call ds%delete()
 
