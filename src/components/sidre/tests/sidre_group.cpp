@@ -29,7 +29,7 @@ using asctoolkit::sidre::FLOAT64_ID;
 
 // Test protocols
 int nprotocols = 3;
-std::string const protocols[] = { "conduit", "conduit_hdf5", "text" };
+std::string const protocols[] = { "sidre_json", "sidre_hdf5", "json" };
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -731,7 +731,7 @@ TEST(sidre_group,save_restore_api)
   // These should be produce identical files.
 
   // No group provided, defaults to root group
-  ds1->save("sidre_save_fulltree_conduit", "conduit");
+  ds1->save("sidre_save_fulltree_conduit", "json");
 
   for (int i = 0 ; i < nprotocols ; ++i)
   {
@@ -752,7 +752,7 @@ TEST(sidre_group,save_restore_api)
 #endif
 
   DataStore * ds4 = new DataStore();
-  ds4->load("sidre_save_subtree_conduit_hdf5", "conduit_hdf5");
+  ds4->load("sidre_save_subtree_sidre_hdf5", "sidre_hdf5");
   EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(root1) );
   delete ds4;
 

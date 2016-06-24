@@ -19,7 +19,7 @@ module sidre_group
 
   ! Test protocols
   integer, parameter :: nprotocols = 3
-  character(12) :: protocols(nprotocols) = [ "conduit     ", "conduit_hdf5", "text        " ]
+  character(12) :: protocols(nprotocols) = [ "sidre_json  ", "sidre_hdf5  ", "json        " ]
 
 contains
 

@@ -1052,6 +1052,25 @@ public:
 
 
   /*!
+   *@{
+   * @name    Group I/O methods
+   *   These methods save and load Group trees to and from files. 
+   *   This includes the views and buffers used in by groups in the tree.
+   *   We provide several "protocol" options:
+   *
+   *   protocols:
+   *    sidre_hdf5 (default)
+   *    sidre_conduit_json
+   *    sidre_json
+   *
+   *    conduit_hdf5
+   *    conduit_bin
+   *    conduit_json
+   *    json
+   *
+  */
+
+  /*!
    * \brief Save the Group to a file.
    *
    *  Saves the tree starting at this group and the buffers used by the views
@@ -1068,6 +1087,13 @@ public:
   void save( const hid_t& h5_id) const;
 
   /*!
+   * \brief Save the Group to an hdf5 handle.
+   */
+  void save( const hid_t& h5_id,
+             const std::string &protocol) const;
+
+
+  /*!
    * \brief Load the Group from a file.
    */
   void load(const std::string& path,
@@ -1077,6 +1103,15 @@ public:
    * \brief Load the Group from an hdf5 handle.
    */
   void load(const hid_t& h5_id);
+
+
+  /*!
+   * \brief Load the Group from an hdf5 handle.
+   */
+  void load( const hid_t& h5_id,
+             const std::string &protocol);
+
+
 
   /*!
    * \brief Load data into the Group's external views from a file.
@@ -1088,8 +1123,6 @@ public:
    * \brief Load data into the Group's external views from a hdf5 handle.
    */
   void loadExternalData(const hid_t& h5_id);
-
-
 
 
 private:

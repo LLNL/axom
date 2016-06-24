@@ -1111,27 +1111,35 @@ void DataGroup::save(const std::string& path,
                      const std::string& protocol) const
 {
 
-  Node n;
-  exportTo(n["sidre"]);
-  createExternalLayout(n["external"]);
-
-  if (protocol == "conduit")
+  if (protocol == "sidre_hdf5")
   {
-    conduit::relay::io::save(n, path);
+    Node n;
+    exportTo(n["sidre"]);
+    createExternalLayout(n["sidre/external"]);
+    conduit::relay::io::save(n, path, "hdf5");
   }
-  else if (protocol == "conduit_hdf5")
+  else if (protocol == "sidre_conduit_json")
   {
-    conduit::relay::io::hdf5_write( n, path );
+    Node n;
+    exportTo(n["sidre"]);
+    createExternalLayout(n["sidre/external"]);
+    conduit::relay::io::save(n, path, "conduit_json");
   }
-  else if (protocol == "text")
+  else if (protocol == "sidre_json")
   {
-    std::ofstream output_file( path.c_str() );
-    SLIC_ERROR_IF(!output_file.is_open(),
-                  "Unable to create file " << path);
-    if(output_file.is_open())
-    {
-      n.to_json_stream(output_file);
-    }
+    Node n;
+    exportTo(n["sidre"]);
+    createExternalLayout(n["sidre/external"]);
+    conduit::relay::io::save(n, path, "json");
+  }
+  else if (protocol == "conduit_hdf5" || 
+           protocol == "conduit_bin"  || 
+           protocol == "conduit_json" ||
+           protocol == "json")
+  {
+    Node n;
+    createNativeLayout(n);
+    conduit::relay::io::save(n, path, protocol);
   }
   else
   {
@@ -1153,6 +1161,36 @@ void DataGroup::save(const hid_t& h5_id) const
   conduit::relay::io::hdf5_write(n, h5_id);
 }
 
+/*
+ *************************************************************************
+ *
+ * Save Group (including Views and child Groups) to a hdf5 handle
+ *
+ *************************************************************************
+ */
+void DataGroup::save(const hid_t& h5_id,
+                     const std::string& protocol) const
+{
+  // supported here:
+  // "sidre_hdf5"
+  // "conduit_hdf5"
+  if(protocol == "sidre_hdf5")
+  {
+      save(h5_id);
+  }
+  else if( protocol == "conduit_hdf5")
+  {
+    Node n;
+    createNativeLayout(n);
+    conduit::relay::io::hdf5_write(n, h5_id);
+  }
+  else
+  {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file save.");
+  }
+}
+
+
 /*************************************************************************/
 
 /*
@@ -1166,13 +1204,34 @@ void DataGroup::load(const std::string& path,
                      const std::string& protocol)
 {
 
-  if (protocol == "conduit_hdf5")
+  if (protocol == "sidre_hdf5")
   {
-    // CYRUS'-NOTE, not sure ":" will work with multiple trees per
-    // output file
     Node n;
-    conduit::relay::io::hdf5_read( path + ":sidre", n);
-    importFrom(n);
+    conduit::relay::io::load(path,"hdf5", n);
+    SLIC_ASSERT(n.has_path("sidre"));
+    importFrom(n["sidre"]);
+  }
+  else if (protocol == "sidre_conduit_json")
+  {
+    Node n;
+    conduit::relay::io::load(path,"conduit_json", n);
+    SLIC_ASSERT(n.has_path("sidre"));
+    importFrom(n["sidre"]);
+  }
+  else if (protocol == "sidre_json")
+  {
+    Node n;
+    conduit::relay::io::load(path,"json", n);
+    SLIC_ASSERT(n.has_path("sidre"));
+    importFrom(n["sidre"]);
+  }
+  else if (protocol == "conduit_hdf5" || 
+           protocol == "conduit_bin"  || 
+           protocol == "conduit_json" ||
+           protocol == "json")
+  {
+    SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
+    // TODO: implement this case
   }
   else
   {
@@ -1185,6 +1244,7 @@ void DataGroup::load(const std::string& path,
  *
  * Load Group (including Views and child Groups) from an hdf5 handle
  *
+ * : this is the "sidre_hdf5" protocol
  *************************************************************************
  */
 void DataGroup::load(const hid_t& h5_id)
@@ -1192,6 +1252,34 @@ void DataGroup::load(const hid_t& h5_id)
   Node n;
   conduit::relay::io::hdf5_read(h5_id,n);
   importFrom(n);
+}
+
+/*
+ *************************************************************************
+ *
+ * Load Group (including Views and child Groups) from an hdf5 handle
+ *
+ *************************************************************************
+ */
+void DataGroup::load(const hid_t& h5_id,
+                     const std::string &protocol)
+{
+  // supported here:
+  // "sidre_hdf5"
+  // "conduit_hdf5"
+  if(protocol == "sidre_hdf5")
+  {
+      load(h5_id);
+  }
+  else if( protocol == "conduit_hdf5")
+  {
+    SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
+    // TODO: implement this case
+  }
+  else
+  {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+  }
 }
 
 /*
@@ -1205,13 +1293,13 @@ void DataGroup::loadExternalData(const std::string& path,
                                  const std::string& protocol)
 {
 
-  if (protocol == "conduit_hdf5")
+  if (protocol == "sidre_hdf5")
   {
     Node n;
     createExternalLayout(n);
     // CYRUS'-NOTE, not sure ":" will work with multiple trees per
     // output file
-    conduit::relay::io::hdf5_read( path + ":external", n);
+    conduit::relay::io::hdf5_read( path + ":sidre/external", n);
   }
   else
   {
@@ -1230,7 +1318,7 @@ void DataGroup::loadExternalData(const hid_t& h5_id)
 {
   Node n;
   createExternalLayout(n);
-  conduit::relay::io::hdf5_read(h5_id, "external", n);
+  conduit::relay::io::hdf5_read(h5_id, "sidre/external", n);
 }
 
 
