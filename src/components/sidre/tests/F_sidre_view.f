@@ -74,35 +74,42 @@ contains
     type(datastore) ds
     type(datagroup) root
     type(dataview) i0view, i1view, s0view, s1view
-    integer i
-    character(80) s
+    integer(C_INT) i1, i2
+    character(80) s1, s2
 
     call set_case_name("scalar_view")
 
     ds = datastore_new()
     root = ds%get_root()
 
+    i1 = 1
     i0view = root%create_view("i0")
-    call i0view%set_scalar(1)
+    call i0view%set_scalar(i1)
     call check_scalar_values(i0view, SCALAR, .true., .true., .true., SIDRE_INT_ID, 1)
-    i = i0view%get_data_int()
-    call assert_equals( 1, i)
+    i2 = i0view%get_data_int()
+    call assert_equals(i1, i2)
 
-    i1view = root%create_view_scalar("i1", 2)
+    i1 = 2
+    i1view = root%create_view_scalar("i1", i1)
     call check_scalar_values(i1view, SCALAR, .true., .true., .true., SIDRE_INT_ID, 1)
-    i = i1view%get_data_int()
-    call assert_equals( 2, i)
+    i2 = i1view%get_data_int()
+    call assert_equals(i1, i2)
 
+    ! TODO: passing len_trim to account for non-existent NULL
+    s1 = "i am a string"
     s0view = root%create_view("s0")
-    call s0view%set_string("i am a string")
-    call check_scalar_values(s0view, STRING, .true., .true., .true., SIDRE_CHAR8_STR_ID, 14)
-    call s0view%get_string(s)
-    call assert_equals( s, "i am a string")
+    call s0view%set_string(trim(s1))
+    call check_scalar_values(s0view, STRING, .true., .true., .true., &
+         SIDRE_CHAR8_STR_ID, len_trim(s1) + 1)
+    call s0view%get_string(s2)
+    call assert_equals(s1, s2)
 
-    s1view = root%create_view_string("s1", "i too am a string")
-    call check_scalar_values(s1view, STRING, .true., .true., .true., SIDRE_CHAR8_STR_ID, 18)
-    call s1view%get_string(s)
-    call assert_equals( s, "i too am a string")
+    s1 = "i too am a string"
+    s1view = root%create_view_string("s1", trim(s1))
+    call check_scalar_values(s1view, STRING, .true., .true., .true., &
+         SIDRE_CHAR8_STR_ID, len_trim(s1) + 1)
+    call s1view%get_string(s2)
+    call assert_equals(s1, s2)
 
   ! check illegal operations
 !  call i0view%apply(int_id, 1)
@@ -129,6 +136,19 @@ contains
 !  const char * svalue = empty%get_string()
 !  call assert_equals(null, svalue)
 
+    ! Test group access to scalars
+    i1 = 100
+    i2 = 0
+    call root%set_scalar("i0", i1)
+    call root%get_scalar("i0", i2)
+    call assert_equals(i1, i2)
+
+    s1 = "Group string"
+    s2 = " "
+!    call root%set_string("s0", s1)
+!    call root%get_string("s0", s2)
+!    call assert_equals(s1, s2)
+
     call ds%delete()
 
     contains
@@ -141,17 +161,20 @@ contains
         logical, intent(IN) :: is_described, is_allocated, is_applied
         integer, intent(IN) :: type
         integer, intent(IN) :: length
+        character(30) name
 
         integer(SIDRE_LENGTH) dims(2)
 
-        call assert_equals(get_state(view), state)
-        call assert_equals(view%is_described(), is_described)
-        call assert_equals(view%is_allocated(), is_allocated)
-        call assert_equals(view%is_applied(), is_applied)
+        name = view%get_name()
 
-        call assert_equals(view%get_type_id(), type)
-        call assert_true(view%get_num_elements() == length)
-        call assert_equals(view%get_num_dimensions(), 1)
+        call assert_equals(get_state(view), state)
+        call assert_equals(view%is_described(), is_described, trim(name) // " is_described")
+        call assert_equals(view%is_allocated(), is_allocated, trim(name) // "is_allocated")
+        call assert_equals(view%is_applied(), is_applied, trim(name) // " is_applied")
+
+        call assert_equals(view%get_type_id(), type, trim(name) // " get_type_id")
+        call assert_equals(int(view%get_num_elements(), kind(length)), length, trim(name) // " get_num_elements")
+        call assert_equals(view%get_num_dimensions(), 1, trim(name) // " get_num_dimensions")
         call assert_true(view%get_shape(1, dims) == 1 .and. dims(1) == length)
       end subroutine check_scalar_values
 
