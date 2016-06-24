@@ -1099,6 +1099,142 @@ bool DataGroup::isEquivalentTo(const DataGroup * other) const
   return is_equiv;
 }
 
+/*
+ *************************************************************************
+ *
+ * Save Group (including Views and child Groups) to a file
+ *
+ *************************************************************************
+ */
+
+void DataGroup::save(const std::string& path,
+                     const std::string& protocol) const
+{
+
+  Node n;
+  exportTo(n["sidre"]);
+  createExternalLayout(n["external"]);
+
+  if (protocol == "conduit")
+  {
+    conduit::relay::io::save(n, path);
+  }
+  else if (protocol == "conduit_hdf5")
+  {
+    conduit::relay::io::hdf5_write( n, path );
+  }
+  else if (protocol == "text")
+  {
+    std::ofstream output_file( path.c_str() );
+    SLIC_ERROR_IF(!output_file.is_open(),
+                  "Unable to create file " << path);
+    if(output_file.is_open())
+    {
+      n.to_json_stream(output_file);
+    }
+  }
+  else
+  {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Save Group (including Views and child Groups) to a hdf5 handle
+ *
+ *************************************************************************
+ */
+void DataGroup::save(const hid_t& h5_id) const
+{
+  Node n;
+  exportTo(n);
+  conduit::relay::io::hdf5_write(n, h5_id);
+}
+
+/*************************************************************************/
+
+/*
+ *************************************************************************
+ *
+ * Load Group (including Views and child Groups) from a file
+ *
+ *************************************************************************
+ */
+void DataGroup::load(const std::string& path,
+                     const std::string& protocol)
+{
+
+  if (protocol == "conduit_hdf5")
+  {
+    // CYRUS'-NOTE, not sure ":" will work with multiple trees per
+    // output file
+    Node n;
+    conduit::relay::io::hdf5_read( path + ":sidre", n);
+    importFrom(n);
+  }
+  else
+  {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Load Group (including Views and child Groups) from an hdf5 handle
+ *
+ *************************************************************************
+ */
+void DataGroup::load(const hid_t& h5_id)
+{
+  Node n;
+  conduit::relay::io::hdf5_read(h5_id,n);
+  importFrom(n);
+}
+
+/*
+ *************************************************************************
+ *
+ * Load External Data from a file
+ *
+ *************************************************************************
+ */
+void DataGroup::loadExternalData(const std::string& path,
+                                 const std::string& protocol)
+{
+
+  if (protocol == "conduit_hdf5")
+  {
+    Node n;
+    createExternalLayout(n);
+    // CYRUS'-NOTE, not sure ":" will work with multiple trees per
+    // output file
+    conduit::relay::io::hdf5_read( path + ":external", n);
+  }
+  else
+  {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Load External Data from an hdf5 file
+ *
+ *************************************************************************
+ */
+void DataGroup::loadExternalData(const hid_t& h5_id)
+{
+  Node n;
+  createExternalLayout(n);
+  conduit::relay::io::hdf5_read(h5_id, "external", n);
+}
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -1284,6 +1420,54 @@ DataGroup * DataGroup::detachGroup(IndexType idx)
   return group;
 }
 
+
+
+/*
+ *************************************************************************
+ *
+ * Serialize tree identified by a Group into a conduit node.  Include
+ * any Buffers attached to Views in that tree.
+ *
+ *
+ * Note: this is for the "sidre_hdf5" protocol
+ *
+ *************************************************************************
+ */
+void DataGroup::exportTo(conduit::Node & result) const
+{
+  // TODO - This implementation will change in the future.  We want to write
+  // out some separate set of conduit nodes:
+  // #1 A set of nodes representing the Group and Views (hierarchy), with
+  // the data descriptions ( schemas ).
+  // #2 A set of nodes for our data ( Buffers, external data, etc ).
+  // On a load, we want to be able to create our DataStore tree first,
+  // then call allocate ourself, then have conduit load the data directly
+  // into our allocated memory areas.  Conduit can do this, as long as the
+  // conduit node set is compatible with what's in the file.
+  std::set<IndexType> buffer_indices;
+
+  // Tell Group to add itself and all sub-Groups and Views to node.
+  // Any Buffers referenced by those Views will be tracked in the
+  // buffer_indices
+  exportTo(result, buffer_indices);
+
+  if (!buffer_indices.empty())
+  {
+    // Now, add all the referenced buffers to the node.
+    Node & bnode = result["buffers"];
+    for (std::set<IndexType>::iterator s_it = buffer_indices.begin() ;
+         s_it != buffer_indices.end() ; ++s_it)
+    {
+      // Use a dictionary layout here instead of conduit list.
+      // Conduit IO HDF5 doesn't support conduit list objects.
+      std::ostringstream oss;
+      oss << "buffer_id_" << *s_it;
+      Node& n_buffer = bnode.fetch( oss.str() );
+      getDataStore()->getBuffer( *s_it )->exportTo(n_buffer);
+    }
+  }
+}
+
 /*
  *************************************************************************
  *
@@ -1291,15 +1475,17 @@ DataGroup * DataGroup::detachGroup(IndexType idx)
  * given set of ids to maintain correct association of data Buffers
  * to data Views.
  *
+ *
+ * Note: this is for the "sidre_hdf5" protocol
+ *
  *************************************************************************
  */
-
-void DataGroup::exportTo(conduit::Node& data_holder,
+void DataGroup::exportTo(conduit::Node& result,
                          std::set<IndexType>& buffer_indices) const
 {
   if (getNumViews() > 0)
   {
-    Node & vnode = data_holder["views"];
+    Node & vnode = result["views"];
     IndexType vidx = getFirstValidViewIndex();
     while ( indexIsValid(vidx) )
     {
@@ -1312,7 +1498,7 @@ void DataGroup::exportTo(conduit::Node& data_holder,
 
   if (getNumGroups() > 0)
   {
-    Node & gnode = data_holder["groups"];
+    Node & gnode = result["groups"];
     IndexType gidx = getFirstValidGroupIndex();
     while ( indexIsValid(gidx) )
     {
@@ -1325,12 +1511,68 @@ void DataGroup::exportTo(conduit::Node& data_holder,
   }
 
   // TODO - take this out when CON-131 resolved ( can't write out empty node ).
-  if (data_holder.dtype().is_empty() )
+  // TODO -- this is fixed in conduit
+  // but, we should do
+  // result.set(DataType::object())
+  if (result.dtype().is_empty() )
   {
-    data_holder.set_string("empty");
+    result.set_string("empty");
   }
 
 }
+
+/*
+ *************************************************************************
+ *
+ * Imports tree from a conduit node into this DataGroup.  Includes
+ * any Buffers attached to Views in that tree.
+ *
+ *
+ * Note: this is for the "sidre_hdf5" protocol
+ *
+ *************************************************************************
+ */
+
+void DataGroup::importFrom(conduit::Node & result)
+{
+  // TODO - May want to put in a little meta-data into these files like a 'version'
+  // or tag identifying the data.  We don't want someone giving us a file that
+  // doesn't have our full multiView->buffer connectivity in there.
+
+  destroyGroups();
+  destroyViews();
+
+  // First - Import Buffers into the DataStore.
+  std::map<IndexType, IndexType> buffer_indices_map;
+
+  // Added CON-132 ticket asking if has_path can just return false if 
+  // node is empty or not an object type.
+  // TODO: --- this is now fixed in conduit
+  if (result.dtype().is_object() && result.has_path("buffers"))
+  {
+    conduit::NodeIterator buffs_itr = result["buffers"].children();
+    while (buffs_itr.has_next())
+    {
+      Node& n_buffer = buffs_itr.next();
+      IndexType old_buffer_id = n_buffer["id"].as_int32();
+
+      DataBuffer * buffer = getDataStore()->createBuffer();
+
+      // track change of old Buffer id to new Buffer id
+      buffer_indices_map[ old_buffer_id ] = buffer->getIndex();
+
+      // populate the new Buffer's state
+      buffer->importFrom(n_buffer);
+    }
+  }
+
+  // Next - import tree of Groups, sub-Groups, Views into the DataStore.
+  // Use the mapping of old to new Buffer ids to connect the Views to the
+  // right Buffers.
+  importFrom(result, buffer_indices_map);
+
+}
+
 
 /*
  *************************************************************************
@@ -1339,19 +1581,23 @@ void DataGroup::exportTo(conduit::Node& data_holder,
  * given map of ids to indicate association of Buffer ids in node to
  * those in datastore.
  *
+ *
+ * Note: this is for the "sidre_hdf5" protocol
+ *
  *************************************************************************
  */
-void DataGroup::importFrom(conduit::Node& data_holder,
+void DataGroup::importFrom(conduit::Node& node,
                            const std::map<IndexType, IndexType>& buffer_id_map)
 {
-// If the Group is empty, conduit will complain if you call 'has_path'.
+  // If the Group is empty, conduit will complain if you call 'has_path'.
 
   // Added CON-132 ticket asking if has_path can just return false if node
   // is empty or not an object type.
-  if ( data_holder.dtype().is_object() && data_holder.has_path("views") )
+  // TODO: --- this is now fixed in conduit
+  if ( node.dtype().is_object() && node.has_path("views") )
   {
     // create the Views
-    conduit::NodeIterator views_itr = data_holder["views"].children();
+    conduit::NodeIterator views_itr = node["views"].children();
     while (views_itr.has_next())
     {
       Node& n_view = views_itr.next();
@@ -1361,10 +1607,10 @@ void DataGroup::importFrom(conduit::Node& data_holder,
       view->importFrom(n_view, buffer_id_map);
     }
   }
-  if ( data_holder.dtype().is_object() && data_holder.has_path("groups") )
+  if ( node.dtype().is_object() && node.has_path("groups") )
   {
     // create the child Groups
-    conduit::NodeIterator groups_itr = data_holder["groups"].children();
+    conduit::NodeIterator groups_itr = node["groups"].children();
     while (groups_itr.has_next())
     {
       Node& n_group = groups_itr.next();

@@ -232,61 +232,36 @@ public:
   /*!
    * \brief Save the DataStore to a new file.
    * Supported protocols are "conduit" (binary), "conduit_hdf5", and "text" (for debugging).
-   * If a Group is not provided, the root Group will be saved.
    */
   void save( const std::string& file_path,
-             const std::string& protocol,
-             const DataGroup * group = ATK_NULLPTR ) const;
+             const std::string& protocol ) const;
 
   /*!
-   * \brief Save the DataStore to an existing hdf5 file.
-   * If a Group is not provided, the root Group will be saved.
+   * \brief Save the DataStore to an existing hdf5 handle.
    */
-  void save( const hid_t& h5_file_id,
-             const DataGroup * group = ATK_NULLPTR ) const;
+  void save( const hid_t& h5_id) const;
 
   /*!
-   * \brief Load the DataStore from a file
-   * If a Group is not provided, it will be loaded into the root Group.
+   * \brief Load the DataStore from a file.
    */
-  void load(const std::string& file_path,
-            const std::string& protocol,
-            DataGroup * group = ATK_NULLPTR);
+  void load( const std::string& file_path,
+             const std::string& protocol);
 
   /*!
-   * \brief Load the DataStore from an hdf5 file.
-   * If a Group is not provided, it will be loaded into the root Group.
+   * \brief Load the DataStore from an hdf5 handle.
    */
-  void load(const hid_t& h5_file_id,
-            DataGroup * group = ATK_NULLPTR);
+  void load( const hid_t& h5_id);
 
   /*!
-   * \brief Load the DataStore external data from a file
-   * If a Group is not provided, it will be loaded into the root Group.
+   * \brief Load the DataStore external data from a file.
    */
-  void loadExternalData(const std::string& file_path,
-                        const std::string& protocol,
-                        DataGroup * group = ATK_NULLPTR);
+  void loadExternalData( const std::string& file_path,
+                         const std::string& protocol);
 
   /*!
-   * \brief Load the DataStore external data from an hdf5 file.
-   * If a Group is not provided, it will be loaded into the root Group.
+   * \brief Load the DataStore external data from an hdf5 handle.
    */
-  void loadExternalData(const hid_t& h5_file_id,
-                        DataGroup * group = ATK_NULLPTR);
-
-  /*!
-   * \brief Add the DataStore hierarchy and references to it's data to a conduit tree.
-   * This includes the Group/View hierarchy and Buffers.
-   */
-  void exportTo( const DataGroup * group,
-                 conduit::Node& data_holder ) const;
-
-  /*!
-   * \brief Restore a DataStore hierarchy and data contents (Buffers, etc) from a conduit tree.
-   */
-  void importFrom(DataGroup * group,
-                  conduit::Node& data_holder);
+  void loadExternalData( const hid_t& h5_id);
 
 private:
   /*!

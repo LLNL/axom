@@ -736,7 +736,7 @@ TEST(sidre_group,save_restore_api)
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
-    ds1->save(file_path, protocols[i], root1);
+    root1->save(file_path, protocols[i]);
   }
 
 #if 0

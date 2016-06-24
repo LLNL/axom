@@ -281,6 +281,30 @@ void SIDRE_datagroup_print(const SIDRE_datagroup * self);
 bool SIDRE_datagroup_is_equivalent_to(const SIDRE_datagroup * self,
                                       const SIDRE_datagroup * other);
 
+void SIDRE_datagroup_save(const SIDRE_datagroup * self, const char * file_path,
+                          const char * protocol);
+
+void SIDRE_datagroup_save_bufferify(const SIDRE_datagroup * self,
+                                    const char * file_path, int Lfile_path,
+                                    const char * protocol, int Lprotocol);
+
+void SIDRE_datagroup_load(SIDRE_datagroup * self, const char * file_path,
+                          const char * protocol);
+
+void SIDRE_datagroup_load_bufferify(SIDRE_datagroup * self,
+                                    const char * file_path, int Lfile_path,
+                                    const char * protocol, int Lprotocol);
+
+void SIDRE_datagroup_load_external_data(SIDRE_datagroup * self,
+                                        const char * file_path,
+                                        const char * protocol);
+
+void SIDRE_datagroup_load_external_data_bufferify(SIDRE_datagroup * self,
+                                                  const char * file_path,
+                                                  int Lfile_path,
+                                                  const char * protocol,
+                                                  int Lprotocol);
+
 #ifdef __cplusplus
 }
 #endif
