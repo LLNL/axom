@@ -28,6 +28,9 @@ class UberenvAsctoolkit(Package):
     depends_on("py-parsley")
     depends_on("py-cogapp")
 
+    if "darwin" in platform.system().lower():
+        depends_on("mpich")
+
     if not "darwin" in platform.system().lower():
         depends_on("lcov")
 
@@ -126,6 +129,20 @@ class UberenvAsctoolkit(Package):
             cfg.write('set(GENHTML_PATH "%s/usr/bin/genhtml" CACHE PATH "")\n\n' % spec['lcov'].prefix)
         else:
             cfg.write("# lcov and genhtml not built by uberenv\n\n")
+
+        #MPI SUPPORT (when mpich is enabled)
+        if "mpich" in spec:
+            mpiexec  = pjoin(spec['mpich'].prefix.bin,"mpiexec")
+            mpicc    = pjoin(spec['mpich'].prefix.bin,"mpicc")
+            mpif90   = pjoin(spec['mpich'].prefix.bin,"mpif90")
+            cfg.write("# MPI Support\n")
+            cfg.write('set(ENABLE_MPI ON CACHE PATH "")\n\n')
+            cfg.write('set(MPI_C_COMPILER  "%s" CACHE PATH "")\n\n' % mpicc)
+            # we use `mpicc` as `MPI_CXX_COMPILER` b/c we don't want to introduce 
+            # linking deps to the MPI C++ libs (we aren't using C++ features of MPI)
+            cfg.write('set(MPI_CXX_COMPILER "%s" CACHE PATH "")\n\n' % mpicc)
+            cfg.write('set(MPI_Fortran_COMPILER "%s" CACHE PATH "")\n\n' % mpif90)
+            cfg.write('set(MPIEXEC "%s" CACHE PATH "")\n\n' % mpiexec)
 
 
         # Note (KW 3/2016) -- per ATK-659, we are temporarily disabling CXX11 for default configurations on intel builds 
