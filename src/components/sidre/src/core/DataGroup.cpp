@@ -883,6 +883,7 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
 void DataGroup::createNativeLayout(Node& n) const
 {
   //  n.reset();
+  n.set(DataType::object());
 
   // Dump the group's views
   IndexType vidx = getFirstValidViewIndex();
@@ -919,6 +920,7 @@ void DataGroup::createNativeLayout(Node& n) const
 void DataGroup::createExternalLayout(Node& n) const
 {
   // n.reset();
+  n.set(DataType::object());
 
   // Dump the group's views
   IndexType vidx = getFirstValidViewIndex();
@@ -930,7 +932,11 @@ void DataGroup::createExternalLayout(Node& n) const
     SLIC_CHECK_MSG( !hasGroup(view->getName())
                     , view->getName() << " is the name of a groups and a view");
 
-    view->createExternalLayout( n );
+    if(view->isExternal() && view->isDescribed())
+    {
+        view->createNativeLayout(  n[view->getName()]  );
+    }
+
     vidx = getNextValidViewIndex(vidx);
   }
 
@@ -1155,10 +1161,12 @@ void DataGroup::save(const std::string& path,
  *************************************************************************
  */
 void DataGroup::save(const hid_t& h5_id) const
-{
+{ 
+  // This is the sidre hdf5 case ...
   Node n;
-  exportTo(n);
-  conduit::relay::io::hdf5_write(n, h5_id);
+  exportTo(n["sidre"]);
+  createExternalLayout(n["sidre/external"]);
+  conduit::relay::io::hdf5_write(n,h5_id);
 }
 
 /*
@@ -1244,14 +1252,15 @@ void DataGroup::load(const std::string& path,
  *
  * Load Group (including Views and child Groups) from an hdf5 handle
  *
- * : this is the "sidre_hdf5" protocol
+ * Note: this ASSUMES the "sidre_hdf5" protocol
  *************************************************************************
  */
 void DataGroup::load(const hid_t& h5_id)
 {
   Node n;
   conduit::relay::io::hdf5_read(h5_id,n);
-  importFrom(n);
+  SLIC_ASSERT(n.has_path("sidre"));
+  importFrom(n["sidre"]);
 }
 
 /*
@@ -1286,7 +1295,7 @@ void DataGroup::load(const hid_t& h5_id,
  *************************************************************************
  *
  * Load External Data from a file
- *
+ * 
  *************************************************************************
  */
 void DataGroup::loadExternalData(const std::string& path,
@@ -1312,6 +1321,7 @@ void DataGroup::loadExternalData(const std::string& path,
  *
  * Load External Data from an hdf5 file
  *
+ * Note: this ASSUMES uses the "sidre_hdf5" protocol
  *************************************************************************
  */
 void DataGroup::loadExternalData(const hid_t& h5_id)
@@ -1320,9 +1330,6 @@ void DataGroup::loadExternalData(const hid_t& h5_id)
   createExternalLayout(n);
   conduit::relay::io::hdf5_read(h5_id, "sidre/external", n);
 }
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -1522,7 +1529,8 @@ DataGroup * DataGroup::detachGroup(IndexType idx)
  *************************************************************************
  */
 void DataGroup::exportTo(conduit::Node & result) const
-{
+{ 
+  result.set(DataType::object());
   // TODO - This implementation will change in the future.  We want to write
   // out some separate set of conduit nodes:
   // #1 A set of nodes representing the Group and Views (hierarchy), with

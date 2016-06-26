@@ -269,7 +269,7 @@ void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
   hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
   SLIC_ASSERT(h5_group_id >= 0);
 
-  datagroup->getDataStore()->load(h5_group_id);
+  datagroup->load(h5_group_id);
 
   errv = H5Fclose(h5_file_id);
   SLIC_ASSERT(errv >= 0);
@@ -442,13 +442,7 @@ std::string IOManager::getHDF5FileName(
   std::ostringstream pathstream;
   pathstream << "/files/file_" << rankgroup_id << "/group";
   std::string path_name = pathstream.str();
-  
-  conduit::Node n;
-  conduit::relay::io::hdf5_read(root_file_id,path_name,n);
-  SLIC_ASSERT(n.dtype().is_string());
-  return n.as_string();
 
-  /*
   hid_t h5_name_id = H5Dopen(root_file_id, path_name.c_str(), H5P_DEFAULT);
   SLIC_ASSERT(h5_name_id >= 0);
 
@@ -469,7 +463,6 @@ std::string IOManager::getHDF5FileName(
   std::string hdf5_name(h5_name_buf);
   delete[] h5_name_buf;
   return hdf5_name;
-  */
 }
 
 /*
@@ -486,13 +479,6 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
    */
   int read_num_files = 0;
   if (m_my_rank == 0) {
-
-    conduit::Node n;
-    conduit::relay::io::hdf5_read(root_file,n);
-    SLIC_ASSERT(n.has_path("num_files"));
-    read_num_files = n["num_files"].to_int();
-    
-    /*
     hid_t root_file_id = H5Fopen(root_file.c_str(),
                                  H5F_ACC_RDWR,
                                  H5P_DEFAULT);
@@ -510,7 +496,7 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
 
     errv = H5Fclose(root_file_id);
     SLIC_ASSERT(errv >= 0);
-    */
+
   }
 
   /*
