@@ -43,8 +43,7 @@ namespace sidre
 /*
  *************************************************************************
  *
- * Function to map SLIC method for logging error message to Conduit
- * error handler.
+ * Callback function used to map Conduit errors to SLIC errors.
  *
  *************************************************************************
  */
@@ -53,6 +52,36 @@ void DataStoreConduitErrorHandler( const std::string& message,
                                    int line )
 {
   slic::logErrorMessage( message, fileName, line );
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Callback function used to map Conduit warnings to SLIC warnings.
+ *
+ *************************************************************************
+ */
+void DataStoreConduitWarningHandler( const std::string& message,
+                                     const std::string& fileName,
+                                     int line )
+{
+  slic::logWarningMessage( message, fileName, line );
+}
+
+/*
+ *************************************************************************
+ *
+ * Callback function used to map Conduit info messages to SLIC info 
+ * messages.
+ *
+ *************************************************************************
+ */
+void DataStoreConduitInfoHandler( const std::string& message,
+                                  const std::string& fileName,
+                                  int line )
+{
+  slic::logMessage( slic::message::Info, message, fileName, line );
 }
 
 /*
@@ -88,6 +117,8 @@ DataStore::DataStore()
   // Provide SLIC error handler function to Conduit to log
   // internal Conduit errors.
   conduit::utils::set_error_handler( DataStoreConduitErrorHandler );
+  conduit::utils::set_warning_handler( DataStoreConduitWarningHandler );
+  conduit::utils::set_info_handler( DataStoreConduitInfoHandler );
 
   m_RootGroup = new DataGroup("/", this);
 

@@ -711,15 +711,9 @@ public:
    */
   Node::Value getScalar()
   {
-    if (m_state == SCALAR)
-    {
-      return getData();
-    }
-    else
-    {
-      // TODO - This will throw an exception in the user's code  ATK-704
-      return Node().value();
-    }
+     SLIC_CHECK_MSG( (m_state == SCALAR),
+                     "DataView::getScalar() called on non-scalar view.");
+     return getData();
   }
 
   /*!
@@ -737,8 +731,8 @@ public:
                       "No view data present, memory has not been allocated.");
       SLIC_CHECK_MSG( isApplied(),
                       "View data description not present.");
-      return Node().value();
     }
+    // this will return a default value 
     return m_node.value();
   }
 
