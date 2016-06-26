@@ -719,6 +719,57 @@ TEST(sidre_group,save_restore_empty)
   }
 }
 
+
+//------------------------------------------------------------------------------
+// make sure the hdf5 methods are consistent with the path based methods
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_load_via_hdf5_ids)
+{
+
+  DataStore ds_save;
+  // populate the datastore
+  DataGroup *root = ds_save.getRoot();
+  root->createViewScalar<int>("i0", 1);
+  root->createViewAndAllocate("vals", INT_ID, 5);
+  // set values for the "vals" array
+  int *vals_ptr =  root->getView("vals")->getData();
+  for (int i = 0 ; i < 5 ; ++i)
+  {
+     vals_ptr[i] = i;
+  }
+ 
+  // save using the sidre_hdf5 protocol
+  ds_save.save("out_save_load_via_hdf5_ids.sidre_hdf5", "sidre_hdf5");
+
+  // load via path based 
+  DataStore ds_load_generic;
+  ds_load_generic.load("out_save_load_via_hdf5_ids.sidre_hdf5", "sidre_hdf5");
+
+  // load via hdf5 id
+  DataStore ds_load_hdf5;
+  
+  hid_t h5_id = H5Fopen("out_save_load_via_hdf5_ids.sidre_hdf5",
+                        H5F_ACC_RDWR,
+                        H5P_DEFAULT);
+  EXPECT_TRUE(h5_id >= 0);
+  
+  // this implies protocol == "sidre_hdf5"
+  ds_load_hdf5.load(h5_id);
+ 
+  // ? Does isEquivalentTo check values?
+  // check path based with source
+  EXPECT_TRUE( ds_load_generic.getRoot()->isEquivalentTo(ds_save.getRoot()) );
+  
+  // check hdf5 based with source
+  EXPECT_TRUE( ds_load_hdf5.getRoot()->isEquivalentTo(ds_save.getRoot()) );
+
+  // check path based vs hdf5 based
+  EXPECT_TRUE( ds_load_generic.getRoot()->isEquivalentTo(ds_load_hdf5.getRoot()) );
+  
+  // close hdf5 handle
+  EXPECT_TRUE(H5Fclose(h5_id) >=0);
+}
+
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_api)
 {

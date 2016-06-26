@@ -650,32 +650,6 @@ void DataView::createNativeLayout(Node &n) const
 /*
  *************************************************************************
  *
- * Copy data view native layout to given Conduit node.
- *
- *************************************************************************
- */
-void DataView::createExternalLayout(Node &parent) const
-{
-  // see ATK-726 - Handle undescribed and unallocated views in Sidre's createNativeLayout()
-  // TODO: Need to handle cases where the view is not described
-  // TODO: Need to handle cases where the view is not allocated
-  // TODO: Need to handle cases where the view is not applied
-
-  // Note: We are using conduit's pointer rather than the DataView pointer
-  //    since the conduit pointer handles offsetting
-  // Note: const_cast the pointer to satisfy conduit's interface
-  if (isExternal() && isDescribed())
-  {
-    Node & n = parent[ m_name ];
-    void * data_ptr = const_cast<void *>(m_node.data_ptr());
-    n.set_external( m_node.schema(), data_ptr);
-  }
-}
-
-
-/*
- *************************************************************************
- *
  * PRIVATE ctor for DataView not associated with any data.
  *
  *************************************************************************
