@@ -549,21 +549,13 @@ int DataView::getShape(int ndims, SidreLength * shape) const
     return -1;
   }
 
-#if 0
-  for(std::vector<SidreLength>::iterator it = v.begin() ;
-      it != v.end() ;
-      ++it)
-  {
-    *shape++ = it.
-  }
-#else
   for(std::vector<SidreLength>::size_type i = 0 ;
       i != m_shape.size() ;
       ++i)
   {
     shape[i] = m_shape[i];
   }
-#endif
+
   return m_shape.size();
 }
 
@@ -969,6 +961,10 @@ void DataView::exportTo(conduit::Node& data_holder,
     if (isDescribed())
     {
       data_holder["schema"] = m_schema.to_json();
+      if (getNumDimensions() > 1)
+      {
+        data_holder["dimensions"].set(m_shape);
+      }
     }
     break;
   case BUFFER: {
@@ -977,6 +973,10 @@ void DataView::exportTo(conduit::Node& data_holder,
     if (isDescribed())
     {
       data_holder["schema"] = m_schema.to_json();
+      if (getNumDimensions() > 1)
+      {
+        data_holder["dimensions"].set(m_shape);
+      }
     }
     data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
     buffer_indices.insert(buffer_id);
@@ -986,6 +986,10 @@ void DataView::exportTo(conduit::Node& data_holder,
     if (isDescribed())
     {
       data_holder["schema"] = m_schema.to_json();
+      if (getNumDimensions() > 1)
+      {
+        data_holder["dimensions"].set(m_shape);
+      }
     }
     else
     {
@@ -1020,6 +1024,13 @@ void DataView::importFrom(conduit::Node& data_holder,
     {
       conduit::Schema schema( data_holder["schema"].as_string() );
       describe( schema.dtype() );
+      if (data_holder.has_path("dimensions"))
+      {
+	  Node n = data_holder["dimensions"];
+	  SidreLength * shape = n.as_long_ptr();
+	  int ndims = n.dtype().number_of_elements();
+	  describeShape(ndims, shape);
+      }
     }
     break;
   case BUFFER: {
@@ -1043,6 +1054,13 @@ void DataView::importFrom(conduit::Node& data_holder,
     {
       conduit::Schema schema( data_holder["schema"].as_string() );
       describe( schema.dtype() );
+      if (data_holder.has_path("dimensions"))
+      {
+	  Node n = data_holder["dimensions"];
+	  SidreLength * shape = n.as_long_ptr();
+	  int ndims = n.dtype().number_of_elements();
+	  describeShape(ndims, shape);
+      }
     }
     attachBuffer( buffer );
     if ( is_applied )
@@ -1053,6 +1071,13 @@ void DataView::importFrom(conduit::Node& data_holder,
   }
   case EXTERNAL:
     m_schema.set( data_holder["schema"].as_string() );
+    if (data_holder.has_path("dimensions"))
+    {
+	  Node n = data_holder["dimensions"];
+	  SidreLength * shape = n.as_long_ptr();
+	  int ndims = n.dtype().number_of_elements();
+	  describeShape(ndims, shape);
+    }
     break;
   case SCALAR:
   case STRING:
@@ -1063,13 +1088,6 @@ void DataView::importFrom(conduit::Node& data_holder,
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
-
-  // We don't save the shape vector, just call this to set it after the schema
-  // has been restored..
-  // TODO - Check with Lee to see if this is sufficient.  We might need to save
-  // /restore the shape vector.
-  describeShape();
-
 }
 
 } /* end namespace sidre */

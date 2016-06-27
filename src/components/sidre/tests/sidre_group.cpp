@@ -688,7 +688,7 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_group,save_restore_empty)
+TEST(sidre_group,save_restore_empty_datastore)
 {
   const std::string file_path_base("sidre_empty_datastore_");
   DataStore * ds1 = new DataStore();
@@ -829,11 +829,19 @@ TEST(sidre_group,save_restore_external_data)
 
   int nfoo = 10;
   int foo1[nfoo], foo2[nfoo], * foo3, foo4[nfoo];
+  int int2d1[nfoo*2], int2d2[nfoo*2];
+  SidreLength shape[] = { nfoo, 2 };
+
   for (int i = 0 ; i < nfoo ; ++i)
   {
     foo1[i] = i;
     foo2[i] = 0;
     foo4[i] = i;
+  }
+  for (int i = 0 ; i < 2*nfoo ; ++i)
+  {
+    int2d1[i] = i;
+    int2d2[i] = 0;
   }
   foo3 = NULL;
 
@@ -845,6 +853,7 @@ TEST(sidre_group,save_restore_external_data)
   // XXX this falls into createView(name, type, ndims, shape)
   // root1->createView("empty_array", INT_ID, nfoo, NULL);
   root1->createView("external_undescribed")->setExternalDataPtr(foo4);
+  root1->createView("int2d", INT_ID, 2, shape, int2d1);
 
   for (int i = 0 ; i < nprotocols ; ++i)
   {
@@ -859,6 +868,8 @@ TEST(sidre_group,save_restore_external_data)
   for (int i = 1 ; i < 2 ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
+    SidreLength extents[7];
+    int rank;
 
     DataStore * ds2 = new DataStore();
     DataGroup * root2 = ds2->getRoot();
@@ -870,6 +881,7 @@ TEST(sidre_group,save_restore_external_data)
     DataView * view1 = root2->getView("external_array");
     EXPECT_TRUE(view1->isExternal());
     EXPECT_TRUE(view1->isDescribed());
+    EXPECT_EQ(view1->getTypeID(), INT_ID);
     EXPECT_EQ(view1->getNumElements(), nfoo);
     EXPECT_TRUE(view1->getVoidPtr() == ATK_NULLPTR);
     view1->setExternalDataPtr(foo2);
@@ -877,6 +889,7 @@ TEST(sidre_group,save_restore_external_data)
     DataView * view2 = root2->getView("empty_array");
     EXPECT_TRUE(view2->isEmpty());
     EXPECT_TRUE(view2->isDescribed());
+    EXPECT_EQ(view2->getTypeID(), INT_ID);
     EXPECT_TRUE(view2->getVoidPtr() == ATK_NULLPTR);
     view2->setExternalDataPtr(foo3);
 
@@ -889,6 +902,18 @@ TEST(sidre_group,save_restore_external_data)
     // written to the dump sice it is undescribed.
     view3->setExternalDataPtr(foo2);
 
+    DataView * view4 = root2->getView("int2d");
+    EXPECT_FALSE(view4->isEmpty());
+    EXPECT_TRUE(view4->isDescribed());
+    EXPECT_TRUE(view4->getVoidPtr() == ATK_NULLPTR);
+    EXPECT_EQ(view4->getTypeID(), INT_ID);
+    EXPECT_EQ(view4->getNumElements(), nfoo*2);
+    EXPECT_EQ(view4->getNumDimensions(), 2);
+    rank = view4->getShape(7, extents);
+    EXPECT_EQ(rank, 2);
+    EXPECT_TRUE(extents[0] == nfoo && extents[1] == 2);
+    view4->setExternalDataPtr(int2d2);
+
     // Read external data into views
     ds2->loadExternalData(file_path, protocols[i]);
 
@@ -896,10 +921,15 @@ TEST(sidre_group,save_restore_external_data)
     EXPECT_TRUE(view1->getVoidPtr() == static_cast<void *>(foo2));
     EXPECT_TRUE(view2->getVoidPtr() == static_cast<void *>(foo3));    // ATK_NULLPTR
     EXPECT_TRUE(view3->getVoidPtr() == static_cast<void *>(foo2));
+    EXPECT_TRUE(view4->getVoidPtr() == static_cast<void *>(int2d2));
 
     for (int j = 0 ; i < nfoo ; ++i)
     {
       EXPECT_TRUE( foo1[j] == foo2[j] );
+    }
+    for (int j = 0 ; i < 2*nfoo ; ++i)
+    {
+      EXPECT_TRUE( int2d1[j] == int2d2[j] );
     }
 
     delete ds2;
@@ -1066,6 +1096,79 @@ TEST(sidre_group,save_restore_buffer)
 
   delete ds1;
 
+}
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_group,save_restore_other)
+{
+  const std::string file_path_base("sidre_save_other_");
+  const int ndata = 10;
+  SidreLength shape1[] = {ndata, 2};
+  DataStore * ds1 = new DataStore();
+  DataGroup * root1 = ds1->getRoot();
+
+  root1->createView("empty_view");
+  root1->createView("empty_described", INT_ID, ndata);
+  root1->createView("empty_shape", INT_ID, 2, shape1);
+
+  root1->createViewAndAllocate("buffer_shape", INT_ID, 2, shape1);
+
+  for (int i = 0 ; i < nprotocols ; ++i)
+  {
+    const std::string file_path = file_path_base + protocols[i];
+    ds1->save(file_path, protocols[i]);
+  }
+
+  delete ds1;
+
+  // Now load back in.
+  // Only restore conduit protocol_hdf5
+  for (int i = 1 ; i < 2 ; ++i)
+  {
+    const std::string file_path = file_path_base + protocols[i];
+    SidreLength shape2[7];
+    int rank;
+
+    DataStore * ds2 = new DataStore();
+    DataGroup * root2 = ds2->getRoot();
+
+    ds2->load(file_path, protocols[i]);
+
+    DataView * view1 = root2->getView("empty_view");
+    EXPECT_TRUE(view1->isEmpty());
+    EXPECT_FALSE(view1->isDescribed());
+
+    DataView * view2 = root2->getView("empty_described");
+    EXPECT_TRUE(view2->isEmpty());
+    EXPECT_TRUE(view2->isDescribed());
+    EXPECT_EQ(view2->getTypeID(), INT_ID);
+    EXPECT_EQ(view2->getNumElements(), ndata);
+
+    DataView * view3 = root2->getView("empty_shape");
+    EXPECT_TRUE(view3->isEmpty());
+    EXPECT_TRUE(view3->isDescribed());
+    EXPECT_EQ(view3->getTypeID(), INT_ID);
+    EXPECT_EQ(view3->getNumElements(), ndata*2);
+    shape2[0] = 0;
+    shape2[1] = 0;
+    rank = view3->getShape(7, shape2);
+    EXPECT_EQ(rank, 2);
+    EXPECT_TRUE(shape2[0] == ndata && shape2[1] == 2);
+
+    DataView * view4 = root2->getView("buffer_shape");
+    EXPECT_TRUE(view4->hasBuffer());
+    EXPECT_TRUE(view4->isDescribed());
+    EXPECT_EQ(view4->getTypeID(), INT_ID);
+    EXPECT_EQ(view4->getNumElements(), ndata*2);
+    shape2[0] = 0;
+    shape2[1] = 0;
+    rank = view4->getShape(7, shape2);
+    EXPECT_EQ(rank, 2);
+    EXPECT_TRUE(shape2[0] == ndata && shape2[1] == 2);
+
+    delete ds2;
+  }
 }
 
 //------------------------------------------------------------------------------
