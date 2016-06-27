@@ -779,6 +779,12 @@ contains
 
        call assert_true( all(foo1 == foo2), "compare foo1 foo2" )
 
+       ! make sure shape translates into fortran
+       call view4%get_data(int2d3)
+       call assert_equals(size(int2d3,1), nfoo, "int2d fortran size(1)")
+       call assert_equals(size(int2d3,2), 2, "int2d fortran size(2)")
+       call assert_true( all(int2d1 == int2d3), "compare ind2d1==ind2d3" )
+
        call ds2%delete()
     enddo
    
