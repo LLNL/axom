@@ -40,6 +40,30 @@ const char DataGroup::s_path_delimiter = '/';
 
 ////////////////////////////////////////////////////////////////////////
 //
+// View query methods.
+//
+////////////////////////////////////////////////////////////////////////
+
+/*
+ *************************************************************************
+ *
+ * Return true if Group owns a View with given name or path; else false.
+ *
+ *************************************************************************
+ */
+bool DataGroup::hasView( const std::string& name ) const
+{
+  std::string path = name;
+  const DataGroup * group = walkPath( path );
+
+  if (group == ATK_NULLPTR) return false;
+
+  return group->m_view_coll.hasItem(path);
+}
+
+
+////////////////////////////////////////////////////////////////////////
+//
 // View access methods.
 //
 ////////////////////////////////////////////////////////////////////////
@@ -74,11 +98,24 @@ DataView * DataGroup::getView( const std::string& name )
 const DataView * DataGroup::getView( const std::string& name ) const
 {
 // XXXX: Add path implementation
-  SLIC_CHECK_MSG( !name.empty() && hasView(name),
-                  "Group " << getName() <<
-                  " has no View with name '" << name << "'");
+  std::string path = name;
+  const DataGroup * group = walkPath( path ); // Note that we're calling the const version here
 
-  return m_view_coll.getItem(name);
+  SLIC_CHECK_MSG( group != ATK_NULLPTR,
+		  "Non-existent group in path " << name );
+
+  if (group != ATK_NULLPTR)
+  {
+    SLIC_CHECK_MSG( !path.empty() && group->hasView(path),
+		    "Group " << getName() <<
+		    " has no View with name '" << path << "'");
+
+    return group->m_view_coll.getItem(path);
+  }
+  else
+  {
+    return ATK_NULLPTR;
+  }
 }
 
 
@@ -1417,6 +1454,48 @@ DataGroup * DataGroup::walkPath( std::string& path,
       {
         SLIC_ERROR( "Invalid path, Group '" << group_ptr->getName() <<
                     "' has no Group with name '" << *iter << "'");
+      }
+    }
+    path = tokens.back();
+  }
+
+  return group_ptr;
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE const method to walk down a path to the next-to-last entry.
+ *
+ * If an error is encountered, this private function will return ATK_NULLPTR
+ *
+ *************************************************************************
+ */
+const DataGroup * DataGroup::walkPath( std::string& path ) const
+{
+  const DataGroup * group_ptr = this;
+
+  std::string::size_type pos = detail::find_exclusive( path, s_path_delimiter);
+  if (pos != std::string::npos)
+  {
+    std::vector<std::string> tokens =
+      detail::split(path, s_path_delimiter, pos);
+    std::vector<std::string>::iterator stop = tokens.end() - 1;
+
+    // Navigate path down to desired Group
+    for (std::vector<std::string>::const_iterator iter = tokens.begin() ;
+         iter < stop ; ++iter)
+    {
+      SLIC_ASSERT( iter->size() > 0 );
+
+      if ( group_ptr->hasGroup(*iter) )
+      {
+        group_ptr = group_ptr->getGroup(*iter);
+      }
+      else
+      {
+	group_ptr = ATK_NULLPTR;
+	iter = stop;
       }
     }
     path = tokens.back();

@@ -215,10 +215,7 @@ public:
    * \brief Return true if Group owns a View with given name or path;
    * else false.
    */
-  bool hasView( const std::string& name ) const
-  {
-    return m_view_coll.hasItem(name);
-  }
+  bool hasView( const std::string& name ) const;
 
   /*!
    * \brief Return true if Group owns a View with given index; else false.
@@ -1191,6 +1188,11 @@ private:
    */
   DataGroup * walkPath(std::string& path, bool create_groups_in_path );
 
+  /*!
+   * \brief Const private method that returns the Group that is the
+   * next-to-last entry in a delimited path string.
+   */
+  const DataGroup * walkPath(std::string& path ) const;
 
   /// Name of this DataGroup object.
   std::string m_name;
