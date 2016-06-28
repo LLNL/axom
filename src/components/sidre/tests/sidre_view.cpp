@@ -245,6 +245,8 @@ static void checkScalarValues(DataView * view,
 {
   SidreLength dims[2];
 
+  SCOPED_TRACE(view->getName());
+
   EXPECT_EQ(getState(view), state);
 
   EXPECT_EQ(view->isDescribed(), isDescribed);

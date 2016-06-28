@@ -211,6 +211,24 @@ module sidre_mod
             get_view_from_name,  &
             get_view_from_index
         ! splicer begin class.DataGroup.type_bound_procedure_part
+        procedure :: get_scalar_int => datagroup_get_scalar_int
+        procedure :: get_scalar_long => datagroup_get_scalar_long
+        procedure :: get_scalar_float => datagroup_get_scalar_float
+        procedure :: get_scalar_double => datagroup_get_scalar_double
+        generic :: get_scalar => &
+            get_scalar_int,  &
+            get_scalar_long,  &
+            get_scalar_float,  &
+            get_scalar_double
+        procedure :: set_scalar_int => datagroup_set_scalar_int
+        procedure :: set_scalar_long => datagroup_set_scalar_long
+        procedure :: set_scalar_float => datagroup_set_scalar_float
+        procedure :: set_scalar_double => datagroup_set_scalar_double
+        generic :: set_scalar => &
+            set_scalar_int,  &
+            set_scalar_long,  &
+            set_scalar_float,  &
+            set_scalar_double
         procedure :: create_array_view_int_scalar => datagroup_create_array_view_int_scalar
         procedure :: create_array_view_int_1d => datagroup_create_array_view_int_1d
         procedure :: create_array_view_int_2d => datagroup_create_array_view_int_2d
@@ -293,6 +311,8 @@ module sidre_mod
             set_array_data_ptr_double_2d,  &
             set_array_data_ptr_double_3d,  &
             set_array_data_ptr_double_4d
+        procedure :: get_string => datagroup_get_string
+        procedure :: set_string => datagroup_set_string
         ! splicer end class.DataGroup.type_bound_procedure_part
     end type datagroup
     
@@ -368,10 +388,13 @@ module sidre_mod
         procedure :: apply_type_shape => dataview_apply_type_shape
         procedure :: has_buffer => dataview_has_buffer
         procedure :: is_external => dataview_is_external
+        procedure :: is_allocated => dataview_is_allocated
         procedure :: is_applied => dataview_is_applied
         procedure :: is_described => dataview_is_described
         procedure :: is_empty => dataview_is_empty
         procedure :: is_opaque => dataview_is_opaque
+        procedure :: is_scalar => dataview_is_scalar
+        procedure :: is_string => dataview_is_string
         procedure :: get_name => dataview_get_name
         procedure :: get_buffer => dataview_get_buffer
         procedure :: get_void_ptr => dataview_get_void_ptr
@@ -382,6 +405,7 @@ module sidre_mod
         procedure :: set_external_data_ptr_only => dataview_set_external_data_ptr_only
         procedure :: set_external_data_ptr_type_int => dataview_set_external_data_ptr_type_int
         procedure :: set_external_data_ptr_type_long => dataview_set_external_data_ptr_type_long
+        procedure :: set_string => dataview_set_string
         procedure :: set_external_data_ptr_shape => dataview_set_external_data_ptr_shape
         procedure :: get_string => dataview_get_string
         procedure :: get_data_int => dataview_get_data_int
@@ -1798,6 +1822,15 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function c_dataview_is_external
         
+        function c_dataview_is_allocated(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_is_allocated")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            logical(C_BOOL) :: rv
+        end function c_dataview_is_allocated
+        
         pure function c_dataview_is_applied(self) &
                 result(rv) &
                 bind(C, name="SIDRE_dataview_is_applied")
@@ -1833,6 +1866,24 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             logical(C_BOOL) :: rv
         end function c_dataview_is_opaque
+        
+        pure function c_dataview_is_scalar(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_is_scalar")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            logical(C_BOOL) :: rv
+        end function c_dataview_is_scalar
+        
+        pure function c_dataview_is_string(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_is_string")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            logical(C_BOOL) :: rv
+        end function c_dataview_is_string
         
         pure function c_dataview_get_name(self) &
                 result(rv) &
@@ -1919,6 +1970,23 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR), value, intent(IN) :: external_ptr
         end subroutine c_dataview_set_external_data_ptr_type
+        
+        subroutine c_dataview_set_string(self, value) &
+                bind(C, name="SIDRE_dataview_set_string")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: value(*)
+        end subroutine c_dataview_set_string
+        
+        subroutine c_dataview_set_string_bufferify(self, value, Lvalue) &
+                bind(C, name="SIDRE_dataview_set_string_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: value(*)
+            integer(C_INT), value, intent(IN) :: Lvalue
+        end subroutine c_dataview_set_string_bufferify
         
         subroutine c_dataview_set_external_data_ptr_shape(self, type, ndims, shape, external_ptr) &
                 bind(C, name="SIDRE_dataview_set_external_data_ptr_shape")
@@ -3065,6 +3133,118 @@ contains
     ! splicer begin class.DataGroup.additional_functions
     
     ! Generated by genfsidresplicer.py
+    subroutine datagroup_get_scalar_int(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_INT), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        value = c_dataview_get_data_int(view)
+    end subroutine datagroup_get_scalar_int
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_get_scalar_long(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_LONG), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        value = c_dataview_get_data_long(view)
+    end subroutine datagroup_get_scalar_long
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_get_scalar_float(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_FLOAT), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        value = c_dataview_get_data_float(view)
+    end subroutine datagroup_get_scalar_float
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_get_scalar_double(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_DOUBLE), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        value = c_dataview_get_data_double(view)
+    end subroutine datagroup_get_scalar_double
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_set_scalar_int(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_INT), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_set_scalar_int(view, value)
+    end subroutine datagroup_set_scalar_int
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_set_scalar_long(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_LONG), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_set_scalar_long(view, value)
+    end subroutine datagroup_set_scalar_long
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_set_scalar_float(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_FLOAT), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_set_scalar_float(view, value)
+    end subroutine datagroup_set_scalar_float
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_set_scalar_double(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_DOUBLE), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_set_scalar_double(view, value)
+    end subroutine datagroup_set_scalar_double
+    
+    ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_int_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
@@ -4103,6 +4283,33 @@ contains
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
         endif
     end subroutine datagroup_set_array_data_ptr_double_4d
+    
+    subroutine datagroup_get_string(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        character(*), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_get_string_bufferify(view, value, len(value, kind=C_INT))
+    end subroutine datagroup_get_string
+    
+    subroutine datagroup_set_string(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        character(*), intent(IN) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_set_string_bufferify(view, value, len_trim(value, kind=C_INT))
+    end subroutine datagroup_set_string
+    
     ! splicer end class.DataGroup.additional_functions
     
     function databuffer_get_index(obj) result(rv)
@@ -4542,6 +4749,16 @@ contains
         ! splicer end class.DataView.method.is_external
     end function dataview_is_external
     
+    function dataview_is_allocated(obj) result(rv)
+        use iso_c_binding, only : C_BOOL
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin class.DataView.method.is_allocated
+        rv = c_dataview_is_allocated(obj%voidptr)
+        ! splicer end class.DataView.method.is_allocated
+    end function dataview_is_allocated
+    
     function dataview_is_applied(obj) result(rv)
         use iso_c_binding, only : C_BOOL
         implicit none
@@ -4581,6 +4798,26 @@ contains
         rv = c_dataview_is_opaque(obj%voidptr)
         ! splicer end class.DataView.method.is_opaque
     end function dataview_is_opaque
+    
+    function dataview_is_scalar(obj) result(rv)
+        use iso_c_binding, only : C_BOOL
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin class.DataView.method.is_scalar
+        rv = c_dataview_is_scalar(obj%voidptr)
+        ! splicer end class.DataView.method.is_scalar
+    end function dataview_is_scalar
+    
+    function dataview_is_string(obj) result(rv)
+        use iso_c_binding, only : C_BOOL
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin class.DataView.method.is_string
+        rv = c_dataview_is_string(obj%voidptr)
+        ! splicer end class.DataView.method.is_string
+    end function dataview_is_string
     
     function dataview_get_name(obj) result(rv)
         use iso_c_binding, only : C_CHAR, C_INT
@@ -4703,6 +4940,19 @@ contains
             external_ptr)
         ! splicer end class.DataView.method.set_external_data_ptr_type_long
     end subroutine dataview_set_external_data_ptr_type_long
+    
+    subroutine dataview_set_string(obj, value)
+        use iso_c_binding, only : C_INT
+        implicit none
+        class(dataview) :: obj
+        character(*), intent(IN) :: value
+        ! splicer begin class.DataView.method.set_string
+        call c_dataview_set_string_bufferify(  &
+            obj%voidptr,  &
+            value,  &
+            len_trim(value, kind=C_INT))
+        ! splicer end class.DataView.method.set_string
+    end subroutine dataview_set_string
     
     subroutine dataview_set_external_data_ptr_shape(obj, type, ndims, shape, external_ptr)
         use iso_c_binding, only : C_LONG, C_INT

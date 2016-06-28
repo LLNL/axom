@@ -360,10 +360,13 @@ classes:
 #    - decl: DataView* apply(const DataType& dtype)
     - decl: bool hasBuffer() const
     - decl: bool isExternal() const
+    - decl: bool isAllocated()
     - decl: bool isApplied() const
     - decl: bool isDescribed() const
     - decl: bool isEmpty() const
     - decl: bool isOpaque() const
+    - decl: bool isScalar() const
+    - decl: bool isString() const
     - decl: const std::string& getName+len(MAXNAMESIZE)() const
     - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const
@@ -392,6 +395,9 @@ classes:
          num_elems:
          -  int
          -  long
+
+    -  decl: DataView * setString(const std::string& value)
+       return_this: True
 
     -  decl: DataView * setExternalDataPtr(TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
        return_this: True
