@@ -907,6 +907,15 @@ private:
   void importFrom(conduit::Node& data_holder,
                   const std::map<IndexType, IndexType>& buffer_id_map);
 
+  /*!
+   * \brief Add view's description to a conduit tree.
+   */
+  void exportDescription(conduit::Node& data_holder) const;
+
+  /*!
+   * \brief Restore a view's description from a conduit tree.
+   */
+  void importDescription(conduit::Node& data_holder);
 
   /*!
    *  \brief Private method to remove any applied description;

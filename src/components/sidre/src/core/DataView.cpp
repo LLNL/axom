@@ -960,11 +960,7 @@ void DataView::exportTo(conduit::Node& data_holder,
   case EMPTY:
     if (isDescribed())
     {
-      data_holder["schema"] = m_schema.to_json();
-      if (getNumDimensions() > 1)
-      {
-        data_holder["dimensions"].set(m_shape);
-      }
+      exportDescription(data_holder);
     }
     break;
   case BUFFER: {
@@ -972,11 +968,7 @@ void DataView::exportTo(conduit::Node& data_holder,
     data_holder["buffer_id"] = buffer_id;
     if (isDescribed())
     {
-      data_holder["schema"] = m_schema.to_json();
-      if (getNumDimensions() > 1)
-      {
-        data_holder["dimensions"].set(m_shape);
-      }
+      exportDescription(data_holder);
     }
     data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
     buffer_indices.insert(buffer_id);
@@ -985,11 +977,7 @@ void DataView::exportTo(conduit::Node& data_holder,
   case EXTERNAL:
     if (isDescribed())
     {
-      data_holder["schema"] = m_schema.to_json();
-      if (getNumDimensions() > 1)
-      {
-        data_holder["dimensions"].set(m_shape);
-      }
+      exportDescription(data_holder);
     }
     else
     {
@@ -1020,18 +1008,7 @@ void DataView::importFrom(conduit::Node& data_holder,
   switch (m_state)
   {
   case EMPTY:
-    if (data_holder.has_path("schema"))
-    {
-      conduit::Schema schema( data_holder["schema"].as_string() );
-      describe( schema.dtype() );
-      if (data_holder.has_path("dimensions"))
-      {
-	  Node n = data_holder["dimensions"];
-	  SidreLength * shape = n.as_long_ptr();
-	  int ndims = n.dtype().number_of_elements();
-	  describeShape(ndims, shape);
-      }
-    }
+    importDescription(data_holder);
     break;
   case BUFFER: {
     // If view has a buffer, the easiest way to restore it is to use a series of
@@ -1050,18 +1027,7 @@ void DataView::importFrom(conduit::Node& data_holder,
     DataBuffer * buffer = m_owning_group->getDataStore()->
                           getBuffer( buffer_id_map.at(old_buffer_id) );
 
-    if (data_holder.has_path("schema"))
-    {
-      conduit::Schema schema( data_holder["schema"].as_string() );
-      describe( schema.dtype() );
-      if (data_holder.has_path("dimensions"))
-      {
-	  Node n = data_holder["dimensions"];
-	  SidreLength * shape = n.as_long_ptr();
-	  int ndims = n.dtype().number_of_elements();
-	  describeShape(ndims, shape);
-      }
-    }
+    importDescription(data_holder);
     attachBuffer( buffer );
     if ( is_applied )
     {
@@ -1070,14 +1036,7 @@ void DataView::importFrom(conduit::Node& data_holder,
     break;
   }
   case EXTERNAL:
-    m_schema.set( data_holder["schema"].as_string() );
-    if (data_holder.has_path("dimensions"))
-    {
-	  Node n = data_holder["dimensions"];
-	  SidreLength * shape = n.as_long_ptr();
-	  int ndims = n.dtype().number_of_elements();
-	  describeShape(ndims, shape);
-    }
+    importDescription(data_holder);
     break;
   case SCALAR:
   case STRING:
@@ -1089,6 +1048,48 @@ void DataView::importFrom(conduit::Node& data_holder,
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
 }
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to save view's desciption to a conduit tree.
+ * The shape information is only written if there is more than
+ * one dimension.
+ *
+ *************************************************************************
+ */
+void DataView::exportDescription(conduit::Node& data_holder) const
+{
+  data_holder["schema"] = m_schema.to_json();
+  if (getNumDimensions() > 1)
+  {
+    data_holder["shape"].set(m_shape);
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to restore a view's description from a conduit tree.
+ *
+ *************************************************************************
+ */
+void DataView::importDescription(conduit::Node& data_holder)
+{
+  if (data_holder.has_path("schema"))
+  {
+    conduit::Schema schema( data_holder["schema"].as_string() );
+    describe( schema.dtype() );
+    if (data_holder.has_path("shape"))
+    {
+	  Node & n = data_holder["shape"];
+	  SidreLength * shape = n.as_long_ptr();
+	  int ndims = n.dtype().number_of_elements();
+	  describeShape(ndims, shape);
+    }
+  }
+}
+
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */
