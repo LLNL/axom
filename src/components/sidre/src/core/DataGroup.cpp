@@ -81,12 +81,14 @@ DataView * DataGroup::getView( const std::string& name )
   bool create_groups_in_path = false;
   DataGroup * group = walkPath( path, create_groups_in_path );
 
-  SLIC_CHECK_MSG( group != ATK_NULLPTR,
-		  "Non-existent group in path " << name );
+  if ( group == ATK_NULLPTR )
+  {
+    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+		    "Non-existent group in path " << name );
+    return ATK_NULLPTR;
+  }
 
-  if (group == ATK_NULLPTR) return ATK_NULLPTR;
-
-  SLIC_CHECK_MSG( !path.empty() && group->hasView(path),
+  SLIC_CHECK_MSG( !path.empty() && group->hasChildView(path),
                   "Group " << getName() <<
                   " has no View with name '" << path << "'");
 
@@ -105,12 +107,14 @@ const DataView * DataGroup::getView( const std::string& name ) const
   std::string path = name;
   const DataGroup * group = walkPath( path );
 
-  SLIC_CHECK_MSG( group != ATK_NULLPTR,
-		  "Non-existent group in path " << name );
+  if (group == ATK_NULLPTR)
+  {
+    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+		    "Non-existent group in path " << name );
+    return ATK_NULLPTR;
+  }
 
-  if (group == ATK_NULLPTR) return ATK_NULLPTR;
-
-  SLIC_CHECK_MSG( !path.empty() && group->hasView(path),
+  SLIC_CHECK_MSG( !path.empty() && group->hasChildView(path),
 		  "Group " << getName() <<
 		  " has no View with name '" << path << "'");
   
@@ -143,10 +147,10 @@ DataView * DataGroup::createView( const std::string& name )
     SLIC_CHECK( group != ATK_NULLPTR );
     return ATK_NULLPTR;
   }
-  else if ( path.empty() || group->hasView(path) )
+  else if ( path.empty() || group->hasChildView(path) )
   {
     SLIC_CHECK( !path.empty() );
-    SLIC_CHECK_MSG( !group->hasView(path),
+    SLIC_CHECK_MSG( !group->hasChildView(path),
                     "Cannot create View with name '" << path <<
                     "' in Group '" << getName() <<
                     " since it already has a View with that name" );
@@ -521,7 +525,7 @@ DataView * DataGroup::createViewString( const std::string& name,
 /*
  *************************************************************************
  *
- * Destroy View with given name and leave its data intact.
+ * Destroy View with given name or path and leave its data intact.
  *
  *************************************************************************
  */
@@ -588,7 +592,7 @@ void DataGroup::destroyViews()
 /*
  *************************************************************************
  *
- * Destroy View with given name and its data if it's the only View
+ * Destroy View with given name or path and its data if it's the only View
  * associated with that data.
  *
  *************************************************************************
@@ -659,9 +663,9 @@ DataView * DataGroup::moveView(DataView * view)
     // this Group already owns the View
     return view;
   }
-  else if (hasView(view->getName()))
+  else if (hasChildView(view->getName()))
   {
-    SLIC_CHECK_MSG(!hasView(view->getName()),
+    SLIC_CHECK_MSG(!hasChildView(view->getName()),
                    "Group '" << getName() <<
                    "' already has a View named'" << view->getName() <<
                    "' so View move operation cannot happen");
@@ -685,10 +689,10 @@ DataView * DataGroup::moveView(DataView * view)
  */
 DataView * DataGroup::copyView(DataView * view)
 {
-  if ( view == ATK_NULLPTR || hasView(view->getName()) )
+  if ( view == ATK_NULLPTR || hasChildView(view->getName()) )
   {
     SLIC_CHECK( view != ATK_NULLPTR );
-    SLIC_CHECK_MSG(!hasView(view->getName()),
+    SLIC_CHECK_MSG(!hasChildView(view->getName()),
                    "Group '" << getName() <<
                    "' already has a View named'" << view->getName() <<
                    "' so View copy operation cannot happen");
@@ -787,7 +791,7 @@ const DataGroup * DataGroup::getGroup( const std::string& name ) const
 /*
  *************************************************************************
  *
- * Create Group with given name and make it a child of this Group.
+ * Create Group with given name or path and make it a child of this Group.
  *
  *************************************************************************
  */
@@ -824,7 +828,7 @@ DataGroup * DataGroup::createGroup( const std::string& name )
 /*
  *************************************************************************
  *
- * Detach child Group with given name and destroy it.
+ * Detach child Group with given name or path and destroy it.
  *
  *************************************************************************
  */
@@ -1236,7 +1240,7 @@ DataGroup::~DataGroup()
  */
 DataView * DataGroup::attachView(DataView * view)
 {
-  if ( view == ATK_NULLPTR || hasView(view->getName()) )
+  if ( view == ATK_NULLPTR || hasChildView(view->getName()) )
   {
     return ATK_NULLPTR;
   }

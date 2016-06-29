@@ -218,6 +218,15 @@ public:
   bool hasView( const std::string& name ) const;
 
   /*!
+   * \brief Return true if this Group owns a View with given
+   * name (not path); else false.
+   */
+  bool hasChildView( const std::string& name ) const
+  {
+    return m_view_coll.hasItem(name);
+  }
+
+  /*!
    * \brief Return true if Group owns a View with given index; else false.
    */
   bool hasView( IndexType idx ) const
@@ -232,7 +241,7 @@ public:
    */
   IndexType getViewIndex(const std::string& name) const
   {
-    SLIC_CHECK_MSG(hasView(name),
+    SLIC_CHECK_MSG(hasChildView(name),
                    "Group " << this->getName() <<
                    " has no View with name '" << name << "'");
 
@@ -699,7 +708,7 @@ public:
 //! Each of these methods is a no-op if the specified View does not exist.
 
   /*!
-   * \brief Destroy View with given name owned by this Group, but leave
+   * \brief Destroy View with given name or path owned by this Group, but leave
    * its data intect.
    */
   void destroyView(const std::string& name);
@@ -717,7 +726,7 @@ public:
   void destroyViews();
 
   /*!
-   * \brief Destroy View with given name owned by this Group and deallocate
+   * \brief Destroy View with given name or path owned by this Group and deallocate
    * its data if it's the only View associated with that data.
    */
   void destroyViewAndData(const std::string& name);
