@@ -774,10 +774,16 @@ public:
 //!  @name Child Group query methods.
 
   /*!
-   * \brief Return true if Group has an immediate child Group with given
+   * \brief Return true if this Group has a descendant Group with given
+   * name or path; else false.
+   */
+  bool hasGroup( const std::string& name ) const;
+
+  /*!
+   * \brief Return true if this Group has a child Group with given
    * name; else false.
    */
-  bool hasGroup( const std::string& name ) const
+  bool hasChildGroup( const std::string& name ) const
   {
     return m_group_coll.hasItem(name);
   }
@@ -798,7 +804,7 @@ public:
    */
   IndexType getGroupIndex(const std::string& name) const
   {
-    SLIC_CHECK_MSG(hasGroup(name),
+    SLIC_CHECK_MSG(hasChildGroup(name),
                    "Group " << this->getName() <<
                    " has no child Group with name '" << name << "'");
 
