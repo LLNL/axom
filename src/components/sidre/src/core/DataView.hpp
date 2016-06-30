@@ -582,6 +582,52 @@ public:
     }
     return this;
   }
+  
+  
+
+    /*!
+     * \brief Set the view to hold the given scalar.
+     *
+     * \return pointer to this DataView object.
+     */
+    DataView * setScalar(Node &value)
+    {
+      // If this view already contains a scalar, issue a warning if the user is
+      // changing the underlying type ( ie: integer -> float ).
+  #if defined(ATK_DEBUG)
+      if (m_state == SCALAR)
+      {
+        SLIC_CHECK_MSG(value.dtype().id() == m_node.dtype().id(),
+                       "You are setting a scalar value in view "
+                       << m_name
+                       << " which has changed the underlying data type."
+                       << "Old type = " << m_node.dtype().name()
+                       << ", new type ="
+                       <<  DataType::id_to_name( value.dtype().id() ) << ".");
+      }
+  #endif
+
+      // Note: most of these calls that set the view class members are
+      //       unnecessary if the view already holds a scalar.  May be
+      //       a future optimization opportunity to split the
+      if (m_state == EMPTY || m_state == SCALAR)
+      {
+        m_node.set(value);
+        m_schema.set(m_node.schema());
+        m_state = SCALAR;
+        m_is_applied = true;
+        describeShape();
+      }
+      else
+      {
+        SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
+                       "Unable to set scalar value on view "
+                       << m_name << " with state: "
+                       << getStateStringName(m_state)  );
+      }
+      return this;
+    }
+  
 
 //
 // RDH -- Add an overload of the following that takes a const char *.
@@ -963,6 +1009,11 @@ private:
    *  \brief Private method returns string name of given view state enum value.
    */
   static char const * getStateStringName(State state);
+
+  /*!
+   *  \brief Private method returns state enum value give a state name.
+   */
+  State getStateId(const std::string &name);
 
   /// Name of this DataView object.
   std::string m_name;

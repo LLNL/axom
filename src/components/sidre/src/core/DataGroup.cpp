@@ -1138,8 +1138,13 @@ void DataGroup::save(const std::string& path,
     createExternalLayout(n["sidre/external"]);
     conduit::relay::io::save(n, path, "json");
   }
-  else if (protocol == "conduit_hdf5" || 
-           protocol == "conduit_bin"  || 
+  else if (protocol == "conduit_hdf5" )
+  {
+      Node n;
+      createNativeLayout(n);
+      conduit::relay::io::save(n, path,"hdf5");
+  }
+  else if (protocol == "conduit_bin"  || 
            protocol == "conduit_json" ||
            protocol == "json")
   {
@@ -1194,7 +1199,9 @@ void DataGroup::save(const hid_t& h5_id,
   }
   else
   {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file save.");
+    SLIC_ERROR("Invalid protocol " 
+                << protocol 
+                << " for save with hdf5 handle.");
   }
 }
 
@@ -1233,13 +1240,20 @@ void DataGroup::load(const std::string& path,
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
   }
-  else if (protocol == "conduit_hdf5" || 
-           protocol == "conduit_bin"  || 
+  else if (protocol == "conduit_hdf5")
+  {
+      Node n;
+      conduit::relay::io::load(path,"hdf5", n);
+      importConduitTree(n);
+      
+  }
+  else if (protocol == "conduit_bin"  || 
            protocol == "conduit_json" ||
            protocol == "json")
   {
-    SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
-    // TODO: implement this case
+    Node n;
+    conduit::relay::io::load(path,protocol, n);
+    importConduitTree(n);
   }
   else
   {
@@ -1284,6 +1298,9 @@ void DataGroup::load(const hid_t& h5_id,
   {
     SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
     // TODO: implement this case
+    Node n;
+    conduit::relay::io::hdf5_read(h5_id, n);
+    importConduitTree(n);
   }
   else
   {
@@ -1629,7 +1646,7 @@ void DataGroup::exportTo(conduit::Node& result,
  *************************************************************************
  */
 
-void DataGroup::importFrom(conduit::Node & result)
+void DataGroup::importFrom(conduit::Node & node)
 {
   // TODO - May want to put in a little meta-data into these files like a 'version'
   // or tag identifying the data.  We don't want someone giving us a file that
@@ -1641,12 +1658,9 @@ void DataGroup::importFrom(conduit::Node & result)
   // First - Import Buffers into the DataStore.
   std::map<IndexType, IndexType> buffer_indices_map;
 
-  // Added CON-132 ticket asking if has_path can just return false if 
-  // node is empty or not an object type.
-  // TODO: --- this is now fixed in conduit
-  if (result.dtype().is_object() && result.has_path("buffers"))
+  if (node.has_path("buffers") )
   {
-    conduit::NodeIterator buffs_itr = result["buffers"].children();
+    conduit::NodeIterator buffs_itr = node["buffers"].children();
     while (buffs_itr.has_next())
     {
       Node& n_buffer = buffs_itr.next();
@@ -1665,7 +1679,7 @@ void DataGroup::importFrom(conduit::Node & result)
   // Next - import tree of Groups, sub-Groups, Views into the DataStore.
   // Use the mapping of old to new Buffer ids to connect the Views to the
   // right Buffers.
-  importFrom(result, buffer_indices_map);
+  importFrom(node, buffer_indices_map);
 
 }
 
@@ -1715,6 +1729,76 @@ void DataGroup::importFrom(conduit::Node& node,
       group->importFrom(n_group, buffer_id_map);
     }
   }
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Imports tree from a conduit node into this DataGroup. 
+ * This takes a generic conduit tree, not one with sidre conventions.
+ *
+ *************************************************************************
+ */
+
+void DataGroup::importConduitTree(conduit::Node &node)
+{
+  destroyGroups();
+  destroyViews();
+
+ //
+  DataType node_dtype = node.dtype();
+  if(node_dtype.is_object())
+  {
+      conduit::NodeIterator itr = node.children();
+      while (itr.has_next())
+      {
+          Node&       cld_node  = itr.next();
+          std::string cld_name  = itr.path();
+          DataType    cld_dtype = cld_node.dtype();
+
+          if(cld_dtype.is_object())
+          {
+              // create group
+              DataGroup *grp = createGroup(cld_name);
+              grp->importConduitTree(cld_node);
+          }
+          else if(cld_dtype.is_string())
+          {
+              //create string view
+              createViewString(cld_name,cld_node.as_string());
+          }
+          else if(cld_dtype.is_number())
+          {
+             if(cld_dtype.number_of_elements() == 1)
+             {
+                  // create scalar view
+                 DataView * view = createView(cld_name);
+                 view->setScalar(cld_node);
+             }
+             else
+             {
+                 // create view with buffer 
+                 DataView * view = createViewAndAllocate(cld_name,cld_dtype);
+                 std::memcpy( view->getBuffer()->getVoidPtr(),
+                             cld_node.element_ptr(0),
+                             cld_node.total_bytes());
+                 // we should only have to do the above copy,
+                 // something is wrong ..
+                 //std::memcpy( view->getNode().element_ptr(0),
+                 //            cld_node.element_ptr(0),
+                 //            cld_node.total_bytes());
+             }
+          }
+      }
+  }
+  else
+  {
+      // ERROR
+      SLIC_ERROR( "DataGroup cannot import non-object Conduit Node");
+      
+  }
+  
 }
 
 /*

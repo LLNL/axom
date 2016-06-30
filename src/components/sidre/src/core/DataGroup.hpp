@@ -1076,7 +1076,6 @@ public:
    *  Saves the tree starting at this group and the buffers used by the views
    *  in this tree.
    *
-   * Supported protocols are "conduit" (binary), "conduit_hdf5", and "text" (for debugging).
    */
   void save( const std::string& path,
              const std::string& protocol) const;
@@ -1249,7 +1248,7 @@ private:
   /*!
    * \brief Private method to build a Group hierarchy from Conduit Node.
    *
-   * Note: This is for the "sidre_hdf5" protocol.
+   * Note: This is for the "sidre_{zzz}" protocols.
    */
    void importFrom(conduit::Node& node);
 
@@ -1263,6 +1262,15 @@ private:
    */
   void importFrom(conduit::Node& node,
                   const std::map<IndexType, IndexType>& buffer_id_map);
+
+
+  /*!
+   * \brief Private method to build a Group hierarchy from Conduit Node.
+   *
+   * Note: This is for the "conduit_{zzz}" protocols.
+   */
+   void importConduitTree(conduit::Node& node);
+
 
 //@}
 
@@ -1299,7 +1307,7 @@ private:
   static const char s_path_delimiter;
 
   ///
-  /// Typedefs for View and shild Group containers. They are here to
+  /// Typedefs for View and child Group containers. They are here to
   /// avoid propagating specific type names in the DataGroup class
   /// implementation when we experiment with different containers.
   ///

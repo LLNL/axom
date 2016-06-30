@@ -1235,3 +1235,59 @@ TEST(sidre_group,is_equivalent_to)
   delete ds;
 
 }
+
+
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_load_all_protocols)
+{
+  const std::string file_path_base("sidre_save_load_all_protocols.");
+  DataStore ds;
+  
+  DataGroup * flds = ds.getRoot()->createGroup("fields");
+
+  DataGroup * ga = flds->createGroup("a");
+  DataGroup * gb = flds->createGroup("b");
+  DataGroup * gc = flds->createGroup("c");
+  int ndata = 10;
+
+  // use int64 and float64 b/c the basic json
+  // reader use those types
+  ga->createViewScalar<conduit::int64>("i0", 100);
+  ga->createViewScalar<conduit::float64>("d0", 3000.00);
+  gb->createViewString("s0", "foo");
+
+  gc->createViewAndAllocate("int10", DataType::int64(ndata));
+  conduit::int64 * data_ptr = gc->getView("int10")->getArray();
+  for (int i = 0 ; i < ndata ; ++i)
+  {
+    data_ptr[i] = (conduit::int64)i;
+  }
+
+  std::vector<std::string> protocols;
+  protocols.push_back("sidre_hdf5");
+  protocols.push_back("sidre_conduit_json");
+  protocols.push_back("sidre_json");
+
+  protocols.push_back("conduit_hdf5");
+  protocols.push_back("conduit_bin");
+  protocols.push_back("conduit_json");
+  protocols.push_back("json");
+
+  ds.print();
+    
+  for (size_t i = 0 ; i < protocols.size(); ++i)
+  {
+    SLIC_INFO("Testing protocol:" << protocols[i]);
+    const std::string file_path = file_path_base + protocols[i];
+    ds.save(file_path, protocols[i]);
+
+    
+    DataStore ds_load;
+    ds_load.load(file_path, protocols[i]);
+    ds_load.print();
+    EXPECT_TRUE( ds.getRoot()->isEquivalentTo(ds_load.getRoot()));
+  }
+}
+
+

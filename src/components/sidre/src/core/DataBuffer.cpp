@@ -228,7 +228,7 @@ DataBuffer * DataBuffer::copyBytesIntoBuffer(const void * src,
 void DataBuffer::copyToConduitNode(Node &n) const
 {
   n["index"].set(m_index);
-  n["node"].set(m_node.to_json());
+  n["value"].set(m_node.to_json());
 }
 
 /*

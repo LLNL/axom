@@ -621,8 +621,8 @@ void DataView::copyToConduitNode(Node &n) const
 {
   n["name"] = m_name;
   n["schema"] = m_schema.to_json();
-  n["node"] = m_node.to_json();
-  n["state"] = getStateStringName(m_state);
+  n["value"]  = m_node.to_json();
+  n["state"]  = getStateStringName(m_state);
   n["is_applied"] = m_is_applied;
 }
 
@@ -926,6 +926,45 @@ char const * DataView::getStateStringName(State state)
 /*
  *************************************************************************
  *
+ * PRIVATE method returns state enum value when given string with a
+ * state name.
+ *
+ *************************************************************************
+ */
+DataView::State DataView::getStateId(const std::string &name)
+{
+  State res = EMPTY;
+  if(name == "EMPTY")
+  {
+    res = EMPTY;
+  }
+  else if(name == "BUFFER")
+  {
+    res = BUFFER;
+  }
+  else if(name == "EXTERNAL")
+  {
+    res = EXTERNAL;
+  }
+  else if(name == "SCALAR")
+  {
+    res = SCALAR;
+  }
+  else if(name == "STRING")
+  {
+    res = STRING;
+  }
+  else if(name == "UNKNOWN")
+  {
+    res = EMPTY;
+  }
+  
+  return res;
+}
+
+/*
+ *************************************************************************
+ *
  * PRIVATE method to copy view data to given Conduit node using
  * given set of ids to maintain correct association of data buffers
  * to data views.
@@ -935,7 +974,7 @@ char const * DataView::getStateStringName(State state)
 void DataView::exportTo(conduit::Node& data_holder,
                         std::set<IndexType>& buffer_indices) const
 {
-  data_holder["state"] = static_cast<unsigned int>(m_state);
+  data_holder["state"] = getStateStringName(m_state);
 
   switch (m_state)
   {
@@ -964,12 +1003,12 @@ void DataView::exportTo(conduit::Node& data_holder,
     else
     {
       // If there is no description, make it an EMPTY view
-      data_holder["state"] = static_cast<unsigned int>(EMPTY);
+      data_holder["state"] = getStateStringName(EMPTY);
     }
     break;
   case SCALAR:
   case STRING:
-    data_holder["node"] = getNode();
+    data_holder["value"] = getNode();
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
@@ -985,7 +1024,7 @@ void DataView::exportTo(conduit::Node& data_holder,
 void DataView::importFrom(conduit::Node& data_holder,
                           const std::map<IndexType, IndexType>& buffer_id_map)
 {
-  m_state = static_cast<State>(data_holder["state"].as_unsigned_int());
+  m_state = getStateId(data_holder["state"].as_string());
 
   switch (m_state)
   {
@@ -1030,7 +1069,7 @@ void DataView::importFrom(conduit::Node& data_holder,
     break;
   case SCALAR:
   case STRING:
-    m_node = data_holder["node"];
+    m_node = data_holder["value"];
     m_schema.set(m_node.schema());
     m_is_applied = true;
     break;
