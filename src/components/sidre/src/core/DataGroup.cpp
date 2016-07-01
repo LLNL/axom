@@ -1244,6 +1244,7 @@ void DataGroup::load(const std::string& path,
   {
       Node n;
       conduit::relay::io::load(path,"hdf5", n);
+      n.print();
       importConduitTree(n);
       
   }
@@ -1253,7 +1254,8 @@ void DataGroup::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,protocol, n);
-    importConduitTree(n);
+      n.print();
+      importConduitTree(n);
   }
   else
   {
@@ -1300,6 +1302,7 @@ void DataGroup::load(const hid_t& h5_id,
     // TODO: implement this case
     Node n;
     conduit::relay::io::hdf5_read(h5_id, n);
+      n.print();
     importConduitTree(n);
   }
   else
@@ -1778,25 +1781,40 @@ void DataGroup::importConduitTree(conduit::Node &node)
              }
              else
              {
-                 // create view with buffer 
-                 DataView * view = createViewAndAllocate(cld_name,cld_dtype);
-                 std::memcpy( view->getBuffer()->getVoidPtr(),
-                             cld_node.element_ptr(0),
-                             cld_node.total_bytes());
-                 // we should only have to do the above copy,
-                 // something is wrong ..
-                 //std::memcpy( view->getNode().element_ptr(0),
-                 //            cld_node.element_ptr(0),
-                 //            cld_node.total_bytes());
+                 // create view with buffer
+                 DataBuffer * buff = getDataStore()->createBuffer();
+                 
+                 conduit::index_t num_ele   = cld_dtype.number_of_elements();
+                 conduit::index_t ele_bytes = DataType::default_bytes(cld_dtype.id());
+                 
+                 buff->allocate((TypeID)cld_dtype.id(),
+                                num_ele);
+                 // copy the data in a way that matches
+                 // to compact representation of the buffer
+                 conduit::uint8 * data_ptr = (conduit::uint8*) buff->getVoidPtr();
+                 for(conduit::index_t i=0;i<num_ele;i++)
+                 {
+                     memcpy(data_ptr,
+                            cld_node.element_ptr(i),
+                            ele_bytes);
+                     data_ptr+=ele_bytes;
+                 }
+                 
+                 
+                 DataView * view = createView(cld_name);
+                 view->attachBuffer(buff);
+                 // it is important to not use the data type directly
+                 // it could contain offsets that are no longer 
+                 // valid our new buffer
+                 view->apply((TypeID)cld_dtype.id(),
+                             cld_dtype.number_of_elements());
              }
           }
       }
   }
   else
   {
-      // ERROR
       SLIC_ERROR( "DataGroup cannot import non-object Conduit Node");
-      
   }
   
 }

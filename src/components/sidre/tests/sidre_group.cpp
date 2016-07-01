@@ -1251,8 +1251,12 @@ TEST(sidre_group,save_load_all_protocols)
   DataGroup * gc = flds->createGroup("c");
   int ndata = 10;
 
-  // use int64 and float64 b/c the basic json
-  // reader use those types
+  // prep a tree that can exactly restored by all 
+  // i/o protocols.
+  // Specially, use int64 and float64 b/c the 
+  // json i/o case uses those types for parsed integers
+  // and floating point numbers. 
+  
   ga->createViewScalar<conduit::int64>("i0", 100);
   ga->createViewScalar<conduit::float64>("d0", 3000.00);
   gb->createViewString("s0", "foo");
@@ -1264,6 +1268,13 @@ TEST(sidre_group,save_load_all_protocols)
     data_ptr[i] = (conduit::int64)i;
   }
 
+  // show the source tree
+  SLIC_INFO("Source tree");
+  ds.print();
+
+  //
+  // test all protocols
+  //
   std::vector<std::string> protocols;
   protocols.push_back("sidre_hdf5");
   protocols.push_back("sidre_conduit_json");
@@ -1274,19 +1285,35 @@ TEST(sidre_group,save_load_all_protocols)
   protocols.push_back("conduit_json");
   protocols.push_back("json");
 
-  ds.print();
-    
   for (size_t i = 0 ; i < protocols.size(); ++i)
   {
-    SLIC_INFO("Testing protocol:" << protocols[i]);
+    SLIC_INFO("Testing protocol: " << protocols[i]);
     const std::string file_path = file_path_base + protocols[i];
+    // save using current protocol
     ds.save(file_path, protocols[i]);
 
-    
     DataStore ds_load;
     ds_load.load(file_path, protocols[i]);
+    
+    SLIC_INFO("Tree from protocol: " <<  protocols[i]);
+    // show the result
     ds_load.print();
-    EXPECT_TRUE( ds.getRoot()->isEquivalentTo(ds_load.getRoot()));
+    
+    DataGroup *ds_load_root = ds_load.getRoot();
+    // check that the sidre hierarchy is equiv
+    EXPECT_TRUE( ds.getRoot()->isEquivalentTo(ds_load_root));
+    
+    // check that the values are the same
+    EXPECT_EQ(ds_load_root->getView("fields/a/i0")->getData<conduit::int64>(),100);
+    EXPECT_NEAR(ds_load_root->getView("fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+    EXPECT_EQ(ds_load_root->getView("fields/b/s0")->getString(),std::string("foo"));
+    
+    conduit::int64 * load_data_ptr = ds_load_root->getView("fields/c/int10")->getData();
+    for(int j=0; j< ndata; j++)
+    {
+        EXPECT_EQ(data_ptr[j],load_data_ptr[j]);
+    }
+
   }
 }
 
