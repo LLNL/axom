@@ -510,6 +510,41 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
   return num_files;
 }
 
+/*
+ *************************************************************************
+ *
+ * Write a group to an existing root file
+ *
+ *************************************************************************
+ */
+
+void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
+                                     std::string& file_name)
+{
+  MPI_Barrier(m_mpi_comm);
+  if (m_my_rank == 0) {
+    hid_t root_file_id = H5Fopen(file_name.c_str(),
+                                 H5F_ACC_RDWR,
+                                 H5P_DEFAULT);
+
+    SLIC_ASSERT(root_file_id >= 0); 
+
+    hid_t group_id = H5Gcreate2(root_file_id,
+                                group->getName().c_str(),
+                                H5P_DEFAULT,
+                                H5P_DEFAULT,
+                                H5P_DEFAULT);
+
+    conduit::Node data_holder;
+    group->createNativeLayout(data_holder);
+
+    conduit::relay::io::hdf5_write(data_holder, group_id);
+  }
+  MPI_Barrier(m_mpi_comm);
+}
+
+
+
 
 
 } /* end namespace spio */
