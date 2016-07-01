@@ -69,7 +69,8 @@ int main(int argc, char** argv)
   /*
    * Extra stuff to exercise writeGroupToRootFile
    */
-  DataGroup * extra = root->createGroup("extra");
+  DataStore * dsextra = new DataStore();
+  DataGroup * extra = dsextra->getRoot()->createGroup("extra");
   extra->createViewScalar<double>("dval", 1.1);
   DataGroup * child = extra->createGroup("child");
   child->createViewScalar<int>("ival", 7);
@@ -134,6 +135,7 @@ int main(int argc, char** argv)
 
   delete ds;
   delete ds2;
+  delete dsextra;
 
   MPI_Finalize();
 
