@@ -1242,11 +1242,9 @@ void DataGroup::load(const std::string& path,
   }
   else if (protocol == "conduit_hdf5")
   {
-      Node n;
-      conduit::relay::io::load(path,"hdf5", n);
-      n.print();
-      importConduitTree(n);
-      
+    Node n;
+    conduit::relay::io::load(path,"hdf5", n);
+    importConduitTree(n);
   }
   else if (protocol == "conduit_bin"  || 
            protocol == "conduit_json" ||
@@ -1254,8 +1252,7 @@ void DataGroup::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,protocol, n);
-      n.print();
-      importConduitTree(n);
+    importConduitTree(n);
   }
   else
   {
@@ -1299,10 +1296,8 @@ void DataGroup::load(const hid_t& h5_id,
   else if( protocol == "conduit_hdf5")
   {
     SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
-    // TODO: implement this case
     Node n;
     conduit::relay::io::hdf5_read(h5_id, n);
-      n.print();
     importConduitTree(n);
   }
   else
@@ -1626,15 +1621,7 @@ void DataGroup::exportTo(conduit::Node& result,
     }
   }
 
-  // TODO - take this out when CON-131 resolved ( can't write out empty node ).
-  // TODO -- this is fixed in conduit
-  // but, we should do
-  // result.set(DataType::object())
-  if (result.dtype().is_empty() )
-  {
-    result.set_string("empty");
-  }
-
+  result.set(DataType::object());
 }
 
 /*
@@ -1702,12 +1689,7 @@ void DataGroup::importFrom(conduit::Node & node)
 void DataGroup::importFrom(conduit::Node& node,
                            const std::map<IndexType, IndexType>& buffer_id_map)
 {
-  // If the Group is empty, conduit will complain if you call 'has_path'.
-
-  // Added CON-132 ticket asking if has_path can just return false if node
-  // is empty or not an object type.
-  // TODO: --- this is now fixed in conduit
-  if ( node.dtype().is_object() && node.has_path("views") )
+  if ( node.has_path("views") )
   {
     // create the Views
     conduit::NodeIterator views_itr = node["views"].children();
@@ -1720,7 +1702,7 @@ void DataGroup::importFrom(conduit::Node& node,
       view->importFrom(n_view, buffer_id_map);
     }
   }
-  if ( node.dtype().is_object() && node.has_path("groups") )
+  if ( node.has_path("groups") )
   {
     // create the child Groups
     conduit::NodeIterator groups_itr = node["groups"].children();
