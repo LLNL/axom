@@ -192,6 +192,15 @@ bool SIDRE_dataview_is_external(const SIDRE_dataview * self)
 // splicer end class.DataView.method.is_external
 }
 
+bool SIDRE_dataview_is_allocated(SIDRE_dataview * self)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.is_allocated
+  bool rv = selfobj->isAllocated();
+  return rv;
+// splicer end class.DataView.method.is_allocated
+}
+
 bool SIDRE_dataview_is_applied(const SIDRE_dataview * self)
 {
   const DataView * selfobj =
@@ -230,6 +239,26 @@ bool SIDRE_dataview_is_opaque(const SIDRE_dataview * self)
   bool rv = selfobj->isOpaque();
   return rv;
 // splicer end class.DataView.method.is_opaque
+}
+
+bool SIDRE_dataview_is_scalar(const SIDRE_dataview * self)
+{
+  const DataView * selfobj =
+    static_cast<const DataView *>(static_cast<const void *>(self));
+// splicer begin class.DataView.method.is_scalar
+  bool rv = selfobj->isScalar();
+  return rv;
+// splicer end class.DataView.method.is_scalar
+}
+
+bool SIDRE_dataview_is_string(const SIDRE_dataview * self)
+{
+  const DataView * selfobj =
+    static_cast<const DataView *>(static_cast<const void *>(self));
+// splicer begin class.DataView.method.is_string
+  bool rv = selfobj->isString();
+  return rv;
+// splicer end class.DataView.method.is_string
 }
 
 const char * SIDRE_dataview_get_name(const SIDRE_dataview * self)
@@ -328,6 +357,27 @@ void SIDRE_dataview_set_external_data_ptr_type(SIDRE_dataview * self, int type,
   selfobj->setExternalDataPtr(getTypeID(type), num_elems, external_ptr);
   return;
 // splicer end class.DataView.method.set_external_data_ptr_type
+}
+
+void SIDRE_dataview_set_string(SIDRE_dataview * self, const char * value)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.set_string
+  const std::string SH_value(value);
+  selfobj->setString(SH_value);
+  return;
+// splicer end class.DataView.method.set_string
+}
+
+void SIDRE_dataview_set_string_bufferify(SIDRE_dataview * self,
+                                         const char * value, int Lvalue)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.set_string_bufferify
+  const std::string SH_value(value, Lvalue);
+  selfobj->setString(SH_value);
+  return;
+// splicer end class.DataView.method.set_string_bufferify
 }
 
 void SIDRE_dataview_set_external_data_ptr_shape(SIDRE_dataview * self, int type,

@@ -89,6 +89,8 @@ bool SIDRE_dataview_has_buffer(const SIDRE_dataview * self);
 
 bool SIDRE_dataview_is_external(const SIDRE_dataview * self);
 
+bool SIDRE_dataview_is_allocated(SIDRE_dataview * self);
+
 bool SIDRE_dataview_is_applied(const SIDRE_dataview * self);
 
 bool SIDRE_dataview_is_described(const SIDRE_dataview * self);
@@ -96,6 +98,10 @@ bool SIDRE_dataview_is_described(const SIDRE_dataview * self);
 bool SIDRE_dataview_is_empty(const SIDRE_dataview * self);
 
 bool SIDRE_dataview_is_opaque(const SIDRE_dataview * self);
+
+bool SIDRE_dataview_is_scalar(const SIDRE_dataview * self);
+
+bool SIDRE_dataview_is_string(const SIDRE_dataview * self);
 
 const char * SIDRE_dataview_get_name(const SIDRE_dataview * self);
 
@@ -120,6 +126,11 @@ void SIDRE_dataview_set_external_data_ptr_only(SIDRE_dataview * self,
 void SIDRE_dataview_set_external_data_ptr_type(SIDRE_dataview * self, int type,
                                                SIDRE_SidreLength num_elems,
                                                void * external_ptr);
+
+void SIDRE_dataview_set_string(SIDRE_dataview * self, const char * value);
+
+void SIDRE_dataview_set_string_bufferify(SIDRE_dataview * self,
+                                         const char * value, int Lvalue);
 
 void SIDRE_dataview_set_external_data_ptr_shape(SIDRE_dataview * self, int type,
                                                 int ndims,
