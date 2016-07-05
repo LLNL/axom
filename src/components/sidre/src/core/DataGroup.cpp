@@ -147,13 +147,17 @@ DataView * DataGroup::createView( const std::string& name )
     SLIC_CHECK( group != ATK_NULLPTR );
     return ATK_NULLPTR;
   }
-  else if ( path.empty() || group->hasChildView(path) )
+  else if ( path.empty() || group->hasChildView(path) || group->hasChildGroup(path) )
   {
     SLIC_CHECK( !path.empty() );
     SLIC_CHECK_MSG( !group->hasChildView(path),
                     "Cannot create View with name '" << path <<
                     "' in Group '" << getName() <<
                     " since it already has a View with that name" );
+    SLIC_CHECK_MSG( !group->hasChildGroup(path),
+                    "Cannot create View with name '" << path <<
+                    "' in Group '" << getName() <<
+                    " since it already has a Group with that name" );
     return ATK_NULLPTR;
   }
 
@@ -806,13 +810,17 @@ DataGroup * DataGroup::createGroup( const std::string& name )
     SLIC_CHECK( group != ATK_NULLPTR );
     return ATK_NULLPTR;
   }
-  else if ( path.empty() || group->hasChildGroup(path) )
+  else if ( path.empty() || group->hasChildGroup(path) || group->hasChildView(path) )
   {
     SLIC_CHECK( !path.empty() );
     SLIC_CHECK_MSG( !group->hasChildGroup(path),
                     "Cannot create Group with name '" << path <<
                     " in Group '" << getName() <<
                     " since it already has a Group with that name" );
+    SLIC_CHECK_MSG( !group->hasChildView(path),
+                    "Cannot create Group with name '" << path <<
+                    " in Group '" << getName() <<
+                    " since it already has a View with that name" );
 
     return ATK_NULLPTR;
   }
