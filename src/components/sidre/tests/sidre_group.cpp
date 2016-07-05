@@ -523,6 +523,17 @@ TEST(sidre_group,group_name_collisions)
   // attempt to create duplicate view name.
   EXPECT_TRUE(flds->createView("a") == ATK_NULLPTR);
 
+  DataGroup * irrgroup1 = ds->getRoot()->createGroup("here//is/path");
+  DataGroup * irrgroup2 = ds->getRoot()->createGroup("éch≈o/Ωd");
+  DataGroup * irrgroup3 = ds->getRoot()->createGroup("../group/..");
+
+  IndexType idx = ds->getRoot()->getFirstValidGroupIndex();
+  while (idx != InvalidIndex)
+  {
+    std::cout << ds->getRoot()->getGroup(idx)->getName() << std::endl;
+    idx = ds->getRoot()->getNextValidGroupIndex(idx);
+  }
+
   delete ds;
 }
 //------------------------------------------------------------------------------
