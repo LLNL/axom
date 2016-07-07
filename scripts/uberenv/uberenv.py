@@ -359,8 +359,8 @@ def main():
                              opts["mirror"])
         # use the uberenv package to trigger the right builds 
         # and build an host-config.cmake file
-        sexe("spack/bin/spack install " + uberenv_pkg_name + opts["spec"], echo=True)
-#        sexe("spack/bin/spack install " + uberenv_pkg_name + opts["spec"] +" ^cmake %clang@3.4svn ^doxygen %clang@3.4svn ^python %clang@3.4svn ", echo=True)
+        sexe("spack/bin/spack install " + uberenv_pkg_name + opts["spec"],
+             echo=True)
 
 if __name__ == "__main__":
     main()
