@@ -53,7 +53,28 @@ compilers:
              cxx: /usr/bin/clang++
              f77: /usr/local/bin/gfortran
              fc:  /usr/local/bin/gfortran
-
-
-
-
+         clang@apple-fink:
+             cc:  /usr/bin/clang
+             cxx: /usr/bin/clang++
+             f77: /sw/local/bin/gfortran
+             fc:  /sw/local/bin/gfortran
+         clang@apple-mp:
+             cc:  /usr/bin/clang
+             cxx: /usr/bin/clang++
+             f77: /opt/local/bin/gfortran-mp-5
+             fc:  /opt/local/bin/gfortran-mp-5
+         clang@mp3.7:
+             cc:  /opt/local/bin/clang-mp-3.7
+             cxx: /opt/local/bin/clang++-mp-3.7
+             f77: /opt/local/bin/gfortran-mp-5
+             fc:  /opt/local/bin/gfortran-mp-5
+         gcc@mp49:
+             cc:  /opt/local/bin/gcc-mp-4.9
+             cxx: /opt/local/bin/g++-mp-4.9
+             f77: /opt/local/bin/gfortran-mp-4.9
+             fc:  /opt/local/bin/gfortran-mp-4.9
+         gcc@mp5:
+             cc:  /opt/local/bin/gcc-mp-5
+             cxx: /opt/local/bin/g++-mp-5
+             f77: /opt/local/bin/gfortran-mp-5
+             fc:  /opt/local/bin/gfortran-mp-5

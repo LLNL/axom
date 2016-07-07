@@ -402,7 +402,7 @@ public:
   {
     return (idx >= 0 &&
             static_cast<unsigned>(idx) < m_items.size() &&
-            m_items[idx]);
+            m_items[static_cast<unsigned>(idx)]);
   }
 
   ///
@@ -424,19 +424,19 @@ public:
   ///
   TYPE * getItem(IndexType idx)
   {
-    return ( hasItem(idx) ? m_items[idx] : ATK_NULLPTR );
+    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : ATK_NULLPTR );
   }
 
   ///
   TYPE const * getItem(IndexType idx) const
   {
-    return ( hasItem(idx) ? m_items[idx] : ATK_NULLPTR );
+    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : ATK_NULLPTR );
   }
 
   ///
   const std::string& getItemName(IndexType idx) const
   {
-    return ( hasItem(idx) ? m_items[idx]->getName() : InvalidName );
+    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)]->getName() : InvalidName );
   }
 
   ///
@@ -485,7 +485,7 @@ IndexType NewMapCollection<TYPE,
 {
   idx++;
   while ( static_cast<unsigned>(idx) < m_items.size() &&
-          m_items[idx] == ATK_NULLPTR )
+          m_items[static_cast<unsigned>(idx)] == ATK_NULLPTR )
   {
     idx++;
   }
