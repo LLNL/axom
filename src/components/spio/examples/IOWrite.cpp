@@ -60,6 +60,16 @@ int main(int argc, char * argv[])
   IOManager writer(MPI_COMM_WORLD);
   writer.write(root, num_files, file_base, "conduit_hdf5");
 
+  DataGroup * extra = root->createGroup("extra");
+  extra->createViewScalar<double>("dval", 1.1);
+  DataGroup * child = extra->createGroup("child");
+  child->createViewScalar<int>("ival", 7);
+  child->createViewString("word0", "hello");
+  child->createViewString("word1", "world");
+
+  std::string root_name = file_base + ".root";
+  writer.writeGroupToRootFile(extra, root_name);
+
   delete ds;
 
   MPI_Finalize();
