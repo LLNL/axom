@@ -58,7 +58,7 @@ bool DataGroup::hasView( const std::string& name ) const
 
   if (group == ATK_NULLPTR) return false;
 
-  return group->m_view_coll.hasItem(path);
+  return group->hasChildView(path);
 }
 
 
@@ -731,7 +731,7 @@ bool DataGroup::hasGroup( const std::string& name ) const
   const DataGroup * group = walkPath( path );
 
   if ( group == ATK_NULLPTR ) return false;
-  else return group->m_group_coll.hasItem(path);
+  else return group->hasChildGroup(path);
 }
 
 ////////////////////////////////////////////////////////////////////////

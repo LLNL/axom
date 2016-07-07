@@ -235,7 +235,7 @@ public:
   }
 
   /*!
-   * \brief Return index of View with given name owned by Group object.
+   * \brief Return index of View with given name owned by this Group object.
    *
    *        If no such View exists, return sidre::InvalidIndex;
    */
@@ -1193,7 +1193,7 @@ private:
    * in the path.
    *
    * If there is no "/" in the given path, the entire string is considered
-   * the next-to-last path entry. In this case, the erturn value is this
+   * the next-to-last path entry. In this case, the return value is this
    * Group.
    *
    * The path argument is modified while walking the path. Its value when
@@ -1206,6 +1206,11 @@ private:
   /*!
    * \brief Const private method that returns the Group that is the
    * next-to-last entry in a delimited path string.
+   *
+   * The path argument is modified while walking the path. Its value when
+   * the method returns is the last entry in the path, either the string
+   * following the last "/" in the input (if there is one) or the entire
+   * input path string if it contains no "/".
    */
   const DataGroup * walkPath(std::string& path ) const;
 

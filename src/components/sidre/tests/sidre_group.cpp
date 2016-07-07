@@ -76,12 +76,10 @@ TEST(sidre_group,group_with_path)
 
   // Now verify that code will not create missing groups.
 
-  DataGroup * group3 = root->createGroup("testa")->createGroup("testb")->createGroup("testc");
+  root->createGroup("testa")->createGroup("testb")->createGroup("testc");
   DataGroup * group_bada = root->getGroup("BAD/testb/testc");
   DataGroup * group_badb = root->getGroup("testa/BAD/testc");
   DataGroup * group_badc = root->getGroup("testa/testb/BAD");
-
-  (void)group3;
 
   EXPECT_EQ(group_bada, ATK_NULLPTR );
   EXPECT_EQ(group_badb, ATK_NULLPTR );
