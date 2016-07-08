@@ -27,9 +27,9 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <cstring>
 
 // third party lib headers
-#include "relay.hpp"
 #include "hdf5.h"
 
 #ifndef USE_UNORDERED_MAP
@@ -1083,13 +1083,8 @@ public:
   /*!
    * \brief Save the Group to an hdf5 handle.
    */
-  void save( const hid_t& h5_id) const;
-
-  /*!
-   * \brief Save the Group to an hdf5 handle.
-   */
   void save( const hid_t& h5_id,
-             const std::string &protocol) const;
+             const std::string &protocol = "sidre_hdf5") const;
 
 
   /*!
@@ -1101,15 +1096,8 @@ public:
   /*!
    * \brief Load the Group from an hdf5 handle.
    */
-  void load(const hid_t& h5_id);
-
-
-  /*!
-   * \brief Load the Group from an hdf5 handle.
-   */
   void load( const hid_t& h5_id,
-             const std::string &protocol);
-
+             const std::string &protocol = "sidre_hdf5");
 
 
   /*!

@@ -21,6 +21,8 @@
 // Associated header file
 #include "DataGroup.hpp"
 
+#include "relay.hpp"
+
 // Other toolkit component headers
 
 // SiDRe project headers
@@ -882,7 +884,6 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
  */
 void DataGroup::createNativeLayout(Node& n) const
 {
-  //  n.reset();
   n.set(DataType::object());
 
   // Dump the group's views
@@ -919,7 +920,6 @@ void DataGroup::createNativeLayout(Node& n) const
  */
 void DataGroup::createExternalLayout(Node& n) const
 {
-  // n.reset();
   n.set(DataType::object());
 
   // Dump the group's views
@@ -1165,22 +1165,6 @@ void DataGroup::save(const std::string& path,
  *
  *************************************************************************
  */
-void DataGroup::save(const hid_t& h5_id) const
-{ 
-  // This is the sidre hdf5 case ...
-  Node n;
-  exportTo(n["sidre"]);
-  createExternalLayout(n["sidre/external"]);
-  conduit::relay::io::hdf5_write(n,h5_id);
-}
-
-/*
- *************************************************************************
- *
- * Save Group (including Views and child Groups) to a hdf5 handle
- *
- *************************************************************************
- */
 void DataGroup::save(const hid_t& h5_id,
                      const std::string& protocol) const
 {
@@ -1189,7 +1173,10 @@ void DataGroup::save(const hid_t& h5_id,
   // "conduit_hdf5"
   if(protocol == "sidre_hdf5")
   {
-      save(h5_id);
+    Node n;
+    exportTo(n["sidre"]);
+    createExternalLayout(n["sidre/external"]);
+    conduit::relay::io::hdf5_write(n,h5_id);
   }
   else if( protocol == "conduit_hdf5")
   {
@@ -1265,22 +1252,6 @@ void DataGroup::load(const std::string& path,
  *
  * Load Group (including Views and child Groups) from an hdf5 handle
  *
- * Note: this ASSUMES the "sidre_hdf5" protocol
- *************************************************************************
- */
-void DataGroup::load(const hid_t& h5_id)
-{
-  Node n;
-  conduit::relay::io::hdf5_read(h5_id,n);
-  SLIC_ASSERT(n.has_path("sidre"));
-  importFrom(n["sidre"]);
-}
-
-/*
- *************************************************************************
- *
- * Load Group (including Views and child Groups) from an hdf5 handle
- *
  *************************************************************************
  */
 void DataGroup::load(const hid_t& h5_id,
@@ -1291,7 +1262,10 @@ void DataGroup::load(const hid_t& h5_id,
   // "conduit_hdf5"
   if(protocol == "sidre_hdf5")
   {
-      load(h5_id);
+    Node n;
+    conduit::relay::io::hdf5_read(h5_id,n);
+    SLIC_ASSERT(n.has_path("sidre"));
+    importFrom(n["sidre"]);
   }
   else if( protocol == "conduit_hdf5")
   {
