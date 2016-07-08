@@ -582,6 +582,52 @@ public:
     }
     return this;
   }
+  
+  
+
+    /*!
+     * \brief Set the view to hold the given scalar.
+     *
+     * \return pointer to this DataView object.
+     */
+    DataView * setScalar(Node &value)
+    {
+      // If this view already contains a scalar, issue a warning if the user is
+      // changing the underlying type ( ie: integer -> float ).
+  #if defined(ATK_DEBUG)
+      if (m_state == SCALAR)
+      {
+        SLIC_CHECK_MSG(value.dtype().id() == m_node.dtype().id(),
+                       "You are setting a scalar value in view "
+                       << m_name
+                       << " which has changed the underlying data type."
+                       << "Old type = " << m_node.dtype().name()
+                       << ", new type ="
+                       <<  DataType::id_to_name( value.dtype().id() ) << ".");
+      }
+  #endif
+
+      // Note: most of these calls that set the view class members are
+      //       unnecessary if the view already holds a scalar.  May be
+      //       a future optimization opportunity to split the
+      if (m_state == EMPTY || m_state == SCALAR)
+      {
+        m_node.set(value);
+        m_schema.set(m_node.schema());
+        m_state = SCALAR;
+        m_is_applied = true;
+        describeShape();
+      }
+      else
+      {
+        SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
+                       "Unable to set scalar value on view "
+                       << m_name << " with state: "
+                       << getStateStringName(m_state)  );
+      }
+      return this;
+    }
+  
 
 //
 // RDH -- Add an overload of the following that takes a const char *.
@@ -711,15 +757,9 @@ public:
    */
   Node::Value getScalar()
   {
-    if (m_state == SCALAR)
-    {
-      return getData();
-    }
-    else
-    {
-      // TODO - This will throw an exception in the user's code  ATK-704
-      return Node().value();
-    }
+     SLIC_CHECK_MSG( (m_state == SCALAR),
+                     "DataView::getScalar() called on non-scalar view.");
+     return getData();
   }
 
   /*!
@@ -737,8 +777,8 @@ public:
                       "No view data present, memory has not been allocated.");
       SLIC_CHECK_MSG( isApplied(),
                       "View data description not present.");
-      return Node().value();
     }
+    // this will return a default value 
     return m_node.value();
   }
 
@@ -794,15 +834,6 @@ public:
    * in the file (independent of file format) and can be accessed as a Conduit tree.
    */
   void createNativeLayout(Node& n) const;
-
-  /*!
-   * \brief Copy data view native layout to given Conduit node.
-   *
-   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
-   * externally to the Sidre View data so that it can be filled in from the data
-   * in the file (independent of file format) and can be accessed as a Conduit tree.
-   */
-  void createExternalLayout(Node& parent) const;
 
 private:
 
@@ -987,6 +1018,11 @@ private:
    *  \brief Private method returns string name of given view state enum value.
    */
   static char const * getStateStringName(State state);
+
+  /*!
+   *  \brief Private method returns state enum value give a state name.
+   */
+  State getStateId(const std::string &name);
 
   /// Name of this DataView object.
   std::string m_name;

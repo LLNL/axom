@@ -218,7 +218,8 @@ const char* Lumberjack::packMessages()
         std::memcpy(packedMessagesIndex, packedMessages[i].c_str(), packedMessages[i].size());
         packedMessagesIndex += packedMessages[i].size();
     }
-    packedMessagesIndex = '\0';
+    
+    packedMessagesIndex[0] = '\0';
     return packedMessagesString;
 }
 

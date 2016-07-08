@@ -64,7 +64,7 @@ int main(int argc, char** argv)
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root, num_files, "out_spio_parallel_write_read", "conduit_hdf5");
+  writer.write(root, num_files, "out_spio_parallel_write_read", "sidre_hdf5");
 
   /*
    * Create another DataStore that holds nothing but the root group.

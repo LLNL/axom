@@ -613,8 +613,8 @@ void DataView::copyToConduitNode(Node &n) const
 {
   n["name"] = m_name;
   n["schema"] = m_schema.to_json();
-  n["node"] = m_node.to_json();
-  n["state"] = getStateStringName(m_state);
+  n["value"]  = m_node.to_json();
+  n["state"]  = getStateStringName(m_state);
   n["is_applied"] = m_is_applied;
 }
 
@@ -638,32 +638,6 @@ void DataView::createNativeLayout(Node &n) const
   void * data_ptr = const_cast<void *>(m_node.data_ptr());
   n.set_external( m_node.schema(), data_ptr);
 }
-
-/*
- *************************************************************************
- *
- * Copy data view native layout to given Conduit node.
- *
- *************************************************************************
- */
-void DataView::createExternalLayout(Node &parent) const
-{
-  // see ATK-726 - Handle undescribed and unallocated views in Sidre's createNativeLayout()
-  // TODO: Need to handle cases where the view is not described
-  // TODO: Need to handle cases where the view is not allocated
-  // TODO: Need to handle cases where the view is not applied
-
-  // Note: We are using conduit's pointer rather than the DataView pointer
-  //    since the conduit pointer handles offsetting
-  // Note: const_cast the pointer to satisfy conduit's interface
-  if (isExternal() && isDescribed())
-  {
-    Node & n = parent[ m_name ];
-    void * data_ptr = const_cast<void *>(m_node.data_ptr());
-    n.set_external( m_node.schema(), data_ptr);
-  }
-}
-
 
 /*
  *************************************************************************
@@ -944,6 +918,45 @@ char const * DataView::getStateStringName(State state)
 /*
  *************************************************************************
  *
+ * PRIVATE method returns state enum value when given string with a
+ * state name.
+ *
+ *************************************************************************
+ */
+DataView::State DataView::getStateId(const std::string &name)
+{
+  State res = EMPTY;
+  if(name == "EMPTY")
+  {
+    res = EMPTY;
+  }
+  else if(name == "BUFFER")
+  {
+    res = BUFFER;
+  }
+  else if(name == "EXTERNAL")
+  {
+    res = EXTERNAL;
+  }
+  else if(name == "SCALAR")
+  {
+    res = SCALAR;
+  }
+  else if(name == "STRING")
+  {
+    res = STRING;
+  }
+  else if(name == "UNKNOWN")
+  {
+    res = EMPTY;
+  }
+  
+  return res;
+}
+
+/*
+ *************************************************************************
+ *
  * PRIVATE method to copy view data to given Conduit node using
  * given set of ids to maintain correct association of data buffers
  * to data views.
@@ -953,7 +966,7 @@ char const * DataView::getStateStringName(State state)
 void DataView::exportTo(conduit::Node& data_holder,
                         std::set<IndexType>& buffer_indices) const
 {
-  data_holder["state"] = static_cast<unsigned int>(m_state);
+  data_holder["state"] = getStateStringName(m_state);
 
   switch (m_state)
   {
@@ -982,12 +995,12 @@ void DataView::exportTo(conduit::Node& data_holder,
     else
     {
       // If there is no description, make it an EMPTY view
-      data_holder["state"] = static_cast<unsigned int>(EMPTY);
+      data_holder["state"] = getStateStringName(EMPTY);
     }
     break;
   case SCALAR:
   case STRING:
-    data_holder["node"] = getNode();
+    data_holder["value"] = getNode();
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
@@ -1003,7 +1016,7 @@ void DataView::exportTo(conduit::Node& data_holder,
 void DataView::importFrom(conduit::Node& data_holder,
                           const std::map<IndexType, IndexType>& buffer_id_map)
 {
-  m_state = static_cast<State>(data_holder["state"].as_unsigned_int());
+  m_state = getStateId(data_holder["state"].as_string());
 
   switch (m_state)
   {
@@ -1040,7 +1053,7 @@ void DataView::importFrom(conduit::Node& data_holder,
     break;
   case SCALAR:
   case STRING:
-    m_node = data_holder["node"];
+    m_node = data_holder["value"];
     m_schema.set(m_node.schema());
     m_is_applied = true;
     break;

@@ -69,7 +69,7 @@ program spio_parallel_write_read
   num_files = num_output
   writer = iomanager_new(MPI_COMM_WORLD)
 
-  call writer%write(root1, num_files, "F_out_spio_parallel_write_read", "conduit_hdf5")
+  call writer%write(root1, num_files, "F_out_spio_parallel_write_read", "sidre_hdf5")
 
   ! create another datastore that holds nothing but the root group.
   ds2 = datastore_new()

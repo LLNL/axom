@@ -87,14 +87,14 @@ classes:
     -  decl: void print() const
 #    -  decl: void print(std::ostream& os) const
 
-    -  decl: void save(const std::string& file_path, const std::string& protocol, const DataGroup* group = ATK_NULLPTR ) const
-#   -  decl: void save(const hid_t& h5_file_id, const DataGroup* group = ATK_NULLPTR ) const
+    -  decl: void save(const std::string& file_path, const std::string& protocol) const
+#   -  decl: void save(const hid_t& h5_id) const
 #      function_suffix: _hdf
-    -  decl: void load(const std::string& file_path, const std::string& protocol, DataGroup * group = ATK_NULLPTR)
-#   -  decl: void load(const hid_t& h5_file_id, DataGroup * group = ATK_NULLPTR)
+    -  decl: void load(const std::string& file_path, const std::string& protocol)
+#   -  decl: void load(const hid_t& h5_id)
 #      function_suffix: _hdf
-    -  decl: void loadExternalData(const std::string& file_path, const std::string& protocol, DataGroup * group = ATK_NULLPTR)
-#   -  decl: void loadExternalData(const hid_t& h5_file_id, DataGroup * group = ATK_NULLPTR)
+    -  decl: void loadExternalData(const std::string& file_path, const std::string& protocol)
+#   -  decl: void loadExternalData(const hid_t& h5_id)
 #      function_suffix: _hdf
 
 #    - decl: void createNativeLayout(Node &) const
@@ -252,6 +252,15 @@ classes:
 #   -  decl: void load(const std::string& obase,  const std::string& protocol)
 
     - decl: bool isEquivalentTo(const DataGroup * other) const
+    
+    -  decl: void save(const std::string& file_path, const std::string& protocol) const
+#   -  decl: void save(const hid_t& h5_id) const
+#      function_suffix: _hdf
+    -  decl: void load(const std::string& file_path, const std::string& protocol)
+#   -  decl: void load(const hid_t& h5_id)
+#      function_suffix: _hdf
+    -  decl: void loadExternalData(const std::string& file_path, const std::string& protocol)
+    
 
     python:
       type: [ init, richcompare ]

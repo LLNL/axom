@@ -29,7 +29,7 @@ using asctoolkit::sidre::FLOAT64_ID;
 
 // Test protocols
 int nprotocols = 3;
-std::string const protocols[] = { "conduit", "conduit_hdf5", "text" };
+std::string const protocols[] = { "sidre_json", "sidre_hdf5", "json" };
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -719,6 +719,57 @@ TEST(sidre_group,save_restore_empty_datastore)
   }
 }
 
+
+//------------------------------------------------------------------------------
+// make sure the hdf5 methods are consistent with the path based methods
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_load_via_hdf5_ids)
+{
+
+  DataStore ds_save;
+  // populate the datastore
+  DataGroup *root = ds_save.getRoot();
+  root->createViewScalar<int>("i0", 1);
+  root->createViewAndAllocate("vals", INT_ID, 5);
+  // set values for the "vals" array
+  int *vals_ptr =  root->getView("vals")->getData();
+  for (int i = 0 ; i < 5 ; ++i)
+  {
+     vals_ptr[i] = i;
+  }
+ 
+  // save using the sidre_hdf5 protocol
+  ds_save.save("out_save_load_via_hdf5_ids.sidre_hdf5", "sidre_hdf5");
+
+  // load via path based 
+  DataStore ds_load_generic;
+  ds_load_generic.load("out_save_load_via_hdf5_ids.sidre_hdf5", "sidre_hdf5");
+
+  // load via hdf5 id
+  DataStore ds_load_hdf5;
+  
+  hid_t h5_id = H5Fopen("out_save_load_via_hdf5_ids.sidre_hdf5",
+                        H5F_ACC_RDWR,
+                        H5P_DEFAULT);
+  EXPECT_TRUE(h5_id >= 0);
+  
+  // this implies protocol == "sidre_hdf5"
+  ds_load_hdf5.load(h5_id);
+ 
+  // ? Does isEquivalentTo check values?
+  // check path based with source
+  EXPECT_TRUE( ds_load_generic.getRoot()->isEquivalentTo(ds_save.getRoot()) );
+  
+  // check hdf5 based with source
+  EXPECT_TRUE( ds_load_hdf5.getRoot()->isEquivalentTo(ds_save.getRoot()) );
+
+  // check path based vs hdf5 based
+  EXPECT_TRUE( ds_load_generic.getRoot()->isEquivalentTo(ds_load_hdf5.getRoot()) );
+  
+  // close hdf5 handle
+  EXPECT_TRUE(H5Fclose(h5_id) >=0);
+}
+
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_api)
 {
@@ -731,12 +782,12 @@ TEST(sidre_group,save_restore_api)
   // These should be produce identical files.
 
   // No group provided, defaults to root group
-  ds1->save("sidre_save_fulltree_conduit", "conduit");
+  ds1->save("sidre_save_fulltree_conduit", "json");
 
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
-    ds1->save(file_path, protocols[i], root1);
+    root1->save(file_path, protocols[i]);
   }
 
 #if 0
@@ -752,7 +803,7 @@ TEST(sidre_group,save_restore_api)
 #endif
 
   DataStore * ds4 = new DataStore();
-  ds4->load("sidre_save_subtree_conduit_hdf5", "conduit_hdf5");
+  ds4->load("sidre_save_subtree_sidre_hdf5", "sidre_hdf5");
   EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(root1) );
   delete ds4;
 
@@ -1287,3 +1338,86 @@ TEST(sidre_group,is_equivalent_to)
   delete ds;
 
 }
+
+
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_load_all_protocols)
+{
+  const std::string file_path_base("sidre_save_load_all_protocols.");
+  DataStore ds;
+  
+  DataGroup * flds = ds.getRoot()->createGroup("fields");
+
+  DataGroup * ga = flds->createGroup("a");
+  DataGroup * gb = flds->createGroup("b");
+  DataGroup * gc = flds->createGroup("c");
+  int ndata = 10;
+
+  // prep a tree that can exactly restored by all 
+  // i/o protocols.
+  // Specially, use int64 and float64 b/c the 
+  // json i/o case uses those types for parsed integers
+  // and floating point numbers. 
+  
+  ga->createViewScalar<conduit::int64>("i0", 100);
+  ga->createViewScalar<conduit::float64>("d0", 3000.00);
+  gb->createViewString("s0", "foo");
+
+  gc->createViewAndAllocate("int10", DataType::int64(ndata));
+  conduit::int64 * data_ptr = gc->getView("int10")->getArray();
+  for (int i = 0 ; i < ndata ; ++i)
+  {
+    data_ptr[i] = (conduit::int64)i;
+  }
+
+  // show the source tree
+  SLIC_INFO("Source tree");
+  ds.print();
+
+  //
+  // test all protocols
+  //
+  std::vector<std::string> protocols;
+  protocols.push_back("sidre_hdf5");
+  protocols.push_back("sidre_conduit_json");
+  protocols.push_back("sidre_json");
+
+  protocols.push_back("conduit_hdf5");
+  protocols.push_back("conduit_bin");
+  protocols.push_back("conduit_json");
+  protocols.push_back("json");
+
+  for (size_t i = 0 ; i < protocols.size(); ++i)
+  {
+    SLIC_INFO("Testing protocol: " << protocols[i]);
+    const std::string file_path = file_path_base + protocols[i];
+    // save using current protocol
+    ds.save(file_path, protocols[i]);
+
+    DataStore ds_load;
+    ds_load.load(file_path, protocols[i]);
+    
+    SLIC_INFO("Tree from protocol: " <<  protocols[i]);
+    // show the result
+    ds_load.print();
+    
+    DataGroup *ds_load_root = ds_load.getRoot();
+    // check that the sidre hierarchy is equiv
+    EXPECT_TRUE( ds.getRoot()->isEquivalentTo(ds_load_root));
+    
+    // check that the values are the same
+    EXPECT_EQ(ds_load_root->getView("fields/a/i0")->getData<conduit::int64>(),100);
+    EXPECT_NEAR(ds_load_root->getView("fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+    EXPECT_EQ(ds_load_root->getView("fields/b/s0")->getString(),std::string("foo"));
+    
+    conduit::int64 * load_data_ptr = ds_load_root->getView("fields/c/int10")->getData();
+    for(int j=0; j< ndata; j++)
+    {
+        EXPECT_EQ(data_ptr[j],load_data_ptr[j]);
+    }
+
+  }
+}
+
+

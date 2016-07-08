@@ -1204,3 +1204,30 @@ TEST(sidre_datastore,destroy_buffer)
 
   delete ds;
 }
+
+
+//------------------------------------------------------------------------------
+TEST(sidre_view,value_from_uninited_view)
+{
+    DataStore ds;
+    DataView * view = ds.getRoot()->createView("empty");
+
+    // check getScalar
+    int val = view->getScalar();
+    EXPECT_EQ(val,0);
+
+    // check getArray
+    int *aval_ptr =    view->getArray();
+    EXPECT_TRUE( aval_ptr == NULL );
+
+    int aval = view->getArray();
+    EXPECT_EQ(aval,0);
+    
+    // check getData
+    int *dval_ptr =    view->getData();
+    EXPECT_TRUE( dval_ptr == NULL );
+
+    int dval = view->getData();
+    EXPECT_EQ(dval,0);
+    
+}

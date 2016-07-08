@@ -27,6 +27,10 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <cstring>
+
+// third party lib headers
+#include "hdf5.h"
 
 #ifndef USE_UNORDERED_MAP
 #define USE_UNORDERED_MAP
@@ -1046,6 +1050,68 @@ public:
    */
   bool isEquivalentTo(const DataGroup * other) const;
 
+
+  /*!
+   *@{
+   * @name    Group I/O methods
+   *   These methods save and load Group trees to and from files. 
+   *   This includes the views and buffers used in by groups in the tree.
+   *   We provide several "protocol" options:
+   *
+   *   protocols:
+   *    sidre_hdf5 (default)
+   *    sidre_conduit_json
+   *    sidre_json
+   *
+   *    conduit_hdf5
+   *    conduit_bin
+   *    conduit_json
+   *    json
+   *
+  */
+
+  /*!
+   * \brief Save the Group to a file.
+   *
+   *  Saves the tree starting at this group and the buffers used by the views
+   *  in this tree.
+   *
+   */
+  void save( const std::string& path,
+             const std::string& protocol) const;
+
+  /*!
+   * \brief Save the Group to an hdf5 handle.
+   */
+  void save( const hid_t& h5_id,
+             const std::string &protocol = "sidre_hdf5") const;
+
+
+  /*!
+   * \brief Load the Group from a file.
+   */
+  void load(const std::string& path,
+            const std::string& protocol);
+
+  /*!
+   * \brief Load the Group from an hdf5 handle.
+   */
+  void load( const hid_t& h5_id,
+             const std::string &protocol = "sidre_hdf5");
+
+
+  /*!
+   * \brief Load data into the Group's external views from a file.
+   */
+  void loadExternalData(const std::string& path,
+                        const std::string& protocol);
+
+  /*!
+   * \brief Load data into the Group's external views from a hdf5 handle.
+   */
+  void loadExternalData(const hid_t& h5_id);
+
+
 private:
 
   /*!
@@ -1150,8 +1216,16 @@ private:
 //@{
 //!  @name Private DataGroup methods for interacting with Conduit Nodes.
 
+
   /*!
-   * \brief Private methods to copy DataGroup to Conduit Node.
+   * \brief Private method to copy DataGroup to Conduit Node.
+   *
+   * Note: This is for the "sidre_hdf5" protocol.
+   */
+  void exportTo(conduit::Node& result) const;
+  
+  /*!
+   * \brief Private method to copy DataGroup to Conduit Node.
    *
    * \param buffer_indices Used to track what Buffers are referenced
    * by the Views in this Group and Groups in the sub-tree below it.
@@ -1160,7 +1234,14 @@ private:
                 std::set<IndexType>& buffer_indices) const;
 
   /*!
-   * \brief Private methods to copy DataGroup from Conduit Node.
+   * \brief Private method to build a Group hierarchy from Conduit Node.
+   *
+   * Note: This is for the "sidre_{zzz}" protocols.
+   */
+   void importFrom(conduit::Node& node);
+
+  /*!
+   * \brief Private method to copy DataGroup from Conduit Node.
    *
    * Map of Buffer indices tracks old Buffer ids in the file to the
    * new Buffer ids in the datastore.  Buffer ids are not guaranteed
@@ -1169,6 +1250,15 @@ private:
    */
   void importFrom(conduit::Node& node,
                   const std::map<IndexType, IndexType>& buffer_id_map);
+
+
+  /*!
+   * \brief Private method to build a Group hierarchy from Conduit Node.
+   *
+   * Note: This is for the "conduit_{zzz}" protocols.
+   */
+   void importConduitTree(conduit::Node& node);
+
 
 //@}
 
@@ -1205,7 +1295,7 @@ private:
   static const char s_path_delimiter;
 
   ///
-  /// Typedefs for View and shild Group containers. They are here to
+  /// Typedefs for View and child Group containers. They are here to
   /// avoid propagating specific type names in the DataGroup class
   /// implementation when we experiment with different containers.
   ///

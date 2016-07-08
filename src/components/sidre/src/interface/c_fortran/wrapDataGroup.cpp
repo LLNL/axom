@@ -921,6 +921,86 @@ bool SIDRE_datagroup_is_equivalent_to(const SIDRE_datagroup * self,
 // splicer end class.DataGroup.method.is_equivalent_to
 }
 
+void SIDRE_datagroup_save(const SIDRE_datagroup * self, const char * file_path,
+                          const char * protocol)
+{
+  const DataGroup * selfobj =
+    static_cast<const DataGroup *>(static_cast<const void *>(self));
+// splicer begin class.DataGroup.method.save
+  const std::string SH_file_path(file_path);
+  const std::string SH_protocol(protocol);
+  selfobj->save(SH_file_path, SH_protocol);
+  return;
+// splicer end class.DataGroup.method.save
+}
+
+void SIDRE_datagroup_save_bufferify(const SIDRE_datagroup * self,
+                                    const char * file_path, int Lfile_path,
+                                    const char * protocol, int Lprotocol)
+{
+  const DataGroup * selfobj =
+    static_cast<const DataGroup *>(static_cast<const void *>(self));
+// splicer begin class.DataGroup.method.save_bufferify
+  const std::string SH_file_path(file_path, Lfile_path);
+  const std::string SH_protocol(protocol, Lprotocol);
+  selfobj->save(SH_file_path, SH_protocol);
+  return;
+// splicer end class.DataGroup.method.save_bufferify
+}
+
+void SIDRE_datagroup_load(SIDRE_datagroup * self, const char * file_path,
+                          const char * protocol)
+{
+  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.load
+  const std::string SH_file_path(file_path);
+  const std::string SH_protocol(protocol);
+  selfobj->load(SH_file_path, SH_protocol);
+  return;
+// splicer end class.DataGroup.method.load
+}
+
+void SIDRE_datagroup_load_bufferify(SIDRE_datagroup * self,
+                                    const char * file_path, int Lfile_path,
+                                    const char * protocol, int Lprotocol)
+{
+  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.load_bufferify
+  const std::string SH_file_path(file_path, Lfile_path);
+  const std::string SH_protocol(protocol, Lprotocol);
+  selfobj->load(SH_file_path, SH_protocol);
+  return;
+// splicer end class.DataGroup.method.load_bufferify
+}
+
+void SIDRE_datagroup_load_external_data(SIDRE_datagroup * self,
+                                        const char * file_path,
+                                        const char * protocol)
+{
+  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.load_external_data
+  const std::string SH_file_path(file_path);
+  const std::string SH_protocol(protocol);
+  selfobj->loadExternalData(SH_file_path, SH_protocol);
+  return;
+// splicer end class.DataGroup.method.load_external_data
+}
+
+void SIDRE_datagroup_load_external_data_bufferify(SIDRE_datagroup * self,
+                                                  const char * file_path,
+                                                  int Lfile_path,
+                                                  const char * protocol,
+                                                  int Lprotocol)
+{
+  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.load_external_data_bufferify
+  const std::string SH_file_path(file_path, Lfile_path);
+  const std::string SH_protocol(protocol, Lprotocol);
+  selfobj->loadExternalData(SH_file_path, SH_protocol);
+  return;
+// splicer end class.DataGroup.method.load_external_data_bufferify
+}
+
 // splicer begin class.DataGroup.additional_functions
 // splicer end class.DataGroup.additional_functions
 
