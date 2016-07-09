@@ -204,10 +204,10 @@ PP_exclass2_get_class1(
 // splicer begin class.ExClass2.method.get_class1
     const ExClass1 * in;
     PP_ExClass1 * SH_Py_in;
-    const char *kwcpp = "in";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "in";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:get_class1", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:get_class1", SH_kw_list,
         &PP_ExClass1_Type, &SH_Py_in))
     {
         return NULL;
@@ -234,12 +234,12 @@ PP_exclass2_declare_1(
     Py_ssize_t SH_nargs = 0;
     TypeID type;
     SidreLength len;
-    const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    const char *SH_kwcpp = "type\0len";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
     
     if (args != NULL) SH_nargs += PyTuple_Size(args);
     if (kwds != NULL) SH_nargs += PyDict_Size(args);
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|l:declare", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|l:declare", SH_kw_list,
         &type, &len))
     {
         return NULL;

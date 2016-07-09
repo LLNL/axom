@@ -64,10 +64,10 @@ PP_exclass1_increment_count(
 {
 // splicer begin class.ExClass1.method.increment_count
     int incr;
-    const char *kwcpp = "incr";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "incr";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:incrementCount", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:incrementCount", SH_kw_list,
         &incr))
     {
         return NULL;
@@ -175,10 +175,10 @@ PP_exclass1_get_value_from_int(
 {
 // splicer begin class.ExClass1.method.get_value_from_int
     int value;
-    const char *kwcpp = "value";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "value";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getValue", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getValue", SH_kw_list,
         &value))
     {
         return NULL;
@@ -196,10 +196,10 @@ PP_exclass1_get_value_1(
 {
 // splicer begin class.ExClass1.method.get_value_1
     long value;
-    const char *kwcpp = "value";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "value";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:getValue", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:getValue", SH_kw_list,
         &value))
     {
         return NULL;
@@ -239,10 +239,10 @@ PP_exclass1_has_addr(
 // splicer begin class.ExClass1.method.has_addr
     bool in;
     PyObject * SH_Py_in;
-    const char *kwcpp = "in";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "in";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:hasAddr", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:hasAddr", SH_kw_list,
         &PyBool_Type, &SH_Py_in))
     {
         return NULL;

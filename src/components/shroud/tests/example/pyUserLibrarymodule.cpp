@@ -43,10 +43,10 @@ PP_is_name_valid(
 {
 // splicer begin function.is_name_valid
     const char * name;
-    const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "name";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", SH_kw_list,
         &name))
     {
         return NULL;
@@ -83,10 +83,10 @@ PP_test_names(
 {
 // splicer begin function.test_names
     const char * name;
-    const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "name";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:test_names", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:test_names", SH_kw_list,
         &name))
     {
         return NULL;
@@ -106,10 +106,10 @@ PP_test_names_flag(
 // splicer begin function.test_names_flag
     const char * name;
     int flag;
-    const char *kwcpp = "name\0flag";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    const char *SH_kwcpp = "name\0flag";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si:test_names", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si:test_names", SH_kw_list,
         &name, &flag))
     {
         return NULL;
@@ -134,12 +134,12 @@ PP_testoptional_2(
     Py_ssize_t SH_nargs = 0;
     int i;
     long j;
-    const char *kwcpp = "i\0j";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+2, NULL };
+    const char *SH_kwcpp = "i\0j";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+2, NULL };
     
     if (args != NULL) SH_nargs += PyTuple_Size(args);
     if (kwds != NULL) SH_nargs += PyDict_Size(args);
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|il:testoptional", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|il:testoptional", SH_kw_list,
         &i, &j))
     {
         return NULL;
@@ -171,10 +171,10 @@ PP_testmpi(
 {
 // splicer begin function.testmpi
     MPI_Comm comm;
-    const char *kwcpp = "comm";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "comm";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:testmpi", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:testmpi", SH_kw_list,
         &comm))
     {
         return NULL;
@@ -197,10 +197,10 @@ PP_testgroup1(
 // splicer begin function.testgroup1
     asctoolkit::sidre::DataGroup * grp;
     PyObject * SH_Py_grp;
-    const char *kwcpp = "grp";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "grp";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:testgroup1", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:testgroup1", SH_kw_list,
         &FillInTypeForGroup, &SH_Py_grp))
     {
         return NULL;
@@ -224,10 +224,10 @@ PP_testgroup2(
 // splicer begin function.testgroup2
     const asctoolkit::sidre::DataGroup * grp;
     PyObject * SH_Py_grp;
-    const char *kwcpp = "grp";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "grp";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:testgroup2", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:testgroup2", SH_kw_list,
         &FillInTypeForGroup, &SH_Py_grp))
     {
         return NULL;

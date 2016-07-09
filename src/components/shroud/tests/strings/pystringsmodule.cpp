@@ -22,10 +22,10 @@ PY_pass_char(
 {
 // splicer begin function.pass_char
     char status;
-    const char *kwcpp = "status";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "status";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:passChar", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:passChar", SH_kw_list,
         &status))
     {
         return NULL;
@@ -65,10 +65,10 @@ PY_pass_char_ptr(
 // splicer begin function.pass_char_ptr
     char * dest;
     const char * src;
-    const char *kwcpp = "src";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "src";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:passCharPtr", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:passCharPtr", SH_kw_list,
         &src))
     {
         return NULL;
@@ -193,10 +193,10 @@ PY_accept_string_const_reference(
 {
 // splicer begin function.accept_string_const_reference
     const char * arg1;
-    const char *kwcpp = "arg1";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "arg1";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:acceptStringConstReference", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:acceptStringConstReference", SH_kw_list,
         &arg1))
     {
         return NULL;
@@ -219,10 +219,10 @@ PY_accept_string_reference(
 {
 // splicer begin function.accept_string_reference
     char * arg1;
-    const char *kwcpp = "arg1";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "arg1";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:acceptStringReference", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:acceptStringReference", SH_kw_list,
         &arg1))
     {
         return NULL;

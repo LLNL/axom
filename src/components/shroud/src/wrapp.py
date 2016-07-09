@@ -387,7 +387,7 @@ return 1;""", fmt)
                 if attrs['intent'] in [ 'inout', 'in']:
                     # names to PyArg_ParseTupleAndKeywords
                     arg_names.append(arg_name)
-                    arg_offsets.append( '(char *) kwcpp+%d' % offset)
+                    arg_offsets.append( '(char *) SH_kwcpp+%d' % offset)
                     offset += len(arg_name) + 1
 
                     # XXX default should be handled differently
@@ -467,14 +467,14 @@ return 1;""", fmt)
             if True:
                 # jump through some hoops for char ** const correctness for C++
                 # warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
-                PY_decl.append('const char *kwcpp = "%s";' % '\\0'.join(arg_names))
-                PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ', NULL };')
+                PY_decl.append('const char *SH_kwcpp = "%s";' % '\\0'.join(arg_names))
+                PY_decl.append('char *SH_kw_list[] = { ' + ','.join(arg_offsets) + ', NULL };')
             else:
-                PY_decl.append('char * kw_list[] = { "' + '", "'.join(arg_names) + ', NULL" };')
+                PY_decl.append('char * SH_kw_list[] = { "' + '", "'.join(arg_names) + ', NULL" };')
             parse_format.extend([ ':', fmt.function_name])
             fmt.PyArg_format = ''.join(parse_format)
             fmt.PyArg_vargs = ', '.join(parse_vargs)
-            PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords({PY_param_args}, {PY_param_kwds}, "{PyArg_format}", kw_list,', fmt))
+            PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords({PY_param_args}, {PY_param_kwds}, "{PyArg_format}", SH_kw_list,', fmt))
             PY_code.append(1)
             PY_code.append(wformat('{PyArg_vargs}))', fmt))
             PY_code.append(-1)

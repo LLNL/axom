@@ -50,10 +50,10 @@ PY_function3a_0(
 {
 // splicer begin function.function3a_0
     int i;
-    const char *kwcpp = "i";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "i";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:function3a", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:function3a", SH_kw_list,
         &i))
     {
         return NULL;
@@ -71,10 +71,10 @@ PY_function3a_1(
 {
 // splicer begin function.function3a_1
     long i;
-    const char *kwcpp = "i";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "i";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:function3a", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:function3a", SH_kw_list,
         &i))
     {
         return NULL;
