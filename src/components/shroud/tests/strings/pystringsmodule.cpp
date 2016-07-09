@@ -16,7 +16,7 @@ static char PY_pass_char__doc__[] =
 
 static PyObject *
 PY_pass_char(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -41,9 +41,9 @@ static char PY_return_char__doc__[] =
 
 static PyObject *
 PY_return_char(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.return_char
     char rv = returnChar();
@@ -58,7 +58,7 @@ static char PY_pass_char_ptr__doc__[] =
 
 static PyObject *
 PY_pass_char_ptr(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -85,9 +85,9 @@ static char PY_get_char1__doc__[] =
 
 static PyObject *
 PY_get_char1(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_char1
     const char * rv = getChar1();
@@ -102,9 +102,9 @@ static char PY_get_char2__doc__[] =
 
 static PyObject *
 PY_get_char2(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_char2
     const char * rv = getChar2();
@@ -119,9 +119,9 @@ static char PY_get_char3__doc__[] =
 
 static PyObject *
 PY_get_char3(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_char3
     const char * rv = getChar3();
@@ -136,9 +136,9 @@ static char PY_get_string1__doc__[] =
 
 static PyObject *
 PY_get_string1(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_string1
     const std::string & rv = getString1();
@@ -153,9 +153,9 @@ static char PY_get_string2__doc__[] =
 
 static PyObject *
 PY_get_string2(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_string2
     const std::string & rv = getString2();
@@ -170,9 +170,9 @@ static char PY_get_string3__doc__[] =
 
 static PyObject *
 PY_get_string3(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_string3
     const std::string & rv = getString3();
@@ -187,7 +187,7 @@ static char PY_accept_string_const_reference__doc__[] =
 
 static PyObject *
 PY_accept_string_const_reference(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -213,7 +213,7 @@ static char PY_accept_string_reference__doc__[] =
 
 static PyObject *
 PY_accept_string_reference(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {

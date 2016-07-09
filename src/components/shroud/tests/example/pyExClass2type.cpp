@@ -148,8 +148,8 @@ static char PP_exclass2_delete__doc__[] =
 static PyObject *
 PP_exclass2_delete(
   PP_ExClass2 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass2.method.delete
     delete self->BBB;
@@ -165,8 +165,8 @@ static char PP_exclass2_get_name__doc__[] =
 static PyObject *
 PP_exclass2_get_name(
   PP_ExClass2 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass2.method.get_name
     const std::string & rv = self->BBB->getName();
@@ -182,8 +182,8 @@ static char PP_exclass2_get_name_length__doc__[] =
 static PyObject *
 PP_exclass2_get_name_length(
   PP_ExClass2 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass2.method.get_name_length
     const int rv = self->BBB->GetNameLength();
@@ -263,8 +263,8 @@ static char PP_exclass2_destroyall__doc__[] =
 static PyObject *
 PP_exclass2_destroyall(
   PP_ExClass2 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass2.method.destroyall
     self->BBB->destroyall();
@@ -279,8 +279,8 @@ static char PP_exclass2_get_type_id__doc__[] =
 static PyObject *
 PP_exclass2_get_type_id(
   PP_ExClass2 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass2.method.get_type_id
     TypeID rv = self->BBB->getTypeID();

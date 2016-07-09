@@ -21,9 +21,9 @@ static char PP_local_function1__doc__[] =
 
 static PyObject *
 PP_local_function1(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.local_function1
     local_function1();
@@ -37,7 +37,7 @@ static char PP_is_name_valid__doc__[] =
 
 static PyObject *
 PP_is_name_valid(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -64,9 +64,9 @@ static char PP_is_initialized__doc__[] =
 
 static PyObject *
 PP_is_initialized(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.is_initialized
     bool rv = isInitialized();
@@ -77,7 +77,7 @@ PP_is_initialized(
 
 static PyObject *
 PP_test_names(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -99,7 +99,7 @@ PP_test_names(
 
 static PyObject *
 PP_test_names_flag(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -126,7 +126,7 @@ static char PP_testoptional_2__doc__[] =
 
 static PyObject *
 PP_testoptional_2(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -165,7 +165,7 @@ static char PP_testmpi__doc__[] =
 
 static PyObject *
 PP_testmpi(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -190,7 +190,7 @@ static char PP_testgroup1__doc__[] =
 
 static PyObject *
 PP_testgroup1(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -217,7 +217,7 @@ static char PP_testgroup2__doc__[] =
 
 static PyObject *
 PP_testgroup2(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -244,7 +244,7 @@ static char PP_test_names__doc__[] =
 
 static PyObject *
 PP_test_names(
-  PyObject *self,    /* not used */
+  PyObject *self,
   PyObject *args,
   PyObject *kwds)
 {

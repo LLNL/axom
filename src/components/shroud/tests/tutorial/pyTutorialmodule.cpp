@@ -17,9 +17,9 @@ static char PY_function1__doc__[] =
 
 static PyObject *
 PY_function1(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.function1
     Function1();
@@ -33,7 +33,7 @@ static char PY_function2__doc__[] =
 
 static PyObject *
 PY_function2(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -53,40 +53,13 @@ PY_function2(
 // splicer end function.function2
 }
 
-static char PY_sum__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PY_sum(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin function.sum
-    int len;
-    int * values;
-    int * result;
-    const char *kwcpp = "len\0values";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4, NULL };
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ii:Sum", kw_list,
-        &len, &values))
-    {
-        return NULL;
-    }
-    Sum(len, values, result);
-    return Py_BuildValue("i", *result);
-// splicer end function.sum
-}
-
 static char PY_function3__doc__[] =
 "documentation"
 ;
 
 static PyObject *
 PY_function3(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -114,7 +87,7 @@ static char PY_function4a__doc__[] =
 
 static PyObject *
 PY_function4a(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -143,7 +116,7 @@ static char PY_function4b__doc__[] =
 
 static PyObject *
 PY_function4b(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -172,7 +145,7 @@ static char PY_function5_arg1_arg2__doc__[] =
 
 static PyObject *
 PY_function5_arg1_arg2(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -210,7 +183,7 @@ PY_function5_arg1_arg2(
 
 static PyObject *
 PY_function6_from_name(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -232,7 +205,7 @@ PY_function6_from_name(
 
 static PyObject *
 PY_function6_from_index(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -257,7 +230,7 @@ static char PY_function9__doc__[] =
 
 static PyObject *
 PY_function9(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -278,9 +251,9 @@ PY_function9(
 
 static PyObject *
 PY_function10_0(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.function10_0
     Function10();
@@ -290,7 +263,7 @@ PY_function10_0(
 
 static PyObject *
 PY_function10_1(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -313,7 +286,7 @@ PY_function10_1(
 
 static PyObject *
 PY_overload1_num_offset_stride(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -350,7 +323,7 @@ PY_overload1_num_offset_stride(
 
 static PyObject *
 PY_overload1_5(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -392,7 +365,7 @@ static char PY_typefunc__doc__[] =
 
 static PyObject *
 PY_typefunc(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -417,7 +390,7 @@ static char PY_enumfunc__doc__[] =
 
 static PyObject *
 PY_enumfunc(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -442,7 +415,7 @@ static char PY_useclass__doc__[] =
 
 static PyObject *
 PY_useclass(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -469,9 +442,9 @@ static char PY_last_function_called__doc__[] =
 
 static PyObject *
 PY_last_function_called(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.last_function_called
     const std::string & rv = LastFunctionCalled();
@@ -486,7 +459,7 @@ static char PY_function10__doc__[] =
 
 static PyObject *
 PY_function10(
-  PyObject *self,    /* not used */
+  PyObject *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -524,7 +497,7 @@ static char PY_function6__doc__[] =
 
 static PyObject *
 PY_function6(
-  PyObject *self,    /* not used */
+  PyObject *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -562,7 +535,7 @@ static char PY_overload1__doc__[] =
 
 static PyObject *
 PY_overload1(
-  PyObject *self,    /* not used */
+  PyObject *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -596,7 +569,6 @@ PY_overload1(
 static PyMethodDef PY_methods[] = {
 {"Function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
 {"Function2", (PyCFunction)PY_function2, METH_VARARGS|METH_KEYWORDS, PY_function2__doc__},
-{"Sum", (PyCFunction)PY_sum, METH_VARARGS|METH_KEYWORDS, PY_sum__doc__},
 {"Function3", (PyCFunction)PY_function3, METH_VARARGS|METH_KEYWORDS, PY_function3__doc__},
 {"Function4a", (PyCFunction)PY_function4a, METH_VARARGS|METH_KEYWORDS, PY_function4a__doc__},
 {"Function4b", (PyCFunction)PY_function4b, METH_VARARGS|METH_KEYWORDS, PY_function4b__doc__},

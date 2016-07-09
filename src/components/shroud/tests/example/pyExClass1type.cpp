@@ -42,8 +42,8 @@ static char PP_exclass1_delete__doc__[] =
 static PyObject *
 PP_exclass1_delete(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.delete
     delete self->BBB;
@@ -84,8 +84,8 @@ static char PP_exclass1_get_name__doc__[] =
 static PyObject *
 PP_exclass1_get_name(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_name
     const std::string & rv = self->BBB->getName();
@@ -106,8 +106,8 @@ static char PP_exclass1_get_name_length__doc__[] =
 static PyObject *
 PP_exclass1_get_name_length(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_name_length
     int rv = self->BBB->GetNameLength();
@@ -122,8 +122,8 @@ static char PP_exclass1_get_name_error_check__doc__[] =
 static PyObject *
 PP_exclass1_get_name_error_check(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_name_error_check
     const std::string & rv = self->BBB->getNameErrorCheck();
@@ -139,8 +139,8 @@ static char PP_exclass1_get_name_arg__doc__[] =
 static PyObject *
 PP_exclass1_get_name_arg(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_name_arg
     const std::string & rv = self->BBB->getNameArg();
@@ -156,8 +156,8 @@ static char PP_exclass1_get_root__doc__[] =
 static PyObject *
 PP_exclass1_get_root(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_root
     ExClass2 * rv = self->BBB->getRoot();
@@ -216,8 +216,8 @@ static char PP_exclass1_get_addr__doc__[] =
 static PyObject *
 PP_exclass1_get_addr(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_addr
     void * rv = self->BBB->getAddr();
@@ -261,8 +261,8 @@ static char PP_exclass1_splicer_special__doc__[] =
 static PyObject *
 PP_exclass1_splicer_special(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.splicer_special
     self->BBB->SplicerSpecial();
