@@ -34,6 +34,7 @@ module spio_mod
     contains
         procedure :: delete => iomanager_delete
         procedure :: write => iomanager_write
+        procedure :: write_group_to_root_file => iomanager_write_group_to_root_file
         procedure :: read_0 => iomanager_read_0
         procedure :: read_1 => iomanager_read_1
         procedure :: load_external_data => iomanager_load_external_data
@@ -99,6 +100,25 @@ module spio_mod
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             integer(C_INT), value, intent(IN) :: Lprotocol
         end subroutine c_iomanager_write_bufferify
+        
+        subroutine c_iomanager_write_group_to_root_file(self, group, file_name) &
+                bind(C, name="SPIO_iomanager_write_group_to_root_file")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: group
+            character(kind=C_CHAR), intent(IN) :: file_name(*)
+        end subroutine c_iomanager_write_group_to_root_file
+        
+        subroutine c_iomanager_write_group_to_root_file_bufferify(self, group, file_name, Lfile_name) &
+                bind(C, name="SPIO_iomanager_write_group_to_root_file_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: group
+            character(kind=C_CHAR), intent(IN) :: file_name(*)
+            integer(C_INT), value, intent(IN) :: Lfile_name
+        end subroutine c_iomanager_write_group_to_root_file_bufferify
         
         subroutine c_iomanager_read_0(self, group, file_string, protocol) &
                 bind(C, name="SPIO_iomanager_read_0")
@@ -205,6 +225,22 @@ contains
             len_trim(protocol, kind=C_INT))
         ! splicer end class.IOManager.method.write
     end subroutine iomanager_write
+    
+    subroutine iomanager_write_group_to_root_file(obj, group, file_name)
+        use iso_c_binding, only : C_INT
+        use sidre_mod, only : datagroup
+        implicit none
+        class(iomanager) :: obj
+        type(datagroup), value, intent(IN) :: group
+        character(*), intent(IN) :: file_name
+        ! splicer begin class.IOManager.method.write_group_to_root_file
+        call c_iomanager_write_group_to_root_file_bufferify(  &
+            obj%voidptr,  &
+            group%get_instance(),  &
+            file_name,  &
+            len_trim(file_name, kind=C_INT))
+        ! splicer end class.IOManager.method.write_group_to_root_file
+    end subroutine iomanager_write_group_to_root_file
     
     subroutine iomanager_read_0(obj, group, file_string, protocol)
         use iso_c_binding, only : C_INT
