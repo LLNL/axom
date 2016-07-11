@@ -59,7 +59,7 @@ static const struct luaL_Reg l_Class1_Reg [] = {
     {NULL, NULL}   /*sentinel */
 };
 
-static int l_function1(lua_State * /*L*/)
+static int l_function1(lua_State *)
 {
     // splicer begin function.Function1
     Function1();
@@ -113,7 +113,7 @@ static int l_function4b(lua_State *L)
 static int l_function5(lua_State *L)
 {
     // splicer begin function.Function5
-    int SH_nresult = -1;
+    int SH_nresult = 0;
     int SH_nargs = lua_gettop(L);
     int SH_itype1 = lua_type(L, 1);
     int SH_itype2 = lua_type(L, 2);
@@ -160,7 +160,7 @@ static int l_function5(lua_State *L)
 static int l_function6(lua_State *L)
 {
     // splicer begin function.Function6
-    int SH_nresult = -1;
+    int SH_nresult = 0;
     int SH_nargs = lua_gettop(L);
     int SH_itype1 = lua_type(L, 1);
     switch (SH_nargs) {
@@ -199,7 +199,7 @@ static int l_function9(lua_State *L)
 static int l_function10(lua_State *L)
 {
     // splicer begin function.Function10
-    int SH_nresult = -1;
+    int SH_nresult = 0;
     int SH_nargs = lua_gettop(L);
     int SH_itype1 = lua_type(L, 1);
     int SH_itype2 = lua_type(L, 2);
@@ -233,7 +233,7 @@ static int l_function10(lua_State *L)
 static int l_overload1(lua_State *L)
 {
     // splicer begin function.overload1
-    int SH_nresult = -1;
+    int SH_nresult = 0;
     int SH_nargs = lua_gettop(L);
     int SH_itype1 = lua_type(L, 1);
     int SH_itype2 = lua_type(L, 2);

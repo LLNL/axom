@@ -15,8 +15,8 @@ static char PY_names_method1__doc__[] =
 static PyObject *
 PY_names_method1(
   PY_Names *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.Names.method.method1
     self->BBB->method1();
@@ -31,8 +31,8 @@ static char PY_names_method2__doc__[] =
 static PyObject *
 PY_names_method2(
   PY_Names *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.Names.method.method2
     self->BBB->method2();
