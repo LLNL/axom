@@ -12,11 +12,12 @@ BP="build-chaos-gcc@4.9.3-toolkit-serial"
 IP="install-chaos-gcc@4.9.3-toolkit-serial"
 COMP_OPT=""
 BUILD_OPT="-DENABLE_MPI=OFF"
-
+OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
 
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT    
+echo "Options: $OPTIONS"
+./scripts/config-build.py $OPTIONS
 
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
