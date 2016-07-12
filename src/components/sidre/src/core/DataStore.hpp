@@ -107,7 +107,7 @@ public:
   bool hasBuffer( IndexType idx ) const
   {
     return ( 0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() &&
-             m_data_buffers[idx] != ATK_NULLPTR );
+             m_data_buffers[static_cast<unsigned>(idx)] != ATK_NULLPTR );
   }
 
   /*!

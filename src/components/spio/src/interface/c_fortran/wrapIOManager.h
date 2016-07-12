@@ -40,6 +40,10 @@ void SPIO_iomanager_write(SPIO_iomanager * self, SIDRE_datagroup * group, int nu
 
 void SPIO_iomanager_write_bufferify(SPIO_iomanager * self, SIDRE_datagroup * group, int num_files, const char * file_string, int Lfile_string, const char * protocol, int Lprotocol);
 
+void SPIO_iomanager_write_group_to_root_file(SPIO_iomanager * self, SIDRE_datagroup * group, const char * file_name);
+
+void SPIO_iomanager_write_group_to_root_file_bufferify(SPIO_iomanager * self, SIDRE_datagroup * group, const char * file_name, int Lfile_name);
+
 void SPIO_iomanager_read_0(SPIO_iomanager * self, SIDRE_datagroup * group, const char * file_string, const char * protocol);
 
 void SPIO_iomanager_read_0_bufferify(SPIO_iomanager * self, SIDRE_datagroup * group, const char * file_string, int Lfile_string, const char * protocol, int Lprotocol);

@@ -13,13 +13,12 @@ BP="build-chaos-${COMPILER}-${BT,,}"
 IP="install-chaos-${COMPILER}-${BT,,}"
 COMP_OPT=""
 BUILD_OPT="-DENABLE_COVERAGE=TRUE"
-
-
-
+OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
 
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT    
+echo "Options: $OPTIONS"
+./scripts/config-build.py $OPTIONS
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1

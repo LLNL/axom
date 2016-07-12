@@ -94,7 +94,6 @@ Python method void Method1()
 Close pyClass1type.cpp
 Python function void Function1()
 Python function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
-Python function void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))
 Python function bool Function3(bool arg+intent(in)+value)
 Python function const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
 Python function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))

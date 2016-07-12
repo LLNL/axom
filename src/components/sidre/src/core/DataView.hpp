@@ -257,7 +257,7 @@ public:
    */
   int getNumDimensions() const
   {
-    return m_shape.size();
+    return static_cast<int>(m_shape.size());
   }
 
   /*!

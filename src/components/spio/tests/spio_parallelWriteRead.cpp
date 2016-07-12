@@ -67,6 +67,20 @@ int main(int argc, char** argv)
   writer.write(root, num_files, "out_spio_parallel_write_read", "sidre_hdf5");
 
   /*
+   * Extra stuff to exercise writeGroupToRootFile
+   */
+  DataStore * dsextra = new DataStore();
+  DataGroup * extra = dsextra->getRoot()->createGroup("extra");
+  extra->createViewScalar<double>("dval", 1.1);
+  DataGroup * child = extra->createGroup("child");
+  child->createViewScalar<int>("ival", 7);
+  child->createViewString("word0", "hello");
+  child->createViewString("word1", "world");
+
+  std::string root_name = "out_spio_parallel_write_read.root";
+  writer.writeGroupToRootFile(extra, root_name);
+
+  /*
    * Create another DataStore that holds nothing but the root group.
    */
   DataStore * ds2 = new DataStore();
@@ -76,7 +90,7 @@ int main(int argc, char** argv)
    */
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(ds2->getRoot(), "out_spio_parallel_write_read.root");
+  reader.read(ds2->getRoot(), root_name);
 
 
   /*
@@ -121,6 +135,7 @@ int main(int argc, char** argv)
 
   delete ds;
   delete ds2;
+  delete dsextra;
 
   MPI_Finalize();
 
