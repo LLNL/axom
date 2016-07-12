@@ -12,7 +12,7 @@ BT="RelWithDebInfo"
 BP="build-chaos-${COMPILER}-${BT,,}"
 IP="install-chaos-${COMPILER}-${BT,,}"
 COMP_OPT=""
-BUILD_OPT="-DCXX_STD=c++03"
+BUILD_OPT="-DBLT_CXX_STD=c++98"
 OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
 
 echo "Configuring..."

@@ -58,7 +58,7 @@ set(LCOV_PATH "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/2016_06_12_12_3
 set(GENHTML_PATH "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/2016_06_12_12_36_40/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109/lcov-1.11-nrsx4h6lyz4ajjrqi45dphsnbppj3da3/usr/bin/genhtml" CACHE PATH "")
 
 # Temporarily disable CXX11 on intel builds until we resolve issue ATK-619
-set(CXX_STD "c++03" CACHE PATH "")
+set(BLT_CXX_STD "c++98" CACHE PATH "")
 
 ##################################
 # end uberenv host-config
