@@ -539,7 +539,7 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
  */
 
 void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
-                                     std::string& file_name)
+                                     const std::string& file_name)
 {
   MPI_Barrier(m_mpi_comm);
   if (m_my_rank == 0) {

@@ -86,7 +86,7 @@ public:
    * \param group         DataGroup to add to root file
    * \param file_name     name of existing root file
    */
-  void writeGroupToRootFile(sidre::DataGroup * group, std::string& file_name);
+  void writeGroupToRootFile(sidre::DataGroup * group, const std::string& file_name);
 
   /*!
    * \brief read from input files

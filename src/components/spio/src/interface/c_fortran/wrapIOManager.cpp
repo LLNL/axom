@@ -60,6 +60,28 @@ return;
 // splicer end class.IOManager.method.write_bufferify
 }
 
+void SPIO_iomanager_write_group_to_root_file(SPIO_iomanager * self, SIDRE_datagroup * group, const char * file_name)
+{
+IOManager *selfobj = static_cast<IOManager *>(static_cast<void *>(self));
+// splicer begin class.IOManager.method.write_group_to_root_file
+asctoolkit::sidre::DataGroup * SH_group = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group));
+const std::string SH_file_name(file_name);
+selfobj->writeGroupToRootFile(SH_group, SH_file_name);
+return;
+// splicer end class.IOManager.method.write_group_to_root_file
+}
+
+void SPIO_iomanager_write_group_to_root_file_bufferify(SPIO_iomanager * self, SIDRE_datagroup * group, const char * file_name, int Lfile_name)
+{
+IOManager *selfobj = static_cast<IOManager *>(static_cast<void *>(self));
+// splicer begin class.IOManager.method.write_group_to_root_file_bufferify
+asctoolkit::sidre::DataGroup * SH_group = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(group));
+const std::string SH_file_name(file_name, Lfile_name);
+selfobj->writeGroupToRootFile(SH_group, SH_file_name);
+return;
+// splicer end class.IOManager.method.write_group_to_root_file_bufferify
+}
+
 void SPIO_iomanager_read_0(SPIO_iomanager * self, SIDRE_datagroup * group, const char * file_string, const char * protocol)
 {
 IOManager *selfobj = static_cast<IOManager *>(static_cast<void *>(self));
