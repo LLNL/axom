@@ -102,7 +102,7 @@ class DataStore;
  * by name or index.
  *
  * Note that certain methods for creating, accessing, etc. DataGroups and
- * DataViews that take a string name accept either the name of a child Group
+ * DataViews that take a string path accept either the name of a child Group
  * or View within a Group object or a path syntax. When a path is given, the
  * last item in the path indicates the item to be created, accessed, etc. So,
  * for example,
@@ -212,14 +212,14 @@ public:
 //!  @name View query methods.
 
   /*!
-   * \brief Return true if Group owns a View with given name or path;
+   * \brief Return true if Group owns a descendant View with given name or path;
    * else false.
    */
-  bool hasView( const std::string& name ) const;
+  bool hasView( const std::string& path ) const;
 
   /*!
-   * \brief Return true if this Group owns a View with given
-   * name (not path); else false.
+   * \brief Return true if this Group owns a View with given name (not path);
+   * else false.
    */
   bool hasChildView( const std::string& name ) const
   {
@@ -227,7 +227,7 @@ public:
   }
 
   /*!
-   * \brief Return true if Group owns a View with given index; else false.
+   * \brief Return true if this Group owns a View with given index; else false.
    */
   bool hasView( IndexType idx ) const
   {
@@ -276,7 +276,7 @@ public:
    *
    * If no such View exists, ATK_NULLPTR is returned.
    */
-  DataView * getView( const std::string& name );
+  DataView * getView( const std::string& path );
 
   /*!
    * \brief Return pointer to const View with given name or path.
@@ -285,7 +285,7 @@ public:
    *
    * If no such View exists, ATK_NULLPTR is returned.
    */
-  const DataView * getView( const std::string& name ) const;
+  const DataView * getView( const std::string& path ) const;
 
   /*!
    * \brief Return pointer to non-const View with given index.
@@ -361,7 +361,7 @@ public:
    *
    * \return pointer to new View object or ATK_NULLPTR if one is not created.
    */
-  DataView * createView( const std::string& name );
+  DataView * createView( const std::string& path );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -372,7 +372,7 @@ public:
    *
    * \return pointer to new View object or ATK_NULLPTR if one is not created.
    */
-  DataView * createView( const std::string& name,
+  DataView * createView( const std::string& path,
                          TypeID type,
                          SidreLength num_elems );
 
@@ -385,7 +385,7 @@ public:
    *
    * \return pointer to new View object or ATK_NULLPTR if one is not created.
    */
-  DataView * createView( const std::string& name,
+  DataView * createView( const std::string& path,
                          TypeID type,
                          int ndims,
                          SidreLength * shape );
@@ -396,7 +396,7 @@ public:
    *
    * \return pointer to new View object or ATK_NULLPTR if one is not created.
    */
-  DataView * createView( const std::string& name,
+  DataView * createView( const std::string& path,
                          const DataType& dtype);
 
 //@}
@@ -433,7 +433,7 @@ public:
    *
    * \sa DataView::attachBuffer
    */
-  DataView * createView( const std::string& name,
+  DataView * createView( const std::string& path,
                          DataBuffer * buff );
 
   /*!
@@ -452,7 +452,7 @@ public:
    *
    * \sa DataView::attachBuffer
    */
-  DataView * createView( const std::string& name,
+  DataView * createView( const std::string& path,
                          TypeID type,
                          SidreLength num_elems,
                          DataBuffer * buff );
@@ -473,7 +473,7 @@ public:
    *
    * \sa DataView::attachBuffer
    */
-  DataView * createView( const std::string& name,
+  DataView * createView( const std::string& path,
                          TypeID type,
                          int ndims,
                          SidreLength * shape,
@@ -491,7 +491,7 @@ public:
    *
    * \sa DataView::attachBuffer
    */
-  DataView * createView( const std::string& name,
+  DataView * createView( const std::string& path,
                          const DataType& dtype,
                          DataBuffer * buff );
 
@@ -526,7 +526,7 @@ public:
    *
    * \sa DataView::setExternalDataPtr
    */
-  DataView * createView( const std::string& name,
+  DataView * createView( const std::string& path,
                          void * external_ptr );
 
   /*!
@@ -546,7 +546,7 @@ public:
    *
    * \sa DataView::setExternalDataPtr
    */
-  DataView * createView( const std::string& name,
+  DataView * createView( const std::string& path,
                          TypeID type,
                          SidreLength num_elems,
                          void * external_ptr );
@@ -570,7 +570,7 @@ public:
    *
    * \sa DataView::setExternalDataPtr
    */
-  DataView * createView( const std::string& name,
+  DataView * createView( const std::string& path,
                          TypeID type,
                          int ndims,
                          SidreLength * shape,
@@ -588,7 +588,7 @@ public:
    *
    * \sa DataView::attachBuffer
    */
-  DataView * createView( const std::string& name,
+  DataView * createView( const std::string& path,
                          const DataType& dtype,
                          void * external_ptr );
 
@@ -619,7 +619,7 @@ public:
    *
    * \sa DataView::allocate
    */
-  DataView * createViewAndAllocate( const std::string& name,
+  DataView * createViewAndAllocate( const std::string& path,
                                     TypeID type,
                                     SidreLength num_elems );
 
@@ -638,7 +638,7 @@ public:
    *
    * \sa DataView::allocate
    */
-  DataView * createViewAndAllocate( const std::string& name,
+  DataView * createViewAndAllocate( const std::string& path,
                                     TypeID type,
                                     int ndims,
                                     SidreLength * shape );
@@ -657,7 +657,7 @@ public:
    *
    * \sa DataView::allocate
    */
-  DataView * createViewAndAllocate( const std::string& name,
+  DataView * createViewAndAllocate( const std::string& path,
                                     const DataType& dtype);
 
   /*!
@@ -673,9 +673,9 @@ public:
    * \sa DataView::setScalar
    */
   template<typename ScalarType>
-  DataView * createViewScalar( const std::string& name, ScalarType value)
+  DataView * createViewScalar( const std::string& path, ScalarType value)
   {
-    DataView * view = createView(name);
+    DataView * view = createView(path);
     if (view != ATK_NULLPTR)
     {
       view->setScalar(value);
@@ -696,7 +696,7 @@ public:
    *
    * \sa DataView::setString
    */
-  DataView * createViewString( const std::string& name,
+  DataView * createViewString( const std::string& path,
                                const std::string& value);
 
 //@}
@@ -711,7 +711,7 @@ public:
    * \brief Destroy View with given name or path owned by this Group, but leave
    * its data intect.
    */
-  void destroyView(const std::string& name);
+  void destroyView(const std::string& path);
 
   /*!
    * \brief Destroy View with given index owned by this Group, but leave
@@ -729,7 +729,7 @@ public:
    * \brief Destroy View with given name or path owned by this Group and deallocate
    * its data if it's the only View associated with that data.
    */
-  void destroyViewAndData(const std::string& name);
+  void destroyViewAndData(const std::string& path);
 
   /*!
    * \brief Destroy View with given index owned by this Group and deallocate
@@ -786,7 +786,7 @@ public:
    * \brief Return true if this Group has a descendant Group with given
    * name or path; else false.
    */
-  bool hasGroup( const std::string& name ) const;
+  bool hasGroup( const std::string& path ) const;
 
   /*!
    * \brief Return true if this Group has a child Group with given
@@ -847,7 +847,7 @@ public:
    *
    * If no such Group exists, ATK_NULLPTR is returned.
    */
-  DataGroup * getGroup( const std::string& name );
+  DataGroup * getGroup( const std::string& path );
 
   /*!
    * \brief Return pointer to const child Group with given name or path.
@@ -856,7 +856,7 @@ public:
    *
    * If no such Group exists, ATK_NULLPTR is returned.
    */
-  DataGroup const * getGroup( const std::string& name ) const;
+  DataGroup const * getGroup( const std::string& path ) const;
 
   /*!
    * \brief Return pointer to non-const immediate child Group with given index.
@@ -925,14 +925,14 @@ public:
    * \return pointer to created DataGroup object or ATK_NULLPTR if new
    * Group is not created.
    */
-  DataGroup * createGroup( const std::string& name );
+  DataGroup * createGroup( const std::string& path );
 
   /*!
    * \brief Destroy child Group in this Group with given name or path.
    *
    * If no such Group exists, method is a no-op.
    */
-  void destroyGroup(const std::string& name);
+  void destroyGroup(const std::string& path);
 
   /*!
    * \brief Destroy child Group within this Group with given index.

@@ -51,14 +51,14 @@ const char DataGroup::s_path_delimiter = '/';
  *
  *************************************************************************
  */
-bool DataGroup::hasView( const std::string& name ) const
+bool DataGroup::hasView( const std::string& path ) const
 {
-  std::string path = name;
-  const DataGroup * group = walkPath( path );
+  std::string intpath(path);
+  const DataGroup * group = walkPath( intpath );
 
   if (group == ATK_NULLPTR) return false;
 
-  return group->hasChildView(path);
+  return group->hasChildView(intpath);
 }
 
 
@@ -75,24 +75,24 @@ bool DataGroup::hasView( const std::string& name ) const
  *
  *************************************************************************
  */
-DataView * DataGroup::getView( const std::string& name )
+DataView * DataGroup::getView( const std::string& path )
 {
-  std::string path = name;
+  std::string intpath(path);
   bool create_groups_in_path = false;
-  DataGroup * group = walkPath( path, create_groups_in_path );
+  DataGroup * group = walkPath( intpath, create_groups_in_path );
 
   if ( group == ATK_NULLPTR )
   {
     SLIC_CHECK_MSG( group != ATK_NULLPTR,
-		    "Non-existent group in path " << name );
+		    "Non-existent group in path " << path );
     return ATK_NULLPTR;
   }
 
-  SLIC_CHECK_MSG( !path.empty() && group->hasChildView(path),
+  SLIC_CHECK_MSG( !intpath.empty() && group->hasChildView(intpath),
                   "Group " << getName() <<
-                  " has no View with name '" << path << "'");
+                  " has no View with name '" << intpath << "'");
 
-  return group->m_view_coll.getItem(path);
+  return group->m_view_coll.getItem(intpath);
 }
 
 /*
@@ -102,23 +102,23 @@ DataView * DataGroup::getView( const std::string& name )
  *
  *************************************************************************
  */
-const DataView * DataGroup::getView( const std::string& name ) const
+const DataView * DataGroup::getView( const std::string& path ) const
 {
-  std::string path = name;
-  const DataGroup * group = walkPath( path );
+  std::string intpath(path);
+  const DataGroup * group = walkPath( intpath );
 
   if (group == ATK_NULLPTR)
   {
     SLIC_CHECK_MSG( group != ATK_NULLPTR,
-		    "Non-existent group in path " << name );
+		    "Non-existent group in path " << path );
     return ATK_NULLPTR;
   }
 
-  SLIC_CHECK_MSG( !path.empty() && group->hasChildView(path),
+  SLIC_CHECK_MSG( !intpath.empty() && group->hasChildView(intpath),
 		  "Group " << getName() <<
-		  " has no View with name '" << path << "'");
+		  " has no View with name '" << intpath << "'");
   
-  return group->m_view_coll.getItem(path);
+  return group->m_view_coll.getItem(intpath);
 }
 
 
@@ -136,32 +136,32 @@ const DataView * DataGroup::getView( const std::string& name ) const
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name )
+DataView * DataGroup::createView( const std::string& path )
 {
-  std::string path = name;
+  std::string intpath(path);
   bool create_groups_in_path = true;
-  DataGroup * group = walkPath( path, create_groups_in_path );
+  DataGroup * group = walkPath( intpath, create_groups_in_path );
 
   if ( group == ATK_NULLPTR )
   {
     SLIC_CHECK( group != ATK_NULLPTR );
     return ATK_NULLPTR;
   }
-  else if ( path.empty() || group->hasChildView(path) || group->hasChildGroup(path) )
+  else if ( intpath.empty() || group->hasChildView(intpath) || group->hasChildGroup(intpath) )
   {
-    SLIC_CHECK( !path.empty() );
-    SLIC_CHECK_MSG( !group->hasChildView(path),
-                    "Cannot create View with name '" << path <<
+    SLIC_CHECK( !intpath.empty() );
+    SLIC_CHECK_MSG( !group->hasChildView(intpath),
+                    "Cannot create View with name '" << intpath <<
                     "' in Group '" << getName() <<
                     " since it already has a View with that name" );
-    SLIC_CHECK_MSG( !group->hasChildGroup(path),
-                    "Cannot create View with name '" << path <<
+    SLIC_CHECK_MSG( !group->hasChildGroup(intpath),
+                    "Cannot create View with name '" << intpath <<
                     "' in Group '" << getName() <<
                     " since it already has a Group with that name" );
     return ATK_NULLPTR;
   }
 
-  DataView * view = new(std::nothrow) DataView(path);
+  DataView * view = new(std::nothrow) DataView(intpath);
   if ( view != ATK_NULLPTR )
   {
     group->attachView(view);
@@ -177,22 +177,22 @@ DataView * DataGroup::createView( const std::string& name )
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name,
+DataView * DataGroup::createView( const std::string& path,
                                   TypeID type,
                                   SidreLength num_elems )
 {
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
     SLIC_CHECK_MSG(type != NO_TYPE_ID,
-                   "Cannot create View with name '" << name <<
+                   "Cannot create View with name '" << path <<
                    "' in Group '" << getName() << " without a valid type" );
     SLIC_CHECK_MSG(num_elems >= 0,
-                   "Cannot create View with name '" << name <<
+                   "Cannot create View with name '" << path <<
                    "' in Group '" << getName() << " with # elems < 0" );
     return ATK_NULLPTR;
   }
 
-  DataView * view = createView(name);
+  DataView * view = createView(path);
   if (view != ATK_NULLPTR)
   {
     view->describe(type, num_elems);
@@ -208,7 +208,7 @@ DataView * DataGroup::createView( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name,
+DataView * DataGroup::createView( const std::string& path,
                                   TypeID type,
                                   int ndims,
                                   SidreLength * shape )
@@ -216,18 +216,18 @@ DataView * DataGroup::createView( const std::string& name,
   if ( type == NO_TYPE_ID || ndims < 0 || shape == ATK_NULLPTR )
   {
     SLIC_CHECK_MSG(type != NO_TYPE_ID,
-                   "Cannot create View with name '" << name <<
+                   "Cannot create View with name '" << path <<
                    "' in Group '" << getName() << " without a valid type" );
     SLIC_CHECK_MSG(ndims >= 0,
-                   "Cannot create View with name '" << name <<
+                   "Cannot create View with name '" << path <<
                    "' in Group '" << getName() << " with ndims < 0" );
     SLIC_CHECK_MSG(shape != ATK_NULLPTR,
-                   "Cannot create View with name '" << name <<
+                   "Cannot create View with name '" << path <<
                    "' in Group '" << getName() << " with null shape ptr" );
     return ATK_NULLPTR;
   }
 
-  DataView * view = createView(name);
+  DataView * view = createView(path);
   if (view != ATK_NULLPTR)
   {
     view->describe(type, ndims, shape);
@@ -242,10 +242,10 @@ DataView * DataGroup::createView( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name,
+DataView * DataGroup::createView( const std::string& path,
                                   const DataType& dtype )
 {
-  DataView * view = createView(name);
+  DataView * view = createView(path);
   if (view != ATK_NULLPTR)
   {
     view->describe(dtype);
@@ -269,10 +269,10 @@ DataView * DataGroup::createView( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name,
+DataView * DataGroup::createView( const std::string& path,
                                   DataBuffer * buff )
 {
-  DataView * view = createView(name);
+  DataView * view = createView(path);
   if ( view != ATK_NULLPTR )
   {
     view->attachBuffer( buff );
@@ -288,12 +288,12 @@ DataView * DataGroup::createView( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name,
+DataView * DataGroup::createView( const std::string& path,
                                   TypeID type,
                                   SidreLength num_elems,
                                   DataBuffer * buff )
 {
-  DataView * view = createView(name, type, num_elems);
+  DataView * view = createView(path, type, num_elems);
   if (view != ATK_NULLPTR)
   {
     view->attachBuffer(buff);
@@ -309,13 +309,13 @@ DataView * DataGroup::createView( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name,
+DataView * DataGroup::createView( const std::string& path,
                                   TypeID type,
                                   int ndims,
                                   SidreLength * shape,
                                   DataBuffer * buff )
 {
-  DataView * view = createView(name, type, ndims, shape);
+  DataView * view = createView(path, type, ndims, shape);
   if (view != ATK_NULLPTR)
   {
     view->attachBuffer(buff);
@@ -331,11 +331,11 @@ DataView * DataGroup::createView( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name,
+DataView * DataGroup::createView( const std::string& path,
                                   const DataType& dtype,
                                   DataBuffer * buff )
 {
-  DataView * view = createView(name, dtype);
+  DataView * view = createView(path, dtype);
   if (view != ATK_NULLPTR)
   {
     view->attachBuffer(buff);
@@ -359,10 +359,10 @@ DataView * DataGroup::createView( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name,
+DataView * DataGroup::createView( const std::string& path,
                                   void * external_ptr )
 {
-  DataView * view = createView(name);
+  DataView * view = createView(path);
   if ( view != ATK_NULLPTR )
   {
     view->setExternalDataPtr(external_ptr);
@@ -378,12 +378,12 @@ DataView * DataGroup::createView( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name,
+DataView * DataGroup::createView( const std::string& path,
                                   TypeID type,
                                   SidreLength num_elems,
                                   void * external_ptr )
 {
-  DataView * view = createView(name, type, num_elems);
+  DataView * view = createView(path, type, num_elems);
   if (view != ATK_NULLPTR)
   {
     view->setExternalDataPtr(external_ptr);
@@ -399,13 +399,13 @@ DataView * DataGroup::createView( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name,
+DataView * DataGroup::createView( const std::string& path,
                                   TypeID type,
                                   int ndims,
                                   SidreLength * shape,
                                   void * external_ptr )
 {
-  DataView * view = createView(name, type, ndims, shape);
+  DataView * view = createView(path, type, ndims, shape);
   if (view != ATK_NULLPTR)
   {
     view->setExternalDataPtr(external_ptr);
@@ -421,11 +421,11 @@ DataView * DataGroup::createView( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createView( const std::string& name,
+DataView * DataGroup::createView( const std::string& path,
                                   const DataType& dtype,
                                   void * external_ptr )
 {
-  DataView * view = createView(name, dtype);
+  DataView * view = createView(path, dtype);
   if (view != ATK_NULLPTR)
   {
     view->setExternalDataPtr(external_ptr);
@@ -448,11 +448,11 @@ DataView * DataGroup::createView( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createViewAndAllocate( const std::string& name,
+DataView * DataGroup::createViewAndAllocate( const std::string& path,
                                              TypeID type,
                                              SidreLength num_elems )
 {
-  DataView * view = createView(name, type, num_elems);
+  DataView * view = createView(path, type, num_elems);
   if ( view != ATK_NULLPTR )
   {
     view->allocate();
@@ -468,12 +468,12 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createViewAndAllocate( const std::string& name,
+DataView * DataGroup::createViewAndAllocate( const std::string& path,
                                              TypeID type,
                                              int ndims,
                                              SidreLength * shape )
 {
-  DataView * view = createView(name, type, ndims, shape);
+  DataView * view = createView(path, type, ndims, shape);
   if ( view != ATK_NULLPTR )
   {
     view->allocate();
@@ -489,10 +489,10 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createViewAndAllocate( const std::string& name,
+DataView * DataGroup::createViewAndAllocate( const std::string& path,
                                              const DataType& dtype)
 {
-  DataView * view = createView(name, dtype);
+  DataView * view = createView(path, dtype);
   if ( view != ATK_NULLPTR )
   {
     view->allocate();
@@ -507,10 +507,10 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
  *
  *************************************************************************
  */
-DataView * DataGroup::createViewString( const std::string& name,
+DataView * DataGroup::createViewString( const std::string& path,
                                         const std::string& value)
 {
-  DataView * view = createView(name);
+  DataView * view = createView(path);
   if (view != ATK_NULLPTR)
   {
     view->setString(value);
@@ -533,11 +533,11 @@ DataView * DataGroup::createViewString( const std::string& name,
  *
  *************************************************************************
  */
-void DataGroup::destroyView( const std::string& name )
+void DataGroup::destroyView( const std::string& path )
 {
-  std::string path = name;
+  std::string intpath(path);
   bool create_groups_in_path = false;
-  DataGroup * group = walkPath( path, create_groups_in_path );
+  DataGroup * group = walkPath( intpath, create_groups_in_path );
 
   if ( group == ATK_NULLPTR )
   {
@@ -545,7 +545,7 @@ void DataGroup::destroyView( const std::string& name )
   }
   else
   {
-    DataView * view = group->detachView(path);
+    DataView * view = group->detachView(intpath);
     if ( view != ATK_NULLPTR )
     {
       delete view;
@@ -601,9 +601,9 @@ void DataGroup::destroyViews()
  *
  *************************************************************************
  */
-void DataGroup::destroyViewAndData( const std::string& name )
+void DataGroup::destroyViewAndData( const std::string& path )
 {
-  destroyViewAndData(getView(name));
+  destroyViewAndData(getView(path));
 }
 
 /*
@@ -719,19 +719,18 @@ DataView * DataGroup::copyView(DataView * view)
 /*
  ***********************************************************************
  *
- * Return true if this Group has a descendant Group with 
- * given name or path; else false.
+ * Return true if this Group has a descendant Group with given name or path;
+ * else false.
  *
  ***********************************************************************
  */
-bool DataGroup::hasGroup( const std::string& name ) const
+bool DataGroup::hasGroup( const std::string& path ) const
 {
-  // return m_group_coll.hasItem(name);
-  std::string path = name;
-  const DataGroup * group = walkPath( path );
+  std::string intpath(path);
+  const DataGroup * group = walkPath( intpath );
 
   if ( group == ATK_NULLPTR ) return false;
-  else return group->hasChildGroup(path);
+  else return group->hasChildGroup(intpath);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -748,19 +747,19 @@ bool DataGroup::hasGroup( const std::string& name ) const
  *
  *************************************************************************
  */
-DataGroup * DataGroup::getGroup( const std::string& name )
+DataGroup * DataGroup::getGroup( const std::string& path )
 {
-  std::string path = name;
+  std::string intpath(path);
   bool create_groups_in_path = false;
-  DataGroup * group = walkPath( path, create_groups_in_path );
+  DataGroup * group = walkPath( intpath, create_groups_in_path );
 
   if (group == ATK_NULLPTR) return ATK_NULLPTR;
 
   SLIC_CHECK_MSG( !path.empty() && group->hasChildGroup(path),
                   "Group " << getName() <<
-                  " has no child Group with name '" << path << "'");
+                  " has no child Group with name '" << intpath << "'");
 
-  return group->m_group_coll.getItem(path);
+  return group->m_group_coll.getItem(intpath);
 }
 
 /*
@@ -770,18 +769,18 @@ DataGroup * DataGroup::getGroup( const std::string& name )
  *
  *************************************************************************
  */
-const DataGroup * DataGroup::getGroup( const std::string& name ) const
+const DataGroup * DataGroup::getGroup( const std::string& path ) const
 {
-  std::string path = name;
-  const DataGroup * group = walkPath( path );
+  std::string intpath(path);
+  const DataGroup * group = walkPath( intpath );
 
   if (group == ATK_NULLPTR) return ATK_NULLPTR;
 
-  SLIC_CHECK_MSG( !path.empty() && group->hasChildGroup(path),
+  SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
                   "Group " << getName() <<
                   " has no child Group with name '" << path << "'");
 
-  return group->m_group_coll.getItem(path);
+  return group->m_group_coll.getItem(intpath);
 }
 
 
@@ -799,25 +798,25 @@ const DataGroup * DataGroup::getGroup( const std::string& name ) const
  *
  *************************************************************************
  */
-DataGroup * DataGroup::createGroup( const std::string& name )
+DataGroup * DataGroup::createGroup( const std::string& path )
 {
-  std::string path = name;
+  std::string intpath(path);
   bool create_groups_in_path = true;
-  DataGroup * group = walkPath( path, create_groups_in_path );
+  DataGroup * group = walkPath( intpath, create_groups_in_path );
 
   if ( group == ATK_NULLPTR )
   {
     SLIC_CHECK( group != ATK_NULLPTR );
     return ATK_NULLPTR;
   }
-  else if ( path.empty() || group->hasChildGroup(path) || group->hasChildView(path) )
+  else if ( intpath.empty() || group->hasChildGroup(intpath) || group->hasChildView(intpath) )
   {
-    SLIC_CHECK( !path.empty() );
-    SLIC_CHECK_MSG( !group->hasChildGroup(path),
+    SLIC_CHECK( !intpath.empty() );
+    SLIC_CHECK_MSG( !group->hasChildGroup(intpath),
                     "Cannot create Group with name '" << path <<
                     " in Group '" << getName() <<
                     " since it already has a Group with that name" );
-    SLIC_CHECK_MSG( !group->hasChildView(path),
+    SLIC_CHECK_MSG( !group->hasChildView(intpath),
                     "Cannot create Group with name '" << path <<
                     " in Group '" << getName() <<
                     " since it already has a View with that name" );
@@ -825,7 +824,7 @@ DataGroup * DataGroup::createGroup( const std::string& name )
     return ATK_NULLPTR;
   }
 
-  DataGroup * new_group = new(std::nothrow) DataGroup(path, this);
+  DataGroup * new_group = new(std::nothrow) DataGroup(intpath, this);
   if ( new_group == ATK_NULLPTR )
   {
     return ATK_NULLPTR;
@@ -840,15 +839,15 @@ DataGroup * DataGroup::createGroup( const std::string& name )
  *
  *************************************************************************
  */
-void DataGroup::destroyGroup( const std::string& name )
+void DataGroup::destroyGroup( const std::string& path )
 {
-  std::string path = name;
+  std::string intpath(path);
   bool create_groups_in_path = false;
-  DataGroup * group = walkPath( path, create_groups_in_path );
+  DataGroup * group = walkPath( intpath, create_groups_in_path );
 
   if ( group != ATK_NULLPTR )
   {
-    DataGroup * targetgroup = group->detachGroup(path);
+    DataGroup * targetgroup = group->detachGroup(intpath);
     if ( targetgroup != ATK_NULLPTR )
     {
       delete targetgroup;
