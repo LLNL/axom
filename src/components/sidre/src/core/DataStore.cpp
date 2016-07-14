@@ -120,7 +120,7 @@ DataStore::DataStore()
   conduit::utils::set_warning_handler( DataStoreConduitWarningHandler );
   conduit::utils::set_info_handler( DataStoreConduitInfoHandler );
 
-  m_RootGroup = new DataGroup("root", this);
+  m_RootGroup = new DataGroup("/", this);
 
 };
 
