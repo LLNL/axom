@@ -78,6 +78,17 @@ public:
              const std::string& protocol);
 
   /*!
+   * \brief write additional group to existing root file
+   *
+   * Should be called after write().  The native layout of the group will
+   * be added to the root file.
+   *
+   * \param group         DataGroup to add to root file
+   * \param file_name     name of existing root file
+   */
+  void writeGroupToRootFile(sidre::DataGroup * group, const std::string& file_name);
+
+  /*!
    * \brief read from input files
    *
    * \param group         DataGroup to fill with input data
@@ -113,7 +124,9 @@ private:
                       const std::string& file_base,
                       int num_files);
 
-  std::string getHDF5FileName(hid_t root_file_id, int rankgroup_id);
+  std::string getHDF5FileName(const std::string& root_name,
+                              hid_t root_file_id,
+                              int rankgroup_id);
 
   int getNumFilesFromRoot(const std::string& root_file);
 

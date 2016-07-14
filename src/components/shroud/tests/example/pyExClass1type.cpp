@@ -42,8 +42,8 @@ static char PP_exclass1_delete__doc__[] =
 static PyObject *
 PP_exclass1_delete(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.delete
     delete self->BBB;
@@ -64,10 +64,10 @@ PP_exclass1_increment_count(
 {
 // splicer begin class.ExClass1.method.increment_count
     int incr;
-    const char *kwcpp = "incr";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "incr";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:incrementCount", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:incrementCount", SH_kw_list,
         &incr))
     {
         return NULL;
@@ -84,8 +84,8 @@ static char PP_exclass1_get_name__doc__[] =
 static PyObject *
 PP_exclass1_get_name(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_name
     const std::string & rv = self->BBB->getName();
@@ -106,8 +106,8 @@ static char PP_exclass1_get_name_length__doc__[] =
 static PyObject *
 PP_exclass1_get_name_length(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_name_length
     int rv = self->BBB->GetNameLength();
@@ -122,8 +122,8 @@ static char PP_exclass1_get_name_error_check__doc__[] =
 static PyObject *
 PP_exclass1_get_name_error_check(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_name_error_check
     const std::string & rv = self->BBB->getNameErrorCheck();
@@ -139,8 +139,8 @@ static char PP_exclass1_get_name_arg__doc__[] =
 static PyObject *
 PP_exclass1_get_name_arg(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_name_arg
     const std::string & rv = self->BBB->getNameArg();
@@ -156,8 +156,8 @@ static char PP_exclass1_get_root__doc__[] =
 static PyObject *
 PP_exclass1_get_root(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_root
     ExClass2 * rv = self->BBB->getRoot();
@@ -175,10 +175,10 @@ PP_exclass1_get_value_from_int(
 {
 // splicer begin class.ExClass1.method.get_value_from_int
     int value;
-    const char *kwcpp = "value";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "value";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getValue", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getValue", SH_kw_list,
         &value))
     {
         return NULL;
@@ -196,10 +196,10 @@ PP_exclass1_get_value_1(
 {
 // splicer begin class.ExClass1.method.get_value_1
     long value;
-    const char *kwcpp = "value";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "value";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:getValue", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:getValue", SH_kw_list,
         &value))
     {
         return NULL;
@@ -216,8 +216,8 @@ static char PP_exclass1_get_addr__doc__[] =
 static PyObject *
 PP_exclass1_get_addr(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.get_addr
     void * rv = self->BBB->getAddr();
@@ -239,10 +239,10 @@ PP_exclass1_has_addr(
 // splicer begin class.ExClass1.method.has_addr
     bool in;
     PyObject * SH_Py_in;
-    const char *kwcpp = "in";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "in";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:hasAddr", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:hasAddr", SH_kw_list,
         &PyBool_Type, &SH_Py_in))
     {
         return NULL;
@@ -261,8 +261,8 @@ static char PP_exclass1_splicer_special__doc__[] =
 static PyObject *
 PP_exclass1_splicer_special(
   PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass1.method.splicer_special
     self->BBB->SplicerSpecial();

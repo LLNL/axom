@@ -16,9 +16,9 @@ static char PY_function1__doc__[] =
 
 static PyObject *
 PY_function1(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.function1
     function1();
@@ -32,9 +32,9 @@ static char PY_function2__doc__[] =
 
 static PyObject *
 PY_function2(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.function2
     function2();
@@ -44,16 +44,16 @@ PY_function2(
 
 static PyObject *
 PY_function3a_0(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.function3a_0
     int i;
-    const char *kwcpp = "i";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "i";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:function3a", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:function3a", SH_kw_list,
         &i))
     {
         return NULL;
@@ -65,16 +65,16 @@ PY_function3a_0(
 
 static PyObject *
 PY_function3a_1(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.function3a_1
     long i;
-    const char *kwcpp = "i";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "i";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:function3a", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:function3a", SH_kw_list,
         &i))
     {
         return NULL;
@@ -90,7 +90,7 @@ static char PY_function3a__doc__[] =
 
 static PyObject *
 PY_function3a(
-  PyObject *self,    /* not used */
+  PyObject *self,
   PyObject *args,
   PyObject *kwds)
 {

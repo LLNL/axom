@@ -151,12 +151,20 @@
         "LUA_module_reg": "l_Tutorial_Reg", 
         "LUA_prefix": "l_", 
         "LUA_state_var": "L", 
+        "LUA_used_param_state": false, 
+        "PY_PyObject": "PyObject", 
         "PY_header_filename": "pyTutorialmodule.hpp", 
         "PY_helper_filename": "pyTutorialhelper.cpp", 
         "PY_library_doc": "library documentation", 
         "PY_module_filename": "pyTutorialmodule.cpp", 
         "PY_module_name": "tutorial", 
+        "PY_param_args": "args", 
+        "PY_param_kwds": "kwds", 
+        "PY_param_self": "self", 
         "PY_prefix": "PY_", 
+        "PY_used_param_args": false, 
+        "PY_used_param_kwds": false, 
+        "PY_used_param_self": false, 
         "class_name": "", 
         "function_suffix": "", 
         "library": "Tutorial", 
@@ -277,12 +285,12 @@
                 "F_name_generic": "sum", 
                 "F_name_impl": "sum", 
                 "F_name_method": "sum", 
-                "PY_name_impl": "PY_sum", 
                 "function_name": "Sum", 
                 "underscore_name": "sum"
             }, 
             "options": {
-                "wrap_lua": false
+                "wrap_lua": false, 
+                "wrap_python": false
             }, 
             "result": {
                 "attrs": {}, 

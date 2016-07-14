@@ -91,7 +91,8 @@ public:
    */
   IndexType getNumViews() const
   {
-    return m_views.size();
+    // need error checking for this conversion
+    return static_cast<IndexType>(m_views.size());
   }
 
 //@}

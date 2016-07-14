@@ -7,7 +7,7 @@ set(gtest_slic_tests
    )
 
 set(bench_slic_tests
-    slic_benchAsserts.cpp
+    slic_benchmark_asserts.cpp
    )
 
 
@@ -31,6 +31,21 @@ blt_add_executable( NAME slic_fmt
 blt_add_test( NAME slic_fmt COMMAND slic_fmt )
 
 
-foreach(test ${bench_slic_tests})
-	blt_add_benchmark( TEST_SOURCE ${test} TEST_ARGS "--benchmark_min_time=0.00000001" DEPENDS_ON slic )
-endforeach()
+
+if (ENABLE_BENCHMARKS)
+    foreach(test ${bench_slic_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+    
+        blt_add_executable(
+            NAME ${test_name}
+            SOURCES ${test}
+            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+            DEPENDS_ON slic gbenchmark
+            )
+
+        blt_add_benchmark( 
+            NAME ${test_name} 
+            COMMAND ${test_name} "--benchmark_min_time=0.0001"
+            )
+    endforeach()
+endif()
