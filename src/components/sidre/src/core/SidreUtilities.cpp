@@ -40,7 +40,7 @@ namespace detail
  * If the position of the first delimiter is known, it can be provided in the 'pos' parameter.
  */
 std::vector<std::string> split(const std::string& s, char c,
-                               std::string::size_type pos)
+                               std::string::size_type pos, bool keep_empty)
 {
   std::vector<std::string> v;
   std::string::size_type i = 0;
@@ -51,11 +51,14 @@ std::vector<std::string> split(const std::string& s, char c,
   }
   while (pos != std::string::npos)
   {
-    v.push_back(s.substr(i, pos-i));
+    if (keep_empty || pos-i > 0)
+    {
+      v.push_back(s.substr(i, pos-i));
+    }
     i = ++pos;
     pos = s.find(c, pos);
 
-    if (pos == std::string::npos)
+    if (pos == std::string::npos && (keep_empty || s.length() - i > 0))
     {
       v.push_back(s.substr(i, s.length()));
     }

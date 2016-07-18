@@ -22,7 +22,7 @@ namespace sidre
 namespace detail
 {
   std::vector<std::string> split(const std::string& s, char c, 
-                                 std::string::size_type pos);
+                                 std::string::size_type pos, bool keep_empty = false);
 
   std::string::size_type find_exclusive( const std::string& s, char c);
 
