@@ -56,7 +56,10 @@ bool DataGroup::hasView( const std::string& path ) const
   std::string intpath(path);
   const DataGroup * group = walkPath( intpath );
 
-  if (group == ATK_NULLPTR) return false;
+  if (group == ATK_NULLPTR)
+  {
+    return false;
+  }
 
   return group->hasChildView(intpath);
 }
@@ -144,7 +147,9 @@ DataView * DataGroup::createView( const std::string& path )
 
   if ( group == ATK_NULLPTR )
   {
-    SLIC_CHECK( group != ATK_NULLPTR );
+    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+		    "Could not find or create path " << path <<
+		    " since it appears there is already a view with that name" );
     return ATK_NULLPTR;
   }
   else if ( intpath.empty() || group->hasChildView(intpath) || group->hasChildGroup(intpath) )
@@ -539,11 +544,7 @@ void DataGroup::destroyView( const std::string& path )
   bool create_groups_in_path = false;
   DataGroup * group = walkPath( intpath, create_groups_in_path );
 
-  if ( group == ATK_NULLPTR )
-  {
-    SLIC_CHECK( group != ATK_NULLPTR );
-  }
-  else
+  if ( group != ATK_NULLPTR )
   {
     DataView * view = group->detachView(intpath);
     if ( view != ATK_NULLPTR )
@@ -729,8 +730,14 @@ bool DataGroup::hasGroup( const std::string& path ) const
   std::string intpath(path);
   const DataGroup * group = walkPath( intpath );
 
-  if ( group == ATK_NULLPTR ) return false;
-  else return group->hasChildGroup(intpath);
+  if ( group == ATK_NULLPTR )
+  {
+    return false;
+  }
+  else
+  {
+    return group->hasChildGroup(intpath);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -753,7 +760,12 @@ DataGroup * DataGroup::getGroup( const std::string& path )
   bool create_groups_in_path = false;
   DataGroup * group = walkPath( intpath, create_groups_in_path );
 
-  if (group == ATK_NULLPTR) return ATK_NULLPTR;
+  if (group == ATK_NULLPTR)
+  {
+    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+		    "Non-existent group in path " << path );
+    return ATK_NULLPTR;
+  }
 
   SLIC_CHECK_MSG( !path.empty() && group->hasChildGroup(path),
                   "Group " << getName() <<
@@ -774,7 +786,12 @@ const DataGroup * DataGroup::getGroup( const std::string& path ) const
   std::string intpath(path);
   const DataGroup * group = walkPath( intpath );
 
-  if (group == ATK_NULLPTR) return ATK_NULLPTR;
+  if (group == ATK_NULLPTR)
+  {
+    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+		    "Non-existent group in path " << path );
+    return ATK_NULLPTR;
+  }
 
   SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
                   "Group " << getName() <<
@@ -806,7 +823,9 @@ DataGroup * DataGroup::createGroup( const std::string& path )
 
   if ( group == ATK_NULLPTR )
   {
-    SLIC_CHECK( group != ATK_NULLPTR );
+    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+		    "Could not find or create path " << path <<
+		    " since it appears there is already a view with that name" );
     return ATK_NULLPTR;
   }
   else if ( intpath.empty() || group->hasChildGroup(intpath) || group->hasChildView(intpath) )
