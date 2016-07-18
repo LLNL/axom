@@ -533,11 +533,15 @@ void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
                                 H5P_DEFAULT,
                                 H5P_DEFAULT,
                                 H5P_DEFAULT);
+    SLIC_ASSERT(group_id >= 0);
 
     conduit::Node data_holder;
     group->createNativeLayout(data_holder);
 
     conduit::relay::io::hdf5_write(data_holder, group_id);
+
+    herr_t errv =  H5Fclose(root_file_id);
+    SLIC_ASSERT(errv >= 0); 
   }
   MPI_Barrier(m_mpi_comm);
 }
