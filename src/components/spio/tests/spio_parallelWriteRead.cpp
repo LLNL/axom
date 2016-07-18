@@ -66,19 +66,24 @@ int main(int argc, char** argv)
 
   writer.write(root, num_files, "out_spio_parallel_write_read", "conduit_hdf5");
 
+  std::string root_name = "out_spio_parallel_write_read.root";
+
   /*
    * Extra stuff to exercise writeGroupToRootFile
    */
-  DataStore * dsextra = new DataStore();
-  DataGroup * extra = dsextra->getRoot()->createGroup("extra");
-  extra->createViewScalar<double>("dval", 1.1);
-  DataGroup * child = extra->createGroup("child");
-  child->createViewScalar<int>("ival", 7);
-  child->createViewString("word0", "hello");
-  child->createViewString("word1", "world");
+  if (my_rank == 0) { 
+    DataStore * dsextra = new DataStore();
+    DataGroup * extra = dsextra->getRoot()->createGroup("extra");
+    extra->createViewScalar<double>("dval", 1.1);
+    DataGroup * child = extra->createGroup("child");
+    child->createViewScalar<int>("ival", 7);
+    child->createViewString("word0", "hello");
+    child->createViewString("word1", "world");
 
-  std::string root_name = "out_spio_parallel_write_read.root";
-  writer.writeGroupToRootFile(extra, root_name);
+    writer.writeGroupToRootFile(extra, root_name);
+    delete dsextra;
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
 
   /*
    * Create another DataStore that holds nothing but the root group.
@@ -135,7 +140,6 @@ int main(int argc, char** argv)
 
   delete ds;
   delete ds2;
-  delete dsextra;
 
   MPI_Finalize();
 

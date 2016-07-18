@@ -520,30 +520,26 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
 void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
                                      const std::string& file_name)
 {
-  MPI_Barrier(m_mpi_comm);
-  if (m_my_rank == 0) {
-    hid_t root_file_id = H5Fopen(file_name.c_str(),
-                                 H5F_ACC_RDWR,
-                                 H5P_DEFAULT);
+  hid_t root_file_id = H5Fopen(file_name.c_str(),
+                               H5F_ACC_RDWR,
+                               H5P_DEFAULT);
 
-    SLIC_ASSERT(root_file_id >= 0); 
+  SLIC_ASSERT(root_file_id >= 0); 
 
-    hid_t group_id = H5Gcreate2(root_file_id,
-                                group->getName().c_str(),
-                                H5P_DEFAULT,
-                                H5P_DEFAULT,
-                                H5P_DEFAULT);
-    SLIC_ASSERT(group_id >= 0);
+  hid_t group_id = H5Gcreate2(root_file_id,
+                              group->getName().c_str(),
+                              H5P_DEFAULT,
+                              H5P_DEFAULT,
+                              H5P_DEFAULT);
+  SLIC_ASSERT(group_id >= 0);
 
-    conduit::Node data_holder;
-    group->createNativeLayout(data_holder);
+  conduit::Node data_holder;
+  group->createNativeLayout(data_holder);
 
-    conduit::relay::io::hdf5_write(data_holder, group_id);
+  conduit::relay::io::hdf5_write(data_holder, group_id);
 
-    herr_t errv =  H5Fclose(root_file_id);
-    SLIC_ASSERT(errv >= 0); 
-  }
-  MPI_Barrier(m_mpi_comm);
+  herr_t errv =  H5Fclose(root_file_id);
+  SLIC_ASSERT(errv >= 0); 
 }
 
 
