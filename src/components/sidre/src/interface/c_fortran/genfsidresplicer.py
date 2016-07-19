@@ -48,7 +48,7 @@ subroutine datagroup_set_scalar_{typename}(group, name, value)
     use iso_c_binding
     class(datagroup), intent(IN) :: group
     character(*), intent(IN) :: name
-    {f_type}, intent(OUT) :: value
+    {f_type}, intent(IN) :: value
     integer(C_INT) :: lname
     type(C_PTR) view
 

@@ -3166,7 +3166,7 @@ contains
         use iso_c_binding
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
-        integer(C_INT), intent(OUT) :: value
+        integer(C_INT), intent(IN) :: value
         integer(C_INT) :: lname
         type(C_PTR) view
     
@@ -3180,7 +3180,7 @@ contains
         use iso_c_binding
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
-        integer(C_LONG), intent(OUT) :: value
+        integer(C_LONG), intent(IN) :: value
         integer(C_INT) :: lname
         type(C_PTR) view
     
@@ -3194,7 +3194,7 @@ contains
         use iso_c_binding
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
-        real(C_FLOAT), intent(OUT) :: value
+        real(C_FLOAT), intent(IN) :: value
         integer(C_INT) :: lname
         type(C_PTR) view
     
@@ -3208,7 +3208,7 @@ contains
         use iso_c_binding
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
-        real(C_DOUBLE), intent(OUT) :: value
+        real(C_DOUBLE), intent(IN) :: value
         integer(C_INT) :: lname
         type(C_PTR) view
     
