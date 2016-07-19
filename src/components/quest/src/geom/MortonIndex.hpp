@@ -2,6 +2,8 @@
 #ifndef MORTON_INDEX_HXX_
 #define MORTON_INDEX_HXX_
 
+#include "common/config.hpp"
+
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 

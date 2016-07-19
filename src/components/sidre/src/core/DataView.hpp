@@ -26,6 +26,7 @@
 #include <set>
 
 // Other CS Toolkit headers
+#include "common/config.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
