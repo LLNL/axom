@@ -87,6 +87,8 @@ program spio_parallel_write_read
      view = child%create_view_string("word1", "world")
 
      call writer%write_group_to_root_file(extra, "F_out_spio_parallel_write_read.root")
+
+     call dsextra%delete()
   endif
   call mpi_barrier(MPI_COMM_WORLD, mpierr)
 
@@ -131,9 +133,6 @@ program spio_parallel_write_read
 
   call ds1%delete()
   call ds2%delete()
-  if (my_rank == 0) then
-     call dsextra%delete()
-  endif
 
   call mpi_finalize(mpierr)
 
