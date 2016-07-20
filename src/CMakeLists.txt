@@ -53,3 +53,7 @@ endif()
 install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION . OPTIONAL)
 install(DIRECTORY ${PROJECT_BINARY_DIR}/lib/fortran DESTINATION lib OPTIONAL)
 
+################################
+# Create header of configuration options
+################################s
+include(cmake/CMakeConfigureFile.cmake)

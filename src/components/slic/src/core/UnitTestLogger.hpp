@@ -18,6 +18,9 @@
 #ifndef UNITTESTLOGGER_HPP_
 #define UNITTESTLOGGER_HPP_
 
+// Other CS Toolkit headers
+#include "common/config.hpp"
+
 // slic component headers
 #include "slic.hpp"
 #include "GenericOutputStream.hpp"
