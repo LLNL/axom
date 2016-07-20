@@ -71,6 +71,7 @@ int main(int argc, char** argv)
   /*
    * Extra stuff to exercise writeGroupToRootFile
    */
+  MPI_Barrier(MPI_COMM_WORLD);
   if (my_rank == 0) { 
     DataStore * dsextra = new DataStore();
     DataGroup * extra = dsextra->getRoot()->createGroup("extra");

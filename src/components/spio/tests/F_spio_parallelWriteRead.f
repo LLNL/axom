@@ -76,6 +76,7 @@ program spio_parallel_write_read
   call writer%write(root1, num_files, "F_out_spio_parallel_write_read", "conduit_hdf5")
 
   ! Extra stuff to exercise writeGroupToRootFile
+  call mpi_barrier(MPI_COMM_WORLD, mpierr)
   if (my_rank == 0) then
      dsextra = datastore_new()
      extra_root = dsextra%get_root()
