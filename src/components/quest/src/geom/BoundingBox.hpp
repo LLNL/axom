@@ -27,6 +27,8 @@
 
 #include <limits>
 
+#include "common/config.hpp"
+
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 

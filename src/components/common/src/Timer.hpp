@@ -12,6 +12,7 @@
 #ifndef TIMER_HPP_
 #define TIMER_HPP_
 
+#include "common/config.hpp"
 #ifdef USE_CXX11
   #include "common/ChronoTimer.hpp"
 #else

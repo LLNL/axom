@@ -76,16 +76,22 @@ program spio_parallel_write_read
   call writer%write(root1, num_files, "F_out_spio_parallel_write_read", "sidre_hdf5")
 
   ! Extra stuff to exercise writeGroupToRootFile
-  dsextra = datastore_new()
-  extra_root = dsextra%get_root()
-  extra = extra_root%create_group("extra")
-  view = extra%create_View_Scalar("dval", 1.1d0)
-  child = extra%create_group("child")
-  view = child%create_view_scalar("ival", 7)
-  view = child%create_view_string("word0", "hello")
-  view = child%create_view_string("word1", "world")
+  call mpi_barrier(MPI_COMM_WORLD, mpierr)
+  if (my_rank == 0) then
+     dsextra = datastore_new()
+     extra_root = dsextra%get_root()
+     extra = extra_root%create_group("extra")
+     view = extra%create_View_Scalar("dval", 1.1d0)
+     child = extra%create_group("child")
+     view = child%create_view_scalar("ival", 7)
+     view = child%create_view_string("word0", "hello")
+     view = child%create_view_string("word1", "world")
 
-  call writer%write_group_to_root_file(extra, "F_out_spio_parallel_write_read.root")
+     call writer%write_group_to_root_file(extra, "F_out_spio_parallel_write_read.root")
+
+     call dsextra%delete()
+  endif
+  call mpi_barrier(MPI_COMM_WORLD, mpierr)
 
   ! create another datastore that holds nothing but the root group.
   ds2 = datastore_new()
@@ -128,7 +134,6 @@ program spio_parallel_write_read
 
   call ds1%delete()
   call ds2%delete()
-  call dsextra%delete()
 
   call mpi_finalize(mpierr)
 

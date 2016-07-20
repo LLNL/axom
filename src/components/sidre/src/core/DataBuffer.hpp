@@ -25,6 +25,7 @@
 #include <vector>
 
 // Other toolkit component headers
+#include "common/config.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 

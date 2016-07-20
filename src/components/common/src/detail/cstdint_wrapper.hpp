@@ -2,6 +2,8 @@
 #ifndef COMMON_CSTDINT_WRAPPER_HPP_
 #define COMMON_CSTDINT_WRAPPER_HPP_
 
+#include "common/config.hpp"    // define USE_CXX11
+
 #ifdef USE_CXX11
   #include <cstdint>            // for fixed width types in c++11
 #endif

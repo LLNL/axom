@@ -1,6 +1,7 @@
 #ifndef INOUT_OCTREE__HXX_
 #define INOUT_OCTREE__HXX_
 
+#include "common/config.hpp"
 #include "common/ATKMacros.hpp"
 #include "common/Timer.hpp"
 #include "common/Utilities.hpp"
