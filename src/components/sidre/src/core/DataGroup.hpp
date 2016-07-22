@@ -231,7 +231,7 @@ public:
   /*!
    * \brief Return true if this Group owns a View with given index; else false.
    */
-  bool hasView( IndexType idx ) const
+  bool hasChildView( IndexType idx ) const
   {
     return m_view_coll.hasItem(idx);
   }
@@ -257,7 +257,7 @@ public:
    */
   const std::string& getViewName(IndexType idx) const
   {
-    SLIC_CHECK_MSG(hasView(idx),
+    SLIC_CHECK_MSG(hasChildView(idx),
                    "Group " << this->getName() <<
                    " has no View with index " << idx);
 
@@ -296,7 +296,7 @@ public:
    */
   DataView * getView( IndexType idx )
   {
-    SLIC_CHECK_MSG( hasView(idx),
+    SLIC_CHECK_MSG( hasChildView(idx),
                     "Group " << this->getName()
                              << " has no View with index " << idx);
 
@@ -310,7 +310,7 @@ public:
    */
   const DataView * getView( IndexType idx ) const
   {
-    SLIC_CHECK_MSG( hasView(idx),
+    SLIC_CHECK_MSG( hasChildView(idx),
                     "Group " << this->getName()
                              << " has no View with index " << idx);
 
@@ -803,7 +803,7 @@ public:
    * \brief Return true if Group has an immediate child Group
    *        with given index; else false.
    */
-  bool hasGroup( IndexType idx ) const
+  bool hasChildGroup( IndexType idx ) const
   {
     return m_group_coll.hasItem(idx);
   }
@@ -829,7 +829,7 @@ public:
    */
   const std::string& getGroupName(IndexType idx) const
   {
-    SLIC_CHECK_MSG(hasGroup(idx),
+    SLIC_CHECK_MSG(hasChildGroup(idx),
                    "Group " << this->getName() <<
                    " has no child Group with index " << idx);
 
@@ -867,7 +867,7 @@ public:
    */
   DataGroup * getGroup( IndexType idx )
   {
-    SLIC_CHECK_MSG(hasGroup(idx),
+    SLIC_CHECK_MSG(hasChildGroup(idx),
                    "Group " << this->getName() <<
                    " has no child Group with index " << idx);
 
@@ -881,7 +881,7 @@ public:
    */
   const DataGroup * getGroup( IndexType idx ) const
   {
-    SLIC_CHECK_MSG(hasGroup(idx),
+    SLIC_CHECK_MSG(hasChildGroup(idx),
                    "Group " << this->getName() <<
                    " has no child Group with index " << idx);
 

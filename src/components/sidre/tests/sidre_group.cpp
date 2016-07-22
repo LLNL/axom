@@ -510,7 +510,7 @@ TEST(sidre_group,group_name_collisions)
   DataGroup * flds = ds->getRoot()->createGroup("fields");
   flds->createView("a");
 
-  EXPECT_TRUE(flds->hasView("a"));
+  EXPECT_TRUE(flds->hasChildView("a"));
 
   // attempt to create duplicate group name
 
@@ -746,7 +746,7 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   DataView * const view1 = grp->createViewAndAllocate(viewName1,
                                                       DataType::c_int(10));
 
-  EXPECT_TRUE(grp->hasView(viewName1));
+  EXPECT_TRUE(grp->hasChildView(viewName1));
   EXPECT_EQ( grp->getView(viewName1), view1 );
 
   int * v1_vals = view1->getData();

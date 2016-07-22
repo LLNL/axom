@@ -1183,7 +1183,7 @@ bool DataGroup::isEquivalentTo(const DataGroup * other) const
       const DataView * view = getView(vidx);
       const std::string& name = view->getName();
 
-      is_equiv = other->hasView( name )
+      is_equiv = other->hasChildView( name )
               && view->isEquivalentTo( other->getView( name ) );
 
       vidx = getNextValidViewIndex(vidx);
@@ -1199,7 +1199,7 @@ bool DataGroup::isEquivalentTo(const DataGroup * other) const
       const DataGroup * group =  getGroup(gidx);
       const std::string& name = group->getName();
 
-      is_equiv = other->hasGroup( name )
+      is_equiv = other->hasChildGroup( name )
               && group->isEquivalentTo( other->getGroup( name ));
 
       gidx = getNextValidGroupIndex(gidx);
