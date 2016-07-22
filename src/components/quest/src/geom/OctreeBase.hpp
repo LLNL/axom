@@ -10,13 +10,15 @@
 #include "quest/Vector.hpp"
 #include "quest/Mesh.hpp"
 
+#include "common/config.hpp"
+
 #include "slic/slic.hpp"
 
 #include "slam/SizePolicies.hpp"
 #include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
 
-#if defined(USE_CXX11)
+#ifdef USE_CXX11
 #include <unordered_map>
 #else
 #include "boost/unordered_map.hpp"

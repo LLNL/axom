@@ -16,16 +16,16 @@ static char PY_pass_char__doc__[] =
 
 static PyObject *
 PY_pass_char(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.pass_char
     char status;
-    const char *kwcpp = "status";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "status";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:passChar", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:passChar", SH_kw_list,
         &status))
     {
         return NULL;
@@ -41,9 +41,9 @@ static char PY_return_char__doc__[] =
 
 static PyObject *
 PY_return_char(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.return_char
     char rv = returnChar();
@@ -58,17 +58,17 @@ static char PY_pass_char_ptr__doc__[] =
 
 static PyObject *
 PY_pass_char_ptr(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.pass_char_ptr
     char * dest;
     const char * src;
-    const char *kwcpp = "src";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "src";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:passCharPtr", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:passCharPtr", SH_kw_list,
         &src))
     {
         return NULL;
@@ -85,9 +85,9 @@ static char PY_get_char1__doc__[] =
 
 static PyObject *
 PY_get_char1(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_char1
     const char * rv = getChar1();
@@ -102,9 +102,9 @@ static char PY_get_char2__doc__[] =
 
 static PyObject *
 PY_get_char2(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_char2
     const char * rv = getChar2();
@@ -119,9 +119,9 @@ static char PY_get_char3__doc__[] =
 
 static PyObject *
 PY_get_char3(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_char3
     const char * rv = getChar3();
@@ -136,9 +136,9 @@ static char PY_get_string1__doc__[] =
 
 static PyObject *
 PY_get_string1(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_string1
     const std::string & rv = getString1();
@@ -153,9 +153,9 @@ static char PY_get_string2__doc__[] =
 
 static PyObject *
 PY_get_string2(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_string2
     const std::string & rv = getString2();
@@ -170,9 +170,9 @@ static char PY_get_string3__doc__[] =
 
 static PyObject *
 PY_get_string3(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.get_string3
     const std::string & rv = getString3();
@@ -187,16 +187,16 @@ static char PY_accept_string_const_reference__doc__[] =
 
 static PyObject *
 PY_accept_string_const_reference(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.accept_string_const_reference
     const char * arg1;
-    const char *kwcpp = "arg1";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "arg1";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:acceptStringConstReference", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:acceptStringConstReference", SH_kw_list,
         &arg1))
     {
         return NULL;
@@ -213,16 +213,16 @@ static char PY_accept_string_reference__doc__[] =
 
 static PyObject *
 PY_accept_string_reference(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.accept_string_reference
     char * arg1;
-    const char *kwcpp = "arg1";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "arg1";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:acceptStringReference", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:acceptStringReference", SH_kw_list,
         &arg1))
     {
         return NULL;

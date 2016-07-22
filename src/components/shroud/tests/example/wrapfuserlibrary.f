@@ -108,6 +108,20 @@ module userlibrary_mod
             integer(C_INT), value, intent(IN) :: comm
         end subroutine testmpi
         
+        subroutine c_testgroup1(grp) &
+                bind(C, name="AA_testgroup1")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: grp
+        end subroutine c_testgroup1
+        
+        subroutine c_testgroup2(grp) &
+                bind(C, name="AA_testgroup2")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: grp
+        end subroutine c_testgroup2
+        
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
     end interface
@@ -129,7 +143,7 @@ contains
     ! string_to_buffer_and_len
     ! function_index=42
     function is_name_valid(name) result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL, C_INT
         implicit none
         character(*), intent(IN) :: name
         logical :: rv
@@ -141,7 +155,7 @@ contains
     ! bool isInitialized()
     ! function_index=43
     function is_initialized() result(rv)
-        use iso_c_binding
+        use iso_c_binding, only : C_BOOL
         implicit none
         logical :: rv
         ! splicer begin is_initialized
@@ -153,7 +167,7 @@ contains
     ! string_to_buffer_and_len
     ! function_index=44
     subroutine test_names(name)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(IN) :: name
         ! splicer begin test_names
@@ -167,7 +181,7 @@ contains
     ! string_to_buffer_and_len
     ! function_index=45
     subroutine test_names_flag(name, flag)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(IN) :: name
         integer(C_INT), value, intent(IN) :: flag
@@ -181,9 +195,8 @@ contains
     
     ! void testoptional()
     ! has_default_arg
-    ! function_index=48
+    ! function_index=50
     subroutine testoptional_0()
-        use iso_c_binding
         implicit none
         ! splicer begin testoptional_0
         call c_testoptional_0()
@@ -192,9 +205,9 @@ contains
     
     ! void testoptional(int i+default(1)+intent(in)+value)
     ! has_default_arg
-    ! function_index=49
+    ! function_index=51
     subroutine testoptional_1(i)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         integer(C_INT), value, intent(IN) :: i
         ! splicer begin testoptional_1
@@ -205,7 +218,7 @@ contains
     ! void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
     ! function_index=46
     subroutine testoptional_2(i, j)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG, C_INT
         implicit none
         integer(C_INT), value, intent(IN) :: i
         integer(C_LONG), value, intent(IN) :: j
@@ -215,6 +228,28 @@ contains
             j)
         ! splicer end testoptional_2
     end subroutine testoptional_2
+    
+    ! void testgroup1(DataGroup * grp+intent(in)+value)
+    ! function_index=48
+    subroutine testgroup1(grp)
+        use sidre_mod, only : datagroup
+        implicit none
+        type(datagroup), value, intent(IN) :: grp
+        ! splicer begin testgroup1
+        call c_testgroup1(grp%get_instance())
+        ! splicer end testgroup1
+    end subroutine testgroup1
+    
+    ! void testgroup2(const DataGroup * grp+intent(in)+value)
+    ! function_index=49
+    subroutine testgroup2(grp)
+        use sidre_mod, only : datagroup
+        implicit none
+        type(datagroup), value, intent(IN) :: grp
+        ! splicer begin testgroup2
+        call c_testgroup2(grp%get_instance())
+        ! splicer end testgroup2
+    end subroutine testgroup2
     
     ! splicer begin additional_functions
     ! splicer end additional_functions

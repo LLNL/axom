@@ -934,11 +934,12 @@ TEST(sidre_group,save_restore_external_data)
   const std::string file_path_base("sidre_save_external_");
 
   int nfoo = 10;
-  int foo1[nfoo], foo2[nfoo], * foo3;
+  int foo1[nfoo], foo2[nfoo], * foo3, foo4[nfoo];
   for (int i = 0 ; i < nfoo ; ++i)
   {
     foo1[i] = i;
     foo2[i] = 0;
+    foo4[i] = i;
   }
   foo3 = NULL;
 
@@ -949,7 +950,7 @@ TEST(sidre_group,save_restore_external_data)
   root1->createView("empty_array", INT_ID, nfoo, foo3);
   // XXX this falls into createView(name, type, ndims, shape)
   // root1->createView("empty_array", INT_ID, nfoo, NULL);
-  root1->createView("external_undescribed")->setExternalDataPtr(foo1);
+  root1->createView("external_undescribed")->setExternalDataPtr(foo4);
 
   for (int i = 0 ; i < nprotocols ; ++i)
   {
@@ -1260,23 +1261,23 @@ TEST(sidre_group,is_equivalent_to)
   DataGroup * ga1 = flds1->createGroup("a");
   DataGroup * gb1 = flds1->createGroup("b");
   DataGroup * gc1 = flds1->createGroup("c");
-  DataGroup * ga2 = flds2->createGroup("a");
+
+  DataGroup * gc2 = flds2->createGroup("c");    // Note: flds2 groups added in different order
   DataGroup * gb2 = flds2->createGroup("b");
-  DataGroup * gc2 = flds2->createGroup("c");
+  DataGroup * ga2 = flds2->createGroup("a");
 
   ga1->createViewScalar("i0", 1 );
   gb1->createViewScalar("f0", 100.0f );
   gc1->createViewScalar("d0", 3000.00);
+  gc1->createViewScalar("d1", 6000.00);
+  gc1->createViewScalar("d2", 9000.00);
+
   ga2->createViewScalar("i0", 1);
   gb2->createViewScalar("f0", 100.0f);
+  gc2->createViewScalar("d2", 9000.00);         // Note: views of gc2 added in different order
+  gc2->createViewScalar("d1", 6000.00);
   gc2->createViewScalar("d0", 3000.00);
 
-  ga1->getView("i0")->setScalar(1);
-  gb1->getView("f0")->setScalar( 100.0f );
-  gc1->getView("d0")->setScalar(3000.00);
-  ga2->getView("i0")->setScalar(1);
-  gb2->getView("f0")->setScalar( 100.0f );
-  gc2->getView("d0")->setScalar(3000.00);
 
   // Groups were created identically, so should be equivalent.
   EXPECT_TRUE(flds1->isEquivalentTo(flds2));

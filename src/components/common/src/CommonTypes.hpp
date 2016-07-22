@@ -19,11 +19,12 @@
 #define COMMONTYPES_HPP_
 
 
+#include "common/config.hpp"           // Defines USE_CXX11
+#include "common/cstdint_wrapper.hpp"  // for fixed bitwidth integer types
+
 #ifndef USE_CXX11
   #include <cstddef>            // brings in NULL
 #endif
-
-#include "common/cstdint_wrapper.hpp"  // for fixed bitwidth integer types
 
 namespace asctoolkit {
 

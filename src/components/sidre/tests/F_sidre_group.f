@@ -15,7 +15,6 @@ module sidre_group
   use iso_c_binding
   use fruit
   use sidre_mod
-  use slic_mod
   implicit none
 
   ! Test protocols
@@ -676,15 +675,17 @@ contains
     integer, parameter :: nfoo = 10
     integer foo1(nfoo), foo2(nfoo)
     integer, pointer :: foo3(:) => null()
+    integer(C_INT), target :: foo4(nfoo)
     type(datastore) ds1, ds2
     type(datagroup) root1, root2
-    type(dataview) view1, view2
+    type(dataview) view1, view2, view3
 
     call set_case_name("save_restore_external_data")
 
     do i = 1, nfoo
        foo1(i) = i - 1   ! -1 to match C++
        foo2(i) = 0
+       foo4(i) = i
     enddo
 
     ds1 = datastore_new()
@@ -692,8 +693,8 @@ contains
 
     view1 = root1%create_array_view("external_array", foo1)
     view2 = root1%create_array_view("empty_array", foo3)
-    ! "external_undescribed" is impossible to create with create_array_view, so skip test
-    ! Could munge with set_external_data_ptr(C_LOC(array))
+    view3 = root1%create_view("external_undescribed")
+    call view3%set_external_data_ptr(C_LOC(foo4))
 
     do i = 1, nprotocols
        file_path = file_path_base //  protocols(i)
@@ -726,6 +727,10 @@ contains
        call assert_true(view2%is_described())
 !       call view2%set_array_data_ptr(foo3)
        call root2%set_array_data_ptr("empty_array", foo3)
+
+       view3 = root2%get_view("external_undescribed");
+       call assert_true(view3%is_empty(), "external_undescribed is empty")
+       call assert_false(view3%is_described(), "external_undescribed is not described")
 
        ! read external data into views
        call ds2%load_external_data(file_path, protocols(i))

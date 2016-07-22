@@ -21,9 +21,9 @@ static char PP_local_function1__doc__[] =
 
 static PyObject *
 PP_local_function1(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.local_function1
     local_function1();
@@ -37,16 +37,16 @@ static char PP_is_name_valid__doc__[] =
 
 static PyObject *
 PP_is_name_valid(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.is_name_valid
     const char * name;
-    const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "name";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", SH_kw_list,
         &name))
     {
         return NULL;
@@ -64,9 +64,9 @@ static char PP_is_initialized__doc__[] =
 
 static PyObject *
 PP_is_initialized(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.is_initialized
     bool rv = isInitialized();
@@ -77,16 +77,16 @@ PP_is_initialized(
 
 static PyObject *
 PP_test_names(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.test_names
     const char * name;
-    const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "name";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:test_names", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:test_names", SH_kw_list,
         &name))
     {
         return NULL;
@@ -99,17 +99,17 @@ PP_test_names(
 
 static PyObject *
 PP_test_names_flag(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.test_names_flag
     const char * name;
     int flag;
-    const char *kwcpp = "name\0flag";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    const char *SH_kwcpp = "name\0flag";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si:test_names", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si:test_names", SH_kw_list,
         &name, &flag))
     {
         return NULL;
@@ -126,7 +126,7 @@ static char PP_testoptional_2__doc__[] =
 
 static PyObject *
 PP_testoptional_2(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -134,12 +134,12 @@ PP_testoptional_2(
     Py_ssize_t SH_nargs = 0;
     int i;
     long j;
-    const char *kwcpp = "i\0j";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+2, NULL };
+    const char *SH_kwcpp = "i\0j";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+2, NULL };
     
     if (args != NULL) SH_nargs += PyTuple_Size(args);
     if (kwds != NULL) SH_nargs += PyDict_Size(args);
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|il:testoptional", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|il:testoptional", SH_kw_list,
         &i, &j))
     {
         return NULL;
@@ -165,16 +165,16 @@ static char PP_testmpi__doc__[] =
 
 static PyObject *
 PP_testmpi(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.testmpi
     MPI_Comm comm;
-    const char *kwcpp = "comm";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "comm";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:testmpi", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:testmpi", SH_kw_list,
         &comm))
     {
         return NULL;
@@ -184,13 +184,67 @@ PP_testmpi(
 // splicer end function.testmpi
 }
 
+static char PP_testgroup1__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_testgroup1(
+  PyObject *,  // self unused
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.testgroup1
+    asctoolkit::sidre::DataGroup * grp;
+    PyObject * SH_Py_grp;
+    const char *SH_kwcpp = "grp";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:testgroup1", SH_kw_list,
+        &FillInTypeForGroup, &SH_Py_grp))
+    {
+        return NULL;
+    }
+    asctoolkit::sidre::DataGroup * SH_grp = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(grp));
+    testgroup1(SH_grp);
+    Py_RETURN_NONE;
+// splicer end function.testgroup1
+}
+
+static char PP_testgroup2__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_testgroup2(
+  PyObject *,  // self unused
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.testgroup2
+    const asctoolkit::sidre::DataGroup * grp;
+    PyObject * SH_Py_grp;
+    const char *SH_kwcpp = "grp";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:testgroup2", SH_kw_list,
+        &FillInTypeForGroup, &SH_Py_grp))
+    {
+        return NULL;
+    }
+    const asctoolkit::sidre::DataGroup * SH_grp = static_cast<const asctoolkit::sidre::DataGroup *>(static_cast<const void *>(grp));
+    testgroup2(SH_grp);
+    Py_RETURN_NONE;
+// splicer end function.testgroup2
+}
+
 static char PP_test_names__doc__[] =
 "documentation"
 ;
 
 static PyObject *
 PP_test_names(
-  PyObject *self,    /* not used */
+  PyObject *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -227,6 +281,8 @@ static PyMethodDef PP_methods[] = {
 {"isInitialized", (PyCFunction)PP_is_initialized, METH_NOARGS, PP_is_initialized__doc__},
 {"testoptional", (PyCFunction)PP_testoptional_2, METH_VARARGS|METH_KEYWORDS, PP_testoptional_2__doc__},
 {"testmpi", (PyCFunction)PP_testmpi, METH_VARARGS|METH_KEYWORDS, PP_testmpi__doc__},
+{"testgroup1", (PyCFunction)PP_testgroup1, METH_VARARGS|METH_KEYWORDS, PP_testgroup1__doc__},
+{"testgroup2", (PyCFunction)PP_testgroup2, METH_VARARGS|METH_KEYWORDS, PP_testgroup2__doc__},
 {"test_names", (PyCFunction)PP_test_names, METH_VARARGS|METH_KEYWORDS, PP_test_names__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };

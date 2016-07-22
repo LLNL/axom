@@ -66,8 +66,28 @@ int main(int argc, char** argv)
 
   writer.write(root, num_files, "out_spio_parallel_write_read", "conduit_hdf5");
 
+  std::string root_name = "out_spio_parallel_write_read.root";
+
   /*
-   * Create another DataStore than holds nothing but the root group.
+   * Extra stuff to exercise writeGroupToRootFile
+   */
+  MPI_Barrier(MPI_COMM_WORLD);
+  if (my_rank == 0) { 
+    DataStore * dsextra = new DataStore();
+    DataGroup * extra = dsextra->getRoot()->createGroup("extra");
+    extra->createViewScalar<double>("dval", 1.1);
+    DataGroup * child = extra->createGroup("child");
+    child->createViewScalar<int>("ival", 7);
+    child->createViewString("word0", "hello");
+    child->createViewString("word1", "world");
+
+    writer.writeGroupToRootFile(extra, root_name);
+    delete dsextra;
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  /*
+   * Create another DataStore that holds nothing but the root group.
    */
   DataStore * ds2 = new DataStore();
 
@@ -76,7 +96,7 @@ int main(int argc, char** argv)
    */
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(ds2->getRoot(), "out_spio_parallel_write_read.root");
+  reader.read(ds2->getRoot(), root_name);
 
 
   /*
@@ -105,17 +125,19 @@ int main(int argc, char** argv)
   if (view_i1_restored->getNumElements() != num_elems) {
     return_val = 1;
   }
+  else
+  {
+    int * i1_orig = view_i1_orig->getData();
+    int * i1_restored = view_i1_restored->getData();
 
-  int * i1_orig = view_i1_orig->getData();
-  int * i1_restored = view_i1_restored->getData();
-
-  for (int i = 0; i < num_elems; ++i) {
-    if (return_val != 1) {
-      if (i1_orig[i] != i1_restored[i]) {
-        return_val = 1;
+    for (int i = 0; i < num_elems; ++i) {
+      if (return_val != 1) {
+	if (i1_orig[i] != i1_restored[i]) {
+	  return_val = 1;
+	}
       }
-    }
-  } 
+    } 
+  }
 
   delete ds;
   delete ds2;

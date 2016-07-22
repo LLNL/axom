@@ -25,6 +25,7 @@
 #include <vector>
 
 // Other toolkit component headers
+#include "common/config.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -91,7 +92,8 @@ public:
    */
   IndexType getNumViews() const
   {
-    return m_views.size();
+    // need error checking for this conversion
+    return static_cast<IndexType>(m_views.size());
   }
 
 //@}

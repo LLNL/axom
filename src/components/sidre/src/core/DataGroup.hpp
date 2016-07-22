@@ -21,6 +21,8 @@
 #ifndef DATAGROUP_HPP_
 #define DATAGROUP_HPP_
 
+#include "common/config.hpp"
+
 // Standard C++ headers
 #include <memory>
 #include <map>
@@ -41,7 +43,7 @@
 
 #if defined(USE_UNORDERED_MAP)
 //STL or Boost unordered_map, depending on
-#if defined(USE_CXX11)
+#ifdef USE_CXX11
 #include <unordered_map>
 #else
 #include "boost/unordered_map.hpp"
@@ -1243,7 +1245,7 @@ private:
   // typedef std::map<std::string, IndexType> MapType;
   ///
 #if defined(USE_UNORDERED_MAP)
-#if defined(USE_CXX11)
+#ifdef USE_CXX11
   typedef std::unordered_map<std::string, IndexType> MapType;
 #else
   typedef boost::unordered_map<std::string, IndexType> MapType;

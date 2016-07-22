@@ -1,0 +1,17 @@
+/*
+ * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and
+ * further review from Lawrence Livermore National Laboratory.
+ */
+
+#ifndef ATK_COMMON_CONFIG_HPP
+#define ATK_COMMON_CONFIG_HPP
+
+#cmakedefine USE_CXX11
+
+#endif  // ATK_COMMON_CONFIG_CPP
+

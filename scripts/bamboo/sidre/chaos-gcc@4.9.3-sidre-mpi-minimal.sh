@@ -16,11 +16,12 @@ BP="build-chaos-gcc@4.9.3-sidre-mpi-minimal"
 IP="install-chaos-gcc@4.9.3-sidre-mpi-minimal"
 COMP_OPT="-DENABLE_QUEST=OFF -DENABLE_SLAM=OFF -DENABLE_SHROUD=OFF"
 BUILD_OPT="-DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_PYTHON=OFF -DENABLE_MPI=ON"
-
+OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
 
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT    
+echo "Options: $OPTIONS"
+./scripts/config-build.py $OPTIONS
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1

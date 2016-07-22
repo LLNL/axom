@@ -26,6 +26,7 @@
 #include <set>
 
 // Other CS Toolkit headers
+#include "common/config.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -257,7 +258,7 @@ public:
    */
   int getNumDimensions() const
   {
-    return m_shape.size();
+    return static_cast<int>(m_shape.size());
   }
 
   /*!
