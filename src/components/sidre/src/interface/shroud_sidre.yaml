@@ -117,7 +117,7 @@ classes:
     -  decl: size_t getNumGroups() const
     -  decl: bool hasView( const string& path ) const
     -  decl: bool hasChildView( const string& name ) const
-#    -  decl: bool hasChildView( IndexType idx ) const
+#    -  decl: bool hasView( IndexType idx ) const
     -  decl: DataView *getView( const std::string& path )
        function_suffix: _from_name
        PY_error_pattern: PY_null_to_none
@@ -222,7 +222,7 @@ classes:
     -  decl: DataView *copyView(DataView *view)
 
     -  decl: bool hasGroup( const string& path )
-#    -  decl: bool hasChildGroup( IndexType idx )
+#    -  decl: bool hasGroup( IndexType idx )
     -  decl: bool hasChildGroup( const string& name )
     -  decl: DataGroup * getGroup( const std::string& path )
        PY_error_pattern: PY_null_to_none
