@@ -55,9 +55,9 @@ void verifyEmptyGroupNamed( DataGroup * dg, std::string name )
   EXPECT_EQ( name, dg->getName() );
 
   EXPECT_EQ( 0UL, dg->getNumGroups() );
-  EXPECT_FALSE( dg->hasChildGroup( -1 ) );
-  EXPECT_FALSE( dg->hasChildGroup(  0 ) );
-  EXPECT_FALSE( dg->hasChildGroup(  1 ) );
+  EXPECT_FALSE( dg->hasGroup( -1 ) );
+  EXPECT_FALSE( dg->hasGroup(  0 ) );
+  EXPECT_FALSE( dg->hasGroup(  1 ) );
   EXPECT_FALSE( dg->hasGroup("some_name") );
   EXPECT_EQ( InvalidIndex, dg->getGroupIndex("some_other_name") );
   EXPECT_EQ( InvalidIndex, dg->getFirstValidGroupIndex() );
@@ -65,9 +65,9 @@ void verifyEmptyGroupNamed( DataGroup * dg, std::string name )
   EXPECT_EQ( InvalidIndex, dg->getNextValidGroupIndex(4) );
 
   EXPECT_EQ( 0UL, dg->getNumViews() );
-  EXPECT_FALSE( dg->hasChildView( -1 ) );
-  EXPECT_FALSE( dg->hasChildView(  0 ) );
-  EXPECT_FALSE( dg->hasChildView(  1 ) );
+  EXPECT_FALSE( dg->hasView( -1 ) );
+  EXPECT_FALSE( dg->hasView(  0 ) );
+  EXPECT_FALSE( dg->hasView(  1 ) );
   EXPECT_FALSE( dg->hasView("some_name") );
   EXPECT_EQ( InvalidIndex, dg->getViewIndex("some_other_name") );
   EXPECT_EQ( InvalidIndex, dg->getFirstValidViewIndex() );

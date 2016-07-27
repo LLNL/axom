@@ -1328,7 +1328,8 @@ void DataGroup::destroyViewAndData( DataView * view )
 {
   if ( view != ATK_NULLPTR )
   {
-    detachView( view->getName() );
+    DataGroup * group = view->getOwningGroup();
+    group->detachView( view->getName() );
     DataBuffer * const buffer = view->detachBuffer();
     if ( buffer != ATK_NULLPTR && buffer->getNumViews() == 0 )
     {
