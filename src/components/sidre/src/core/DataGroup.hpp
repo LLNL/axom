@@ -103,11 +103,13 @@ class DataStore;
  * Note that DataViews and child DataGroups within a Group can be accessed
  * by name or index.
  *
- * Note that certain methods for creating, accessing, etc. DataGroups and
- * DataViews that take a string path accept either the name of a child Group
- * or View within a Group object or a path syntax. When a path is given, the
- * last item in the path indicates the item to be created, accessed, etc. So,
- * for example,
+ * Note that certain methods for querying, creating, retrieving, and
+ * deleting DataGroups and DataViews take a string with path syntax,
+ * while others take the name of a direct child of the current DataGroup.
+ * Methods that require the name of a direct child are marked with
+ * "Child", for example hasChildView() and hasChildGroup().  When a path
+ * string is passed to a method that accepts path syntax, the last item in
+ * the path indicates the item to be created, accessed, etc.  For example,
  *
  * \verbatim
  *
@@ -122,6 +124,10 @@ class DataStore;
  *
  * In particular, intermediate Groups "foo" and "bar" will be created in
  * this case if they don't already exist.
+ *
+ * Methods that access Views or Groups by index work with the immediate
+ * children of the current Group because an index has no meaning outside
+ * of the indexed group.  None of these methods is marked with "Child".
  *
  * IMPORTANT: when Views or Groups are created, destroyed, copied, or moved,
  * indices of other Views and Groups in associated DataGroup objects may
