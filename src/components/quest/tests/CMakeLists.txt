@@ -13,7 +13,7 @@ set(quest_tests
     quest_bucket_tree.cpp
     quest_inout_octree.cpp
     quest_intersection.cpp
-    quest_mesh_extent.cpp
+#    quest_mesh_extent.cpp
     quest_morton.cpp
     quest_numeric_array.cpp
     quest_octree.cpp

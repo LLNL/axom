@@ -32,21 +32,21 @@
 
 #include "quest/BoundingBox.hpp"
 #include "quest/BVHTree.hpp"
-#include "quest/Field.hpp"
-#include "quest/FieldData.hpp"
-#include "quest/FieldVariable.hpp"
 #include "quest/HyperSphere.hpp"
-#include "quest/Mesh.hpp"
 #include "quest/Orientation.hpp"
 #include "quest/Point.hpp"
 #include "quest/STLReader.hpp"
 #include "quest/SquaredDistance.hpp"
 #include "quest/Triangle.hpp"
-#include "quest/UniformMesh.hpp"
-#include "quest/UnstructuredMesh.hpp"
 #include "quest/Vector.hpp"
 #include "quest/SignedDistance.hpp"
 
+#include "mint/Field.hpp"
+#include "mint/FieldData.hpp"
+#include "mint/FieldVariable.hpp"
+#include "mint/Mesh.hpp"
+#include "mint/UniformMesh.hpp"
+#include "mint/UnstructuredMesh.hpp"
 
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
@@ -57,14 +57,13 @@
 // C/C++ includes
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
 #include <iostream>
 #include <limits>
 
 using namespace asctoolkit;
 
-static const int NDIMS = 3;
-typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+static const int DIM = 3;
+typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
 
 struct {
  std::string fileName;
@@ -111,7 +110,7 @@ int main( int argc, char** argv )
   write_vtk( surface_mesh, "surface_mesh.vtk" );
 
   // STEP 2: get uniform mesh
-  meshtk::UniformMesh* umesh = ATK_NULLPTR;
+  mint::UniformMesh* umesh = ATK_NULLPTR;
   get_uniform_mesh( surface_mesh, umesh );
   SLIC_ASSERT( umesh != ATK_NULLPTR );
 
@@ -302,7 +301,7 @@ void finalize()
 }
 
 //------------------------------------------------------------------------------
-void compute_norms( meshtk::UniformMesh* umesh,
+void compute_norms( mint::UniformMesh* umesh,
                     double& l1, double& l2, double& linf )
 {
    SLIC_ASSERT( umesh != ATK_NULLPTR );
@@ -379,17 +378,17 @@ void expected_phi(meshtk::UniformMesh* umesh)
 }
 
 //------------------------------------------------------------------------------
-void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
+void n2( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
 {
    SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
    SLIC_ASSERT( umesh != ATK_NULLPTR );
 
    // STEP 1: Setup node-centered signed distance field on uniform mesh
    const int nnodes = umesh->getNumberOfNodes();
-   meshtk::FieldData* PD = umesh->getNodeFieldData();
+   mint::FieldData* PD = umesh->getNodeFieldData();
    SLIC_ASSERT( PD != ATK_NULLPTR );
 
-   PD->addField( new meshtk::FieldVariable<double>("n2_phi",nnodes) );
+   PD->addField( new mint::FieldVariable<double>("n2_phi",nnodes) );
    double* phi = PD->getField( "n2_phi" )->getDoublePtr();
    SLIC_ASSERT( phi != ATK_NULLPTR );
 
@@ -440,8 +439,8 @@ void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
 }
 
 //------------------------------------------------------------------------------
-void computeUsingBucketTree( meshtk::Mesh* surface_mesh,
-                             meshtk::UniformMesh* umesh )
+void computeUsingBucketTree( mint::Mesh* surface_mesh,
+                             mint::UniformMesh* umesh )
 {
   // Sanity Checks
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
@@ -453,7 +452,7 @@ void computeUsingBucketTree( meshtk::Mesh* surface_mesh,
   meshtk::FieldData* PD = umesh->getNodeFieldData();
   SLIC_ASSERT( PD != ATK_NULLPTR );
 
-  PD->addField( new meshtk::FieldVariable< double >("phi",nnodes) );
+  PD->addField( new mint::FieldVariable< double >("phi",nnodes) );
   double* phi = PD->getField( "phi" )->getDoublePtr();
   SLIC_ASSERT( phi != ATK_NULLPTR );
 
@@ -537,7 +536,7 @@ quest::BoundingBox< double,NDIMS > compute_bounds( meshtk::Mesh* mesh)
 
 
 //------------------------------------------------------------------------------
-void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
+void write_vtk( mint::Mesh* mesh, const std::string& fileName )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -606,7 +605,7 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
   meshtk::FieldData* CD = mesh->getCellFieldData();
   for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
 
-      meshtk::Field* field = CD->getField( f );
+      mint::Field* field = CD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
       if ( field->getType() == meshtk::DOUBLE_FIELD_TYPE ) {

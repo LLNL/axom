@@ -29,7 +29,7 @@
 TEST( quest_extent, basic )
 {
    int ext[6]={ 0,5,0,5,0,5 };
-   meshtk::Extent< int > extent(3,ext);
+   mint::Extent< int > extent(3,ext);
 
    EXPECT_EQ( 3, extent.getDimension() );
 
