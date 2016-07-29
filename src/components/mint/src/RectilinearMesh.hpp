@@ -25,14 +25,14 @@
 #ifndef RECTILINEARMESH_HXX_
 #define RECTILINEARMESH_HXX_
 
-#include "quest/StructuredMesh.hpp"
-#include "quest/MeshCoordinates.hpp"
+#include "mint/StructuredMesh.hpp"
+#include "mint/MeshCoordinates.hpp"
 
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 
 
-namespace meshtk
+namespace mint
 {
 
 class RectilinearMesh : public StructuredMesh
@@ -181,12 +181,12 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT(RectilinearMesh);
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
-namespace meshtk
+namespace mint
 {
 
 inline void RectilinearMesh::setCoordinate( int idim, int i, double coord )
@@ -279,5 +279,5 @@ inline double RectilinearMesh::getNodeCoordinate(
   return xc[ ijk[idim] ];
 }
 
-} /* namespace meshtk */
+} /* namespace mint */
 #endif /* RECTILINEARMESH_HXX_ */

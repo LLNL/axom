@@ -14,13 +14,14 @@ blt_add_component(COMPONENT_NAME common DEFAULT_STATE ON)
 # reduction capabilities for parallel (MPI) executables.It is not meant for 
 # serial (non-mpi) executables.
 if(ENABLE_MPI)
-  blt_add_component(COMPONENT_NAME lumberjack 
-                    DEFAULT_STATE  ${ENABLE_ALL_COMPONENTS})
+  blt_add_component( COMPONENT_NAME lumberjack 
+                     DEFAULT_STATE  ${ENABLE_ALL_COMPONENTS})
 endif(ENABLE_MPI)
 
 blt_add_component(COMPONENT_NAME slic DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 blt_add_component(COMPONENT_NAME slam DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 blt_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+blt_add_component(COMPONENT_NAME mint DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 blt_add_component(COMPONENT_NAME quest DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 
 if(ENABLE_MPI)

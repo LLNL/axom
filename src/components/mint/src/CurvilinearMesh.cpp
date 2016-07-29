@@ -23,6 +23,7 @@
  */
 
 #include "CurvilinearMesh.hpp"
+#include "MeshType.hpp"
 
 // ATK includes
 #include "slic/slic.hpp"
@@ -30,7 +31,7 @@
 // C/C++ includes
 #include <cstddef> // for definition of ATK_NULLPTR
 
-namespace meshtk {
+namespace mint {
 
 CurvilinearMesh::CurvilinearMesh() :
         StructuredMesh( UNDEFINED_MESH, -1, ATK_NULLPTR ),
@@ -63,4 +64,4 @@ CurvilinearMesh::~CurvilinearMesh()
   m_coordinates = ATK_NULLPTR;
 }
 
-} /* namespace meshtk */
+} /* namespace mint */

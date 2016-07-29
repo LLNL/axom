@@ -25,12 +25,12 @@
 #include "FieldData.hpp"
 
 // ATK includes
-#include "quest/Field.hpp"
+#include "mint/Field.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
 
-namespace meshtk {
+namespace mint {
 
 
 FieldData::FieldData()
@@ -111,4 +111,4 @@ bool FieldData::empty() const
    return( m_container.empty( ) );
 }
 
-} /* namespace meshtk */
+} /* namespace mint */

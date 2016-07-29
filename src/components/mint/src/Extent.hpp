@@ -30,7 +30,7 @@
 // C/C++ includes
 #include <cstring> // for memcpy()
 
-namespace meshtk
+namespace mint
 {
 
 
@@ -222,12 +222,12 @@ private:
   IndexType m_cell_offsets[8];  /*!< cell offsets                */
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 //------------------------------------------------------------------------------
 //  Extent Implementation
 //------------------------------------------------------------------------------
-namespace meshtk {
+namespace mint {
 
 //------------------------------------------------------------------------------
 template < typename IndexType >
@@ -359,5 +359,5 @@ void Extent< IndexType >::getGridIndex(
   i = linearIdx - k*m_kp - j*m_jp;
 }
 
-} /* namespace meshtk */
+} /* namespace mint */
 #endif /* EXTENT_HXX_ */

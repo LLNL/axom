@@ -25,14 +25,14 @@
 #ifndef PARTICLEMESH_HXX_
 #define PARTICLEMESH_HXX_
 
-#include "quest/Mesh.hpp"
-#include "quest/CellType.hpp"
-#include "quest/MeshCoordinates.hpp"
+#include "mint/Mesh.hpp"
+#include "mint/CellType.hpp"
+#include "mint/MeshCoordinates.hpp"
 #include "slic/slic.hpp"
 
 #include <cstddef> // for ATK_NULLPTR
 
-namespace meshtk
+namespace mint
 {
 
 class ParticleMesh : public Mesh
@@ -216,12 +216,12 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT(ParticleMesh);
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
-namespace meshtk
+namespace mint
 {
 
 inline double* ParticleMesh::getParticlesCoordinatesArray( int idim ) const
@@ -257,6 +257,6 @@ inline void ParticleMesh::getParticleCoordinates(
 
 }
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* PARTICLEMESH_HXX_ */

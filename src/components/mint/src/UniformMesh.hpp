@@ -25,10 +25,10 @@
 #ifndef UNIFORMMESH_HXX_
 #define UNIFORMMESH_HXX_
 
-#include "quest/StructuredMesh.hpp"
+#include "mint/StructuredMesh.hpp"
 #include "slic/slic.hpp"
 
-namespace meshtk
+namespace mint
 {
 
 class UniformMesh : public StructuredMesh
@@ -181,12 +181,12 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT(UniformMesh);
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 //------------------------------------------------------------------------------
 //          In-lined Method Implementations
 //------------------------------------------------------------------------------
-namespace meshtk
+namespace mint
 {
 
 inline void UniformMesh::getOrigin( double origin[3] ) const
@@ -276,6 +276,6 @@ double UniformMesh::getNodeCoordinate( int i, int j, int k, int idim ) const
   return ( (m_origin[ idim ] + m_h[ idim ]*ijk[ idim ]) );
 }
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* UNIFORMMESH_HXX_ */

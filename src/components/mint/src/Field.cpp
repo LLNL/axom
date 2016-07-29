@@ -24,12 +24,12 @@
 
 #include "Field.hpp"
 
-#include "quest/FieldTypes.hpp"
+#include "mint/FieldTypes.hpp"
 #include "common/CommonTypes.hpp"
 
 #include <cstddef>
 
-namespace meshtk {
+namespace mint {
 
 Field::Field() :
         m_name(""),
@@ -71,4 +71,4 @@ int* Field::getIntPtr()
   return ATK_NULLPTR;
 }
 
-} /* namespace meshtk */
+} /* namespace mint */

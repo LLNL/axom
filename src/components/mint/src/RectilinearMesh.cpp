@@ -22,11 +22,11 @@
  *******************************************************************************
  */
 
-#include "quest/RectilinearMesh.hpp"
+#include "mint/RectilinearMesh.hpp"
 
 #include "common/CommonTypes.hpp"
 
-namespace meshtk {
+namespace mint {
 
 RectilinearMesh::RectilinearMesh() :
         StructuredMesh(UNDEFINED_MESH,-1,ATK_NULLPTR),
@@ -61,4 +61,4 @@ RectilinearMesh::~RectilinearMesh()
   m_coordinates = ATK_NULLPTR;
 }
 
-} /* namespace meshtk */
+} /* namespace mint */

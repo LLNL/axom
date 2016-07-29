@@ -23,10 +23,10 @@
  */
 
 
-#include "quest/ParticleMesh.hpp"
+#include "mint/ParticleMesh.hpp"
 #include "common/CommonTypes.hpp"
 
-namespace meshtk
+namespace mint
 {
 
 ParticleMesh::ParticleMesh( ) :
@@ -59,4 +59,4 @@ ParticleMesh::~ParticleMesh()
   m_particle_coordinates = ATK_NULLPTR;
 }
 
-} /* namespace meshtk */
+} /* namespace mint */

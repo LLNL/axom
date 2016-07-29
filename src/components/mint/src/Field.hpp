@@ -31,7 +31,7 @@
 // C/C++ includes
 #include <string>
 
-namespace meshtk {
+namespace mint {
 
 class Field
 {
@@ -132,6 +132,6 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT(Field);
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* FIELD_HPP_ */

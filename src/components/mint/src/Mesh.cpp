@@ -23,16 +23,16 @@
  */
 
 
-#include "quest/Mesh.hpp"
+#include "mint/Mesh.hpp"
 
 // ATK includes
 #include "common/CommonTypes.hpp"
-#include "quest/FieldData.hpp"
+#include "mint/FieldData.hpp"
 
 // C/C++ includes
 #include <cstddef>
 
-namespace meshtk {
+namespace mint {
 
 Mesh::Mesh() :
     m_ndims(2),
@@ -75,4 +75,4 @@ Mesh::~Mesh()
    m_face_data = ATK_NULLPTR;
 }
 
-  } /* namespace meshtk */
+  } /* namespace mint */
