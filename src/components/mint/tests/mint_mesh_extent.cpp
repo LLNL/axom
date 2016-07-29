@@ -24,9 +24,9 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Extent.hpp"
+#include "mint/Extent.hpp"
 
-TEST( quest_extent, basic )
+TEST( mint_extent, basic )
 {
    int ext[6]={ 0,5,0,5,0,5 };
    mint::Extent< int > extent(3,ext);

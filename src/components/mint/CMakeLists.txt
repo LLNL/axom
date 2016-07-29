@@ -28,9 +28,9 @@ add_subdirectory(src)
 ################################
 # Add tests
 ################################
-#if (ENABLE_TESTS)
-#  add_subdirectory(tests)
-#endif()
+if (ENABLE_TESTS)
+  add_subdirectory(tests)
+endif()
 
 #
 #add_code_check_targets(uncrustify.cfg)
