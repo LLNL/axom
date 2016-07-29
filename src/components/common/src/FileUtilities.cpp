@@ -87,8 +87,52 @@ namespace filesystem {
     return fullFileNameStream.str();
   }
 
+//-----------------------------------------------------------------------------
+  int makeDirsForPath(const std::string& path, mode_t mode)
+  {
 
+    char separator = '/';
+    std::string::size_type pos = 0;
+    int err = 0;
 
+    do {
+      pos = path.find(separator, pos+1);
+      std::string dir_name = path.substr(0, pos);
+      err = mkdir(dir_name.c_str(), mode);
+      err = (err && (errno != EEXIST)) ? 1 : 0;
+
+    } while (pos != std::string::npos);
+
+    return err;
+  }
+
+//-----------------------------------------------------------------------------
+  int truncatedMakeDirs(const std::string& path, mode_t mode)
+  {
+    int err = 0;
+
+    std::string curr;
+    std::string dir_path;
+    std::string slash = "/";
+
+    std::size_t found = path.rfind(slash);
+    if (found != std::string::npos)
+    {
+      dir_path = path.substr(0,found);
+      if (found != path.size()-1) {
+        curr = path.substr(found+1, path.size()-(found-1));
+      }
+    }
+    else
+    {
+      curr = path;
+    }
+    if (!dir_path.empty()) {
+      err = makeDirsForPath(dir_path, mode);
+    }
+
+    return err;
+  }
 
 }   // end namespace filesystem
 }   // end namespace utilities

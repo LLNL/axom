@@ -14,6 +14,7 @@
 
 #include "mpi.h"
 
+#include "common/FileUtilities.hpp"
 #include "sidre/DataGroup.hpp"
 #include "sidre/DataStore.hpp"
 #include "spio/IOManager.hpp"
@@ -22,6 +23,7 @@ using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataType;
 using asctoolkit::spio::IOManager;
+using namespace asctoolkit::utilities;
 
 /**************************************************************************
  * Subroutine:  main
@@ -56,6 +58,11 @@ int main(int argc, char * argv[])
   DataGroup * gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", my_rank + 101);
   gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
+
+  if (my_rank == 0) {
+    filesystem::truncatedMakeDirs(file_base);
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
 
   IOManager writer(MPI_COMM_WORLD);
   writer.write(root, num_files, file_base, "conduit_hdf5");

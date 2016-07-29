@@ -50,6 +50,36 @@ namespace filesystem {
                        , const std::string& separator = "/");
 
 
+/**
+ * \brief Make directories for a given path string
+ *
+ * \param [in] path  string representing an absolute or relative directory path
+ * \param [in] mode  controls the permissions of the new directories
+ *
+ * Everything in the path is assumed to be intended to be a directory.  If
+ * a directory in the path already exists, nothing is done.  If a directory
+ * doesn't exist, it is created.
+ */
+  int makeDirsForPath(
+    const std::string& path,
+    mode_t mode = 0700);
+
+/**
+ * \brief Make directories for a given path string that contains a file name
+ *
+ * \param [in] path  string representing an absolute or relative directory path
+ * \param [in] mode  controls the permissions of the new directories
+ *
+ * This is similar to makeDirsForPath, exept it assumes that the last word in
+ * the path string is intended to be a file name and thus will not create a
+ * directory with that name.  For example, if the path string is
+ * "abc/def/ghi/file.txt", this function will create the directory path
+ * abc/def/ghi (if it doesn't already exist) and ignore the file name at the
+ * end of the string.
+ */
+  int truncatedMakeDirs(
+    const std::string& path,
+    mode_t mode = 0700);
 
 } // end namespace filesystem
 } // end namespace utilities
