@@ -862,8 +862,8 @@ bool DataView::isApplyValid() const
   case STRING:
   case SCALAR:
     SLIC_CHECK_MSG( false,
-                    "Apply is not valid for " <<
-                    getStateStringName(m_state) << " view");
+                    "Apply is not valid for view " <<
+                    getStateStringName(m_state) << " with scalar data type.");
     break;
   case EXTERNAL:
     SLIC_ASSERT ( m_external_ptr != ATK_NULLPTR );
@@ -872,6 +872,10 @@ bool DataView::isApplyValid() const
   case BUFFER:
     rv = 0 < getTotalBytes() &&
          getTotalBytes() <= m_data_buffer->getTotalBytes();;
+    SLIC_CHECK_MSG( 0 < getTotalBytes(), 
+                    "Apply is not valid on data with zero length." );
+    SLIC_CHECK_MSG( getTotalBytes() <= m_data_buffer->getTotalBytes(),
+                    "Apply is not valid, view's datatype length exceeds bytes in buffer.");
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
