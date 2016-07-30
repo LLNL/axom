@@ -22,6 +22,7 @@
 #include "DataGroup.hpp"
 
 #include "relay.hpp"
+#include "relay_hdf5.hpp"
 
 // Other toolkit component headers
 

@@ -46,16 +46,24 @@ class UberenvAsctoolkit(Package):
         return url
 
     def install(self, spec, prefix):
-        #mkdirp(prefix)
         dest_dir     = env["SPACK_DEBUG_LOG_DIR"]
+        
         c_compiler   = env["SPACK_CC"]
         cpp_compiler = env["SPACK_CXX"]
-        f_compiler = None
+        f_compiler   = None
+        
+        # see if we should enable fortran support
         if "SPACK_FC" in env.keys():
-            f_compiler   = env["SPACK_FC"]
-        sys_type     = spec.architecture
-        if "SYS_TYPE" in env.keys():
+            # even if this is set, it may not exist
+            # do one more sanity check
+            if os.path.isfile(env["SPACK_FC"]):
+                f_compiler  = env["SPACK_FC"]
+
+        sys_type = spec.architecture
+        # if on llnl systems, we can use the SYS_TYPE
+        if env.has_key("SYS_TYPE"):
             sys_type = env["SYS_TYPE"]
+
         # conduit
         conduit_dir      = spec['conduit'].prefix
         cmake_exe        = pjoin(spec['cmake'].prefix.bin,"cmake")
