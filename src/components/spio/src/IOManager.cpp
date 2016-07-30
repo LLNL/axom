@@ -481,24 +481,10 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
    */
   int read_num_files = 0;
   if (m_my_rank == 0) {
-    hid_t root_file_id = H5Fopen(root_file.c_str(),
-                                 H5F_ACC_RDWR,
-                                 H5P_DEFAULT);
-
-    SLIC_ASSERT(root_file_id >= 0);
-
-
-    hid_t filesset = H5Dopen(root_file_id, "number_of_files", H5P_DEFAULT);
-    SLIC_ASSERT(filesset >= 0);
-
-    herr_t errv = H5Dread(filesset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
-      H5P_DEFAULT, &read_num_files);
-    SLIC_ASSERT(errv >= 0);
+    conduit::Node n;
+    conduit::relay::io::load(root_file + ":number_of_files","hdf5",n);
+    read_num_files = n.to_int();
     SLIC_ASSERT(read_num_files > 0);
-
-    errv = H5Fclose(root_file_id);
-    SLIC_ASSERT(errv >= 0);
-
   }
 
   /*
