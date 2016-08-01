@@ -88,8 +88,9 @@ class DataStore;
  *      child Groups from the root Group owned by a DataStore object.
  *    - A DataGroup object can only be created by another DataGroup; the
  *      DataGroup ctor is not visible externally. A DataGroup is owned
- *      by the DataGroup that creates it (its parent) and becomes a child
- *      Group of the parent.
+ *      by the DataGroup that creates it (its parent) and becomes a
+ *      (direct) child Group of the parent. DataGroups in the subtree
+ *      rooted at an ancestor DataGroup are that Group's descendants.
  *    - A DataGroup object has a unique name (string) within its parent
  *      DataGroup.
  *    - A DataGroup object maintains a pointer to its parent DataGroup.
@@ -125,7 +126,7 @@ class DataStore;
  * In particular, intermediate Groups "foo" and "bar" will be created in
  * this case if they don't already exist.
  *
- * Methods that access Views or Groups by index work with the immediate
+ * Methods that access Views or Groups by index work with the direct
  * children of the current Group because an index has no meaning outside
  * of the indexed group.  None of these methods is marked with "Child".
  *
@@ -196,7 +197,7 @@ public:
   }
 
   /*!
-   * \brief Return pointer to non-const DataStore object that owns a
+   * \brief Return pointer to non-const DataStore object that owns this
    * object.
    */
   DataStore * getDataStore()
@@ -205,7 +206,7 @@ public:
   }
 
   /*!
-   * \brief Return pointer to const DataStore object that owns a
+   * \brief Return pointer to const DataStore object that owns this
    * object.
    */
   const DataStore * getDataStore() const
@@ -220,8 +221,8 @@ public:
 //!  @name View query methods.
 
   /*!
-   * \brief Return true if Group owns a descendant View with given name or path;
-   * else false.
+   * \brief Return true if Group includes a descendant View with
+   * given name or path; else false.
    */
   bool hasView( const std::string& path ) const;
 

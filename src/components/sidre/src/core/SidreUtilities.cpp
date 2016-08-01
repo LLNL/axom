@@ -36,8 +36,11 @@ namespace detail
 {
 
 /*
- * Splits a string given the provided delimiter into a vector of strings.
- * If the position of the first delimiter is known, it can be provided in the 'pos' parameter.
+ *************************************************************************
+ *
+ * Split a string s (such as a pathname) into substrings delimited by c
+ *
+ *************************************************************************
  */
 std::vector<std::string> split(const std::string& s, char c,
                                std::string::size_type pos, bool keep_empty)
@@ -68,16 +71,13 @@ std::vector<std::string> split(const std::string& s, char c,
 }
 
 /*
- * Checks if a specified character is found in a string, but a valid input
- * string is defined as only having the character in the internals of the
- * string, exclusive of the first and last position.
+ *************************************************************************
  *
- * It will return the position of the first instance found, or 0 if none
- * found.
+ * Report the position of the first occurence of c in s.  First or last
+ * or not found is reported with std::string::npos.  In addition, c being
+ * first or last is considered an error.
  *
- * This function is used by DataGroup when checking for a valid path,
- * and the path delimiter is not considered valid when in the first
- * or last spot of the string.  See ATK-316 for more info.
+ *************************************************************************
  */
 std::string::size_type find_exclusive( const std::string& s, char c)
 {

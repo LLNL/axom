@@ -155,7 +155,7 @@ public:
 
 
   /*!
-   * \brief Return true if Buffer contains allocated data.
+   * \brief Return true if Buffer has been (re)allocated with length >= 0, else false.
    */
   bool isAllocated() const
   {

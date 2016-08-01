@@ -233,6 +233,40 @@ TEST(sidre_databuffer,buffer_allocate)
     verifyAllocatedBuffer(buf3, tid, eltsize, eltcount);
   }
 
+  tid = getTypeID(SIDRE_FLOAT_ID);
+  eltsize = sizeof(float);
+  eltcount = 0;
+  DataBuffer * buf4 = ds->createBuffer(tid, eltcount);
+  {
+    SCOPED_TRACE("allocate a described zero-element buffer");
+    verifyDescribedBuffer(buf4, isDescribed, tid, eltsize, eltcount);
+    buf4->allocate();
+    verifyAllocatedBuffer(buf4, tid, eltsize, eltcount);
+  }
+
+  isDescribed = false;
+  tid = getTypeID(SIDRE_NO_TYPE_ID);
+  DataBuffer * buf4a = ds->createBuffer();
+  {
+    SCOPED_TRACE("describe and allocate (in one step) a zero-element buffer");
+    verifyDescribedBuffer(buf4a, isDescribed, tid, eltsize, eltcount);
+    tid = getTypeID(SIDRE_FLOAT_ID);
+    buf4a->allocate(tid, eltcount);
+    verifyAllocatedBuffer(buf4a, tid, eltsize, eltcount);
+
+    void *ptr = buf4a->getVoidPtr();
+    std::cout << "Pointer from zero-allocated buffer is: " << ptr << std::endl;
+  }
+
+  eltcount = 12;
+  {
+    SCOPED_TRACE("REallocate a described zero-element buffer");
+    buf4a->reallocate(eltcount);
+    eltcount = 0;
+    buf4a->reallocate(eltcount);
+    verifyAllocatedBuffer(buf4a, tid, eltsize, eltcount);
+  }
+
   delete ds;
 }
 
