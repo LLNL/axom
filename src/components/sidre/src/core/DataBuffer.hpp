@@ -155,11 +155,11 @@ public:
 
 
   /*!
-   * \brief Return true if Buffer contains allocated data of > 0 bytes.
+   * \brief Return true if Buffer has been (re)allocated with length >= 0, else false.
    */
   bool isAllocated() const
   {
-    return (m_node.data_ptr() != ATK_NULLPTR) && (getTotalBytes() > 0);
+    return (m_node.data_ptr() != ATK_NULLPTR);
   }
 
   /*!

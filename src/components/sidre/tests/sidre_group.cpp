@@ -50,9 +50,9 @@ TEST(sidre_group,get_name)
 }
 
 //------------------------------------------------------------------------------
-// getNameWithPath()
+// createGroup(), getGroup(), hasGroup()  with path strings
 //------------------------------------------------------------------------------
-TEST(sidre_group,get_group_with_path)
+TEST(sidre_group,group_with_path)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
@@ -75,16 +75,71 @@ TEST(sidre_group,get_group_with_path)
 
 
   // Now verify that code will not create missing groups.
-  // TODO - improve error handling so this isn't fatal.
-//  DataGroup * group3 = root->createGroup("testa")->createGroup("testb")->createGroup("testc");
-//  DataGroup * group_bad = root->getGroup("testa/BAD/testc");
 
-//  (void)group3;
+  root->createGroup("testa")->createGroup("testb")->createGroup("testc");
+  DataGroup * group_bada = root->getGroup("BAD/testb/testc");
+  DataGroup * group_badb = root->getGroup("testa/BAD/testc");
+  DataGroup * group_badc = root->getGroup("testa/testb/BAD");
 
-//  EXPECT_EQ(group_bad, root->getGroup("testa") );
+  EXPECT_EQ(group_bada, ATK_NULLPTR );
+  EXPECT_EQ(group_badb, ATK_NULLPTR );
+  EXPECT_EQ(group_badc, ATK_NULLPTR );
+
+  // Test hasGroup with paths.
+
+  EXPECT_FALSE(root->hasGroup("BAD/testb/testc"));
+  EXPECT_FALSE(root->hasGroup("testa/BAD/testc"));
+  EXPECT_FALSE(root->hasGroup("testa/testb/BAD"));
+
+  EXPECT_TRUE(root->hasGroup("test1"));
+  EXPECT_TRUE(root->hasGroup("test1/test2"));
+  EXPECT_TRUE(root->hasGroup("test1/test2/test3"));
+  DataGroup * group_testa = root->getGroup("testa");
+  EXPECT_TRUE(group_testa->hasGroup("testb"));
+  EXPECT_TRUE(group_testa->hasGroup("testb/testc"));
+  EXPECT_FALSE(group_testa->hasGroup("testb/BAD"));
+  EXPECT_FALSE(group_testa->hasGroup("testb/testc/BAD"));
+
+  unsigned int testbnumgroups = group_testa->getGroup("testb")->getNumGroups();
+  DataGroup * group_cdup = group_testa->createGroup("testb/testc");
+
+  EXPECT_EQ(group_cdup, ATK_NULLPTR);
+  EXPECT_EQ(group_testa->getGroup("testb")->getNumGroups(), testbnumgroups);
 
   delete ds;
 
+}
+
+//------------------------------------------------------------------------------
+// createGroup(), destroyGroup()  with path strings
+//------------------------------------------------------------------------------
+TEST(sidre_group,destroy_group_with_path)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  // Test full path access when building incrementally
+  DataGroup * group = root->createGroup("test1/test2/test3");
+  (void)group;
+
+  EXPECT_EQ(root->getNumGroups(), 1);
+  EXPECT_EQ(root->getGroup("test1")->getNumGroups(), 1);
+  EXPECT_EQ(root->getGroup("test1/test2")->getNumGroups(), 1);
+  EXPECT_EQ(root->getGroup("test1/test2/test3")->getNumGroups(), 0);
+
+  root->destroyGroup("test1/test2");
+
+  EXPECT_EQ(root->getNumGroups(), 1);
+  EXPECT_EQ(root->getGroup("test1")->getNumGroups(), 0);
+  EXPECT_FALSE(root->hasGroup("test1/test2/test3"));
+  EXPECT_FALSE(root->hasGroup("test1/test2"));
+
+  root->destroyGroup("test1/BAD");
+  
+  EXPECT_EQ(root->getNumGroups(), 1);
+  EXPECT_EQ(root->getGroup("test1")->getNumGroups(), 0);
+
+  delete ds;
 }
 
 
@@ -157,10 +212,11 @@ TEST(sidre_group,get_view)
 
   delete ds;
 }
+
 //------------------------------------------------------------------------------
-// Verify getViewWithPath()
+// createView, hasView(), getView(), destroyView() with path strings
 //------------------------------------------------------------------------------
-TEST(sidre_group,get_view_with_path)
+TEST(sidre_group,view_with_path)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
@@ -181,6 +237,55 @@ TEST(sidre_group,get_view_with_path)
 
   EXPECT_TRUE(ATK_NULLPTR != viewP2);
   EXPECT_EQ( viewP, viewP2 );
+
+  // Now verify that bad paths just return null, and don't create missing groups
+  DataView * v_bad1 = root->getView("BAD/groupB/viewA");
+  DataView * v_bad2 = root->getView("groupA/BAD/viewA");
+  DataView * v_bad3 = root->getView("groupA/groupB/BAD");
+
+  EXPECT_EQ(v_bad1, ATK_NULLPTR);
+  EXPECT_EQ(v_bad2, ATK_NULLPTR);
+  EXPECT_EQ(v_bad3, ATK_NULLPTR);
+
+  EXPECT_EQ(root->getNumGroups(), 2);
+  EXPECT_TRUE(root->hasGroup("group1"));
+  EXPECT_TRUE(root->hasGroup("groupA"));
+  EXPECT_EQ(root->getGroup("group1")->getNumGroups(), 1);
+  EXPECT_TRUE(root->hasGroup("group1/group2"));
+  EXPECT_EQ(root->getGroup("group1/group2")->getNumGroups(), 0);
+  EXPECT_EQ(root->getGroup("group1/group2")->getNumViews(), 1);
+  EXPECT_EQ(root->getGroup("group1/group2")->getView("view1"), view);
+  EXPECT_EQ(root->getGroup("group1")->getView("group2/view1"), view);
+
+  EXPECT_EQ(root->getGroup("groupA")->getNumGroups(), 1);
+  EXPECT_TRUE(root->hasGroup("groupA/groupB"));
+  EXPECT_EQ(root->getGroup("groupA/groupB")->getNumGroups(), 0);
+  EXPECT_EQ(root->getGroup("groupA/groupB")->getNumViews(), 1);
+  EXPECT_EQ(root->getGroup("groupA/groupB")->getView("viewA"), viewP);
+  EXPECT_EQ(root->getGroup("groupA")->getView("groupB/viewA"), viewP);
+
+  root->destroyView("group1/group2/view1");
+
+  EXPECT_EQ(root->getGroup("group1/group2")->getNumViews(), 0);
+  EXPECT_FALSE(root->getGroup("group1/group2")->hasView("view1"));
+  EXPECT_EQ(root->getGroup("group1/group2")->getView("view1"), ATK_NULLPTR);
+  EXPECT_FALSE(root->hasView("group1/group2/view1"));
+  EXPECT_EQ(root->getView("group1/group2/view1"), ATK_NULLPTR);
+
+  DataGroup * groupA = root->getGroup("groupA");
+  EXPECT_TRUE(groupA->hasView("groupB/viewA"));
+  EXPECT_EQ(groupA->getView("groupB/viewA"), viewP);
+  EXPECT_TRUE(root->hasView("groupA/groupB/viewA"));
+  EXPECT_EQ(root->getView("groupA/groupB/viewA"), viewP);
+
+  groupA->destroyView("groupB/viewA");
+
+  EXPECT_EQ(groupA->getGroup("groupB")->getNumViews(), 0);
+  EXPECT_FALSE(groupA->getGroup("groupB")->hasView("viewA"));
+  EXPECT_EQ(groupA->getGroup("groupB")->getView("viewA"), ATK_NULLPTR);
+  EXPECT_FALSE(groupA->hasView("groupB/viewA"));
+  EXPECT_EQ(groupA->getView("groupB/viewA"), ATK_NULLPTR);
+  EXPECT_EQ(root->getView("groupA/groupB/viewA"), ATK_NULLPTR);
 
   delete ds;
 }
@@ -405,7 +510,7 @@ TEST(sidre_group,group_name_collisions)
   DataGroup * flds = ds->getRoot()->createGroup("fields");
   flds->createView("a");
 
-  EXPECT_TRUE(flds->hasView("a"));
+  EXPECT_TRUE(flds->hasChildView("a"));
 
   // attempt to create duplicate group name
 
@@ -415,6 +520,17 @@ TEST(sidre_group,group_name_collisions)
   // check error condition
   // attempt to create duplicate view name.
   EXPECT_TRUE(flds->createView("a") == ATK_NULLPTR);
+
+  DataGroup * irrgroup1 = ds->getRoot()->createGroup("here//is/path");
+  DataGroup * irrgroup2 = ds->getRoot()->createGroup("éch≈o/Ωd");
+  DataGroup * irrgroup3 = ds->getRoot()->createGroup("../group/..");
+
+  IndexType idx = ds->getRoot()->getFirstValidGroupIndex();
+  while (idx != InvalidIndex)
+  {
+    std::cout << ds->getRoot()->getGroup(idx)->getName() << std::endl;
+    idx = ds->getRoot()->getNextValidGroupIndex(idx);
+  }
 
   delete ds;
 }
@@ -630,7 +746,7 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   DataView * const view1 = grp->createViewAndAllocate(viewName1,
                                                       DataType::c_int(10));
 
-  EXPECT_TRUE(grp->hasView(viewName1));
+  EXPECT_TRUE(grp->hasChildView(viewName1));
   EXPECT_EQ( grp->getView(viewName1), view1 );
 
   int * v1_vals = view1->getData();

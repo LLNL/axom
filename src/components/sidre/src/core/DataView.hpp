@@ -56,8 +56,10 @@ class DataStore;
  * The DataView class has the following properties:
  *
  *    - DataView objects can only be created via the DataGroup interface,
- *      not constructed directly. A view object is owned by the DataGroup
- *      object that creates it.
+ *      not constructed directly. A View object is owned by the DataGroup
+ *      object that creates it. A View object owned by a DataGroup object
+ *      that is a descendant of some ancestor DataGroup is a descendant
+ *      View of the ancestor Group.
  *    - A DataView object has a unique name (string) within the DataGroup
  *      that owns it.
  *    - A DataView holds a pointer to the DataGroup that created it and which
@@ -158,7 +160,8 @@ public:
   }
 
   /*!
-   * \brief Return true if view holds data that has been allocated.
+   * \brief Return true if view is described and refers to a buffer
+   * that has been allocated.
    */
   // TODO - Would like to make this a const function.  Need to have conduit element_ptr() be const to do this.
   bool isAllocated();
@@ -355,9 +358,6 @@ public:
    *
    * \return pointer to this DataView object.
    */
-//
-// RDH -- Should calling reallocate with 0 elems deallocate the data??
-//
   DataView * reallocate(SidreLength num_elems);
 
   /*!
