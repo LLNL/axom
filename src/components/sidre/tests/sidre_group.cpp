@@ -81,9 +81,9 @@ TEST(sidre_group,group_with_path)
   DataGroup * group_badb = root->getGroup("testa/BAD/testc");
   DataGroup * group_badc = root->getGroup("testa/testb/BAD");
 
-  EXPECT_EQ(group_bada, ATK_NULLPTR );
-  EXPECT_EQ(group_badb, ATK_NULLPTR );
-  EXPECT_EQ(group_badc, ATK_NULLPTR );
+  EXPECT_EQ(group_bada, static_cast<void *>(ATK_NULLPTR) );
+  EXPECT_EQ(group_badb, static_cast<void *>(ATK_NULLPTR) );
+  EXPECT_EQ(group_badc, static_cast<void *>(ATK_NULLPTR) );
 
   // Test hasGroup with paths.
 
@@ -103,7 +103,7 @@ TEST(sidre_group,group_with_path)
   unsigned int testbnumgroups = group_testa->getGroup("testb")->getNumGroups();
   DataGroup * group_cdup = group_testa->createGroup("testb/testc");
 
-  EXPECT_EQ(group_cdup, ATK_NULLPTR);
+  EXPECT_EQ(group_cdup, static_cast<void *>(ATK_NULLPTR));
   EXPECT_EQ(group_testa->getGroup("testb")->getNumGroups(), testbnumgroups);
 
   delete ds;
@@ -243,9 +243,9 @@ TEST(sidre_group,view_with_path)
   DataView * v_bad2 = root->getView("groupA/BAD/viewA");
   DataView * v_bad3 = root->getView("groupA/groupB/BAD");
 
-  EXPECT_EQ(v_bad1, ATK_NULLPTR);
-  EXPECT_EQ(v_bad2, ATK_NULLPTR);
-  EXPECT_EQ(v_bad3, ATK_NULLPTR);
+  EXPECT_EQ(v_bad1, static_cast<void *>(ATK_NULLPTR));
+  EXPECT_EQ(v_bad2, static_cast<void *>(ATK_NULLPTR));
+  EXPECT_EQ(v_bad3, static_cast<void *>(ATK_NULLPTR));
 
   EXPECT_EQ(root->getNumGroups(), 2);
   EXPECT_TRUE(root->hasGroup("group1"));
@@ -268,9 +268,9 @@ TEST(sidre_group,view_with_path)
 
   EXPECT_EQ(root->getGroup("group1/group2")->getNumViews(), 0);
   EXPECT_FALSE(root->getGroup("group1/group2")->hasView("view1"));
-  EXPECT_EQ(root->getGroup("group1/group2")->getView("view1"), ATK_NULLPTR);
+  EXPECT_EQ(root->getGroup("group1/group2")->getView("view1"), static_cast<void *>(ATK_NULLPTR));
   EXPECT_FALSE(root->hasView("group1/group2/view1"));
-  EXPECT_EQ(root->getView("group1/group2/view1"), ATK_NULLPTR);
+  EXPECT_EQ(root->getView("group1/group2/view1"), static_cast<void *>(ATK_NULLPTR));
 
   DataGroup * groupA = root->getGroup("groupA");
   EXPECT_TRUE(groupA->hasView("groupB/viewA"));
@@ -282,10 +282,10 @@ TEST(sidre_group,view_with_path)
 
   EXPECT_EQ(groupA->getGroup("groupB")->getNumViews(), 0);
   EXPECT_FALSE(groupA->getGroup("groupB")->hasView("viewA"));
-  EXPECT_EQ(groupA->getGroup("groupB")->getView("viewA"), ATK_NULLPTR);
+  EXPECT_EQ(groupA->getGroup("groupB")->getView("viewA"), static_cast<void *>(ATK_NULLPTR));
   EXPECT_FALSE(groupA->hasView("groupB/viewA"));
-  EXPECT_EQ(groupA->getView("groupB/viewA"), ATK_NULLPTR);
-  EXPECT_EQ(root->getView("groupA/groupB/viewA"), ATK_NULLPTR);
+  EXPECT_EQ(groupA->getView("groupB/viewA"), static_cast<void *>(ATK_NULLPTR));
+  EXPECT_EQ(root->getView("groupA/groupB/viewA"), static_cast<void *>(ATK_NULLPTR));
 
   delete ds;
 }

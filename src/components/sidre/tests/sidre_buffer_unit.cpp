@@ -52,8 +52,8 @@ TEST(sidre_databuffer, buffer_create)
 
   DataBuffer * buf1 = ds->createBuffer();
 
-  EXPECT_EQ(ATK_NULLPTR, buf1->getVoidPtr());
-  // EXPECT_EQ(ATK_NULLPTR, buf1->getData());
+  EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), buf1->getVoidPtr());
+  // EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), buf1->getData());
   EXPECT_EQ(0, buf1->getIndex());
   EXPECT_EQ(0, buf1->getNumViews());
   EXPECT_EQ(0, buf1->getTotalBytes());
@@ -71,7 +71,7 @@ void verifyDescribedBuffer(DataBuffer * buf, bool isDescribed,
   EXPECT_EQ(tid, buf->getTypeID());
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
-  EXPECT_EQ(ATK_NULLPTR, buf->getVoidPtr());
+  EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), buf->getVoidPtr());
 }
 
 void verifyAllocatedBuffer(DataBuffer * buf, DataTypeId tid, int eltsize, int eltcount)
@@ -81,7 +81,7 @@ void verifyAllocatedBuffer(DataBuffer * buf, DataTypeId tid, int eltsize, int el
   EXPECT_EQ(tid, buf->getTypeID());
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
-  EXPECT_NE(ATK_NULLPTR, buf->getVoidPtr());
+  EXPECT_NE(static_cast<void *>(ATK_NULLPTR), buf->getVoidPtr());
 }
 
 // Test describe methods
@@ -374,7 +374,7 @@ TEST(sidre_databuffer,buffer_delete_view_detach)
   EXPECT_EQ(1, bA->getNumViews());
   EXPECT_EQ(bA, vA->getBuffer());
   EXPECT_EQ(0, countMismatch(8, vAtest, vA->getArray()));
-  EXPECT_EQ(ATK_NULLPTR, vB->getBuffer());
+  EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), vB->getBuffer());
 
   // Make a new buffer bB and attach to vB; verify we can see the data in bB
   DataBuffer *bB = ds->createBuffer(tid, Bcount)->allocate();
