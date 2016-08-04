@@ -513,13 +513,16 @@ TEST(sidre_group,group_name_collisions)
   EXPECT_TRUE(flds->hasChildView("a"));
 
   // attempt to create duplicate group name
+  EXPECT_TRUE( ds->getRoot()->createGroup("fields") == ATK_NULLPTR );
 
-  DataGroup * badGroup = ds->getRoot()->createGroup("fields");
-  EXPECT_TRUE( badGroup == ATK_NULLPTR );
-
-  // check error condition
   // attempt to create duplicate view name.
   EXPECT_TRUE(flds->createView("a") == ATK_NULLPTR);
+
+  // attempt to create a group named the same as an existing view
+  EXPECT_TRUE(flds->createGroup("a") == ATK_NULLPTR);
+
+  // attempt to create a view named the same as an existing group
+  EXPECT_TRUE(ds->getRoot()->createView("fields") == ATK_NULLPTR);
 
   DataGroup * irrgroup1 = ds->getRoot()->createGroup("here//is/path");
   DataGroup * irrgroup2 = ds->getRoot()->createGroup("éch≈o/Ωd");
