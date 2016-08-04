@@ -65,21 +65,22 @@ namespace filesystem {
     mode_t mode = 0700);
 
 /**
- * \brief Make directories for a given path string that contains a file name
+ * \brief Get directory name from a path that contains a file name
  *
- * \param [in] path  string representing an absolute or relative directory path
- * \param [in] mode  controls the permissions of the new directories
+ * \param [out] dir  a directory path formed by removing the file name from
+ *                   the input path
+ * \param [in] path  an absolute or relative directory/file path
  *
- * This is similar to makeDirsForPath, exept it assumes that the last word in
- * the path string is intended to be a file name and thus will not create a
- * directory with that name.  For example, if the path string is
- * "abc/def/ghi/file.txt", this function will create the directory path
- * abc/def/ghi (if it doesn't already exist) and ignore the file name at the
- * end of the string.
+ * This function assumes that the input path has a file name at the end, and
+ * it removes that file name, leaving a string containing only a directory
+ * path.
+ * 
+ * For example, if the path string is "abc/def/ghi/file.txt", the output dir
+ * string will be "abc/def/ghi".
  */
-  int truncatedMakeDirs(
-    const std::string& path,
-    mode_t mode = 0700);
+  void getDirName(
+    std::string& dir,
+    const std::string& path);
 
 } // end namespace filesystem
 } // end namespace utilities

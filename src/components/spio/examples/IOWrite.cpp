@@ -60,13 +60,16 @@ int main(int argc, char * argv[])
   gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
 
   if (my_rank == 0) {
-    filesystem::truncatedMakeDirs(file_base);
+    std::string dir;
+    filesystem::getDirName(dir, file_base);
+    filesystem::makeDirsForPath(dir);
   }
   MPI_Barrier(MPI_COMM_WORLD);
 
   IOManager writer(MPI_COMM_WORLD);
   writer.write(root, num_files, file_base, "conduit_hdf5");
 
+  MPI_Barrier(MPI_COMM_WORLD);
   if (my_rank == 0) {
     DataGroup * extra = root->createGroup("extra");
     extra->createViewScalar<double>("dval", 1.1);

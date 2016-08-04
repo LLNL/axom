@@ -107,31 +107,19 @@ namespace filesystem {
   }
 
 //-----------------------------------------------------------------------------
-  int truncatedMakeDirs(const std::string& path, mode_t mode)
+  void getDirName(std::string& dir, const std::string& path)
   {
-    int err = 0;
+    char separator = '/';
 
-    std::string curr;
-    std::string dir_path;
-    std::string slash = "/";
-
-    std::size_t found = path.rfind(slash);
+    std::size_t found = path.rfind(separator);
     if (found != std::string::npos)
     {
-      dir_path = path.substr(0,found);
-      if (found != path.size()-1) {
-        curr = path.substr(found+1, path.size()-(found-1));
-      }
+      dir = path.substr(0,found);
     }
     else
     {
-      curr = path;
+      dir = "."; 
     }
-    if (!dir_path.empty()) {
-      err = makeDirsForPath(dir_path, mode);
-    }
-
-    return err;
   }
 
 }   // end namespace filesystem
