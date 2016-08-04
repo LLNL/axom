@@ -93,8 +93,8 @@ void computeUsingBucketTree( meshtk::Mesh* surface_mesh,
                              meshtk::UniformMesh* umesh );
 void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh );
 void expected_phi(meshtk::UniformMesh* umesh);
-void write_matlab( meshtk::UniformMesh* umesh );
-void l2norm( meshtk::UniformMesh* umesh );
+void compute_norms( meshtk::UniformMesh* umesh,
+                    double& l1, double& l2, double& linf );
 void finalize();
 
 //------------------------------------------------------------------------------
@@ -145,9 +145,11 @@ int main( int argc, char** argv )
   // STEP 11: compute expected phi and error
   SLIC_INFO( "Compute expected phi & error...." );
   expected_phi( umesh );
-  l2norm( umesh );
-  write_matlab( umesh );
+  double l1=0.0, l2=0.0, linf=0.0;
+  compute_norms( umesh, l1, l2, linf );
   SLIC_INFO( "done." );
+
+  SLIC_INFO( "l1="<< l1 << " l2="<< l2 << " linf=" << linf );
 
   write_vtk( umesh, "uniform_mesh.vtk" );
 
@@ -284,78 +286,43 @@ void finalize()
 }
 
 //------------------------------------------------------------------------------
-void l2norm( meshtk::UniformMesh* umesh )
+void compute_norms( meshtk::UniformMesh* umesh,
+                    double& l1, double& l2, double& linf )
 {
    SLIC_ASSERT( umesh != ATK_NULLPTR );
 
-   const int nnodes = umesh->getMeshNumberOfNodes();
+   const int nnodes = umesh->getNumberOfNodes();
 
-   // STEP 0: Get computed & expected fields
+   // STEP 0: grab field pointers
    meshtk::FieldData* PD = umesh->getNodeFieldData();
-   double* phi_computed = PD->getField( "phi" )->getDoublePtr();
-   double* phi_expected = PD->getField( "expected_phi" )->getDoublePtr();
+   double* phi_computed  = PD->getField( "phi" )->getDoublePtr();
+   double* phi_expected  = PD->getField( "expected_phi" )->getDoublePtr();
 
-   // STEP 1: Add field to store error
-   PD->addField( new meshtk::FieldVariable< double >( "error",nnodes ) );
+   // STEP 1: add field to store error
+   PD->addField( new meshtk::FieldVariable< double >( "error", nnodes ) );
    double* error = PD->getField( "error" )->getDoublePtr();
    SLIC_ASSERT( error != ATK_NULLPTR );
 
-   // STEP 2: loop and calculate the error
-   for ( int i=0; i < nnodes; ++i ) {
+   // STEP 2: loop over nodes and calculate norms
+   l1 = l2 = 0.0;
+   linf = std::numeric_limits< double >::min( );
 
-       // relative error
-       const double delta = phi_computed[ i ]-phi_expected[ i ];
-       error[ i ] = delta / phi_expected[ i ];
+   for ( int inode=0; inode < nnodes; ++inode ) {
 
+       const double dx    = phi_computed[ inode ] - phi_expected[ inode ];
+       const double absdx = std::fabs( dx );
+
+       l1 += absdx;
+       l2 += dx*dx;
+
+       if ( absdx > linf ) {
+          linf = absdx;
+       }
+
+       error[ inode ] = absdx;
    } // END for all nodes
 
-}
-
-//------------------------------------------------------------------------------
-void write_matlab( meshtk::UniformMesh* umesh )
-{
-  SLIC_ASSERT( umesh != ATK_NULLPTR );
-
-  meshtk::FieldData* PD = umesh->getNodeFieldData();
-  double* phi_computed  = PD->getField( "phi" )->getDoublePtr();
-  double* phi_expected  = PD->getField( "expected_phi" )->getDoublePtr();
-
-  std::ostringstream xstream;
-  std::ostringstream absdiff;
-
-  xstream << "x = [ ";
-  absdiff << "y = [ ";
-
-  const int nnodes = umesh->getNumberOfNodes();
-  for ( int i=0; i < nnodes; ++i ) {
-
-     xstream << i << std::endl;;
-     double diff  = phi_computed[ i ] - phi_expected[ i ];
-     double diff2 = ( utilities::isNearlyEqual(std::fabs(diff),0.0,1.0e-12) )? 0.0:diff;
-     absdiff << diff2 << std::endl;
-
-  } // END for all nodes
-
-  xstream << "];\n";
-  absdiff << "];\n";
-
-  std::ofstream ofs;
-  ofs.open( "sphere_comparisson.m" );
-  ofs << "%%--------------------------------------------------------\n";
-  ofs << "%% This code is automatically generated \n";
-  ofs << "%% " << __DATE__ << std::endl;
-  ofs << "%%--------------------------------------------------------\n";
-
-  ofs << "%% x-axis\n";
-  ofs << xstream.str();
-  ofs << std::endl;
-
-  ofs << "%% absdiff\n";
-  ofs << absdiff.str();
-  ofs << "plot( x, y, 'b-o' );\n";
-  ofs << "grid on;\n";
-
-  ofs.close();
+   l2 = std::sqrt( l2 );
 }
 
 //------------------------------------------------------------------------------
@@ -364,6 +331,10 @@ void expected_phi(meshtk::UniformMesh* umesh)
    SLIC_ASSERT( umesh != ATK_NULLPTR );
 
    // STEP 0: Construct sphere centered at (0.0,0.0,0.0) with radius 5.0
+   SLIC_INFO("computing expected signed distance field...");
+   SLIC_INFO("sphere radius: " << Arguments.sphere_radius );
+   SLIC_INFO("sphere center: " << Arguments.sphere_center );
+
    quest::HyperSphere< double, 3 > sphere( Arguments.sphere_radius );
 
    // STEP 1: Add node field to stored exact distance field.
