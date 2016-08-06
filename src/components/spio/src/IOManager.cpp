@@ -332,90 +332,22 @@ void IOManager::createRootFile(const std::string& root_name,
                                const std::string& file_base,
                                int num_files)
 {
-  hid_t root_file_id;
 
-  root_file_id = H5Fcreate(root_name.c_str(),
-                           H5F_ACC_TRUNC,
-                           H5P_DEFAULT,
-                           H5P_DEFAULT);
-  SLIC_ASSERT(root_file_id >= 0);
-
-  hsize_t dim[] = { 1 };
-  hid_t int_space = H5Screate_simple(1, dim, 0);
-  SLIC_ASSERT(int_space >= 0);
-
-  hid_t filesset = H5Dcreate(root_file_id, "number_of_files", H5T_NATIVE_INT,
-    int_space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-  SLIC_ASSERT(filesset >= 0);
-
-  herr_t errv = H5Dwrite(filesset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
-    H5P_DEFAULT, &num_files);
-  SLIC_ASSERT(errv >= 0);
-
-  hid_t ranksset = H5Dcreate(root_file_id, "number_of_domains", H5T_NATIVE_INT,
-    int_space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-  SLIC_ASSERT(ranksset >= 0);
-
-  errv = H5Dwrite(ranksset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
-    H5P_DEFAULT, &m_comm_size);
-  SLIC_ASSERT(errv >= 0);
-
-  // If there is a full path given, get the name at the end of the path.
+  conduit::Node n;
+  
+  n["number_of_files"] = num_files;
   std::string local_file_base;
   std::string next;
   std::string slash = "/";
   conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
-  SLIC_ASSERT(!local_file_base.empty());
-
-  // Write the file pattern string 
-  std::string file_pattern = local_file_base + "_" + "%07d.hdf5";
-
-  hid_t fatype = H5Tcopy(H5T_C_S1);
-  SLIC_ASSERT(fatype >= 0);
-
-  errv = H5Tset_size(fatype, file_pattern.size()+1);
-  SLIC_ASSERT(errv >= 0);
-
-  errv = H5Tset_strpad(fatype, H5T_STR_NULLTERM);
-  SLIC_ASSERT(errv >= 0);
-
-  hid_t fspace = H5Screate_simple(1, dim, 0);
-  SLIC_ASSERT(fspace >= 0);
-
-  hid_t fdataset = H5Dcreate(root_file_id, "file_pattern",
-    fatype, fspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-  SLIC_ASSERT(fdataset >= 0);
-
-  errv = H5Dwrite(fdataset, fatype, H5S_ALL, H5S_ALL,
-    H5P_DEFAULT, file_pattern.c_str());
-
-  // Write the domain pattern string
-  std::string domain_pattern =  "datagroup_%07d";
-
-  hid_t datype = H5Tcopy(H5T_C_S1);
-  SLIC_ASSERT(datype >= 0);
-
-  errv = H5Tset_size(datype, domain_pattern.size()+1);
-  SLIC_ASSERT(errv >= 0);
-
-  errv = H5Tset_strpad(datype, H5T_STR_NULLTERM);
-  SLIC_ASSERT(errv >= 0);
-
-  hid_t dspace = H5Screate_simple(1, dim, 0);
-  SLIC_ASSERT(dspace >= 0);
-
-  hid_t ddataset = H5Dcreate(root_file_id, "domain_pattern",
-    datype, dspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-  SLIC_ASSERT(ddataset >= 0);
-
-  errv = H5Dwrite(ddataset, datype, H5S_ALL, H5S_ALL,
-    H5P_DEFAULT, domain_pattern.c_str());
-
-  errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
-  SLIC_ASSERT(errv >= 0);
-  errv = H5Fclose(root_file_id);
-  SLIC_ASSERT(errv >= 0);
-
+  n["file_pattern"] = local_file_base + "_" + "%07d.hdf5";
+  n["number_of_trees"] = m_comm_size;
+  
+  n["tree_pattern"] = "datagroup_%07d";
+  n["protocol/name"] = "sidre_hdf5";
+  n["protocol/version"] = "0.0";
+  
+  conduit::relay::io::save(n,root_name,"hdf5");
 }
 
 /*
