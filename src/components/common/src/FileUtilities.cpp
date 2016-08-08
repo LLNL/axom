@@ -23,7 +23,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-
+#include <errno.h>
 
 #include <cstdio>                       // defines FILENAME_MAX
 
