@@ -52,16 +52,21 @@ size_t SIDRE_datagroup_get_num_views(const SIDRE_datagroup * self);
 
 size_t SIDRE_datagroup_get_num_groups(const SIDRE_datagroup * self);
 
-bool SIDRE_datagroup_has_view(SIDRE_datagroup * self, const char * name);
+bool SIDRE_datagroup_has_view(SIDRE_datagroup * self, const char * path);
 
 bool SIDRE_datagroup_has_view_bufferify(SIDRE_datagroup * self,
-                                        const char * name, int Lname);
+                                        const char * path, int Lpath);
+
+bool SIDRE_datagroup_has_child_view(SIDRE_datagroup * self, const char * name);
+
+bool SIDRE_datagroup_has_child_view_bufferify(SIDRE_datagroup * self,
+                                              const char * name, int Lname);
 
 SIDRE_dataview * SIDRE_datagroup_get_view_from_name(SIDRE_datagroup * self,
-                                                    const char * name);
+                                                    const char * path);
 
 SIDRE_dataview * SIDRE_datagroup_get_view_from_name_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname);
+  SIDRE_datagroup * self, const char * path, int Lpath);
 
 SIDRE_dataview * SIDRE_datagroup_get_view_from_index(SIDRE_datagroup * self,
                                                      const SIDRE_IndexType idx);
@@ -86,136 +91,136 @@ SIDRE_IndexType SIDRE_datagroup_get_next_valid_view_index(
   const SIDRE_datagroup * self, SIDRE_IndexType idx);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_nelems(
-  SIDRE_datagroup * self, const char * name, int type,
+  SIDRE_datagroup * self, const char * path, int type,
   SIDRE_SidreLength num_elems);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_nelems_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, int type,
+  SIDRE_datagroup * self, const char * path, int Lpath, int type,
   SIDRE_SidreLength num_elems);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_shape(
-  SIDRE_datagroup * self, const char * name, int type, int ndims,
+  SIDRE_datagroup * self, const char * path, int type, int ndims,
   SIDRE_SidreLength * shape);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_shape_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, int type, int ndims,
+  SIDRE_datagroup * self, const char * path, int Lpath, int type, int ndims,
   SIDRE_SidreLength * shape);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_scalar_int(SIDRE_datagroup * self,
-                                                        const char * name,
+                                                        const char * path,
                                                         int value);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_scalar_int_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, int value);
+  SIDRE_datagroup * self, const char * path, int Lpath, int value);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_scalar_long(SIDRE_datagroup * self,
-                                                         const char * name,
+                                                         const char * path,
                                                          long value);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_scalar_long_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, long value);
+  SIDRE_datagroup * self, const char * path, int Lpath, long value);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_scalar_float(
-  SIDRE_datagroup * self, const char * name, float value);
+  SIDRE_datagroup * self, const char * path, float value);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_scalar_float_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, float value);
+  SIDRE_datagroup * self, const char * path, int Lpath, float value);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_scalar_double(
-  SIDRE_datagroup * self, const char * name, double value);
+  SIDRE_datagroup * self, const char * path, double value);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_scalar_double_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, double value);
+  SIDRE_datagroup * self, const char * path, int Lpath, double value);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_string(SIDRE_datagroup * self,
-                                                    const char * name,
+                                                    const char * path,
                                                     const char * value);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_string_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, const char * value,
+  SIDRE_datagroup * self, const char * path, int Lpath, const char * value,
   int Lvalue);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_empty(SIDRE_datagroup * self,
-                                                   const char * name);
+                                                   const char * path);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_empty_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname);
+  SIDRE_datagroup * self, const char * path, int Lpath);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_type(SIDRE_datagroup * self,
-                                                       const char * name,
+                                                       const char * path,
                                                        int type,
                                                        SIDRE_SidreLength num_elems);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_type_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, int type,
+  SIDRE_datagroup * self, const char * path, int Lpath, int type,
   SIDRE_SidreLength num_elems);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_type_and_buffer(
-  SIDRE_datagroup * self, const char * name, int type,
+  SIDRE_datagroup * self, const char * path, int type,
   SIDRE_SidreLength num_elems, SIDRE_databuffer * buff);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_type_and_buffer_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, int type,
+  SIDRE_datagroup * self, const char * path, int Lpath, int type,
   SIDRE_SidreLength num_elems, SIDRE_databuffer * buff);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_type_external(
-  SIDRE_datagroup * self, const char * name, int type,
+  SIDRE_datagroup * self, const char * path, int type,
   SIDRE_SidreLength num_elems, void * external_ptr);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_type_external_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, int type,
+  SIDRE_datagroup * self, const char * path, int Lpath, int type,
   SIDRE_SidreLength num_elems, void * external_ptr);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_shape(SIDRE_datagroup * self,
-                                                        const char * name,
+                                                        const char * path,
                                                         int type, int ndims,
                                                         SIDRE_SidreLength * shape);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_shape_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, int type, int ndims,
+  SIDRE_datagroup * self, const char * path, int Lpath, int type, int ndims,
   SIDRE_SidreLength * shape);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_shape_and_buffer(
-  SIDRE_datagroup * self, const char * name, int type, int ndims,
+  SIDRE_datagroup * self, const char * path, int type, int ndims,
   SIDRE_SidreLength * shape, SIDRE_databuffer * buff);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_shape_and_buffer_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, int type, int ndims,
+  SIDRE_datagroup * self, const char * path, int Lpath, int type, int ndims,
   SIDRE_SidreLength * shape, SIDRE_databuffer * buff);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_shape_external(
-  SIDRE_datagroup * self, const char * name, int type, int ndims,
+  SIDRE_datagroup * self, const char * path, int type, int ndims,
   SIDRE_SidreLength * shape, void * external_ptr);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_from_shape_external_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, int type, int ndims,
+  SIDRE_datagroup * self, const char * path, int Lpath, int type, int ndims,
   SIDRE_SidreLength * shape, void * external_ptr);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_into_buffer(SIDRE_datagroup * self,
-                                                         const char * name,
+                                                         const char * path,
                                                          SIDRE_databuffer * buff);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_into_buffer_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname,
+  SIDRE_datagroup * self, const char * path, int Lpath,
   SIDRE_databuffer * buff);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_external(SIDRE_datagroup * self,
-                                                      const char * name,
+                                                      const char * path,
                                                       void * external_ptr);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_external_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname, void * external_ptr);
+  SIDRE_datagroup * self, const char * path, int Lpath, void * external_ptr);
 
-void SIDRE_datagroup_destroy_view(SIDRE_datagroup * self, const char * name);
+void SIDRE_datagroup_destroy_view(SIDRE_datagroup * self, const char * path);
 
 void SIDRE_datagroup_destroy_view_bufferify(SIDRE_datagroup * self,
-                                            const char * name, int Lname);
+                                            const char * path, int Lpath);
 
 void SIDRE_datagroup_destroy_view_and_data_name(SIDRE_datagroup * self,
-                                                const char * name);
+                                                const char * path);
 
 void SIDRE_datagroup_destroy_view_and_data_name_bufferify(
-  SIDRE_datagroup * self, const char * name, int Lname);
+  SIDRE_datagroup * self, const char * path, int Lpath);
 
 void SIDRE_datagroup_destroy_view_and_data_index(SIDRE_datagroup * self,
                                                  SIDRE_IndexType idx);
@@ -226,17 +231,22 @@ SIDRE_dataview * SIDRE_datagroup_move_view(SIDRE_datagroup * self,
 SIDRE_dataview * SIDRE_datagroup_copy_view(SIDRE_datagroup * self,
                                            SIDRE_dataview * view);
 
-bool SIDRE_datagroup_has_group(SIDRE_datagroup * self, const char * name);
+bool SIDRE_datagroup_has_group(SIDRE_datagroup * self, const char * path);
 
 bool SIDRE_datagroup_has_group_bufferify(SIDRE_datagroup * self,
-                                         const char * name, int Lname);
+                                         const char * path, int Lpath);
+
+bool SIDRE_datagroup_has_child_group(SIDRE_datagroup * self, const char * name);
+
+bool SIDRE_datagroup_has_child_group_bufferify(SIDRE_datagroup * self,
+                                               const char * name, int Lname);
 
 SIDRE_datagroup * SIDRE_datagroup_get_group(SIDRE_datagroup * self,
-                                            const char * name);
+                                            const char * path);
 
 SIDRE_datagroup * SIDRE_datagroup_get_group_bufferify(SIDRE_datagroup * self,
-                                                      const char * name,
-                                                      int Lname);
+                                                      const char * path,
+                                                      int Lpath);
 
 SIDRE_IndexType SIDRE_datagroup_get_group_index(const SIDRE_datagroup * self,
                                                 const char * name);
@@ -258,17 +268,17 @@ SIDRE_IndexType SIDRE_datagroup_get_next_valid_group_index(
   const SIDRE_datagroup * self, SIDRE_IndexType idx);
 
 SIDRE_datagroup * SIDRE_datagroup_create_group(SIDRE_datagroup * self,
-                                               const char * name);
+                                               const char * path);
 
 SIDRE_datagroup * SIDRE_datagroup_create_group_bufferify(SIDRE_datagroup * self,
-                                                         const char * name,
-                                                         int Lname);
+                                                         const char * path,
+                                                         int Lpath);
 
 void SIDRE_datagroup_destroy_group_name(SIDRE_datagroup * self,
-                                        const char * name);
+                                        const char * path);
 
 void SIDRE_datagroup_destroy_group_name_bufferify(SIDRE_datagroup * self,
-                                                  const char * name, int Lname);
+                                                  const char * path, int Lpath);
 
 void SIDRE_datagroup_destroy_group_index(SIDRE_datagroup * self,
                                          SIDRE_IndexType idx);

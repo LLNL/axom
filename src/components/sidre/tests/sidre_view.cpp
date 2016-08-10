@@ -373,7 +373,7 @@ TEST(sidre_view,dealloc)
 
 //------------------------------------------------------------------------------
 
-// allocate/reallocate with zero items results in not applied.
+// allocate/reallocate with zero items results in allocated (yet zero).
 
 TEST(sidre_view,alloc_zero_items)
 {
@@ -385,8 +385,8 @@ TEST(sidre_view,alloc_zero_items)
   dv = root->createView("z0");
   EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
   dv->allocate(INT_ID, 0);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, 0));
-  EXPECT_FALSE(dv->getBuffer()->isAllocated());
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, false, 0));
+  EXPECT_TRUE(dv->getBuffer()->isAllocated());
 
   // Reallocate zero items
   dv = root->createView("z1");
@@ -395,8 +395,8 @@ TEST(sidre_view,alloc_zero_items)
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
   dv->reallocate(0);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, 0));
-  EXPECT_FALSE(dv->getBuffer()->isAllocated());
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, false, 0));
+  EXPECT_TRUE(dv->getBuffer()->isAllocated());
 
   delete ds;
 }

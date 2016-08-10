@@ -5,6 +5,7 @@
 set(gtest_sidre_tests
    sidre_smoke.cpp
    sidre_buffer.cpp
+   sidre_buffer_unit.cpp
    sidre_class.cpp
    sidre_datastore.cpp
    sidre_datastore_unit.cpp
