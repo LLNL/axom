@@ -770,7 +770,7 @@ DataGroup * DataGroup::getGroup( const std::string& path )
     return ATK_NULLPTR;
   }
 
-  SLIC_CHECK_MSG( !path.empty() && group->hasChildGroup(path),
+  SLIC_CHECK_MSG( !path.empty() && group->hasChildGroup(intpath),
                   "Group " << getName() <<
                   " has no child Group with name '" << intpath << "'");
 
