@@ -86,7 +86,6 @@ set( quest_depends_on
      common
      slic
      slam
-     stla_io
      )
 
 if (ENABLE_BOOST)
