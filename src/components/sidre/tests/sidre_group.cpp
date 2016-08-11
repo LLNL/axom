@@ -72,6 +72,10 @@ TEST(sidre_group,group_with_path)
 
   EXPECT_TRUE(ATK_NULLPTR != groupP2);
   EXPECT_EQ(groupP, groupP2);
+  // test non-const getGroup() with path
+  DataGroup * groupPParent = root->getGroup("testA/testB");
+  EXPECT_EQ(groupP->getParent(), groupPParent);
+  EXPECT_EQ(groupP->getParent()->getName(), "testB");
 
 
   // Now verify that code will not create missing groups.
