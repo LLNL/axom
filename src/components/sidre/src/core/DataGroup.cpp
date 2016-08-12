@@ -767,9 +767,9 @@ DataGroup * DataGroup::getGroup( const std::string& path )
     return ATK_NULLPTR;
   }
 
-  SLIC_CHECK_MSG( !path.empty() && group->hasChildGroup(path),
+  SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
                   "Group " << getName() <<
-                  " has no child Group with name '" << intpath << "'");
+                  " has no descendant Group with name '" << path << "'");
 
   return group->m_group_coll.getItem(intpath);
 }
@@ -795,7 +795,7 @@ const DataGroup * DataGroup::getGroup( const std::string& path ) const
 
   SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
                   "Group " << getName() <<
-                  " has no child Group with name '" << path << "'");
+                  " has no descendant Group with name '" << path << "'");
 
   return group->m_group_coll.getItem(intpath);
 }
@@ -843,7 +843,7 @@ DataGroup * DataGroup::createGroup( const std::string& path )
     return ATK_NULLPTR;
   }
 
-  DataGroup * new_group = new(std::nothrow) DataGroup(intpath, this);
+  DataGroup * new_group = new(std::nothrow) DataGroup(intpath, group);
   if ( new_group == ATK_NULLPTR )
   {
     return ATK_NULLPTR;
