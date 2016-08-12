@@ -95,6 +95,7 @@ void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh );
 void expected_phi(meshtk::UniformMesh* umesh);
 void compute_norms( meshtk::UniformMesh* umesh,
                     double& l1, double& l2, double& linf );
+void showHelp();
 void finalize();
 
 //------------------------------------------------------------------------------
@@ -235,6 +236,9 @@ void parse_args( int argc, char** argv )
 
         Arguments.inflate_factor = std::atof( argv[++i] );
 
+      } else if ( strcmp(argv[i],"--help")==0 ) {
+         showHelp();
+         exit(0);
       }
 
   } // END for all arguments
@@ -242,6 +246,18 @@ void parse_args( int argc, char** argv )
   if ( Arguments.fileName == "" ) {
       SLIC_ERROR( "No STL input file provided. Provide one with --file" );
   }
+}
+
+//------------------------------------------------------------------------------
+void showHelp()
+{
+   SLIC_INFO("Usage: ./quest_sphere --file <sphere.stl> [options]" );
+   SLIC_INFO("--file <file> sets the filename of the STL file. Required.");
+   SLIC_INFO("--n2 flag that indicates whether to run the N^2 algorithm.");
+   SLIC_INFO("--radius <radius> the radius of the sphere. Default 0.5.");
+   SLIC_INFO("--center <x y z> the center of the sphere.Default (0.0,0.0,0.0)");
+   SLIC_INFO("--inflate <n> factor to inflate bounding box. Default is 2.0");
+   SLIC_INFO("--help prints help information.");
 }
 
 //------------------------------------------------------------------------------
@@ -330,7 +346,7 @@ void expected_phi(meshtk::UniformMesh* umesh)
 {
    SLIC_ASSERT( umesh != ATK_NULLPTR );
 
-   // STEP 0: Construct sphere centered at (0.0,0.0,0.0) with radius 5.0
+   // STEP 0: Construct sphere with user-supplied center and radius.
    SLIC_INFO("computing expected signed distance field...");
    SLIC_INFO("sphere radius: " << Arguments.sphere_radius );
    SLIC_INFO("sphere center: " << Arguments.sphere_center );
