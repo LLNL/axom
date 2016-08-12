@@ -362,25 +362,10 @@ std::string IOManager::getHDF5FileName(
   hid_t root_file_id,
   int rankgroup_id)
 {
-  hid_t h5_pattern_id = H5Dopen(root_file_id, "file_pattern", H5P_DEFAULT);
-  SLIC_ASSERT(h5_pattern_id >= 0);
+  conduit::Node n;
+  conduit::relay::io::load(root_name + ":file_pattern", "hdf5", n);
 
-  hid_t dtype = H5Dget_type(h5_pattern_id);
-  SLIC_ASSERT(dtype >= 0);
-  size_t dsize = H5Tget_size(dtype);
-
-  char* h5_pattern_buf = new char[dsize];
-  SLIC_ASSERT(h5_pattern_buf);
-  herr_t errv = H5Dread(h5_pattern_id,
-                        dtype,
-                        H5S_ALL,
-                        H5S_ALL,
-                        H5P_DEFAULT,
-                        h5_pattern_buf);
-  SLIC_ASSERT(errv >= 0);
-
-  std::string file_pattern(h5_pattern_buf);
-  delete[] h5_pattern_buf;
+  std::string file_pattern = n.as_string();
 
   std::string hdf5_name = fmt::sprintf(file_pattern.c_str(), rankgroup_id);
 
