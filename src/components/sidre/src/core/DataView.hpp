@@ -110,6 +110,16 @@ public:
   }
 
   /*!
+   * \brief Return path of View's owning Group object
+   */
+  std::string getPath() const;
+
+  /*!
+   * \brief Return full path of View object, including its name.
+   */
+  std::string getPathName() const;
+
+  /*!
    * \brief Return pointer to non-const DataGroup that owns DataView object.
    */
   DataGroup * getOwningGroup()

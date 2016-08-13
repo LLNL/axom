@@ -151,11 +151,37 @@ public:
 //!  @name Basic query and accessor methods.
 
   /*!
+   * \brief Return the path delimiter
+   */
+  char getPathDelimiter() const
+  {
+    return s_path_delimiter;
+  }
+
+  /*!
    * \brief Return const reference to name of Group object.
    */
   const std::string& getName() const
   {
     return m_name;
+  }
+
+  /*!
+   * \brief Return path of Group object, not including its name.
+   */
+  std::string getPath() const;
+
+  /*!
+   * \brief Return full path of Group object, including its name.
+   */
+  std::string getPathName() const
+  {
+    if (getPath().length() < 1)
+    {
+      return getName();
+    }
+
+    return getPath() + getPathDelimiter() + getName();
   }
 
   /*!
