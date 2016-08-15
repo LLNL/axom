@@ -160,6 +160,8 @@ public:
 
   /*!
    * \brief Return const reference to name of Group object.
+   *
+   * \sa getPath(), getPathName()
    */
   const std::string& getName() const
   {
@@ -168,11 +170,24 @@ public:
 
   /*!
    * \brief Return path of Group object, not including its name.
+   *
+   * \sa getName(), getPathName()
    */
   std::string getPath() const;
 
   /*!
    * \brief Return full path of Group object, including its name.
+   *
+   * If a DataStore contains a DataGroup tree structure a/b/c/d/e, with
+   * group d owning a view v, the following results are expected:
+   *
+   * Method Call      | Result
+   * -----------------|----------
+   * d->getName()     | d
+   * d->getPath()     | a/b/c
+   * d->getPathName() | a/b/c/d
+   *
+   * \sa getName(), getPath(), DataView::getPathName()
    */
   std::string getPathName() const
   {
