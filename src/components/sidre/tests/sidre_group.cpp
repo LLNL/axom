@@ -50,6 +50,36 @@ TEST(sidre_group,get_name)
 }
 
 //------------------------------------------------------------------------------
+// getPath(), getPathName()
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_path_name)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  EXPECT_EQ(root->getParent(), root);
+  EXPECT_EQ(root->getName(), "");
+  DataGroup * group = root->createGroup("test/a/b/c");
+  DataGroup * grp2 = root->getGroup("test/a");
+  DataGroup * grp3 = root->getGroup("test");
+
+  EXPECT_EQ(root->getName(), std::string(""));
+  EXPECT_EQ(root->getPath(), std::string(""));
+  EXPECT_EQ(root->getPathName(), std::string(""));
+
+  EXPECT_EQ(grp2->getName(), std::string("a") );
+  EXPECT_EQ(grp2->getPath(), std::string("test") );
+  EXPECT_EQ(grp2->getPathName(), std::string("test/a") );
+
+  EXPECT_EQ(grp3->getName(), std::string("test") );
+  EXPECT_EQ(grp3->getPath(), std::string("") );
+  EXPECT_EQ(grp3->getPathName(), std::string("test") );
+
+  EXPECT_EQ(group->getName(), std::string("c") );
+  EXPECT_EQ(group->getPath(), std::string("test/a/b") );
+  EXPECT_EQ(group->getPathName(), std::string("test/a/b/c") );
+}
+
+//------------------------------------------------------------------------------
 // createGroup(), getGroup(), hasGroup()  with path strings
 //------------------------------------------------------------------------------
 TEST(sidre_group,group_with_path)
@@ -72,6 +102,10 @@ TEST(sidre_group,group_with_path)
 
   EXPECT_TRUE(ATK_NULLPTR != groupP2);
   EXPECT_EQ(groupP, groupP2);
+  // test non-const getGroup() with path
+  DataGroup * groupPParent = root->getGroup("testA/testB");
+  EXPECT_EQ(groupP->getParent(), groupPParent);
+  EXPECT_EQ(groupP->getParent()->getName(), "testB");
 
 
   // Now verify that code will not create missing groups.
@@ -513,13 +547,16 @@ TEST(sidre_group,group_name_collisions)
   EXPECT_TRUE(flds->hasChildView("a"));
 
   // attempt to create duplicate group name
+  EXPECT_TRUE( ds->getRoot()->createGroup("fields") == ATK_NULLPTR );
 
-  DataGroup * badGroup = ds->getRoot()->createGroup("fields");
-  EXPECT_TRUE( badGroup == ATK_NULLPTR );
-
-  // check error condition
   // attempt to create duplicate view name.
   EXPECT_TRUE(flds->createView("a") == ATK_NULLPTR);
+
+  // attempt to create a group named the same as an existing view
+  EXPECT_TRUE(flds->createGroup("a") == ATK_NULLPTR);
+
+  // attempt to create a view named the same as an existing group
+  EXPECT_TRUE(ds->getRoot()->createView("fields") == ATK_NULLPTR);
 
   DataGroup * irrgroup1 = ds->getRoot()->createGroup("here//is/path");
   DataGroup * irrgroup2 = ds->getRoot()->createGroup("éch≈o/Ωd");

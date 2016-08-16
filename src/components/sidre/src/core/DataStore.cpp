@@ -89,8 +89,8 @@ DataStore::DataStore()
   // internal Conduit errors.
   conduit::utils::set_error_handler( DataStoreConduitErrorHandler );
 
-  m_RootGroup = new DataGroup("/", this);
-
+  m_RootGroup = new DataGroup("", this);
+  m_RootGroup->m_parent = m_RootGroup;
 };
 
 
