@@ -13,6 +13,7 @@
 #define COMMON_FILE_UTILITIES_H_
 
 #include <string>
+#include <sys/stat.h>
 
 namespace asctoolkit {
 namespace utilities {
@@ -50,6 +51,37 @@ namespace filesystem {
                        , const std::string& separator = "/");
 
 
+/**
+ * \brief Make directories for a given path string
+ *
+ * \param [in] path  string representing an absolute or relative directory path
+ * \param [in] mode  controls the permissions of the new directories
+ *
+ * Everything in the path is assumed to be intended to be a directory.  If
+ * a directory in the path already exists, nothing is done.  If a directory
+ * doesn't exist, it is created.
+ */
+  int makeDirsForPath(
+    const std::string& path,
+    mode_t mode = 0700);
+
+/**
+ * \brief Get directory name from a path that contains a file name
+ *
+ * \param [out] dir  a directory path formed by removing the file name from
+ *                   the input path
+ * \param [in] path  an absolute or relative directory/file path
+ *
+ * This function assumes that the input path has a file name at the end, and
+ * it removes that file name, leaving a string containing only a directory
+ * path.
+ * 
+ * For example, if the path string is "abc/def/ghi/file.txt", the output dir
+ * string will be "abc/def/ghi".
+ */
+  void getDirName(
+    std::string& dir,
+    const std::string& path);
 
 } // end namespace filesystem
 } // end namespace utilities
