@@ -50,6 +50,36 @@ TEST(sidre_group,get_name)
 }
 
 //------------------------------------------------------------------------------
+// getPath(), getPathName()
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_path_name)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  EXPECT_EQ(root->getParent(), root);
+  EXPECT_EQ(root->getName(), "");
+  DataGroup * group = root->createGroup("test/a/b/c");
+  DataGroup * grp2 = root->getGroup("test/a");
+  DataGroup * grp3 = root->getGroup("test");
+
+  EXPECT_EQ(root->getName(), std::string(""));
+  EXPECT_EQ(root->getPath(), std::string(""));
+  EXPECT_EQ(root->getPathName(), std::string(""));
+
+  EXPECT_EQ(grp2->getName(), std::string("a") );
+  EXPECT_EQ(grp2->getPath(), std::string("test") );
+  EXPECT_EQ(grp2->getPathName(), std::string("test/a") );
+
+  EXPECT_EQ(grp3->getName(), std::string("test") );
+  EXPECT_EQ(grp3->getPath(), std::string("") );
+  EXPECT_EQ(grp3->getPathName(), std::string("test") );
+
+  EXPECT_EQ(group->getName(), std::string("c") );
+  EXPECT_EQ(group->getPath(), std::string("test/a/b") );
+  EXPECT_EQ(group->getPathName(), std::string("test/a/b/c") );
+}
+
+//------------------------------------------------------------------------------
 // createGroup(), getGroup(), hasGroup()  with path strings
 //------------------------------------------------------------------------------
 TEST(sidre_group,group_with_path)

@@ -189,6 +189,29 @@ TEST(sidre_view,create_views)
 
 //------------------------------------------------------------------------------
 
+TEST(sidre_view,get_path_name)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  DataView * v1 = root->createView("test/a/b/v1");
+  DataView * v2 = root->createView("test/v2");
+  DataView * v3 = root->createView("v3");
+
+  EXPECT_EQ(std::string("v1"), v1->getName());
+  EXPECT_EQ(std::string("test/a/b"), v1->getPath());
+  EXPECT_EQ(std::string("test/a/b/v1"), v1->getPathName());
+
+  EXPECT_EQ(std::string("v2") , v2->getName());
+  EXPECT_EQ(std::string("test") , v2->getPath());
+  EXPECT_EQ(std::string("test/v2") , v2->getPathName());
+
+  EXPECT_EQ(std::string("v3") , v3->getName());
+  EXPECT_EQ(std::string("") , v3->getPath());
+  EXPECT_EQ(std::string("v3") , v3->getPathName());
+}
+
+//------------------------------------------------------------------------------
+
 TEST(sidre_view,create_view_from_path)
 {
   DataStore * ds   = new DataStore();

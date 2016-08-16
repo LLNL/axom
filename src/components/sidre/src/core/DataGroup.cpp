@@ -37,6 +37,34 @@ namespace sidre
 // support path syntax.
 const char DataGroup::s_path_delimiter = '/';
 
+////////////////////////////////////////////////////////////////////////
+//
+// Basic query and accessor methods.
+//
+////////////////////////////////////////////////////////////////////////
+
+/*
+ *************************************************************************
+ *
+ * Return path of Group object, not including its name.
+ *
+ *************************************************************************
+ */
+std::string DataGroup::getPath() const
+{
+  const DataGroup * root = getDataStore()->getRoot();
+  const DataGroup * curr = getParent();
+  std::string thePath = curr->getName();
+  curr = curr->getParent();
+
+  while (curr != root)
+  {
+    thePath = curr->getName() + s_path_delimiter + thePath;
+    curr = curr->getParent();
+  }
+
+  return thePath;
+}
 
 ////////////////////////////////////////////////////////////////////////
 //
