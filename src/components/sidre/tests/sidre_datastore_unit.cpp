@@ -125,10 +125,10 @@ TEST(sidre_datastore,default_ctor)
   DataGroup * dg = ds->getRoot();
 
   EXPECT_FALSE( ATK_NULLPTR == dg );
-  EXPECT_EQ( static_cast<void *>(ATK_NULLPTR), dg->getParent() );
-  EXPECT_EQ( ds, dg->getDataStore() );
+  EXPECT_EQ(dg, dg->getParent() );
+  EXPECT_EQ(ds, dg->getDataStore() );
 
-  verifyEmptyGroupNamed(dg, "/");
+  verifyEmptyGroupNamed(dg, "");
 
   delete ds;
 }

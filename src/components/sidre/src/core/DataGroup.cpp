@@ -40,6 +40,34 @@ namespace sidre
 // support path syntax.
 const char DataGroup::s_path_delimiter = '/';
 
+////////////////////////////////////////////////////////////////////////
+//
+// Basic query and accessor methods.
+//
+////////////////////////////////////////////////////////////////////////
+
+/*
+ *************************************************************************
+ *
+ * Return path of Group object, not including its name.
+ *
+ *************************************************************************
+ */
+std::string DataGroup::getPath() const
+{
+  const DataGroup * root = getDataStore()->getRoot();
+  const DataGroup * curr = getParent();
+  std::string thePath = curr->getName();
+  curr = curr->getParent();
+
+  while (curr != root)
+  {
+    thePath = curr->getName() + s_path_delimiter + thePath;
+    curr = curr->getParent();
+  }
+
+  return thePath;
+}
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -770,9 +798,9 @@ DataGroup * DataGroup::getGroup( const std::string& path )
     return ATK_NULLPTR;
   }
 
-  SLIC_CHECK_MSG( !path.empty() && group->hasChildGroup(intpath),
+  SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
                   "Group " << getName() <<
-                  " has no child Group with name '" << intpath << "'");
+                  " has no descendant Group with name '" << path << "'");
 
   return group->m_group_coll.getItem(intpath);
 }
@@ -798,7 +826,7 @@ const DataGroup * DataGroup::getGroup( const std::string& path ) const
 
   SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
                   "Group " << getName() <<
-                  " has no child Group with name '" << path << "'");
+                  " has no descendant Group with name '" << path << "'");
 
   return group->m_group_coll.getItem(intpath);
 }
@@ -846,7 +874,7 @@ DataGroup * DataGroup::createGroup( const std::string& path )
     return ATK_NULLPTR;
   }
 
-  DataGroup * new_group = new(std::nothrow) DataGroup(intpath, this);
+  DataGroup * new_group = new(std::nothrow) DataGroup(intpath, group);
   if ( new_group == ATK_NULLPTR )
   {
     return ATK_NULLPTR;

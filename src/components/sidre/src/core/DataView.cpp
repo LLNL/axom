@@ -38,6 +38,39 @@ namespace sidre
 /*
  *************************************************************************
  *
+ * Return path of View's owning Group object.
+ * Needs to be in the .cpp file because DataGroup methods aren't
+ * accessible in .hpp file.
+ *
+ *************************************************************************
+ */
+std::string DataView::getPath() const
+{
+  return getOwningGroup()->getPathName();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return full path of View object, including its name.
+ * Needs to be in the .cpp file because DataGroup methods aren't
+ * accessible in .hpp file.
+ *
+ *************************************************************************
+ */
+std::string DataView::getPathName() const
+{
+  if (getPath().length() < 1)
+  {
+    return getName();
+  }
+
+  return getPath() + getOwningGroup()->getPathDelimiter() + getName();
+}
+
+/*
+ *************************************************************************
+ *
  * Allocate data for view, previously described.
  * The state may transition from EMPTY to BUFFER;
  * otherwise, the state must already be BUFFER.
