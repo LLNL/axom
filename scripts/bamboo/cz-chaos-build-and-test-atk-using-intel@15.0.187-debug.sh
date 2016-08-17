@@ -13,7 +13,7 @@ BT="Debug"
 BP="atk_build"
 IP="atk_install"
 COMP_OPT=""
-BUILD_OPT=""
+BUILD_OPT="-DBLT_CXX_STD=c++98"
 OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
 
 echo "Configuring..."
