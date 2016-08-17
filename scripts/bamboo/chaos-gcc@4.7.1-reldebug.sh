@@ -12,7 +12,8 @@ BT="RelWithDebInfo"
 BP="build-chaos-${COMPILER}-${BT,,}"
 IP="install-chaos-${COMPILER}-${BT,,}"
 COMP_OPT=""
-BUILD_OPT="-DBLT_CXX_STD=c++98"
+# gcc 4.7.1 does not fully support Fortran 2003 C interoperability
+BUILD_OPT="-DBLT_CXX_STD=c++98 -DENABLE_FORTRAN=OFF"
 OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
 
 echo "Configuring..."
