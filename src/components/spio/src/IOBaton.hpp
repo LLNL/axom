@@ -105,7 +105,7 @@ public:
   /*!
    * \brief Get the number of files involved in the I/O operation.
    */
-  bool getNumFiles() const
+  int getNumFiles() const
   {
      return m_num_groups;
   }

@@ -128,8 +128,10 @@ private:
                       const std::string& file_base,
                       int num_files);
 
-  std::string getHDF5FileName(const std::string& root_name,
-                              hid_t root_file_id,
+  std::string getHDF5FilePattern(const std::string& root_name);
+
+  std::string getHDF5FileName(const std::string& file_pattern,
+                              const std::string& root_name,
                               int rankgroup_id);
 
   int getNumFilesFromRoot(const std::string& root_file);
