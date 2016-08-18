@@ -45,6 +45,8 @@
 
 #include "slam/Utilities.hpp"
 
+#include "fmt/fmt.hpp"
+
 
 // C/C++ includes
 #include <algorithm>
@@ -342,9 +344,8 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
         containment[ inode ] = inOutOctree.within(pt) ? 1 : 0;
     }
     timer.stop();
-    SLIC_INFO("\tQuerying "<< gridRes << "^3 containment field took " << timer.elapsed() << " seconds"
-              << " (@ " << nnodes / timer.elapsed() << " queries per second)"
-        );
+    SLIC_INFO(fmt::format("\tQuerying {}^3 containment field took {} seconds (@ {} queries per second)"
+                    , gridRes, timer.elapsed(), nnodes / timer.elapsed()));
 
   #ifdef DUMP_VTK_MESH
     std::stringstream sstr;
@@ -440,39 +441,36 @@ void print_surface_stats( mint::Mesh* mesh)
 
    // Log the results
    const int nVerts = mesh->getMeshNumberOfNodes();
-   SLIC_INFO("Mesh has " << nVerts << " vertices "
-             <<"and " << nCells << " triangles.");
+   SLIC_INFO(fmt::format("Mesh has {} vertices  and {} triangles.", nVerts, nCells));
 
-   SLIC_INFO("Edge length range is: "  << meshEdgeLenRange);
+   SLIC_INFO("Edge length range: "  << meshEdgeLenRange);
    SLIC_INFO("Triangle area range is: "  << meshTriAreaRange);
 
-   std::stringstream edgeHistStr;
-   edgeHistStr<<"\tEdge length histogram (lg-arithmic): ";
+   fmt::MemoryWriter edgeHistStr;
+   edgeHistStr<<"Edge length histogram (lg-arithmic): ";
    for(LogHistogram::const_iterator it = edgeLenHist.begin()
            ; it != edgeLenHist.end()
            ; ++it)
    {
-       edgeHistStr << "\n\t exp: " << it->first
-                   <<"\t count: " << (it->second / 2)
-                   <<"\tRange: " << edgeLenRangeMap[it->first];
+       edgeHistStr.write("\n\texp: {}\tcount: {}\tRange: {}"
+                        , it->first, it->second / 2, edgeLenRangeMap[it->first]);
    }
    SLIC_DEBUG(edgeHistStr.str());
 
-   std::stringstream triHistStr;
-   triHistStr<<"\tTriangle areas histogram (lg-arithmic): ";
+   fmt::MemoryWriter triHistStr;
+   triHistStr<<"Triangle areas histogram (lg-arithmic): ";
    for(LogHistogram::const_iterator it =areaHist.begin()
            ; it != areaHist.end()
            ; ++it)
    {
-       triHistStr<<"\n\t exp: " << it->first
-                 <<"\t count: " << it->second
-                 << "\tRange: " << areaRangeMap[it->first];
+       triHistStr.write("\n\texp: {}\tcount: {}\tRange: {}"
+                       , it->first, it->second, areaRangeMap[it->first]);
    }
    SLIC_DEBUG(triHistStr.str());
 
    if(! badTriangles.empty() )
    {
-       std::stringstream badTriStr;
+       fmt::MemoryWriter badTriStr;
        badTriStr<<"The following triangle(s) have zero area/edge lengths:";
        for(TriIdxSet::const_iterator it = badTriangles.begin()
                ; it != badTriangles.end()
@@ -486,7 +484,7 @@ void print_surface_stats( mint::Mesh* mesh)
            for(int j=0; j<3; ++j)
            {
                mesh->getMeshNode( vertIndices[j], vertPos.data() );
-               badTriStr<<"\n\t\t vId: " << vertIndices[j] <<" @ position: " << vertPos;
+               badTriStr.write("\n\t\t vId: {} @ position: {}", vertIndices[j], vertPos);
            }
        }
        SLIC_DEBUG(badTriStr.str());
@@ -509,11 +507,9 @@ void refineAndPrint(Octree3D& octree, const SpacePt& queryPt, bool shouldRefine 
     GeometricBoundingBox blockBB = octree.blockBoundingBox( leafBlock);
     bool containsPt = blockBB.contains(queryPt);
 
-    SLIC_INFO("\t{gridPt: " << leafBlock.pt()
-            <<"; lev: " << leafBlock.level()
-            <<"} "
-            <<" with bounds " << blockBB
-            << (containsPt? " contains " : "does not contain ") << "query point.");
+    SLIC_INFO(fmt::format("\t(gridPt: {}; lev: {}) with bounds {} {} query point."
+            , leafBlock.pt(), leafBlock.level(), blockBB
+            , (containsPt? " contains " : "does not contain ") ));
 }
 
 //------------------------------------------------------------------------------
@@ -541,6 +537,7 @@ int main( int argc, char** argv )
   SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( stlFile));
 
   // STEP 2: read mesh file
+  SLIC_INFO(fmt::format("\n\t{:*^80}"," Loading the mesh "));
   SLIC_INFO("Reading file: " << stlFile << "...");
 
   quest::STLReader* reader = new quest::STLReader();
@@ -573,7 +570,7 @@ int main( int argc, char** argv )
 
 
   // STEP 6: Create octree over mesh's bounding box and query a point in space
-  SLIC_INFO("-- About to generate the InOutOctree");
+  SLIC_INFO(fmt::format("\n\t{:*^80}"," Generating the octree "));
   Octree3D octree(meshBB, surface_mesh);
   octree.generateIndex();
 
@@ -581,7 +578,7 @@ int main( int argc, char** argv )
   print_surface_stats(surface_mesh);
   write_vtk(surface_mesh, "meldedTriMesh.vtk");
 
-  SLIC_INFO("-- About to query the octree");
+  SLIC_INFO(fmt::format("\n\t{:*^80}"," Querying the octree "));
 
   // Query on a slightly expanded bounding box
   GeometricBoundingBox queryBB
@@ -601,11 +598,11 @@ int main( int argc, char** argv )
       testContainmentOnRegularGrid( octree, queryBB, 1<<i);
 
 
-  //
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 
   // Other -- find leaf block of a given query point at various levels of resolution
+  SLIC_INFO(fmt::format("\n\t{:*^80}"," Other octree operations "));
   double alpha = 2./3.;
   SpacePt queryPt = SpacePt::lerp(meshBB.getMin(), meshBB.getMax(), alpha);
 
@@ -613,12 +610,13 @@ int main( int argc, char** argv )
   for(int lev = 0; lev < octree.maxLeafLevel(); ++lev)
   {
       GridPt gridPt = octree.findGridCellAtLevel(queryPt, lev);
-      SLIC_INFO("  @level " << lev
-              <<":\n\t" <<  gridPt
-              <<"\n\t[max gridPt: " << octree.maxGridCellAtLevel(lev)
-              <<"; spacing" << octree.spacingAtLevel(lev)
-              <<";\n\t bounding box " << octree.blockBoundingBox(gridPt, lev)
-              <<"]");
+      SLIC_INFO(fmt::format(
+              "  {1} @ level {0}\n\t[max gridPt: {2}; spacing: {3};\n\t bounding box {4}]"
+              , lev, gridPt
+              , octree.maxGridCellAtLevel(lev)
+              , octree.spacingAtLevel(lev)
+              , octree.blockBoundingBox(gridPt, lev)
+              ));
   }
 
 

@@ -38,7 +38,7 @@ blt_add_executable(
     NAME        quest_octree_driver 
     SOURCES     octree_driver.cpp 
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${quest_example_depends}
+    DEPENDS_ON  ${quest_example_depends} fmt
     )
 
 if (ENABLE_MPI)
