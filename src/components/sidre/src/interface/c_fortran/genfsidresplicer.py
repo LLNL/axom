@@ -49,7 +49,7 @@ function datagroup_create_array_view_{typename}_{nd}(group, name, value) result(
     type(C_PTR) addr
 
     lname = len_trim(name)
-    call SHROUD_C_LOC(value, addr)
+    addr = c_loc(value)
     if (c_associated(addr)) then
       {extents_asgn}
     else
@@ -99,7 +99,7 @@ subroutine datagroup_set_array_data_ptr_{typename}_{nd}(group, name, value)
 !    {extents_asgn}
     view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
     if (c_associated(view)) then
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view, addr)
 !        call c_dataview_apply_type_shape(rv%voidptr, type, {rank}, extents)
     endif
@@ -138,7 +138,7 @@ subroutine dataview_set_array_data_ptr_{typename}_{nd}(view, value)
 
 !    lname = len_trim(name)
 !    {extents_asgn}
-    call SHROUD_C_LOC(value, addr)
+    addr = c_loc(value)
     call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
 !    call c_dataview_apply_type_shape(rv%voidptr, type, {rank}, extents)
 end subroutine dataview_set_array_data_ptr_{typename}_{nd}""".format(

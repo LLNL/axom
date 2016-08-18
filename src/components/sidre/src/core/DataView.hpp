@@ -103,11 +103,36 @@ public:
 
   /*!
    * \brief Return const reference to name of DataView.
+   *
+   * \sa getPath(), getPathName()
    */
   const std::string& getName() const
   {
     return m_name;
   }
+
+  /*!
+   * \brief Return path of View's owning Group object.
+   *
+   * \sa getName(), getPathName()
+   */
+  std::string getPath() const;
+
+  /*!
+   * \brief Return full path of View object, including its name.
+   *
+   * If a DataStore contains a DataGroup tree structure a/b/c/d/e, with
+   * group d owning a view v, the following results are expected:
+   *
+   * Method Call      | Result
+   * -----------------|----------
+   * v->getName()     | v
+   * v->getPath()     | a/b/c/d
+   * v->getPathName() | a/b/c/d/v
+   *
+   * \sa getName(), getPath(), DataGroup::getPathName()
+   */
+  std::string getPathName() const;
 
   /*!
    * \brief Return pointer to non-const DataGroup that owns DataView object.
