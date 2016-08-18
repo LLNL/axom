@@ -169,9 +169,9 @@ public:
    *
    * Method Call      | Result
    * -----------------|----------
-   * d->getName()     | d
-   * d->getPath()     | a/b/c
-   * d->getPathName() | a/b/c/d
+   * e->getName()     | e
+   * e->getPath()     | a/b/c/d
+   * e->getPathName() | a/b/c/d/e
    *
    * \sa getName(), getPath(), View::getPathName()
    */
