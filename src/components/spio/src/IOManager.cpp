@@ -150,7 +150,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
     SLIC_ASSERT(status >= 0);
 
 
-  } else if (protocol == "conduit") {
+  } else {
     std::ostringstream savestream;
     savestream << file_name << ".group";
     std::string obase = savestream.str();
