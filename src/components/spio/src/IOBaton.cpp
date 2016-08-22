@@ -47,9 +47,9 @@ IOBaton::IOBaton(MPI_Comm comm,
 {
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
-  m_num_groups = num_files;
+  m_num_files = num_files;
   m_num_larger_groups = m_comm_size % num_files;
-  m_group_size = m_comm_size / m_num_groups; // ?
+  m_group_size = m_comm_size / m_num_files; // ?
   m_first_regular_group_rank = (m_group_size + 1) * m_num_larger_groups;
   if (m_my_rank < m_first_regular_group_rank) {
     m_group_id = m_my_rank / (m_group_size + 1);
