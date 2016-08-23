@@ -22,7 +22,7 @@
 #define BUFFER_HPP_
 
 // Standard C++ headers
-#include <vector>
+#include <set>
 
 // Other axom headers
 #include "axom/Macros.hpp"
@@ -343,7 +343,7 @@ private:
   IndexType m_index;
 
   /// Container of Views attached to this Buffer.
-  std::vector<View *> m_views;
+  std::set<DataView *> m_views;
 
   /// Conduit Node that holds Buffer data.
   Node m_node;
