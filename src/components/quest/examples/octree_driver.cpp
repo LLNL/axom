@@ -62,6 +62,9 @@ typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
 
 typedef quest::InOutOctree<3> Octree3D;
 
+typedef quest::Point<int,3> TriVertIndices;
+typedef quest::Triangle<double, 3> SpaceTriangle;
+
 typedef Octree3D::GeometricBoundingBox GeometricBoundingBox;
 typedef Octree3D::SpacePt SpacePt;
 typedef Octree3D::SpaceVector SpaceVector;
@@ -357,12 +360,39 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
 }
 
 
+/**
+ * \brief Extracts the vertex indices of cell cellIndex from the mesh
+ */
+TriVertIndices getTriangleVertIndices(meshtk::Mesh* mesh, int cellIndex)
+{
+    SLIC_ASSERT(mesh != ATK_NULLPTR);
+    SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getMeshNumberOfCells());
+
+    TriVertIndices tvInd;
+    mesh->getMeshCell( cellIndex, tvInd.data() );
+    return tvInd;
+}
+
+/**
+ * \brief Extracts the positions of a traingle's vertices from the mesh
+ * \return The triangle vertex positions in a SpaceTriangle instance
+ */
+SpaceTriangle getMeshTriangle(meshtk::Mesh* mesh, const TriVertIndices& vertIndices )
+{
+    SLIC_ASSERT(mesh != ATK_NULLPTR);
+
+    SpaceTriangle tri;
+    for(int i=0; i< 3; ++i)
+        mesh->getMeshNode( vertIndices[i], tri[i].data() );
+
+    return tri;
+}
 
 /**
  * \brief Computes some statistics about the surface mesh.
  *
  * Specifically, computes histograms (and ranges) of the edge lengths and triangle areas
- * on a lg scale and logs the results
+ * on a logarithmic scale and logs the results
  */
 void print_surface_stats( mint::Mesh* mesh)
 {
@@ -389,23 +419,20 @@ void print_surface_stats( mint::Mesh* mesh)
    LogRangeMap areaRangeMap;        // Tracks range of triangle areas at each scale
 
    typedef quest::Point<int,3> TriVertIndices;
+   int expBase2;
 
    // Traverse mesh triangles and bin the edge lengths and areas
    for ( int i=0; i < nCells; ++i )
    {
       // Get the indices and positions of the triangle's three vertices
-      TriVertIndices vertIndices;
-      mesh->getMeshCell( i, vertIndices.data() );
-
-      SpacePt vertPos[3];
-      for(int j=0; j<3; ++j)
-          mesh->getMeshNode( vertIndices[j], vertPos[j].data() );
+      TriVertIndices vertIndices = getTriangleVertIndices(mesh, i);
+      SpaceTriangle tri = getMeshTriangle(mesh, vertIndices);
 
       // Compute edge stats -- note edges are double counted
       for(int j=0; j<3; ++j)
       {
-          double len = SpaceVector(vertPos[j],vertPos[(j+1)%3]).norm();
-          if(len == 0)
+          double len = SpaceVector(tri[j],tri[(j+1)%3]).norm();
+          if(asctoolkit::utilities::isNearlyEqual(len,0.))
           {
               badTriangles.insert(i);
           }
@@ -413,7 +440,6 @@ void print_surface_stats( mint::Mesh* mesh)
           {
               LengthType edgeLen(len);
               meshEdgeLenRange.addPoint( edgeLen );
-              int expBase2;
               std::frexp (len, &expBase2);
               edgeLenHist[expBase2]++;
               edgeLenRangeMap[expBase2].addPoint( edgeLen );
@@ -421,17 +447,15 @@ void print_surface_stats( mint::Mesh* mesh)
       }
 
       // Compute triangle area stats
-      double area = SpaceVector::cross_product(
-                  SpaceVector(vertPos[0],vertPos[1])
-                  , SpaceVector(vertPos[0],vertPos[2])
-                  ).norm();
-      if(area == 0.)
+      double area = tri.area();
+      if( asctoolkit::utilities::isNearlyEqual(area, 0.))
+      {
           badTriangles.insert(i);
+      }
       else
       {
           LengthType triArea(area);
           meshTriAreaRange.addPoint ( triArea );
-          int expBase2;
           std::frexp (area, &expBase2);
           areaHist[expBase2]++;
           areaRangeMap[expBase2].addPoint( triArea);
