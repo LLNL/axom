@@ -1138,8 +1138,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
 {
     typedef asctoolkit::utilities::Timer Timer;
 
-    typedef typename OctreeBaseType::MapType LeavesLevelMap;
-    typedef typename LeavesLevelMap::iterator LeavesIterator;
+    typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
+    typedef typename OctreeBaseType::LevelMapIterator LeavesIterator;
 
     SLIC_ASSERT( m_meshWrapper.meshWasReindexed() );
 
@@ -1187,7 +1187,7 @@ void InOutOctree<DIM>::insertMeshTriangles ()
 
         int nextLevelDataBlockCounter = 0;
 
-        LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
+        LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
             InOutBlockData& blkData = it->second;
@@ -1372,8 +1372,8 @@ void InOutOctree<DIM>::colorOctreeLeaves()
     // * one of its siblings has a gray descendant
 
     typedef asctoolkit::utilities::Timer Timer;
-    typedef typename OctreeBaseType::MapType LeavesLevelMap;
-    typedef typename LeavesLevelMap::iterator LeavesIterator;
+    typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
+    typedef typename OctreeBaseType::LevelMapIterator LeavesIterator;
     typedef std::vector<GridPt> GridPtVec;
     GridPtVec uncoloredBlocks;
 
@@ -1383,7 +1383,7 @@ void InOutOctree<DIM>::colorOctreeLeaves()
         uncoloredBlocks.clear();
         Timer levelTimer(true);
 
-        LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
+        LeavesLevelMap& levelLeafMap = this->getOctreeLevel(lev);
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
             if( !it->second.isLeaf() )
@@ -1766,8 +1766,8 @@ bool InOutOctree<DIM>::within(const SpacePt& pt) const
 template<int DIM>
 void InOutOctree<DIM>::printOctreeStats() const
 {
-    typedef typename OctreeBaseType::MapType LeavesLevelMap;
-    typedef typename LeavesLevelMap::const_iterator LeavesIterator;
+    typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
+    typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
 
 
     typedef asctoolkit::slam::Map<int> LeafCountMap;
@@ -2038,10 +2038,10 @@ template<int DIM>
 void InOutOctree<DIM>::checkAllLeavesColoredAtLevel(int ATK_DEBUG_PARAM(level)) const
 {
 #ifdef ATK_DEBUG
-  typedef typename OctreeBaseType::MapType LeavesLevelMap;
-  typedef typename LeavesLevelMap::const_iterator LeavesIterator;
+    typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
+    typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
 
-  const LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ level ];
+  const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( level );
   for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
   {
       if( ! it->second.isLeaf() )
@@ -2060,8 +2060,8 @@ template<int DIM>
 void InOutOctree<DIM>::checkValid() const
 {
 #ifdef ATK_DEBUG
-    typedef typename OctreeBaseType::MapType LeavesLevelMap;
-    typedef typename LeavesLevelMap::const_iterator LeavesIterator;
+    typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
+    typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
 
     SLIC_ASSERT_MSG( m_generationState >= INOUTOCTREE_VERTICES_INSERTED
                    , "InOutOctree::checkValid assumes that we have already inserted "
@@ -2154,7 +2154,7 @@ void InOutOctree<DIM>::checkValid() const
         SLIC_DEBUG("--Checking that internal blocks have no data, and that leaves satisfy all PM conditions");
         for(int lev=0; lev< this->m_levels.size(); ++lev)
         {
-            const LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
+            const LeavesLevelMap& levelLeafMap = this->getOctreeLevel(lev);
             for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
             {
                 const BlockIndex block(it->first, lev);
@@ -2213,7 +2213,7 @@ void InOutOctree<DIM>::checkValid() const
         SLIC_DEBUG("--Checking that inside blocks do not neighbor outside blocks");
         for(int lev=this->maxLeafLevel()-1; lev >= 0; --lev)
         {
-            const LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
+            const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
             for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
             {
                 const BlockIndex block(it->first, lev);

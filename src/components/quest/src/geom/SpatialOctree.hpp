@@ -36,7 +36,6 @@ public:
     typedef typename BaseOctree::GridPt GridPt;
     typedef typename GridPt::CoordType CoordType;
 
-    typedef typename BaseOctree::MapType MapType;
     typedef typename BaseOctree::BlockIndex BlockIndex;
 
     typedef asctoolkit::slam::Map<SpaceVector> SpaceVectorLevelMap;
@@ -131,17 +130,17 @@ public:
             GridPt gridPt = findGridCellAtLevel(pt, lev);
             switch( this->blockStatus(gridPt,lev) )
             {
-            case BaseOctree::BlockNotInTree:
+            case BlockNotInTree:
                 // Block must be in coarser levels -- update upper bound
                 maxLev = lev-1;
                 lev = (maxLev + minLev)>>1;
                 break;
-            case BaseOctree::InternalBlock:
+            case InternalBlock:
                 // Block must be in deeper levels -- update lower bound
                 minLev = lev+1;
                 lev = (maxLev + minLev)>>1;
                 break;
-            case BaseOctree::LeafBlock:
+            case LeafBlock:
                 return BlockIndex(gridPt, lev);
             }
         }
