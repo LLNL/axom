@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-namespace meshtk {
+namespace mint {
 
 // Forward Declarations
 class Field;
@@ -132,6 +132,6 @@ private:
    DISABLE_COPY_AND_ASSIGNMENT(FieldData);
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* FIELDDATA_HPP_ */

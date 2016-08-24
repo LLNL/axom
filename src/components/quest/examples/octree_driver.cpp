@@ -24,20 +24,21 @@
 #include "common/Timer.hpp"
 
 #include "quest/BoundingBox.hpp"
-#include "quest/Field.hpp"
-#include "quest/FieldData.hpp"
-#include "quest/FieldVariable.hpp"
-#include "quest/Mesh.hpp"
 #include "quest/Orientation.hpp"
 #include "quest/Point.hpp"
 #include "quest/STLReader.hpp"
 #include "quest/SquaredDistance.hpp"
 #include "quest/Triangle.hpp"
-#include "quest/UniformMesh.hpp"
-#include "quest/UnstructuredMesh.hpp"
 #include "quest/Point.hpp"
 #include "quest/SpatialOctree.hpp"
 #include "quest/InOutOctree.hpp"
+
+#include "mint/Field.hpp"
+#include "mint/FieldData.hpp"
+#include "mint/FieldVariable.hpp"
+#include "mint/Mesh.hpp"
+#include "mint/UniformMesh.hpp"
+#include "mint/UnstructuredMesh.hpp"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
@@ -55,7 +56,7 @@
 
 using namespace asctoolkit;
 
-typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
 
 typedef quest::InOutOctree<3> Octree3D;
 
@@ -76,7 +77,7 @@ typedef Octree3D::BlockIndex BlockIndex;
 /**
  * \brief Computes the bounding box of the surface mesh
  */
-GeometricBoundingBox compute_bounds( meshtk::Mesh* mesh)
+GeometricBoundingBox compute_bounds( mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -96,7 +97,7 @@ GeometricBoundingBox compute_bounds( meshtk::Mesh* mesh)
 
 
 //------------------------------------------------------------------------------
-void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
+void write_vtk( mint::Mesh* mesh, const std::string& fileName )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -156,19 +157,19 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
   ofs << "CELL_TYPES " << ncells << std::endl;
   for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
     int ctype    = mesh->getMeshCellType( cellIdx );
-    int vtk_type = meshtk::cell::vtk_types[ ctype ];
+    int vtk_type = mint::cell::vtk_types[ ctype ];
     ofs << vtk_type << std::endl;
   } // END for all cells
 
   // STEP 4: Write Cell Data
   ofs << "CELL_DATA " << ncells << std::endl;
-  meshtk::FieldData* CD = mesh->getCellFieldData();
+  mint::FieldData* CD = mesh->getCellFieldData();
   for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
 
-      meshtk::Field* field = CD->getField( f );
+      mint::Field* field = CD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == meshtk::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           SLIC_ASSERT( dataPtr != ATK_NULLPTR );
@@ -198,13 +199,13 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
   // STEP 5: Write Point Data
   const int nnodes = mesh->getMeshNumberOfNodes();
   ofs << "POINT_DATA " << nnodes << std::endl;
-  meshtk::FieldData* PD = mesh->getNodeFieldData();
+  mint::FieldData* PD = mesh->getNodeFieldData();
   for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
 
-      meshtk::Field* field = PD->getField( f );
+      mint::Field* field = PD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == meshtk::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           ofs << "double\n";
@@ -246,7 +247,7 @@ void testIntersectionOnRegularGrid()
 
     TriangleType unitTri( ptX, ptY, ptZ );
 
-    typedef meshtk::UnstructuredMesh<meshtk::MIXED> DebugMesh;
+    typedef mint::UnstructuredMesh<mint::MIXED> DebugMesh;
     DebugMesh* debugMesh = new DebugMesh(3);
 
     // Add triangle to mesh
@@ -255,7 +256,7 @@ void testIntersectionOnRegularGrid()
     debugMesh->insertNode( ptZ[0], ptZ[1], ptZ[2]);
 
     int tArr[3] = {0,1,2};
-    debugMesh->insertCell(tArr, meshtk::LINEAR_TRIANGLE, 3);
+    debugMesh->insertCell(tArr, mint::LINEAR_TRIANGLE, 3);
 
     PointType bbMin(-0.1);
     PointType bbMax(1.1);
@@ -294,7 +295,7 @@ void testIntersectionOnRegularGrid()
                     for(int i=0; i< 8; ++i)
                         data[i] = vStart + i;
 
-                    debugMesh->insertCell( data, meshtk::LINEAR_HEX, 8);
+                    debugMesh->insertCell( data, mint::LINEAR_HEX, 8);
                 }
             }
         }
@@ -319,15 +320,15 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
     ext[0] = ext[2] = ext[4] = 0;
     ext[1] = ext[3] = ext[5] = gridRes;
 
-    meshtk::UniformMesh* umesh =
-            new meshtk::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
+    mint::UniformMesh* umesh =
+            new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
 
 
     const int nnodes = umesh->getNumberOfNodes();
-    meshtk::FieldData* PD = umesh->getNodeFieldData();
+    mint::FieldData* PD = umesh->getNodeFieldData();
     SLIC_ASSERT( PD != ATK_NULLPTR );
 
-    PD->addField( new meshtk::FieldVariable< int >("containment",nnodes) );
+    PD->addField( new mint::FieldVariable< int >("containment",nnodes) );
     int* containment = PD->getField( "containment" )->getIntPtr();
     SLIC_ASSERT( containment != ATK_NULLPTR );
 
@@ -362,7 +363,7 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
  * Specifically, computes histograms (and ranges) of the edge lengths and triangle areas
  * on a lg scale and logs the results
  */
-void print_surface_stats( meshtk::Mesh* mesh)
+void print_surface_stats( mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -549,7 +550,7 @@ int main( int argc, char** argv )
 
 
   // STEP 3: create surface mesh
-  meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
+  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
   reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
   // dump mesh info
   SLIC_INFO("Mesh has "

@@ -25,11 +25,11 @@
 #ifndef CURVILINEARMESH_HXX_
 #define CURVILINEARMESH_HXX_
 
-#include "quest/StructuredMesh.hpp"
-#include "quest/MeshCoordinates.hpp"
+#include "mint/StructuredMesh.hpp"
+#include "mint/MeshCoordinates.hpp"
 #include "slic/slic.hpp"
 
-namespace meshtk
+namespace mint
 {
 
 class CurvilinearMesh : public StructuredMesh
@@ -225,13 +225,13 @@ private:
   CurvilinearMesh& operator=(const CurvilinearMesh&); // Not implemented
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
 
-namespace meshtk
+namespace mint
 {
 
 
@@ -337,6 +337,6 @@ double CurvilinearMesh::getNodeCoordinate( int i, int j, int k, int idim ) const
   return ( this->getNodeCoordinate(nodeIdx, idim) );
 }
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* CURVILINEARMESH_HXX_ */

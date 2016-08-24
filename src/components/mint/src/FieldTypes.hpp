@@ -26,7 +26,7 @@
 #define FIELDTYPES_HPP_
 
 
-namespace meshtk {
+namespace mint {
 
 enum FieldTypes {
     UNDEFINED_FIELD_TYPE =-1,

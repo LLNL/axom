@@ -25,19 +25,19 @@
 #ifndef FIELDVARIABLE_HPP_
 #define FIELDVARIABLE_HPP_
 
-#include "quest/Field.hpp" // Base class
+#include "mint/Field.hpp" // Base class
 
 // ATK includes
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
-#include "quest/FieldTypes.hpp"
+#include "mint/FieldTypes.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
 #include <cstddef> // for NULL
 #include <string>  // for C++ string
 
-namespace meshtk {
+namespace mint {
 
 template< typename FieldType >
 class FieldVariable : public Field
@@ -95,13 +95,13 @@ private:
    DISABLE_COPY_AND_ASSIGNMENT(FieldVariable);
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 
 //------------------------------------------------------------------------------
 //                  FIELD VARIABLE IMPLEMENTATION
 //------------------------------------------------------------------------------
-namespace meshtk {
+namespace mint {
 
 template < typename FieldType >
 FieldVariable< FieldType >::FieldVariable(
@@ -145,6 +145,6 @@ int* FieldVariable< FieldType >::getIntPtr()
    return ATK_NULLPTR;
 }
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* FIELDVARIABLE_HPP_ */

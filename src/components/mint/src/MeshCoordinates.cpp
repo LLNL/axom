@@ -23,11 +23,11 @@
  */
 
 
-#include "quest/MeshCoordinates.hpp"
+#include "mint/MeshCoordinates.hpp"
 
 #include "slic/slic.hpp"
 
-namespace meshtk
+namespace mint
 {
 
 MeshCoordinates::MeshCoordinates(): m_ndims(2)
@@ -159,4 +159,4 @@ void MeshCoordinates::initialize( int npoints )
   }
 }
 
-} /* namespace meshtk */
+} /* namespace mint */

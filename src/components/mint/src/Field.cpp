@@ -15,48 +15,60 @@
 
 /*!
  *******************************************************************************
- * \file ParticleMesh.hxx
+ * \file Field.cpp
  *
- * \date Sep 27, 2015
+ * \date Sep 19, 2015
  * \author George Zagaris (zagaris2@llnl.gov)
  *******************************************************************************
  */
 
+#include "Field.hpp"
 
-#include "quest/ParticleMesh.hpp"
+#include "mint/FieldTypes.hpp"
 #include "common/CommonTypes.hpp"
 
-namespace meshtk
-{
+#include <cstddef>
 
-ParticleMesh::ParticleMesh( ) :
-    Mesh( -1, UNDEFINED_MESH, -1, -1 ),
-    m_particle_coordinates( ATK_NULLPTR )
-{
+namespace mint {
 
-}
+Field::Field() :
+        m_name(""),
+        m_num_tuples(0),
+        m_num_components(0),
+        m_type(UNDEFINED_FIELD_TYPE)
 
-//------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension ) :
-    Mesh( dimension, PARTICLE_MESH, 0, 0 ),
-    m_particle_coordinates( new MeshCoordinates(dimension) )
 {
 
 }
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension, int blockId, int partId ) :
-    Mesh( dimension, PARTICLE_MESH, blockId, partId ),
-    m_particle_coordinates( new MeshCoordinates(dimension) )
+Field::Field( const std::string& name,
+              int size,
+              int num_components ) :
+                      m_name( name ),
+                      m_num_tuples( size ),
+                      m_num_components( num_components ),
+                      m_type(UNDEFINED_FIELD_TYPE)
 {
 
 }
 
 //------------------------------------------------------------------------------
-ParticleMesh::~ParticleMesh()
+Field::~Field()
 {
-  delete m_particle_coordinates;
-  m_particle_coordinates = ATK_NULLPTR;
+
 }
 
-} /* namespace meshtk */
+//------------------------------------------------------------------------------
+double* Field::getDoublePtr()
+{
+  return ATK_NULLPTR;
+}
+
+//------------------------------------------------------------------------------
+int* Field::getIntPtr()
+{
+  return ATK_NULLPTR;
+}
+
+} /* namespace mint */

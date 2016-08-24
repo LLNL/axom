@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "common/ATKMacros.hpp"
-#include "quest/UnstructuredMesh.hpp"
+#include "mint/UnstructuredMesh.hpp"
 
 namespace quest
 {
@@ -79,7 +79,7 @@ public:
      * \pre mesh != ATK_NULLPTR.
      ***************************************************************************
      */
-    void getMesh( meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE >* mesh );
+    void getMesh( mint::UnstructuredMesh< mint::LINEAR_TRIANGLE >* mesh );
 
 
 private:

@@ -25,7 +25,7 @@
 #define MESHTYPE_HXX_
 
 
-namespace meshtk {
+namespace mint {
 
 enum MeshType {
   UNDEFINED_MESH = -1,
@@ -107,7 +107,7 @@ static const bool mixed_celltype[] = {
 
 } /* namespace mesh_properties */
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 
 #endif /* MESHTYPE_HXX_ */

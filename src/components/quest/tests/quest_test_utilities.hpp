@@ -7,10 +7,10 @@
 #include "quest/Point.hpp"
 #include "quest/Triangle.hpp"
 
-#include "quest/Mesh.hpp"
-#include "quest/UnstructuredMesh.hpp"
-#include "quest/Field.hpp"
-#include "quest/FieldData.hpp"
+#include "mint/Mesh.hpp"
+#include "mint/UnstructuredMesh.hpp"
+#include "mint/Field.hpp"
+#include "mint/FieldData.hpp"
 
 
 /**
@@ -79,7 +79,7 @@ quest::Point<double,DIM> getCentroid(const quest::Point<double,DIM>& pt0, const 
  * Vertices of the octahedron are at +-i, +-j and +-k.
  * \note The caller must delete the mesh
  */
-meshtk::Mesh*  make_octahedron_mesh()
+mint::Mesh*  make_octahedron_mesh()
 {
     typedef int VertexIndex;
     typedef quest::Point<double, 3> SpacePt;
@@ -143,7 +143,7 @@ meshtk::Mesh*  make_octahedron_mesh()
     }
 
     // Now create an unstructured triangle mesh from the two arrays
-    typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+    typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
     TriangleMesh* triMesh = new TriangleMesh(3);
 
     // insert verts
@@ -152,7 +152,7 @@ meshtk::Mesh*  make_octahedron_mesh()
 
     // insert triangles
     for(int i=0; i< NUM_TRIS; ++i)
-        triMesh->insertCell( &tvRelation[i*VERTS_PER_TRI], meshtk::LINEAR_TRIANGLE, 3);
+        triMesh->insertCell( &tvRelation[i*VERTS_PER_TRI], mint::LINEAR_TRIANGLE, 3);
 
     SLIC_ASSERT( NUM_VERTS == triMesh->getMeshNumberOfNodes() );
     SLIC_ASSERT( NUM_TRIS == triMesh->getMeshNumberOfCells() );
@@ -162,9 +162,9 @@ meshtk::Mesh*  make_octahedron_mesh()
 
 
 /**
- * \brief Utility function to write a VTK file from a meshtk Mesh instance
+ * \brief Utility function to write a VTK file from a mint Mesh instance
  */
-void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
+void write_vtk( mint::Mesh* mesh, const std::string& fileName )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -224,19 +224,19 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
   ofs << "CELL_TYPES " << ncells << std::endl;
   for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
     int ctype    = mesh->getMeshCellType( cellIdx );
-    int vtk_type = meshtk::cell::vtk_types[ ctype ];
+    int vtk_type = mint::cell::vtk_types[ ctype ];
     ofs << vtk_type << std::endl;
   } // END for all cells
 
   // STEP 4: Write Cell Data
   ofs << "CELL_DATA " << ncells << std::endl;
-  meshtk::FieldData* CD = mesh->getCellFieldData();
+  mint::FieldData* CD = mesh->getCellFieldData();
   for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
 
-      meshtk::Field* field = CD->getField( f );
+      mint::Field* field = CD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == meshtk::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           SLIC_ASSERT( dataPtr != ATK_NULLPTR );
@@ -266,13 +266,13 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
   // STEP 5: Write Point Data
   const int nnodes = mesh->getMeshNumberOfNodes();
   ofs << "POINT_DATA " << nnodes << std::endl;
-  meshtk::FieldData* PD = mesh->getNodeFieldData();
+  mint::FieldData* PD = mesh->getNodeFieldData();
   for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
 
-      meshtk::Field* field = PD->getField( f );
+      mint::Field* field = PD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == meshtk::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           ofs << "double\n";

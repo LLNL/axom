@@ -11,6 +11,7 @@
 set(quest_example_depends
         common 
         slic
+        mint
         slam
         quest 
         )

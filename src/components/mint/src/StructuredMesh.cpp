@@ -23,12 +23,12 @@
  */
 
 
-#include "quest/StructuredMesh.hpp"
+#include "mint/StructuredMesh.hpp"
 
-#include "quest/MeshType.hpp"
+#include "mint/MeshType.hpp"
 
 
-namespace meshtk
+namespace mint
 {
 
 
@@ -67,4 +67,4 @@ StructuredMesh::~StructuredMesh()
 
 
 
-} /* namespace meshtk */
+} /* namespace mint */

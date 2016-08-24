@@ -25,14 +25,14 @@
 #ifndef UNSTRUCTUREDMESH_HXX_
 #define UNSTRUCTUREDMESH_HXX_
 
-#include "quest/Mesh.hpp"
-#include "quest/MeshType.hpp"
-#include "quest/CellType.hpp"
-#include "quest/CellConnectivity.hpp"
-#include "quest/MeshCoordinates.hpp"
-#include "quest/Field.hpp"
-#include "quest/FieldTypes.hpp"
-#include "quest/FieldData.hpp"
+#include "mint/Mesh.hpp"
+#include "mint/MeshType.hpp"
+#include "mint/CellType.hpp"
+#include "mint/CellConnectivity.hpp"
+#include "mint/MeshCoordinates.hpp"
+#include "mint/Field.hpp"
+#include "mint/FieldTypes.hpp"
+#include "mint/FieldData.hpp"
 
 #include "slic/slic.hpp"
 
@@ -42,7 +42,7 @@
 #include <cstring> // for memcpy()
 #include <fstream> // for fstream
 
-namespace meshtk {
+namespace mint {
 
 template < int CellType >
 class UnstructuredMesh : public Mesh
@@ -295,12 +295,12 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT(UnstructuredMesh);
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 //------------------------------------------------------------------------------
 //      UnstructuredMesh Implementation
 //------------------------------------------------------------------------------
-namespace meshtk {
+namespace mint {
 
 template < int CellType >
 UnstructuredMesh< CellType >::UnstructuredMesh() :
@@ -521,6 +521,6 @@ void UnstructuredMesh< CellType >::toVtkFile( const std::string& file )
   ofs.close();
 }
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* UNSTRUCTUREDMESH_HXX_ */
