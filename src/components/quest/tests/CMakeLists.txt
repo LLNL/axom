@@ -19,6 +19,7 @@ set(quest_tests
     quest_octree.cpp
     quest_orient.cpp
     quest_point.cpp
+    quest_signed_distance.cpp
     quest_spatial_octree.cpp
     quest_squared_distance.cpp
     quest_vector.cpp
@@ -36,14 +37,14 @@ endif()
 
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable( 
+    blt_add_executable(
         NAME ${test_name}
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends}
     )
-    blt_add_test( 
-        NAME ${test_name} 
+    blt_add_test(
+        NAME ${test_name}
         COMMAND ${test_name}
     )
 endforeach()
