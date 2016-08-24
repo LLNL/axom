@@ -12,13 +12,14 @@
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
+#include "mint/CellType.hpp"
+#include "mint/MeshType.hpp"
+#include "mint/UniformMesh.hpp"
+#include "mint/UnstructuredMesh.hpp"
+
 #include "quest/BoundingBox.hpp"
-#include "quest/CellType.hpp"
 #include "quest/HyperSphere.hpp"
-#include "quest/MeshType.hpp"
 #include "quest/SignedDistance.hpp"
-#include "quest/UniformMesh.hpp"
-#include "quest/UnstructuredMesh.hpp"
 
 // Google Test includes
 #include "gtest/gtest.h"
@@ -26,8 +27,8 @@ using asctoolkit::slic::UnitTestLogger;
 // C/C++ includes
 #include <cmath>
 
-typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
-typedef meshtk::UniformMesh UniformMesh;
+typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
+typedef mint::UniformMesh UniformMesh;
 
 // pi / 180
 #define DEG_TO_RAD 0.01745329251
@@ -109,7 +110,7 @@ void getMesh( TriangleMesh* mesh )
      c[2] = phiResolution*i + /* number of poles */ 2;
      c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
      c[0] = 0;
-     mesh->insertCell( c, meshtk::LINEAR_TRIANGLE, 3 );
+     mesh->insertCell( c, mint::LINEAR_TRIANGLE, 3 );
   } // END for
 
   // Generate mesh connectivity around south pole
@@ -118,7 +119,7 @@ void getMesh( TriangleMesh* mesh )
      c[2] = phiResolution*i + offset;
      c[1] = ( phiResolution*(i+1) % stride ) + offset;
      c[0] = 1;
-     mesh->insertCell( c, meshtk::LINEAR_TRIANGLE, 3 );
+     mesh->insertCell( c, mint::LINEAR_TRIANGLE, 3 );
   }
 
   // Generate mesh connectivity in between poles
@@ -130,11 +131,11 @@ void getMesh( TriangleMesh* mesh )
         c[ 1 ] = c[0] + 1;
         c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
 
-        mesh->insertCell( c, meshtk::LINEAR_TRIANGLE, 3 );
+        mesh->insertCell( c, mint::LINEAR_TRIANGLE, 3 );
 
         c[ 1 ] = c[ 2 ];
         c[ 2 ] = c[ 1 ] - 1;
-        mesh->insertCell( c, meshtk::LINEAR_TRIANGLE, 3 );
+        mesh->insertCell( c, mint::LINEAR_TRIANGLE, 3 );
      } // END for all j
 
   } // END for all i
@@ -148,7 +149,7 @@ void getMesh( TriangleMesh* mesh )
  * \return bb bounding box of the mesh
  *******************************************************************************
  */
-quest::BoundingBox< double,3 > getBounds( const meshtk::Mesh* mesh )
+quest::BoundingBox< double,3 > getBounds( const mint::Mesh* mesh )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
 

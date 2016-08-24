@@ -62,7 +62,7 @@
 
 using namespace asctoolkit;
 
-static const int DIM = 3;
+static const int NDIMS = 3;
 typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
 
 struct {
@@ -82,17 +82,17 @@ struct {
 void init();
 void parse_args( int argc, char** argv );
 void read_stl_mesh( TriangleMesh* stl_mesh );
-quest::BoundingBox< double,NDIMS > compute_bounds( meshtk::Mesh* mesh );
+quest::BoundingBox< double,NDIMS > compute_bounds( mint::Mesh* mesh );
 void get_uniform_mesh( TriangleMesh* surface_mesh,
-                       meshtk::UniformMesh*& umesh);
-void write_vtk( meshtk::Mesh* mesh, const std::string& fileName );
+                       mint::UniformMesh*& umesh);
+void write_vtk( mint::Mesh* mesh, const std::string& fileName );
 quest::BoundingBox< double,NDIMS > getCellBoundingBox(
-        int cellIdx, meshtk::Mesh* surface_mesh );
-void computeUsingBucketTree( meshtk::Mesh* surface_mesh,
-                             meshtk::UniformMesh* umesh );
-void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh );
-void expected_phi(meshtk::UniformMesh* umesh);
-void compute_norms( meshtk::UniformMesh* umesh,
+        int cellIdx, mint::Mesh* surface_mesh );
+void computeUsingBucketTree( mint::Mesh* surface_mesh,
+                             mint::UniformMesh* umesh );
+void n2( mint::Mesh* surface_mesh, mint::UniformMesh* umesh );
+void expected_phi(mint::UniformMesh* umesh);
+void compute_norms( mint::UniformMesh* umesh,
                     double& l1, double& l2, double& linf );
 void showHelp();
 void finalize();
@@ -167,7 +167,7 @@ int main( int argc, char** argv )
 
 //------------------------------------------------------------------------------
 void get_uniform_mesh( TriangleMesh* surface_mesh,
-                       meshtk::UniformMesh*& umesh)
+                       mint::UniformMesh*& umesh)
 {
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
 
@@ -187,7 +187,7 @@ void get_uniform_mesh( TriangleMesh* surface_mesh,
   ext[4] = 0;
   ext[5] = Arguments.nz;
 
-  umesh = new meshtk::UniformMesh(3,meshBounds.getMin().data(),h,ext);
+  umesh = new mint::UniformMesh(3,meshBounds.getMin().data(),h,ext);
 }
 
 //------------------------------------------------------------------------------
@@ -309,12 +309,12 @@ void compute_norms( mint::UniformMesh* umesh,
    const int nnodes = umesh->getNumberOfNodes();
 
    // STEP 0: grab field pointers
-   meshtk::FieldData* PD = umesh->getNodeFieldData();
+   mint::FieldData* PD = umesh->getNodeFieldData();
    double* phi_computed  = PD->getField( "phi" )->getDoublePtr();
    double* phi_expected  = PD->getField( "expected_phi" )->getDoublePtr();
 
    // STEP 1: add field to store error
-   PD->addField( new meshtk::FieldVariable< double >( "error", nnodes ) );
+   PD->addField( new mint::FieldVariable< double >( "error", nnodes ) );
    double* error = PD->getField( "error" )->getDoublePtr();
    SLIC_ASSERT( error != ATK_NULLPTR );
 
@@ -341,7 +341,7 @@ void compute_norms( mint::UniformMesh* umesh,
 }
 
 //------------------------------------------------------------------------------
-void expected_phi(meshtk::UniformMesh* umesh)
+void expected_phi(mint::UniformMesh* umesh)
 {
    SLIC_ASSERT( umesh != ATK_NULLPTR );
 
@@ -354,10 +354,10 @@ void expected_phi(meshtk::UniformMesh* umesh)
 
    // STEP 1: Add node field to stored exact distance field.
    const int nnodes = umesh->getNumberOfNodes();
-   meshtk::FieldData* PD = umesh->getNodeFieldData();
+   mint::FieldData* PD = umesh->getNodeFieldData();
    SLIC_ASSERT( PD != ATK_NULLPTR );
 
-   PD->addField( new meshtk::FieldVariable<double>("expected_phi",nnodes) );
+   PD->addField( new mint::FieldVariable<double>("expected_phi",nnodes) );
    double* phi = PD->getField( "expected_phi" )->getDoublePtr();
    SLIC_ASSERT( phi != ATK_NULLPTR );
 
@@ -449,7 +449,7 @@ void computeUsingBucketTree( mint::Mesh* surface_mesh,
   quest::SignedDistance< NDIMS > signedDistance( surface_mesh, 25, 32 );
 
   const int nnodes = umesh->getNumberOfNodes();
-  meshtk::FieldData* PD = umesh->getNodeFieldData();
+  mint::FieldData* PD = umesh->getNodeFieldData();
   SLIC_ASSERT( PD != ATK_NULLPTR );
 
   PD->addField( new mint::FieldVariable< double >("phi",nnodes) );
@@ -474,8 +474,8 @@ void computeUsingBucketTree( mint::Mesh* surface_mesh,
 
   // mark bucket IDs on surface mesh
   const int ncells = surface_mesh->getMeshNumberOfCells();
-  meshtk::FieldData* CD = surface_mesh->getCellFieldData();
-  CD->addField( new meshtk::FieldVariable<int>( "BucketID", ncells ) );
+  mint::FieldData* CD = surface_mesh->getCellFieldData();
+  CD->addField( new mint::FieldVariable<int>( "BucketID", ncells ) );
   int* bidx = CD->getField( "BucketID" )->getIntPtr();
   SLIC_ASSERT( bidx != ATK_NULLPTR );
 
@@ -493,7 +493,7 @@ void computeUsingBucketTree( mint::Mesh* surface_mesh,
 
 //------------------------------------------------------------------------------
 quest::BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
-                                                   meshtk::Mesh* surface_mesh )
+                                                   mint::Mesh* surface_mesh )
 {
    // Sanity checks
    SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
@@ -517,7 +517,7 @@ quest::BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
 
 
 //------------------------------------------------------------------------------
-quest::BoundingBox< double,NDIMS > compute_bounds( meshtk::Mesh* mesh)
+quest::BoundingBox< double,NDIMS > compute_bounds( mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -596,19 +596,19 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   ofs << "CELL_TYPES " << ncells << std::endl;
   for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
     int ctype    = mesh->getMeshCellType( cellIdx );
-    int vtk_type = meshtk::cell::vtk_types[ ctype ];
+    int vtk_type = mint::cell::vtk_types[ ctype ];
     ofs << vtk_type << std::endl;
   } // END for all cells
 
   // STEP 4: Write Cell Data
   ofs << "CELL_DATA " << ncells << std::endl;
-  meshtk::FieldData* CD = mesh->getCellFieldData();
+  mint::FieldData* CD = mesh->getCellFieldData();
   for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
 
       mint::Field* field = CD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == meshtk::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           SLIC_ASSERT( dataPtr != ATK_NULLPTR );
@@ -638,13 +638,13 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   // STEP 5: Write Point Data
   const int nnodes = mesh->getMeshNumberOfNodes();
   ofs << "POINT_DATA " << nnodes << std::endl;
-  meshtk::FieldData* PD = mesh->getNodeFieldData();
+  mint::FieldData* PD = mesh->getNodeFieldData();
   for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
 
-      meshtk::Field* field = PD->getField( f );
+      mint::Field* field = PD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == meshtk::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           ofs << "double\n";
