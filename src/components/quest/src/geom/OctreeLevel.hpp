@@ -24,6 +24,8 @@
 #include "boost/unordered_map.hpp"
 #endif
 
+#include <boost/iterator/iterator_facade.hpp>
+
 /**
  * \file
  * \brief Defines templated OctreeLevel class
@@ -31,6 +33,7 @@
 
 namespace quest
 {
+
     /**
      * \brief Helper enumeration for status of a BlockIndex within an OctreeLevel instance
      */
@@ -50,8 +53,77 @@ namespace quest
         typedef boost::unordered_map<GridPt, BlockDataType, PointHash<int> > MapType;
       #endif
 
-        typedef typename MapType::iterator MapIterator;
-        typedef typename MapType::const_iterator ConstMapIterator;
+        typedef typename MapType::iterator MapIter;
+        typedef typename MapType::const_iterator ConstMapIter;
+
+        template<typename OctreeLevel, typename InnerIterType, typename DataType> class BlockIterator;
+
+        typedef BlockIterator<OctreeLevel, MapIter, BlockDataType> BlockIter;
+        typedef BlockIterator<const OctreeLevel, ConstMapIter, const BlockDataType> ConstBlockIter;
+
+
+    public:
+
+        /**
+         * \class
+         * \brief An iterator type for the blocks of an octree level
+         */
+        template<typename OctreeLevel, typename InnerIterType, typename DataType>
+        class BlockIterator : public boost::iterator_facade< BlockIterator<OctreeLevel, InnerIterType, DataType>
+                                   , DataType
+                                   , boost::forward_traversal_tag
+                                   , DataType
+                                   >
+        {
+        public:
+          typedef BlockIterator<OctreeLevel, InnerIterType, DataType>              iter;
+
+          BlockIterator(OctreeLevel* octLevel, bool begin = false)
+              : m_octLevel(octLevel)
+          {
+              SLIC_ASSERT(octLevel != ATK_NULLPTR);
+
+              if(begin) {
+                  m_levelIter = m_octLevel->m_map.begin();
+                  update();
+              }
+              else
+              {
+                  m_levelIter = m_octLevel->m_map.end();
+                  m_pt = ATK_NULLPTR;
+                  m_data = ATK_NULLPTR;
+              }
+          }
+
+		 // valid for const access to the data
+          const DataType& dereference() const { return *m_data; }
+
+          const GridPt& pt() const { return *m_pt; }
+          
+          // Use for non-const access to the data
+          DataType& data() { return *m_data; }
+          const DataType& data() const { return *m_data; }
+
+          bool equal(const iter& other) const
+          {
+              return (m_octLevel == other.m_octLevel)       // point to same object
+                   && (m_levelIter == other.m_levelIter);   // iterators are the same
+          }
+
+          void increment() { ++m_levelIter; update();}
+          void update() {
+              m_pt = &m_levelIter->first;
+              m_data = &m_levelIter->second;
+          }
+
+
+        private:
+          friend class boost::iterator_core_access;
+          OctreeLevel*  m_octLevel;
+          InnerIterType m_levelIter;
+          const GridPt* m_pt;
+          DataType*     m_data;
+        };
 
     public:
 
@@ -74,7 +146,7 @@ namespace quest
         bool isInternal(const GridPt& pt) const { return blockStatus(pt) == InternalBlock; }
         bool hasBlock(const GridPt& pt) const
         {
-            ConstMapIterator blockIt = m_map.find(pt);
+            ConstMapIter blockIt = m_map.find(pt);
             return blockIt != m_map.end();
         }
 
@@ -97,7 +169,7 @@ namespace quest
                             ,"(" << pt <<", "<< m_level << ") was not a block in the tree at level.");
 
             // Note: Using find() method on hashmap since operator[] is non-const
-            ConstMapIterator blockIt = m_map.find(pt);
+            ConstMapIter blockIt = m_map.find(pt);
             return blockIt->second;
         }
 
@@ -110,18 +182,19 @@ namespace quest
          */
         TreeBlock blockStatus(const GridPt & pt) const
         {
-            ConstMapIterator blockIt = m_map.find(pt);
+            ConstMapIter blockIt = m_map.find(pt);
 
-            if(blockIt == m_map.end())
-                return BlockNotInTree;
-
-            return (blockIt->second.isLeaf()) ? LeafBlock: InternalBlock;
+            return (blockIt == m_map.end())
+                    ? BlockNotInTree
+                    : (blockIt->second.isLeaf())
+                        ? LeafBlock
+                        : InternalBlock;
         }
 
-        MapIterator      begin()       { return m_map.begin(); }
-        ConstMapIterator begin() const { return m_map.begin(); }
-        MapIterator      end()         { return m_map.end(); }
-        ConstMapIterator end()   const { return m_map.end(); }
+        BlockIter      begin()       { return BlockIter(this,true); }
+        ConstBlockIter begin() const { return ConstBlockIter(this,true); }
+        BlockIter      end()         { return BlockIter(this,false); }
+        ConstBlockIter end()   const { return ConstBlockIter(this,false); }
 
         bool empty() const { return m_map.empty(); }
 

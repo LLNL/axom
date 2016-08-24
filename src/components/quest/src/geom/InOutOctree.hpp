@@ -1190,12 +1190,12 @@ void InOutOctree<DIM>::insertMeshTriangles ()
         LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
-            InOutBlockData& blkData = it->second;
+            InOutBlockData& blkData = it.data();
 
             if(! blkData.hasData() )
                 continue;
 
-            BlockIndex blk(it->first, lev);
+            BlockIndex blk(it.pt(), lev);
             DynamicGrayBlockData& dynamicLeafData = currentLevelData[ blkData.dataIndex() ];
 
             bool isInternal = !dynamicLeafData.isLeaf();
@@ -1386,12 +1386,13 @@ void InOutOctree<DIM>::colorOctreeLeaves()
         LeavesLevelMap& levelLeafMap = this->getOctreeLevel(lev);
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
-            if( !it->second.isLeaf() )
+            if( ! it->isLeaf() )
                 continue;
 
-            BlockIndex leafBlk(it->first, lev);
-            if(! colorLeafAndNeighbors( leafBlk, it->second) )
-                uncoloredBlocks.push_back( it->first);
+            BlockIndex leafBlk(it.pt(), lev);
+            InOutBlockData& blockData = it.data();
+            if(! colorLeafAndNeighbors( leafBlk, blockData) )
+                uncoloredBlocks.push_back( it.pt());
         }
 
         // Iterate through the uncolored blocks until all have a color
@@ -2044,12 +2045,12 @@ void InOutOctree<DIM>::checkAllLeavesColoredAtLevel(int ATK_DEBUG_PARAM(level)) 
   const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( level );
   for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
   {
-      if( ! it->second.isLeaf() )
+      if( ! it->isLeaf() )
           continue;
 
-      SLIC_ASSERT_MSG( it->second.isColored()
+      SLIC_ASSERT_MSG( it->isColored()
                       , "Error after coloring level " << level
-                      << " leaf block " << BlockIndex(it->first, level)
+                      << " leaf block " << BlockIndex(it.pt(), level)
                       << " was not colored."
       );
   }
@@ -2157,8 +2158,8 @@ void InOutOctree<DIM>::checkValid() const
             const LeavesLevelMap& levelLeafMap = this->getOctreeLevel(lev);
             for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
             {
-                const BlockIndex block(it->first, lev);
-                const InOutBlockData& data = it->second;
+                const BlockIndex block(it.pt(), lev);
+                const InOutBlockData& data = *it;
 
                 if( !data.isLeaf() )
                 {
@@ -2216,8 +2217,8 @@ void InOutOctree<DIM>::checkValid() const
             const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
             for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
             {
-                const BlockIndex block(it->first, lev);
-                const InOutBlockData& data = it->second;
+                const BlockIndex block(it.pt(), lev);
+                const InOutBlockData& data = *it;
 
                 if(data.isLeaf() && data.color() != InOutBlockData::Gray)
                 {

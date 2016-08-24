@@ -116,9 +116,9 @@ public:
   typedef asctoolkit::slam::policies::CompileTimeSizeHolder<CoordType, std::numeric_limits<CoordType>::digits> MAX_LEVEL_SIZE;
   typedef asctoolkit::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
 
-  typedef OctreeLevel<DIM, BlockDataType> OctreeLevelType;
-  typedef typename OctreeLevelType::MapIterator LevelMapIterator;
-  typedef typename OctreeLevelType::ConstMapIterator LevelMapCIterator;
+  typedef OctreeLevel<DIM, BlockDataType>           OctreeLevelType;
+  typedef typename OctreeLevelType::BlockIter       LevelMapIterator;
+  typedef typename OctreeLevelType::ConstBlockIter  LevelMapCIterator;
 
 
   typedef asctoolkit::slam::Map<OctreeLevelType> LeafIndicesLevelMap;
