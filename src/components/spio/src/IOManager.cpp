@@ -25,6 +25,7 @@
 
 // Other toolkit component headers
 #include "common/CommonTypes.hpp"
+#include "common/FileUtilities.hpp"
 
 // SiDRe project headers
 #include "sidre/DataGroup.hpp"
@@ -111,6 +112,11 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
 
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup()) {
+      std::string dir_name; 
+      utilities::filesystem::getDirName(dir_name, hdf5_name);
+      if (!dir_name.empty()) {
+        utilities::filesystem::makeDirsForPath(dir_name);
+      }
       h5_file_id = H5Fcreate(hdf5_name.c_str(),
                              H5F_ACC_TRUNC,
                              H5P_DEFAULT,
@@ -323,7 +329,7 @@ void IOManager::createRootFile(const std::string& root_name,
   std::string next;
   std::string slash = "/";
   conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
-  n["file_pattern"] = local_file_base + "_" + "%07d.hdf5";
+  n["file_pattern"] = local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
   n["number_of_trees"] = m_comm_size;
 
   n["tree_pattern"] = "datagroup_%07d";
