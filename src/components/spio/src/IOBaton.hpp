@@ -105,9 +105,9 @@ public:
   /*!
    * \brief Get the number of files involved in the I/O operation.
    */
-  bool getNumFiles() const
+  int getNumFiles() const
   {
-     return m_num_groups;
+     return m_num_files;
   }
 
 private:
@@ -120,9 +120,9 @@ private:
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
-  int m_num_groups; // number of groups (files)
+  int m_num_files; // number of groups (files)
   int m_num_larger_groups;  // some group have one extra
-  int m_group_size; // regular group size (m_comm_size / m_num_groups) w/o remainder
+  int m_group_size; // regular group size (m_comm_size / m_num_files) w/o remainder
   int m_group_id;
   int m_first_regular_group_rank;
   int m_rank_within_group;
