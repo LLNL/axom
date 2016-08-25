@@ -93,9 +93,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
     m_baton = new IOBaton(m_mpi_comm, num_files);
   }
 
-  std::ostringstream rootstream;
-  rootstream << file_string << ".root";
-  std::string root_name = rootstream.str();
+  std::string root_name = file_string + ".root";
 
   if (m_my_rank == 0 && protocol == "conduit_hdf5") {
      createRootFile(root_name, file_string, num_files);
@@ -149,9 +147,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
     int group_id = m_baton->wait();
     std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
 
-    std::ostringstream savestream;
-    savestream << file_name << ".group";
-    std::string obase = savestream.str();
+    std::string obase = file_name + ".group";
     datagroup->getDataStore()->save(obase, protocol, datagroup);
   }
   (void)m_baton->pass();
@@ -171,9 +167,7 @@ void IOManager::read(
 {
   if (protocol == "conduit_hdf5") {
 
-    std::ostringstream rootstream;
-    rootstream << file_string << ".root";
-    std::string root_name = rootstream.str();
+    std::string root_name = file_string + ".root";
 
     std::string file_pattern = getHDF5FilePattern(root_name);
 
@@ -202,13 +196,9 @@ void IOManager::read(
 
   } else {
     int group_id = m_baton->wait();
-    std::ostringstream namestream;
-    namestream << file_string << "_" <<  group_id;
-    std::string file_name = namestream.str();
+    std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
 
-    std::ostringstream loadstream;
-    loadstream << file_name << ".group";
-    std::string obase = loadstream.str();
+    std::string obase = file_name + ".group";
     datagroup->getDataStore()->load(obase, protocol, datagroup);
   }
 
