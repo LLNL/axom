@@ -18,6 +18,9 @@
 #include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
 
+
+#include "fmt/fmt.hpp"
+
 #ifdef USE_CXX11
 #include <unordered_map>
 #else
@@ -47,10 +50,40 @@ namespace quest
         typedef quest::Point<CoordType,DIM> GridPt;
         typedef quest::Vector<CoordType,DIM> GridVec;
 
+    private:
+        /**
+         * \class
+         * \brief Private inner class to handle subindexing of block data within siblings
+         */
+      struct Brood {
+          enum { NUM_CHILDREN = 1 << DIM };
+
+          Brood(const GridPt& pt)
+              : m_broodPt( pt.array() /2), m_idx(0)
+          {
+              for(int i=0; i< DIM; ++i)
+              {
+                  m_idx |= (pt[i]& 1) << i;
+              }
+          }
+
+          const GridPt& pt() const { return m_broodPt; }
+          const int& idx() const { return m_idx; }
+
+          GridPt m_broodPt;
+          int m_idx;
+      };
+
+    public:
+
+        // A brood is a collection of sibling blocks that are created at the same time
+        typedef BlockDataType BroodData[ Brood::NUM_CHILDREN ];
+
+
       #if defined(USE_CXX11)
-        typedef std::unordered_map<GridPt, BlockDataType, PointHash<int> > MapType;
+        typedef std::unordered_map<GridPt, BroodData, PointHash<int> > MapType;
       #else
-        typedef boost::unordered_map<GridPt, BlockDataType, PointHash<int> > MapType;
+        typedef boost::unordered_map<GridPt, BroodData, PointHash<int> > MapType;
       #endif
 
         typedef typename MapType::iterator MapIter;
@@ -79,26 +112,20 @@ namespace quest
           typedef BlockIterator<OctreeLevel, InnerIterType, DataType>              iter;
 
           BlockIterator(OctreeLevel* octLevel, bool begin = false)
-              : m_octLevel(octLevel)
+              : m_octLevel(octLevel), m_data(ATK_NULLPTR), m_idx(0)
           {
               SLIC_ASSERT(octLevel != ATK_NULLPTR);
 
-              if(begin) {
-                  m_levelIter = m_octLevel->m_map.begin();
-                  update();
-              }
-              else
-              {
-                  m_levelIter = m_octLevel->m_map.end();
-                  m_pt = ATK_NULLPTR;
-                  m_data = ATK_NULLPTR;
-              }
+              m_endIter = m_octLevel->m_map.end();
+              m_levelIter = begin ? m_octLevel->m_map.begin() : m_endIter;
+
+              update();
           }
 
 		 // valid for const access to the data
           const DataType& dereference() const { return *m_data; }
 
-          const GridPt& pt() const { return *m_pt; }
+          const GridPt& pt() const { return m_pt; }
           
           // Use for non-const access to the data
           DataType& data() { return *m_data; }
@@ -107,27 +134,47 @@ namespace quest
           bool equal(const iter& other) const
           {
               return (m_octLevel == other.m_octLevel)       // point to same object
-                   && (m_levelIter == other.m_levelIter);   // iterators are the same
+                   && (m_levelIter == other.m_levelIter)   // iterators are the same
+                   && (m_idx == other.m_idx);               // brood indices are the same
           }
 
-          void increment() { ++m_levelIter; update();}
-          void update() {
-              m_pt = &m_levelIter->first;
-              m_data = &m_levelIter->second;
-          }
+          void increment()
+          {
+              ++m_idx;
 
+              if(m_idx == Brood::NUM_CHILDREN || m_octLevel->m_level == 0)
+              {
+                  ++m_levelIter;
+                  m_idx = 0;
+              }
+
+              update();
+          }
+          void update()
+          {
+              // Test to see if we have finished iterating
+              if(m_levelIter == m_endIter)
+                  return;
+
+              const GridPt& itPt = m_levelIter->first;
+              for(int i=0; i<DIM; ++i)
+                  m_pt[i] = (itPt[i]<<1) + ( m_idx & (1 << i)? 1 : 0);
+
+              m_data = &m_levelIter->second[m_idx];
+          }
 
         private:
           friend class boost::iterator_core_access;
           OctreeLevel*  m_octLevel;
-          InnerIterType m_levelIter;
-          const GridPt* m_pt;
+          InnerIterType m_levelIter, m_endIter;
+          GridPt        m_pt;
           DataType*     m_data;
+          int           m_idx;
         };
 
     public:
 
-        OctreeLevel(int level = -1): m_level(level) {}
+        OctreeLevel(int level = -1): m_level(level){}
 
         //void setLevel(int level) { m_level = level; }
 
@@ -146,7 +193,8 @@ namespace quest
         bool isInternal(const GridPt& pt) const { return blockStatus(pt) == InternalBlock; }
         bool hasBlock(const GridPt& pt) const
         {
-            ConstMapIter blockIt = m_map.find(pt);
+            const Brood brood(pt);
+            ConstMapIter blockIt = m_map.find(brood.pt());
             return blockIt != m_map.end();
         }
 
@@ -161,7 +209,8 @@ namespace quest
 
         BlockDataType& operator[](const GridPt& pt)
         {
-            return m_map[ pt ];
+            const Brood brood(pt);
+            return m_map[ brood.pt() ][brood.idx()];
         }
         const BlockDataType& operator[](const GridPt& pt) const
         {
@@ -169,8 +218,9 @@ namespace quest
                             ,"(" << pt <<", "<< m_level << ") was not a block in the tree at level.");
 
             // Note: Using find() method on hashmap since operator[] is non-const
-            ConstMapIter blockIt = m_map.find(pt);
-            return blockIt->second;
+            const Brood brood(pt);
+            ConstMapIter blockIt = m_map.find(brood.pt());
+            return blockIt->second[brood.idx()];
         }
 
         /**
@@ -182,11 +232,12 @@ namespace quest
          */
         TreeBlock blockStatus(const GridPt & pt) const
         {
-            ConstMapIter blockIt = m_map.find(pt);
+            const Brood brood(pt);
+            ConstMapIter blockIt = m_map.find(brood.pt());
 
             return (blockIt == m_map.end())
                     ? BlockNotInTree
-                    : (blockIt->second.isLeaf())
+                    : (blockIt->second[brood.idx()].isLeaf())
                         ? LeafBlock
                         : InternalBlock;
         }
