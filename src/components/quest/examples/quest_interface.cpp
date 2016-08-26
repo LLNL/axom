@@ -45,11 +45,31 @@ T getRandomDouble( T low, T high )
   return ( delta*c+low );
 }
 
+void outputMeshStats()
+{
+    // Obtain and log the mesh bounding box
+    double bb0[3] = {quest::mesh_min_x(), quest::mesh_min_y(), quest::mesh_min_z()};
+    double bb1[3] = {quest::mesh_max_x(), quest::mesh_max_y(), quest::mesh_max_z()};
+    SLIC_INFO("Mesh bounding box: "
+            << "{ lower: (" << bb0[0] <<"," << bb0[1] <<","<< bb0[2] << "}"
+            << "{ upper: (" << bb1[0] <<"," << bb1[1] <<","<< bb1[2] << "}"
+            );
+
+    // Obtain and log the mesh center of mass
+    double cm[3] =  { quest::mesh_center_of_mass_x()
+                    , quest::mesh_center_of_mass_y()
+                    , quest::mesh_center_of_mass_z()};
+    SLIC_INFO("Mesh center of mass: "
+            << "(" << cm[0] <<"," << cm[1] <<","<< cm[2] << ")"
+            );
+}
 
 void runQuestDistance(const std::string& fileName, const CoordsVec& points)
 {
     const bool useDistance = true;
     quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, 25, 20 );
+
+    outputMeshStats();
 
     int nPoints = points.size()/3;
     for(int i=0; i< nPoints; ++i)
@@ -74,6 +94,8 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
     const bool useDistance = false;
     const int unusedVar = -1;
     quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, unusedVar, unusedVar);
+
+    outputMeshStats();
 
     int nPoints = points.size()/3;
     for(int i=0; i< nPoints; ++i)
@@ -122,8 +144,7 @@ int main( int argc, char**argv )
   sstream->setFormatString( fmt );
   slic::addStreamToAllMsgLevels( sstream );
 
-  // Initialize quest
-
+  // Generate the query points
   std::string fileName = std::string(argv[1]);
 
   std::srand( time(NULL) );
