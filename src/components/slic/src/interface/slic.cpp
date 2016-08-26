@@ -55,9 +55,9 @@ void createLogger( const std::string& name, char imask )
 }
 
 //------------------------------------------------------------------------------
-void activateLogger( const std::string& name )
+bool activateLogger( const std::string& name )
 {
-  Logger::activateLogger( name );
+  return Logger::activateLogger( name );
 }
 
 //------------------------------------------------------------------------------

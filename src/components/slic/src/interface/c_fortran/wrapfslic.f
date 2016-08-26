@@ -58,20 +58,24 @@ module slic_mod
             character(kind=C_CHAR), value, intent(IN) :: imask
         end subroutine c_create_logger_bufferify
         
-        subroutine c_activate_logger(name) &
+        function c_activate_logger(name) &
+                result(rv) &
                 bind(C, name="SLIC_activate_logger")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
-        end subroutine c_activate_logger
+            logical(C_BOOL) :: rv
+        end function c_activate_logger
         
-        subroutine c_activate_logger_bufferify(name, Lname) &
+        function c_activate_logger_bufferify(name, Lname) &
+                result(rv) &
                 bind(C, name="SLIC_activate_logger_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine c_activate_logger_bufferify
+            logical(C_BOOL) :: rv
+        end function c_activate_logger_bufferify
         
         subroutine c_get_active_logger_name_bufferify(name, Lname) &
                 bind(C, name="SLIC_get_active_logger_name_bufferify")
@@ -140,16 +144,17 @@ contains
         ! splicer end create_logger
     end subroutine slic_create_logger
     
-    subroutine slic_activate_logger(name)
-        use iso_c_binding, only : C_INT
+    function slic_activate_logger(name) result(rv)
+        use iso_c_binding, only : C_BOOL, C_INT
         implicit none
         character(*), intent(IN) :: name
+        logical :: rv
         ! splicer begin activate_logger
-        call c_activate_logger_bufferify(  &
+        rv = c_activate_logger_bufferify(  &
             name,  &
             len_trim(name, kind=C_INT))
         ! splicer end activate_logger
-    end subroutine slic_activate_logger
+    end function slic_activate_logger
     
     subroutine slic_get_active_logger_name(name)
         use iso_c_binding, only : C_INT
