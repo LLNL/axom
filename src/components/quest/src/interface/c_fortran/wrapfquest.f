@@ -74,6 +74,78 @@ module quest_mod
             integer(C_INT) :: rv
         end function quest_inside
         
+        function quest_mesh_min_x() &
+                result(rv) &
+                bind(C, name="QUEST_mesh_min_x")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE) :: rv
+        end function quest_mesh_min_x
+        
+        function quest_mesh_min_y() &
+                result(rv) &
+                bind(C, name="QUEST_mesh_min_y")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE) :: rv
+        end function quest_mesh_min_y
+        
+        function quest_mesh_min_z() &
+                result(rv) &
+                bind(C, name="QUEST_mesh_min_z")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE) :: rv
+        end function quest_mesh_min_z
+        
+        function quest_mesh_max_x() &
+                result(rv) &
+                bind(C, name="QUEST_mesh_max_x")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE) :: rv
+        end function quest_mesh_max_x
+        
+        function quest_mesh_max_y() &
+                result(rv) &
+                bind(C, name="QUEST_mesh_max_y")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE) :: rv
+        end function quest_mesh_max_y
+        
+        function quest_mesh_max_z() &
+                result(rv) &
+                bind(C, name="QUEST_mesh_max_z")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE) :: rv
+        end function quest_mesh_max_z
+        
+        function quest_mesh_center_of_mass_x() &
+                result(rv) &
+                bind(C, name="QUEST_mesh_center_of_mass_x")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE) :: rv
+        end function quest_mesh_center_of_mass_x
+        
+        function quest_mesh_center_of_mass_y() &
+                result(rv) &
+                bind(C, name="QUEST_mesh_center_of_mass_y")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE) :: rv
+        end function quest_mesh_center_of_mass_y
+        
+        function quest_mesh_center_of_mass_z() &
+                result(rv) &
+                bind(C, name="QUEST_mesh_center_of_mass_z")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE) :: rv
+        end function quest_mesh_center_of_mass_z
+        
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
     end interface
