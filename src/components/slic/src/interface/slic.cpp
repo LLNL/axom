@@ -145,6 +145,7 @@ void logErrorMessage( const std::string& message,
   oss << message << slic::stacktrace();
 
   slic::logMessage( message::Fatal, oss.str(), fileName, line );
+  slic::flushStreams();
   asctoolkit::utilities::processAbort();
 }
 

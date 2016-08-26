@@ -25,7 +25,7 @@
 #ifndef CELLTYPE_HXX_
 #define CELLTYPE_HXX_
 
-namespace meshtk {
+namespace mint {
 
 
 enum CellType {
@@ -74,6 +74,6 @@ static const int num_nodes[] = {
 
 } /* namespace cell */
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* CELLTYPE_HXX_ */

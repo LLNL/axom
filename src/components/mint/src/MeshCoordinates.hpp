@@ -33,7 +33,7 @@
 #define Y_COORDINATE 1
 #define Z_COORDINATE 2
 
-namespace meshtk
+namespace mint
 {
 
 /*!
@@ -210,6 +210,6 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT(MeshCoordinates);
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* MESHCOORDINATES_HXX_ */

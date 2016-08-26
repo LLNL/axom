@@ -15,50 +15,53 @@
 
 /*!
  *******************************************************************************
- * \file RectilinearMesh.cxx
+ * \file CurvilinearMesh.cxx
  *
- * \date Sep 26, 2015
+ * \date Sep 20, 2015
  * \author George Zagaris (zagaris2@llnl.gov)
  *******************************************************************************
  */
 
-#include "quest/RectilinearMesh.hpp"
+#include "CurvilinearMesh.hpp"
+#include "MeshType.hpp"
 
-#include "common/CommonTypes.hpp"
+// ATK includes
+#include "slic/slic.hpp"
 
-namespace meshtk {
+// C/C++ includes
+#include <cstddef> // for definition of ATK_NULLPTR
 
-RectilinearMesh::RectilinearMesh() :
-        StructuredMesh(UNDEFINED_MESH,-1,ATK_NULLPTR),
+namespace mint {
+
+CurvilinearMesh::CurvilinearMesh() :
+        StructuredMesh( UNDEFINED_MESH, -1, ATK_NULLPTR ),
         m_coordinates( ATK_NULLPTR )
 {
 
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, int ext[6] ) :
-       StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, ext )
+CurvilinearMesh::CurvilinearMesh( int ndims, int ext[6] ) :
+        StructuredMesh( STRUCTURED_CURVILINEAR_MESH, ndims, ext ),
+        m_coordinates( new MeshCoordinates(ndims,m_extent->getNumNodes()) )
 {
-  int ndims[3];
-  this->getDimensions( ndims );
-  m_coordinates = new MeshCoordinates( dimension, ndims );
+
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, int ext[6],
+CurvilinearMesh::CurvilinearMesh( int ndims, int ext[6],
                                   int blockId, int partId ) :
- StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, ext, blockId, partId )
+     StructuredMesh( STRUCTURED_CURVILINEAR_MESH, ndims, ext, blockId, partId),
+     m_coordinates( new MeshCoordinates(ndims,m_extent->getNumNodes()) )
 {
-  int ndims[3];
-  this->getDimensions( ndims );
-  m_coordinates = new MeshCoordinates( dimension, ndims );
+
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::~RectilinearMesh()
+CurvilinearMesh::~CurvilinearMesh()
 {
   delete m_coordinates;
   m_coordinates = ATK_NULLPTR;
 }
 
-} /* namespace meshtk */
+} /* namespace mint */

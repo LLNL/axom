@@ -30,14 +30,14 @@
 
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
-#include "quest/CellType.hpp"
+#include "mint/CellType.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
 #include <cstring> // for memcpy()
 #include <vector>  // for STL vector
 
-namespace meshtk {
+namespace mint {
 
 
 template < typename index_type, int cell_type >
@@ -104,7 +104,7 @@ public:
    * \param [in] cellIdx the index of the cell in question.
    * \return ctype the cell type.
    * \pre cellIdx >= 0 && cellIdx < ncells
-   * \post ctype >= meshtk::VERTEX && ctype < meshtk::NUM_CELL_TYPES.
+   * \post ctype >= mint::VERTEX && ctype < mint::NUM_CELL_TYPES.
    *****************************************************************************
    */
   int getCellType( int ATK_NOT_USED(cellIdx) ) const { return cell_type; }
@@ -249,7 +249,7 @@ public:
    * \param [in] cellIdx the index of the cell in question.
    * \return ctype the cell type.
    * \pre cellIdx >= 0 && cellIdx < ncells
-   * \post ctype >= meshtk::VERTEX && ctype < meshtk::NUM_CELL_TYPES.
+   * \post ctype >= mint::VERTEX && ctype < mint::NUM_CELL_TYPES.
    *****************************************************************************
    */
   int getCellType( int cellIdx ) const
@@ -359,6 +359,6 @@ typedef CellConnectivity< int, LINEAR_HEX >      HexCellConnectivity;
 typedef CellConnectivity< int, MIXED  > MixedCellConnectivity;
 /// @}
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* CELLCONNECTIVITY_HXX_ */

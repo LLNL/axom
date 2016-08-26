@@ -26,9 +26,9 @@
 #define MESH_HXX_
 
 #include "common/ATKMacros.hpp"
-#include "quest/MeshType.hpp"
+#include "mint/MeshType.hpp"
 
-namespace meshtk {
+namespace mint {
 
 // Forward Declarations
 class FieldData;
@@ -249,6 +249,6 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT(Mesh);
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* MESH_HXX_ */

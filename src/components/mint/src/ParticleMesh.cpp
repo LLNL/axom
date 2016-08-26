@@ -15,60 +15,48 @@
 
 /*!
  *******************************************************************************
- * \file Field.cpp
+ * \file ParticleMesh.hxx
  *
- * \date Sep 19, 2015
+ * \date Sep 27, 2015
  * \author George Zagaris (zagaris2@llnl.gov)
  *******************************************************************************
  */
 
-#include "Field.hpp"
 
-#include "quest/FieldTypes.hpp"
+#include "mint/ParticleMesh.hpp"
 #include "common/CommonTypes.hpp"
 
-#include <cstddef>
+namespace mint
+{
 
-namespace meshtk {
-
-Field::Field() :
-        m_name(""),
-        m_num_tuples(0),
-        m_num_components(0),
-        m_type(UNDEFINED_FIELD_TYPE)
-
+ParticleMesh::ParticleMesh( ) :
+    Mesh( -1, UNDEFINED_MESH, -1, -1 ),
+    m_particle_coordinates( ATK_NULLPTR )
 {
 
 }
 
 //------------------------------------------------------------------------------
-Field::Field( const std::string& name,
-              int size,
-              int num_components ) :
-                      m_name( name ),
-                      m_num_tuples( size ),
-                      m_num_components( num_components ),
-                      m_type(UNDEFINED_FIELD_TYPE)
+ParticleMesh::ParticleMesh( int dimension ) :
+    Mesh( dimension, PARTICLE_MESH, 0, 0 ),
+    m_particle_coordinates( new MeshCoordinates(dimension) )
 {
 
 }
 
 //------------------------------------------------------------------------------
-Field::~Field()
+ParticleMesh::ParticleMesh( int dimension, int blockId, int partId ) :
+    Mesh( dimension, PARTICLE_MESH, blockId, partId ),
+    m_particle_coordinates( new MeshCoordinates(dimension) )
 {
 
 }
 
 //------------------------------------------------------------------------------
-double* Field::getDoublePtr()
+ParticleMesh::~ParticleMesh()
 {
-  return ATK_NULLPTR;
+  delete m_particle_coordinates;
+  m_particle_coordinates = ATK_NULLPTR;
 }
 
-//------------------------------------------------------------------------------
-int* Field::getIntPtr()
-{
-  return ATK_NULLPTR;
-}
-
-} /* namespace meshtk */
+} /* namespace mint */

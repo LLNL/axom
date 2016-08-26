@@ -25,9 +25,9 @@
 #ifndef STRUCTUREDMESH_HXX_
 #define STRUCTUREDMESH_HXX_
 
-#include "quest/Mesh.hpp"
-#include "quest/CellType.hpp"
-#include "quest/Extent.hpp"
+#include "mint/Mesh.hpp"
+#include "mint/CellType.hpp"
+#include "mint/Extent.hpp"
 
 #include "common/CommonTypes.hpp"
 #include "common/ATKMacros.hpp"
@@ -36,7 +36,7 @@
 // C/C++ includes
 #include <cstddef> // for ATK_NULLPTR
 
-namespace meshtk
+namespace mint
 {
 
 class StructuredMesh : public Mesh
@@ -361,12 +361,12 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT( StructuredMesh );
 };
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
-namespace meshtk {
+namespace mint {
 
 inline void StructuredMesh::getCell(int cellIdx, int* cell) const
 {
@@ -459,6 +459,6 @@ inline void StructuredMesh::getCell(int i, int j, int k, int* cell) const
 }
 
 
-} /* namespace meshtk */
+} /* namespace mint */
 
 #endif /* STRUCTUREDMESH_HXX_ */

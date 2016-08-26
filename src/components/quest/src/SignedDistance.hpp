@@ -26,14 +26,15 @@
 
 #include "quest/BVHTree.hpp"
 #include "quest/BoundingBox.hpp"
-#include "quest/Field.hpp"
-#include "quest/FieldData.hpp"
-#include "quest/FieldVariable.hpp"
-#include "quest/Mesh.hpp"
 #include "quest/Orientation.hpp"
 #include "quest/Point.hpp"
 #include "quest/Triangle.hpp"
 #include "quest/Vector.hpp"
+
+#include "mint/Field.hpp"
+#include "mint/FieldData.hpp"
+#include "mint/FieldVariable.hpp"
+#include "mint/Mesh.hpp"
 
 #include "common/Utilities.hpp"
 
@@ -64,7 +65,7 @@ public:
    * \pre surfaceMesh != ATK_NULLPTR
    *****************************************************************************
    */
-  SignedDistance( meshtk::Mesh* surfaceMesh, int maxObjects, int maxLevels=5 );
+  SignedDistance( mint::Mesh* surfaceMesh, int maxObjects, int maxLevels=5 );
 
   /*!
    *****************************************************************************
@@ -136,7 +137,7 @@ private:
 
 private:
 
-  meshtk::Mesh* m_surfaceMesh;   /*!< User-supplied surface mesh. */
+  mint::Mesh* m_surfaceMesh;   /*!< User-supplied surface mesh. */
   BoxType m_boxDomain;           /*!< bounding box containing surface mesh */
   BVHTreeType* m_bvhTree;        /*!< Spatial acceleration data-structure. */
 
@@ -155,7 +156,7 @@ namespace quest
 //------------------------------------------------------------------------------
 template < int NDIMS >
 SignedDistance< NDIMS >::SignedDistance(
-        meshtk::Mesh* surfaceMesh, int maxObjects, int maxLevels )
+        mint::Mesh* surfaceMesh, int maxObjects, int maxLevels )
 {
   // Sanity checks
   SLIC_ASSERT( surfaceMesh != ATK_NULLPTR );
@@ -273,8 +274,8 @@ inline void SignedDistance< NDIMS >::updateMinSquaredDistance(
 
   // TODO: for now we assume a triangle mesh, the squared_distance() must be
   // updated to support, quad, etc., punting it for now...
-  SLIC_ASSERT( cellType==meshtk::LINEAR_TRIANGLE );
-//  const int nnodes = meshtk::cell::num_nodes[ cellType ];
+  SLIC_ASSERT( cellType==mint::LINEAR_TRIANGLE );
+//  const int nnodes = mint::cell::num_nodes[ cellType ];
 
   // Get the cell node IDs that make up the cell
   int cellIds[3];
@@ -321,10 +322,10 @@ SignedDistance< NDIMS >::getCellBoundingBox( int icell )
   // Get the cell type, for now we support linear triangle,quad in 3-D and
   // line segments in 2-D.
   const int cellType = m_surfaceMesh->getMeshCellType( icell );
-  SLIC_ASSERT( cellType==meshtk::LINEAR_TRIANGLE ||
-               cellType==meshtk::LINEAR_QUAD ||
-               cellType==meshtk::LINE );
-  const int nnodes = meshtk::cell::num_nodes[ cellType ];
+  SLIC_ASSERT( cellType==mint::LINEAR_TRIANGLE ||
+               cellType==mint::LINEAR_QUAD ||
+               cellType==mint::LINE );
+  const int nnodes = mint::cell::num_nodes[ cellType ];
 
   // Get the cell node IDs that make up the cell
   int* cellIds = new int[ nnodes ];

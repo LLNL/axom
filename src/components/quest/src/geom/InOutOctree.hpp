@@ -20,14 +20,13 @@
 #include "slam/StaticConstantRelation.hpp"
 #include "slam/StaticVariableRelation.hpp"
 
-
-#include "quest/Mesh.hpp"
 #include "quest/SpatialOctree.hpp"
 #include "quest/Triangle.hpp"
-#include "quest/Mesh.hpp"
-#include "quest/UnstructuredMesh.hpp"
-#include "quest/FieldData.hpp"
-#include "quest/FieldVariable.hpp"
+
+#include "mint/Mesh.hpp"
+#include "mint/UnstructuredMesh.hpp"
+#include "mint/FieldData.hpp"
+#include "mint/FieldVariable.hpp"
 
 
 #include <vector>   // For InOutLeafData triangle lists -- TODO replace with SLAM DynamicVariableRelation...
@@ -443,7 +442,7 @@ private:
     public:
         typedef int VertexIndex;
         typedef int TriangleIndex;
-        typedef meshtk::Mesh SurfaceMesh;
+        typedef mint::Mesh SurfaceMesh;
 
         /** \brief A vertex index to indicate that there is no associated vertex */
         static const VertexIndex NO_VERTEX = -1;
@@ -714,7 +713,7 @@ private:
               m_surfaceMesh = ATK_NULLPTR;
           }
 
-          typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+          typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
           TriangleMesh* triMesh = new TriangleMesh(3);
 
           // Add vertices to the mesh (i.e. vertex positions)
@@ -728,7 +727,7 @@ private:
           for(int i=0; i< m_elementSet.size(); ++i)
           {
               const TriangleIndex* tv = &triangleVertexIndices(i)[0];
-              triMesh->insertCell(tv, meshtk::LINEAR_TRIANGLE, NUM_TRI_VERTS);
+              triMesh->insertCell(tv, mint::LINEAR_TRIANGLE, NUM_TRI_VERTS);
           }
 
           m_surfaceMesh = triMesh;
@@ -749,7 +748,7 @@ private:
 public:
 
     typedef typename MeshWrapper::SurfaceMesh SurfaceMesh;
-    typedef meshtk::UnstructuredMesh<meshtk::MIXED> DebugMesh;
+    typedef mint::UnstructuredMesh<mint::MIXED> DebugMesh;
 
     typedef typename MeshWrapper::VertexIndex VertexIndex;
     typedef typename MeshWrapper::TriangleIndex TriangleIndex;
@@ -2007,8 +2006,8 @@ void InOutOctree<DIM>::printOctreeStats() const
         SLIC_INFO(vtCartStr.str());
 
 //        // Add field to the triangle mesh
-//        meshtk::FieldData* CD = m_surfaceMesh->getCellFieldData();
-//        CD->addField( new meshtk::FieldVariable< TriangleIndex >("blockCount", meshTris.size()) );
+//        mint::FieldData* CD = m_surfaceMesh->getCellFieldData();
+//        CD->addField( new mint::FieldVariable< TriangleIndex >("blockCount", meshTris.size()) );
 //
 //        int* blockCount = CD->getField( "blockCount" )->getIntPtr();
 //
@@ -2019,8 +2018,8 @@ void InOutOctree<DIM>::printOctreeStats() const
 //        }
 //
 //        // Add field to the triangle mesh
-//        meshtk::FieldData* ND = m_surfaceMesh->getNodeFieldData();
-//        ND->addField( new meshtk::FieldVariable< int >("vtCount", m_vertexSet.size()) );
+//        mint::FieldData* ND = m_surfaceMesh->getNodeFieldData();
+//        ND->addField( new mint::FieldVariable< int >("vtCount", m_vertexSet.size()) );
 //
 //        int* vtCount = ND->getField( "vtCount" )->getIntPtr();
 //
@@ -2332,7 +2331,7 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
             for(int i=0; i< 8; ++i)
                 data[i] = vStart + i;
 
-            debugMesh->insertCell( data, meshtk::LINEAR_HEX, 8);
+            debugMesh->insertCell( data, mint::LINEAR_HEX, 8);
 
             int vIdx = leafData.hasData() ? leafVertex(block, leafData) :  MeshWrapper::NO_VERTEX;
             leafVertID[leafCount] = vIdx;
@@ -2357,13 +2356,13 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
     if(totalLeaves > 0)
     {
         // Add the fields to the mesh
-        meshtk::FieldData* CD = debugMesh->getCellFieldData();
+        mint::FieldData* CD = debugMesh->getCellFieldData();
 
-        CD->addField( new meshtk::FieldVariable< VertexIndex >("vertID", leafSet.size()) );
+        CD->addField( new mint::FieldVariable< VertexIndex >("vertID", leafSet.size()) );
         VertexIndex* vertID = CD->getField( "vertID" )->getIntPtr();
         SLIC_ASSERT( vertID != ATK_NULLPTR );
 
-        CD->addField( new meshtk::FieldVariable< VertexIndex >("level", leafSet.size()) );
+        CD->addField( new mint::FieldVariable< VertexIndex >("level", leafSet.size()) );
         VertexIndex* lLevel = CD->getField( "level" )->getIntPtr();
         SLIC_ASSERT( lLevel != ATK_NULLPTR );
 
@@ -2375,11 +2374,11 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
 
         if(hasTriangles)
         {
-            CD->addField( new meshtk::FieldVariable< VertexIndex >("uniqVertID", leafSet.size()) );
+            CD->addField( new mint::FieldVariable< VertexIndex >("uniqVertID", leafSet.size()) );
             VertexIndex* uniqVertID = hasTriangles ? CD->getField( "uniqVertID" )->getIntPtr(): ATK_NULLPTR;
             SLIC_ASSERT( uniqVertID != ATK_NULLPTR );
 
-            CD->addField( new meshtk::FieldVariable< int >("triCount", leafSet.size()) );
+            CD->addField( new mint::FieldVariable< int >("triCount", leafSet.size()) );
             int* triCount = hasTriangles ? CD->getField( "triCount" )->getIntPtr() : ATK_NULLPTR;
             SLIC_ASSERT( triCount != ATK_NULLPTR );
 
@@ -2392,7 +2391,7 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
 
         if(hasColors)
         {
-            CD->addField( new meshtk::FieldVariable< int >("colors", leafSet.size()) );
+            CD->addField( new mint::FieldVariable< int >("colors", leafSet.size()) );
             int* colors = hasColors ? CD->getField( "colors" )->getIntPtr() : ATK_NULLPTR;
             SLIC_ASSERT( !hasColors || colors != ATK_NULLPTR );
             for ( int i=0; i < leafSet.size(); ++i )
@@ -2523,7 +2522,7 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
       int data[8];
       for(int i=0; i< 8; ++i)
         data[i] = colorsField.size()*8+i;
-      debugMesh->insertCell( data, meshtk::LINEAR_HEX, 8);
+      debugMesh->insertCell( data, mint::LINEAR_HEX, 8);
 
       debugIdxField.push_back( it->second );
       colorsField.push_back( colorMap[ blkData.color() ]);
@@ -2532,9 +2531,9 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
 
   if(!colorsField.empty())
   {
-    meshtk::FieldData* CD = debugMesh->getCellFieldData();
-    CD->addField( new meshtk::FieldVariable< int >("colors", colorsField.size()) );
-    CD->addField( new meshtk::FieldVariable< int >("debugIdx", debugIdxField.size()) );
+    mint::FieldData* CD = debugMesh->getCellFieldData();
+    CD->addField( new mint::FieldVariable< int >("colors", colorsField.size()) );
+    CD->addField( new mint::FieldVariable< int >("debugIdx", debugIdxField.size()) );
     int* colors = CD->getField( "colors" )->getIntPtr();
     int* debIdx = CD->getField( "debugIdx" )->getIntPtr();
     SLIC_ASSERT(colors != ATK_NULLPTR );
@@ -2577,7 +2576,7 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name
         debugMesh->insertNode( triPos.C()[0], triPos.C()[1], triPos.C()[2]);
 
         int verts[3] = {0,1,2};
-        debugMesh->insertCell(verts, meshtk::LINEAR_TRIANGLE, 3);
+        debugMesh->insertCell(verts, mint::LINEAR_TRIANGLE, 3);
 
         fNameStr << name << idx << ".vtk";
 
@@ -2605,7 +2604,7 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name
         for(int i=0; i< 8; ++i)
             data[i] = i;
 
-        debugMesh->insertCell( data, meshtk::LINEAR_HEX, 8);
+        debugMesh->insertCell( data, mint::LINEAR_HEX, 8);
 
         fNameStr << name << idx << "_" << counter[name] << ".vtk";
 

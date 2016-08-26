@@ -30,7 +30,7 @@ namespace quest
     // Note: Define everything in a local namespace
   namespace
   {
-    typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+    typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
     enum QueryMode { QUERY_MODE_NONE, QUERY_MODE_CONTAINMENT, QUERY_MODE_SIGNED_DISTANCE };
 
     /**
@@ -56,7 +56,7 @@ namespace quest
          * \param surface_mesh The surface mesh
          * \pre Assumes that we are not yet initialized
          */
-        void initializeContainmentTree(meshtk::Mesh* surface_mesh)
+        void initializeContainmentTree(mint::Mesh* surface_mesh)
         {
             SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
             SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
@@ -75,7 +75,7 @@ namespace quest
          * \param surface_mesh The surface mesh
          * \pre Assumes that we are not yet initialized
          */
-        void initializeSignedDistance(meshtk::Mesh* surface_mesh, int maxElements, int maxLevels)
+        void initializeSignedDistance(mint::Mesh* surface_mesh, int maxElements, int maxLevels)
         {
             SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
             SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
@@ -171,7 +171,7 @@ namespace quest
          * \brief Utility function to compute the bounding box of the mesh
          */
 
-        GeometricBoundingBox meshBoundingBox(meshtk::Mesh* mesh)
+        GeometricBoundingBox meshBoundingBox(mint::Mesh* mesh)
         {
             SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -249,7 +249,7 @@ namespace quest
   #endif
 
     private:
-        meshtk::Mesh* m_surface_mesh;
+        mint::Mesh* m_surface_mesh;
         SignedDistance< DIM >* m_region;
         InOutOctree< DIM >* m_containmentTree;
         QueryMode m_queryMode;
@@ -284,7 +284,7 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   reader->setFileName( fileName );
   reader->read();
 
-  meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
+  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
@@ -318,7 +318,7 @@ void initialize( const std::string& fileName,
   reader->setFileName( fileName );
   reader->read();
 
-  meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
+  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );

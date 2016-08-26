@@ -22,14 +22,14 @@
  *******************************************************************************
  */
 
-#include "quest/UniformMesh.hpp"
-#include "quest/MeshType.hpp"
+#include "mint/UniformMesh.hpp"
+#include "mint/MeshType.hpp"
 
 #include "common/CommonTypes.hpp"
 
 #include <algorithm> // for std::fill()
 
-namespace meshtk
+namespace mint
 {
 
 UniformMesh::UniformMesh() :
@@ -77,4 +77,4 @@ UniformMesh::~UniformMesh()
 }
 
 
-} /* namespace meshtk */
+} /* namespace mint */

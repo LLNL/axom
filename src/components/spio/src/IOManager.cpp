@@ -25,6 +25,7 @@
 
 // Other toolkit component headers
 #include "common/CommonTypes.hpp"
+#include "common/FileUtilities.hpp"
 
 // SiDRe project headers
 #include "sidre/DataGroup.hpp"
@@ -94,9 +95,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
     m_baton = new IOBaton(m_mpi_comm, num_files);
   }
 
-  std::ostringstream rootstream;
-  rootstream << file_string << ".root";
-  std::string root_name = rootstream.str();
+  std::string root_name = file_string + ".root";
 
   if (m_my_rank == 0 && protocol == "sidre_hdf5") {
      createRootFile(root_name, file_string, num_files);
@@ -104,7 +103,6 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
   MPI_Barrier(m_mpi_comm);
 
   if (protocol == "sidre_hdf5") {
-
     std::string file_pattern = getHDF5FilePattern(root_name);
 
     int group_id = m_baton->wait();
@@ -113,6 +111,11 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
 
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup()) {
+      std::string dir_name; 
+      utilities::filesystem::getDirName(dir_name, hdf5_name);
+      if (!dir_name.empty()) {
+        utilities::filesystem::makeDirsForPath(dir_name);
+      }
       h5_file_id = H5Fcreate(hdf5_name.c_str(),
                              H5F_ACC_TRUNC,
                              H5P_DEFAULT,
@@ -145,9 +148,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
     int group_id = m_baton->wait();
     std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
 
-    std::ostringstream savestream;
-    savestream << file_name << ".group";
-    std::string obase = savestream.str();
+    std::string obase = file_name + ".group";
     datagroup->save(obase, protocol);
   }
   (void)m_baton->pass();
@@ -166,9 +167,7 @@ void IOManager::read(
   const std::string& protocol)
 {
   if (protocol == "sidre_hdf5") {
-    std::ostringstream rootstream;
-    rootstream << file_string << ".root";
-    std::string root_name = rootstream.str();
+    std::string root_name = file_string + ".root";
 
     std::string file_pattern = getHDF5FilePattern(root_name);
 
@@ -197,13 +196,9 @@ void IOManager::read(
 
   } else {
     int group_id = m_baton->wait();
-    std::ostringstream namestream;
-    namestream << file_string << "_" <<  group_id;
-    std::string file_name = namestream.str();
+    std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
 
-    std::ostringstream loadstream;
-    loadstream << file_name << ".group";
-    std::string obase = loadstream.str();
+    std::string obase = file_name + ".group";
     datagroup->load(obase, protocol);
   }
 
@@ -324,7 +319,7 @@ void IOManager::createRootFile(const std::string& root_name,
   std::string next;
   std::string slash = "/";
   conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
-  n["file_pattern"] = local_file_base + "_" + "%07d.hdf5";
+  n["file_pattern"] = local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
   n["number_of_trees"] = m_comm_size;
   
   n["tree_pattern"] = "datagroup_%07d";

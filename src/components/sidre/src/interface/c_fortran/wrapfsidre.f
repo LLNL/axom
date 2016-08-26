@@ -3304,7 +3304,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3331,7 +3331,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3358,7 +3358,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3385,7 +3385,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3412,7 +3412,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3439,7 +3439,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3466,7 +3466,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3493,7 +3493,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3520,7 +3520,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3547,7 +3547,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3574,7 +3574,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3601,7 +3601,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3628,7 +3628,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3655,7 +3655,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3682,7 +3682,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3709,7 +3709,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3736,7 +3736,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3763,7 +3763,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3790,7 +3790,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3817,7 +3817,7 @@ contains
         type(C_PTR) addr
     
         lname = len_trim(name)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
           rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -3848,7 +3848,7 @@ contains
     !    extents(1) = 1_SIDRE_LENGTH
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
         endif
@@ -3873,7 +3873,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
         endif
@@ -3898,7 +3898,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
         endif
@@ -3923,7 +3923,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
         endif
@@ -3948,7 +3948,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
         endif
@@ -3973,7 +3973,7 @@ contains
     !    extents(1) = 1_SIDRE_LENGTH
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
         endif
@@ -3998,7 +3998,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
         endif
@@ -4023,7 +4023,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
         endif
@@ -4048,7 +4048,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
         endif
@@ -4073,7 +4073,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
         endif
@@ -4098,7 +4098,7 @@ contains
     !    extents(1) = 1_SIDRE_LENGTH
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
         endif
@@ -4123,7 +4123,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
         endif
@@ -4148,7 +4148,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
         endif
@@ -4173,7 +4173,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
         endif
@@ -4198,7 +4198,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
         endif
@@ -4223,7 +4223,7 @@ contains
     !    extents(1) = 1_SIDRE_LENGTH
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
         endif
@@ -4248,7 +4248,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
         endif
@@ -4273,7 +4273,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
         endif
@@ -4298,7 +4298,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
         endif
@@ -4323,7 +4323,7 @@ contains
     !    extents = shape(value, kind=SIDRE_LENGTH)
         view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
         if (c_associated(view)) then
-            call SHROUD_C_LOC(value, addr)
+            addr = c_loc(value)
             call c_dataview_set_external_data_ptr_only(view, addr)
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
         endif
@@ -5549,7 +5549,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents(1) = 1_SIDRE_LENGTH
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end subroutine dataview_set_array_data_ptr_int_scalar
@@ -5567,7 +5567,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end subroutine dataview_set_array_data_ptr_int_1d
@@ -5585,7 +5585,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end subroutine dataview_set_array_data_ptr_int_2d
@@ -5603,7 +5603,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end subroutine dataview_set_array_data_ptr_int_3d
@@ -5621,7 +5621,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
     end subroutine dataview_set_array_data_ptr_int_4d
@@ -5639,7 +5639,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents(1) = 1_SIDRE_LENGTH
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end subroutine dataview_set_array_data_ptr_long_scalar
@@ -5657,7 +5657,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end subroutine dataview_set_array_data_ptr_long_1d
@@ -5675,7 +5675,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end subroutine dataview_set_array_data_ptr_long_2d
@@ -5693,7 +5693,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end subroutine dataview_set_array_data_ptr_long_3d
@@ -5711,7 +5711,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
     end subroutine dataview_set_array_data_ptr_long_4d
@@ -5729,7 +5729,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents(1) = 1_SIDRE_LENGTH
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end subroutine dataview_set_array_data_ptr_float_scalar
@@ -5747,7 +5747,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end subroutine dataview_set_array_data_ptr_float_1d
@@ -5765,7 +5765,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end subroutine dataview_set_array_data_ptr_float_2d
@@ -5783,7 +5783,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end subroutine dataview_set_array_data_ptr_float_3d
@@ -5801,7 +5801,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
     end subroutine dataview_set_array_data_ptr_float_4d
@@ -5819,7 +5819,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents(1) = 1_SIDRE_LENGTH
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end subroutine dataview_set_array_data_ptr_double_scalar
@@ -5837,7 +5837,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end subroutine dataview_set_array_data_ptr_double_1d
@@ -5855,7 +5855,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end subroutine dataview_set_array_data_ptr_double_2d
@@ -5873,7 +5873,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end subroutine dataview_set_array_data_ptr_double_3d
@@ -5891,7 +5891,7 @@ contains
     
     !    lname = len_trim(name)
     !    extents = shape(value, kind=SIDRE_LENGTH)
-        call SHROUD_C_LOC(value, addr)
+        addr = c_loc(value)
         call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
     end subroutine dataview_set_array_data_ptr_double_4d
