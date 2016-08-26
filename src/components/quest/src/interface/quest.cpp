@@ -43,6 +43,7 @@ namespace quest
     {
         typedef BoundingBox< double, DIM> GeometricBoundingBox;
         typedef Point< double, DIM> SpacePt;
+        typedef Vector< double, DIM> SpaceVec;
 
         /** \brief Default constructor */
         QuestAccelerator()
@@ -52,6 +53,33 @@ namespace quest
             , m_queryMode(QUERY_MODE_NONE) {}
 
         /**
+         * \brief Sets the internal mesh pointer and computes some surface properties (bounding box and center of mass)
+         */
+        void setMesh(mint::Mesh* surface_mesh)
+        {
+            SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
+
+            m_surface_mesh = surface_mesh;
+
+            // Computer the mesh's bounding box and center of mass
+            m_meshBoundingBox.clear();
+            m_meshCenterOfMass = SpacePt::zero();
+
+            SpacePt pt;
+            int numMeshNodes = m_surface_mesh->getMeshNumberOfNodes();
+            for ( int i=0; i < numMeshNodes; ++i )
+            {
+                m_surface_mesh->getMeshNode( i, pt.data() );
+
+                m_meshBoundingBox.addPoint( pt );
+                m_meshCenterOfMass.array() += pt.array();
+            }
+            m_meshCenterOfMass.array() /= numMeshNodes;
+
+            SLIC_ASSERT( m_meshBoundingBox.isValid() );
+        }
+
+        /**
          * \brief Initializes the containment tree mode
          * \param surface_mesh The surface mesh
          * \pre Assumes that we are not yet initialized
@@ -59,13 +87,9 @@ namespace quest
         void initializeContainmentTree(mint::Mesh* surface_mesh)
         {
             SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
-            SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
 
-            m_surface_mesh = surface_mesh;
-
-            GeometricBoundingBox meshBB = meshBoundingBox( m_surface_mesh );
-
-            m_containmentTree = new InOutOctree<DIM>( meshBB, m_surface_mesh );
+            setMesh(surface_mesh);
+            m_containmentTree = new InOutOctree<DIM>( m_meshBoundingBox, m_surface_mesh );
             m_containmentTree->generateIndex();
             m_queryMode = QUERY_MODE_CONTAINMENT;
         }
@@ -78,9 +102,8 @@ namespace quest
         void initializeSignedDistance(mint::Mesh* surface_mesh, int maxElements, int maxLevels)
         {
             SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
-            SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
 
-            m_surface_mesh = surface_mesh;
+            setMesh(surface_mesh);
             m_region = new SignedDistance<DIM>( m_surface_mesh, maxElements, maxLevels );
             m_queryMode = QUERY_MODE_SIGNED_DISTANCE;
         }
@@ -107,6 +130,9 @@ namespace quest
                delete m_surface_mesh;
                m_surface_mesh = ATK_NULLPTR;
             }
+
+            m_meshBoundingBox.clear();
+            m_meshCenterOfMass = SpacePt::zero();
         }
 
 
@@ -168,28 +194,22 @@ namespace quest
         }
 
         /**
-         * \brief Utility function to compute the bounding box of the mesh
+         * \brief Returns a const reference to the bounding box of the mesh
          */
-
-        GeometricBoundingBox meshBoundingBox(mint::Mesh* mesh)
+        const GeometricBoundingBox& meshBoundingBox() const
         {
-            SLIC_ASSERT( mesh != ATK_NULLPTR );
-
-            GeometricBoundingBox meshBB;
-            SpacePt pt;
-
-            for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i )
-            {
-                mesh->getMeshNode( i, pt.data() );
-                meshBB.addPoint( pt );
-            }
-
-            SLIC_ASSERT( meshBB.isValid() );
-
-            return meshBB;
+            return m_meshBoundingBox;
         }
 
-  #ifdef ATK_DEBUG
+        /**
+         * \brief Returns a const reference to the center of mass of the mesh
+         */
+        const SpacePt& meshCenterOfMass() const
+        {
+            return m_meshCenterOfMass;
+        }
+
+      #ifdef ATK_DEBUG
         /**
          * \brief Utility function to determine if we are in a mode that supports distance queries
          */
@@ -253,6 +273,9 @@ namespace quest
         SignedDistance< DIM >* m_region;
         InOutOctree< DIM >* m_containmentTree;
         QueryMode m_queryMode;
+
+        SpacePt              m_meshCenterOfMass;
+        GeometricBoundingBox m_meshBoundingBox;
     };
 
     /**
@@ -365,6 +388,39 @@ int inside( double x, double y, double z )
   // TODO: assume 3-D for now
   return accelerator3D.inside(x,y,z);
 }
+
+
+
+
+//------------------------------------------------------------------------------
+double mesh_min_x(){ return accelerator3D.meshBoundingBox().getMin()[0]; }
+
+//------------------------------------------------------------------------------
+double mesh_max_x(){ return accelerator3D.meshBoundingBox().getMax()[0]; }
+
+//------------------------------------------------------------------------------
+double mesh_min_y(){ return accelerator3D.meshBoundingBox().getMin()[1]; }
+
+//------------------------------------------------------------------------------
+double mesh_max_y(){ return accelerator3D.meshBoundingBox().getMax()[1]; }
+
+//------------------------------------------------------------------------------
+double mesh_min_z(){ return accelerator3D.meshBoundingBox().getMin()[2]; }
+
+//------------------------------------------------------------------------------
+double mesh_max_z(){ return accelerator3D.meshBoundingBox().getMax()[2]; }
+
+
+//------------------------------------------------------------------------------
+double mesh_center_of_mass_x(){ return accelerator3D.meshCenterOfMass()[0]; }
+
+//------------------------------------------------------------------------------
+double mesh_center_of_mass_y(){ return accelerator3D.meshCenterOfMass()[1]; }
+
+//------------------------------------------------------------------------------
+double mesh_center_of_mass_z(){ return accelerator3D.meshCenterOfMass()[2]; }
+
+
 
 //------------------------------------------------------------------------------
 void inside( const double* xyz, int* in, int npoints )
