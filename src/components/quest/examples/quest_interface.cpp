@@ -51,8 +51,8 @@ void outputMeshStats()
     double bb0[3] = {quest::mesh_min_x(), quest::mesh_min_y(), quest::mesh_min_z()};
     double bb1[3] = {quest::mesh_max_x(), quest::mesh_max_y(), quest::mesh_max_z()};
     SLIC_INFO("Mesh bounding box: "
-            << "{ lower: (" << bb0[0] <<"," << bb0[1] <<","<< bb0[2] << "}"
-            << "{ upper: (" << bb1[0] <<"," << bb1[1] <<","<< bb1[2] << "}"
+            << "{ lower: (" << bb0[0] <<"," << bb0[1] <<","<< bb0[2] << ")"
+            << "; upper: (" << bb1[0] <<"," << bb1[1] <<","<< bb1[2] << ")}"
             );
 
     // Obtain and log the mesh center of mass

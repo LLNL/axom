@@ -20,8 +20,12 @@
 
 #include "slic/slic.hpp"
 
+
 #ifdef USE_MPI
-#include "quest/PSTLReader.hpp"
+  #include "quest/PSTLReader.hpp"
+  #include "slic/LumberjackStream.hpp"
+#else
+  #include "slic/GenericOutputStream.hpp"
 #endif
 
 namespace quest
@@ -50,7 +54,10 @@ namespace quest
             : m_surface_mesh(ATK_NULLPTR)
             , m_region(ATK_NULLPTR)
             , m_containmentTree(ATK_NULLPTR)
-            , m_queryMode(QUERY_MODE_NONE) {}
+            , m_queryMode(QUERY_MODE_NONE)
+            , m_originalLoggerName("")
+        {
+        }
 
         /**
          * \brief Sets the internal mesh pointer and computes some surface properties (bounding box and center of mass)
@@ -61,7 +68,7 @@ namespace quest
 
             m_surface_mesh = surface_mesh;
 
-            // Computer the mesh's bounding box and center of mass
+            // Compute the mesh's bounding box and center of mass
             m_meshBoundingBox.clear();
             m_meshCenterOfMass = SpacePt::zero();
 
@@ -268,6 +275,56 @@ namespace quest
         }
   #endif
 
+        /**
+         * \brief Sets up the formatted Slic logger for quest
+         */
+        void setupQuestLogger()
+        {
+            namespace slic = asctoolkit::slic;
+
+            // Setup the formatted quest logger
+            if( ! slic::isInitialized() )
+            {
+                slic::initialize();
+            }
+
+            const std::string questLoggerName = "quest_logger";
+            m_originalLoggerName = slic::getActiveLoggerName();
+            slic::flushStreams();
+            if( ! slic::activateLogger(questLoggerName) )
+            {
+              #ifdef USE_MPI
+                const int RLIMIT = 8;
+                std::string fmt = "[<RANK>][Quest <LEVEL>]: <MESSAGE>\n";
+                slic::LogStream* ls = new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, RLIMIT, fmt );
+              #else
+                std::string fmt = "[Quest <LEVEL>]: <MESSAGE>";
+                slic::LogStream* ls = new slic::GenericOutputStream(&std::cout, fmt);
+              #endif
+                slic::createLogger(questLoggerName, slic::inherit::errors_and_warnings);
+                slic::activateLogger(questLoggerName);
+                slic::setLoggingMsgLevel( slic::message::Info );
+                slic::addStreamToAllMsgLevels(ls);
+            }
+        }
+
+        /**
+         * \brief Restores the original Slic logger
+         */
+        void teardownQuestLogger()
+        {
+            namespace slic = asctoolkit::slic;
+
+            if(m_originalLoggerName != "")
+            {
+                // Revert to original Slic logger
+                slic::flushStreams();
+                slic::activateLogger(m_originalLoggerName);
+                m_originalLoggerName = "";
+            }
+        }
+
+
     private:
         mint::Mesh* m_surface_mesh;
         SignedDistance< DIM >* m_region;
@@ -276,6 +333,8 @@ namespace quest
 
         SpacePt              m_meshCenterOfMass;
         GeometricBoundingBox m_meshBoundingBox;
+
+        std::string          m_originalLoggerName;
     };
 
     /**
@@ -301,6 +360,8 @@ void initialize( MPI_Comm comm, const std::string& fileName,
 
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(ndims==3, "Quest currently only supports 3D triangle meshes.");
+
+  accelerator3D.setupQuestLogger();
 
   // Read in the mesh
   quest::PSTLReader* reader = new quest::PSTLReader( comm );
@@ -335,6 +396,8 @@ void initialize( const std::string& fileName,
 
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(NDIMS==3, "Quest currently only supports 3D triangle meshes.");
+
+  accelerator3D.setupQuestLogger();
 
   // Read in the mesh
   quest::STLReader* reader = new quest::STLReader();
@@ -441,6 +504,7 @@ void inside( const double* xyz, int* in, int npoints )
 void finalize()
 {
   accelerator3D.finalize();
+  accelerator3D.teardownQuestLogger();
 }
 
 } /* end namespace quest */
