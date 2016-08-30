@@ -61,21 +61,21 @@ return;
 // splicer end function.create_logger_bufferify
 }
 
-void SLIC_activate_logger(const char * name)
+bool SLIC_activate_logger(const char * name)
 {
 // splicer begin function.activate_logger
 const std::string SH_name(name);
-activateLogger(SH_name);
-return;
+bool rv = activateLogger(SH_name);
+return rv;
 // splicer end function.activate_logger
 }
 
-void SLIC_activate_logger_bufferify(const char * name, int Lname)
+bool SLIC_activate_logger_bufferify(const char * name, int Lname)
 {
 // splicer begin function.activate_logger_bufferify
 const std::string SH_name(name, Lname);
-activateLogger(SH_name);
-return;
+bool rv = activateLogger(SH_name);
+return rv;
 // splicer end function.activate_logger_bufferify
 }
 

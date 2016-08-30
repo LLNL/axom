@@ -59,6 +59,78 @@ return rv;
 // splicer end function.inside
 }
 
+double QUEST_mesh_min_x()
+{
+// splicer begin function.mesh_min_x
+double rv = mesh_min_x();
+return rv;
+// splicer end function.mesh_min_x
+}
+
+double QUEST_mesh_min_y()
+{
+// splicer begin function.mesh_min_y
+double rv = mesh_min_y();
+return rv;
+// splicer end function.mesh_min_y
+}
+
+double QUEST_mesh_min_z()
+{
+// splicer begin function.mesh_min_z
+double rv = mesh_min_z();
+return rv;
+// splicer end function.mesh_min_z
+}
+
+double QUEST_mesh_max_x()
+{
+// splicer begin function.mesh_max_x
+double rv = mesh_max_x();
+return rv;
+// splicer end function.mesh_max_x
+}
+
+double QUEST_mesh_max_y()
+{
+// splicer begin function.mesh_max_y
+double rv = mesh_max_y();
+return rv;
+// splicer end function.mesh_max_y
+}
+
+double QUEST_mesh_max_z()
+{
+// splicer begin function.mesh_max_z
+double rv = mesh_max_z();
+return rv;
+// splicer end function.mesh_max_z
+}
+
+double QUEST_mesh_center_of_mass_x()
+{
+// splicer begin function.mesh_center_of_mass_x
+double rv = mesh_center_of_mass_x();
+return rv;
+// splicer end function.mesh_center_of_mass_x
+}
+
+double QUEST_mesh_center_of_mass_y()
+{
+// splicer begin function.mesh_center_of_mass_y
+double rv = mesh_center_of_mass_y();
+return rv;
+// splicer end function.mesh_center_of_mass_y
+}
+
+double QUEST_mesh_center_of_mass_z()
+{
+// splicer begin function.mesh_center_of_mass_z
+double rv = mesh_center_of_mass_z();
+return rv;
+// splicer end function.mesh_center_of_mass_z
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 

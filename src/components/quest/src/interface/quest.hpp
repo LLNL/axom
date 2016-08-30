@@ -92,6 +92,38 @@ int inside(double x, double y, double z=0.0);
  */
 void inside( const double* xyz, int* in, int npoints);
 
+
+
+/** \brief Gets the minimum x coordinate of the mesh's bounding box */
+double mesh_min_x();
+
+/** \brief Gets the maximum x coordinate of the mesh's bounding box */
+double mesh_max_x();
+
+/** \brief Gets the minimum y coordinate of the mesh's bounding box */
+double mesh_min_y();
+
+/** \brief Gets the maximum y coordinate of the mesh's bounding box */
+double mesh_max_y();
+
+/** \brief Gets the minimum z coordinate of the mesh's bounding box */
+double mesh_min_z();
+
+/** \brief Gets the maximum z coordinate of the mesh's bounding box */
+double mesh_max_z();
+
+/** \brief Gets the x coordinate of the mesh's center of mass */
+double mesh_center_of_mass_x();
+
+/** \brief Gets the y coordinate of the mesh's center of mass */
+double mesh_center_of_mass_y();
+
+/** \brief Gets the z coordinate of the mesh's center of mass */
+double mesh_center_of_mass_z();
+
+
+
+
 /*!
  *******************************************************************************
  * \brief Finalize quest.

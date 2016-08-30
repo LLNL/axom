@@ -369,9 +369,10 @@ void createLogger( const std::string& name,
  *******************************************************************************
  * \brief Activates the logger associated with the given name.
  * \param [in] name the name of the logger to activate.
+ * \return True if the named logger was activated, False otherwise
  *******************************************************************************
  */
-void activateLogger( const std::string& name );
+bool activateLogger( const std::string& name );
 
 /*!
  *******************************************************************************

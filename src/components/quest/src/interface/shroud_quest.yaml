@@ -39,3 +39,15 @@ functions:
 
 - decl: int inside( double x, double y, double z )
 ##- decl: void inside( const double* xyz, int* in, int npoints )
+
+- decl: double mesh_min_x( )
+- decl: double mesh_min_y( )
+- decl: double mesh_min_z( )
+
+- decl: double mesh_max_x( )
+- decl: double mesh_max_y( )
+- decl: double mesh_max_z( )
+
+- decl: double mesh_center_of_mass_x( )
+- decl: double mesh_center_of_mass_y( )
+- decl: double mesh_center_of_mass_z( )
