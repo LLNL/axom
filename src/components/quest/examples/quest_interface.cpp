@@ -45,6 +45,13 @@ T getRandomDouble( T low, T high )
   return ( delta*c+low );
 }
 
+template < typename T >
+T scaleAndOffset( T rangeMin, T rangeMax, T val)
+{
+  return rangeMin + (rangeMax - rangeMin) * val;
+}
+
+
 void outputMeshStats()
 {
     // Obtain and log the mesh bounding box
@@ -71,12 +78,47 @@ void runQuestDistance(const std::string& fileName, const CoordsVec& points)
 
     outputMeshStats();
 
-    int nPoints = points.size()/3;
+    CoordsVec coords[3];
+    {
+        int nOrigPts = points.size()/3;
+        coords[0].reserve(nOrigPts+2);
+        coords[1].reserve(nOrigPts+2);
+        coords[2].reserve(nOrigPts+2);
+
+        CoordsVec::value_type xMin = quest::mesh_min_x();
+        CoordsVec::value_type xMax = quest::mesh_max_x();
+        CoordsVec::value_type yMin = quest::mesh_min_y();
+        CoordsVec::value_type yMax = quest::mesh_max_y();
+        CoordsVec::value_type zMin = quest::mesh_min_z();
+        CoordsVec::value_type zMax = quest::mesh_max_z();
+
+        // Add the BB center
+        coords[0].push_back( scaleAndOffset(xMin, xMax, 0.5));
+        coords[1].push_back( scaleAndOffset(yMin, yMax, 0.5));
+        coords[2].push_back( scaleAndOffset(zMin, zMax, 0.5));
+
+        // Add the mesh center of mass
+        coords[0].push_back( quest::mesh_center_of_mass_x() );
+        coords[1].push_back( quest::mesh_center_of_mass_y() );
+        coords[2].push_back( quest::mesh_center_of_mass_z() );
+
+        // Scale and add the random points
+        for(int i=0; i< nOrigPts; ++i)
+        {
+            coords[0].push_back( scaleAndOffset(xMin, xMax, points[i*3]));
+            coords[1].push_back( scaleAndOffset(yMin, yMax, points[i*3 +1]));
+            coords[2].push_back( scaleAndOffset(zMin, zMax, points[i*3 +2]));
+        }
+    }
+
+
+    int nPoints = coords[0].size();
     for(int i=0; i< nPoints; ++i)
     {
-        const double x = points[i*3];
-        const double y = points[i*3+1];
-        const double z = points[i*3+2];
+        // scale points within bounding box of mesh
+        const double x = coords[0][i];
+        const double y = coords[1][i];
+        const double z = coords[2][i];
 
         const double phi = quest::distance(x,y,z);
         const int ins = quest::inside( x,y,z );
@@ -97,12 +139,47 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
 
     outputMeshStats();
 
-    int nPoints = points.size()/3;
+    CoordsVec coords[3];
+    {
+        int nOrigPts = points.size()/3;
+        coords[0].reserve(nOrigPts+2);
+        coords[1].reserve(nOrigPts+2);
+        coords[2].reserve(nOrigPts+2);
+
+        CoordsVec::value_type xMin = quest::mesh_min_x();
+        CoordsVec::value_type xMax = quest::mesh_max_x();
+        CoordsVec::value_type yMin = quest::mesh_min_y();
+        CoordsVec::value_type yMax = quest::mesh_max_y();
+        CoordsVec::value_type zMin = quest::mesh_min_z();
+        CoordsVec::value_type zMax = quest::mesh_max_z();
+
+        // Add the BB center
+        coords[0].push_back( scaleAndOffset(xMin, xMax, 0.5));
+        coords[1].push_back( scaleAndOffset(yMin, yMax, 0.5));
+        coords[2].push_back( scaleAndOffset(zMin, zMax, 0.5));
+
+        // Add the mesh center of mass
+        coords[0].push_back( quest::mesh_center_of_mass_x() );
+        coords[1].push_back( quest::mesh_center_of_mass_y() );
+        coords[2].push_back( quest::mesh_center_of_mass_z() );
+
+        // Scale and add the random points
+        for(int i=0; i< nOrigPts; ++i)
+        {
+            coords[0].push_back( scaleAndOffset(xMin, xMax, points[i*3]));
+            coords[1].push_back( scaleAndOffset(yMin, yMax, points[i*3 +1]));
+            coords[2].push_back( scaleAndOffset(zMin, zMax, points[i*3 +2]));
+        }
+    }
+
+
+    int nPoints = coords[0].size();
     for(int i=0; i< nPoints; ++i)
     {
-        const double x = points[i*3];
-        const double y = points[i*3+1];
-        const double z = points[i*3+2];
+        // scale points within bounding box of mesh
+        const double x = coords[0][i];
+        const double y = coords[1][i];
+        const double z = coords[2][i];
         const int ins = quest::inside( x,y,z);
 
         SLIC_INFO("Point (" << x << ", " << y << ", " << z << ") "
@@ -149,8 +226,8 @@ int main( int argc, char**argv )
 
   std::srand( time(NULL) );
   const int npoints = 10;
-  const double lb = -4.5;
-  const double ub =  4.5;
+  const double lb = 0.;
+  const double ub = 1.;
   CoordsVec ptVec;
   ptVec.reserve(3*npoints);
   for ( int ipnt=0; ipnt < npoints; ++ipnt )

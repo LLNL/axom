@@ -26,8 +26,6 @@ module quest_fortran_usage
   include 'mpif.h'
 #endif
 
-  real*8 :: default_lb = -4.5
-  real*8 :: default_ub = 4.5
   integer :: num_pts = 10, rank, nprocs, ierr
   character(LEN=40) :: FileName = "sphere.stl"
   integer :: dim = 3
@@ -86,10 +84,16 @@ contains
     call quest_initialize( MPI_COMM_WORLD, FileName, .true., dim, bucket_size, depth )
 
     !... Create random pts and query surface distance and containment
-    do i=1,num_pts
-      x = random_double( default_lb, default_ub )
-      y = random_double( default_lb, default_ub )
-      z = random_double( default_lb, default_ub )
+    do i=1,num_pts + 1
+      if (i == 1) then
+        x = quest_mesh_center_of_mass_x()
+        y = quest_mesh_center_of_mass_y()
+        z = quest_mesh_center_of_mass_z()
+      else
+        x = random_double( quest_mesh_min_x(), quest_mesh_max_x() )
+        y = random_double( quest_mesh_min_y(), quest_mesh_max_y() )
+        z = random_double( quest_mesh_min_z(), quest_mesh_max_z() )
+      end if
 
       phi = quest_distance( x, y, z )
       ins = quest_inside(x,y,z)
@@ -126,10 +130,16 @@ contains
     call quest_initialize( MPI_COMM_WORLD, FileName, .false., dim, unused, unused )
 
     !... Create random pts and query surface containment
-    do i=1,num_pts
-      x = random_double( default_lb, default_ub )
-      y = random_double( default_lb, default_ub )
-      z = random_double( default_lb, default_ub )
+    do i=1,num_pts + 1
+      if (i == 1) then
+        x = quest_mesh_center_of_mass_x()
+        y = quest_mesh_center_of_mass_y()
+        z = quest_mesh_center_of_mass_z()
+      else
+        x = random_double( quest_mesh_min_x(), quest_mesh_max_x() )
+        y = random_double( quest_mesh_min_y(), quest_mesh_max_y() )
+        z = random_double( quest_mesh_min_z(), quest_mesh_max_z() )
+      end if
 
       ins = quest_inside(x,y,z)
 
