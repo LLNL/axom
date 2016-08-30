@@ -278,7 +278,11 @@ namespace quest
         /**
          * \brief Sets up the formatted Slic logger for quest
          */
+#ifdef USE_MPI
+        void setupQuestLogger( MPI_Comm comm)
+#else
         void setupQuestLogger()
+#endif
         {
             namespace slic = asctoolkit::slic;
 
@@ -296,7 +300,7 @@ namespace quest
               #ifdef USE_MPI
                 const int RLIMIT = 8;
                 std::string fmt = "[<RANK>][Quest <LEVEL>]: <MESSAGE>\n";
-                slic::LogStream* ls = new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, RLIMIT, fmt );
+                slic::LogStream* ls = new slic::LumberjackStream( &std::cout, comm, RLIMIT, fmt );
               #else
                 std::string fmt = "[Quest <LEVEL>]: <MESSAGE>";
                 slic::LogStream* ls = new slic::GenericOutputStream(&std::cout, fmt);
@@ -361,7 +365,7 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(ndims==3, "Quest currently only supports 3D triangle meshes.");
 
-  accelerator3D.setupQuestLogger();
+  accelerator3D.setupQuestLogger(comm);
 
   // Read in the mesh
   quest::PSTLReader* reader = new quest::PSTLReader( comm );
