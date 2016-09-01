@@ -39,23 +39,11 @@ double QUEST_distance(double x, double y, double z);
 
 int QUEST_inside(double x, double y, double z);
 
-double QUEST_mesh_min_x();
+void QUEST_mesh_bounds_min(double * coords);
 
-double QUEST_mesh_min_y();
+void QUEST_mesh_bounds_max(double * coords);
 
-double QUEST_mesh_min_z();
-
-double QUEST_mesh_max_x();
-
-double QUEST_mesh_max_y();
-
-double QUEST_mesh_max_z();
-
-double QUEST_mesh_center_of_mass_x();
-
-double QUEST_mesh_center_of_mass_y();
-
-double QUEST_mesh_center_of_mass_z();
+void QUEST_mesh_center_of_mass(double * coords);
 
 #ifdef __cplusplus
 }

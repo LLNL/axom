@@ -94,33 +94,27 @@ void inside( const double* xyz, int* in, int npoints);
 
 
 
-/** \brief Gets the minimum x coordinate of the mesh's bounding box */
-double mesh_min_x();
+/**
+ * \brief Gets coordinates of the minimum corner of the mesh's bounding box
+ * \param [out] coords user-supplied array to store the coordinates
+ * \pre coords must be preallocated with room for at least three doubles.
+ * */
+void mesh_bounds_min(double* coords);
 
-/** \brief Gets the maximum x coordinate of the mesh's bounding box */
-double mesh_max_x();
+/**
+ * \brief Gets coordinates of the maximum corner of the mesh's bounding box
+ * \param [out] coords user-supplied array to store the coordinates
+ * \pre coords must be preallocated with room for at least three doubles.
+ * */
+void mesh_bounds_max(double* coords);
 
-/** \brief Gets the minimum y coordinate of the mesh's bounding box */
-double mesh_min_y();
-
-/** \brief Gets the maximum y coordinate of the mesh's bounding box */
-double mesh_max_y();
-
-/** \brief Gets the minimum z coordinate of the mesh's bounding box */
-double mesh_min_z();
-
-/** \brief Gets the maximum z coordinate of the mesh's bounding box */
-double mesh_max_z();
-
-/** \brief Gets the x coordinate of the mesh's center of mass */
-double mesh_center_of_mass_x();
-
-/** \brief Gets the y coordinate of the mesh's center of mass */
-double mesh_center_of_mass_y();
-
-/** \brief Gets the z coordinate of the mesh's center of mass */
-double mesh_center_of_mass_z();
-
+/**
+ * \brief Gets coordinates of the mesh's center of mass
+ * \param [out] coords user-supplied array to store the coordinates
+ * \pre coords must be preallocated with room for at least three doubles.
+ * \note The center of mass is computed as the average vertex position
+ * */
+void mesh_center_of_mass(double* coords);
 
 
 

@@ -72,6 +72,7 @@ contains
     real*8  :: x, y, z, phi
     integer :: bucket_size = 25
     integer :: depth = 10
+    real*8 :: mesh_bb_min(3), mesh_bb_max(3), mesh_center_of_mass(3)
     character(LEN=40) :: Format = "(I2, F6.2, F6.2, F6.2, F6.2, I3)"
 
     if (rank == 0) then
@@ -82,17 +83,20 @@ contains
 
     !...initialize quest
     call quest_initialize( MPI_COMM_WORLD, FileName, .true., dim, bucket_size, depth )
+    call quest_mesh_bounds_min(mesh_bb_min)
+    call quest_mesh_bounds_max(mesh_bb_max)
+    call quest_mesh_center_of_mass(mesh_center_of_mass)
 
     !... Create random pts and query surface distance and containment
     do i=1,num_pts + 1
       if (i == 1) then
-        x = quest_mesh_center_of_mass_x()
-        y = quest_mesh_center_of_mass_y()
-        z = quest_mesh_center_of_mass_z()
+        x = mesh_center_of_mass(1)
+        y = mesh_center_of_mass(2)
+        z = mesh_center_of_mass(3)
       else
-        x = random_double( quest_mesh_min_x(), quest_mesh_max_x() )
-        y = random_double( quest_mesh_min_y(), quest_mesh_max_y() )
-        z = random_double( quest_mesh_min_z(), quest_mesh_max_z() )
+        x = random_double( mesh_bb_min(1), mesh_bb_max(1) )
+        y = random_double( mesh_bb_min(2), mesh_bb_max(2) )
+        z = random_double( mesh_bb_min(3), mesh_bb_max(3) )
       end if
 
       phi = quest_distance( x, y, z )
@@ -118,6 +122,7 @@ contains
     integer :: i, ins
     real*8  :: x, y, z
     integer :: unused = -1
+    real*8 :: mesh_bb_min(3), mesh_bb_max(3), mesh_center_of_mass(3)
     character(LEN=40) :: Format = "(I2, F6.2, F6.2, F6.2, I3)"
 
     if (rank == 0) then
@@ -128,17 +133,20 @@ contains
 
     !...initialize quest
     call quest_initialize( MPI_COMM_WORLD, FileName, .false., dim, unused, unused )
+    call quest_mesh_bounds_min(mesh_bb_min)
+    call quest_mesh_bounds_max(mesh_bb_max)
+    call quest_mesh_center_of_mass(mesh_center_of_mass)
 
-    !... Create random pts and query surface containment
+    !... Create random pts and query surface distance and containment
     do i=1,num_pts + 1
       if (i == 1) then
-        x = quest_mesh_center_of_mass_x()
-        y = quest_mesh_center_of_mass_y()
-        z = quest_mesh_center_of_mass_z()
+        x = mesh_center_of_mass(1)
+        y = mesh_center_of_mass(2)
+        z = mesh_center_of_mass(3)
       else
-        x = random_double( quest_mesh_min_x(), quest_mesh_max_x() )
-        y = random_double( quest_mesh_min_y(), quest_mesh_max_y() )
-        z = random_double( quest_mesh_min_z(), quest_mesh_max_z() )
+        x = random_double( mesh_bb_min(1), mesh_bb_max(1) )
+        y = random_double( mesh_bb_min(2), mesh_bb_max(2) )
+        z = random_double( mesh_bb_min(3), mesh_bb_max(3) )
       end if
 
       ins = quest_inside(x,y,z)
