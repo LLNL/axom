@@ -9,7 +9,6 @@
 
 #include "slam/Map.hpp"
 
-#include "mint/Mesh.hpp"
 #include "quest/OctreeBase.hpp"
 
 

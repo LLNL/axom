@@ -9,7 +9,6 @@
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 #include "quest/OctreeLevel.hpp"
-#include "mint/Mesh.hpp"
 
 #include "common/config.hpp"
 

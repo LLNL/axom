@@ -363,7 +363,7 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
 /**
  * \brief Extracts the vertex indices of cell cellIndex from the mesh
  */
-TriVertIndices getTriangleVertIndices(meshtk::Mesh* mesh, int cellIndex)
+TriVertIndices getTriangleVertIndices(mint::Mesh* mesh, int cellIndex)
 {
     SLIC_ASSERT(mesh != ATK_NULLPTR);
     SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getMeshNumberOfCells());
@@ -377,7 +377,7 @@ TriVertIndices getTriangleVertIndices(meshtk::Mesh* mesh, int cellIndex)
  * \brief Extracts the positions of a traingle's vertices from the mesh
  * \return The triangle vertex positions in a SpaceTriangle instance
  */
-SpaceTriangle getMeshTriangle(meshtk::Mesh* mesh, const TriVertIndices& vertIndices )
+SpaceTriangle getMeshTriangle(mint::Mesh* mesh, const TriVertIndices& vertIndices )
 {
     SLIC_ASSERT(mesh != ATK_NULLPTR);
 
