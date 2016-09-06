@@ -703,7 +703,7 @@ protected:
    * \param pt The grid point of the block index that we are testing
    * \param lev The level of the block index that we are testing
    */
-  TreeBlock blockStatus(const GridPt & pt, int lev) const
+  TreeBlockStatus blockStatus(const GridPt & pt, int lev) const
   {
       return isLevelValid(lev)
               ? getOctreeLevel(lev).blockStatus(pt)
@@ -716,7 +716,7 @@ protected:
    *       and is not meant to be exposed in the public API
    * \param blk The block index we are testing
    */
-  TreeBlock blockStatus(const BlockIndex& blk) const
+  TreeBlockStatus blockStatus(const BlockIndex& blk) const
   {
       return isLevelValid(blk.level())
               ? getOctreeLevel(blk.level()).blockStatus(blk.pt())
