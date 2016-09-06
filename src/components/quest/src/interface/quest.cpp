@@ -460,34 +460,45 @@ int inside( double x, double y, double z )
 
 
 //------------------------------------------------------------------------------
-double mesh_min_x(){ return accelerator3D.meshBoundingBox().getMin()[0]; }
+void mesh_min_bounds(double* coords)
+{
+    typedef QuestAccelerator<3>::SpacePt SpacePt;
+    SLIC_ASSERT(coords != ATK_NULLPTR);
+
+    const SpacePt& bbMin = accelerator3D.meshBoundingBox().getMin();
+    for(int i=0; i< SpacePt::dimension(); ++i)
+    {
+        coords[i] = bbMin[i];
+    }
+}
 
 //------------------------------------------------------------------------------
-double mesh_max_x(){ return accelerator3D.meshBoundingBox().getMax()[0]; }
+void mesh_max_bounds(double* coords)
+{
+    typedef QuestAccelerator<3>::SpacePt SpacePt;
+    SLIC_ASSERT(coords != ATK_NULLPTR);
+
+    const SpacePt& bbMax = accelerator3D.meshBoundingBox().getMax();
+    for(int i=0; i< SpacePt::dimension(); ++i)
+    {
+        coords[i] = bbMax[i];
+    }
+}
+
+
 
 //------------------------------------------------------------------------------
-double mesh_min_y(){ return accelerator3D.meshBoundingBox().getMin()[1]; }
+void mesh_center_of_mass(double* coords)
+{
+    typedef QuestAccelerator<3>::SpacePt SpacePt;
+    SLIC_ASSERT(coords != ATK_NULLPTR);
 
-//------------------------------------------------------------------------------
-double mesh_max_y(){ return accelerator3D.meshBoundingBox().getMax()[1]; }
-
-//------------------------------------------------------------------------------
-double mesh_min_z(){ return accelerator3D.meshBoundingBox().getMin()[2]; }
-
-//------------------------------------------------------------------------------
-double mesh_max_z(){ return accelerator3D.meshBoundingBox().getMax()[2]; }
-
-
-//------------------------------------------------------------------------------
-double mesh_center_of_mass_x(){ return accelerator3D.meshCenterOfMass()[0]; }
-
-//------------------------------------------------------------------------------
-double mesh_center_of_mass_y(){ return accelerator3D.meshCenterOfMass()[1]; }
-
-//------------------------------------------------------------------------------
-double mesh_center_of_mass_z(){ return accelerator3D.meshCenterOfMass()[2]; }
-
-
+    const SpacePt& cMass = accelerator3D.meshCenterOfMass();
+    for(int i=0; i< SpacePt::dimension(); ++i)
+    {
+        coords[i] = cMass[i];
+    }
+}
 
 //------------------------------------------------------------------------------
 void inside( const double* xyz, int* in, int npoints )

@@ -55,17 +55,17 @@ T scaleAndOffset( T rangeMin, T rangeMax, T val)
 void outputMeshStats()
 {
     // Obtain and log the mesh bounding box
-    double bb0[3] = {quest::mesh_min_x(), quest::mesh_min_y(), quest::mesh_min_z()};
-    double bb1[3] = {quest::mesh_max_x(), quest::mesh_max_y(), quest::mesh_max_z()};
+    double bbMin[3], bbMax[3];
+    quest::mesh_min_bounds(bbMin);
+    quest::mesh_max_bounds(bbMax);
     SLIC_INFO("Mesh bounding box: "
-            << "{ lower: (" << bb0[0] <<"," << bb0[1] <<","<< bb0[2] << ")"
-            << "; upper: (" << bb1[0] <<"," << bb1[1] <<","<< bb1[2] << ")}"
+            << "{ lower: (" << bbMin[0] <<"," << bbMin[1] <<","<< bbMin[2] << ")"
+            << "; upper: (" << bbMax[0] <<"," << bbMax[1] <<","<< bbMax[2] << ")}"
             );
 
     // Obtain and log the mesh center of mass
-    double cm[3] =  { quest::mesh_center_of_mass_x()
-                    , quest::mesh_center_of_mass_y()
-                    , quest::mesh_center_of_mass_z()};
+    double cm[3];
+    quest::mesh_center_of_mass(cm);
     SLIC_INFO("Mesh center of mass: "
             << "(" << cm[0] <<"," << cm[1] <<","<< cm[2] << ")"
             );
@@ -81,33 +81,27 @@ void runQuestDistance(const std::string& fileName, const CoordsVec& points)
     CoordsVec coords[3];
     {
         int nOrigPts = points.size()/3;
-        coords[0].reserve(nOrigPts+2);
-        coords[1].reserve(nOrigPts+2);
-        coords[2].reserve(nOrigPts+2);
 
-        CoordsVec::value_type xMin = quest::mesh_min_x();
-        CoordsVec::value_type xMax = quest::mesh_max_x();
-        CoordsVec::value_type yMin = quest::mesh_min_y();
-        CoordsVec::value_type yMax = quest::mesh_max_y();
-        CoordsVec::value_type zMin = quest::mesh_min_z();
-        CoordsVec::value_type zMax = quest::mesh_max_z();
+        double bbMin[3], bbMax[3], cMass[3];
+        quest::mesh_min_bounds(bbMin);
+        quest::mesh_max_bounds(bbMax);
+        quest::mesh_center_of_mass(cMass);
 
-        // Add the BB center
-        coords[0].push_back( scaleAndOffset(xMin, xMax, 0.5));
-        coords[1].push_back( scaleAndOffset(yMin, yMax, 0.5));
-        coords[2].push_back( scaleAndOffset(zMin, zMax, 0.5));
-
-        // Add the mesh center of mass
-        coords[0].push_back( quest::mesh_center_of_mass_x() );
-        coords[1].push_back( quest::mesh_center_of_mass_y() );
-        coords[2].push_back( quest::mesh_center_of_mass_z() );
-
-        // Scale and add the random points
-        for(int i=0; i< nOrigPts; ++i)
+        // Reserve space and add the mesh BB center and center of mass
+        for(int i=0; i< 3; ++i)
         {
-            coords[0].push_back( scaleAndOffset(xMin, xMax, points[i*3]));
-            coords[1].push_back( scaleAndOffset(yMin, yMax, points[i*3 +1]));
-            coords[2].push_back( scaleAndOffset(zMin, zMax, points[i*3 +2]));
+            coords[i].reserve(nOrigPts+2);
+            coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], 0.5));
+            coords[i].push_back( scaleAndOffset(cMass[i], cMass[i], 0.5));
+        }
+
+        // Scale and add the random points from input parameter
+        for(int j=0; j< nOrigPts; ++j)
+        {
+            for(int i=0; i< 3; ++i)
+            {
+                coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
+            }
         }
     }
 
@@ -142,33 +136,27 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
     CoordsVec coords[3];
     {
         int nOrigPts = points.size()/3;
-        coords[0].reserve(nOrigPts+2);
-        coords[1].reserve(nOrigPts+2);
-        coords[2].reserve(nOrigPts+2);
 
-        CoordsVec::value_type xMin = quest::mesh_min_x();
-        CoordsVec::value_type xMax = quest::mesh_max_x();
-        CoordsVec::value_type yMin = quest::mesh_min_y();
-        CoordsVec::value_type yMax = quest::mesh_max_y();
-        CoordsVec::value_type zMin = quest::mesh_min_z();
-        CoordsVec::value_type zMax = quest::mesh_max_z();
+        double bbMin[3], bbMax[3], cMass[3];
+        quest::mesh_min_bounds(bbMin);
+        quest::mesh_max_bounds(bbMax);
+        quest::mesh_center_of_mass(cMass);
 
-        // Add the BB center
-        coords[0].push_back( scaleAndOffset(xMin, xMax, 0.5));
-        coords[1].push_back( scaleAndOffset(yMin, yMax, 0.5));
-        coords[2].push_back( scaleAndOffset(zMin, zMax, 0.5));
-
-        // Add the mesh center of mass
-        coords[0].push_back( quest::mesh_center_of_mass_x() );
-        coords[1].push_back( quest::mesh_center_of_mass_y() );
-        coords[2].push_back( quest::mesh_center_of_mass_z() );
-
-        // Scale and add the random points
-        for(int i=0; i< nOrigPts; ++i)
+        // Reserve space and add the mesh BB center and center of mass
+        for(int i=0; i< 3; ++i)
         {
-            coords[0].push_back( scaleAndOffset(xMin, xMax, points[i*3]));
-            coords[1].push_back( scaleAndOffset(yMin, yMax, points[i*3 +1]));
-            coords[2].push_back( scaleAndOffset(zMin, zMax, points[i*3 +2]));
+            coords[i].reserve(nOrigPts+2);
+            coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], 0.5));
+            coords[i].push_back( scaleAndOffset(cMass[i], cMass[i], 0.5));
+        }
+
+        // Scale and add the random points from input parameter
+        for(int j=0; j< nOrigPts; ++j)
+        {
+            for(int i=0; i< 3; ++i)
+            {
+                coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
+            }
         }
     }
 
