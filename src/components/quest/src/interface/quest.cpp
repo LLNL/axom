@@ -460,7 +460,7 @@ int inside( double x, double y, double z )
 
 
 //------------------------------------------------------------------------------
-void mesh_bounds_min(double* coords)
+void mesh_min_bounds(double* coords)
 {
     typedef QuestAccelerator<3>::SpacePt SpacePt;
     SLIC_ASSERT(coords != ATK_NULLPTR);
@@ -473,7 +473,7 @@ void mesh_bounds_min(double* coords)
 }
 
 //------------------------------------------------------------------------------
-void mesh_bounds_max(double* coords)
+void mesh_max_bounds(double* coords)
 {
     typedef QuestAccelerator<3>::SpacePt SpacePt;
     SLIC_ASSERT(coords != ATK_NULLPTR);

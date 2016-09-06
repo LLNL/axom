@@ -59,20 +59,20 @@ return rv;
 // splicer end function.inside
 }
 
-void QUEST_mesh_bounds_min(double * coords)
+void QUEST_mesh_min_bounds(double * coords)
 {
-// splicer begin function.mesh_bounds_min
-mesh_bounds_min(coords);
+// splicer begin function.mesh_min_bounds
+mesh_min_bounds(coords);
 return;
-// splicer end function.mesh_bounds_min
+// splicer end function.mesh_min_bounds
 }
 
-void QUEST_mesh_bounds_max(double * coords)
+void QUEST_mesh_max_bounds(double * coords)
 {
-// splicer begin function.mesh_bounds_max
-mesh_bounds_max(coords);
+// splicer begin function.mesh_max_bounds
+mesh_max_bounds(coords);
 return;
-// splicer end function.mesh_bounds_max
+// splicer end function.mesh_max_bounds
 }
 
 void QUEST_mesh_center_of_mass(double * coords)

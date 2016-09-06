@@ -83,8 +83,8 @@ contains
 
     !...initialize quest
     call quest_initialize( MPI_COMM_WORLD, FileName, .true., dim, bucket_size, depth )
-    call quest_mesh_bounds_min(mesh_bb_min)
-    call quest_mesh_bounds_max(mesh_bb_max)
+    call quest_mesh_min_bounds(mesh_bb_min)
+    call quest_mesh_max_bounds(mesh_bb_max)
     call quest_mesh_center_of_mass(mesh_center_of_mass)
 
     !... Create random pts and query surface distance and containment
@@ -133,8 +133,8 @@ contains
 
     !...initialize quest
     call quest_initialize( MPI_COMM_WORLD, FileName, .false., dim, unused, unused )
-    call quest_mesh_bounds_min(mesh_bb_min)
-    call quest_mesh_bounds_max(mesh_bb_max)
+    call quest_mesh_min_bounds(mesh_bb_min)
+    call quest_mesh_max_bounds(mesh_bb_max)
     call quest_mesh_center_of_mass(mesh_center_of_mass)
 
     !... Create random pts and query surface distance and containment

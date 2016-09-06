@@ -40,6 +40,6 @@ functions:
 - decl: int inside( double x, double y, double z )
 ##- decl: void inside( const double* xyz, int* in, int npoints )
 
-- decl: void mesh_bounds_min( double* coords+dimension+intent(OUT) )
-- decl: void mesh_bounds_max( double* coords+dimension+intent(OUT) )
+- decl: void mesh_min_bounds( double* coords+dimension+intent(OUT) )
+- decl: void mesh_max_bounds( double* coords+dimension+intent(OUT) )
 - decl: void mesh_center_of_mass( double* coords+dimension+intent(OUT) )

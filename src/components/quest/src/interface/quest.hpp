@@ -100,8 +100,8 @@ void inside( const double* xyz, int* in, int npoints);
  * \param [out] coords user-supplied array to store the coordinates
  * \pre coords must be preallocated with room for at least three doubles.
  *******************************************************************************
- * */
-void mesh_bounds_min(double* coords);
+ */
+void mesh_min_bounds(double* coords);
 
 /*!
  *******************************************************************************
@@ -110,7 +110,7 @@ void mesh_bounds_min(double* coords);
  * \pre coords must be preallocated with room for at least three doubles.
  *******************************************************************************
  */
-void mesh_bounds_max(double* coords);
+void mesh_max_bounds(double* coords);
 
 /*!
  *******************************************************************************

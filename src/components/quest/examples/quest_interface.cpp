@@ -56,8 +56,8 @@ void outputMeshStats()
 {
     // Obtain and log the mesh bounding box
     double bbMin[3], bbMax[3];
-    quest::mesh_bounds_min(bbMin);
-    quest::mesh_bounds_max(bbMax);
+    quest::mesh_min_bounds(bbMin);
+    quest::mesh_max_bounds(bbMax);
     SLIC_INFO("Mesh bounding box: "
             << "{ lower: (" << bbMin[0] <<"," << bbMin[1] <<","<< bbMin[2] << ")"
             << "; upper: (" << bbMax[0] <<"," << bbMax[1] <<","<< bbMax[2] << ")}"
@@ -83,8 +83,8 @@ void runQuestDistance(const std::string& fileName, const CoordsVec& points)
         int nOrigPts = points.size()/3;
 
         double bbMin[3], bbMax[3], cMass[3];
-        quest::mesh_bounds_min(bbMin);
-        quest::mesh_bounds_max(bbMax);
+        quest::mesh_min_bounds(bbMin);
+        quest::mesh_max_bounds(bbMax);
         quest::mesh_center_of_mass(cMass);
 
         // Reserve space and add the mesh BB center and center of mass
@@ -138,8 +138,8 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
         int nOrigPts = points.size()/3;
 
         double bbMin[3], bbMax[3], cMass[3];
-        quest::mesh_bounds_min(bbMin);
-        quest::mesh_bounds_max(bbMax);
+        quest::mesh_min_bounds(bbMin);
+        quest::mesh_max_bounds(bbMax);
         quest::mesh_center_of_mass(cMass);
 
         // Reserve space and add the mesh BB center and center of mass
