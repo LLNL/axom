@@ -70,7 +70,7 @@ namespace quest
       void setInternal() { if(isLeaf()) { m_id = ~m_id; } }
 
       /**
-       * Equality operator for comparing two LeafData instances
+       * Equality operator for comparing two BlockData instances
        */
       friend bool operator==(const BlockData& lhs, const BlockData& rhs )
       {
@@ -626,12 +626,7 @@ public:
 
     // Add its children to the tree
     OctreeLevelType& childLevelMap = getOctreeLevel(leafBlock.childLevel());
-    typedef typename BlockIndex::ChildIndexSet ChildIndexSet;
-    const int numChildren = ChildIndexSet().size();
-    for(int childIdx=0; childIdx < numChildren; ++childIdx)
-    {
-        childLevelMap[leafBlock.childPt(childIdx)] = BlockDataType();
-    }
+    childLevelMap.addAllChildren(leafBlock.pt());
   }
 
   /**

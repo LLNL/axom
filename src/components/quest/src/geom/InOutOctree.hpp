@@ -193,6 +193,10 @@ namespace quest
             return color() != Undetermined;
         }
 
+        friend bool operator==(const InOutBlockData& lhs, const InOutBlockData& rhs)
+        {
+            return lhs.m_idx == rhs.m_idx;
+        }
     private:
         int m_idx;
     };

@@ -264,6 +264,23 @@ namespace quest
         }
 
         /**
+         * \brief Adds all children of the given grid point to the octree level
+         * \param [in] pt The gridPoint associated with the parent of the children that are being added
+         * \pre pt must be in bounds for the level
+         * \sa inBounds()
+         */
+        void addAllChildren(const GridPt& pt)
+        {
+            SLIC_ASSERT_MSG(inBounds(pt)
+                           , "Problem while inserting children of point " << pt
+                           << " into octree level " << m_level
+                           << ". Point was out of bounds -- "
+                           << "each coordinate must be between 0 and " << maxCoord() << ".");
+
+            m_map[pt];  // Adds children, if not already present, using default BlockDataType() constructor
+        }
+
+        /**
          * \brief Predicate to check whether the block associated with the given GridPt pt is an allowed block ih the level
          * \param [in] pt The gridpoint of the block to check
          * \note pt is inBounds if each of its coordinates is a non-negative integer less than maxCoord()
