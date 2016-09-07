@@ -22,6 +22,7 @@ set( quest_headers
     geom/MortonIndex.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp
+    geom/OctreeLevel.hpp
     geom/Orientation.hpp
     geom/Point.hpp
     geom/Ray.hpp

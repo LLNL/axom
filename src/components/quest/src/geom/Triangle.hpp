@@ -49,6 +49,10 @@ public:
     typedef Point<T,DIM>  PointType;
     typedef Vector<T,DIM> VectorType;
 
+    enum {
+        NUM_TRI_VERTS = 3
+    };
+
 public:
 
   /*!
@@ -134,6 +138,34 @@ public:
   const PointType& C() const { return m_C; };
 
 
+  /**
+   * \brief Index operator to get the i^th vertex
+   * \param idx The index of the desired vertex
+   * \pre idx is 0, 1 or 2
+   */
+  PointType& operator[](int idx)
+  {
+      SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
+
+      return (idx == 0)
+              ? m_A
+              : (idx == 1)? m_B : m_C;
+  }
+
+  /**
+   * \brief Index operator to get the i^th vertex
+   * \param idx The index of the desired vertex
+   * \pre idx is 0, 1 or 2
+   */
+  const PointType& operator[](int idx) const
+  {
+      SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
+
+      return (idx == 0)
+              ? m_A
+              : (idx == 1)? m_B : m_C;
+  }
+
   /*!
    * \brief Returns the normal of the triangle (not normalized)
    * \pre This function is only valid when DIM = 3
@@ -148,6 +180,21 @@ public:
               : VectorType();
   }
 
+  /**
+   * \brief Returns the area of the triangle
+   * \pre Only defined when dimension DIM is 2 or 3
+   */
+  double area() const
+  {
+      SLIC_CHECK_MSG(DIM == 2 || DIM == 3, "quest::Triangle::area() only valid when dimension is 2 or 3");
+
+      VectorType v(m_A, m_B);
+      VectorType w(m_A, m_C);
+
+      return (DIM==2)
+                  ? 0.5 * std::fabs(v[0]*w[1] - v[1]*w[0])
+                  : 0.5 * VectorType::cross_product( v,w).norm();
+  }
 
   /*!
    * \brief Simple formatted print of a triangle instance

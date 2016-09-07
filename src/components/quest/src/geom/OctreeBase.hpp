@@ -8,7 +8,7 @@
 #include "quest/MortonIndex.hpp"
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
-#include "mint/Mesh.hpp"
+#include "quest/OctreeLevel.hpp"
 
 #include "common/config.hpp"
 
@@ -18,11 +18,6 @@
 #include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
 
-#ifdef USE_CXX11
-#include <unordered_map>
-#else
-#include "boost/unordered_map.hpp"
-#endif
 
 /**
  * \file
@@ -75,7 +70,7 @@ namespace quest
       void setInternal() { if(isLeaf()) { m_id = ~m_id; } }
 
       /**
-       * Equality operator for comparing two LeafData instances
+       * Equality operator for comparing two BlockData instances
        */
       friend bool operator==(const BlockData& lhs, const BlockData& rhs )
       {
@@ -120,16 +115,12 @@ public:
   typedef asctoolkit::slam::policies::CompileTimeSizeHolder<CoordType, std::numeric_limits<CoordType>::digits> MAX_LEVEL_SIZE;
   typedef asctoolkit::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
 
+  typedef OctreeLevel<DIM, BlockDataType>           OctreeLevelType;
+  typedef typename OctreeLevelType::BlockIter       LevelMapIterator;
+  typedef typename OctreeLevelType::ConstBlockIter  LevelMapCIterator;
 
-#if defined(USE_CXX11)
-  typedef std::unordered_map<GridPt, BlockDataType, PointHash<int> > MapType;
-#else
-  typedef boost::unordered_map<GridPt, BlockDataType, PointHash<int> > MapType;
-#endif
-  typedef typename MapType::iterator LevelMapIterator;
-  typedef typename MapType::const_iterator LevelMapCIterator;
 
-  typedef asctoolkit::slam::Map<MapType> LeafIndicesLevelMap;
+  typedef asctoolkit::slam::Map<OctreeLevelType> LeafIndicesLevelMap;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
@@ -399,6 +390,11 @@ public:
   OctreeBase()
     : m_leavesLevelMap(&m_levels)
   {
+      for(int i=0; i< maxLeafLevel(); ++i)
+      {
+          m_leavesLevelMap[i] = OctreeLevelType(i);
+      }
+
       BlockIndex rootBlock = root();
       m_leavesLevelMap[rootBlock.level()][rootBlock.pt()] = BlockDataType();
   }
@@ -508,8 +504,23 @@ public:
 
   // @}
 
+  OctreeLevelType& getOctreeLevel(int lev)
+  {
+      return m_leavesLevelMap[lev];
+  }
+
+  const OctreeLevelType& getOctreeLevel(int lev) const
+  {
+      return m_leavesLevelMap[lev];
+  }
 
 public:
+
+  bool isLevelValid(int lev) const
+  {
+      return lev >=0 && lev <= maxLeafLevel();
+  }
+
   /**
    * \brief Determine whether the octree contains a leaf block associated with grid point pt at level lev
    * \param [in] pt The grid point to check
@@ -518,7 +529,7 @@ public:
    */
   bool isLeaf(const GridPt& pt, int lev) const
   {
-      return blockStatus(pt,lev)== LeafBlock;
+      return isLevelValid(lev) && getOctreeLevel(lev).isLeaf(pt);
   }
 
   /**
@@ -528,7 +539,8 @@ public:
    */
   bool isLeaf(const BlockIndex& block) const
   {
-      return blockStatus(block)== LeafBlock;
+      return isLevelValid(block.level())
+           && m_leavesLevelMap[block.level()].isLeaf(block.pt());
   }
 
 
@@ -540,7 +552,7 @@ public:
    */
   bool isInternal(const GridPt& pt, int lev) const
   {
-      return blockStatus(pt,lev)== InternalBlock;
+      return isLevelValid(lev) && getOctreeLevel(lev).isInternal(pt);
   }
 
   /**
@@ -550,7 +562,8 @@ public:
    */
   bool isInternal(const BlockIndex& block) const
   {
-      return blockStatus(block)== InternalBlock;
+      return isLevelValid(block.level())
+           && getOctreeLevel(block.level()).isInternal(block.pt());
   }
 
   /**
@@ -561,8 +574,7 @@ public:
    */
   bool hasBlock(const GridPt& pt, int lev) const
   {
-      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[lev] ];
-      return (levelLeafMap.find(pt) != levelLeafMap.end());
+      return isLevelValid(lev) && getOctreeLevel(lev).hasBlock(pt);
   }
 
 
@@ -573,7 +585,8 @@ public:
    */
   bool hasBlock(const BlockIndex& block) const
   {
-      return hasBlock(block.pt(), block.level());
+      return isLevelValid(block.level())
+           && getOctreeLevel(block.level()).hasBlock(block.pt());
   }
 
   /**
@@ -583,15 +596,7 @@ public:
    */
   bool inBounds(const GridPt& pt, int lev) const
   {
-      if( lev < 0 || lev > maxLeafLevel())
-          return false;
-
-      const CoordType maxVal = maxCoordAtLevel(lev);
-      for(int i=0; i< DIM; ++i)
-          if( pt[i] < 0 || pt[i] > maxVal)
-              return false;
-
-      return true;
+      return isLevelValid(lev) && getOctreeLevel(lev).inBounds(pt);
   }
 
 
@@ -602,7 +607,8 @@ public:
    */
   bool inBounds(const BlockIndex& block) const
   {
-      return inBounds(block.pt(), block.level());
+      return isLevelValid(block.level())
+            && getOctreeLevel(block.level()).inBounds(block.pt());
   }
 
   /**
@@ -615,17 +621,12 @@ public:
     SLIC_ASSERT( isLeaf(leafBlock) );
 
     // Find the leaf node and set as internal
-    MapType& currentNodeLevelMap = m_leavesLevelMap[ m_levels[leafBlock.level()] ];
+    OctreeLevelType& currentNodeLevelMap = getOctreeLevel(leafBlock.level());
     currentNodeLevelMap[ leafBlock.pt() ].setInternal();
 
     // Add its children to the tree
-    MapType& childLevelMap = m_leavesLevelMap[ m_levels[leafBlock.childLevel()] ];
-    typedef typename BlockIndex::ChildIndexSet ChildIndexSet;
-    const int numChildren = ChildIndexSet().size();
-    for(int childIdx=0; childIdx < numChildren; ++childIdx)
-    {
-        childLevelMap.insert( std::make_pair( leafBlock.childPt(childIdx), BlockDataType()));
-    }
+    OctreeLevelType& childLevelMap = getOctreeLevel(leafBlock.childLevel());
+    childLevelMap.addAllChildren(leafBlock.pt());
   }
 
   /**
@@ -637,7 +638,7 @@ public:
   {
       SLIC_ASSERT_MSG(hasBlock(block), "Block " << block << " was not a block in the tree.");
 
-      return m_leavesLevelMap[ m_levels[block.level()] ][ block.pt()];
+      return getOctreeLevel(block.level())[ block.pt()];
   }
 
   /**
@@ -648,12 +649,7 @@ public:
   const BlockDataType& operator[](const BlockIndex& block) const
   {
       SLIC_ASSERT_MSG(hasBlock(block), "Block " << block << " was not a block in the tree.");
-
-      // Note: Using find() method on hashmap since operator[] is non-const
-      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[block.level()] ];
-      LevelMapCIterator blockIt = levelLeafMap.find(block.pt());
-
-      return blockIt->second;
+      return getOctreeLevel(block.level())[ block.pt()];
   }
 
   /**
@@ -694,11 +690,6 @@ public:
   }
 
 protected:
-  /**
-   * \brief Helper enumeration for status of a BlockIndex within an octree instance
-   */
-  enum TreeBlock { BlockNotInTree, LeafBlock, InternalBlock};
-
 
   /**
    * \brief Helper function to determine the status of a BlockIndex within an octree instance
@@ -707,15 +698,11 @@ protected:
    * \param pt The grid point of the block index that we are testing
    * \param lev The level of the block index that we are testing
    */
-  TreeBlock blockStatus(const GridPt & pt, int lev) const
+  TreeBlockStatus blockStatus(const GridPt & pt, int lev) const
   {
-      const MapType& levelLeafMap = m_leavesLevelMap[ m_levels[lev] ];
-      LevelMapCIterator blockIt = levelLeafMap.find(pt);
-
-      if(blockIt == levelLeafMap.end())
-          return BlockNotInTree;
-
-      return (blockIt->second.isLeaf()) ? LeafBlock: InternalBlock;
+      return isLevelValid(lev)
+              ? getOctreeLevel(lev).blockStatus(pt)
+              : BlockNotInTree;
   }
 
   /**
@@ -724,9 +711,11 @@ protected:
    *       and is not meant to be exposed in the public API
    * \param blk The block index we are testing
    */
-  TreeBlock blockStatus(const BlockIndex& blk) const
+  TreeBlockStatus blockStatus(const BlockIndex& blk) const
   {
-      return blockStatus(blk.pt(), blk.level());
+      return isLevelValid(blk.level())
+              ? getOctreeLevel(blk.level()).blockStatus(blk.pt())
+              : BlockNotInTree;
   }
 
 
