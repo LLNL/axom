@@ -9,6 +9,7 @@
 #include "slic/slic.hpp"
 
 #include "quest/MortonIndex.hpp"
+#include "quest/NumericArray.hpp"
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 
@@ -94,8 +95,7 @@ namespace quest
     public:
 
         // A brood is a collection of sibling blocks that are generated simultaneously
-        typedef BlockDataType   BroodData[ Brood::NUM_CHILDREN ];
-
+        typedef quest::NumericArray< BlockDataType, Brood::NUM_CHILDREN> BroodData;
 
       #if defined(USE_CXX11)
         typedef std::unordered_map<GridPt, BroodData, PointHash<int> > MapType;
