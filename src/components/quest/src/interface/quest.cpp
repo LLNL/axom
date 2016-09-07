@@ -466,10 +466,7 @@ void mesh_min_bounds(double* coords)
     SLIC_ASSERT(coords != ATK_NULLPTR);
 
     const SpacePt& bbMin = accelerator3D.meshBoundingBox().getMin();
-    for(int i=0; i< SpacePt::dimension(); ++i)
-    {
-        coords[i] = bbMin[i];
-    }
+    bbMin.array().to_array(coords);
 }
 
 //------------------------------------------------------------------------------
@@ -479,10 +476,7 @@ void mesh_max_bounds(double* coords)
     SLIC_ASSERT(coords != ATK_NULLPTR);
 
     const SpacePt& bbMax = accelerator3D.meshBoundingBox().getMax();
-    for(int i=0; i< SpacePt::dimension(); ++i)
-    {
-        coords[i] = bbMax[i];
-    }
+    bbMax.array().to_array(coords);
 }
 
 
@@ -494,10 +488,7 @@ void mesh_center_of_mass(double* coords)
     SLIC_ASSERT(coords != ATK_NULLPTR);
 
     const SpacePt& cMass = accelerator3D.meshCenterOfMass();
-    for(int i=0; i< SpacePt::dimension(); ++i)
-    {
-        coords[i] = cMass[i];
-    }
+    cMass.array().to_array(coords);
 }
 
 //------------------------------------------------------------------------------
