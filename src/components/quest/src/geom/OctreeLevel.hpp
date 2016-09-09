@@ -40,9 +40,6 @@ namespace quest
         , InternalBlock    // Status of blocks that are internal to the tree
     };
 
-    // Predeclare types
-    template<int DIM, typename BlockDataType> class GridPointOctreeLevel;
-
     /**
      * \class
      * \brief A class to represent a sparse level of blocks within an octree.
@@ -86,6 +83,12 @@ namespace quest
 
           /** \brief Accessor for the base point of the entire brood */
           const GridPt& base() const { return m_broodPt; }
+
+          /** \brief Accessor for the Morton index of the base point */
+          MortonIndex baseMorton() const
+          {
+              return Mortonizer<CoordType,DIM>::mortonize(m_broodPt);
+          }
 
           /** \brief Accessor for the index of the point within the brood */
           const int& index() const { return m_idx; }
@@ -172,9 +175,6 @@ namespace quest
 
     public:
 
-      virtual BlockIteratorHelper* getIteratorHelper(OctreeLevel*, bool) = 0;
-      virtual ConstBlockIteratorHelper* getIteratorHelper(const OctreeLevel*, bool) const = 0;
-
       /**
        * \class
        * \brief An iterator type for the blocks of an octree level
@@ -193,7 +193,6 @@ namespace quest
             : m_octLevel(octLevel)
         {
             SLIC_ASSERT(octLevel != ATK_NULLPTR);
-
             m_iterHelper = octLevel->getIteratorHelper(octLevel,begin);
         }
 
@@ -256,9 +255,6 @@ namespace quest
 
     public:
 
-
-
-
       /**
        * \brief Predicate to check whether the block associated with the given GridPt pt is a leaf block
        */
@@ -268,15 +264,6 @@ namespace quest
        * \brief Predicate to check whether the block associated with the given GridPt pt is an internal block
        */
       bool isInternal(const GridPt& pt) const { return this->blockStatus(pt) == InternalBlock; }
-
-
-      virtual bool empty() const =0;
-
-      virtual bool hasBlock(const GridPt& pt) const =0;
-      virtual void addAllChildren(const GridPt& pt) = 0;
-
-      virtual const BlockDataType& operator[](const GridPt& pt) const = 0;
-      virtual       BlockDataType& operator[](const GridPt& pt)       = 0;
 
 
       /** \brief Begin iterator to points and data in tree level */
@@ -293,6 +280,17 @@ namespace quest
 
       virtual TreeBlockStatus blockStatus(const GridPt & pt) const = 0;
 
+      virtual bool empty() const =0;
+      virtual bool hasBlock(const GridPt& pt) const =0;
+      virtual void addAllChildren(const GridPt& pt) = 0;
+
+      virtual const BlockDataType& operator[](const GridPt& pt) const = 0;
+      virtual       BlockDataType& operator[](const GridPt& pt)       = 0;
+
+      virtual BlockIteratorHelper* getIteratorHelper(OctreeLevel*, bool) = 0;
+      virtual ConstBlockIteratorHelper* getIteratorHelper(const OctreeLevel*, bool) const = 0;
+
+
     protected:
       int m_level;
     };
@@ -307,7 +305,6 @@ namespace quest
       typedef typename Base::BroodData BroodData;
       typedef typename Base::BlockIteratorHelper BaseBlockIteratorHelper;
       typedef typename Base::ConstBlockIteratorHelper ConstBaseBlockIteratorHelper;
-
 
       #if defined(USE_CXX11)
         typedef std::unordered_map<GridPt, BroodData, PointHash<int> > MapType;
@@ -448,9 +445,7 @@ namespace quest
 
 
 
-        /**
-         * \brief Predicate to check if there are any blocks in this octree level
-         */
+        /** \brief Predicate to check if there are any blocks in this octree level */
         bool empty() const { return m_map.empty(); }
 
         /**
@@ -462,6 +457,185 @@ namespace quest
         {
             const Brood brood(pt);
             ConstMapIter blockIt = m_map.find(brood.base());
+
+            return (blockIt == m_map.end())
+                    ? BlockNotInTree
+                    : (blockIt->second[brood.index()].isLeaf())
+                        ? LeafBlock
+                        : InternalBlock;
+        }
+
+    //private:
+    //  DISABLE_COPY_AND_ASSIGNMENT(OctreeLevel);
+
+    private:
+      MapType m_map;
+    };
+
+
+    template<int DIM, typename BlockDataType>
+    class MortonOctreeLevel : public OctreeLevel<DIM,BlockDataType>
+    {
+    public:
+      typedef OctreeLevel<DIM, BlockDataType> Base;
+      typedef typename Base::GridPt GridPt;
+      typedef typename Base::Brood Brood;
+      typedef typename Base::BroodData BroodData;
+      typedef typename Base::BlockIteratorHelper BaseBlockIteratorHelper;
+      typedef typename Base::ConstBlockIteratorHelper ConstBaseBlockIteratorHelper;
+
+      #if defined(USE_CXX11)
+          typedef std::unordered_map<MortonIndex, BroodData> MapType;
+    #else
+          typedef boost::unordered_map<MortonIndex, BroodData> MapType;
+      #endif
+
+        typedef typename MapType::iterator       MapIter;
+        typedef typename MapType::const_iterator ConstMapIter;
+
+        template<typename OctreeLevelType, typename InnerIterType, typename ParentType> class MortonBlockIteratorHelper;
+
+        typedef MortonBlockIteratorHelper<MortonOctreeLevel, MapIter, BaseBlockIteratorHelper> MortonBlockIterHelper;
+        typedef MortonBlockIteratorHelper<const MortonOctreeLevel, ConstMapIter, ConstBaseBlockIteratorHelper> ConstMortonBlockIterHelper;
+
+
+    public:
+
+        template<typename OctreeLevelType, typename InnerIterType, typename ParentType>
+        class MortonBlockIteratorHelper : public ParentType
+        {
+        public:
+            typedef MortonBlockIteratorHelper<OctreeLevelType, InnerIterType, ParentType> MortonBlockItType;
+            typedef ParentType     BaseBlockItType;
+
+            MortonBlockIteratorHelper(OctreeLevelType* octLevel, bool begin)
+                : m_endIter( octLevel->m_map.end() )
+                , m_offset(0)
+                , m_isLevelZero( octLevel->level() == 0)
+            {
+                m_currentIter = begin ? octLevel->m_map.begin() : m_endIter;
+            }
+
+            void increment()
+            {
+                ++m_offset;
+
+                if(m_offset == Base::Brood::NUM_CHILDREN || m_isLevelZero)
+                {
+                    ++m_currentIter;
+                    m_offset = 0;
+                }
+            }
+
+            GridPt pt() const
+            {
+                // Reconstruct the grid point from its brood representation
+                typedef Mortonizer<typename GridPt::CoordType, GridPt::NDIMS> Mort;
+                GridPt itPt = Mort::demortonize( m_currentIter->first );
+                for(int i=0; i<DIM; ++i)
+                    itPt[i] = (itPt[i]<<1) + ( m_offset & (1 << i)? 1 : 0);
+
+                return itPt;
+            }
+
+            BlockDataType* data() { return &m_currentIter->second[m_offset]; }
+            const BlockDataType* data() const { return &m_currentIter->second[m_offset]; }
+
+            bool equal(const BaseBlockItType* other)
+            {
+                const MortonBlockItType* pother = dynamic_cast<const MortonBlockItType*>(other);
+
+                return (pother != ATK_NULLPTR)
+                     && (m_currentIter == pother->m_currentIter)   // iterators are the same
+                     && (m_offset == pother->m_offset);               // brood indices are the same
+            }
+        private:
+            InnerIterType m_currentIter, m_endIter;
+            int m_offset;
+            bool m_isLevelZero;
+        };
+
+    public:
+
+        /**
+         * \brief Default constructor for an octree level
+         */
+        MortonOctreeLevel(int level = -1): Base(level){}
+
+
+        BaseBlockIteratorHelper* getIteratorHelper(Base* octLevel, bool begin)
+        {
+            return new MortonBlockIterHelper(static_cast<MortonOctreeLevel*>(octLevel), begin);
+        }
+
+        ConstBaseBlockIteratorHelper* getIteratorHelper(const Base* octLevel, bool begin) const
+        {
+            return new ConstMortonBlockIterHelper(static_cast<const MortonOctreeLevel*>(octLevel), begin);
+        }
+
+
+        /**
+         * \brief Predicate to check whether the block associated with the given GridPt pt is in the current level
+         */
+        bool hasBlock(const GridPt& pt) const
+        {
+            const Brood brood(pt);
+            ConstMapIter blockIt = m_map.find(brood.baseMorton());
+            return blockIt != m_map.end();
+        }
+
+        /**
+         * \brief Adds all children of the given grid point to the octree level
+         * \param [in] pt The gridPoint associated with the parent of the children that are being added
+         * \pre pt must be in bounds for the level
+         * \sa inBounds()
+         */
+        void addAllChildren(const GridPt& pt)
+        {
+            SLIC_ASSERT_MSG(this->inBounds(pt)
+                           , "Problem while inserting children of point " << pt
+                           << " into octree level " << this->m_level
+                           << ". Point was out of bounds -- "
+                           << "each coordinate must be between 0 and " << this->maxCoord() << ".");
+
+            m_map[ Mortonizer<typename GridPt::CoordType,DIM>::mortonize(pt) ];  // Adds children, if not already present, using default BlockDataType() constructor
+        }
+
+
+
+        /** \brief Accessor for the data associated with pt */
+        BlockDataType& operator[](const GridPt& pt)
+        {
+            const Brood brood(pt);
+            return m_map[brood.baseMorton()][brood.index()];
+        }
+
+        /** \brief Const accessor for the data associated with pt */
+        const BlockDataType& operator[](const GridPt& pt) const
+        {
+            SLIC_ASSERT_MSG(hasBlock(pt)
+                            ,"(" << pt <<", "<< this->m_level << ") was not a block in the tree at level.");
+
+            // Note: Using find() method on hashmap since operator[] is non-const
+            const Brood brood(pt);
+            ConstMapIter blockIt = m_map.find(brood.baseMorton());
+            return blockIt->second[brood.index()];
+        }
+
+
+
+        /** \brief Predicate to check if there are any blocks in this octree level */
+        bool empty() const { return m_map.empty(); }
+
+        /**
+         * \brief Helper function to determine the status of an octree block within this octree level
+         * \param pt The grid point of the block index that we are testing
+         * \return The status of the grid point pt (e.g. LeafBlock, InternalBlock, ...)
+         */
+        TreeBlockStatus blockStatus(const GridPt & pt) const
+        {
+            const Brood brood(pt);
+            ConstMapIter blockIt = m_map.find(brood.baseMorton());
 
             return (blockIt == m_map.end())
                     ? BlockNotInTree

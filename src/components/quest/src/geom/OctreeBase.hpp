@@ -392,7 +392,10 @@ public:
   {
       for(int i=0; i< maxLeafLevel(); ++i)
       {
-          m_leavesLevelMap[i] = new GridPointOctreeLevel<DIM,BlockDataType>(i);
+          if( i * DIM <= 64 )
+              m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,BlockDataType>(i);
+          else
+              m_leavesLevelMap[i] = new GridPointOctreeLevel<DIM,BlockDataType>(i);
       }
 
       BlockIndex rootBlock = root();
