@@ -120,7 +120,7 @@ public:
   typedef typename OctreeLevelType::ConstBlockIter  LevelMapCIterator;
 
 
-  typedef asctoolkit::slam::Map<OctreeLevelType> LeafIndicesLevelMap;
+  typedef asctoolkit::slam::Map<OctreeLevelType*> LeafIndicesLevelMap;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
@@ -392,11 +392,20 @@ public:
   {
       for(int i=0; i< maxLeafLevel(); ++i)
       {
-          m_leavesLevelMap[i] = OctreeLevelType(i);
+          m_leavesLevelMap[i] = new GridPointOctreeLevel<DIM,BlockDataType>(i);
       }
 
       BlockIndex rootBlock = root();
-      m_leavesLevelMap[rootBlock.level()][rootBlock.pt()] = BlockDataType();
+      (*m_leavesLevelMap[rootBlock.level()])[rootBlock.pt()] = BlockDataType();
+  }
+
+  ~OctreeBase()
+  {
+      for(int i=0; i< maxLeafLevel(); ++i)
+      {
+          delete m_leavesLevelMap[i];
+          m_leavesLevelMap[i] = ATK_NULLPTR;
+      }
   }
 
   /**
@@ -506,12 +515,12 @@ public:
 
   OctreeLevelType& getOctreeLevel(int lev)
   {
-      return m_leavesLevelMap[lev];
+      return *m_leavesLevelMap[lev];
   }
 
   const OctreeLevelType& getOctreeLevel(int lev) const
   {
-      return m_leavesLevelMap[lev];
+      return *m_leavesLevelMap[lev];
   }
 
 public:
@@ -540,7 +549,7 @@ public:
   bool isLeaf(const BlockIndex& block) const
   {
       return isLevelValid(block.level())
-           && m_leavesLevelMap[block.level()].isLeaf(block.pt());
+           && getOctreeLevel(block.level()).isLeaf(block.pt());
   }
 
 
