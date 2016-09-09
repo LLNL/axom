@@ -56,52 +56,12 @@ namespace quest
         typedef quest::Point<CoordType,DIM> GridPt;
         typedef quest::Vector<CoordType,DIM> GridVec;
 
-    protected:
-        /**
-         * \class
-         * \brief Private inner class to handle subindexing of block data within octree siblings
-         * \note A brood is a collection of siblings that are generated simultaneously.
-         * \note This class converts a grid point at the given level into a brood index of the point.
-         *       The base brood point is that of the grid point's octree parent
-         *       and its offset index is obtained by interleaving the least significant bit of its coordinates.
-         */
-      struct Brood {
-          enum { NUM_CHILDREN = 1 << DIM };
-
-          /**
-           * \brief Constructor for a brood offset relative to the given grid point pt
-           * \param [in] pt The grid point within the octree level
-           */
-          Brood(const GridPt& pt)
-              : m_broodPt( pt.array() /2), m_idx(0)
-          {
-              for(int i=0; i< DIM; ++i)
-              {
-                  m_idx |= (pt[i]& 1) << i; // interleave the least significant bits
-              }
-          }
-
-          /** \brief Accessor for the base point of the entire brood */
-          const GridPt& base() const { return m_broodPt; }
-
-          /** \brief Accessor for the Morton index of the base point */
-          MortonIndex baseMorton() const
-          {
-              return Mortonizer<CoordType,DIM>::mortonize(m_broodPt);
-          }
-
-          /** \brief Accessor for the index of the point within the brood */
-          const int& index() const { return m_idx; }
-
-      private:
-          GridPt m_broodPt;  /** Base point of all blocks within the brood */
-          int m_idx;         /** Index of the block within the brood. Value is in [0, 2^DIM) */
-      };
+        enum { BROOD_SIZE = 1 << DIM };
 
     public:
 
       // A brood is a collection of sibling blocks that are generated simultaneously
-      typedef quest::NumericArray< BlockDataType, Brood::NUM_CHILDREN> BroodData;
+      typedef quest::NumericArray< BlockDataType, BROOD_SIZE> BroodData;
 
       template<typename OctreeLevel, typename IterHelper, typename DataType> class BlockIterator;
 
@@ -301,7 +261,6 @@ namespace quest
     public:
       typedef OctreeLevel<DIM, BlockDataType> Base;
       typedef typename Base::GridPt GridPt;
-      typedef typename Base::Brood Brood;
       typedef typename Base::BroodData BroodData;
       typedef typename Base::BlockIteratorHelper BaseBlockIteratorHelper;
       typedef typename Base::ConstBlockIteratorHelper ConstBaseBlockIteratorHelper;
@@ -320,6 +279,40 @@ namespace quest
         typedef GridBlockIteratorHelper<GridPointOctreeLevel, MapIter, BaseBlockIteratorHelper> GridBlockIterHelper;
         typedef GridBlockIteratorHelper<const GridPointOctreeLevel, ConstMapIter, ConstBaseBlockIteratorHelper> ConstGridBlockIterHelper;
 
+    protected:
+        /**
+         * \class
+         * \brief Private inner class to handle subindexing of block data within octree siblings
+         * \note A brood is a collection of siblings that are generated simultaneously.
+         * \note This class converts a grid point at the given level into a brood index of the point.
+         *       The base brood point is that of the grid point's octree parent
+         *       and its offset index is obtained by interleaving the least significant bit of its coordinates.
+         */
+      struct Brood {
+
+          /**
+           * \brief Constructor for a brood offset relative to the given grid point pt
+           * \param [in] pt The grid point within the octree level
+           */
+          Brood(const GridPt& pt)
+              : m_broodPt( pt.array() /2), m_offset(0)
+          {
+              for(int i=0; i< DIM; ++i)
+              {
+                  m_offset |= (pt[i]& 1) << i; // interleave the least significant bits
+              }
+          }
+
+          /** \brief Accessor for the base point of the entire brood */
+          const GridPt& base() const { return m_broodPt; }
+
+          /** \brief Accessor for the index of the point within the brood */
+          const int& offset() const { return m_offset; }
+
+      private:
+          GridPt m_broodPt;  /** Base point of all blocks within the brood */
+          int m_offset;         /** Index of the block within the brood. Value is in [0, 2^DIM) */
+      };
 
     public:
 
@@ -333,7 +326,6 @@ namespace quest
             GridBlockIteratorHelper(OctreeLevelType* octLevel, bool begin)
                 : m_endIter( octLevel->m_map.end() )
                 , m_offset(0)
-                , m_isLevelZero( octLevel->level() == 0)
             {
                 m_currentIter = begin ? octLevel->m_map.begin() : m_endIter;
             }
@@ -342,7 +334,7 @@ namespace quest
             {
                 ++m_offset;
 
-                if(m_offset == Base::Brood::NUM_CHILDREN || m_isLevelZero)
+                if(m_offset == Base::BROOD_SIZE)
                 {
                     ++m_currentIter;
                     m_offset = 0;
@@ -373,7 +365,6 @@ namespace quest
         private:
             InnerIterType m_currentIter, m_endIter;
             int m_offset;
-            bool m_isLevelZero;
         };
 
     public:
@@ -428,7 +419,7 @@ namespace quest
         BlockDataType& operator[](const GridPt& pt)
         {
             const Brood brood(pt);
-            return m_map[brood.base()][brood.index()];
+            return m_map[brood.base()][brood.offset()];
         }
 
         /** \brief Const accessor for the data associated with pt */
@@ -440,7 +431,7 @@ namespace quest
             // Note: Using find() method on hashmap since operator[] is non-const
             const Brood brood(pt);
             ConstMapIter blockIt = m_map.find(brood.base());
-            return blockIt->second[brood.index()];
+            return blockIt->second[brood.offset()];
         }
 
 
@@ -460,7 +451,7 @@ namespace quest
 
             return (blockIt == m_map.end())
                     ? BlockNotInTree
-                    : (blockIt->second[brood.index()].isLeaf())
+                    : (blockIt->second[brood.offset()].isLeaf())
                         ? LeafBlock
                         : InternalBlock;
         }
@@ -479,7 +470,6 @@ namespace quest
     public:
       typedef OctreeLevel<DIM, BlockDataType> Base;
       typedef typename Base::GridPt GridPt;
-      typedef typename Base::Brood Brood;
       typedef typename Base::BroodData BroodData;
       typedef typename Base::BlockIteratorHelper BaseBlockIteratorHelper;
       typedef typename Base::ConstBlockIteratorHelper ConstBaseBlockIteratorHelper;
@@ -498,6 +488,41 @@ namespace quest
         typedef MortonBlockIteratorHelper<MortonOctreeLevel, MapIter, BaseBlockIteratorHelper> MortonBlockIterHelper;
         typedef MortonBlockIteratorHelper<const MortonOctreeLevel, ConstMapIter, ConstBaseBlockIteratorHelper> ConstMortonBlockIterHelper;
 
+    protected:
+        /**
+         * \class
+         * \brief Private inner class to handle subindexing of block data within octree siblings
+         * \note A brood is a collection of siblings that are generated simultaneously.
+         * \note This class converts a grid point at the given level into a brood index of the point.
+         *       The base brood point is that of the grid point's octree parent
+         *       and its offset index is obtained by interleaving the least significant bit of its coordinates.
+         */
+      struct Brood {
+          enum { BROOD_BITMASK = Base::BROOD_SIZE -1 };
+
+          typedef Mortonizer<typename GridPt::CoordType, GridPt::NDIMS> MortonizerType;
+
+          /**
+           * \brief Constructor for a brood offset relative to the given grid point pt
+           * \param [in] pt The grid point within the octree level
+           */
+          Brood(const GridPt& pt)
+          {
+              m_broodIdx = MortonizerType::mortonize(pt);
+              m_offset = m_broodIdx & BROOD_BITMASK;
+              m_broodIdx >>= DIM;
+          }
+
+          /** \brief Accessor for the base point of the entire brood */
+          const MortonIndex& base() const { return m_broodIdx; }
+
+          /** \brief Accessor for the index of the point within the brood */
+          const int& offset() const { return m_offset; }
+
+      private:
+          MortonIndex m_broodIdx;  /** Base point of all blocks within the brood */
+          int m_offset;         /** Index of the block within the brood. Value is in [0, 2^DIM) */
+      };
 
     public:
 
@@ -520,7 +545,7 @@ namespace quest
             {
                 ++m_offset;
 
-                if(m_offset == Base::Brood::NUM_CHILDREN || m_isLevelZero)
+                if(m_offset == Base::BROOD_SIZE || m_isLevelZero)
                 {
                     ++m_currentIter;
                     m_offset = 0;
@@ -531,11 +556,7 @@ namespace quest
             {
                 // Reconstruct the grid point from its brood representation
                 typedef Mortonizer<typename GridPt::CoordType, GridPt::NDIMS> Mort;
-                GridPt itPt = Mort::demortonize( m_currentIter->first );
-                for(int i=0; i<DIM; ++i)
-                    itPt[i] = (itPt[i]<<1) + ( m_offset & (1 << i)? 1 : 0);
-
-                return itPt;
+                return Mort::demortonize( (m_currentIter->first << DIM)  + m_offset);
             }
 
             BlockDataType* data() { return &m_currentIter->second[m_offset]; }
@@ -580,7 +601,7 @@ namespace quest
         bool hasBlock(const GridPt& pt) const
         {
             const Brood brood(pt);
-            ConstMapIter blockIt = m_map.find(brood.baseMorton());
+            ConstMapIter blockIt = m_map.find(brood.base());
             return blockIt != m_map.end();
         }
 
@@ -598,7 +619,7 @@ namespace quest
                            << ". Point was out of bounds -- "
                            << "each coordinate must be between 0 and " << this->maxCoord() << ".");
 
-            m_map[ Mortonizer<typename GridPt::CoordType,DIM>::mortonize(pt) ];  // Adds children, if not already present, using default BlockDataType() constructor
+            m_map[ Brood::MortonizerType::mortonize(pt) ];  // Adds children, if not already present, using default BlockDataType() constructor
         }
 
 
@@ -607,7 +628,7 @@ namespace quest
         BlockDataType& operator[](const GridPt& pt)
         {
             const Brood brood(pt);
-            return m_map[brood.baseMorton()][brood.index()];
+            return m_map[brood.base()][brood.offset()];
         }
 
         /** \brief Const accessor for the data associated with pt */
@@ -618,8 +639,8 @@ namespace quest
 
             // Note: Using find() method on hashmap since operator[] is non-const
             const Brood brood(pt);
-            ConstMapIter blockIt = m_map.find(brood.baseMorton());
-            return blockIt->second[brood.index()];
+            ConstMapIter blockIt = m_map.find(brood.base());
+            return blockIt->second[brood.offset()];
         }
 
 
@@ -635,11 +656,11 @@ namespace quest
         TreeBlockStatus blockStatus(const GridPt & pt) const
         {
             const Brood brood(pt);
-            ConstMapIter blockIt = m_map.find(brood.baseMorton());
+            ConstMapIter blockIt = m_map.find(brood.base());
 
             return (blockIt == m_map.end())
                     ? BlockNotInTree
-                    : (blockIt->second[brood.index()].isLeaf())
+                    : (blockIt->second[brood.offset()].isLeaf())
                         ? LeafBlock
                         : InternalBlock;
         }
