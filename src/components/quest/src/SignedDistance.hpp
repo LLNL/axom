@@ -82,6 +82,8 @@ public:
    *****************************************************************************
    */
   double computeDistance( const PointType& queryPnt ) const;
+  double computeDistance( const PointType& queryPnt,
+			  int& totalobj ) const;
 
   /*!
    *****************************************************************************
@@ -198,24 +200,40 @@ template < int NDIMS >
 inline double
 SignedDistance< NDIMS >::computeDistance( const PointType& pt ) const
 {
+  int totalobj = 0;
+  return computeDistance(pt, totalobj);
+}
+
+template < int NDIMS >
+inline double
+SignedDistance< NDIMS >::computeDistance(
+  const PointType& pt,
+  int& totalobj ) const
+{
   SLIC_ASSERT( m_surfaceMesh != ATK_NULLPTR );
   SLIC_ASSERT( m_bvhTree != ATK_NULLPTR );
 
   PointType closest_pt;
   VectorType normal;
+
   int count        = 0;
   int closest_cell = -1;
   double minSqDist = std::numeric_limits< double >::max();
-
+  static double totalboxes;
   std::vector< int > candidate_buckets;
+
   m_bvhTree->find( pt, candidate_buckets );
 
   const int nbuckets = candidate_buckets.size();
+  totalboxes+=nbuckets;
+
   for ( int ibucket=0; ibucket < nbuckets; ++ibucket ) {
 
      const int bucketIdx  = candidate_buckets[ ibucket ];
      const int numObjects = m_bvhTree->getBucketNumObjects( bucketIdx );
      const int* objIdList = m_bvhTree->getBucketObjectArray( bucketIdx );
+
+     totalobj+=numObjects;
 
      for ( int iobject=0; iobject < numObjects; ++iobject ) {
 
@@ -302,7 +320,7 @@ inline void SignedDistance< NDIMS >::updateMinSquaredDistance(
 
   } else if ( fuzzy ) {
 
-     SLIC_ASSERT( count > 0 );
+     SLIC_ASSERT( count >= 0 );
      normal += surfTri.normal();
      ++count;
 
