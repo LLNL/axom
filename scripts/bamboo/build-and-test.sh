@@ -11,8 +11,6 @@ else
 fi
 #BT="Debug"
 BT=$2
-echo $COMPILER,$BT
-exit
 BP="atk_build"
 IP="atk_install"
 COMP_OPT=""
