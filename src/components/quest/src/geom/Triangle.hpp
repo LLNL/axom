@@ -27,6 +27,7 @@
 
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
+#include "common/Utilities.hpp"
 
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
@@ -266,6 +267,22 @@ public:
   bool degenerate() const
   {
     return asctoolkit::utilities::isNearlyEqual(area(),  0.0, 1.0e-12);
+  }
+
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether Point P is in the triangle for some 3d Triangle
+   * \return true iff P is in the triangle
+   * \see quest::Point
+   *****************************************************************************
+   */
+
+  bool checkInTriangle(const Point<double, DIM>& P) const{
+    Point<T,3> bC= barycenterCoords(P);
+    return ((bC[0]>=0.0) && (bC[1] >= 0.0) && (bC[2]>=0.0) &&
+	    (bC[0]<=1.0) && (bC[1]<=1.0) && (bC[2]<=1.0) &&
+	    (bC[0]+bC[1]+bC[2]<=1.0));
   }
 
 
