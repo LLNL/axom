@@ -553,7 +553,7 @@ private:
         }
 
         /**
-         * \brief Utility function to retrieve the positions of the traingle's vertices
+         * \brief Utility function to retrieve the positions of the triangle's vertices
          * \return A triangle instance whose vertices are positioned in space
          */
         SpaceTriangle trianglePositions(TriangleIndex idx) const

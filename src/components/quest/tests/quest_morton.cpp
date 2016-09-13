@@ -63,8 +63,9 @@ TEST( quest_point, test_max_set_bit)
     SLIC_INFO(" This test checks that MortonBase's maxSetBit function works properly");
 
     typedef int CoordType;
+    typedef std::size_t MortonIndexType;
 
-    quest::Mortonizer<CoordType,2> morton2;
+    quest::Mortonizer<CoordType,MortonIndexType,2> morton2;
     EXPECT_EQ( morton2.maxSetBit( 0), 0);
 
 
@@ -91,13 +92,15 @@ TEST( quest_point, test_mortonizer)
   SLIC_INFO("Testing Morton conversion on some simple points");
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  typedef std::size_t MortonIndexType;
+
 
   Point<int,2> pt2(2);  // (0b10, 0b10)
-  Mortonizer<int,2> morton2;
-  MortonIndex mIdx2 = morton2.mortonize(pt2);
-  EXPECT_EQ( mIdx2, static_cast<MortonIndex>(0b1100) ); // interleaved bits
+  Mortonizer<int,MortonIndexType,2> morton2;
+  MortonIndexType mIdx2 = morton2.mortonize(pt2);
+  EXPECT_EQ( mIdx2, static_cast<MortonIndexType>(0b1100) ); // interleaved bits
 
-  MortonIndex mIdx2Alt = morton2.mortonize(pt2[0],pt2[1]);
+  MortonIndexType mIdx2Alt = morton2.mortonize(pt2[0],pt2[1]);
   EXPECT_EQ( mIdx2, mIdx2Alt );
   EXPECT_EQ( morton2.demortonize(mIdx2Alt), pt2 );
 
@@ -109,17 +112,17 @@ TEST( quest_point, test_mortonizer)
   ptDoxygenExample[1] = 3;
   EXPECT_EQ(ptDoxygenExample[1], 0b0011 );
 
-  MortonIndex mEx = morton2.mortonize(ptDoxygenExample);
-  EXPECT_EQ( mEx, static_cast<MortonIndex>(30) ); // interleaved bits
+  MortonIndexType mEx = morton2.mortonize(ptDoxygenExample);
+  EXPECT_EQ( mEx, static_cast<MortonIndexType>(30) ); // interleaved bits
   EXPECT_EQ(30, 0b00011110 );
 
 
   Point<int,3> pt3(2);  // (0b10, 0b10, 0b10)
-  Mortonizer<int,3> morton3;
-  MortonIndex mIdx3 = morton3.mortonize(pt3);
-  EXPECT_EQ( mIdx3, static_cast<MortonIndex>(0b111000) ); // interleaved bits
+  Mortonizer<int,MortonIndexType,3> morton3;
+  MortonIndexType mIdx3 = morton3.mortonize(pt3);
+  EXPECT_EQ( mIdx3, static_cast<MortonIndexType>(0b111000) ); // interleaved bits
 
-  MortonIndex mIdx3Alt = morton3.mortonize(pt3[0],pt3[1],pt3[2]);
+  MortonIndexType mIdx3Alt = morton3.mortonize(pt3[0],pt3[1],pt3[2]);
   EXPECT_EQ( mIdx3, mIdx3Alt );
   EXPECT_EQ( morton3.demortonize(mIdx3Alt), pt3 );
 
@@ -130,7 +133,7 @@ TEST( quest_point, test_mortonizer)
 }
 
 
-template<typename CoordType>
+template<typename CoordType, typename MortonIndexType>
 void testMortonizer2D()
 {
     using namespace quest;
@@ -138,7 +141,7 @@ void testMortonizer2D()
     static const int DIM = 2;
     typedef Point<CoordType, DIM> GridPoint;
 
-    int maxBits = quest::Mortonizer<CoordType,DIM>::uniqueCoordBits();
+    int maxBits = quest::Mortonizer<CoordType,MortonIndexType,DIM>::uniqueCoordBits();
     SLIC_INFO("\tMax bits per dimension: " << std::numeric_limits<CoordType>::digits);
     SLIC_INFO("\tMax unique bits per dimension: " << maxBits);
 
@@ -148,15 +151,15 @@ void testMortonizer2D()
         GridPoint origPt = randomPoint<CoordType, DIM>(0, 1 << maxBits);
         SLIC_DEBUG( "\tOriginal point: " << origPt);
 
-        MortonIndex mortonIdx = convertPointToMorton2D( origPt);
+        MortonIndexType mortonIdx = convertPointToMorton2D<CoordType, MortonIndexType>( origPt);
         SLIC_DEBUG( "\tMorton index: " << mortonIdx);
 
-        GridPoint convertedPt = convertMortonToPoint2D<CoordType>( mortonIdx);
+        GridPoint convertedPt = convertMortonToPoint2D<CoordType, MortonIndexType>( mortonIdx);
         SLIC_DEBUG( "\tConverted point: " << convertedPt << "\n..");
 
         EXPECT_EQ( origPt, convertedPt );
 
-        MortonIndex convertedMortonIdx = convertPointToMorton2D( convertedPt );
+        MortonIndexType convertedMortonIdx = convertPointToMorton2D<CoordType, MortonIndexType>( convertedPt );
         EXPECT_EQ( mortonIdx, convertedMortonIdx );
     }
 }
@@ -165,38 +168,40 @@ void testMortonizer2D()
 TEST( quest_point, test_integral_types_2D)
 {
     SLIC_INFO("*** Testing morton indexing in 2D with different coord types");
+    namespace common = asctoolkit::common;
+    typedef common::uint64 MortonIndexType;
 
     SLIC_INFO("Testing char -- ");
-    testMortonizer2D<char>();
+    testMortonizer2D<common::int8,MortonIndexType>();
 
     SLIC_INFO("Testing uchar -- ");
-    testMortonizer2D<unsigned char>();
+    testMortonizer2D<common::uint8,MortonIndexType>();
 
     // --
     SLIC_INFO("Testing short -- ");
-    testMortonizer2D<short>();
+    testMortonizer2D<common::int16,MortonIndexType>();
 
     SLIC_INFO("Testing ushort-- ");
-    testMortonizer2D<unsigned short>();
+    testMortonizer2D<common::uint16,MortonIndexType>();
 
     // --
     SLIC_INFO("Testing int -- ");
-    testMortonizer2D<int>();
+    testMortonizer2D<common::int32,MortonIndexType>();
 
     SLIC_INFO("Testing uint -- ");
-    testMortonizer2D<unsigned int>();
+    testMortonizer2D<common::uint32,MortonIndexType>();
 
     // --
     SLIC_INFO("Testing long -- ");
-    testMortonizer2D<long long int>();
+    testMortonizer2D<common::int64,MortonIndexType>();
 
     SLIC_INFO("Testing ull-- ");
-    testMortonizer2D<unsigned long long int>();
+    testMortonizer2D<common::uint64,MortonIndexType>();
 
 }
 
 
-template<typename CoordType>
+template<typename CoordType, typename MortonIndexType>
 void testMortonizer3D()
 {
     using namespace quest;
@@ -204,7 +209,7 @@ void testMortonizer3D()
     static const int DIM = 3;
     typedef Point<CoordType, DIM> GridPoint;
 
-    int maxBits = quest::Mortonizer<CoordType,DIM>::uniqueCoordBits();
+    int maxBits = quest::Mortonizer<CoordType,MortonIndexType,DIM>::uniqueCoordBits();
     SLIC_INFO("\tMax bits per dimension: " << std::numeric_limits<CoordType>::digits);
     SLIC_INFO("\tMax unique bits per dimension: " << maxBits );
 
@@ -215,16 +220,16 @@ void testMortonizer3D()
 
         SLIC_DEBUG( "\tOriginal point: " << origPt);
 
-        MortonIndex mortonIdx = convertPointToMorton3D( origPt);
+        MortonIndexType mortonIdx = convertPointToMorton3D<CoordType, MortonIndexType>( origPt);
         SLIC_DEBUG( "\tMorton index: " << mortonIdx);
 
-        GridPoint convertedPt = convertMortonToPoint3D<CoordType>( mortonIdx);
+        GridPoint convertedPt = convertMortonToPoint3D<CoordType, MortonIndexType>( mortonIdx);
         SLIC_DEBUG( "\tConverted point: " << convertedPt << "\n..");
 
 
         EXPECT_EQ( origPt, convertedPt );
 
-        MortonIndex convertedMortonIdx = convertPointToMorton3D( convertedPt );
+        MortonIndexType convertedMortonIdx = convertPointToMorton3D<CoordType, MortonIndexType>( convertedPt );
         EXPECT_EQ( mortonIdx, convertedMortonIdx );
     }
 }
@@ -234,32 +239,35 @@ TEST( quest_point, test_integral_types_3D)
 {
     SLIC_INFO("*** Testing morton indexing in 3D with different coord types");
 
+    namespace common = asctoolkit::common;
+    typedef common::uint64 MortonIndexType;
+
     SLIC_INFO("Testing char -- ");
-    testMortonizer3D<char>();
+    testMortonizer3D<common::int8,MortonIndexType>();
 
     SLIC_INFO("Testing uchar -- ");
-    testMortonizer3D<unsigned char>();
+    testMortonizer3D<common::uint8,MortonIndexType>();
 
     // --
     SLIC_INFO("Testing short -- ");
-    testMortonizer3D<short>();
+    testMortonizer3D<common::int16,MortonIndexType>();
 
     SLIC_INFO("Testing ushort-- ");
-    testMortonizer3D<unsigned short>();
+    testMortonizer3D<common::uint16,MortonIndexType>();
 
     // --
     SLIC_INFO("Testing int -- ");
-    testMortonizer3D<int>();
+    testMortonizer3D<common::int32,MortonIndexType>();
 
     SLIC_INFO("Testing uint -- ");
-    testMortonizer3D<unsigned int>();
+    testMortonizer3D<common::uint32,MortonIndexType>();
 
     // --
     SLIC_INFO("Testing long -- ");
-    testMortonizer3D<long long int>();
+    testMortonizer3D<common::int64,MortonIndexType>();
 
     SLIC_INFO("Testing ull-- ");
-    testMortonizer3D<unsigned long long int>();
+    testMortonizer3D<common::uint64,MortonIndexType>();
 }
 
 

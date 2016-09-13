@@ -392,8 +392,14 @@ public:
   {
       for(int i=0; i< maxLeafLevel(); ++i)
       {
-          if( i * DIM <= 64 )
-              m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,BlockDataType>(i);
+          namespace common = asctoolkit::common;
+
+          if( i * DIM <= 16)
+              m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,common::uint16, BlockDataType>(i);
+          else if( i * DIM <= 32 )
+              m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,common::uint32, BlockDataType>(i);
+          else if( i * DIM <= 64 )
+              m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,common::uint64, BlockDataType>(i);
           else
               m_leavesLevelMap[i] = new GridPointOctreeLevel<DIM,BlockDataType>(i);
       }

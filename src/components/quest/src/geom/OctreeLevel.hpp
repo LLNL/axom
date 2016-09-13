@@ -4,6 +4,7 @@
 
 
 #include "common/config.hpp"
+#include "common/CommonTypes.hpp"
 
 #include "fmt/fmt.hpp"
 #include "slic/slic.hpp"
@@ -464,7 +465,7 @@ namespace quest
     };
 
 
-    template<int DIM, typename BlockDataType>
+    template<int DIM, typename MortonIndexType, typename BlockDataType>
     class MortonOctreeLevel : public OctreeLevel<DIM,BlockDataType>
     {
     public:
@@ -475,9 +476,9 @@ namespace quest
       typedef typename Base::ConstBlockIteratorHelper ConstBaseBlockIteratorHelper;
 
       #if defined(USE_CXX11)
-          typedef std::unordered_map<MortonIndex, BroodData> MapType;
+          typedef std::unordered_map<MortonIndexType, BroodData> MapType;
     #else
-          typedef boost::unordered_map<MortonIndex, BroodData> MapType;
+          typedef boost::unordered_map<MortonIndexType, BroodData> MapType;
       #endif
 
         typedef typename MapType::iterator       MapIter;
@@ -500,7 +501,7 @@ namespace quest
       struct Brood {
           enum { BROOD_BITMASK = Base::BROOD_SIZE -1 };
 
-          typedef Mortonizer<typename GridPt::CoordType, GridPt::NDIMS> MortonizerType;
+          typedef Mortonizer<typename GridPt::CoordType, MortonIndexType, GridPt::NDIMS> MortonizerType;
 
           /**
            * \brief Constructor for a brood offset relative to the given grid point pt
@@ -514,13 +515,13 @@ namespace quest
           }
 
           /** \brief Accessor for the base point of the entire brood */
-          const MortonIndex& base() const { return m_broodIdx; }
+          const MortonIndexType& base() const { return m_broodIdx; }
 
           /** \brief Accessor for the index of the point within the brood */
           const int& offset() const { return m_offset; }
 
       private:
-          MortonIndex m_broodIdx;  /** Base point of all blocks within the brood */
+          MortonIndexType m_broodIdx;  /** Base point of all blocks within the brood */
           int m_offset;         /** Index of the block within the brood. Value is in [0, 2^DIM) */
       };
 
@@ -555,7 +556,7 @@ namespace quest
             GridPt pt() const
             {
                 // Reconstruct the grid point from its brood representation
-                typedef Mortonizer<typename GridPt::CoordType, GridPt::NDIMS> Mort;
+                typedef Mortonizer<typename GridPt::CoordType, MortonIndexType, GridPt::NDIMS> Mort;
                 return Mort::demortonize( (m_currentIter->first << DIM)  + m_offset);
             }
 
