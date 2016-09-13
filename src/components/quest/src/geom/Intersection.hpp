@@ -92,6 +92,59 @@ bool intersect( const Ray<T,2>& R, const Segment<T,2>& S, Point<T,2>& ip )
    return false;
 }
 
+/*!
+ *******************************************************************************
+ * \brief Computes the intersection of the given ray, R, with the Box, bb.
+ * \param [in] R user-supplied ray R.
+ * \param [in] bb user-supplied box bb.
+ * \param [out] ip the point of intersection.
+ * \return status true iff bb intersects with R, otherwise, false.
+ *
+ * Computes Ray Box intersection using the slab method from pg 180 of
+ * Real Time Collision Detection by Christer Ericson.
+ *******************************************************************************
+ */
+template < typename T, int DIM>
+bool intersect (const Ray<T,DIM> & R,
+		const BoundingBox<T,DIM> & bb,
+		Point<T,DIM> & ip)
+{
+  T tmin = std::numeric_limits<T>::min();
+  SLIC_ASSERT(tmin>=0.0);
+  T tmax = std::numeric_limits<T>::max();
+
+  for (int i=0; i<DIM; i++)
+  {
+    if (asctoolkit::utilities::isNearlyEqual(R.direction()[i],
+					     std::numeric_limits<T>::min(),
+					     1.0e-9 ))
+    {
+      T pointDim =  R.origin()[i];
+      if ((pointDim<bb.getMin()[i]) || (pointDim>bb.getMax()[i]))
+      {
+	return false;
+      }
+    }
+    else
+    {
+      T ood = (static_cast<T>(1.0)) / (R.direction()[i]);
+      T t1 = ((bb.getMin()[i]- R.origin()[i])*ood);
+      T t2 = ((bb.getMax()[i]- R.origin()[i])*ood);
+      if (t1>t2) std::swap(t1,t2);
+      tmin = std::max(tmin, t1);
+      tmax = std::min(tmax, t2);
+      if (tmin > tmax) return false;
+    }
+  }
+
+  for (int i = 0; i < DIM; i++)
+  {
+    ip.data()[i] = R.origin()[i] + R.direction()[i] * tmin;
+  }
+
+  return true;
+}
+
 
 namespace {
 
