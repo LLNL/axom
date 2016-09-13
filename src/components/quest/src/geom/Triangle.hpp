@@ -28,6 +28,9 @@
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 
+#include "slic/GenericOutputStream.hpp"
+#include "slic/slic.hpp"
+
 namespace quest
 {
 
@@ -194,6 +197,62 @@ public:
       return (DIM==2)
                   ? 0.5 * std::fabs(v[0]*w[1] - v[1]*w[0])
                   : 0.5 * VectorType::cross_product( v,w).norm();
+  }
+
+  /*!
+   * \brief Returns the barycentric coordinates of a triangle
+   * \return The barycentric coordinates of the triangle inside a Point<T,3>
+   */
+  Point<T,3> barycenterCoords(const Point<T, DIM>& p) const{
+	//adapted from Real Time Collision Detection by Christer Ericson
+
+    VectorType u= VectorType(m_A, m_B);
+    T nu, nv, ood;
+    T x= std::abs(u[0]);
+    T y= std::abs(u[1]);
+    T z= std::abs(u[2]);
+
+
+    if (x>=y && x>= z) {
+        Point<T,2> pP= Point<T,2>::make_point(p[1], p[2]);
+        Point<T,2> p1= Point<T,2>::make_point(m_A[1], m_A[2]);
+        Point<T,2> p2= Point<T,2>::make_point(m_B[1], m_B[2]);
+        Point<T,2> p3= Point<T,2>::make_point(m_C[1], m_C[2]);
+        Triangle<T,2> t1(pP, p2, p3);
+        Triangle<T,2> t2(pP, p3, p1);
+        nu=t1.area2d();
+        nv=t2.area2d();
+        ood=1.0/u[0];
+
+    }
+    else if (y>=x && y>=z) {
+        Point<T,2> pP= Point<T,2>::make_point(p[0], p[2]);
+        Point<T,2> p1= Point<T,2>::make_point(m_A[0], m_A[2]);
+        Point<T,2> p2= Point<T,2>::make_point(m_B[0], m_B[2]);
+        Point<T,2> p3= Point<T,2>::make_point(m_C[0], m_C[2]);
+        Triangle<T,2> t1(pP, p2, p3);
+        Triangle<T,2> t2(pP, p3, p1);
+        nu=t1.area2d();
+        nv=t2.area2d();
+        ood=-1.0/u[1];
+
+    }
+    else {
+        Point<T,2> pP= Point<T,2>::make_point(p[0], p[1]);
+        Point<T,2> p1= Point<T,2>::make_point(m_A[0], m_A[1]);
+        Point<T,2> p2= Point<T,2>::make_point(m_B[0], m_B[1]);
+        Point<T,2> p3= Point<T,2>::make_point(m_C[0], m_C[1]);
+        Triangle<T,2> t1(pP, p2, p3);
+        Triangle<T,2> t2(pP, p3, p1);
+        nu=t1.area2d();
+        nv=t2.area2d();
+        ood=-1.0/u[2];
+    }
+
+    T bX= nu*ood;
+    T bY = nv*ood;
+
+    return (Point<T,3>::make_point(bX, bY, 1.0-bX-bY));
   }
 
   /*!
