@@ -1268,12 +1268,15 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                 DynamicGrayBlockData    childData[BlockIndex::NUM_CHILDREN];
                 DynamicGrayBlockData*   childDataPtr[BlockIndex::NUM_CHILDREN];
 
+
+                const typename LeavesLevelMap::BroodData& broodData = this->getOctreeLevel( lev+1 ).getBroodData(blk.pt());
+
                 for(int j=0; j< BlockIndex::NUM_CHILDREN; ++j)
                 {
                     childBlk[j]  = blk.child(j);
                     childBB[j]   = this->blockBoundingBox( childBlk[j] );
 
-                    InOutBlockData& childBlockData = (*this)[childBlk[j] ];
+                    const InOutBlockData& childBlockData = broodData[j];
                     if(!childBlockData.hasData())
                     {
                         childData[j] = DynamicGrayBlockData();

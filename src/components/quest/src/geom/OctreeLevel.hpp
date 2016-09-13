@@ -248,6 +248,10 @@ namespace quest
       virtual const BlockDataType& operator[](const GridPt& pt) const = 0;
       virtual       BlockDataType& operator[](const GridPt& pt)       = 0;
 
+      virtual BroodData& getBroodData(const GridPt& pt) =0;
+      virtual const BroodData& getBroodData(const GridPt& pt) const =0;
+
+
       virtual BlockIteratorHelper* getIteratorHelper(OctreeLevel*, bool) = 0;
       virtual ConstBlockIteratorHelper* getIteratorHelper(const OctreeLevel*, bool) const = 0;
 
@@ -435,6 +439,18 @@ namespace quest
             return blockIt->second[brood.offset()];
         }
 
+        /** \brief Access the data associated with the entire brood */
+        BroodData& getBroodData(const GridPt& pt) { return m_map[ pt]; }
+
+        /** \brief Const access to data associated with the entire brood */
+        const BroodData& getBroodData(const GridPt& pt) const {
+            SLIC_ASSERT_MSG(hasBlock(pt)
+                            ,"(" << pt <<", "<< this->m_level << ") was not a block in the tree at level.");
+
+            // Note: Using find() method on hashmap since operator[] is non-const
+            ConstMapIter blockIt = m_map.find( pt);
+            return blockIt->second;
+        }
 
 
         /** \brief Predicate to check if there are any blocks in this octree level */
@@ -644,7 +660,21 @@ namespace quest
             return blockIt->second[brood.offset()];
         }
 
+        /** \brief Access the data associated with the entire brood */
+        BroodData& getBroodData(const GridPt& pt)
+        {
+            return m_map[ Brood::MortonizerType::mortonize(pt)];
+        }
 
+        /** \brief Const access to data associated with the entire brood */
+        const BroodData& getBroodData(const GridPt& pt) const {
+            SLIC_ASSERT_MSG(hasBlock(pt)
+                            ,"(" << pt <<", "<< this->m_level << ") was not a block in the tree at level.");
+
+            // Note: Using find() method on hashmap since operator[] is non-const
+            ConstMapIter blockIt = m_map.find( Brood::MortonizerType::mortonize(pt));
+            return blockIt->second;
+        }
 
         /** \brief Predicate to check if there are any blocks in this octree level */
         bool empty() const { return m_map.empty(); }
