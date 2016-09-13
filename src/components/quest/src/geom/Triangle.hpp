@@ -255,6 +255,20 @@ public:
     return (Point<T,3>::make_point(bX, bY, 1.0-bX-bY));
   }
 
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether the triangle is degenerate
+   * \return true iff the triangle is degenerate (0 area)
+   * \see quest::Point
+   *****************************************************************************
+   */
+  bool degenerate() const
+  {
+    return asctoolkit::utilities::isNearlyEqual(area(),  0.0, 1.0e-12);
+  }
+
+
   /*!
    * \brief Simple formatted print of a triangle instance
    * \param os The output stream to write to
