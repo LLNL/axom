@@ -394,6 +394,8 @@ public:
       {
           namespace common = asctoolkit::common;
 
+          // Use MortonOctreeLevel (key is integer with the appropriate number of bits) when we can.
+          // Use a GridPointOctreeLevel (key is Point<int, DIM>, hashed using a MortonIndex) when DIM*level > 64
           if( i * DIM <= 16)
               m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,common::uint16, BlockDataType>(i);
           else if( i * DIM <= 32 )
@@ -408,6 +410,9 @@ public:
       (*m_leavesLevelMap[rootBlock.level()])[rootBlock.pt()] = BlockDataType();
   }
 
+  /**
+   * \brief OctreeBase desctructor
+   */
   ~OctreeBase()
   {
       for(int i=0; i< maxLeafLevel(); ++i)
@@ -418,12 +423,12 @@ public:
   }
 
   /**
-   * \brief The resolution octree level for leaf blocks of the octree
+   * \brief The max level for leaf blocks of the octree
    */
   int maxLeafLevel() const { return m_levels.size(); }
 
   /**
-   * \brief The resolution octree level for internal blocks of the octree
+   * \brief The max level for internal blocks of the octree
    */
   int maxInternalLevel() const { return m_levels.size()-1; }
 public:
@@ -522,11 +527,17 @@ public:
 
   // @}
 
+  /**
+   * \brief Accessor for a reference to the octree level instance at level lev
+   */
   OctreeLevelType& getOctreeLevel(int lev)
   {
       return *m_leavesLevelMap[lev];
   }
 
+  /**
+   * \brief Const accessor for a reference to the octree level instance at level lev
+   */
   const OctreeLevelType& getOctreeLevel(int lev) const
   {
       return *m_leavesLevelMap[lev];
@@ -534,6 +545,10 @@ public:
 
 public:
 
+  /**
+   * \brief Predicate to determine if level lev is in the range
+   * \note lev is in range if 0 <= lev <= maxLeafLevel()
+   */
   bool isLevelValid(int lev) const
   {
       return lev >=0 && lev <= maxLeafLevel();
@@ -677,7 +692,8 @@ public:
    *        the block lies within the octree bounds (default=true)
    * \post The returned block, if valid, is blk or one of its ancestor blocks.
    * \return The blockIndex of the finest octree leaf covering blk, if it exists,
-   *    BlockIndex::invalid_index otherwise (e.g. blk is out of bounds)
+   *    BlockIndex::invalid_index otherwise (e.g. blk is an internal block of the tree
+   *    or is out of bounds)
    */
   BlockIndex coveringLeafBlock(const BlockIndex& blk, bool checkInBounds = true) const
   {

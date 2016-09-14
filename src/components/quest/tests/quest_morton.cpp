@@ -225,7 +225,7 @@ void testIntegralTypes()
 
 TEST( quest_point, test_integral_types_2D)
 {
-    SLIC_INFO("*** Testing morton indexing in 2D with different coord types");
+    SLIC_INFO("*** Testing morton indexing in 2D with different coord and Morton index types");
 
     const int DIM = 2;
     testIntegralTypes<DIM>();
@@ -234,7 +234,7 @@ TEST( quest_point, test_integral_types_2D)
 
 TEST( quest_point, test_integral_types_3D)
 {
-    SLIC_INFO("*** Testing morton indexing in 3D with different coord types");
+    SLIC_INFO("*** Testing morton indexing in 3D with different coord and Morton index types");
 
     const int DIM = 3;
     testIntegralTypes<DIM>();

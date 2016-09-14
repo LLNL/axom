@@ -64,8 +64,10 @@ namespace quest
         // static assert to ensure that this class is only instantiated on integral types
 #ifdef USE_CXX11
         static_assert( std::is_integral<CoordType>::value, "Coordtype must be integral for Morton indexing" );
+        static_assert( std::is_integral<MortonIndexType>::value, "MortonIndexType must be integral for Morton indexing" );
 #else
         BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
+        BOOST_STATIC_ASSERT(boost::is_integral<MortonIndexType>::value);
 #endif
 
     private:
@@ -81,8 +83,6 @@ namespace quest
          * \return A zero-filled expanded MortonIndex
          * In dimension D, it adds (D-1) zeros between each bit,
          * so, e.g. in 2D, 6 == 0b0110 becomes 0b*0*1*1*0 == 0b00010100 == 20
-         * \todo We might be able to reduce the number of iterations MAX_ITER
-         *       based on the number of bits in CoordType.
          */
         static MortonIndexType expandBits(MortonIndexType x)
         {
@@ -100,8 +100,6 @@ namespace quest
          * \return A contracted MortonIndex
          * In dimension D, it retains every (D-1)\f$^th\f$ bit,
          * so, e.g. in 2D, 20 = 0b00010100 == 0b*0*1*1*0 becomes  0b0110 = 6
-         * \todo We might be able to reduce the number of iterations MAX_ITER
-         *       based on the number of bits in CoordType.
          */
         static MortonIndexType contractBits(MortonIndexType x)
         {
@@ -114,11 +112,7 @@ namespace quest
         }
 
     public:
-        /**
-         * \brief Finds the index of the maximum set bit (MSB) in an integral type
-         * \todo We might be able to reduce the number of iterations MAX_ITER
-         *       based on the number of bits in CoordType.
-         */
+        /** \brief Finds the index of the maximum set bit (MSB) in an integral type */
         static int maxSetBit(CoordType x)
         {
             CoordType res = 0;
@@ -153,10 +147,9 @@ namespace quest
 
     /**
      * \class
-     * \brief A 2D instance of Mortonizer to convert between Grid points and MortonIndexes
-     * where a grid point is a point whose coordinates are integral types
-     * Expand bits will add a 0 between every bit,
-     * and contract bits will remove every other bit
+     * \brief A 2D specialization of Mortonizer to convert between 2D integer Grid points
+     * and MortonIndexes where a grid point is a point whose coordinates are integral types
+     * Expand bits will add a 0 between every bit and contract bits will remove every other bit
      * \see Mortonizer
      */
     template<typename CoordType, typename MortonIndexType>
@@ -192,15 +185,11 @@ namespace quest
 
             /** The number of iterations required for converting from MortonIndexes to CoordType
              *  using the bit interleaving algorithm in MortonBase.
-             *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
-             *  to use fewer iterations.  This is something that might be worth looking into.
              */
             CONTRACT_MAX_ITER = NumReps<MortonIndexType>::value,
 
             /** The number of iterations required for converting between CoordTypes and MortonIndexes
              *  using the bit interleaving algorithm in MortonBase.
-             *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
-             *  to use fewer iterations.  This is something that might be worth looking into.
              */
             EXPAND_MAX_ITER = NumReps<MortonIndexType>::value
         };
@@ -271,10 +260,9 @@ namespace quest
 
     /**
      * \class
-     * \brief A 3D instance of Mortonizer to convert between Grid points and MortonIndexes
-     * where a grid point is a point whose coordinates are integral types
-     * Expand bits will add two zeros between every bit,
-     * and contract bits will remove every other bit
+     * \brief A 3D specialization of Mortonizer to convert between 3D integer grid points
+     * and MortonIndexes where a grid point is a point whose coordinates are integral types
+     * Expand bits will add a 0 between every bit and contract bits will remove every other bit
      * \see Mortonizer
      */
     template<typename CoordType, typename MortonIndexType>
@@ -309,15 +297,11 @@ namespace quest
 
             /** The number of iterations required for converting from MortonIndexes to CoordType
              *  using the bit interleaving algorithm in MortonBase.
-             *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
-             *  to use fewer iterations.  This is something that might be worth looking into.
              */
             CONTRACT_MAX_ITER = NumReps<MortonIndexType>::value,
 
             /** The number of iterations required for converting between CoordTypes and MortonIndexes
              *  using the bit interleaving algorithm in MortonBase.
-             *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
-             *  to use fewer iterations.  This is something that might be worth looking into.
              */
             EXPAND_MAX_ITER = NumReps<MortonIndexType>::value -1
         };
