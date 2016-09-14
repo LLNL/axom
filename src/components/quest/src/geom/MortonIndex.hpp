@@ -25,8 +25,33 @@
  * that can be used as a std::hash for unordered_maps
  */
 
+
+namespace {
+    /**
+     * \brief A helper type trait class for the Mortonizer class
+     *
+     * This type trait helps determine the number of iterations required
+     * to convert between Points and a 1D Morton index.
+     */
+    template<typename IntegerType> struct NumReps {  enum {value = 5}; };
+
+    template<> struct NumReps<asctoolkit::common::int64>  { enum {value = 5}; };
+    template<> struct NumReps<asctoolkit::common::uint64> { enum {value = 5}; };
+
+    template<> struct NumReps<asctoolkit::common::int32>  { enum {value = 4}; };
+    template<> struct NumReps<asctoolkit::common::uint32> { enum {value = 4}; };
+
+    template<> struct NumReps<asctoolkit::common::int16>  { enum {value = 3}; };
+    template<> struct NumReps<asctoolkit::common::uint16> { enum {value = 3}; };
+
+    template<> struct NumReps<asctoolkit::common::int8>   { enum {value = 2}; };
+    template<> struct NumReps<asctoolkit::common::uint8>  { enum {value = 2}; };
+}
+
+
 namespace quest
 {
+
     /**
      * \class
      * \brief Base class for Dimension independent Morton indexing
@@ -154,7 +179,7 @@ namespace quest
             /** The number of bits in a MortonIndex  */
             MORTON_BITS = std::numeric_limits<MortonIndexType>::digits,
 
-            /** The number of representable morton bits per dimension */
+            /** The number of representable Morton bits per dimension */
             MB_PER_DIM = MORTON_BITS / NDIM,
 
             /** The maximum number of unique bits from each coordinate of type CoordType
@@ -170,14 +195,14 @@ namespace quest
              *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
              *  to use fewer iterations.  This is something that might be worth looking into.
              */
-            CONTRACT_MAX_ITER = (MORTON_BITS > 32) ? 5 : 4,
+            CONTRACT_MAX_ITER = NumReps<MortonIndexType>::value,
 
             /** The number of iterations required for converting between CoordTypes and MortonIndexes
              *  using the bit interleaving algorithm in MortonBase.
              *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
              *  to use fewer iterations.  This is something that might be worth looking into.
              */
-            EXPAND_MAX_ITER = (MORTON_BITS > 32) ? 5 : 4
+            EXPAND_MAX_ITER = NumReps<MortonIndexType>::value
         };
 
         /**
@@ -238,9 +263,9 @@ namespace quest
         }
 
         /**
-         * \brief returns the maximum number of bits per
+         * \brief returns the maximum number of bits per coordinate
          */
-        static int uniqueCoordBits() { return MAX_UNIQUE_BITS; }
+        static int maxBitsPerCoord() { return MAX_UNIQUE_BITS; }
 
     };
 
@@ -287,14 +312,14 @@ namespace quest
              *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
              *  to use fewer iterations.  This is something that might be worth looking into.
              */
-            CONTRACT_MAX_ITER = (MORTON_BITS > 32) ? 5 : 4,
+            CONTRACT_MAX_ITER = NumReps<MortonIndexType>::value,
 
             /** The number of iterations required for converting between CoordTypes and MortonIndexes
              *  using the bit interleaving algorithm in MortonBase.
              *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
              *  to use fewer iterations.  This is something that might be worth looking into.
              */
-            EXPAND_MAX_ITER = (MORTON_BITS > 32) ? 4 : 3
+            EXPAND_MAX_ITER = NumReps<MortonIndexType>::value -1
         };
 
         /**
@@ -363,9 +388,9 @@ namespace quest
         }
 
         /**
-         * \brief returns the maximum number of bits per
+         * \brief returns the maximum number of bits per coordinate
          */
-        static int uniqueCoordBits() { return MAX_UNIQUE_BITS; }
+        static int maxBitsPerCoord() { return MAX_UNIQUE_BITS; }
 
     };
 
@@ -410,44 +435,25 @@ namespace quest
     const int Mortonizer<CoordType,MortonIndexType,3>::S[] = { 2, 4, 8, 16, 32, 0};
 
     /**
-     * \brief A helper function to convert a 2D point directly to a MortonIndex
-     * \return The Morton index of the 2D point
+     * \brief A helper function to convert a point directly to a MortonIndex
+     * \return The Morton index of the point
      */
-    template<typename CoordType, typename MortonIndexType>
-    inline MortonIndexType convertPointToMorton2D(const Point<CoordType,2>& pt)
+    template<typename MortonIndexType, typename CoordType, int DIM>
+    inline MortonIndexType convertPointToMorton(const Point<CoordType,DIM>& pt)
     {
-        return Mortonizer<CoordType,MortonIndexType,2>::mortonize(pt);
+        return Mortonizer<CoordType,MortonIndexType,DIM>::mortonize(pt);
     }
 
     /**
-     * \brief A helper function to convert a 3D point directly to a MortonIndex
-     * \return The Morton index of the 3D point
+     * \brief A helper function to convert a MortonIndex back to a point
+     * \return The demortonized Point
      */
-    template<typename CoordType, typename MortonIndexType>
-    inline MortonIndexType convertPointToMorton3D(const Point<CoordType,3>& pt)
+    template<typename CoordType, int DIM, typename MortonIndexType>
+    inline Point<CoordType,DIM> convertMortonToPoint(MortonIndexType idx)
     {
-        return Mortonizer<CoordType,MortonIndexType,3>::mortonize(pt);
+        return Mortonizer<CoordType,MortonIndexType,DIM>::demortonize(idx);
     }
 
-    /**
-     * \brief A helper function to convert MortonIndex back to a 2D point
-     * \return The demortonized 2D Point
-     */
-    template<typename CoordType, typename MortonIndexType>
-    inline Point<CoordType,2> convertMortonToPoint2D(MortonIndexType idx)
-    {
-        return Mortonizer<CoordType,MortonIndexType,2>::demortonize(idx);
-    }
-
-    /**
-     * \brief A helper function to convert MortonIndex back to a 3D point
-     * \return The demortonized 3D Point
-     */
-    template<typename CoordType, typename MortonIndexType>
-    inline Point<CoordType,3> convertMortonToPoint3D(MortonIndexType idx)
-    {
-        return Mortonizer<CoordType,MortonIndexType,3>::demortonize(idx);
-    }
 
     /**
      * \class
