@@ -11,6 +11,7 @@
 #include "quest/OctreeLevel.hpp"
 #include "quest/MortonOctreeLevel.hpp"
 #include "quest/GridPointOctreeLevel.hpp"
+#include "quest/FullGridOctreeLevel.hpp"
 
 #include "common/config.hpp"
 
@@ -40,6 +41,7 @@ namespace quest
    */
   class BlockData
   {
+      static const int NON_BLOCK = ~0;
   public:
       BlockData()
       {
@@ -63,7 +65,13 @@ namespace quest
       /**
        * Marks the block as not in the octree
        */
-      void setNonBlock() { m_id = ~0; }
+      void setNonBlock() { m_id = NON_BLOCK; }
+
+      /**
+       * Predicate to check if the associated block is in the octree
+       */
+      bool isBlock() const { return m_id != NON_BLOCK; }
+
       /**
        * Returns the normalized form of the id for this BlockData instance
        * \note The normalized form is a non-negative integer.
@@ -405,7 +413,7 @@ public:
           // Use MortonOctreeLevel (key is integer with the appropriate number of bits) when we can.
           // Use a GridPointOctreeLevel (key is Point<int, DIM>, hashed using a MortonIndex) when DIM*level > 64
           if( i * DIM <= 16)
-              m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,common::uint16, BlockDataType>(i);
+              m_leavesLevelMap[i] = new FullGridOctreeLevel<DIM,common::uint16, BlockDataType>(i);
           else if( i * DIM <= 32 )
               m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,common::uint32, BlockDataType>(i);
           else if( i * DIM <= 64 )
@@ -414,16 +422,13 @@ public:
               m_leavesLevelMap[i] = new GridPointOctreeLevel<DIM,BlockDataType>(i);
       }
 
-      // Add the root (without its siblings)
+      // Add the root block to the octree
       BlockIndex rootBlock = root();
-      typename OctreeLevelType::BroodData& bd = (*m_leavesLevelMap[rootBlock.level()]).getBroodData(rootBlock.pt());
-      bd[0] = BlockDataType();
-      for(int i=1; i< OctreeLevelType::BROOD_SIZE; ++i)
-          bd[i].setNonBlock();
+      (*m_leavesLevelMap[rootBlock.level()]).addAllChildren(rootBlock.pt());
   }
 
   /**
-   * \brief OctreeBase desctructor
+   * \brief OctreeBase destructor
    */
   ~OctreeBase()
   {

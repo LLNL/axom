@@ -117,6 +117,8 @@ namespace quest
 
         void setNonBlock()  { m_idx = NON_BLOCK; }
 
+        bool isBlock() const { return m_idx != NON_BLOCK; }
+
     public:     // Other functions
 
         void clear()

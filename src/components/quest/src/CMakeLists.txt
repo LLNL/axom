@@ -16,6 +16,7 @@ set( quest_headers
     geom/BVHTree.hpp
     geom/BoundingBox.hpp
     geom/Determinants.hpp
+    geom/FullGridOctreeLevel.hpp
     geom/GridPointOctreeLevel.hpp
     geom/HyperSphere.hpp
     geom/InOutOctree.hpp
