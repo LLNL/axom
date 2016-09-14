@@ -130,16 +130,95 @@ bool intersect (const Ray<T,DIM> & R,
       T ood = (static_cast<T>(1.0)) / (R.direction()[i]);
       T t1 = ((bb.getMin()[i]- R.origin()[i])*ood);
       T t2 = ((bb.getMax()[i]- R.origin()[i])*ood);
-      if (t1>t2) std::swap(t1,t2);
+
+      if (t1>t2)
+      {
+	std::swap(t1,t2);
+      }
+
       tmin = std::max(tmin, t1);
       tmax = std::min(tmax, t2);
-      if (tmin > tmax) return false;
+
+      if (tmin > tmax)
+      {
+	return false;
+      }
     }
   }
 
   for (int i = 0; i < DIM; i++)
   {
     ip.data()[i] = R.origin()[i] + R.direction()[i] * tmin;
+  }
+
+  return true;
+}
+
+
+/*!
+ *******************************************************************************
+ * \brief Computes the intersection of the given segment, S, with the Box, bb.
+ * \param [in] S user-supplied segment S.
+ * \param [in] bb user-supplied box bb.
+ * \param [out] ip the point of intersection.
+ * \return status true iff bb intersects with S, otherwise, false.
+ *
+ * Computes Segment Box intersection using the slab method from pg 180 of
+ * Real Time Collision Detection by Christer Ericson.
+ * WIP: More test cases for this
+ *******************************************************************************
+ */
+template < typename T, int DIM>
+bool intersect (const Segment<T,DIM> & S,
+		const BoundingBox<T,DIM> & bb,
+		Point<T,DIM> & ip)
+{
+  T tmin = std::numeric_limits<T>::min();
+  Vector<T,DIM> direction(S.source(), S.target());
+  T tmax = direction.norm();
+  Ray<T,DIM> R(S.source(), direction);
+
+  // These operations constrain the parameter specifying ray-slab intersection
+  // points to exclude points not within the segment.
+  tmin = static_cast<T>(0);
+  tmax = static_cast<T>(1);
+
+  for (int i=0; i<DIM; i++)
+  {
+    if (asctoolkit::utilities::isNearlyEqual(R.direction()[i],
+					     std::numeric_limits<T>::min(),
+					     1.0e-9 ))
+    {
+      T pointDim =  R.origin()[i];
+      if ((pointDim<bb.getMin()[i]) || (pointDim>bb.getMax()[i]))
+      {
+	return false;
+      }
+    }
+    else
+    {
+      T ood = (static_cast<T>(1.0)) / (R.direction()[i]);
+      T t1 = ((bb.getMin()[i]- R.origin()[i])*ood);
+      T t2 = ((bb.getMax()[i]- R.origin()[i])*ood);
+
+      if (t1>t2)
+      {
+	std::swap(t1,t2);
+      }
+
+      tmin = std::max(tmin, t1);
+      tmax = std::min(tmax, t2);
+
+      if (tmin > tmax)
+      {
+	return false;
+      }
+    }
+  }
+
+  for (int i=0; i< DIM; i++)
+  {
+    ip.data()[i] = R.origin()[i] + R.direction()[i]*tmin;
   }
 
   return true;
