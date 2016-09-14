@@ -76,10 +76,11 @@ namespace quest
         // A block is a leaf block when its m_idx is not INTERNAL_BLOCK
         // Leaf blocks can be uncolored or colored (without additional data)
         //      or m_idx be the index of the data associated with a gray block
-        enum { INTERNAL_BLOCK       = -1
-             , LEAF_BLOCK_UNCOLORED = -2
-             , LEAF_BLOCK_WHITE     = -3
-             , LEAF_BLOCK_BLACK     = -4
+        enum { LEAF_BLOCK_UNCOLORED = -1
+             , LEAF_BLOCK_WHITE     = -2
+             , LEAF_BLOCK_BLACK     = -3
+             , INTERNAL_BLOCK       = -4
+             , NON_BLOCK            = -5
         };
 
     public:
@@ -110,9 +111,11 @@ namespace quest
 
     public:     // API for a BlockData
 
-        bool isLeaf() const { return m_idx != INTERNAL_BLOCK; }
+        bool isLeaf() const { return m_idx > INTERNAL_BLOCK; }
 
         void setInternal()  { m_idx = INTERNAL_BLOCK; }
+
+        void setNonBlock()  { m_idx = NON_BLOCK; }
 
     public:     // Other functions
 
@@ -1259,7 +1262,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                     blkData.setInternal();
                 }
 
-                SLIC_ASSERT( this->isInternal(blk) );
+                SLIC_ASSERT_MSG( this->isInternal(blk)
+                               , "Block " << blk <<" was refined, so it should be marked as internal." );
 
 
                 /// Setup caches for data associated with children

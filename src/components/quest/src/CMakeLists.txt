@@ -16,10 +16,12 @@ set( quest_headers
     geom/BVHTree.hpp
     geom/BoundingBox.hpp
     geom/Determinants.hpp
+    geom/GridPointOctreeLevel.hpp
     geom/HyperSphere.hpp
     geom/InOutOctree.hpp
     geom/Intersection.hpp
     geom/MortonIndex.hpp
+    geom/MortonOctreeLevel.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp
     geom/OctreeLevel.hpp

@@ -9,6 +9,8 @@
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 #include "quest/OctreeLevel.hpp"
+#include "quest/MortonOctreeLevel.hpp"
+#include "quest/GridPointOctreeLevel.hpp"
 
 #include "common/config.hpp"
 
@@ -41,7 +43,7 @@ namespace quest
   public:
       BlockData()
       {
-          static int idGenerator = 0;
+          static int idGenerator = 1;
           m_id = idGenerator++;
       }
 
@@ -59,10 +61,16 @@ namespace quest
       void setData(int blockID) { m_id = blockID; }
 
       /**
+       * Marks the block as not in the octree
+       */
+      void setNonBlock() { m_id = ~0; }
+      /**
        * Returns the normalized form of the id for this BlockData instance
        * \note The normalized form is a non-negative integer.
        */
       int getID() const { return isLeaf()? m_id : ~m_id; }
+
+      const int& dataIndex() const { return m_id; }
 
       /**
        * \brief Sets the block type to internal
@@ -406,8 +414,12 @@ public:
               m_leavesLevelMap[i] = new GridPointOctreeLevel<DIM,BlockDataType>(i);
       }
 
+      // Add the root (without its siblings)
       BlockIndex rootBlock = root();
-      (*m_leavesLevelMap[rootBlock.level()])[rootBlock.pt()] = BlockDataType();
+      typename OctreeLevelType::BroodData& bd = (*m_leavesLevelMap[rootBlock.level()]).getBroodData(rootBlock.pt());
+      bd[0] = BlockDataType();
+      for(int i=1; i< OctreeLevelType::BROOD_SIZE; ++i)
+          bd[i].setNonBlock();
   }
 
   /**
