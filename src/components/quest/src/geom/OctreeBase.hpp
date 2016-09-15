@@ -323,18 +323,29 @@ public:
         /**
          * \brief Checks the validity of the index.
          * A block index is valid when its level is \f$ \ge 0 \f$
-         * and each coordinate p[i] of its grid point is \f$ 0 \le p[i] < 2^{level()} \f$.
-         *
+         * and  it is inBounds
          * \returns true if the block index is valid, else false
+         * \see inBounds()
          */
         bool isValid() const
         {
-            bool bValid = (m_lev >= 0);
+            return (m_lev >= 0) && inBounds();
+        }
 
+        /**
+        * \brief Checks the if the block is in bounds for the level.
+        * A block index is in bounds when each coordinate p[i]
+        * of its grid point is \f$ 0 \le p[i] < 2^{level()} \f$.
+        *
+        * \returns true if the block index is inBounds, else false
+        */
+        bool inBounds() const
+        {
+            const CoordType maxVal = (1<<m_lev)-1;
             for(int i = 0; i < DIM; ++i)
-                bValid = bValid && (m_pt[i] >=0) && (m_pt[i] < (1<< m_lev) );
-
-            return bValid;
+                if( (m_pt[i] < 0) || (m_pt[i] > maxVal) )
+                    return false;
+            return true;
         }
 
         /**
@@ -410,10 +421,14 @@ public:
       {
           namespace common = asctoolkit::common;
 
-          // Use MortonOctreeLevel (key is integer with the appropriate number of bits) when we can.
-          // Use a GridPointOctreeLevel (key is Point<int, DIM>, hashed using a MortonIndex) when DIM*level > 64
-          if( i * DIM <= 16)
+          // Use FullGridOctreeLevel on first few levels to reduce allocations and fragmentation
+          // Use MortonOctreeLevel (key is smallest possible integer) on next few levels.
+          // Use a GridPointOctreeLevel (key is Point<int, DIM>, hashed using a MortonIndex)
+          //    when MortonIndex requires more than 64
+          if( i <= 4 && i * DIM <= 16)
               m_leavesLevelMap[i] = new FullGridOctreeLevel<DIM,common::uint16, BlockDataType>(i);
+          else if( i * DIM <= 16)
+              m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,common::uint16, BlockDataType>(i);
           else if( i * DIM <= 32 )
               m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,common::uint32, BlockDataType>(i);
           else if( i * DIM <= 64 )
@@ -449,18 +464,15 @@ public:
    */
   int maxInternalLevel() const { return m_levels.size()-1; }
 public:
-   // \todo KW Convert these two functions to static class functions.
-   //        This will require converting m_levels to a static set
 
   //@{
 
   /**
    * \brief Utility function to find the number of (possible) grid cells at a given level or resolution
    * \param [in] level The level or resolution.
-   * \pre \f$ 0 \le lev < \f$ maxLeafLevel()
-   * \todo Convert this to a static class function.
+   * \pre \f$ 0 \le lev
    */
-  GridPt maxGridCellAtLevel(int level) const
+  static GridPt maxGridCellAtLevel(int level)
   {
     return GridPt( maxCoordAtLevel(level) );
   }
@@ -468,12 +480,11 @@ public:
   /**
    * \brief Finds the highest coordinate value at a given level or resolution
    * \param [in] level The level or resolution.
-   * \pre \f$ 0 \le lev < \f$ maxLeafLevel()
-   * \todo Convert this to a static class function.
+   * \pre \f$ 0 \le lev
    */
-  CoordType maxCoordAtLevel(int level) const
+  static CoordType maxCoordAtLevel(int level)
   {
-      return (1<< m_levels[level])-1;
+      return (1<< level)-1;
   }
 
   /**
@@ -481,9 +492,8 @@ public:
    * \note The root block has no parent.
    *       Its parent is an invalid BlockIndex.
    *       I.e. octree.parent( octree.root()).isValid() = false.
-   * \todo Convert this to a static class function
    */
-  BlockIndex root() const { return BlockIndex(); }
+  static BlockIndex root() { return BlockIndex(); }
 
   // @}
 
@@ -646,7 +656,7 @@ public:
    */
   bool inBounds(const GridPt& pt, int lev) const
   {
-      return isLevelValid(lev) && getOctreeLevel(lev).inBounds(pt);
+      return isLevelValid(lev) && BlockIndex(pt,lev).inBounds();
   }
 
 
@@ -657,8 +667,7 @@ public:
    */
   bool inBounds(const BlockIndex& block) const
   {
-      return isLevelValid(block.level())
-            && getOctreeLevel(block.level()).inBounds(block.pt());
+      return isLevelValid(block.level()) && block.inBounds();
   }
 
   /**

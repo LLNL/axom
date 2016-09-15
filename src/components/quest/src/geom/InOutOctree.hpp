@@ -49,9 +49,8 @@
 //    #define DUMP_OCTREE_INFO 1
 #endif
 
-
 #ifndef DEBUG_OCTREE_ACTIVE
-    //#define DEBUG_OCTREE_ACTIVE
+//    #define DEBUG_OCTREE_ACTIVE
 #endif
 
 #if defined(DEBUG_OCTREE_ACTIVE) and defined(ATK_DEBUG)
@@ -1199,7 +1198,7 @@ void InOutOctree<DIM>::insertMeshTriangles ()
         LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
-            InOutBlockData& blkData = it.data();
+            InOutBlockData& blkData = *it;
 
             if(! blkData.hasData() )
                 continue;
@@ -1403,9 +1402,9 @@ void InOutOctree<DIM>::colorOctreeLeaves()
                 continue;
 
             BlockIndex leafBlk(it.pt(), lev);
-            InOutBlockData& blockData = it.data();
+            InOutBlockData& blockData = *it;
             if(! colorLeafAndNeighbors( leafBlk, blockData) )
-                uncoloredBlocks.push_back( it.pt());
+                uncoloredBlocks.push_back( leafBlk.pt());
         }
 
         // Iterate through the uncolored blocks until all have a color
@@ -1782,8 +1781,6 @@ void InOutOctree<DIM>::printOctreeStats() const
 {
     typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
     typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
-
-
     typedef asctoolkit::slam::Map<int> LeafCountMap;
 
     LeafCountMap levelBlocks( &this->m_levels);
@@ -1804,12 +1801,11 @@ void InOutOctree<DIM>::printOctreeStats() const
     int totalGrayBlocks = 0;
 
     // Iterate through blocks -- count the numbers of internal and leaf blocks
-    //
     for(int lev=0; lev< this->m_levels.size(); ++lev)
     {
-        const LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
-        levelBlocks[lev] = levelLeafMap.size();
-        levelLeaves[lev] = 0;
+        const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
+        levelBlocks[lev] = levelLeafMap.numBlocks();
+        levelLeaves[lev] = levelLeafMap.numLeafBlocks();
         levelLeavesWithVert[lev] = 0;
         levelTriangleRefCount[lev] = 0;
         levelWhiteBlockCount[lev] = 0;
@@ -1818,22 +1814,18 @@ void InOutOctree<DIM>::printOctreeStats() const
 
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
-            const InOutBlockData& blockData = it->second;
-            BlockIndex block(it->first, lev);
+            const InOutBlockData& blockData = *it;
+            BlockIndex block(it.pt(), lev);
 
             if(blockData.isLeaf())
             {
-                ++levelLeaves[lev];
-
                 if(blockData.hasData())
                 {
                     ++levelLeavesWithVert[ lev ];
 
                     if(m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED)
                     {
-                        TriangleIndexSet triSet = leafTriangles(block, blockData);
-                        if(triSet.size() >= 0)
-                            levelTriangleRefCount[ lev ] += triSet.size();
+                        levelTriangleRefCount[ lev ] += leafTriangles(block, blockData).size();
                     }
                 }
                 if(m_generationState >= INOUTOCTREE_LEAVES_COLORED)
@@ -1935,14 +1927,14 @@ void InOutOctree<DIM>::printOctreeStats() const
         TriCountMap triCount( &m_meshWrapper.elementSet());
         for(int lev=0; lev< this->m_levels.size(); ++lev)
         {
-            const LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
-            levelBlocks[lev] = levelLeafMap.size();
+            const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
+            levelBlocks[lev] = levelLeafMap.numBlocks();
             for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
             {
-                const InOutBlockData& leafData = it->second;
+                const InOutBlockData& leafData = *it;
                 if(leafData.isLeaf() && leafData.hasData())
                 {
-                    BlockIndex blk(it->first, lev);
+                    BlockIndex blk(it.pt(), lev);
                     TriangleIndexSet tris = leafTriangles(blk, leafData);
                     for(int i = 0; i < tris.size(); ++i)
                     {
@@ -2275,8 +2267,9 @@ template<int DIM>
 void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
 {
   #ifdef DUMP_VTK_MESH
-    typedef typename OctreeBaseType::MapType LeavesLevelMap;
-    typedef typename LeavesLevelMap::const_iterator LeavesIterator;
+    typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
+    typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
+
 
     DebugMesh* debugMesh= new DebugMesh(3);
     std::stringstream fNameStr;
@@ -2289,10 +2282,10 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
     // Iterate through blocks -- count the numbers of leaves
     for(int lev=0; lev< this->m_levels.size(); ++lev)
     {
-        const LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
+        const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
-            if( it->second.isLeaf())
+            if( it->isLeaf())
                 totalLeaves++;
         }
     }
@@ -2319,15 +2312,15 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
     int leafCount = 0;
     for(int lev=0; lev< this->m_levels.size(); ++lev)
     {
-        const LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
+        const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
         for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
-            if( ! it->second.isLeaf())
+            if( ! it->isLeaf())
                 continue;
 
             // Add a hex
-            BlockIndex block( it->first, lev);
-            const InOutBlockData& leafData = it->second;
+            BlockIndex block( it.pt(), lev);
+            const InOutBlockData& leafData = *it;
             GeometricBoundingBox blockBB = this->blockBoundingBox(block);
 
             int vStart = debugMesh->getMeshNumberOfNodes();
@@ -2428,8 +2421,8 @@ template<int DIM>
 void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& fName) const
 {
   #ifdef DUMP_VTK_MESH
-    typedef typename OctreeBaseType::MapType LeavesLevelMap;
-    typedef typename LeavesLevelMap::const_iterator LeavesIterator;
+    typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
+    typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
 
     if( m_generationState <= INOUTOCTREE_LEAVES_COLORED)
     {
@@ -2460,11 +2453,11 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
   // Iterate through the octree leaves looking for neigbor blocks with different labelings
   for(int lev=this->maxLeafLevel()-1; lev >= 0; --lev)
   {
-    const LeavesLevelMap& levelLeafMap = this->m_leavesLevelMap[ lev ];
+    const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
     for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
     {
-      const BlockIndex block(it->first, lev);
-      const InOutBlockData& data = it->second;
+      const BlockIndex block(it.pt(), lev);
+      const InOutBlockData& data = *it;
       if(data.isLeaf() && data.color() != InOutBlockData::Gray)
       {
         bool addNeigbors = false;
@@ -2480,7 +2473,7 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
             case InOutBlockData::White:
                 if(data.color() != neighborData.color())
                 {
-                    diffBlocks[lev][it->first] = 1;
+                    diffBlocks[lev][block.pt()] = 1;
                     addNeigbors = true;
                 }
                 break;

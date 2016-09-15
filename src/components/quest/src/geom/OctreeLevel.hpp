@@ -263,7 +263,6 @@ namespace quest
       class BlockIterator : public boost::iterator_facade< BlockIterator<OctreeLevel, IterHelper, DataType>
                                  , DataType
                                  , boost::forward_traversal_tag
-                                 , DataType
                                  >
       {
       public:
@@ -292,22 +291,12 @@ namespace quest
          * \note For non-const access on a non-const iterator, use the data() function
          * \sa data()
          */
-        const DataType& dereference() const { return *m_iterHelper->data(); }
+        DataType& dereference() const { return *m_iterHelper->data(); }
 
         /**
          * \brief Const accessor for the iterator's current grid point
          */
         GridPt pt() const { return m_iterHelper->pt(); }
-
-        /**
-         * \brief Non-const accessor for data associated with the iterator's current grid point
-         */
-        DataType& data() { return *m_iterHelper->data(); }
-
-        /**
-         * \brief Const accessor for data associated with the iterator's current grid point
-         */
-        const DataType& data() const { return *m_iterHelper->data(); }
 
         /**
          * \brief Equality test against another iterator
