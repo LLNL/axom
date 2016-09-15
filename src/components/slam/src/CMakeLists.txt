@@ -70,11 +70,6 @@ blt_add_library(
     NAME        slam
     SOURCES     ${slam_sources}
     HEADERS     ${slam_headers}
+    HEADERS_OUTPUT_SUBDIR slam
     DEPENDS_ON  ${slam_depends_on}
     )
-
-####################################
-# install target for slam
-####################################
-
-install(TARGETS slam DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

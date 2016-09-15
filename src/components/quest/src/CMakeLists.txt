@@ -22,6 +22,7 @@ set( quest_headers
     geom/MortonIndex.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp
+    geom/OctreeLevel.hpp
     geom/Orientation.hpp
     geom/Point.hpp
     geom/Ray.hpp
@@ -31,24 +32,6 @@ set( quest_headers
     geom/Triangle.hpp
     geom/Vector.hpp
     geom/closest_point.hpp
-    
-    ## Mesh Library Headers
-    mesh/CellConnectivity.hpp
-    mesh/CellType.hpp
-    mesh/CurvilinearMesh.hpp
-    mesh/Extent.hpp
-    mesh/Field.hpp
-    mesh/FieldData.hpp
-    mesh/FieldTypes.hpp
-    mesh/FieldVariable.hpp
-    mesh/Mesh.hpp
-    mesh/MeshCoordinates.hpp
-    mesh/MeshType.hpp
-    mesh/ParticleMesh.hpp
-    mesh/RectilinearMesh.hpp
-    mesh/StructuredMesh.hpp
-    mesh/UniformMesh.hpp
-    mesh/UnstructuredMesh.hpp
     
     ## STL library headers
     stl/STLReader.hpp
@@ -62,17 +45,6 @@ set( quest_sources
     
     ## Geometry Sources
     # <nothing yet>
-        
-    ## Mesh Library Sources
-    mesh/CurvilinearMesh.cpp
-    mesh/Field.cpp
-    mesh/FieldData.cpp
-    mesh/Mesh.cpp
-    mesh/MeshCoordinates.cpp
-    mesh/ParticleMesh.cpp
-    mesh/RectilinearMesh.cpp
-    mesh/StructuredMesh.cpp
-    mesh/UniformMesh.cpp
     
     ## STL library sources
     stl/STLReader.cpp
@@ -85,8 +57,8 @@ set( quest_sources
 set( quest_depends_on 
      common
      slic
+     mint
      slam
-     stla_io
      )
 
 if (ENABLE_BOOST)
@@ -96,6 +68,7 @@ endif()
 if (ENABLE_MPI)
   list(APPEND quest_headers stl/PSTLReader.hpp)  
   list(APPEND quest_sources stl/PSTLReader.cpp)
+  list(APPEND quest_depends_on lumberjack)
 endif()
 
 if(ENABLE_SHROUD)
@@ -114,7 +87,6 @@ blt_add_library(
     NAME        quest
     SOURCES     ${quest_sources}
     HEADERS     ${quest_headers}
+    HEADERS_OUTPUT_SUBDIR quest
     DEPENDS_ON  ${quest_depends_on}
     )
-             
-install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )

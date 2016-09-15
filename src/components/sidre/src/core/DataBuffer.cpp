@@ -102,7 +102,7 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
 
     return this;
   }
- 
+
   describe(type, num_elems);
   allocate();
 
@@ -123,11 +123,11 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
     if (isDescribed())
     {
       allocate();
-    } 
+    }
     else
     {
-       SLIC_CHECK_MSG(isDescribed(),
-                      "Can't re-allocate Buffer with no type description.");
+      SLIC_CHECK_MSG(isDescribed(),
+                     "Can't re-allocate Buffer with no type description.");
     }
 
     return this;
@@ -154,11 +154,11 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
     m_node.set_external(dtype, new_data_ptr);
     copyBytesIntoBuffer(old_data_ptr, std::min(old_size, new_size) );
     releaseBytes( old_data_ptr);
-  } 
-  else 
+  }
+  else
   {
-     SLIC_CHECK_MSG(new_data_ptr != ATK_NULLPTR,
-                    "Buffer re-allocate failed with " << new_size << " bytes.");
+    SLIC_CHECK_MSG(new_data_ptr != ATK_NULLPTR,
+                   "Buffer re-allocate failed with " << new_size << " bytes.");
   }
 
   return this;
@@ -192,21 +192,22 @@ DataBuffer * DataBuffer::deallocate()
 /*
  *************************************************************************
  *
- * Update contents of Buffer by copying nbytes of data into the Buffer 
+ * Update contents of Buffer by copying nbytes of data into the Buffer
  * from src.
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::copyBytesIntoBuffer(const void * src, 
+DataBuffer * DataBuffer::copyBytesIntoBuffer(const void * src,
                                              SidreLength nbytes)
 {
   if ( src == ATK_NULLPTR || nbytes < 0 || nbytes > getTotalBytes() )
   {
-    SLIC_CHECK_MSG(src != ATK_NULLPTR, 
-      "Cannot copy data into Buffer from null pointer.");
+    SLIC_CHECK_MSG(src != ATK_NULLPTR,
+                   "Cannot copy data into Buffer from null pointer.");
     SLIC_CHECK_MSG(nbytes >= 0, "Cannot copy < 0 bytes of data into Buffer.");
-    SLIC_CHECK_MSG(nbytes <= getTotalBytes(),
-      "Unable to copy " << nbytes << " bytes of data into Buffer with " << 
+    SLIC_CHECK_MSG(
+      nbytes <= getTotalBytes(),
+      "Unable to copy " << nbytes << " bytes of data into Buffer with " <<
       getTotalBytes() << " bytes allocated.");
 
     return this;
@@ -310,7 +311,7 @@ void DataBuffer::attachToView( DataView * view )
 {
   SLIC_ASSERT(view->m_data_buffer == this);
 
-  if (view->m_data_buffer == this) 
+  if (view->m_data_buffer == this)
   {
     m_views.push_back( view );
   }
@@ -337,7 +338,7 @@ void DataBuffer::detachFromView( DataView * view )
       SLIC_ASSERT(pos != m_views.end());
       m_views.erase(pos);
       view->setBufferViewToEmpty();
-    } 
+    }
   }
 }
 
@@ -407,7 +408,11 @@ void DataBuffer::releaseBytes( void * ptr)
 void DataBuffer::exportTo( conduit::Node& data_holder)
 {
   data_holder["id"] = m_index;
-  data_holder["schema_json"] = m_node.schema().to_json();
+
+  if ( isDescribed() )
+  {
+    data_holder["schema"] = m_node.schema().to_json();
+  }
 
   // If Buffer is allocated, export it's node's data
   if ( isAllocated() )
@@ -432,11 +437,13 @@ void DataBuffer::exportTo( conduit::Node& data_holder)
  */
 void DataBuffer::importFrom( conduit::Node& buffer_holder)
 {
-  Schema schema( buffer_holder["schema_json"].as_string() );
-  TypeID type = static_cast<TypeID>( schema.dtype().id() );
-  SidreLength num_elems = schema.dtype().number_of_elements();
-
-  describe(type, num_elems);
+  if (buffer_holder.has_path("schema"))
+  {
+    Schema schema( buffer_holder["schema"].as_string() );
+    TypeID type = static_cast<TypeID>( schema.dtype().id() );
+    SidreLength num_elems = schema.dtype().number_of_elements();
+    describe(type, num_elems);
+  }
 
   // If Buffer was allocated, the conduit node will have the entry "data".
   // Allocate and copy in that data.
@@ -445,11 +452,7 @@ void DataBuffer::importFrom( conduit::Node& buffer_holder)
     allocate();
     conduit::Node& buffer_data_holder = buffer_holder["data"];
     copyBytesIntoBuffer(buffer_data_holder.element_ptr(0),
-           buffer_data_holder.total_bytes() );
-  }
-  else
-  {
-    std::cerr << "NO PATH??" << std::endl;
+                        buffer_data_holder.total_bytes() );
   }
 }
 

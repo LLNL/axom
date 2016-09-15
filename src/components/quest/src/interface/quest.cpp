@@ -20,8 +20,12 @@
 
 #include "slic/slic.hpp"
 
+
 #ifdef USE_MPI
-#include "quest/PSTLReader.hpp"
+  #include "quest/PSTLReader.hpp"
+  #include "slic/LumberjackStream.hpp"
+#else
+  #include "slic/GenericOutputStream.hpp"
 #endif
 
 namespace quest
@@ -30,7 +34,7 @@ namespace quest
     // Note: Define everything in a local namespace
   namespace
   {
-    typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+    typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
     enum QueryMode { QUERY_MODE_NONE, QUERY_MODE_CONTAINMENT, QUERY_MODE_SIGNED_DISTANCE };
 
     /**
@@ -43,30 +47,56 @@ namespace quest
     {
         typedef BoundingBox< double, DIM> GeometricBoundingBox;
         typedef Point< double, DIM> SpacePt;
+        typedef Vector< double, DIM> SpaceVec;
 
         /** \brief Default constructor */
         QuestAccelerator()
             : m_surface_mesh(ATK_NULLPTR)
             , m_region(ATK_NULLPTR)
             , m_containmentTree(ATK_NULLPTR)
-            , m_queryMode(QUERY_MODE_NONE) {}
+            , m_queryMode(QUERY_MODE_NONE)
+            , m_originalLoggerName("")
+        {
+        }
+
+        /**
+         * \brief Sets the internal mesh pointer and computes some surface properties (bounding box and center of mass)
+         */
+        void setMesh(mint::Mesh* surface_mesh)
+        {
+            SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
+
+            m_surface_mesh = surface_mesh;
+
+            // Compute the mesh's bounding box and center of mass
+            m_meshBoundingBox.clear();
+            m_meshCenterOfMass = SpacePt::zero();
+
+            SpacePt pt;
+            int numMeshNodes = m_surface_mesh->getMeshNumberOfNodes();
+            for ( int i=0; i < numMeshNodes; ++i )
+            {
+                m_surface_mesh->getMeshNode( i, pt.data() );
+
+                m_meshBoundingBox.addPoint( pt );
+                m_meshCenterOfMass.array() += pt.array();
+            }
+            m_meshCenterOfMass.array() /= numMeshNodes;
+
+            SLIC_ASSERT( m_meshBoundingBox.isValid() );
+        }
 
         /**
          * \brief Initializes the containment tree mode
          * \param surface_mesh The surface mesh
          * \pre Assumes that we are not yet initialized
          */
-        void initializeContainmentTree(meshtk::Mesh* surface_mesh)
+        void initializeContainmentTree(mint::Mesh* surface_mesh)
         {
             SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
-            SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
 
-            m_surface_mesh = surface_mesh;
-
-            GeometricBoundingBox meshBB = meshBoundingBox( m_surface_mesh );
-            meshBB.scale(1.01);
-
-            m_containmentTree = new InOutOctree<DIM>( meshBB, m_surface_mesh );
+            setMesh(surface_mesh);
+            m_containmentTree = new InOutOctree<DIM>( m_meshBoundingBox, m_surface_mesh );
             m_containmentTree->generateIndex();
             m_queryMode = QUERY_MODE_CONTAINMENT;
         }
@@ -76,12 +106,11 @@ namespace quest
          * \param surface_mesh The surface mesh
          * \pre Assumes that we are not yet initialized
          */
-        void initializeSignedDistance(meshtk::Mesh* surface_mesh, int maxElements, int maxLevels)
+        void initializeSignedDistance(mint::Mesh* surface_mesh, int maxElements, int maxLevels)
         {
             SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
-            SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
 
-            m_surface_mesh = surface_mesh;
+            setMesh(surface_mesh);
             m_region = new SignedDistance<DIM>( m_surface_mesh, maxElements, maxLevels );
             m_queryMode = QUERY_MODE_SIGNED_DISTANCE;
         }
@@ -108,6 +137,9 @@ namespace quest
                delete m_surface_mesh;
                m_surface_mesh = ATK_NULLPTR;
             }
+
+            m_meshBoundingBox.clear();
+            m_meshCenterOfMass = SpacePt::zero();
         }
 
 
@@ -169,28 +201,22 @@ namespace quest
         }
 
         /**
-         * \brief Utility function to compute the bounding box of the mesh
+         * \brief Returns a const reference to the bounding box of the mesh
          */
-
-        GeometricBoundingBox meshBoundingBox(meshtk::Mesh* mesh)
+        const GeometricBoundingBox& meshBoundingBox() const
         {
-            SLIC_ASSERT( mesh != ATK_NULLPTR );
-
-            GeometricBoundingBox meshBB;
-            SpacePt pt;
-
-            for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i )
-            {
-                mesh->getMeshNode( i, pt.data() );
-                meshBB.addPoint( pt );
-            }
-
-            SLIC_ASSERT( meshBB.isValid() );
-
-            return meshBB;
+            return m_meshBoundingBox;
         }
 
-  #ifdef ATK_DEBUG
+        /**
+         * \brief Returns a const reference to the center of mass of the mesh
+         */
+        const SpacePt& meshCenterOfMass() const
+        {
+            return m_meshCenterOfMass;
+        }
+
+      #ifdef ATK_DEBUG
         /**
          * \brief Utility function to determine if we are in a mode that supports distance queries
          */
@@ -249,11 +275,70 @@ namespace quest
         }
   #endif
 
+        /**
+         * \brief Sets up the formatted Slic logger for quest
+         */
+#ifdef USE_MPI
+        void setupQuestLogger( MPI_Comm comm)
+#else
+        void setupQuestLogger()
+#endif
+        {
+            namespace slic = asctoolkit::slic;
+
+            // Setup the formatted quest logger
+            if( ! slic::isInitialized() )
+            {
+                slic::initialize();
+            }
+
+            const std::string questLoggerName = "quest_logger";
+            m_originalLoggerName = slic::getActiveLoggerName();
+            slic::flushStreams();
+            if( ! slic::activateLogger(questLoggerName) )
+            {
+              #ifdef USE_MPI
+                const int RLIMIT = 8;
+                std::string fmt = "[<RANK>][Quest <LEVEL>]: <MESSAGE>\n";
+                slic::LogStream* ls = new slic::LumberjackStream( &std::cout, comm, RLIMIT, fmt );
+              #else
+                std::string fmt = "[Quest <LEVEL>]: <MESSAGE>";
+                slic::LogStream* ls = new slic::GenericOutputStream(&std::cout, fmt);
+              #endif
+                slic::createLogger(questLoggerName, slic::inherit::errors_and_warnings);
+                slic::activateLogger(questLoggerName);
+                slic::setLoggingMsgLevel( slic::message::Info );
+                slic::addStreamToAllMsgLevels(ls);
+            }
+        }
+
+        /**
+         * \brief Restores the original Slic logger
+         */
+        void teardownQuestLogger()
+        {
+            namespace slic = asctoolkit::slic;
+
+            if(m_originalLoggerName != "")
+            {
+                // Revert to original Slic logger
+                slic::flushStreams();
+                slic::activateLogger(m_originalLoggerName);
+                m_originalLoggerName = "";
+            }
+        }
+
+
     private:
-        meshtk::Mesh* m_surface_mesh;
+        mint::Mesh* m_surface_mesh;
         SignedDistance< DIM >* m_region;
         InOutOctree< DIM >* m_containmentTree;
         QueryMode m_queryMode;
+
+        SpacePt              m_meshCenterOfMass;
+        GeometricBoundingBox m_meshBoundingBox;
+
+        std::string          m_originalLoggerName;
     };
 
     /**
@@ -280,12 +365,14 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(ndims==3, "Quest currently only supports 3D triangle meshes.");
 
+  accelerator3D.setupQuestLogger(comm);
+
   // Read in the mesh
   quest::PSTLReader* reader = new quest::PSTLReader( comm );
   reader->setFileName( fileName );
   reader->read();
 
-  meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
+  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
@@ -308,18 +395,20 @@ void initialize( const std::string& fileName,
 {
   SLIC_ASSERT( ! accelerator3D.isInitialized() );
 
-  int NDIMS = ndims;
-  SLIC_ASSERT( NDIMS==2 || NDIMS==3 );
+  ATK_DEBUG_VAR(ndims);
+  SLIC_ASSERT( ndims==2 || ndims==3 );
 
   // In the future, we will also support 2D, but we currently only support 3D
-  SLIC_ASSERT_MSG(NDIMS==3, "Quest currently only supports 3D triangle meshes.");
+  SLIC_ASSERT_MSG(ndims==3, "Quest currently only supports 3D triangle meshes.");
+
+  accelerator3D.setupQuestLogger();
 
   // Read in the mesh
   quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( fileName );
   reader->read();
 
-  meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
+  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
@@ -367,6 +456,41 @@ int inside( double x, double y, double z )
   return accelerator3D.inside(x,y,z);
 }
 
+
+
+
+//------------------------------------------------------------------------------
+void mesh_min_bounds(double* coords)
+{
+    typedef QuestAccelerator<3>::SpacePt SpacePt;
+    SLIC_ASSERT(coords != ATK_NULLPTR);
+
+    const SpacePt& bbMin = accelerator3D.meshBoundingBox().getMin();
+    bbMin.array().to_array(coords);
+}
+
+//------------------------------------------------------------------------------
+void mesh_max_bounds(double* coords)
+{
+    typedef QuestAccelerator<3>::SpacePt SpacePt;
+    SLIC_ASSERT(coords != ATK_NULLPTR);
+
+    const SpacePt& bbMax = accelerator3D.meshBoundingBox().getMax();
+    bbMax.array().to_array(coords);
+}
+
+
+
+//------------------------------------------------------------------------------
+void mesh_center_of_mass(double* coords)
+{
+    typedef QuestAccelerator<3>::SpacePt SpacePt;
+    SLIC_ASSERT(coords != ATK_NULLPTR);
+
+    const SpacePt& cMass = accelerator3D.meshCenterOfMass();
+    cMass.array().to_array(coords);
+}
+
 //------------------------------------------------------------------------------
 void inside( const double* xyz, int* in, int npoints )
 {
@@ -386,6 +510,7 @@ void inside( const double* xyz, int* in, int npoints )
 void finalize()
 {
   accelerator3D.finalize();
+  accelerator3D.teardownQuestLogger();
 }
 
 } /* end namespace quest */

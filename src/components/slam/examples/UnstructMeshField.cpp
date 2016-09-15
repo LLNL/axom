@@ -17,7 +17,7 @@
  * \details Loads a hex mesh from a VTK file, generates the Node to Zone relation and does simple mesh processing.
  *
  * \author T. Brunner (original)
- * \author K. Weiss (modified to use the asc toolkit mesh API)
+ * \author K. Weiss (modified to use the Slam component of the ASC Toolkit)
  */
 
 #include <fstream>
@@ -40,6 +40,8 @@
 #include "slam/Map.hpp"
 #include "slam/Utilities.hpp"
 
+#include "fmt/fmt.hpp"
+
 
 #ifndef USE_CONSTANT_RELATION
   #define USE_CONSTANT_RELATION
@@ -56,6 +58,7 @@ namespace slamUnstructuredHex {
   typedef double                          DataType;
 
 
+  /** Simple point class for this example */
   struct Point
   {
     Point(const DataType& x, const DataType& y, const DataType& z) : m_x(x), m_y(y), m_z(z){}
@@ -79,6 +82,11 @@ namespace slamUnstructuredHex {
   Point operator    /(const Point& pt1, const T& sc){ Point pt(pt1); pt *= (1. / sc);  return pt; }
 
 
+  /**
+   * \brief Simple hex mesh for this example.
+   *  Contains the necessary types, for a set of nodes and zones,
+   *  the incidence relations between them and some fields defined on them.
+   */
   struct HexMesh
   {
 
@@ -126,37 +134,34 @@ namespace slamUnstructuredHex {
     NodeToZoneRelation relationNodeZone;      // storage for relation_(0,3) -- nodes -> zones
 
 
-    /// Maps (fields) in the mesh -- positions and scalar fields
-
-    // Node-centered position field
-    PositionsVec nodePosition;
-    PositionsVec zonePosition;
-
-    // A zone field and two node fields
-    ZoneField zoneField;
-    NodeField nodeFieldExact;
-    NodeField nodeFieldAvg;
+    /// Maps (fields) defined on the mesh -- nodal and zonal positions and scalar fields
+    PositionsVec    nodePosition;
+    PositionsVec    zonePosition;
+    ZoneField       zoneField;
+    NodeField       nodeFieldExact;
+    NodeField       nodeFieldAvg;
   };
 
-
-  class SimpleVTKHeshMeshReader
+  /** A simple class to read a VTK hex mesh */
+  class SimpleVTKHexMeshReader
   {
   public:
     // uses RAII to open/close the file
-    SimpleVTKHeshMeshReader(const std::string & fileName) : vtkMesh( fileName.c_str() )
+    SimpleVTKHexMeshReader(const std::string & fileName) : vtkMesh( fileName.c_str() )
     {
       if(!vtkMesh)
       {
         using namespace asctoolkit::slam::util;
         std::string ancesFile = findFileInAncestorDirs( fileName);
-        SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( ancesFile));
+        SLIC_ERROR_IF( !asctoolkit::utilities::filesystem::pathExists( ancesFile)
+                     , fmt::format("Tried opening file '{}', but it does not exist.", ancesFile) );
 
         SLIC_INFO("Opening file " << ancesFile);
         vtkMesh.open( ancesFile.c_str() );
       }
 
     }
-    ~SimpleVTKHeshMeshReader()
+    ~SimpleVTKHexMeshReader()
     {
       vtkMesh.close();      // Close the file.
     }
@@ -176,7 +181,7 @@ namespace slamUnstructuredHex {
       vtkMesh >> numNodes;
       vtkMesh >> junk;
 
-      SLIC_INFO("\t** Number of nodes = " << numNodes);
+      SLIC_INFO("-- Number of nodes: " << numNodes);
 
       // Create the set of Nodes
       mesh->nodes = HexMesh::NodeSet(numNodes);
@@ -205,10 +210,11 @@ namespace slamUnstructuredHex {
 
       // This is only because we're assuming Hex's.  General meshes can be different.
       SLIC_ASSERT_MSG( numZones * (HexMesh::NODES_PER_ZONE) == numNodeZoneIndices
-          ,  "Error in reading mesh!\n" << "  numZones = " << numZones << "\n"
-                                        << "  numZones*" << (HexMesh::NODES_PER_ZONE) << " = " << numZones * (HexMesh::NODES_PER_ZONE) << "\n"
-                                        << "  numNodeZoneIndices = " << numNodeZoneIndices << "\n" );
-      SLIC_INFO("\t** Number of zones = " << numZones);
+           ,  "Error while reading mesh!\n"
+           << fmt::format(" numZones = {0}; numZones*{1} = {2}; numNodeZoneIndices = {3}"
+                          , numZones, static_cast<int>(HexMesh::NODES_PER_ZONE)
+                          , numZones * (HexMesh::NODES_PER_ZONE), numNodeZoneIndices ));
+      SLIC_INFO("-- Number of zones: " << numZones );
 
       // Create the set of Zones
       mesh->zones = HexMesh::ZoneSet(numZones);
@@ -271,7 +277,7 @@ namespace slamUnstructuredHex {
 
   void readHexMesh(std::string fileName, HexMesh* mesh)
   {
-    SimpleVTKHeshMeshReader vtkMeshReader(fileName);
+    SimpleVTKHexMeshReader vtkMeshReader(fileName);
 
     vtkMeshReader.loadNodesAndPositions(mesh);
     vtkMeshReader.loadHexToNodesRelation(mesh);
@@ -340,7 +346,7 @@ namespace slamUnstructuredHex {
     SLIC_ASSERT_MSG(  mesh->relationNodeZone.isValid(), "Error creating (static) relation from nodes to zones!\n");
     SLIC_ASSERT_MSG(  count == numZonesOfNode,          "Error creating zones of Node list!\n");
 
-    SLIC_INFO("\t** numZonesOfNode = " << numZonesOfNode);
+    SLIC_INFO("-- numZonesOfNode: " << numZonesOfNode);
   }
 
   void computeZoneBarycenters(HexMesh* mesh)
@@ -417,7 +423,7 @@ namespace slamUnstructuredHex {
     }
 
     DataType err = std::sqrt( errSqSum / mesh->numNodes() );
-    SLIC_INFO("\t** The L2-ish error in the node average radius was " << err);
+    SLIC_INFO("-> The L2-ish error in the node average radius was " << err);
 
     return err;
   }
@@ -425,7 +431,7 @@ namespace slamUnstructuredHex {
 }   // end namespace slamUnstructuredHex
 
 
-int main()
+int main(int argc, char** argv)
 {
   using namespace slamUnstructuredHex;
 
@@ -441,12 +447,21 @@ int main()
   DataType expectedResults[] = {0.10736689892, 0.037977237476, 0.013251067479, 0.0046357167735};
   ATK_DEBUG_VAR(expectedResults);
 
+  // Parse command line for data directory, with fallback
+  const std::string DEFAULT_DATA_DIR = "../src/components/slam/data";
+  std::string dataDir;
+  if(argc > 0)
+      dataDir = std::string(argv[1]);
+  else
+  {
+      dataDir = DEFAULT_DATA_DIR;
+      SLIC_INFO("Using default data directory " << DEFAULT_DATA_DIR
+                << "\n First parameter can be a custom directory.");
+  }
+
   for(int res = 0; res < NUM_RESOLUTIONS; ++res)
   {
-    std::stringstream filePath;
-    filePath  << "../src/components/slam/data/"
-              << "ball_" << fileResolutions[res] << ".vtk";
-    std::string meshName = filePath.str();
+    std::string meshName = fmt::format("{}/ball_{}.vtk", dataDir, fileResolutions[res]);
 
     SLIC_INFO("Loading mesh file '" << meshName << "' and generating zone-> node relation");
 
@@ -456,29 +471,27 @@ int main()
     //--------------------------------------------------------------
 
     // Now build the node to zone relation
-    SLIC_INFO("\tGenerating node->zone relation");
+    SLIC_INFO("Generating node->zone relation");
     generateNodeZoneRelation( &hexMesh );
 
     //--------------------------------------------------------------
     // Now that we have the mesh in memory, we can start to do things with it.
-//for(int i=0; i<1000; ++i) {
-    SLIC_INFO("\tComputing zone barycenters using zone->node relation");
+    SLIC_INFO("Computing zone barycenters using zone->node relation");
     computeZoneBarycenters(&hexMesh);
 
-    SLIC_INFO("\tGenerating a zone-centered radius field");
+    SLIC_INFO("Generating a zone-centered radius field");
     createZoneRadiusField(&hexMesh);
 
     DataType errVal = computeNodalErrors(&hexMesh);
     ATK_DEBUG_VAR(errVal);
 
     // Some error checking based on precomputed values
-    SLIC_ASSERT_MSG(
-      asctoolkit::utilities::isNearlyEqual(errVal, expectedResults[res]), "Error differed from expected value."
-      << "\n\texpected: " << expectedResults[res]
-      << "\n\tactual: "   << errVal
-      << "\n\tdiff: "     << (errVal - expectedResults[res]));
+    SLIC_ASSERT_MSG(asctoolkit::utilities::isNearlyEqual(errVal, expectedResults[res])
+        , "Error differed from expected value -- "
+        << fmt::format("Expected {}, but got {} (difference: {}"
+              , expectedResults[res], errVal, errVal - expectedResults[res]));
 //}
-    SLIC_INFO("\tdone.\n");
+    SLIC_INFO("-- done.\n");
   }
 
   //--------------------------------------------------------------

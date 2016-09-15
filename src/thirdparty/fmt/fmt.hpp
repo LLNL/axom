@@ -23,8 +23,17 @@
   #define MUST_UNDEF_FMT_HEADER_ONLY
 #endif
 
+// Clang has a linker error with fmt's extern templates
+#undef MUST_UNDEF_FMT_EXTERN_TEMPLATES
+#if !defined(FMT_USE_EXTERN_TEMPLATES) && defined(__clang__)
+  #define FMT_USE_EXTERN_TEMPLATES 0
+  #define MUST_UNDEF_FMT_EXTERN_TEMPLATES
+#endif
+
+
 
 #include "fmt/format.h"
+#include "fmt/ostream.h"
 
 
 // Undef the defines above
@@ -37,5 +46,11 @@
   #undef FMT_HEADER_ONLY
   #undef MUST_UNDEF_FMT_HEADER_ONLY
 #endif
+
+#ifdef MUST_UNDEF_FMT_EXTERN_TEMPLATES
+  #undef FMT_USE_EXTERN_TEMPLATES
+  #undef MUST_UNDEF_FMT_EXTERN_TEMPLATES
+#endif
+
 
 #endif  // FMT_TPL_H_

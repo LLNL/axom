@@ -189,6 +189,29 @@ TEST(sidre_view,create_views)
 
 //------------------------------------------------------------------------------
 
+TEST(sidre_view,get_path_name)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  DataView * v1 = root->createView("test/a/b/v1");
+  DataView * v2 = root->createView("test/v2");
+  DataView * v3 = root->createView("v3");
+
+  EXPECT_EQ(std::string("v1"), v1->getName());
+  EXPECT_EQ(std::string("test/a/b"), v1->getPath());
+  EXPECT_EQ(std::string("test/a/b/v1"), v1->getPathName());
+
+  EXPECT_EQ(std::string("v2") , v2->getName());
+  EXPECT_EQ(std::string("test") , v2->getPath());
+  EXPECT_EQ(std::string("test/v2") , v2->getPathName());
+
+  EXPECT_EQ(std::string("v3") , v3->getName());
+  EXPECT_EQ(std::string("") , v3->getPath());
+  EXPECT_EQ(std::string("v3") , v3->getPathName());
+}
+
+//------------------------------------------------------------------------------
+
 TEST(sidre_view,create_view_from_path)
 {
   DataStore * ds   = new DataStore();
@@ -371,7 +394,7 @@ TEST(sidre_view,dealloc)
 
 //------------------------------------------------------------------------------
 
-// allocate/reallocate with zero items results in not applied.
+// allocate/reallocate with zero items results in allocated (yet zero).
 
 TEST(sidre_view,alloc_zero_items)
 {
@@ -383,8 +406,8 @@ TEST(sidre_view,alloc_zero_items)
   dv = root->createView("z0");
   EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
   dv->allocate(INT_ID, 0);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, 0));
-  EXPECT_FALSE(dv->getBuffer()->isAllocated());
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, false, 0));
+  EXPECT_TRUE(dv->getBuffer()->isAllocated());
 
   // Reallocate zero items
   dv = root->createView("z1");
@@ -393,8 +416,8 @@ TEST(sidre_view,alloc_zero_items)
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
   dv->reallocate(0);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, 0));
-  EXPECT_FALSE(dv->getBuffer()->isAllocated());
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, false, 0));
+  EXPECT_TRUE(dv->getBuffer()->isAllocated());
 
   delete ds;
 }

@@ -24,25 +24,28 @@
 #include "common/Timer.hpp"
 
 #include "quest/BoundingBox.hpp"
-#include "quest/Field.hpp"
-#include "quest/FieldData.hpp"
-#include "quest/FieldVariable.hpp"
-#include "quest/Mesh.hpp"
 #include "quest/Orientation.hpp"
 #include "quest/Point.hpp"
 #include "quest/STLReader.hpp"
 #include "quest/SquaredDistance.hpp"
 #include "quest/Triangle.hpp"
-#include "quest/UniformMesh.hpp"
-#include "quest/UnstructuredMesh.hpp"
 #include "quest/Point.hpp"
 #include "quest/SpatialOctree.hpp"
 #include "quest/InOutOctree.hpp"
+
+#include "mint/Field.hpp"
+#include "mint/FieldData.hpp"
+#include "mint/FieldVariable.hpp"
+#include "mint/Mesh.hpp"
+#include "mint/UniformMesh.hpp"
+#include "mint/UnstructuredMesh.hpp"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
 #include "slam/Utilities.hpp"
+
+#include "fmt/fmt.hpp"
 
 
 // C/C++ includes
@@ -55,9 +58,12 @@
 
 using namespace asctoolkit;
 
-typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
 
 typedef quest::InOutOctree<3> Octree3D;
+
+typedef quest::Point<int,3> TriVertIndices;
+typedef quest::Triangle<double, 3> SpaceTriangle;
 
 typedef Octree3D::GeometricBoundingBox GeometricBoundingBox;
 typedef Octree3D::SpacePt SpacePt;
@@ -76,7 +82,7 @@ typedef Octree3D::BlockIndex BlockIndex;
 /**
  * \brief Computes the bounding box of the surface mesh
  */
-GeometricBoundingBox compute_bounds( meshtk::Mesh* mesh)
+GeometricBoundingBox compute_bounds( mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -96,7 +102,7 @@ GeometricBoundingBox compute_bounds( meshtk::Mesh* mesh)
 
 
 //------------------------------------------------------------------------------
-void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
+void write_vtk( mint::Mesh* mesh, const std::string& fileName )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -156,19 +162,19 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
   ofs << "CELL_TYPES " << ncells << std::endl;
   for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
     int ctype    = mesh->getMeshCellType( cellIdx );
-    int vtk_type = meshtk::cell::vtk_types[ ctype ];
+    int vtk_type = mint::cell::vtk_types[ ctype ];
     ofs << vtk_type << std::endl;
   } // END for all cells
 
   // STEP 4: Write Cell Data
   ofs << "CELL_DATA " << ncells << std::endl;
-  meshtk::FieldData* CD = mesh->getCellFieldData();
+  mint::FieldData* CD = mesh->getCellFieldData();
   for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
 
-      meshtk::Field* field = CD->getField( f );
+      mint::Field* field = CD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == meshtk::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           SLIC_ASSERT( dataPtr != ATK_NULLPTR );
@@ -198,13 +204,13 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
   // STEP 5: Write Point Data
   const int nnodes = mesh->getMeshNumberOfNodes();
   ofs << "POINT_DATA " << nnodes << std::endl;
-  meshtk::FieldData* PD = mesh->getNodeFieldData();
+  mint::FieldData* PD = mesh->getNodeFieldData();
   for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
 
-      meshtk::Field* field = PD->getField( f );
+      mint::Field* field = PD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == meshtk::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           ofs << "double\n";
@@ -246,7 +252,7 @@ void testIntersectionOnRegularGrid()
 
     TriangleType unitTri( ptX, ptY, ptZ );
 
-    typedef meshtk::UnstructuredMesh<meshtk::MIXED> DebugMesh;
+    typedef mint::UnstructuredMesh<mint::MIXED> DebugMesh;
     DebugMesh* debugMesh = new DebugMesh(3);
 
     // Add triangle to mesh
@@ -255,7 +261,7 @@ void testIntersectionOnRegularGrid()
     debugMesh->insertNode( ptZ[0], ptZ[1], ptZ[2]);
 
     int tArr[3] = {0,1,2};
-    debugMesh->insertCell(tArr, meshtk::LINEAR_TRIANGLE, 3);
+    debugMesh->insertCell(tArr, mint::LINEAR_TRIANGLE, 3);
 
     PointType bbMin(-0.1);
     PointType bbMax(1.1);
@@ -294,7 +300,7 @@ void testIntersectionOnRegularGrid()
                     for(int i=0; i< 8; ++i)
                         data[i] = vStart + i;
 
-                    debugMesh->insertCell( data, meshtk::LINEAR_HEX, 8);
+                    debugMesh->insertCell( data, mint::LINEAR_HEX, 8);
                 }
             }
         }
@@ -319,15 +325,15 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
     ext[0] = ext[2] = ext[4] = 0;
     ext[1] = ext[3] = ext[5] = gridRes;
 
-    meshtk::UniformMesh* umesh =
-            new meshtk::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
+    mint::UniformMesh* umesh =
+            new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
 
 
     const int nnodes = umesh->getNumberOfNodes();
-    meshtk::FieldData* PD = umesh->getNodeFieldData();
+    mint::FieldData* PD = umesh->getNodeFieldData();
     SLIC_ASSERT( PD != ATK_NULLPTR );
 
-    PD->addField( new meshtk::FieldVariable< int >("containment",nnodes) );
+    PD->addField( new mint::FieldVariable< int >("containment",nnodes) );
     int* containment = PD->getField( "containment" )->getIntPtr();
     SLIC_ASSERT( containment != ATK_NULLPTR );
 
@@ -341,9 +347,8 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
         containment[ inode ] = inOutOctree.within(pt) ? 1 : 0;
     }
     timer.stop();
-    SLIC_INFO("\tQuerying "<< gridRes << "^3 containment field took " << timer.elapsed() << " seconds"
-              << " (@ " << nnodes / timer.elapsed() << " queries per second)"
-        );
+    SLIC_INFO(fmt::format("\tQuerying {}^3 containment field took {} seconds (@ {} queries per second)"
+                    , gridRes, timer.elapsed(), nnodes / timer.elapsed()));
 
   #ifdef DUMP_VTK_MESH
     std::stringstream sstr;
@@ -355,14 +360,41 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
 }
 
 
+/**
+ * \brief Extracts the vertex indices of cell cellIndex from the mesh
+ */
+TriVertIndices getTriangleVertIndices(mint::Mesh* mesh, int cellIndex)
+{
+    SLIC_ASSERT(mesh != ATK_NULLPTR);
+    SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getMeshNumberOfCells());
+
+    TriVertIndices tvInd;
+    mesh->getMeshCell( cellIndex, tvInd.data() );
+    return tvInd;
+}
+
+/**
+ * \brief Extracts the positions of a traingle's vertices from the mesh
+ * \return The triangle vertex positions in a SpaceTriangle instance
+ */
+SpaceTriangle getMeshTriangle(mint::Mesh* mesh, const TriVertIndices& vertIndices )
+{
+    SLIC_ASSERT(mesh != ATK_NULLPTR);
+
+    SpaceTriangle tri;
+    for(int i=0; i< 3; ++i)
+        mesh->getMeshNode( vertIndices[i], tri[i].data() );
+
+    return tri;
+}
 
 /**
  * \brief Computes some statistics about the surface mesh.
  *
  * Specifically, computes histograms (and ranges) of the edge lengths and triangle areas
- * on a lg scale and logs the results
+ * on a logarithmic scale and logs the results
  */
-void print_surface_stats( meshtk::Mesh* mesh)
+void print_surface_stats( mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -387,23 +419,20 @@ void print_surface_stats( meshtk::Mesh* mesh)
    LogRangeMap areaRangeMap;        // Tracks range of triangle areas at each scale
 
    typedef quest::Point<int,3> TriVertIndices;
+   int expBase2;
 
    // Traverse mesh triangles and bin the edge lengths and areas
    for ( int i=0; i < nCells; ++i )
    {
       // Get the indices and positions of the triangle's three vertices
-      TriVertIndices vertIndices;
-      mesh->getMeshCell( i, vertIndices.data() );
-
-      SpacePt vertPos[3];
-      for(int j=0; j<3; ++j)
-          mesh->getMeshNode( vertIndices[j], vertPos[j].data() );
+      TriVertIndices vertIndices = getTriangleVertIndices(mesh, i);
+      SpaceTriangle tri = getMeshTriangle(mesh, vertIndices);
 
       // Compute edge stats -- note edges are double counted
       for(int j=0; j<3; ++j)
       {
-          double len = SpaceVector(vertPos[j],vertPos[(j+1)%3]).norm();
-          if(len == 0)
+          double len = SpaceVector(tri[j],tri[(j+1)%3]).norm();
+          if(asctoolkit::utilities::isNearlyEqual(len,0.))
           {
               badTriangles.insert(i);
           }
@@ -411,7 +440,6 @@ void print_surface_stats( meshtk::Mesh* mesh)
           {
               LengthType edgeLen(len);
               meshEdgeLenRange.addPoint( edgeLen );
-              int expBase2;
               std::frexp (len, &expBase2);
               edgeLenHist[expBase2]++;
               edgeLenRangeMap[expBase2].addPoint( edgeLen );
@@ -419,17 +447,15 @@ void print_surface_stats( meshtk::Mesh* mesh)
       }
 
       // Compute triangle area stats
-      double area = SpaceVector::cross_product(
-                  SpaceVector(vertPos[0],vertPos[1])
-                  , SpaceVector(vertPos[0],vertPos[2])
-                  ).norm();
-      if(area == 0.)
+      double area = tri.area();
+      if( asctoolkit::utilities::isNearlyEqual(area, 0.))
+      {
           badTriangles.insert(i);
+      }
       else
       {
           LengthType triArea(area);
           meshTriAreaRange.addPoint ( triArea );
-          int expBase2;
           std::frexp (area, &expBase2);
           areaHist[expBase2]++;
           areaRangeMap[expBase2].addPoint( triArea);
@@ -439,39 +465,36 @@ void print_surface_stats( meshtk::Mesh* mesh)
 
    // Log the results
    const int nVerts = mesh->getMeshNumberOfNodes();
-   SLIC_INFO("Mesh has " << nVerts << " vertices "
-             <<"and " << nCells << " triangles.");
+   SLIC_INFO(fmt::format("Mesh has {} vertices  and {} triangles.", nVerts, nCells));
 
-   SLIC_INFO("Edge length range is: "  << meshEdgeLenRange);
+   SLIC_INFO("Edge length range: "  << meshEdgeLenRange);
    SLIC_INFO("Triangle area range is: "  << meshTriAreaRange);
 
-   std::stringstream edgeHistStr;
-   edgeHistStr<<"\tEdge length histogram (lg-arithmic): ";
+   fmt::MemoryWriter edgeHistStr;
+   edgeHistStr<<"Edge length histogram (lg-arithmic): ";
    for(LogHistogram::const_iterator it = edgeLenHist.begin()
            ; it != edgeLenHist.end()
            ; ++it)
    {
-       edgeHistStr << "\n\t exp: " << it->first
-                   <<"\t count: " << (it->second / 2)
-                   <<"\tRange: " << edgeLenRangeMap[it->first];
+       edgeHistStr.write("\n\texp: {}\tcount: {}\tRange: {}"
+                        , it->first, it->second / 2, edgeLenRangeMap[it->first]);
    }
    SLIC_DEBUG(edgeHistStr.str());
 
-   std::stringstream triHistStr;
-   triHistStr<<"\tTriangle areas histogram (lg-arithmic): ";
+   fmt::MemoryWriter triHistStr;
+   triHistStr<<"Triangle areas histogram (lg-arithmic): ";
    for(LogHistogram::const_iterator it =areaHist.begin()
            ; it != areaHist.end()
            ; ++it)
    {
-       triHistStr<<"\n\t exp: " << it->first
-                 <<"\t count: " << it->second
-                 << "\tRange: " << areaRangeMap[it->first];
+       triHistStr.write("\n\texp: {}\tcount: {}\tRange: {}"
+                       , it->first, it->second, areaRangeMap[it->first]);
    }
    SLIC_DEBUG(triHistStr.str());
 
    if(! badTriangles.empty() )
    {
-       std::stringstream badTriStr;
+       fmt::MemoryWriter badTriStr;
        badTriStr<<"The following triangle(s) have zero area/edge lengths:";
        for(TriIdxSet::const_iterator it = badTriangles.begin()
                ; it != badTriangles.end()
@@ -485,7 +508,7 @@ void print_surface_stats( meshtk::Mesh* mesh)
            for(int j=0; j<3; ++j)
            {
                mesh->getMeshNode( vertIndices[j], vertPos.data() );
-               badTriStr<<"\n\t\t vId: " << vertIndices[j] <<" @ position: " << vertPos;
+               badTriStr.write("\n\t\t vId: {} @ position: {}", vertIndices[j], vertPos);
            }
        }
        SLIC_DEBUG(badTriStr.str());
@@ -508,11 +531,9 @@ void refineAndPrint(Octree3D& octree, const SpacePt& queryPt, bool shouldRefine 
     GeometricBoundingBox blockBB = octree.blockBoundingBox( leafBlock);
     bool containsPt = blockBB.contains(queryPt);
 
-    SLIC_INFO("\t{gridPt: " << leafBlock.pt()
-            <<"; lev: " << leafBlock.level()
-            <<"} "
-            <<" with bounds " << blockBB
-            << (containsPt? " contains " : "does not contain ") << "query point.");
+    SLIC_INFO(fmt::format("\t(gridPt: {}; lev: {}) with bounds {} {} query point."
+            , leafBlock.pt(), leafBlock.level(), blockBB
+            , (containsPt? " contains " : "does not contain ") ));
 }
 
 //------------------------------------------------------------------------------
@@ -540,6 +561,7 @@ int main( int argc, char** argv )
   SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( stlFile));
 
   // STEP 2: read mesh file
+  SLIC_INFO(fmt::format("\n\t{:*^80}"," Loading the mesh "));
   SLIC_INFO("Reading file: " << stlFile << "...");
 
   quest::STLReader* reader = new quest::STLReader();
@@ -549,7 +571,7 @@ int main( int argc, char** argv )
 
 
   // STEP 3: create surface mesh
-  meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
+  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
   reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
   // dump mesh info
   SLIC_INFO("Mesh has "
@@ -572,7 +594,7 @@ int main( int argc, char** argv )
 
 
   // STEP 6: Create octree over mesh's bounding box and query a point in space
-  SLIC_INFO("-- About to generate the InOutOctree");
+  SLIC_INFO(fmt::format("\n\t{:*^80}"," Generating the octree "));
   Octree3D octree(meshBB, surface_mesh);
   octree.generateIndex();
 
@@ -580,7 +602,7 @@ int main( int argc, char** argv )
   print_surface_stats(surface_mesh);
   write_vtk(surface_mesh, "meldedTriMesh.vtk");
 
-  SLIC_INFO("-- About to query the octree");
+  SLIC_INFO(fmt::format("\n\t{:*^80}"," Querying the octree "));
 
   // Query on a slightly expanded bounding box
   GeometricBoundingBox queryBB
@@ -600,11 +622,11 @@ int main( int argc, char** argv )
       testContainmentOnRegularGrid( octree, queryBB, 1<<i);
 
 
-  //
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 
   // Other -- find leaf block of a given query point at various levels of resolution
+  SLIC_INFO(fmt::format("\n\t{:*^80}"," Other octree operations "));
   double alpha = 2./3.;
   SpacePt queryPt = SpacePt::lerp(meshBB.getMin(), meshBB.getMax(), alpha);
 
@@ -612,12 +634,13 @@ int main( int argc, char** argv )
   for(int lev = 0; lev < octree.maxLeafLevel(); ++lev)
   {
       GridPt gridPt = octree.findGridCellAtLevel(queryPt, lev);
-      SLIC_INFO("  @level " << lev
-              <<":\n\t" <<  gridPt
-              <<"\n\t[max gridPt: " << octree.maxGridCellAtLevel(lev)
-              <<"; spacing" << octree.spacingAtLevel(lev)
-              <<";\n\t bounding box " << octree.blockBoundingBox(gridPt, lev)
-              <<"]");
+      SLIC_INFO(fmt::format(
+              "  {1} @ level {0}\n\t[max gridPt: {2}; spacing: {3};\n\t bounding box {4}]"
+              , lev, gridPt
+              , octree.maxGridCellAtLevel(lev)
+              , octree.spacingAtLevel(lev)
+              , octree.blockBoundingBox(gridPt, lev)
+              ));
   }
 
 

@@ -1,15 +1,31 @@
 #!/bin/bash
+# This script builds and tests the toolkit without MPI.
+
+if [[ $HOSTNAME == rz* ]]; then
+    HC="host-configs/rzmerl-chaos_5_x86_64_ib-gcc@4.9.3.cmake"
+else
+    HC="host-configs/surface-chaos_5_x86_64_ib-gcc@4.9.3.cmake"
+fi
+
+BT="RelWithDebInfo"
+BP="build-chaos-gcc@4.9.3-toolkit-serial"
+IP="install-chaos-gcc@4.9.3-toolkit-serial"
+COMP_OPT=""
+BUILD_OPT="-DENABLE_MPI=OFF"
+OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
 
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c gcc@4.9.3 --buildtype RelWithDebInfo -DUSE_MPI=OFF
+echo "Options: $OPTIONS"
+./scripts/config-build.py $OPTIONS
+
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1
 fi
 echo "-----------------------------------------------------------------------"
 
-cd build-chaos-gcc@4.9.3-relwithdebinfo
+cd $BP
     echo "Generating C/Fortran binding..."
     make VERBOSE=1 generate
     if [ $? -ne 0 ]; then
@@ -29,7 +45,7 @@ cd build-chaos-gcc@4.9.3-relwithdebinfo
 
     echo "Run tests"
     echo "-----------------------------------------------------------------------"
-    make test ARGS="-T Test"
+	make test ARGS="-T Test -E 'mpi|parallel'"
     if [ $? -ne 0 ]; then
         echo "Error: 'make test' failed"
         exit 1

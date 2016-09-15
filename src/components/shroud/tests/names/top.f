@@ -52,7 +52,6 @@ contains
     ! void function1()
     ! function_index=2
     subroutine testnames_function1()
-        use iso_c_binding
         implicit none
         ! splicer begin function1
         call yyy_tes_function1()
@@ -62,7 +61,6 @@ contains
     ! void function2()
     ! function_index=3
     subroutine f_name_special()
-        use iso_c_binding
         implicit none
         ! splicer begin function2
         call f_c_name_special()
@@ -72,7 +70,7 @@ contains
     ! void function3a(int i+intent(in)+value)
     ! function_index=4
     subroutine F_name_function3a_int(i)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         integer(C_INT), value, intent(IN) :: i
         ! splicer begin function3a_0
@@ -83,7 +81,7 @@ contains
     ! void function3a(long i+intent(in)+value)
     ! function_index=5
     subroutine F_name_function3a_long(i)
-        use iso_c_binding
+        use iso_c_binding, only : C_LONG
         implicit none
         integer(C_LONG), value, intent(IN) :: i
         ! splicer begin function3a_1

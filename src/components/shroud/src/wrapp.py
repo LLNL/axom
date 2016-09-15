@@ -62,6 +62,13 @@ class Wrapp(util.WrapperMixin):
         util.eval_template(top, 'PY_header_filename')
         util.eval_template(top, 'PY_helper_filename')
         fmt_library.BBB = 'BBB'   # name of cpp class pointer in PyObject
+        fmt_library.PY_PyObject   = 'PyObject'
+        fmt_library.PY_param_self = 'self'
+        fmt_library.PY_param_args = 'args'
+        fmt_library.PY_param_kwds = 'kwds'
+        fmt_library.PY_used_param_self = False
+        fmt_library.PY_used_param_args = False
+        fmt_library.PY_used_param_kwds = False
 
         # Variables to accumulate output lines
         self.py_type_object_creation = []
@@ -252,6 +259,7 @@ return 1;""", fmt)
     def wrap_functions(self, cls, functions):
         """Wrap functions for a library or class.
         Compute overloading map.
+        cls - C++ class
         """
         overloaded_methods = {}
         for function in functions:
@@ -278,6 +286,8 @@ return 1;""", fmt)
         fmt.c_var   - name of variable in PyArg_ParseTupleAndKeywords
         fmt.cpp_var - name of variable in c++ call.
         fmt.py_var  - name of PyObject variable
+        fmt.PY_used_param_args - True/False if parameter args is used
+        fmt.PY_used_param_kwds - True/False if parameter kwds is used
         """
         options = node['options']
         if not options.wrap_python:
@@ -292,6 +302,8 @@ return 1;""", fmt)
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
         fmt.doc_string = 'documentation'
+        if cls:
+            fmt.PY_used_param_self = True
 
         CPP_subprogram = node['_subprogram']
 
@@ -353,23 +365,29 @@ return 1;""", fmt)
             fmt.ml_flags = 'METH_NOARGS'
         else:
             fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
+            fmt.PY_used_param_args = True
+            fmt.PY_used_param_kwds = True
             arg_names = []
             arg_offsets  = []
             offset = 0
+            fmt_arg = util.Options(fmt)
             for arg in args:
                 arg_name = arg['name']
-                fmt.c_var = arg['name']
-                fmt.cpp_var = fmt.c_var
-                fmt.py_var = 'SH_Py_' + fmt.c_var
+                fmt_arg.c_var = arg['name']
+                fmt_arg.cpp_var = fmt_arg.c_var
+                fmt_arg.py_var = 'SH_Py_' + fmt_arg.c_var
+                fmt_arg.C_const = 'const ' if arg['attrs'].get('const', False) else ''
+                fmt_arg.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
                 attrs = arg['attrs']
 
                 arg_typedef = self.typedef[arg['type']]
+                fmt_arg.cpp_type = arg_typedef.cpp_type
                 py_statements = arg_typedef.py_statements
-                have_cpp_local_var = False
+                have_cpp_local_var = arg_typedef.cpp_local_var
                 if attrs['intent'] in [ 'inout', 'in']:
                     # names to PyArg_ParseTupleAndKeywords
                     arg_names.append(arg_name)
-                    arg_offsets.append( '(char *) kwcpp+%d' % offset)
+                    arg_offsets.append( '(char *) SH_kwcpp+%d' % offset)
                     offset += len(arg_name) + 1
 
                     # XXX default should be handled differently
@@ -386,7 +404,7 @@ return 1;""", fmt)
                         # Expect object of given type
                         parse_format.append('!')
                         parse_vargs.append('&' + arg_typedef.PY_PyTypeObject)
-                        arg_name = fmt.py_var
+                        arg_name = fmt_arg.py_var
                     elif arg_typedef.PY_from_object:
                         # Use function to convert object
                         parse_format.append('&')
@@ -395,18 +413,19 @@ return 1;""", fmt)
                     # add argument to call to PyArg_ParseTypleAndKeywords
                     parse_vargs.append('&' + arg_name)
 
-                    have_cpp_local_var = py_statements.get('intent_in',{}).get('cpp_local_var', False)
+                    have_cpp_local_var = have_cpp_local_var or \
+                        py_statements.get('intent_in',{}).get('cpp_local_var', False)
                     if have_cpp_local_var:
-                        fmt.cpp_var = 'SH_' + fmt.c_var
+                        fmt_arg.cpp_var = 'SH_' + fmt_arg.c_var
                     cmd_list = py_statements.get('intent_in',{}).get('post_parse',[])
                     if cmd_list:
                         for cmd in cmd_list:
-                            append_format(post_parse, cmd, fmt)
+                            append_format(post_parse, cmd, fmt_arg)
 
                 if attrs['intent'] in [ 'inout', 'out']:
                     # output variable must be a pointer
                     # XXX - fix up for strings
-                    format, vargs = self.intent_out(arg_typedef, fmt, post_call)
+                    format, vargs = self.intent_out(arg_typedef, fmt_arg, post_call)
                     build_format.append(format)
                     build_vargs.append('*' + vargs)
 
@@ -420,35 +439,42 @@ return 1;""", fmt)
                     ptr = True
                 else:
                     ptr = False
-                PY_decl.append(self.std_c_decl(lang, arg, const=False, ptr=ptr) + ';')
+                PY_decl.append(self.std_c_decl(lang, arg, ptr=ptr) + ';')
                 
+                if arg_typedef.cpp_local_var:
+                    # cpp_local_var should only be set if c_statements are not used
+                    if py_statements:
+                        raise RuntimeError("py_statements and cpp_local_var are both defined for {}".format(arg_typedef.name))
+                    append_format(post_parse, '{C_const}{cpp_type}{ptr} {cpp_var} = ' + 
+                                  arg_typedef.c_to_cpp + ';', fmt_arg)
+
                 if arg_typedef.PY_PyTypeObject:
                     # A Python Object which must be converted to C++ type.
                     objtype = arg_typedef.PY_PyObject or 'PyObject'
-                    PY_decl.append(objtype + ' * ' + fmt.py_var + ';')
-                    cpp_call_list.append(fmt.cpp_var)
+                    PY_decl.append(objtype + ' * ' + fmt_arg.py_var + ';')
+                    cpp_call_list.append(fmt_arg.cpp_var)
                 elif arg_typedef.PY_from_object:
                     # already a C++ type
-                    cpp_call_list.append(fmt.cpp_var)
+                    cpp_call_list.append(fmt_arg.cpp_var)
                 elif have_cpp_local_var:
-                    cpp_call_list.append(fmt.cpp_var)
+                    cpp_call_list.append(fmt_arg.cpp_var)
                 else:
                     # convert to C++ type
-                    fmt.ptr=' *' if arg['attrs'].get('ptr', False) else ''
-                    append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
+                    fmt_arg.ptr=' *' if arg['attrs'].get('ptr', False) else ''
+                    append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt_arg)
 
 
             if True:
                 # jump through some hoops for char ** const correctness for C++
                 # warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
-                PY_decl.append('const char *kwcpp = "%s";' % '\\0'.join(arg_names))
-                PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ', NULL };')
+                PY_decl.append('const char *SH_kwcpp = "%s";' % '\\0'.join(arg_names))
+                PY_decl.append('char *SH_kw_list[] = { ' + ','.join(arg_offsets) + ', NULL };')
             else:
-                PY_decl.append('char * kw_list[] = { "' + '", "'.join(arg_names) + ', NULL" };')
+                PY_decl.append('char * SH_kw_list[] = { "' + '", "'.join(arg_names) + ', NULL" };')
             parse_format.extend([ ':', fmt.function_name])
             fmt.PyArg_format = ''.join(parse_format)
             fmt.PyArg_vargs = ', '.join(parse_vargs)
-            PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords(args, kwds, "{PyArg_format}", kw_list,', fmt))
+            PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords({PY_param_args}, {PY_param_kwds}, "{PyArg_format}", SH_kw_list,', fmt))
             PY_code.append(1)
             PY_code.append(wformat('{PyArg_vargs}))', fmt))
             PY_code.append(-1)
@@ -581,12 +607,19 @@ return 1;""", fmt)
                 'static PyObject *',
                 wformat('{PY_name_impl}(', fmt)
                 ])
-        if cls:
-            body.append(wformat('  {PY_PyObject} *self,', fmt))
+        if fmt.PY_used_param_self:
+            body.append(wformat('  {PY_PyObject} *{PY_param_self},', fmt))
         else:
-            body.append('  PyObject *self,    /* not used */')
-        body.append('  PyObject *args,')
-        body.append('  PyObject *kwds)')
+            body.append(wformat('  PyObject *,  // {PY_param_self} unused', fmt))
+        if fmt.PY_used_param_args:
+            body.append(wformat('  PyObject *{PY_param_args},', fmt))
+        else:
+            body.append(wformat('  PyObject *,  // {PY_param_args} unused', fmt))
+        if fmt.PY_used_param_args:
+            body.append(wformat('  PyObject *{PY_param_kwds})', fmt))
+        else:
+            body.append(wformat('  PyObject *)  // {PY_param_kwds} unused', fmt))
+
         body.append('{')
 # use function_suffix in splicer name since a single C++ function may
 # produce several methods.
@@ -683,13 +716,16 @@ return 1;""", fmt)
         """
         for method, methods in self.overloaded_methods.items():
             if len(methods) < 2:
-                continue
+                continue  # not overloaded
 
             fmt_func = methods[0]['fmt']
             fmt = util.Options(fmt_func)
             fmt.function_suffix = ''
             fmt.doc_string = 'documentation'
             fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
+            fmt.PY_used_param_self = True
+            fmt.PY_used_param_args = True
+            fmt.PY_used_param_kwds = True
 
             body = []
             body.append(1)

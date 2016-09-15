@@ -55,9 +55,9 @@ void createLogger( const std::string& name, char imask )
 }
 
 //------------------------------------------------------------------------------
-void activateLogger( const std::string& name )
+bool activateLogger( const std::string& name )
 {
-  Logger::activateLogger( name );
+  return Logger::activateLogger( name );
 }
 
 //------------------------------------------------------------------------------
@@ -145,6 +145,7 @@ void logErrorMessage( const std::string& message,
   oss << message << slic::stacktrace();
 
   slic::logMessage( message::Fatal, oss.str(), fileName, line );
+  slic::flushStreams();
   asctoolkit::utilities::processAbort();
 }
 

@@ -1,15 +1,32 @@
 #!/bin/bash
 
+COMPILER="gcc@4.7.1"
+
+if [[ $HOSTNAME == rz* ]]; then
+    HC="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"
+else
+    HC="host-configs/surface-chaos_5_x86_64_ib-${COMPILER}.cmake"
+fi
+
+BT="RelWithDebInfo"
+BP="build-chaos-${COMPILER}-${BT,,}"
+IP="install-chaos-${COMPILER}-${BT,,}"
+COMP_OPT=""
+# gcc 4.7.1 does not fully support Fortran 2003 C interoperability
+BUILD_OPT="-DBLT_CXX_STD=c++98 -DENABLE_FORTRAN=OFF"
+OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
+
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c gcc@4.7.1 --buildtype RelWithDebInfo -DENABLE_CXX11=FALSE
+echo "Options: $OPTIONS"
+./scripts/config-build.py $OPTIONS
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1
 fi
 echo "-----------------------------------------------------------------------"
 
-cd build-chaos-gcc@4.7.1-relwithdebinfo
+cd $BP
     echo "Generating C/Fortran binding..."
     make VERBOSE=1 generate
     if [ $? -ne 0 ]; then

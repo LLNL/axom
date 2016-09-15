@@ -1,15 +1,31 @@
 #!/bin/bash
 
+COMPILER="gcc@4.9.3"
+
+if [[ $HOSTNAME == rz* ]]; then
+    HC="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"
+else
+    HC="host-configs/surface-chaos_5_x86_64_ib-${COMPILER}.cmake"
+fi
+
+BT="Debug"
+BP="build-chaos-${COMPILER}-${BT,,}"
+IP="install-chaos-${COMPILER}-${BT,,}"
+COMP_OPT=""
+BUILD_OPT="-DENABLE_COVERAGE=TRUE"
+OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
+
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
-./scripts/config-build.py -c gcc@4.9.3 --buildtype Debug -DENABLE_COVERAGE=TRUE 
+echo "Options: $OPTIONS"
+./scripts/config-build.py $OPTIONS
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1
 fi
 echo "-----------------------------------------------------------------------"
 
-cd build-chaos-gcc@4.9.3-debug
+cd $BP
     echo "Generating C/Fortran binding..."
     make VERBOSE=1 generate
     if [ $? -ne 0 ]; then
@@ -36,29 +52,31 @@ cd build-chaos-gcc@4.9.3-debug
     fi
     echo "-----------------------------------------------------------------------"
 
+    TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/toolkit"
+    COVERAGE_DIR="${TOOLKIT_WEB_ROOT}/coverage"
     echo "Install code coverage report to web space..."
     echo "-----------------------------------------------------------------------"
-    if [ -d /usr/global/web-pages/lc/www/toolkit/coverage ]; then
-        rm -rf /usr/global/web-pages/lc/www/toolkit/coverage
+    if [ -d ${COVERAGE_DIR} ]; then
+        rm -rf ${COVERAGE_DIR}
         if [ $? -ne 0 ]; then
             echo "Error: 'rm' of coverage directory failed"
             #exit 1
         fi
     fi
 
-    cp -R ./coverage /usr/global/web-pages/lc/www/toolkit
+    cp -R ./coverage ${TOOLKIT_WEB_ROOT}
     if [ $? -ne 0 ]; then
         echo "Error: 'cp' of coverage directory failed"
         exit 1
     fi
     
-    chgrp -R toolkitd /usr/global/web-pages/lc/www/toolkit/coverage/
+    chgrp -R toolkitd ${COVERAGE_DIR}
     if [ $? -ne 0 ]; then
         echo "Error: 'chgrp' on coverage directory failed"
         exit 1
     fi
 
-    chmod -R ug+rwX /usr/global/web-pages/lc/www/toolkit/coverage/
+    chmod -R ug+rwX ${COVERAGE_DIR}
     if [ $? -ne 0 ]; then
         echo "Error: 'chmod' on coverage directory failed"
         exit 1

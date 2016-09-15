@@ -7,7 +7,6 @@
 #
 set(example_sources
         ShockTube.cpp
-        UnstructMeshField.cpp
         TemplateEx.cpp
         )
 
@@ -39,6 +38,18 @@ foreach(example_source ${example_sources})
         COMMAND     slam_${example_name}
         )
 endforeach()
+
+blt_add_executable(
+    NAME        slam_unstructMesh
+    SOURCES     UnstructMeshField.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  ${slam_tests_depends_on} fmt
+    )
+    
+blt_add_test(
+    NAME        slam_unstructMesh
+    COMMAND     slam_unstructMesh ${CMAKE_CURRENT_SOURCE_DIR}/../data
+    )
 
 
 

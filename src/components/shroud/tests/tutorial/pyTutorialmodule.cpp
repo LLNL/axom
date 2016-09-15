@@ -17,9 +17,9 @@ static char PY_function1__doc__[] =
 
 static PyObject *
 PY_function1(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.function1
     Function1();
@@ -33,17 +33,17 @@ static char PY_function2__doc__[] =
 
 static PyObject *
 PY_function2(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.function2
     double arg1;
     int arg2;
-    const char *kwcpp = "arg1\0arg2";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    const char *SH_kwcpp = "arg1\0arg2";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "di:Function2", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "di:Function2", SH_kw_list,
         &arg1, &arg2))
     {
         return NULL;
@@ -53,50 +53,23 @@ PY_function2(
 // splicer end function.function2
 }
 
-static char PY_sum__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PY_sum(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin function.sum
-    int len;
-    int * values;
-    int * result;
-    const char *kwcpp = "len\0values";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4, NULL };
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ii:Sum", kw_list,
-        &len, &values))
-    {
-        return NULL;
-    }
-    Sum(len, values, result);
-    return Py_BuildValue("i", *result);
-// splicer end function.sum
-}
-
 static char PY_function3__doc__[] =
 "documentation"
 ;
 
 static PyObject *
 PY_function3(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.function3
     bool arg;
     PyObject * SH_Py_arg;
-    const char *kwcpp = "arg";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "arg";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:Function3", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:Function3", SH_kw_list,
         &PyBool_Type, &SH_Py_arg))
     {
         return NULL;
@@ -114,23 +87,23 @@ static char PY_function4a__doc__[] =
 
 static PyObject *
 PY_function4a(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.function4a
-    char * arg1;
-    char * arg2;
-    const char *kwcpp = "arg1\0arg2";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    const char * arg1;
+    const char * arg2;
+    const char *SH_kwcpp = "arg1\0arg2";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:Function4a", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:Function4a", SH_kw_list,
         &arg1, &arg2))
     {
         return NULL;
     }
-    std::string SH_arg1(arg1);
-    std::string SH_arg2(arg2);
+    const std::string SH_arg1(arg1);
+    const std::string SH_arg2(arg2);
     const std::string rv = Function4a(SH_arg1, SH_arg2);
     PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
     return (PyObject *) SH_Py_rv;
@@ -143,23 +116,23 @@ static char PY_function4b__doc__[] =
 
 static PyObject *
 PY_function4b(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.function4b
-    char * arg1;
-    char * arg2;
-    const char *kwcpp = "arg1\0arg2";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    const char * arg1;
+    const char * arg2;
+    const char *SH_kwcpp = "arg1\0arg2";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:Function4b", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:Function4b", SH_kw_list,
         &arg1, &arg2))
     {
         return NULL;
     }
-    std::string SH_arg1(arg1);
-    std::string SH_arg2(arg2);
+    const std::string SH_arg1(arg1);
+    const std::string SH_arg2(arg2);
     const std::string & rv = Function4b(SH_arg1, SH_arg2);
     PyObject * SH_Py_rv = PyString_FromString(rv.c_str());
     return (PyObject *) SH_Py_rv;
@@ -172,7 +145,7 @@ static char PY_function5_arg1_arg2__doc__[] =
 
 static PyObject *
 PY_function5_arg1_arg2(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -181,13 +154,13 @@ PY_function5_arg1_arg2(
     double arg1;
     bool arg2;
     PyObject * SH_Py_arg2;
-    const char *kwcpp = "arg1\0arg2";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    const char *SH_kwcpp = "arg1\0arg2";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
     double rv;
     
     if (args != NULL) SH_nargs += PyTuple_Size(args);
     if (kwds != NULL) SH_nargs += PyDict_Size(args);
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|dO!:Function5", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|dO!:Function5", SH_kw_list,
         &arg1, &PyBool_Type, &SH_Py_arg2))
     {
         return NULL;
@@ -210,21 +183,21 @@ PY_function5_arg1_arg2(
 
 static PyObject *
 PY_function6_from_name(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.function6_from_name
-    char * name;
-    const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char * name;
+    const char *SH_kwcpp = "name";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:Function6", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:Function6", SH_kw_list,
         &name))
     {
         return NULL;
     }
-    std::string SH_name(name);
+    const std::string SH_name(name);
     Function6(SH_name);
     Py_RETURN_NONE;
 // splicer end function.function6_from_name
@@ -232,16 +205,16 @@ PY_function6_from_name(
 
 static PyObject *
 PY_function6_from_index(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.function6_from_index
     int indx;
-    const char *kwcpp = "indx";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "indx";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:Function6", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:Function6", SH_kw_list,
         &indx))
     {
         return NULL;
@@ -257,16 +230,16 @@ static char PY_function9__doc__[] =
 
 static PyObject *
 PY_function9(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.function9
     double arg;
-    const char *kwcpp = "arg";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "arg";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "d:Function9", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "d:Function9", SH_kw_list,
         &arg))
     {
         return NULL;
@@ -278,9 +251,9 @@ PY_function9(
 
 static PyObject *
 PY_function10_0(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.function10_0
     Function10();
@@ -290,22 +263,22 @@ PY_function10_0(
 
 static PyObject *
 PY_function10_1(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.function10_1
-    char * name;
+    const char * name;
     double arg2;
-    const char *kwcpp = "name\0arg2";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    const char *SH_kwcpp = "name\0arg2";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sd:Function10", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sd:Function10", SH_kw_list,
         &name, &arg2))
     {
         return NULL;
     }
-    std::string SH_name(name);
+    const std::string SH_name(name);
     Function10(SH_name, arg2);
     Py_RETURN_NONE;
 // splicer end function.function10_1
@@ -313,7 +286,7 @@ PY_function10_1(
 
 static PyObject *
 PY_overload1_num_offset_stride(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -322,13 +295,13 @@ PY_overload1_num_offset_stride(
     int num;
     int offset;
     int stride;
-    const char *kwcpp = "num\0offset\0stride";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4,(char *) kwcpp+11, NULL };
+    const char *SH_kwcpp = "num\0offset\0stride";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+4,(char *) SH_kwcpp+11, NULL };
     int rv;
     
     if (args != NULL) SH_nargs += PyTuple_Size(args);
     if (kwds != NULL) SH_nargs += PyDict_Size(args);
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|ii:overload1", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|ii:overload1", SH_kw_list,
         &num, &offset, &stride))
     {
         return NULL;
@@ -350,7 +323,7 @@ PY_overload1_num_offset_stride(
 
 static PyObject *
 PY_overload1_5(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
@@ -360,13 +333,13 @@ PY_overload1_5(
     int num;
     int offset;
     int stride;
-    const char *kwcpp = "type\0num\0offset\0stride";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+9,(char *) kwcpp+16, NULL };
+    const char *SH_kwcpp = "type\0num\0offset\0stride";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5,(char *) SH_kwcpp+9,(char *) SH_kwcpp+16, NULL };
     int rv;
     
     if (args != NULL) SH_nargs += PyTuple_Size(args);
     if (kwds != NULL) SH_nargs += PyDict_Size(args);
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "di|ii:overload1", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "di|ii:overload1", SH_kw_list,
         &type, &num, &offset, &stride))
     {
         return NULL;
@@ -392,16 +365,16 @@ static char PY_typefunc__doc__[] =
 
 static PyObject *
 PY_typefunc(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.typefunc
     TypeID arg;
-    const char *kwcpp = "arg";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "arg";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:typefunc", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:typefunc", SH_kw_list,
         &arg))
     {
         return NULL;
@@ -417,16 +390,16 @@ static char PY_enumfunc__doc__[] =
 
 static PyObject *
 PY_enumfunc(
-  PyObject *self,    /* not used */
+  PyObject *,  // self unused
   PyObject *args,
   PyObject *kwds)
 {
 // splicer begin function.enumfunc
     EnumTypeID arg;
-    const char *kwcpp = "arg";
-    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    const char *SH_kwcpp = "arg";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:enumfunc", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:enumfunc", SH_kw_list,
         &arg))
     {
         return NULL;
@@ -436,15 +409,42 @@ PY_enumfunc(
 // splicer end function.enumfunc
 }
 
+static char PY_useclass__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_useclass(
+  PyObject *,  // self unused
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.useclass
+    const Class1 * arg1;
+    PY_Class1 * SH_Py_arg1;
+    const char *SH_kwcpp = "arg1";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:useclass", SH_kw_list,
+        &PY_Class1_Type, &SH_Py_arg1))
+    {
+        return NULL;
+    }
+    arg1 = SH_Py_arg1 ? SH_Py_arg1->BBB : NULL;
+    useclass(arg1);
+    Py_RETURN_NONE;
+// splicer end function.useclass
+}
+
 static char PY_last_function_called__doc__[] =
 "documentation"
 ;
 
 static PyObject *
 PY_last_function_called(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin function.last_function_called
     const std::string & rv = LastFunctionCalled();
@@ -459,7 +459,7 @@ static char PY_function10__doc__[] =
 
 static PyObject *
 PY_function10(
-  PyObject *self,    /* not used */
+  PyObject *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -497,7 +497,7 @@ static char PY_function6__doc__[] =
 
 static PyObject *
 PY_function6(
-  PyObject *self,    /* not used */
+  PyObject *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -535,7 +535,7 @@ static char PY_overload1__doc__[] =
 
 static PyObject *
 PY_overload1(
-  PyObject *self,    /* not used */
+  PyObject *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -569,7 +569,6 @@ PY_overload1(
 static PyMethodDef PY_methods[] = {
 {"Function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
 {"Function2", (PyCFunction)PY_function2, METH_VARARGS|METH_KEYWORDS, PY_function2__doc__},
-{"Sum", (PyCFunction)PY_sum, METH_VARARGS|METH_KEYWORDS, PY_sum__doc__},
 {"Function3", (PyCFunction)PY_function3, METH_VARARGS|METH_KEYWORDS, PY_function3__doc__},
 {"Function4a", (PyCFunction)PY_function4a, METH_VARARGS|METH_KEYWORDS, PY_function4a__doc__},
 {"Function4b", (PyCFunction)PY_function4b, METH_VARARGS|METH_KEYWORDS, PY_function4b__doc__},
@@ -577,6 +576,7 @@ static PyMethodDef PY_methods[] = {
 {"Function9", (PyCFunction)PY_function9, METH_VARARGS|METH_KEYWORDS, PY_function9__doc__},
 {"typefunc", (PyCFunction)PY_typefunc, METH_VARARGS|METH_KEYWORDS, PY_typefunc__doc__},
 {"enumfunc", (PyCFunction)PY_enumfunc, METH_VARARGS|METH_KEYWORDS, PY_enumfunc__doc__},
+{"useclass", (PyCFunction)PY_useclass, METH_VARARGS|METH_KEYWORDS, PY_useclass__doc__},
 {"LastFunctionCalled", (PyCFunction)PY_last_function_called, METH_NOARGS, PY_last_function_called__doc__},
 {"Function10", (PyCFunction)PY_function10, METH_VARARGS|METH_KEYWORDS, PY_function10__doc__},
 {"Function6", (PyCFunction)PY_function6, METH_VARARGS|METH_KEYWORDS, PY_function6__doc__},

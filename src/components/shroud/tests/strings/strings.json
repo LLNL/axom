@@ -18,12 +18,19 @@
         "F_result": "rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
+        "PY_PyObject": "PyObject", 
         "PY_header_filename": "pystringsmodule.hpp", 
         "PY_helper_filename": "pystringshelper.cpp", 
         "PY_library_doc": "library documentation", 
         "PY_module_filename": "pystringsmodule.cpp", 
         "PY_module_name": "strings", 
+        "PY_param_args": "args", 
+        "PY_param_kwds": "kwds", 
+        "PY_param_self": "self", 
         "PY_prefix": "PY_", 
+        "PY_used_param_args": false, 
+        "PY_used_param_kwds": false, 
+        "PY_used_param_self": false, 
         "class_name": "", 
         "function_suffix": "", 
         "library": "strings", 
@@ -1127,6 +1134,11 @@
             "c_type": "bool", 
             "cpp_type": "bool", 
             "f_kind": "C_BOOL", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_BOOL"
+                ]
+            }, 
             "f_statements": {
                 "intent_in": {
                     "declare": [
@@ -1388,10 +1400,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -1419,7 +1431,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
@@ -1436,10 +1448,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -1467,7 +1479,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
@@ -1484,10 +1496,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -1521,7 +1533,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "std::string {cpp_var}({c_var});"
+                        "{C_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }

@@ -26,6 +26,7 @@
 #include <set>
 
 // Other CS Toolkit headers
+#include "common/config.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -55,8 +56,10 @@ class DataStore;
  * The DataView class has the following properties:
  *
  *    - DataView objects can only be created via the DataGroup interface,
- *      not constructed directly. A view object is owned by the DataGroup
- *      object that creates it.
+ *      not constructed directly. A View object is owned by the DataGroup
+ *      object that creates it. A View object owned by a DataGroup object
+ *      that is a descendant of some ancestor DataGroup is a descendant
+ *      View of the ancestor Group.
  *    - A DataView object has a unique name (string) within the DataGroup
  *      that owns it.
  *    - A DataView holds a pointer to the DataGroup that created it and which
@@ -100,11 +103,36 @@ public:
 
   /*!
    * \brief Return const reference to name of DataView.
+   *
+   * \sa getPath(), getPathName()
    */
   const std::string& getName() const
   {
     return m_name;
   }
+
+  /*!
+   * \brief Return path of View's owning Group object.
+   *
+   * \sa getName(), getPathName()
+   */
+  std::string getPath() const;
+
+  /*!
+   * \brief Return full path of View object, including its name.
+   *
+   * If a DataStore contains a DataGroup tree structure a/b/c/d/e, with
+   * group d owning a view v, the following results are expected:
+   *
+   * Method Call      | Result
+   * -----------------|----------
+   * v->getName()     | v
+   * v->getPath()     | a/b/c/d
+   * v->getPathName() | a/b/c/d/v
+   *
+   * \sa getName(), getPath(), DataGroup::getPathName()
+   */
+  std::string getPathName() const;
 
   /*!
    * \brief Return pointer to non-const DataGroup that owns DataView object.
@@ -157,7 +185,8 @@ public:
   }
 
   /*!
-   * \brief Return true if view holds data that has been allocated.
+   * \brief Return true if view is described and refers to a buffer
+   * that has been allocated.
    */
   // TODO - Would like to make this a const function.  Need to have conduit element_ptr() be const to do this.
   bool isAllocated();
@@ -257,7 +286,7 @@ public:
    */
   int getNumDimensions() const
   {
-    return m_shape.size();
+    return static_cast<int>(m_shape.size());
   }
 
   /*!
@@ -354,9 +383,6 @@ public:
    *
    * \return pointer to this DataView object.
    */
-//
-// RDH -- Should calling reallocate with 0 elems deallocate the data??
-//
   DataView * reallocate(SidreLength num_elems);
 
   /*!
@@ -552,12 +578,13 @@ public:
     if (m_state == SCALAR)
     {
       DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
-      SLIC_CHECK_MSG(
-        arg_id == m_node.dtype().id(),
-        "You are setting a scalar value in view " << m_name  <<
-        " which has changed the underlying data type." << "Old type = "
-        << m_node.dtype().name() << ", new type ="
-        <<  DataType::id_to_name( arg_id ) << ".");
+      SLIC_CHECK_MSG(arg_id == m_node.dtype().id(),
+                     "You are setting a scalar value in view "
+                     << m_name
+                     << " which has changed the underlying data type."
+                     << "Old type = " << m_node.dtype().name()
+                     << ", new type ="
+                     <<  DataType::id_to_name( arg_id ) << ".");
     }
 #endif
 
@@ -575,8 +602,9 @@ public:
     else
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
-        "Unable to set scalar value on view " << m_name << " with state: " <<
-        getStateStringName(m_state)  );
+                     "Unable to set scalar value on view "
+                     << m_name << " with state: "
+                     << getStateStringName(m_state)  );
     }
     return this;
   }
@@ -605,8 +633,9 @@ public:
     else
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == STRING,
-        "Unable to set string value on view " << m_name << " with state: " <<
-         getStateStringName(m_state)  );
+                     "Unable to set string value on view "
+                     << m_name << " with state: "
+                     << getStateStringName(m_state)  );
     }
     return this;
   };
@@ -714,7 +743,7 @@ public:
     }
     else
     {
-     // TODO - This will throw and exception in the user's code  ATK-704
+      // TODO - This will throw and exception in the user's code  ATK-704
       return Node().value();
     }
   }
@@ -791,6 +820,15 @@ public:
    * in the file (independent of file format) and can be accessed as a Conduit tree.
    */
   void createNativeLayout(Node& n) const;
+
+  /*!
+   * \brief Copy data view native layout to given Conduit node.
+   *
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
+   * externally to the Sidre View data so that it can be filled in from the data
+   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   */
+  void createExternalLayout(Node& parent) const;
 
 private:
 

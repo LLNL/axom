@@ -19,7 +19,7 @@
 #include "quest/Orientation.hpp"
 #include "quest/Triangle.hpp"
 
-#include "quest/Mesh.hpp"
+#include "mint/Mesh.hpp"
 
 #include "slic/slic.hpp"
 
@@ -55,7 +55,7 @@ typedef Octree3D::BlockIndex BlockIndex;
 
 
 
-void queryOctahedronMesh(meshtk::Mesh*& mesh, const GeometricBoundingBox& bbox)
+void queryOctahedronMesh(mint::Mesh*& mesh, const GeometricBoundingBox& bbox)
 {
     const double bbMin = bbox.getMin()[0];
     const double bbMax = bbox.getMax()[0];
@@ -135,7 +135,7 @@ TEST( quest_inout_octree, octahedron_mesh)
     SLIC_INFO("*** This test creates a simple mesh of an octahedron and tests point containment.\n");
 
     // Generate the InOutOctree
-    meshtk::Mesh* mesh = quest::utilities::make_octahedron_mesh();
+    mint::Mesh* mesh = quest::utilities::make_octahedron_mesh();
     // quest::utilities::write_vtk(mesh, "octahedron.vtk");
 
     ///

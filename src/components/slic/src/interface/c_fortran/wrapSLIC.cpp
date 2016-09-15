@@ -46,7 +46,7 @@ return;
 void SLIC_create_logger(const char * name, char imask)
 {
 // splicer begin function.create_logger
-std::string SH_name(name);
+const std::string SH_name(name);
 createLogger(SH_name, imask);
 return;
 // splicer end function.create_logger
@@ -55,27 +55,27 @@ return;
 void SLIC_create_logger_bufferify(const char * name, int Lname, char imask)
 {
 // splicer begin function.create_logger_bufferify
-std::string SH_name(name, Lname);
+const std::string SH_name(name, Lname);
 createLogger(SH_name, imask);
 return;
 // splicer end function.create_logger_bufferify
 }
 
-void SLIC_activate_logger(const char * name)
+bool SLIC_activate_logger(const char * name)
 {
 // splicer begin function.activate_logger
-std::string SH_name(name);
-activateLogger(SH_name);
-return;
+const std::string SH_name(name);
+bool rv = activateLogger(SH_name);
+return rv;
 // splicer end function.activate_logger
 }
 
-void SLIC_activate_logger_bufferify(const char * name, int Lname)
+bool SLIC_activate_logger_bufferify(const char * name, int Lname)
 {
 // splicer begin function.activate_logger_bufferify
-std::string SH_name(name, Lname);
-activateLogger(SH_name);
-return;
+const std::string SH_name(name, Lname);
+bool rv = activateLogger(SH_name);
+return rv;
 // splicer end function.activate_logger_bufferify
 }
 
@@ -99,8 +99,8 @@ return;
 void SLIC_log_message(int level, const char * message, const char * fileName, int line, bool filter)
 {
 // splicer begin function.log_message
-std::string SH_message(message);
-std::string SH_fileName(fileName);
+const std::string SH_message(message);
+const std::string SH_fileName(fileName);
 logMessage(static_cast<message::Level>(level), SH_message, SH_fileName, line, filter);
 return;
 // splicer end function.log_message
@@ -109,8 +109,8 @@ return;
 void SLIC_log_message_bufferify(int level, const char * message, int Lmessage, const char * fileName, int LfileName, int line, bool filter)
 {
 // splicer begin function.log_message_bufferify
-std::string SH_message(message, Lmessage);
-std::string SH_fileName(fileName, LfileName);
+const std::string SH_message(message, Lmessage);
+const std::string SH_fileName(fileName, LfileName);
 logMessage(static_cast<message::Level>(level), SH_message, SH_fileName, line, filter);
 return;
 // splicer end function.log_message_bufferify

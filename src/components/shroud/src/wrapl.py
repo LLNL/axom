@@ -46,6 +46,7 @@ class Wrapl(util.WrapperMixin):
         # Format variables
         fmt_library.LUA_prefix        = options.get('LUA_prefix', 'l_')
         fmt_library.LUA_state_var = 'L'
+        fmt_library.LUA_used_param_state = False
         util.eval_template(top, 'LUA_module_name')
         util.eval_template(top, 'LUA_module_reg')
         util.eval_template(top, 'LUA_module_filename')
@@ -233,7 +234,8 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             self.do_function(cls, call, fmt)
             append_format(lines, 'return {nresults};', fmt)
         else:
-            lines.append('int SH_nresult;')
+            lines.append('int SH_nresult = 0;')
+            fmt.LUA_used_param_state = True
             append_format(lines, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
 
             # Find type of each argument
@@ -322,9 +324,12 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             lines.append('return SH_nresult;')
 
         body = self.body_lines
+        body.append('')
+        if fmt.LUA_used_param_state:
+            append_format(body, 'static int {LUA_name_impl}(lua_State *{LUA_state_var})', fmt)
+        else:
+            append_format(body, 'static int {LUA_name_impl}(lua_State *)', fmt)
         body.extend([
-                '',
-                wformat('static int {LUA_name_impl}(lua_State *L)', fmt),
                 '{',
                 1,
                 ])
@@ -406,6 +411,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         if cls:
             cls_typedef = self.typedef[cls['name']]
             if not is_ctor:
+                fmt.LUA_used_param_state = True
                 fmt.c_var = wformat(cls_typedef.LUA_pop, fmt)
                 LUA_code.append(
                     wformat('{LUA_userdata_type} * {LUA_userdata_var} = {c_var};', fmt))
@@ -417,38 +423,42 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 #        if '_has_default_arg' in node:
 #            append_format(LUA_decl, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
 
-        fmt.LUA_index = 1
         # Only process nargs.
         # Each variation of default-arguments produces a new call.
+        fmt_arg = util.Options(fmt)
+        fmt_arg.LUA_index = 1
         for iarg in range(luafcn.nargs):
             arg = node['args'][iarg]
             arg_name = arg['name']
-            fmt.c_var = arg['name']
-            fmt.cpp_var = fmt.c_var
-            fmt.lua_var = 'SH_Lua_' + fmt.c_var
-            fmt.c_var_len = 'L' + fmt.c_var
+            fmt_arg.c_var = arg['name']
+            fmt_arg.cpp_var = fmt_arg.c_var
+            fmt_arg.lua_var = 'SH_Lua_' + fmt_arg.c_var
+            fmt_arg.c_var_len = 'L' + fmt_arg.c_var
+            fmt_arg.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
             attrs = arg['attrs']
 
             lua_pop = None
 
             arg_typedef = self.typedef[arg['type']]
+            fmt_arg.cpp_type = arg_typedef.cpp_type
             LUA_statements = arg_typedef.LUA_statements
             if attrs['intent'] in [ 'inout', 'in']:
-#                lua_pop = wformat(arg_typedef.LUA_pop, fmt)
+#                lua_pop = wformat(arg_typedef.LUA_pop, fmt_arg)
                 # lua_pop is a C++ expression
-                fmt.c_var = wformat(arg_typedef.LUA_pop, fmt)
-                lua_pop = wformat(arg_typedef.c_to_cpp, fmt)
-                fmt.LUA_index += 1 
+                fmt_arg.c_var = wformat(arg_typedef.LUA_pop, fmt_arg)
+                lua_pop = wformat(arg_typedef.c_to_cpp, fmt_arg)
+                fmt_arg.LUA_index += 1 
 
             if attrs['intent'] in [ 'inout', 'out']:
                 # output variable must be a pointer
                 # XXX - fix up for strings
-#                format, vargs = self.intent_out(arg_typedef, fmt, post_call)
+#                format, vargs = self.intent_out(arg_typedef, fmt_arg, post_call)
 #                build_format.append(format)
 #                build_vargs.append('*' + vargs)
 
-                #append_format(LUA_push, arg_typedef.LUA_push, fmt)
-                tmp = wformat(arg_typedef.LUA_push, fmt)
+                #append_format(LUA_push, arg_typedef.LUA_push, fmt_arg)
+                fmt.LUA_used_param_state = True
+                tmp = wformat(arg_typedef.LUA_push, fmt_arg)
                 LUA_push.append( tmp + ';' )
 
             # argument for C++ function
@@ -465,12 +475,13 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                 ptr = False
 
             if lua_pop:
+                fmt.LUA_used_param_state = True
                 decl_suffix = ' = {};'.format(lua_pop)
             else:
                 decl_suffix = ';'
             LUA_decl.append(self.std_c_decl(lang, arg, const=arg_const, ptr=ptr) + decl_suffix)
             
-            cpp_call_list.append(fmt.cpp_var)
+            cpp_call_list.append(fmt_arg.cpp_var)
 
         # call with arguments
         fmt.cpp_call_list = ', '.join(cpp_call_list)
@@ -478,6 +489,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 #        LUA_code.extend(post_parse)
 
         if is_ctor:
+            fmt.LUA_used_param_state = True
             LUA_code.extend([
                     wformat('{LUA_userdata_type} * {LUA_userdata_var} = ({LUA_userdata_type} *) lua_newuserdata({LUA_state_var}, sizeof(*{LUA_userdata_var}));', fmt),
                     wformat('{LUA_userdata_var}->{LUA_userdata_member} = new {cpp_class}({cpp_call_list});', fmt),
@@ -487,6 +499,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                     'lua_setmetatable(L, -2);',
                     ])
         elif is_dtor:
+            fmt.LUA_used_param_state = True
             LUA_code.extend([
                     wformat('delete {LUA_userdata_var}->{LUA_userdata_member};', fmt),
                     wformat('{LUA_userdata_var}->{LUA_userdata_member} = NULL;', fmt),
@@ -508,6 +521,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         if CPP_subprogram == 'function' and not is_ctor:
             fmt.cpp_var = fmt.rv
             fmt.c_var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
+            fmt.LUA_used_param_state = True
             tmp = wformat(result_typedef.LUA_push, fmt)
             LUA_push.append( tmp + ';' )
 

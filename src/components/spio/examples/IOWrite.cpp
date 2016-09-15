@@ -14,6 +14,7 @@
 
 #include "mpi.h"
 
+#include "common/FileUtilities.hpp"
 #include "sidre/DataGroup.hpp"
 #include "sidre/DataStore.hpp"
 #include "spio/IOManager.hpp"
@@ -22,6 +23,7 @@ using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataType;
 using asctoolkit::spio::IOManager;
+using namespace asctoolkit::utilities;
 
 /**************************************************************************
  * Subroutine:  main
@@ -57,11 +59,29 @@ int main(int argc, char * argv[])
   ga->createViewScalar<int>("i0", my_rank + 101);
   gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
 
-  std::vector<DataGroup *> groups;
-  groups.push_back(root);
+  if (my_rank == 0) {
+    std::string dir;
+    filesystem::getDirName(dir, file_base);
+    filesystem::makeDirsForPath(dir);
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
 
-  IOManager writer(MPI_COMM_WORLD, &(groups[0]), groups.size(), num_files);
-  writer.write(file_base, 0, "conduit_hdf5");
+  IOManager writer(MPI_COMM_WORLD);
+  writer.write(root, num_files, file_base, "conduit_hdf5");
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  if (my_rank == 0) {
+    DataGroup * extra = root->createGroup("extra");
+    extra->createViewScalar<double>("dval", 1.1);
+    DataGroup * child = extra->createGroup("child");
+    child->createViewScalar<int>("ival", 7);
+    child->createViewString("word0", "hello");
+    child->createViewString("word1", "world");
+
+    std::string root_name = file_base + ".root";
+    writer.writeGroupToRootFile(extra, root_name);
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
 
   delete ds;
 

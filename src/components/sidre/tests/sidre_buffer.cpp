@@ -238,15 +238,15 @@ TEST(sidre_buffer, create_buffer_view)
       break;
     case 1:
       view = root->createView("data1", INT_ID, len)
-                 ->attachBuffer(buff);
+             ->attachBuffer(buff);
       break;
     case 2:
       view = root->createView("data2")
-                 ->attachBuffer(INT_ID, len, buff);
+             ->attachBuffer(INT_ID, len, buff);
       break;
     case 3:
       view = root->createView("data3", buff)
-                 ->apply(INT_ID, len);
+             ->apply(INT_ID, len);
       break;
 
     case 4:
@@ -254,15 +254,15 @@ TEST(sidre_buffer, create_buffer_view)
       break;
     case 5:
       view = root->createView("data5", INT_ID, ndims, shape)
-                 ->attachBuffer(buff);
+             ->attachBuffer(buff);
       break;
     case 6:
       view = root->createView("data6")
-                 ->attachBuffer(INT_ID, ndims, shape, buff);
+             ->attachBuffer(INT_ID, ndims, shape, buff);
       break;
     case 7:
       view = root->createView("data7", buff)
-                 ->apply(INT_ID, ndims, shape);
+             ->apply(INT_ID, ndims, shape);
       break;
     }
 

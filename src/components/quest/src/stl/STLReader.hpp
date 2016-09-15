@@ -16,17 +16,17 @@
 /*!
  *******************************************************************************
  * \file STLReader.hpp
- *
- * \date Dec 8, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
  *******************************************************************************
  */
 
 #ifndef STLREADER_HPP_
 #define STLREADER_HPP_
 
+#include <string>
+#include <vector>
+
 #include "common/ATKMacros.hpp"
-#include "quest/UnstructuredMesh.hpp"
+#include "mint/UnstructuredMesh.hpp"
 
 namespace quest
 {
@@ -79,17 +79,37 @@ public:
      * \pre mesh != ATK_NULLPTR.
      ***************************************************************************
      */
-    void getMesh( meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE >* mesh );
+    void getMesh( mint::UnstructuredMesh< mint::LINEAR_TRIANGLE >* mesh );
+
+
+private:
+    /**
+     * \brief A predicate to check if the file is in ascii format
+     */
+    bool isAsciiFormat() const;
+
+    /**
+     * \brief Reads an ascii encoded STL file into memory
+     * \note The filename should be set with STLReader::setFileName()
+     */
+    void readAsciiSTL();
+
+    /**
+     * \brief Reads a binary encoded STL file into memory
+     * \note The filename should be set with STLReader::setFileName()
+     */
+    void readBinarySTL();
 
 protected:
     std::string m_fileName;
+
     int m_num_nodes;
     int m_num_faces;
-    double* m_nodes;
-    double* m_face_normals;
-    int*    m_face_connectivity;
+
+    std::vector<double> m_nodes;
 
 private:
+
     DISABLE_COPY_AND_ASSIGNMENT(STLReader);
 };
 

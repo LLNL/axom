@@ -14,6 +14,8 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
+struct s_TUT_class1;
+typedef struct s_TUT_class1 TUT_class1;
 
 // splicer begin C_definition
 // splicer end C_definition
@@ -75,6 +77,8 @@ int TUT_overload1_5(double type, int num, int offset, int stride);
 int TUT_typefunc(int arg);
 
 int TUT_enumfunc(int arg);
+
+void TUT_useclass(const TUT_class1 * arg1);
 
 const char * TUT_last_function_called();
 
