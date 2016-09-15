@@ -52,41 +52,7 @@ namespace quest
         typedef MortonBlockIteratorHelper<MortonOctreeLevel, MapIter, BaseBlockIteratorHelper> MortonBlockIterHelper;
         typedef MortonBlockIteratorHelper<const MortonOctreeLevel, ConstMapIter, ConstBaseBlockIteratorHelper> ConstMortonBlockIterHelper;
 
-    protected:
-        /**
-         * \class
-         * \brief Private helper class to handle subindexing of block data within octree siblings
-         * \note A brood is a collection of siblings that are generated simultaneously.
-         * \note This class converts a grid point at the given level into a brood index of the point.
-         *       The base brood is the MortonIndex of the grid point's octree parent
-         *       and its offset index is obtained by interleaving the least significant bit of its coordinates.
-         */
-      struct Brood {
-          enum { BROOD_BITMASK = Base::BROOD_SIZE -1 };
-
-          typedef Mortonizer<typename GridPt::CoordType, MortonIndexType, GridPt::NDIMS> MortonizerType;
-
-          /**
-           * \brief Constructor for a brood offset relative to the given grid point pt
-           * \param [in] pt The grid point within the octree level
-           */
-          Brood(const GridPt& pt)
-          {
-              m_broodIdx = MortonizerType::mortonize(pt);
-              m_offset = m_broodIdx & BROOD_BITMASK;
-              m_broodIdx >>= DIM;
-          }
-
-          /** \brief Accessor for the base point of the entire brood */
-          const MortonIndexType& base() const { return m_broodIdx; }
-
-          /** \brief Accessor for the index of the point within the brood */
-          const int& offset() const { return m_offset; }
-
-      private:
-          MortonIndexType m_broodIdx;   /** MortonIndex of the base point of all blocks within the brood */
-          int m_offset;                 /** Index of the block within the brood. Value is in [0, 2^DIM) */
-      };
+        typedef Brood<GridPt, MortonIndexType> BroodType;
 
     public:
 
@@ -101,11 +67,12 @@ namespace quest
             typedef ParentType     BaseBlockItType;
 
             MortonBlockIteratorHelper(OctreeLevelType* octLevel, bool begin)
-                : m_endIter( octLevel->m_map.end() )
-                , m_offset(0)
+                : m_offset(0)
                 , m_isLevelZero( octLevel->level() == 0)
             {
-                m_currentIter = begin ? octLevel->m_map.begin() : m_endIter;
+                m_currentIter = begin
+                        ? octLevel->m_map.begin()
+                        : octLevel->m_map.end();
             }
 
             /** Increment to next block of the level */
@@ -140,10 +107,10 @@ namespace quest
 
                 return (pother != ATK_NULLPTR)
                      && (m_currentIter == pother->m_currentIter)   // iterators are the same
-                     && (m_offset == pother->m_offset);               // brood indices are the same
+                     && (m_offset == pother->m_offset);            // brood indices are the same
             }
         private:
-            InnerIterType m_currentIter, m_endIter;
+            InnerIterType m_currentIter;
             int m_offset;
             bool m_isLevelZero;
         };
@@ -171,7 +138,7 @@ namespace quest
          */
         bool hasBlock(const GridPt& pt) const
         {
-            const Brood brood(pt);
+            const BroodType brood(pt);
             ConstMapIter blockIt = m_map.find(brood.base());
             return blockIt != m_map.end();
         }
@@ -190,7 +157,12 @@ namespace quest
                            << ". Point was out of bounds -- "
                            << "each coordinate must be between 0 and " << this->maxCoord() << ".");
 
-            m_map[ Brood::MortonizerType::mortonize(pt) ];  // Adds children, if not already present, using default BlockDataType() constructor
+            BroodData& bd = getBroodData(pt);   // Adds entire brood at once (default constructed)
+            if( this->level() == 0)
+            {
+                for(int j=1; j< Base::BROOD_SIZE; ++j)
+                    bd[j].setNonBlock();
+            }
         }
 
 
@@ -198,7 +170,7 @@ namespace quest
         /** \brief Accessor for the data associated with pt */
         BlockDataType& operator[](const GridPt& pt)
         {
-            const Brood brood(pt);
+            const BroodType brood(pt);
             return m_map[brood.base()][brood.offset()];
         }
 
@@ -209,7 +181,7 @@ namespace quest
                             ,"(" << pt <<", "<< this->m_level << ") was not a block in the tree at level.");
 
             // Note: Using find() method on hashmap since operator[] is non-const
-            const Brood brood(pt);
+            const BroodType brood(pt);
             ConstMapIter blockIt = m_map.find(brood.base());
             return blockIt->second[brood.offset()];
         }
@@ -217,7 +189,7 @@ namespace quest
         /** \brief Access the data associated with the entire brood */
         BroodData& getBroodData(const GridPt& pt)
         {
-            return m_map[ Brood::MortonizerType::mortonize(pt)];
+            return m_map[ BroodType::MortonizerType::mortonize(pt)];
         }
 
         /** \brief Const access to data associated with the entire brood */
@@ -226,7 +198,7 @@ namespace quest
                             ,"(" << pt <<", "<< this->m_level << ") was not a block in the tree at level.");
 
             // Note: Using find() method on hashmap since operator[] is non-const
-            ConstMapIter blockIt = m_map.find( Brood::MortonizerType::mortonize(pt));
+            ConstMapIter blockIt = m_map.find( BroodType::MortonizerType::mortonize(pt));
             return blockIt->second;
         }
 
@@ -247,10 +219,10 @@ namespace quest
             if(empty())
                 return 0;
 
-            const int leaves = numLeafBlocks();
-            return (this->m_level == 0 && leaves == 0)
+            const int numLeaves = numLeafBlocks();
+            return (this->m_level == 0 && numLeaves == 0)
                     ? 1
-                    : numBlocks() - numLeafBlocks(); }
+                    : numBlocks() - numLeaves; }
 
         /** \brief Returns the number of leaf blocks in the level */
         int numLeafBlocks() const
@@ -278,7 +250,7 @@ namespace quest
          */
         TreeBlockStatus blockStatus(const GridPt & pt) const
         {
-            const Brood brood(pt);
+            const BroodType brood(pt);
             ConstMapIter blockIt = m_map.find(brood.base());
 
             return (blockIt == m_map.end())

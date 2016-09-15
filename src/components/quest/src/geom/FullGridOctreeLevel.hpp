@@ -13,16 +13,17 @@ namespace quest
 
     /**
      * \class
-     * \brief A GridPointOctreeLevel is a representation of a sparse OctreeLevel.
-     *  It is a concrete implementation of an OctreeLevel
+     * \brief A FullGridOctreeLevel is a representation of an OctreeLevel.
+     *  that allocates space for all possible blocks at the given level.
      *
-     *  It associates data with its Octree block using a hash map
-     *  whose key type is an integer GridPoint (using a Morton-based hash function),
-     *  and whose value type is a BlockDataType.
+     *  It uses a Brood-based organization of the data, where the data for all octree
+     *  siblings are stored contiguously, and uses a Morton-based order on the Broods
+     *  in the level.  Associated with each block is a BlockDataType
      *  For efficiency, the data is associated with an entire brood, a collection of
      *  siblings that are created simultaneously. In dimension DIM, there are 2^DIM siblings in a brood.
      *
      *  \see OctreeLevel
+     *  \see Brood
      */
     template<int DIM, typename MortonIndexType, typename BlockDataType>
     class FullGridOctreeLevel : public OctreeLevel<DIM,BlockDataType>
@@ -39,48 +40,14 @@ namespace quest
         typedef FullGridBlockIteratorHelper<FullGridOctreeLevel, BaseBlockIteratorHelper> FullGridBlockIterHelper;
         typedef FullGridBlockIteratorHelper<const FullGridOctreeLevel, ConstBaseBlockIteratorHelper> ConstFullGridBlockIterHelper;
 
-    protected:
-
-        /**
-         * \class
-         * \brief Private helper class to handle subindexing of block data within octree siblings
-         * \note A brood is a collection of siblings that are generated simultaneously.
-         * \note This class converts a grid point at the given level into a brood index of the point.
-         * \note We are using a Morton order based brood
-         *       The base brood is the MortonIndex of the grid point's octree parent
-         *       and its offset index is obtained by interleaving the least significant bit of its coordinates.
-         */
-        struct Brood {
-            enum { BROOD_BITMASK = Base::BROOD_SIZE -1 };
-
-            typedef Mortonizer<typename GridPt::CoordType, MortonIndexType, GridPt::NDIMS> MortonizerType;
-
-            /**
-             * \brief Constructor for a brood offset relative to the given grid point pt
-             * \param [in] pt The grid point within the octree level
-             */
-            Brood(const GridPt& pt)
-            {
-                m_broodIdx = MortonizerType::mortonize(pt);
-                m_offset = m_broodIdx & BROOD_BITMASK;
-                m_broodIdx >>= DIM;
-            }
-
-            /** \brief Accessor for the base point of the entire brood */
-            const MortonIndexType& base() const { return m_broodIdx; }
-
-            /** \brief Accessor for the index of the point within the brood */
-            const int& offset() const { return m_offset; }
-
-        private:
-            MortonIndexType m_broodIdx;   /** MortonIndex of the base point of all blocks within the brood */
-            int m_offset;                 /** Index of the block within the brood. Value is in [0, 2^DIM) */
-        };
+        typedef Brood<GridPt, MortonIndexType> BroodType;
 
     public:
 
         /**
          * \brief Concrete instance of the BlockIteratorHelper class defined in the OctreeLevel base class.
+         * \note ParenType must be either BlockIteratorHelper or ConstBlockIteratorHelper,
+         *       both are defined in the OctreeLevel base class
          */
         template<typename OctreeLevelType, typename ParentType>
         class FullGridBlockIteratorHelper : public ParentType
@@ -95,15 +62,17 @@ namespace quest
                 , m_offset(0)
                 , m_isLevelZero( octLevel->level() == 0)
             {
-                m_currentIdx = begin
-                        ? 0
-                        : m_endIdx;
-            }
+                m_currentIdx = begin? 0 : m_endIdx;
 
+                // Advance the iterator to point to a valid Block
+                if( begin && !data()->isBlock())
+                    increment();
+            }
 
             /** Increment to next block of the level */
             void increment()
             {
+                // Note, must skip blocks that are not in the tree
                 do {
                     ++m_offset;
                     if(m_offset == Base::BROOD_SIZE || m_isLevelZero)
@@ -212,7 +181,7 @@ namespace quest
          */
         bool hasBlock(const GridPt& pt) const
         {
-            const Brood brood(pt);
+            const BroodType brood(pt);
             return m_data[brood.base()][brood.offset()].isBlock();
         }
 
@@ -249,27 +218,27 @@ namespace quest
         /** \brief Accessor for the data associated with pt */
         BlockDataType& operator[](const GridPt& pt)
         {
-            const Brood brood(pt);
+            const BroodType brood(pt);
             return m_data[brood.base()][brood.offset()];
         }
 
         /** \brief Const accessor for the data associated with pt */
         const BlockDataType& operator[](const GridPt& pt) const
         {
-            const Brood brood(pt);
+            const BroodType brood(pt);
             return m_data[brood.base()][brood.offset()];
         }
 
         /** \brief Access the data associated with the entire brood */
         BroodData& getBroodData(const GridPt& pt)
         {
-            return m_data[Brood::MortonizerType::mortonize(pt)];
+            return m_data[BroodType::MortonizerType::mortonize(pt)];
         }
 
         /** \brief Const access to data associated with the entire brood */
         const BroodData& getBroodData(const GridPt& pt) const
         {
-            return m_data[Brood::MortonizerType::mortonize(pt)];
+            return m_data[BroodType::MortonizerType::mortonize(pt)];
         }
 
 
@@ -312,7 +281,7 @@ namespace quest
             if(! this->inBounds(pt))
                 return BlockNotInTree;
 
-            const Brood brood(pt);
+            const BroodType brood(pt);
             const BlockDataType& blockData =  m_data[brood.base()][brood.offset()];
 
             return blockData.isBlock()
