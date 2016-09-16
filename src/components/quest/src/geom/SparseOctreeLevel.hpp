@@ -1,5 +1,5 @@
-#ifndef MORTON_OCTREE_LEVEL__HXX_
-#define MORTON_OCTREE_LEVEL__HXX_
+#ifndef SPARSE_OCTREE_LEVEL__HXX_
+#define SPARSE_OCTREE_LEVEL__HXX_
 
 
 #include "common/config.hpp"
@@ -8,65 +8,138 @@
 #include "quest/OctreeLevel.hpp"
 
 #ifdef USE_CXX11
-#include <unordered_map>
+  #include <type_traits>
+  #include <unordered_map>
 #else
-#include "boost/unordered_map.hpp"
+  #include <boost/static_assert.hpp>
+  #include <boost/type_traits.hpp>
+  #include "boost/unordered_map.hpp"
 #endif
 
 namespace quest
 {
+
+    /**
+     * \brief Traits class to manage types for different point representations in a SparseOctreeLevel
+     *
+     * The general case is meant for Representations types that are unsigned integers
+     * and uses a Morton-based index as the hashmap key.
+     */
+    template<typename CoordType, int DIM, typename BroodDataType, typename RepresentationType>
+    struct BroodRepresentationTraits
+    {
+        typedef Point<CoordType,DIM> GridPt;
+        typedef RepresentationType PointRepresenationType;
+
+        // Requires an unsigned int for RepresentationType with 8-,16-,32-, or 64- bits
+        #if defined(USE_CXX11)
+            static_assert( std::is_integral<CoordType>::value, "CoordType must be integral" );
+            static_assert( std::is_integral<PointRepresenationType>::value, "RepresentationType must be integral" );
+            static_assert( std::is_unsigned<PointRepresenationType>::value, "RepresentationType must be unsigned" );
+
+            typedef std::unordered_map<RepresentationType, BroodDataType> MapType;
+        #else
+            BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
+            BOOST_STATIC_ASSERT(boost::is_integral<PointRepresenationType>::value);
+            BOOST_STATIC_ASSERT(boost::is_unsigned<PointRepresenationType>::value);
+
+            typedef boost::unordered_map<PointRepresenationType, BroodDataType> MapType;
+        #endif
+
+        typedef Brood<GridPt, PointRepresenationType> BroodType;
+
+        /** Simple function to convert a point to its representation type */
+        static PointRepresenationType convertPoint(const GridPt& pt)
+        {
+            return BroodType::MortonizerType::mortonize(pt);
+        }
+    };
+
+    /**
+     * \brief Traits class to manage types for different point representations in a SparseOctreeLevel
+     *
+     * This is a specialization meant for point representation
+     * that use an integer grid point.  The underlying hashmap uses a Morton-based hash function.
+     */
+    template<typename CoordType, int DIM, typename BroodDataType>
+    struct BroodRepresentationTraits<CoordType, DIM, BroodDataType, Point<CoordType,DIM> >
+    {
+        typedef Point<CoordType,DIM> GridPt;
+        typedef GridPt PointRepresenationType;
+
+      #if defined(USE_CXX11)
+        static_assert( std::is_integral<CoordType>::value, "CoordType must be integral" );
+        typedef std::unordered_map<GridPt, BroodDataType, PointHash<int> > MapType;
+      #else
+        BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
+        typedef boost::unordered_map<GridPt, BroodDataType, PointHash<int> > MapType;
+      #endif
+
+        typedef Brood<GridPt, GridPt> BroodType;
+
+        /** Simple function to convert a point to its representation type
+         *  \note This is a pass through function
+         *        since the representation and grid point types are the same
+         */
+        static const PointRepresenationType& convertPoint(const GridPt& pt)
+        {
+            return pt;  // simple pass through function
+        }
+    };
+
+
     /**
      * \class
-     * \brief A MortonOctreeLevel is a representation of a sparse OctreeLevel.
+     * \brief A representation of a sparse OctreeLevel.
      *  It is a concrete implementation of an OctreeLevel
      *
      *  It associates data with its Octree block using a hash map
-     *  whose key type is a MortonIndex type (an integer type),
+     *  whose key type is of type PointRepresentationType
+     *  (either an integer grid point hashed by a Morton index,
+     *   or an Morton index (unsigned integer of a specified bitwidth)
      *  and whose value type is a BlockDataType.
      *  For efficiency, the data is associated with an entire brood, a collection of
      *  siblings that are created simultaneously. In dimension DIM, there are 2^DIM siblings in a brood.
      *
      *  \see OctreeLevel
      */
-    template<int DIM, typename MortonIndexType, typename BlockDataType>
-    class MortonOctreeLevel : public OctreeLevel<DIM,BlockDataType>
+    template<int DIM, typename BlockDataType, typename PointRepresenationType>
+    class SparseOctreeLevel : public OctreeLevel<DIM,BlockDataType>
     {
     public:
       typedef OctreeLevel<DIM, BlockDataType> Base;
-      typedef typename Base::GridPt GridPt;
-      typedef typename Base::BroodData BroodData;
-      typedef typename Base::BlockIteratorHelper BaseBlockIteratorHelper;
+      typedef typename Base::GridPt                   GridPt;
+      typedef typename Base::BroodData                BroodData;
+      typedef typename Base::BlockIteratorHelper      BaseBlockIteratorHelper;
       typedef typename Base::ConstBlockIteratorHelper ConstBaseBlockIteratorHelper;
 
-      #if defined(USE_CXX11)
-          typedef std::unordered_map<MortonIndexType, BroodData> MapType;
-    #else
-          typedef boost::unordered_map<MortonIndexType, BroodData> MapType;
-      #endif
+      typedef BroodRepresentationTraits<typename GridPt::CoordType, GridPt::NDIMS, BroodData, PointRepresenationType> BroodTraits;
+      typedef typename BroodTraits::MapType MapType;
+      typedef typename BroodTraits::BroodType BroodType;
 
-        typedef typename MapType::iterator       MapIter;
-        typedef typename MapType::const_iterator ConstMapIter;
+      typedef typename MapType::iterator       MapIter;
+      typedef typename MapType::const_iterator ConstMapIter;
 
-        template<typename OctreeLevelType, typename InnerIterType, typename ParentType> class MortonBlockIteratorHelper;
+      template<typename OctreeLevelType, typename AdaptedIterType, typename ParentType> class IteratorHelper;
 
-        typedef MortonBlockIteratorHelper<MortonOctreeLevel, MapIter, BaseBlockIteratorHelper> MortonBlockIterHelper;
-        typedef MortonBlockIteratorHelper<const MortonOctreeLevel, ConstMapIter, ConstBaseBlockIteratorHelper> ConstMortonBlockIterHelper;
+      typedef IteratorHelper<SparseOctreeLevel, MapIter, BaseBlockIteratorHelper> IterHelper;
+      typedef IteratorHelper<const SparseOctreeLevel, ConstMapIter, ConstBaseBlockIteratorHelper> ConstIterHelper;
 
-        typedef Brood<GridPt, MortonIndexType> BroodType;
+
 
     public:
 
-       /**
-        * \brief Concrete instance of the BlockIteratorHelper class defined in the OctreeLevel base class.
-        */
-        template<typename OctreeLevelType, typename InnerIterType, typename ParentType>
-        class MortonBlockIteratorHelper : public ParentType
+        /**
+         * \brief Concrete instance of the BlockIteratorHelper class defined in the OctreeLevel base class.
+         */
+        template<typename OctreeLevelType, typename AdaptedIterType, typename ParentType>
+        class IteratorHelper : public ParentType
         {
         public:
-            typedef MortonBlockIteratorHelper<OctreeLevelType, InnerIterType, ParentType> MortonBlockItType;
+            typedef IteratorHelper<OctreeLevelType, AdaptedIterType, ParentType> self;
             typedef ParentType     BaseBlockItType;
 
-            MortonBlockIteratorHelper(OctreeLevelType* octLevel, bool begin)
+            IteratorHelper(OctreeLevelType* octLevel, bool begin)
                 : m_offset(0)
                 , m_isLevelZero( octLevel->level() == 0)
             {
@@ -75,7 +148,7 @@ namespace quest
                         : octLevel->m_map.end();
             }
 
-            /** Increment to next block of the level */
+            /** Increment to next block in the level */
             void increment()
             {
                 ++m_offset;
@@ -87,30 +160,28 @@ namespace quest
                 }
             }
 
-            /** Access to point associated with the block pointed to by the iterator */
+            /** Accessor for point associated with iterator's block  */
             GridPt pt() const
             {
-                // Reconstruct the grid point from its brood representation
-                typedef Mortonizer<typename GridPt::CoordType, MortonIndexType, GridPt::NDIMS> Mort;
-                return Mort::demortonize( (m_currentIter->first << DIM)  + m_offset);
+                return BroodType::reconstructGridPt(m_currentIter->first, m_offset);
             }
 
-            /** Access to data associated with the block pointed to by the iterator */
+            /** Accessor for data associated with the iterator's block */
             BlockDataType* data() { return &m_currentIter->second[m_offset]; }
-            /** Const access to data associated with the block pointed to by the iterator */
+            /** Const accessor for data associated with the iterator's block */
             const BlockDataType* data() const { return &m_currentIter->second[m_offset]; }
 
-            /** Determine if two BlockIterators are pointing to the same block */
+            /** \brief Predicate to determine if two block iterators are the same */
             bool equal(const BaseBlockItType* other)
             {
-                const MortonBlockItType* pother = dynamic_cast<const MortonBlockItType*>(other);
+                const self* pother = dynamic_cast<const self*>(other);
 
                 return (pother != ATK_NULLPTR)
                      && (m_currentIter == pother->m_currentIter)   // iterators are the same
                      && (m_offset == pother->m_offset);            // brood indices are the same
             }
         private:
-            InnerIterType m_currentIter;
+            AdaptedIterType m_currentIter;
             int m_offset;
             bool m_isLevelZero;
         };
@@ -118,18 +189,25 @@ namespace quest
     public:
 
         /** \brief Default constructor for an octree level */
-        MortonOctreeLevel(int level = -1): Base(level){}
+        SparseOctreeLevel(int level = -1): Base(level){}
 
-        /** Factory function to return an octree block iterator helper */
+
+        /**
+         * \brief Factory function to return a SparseBlockIterHelper for this level
+         * \param begin A boolean to determine if this is to be a begin (true) or end (false) iterator
+         */
         BaseBlockIteratorHelper* getIteratorHelper(bool begin)
         {
-            return new MortonBlockIterHelper(this, begin);
+            return new IterHelper(this, begin);
         }
 
-        /** Factory function to return a const octree block iterator helper */
+        /**
+         * \brief Factory function to return a ConstSparseBlockIterHelper for this level
+         * \param begin A boolean to determine if this is to be a begin (true) or end (false) iterator
+         */
         ConstBaseBlockIteratorHelper* getIteratorHelper(bool begin) const
         {
-            return new ConstMortonBlockIterHelper(this, begin);
+            return new ConstIterHelper(this, begin);
         }
 
 
@@ -187,10 +265,7 @@ namespace quest
         }
 
         /** \brief Access the data associated with the entire brood */
-        BroodData& getBroodData(const GridPt& pt)
-        {
-            return m_map[ BroodType::MortonizerType::mortonize(pt)];
-        }
+        BroodData& getBroodData(const GridPt& pt) { return m_map[ BroodTraits::convertPoint(pt)]; }
 
         /** \brief Const access to data associated with the entire brood */
         const BroodData& getBroodData(const GridPt& pt) const {
@@ -198,7 +273,7 @@ namespace quest
                             ,"(" << pt <<", "<< this->m_level << ") was not a block in the tree at level.");
 
             // Note: Using find() method on hashmap since operator[] is non-const
-            ConstMapIter blockIt = m_map.find( BroodType::MortonizerType::mortonize(pt));
+            ConstMapIter blockIt = m_map.find( BroodTraits::convertPoint(pt) );
             return blockIt->second;
         }
 
@@ -214,15 +289,7 @@ namespace quest
         }
 
         /** \brief Returns the number of internal blocks in the level */
-        int numInternalBlocks() const
-        {
-            if(empty())
-                return 0;
-
-            const int numLeaves = numLeafBlocks();
-            return (this->m_level == 0 && numLeaves == 0)
-                    ? 1
-                    : numBlocks() - numLeaves; }
+        int numInternalBlocks() const { return numBlocks() - numLeafBlocks(); }
 
         /** \brief Returns the number of leaf blocks in the level */
         int numLeafBlocks() const
@@ -260,16 +327,13 @@ namespace quest
                         : InternalBlock;
         }
 
-    //private:
-    //  DISABLE_COPY_AND_ASSIGNMENT(OctreeLevel);
+    private:
+        DISABLE_COPY_AND_ASSIGNMENT(SparseOctreeLevel);
 
     private:
       MapType m_map;
     };
 
-
-
-
 } // end namespace quest
 
-#endif  // MORTON_OCTREE_LEVEL__HXX_
+#endif  // SPARSE_OCTREE_LEVEL__HXX_

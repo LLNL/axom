@@ -16,13 +16,11 @@ set( quest_headers
     geom/BVHTree.hpp
     geom/BoundingBox.hpp
     geom/Determinants.hpp
-    geom/FullGridOctreeLevel.hpp
-    geom/GridPointOctreeLevel.hpp
+    geom/DenseOctreeLevel.hpp
     geom/HyperSphere.hpp
     geom/InOutOctree.hpp
     geom/Intersection.hpp
     geom/MortonIndex.hpp
-    geom/MortonOctreeLevel.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp
     geom/OctreeLevel.hpp
@@ -30,6 +28,7 @@ set( quest_headers
     geom/Point.hpp
     geom/Ray.hpp
     geom/Segment.hpp
+    geom/SparseOctreeLevel.hpp
     geom/SpatialOctree.hpp
     geom/SquaredDistance.hpp
     geom/Triangle.hpp

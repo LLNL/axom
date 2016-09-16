@@ -9,9 +9,8 @@
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 #include "quest/OctreeLevel.hpp"
-#include "quest/MortonOctreeLevel.hpp"
-#include "quest/GridPointOctreeLevel.hpp"
-#include "quest/FullGridOctreeLevel.hpp"
+#include "quest/DenseOctreeLevel.hpp"
+#include "quest/SparseOctreeLevel.hpp"
 
 #include "common/config.hpp"
 
@@ -33,11 +32,13 @@ namespace quest
 
   /**
    * \brief Minimal implementation of a BlockDataType for an OctreeBase.
-   * BlockData is default constructible and provides an isLeaf() and setInternal() functions.
+   * BlockData is default constructible and provides the following functions:
+   *    isLeaf(), setInternal(), setNonBlock() and isBlock().
    * \note This implementation uses ones-complement to differentiate between leaf and internal blocks.
-   * This has the nice properties that (a) all internal LeafData have an id with a negative number,
-   * (b) the LeafData id's can be zero-based (c) all LeafDatas -- representing leaf and internal blocks
-   * can live in the same index space.
+   * This has the nice properties that
+   *    (a) all internal LeafData have an id with a negative number,
+   *    (b) all BlockDatas -- representing leaf and internal blocks
+   *        can live in the same index space.
    */
   class BlockData
   {
@@ -426,15 +427,15 @@ public:
           // Use a GridPointOctreeLevel (key is Point<int, DIM>, hashed using a MortonIndex)
           //    when MortonIndex requires more than 64
           if( i <= 4 && i * DIM <= 16)
-              m_leavesLevelMap[i] = new FullGridOctreeLevel<DIM,common::uint16, BlockDataType>(i);
+              m_leavesLevelMap[i] = new DenseOctreeLevel<DIM, BlockDataType,common::uint16>(i);
           else if( i * DIM <= 16)
-              m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,common::uint16, BlockDataType>(i);
+              m_leavesLevelMap[i] = new SparseOctreeLevel<DIM, BlockDataType,common::uint16>(i);
           else if( i * DIM <= 32 )
-              m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,common::uint32, BlockDataType>(i);
+              m_leavesLevelMap[i] = new SparseOctreeLevel<DIM, BlockDataType,common::uint32>(i);
           else if( i * DIM <= 64 )
-              m_leavesLevelMap[i] = new MortonOctreeLevel<DIM,common::uint64, BlockDataType>(i);
+              m_leavesLevelMap[i] = new SparseOctreeLevel<DIM, BlockDataType,common::uint64>(i);
           else
-              m_leavesLevelMap[i] = new GridPointOctreeLevel<DIM,BlockDataType>(i);
+              m_leavesLevelMap[i] = new SparseOctreeLevel<DIM,BlockDataType, GridPt>(i);
       }
 
       // Add the root block to the octree

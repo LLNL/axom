@@ -1971,7 +1971,7 @@ void InOutOctree<DIM>::printOctreeStats() const
         }
 
         std::stringstream triCountStr;
-        triCountStr<<"\tTriangle index count (lg-arithmic): ";
+        triCountStr<<"\tTriangle index count (lg-arithmic bins for number of references per triangle):";
         for(LogHistogram::const_iterator it = triCountHist.begin()
                 ; it != triCountHist.end()
                 ; ++it)

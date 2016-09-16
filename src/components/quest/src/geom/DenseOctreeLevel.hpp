@@ -1,5 +1,5 @@
-#ifndef FULL_GRID_OCTREE_LEVEL__HXX_
-#define FULL_GRID_OCTREE_LEVEL__HXX_
+#ifndef DENSE_OCTREE_LEVEL__HXX_
+#define DENSE_OCTREE_LEVEL__HXX_
 
 
 #include "common/config.hpp"
@@ -13,7 +13,7 @@ namespace quest
 
     /**
      * \class
-     * \brief A FullGridOctreeLevel is a representation of an OctreeLevel.
+     * \brief A representation of a dense OctreeLevel.
      *  that allocates space for all possible blocks at the given level.
      *
      *  It uses a Brood-based organization of the data, where the data for all octree
@@ -25,8 +25,8 @@ namespace quest
      *  \see OctreeLevel
      *  \see Brood
      */
-    template<int DIM, typename MortonIndexType, typename BlockDataType>
-    class FullGridOctreeLevel : public OctreeLevel<DIM,BlockDataType>
+    template<int DIM, typename BlockDataType, typename MortonIndexType>
+    class DenseOctreeLevel : public OctreeLevel<DIM,BlockDataType>
     {
     public:
         typedef OctreeLevel<DIM, BlockDataType> Base;
@@ -35,10 +35,10 @@ namespace quest
         typedef typename Base::BlockIteratorHelper      BaseBlockIteratorHelper;
         typedef typename Base::ConstBlockIteratorHelper ConstBaseBlockIteratorHelper;
 
-        template<typename OctreeLevelType, typename ParentType> class FullGridBlockIteratorHelper;
+        template<typename OctreeLevelType, typename ParentType> class IteratorHelper;
 
-        typedef FullGridBlockIteratorHelper<FullGridOctreeLevel, BaseBlockIteratorHelper> FullGridBlockIterHelper;
-        typedef FullGridBlockIteratorHelper<const FullGridOctreeLevel, ConstBaseBlockIteratorHelper> ConstFullGridBlockIterHelper;
+        typedef IteratorHelper<DenseOctreeLevel, BaseBlockIteratorHelper> IterHelper;
+        typedef IteratorHelper<const DenseOctreeLevel, ConstBaseBlockIteratorHelper> ConstIterHelper;
 
         typedef Brood<GridPt, MortonIndexType> BroodType;
 
@@ -50,13 +50,13 @@ namespace quest
          *       both are defined in the OctreeLevel base class
          */
         template<typename OctreeLevelType, typename ParentType>
-        class FullGridBlockIteratorHelper : public ParentType
+        class IteratorHelper : public ParentType
         {
         public:
-            typedef FullGridBlockIteratorHelper<OctreeLevelType, ParentType> FullGridBlockItType;
+            typedef IteratorHelper<OctreeLevelType, ParentType> self;
             typedef ParentType     BaseBlockItType;
 
-            FullGridBlockIteratorHelper(OctreeLevelType* octLevel, bool begin)
+            IteratorHelper(OctreeLevelType* octLevel, bool begin)
                 : m_octreeLevel(octLevel)
                 , m_endIdx( octLevel->m_broodCapacity)
                 , m_offset(0)
@@ -87,19 +87,18 @@ namespace quest
             GridPt pt() const
             {
                 // Reconstruct the grid point from its brood representation
-                typedef Mortonizer<typename GridPt::CoordType, MortonIndexType, GridPt::NDIMS> Mort;
-                return Mort::demortonize( (m_currentIdx << DIM)  + m_offset);
+                return BroodType::reconstructGridPt(m_currentIdx, m_offset);
             }
 
-            /** Access to data associated with the block pointed to by the iterator */
+            /** Accessor for data associated with the iterator's block */
             BlockDataType* data() { return &m_octreeLevel->m_data[m_currentIdx][m_offset]; }
-            /** Const access to data associated with the block pointed to by the iterator */
+            /** Const accessor for data associated with the iterator's block */
             const BlockDataType* data() const { return &m_octreeLevel->m_data[m_currentIdx][m_offset]; }
 
-            /** Determine if two BlockIterators are pointing to the same block */
+            /** \brief Predicate to determine if two block iterators are the same */
             bool equal(const BaseBlockItType* other)
             {
-                const FullGridBlockItType* pother = dynamic_cast<const FullGridBlockItType*>(other);
+                const self* pother = dynamic_cast<const self*>(other);
 
                 return (pother != ATK_NULLPTR)
                      && (m_currentIdx == pother->m_currentIdx)   // iterators are the same
@@ -115,7 +114,7 @@ namespace quest
     public:
 
         /** \brief Default constructor for an octree level */
-        FullGridOctreeLevel(int level = -1): Base(level), m_blockCount(0)
+        DenseOctreeLevel(int level = -1): Base(level), m_blockCount(0)
         {
             if(level < 0)
             {
@@ -124,19 +123,15 @@ namespace quest
             }
             else
             {
+                const int rowsize = (level > 0) ? 1 << (level-1) : 1;
                 m_broodCapacity = 1;
-
-                if(level > 0)
-                {
-                    const int rowsize = 1 << (level-1);
-                    for(int i=0; i < DIM; ++i)
-                        m_broodCapacity *= rowsize;
-                }
+                for(int i=0; i < DIM; ++i)
+                    m_broodCapacity *= rowsize;
 
                 m_data = new BroodData[m_broodCapacity];
             }
 
-            // Mark all blocks as non blocks
+            // Mark all blocks as not in tree
             for(int i=0; i<m_broodCapacity; ++i)
             {
                 BroodData& bd = m_data[i];
@@ -145,7 +140,7 @@ namespace quest
             }
         }
 
-        ~FullGridOctreeLevel()
+        ~DenseOctreeLevel()
         {
             if(m_data != ATK_NULLPTR)
             {
@@ -163,7 +158,7 @@ namespace quest
          */
         BaseBlockIteratorHelper* getIteratorHelper(bool begin)
         {
-            return new FullGridBlockIterHelper(this, begin);
+            return new IterHelper(this, begin);
         }
 
         /**
@@ -172,7 +167,7 @@ namespace quest
          */
         ConstBaseBlockIteratorHelper* getIteratorHelper(bool begin) const
         {
-            return new ConstFullGridBlockIterHelper(this, begin);
+            return new ConstIterHelper(this, begin);
         }
 
 
@@ -225,6 +220,9 @@ namespace quest
         /** \brief Const accessor for the data associated with pt */
         const BlockDataType& operator[](const GridPt& pt) const
         {
+            SLIC_ASSERT_MSG(hasBlock(pt)
+                            ,"(" << pt <<", "<< this->m_level << ") was not a block in the tree at level.");
+
             const BroodType brood(pt);
             return m_data[brood.base()][brood.offset()];
         }
@@ -289,8 +287,8 @@ namespace quest
                     : BlockNotInTree;
         }
 
-    //private:
-    //  DISABLE_COPY_AND_ASSIGNMENT(OctreeLevel);
+    private:
+        DISABLE_COPY_AND_ASSIGNMENT(DenseOctreeLevel);
 
     private:
       BroodData* m_data;
@@ -300,4 +298,4 @@ namespace quest
 
 } // end namespace quest
 
-#endif  // FULL_GRID_OCTREE_LEVEL__HXX_
+#endif  // DENSE_OCTREE_LEVEL__HXX_

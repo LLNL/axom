@@ -77,6 +77,11 @@ namespace quest
         /** \brief Accessor for the offset of the point within the brood */
         const int& offset() const { return m_offset; }
 
+        /** \brief Reconstruct a grid point from a brood's morton index and an offset */
+        static GridPt reconstructGridPt(MortonIndexType morton, int offset)
+        {
+            return MortonizerType::demortonize( (morton << DIM) + offset);
+        }
      private:
           MortonIndexType m_broodIdx;   /** MortonIndex of the base point of all blocks within the brood */
           int m_offset;                 /** Index of the block within the brood. Value is in [0, 2^DIM) */
@@ -114,6 +119,17 @@ namespace quest
 
         /** \brief Accessor for the index of the point within the brood */
         const int& offset() const { return m_offset; }
+
+        /** \brief Reconstruct a grid point from a brood's base point and an offset */
+        static GridPt reconstructGridPt(const GridPt& pt, int offset)
+        {
+            // shift and add offset to each coordinate
+            GridPt retPt;
+            for(int i=0; i< GridPt::NDIMS; ++i)
+                retPt[i] = (pt[i]<<1) + ( offset & (1 << i)? 1 : 0);
+
+            return retPt;
+        }
 
     private:
         GridPt m_broodPt;  /** Base point of all blocks within the brood */
@@ -187,7 +203,7 @@ namespace quest
       class ConstBlockIteratorHelper
       {
       public:
-          /** Virtual desctructor */
+          /** Virtual destructor */
           virtual ~ConstBlockIteratorHelper() {}
 
           /** \brief A function to increment to the next Block in the level */
@@ -284,25 +300,13 @@ namespace quest
             }
         }
 
-
-        /**
-         * \brief A const dereference function used for accessing the data
-         * \note Only valid for constant access to data associated with an octree block
-         * \note For non-const access on a non-const iterator, use the data() function
-         * \sa data()
-         */
+        /** \brief A const dereference function used for accessing the data  */
         DataType& dereference() const { return *m_iterHelper->data(); }
 
-        /**
-         * \brief Const accessor for the iterator's current grid point
-         */
+        /** \brief Const accessor for the iterator's current grid point */
         GridPt pt() const { return m_iterHelper->pt(); }
 
-        /**
-         * \brief Equality test against another iterator
-         * \param other The other iterator
-         * \return true, if the two iterators are equal, false otherwise
-         */
+        /** \brief Equality test against another iterator */
         bool equal(const iter& other) const
         {
             return (m_octLevel == other.m_octLevel)       // point to same object
@@ -310,16 +314,12 @@ namespace quest
         }
 
         /** \brief Increment the iterator to the next point */
-        void increment()
-        {
-            m_iterHelper->increment();
-        }
+        void increment() { m_iterHelper->increment(); }
 
       private:
         friend class boost::iterator_core_access;
-        OctreeLevel*  m_octLevel;             /** Pointer to the iterator's container class */
-        IterHelper* m_iterHelper;             /** Instance of iterator helper class */
-
+        OctreeLevel*    m_octLevel;        /** Pointer to the iterator's container class */
+        IterHelper*     m_iterHelper;      /** Instance of iterator helper class */
       };
 
 
