@@ -228,8 +228,655 @@ bool intersect (const Segment<T,DIM> & S,
 namespace {
 
   typedef quest::Vector<double, 3> Vector3;
+  typedef quest::Point<double, 3> Point3;
+  typedef quest::Triangle<double, 3> Triangle3;
+  typedef quest::Triangle<double, 2> Triangle2;
+  typedef quest::Point<double, 2> Point2;
 
-  /**
+  /*!
+   *****************************************************************************
+   * \brief Checks if x > y
+   * \param [in] x first value
+   * \param [in] y value to compare to x
+   * \return status true iff x - 1.0e-12 > y
+   *
+   * Helper function for T-T intersect.  > paired with is_nearly_equal
+   *****************************************************************************
+   */
+  inline bool isGt(double x, double y, double EPS=1.0e-12)
+  {
+    return ((x > y) && !(asctoolkit::utilities::isNearlyEqual(x, y, EPS)));
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if x < y
+   * \param [in] x first value
+   * \param [in] y value to compare to x
+   * \return status true iff x + 1.0e-12 < y
+   *
+   * Helper function for T-T intersect.  < paired with is_nearly_equal
+   *****************************************************************************
+   */
+  inline bool isLt(double x, double y, double EPS=1.0e-12)
+  {
+    return ((x < y) && !(asctoolkit::utilities::isNearlyEqual(x, y, EPS)));
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if x <= y
+   * \param [in] x first value
+   * \param [in] y value to compare to x
+   * \return status true iff x - 1.0e-12 <= y
+   *
+   * Helper function for T-T intersect.
+   *****************************************************************************
+   */
+  inline bool isLeq(double x, double y)
+  {
+    return !(isGt(x,y));
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if x >= y
+   * \param [in] x first value
+   * \param [in] y value to compare to x
+   * \return status true iff x + 1.0e-12 >= y
+   *
+   * Helper function for T-T intersect.  < paired with is_nearly_equal
+   *****************************************************************************
+   */
+  inline bool isGeq(double x, double y)
+  {
+    return !(isLt(x,y));
+  }
+
+  /*!
+   *****************************************************************************
+    * \brief Check sign match
+    * \param [in] x first test value
+    * \param [in] y second test value
+    * \param [in] z third test value
+    * \return status true iff x and y have same sign, x and z have same sign
+    *
+    * Helper function for T-T intersect.
+    ****************************************************************************
+    */
+  inline bool signMatch(double x, double y, double z)
+  {
+    return ((isGt(x*y, 0.0)) &&  (isGt(x*z, 0.0)));
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Check 2D triangle orientation.
+   * \param [in] A first corner of triangle
+   * \param [in] B second corner of triangle
+   * \param [in] C third corner of triangle
+   * \return Cross product of A C and B C.
+   *
+   * This function treats three Point2 values as corners of a 3D triangle with
+   * zero Z-coordinate.  Thus we can calculate the cross product of A C with
+   * B C using only the k-hat term, since the other terms go to zero.  A
+   * positive value indicates CCW orientation.
+   *
+   * Helper function for T-T intersect.
+   *****************************************************************************
+   */
+  inline double checkCCW(const Point2& A, const Point2& B, const Point2& C)
+  {
+    return  (((A[0]-C[0])*(B[1]-C[1])-(A[1]-C[1])*(B[0]-C[0])));
+  }
+
+
+  /*!
+   *****************************************************************************
+   * \brief Check for 2D triangle-edge intersection.
+   * \param [in] Ai first corner of triangle
+   * \param [in] Bi second corner of triangle
+   * \param [in] Ci third corner of triangle
+   * \param [in] Aj first point of segment
+   * \param [in] Bj second corner of segment
+   * \return status true iff the edge  Aj Cj intersects the triangle Ai Bi Ci.
+   *
+   * Helper function for T-T intersect.
+   *****************************************************************************
+   */
+  inline bool checkEdge(const Point2 Ai,
+			const Point2 Bi,
+			const Point2 Ci,
+			const Point2 Aj,
+			const Point2 Cj)
+  {
+    if (isGeq(checkCCW(Cj,Aj,Bi),0.0)) {
+      if (isGeq(checkCCW(Ai,Aj,Bi), 0.0)) {
+	if (isGeq(checkCCW(Ai,Bi,Cj), 0.0))
+	  return true;
+	else
+	  return false;
+      }
+      else {
+	if (isGeq(checkCCW(Bi,Ci,Aj), 0.0)) {
+	  if (isGeq(checkCCW(Ci,Ai,Aj), 0.0))
+	    return true;
+	  else
+	    return false;
+	}
+	else
+	  return false;
+      }
+    }
+    else {
+      if (isGeq(checkCCW(Cj,Aj,Ci), 0.0)) {
+	if (isGeq(checkCCW(Ai,Aj,Ci), 0.0)) {
+	  if (isGeq(checkCCW(Ai,Ci,Cj), 0.0))
+	    return true;
+	  else {
+	    if (isGeq(checkCCW(Bi,Ci,Cj), 0.0))
+	      return true;
+	    else
+	      return false;
+	  }
+	}
+	else
+	  return false;
+      }
+      else
+	return false;
+    }
+  }
+
+  /* Note that Evan's original code had checkVertex() with exactly the same
+     text as checkEdge().  This is almost certainly not what he intended, since
+     the two functions are called from CheckReorientedPoints2D() in different
+     code paths.
+
+     2016-09-16 Until I (Arlie Capps) understand this code better, I'm including
+     checkVertex() as a stub that calls checkEdge() in order to let the code
+     compile.
+  */
+  inline bool checkVertex(const Point2 Ai,
+			const Point2 Bi,
+			const Point2 Ci,
+			const Point2 Aj,
+			const Point2 Cj)
+  {
+    // TODO:  FIXME:  Properly implement the body of this function.
+
+    if (isGeq(checkCCW(Cj,Aj,Bi),0.0)) {
+      if (isGeq(checkCCW(Ai,Aj,Bi), 0.0)) {
+	if (isGeq(checkCCW(Ai,Bi,Cj), 0.0))
+	  return true;
+	else
+	  return false;
+      }
+      else {
+	if (isGeq(checkCCW(Bi,Ci,Aj), 0.0)) {
+	  if (isGeq(checkCCW(Ci,Ai,Aj), 0.0))
+	    return true;
+	  else
+	    return false;
+	}
+	else
+	  return false;
+      }
+    }
+    else {
+      if (isGeq(checkCCW(Cj,Aj,Ci), 0.0)) {
+	if (isGeq(checkCCW(Ai,Aj,Ci), 0.0)) {
+	  if (isGeq(checkCCW(Ai,Ci,Cj), 0.0))
+	    return true;
+	  else {
+	    if (isGeq(checkCCW(Bi,Ci,Cj), 0.0))
+	      return true;
+	    else
+	      return false;
+	  }
+	}
+	else
+	  return false;
+      }
+      else
+	return false;
+    }
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Runs tri-tri intersection tests, allowing for corner permutation.
+   * \param [in] Ai first corner of triangle 1
+   * \param [in] Bi second corner of triangle 1
+   * \param [in] Ci third corner of triangle 1
+   * \param [in] Aj first corner of triangle 2
+   * \param [in] Bj second corner of triangle 2
+   * \param [in] Cj third corner of triangle 2
+   * \return status true iff triangle Ai Bi Ci intersects triangle Aj Bj Cj.
+   *
+   * Helper function for T-T intersect.
+   *****************************************************************************
+   */
+  inline bool CheckReorientedPoints2D(const Point2& Ai,
+				      const Point2& Bi,
+				      const Point2& Ci,
+				      const Point2& Aj,
+				      const Point2& Bj,
+				      const Point2& Cj)
+  {
+    // Step 2: Orient triangle 2 to be counter clockwise and break the problem
+    // into two generic cases (where we test the vertex for intersection or the
+    // edges).
+    //
+    // See paper at https://hal.inria.fr/inria-00072100/document for more details
+
+    if (isGeq(checkCCW(Aj,Bj,Ai), 0.0 )) {
+      if (isGeq(checkCCW(Bj,Cj,Ai), 0.0 )) {
+	if (isGeq(checkCCW(Cj,Aj,Ai), 0.0)) {
+	  return true;
+	}
+	else return checkEdge(Ai,Bi,Ci,Aj,Cj); //T1 clockwise
+      }
+      else {
+	if (isGeq(checkCCW(Cj,Aj,Ai), 0.0)){
+	  //5 region decomposistion with Ai in the +-- region
+	  return checkEdge(Ai,Bi,Ci,Cj,Bj);
+	}
+	else return checkVertex(Ai,Bi,Ci,Aj,Cj);
+      }
+    }
+    else {
+      if (isGeq(checkCCW(Bj,Cj,Ai), 0.0)) {
+	if (isGeq(checkCCW(Cj,Aj,Ai), 0.0)) {
+	  //four region decomposistion.  ++- region
+	  return checkEdge(Ai,Bi,Ci,Bj,Aj);
+	}
+	else return checkVertex(Ai,Bi,Ci,Bj,Aj);
+      }
+      else return checkVertex(Ai,Bi,Ci,Cj,Bj);
+    }
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Detect triangle intersection in 2D
+   * \param [in] t1 First Triangle<T, 2>
+   * \param [in] t2 Second Triangle<T, 2>
+   * \return status true iff t1 and t2 intersect
+   *
+   * Determine triangle orientation, then call the worker function with
+   * vertices from t1 and t2 permuted to ensure CCW orientation.
+   *
+   * Helper function that does T-T intersect for 2d
+   *****************************************************************************
+   */
+  inline bool TriangleIntersection2D(const Triangle2& t1,
+				     const Triangle2& t2)
+  {
+    if (isLt(checkCCW(t1.A(),t1.B(),t1.C()),0.0)) {
+      if ((isLt(checkCCW(t2.A(), t2.B(), t2.C()),0.0))) {
+	return CheckReorientedPoints2D(t1.A(), t1.C(), t1.B(),
+				       t2.A(), t2.C(), t2.B());
+      }
+      else return CheckReorientedPoints2D(t1.A(), t1.C(), t1.B(),
+					  t2.A(), t2.B(), t2.C());
+    }
+    else {
+      if (isLt(checkCCW(t2.A(), t2.B(), t2.C()),0.0)) {
+	return CheckReorientedPoints2D(t1.A(), t1.B(), t1.C(),
+				       t2.A(), t2.C(), t2.B());
+      }
+      else {
+	return CheckReorientedPoints2D(t1.A(), t1.B(), t1.C(),
+				       t2.A(), t2.B(), t2.C());
+      }
+    }
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether the two intervals overlap
+   * \param [in] Ai first corner of triangle 1
+   * \param [in] Bi second corner of triangle 1
+   * \param [in] Ci third corner of triangle 1
+   * \param [in] Aj first corner of triangle 2
+   * \param [in] Bj second corner of triangle 2
+   * \param [in] Cj third corner of triangle 2
+   * \return status true iff there is an interval overlap, false otherwise
+   *
+   * I don't see how this does what it claims to do.
+   *
+   * Helper function for T-T intersect.
+   *****************************************************************************
+   */
+  inline bool intervalCheck(const Point3 Ai, const Point3 Bi, const Point3 Ci,
+			    const Point3 Aj, const Point3 Bj, const Point3 Cj)
+  {
+    /* Step 5: From step's 1 through 4, we now have two triangles that,
+       if intersecting, have a line that intersects segments AiCi, AiBi,
+       AjBj, and AjCj.  We check if these two intervals overlap:
+    */
+
+    if (isGt(Vector3(Bi, Bj).dot(Triangle3(Bi, Aj, Ai).normal()), 0.0))
+      return false;
+    if (isGt((Vector3(Ai, Cj).dot(Triangle3(Ai, Aj, Ci).normal())), 0.0))
+      return false;
+
+    return true;
+  }
+}
+
+  /*!
+   *****************************************************************************
+   * \brief Returns whether te two triangles are coplanar
+   * \param [in] Ai first corner of triangle 1
+   * \param [in] Bi second corner of triangle 1
+   * \param [in] Ci third corner of triangle 1
+   * \param [in] Aj first corner of triangle 2
+   * \param [in] Bj second corner of triangle 2
+   * \param [in] Cj third corner of triangle 2
+   * \return status true iff triangle Ai Bi Ci is coplanar to triangle Aj Bj Cj
+   *****************************************************************************
+   */
+  inline bool coplanarCheck(const Point3& Ai, const Point3& Bi, const Point3& Ci,
+			    const Point3& Aj, const Point3& Bj, const Point3& Cj,
+			    Vector3 normal)
+  {
+    /* Co-planar triangles are projected onto the axis that maximizes their
+       area and the 2d intersection used to check if they intersect.
+    */
+
+    //find triangle with maximum area:
+    for (int i=0; i<3; i++)
+    {
+      normal[i] = std::abs(normal[i]);
+    }
+
+    if ((isGt(normal[0], normal[2])) && (isGeq(normal[0], normal[1])))
+    {
+      //if x projection area greatest, project on YZ and return 2D checker
+
+      const Triangle2 t1_2da = Triangle2(Point2::make_point(Bi[2],Bi[1]),
+					 Point2::make_point(Ai[2],Ai[1]),
+					 Point2::make_point(Ci[2],Ci[1]));
+
+      const Triangle2 t2_2da = Triangle2(Point2::make_point(Bj[2],Bj[1]),
+					 Point2::make_point(Aj[2],Aj[1]),
+					 Point2::make_point(Cj[2],Cj[1]));
+
+      return TriangleIntersection2D(t1_2da, t2_2da);
+    }
+    else if (isGt(normal[1],normal[2]) && isGeq(normal[1],normal[0]))
+    {
+      //if y projection area greatest, project on XZ and return 2D checker
+      const Triangle2 t1_2da = Triangle2(Point2::make_point(Bi[0],Bi[2]),
+					 Point2::make_point(Ai[0],Ai[2]),
+					 Point2::make_point(Ci[0],Ci[2]));
+
+      const Triangle2 t2_2da = Triangle2(Point2::make_point(Bj[0],Bj[2]),
+					 Point2::make_point(Aj[0],Aj[2]),
+					 Point2::make_point(Cj[0],Cj[2]));
+
+      return TriangleIntersection2D(t1_2da, t2_2da);
+    }
+    else
+    {
+      //if z projection area greatest, project on XY and return 2D checker
+      const Triangle2 t1_2da = Triangle2(Point2::make_point(Ai[0],Ai[1]),
+					 Point2::make_point(Bi[0],Bi[1]),
+					 Point2::make_point(Ci[0],Ci[1]));
+
+      const Triangle2 t2_2da = Triangle2(Point2::make_point(Aj[0],Aj[1]),
+					 Point2::make_point(Bj[0],Bj[1]),
+					 Point2::make_point(Cj[0],Cj[1]));
+
+      return TriangleIntersection2D(t1_2da, t2_2da);
+    }
+    return false;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Worker function testing for 3D triangle intersection.
+   * \param [in] a user supplied Point<T, 2> Ai
+   * \param [in] a user supplied Point<T, 2> Bi
+   * \param [in] a user supplied Point<T, 2> Ci
+   * \param [in] a user supplied Point<T, 2> Aj
+   * \param [in] a user supplied Point<T, 2> Bj
+   * \param [in] a user supplied Point<T, 2> Cj
+   * \return status true iff there is an interval overlap, false otherwise
+   *
+   * Helper function for TT-intersect
+   *****************************************************************************
+   */
+  inline bool checkTriangleIntersect(const Point3 &Ai, const Point3 &Bi, const Point3 &Ci,
+				     const Point3 &Aj, const Point3 &Bj, const Point3 &Cj,
+				     double dAj, double dBj, double dCj,  Vector3 &normal)
+  {
+    /*Step 4: repeat Step 3, except doing it for triangle 2 instead of triangle 1 */
+    if (isGt(dAj, 0.0))
+    {
+      if (isGt(dBj, 0.0))
+	return intervalCheck(Ai,Ci,Bi,Cj,Aj,Bj);
+      else if (isGt(dCj, 0.0))
+	return intervalCheck(Ai,Ci,Bi,Bj,Cj,Aj);
+      else
+	return intervalCheck(Ai,Bi,Ci,Aj,Bj,Cj);
+    }
+    else if (isLt(dAj,  0.0))
+    {
+      if (isLt(dBj, 0.0))
+	return intervalCheck(Ai,Bi,Ci,Cj,Aj,Bj);
+      else if (isLt(dCj, 0.0))
+	return intervalCheck(Ai,Bi,Ci,Bj,Cj,Aj);
+      else
+	return intervalCheck(Ai,Ci,Bi,Aj,Bj,Cj);
+    } else {
+      if (isLt(dBj, 0.0)) {
+	if (isGeq(dCj, 0.0))
+	  return intervalCheck(Ai,Ci,Bi,Bj,Cj,Aj);
+	else
+	  return intervalCheck(Ai,Bi,Ci,Aj,Bj,Cj);
+      }
+      else if (isGt(dBj, 0.0)) {
+	if (isGt(dCj, 0.0))
+	  return intervalCheck(Ai,Ci,Bi,Aj,Bj,Cj);
+	else
+	  return intervalCheck(Ai,Bi,Ci,Bj,Cj,Aj);
+      }
+      else {
+	if (isGt(dCj, 0.0))
+	  return intervalCheck(Ai,Bi,Ci,Cj,Aj,Bj);
+	else if (isLt(dCj, 0.0))
+	  return intervalCheck(Ai,Ci,Bi,Cj,Aj,Bj);
+	else
+	  return coplanarCheck(Ai,Bi,Ci,Aj,Bj,Cj,normal);
+      }
+    }
+  }
+
+
+/*
+ *******************************************************************************
+ * \brief Tests if 2D Triangles t1 and t2 intersect.
+ * \param [in] t1 First 2D triangle to test.
+ * \param [in] t2 Second 2D triangle to test.
+ * \return status true iff t1 intersects with t2, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T>
+bool intersect( const Triangle<T, 2>& t1, const Triangle<T, 2>& t2)
+{
+  if (t1.degenerate() || t2.degenerate()) {
+    if (t1.degenerate())
+      SLIC_INFO("\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
+    if (t2.degenerate())
+      SLIC_INFO("\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
+  }
+  return TriangleIntersection2D(t1, t2);
+}
+
+
+/*!
+ *******************************************************************************
+ * \brief Tests if 3D Triangles t1 and t2 intersect.
+ * \param [in] t1 First 3D triangle to test.
+ * \param [in] t2 Second 3D triangle to test.
+ * \return status true iff t1 intersects with t2, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T>
+bool intersect( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
+{
+  typedef quest::Vector<T, 3> Vector3;
+
+  /*............................................................................
+    Compute the line of intersection between the two planes with a decision
+    tree aproach.  Note that these nasty if statments are used for robustness
+    to reduce numerical errors -- I found a nice paper which discussed this,
+    and I modeled the following code after it.  By using a decision tree
+    approach, they were able to reduce the number of arithmatic operations and
+    thus reduce numerical imprecision.  What remains to be seen is whether the
+    amount of overhead associated with our abstractions make this approach
+    impractical for our application.
+
+    See paper at https://hal.inria.fr/inria-00072100/document for more details.
+    ............................................................................
+  */
+  if (t1.degenerate() || t2.degenerate()) {
+    if (t1.degenerate())
+      SLIC_INFO("\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
+    if (t2.degenerate())
+      SLIC_INFO("\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
+  }
+
+  // Step 1: Check if all the vertices of triangle 1 lay on the same side of
+  // the plane created by triangle 2:
+
+  Vector3 t2Normal = Vector3::cross_product(Vector3(t2.C(), t2.A()),
+					    Vector3(t2.C(), t2.B()));
+
+  double dAi = (Vector3(t2.C(), t1.A())).dot(t2Normal);
+  double dBi = (Vector3(t2.C(),t1.B())).dot(t2Normal);
+
+  double dCi = (Vector3(t2.C(),t1.C())).dot(t2Normal);
+
+  Vector3 testing = Vector3::cross_product(Vector3(t2.B(), t2.C()),
+					   Vector3(t2.B(), t2.A()));
+
+  if (signMatch(dAi, dBi, dCi)) {
+    return false;
+  }
+
+  // Step 2: Check if all the vertices of triangle 2 lay on the same side of
+  // the plane created by triangle 1:
+
+  Vector3 t1Normal = Vector3::cross_product(Vector3(t1.A(), t1.B()),
+					    Vector3(t1.A(), t1.C()));
+  double dAj = (Vector3(t1.C(),t2.A())).dot(t1Normal);
+  double dBj = (Vector3(t1.C(),t2.B())).dot(t1Normal);
+  double dCj = (Vector3(t1.C(),t2.C())).dot(t1Normal);
+  if (signMatch(dAj, dBj, dCj)) {
+    return false;
+  }
+
+  /* Note: Because we know that all the vertices either triangle do not
+    lay on the same side of the plane formed by the other triangle, we
+    know that for each triangle, exactly 1 out of 3 points exists on one
+    side of the plane formed by the other triangle.
+
+
+    Step 3: We apply a circular permutation of tiangle 1 such that its
+    first point is the only point on the triangle that lies on one side of
+    the plane formed by triangle 2 (with the other 2 on the other side),
+    while handling the special case of one of the vertices lying on the
+    plane formed by triangle 2.  We then perform a swap operation on the
+    second and third points of triangle 2 to map the first point of
+    triangle 1 to the postitive halfspace formed by triangle 2's plane.
+  */
+
+  // compare the signs to create a conveniant permutation of the vertices
+  // of triangle 1
+
+  if (isGt(dAi, 0.0)) {
+    if (isGt(dBi, 0.0)) {
+      return checkTriangleIntersect(t1.C(), t1.A(), t1.B(),
+				    t2.A(), t2.C(), t2.B(),
+				    dAj, dCj, dBj, t1Normal);
+    }
+    else if (isGt(dCi, 0.0)) {
+      return checkTriangleIntersect(t1.B(), t1.C(), t1.A(),
+				    t2.A(), t2.C(), t2.B(),
+				    dAj, dCj, dBj, t1Normal);
+    }
+    else return checkTriangleIntersect(t1.A(), t1.B(), t1.C(),
+				       t2.A(), t2.B(), t2.C(),
+				       dAj, dBj, dCj, t1Normal);
+  }
+  else if (isLt(dAi, 0.0)) {
+    if (isLt(dBi, 0.0)) {
+      return checkTriangleIntersect(t1.C(), t1.A(), t1.B(),
+				    t2.A(), t2.B(), t2.C(),
+				    dAj, dBj, dCj, t1Normal);
+    }
+    else if (isLt(dCi, 0.0f)) {
+      return checkTriangleIntersect(t1.B(), t1.C(), t1.A(),
+				    t2.A(), t2.B(), t2.C(),
+				    dAj, dBj, dCj, t1Normal);
+    }
+    else return checkTriangleIntersect(t1.A(), t1.B(), t1.C(),
+				       t2.A(), t2.C(), t2.B(),
+				       dAj, dCj, dBj, t1Normal);
+  }
+  else { //dAi ~= 0
+    if (isLt(dBi, 0.0)) {
+      if (isGeq(dCi, 0.0)) {
+	return checkTriangleIntersect(t1.B(), t1.C(), t1.A(),
+				      t2.A(), t2.C(), t2.B(),
+				      dAj, dCj, dBj, t1Normal);
+      }
+      else {
+	return checkTriangleIntersect(t1.A(), t1.B(), t1.C(),
+				      t2.A(), t2.B(), t2.C(),
+				      dAj, dBj, dCj, t1Normal);
+      }
+    }
+    else if (isGt(dBi, 0.0)) {
+      if (isGt(dCi, 0.0)) {
+	return checkTriangleIntersect(t1.A(), t1.B(), t1.C(),
+				      t2.A(), t2.C(), t2.B(),
+				      dAj, dCj, dBj, t1Normal);
+      }
+      else {
+	return checkTriangleIntersect(t1.B(), t1.C(), t1.A(),
+				      t2.A(), t2.B(), t2.C(),
+				      dAj, dBj, dCj, t1Normal);
+      }
+    }
+    else  {
+      if (isGt(dCi, 0.0)) {
+	return checkTriangleIntersect(t1.C(), t1.A(), t1.B(),
+				      t2.A(), t2.B(), t2.C(),
+				      dAj, dBj, dCj, t1Normal);
+      }
+      else if (isLt(dCi, 0.0)) {
+	return checkTriangleIntersect(t1.C(), t1.A(), t1.B(),
+				      t2.A(), t2.C(), t2.B(),
+				      dAj, dCj, dBj, t1Normal);
+      }
+      else return coplanarCheck(t1.A(), t1.B(), t1.C(),
+				t2.A(), t2.B(), t2.C(), t1Normal);
+    }
+  }
+}
+
+
+
+namespace {
+
+  typedef quest::Vector<double, 3> Vector3;
+
+ /**
    * \brief Helper function to find disjoint projections for the AABB-triangle test
    * \param d0 The first value defining the test interval
    * \param d1 The second value defining the test interval
