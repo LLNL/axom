@@ -196,8 +196,8 @@ public:
       VectorType w(m_A, m_C);
 
       return (DIM==2)
-                  ? 0.5 * std::fabs(v[0]*w[1] - v[1]*w[0])
-                  : 0.5 * VectorType::cross_product( v,w).norm();
+	? 0.5 * std::fabs(v[0]*w[1] - v[1]*w[0])
+	: 0.5 * Vector<T,3>::cross_product(Vector<T,3>(v.data(), 3), Vector<T,3>(w.data(), 3)).norm();
   }
 
   /*!
