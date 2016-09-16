@@ -1,5 +1,6 @@
 #!/bin/bash
 # 09-12-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug"
+# 09-16-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug" ""
 
 #COMPILER="clang@3.5.0"
 COMPILER=$1
@@ -14,7 +15,7 @@ BT=$2
 BP="atk_build"
 IP="atk_install"
 COMP_OPT=""
-BUILD_OPT=""
+BUILD_OPT=$3
 OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
 
 echo "Configuring..."
@@ -39,7 +40,7 @@ cd $BP
 
     echo "Running tests..."
     echo "-----------------------------------------------------------------------"
-    make test ARGS="-T Test"
+    make test ARGS="-T Test -j16"
     if [ $? -ne 0 ]; then
         echo "Error: 'make test' failed"
         exit 1
