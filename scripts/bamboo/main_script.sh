@@ -52,6 +52,17 @@ if ["$TEST" = true]; then
     echo "-----------------------------------------------------------------------"
 fi
 
+if ["$DOC" = true]; then
+    echo "Making docs..."
+    echo "-----------------------------------------------------------------------"
+    make VERBOSE=1 docs
+    if [ $? -ne 0 ]; then
+        echo "Error: 'make docs' failed"
+        exit 1
+    fi
+    echo "-----------------------------------------------------------------------"
+fi
+
 if ["$INSTALL_FILES" = true]; then
     echo "Installing files..."
     echo "-----------------------------------------------------------------------"
@@ -63,14 +74,54 @@ if ["$INSTALL_FILES" = true]; then
     echo "-----------------------------------------------------------------------"
 fi
 
-f ["$INSTALL_FILES" = true]; then
-    echo "Installing files..."
-    echo "-----------------------------------------------------------------------"
-    make VERBOSE=1 install
+if ["$INSTALL_DOCS" = true]; then
+
+   cd ..
+
+   echo "Installing docs to web space..."
+
+
+   echo "-----------------------------------------------------------------------"
+   if [ -d  ${DOCS_DIR_OLD} ]; then
+       rm -rf ${DOCS_DIR_OLD}
+       if [ $? -ne 0 ]; then
+           echo "Error: 'rm' of docs_old failed"
+           #exit 1
+       fi
+   fi
+
+
+   if [ -d  ${DOCS_DIR} ]; then
+    mv ${DOCS_DIR} ${DOCS_DIR_OLD}
     if [ $? -ne 0 ]; then
-        echo "Error: 'make install' failed"
-        exit 1
+        echo "Error: 'mv' docs to docs_old failed"
+        # exit 1
     fi
-    echo "-----------------------------------------------------------------------"
+   fi
+
+   cp -R ./${IP}/docs ${TOOLKIT_WEB_ROOT}/
+   if [ $? -ne 0 ]; then
+    echo "Error: 'cp' failed"
+    exit 1
+   fi
+
+   chgrp -R toolkit ${DOCS_DIR}
+   if [ $? -ne 0 ]; then
+    echo "Error: 'chgrp' failed"
+    exit 1
+   fi
+
+   chmod -R g+r+w+X ${DOCS_DIR}
+   if [ $? -ne 0 ]; then
+    echo "Error: 'chmod' failed"
+    exit 1
+   fi
+
+   chmod -R o+r+X ${DOCS_DIR}
+   if [ $? -ne 0 ]; then
+    echo "Error: 'chmod' failed"
+    exit 1
+   fi
+   echo "-----------------------------------------------------------------------"
 fi
 

@@ -4,7 +4,6 @@
 # 09-19-2016 chang28, the decider has decided to have a configuration file call a main_script file, this is the configuration file, all environment variables are set up here. chaos5_build_test_all_compilers.sh "Debug" ""
 
 
-HC="host-configs/surface-chaos_5_x86_64_ib-${COMPILER}.cmake"
 #BT="Debug"
 BT=$1
 BP="atk_build"
@@ -19,7 +18,12 @@ DOC=false
 INSTALL_FILES=true
 INSTALL_DOCS=false
 
+TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/toolkit"
+DOCS_DIR_OLD="${TOOLKIT_WEB_ROOT}/docs_old"
+DOCS_DIR="${TOOLKIT_WEB_ROOT}/docs"
+
 COMPILER="clang@3.5.0"
+HC="host-configs/surface-chaos_5_x86_64_ib-${COMPILER}.cmake"
 echo "Running "$COMPILER"
 ./main_script.sh
 if [ $? -ne 0 ]; then
