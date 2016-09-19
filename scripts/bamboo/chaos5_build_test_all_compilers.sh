@@ -33,7 +33,7 @@ fi
 
 OPTIONS="-ecc -hc $HOST_CONFIGURATION -bt $BUILD_TYPE -bp $BUILD_PATH -ip $INSTALL_PATH $COMP_OPT $BUILD_OPT"
 echo Running $COMPILER
-. ./main_script.sh
+. ./scripts/bamboo/main_script.sh
 if [ $? -ne 0 ]; then
     echo Error: calling  $COMPILER  failed
     exit 1
