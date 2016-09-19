@@ -16,7 +16,7 @@ OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
 BUILD=true
 TEST=true
 DOC=false
-INSTALL_FILES=false
+INSTALL_FILES=true
 INSTALL_DOCS=false
 
 COMPILER="clang@3.5.0"
@@ -26,24 +26,3 @@ if [ $? -ne 0 ]; then
     echo "Error: 'calling ' $COMPILER '  failed"
     exit 1
 fi
-
-exit
-
-    echo "Running tests..."
-    echo "-----------------------------------------------------------------------"
-    make test ARGS="-T Test -j16"
-    if [ $? -ne 0 ]; then
-        echo "Error: 'make test' failed"
-        exit 1
-    fi
-    echo "-----------------------------------------------------------------------"
-
-    echo "Installing files..."
-    echo "-----------------------------------------------------------------------"
-    make VERBOSE=1 install
-    if [ $? -ne 0 ]; then
-        echo "Error: 'make install' failed"
-        exit 1
-    fi
-    echo "-----------------------------------------------------------------------"
-
