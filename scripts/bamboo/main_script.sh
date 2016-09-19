@@ -14,11 +14,12 @@ if [ $? -ne 0 ]; then
 fi
 echo "-----------------------------------------------------------------------"
 
+cd $BP
+
 if ["$BUILD" = true]; then
-    cd $BP
     echo "Building..."
     echo "-----------------------------------------------------------------------"
-    make VERBOSE=1 -j16
+    make VERBOSE=1 -j$JOBS
     if [ $? -ne 0 ]; then
         echo "Error: 'make' failed"
         exit 1
@@ -29,7 +30,7 @@ fi
 if ["$TEST" = true]; then
     echo "Running tests..."
     echo "-----------------------------------------------------------------------"
-    make test ARGS="-T Test -j16"
+    make test ARGS="-T Test -j$JOBS"
     if [ $? -ne 0 ]; then
         echo "Error: 'make test' failed"
         exit 1
@@ -59,9 +60,9 @@ if ["$INSTALL_FILES" = true]; then
     echo "-----------------------------------------------------------------------"
 fi
 
+cd ..
 if ["$INSTALL_DOCS" = true]; then
 
-   cd ..
 
    echo "Installing docs to web space..."
 
