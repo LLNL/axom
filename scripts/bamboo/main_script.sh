@@ -3,7 +3,7 @@
 # 09-16-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug" ""
 # 09-19-2016 chang28, the decider has decided to have a configuration file call a main_script file, this is the main_script file, all environment variables are set up in the configuration file. 
 
-echo main_script version 0.9.1
+echo main_script version 0.9.3
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
 echo "Options: $OPTIONS"
@@ -16,7 +16,7 @@ echo "-----------------------------------------------------------------------"
 
 cd $BP
 
-if ["$BUILD" = true]; then
+if [ "$BUILD" = true ]; then
     echo "Building..."
     echo "-----------------------------------------------------------------------"
     make VERBOSE=1 -j$JOBS
@@ -27,7 +27,7 @@ if ["$BUILD" = true]; then
     echo "-----------------------------------------------------------------------"
 fi
 
-if ["$TEST" = true]; then
+if [ "$TEST" = true ]; then
     echo "Running tests..."
     echo "-----------------------------------------------------------------------"
     make test ARGS="-T Test -j$JOBS"
@@ -38,7 +38,7 @@ if ["$TEST" = true]; then
     echo "-----------------------------------------------------------------------"
 fi
 
-if ["$DOC" = true]; then
+if [ "$DOC" = true ]; then
     echo "Making docs..."
     echo "-----------------------------------------------------------------------"
     make VERBOSE=1 docs
@@ -49,7 +49,7 @@ if ["$DOC" = true]; then
     echo "-----------------------------------------------------------------------"
 fi
 
-if ["$INSTALL_FILES" = true]; then
+if [ "$INSTALL_FILES" = true ]; then
     echo "Installing files..."
     echo "-----------------------------------------------------------------------"
     make VERBOSE=1 install
@@ -61,7 +61,7 @@ if ["$INSTALL_FILES" = true]; then
 fi
 
 cd ..
-if ["$INSTALL_DOCS" = true]; then
+if [ "$INSTALL_DOCS" = true ]; then
 
 
    echo "Installing docs to web space..."
