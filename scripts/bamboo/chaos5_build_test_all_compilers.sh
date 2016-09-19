@@ -23,18 +23,19 @@ TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/toolkit"
 DOCS_DIR_OLD="${TOOLKIT_WEB_ROOT}/docs_old"
 DOCS_DIR="${TOOLKIT_WEB_ROOT}/docs"
 
-COMPILER="clang@3.5.0"
+for COMPILER in "clang@3.5.0" "gcc@4.7.1" "gcc@4.9.3" "intel@15.0.187" "intel@16.0.109"
+do
+   if [[ $HOSTNAME == rz* ]]; then
+       HOST_CONFIGURATION="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"
+   else
+       HOST_CONFIGURATION="host-configs/surface-chaos_5_x86_64_ib-${COMPILER}.cmake"
+   fi
 
-if [[ $HOSTNAME == rz* ]]; then
-    HOST_CONFIGURATION="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"
-else
-    HOST_CONFIGURATION="host-configs/surface-chaos_5_x86_64_ib-${COMPILER}.cmake"
-fi
-
-OPTIONS="-ecc -hc $HOST_CONFIGURATION -bt $BUILD_TYPE -bp $BUILD_PATH -ip $INSTALL_PATH $COMP_OPT $BUILD_OPT"
-echo Running $COMPILER
-. ./scripts/bamboo/main_script.sh
-if [ $? -ne 0 ]; then
-    echo Error: calling  $COMPILER  failed
-    exit 1
-fi
+   OPTIONS="-ecc -hc $HOST_CONFIGURATION -bt $BUILD_TYPE -bp $BUILD_PATH -ip $INSTALL_PATH $COMP_OPT $BUILD_OPT"
+   echo Running $COMPILER
+   . ./scripts/bamboo/main_script.sh
+   if [ $? -ne 0 ]; then
+       echo Error: calling  $COMPILER  failed
+       exit 1
+   fi
+done
