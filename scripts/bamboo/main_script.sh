@@ -3,7 +3,7 @@
 # 09-16-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug" ""
 # 09-19-2016 chang28, the decider has decided to have a configuration file call a main_script file, this is the main_script file, all environment variables are set up in the configuration file. 
 
-
+echo main_script version 0.9.1
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
 echo "Options: $OPTIONS"
