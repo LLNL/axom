@@ -14,7 +14,7 @@ if [ $? -ne 0 ]; then
 fi
 echo "-----------------------------------------------------------------------"
 
-cd $BP
+cd $BUILD_PATH
 
 if [ "$BUILD" = true ]; then
     echo "Building..."
