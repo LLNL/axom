@@ -410,6 +410,38 @@ public:
   };
 
 
+private:
+
+  enum {
+       MAX_DENSE_LEV    = 4
+      ,MAX_SPARSE16_LEV = 16 / DIM
+      ,MAX_SPARSE32_LEV = 32 / DIM
+      ,MAX_SPARSE64_LEV = 64 / DIM
+  };
+
+  typedef DenseOctreeLevel<DIM, BlockDataType, asctoolkit::common::uint16> DenseOctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,asctoolkit::common::uint16> Sparse16OctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,asctoolkit::common::uint32> Sparse32OctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,asctoolkit::common::uint64> Sparse64OctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,GridPt>                     SparsePtOctLevType;
+
+  typedef DenseOctLevType*      DenseOctLevPtr;
+  typedef Sparse16OctLevType*   Sparse16OctLevPtr;
+  typedef Sparse32OctLevType*   Sparse32OctLevPtr;
+  typedef Sparse64OctLevType*   Sparse64OctLevPtr;
+  typedef SparsePtOctLevType*   SparsePtOctLevPtr;
+
+  /**
+   * \brief Simple utility to check if a pointer of type BasePtrType
+   *        can be cast to a pointer of type DerivedPtrType
+   */ 
+  template<typename DerivedPtrType, typename BasePtrType>
+  bool checkCast(BasePtrType base) const
+  {
+      return dynamic_cast<DerivedPtrType>(base) != ATK_NULLPTR;
+  }
+
+
 public:
   /**
    * \brief Default constructor.
@@ -422,20 +454,20 @@ public:
       {
           namespace common = asctoolkit::common;
 
-          // Use FullGridOctreeLevel on first few levels to reduce allocations and fragmentation
-          // Use MortonOctreeLevel (key is smallest possible integer) on next few levels.
-          // Use a GridPointOctreeLevel (key is Point<int, DIM>, hashed using a MortonIndex)
+          // Use DenseOctreeLevel on first few levels to reduce allocations and fragmentation
+          // Use Morton-based SparseOctreeLevel (key is smallest possible integer) on next few levels.
+          // Use point bases SparseOctreeLevel (key is Point<int, DIM>, hashed using a MortonIndex)
           //    when MortonIndex requires more than 64
-          if( i <= 4 && i * DIM <= 16)
-              m_leavesLevelMap[i] = new DenseOctreeLevel<DIM, BlockDataType,common::uint16>(i);
-          else if( i * DIM <= 16)
-              m_leavesLevelMap[i] = new SparseOctreeLevel<DIM, BlockDataType,common::uint16>(i);
-          else if( i * DIM <= 32 )
-              m_leavesLevelMap[i] = new SparseOctreeLevel<DIM, BlockDataType,common::uint32>(i);
-          else if( i * DIM <= 64 )
-              m_leavesLevelMap[i] = new SparseOctreeLevel<DIM, BlockDataType,common::uint64>(i);
+          if( i <= MAX_DENSE_LEV )
+              m_leavesLevelMap[i] = new DenseOctLevType(i);
+          else if( i <= MAX_SPARSE16_LEV )
+              m_leavesLevelMap[i] = new Sparse16OctLevType(i);
+          else if( i <= MAX_SPARSE32_LEV )
+              m_leavesLevelMap[i] = new Sparse32OctLevType(i);
+          else if( i <= MAX_SPARSE64_LEV  )
+              m_leavesLevelMap[i] = new Sparse64OctLevType(i);
           else
-              m_leavesLevelMap[i] = new SparseOctreeLevel<DIM,BlockDataType, GridPt>(i);
+              m_leavesLevelMap[i] = new SparsePtOctLevType(i);
       }
 
       // Add the root block to the octree
@@ -635,7 +667,37 @@ public:
    */
   bool hasBlock(const GridPt& pt, int lev) const
   {
-      return isLevelValid(lev) && getOctreeLevel(lev).hasBlock(pt);
+      bool ret = false;
+      if(!isLevelValid(lev))
+      {
+          // No-op
+      }
+      else if( lev <= MAX_DENSE_LEV )
+      {
+          SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
+          ret = (static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
+      }
+      else if( lev <= MAX_SPARSE16_LEV)
+      {
+          SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
+          ret = (static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
+      }
+      else if( lev <= MAX_SPARSE32_LEV )
+      {
+          SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
+          ret = (static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
+      }
+      else if( lev <= MAX_SPARSE64_LEV  )
+      {
+          SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
+          ret = (static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
+      }
+      else
+      {
+          SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
+          ret = (static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
+      }
+      return ret;
   }
 
 
@@ -646,8 +708,7 @@ public:
    */
   bool hasBlock(const BlockIndex& block) const
   {
-      return isLevelValid(block.level())
-           && getOctreeLevel(block.level()).hasBlock(block.pt());
+      return this->hasBlock(block.pt(), block.level());
   }
 
   /**
@@ -698,7 +759,34 @@ public:
   {
       SLIC_ASSERT_MSG(hasBlock(block), "Block " << block << " was not a block in the tree.");
 
-      return getOctreeLevel(block.level())[ block.pt()];
+      const int& lev = block.level();
+      const GridPt& pt = block.pt();
+
+      if( lev <= MAX_DENSE_LEV )
+      {
+          SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
+          return (*static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      }
+      else if( lev <= MAX_SPARSE16_LEV)
+      {
+          SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
+          return (*static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      }
+      else if( lev <= MAX_SPARSE32_LEV )
+      {
+          SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
+          return (*static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      }
+      else if( lev <= MAX_SPARSE64_LEV  )
+      {
+          SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
+          return (*static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      }
+      else
+      {
+          SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
+          return (*static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      }
   }
 
   /**
@@ -709,7 +797,35 @@ public:
   const BlockDataType& operator[](const BlockIndex& block) const
   {
       SLIC_ASSERT_MSG(hasBlock(block), "Block " << block << " was not a block in the tree.");
-      return getOctreeLevel(block.level())[ block.pt()];
+
+      const int& lev = block.level();
+      const GridPt& pt = block.pt();
+
+      if( lev <= MAX_DENSE_LEV )
+      {
+          SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
+          return (*static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      }
+      else if( lev <= MAX_SPARSE16_LEV)
+      {
+          SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
+          return (*static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      }
+      else if( lev <= MAX_SPARSE32_LEV )
+      {
+          SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
+          return (*static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      }
+      else if( lev <= MAX_SPARSE64_LEV  )
+      {
+          SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
+          return (*static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      }
+      else
+      {
+          SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
+          return (*static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      }
   }
 
   /**
@@ -761,9 +877,37 @@ protected:
    */
   TreeBlockStatus blockStatus(const GridPt & pt, int lev) const
   {
-      return isLevelValid(lev)
-              ? getOctreeLevel(lev).blockStatus(pt)
-              : BlockNotInTree;
+      TreeBlockStatus bStat = BlockNotInTree;
+      if(!isLevelValid(lev))
+      {
+          // No-op
+      }
+      else if( lev <= MAX_DENSE_LEV )
+      {
+          SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
+          bStat = (static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
+      }
+      else if( lev <= MAX_SPARSE16_LEV)
+      {
+          SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
+          bStat = (static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
+      }
+      else if( lev <= MAX_SPARSE32_LEV )
+      {
+          SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
+          bStat = (static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
+      }
+      else if( lev <= MAX_SPARSE64_LEV  )
+      {
+          SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
+          bStat = (static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
+      }
+      else
+      {
+          SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
+          bStat = (static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
+      }
+      return bStat;
   }
 
   /**
@@ -774,9 +918,7 @@ protected:
    */
   TreeBlockStatus blockStatus(const BlockIndex& blk) const
   {
-      return isLevelValid(blk.level())
-              ? getOctreeLevel(blk.level()).blockStatus(blk.pt())
-              : BlockNotInTree;
+      return this->blockStatus(blk.pt(), blk.level());
   }
 
 
