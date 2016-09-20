@@ -22,8 +22,8 @@
  *******************************************************************************
  */
 
-#ifndef CELLTYPE_HXX_
-#define CELLTYPE_HXX_
+#ifndef CELLTYPE_HPP_
+#define CELLTYPE_HPP_
 
 namespace mint {
 
@@ -32,7 +32,7 @@ enum CellType {
   UNDEFINED = -1,
 
   VERTEX,
-  LINE,
+  LINE_SEGMENT,
 
   LINEAR_TRIANGLE,
   LINEAR_QUAD,
@@ -49,7 +49,7 @@ namespace cell {
 
 static const int vtk_types[] = {
   1,    // VERTEX          -> VTK_VERTEX
-  3,    // LINE            -> VTK_LINE
+  3,    // LINE_SEGMENT    -> VTK_LINE
   5,    // LINEAR_TRIANGLE -> VTK_TRIANGLE
   9,    // LINEAR_QUAD     -> VTK_QUAD
   10,   // LINEAR_TET      -> VTK_TET
@@ -61,7 +61,7 @@ static const int vtk_types[] = {
 
 static const int num_nodes[] = {
    1,   // VERTEX
-   2,   // LINE
+   2,   // LINE_SEGMENT
    3,   // LINEAR_TRIANGLE
    4,   // LINEAR_QUAD
    4,   // LINEAR_TET

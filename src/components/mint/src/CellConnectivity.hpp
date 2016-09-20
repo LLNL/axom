@@ -346,18 +346,6 @@ private:
   CellConnectivity& operator=(const CellConnectivity& );
 };
 
-/// \name CellConnectivity Type Definitions
-/// \brief Defined here for convenience.
-/// @{
-
-typedef CellConnectivity< int, LINE >     LineCellConnectivity;
-typedef CellConnectivity< int, LINEAR_QUAD >     QuadCellConnectivity;
-typedef CellConnectivity< int, LINEAR_TRIANGLE > TriangleCellConnectivity;
-typedef CellConnectivity< int, LINEAR_TET >      TetCellConnectivity;
-typedef CellConnectivity< int, LINEAR_HEX >      HexCellConnectivity;
-
-typedef CellConnectivity< int, MIXED  > MixedCellConnectivity;
-/// @}
 
 } /* namespace mint */
 

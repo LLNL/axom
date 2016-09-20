@@ -324,7 +324,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( int icell )
   const int cellType = m_surfaceMesh->getMeshCellType( icell );
   SLIC_ASSERT( cellType==mint::LINEAR_TRIANGLE ||
                cellType==mint::LINEAR_QUAD ||
-               cellType==mint::LINE );
+               cellType==mint::LINE_SEGMENT );
   const int nnodes = mint::cell::num_nodes[ cellType ];
 
   // Get the cell node IDs that make up the cell
