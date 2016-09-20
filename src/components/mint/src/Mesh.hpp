@@ -104,7 +104,7 @@ public:
    *****************************************************************************
    */
   inline bool hasMixedCellTypes() const
-    { return (m_type==UNSTRUCTURED_MIXED_ELEMENT_MESH)? true : false; };
+    { return (m_type==MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH)? true : false; };
 
   /*!
    *****************************************************************************

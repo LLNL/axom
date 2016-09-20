@@ -25,25 +25,27 @@
 #ifndef CELLTYPE_HPP_
 #define CELLTYPE_HPP_
 
-namespace mint {
+/*!
+ * \brief Defines the basic cell types supported by mint.
+ */
+enum  {
+  MINT_UNDEFINED_CELL = -1, //!< UNDEFINED
 
+  MINT_VERTEX,         //!< VERTEX
+  MINT_SEGMENT,        //!< LINE_SEGMENT
 
-enum CellType {
-  UNDEFINED = -1,
+  MINT_TRIANGLE,       //!< LINEAR_TRIANGLE
+  MINT_QUAD,           //!< LINEAR_QUAD
+  MINT_TET,            //!< LINEAR_TET
+  MINT_HEX,            //!< LINEAR_HEX
+  MINT_PRISM,          //!< LINEAR_PRISM
+  MINT_PYRAMID,        //!< LINEAR_PYRAMID
 
-  VERTEX,
-  LINE_SEGMENT,
-
-  LINEAR_TRIANGLE,
-  LINEAR_QUAD,
-  LINEAR_TET,
-  LINEAR_HEX,
-  LINEAR_PRISM,
-  LINEAR_PYRAMID,
-
-  MIXED,
-  NUM_CELL_TYPES
+  MINT_MIXED_CELL,     //!< MIXED
+  MINT_NUM_CELL_TYPES  //!< NUM_CELL_TYPES
 };
+
+namespace mint {
 
 namespace cell {
 

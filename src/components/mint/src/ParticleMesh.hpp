@@ -122,7 +122,7 @@ public:
    * \return cellType the cell type of the cell at the given index.
    *****************************************************************************
    */
-  virtual int getMeshCellType( int /*cellIdx*/ ) const { return VERTEX; };
+  virtual int getMeshCellType( int /*cellIdx*/ ) const { return MINT_VERTEX; };
 
   /*!
    *****************************************************************************

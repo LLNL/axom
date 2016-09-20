@@ -176,7 +176,7 @@ private:
 //------------------------------------------------------------------------------
 
 template < typename index_type >
-class CellConnectivity< index_type, MIXED >
+class CellConnectivity< index_type, MINT_MIXED_CELL >
 {
 public:
 
@@ -189,7 +189,7 @@ public:
   {
     m_offset.reserve( 101 );
     m_cell_type.reserve( 100 );
-    m_connectivity.reserve( 100*cell::num_nodes[ MIXED ] );
+    m_connectivity.reserve( 100*cell::num_nodes[ MINT_MIXED_CELL ] );
   };
 
   /*!
