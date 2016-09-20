@@ -10,7 +10,7 @@ if (ENABLE_FORTRAN)
 endif()
 
 ################################
-# Include blt
+# BLT
 ################################
 if (NOT EXISTS ${PROJECT_SOURCE_DIR}/blt/SetupBLT.cmake)
     message(FATAL_ERROR "\
@@ -21,6 +21,8 @@ git submodule update")
 
 endif()
 include(blt/SetupBLT.cmake)
+
+set(ENABLE_COPY_HEADERS ON)
 
 ################################
 # Include standard build system logic and options

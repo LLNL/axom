@@ -74,6 +74,27 @@ module quest_mod
             integer(C_INT) :: rv
         end function quest_inside
         
+        subroutine quest_mesh_min_bounds(coords) &
+                bind(C, name="QUEST_mesh_min_bounds")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE), intent(OUT) :: coords(*)
+        end subroutine quest_mesh_min_bounds
+        
+        subroutine quest_mesh_max_bounds(coords) &
+                bind(C, name="QUEST_mesh_max_bounds")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE), intent(OUT) :: coords(*)
+        end subroutine quest_mesh_max_bounds
+        
+        subroutine quest_mesh_center_of_mass(coords) &
+                bind(C, name="QUEST_mesh_center_of_mass")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE), intent(OUT) :: coords(*)
+        end subroutine quest_mesh_center_of_mass
+        
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
     end interface

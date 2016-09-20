@@ -22,6 +22,7 @@ set( quest_headers
     geom/MortonIndex.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp
+    geom/OctreeLevel.hpp
     geom/Orientation.hpp
     geom/Point.hpp
     geom/Ray.hpp
@@ -67,6 +68,7 @@ endif()
 if (ENABLE_MPI)
   list(APPEND quest_headers stl/PSTLReader.hpp)  
   list(APPEND quest_sources stl/PSTLReader.cpp)
+  list(APPEND quest_depends_on lumberjack)
 endif()
 
 if(ENABLE_SHROUD)

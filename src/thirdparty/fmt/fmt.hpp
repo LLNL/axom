@@ -33,6 +33,7 @@
 
 
 #include "fmt/format.h"
+#include "fmt/ostream.h"
 
 
 // Undef the defines above

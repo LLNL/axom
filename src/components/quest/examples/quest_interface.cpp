@@ -45,18 +45,74 @@ T getRandomDouble( T low, T high )
   return ( delta*c+low );
 }
 
+template < typename T >
+T scaleAndOffset( T rangeMin, T rangeMax, T val)
+{
+  return rangeMin + (rangeMax - rangeMin) * val;
+}
+
+
+void outputMeshStats()
+{
+    // Obtain and log the mesh bounding box
+    double bbMin[3], bbMax[3];
+    quest::mesh_min_bounds(bbMin);
+    quest::mesh_max_bounds(bbMax);
+    SLIC_INFO("Mesh bounding box: "
+            << "{ lower: (" << bbMin[0] <<"," << bbMin[1] <<","<< bbMin[2] << ")"
+            << "; upper: (" << bbMax[0] <<"," << bbMax[1] <<","<< bbMax[2] << ")}"
+            );
+
+    // Obtain and log the mesh center of mass
+    double cm[3];
+    quest::mesh_center_of_mass(cm);
+    SLIC_INFO("Mesh center of mass: "
+            << "(" << cm[0] <<"," << cm[1] <<","<< cm[2] << ")"
+            );
+}
 
 void runQuestDistance(const std::string& fileName, const CoordsVec& points)
 {
     const bool useDistance = true;
     quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, 25, 20 );
 
-    int nPoints = points.size()/3;
+    outputMeshStats();
+
+    CoordsVec coords[3];
+    {
+        int nOrigPts = points.size()/3;
+
+        double bbMin[3], bbMax[3], cMass[3];
+        quest::mesh_min_bounds(bbMin);
+        quest::mesh_max_bounds(bbMax);
+        quest::mesh_center_of_mass(cMass);
+
+        // Reserve space and add the mesh BB center and center of mass
+        for(int i=0; i< 3; ++i)
+        {
+            coords[i].reserve(nOrigPts+2);
+            coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], 0.5));
+            coords[i].push_back( scaleAndOffset(cMass[i], cMass[i], 0.5));
+        }
+
+        // Scale and add the random points from input parameter
+        for(int j=0; j< nOrigPts; ++j)
+        {
+            for(int i=0; i< 3; ++i)
+            {
+                coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
+            }
+        }
+    }
+
+
+    int nPoints = coords[0].size();
     for(int i=0; i< nPoints; ++i)
     {
-        const double x = points[i*3];
-        const double y = points[i*3+1];
-        const double z = points[i*3+2];
+        // scale points within bounding box of mesh
+        const double x = coords[0][i];
+        const double y = coords[1][i];
+        const double z = coords[2][i];
 
         const double phi = quest::distance(x,y,z);
         const int ins = quest::inside( x,y,z );
@@ -75,12 +131,43 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
     const int unusedVar = -1;
     quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, unusedVar, unusedVar);
 
-    int nPoints = points.size()/3;
+    outputMeshStats();
+
+    CoordsVec coords[3];
+    {
+        int nOrigPts = points.size()/3;
+
+        double bbMin[3], bbMax[3], cMass[3];
+        quest::mesh_min_bounds(bbMin);
+        quest::mesh_max_bounds(bbMax);
+        quest::mesh_center_of_mass(cMass);
+
+        // Reserve space and add the mesh BB center and center of mass
+        for(int i=0; i< 3; ++i)
+        {
+            coords[i].reserve(nOrigPts+2);
+            coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], 0.5));
+            coords[i].push_back( scaleAndOffset(cMass[i], cMass[i], 0.5));
+        }
+
+        // Scale and add the random points from input parameter
+        for(int j=0; j< nOrigPts; ++j)
+        {
+            for(int i=0; i< 3; ++i)
+            {
+                coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
+            }
+        }
+    }
+
+
+    int nPoints = coords[0].size();
     for(int i=0; i< nPoints; ++i)
     {
-        const double x = points[i*3];
-        const double y = points[i*3+1];
-        const double z = points[i*3+2];
+        // scale points within bounding box of mesh
+        const double x = coords[0][i];
+        const double y = coords[1][i];
+        const double z = coords[2][i];
         const int ins = quest::inside( x,y,z);
 
         SLIC_INFO("Point (" << x << ", " << y << ", " << z << ") "
@@ -122,14 +209,13 @@ int main( int argc, char**argv )
   sstream->setFormatString( fmt );
   slic::addStreamToAllMsgLevels( sstream );
 
-  // Initialize quest
-
+  // Generate the query points
   std::string fileName = std::string(argv[1]);
 
   std::srand( time(NULL) );
   const int npoints = 10;
-  const double lb = -4.5;
-  const double ub =  4.5;
+  const double lb = 0.;
+  const double ub = 1.;
   CoordsVec ptVec;
   ptVec.reserve(3*npoints);
   for ( int ipnt=0; ipnt < npoints; ++ipnt )

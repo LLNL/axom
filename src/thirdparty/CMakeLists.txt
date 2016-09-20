@@ -8,7 +8,14 @@
 # Register the fmt header-only library for string formatting 
 ############################################################
 
-set(fmtHeaders fmt/fmt.hpp fmt/fmt/format.h fmt/fmt/format.cc)
+set(fmtHeaders 
+    fmt/fmt.hpp 
+    fmt/fmt/format.h 
+    fmt/fmt/format.cc
+    fmt/fmt/ostream.h 
+    fmt/fmt/ostream.cc    
+    fmt/fmt/printf.h    
+    )
 set(fmtDest ${HEADER_INCLUDES_DIRECTORY}/fmt)
 blt_copy_headers_target(NAME        fmt
                         HEADERS     ${fmtHeaders}

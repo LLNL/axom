@@ -49,7 +49,7 @@ functions:
 - decl: void finalize()
 
 - decl: void createLogger( const std::string& name, char imask )
-- decl: void activateLogger( const std::string& name )
+- decl: bool activateLogger( const std::string& name )
 - decl: std::string getActiveLoggerName()
 - decl: void setLoggingMsgLevel( Level level )
 - decl: void logMessage( Level level, const std::string& message, const std::string& fileName, int line, bool filter )

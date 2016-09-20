@@ -92,6 +92,38 @@ int inside(double x, double y, double z=0.0);
  */
 void inside( const double* xyz, int* in, int npoints);
 
+
+
+/*!
+ *******************************************************************************
+ * \brief Gets coordinates of the minimum corner of the mesh's bounding box
+ * \param [out] coords user-supplied array to store the coordinates
+ * \pre coords must be preallocated with room for at least three doubles.
+ *******************************************************************************
+ */
+void mesh_min_bounds(double* coords);
+
+/*!
+ *******************************************************************************
+ * \brief Gets coordinates of the maximum corner of the mesh's bounding box
+ * \param [out] coords user-supplied array to store the coordinates
+ * \pre coords must be preallocated with room for at least three doubles.
+ *******************************************************************************
+ */
+void mesh_max_bounds(double* coords);
+
+/*!
+ *******************************************************************************
+ * \brief Gets coordinates of the mesh's center of mass
+ * \param [out] coords user-supplied array to store the coordinates
+ * \pre coords must be preallocated with room for at least three doubles.
+ * \note The center of mass is computed as the average vertex position
+ *******************************************************************************
+ */
+void mesh_center_of_mass(double* coords);
+
+
+
 /*!
  *******************************************************************************
  * \brief Finalize quest.
