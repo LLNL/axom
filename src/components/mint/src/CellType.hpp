@@ -22,34 +22,36 @@
  *******************************************************************************
  */
 
-#ifndef CELLTYPE_HXX_
-#define CELLTYPE_HXX_
+#ifndef CELLTYPE_HPP_
+#define CELLTYPE_HPP_
+
+/*!
+ * \brief Defines the basic cell types supported by mint.
+ */
+enum  {
+  MINT_UNDEFINED_CELL = -1, //!< UNDEFINED
+
+  MINT_VERTEX,         //!< VERTEX
+  MINT_SEGMENT,        //!< LINE_SEGMENT
+
+  MINT_TRIANGLE,       //!< LINEAR_TRIANGLE
+  MINT_QUAD,           //!< LINEAR_QUAD
+  MINT_TET,            //!< LINEAR_TET
+  MINT_HEX,            //!< LINEAR_HEX
+  MINT_PRISM,          //!< LINEAR_PRISM
+  MINT_PYRAMID,        //!< LINEAR_PYRAMID
+
+  MINT_MIXED_CELL,     //!< MIXED
+  MINT_NUM_CELL_TYPES  //!< NUM_CELL_TYPES
+};
 
 namespace mint {
-
-
-enum CellType {
-  UNDEFINED = -1,
-
-  VERTEX,
-  LINE,
-
-  LINEAR_TRIANGLE,
-  LINEAR_QUAD,
-  LINEAR_TET,
-  LINEAR_HEX,
-  LINEAR_PRISM,
-  LINEAR_PYRAMID,
-
-  MIXED,
-  NUM_CELL_TYPES
-};
 
 namespace cell {
 
 static const int vtk_types[] = {
   1,    // VERTEX          -> VTK_VERTEX
-  3,    // LINE            -> VTK_LINE
+  3,    // LINE_SEGMENT    -> VTK_LINE
   5,    // LINEAR_TRIANGLE -> VTK_TRIANGLE
   9,    // LINEAR_QUAD     -> VTK_QUAD
   10,   // LINEAR_TET      -> VTK_TET
@@ -61,7 +63,7 @@ static const int vtk_types[] = {
 
 static const int num_nodes[] = {
    1,   // VERTEX
-   2,   // LINE
+   2,   // LINE_SEGMENT
    3,   // LINEAR_TRIANGLE
    4,   // LINEAR_QUAD
    4,   // LINEAR_TET

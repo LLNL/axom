@@ -79,7 +79,7 @@ public:
      * \pre mesh != ATK_NULLPTR.
      ***************************************************************************
      */
-    void getMesh( mint::UnstructuredMesh< mint::LINEAR_TRIANGLE >* mesh );
+    void getMesh( mint::UnstructuredMesh< MINT_TRIANGLE >* mesh );
 
 
 private:

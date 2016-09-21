@@ -717,7 +717,7 @@ private:
               m_surfaceMesh = ATK_NULLPTR;
           }
 
-          typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
+          typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
           TriangleMesh* triMesh = new TriangleMesh(3);
 
           // Add vertices to the mesh (i.e. vertex positions)
@@ -731,7 +731,7 @@ private:
           for(int i=0; i< m_elementSet.size(); ++i)
           {
               const TriangleIndex* tv = &triangleVertexIndices(i)[0];
-              triMesh->insertCell(tv, mint::LINEAR_TRIANGLE, NUM_TRI_VERTS);
+              triMesh->insertCell(tv, MINT_TRIANGLE, NUM_TRI_VERTS);
           }
 
           m_surfaceMesh = triMesh;
@@ -752,7 +752,7 @@ private:
 public:
 
     typedef typename MeshWrapper::SurfaceMesh SurfaceMesh;
-    typedef mint::UnstructuredMesh<mint::MIXED> DebugMesh;
+    typedef mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
 
     typedef typename MeshWrapper::VertexIndex VertexIndex;
     typedef typename MeshWrapper::TriangleIndex TriangleIndex;
