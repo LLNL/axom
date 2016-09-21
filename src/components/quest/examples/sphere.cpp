@@ -63,7 +63,7 @@
 using namespace asctoolkit;
 
 static const int NDIMS = 3;
-typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
 struct {
  std::string fileName;

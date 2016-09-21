@@ -27,7 +27,7 @@ using asctoolkit::slic::UnitTestLogger;
 // C/C++ includes
 #include <cmath>
 
-typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 typedef mint::UniformMesh UniformMesh;
 
 // pi / 180
@@ -110,7 +110,7 @@ void getMesh( TriangleMesh* mesh )
      c[2] = phiResolution*i + /* number of poles */ 2;
      c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
      c[0] = 0;
-     mesh->insertCell( c, mint::LINEAR_TRIANGLE, 3 );
+     mesh->insertCell( c, MINT_TRIANGLE, 3 );
   } // END for
 
   // Generate mesh connectivity around south pole
@@ -119,7 +119,7 @@ void getMesh( TriangleMesh* mesh )
      c[2] = phiResolution*i + offset;
      c[1] = ( phiResolution*(i+1) % stride ) + offset;
      c[0] = 1;
-     mesh->insertCell( c, mint::LINEAR_TRIANGLE, 3 );
+     mesh->insertCell( c, MINT_TRIANGLE, 3 );
   }
 
   // Generate mesh connectivity in between poles
@@ -131,11 +131,11 @@ void getMesh( TriangleMesh* mesh )
         c[ 1 ] = c[0] + 1;
         c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
 
-        mesh->insertCell( c, mint::LINEAR_TRIANGLE, 3 );
+        mesh->insertCell( c, MINT_TRIANGLE, 3 );
 
         c[ 1 ] = c[ 2 ];
         c[ 2 ] = c[ 1 ] - 1;
-        mesh->insertCell( c, mint::LINEAR_TRIANGLE, 3 );
+        mesh->insertCell( c, MINT_TRIANGLE, 3 );
      } // END for all j
 
   } // END for all i

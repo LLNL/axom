@@ -274,7 +274,7 @@ inline void SignedDistance< NDIMS >::updateMinSquaredDistance(
 
   // TODO: for now we assume a triangle mesh, the squared_distance() must be
   // updated to support, quad, etc., punting it for now...
-  SLIC_ASSERT( cellType==mint::LINEAR_TRIANGLE );
+  SLIC_ASSERT( cellType == MINT_TRIANGLE );
 //  const int nnodes = mint::cell::num_nodes[ cellType ];
 
   // Get the cell node IDs that make up the cell
@@ -322,9 +322,9 @@ SignedDistance< NDIMS >::getCellBoundingBox( int icell )
   // Get the cell type, for now we support linear triangle,quad in 3-D and
   // line segments in 2-D.
   const int cellType = m_surfaceMesh->getMeshCellType( icell );
-  SLIC_ASSERT( cellType==mint::LINEAR_TRIANGLE ||
-               cellType==mint::LINEAR_QUAD ||
-               cellType==mint::LINE );
+  SLIC_ASSERT( cellType == MINT_TRIANGLE ||
+               cellType == MINT_QUAD ||
+               cellType == MINT_SEGMENT );
   const int nnodes = mint::cell::num_nodes[ cellType ];
 
   // Get the cell node IDs that make up the cell

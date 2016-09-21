@@ -33,7 +33,7 @@ namespace mint
 
 
 StructuredMesh::StructuredMesh() :
-    Mesh(-1,UNDEFINED_MESH,-1,-1),
+    Mesh(-1,MINT_UNDEFINED_MESH,-1,-1),
     m_extent( ATK_NULLPTR )
 {
 // TODO Auto-generated constructor stub

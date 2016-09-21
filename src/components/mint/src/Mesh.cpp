@@ -38,7 +38,7 @@ Mesh::Mesh() :
     m_ndims(2),
     m_block_idx(0),
     m_part_idx(0),
-    m_type(UNDEFINED_MESH),
+    m_type(MINT_UNDEFINED_MESH),
     m_node_data( new FieldData() ),
     m_cell_data( new FieldData() ),
     m_face_data( new FieldData() )
