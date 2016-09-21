@@ -2,8 +2,9 @@
 # 09-12-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug"
 # 09-16-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug" ""
 # 09-19-2016 chang28, the decider has decided to have a configuration file call a main_script file, this is the configuration file, all environment variables are set up here. chaos5_build_test_all_compilers.sh "Debug" ""
+# 09-21-2016 chang28, this script does not work for gcc@4.7.1 and intel@15.0.187, both require BUILD_OPT. Use chaos5_build_test_uno_compilers.sh instead.
 
-echo version 0.9.2
+echo chaos5_build_test_all_compilers.sh version 0.9.2
 #BT="Debug"
 BUILD_TYPE=$1
 BUILD_PATH="atk_build"

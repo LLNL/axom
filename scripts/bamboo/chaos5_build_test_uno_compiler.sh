@@ -4,7 +4,7 @@
 # 09-19-2016 chang28, the decider has decided to have a configuration file call a main_script file, this is the configuration file, all environment variables are set up here. chaos5_build_test_all_compilers.sh "Debug" ""
 # 09-20-2016 chang28,  chaos5_build_test_uno_compiler.sh "Debug" "" "clang@3.5.0"
 
-echo version 0.9.2
+echo chaos5_build_and_test_uno_compiler version 0.9.9
 #BT="Debug"
 BUILD_TYPE=$1
 BUILD_PATH="atk_build"
