@@ -48,3 +48,40 @@ foreach(test ${quest_tests})
     )
 endforeach()
 
+
+# Regression tests for quest signed distance and InOutOctree point containment queries
+if (ENABLE_MPI AND ENABLE_SIDRE)
+
+    blt_add_executable(
+        NAME quest_regression
+        SOURCES quest_regression.cpp
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON ${quest_tests_depends} conduit sidre spio
+    )
+    set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
+    
+    # Note: The following are all valid regression tests.
+    #       Most are commented out to avoid excessive test runtimes, especially in debug mode.
+    set(quest_regression_datasets
+        sphere
+        #naca0012
+        #plane_simp
+        #plane_binary
+    )
+    set(quest_regression_resolutions
+        16
+        #32
+    )
+    
+    # Add resolution tests for each dataset and resolution
+    foreach(dataset ${quest_regression_datasets})
+        foreach(res ${quest_regression_resolutions})
+            blt_add_test(
+                NAME quest_regression_${dataset}_${res}
+                COMMAND quest_regression 
+                        --mesh ${quest_data_dir}/${dataset}.stl 
+                        --baseline ${quest_data_dir}/${dataset}_${res}_baseline.root
+            )
+        endforeach()
+    endforeach()
+endif()
