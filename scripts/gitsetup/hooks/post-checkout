@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+##-----------------------------------------------------------------------
+## post-checkout hook to automatically update submodules. 
+##
+## This hook is executed after every `git checkout` or `git clone` 
+## commands. It ensures that the submodules are up-to-date with
+## respect to the current HEAD. 
+##-----------------------------------------------------------------------
+reset=$(tput sgr0)
+bold=$(tput bold)
+
+echo "$bold updating submodules...$reset"
+git submodule update --recursive
+echo "$bold[DONE]$reset"
