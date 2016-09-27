@@ -59,6 +59,25 @@ using namespace asctoolkit;
 typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
 //------------------------------------------------------------------------------
+void write_point( const quest::Point< double, 3 >& pt,
+                  const std::string& fileName )
+{
+  std::ofstream ofs;
+  ofs.open( fileName.c_str() );
+  ofs << "# vtk DataFile Version 3.0\n";
+  ofs << "Point " << fileName << "\n";
+  ofs << "ASCII\n";
+  ofs << "DATASET UNSTRUCTURED_GRID\n";
+  ofs << "POINTS 1 double\n";
+  ofs << pt[0] << " " << pt[1] << " " << pt[2] << std::endl;
+  ofs << "CELLS 1 2\n";
+  ofs << "1 0\n";
+  ofs << "CELL_TYPES 1\n";
+  ofs << "1\n";
+  ofs.close();
+}
+
+//------------------------------------------------------------------------------
 void write_vtk( mint::Mesh* mesh, const std::string& fileName )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
@@ -190,6 +209,47 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
 }
 
 //------------------------------------------------------------------------------
+void write_triangles( mint::Mesh* mesh, const int* cells, int ncells,
+                      const std::string& fileName )
+{
+  SLIC_ASSERT( mesh != ATK_NULLPTR );
+
+  TriangleMesh* subset = new TriangleMesh(3);
+  SLIC_ASSERT( subset->getMeshType() == mesh->getMeshType() );
+
+  int cellIds[3];
+  quest::Point< double, 3 > n1;
+  quest::Point< double, 3 > n2;
+  quest::Point< double, 3 > n3;
+
+  int icount = 0;
+  int new_cell[3];
+
+  for ( int i=0; i < ncells; ++i ) {
+
+     const int cellIdx = cells[ i ];
+     mesh->getMeshCell( cellIdx, cellIds );
+
+     mesh->getMeshNode( cellIds[0], n1.data() );
+     mesh->getMeshNode( cellIds[1], n2.data() );
+     mesh->getMeshNode( cellIds[2], n3.data() );
+
+     subset->insertNode( n1[0], n1[1], n1[2] );
+     new_cell[0] = icount; ++icount;
+     subset->insertNode( n2[0], n2[1], n2[2] );
+     new_cell[1] = icount; ++icount;
+     subset->insertNode( n3[0], n3[1], n3[2] );
+     new_cell[2] = icount; ++icount;
+
+     subset->insertCell( new_cell, MINT_TRIANGLE,3 );
+  }
+
+  write_vtk( subset, fileName );
+
+  delete subset;
+}
+
+//------------------------------------------------------------------------------
 quest::BoundingBox< double,3 > compute_bounds( mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
@@ -217,7 +277,7 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
   SLIC_ASSERT( umesh != ATK_NULLPTR );
 
-  quest::SignedDistance< 3 > signedDistance( surface_mesh, 25, 10 );
+  quest::SignedDistance< 3 > signedDistance( surface_mesh, 25, 15);
 
 #ifdef ATK_DEBUG
   // write the bucket tree to a file
@@ -249,15 +309,66 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
   SLIC_ASSERT( PD != ATK_NULLPTR );
 
   PD->addField( new mint::FieldVariable< double >("phi",nnodes) );
-  double* phi = PD->getField( "phi" )->getDoublePtr();
+  PD->addField( new mint::FieldVariable< int >("nbuckets",nnodes) );
+  PD->addField( new mint::FieldVariable< int >("ntriangles", nnodes) );
+
+  double* phi     = PD->getField( "phi" )->getDoublePtr();
+  int*  nbuckets  = PD->getField( "nbuckets" )->getIntPtr();
+  int* ntriangles = PD->getField( "ntriangles" )->getIntPtr();
+
   SLIC_ASSERT( phi != ATK_NULLPTR );
+  SLIC_ASSERT( nbuckets != ATK_NULLPTR );
+  SLIC_ASSERT( ntriangles != ATK_NULLPTR );
 
   for ( int inode=0; inode < nnodes; ++inode ) {
 
       quest::Point< double,3 > pt;
       umesh->getMeshNode( inode, pt.data() );
 
-      phi[ inode ] = signedDistance.computeDistance( pt );
+      std::vector< int > buckets;
+      std::vector< int > triangles;
+      std::vector< int > my_triangles;
+      triangles.clear();
+      buckets.clear();
+
+      quest::Point< double,3 > closest_pt;
+      phi[ inode ] = signedDistance.computeDistance( pt,
+                                                     buckets,
+                                                     triangles,
+                                                     my_triangles,
+                                                     closest_pt );
+
+      nbuckets[ inode ]   = static_cast< int >( buckets.size() );
+      ntriangles[ inode ] = static_cast< int >( triangles.size() );
+
+#ifdef ATK_DEBUG
+      std::ostringstream oss;
+      oss << "BINS_" << inode << ".vtk";
+      signedDistance.getBVHTree()->writeLegacyVtkFile(
+            oss.str(), &buckets[0], buckets.size() );
+
+      oss.str("");
+      oss.clear();
+      oss << "POINT_" << inode << ".vtk";
+      write_point( pt, oss.str() );
+
+      oss.str("");
+      oss.clear();
+      oss << "CLOSEST_POINT_" << inode << ".vtk";
+      write_point( closest_pt, oss.str() );
+
+      oss.str("");
+      oss.clear( );
+      oss << "TRIANGLES_" << inode << ".vtk";
+      write_triangles( surface_mesh, &triangles[0],
+                       ntriangles[inode], oss.str() );
+
+      oss.str("");
+      oss.clear();
+      oss << "MY_TRIANGLES_" << inode << ".vtk";
+      write_triangles( surface_mesh, &my_triangles[0], my_triangles.size(),
+                       oss.str() );
+#endif
 
   } // END for all nodes
 
@@ -342,7 +453,7 @@ int main( int argc, char** argv )
   }
 
   quest::BoundingBox< double,3 > queryBounds = meshBB;
-  queryBounds.scale(2.);
+  queryBounds.expand( 10 );
 
   double h[3];
   const quest::Vector< double,3 >& bbDiff = queryBounds.range();
