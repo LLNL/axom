@@ -542,9 +542,22 @@ namespace {
    * \param [in] Aj first corner of triangle 2
    * \param [in] Bj second corner of triangle 2
    * \param [in] Cj third corner of triangle 2
-   * \return status true iff there is an interval overlap, false otherwise
+   * \return status true iff triangles 1 and 2 intersect.
    *
-   * I don't see how this does what it claims to do.
+   * This function implements Equation 1 from Devillers and Guigue (2002), p.8
+   * using a hint from p.10 that greatly simplifies the computation.  The
+   * triangles have been carefully rotated so Ai is across plane j from Bi and
+   * Ci, and Aj is across plane i from Bj and Cj.  Previous tests have ruled
+   * out cases where planes i and j are parallel or identical, as well as cases
+   * where triangle 1 lies entirely off to one side of triangle 2 (and vice
+   * versa).
+   *
+   * The core of the method examines the line l0 defined by the intersection of
+   * planes i and j.  Assume triangles 1 and 2 both intersect this line, which
+   * they must if they intersect each other.  Then the intersection of triangle
+   * 1 with l0 is a segment s1, and the intersection of triangle 2 with l0 is
+   * a segment s2.  If s1 and s2 overlap, triangles 1 and 2 intersect.  Hence
+   * the name "intervalCheck".
    *
    * Helper function for T-T intersect.
    *****************************************************************************
@@ -568,7 +581,7 @@ namespace {
 
   /*!
    *****************************************************************************
-   * \brief Returns whether te two triangles are coplanar
+   * \brief Returns whether the two triangles are coplanar
    * \param [in] Ai first corner of triangle 1
    * \param [in] Bi second corner of triangle 1
    * \param [in] Ci third corner of triangle 1
@@ -638,13 +651,22 @@ namespace {
   /*!
    *****************************************************************************
    * \brief Worker function testing for 3D triangle intersection.
-   * \param [in] a user supplied Point<T, 2> Ai
-   * \param [in] a user supplied Point<T, 2> Bi
-   * \param [in] a user supplied Point<T, 2> Ci
-   * \param [in] a user supplied Point<T, 2> Aj
-   * \param [in] a user supplied Point<T, 2> Bj
-   * \param [in] a user supplied Point<T, 2> Cj
+   * \param [in] Ai first corner of triangle 1
+   * \param [in] Bi second corner of triangle 1
+   * \param [in] Ci third corner of triangle 1
+   * \param [in] Aj first corner of triangle 2
+   * \param [in] Bj second corner of triangle 2
+   * \param [in] Cj third corner of triangle 2
+   * \param [in] dAj Dot product of normal with segment from t1 to Aj
+   * \param [in] dBj Dot product of normal with segment from t1 to Bj
+   * \param [in] dCj Dot product of normal with segment from t1 to Cj
+   * \param [in] normal Normal vector of triangle 1
    * \return status true iff there is an interval overlap, false otherwise
+   *
+   * Bi and Ci both lie in the negative half-space defined by t2; Ai lies in
+   * t2's plane or in its positive half-space.
+   * The sign of dAj, dBj, and dCj indicates whether the associated vertex
+   * of t2 lies in the positive or negative half-space defined by t1.
    *
    * Helper function for TT-intersect
    *****************************************************************************
@@ -755,15 +777,9 @@ bool intersect( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
 
   Vector3 t2Normal = Vector3::cross_product(Vector3(t2.C(), t2.A()),
 					    Vector3(t2.C(), t2.B()));
-
   double dAi = (Vector3(t2.C(), t1.A())).dot(t2Normal);
   double dBi = (Vector3(t2.C(),t1.B())).dot(t2Normal);
-
   double dCi = (Vector3(t2.C(),t1.C())).dot(t2Normal);
-
-  Vector3 testing = Vector3::cross_product(Vector3(t2.B(), t2.C()),
-					   Vector3(t2.B(), t2.A()));
-
   if (signMatch(dAi, dBi, dCi)) {
     return false;
   }
@@ -786,16 +802,16 @@ bool intersect( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
     side of the plane formed by the other triangle.
 
 
-    Step 3: We apply a circular permutation of tiangle 1 such that its
+    Step 3: We apply a circular permutation of triangle 1 such that its
     first point is the only point on the triangle that lies on one side of
     the plane formed by triangle 2 (with the other 2 on the other side),
     while handling the special case of one of the vertices lying on the
     plane formed by triangle 2.  We then perform a swap operation on the
     second and third points of triangle 2 to map the first point of
-    triangle 1 to the postitive halfspace formed by triangle 2's plane.
+    triangle 1 to the positive halfspace formed by triangle 2's plane.
   */
 
-  // compare the signs to create a conveniant permutation of the vertices
+  // compare the signs to create a convenient permutation of the vertices
   // of triangle 1
 
   if (isGt(dAi, 0.0)) {
