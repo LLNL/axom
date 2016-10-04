@@ -104,7 +104,7 @@ public:
    *****************************************************************************
    */
   inline bool hasMixedCellTypes() const
-    { return mesh_properties::mixed_celltype[ m_type ]; };
+    { return (m_type==MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH)? true : false; };
 
   /*!
    *****************************************************************************

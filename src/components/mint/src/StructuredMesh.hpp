@@ -108,7 +108,7 @@ public:
    *****************************************************************************
    */
   virtual int getMeshCellType( int ATK_NOT_USED(cellIdx) ) const
-      { return ( (m_ndims==3)? LINEAR_HEX : LINEAR_QUAD ); };
+      { return ( (m_ndims==3)? MINT_HEX : MINT_QUAD ); };
 
   /*!
    *****************************************************************************

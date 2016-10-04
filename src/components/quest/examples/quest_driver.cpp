@@ -56,7 +56,7 @@
 
 using namespace asctoolkit;
 
-typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
 //------------------------------------------------------------------------------
 void write_vtk( mint::Mesh* mesh, const std::string& fileName )
