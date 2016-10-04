@@ -82,6 +82,20 @@ int main(int argc, char** argv)
     child->createViewString("word1", "world");
 
     writer.writeGroupToRootFile(extra, root_name);
+
+    DataGroup * path_test = dsextra->getRoot()->createGroup("path_test");
+
+    path_test->createViewScalar<int>("path_val", 9);
+    path_test->createViewString("word2", "again");
+
+    writer.writeGroupToRootFileAtPath(path_test, root_name, "extra/child");
+
+    DataView * view_test = dsextra->getRoot()->createViewString("word3", "new_view");
+
+    writer.writeViewToRootFileAtPath(view_test,
+                                     root_name,
+                                     "extra/child/path_test");
+
     delete dsextra;
   }
   MPI_Barrier(MPI_COMM_WORLD);

@@ -463,7 +463,86 @@ void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
   SLIC_ASSERT(errv >= 0); 
 }
 
+/*
+ *************************************************************************
+ *
+ * Write a group to an existing path inside a root file
+ *
+ *************************************************************************
+ */
 
+void IOManager::writeGroupToRootFileAtPath(sidre::DataGroup * group,
+                                           const std::string& file_name,
+                                           const std::string& group_path)
+{
+  hid_t root_file_id = H5Fopen(file_name.c_str(),
+                               H5F_ACC_RDWR,
+                               H5P_DEFAULT);
+
+  SLIC_ASSERT(root_file_id >= 0);
+
+  hid_t path_id = H5Gopen(root_file_id, group_path.c_str(), 0);
+
+  SLIC_ASSERT(path_id >= 0);
+
+  hid_t group_id = H5Gcreate2(path_id,
+                              group->getName().c_str(),
+                              H5P_DEFAULT,
+                              H5P_DEFAULT,
+                              H5P_DEFAULT);
+
+  SLIC_ASSERT(group_id >= 0);
+
+  conduit::Node data_holder;
+  group->createNativeLayout(data_holder);
+
+  conduit::relay::io::hdf5_write(data_holder, group_id);
+
+  herr_t errv = H5Gclose(group_id);
+  SLIC_ASSERT(errv >= 0);
+
+  errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
+  SLIC_ASSERT(errv >= 0);
+
+  errv =  H5Fclose(root_file_id);
+  SLIC_ASSERT(errv >= 0);
+
+}
+
+/*
+ *************************************************************************
+ *
+ * Write a view to an existing path inside a root file
+ *
+ *************************************************************************
+ */
+
+void IOManager::writeViewToRootFileAtPath(sidre::DataView * view,
+                                          const std::string& file_name,
+                                          const std::string& group_path)
+{
+  hid_t root_file_id = H5Fopen(file_name.c_str(),
+                               H5F_ACC_RDWR,
+                               H5P_DEFAULT);
+
+  SLIC_ASSERT(root_file_id >= 0);
+
+  hid_t path_id = H5Gopen(root_file_id, group_path.c_str(), 0);
+
+  SLIC_ASSERT(path_id >= 0);
+
+  conduit::Node data_holder;
+  view->createNativeLayout(data_holder[view->getName()]);
+
+  conduit::relay::io::hdf5_write(data_holder, path_id);
+
+  herr_t errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
+  SLIC_ASSERT(errv >= 0);
+
+  errv =  H5Fclose(root_file_id);
+  SLIC_ASSERT(errv >= 0);
+
+}
 
 
 
