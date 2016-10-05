@@ -24,6 +24,8 @@ on the Livermore Computing CZ Atlassian Space. The repository is the central
 interaction hub for CS Toolkit code development. 
 
 
+.. _gitflow-label:
+
 ======================================================
 Gitflow Branching Model
 ======================================================
@@ -168,6 +170,8 @@ By following these conventions, it is fairly easy to communicate intent of
 version changes to users and it should be straightforward for users
 to manage dependencies on the CS Toolkit.
 
+
+.. _review-label:
 
 ======================================================
 Code Reviews and Acceptance

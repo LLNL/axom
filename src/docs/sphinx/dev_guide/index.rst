@@ -36,8 +36,8 @@ When changes are made, these guidelines should be updated accordingly.
    :maxdepth: 3
 
    dev_model
-   dev_tools
    testing
+   dev_tools
    coding_guidelines
 
 

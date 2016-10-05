@@ -15,5 +15,5 @@
 CS Toolkit Testing
 *********************************
 
-Fill this section in... 
+.. note :: Fill this section in... 
 
