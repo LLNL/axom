@@ -33,8 +33,30 @@ namespace quest
  *
  * \param [in] P the query point
  * \param [in] tri user-supplied triangle.
- *
+ * \param [out] loc int pointer to store location of closest point (optional).
  * \return cp the closest point from a point P and a triangle.
+ *
+ * \note If the optional int pointer is supplied for `loc`, the method returns
+ *  the location of the closest point, which is illustrated in the schematic
+ *  diagram below and encoded as follows:
+ * <ul>
+ *  <li> loc \f$ \in [0,2] \f$, loc corresponds to the triangle node index </li>
+ *  <li> loc \f$ \in [-3,-1] \f$, abs(loc) corresponds to an edge </li>
+ *  <li> loc >= 3, loc is on a triangle face </li>
+ * </ul>
+ *
+ * \verbatim
+ *
+ *            2
+ *           /\
+ *    (-3)--/  \--(-2)
+ *         /    \
+ *        /_ _ _ \
+ *       0   |    1
+ *           |
+ *         (-1)
+ *
+ * \endverbatim
  *
  * \pre NDIMS==2 || NDIMS==3
  *
@@ -44,7 +66,8 @@ namespace quest
  */
 template < typename T, int NDIMS >
 inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
-                                       const Triangle< T,NDIMS >& tri )
+                                       const Triangle< T,NDIMS >& tri,
+                                       int* loc=ATK_NULLPTR )
 {
   // Check if P in vertex region outside A
   Vector< T, NDIMS > ab( tri.A(),tri.B() );
@@ -55,6 +78,9 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   if ( d1 <= 0.0f && d2 <= 0.0f ) {
 
       // A is the closest point
+      if ( loc != ATK_NULLPTR)
+        *loc = 0;
+
       return ( tri.A() );
 
   } // END if
@@ -67,7 +93,10 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   if ( d3 >= 0.0f && d4 <= d3 ) {
 
       // B is the closest point
-      return ( tri.B() );
+    if ( loc != ATK_NULLPTR)
+      *loc = 1;
+
+    return ( tri.B() );
 
   } // END if
 
@@ -83,6 +112,9 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
     double y = tri.A()[1] + v_ab[1];
     double z = (NDIMS==3)? tri.A()[2] + v_ab[2] : 0.0;
 
+    if ( loc != ATK_NULLPTR )
+      *loc = -1;
+
     return ( Point<T,NDIMS>::make_point( x,y,z ) );
   } // END if
 
@@ -94,6 +126,9 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   if ( d6 >= 0.0f && d5 <= d6 ) {
 
      // C is the closest point
+     if ( loc != ATK_NULLPTR )
+       *loc = 2;
+
      return ( tri.C() );
   }
 
@@ -108,6 +143,9 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
     double x = tri.A()[0] + w_ac[0];
     double y = tri.A()[1] + w_ac[1];
     double z = (NDIMS==3)? tri.A()[2] + w_ac[2] : 0.0;
+
+    if ( loc != ATK_NULLPTR)
+      *loc = -3;
 
     return ( Point< T,NDIMS >::make_point( x,y,z ) );
   } // END if
@@ -125,6 +163,9 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
     double y = tri.B()[1] + w_bc[1];
     double z = (NDIMS==3)? tri.B()[2] + w_bc[2] : 0.0;
 
+    if ( loc != ATK_NULLPTR )
+      *loc = -2;
+
     return ( Point< T,NDIMS >::make_point( x,y,z ) );
   } // END if
 
@@ -138,6 +179,9 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   double x = tri.A()[0] + N[0];
   double y = tri.A()[1] + N[1];
   double z = (NDIMS==3)? tri.A()[2] + N[2] : 0.0;
+
+  if ( loc != ATK_NULLPTR )
+    *loc = Triangle< T,NDIMS >::NUM_TRI_VERTS;
 
   return ( Point< T,NDIMS >::make_point( x,y,z ) );
 }
