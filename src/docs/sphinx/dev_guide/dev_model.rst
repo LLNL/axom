@@ -18,10 +18,29 @@ employs a variety of tools to manage its workflow and software development.
 Details about how the team uses these tools and information about getting 
 started with them can be found in :ref:`tooleco-label`.
 
-The CS Toolkit Git repository lives in a 
-`Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_ 
-on the Livermore Computing CZ Atlassian Space. The repository is the central 
-interaction hub for CS Toolkit code development. 
+
+===================
+First Things First
+===================
+
+The CS Toolkit team uses a variety of means for communication and interaction.
+
+The main interaction hub for developers is the Atlassian tool suite on the
+Livermore Computing Collaboration Zone (CZ). These tools can be accessed through
+the `MyLC Portal <https://lc.llnl.gov>`_.  Access to our Atlassian project 
+spaces requires membership in one or both of the LC groups 'toolkit' and 
+'toolkitd'. The first is for users and the second is for developers -- 
+team members are in both. If you're not in these groups, send email to 
+'asctoolkit-dev@llnl.gov' and request to be added.
+
+We maintain two email lists: 'asctoolkit-dev@llnl.gov' 
+(mainly for developer communication) and 'asctoolkit-users@llnl.gov' 
+(for developer-user interaction). Go to the 
+`LLNL E-Mail List Manager Site <https://lists.llnl.gov>`_ to subscribe to
+these lists.
+
+We also have a chat room on Cisco Jabber called 'CS Toolkit Dev'. It's open
+to anyone. You just have to log on to Jabber and join.
 
 
 .. _gitflow-label:
@@ -30,9 +49,13 @@ interaction hub for CS Toolkit code development.
 Gitflow Branching Model
 ======================================================
 
+The CS Toolkit Git repository lives in a 
+`Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_ 
+on the Livermore Computing CZ Atlassian Space. The repository is the central 
+interaction hub for CS Toolkit code development. 
+
 The CS Toolkit team follows the 'Gitflow' branch development model, which is
-summarized here. See the `Atlassian Gitflow Description <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_ 
-for more details.
+summarized here. See the `Atlassian Gitflow Description <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_ for more details.
 
 Gitflow is a branching model centered around software 
 releases. It is a simple workflow that makes clear which branches correspond
@@ -53,8 +76,9 @@ repository regularly for backup. Feature branches are created off the
 develop branch. When a feature is complete, a pull request is submitted
 for review by other team members. When all issues arising in a review 
 have been addressed and reviewers have approved the pull request, the 
-feature branch is merged into develop. **Feature 
-branches never interact directly with the master branch.**
+feature branch is merged into develop. 
+
+.. important:: **Feature branches never interact directly with the master branch.**
 
 When the team has decided that enough features, bug fixes, etc. have been 
 merged into develop (for example, all items identified for a release have
@@ -253,7 +277,7 @@ Beyond build and test correctness, we also want to ensure that code follows
 common conventions before acceptance. The following list summarizes concerns 
 we want to identify during pull request reviews and resolve before a pull 
 request is approved for merging. The list contains references to details 
-in the coding guidelines.
+in the coding guidelines section.
 
  #. A new file or directory must be located in in the proper location; e.g.,
     in the same directory with existing files supporting related functionality.

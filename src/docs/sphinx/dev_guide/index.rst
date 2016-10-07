@@ -12,22 +12,22 @@
 CS Toolkit Developer Guide
 =========================================================
 
-This guide describes key aspects of the software development process and
-provides a set of coding guidelines for the CS Toolkit project. The guide
-is meant for all team members and contributors, especially for "on-boarding"
-new team members and contributors. The aim is that all code in the CS Tookit
-is developed following similar practices to ensure that it is robust, 
-consistent, easily understood and used, and tested and documented well. 
-Anyone who contributes to the CS Toolkit should be aware of and follow 
-these guidelines. 
+This guide describes key aspects of the software development process for
+the CS Toolkit project and provides a set of coding guidelines used by
+the team. The guide is meant for all team members and contributors, and
+is especially helpful for "on-boarding" new team members and contributors. 
+The aim is that all code in the CS Tookit is developed following similar 
+practices to ensure that it is robust, consistent, easily understood and used, 
+and tested and documented well. Anyone who contributes to the CS Toolkit 
+should be aware of and follow these guidelines. 
 
-The guidelines should not be viewed as static; they should evolve with
-project needs and improved when there are better ways of doing things. 
-Changes should be agreed to by the core development team after assessing their
-merits based on the teams collective professional judgment. Also, the 
-benefits of uniformity should be balanced with allowances for individual 
-stylistic preferences, which may be superior in certain situations. 
-When changes are made, these guidelines should be updated accordingly. 
+The guidelines should not be viewed as fixed for all time. They should evolve 
+with project needs and be improved when there are better ways of doing things. 
+Changes should be agreed to by team members after assessing their merits using 
+their collective professional judgment. When changes are made, this guide
+should be updated accordingly. Also, the benefits of uniformity should be 
+balanced with allowances for individual preferences, which may be 
+superior in certain situations. 
 
 
 **Contents:**
@@ -36,7 +36,7 @@ When changes are made, these guidelines should be updated accordingly.
    :maxdepth: 3
 
    dev_model
-   testing
+   config_build_test
    dev_tools
    coding_guidelines
 
