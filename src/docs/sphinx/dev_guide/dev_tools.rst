@@ -20,14 +20,14 @@ three main tenets:
 
   * Use robust, commonly-used tools - don't invent something if we don't need to
   * Use the tools in ways that are easy for non-experts
-  * Strive for automation and reporoducibility
+  * Strive for automation and reproducibility
 
 The main tools we use are listed in this section. Details about how we use 
 them and helpful information about getting started are provided 
 in the sections that follow.
 
 * We use our `Confluence project space <https://lc.llnl.gov/confluence/display/ASCT/ASC+Simulation+CS+Toolkit+Home>`_ for team discussion, planning, maintaining meeting notes, etc.
-* Our Git repository houses the Toolkit source code, build configurations, scipts, test suites, documentation, etc. The repository lives in our `Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_
+* Our Git repository houses the Toolkit source code, build configurations, scripts, test suites, documentation, etc. The repository lives in our `Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_
 * We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for issue tracking.
 * We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for continuous integration and automated testing.
 
@@ -93,14 +93,14 @@ space. This is done by typing::
 
 Important notes:
 
-  * You don't need to remember ths URL for the Toolkit repo above. It can be 
+  * You don't need to remember the URL for the Toolkit repo above. It can be 
     found by going to the CS Toolkit repo on our Bitbucket project and 
     clicking on the 'Clone' Action button that appears when you hover your 
     mouse cursor over the ellipses on the top left of the web page.
   * The '--recursive' argument above is needed to pull the BLT build system into
-    your local copy of the repo. It is a Git submodule of the Toolkit.
+    your local copy of the repo. It is a Git sub-module of the Toolkit.
 
-After cloning, enter the top-level Tookit directory and run the development
+After cloning, enter the top-level Toolkit directory and run the development
 setup script we provide to ensure that your Git environment is configured 
 properly and client-side hooks we use are installed; i.e.,::
 
@@ -115,7 +115,8 @@ Performing topic branch development
 It is worth emphasizing a fundamental principle of the Gitflow development
 model that we described in :ref:`gitflow-label`
 
-.. important:: **We never work directly on the develop or master branches. We use topic branches instead.**
+.. important:: **We never work directly on the develop or master branches. 
+               We use topic branches instead.**
 
 When we refer to a *topic branch*, it could be a *feature branch*, 
 a *bugfix branch*, etc. The basic workflow for performing development 
@@ -228,7 +229,7 @@ conflicts.
 
 **Step 4.** When you are ready to merge your topic branch to the develop 
 branch, you must initiate a pull request in Bitbucket. This is done by going 
-into the Toolkit BitBucket project, selecting your branch, and clicking the 
+into the Toolkit Bitbucket project, selecting your branch, and clicking the 
 pull request button -- make sure you select the correct destination branch. 
 The default destination branch in our project is set up to be the develop 
 branch. So, in most cases, you won't have to do anything special. 
@@ -263,7 +264,10 @@ the previous step. After all conflicts are resolved, run the 'commit' and
 
 Lastly, complete the merge in Bitbucket by clicking the merge button.
 
-.. important:: **To keep things tidy, delete your topic branch in Bitbucket after it is merged if you no longer need it for further development. Bitbucket also provides an option to do this before doing the merge.**
+.. important:: **To keep things tidy, please delete your topic branch in 
+               Bitbucket after it is merged if you no longer need it for 
+               further development. Bitbucket also provides an option to 
+               do this before doing the merge.**
 
 Checking out an existing branch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -296,11 +300,132 @@ Here is a concrete example::
 JIRA Issue Workflow
 --------------------------------------
 
-We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for issue tracking.
+We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for 
+issue tracking. There you can create issues, edit them, comment on them,
+check issue status, and search for issues in various ways, including setting 
+up filters to customize your searches.
+
+Issue states
+^^^^^^^^^^^^^
+
+We have customized our issue workflow to make it simple and easy to understand.
+Specifically, each issue has three possible states:
+
+  * **Open.** Every issues starts out as an open issue. An open issue can 
+    be assigned to someone or unassigned. When an issue is assigned, this 
+    means that the assignee owns the issue and is responsible for working 
+    on it. An open issue that is unassigned has not been been discussed or 
+    reviewed, or no decision to act on it has been made. Typically, an open 
+    issue means that it is not being worked on.
+  * **In Progress.** An issue in progress is one that is actively being 
+    worked on.
+  * **Closed.** When an issue is closed, work on it has been completed, or 
+    a decision has been made that it will not be addressed.
+
+An open issue can transition to either in progress (work has started on it)
+or closed. An in progress issue can transition to either open (work on it
+has stopped, but it is not finished) or closed. Finally, a closed issue
+can be re-opened, which changes its state to open.
+
+Creating a new issue
+^^^^^^^^^^^^^^^^^^^^^
+
+To create a new issue, click the 'Create' button at the top of the CS Toolkit
+JIRA project page and enter information in the issue fields. Filling in the
+fileds properly greatly helps other team members search through project issues
+to find what they are looking for. Note that issue fields marked with a red 
+asterisk are required. The others are not required, but may be used to include 
+helpful information. The main issues we use regularly are:
+
+  * **Project.** The CS Toolkit will show up as the default. You shouldn't need
+    to change this.
+  * **Issue Type.** We use only three issue types: *Bug*, *New Feature*, and
+    *Task*. A bug is something broken that needs to be fixed. A new feature
+    is something to add that increases functionality, enhances an interface,
+    etc. Task is a "catch-all" issue type for any other issue.
+  * **Summary.** Provide a short descriptive summary. A good (and brief)
+    summary makes it easy to scan a list of issues to find one you are 
+    looking for.
+  * **Priority.** Select an appropriate issue priority to impart its level 
+    of importance or urgency. Clicking on the question mark to the right of
+    the priority field provides a description of each option.
+  * **Components.** Each issue is labeled with the Toolkit component it 
+    applies to. Other "component" labels indicate build system issues, 
+    documentation issues, etc. 
+  * **Assignee.** Unless you are certain which team member should be assigned
+    the issue, choose 'Unassigned'. This will indicate that the issue requires
+    discussion and review before it is assigned. The default assignee is the
+    owner of the component you chose earlier if you make no choice.
+  * **Reporter.** Unless you explicitly enter someone in this field, you, as
+    the issue creator, will be the reporter. This is the correct choice in
+    almost all cases.
+  * **Description.** The description field should be used to include important
+    details about the issue that will help the developer who will work on it.
+
+Other fields that appear may be used also if you think they will help
+describe the issue. However, the team seldom uses fields apart from the list
+above.
+
+Starting and stopping work on an issue
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When you begin work on an issue, you should open it, make sure it is 
+assigned to you and click the 'Start Progress' button at the top of the issue.
+This changes its status to *In progress*.
+
+If there is still work to do on the issue, but you will stop working on it 
+for a while, you can click the 'Stop Progress' button at the top of the
+issue. This changes its status back to *Open*.
+
+Closing an issue
+^^^^^^^^^^^^^^^^^
+
+When work is completed on an issue (which includes testing, adding
+new documentation if needed, etc.), or the issue will not be addressed,
+it should be closed. To close an issue, click the 'Close' button and select 
+the appropriate issue resolution. There are two options: *Done* and *Won't Fix*.
+'Done' means that the issue is resolved. 'Won't Fix' means that the issue will 
+not be addressed for some reason.
+
+When closing an issue, adding information to the 'Comment' field may be 
+helpful. For example, when an issue is closed as 'Won't Fix', it is helpful to
+enter a brief explanation as to why this is so.
+
+.. note :: BLT is supported as a standalone product and used by other 
+           software projects.
+
+Issue assignee
+^^^^^^^^^^^^^^^
+
+Note that an assigned issue can be assigned to someone else to work on it.
+An assigned issue can also be set back to 'Unassigned' if it needs further 
+discussion by the team.
 
 
 --------------------------------------
-Bamboo Continous Integration
+Bamboo Continuous Integration
 --------------------------------------
 
-We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for continuous integration and automated testing.
+We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for 
+continuous integration and automated testing. We maintain a collection of
+test plans for performing automated and manual builds, tests, and other
+code health monitoring tasks.
+
+Automated plans
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note :: **Fill in this section with a description of these plans: what is
+           built, tested, other tasks performed, when they are run, etc.**
+
+Manually running a plan on a branch
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note :: **Fill in this section with a description of what can be run 
+           manually, and how to do it.**
+
+Restricted Zone (RE) Bamboo Project
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note :: **Fill in this section with a description of this when it is
+           set up.**
+
