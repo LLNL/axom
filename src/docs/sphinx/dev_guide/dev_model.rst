@@ -13,10 +13,11 @@
 CS Toolkit Development
 *********************************
 
-The CS Toolkit team uses an agile, sprint-based development process and 
-employs a variety of tools to manage its workflow and software development. 
-Details about how the team uses these tools and information about getting 
-started with them can be found in :ref:`tooleco-label`.
+The CS Toolkit team uses an agile, sprint-based development process where
+we target a set of development tasks for each release. We also employ a 
+variety of tools to manage our workflow and software development. This guide
+contains descriptions of our processes and information about how we use tools 
+and getting started with them.
 
 
 ===================

@@ -29,6 +29,13 @@ should be updated accordingly. Also, the benefits of uniformity should be
 balanced with allowances for individual preferences, which may be 
 superior in certain situations. 
 
+.. note :: This guide is generated using Sphinx and is written in the 
+           *reStructuredText* markup language. The document source lives
+           in the CS Toolkit source code repository. If you need to edit 
+           the guide and/or need more information about how to do this, please
+           see the 
+           `Sphinx Guide <http://www.sphinx-doc.org/en/stable/index.html>`_. 
+
 
 **Contents:**
 
