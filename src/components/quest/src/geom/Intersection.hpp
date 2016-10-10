@@ -9,15 +9,6 @@
  */
 
 
-/*!
- *******************************************************************************
- * \file Intersection.hpp
- *
- * \date Jan 5, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef INTERSECTION_HPP_
 #define INTERSECTION_HPP_
 

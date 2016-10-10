@@ -9,19 +9,12 @@
  */
 
 
-/*
- * $Id$
- */
-
 /*!
  *******************************************************************************
  * \file
  *
  * \brief Consists of a set of templated (overloaded) routines used to calculate
  *  the orientation of a given point to another geometric entity.
- *
- * \date Dec 17, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
  *
  *******************************************************************************
  */
