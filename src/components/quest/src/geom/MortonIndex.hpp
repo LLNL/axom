@@ -1,4 +1,12 @@
 
+/**
+ * \file
+ * \brief Classes and functions to convert between points on an integer grid and their unidimensional MortonIndex.
+ *
+ * Also has some utility functions for 'mortonizing' and 'demortonizing' points and a PointHash functor class
+ * that can be used as a std::hash for unordered_maps
+ */
+
 #ifndef MORTON_INDEX_HXX_
 #define MORTON_INDEX_HXX_
 
@@ -16,15 +24,6 @@
 #endif
 
 #include <limits>           // for numeric_limits
-
-/**
- * \file
- * \brief Classes and functions to convert between points on an integer grid and their unidimensional MortonIndex.
- *
- * Also has some utility functions for 'mortonizing' and 'demortonizing' points and a PointHash functor class
- * that can be used as a std::hash for unordered_maps
- */
-
 
 namespace {
     /**
@@ -55,6 +54,7 @@ namespace quest
     /**
      * \class
      * \brief Base class for Dimension independent Morton indexing
+     *
      * \note Uses CRTP to access dimension-dependent data from the derived class
      * \note This class only works for integral CoordTypes
      */
@@ -79,6 +79,7 @@ namespace quest
 
         /**
          * \brief Expands bits in bitwise representation of an integral type and zero-fills the holes
+         *
          * \param [in] x The integer type that we are expanding
          * \return A zero-filled expanded MortonIndex
          * In dimension D, it adds (D-1) zeros between each bit,
@@ -96,6 +97,7 @@ namespace quest
 
         /**
          * \brief Contracts bits in bitwise representation of x
+         *
          * \param [in] x The Morton index that we are contracting
          * \return A contracted MortonIndex
          * In dimension D, it retains every (D-1)\f$^th\f$ bit,
@@ -134,6 +136,7 @@ namespace quest
     /**
      * \class
      * \brief Helper class for MortonIndexing of a point's coordinate
+     *
      * The Morton index of a point interleaves the bits of its coordinates
      * (with the least significant bit coming from the x-coordinate
      * E.g. if we have a point in 2D (6,3) == (0b0110, 0b0011) in its binary representation.
@@ -148,6 +151,7 @@ namespace quest
     /**
      * \class
      * \brief A 2D specialization of Mortonizer to convert between 2D integer Grid points
+     *
      * and MortonIndexes where a grid point is a point whose coordinates are integral types
      * Expand bits will add a 0 between every bit and contract bits will remove every other bit
      * \see Mortonizer
@@ -214,6 +218,7 @@ namespace quest
 
         /**
          * \brief A function to convert a 2D point to a Morton index
+         *
          * \see mortonize(CoordType, CoordType)
          */
         static inline MortonIndexType mortonize(const Point<CoordType,NDIM> & pt)
@@ -242,6 +247,7 @@ namespace quest
 
         /**
          * \brief A function to convert a Morton index back to a 2D point
+         *
          * \see demortonize(MortonIndex,CoordType,CoordType)
          */
         static inline Point<CoordType,NDIM> demortonize(MortonIndexType morton)
@@ -261,6 +267,7 @@ namespace quest
     /**
      * \class
      * \brief A 3D specialization of Mortonizer to convert between 3D integer grid points
+     *
      * and MortonIndexes where a grid point is a point whose coordinates are integral types
      * Expand bits will add a 0 between every bit and contract bits will remove every other bit
      * \see Mortonizer
@@ -330,6 +337,7 @@ namespace quest
 
         /**
          * \brief A function to convert a 3D point to a Morton index
+         *
          * \see mortonize(CoordType, CoordType, CoordType)
          */
         static inline MortonIndexType mortonize(const Point<CoordType,NDIM> & pt)
@@ -362,6 +370,7 @@ namespace quest
 
         /**
          * \brief A function to convert a Morton index back to a 3D point
+         *
          * \see demortonize(MortonIndex,CoordType,CoordType,CoordType)
          */
         static inline Point<CoordType,NDIM> demortonize(MortonIndexType morton)
@@ -420,6 +429,7 @@ namespace quest
 
     /**
      * \brief A helper function to convert a point directly to a MortonIndex
+     *
      * \return The Morton index of the point
      */
     template<typename MortonIndexType, typename CoordType, int DIM>
@@ -430,6 +440,7 @@ namespace quest
 
     /**
      * \brief A helper function to convert a MortonIndex back to a point
+     *
      * \return The demortonized Point
      */
     template<typename CoordType, int DIM, typename MortonIndexType>
@@ -452,6 +463,7 @@ namespace quest
 
         /**
          * \brief Mortonizes a coordinate (viewed as a 1D point)
+         *
          * \note This is a no-op and is provided for genericity in point dimension
          * \param [in] coord The coordinate of the
          * \returns The morton index of the 1D point
@@ -463,6 +475,7 @@ namespace quest
 
         /**
          * \brief Mortonizes a 1D point
+         *
          * \note This is a no-op and is provided for genericity in point dimension
          * \param [in] pt The 1D point
          * \returns The morton index of the point
@@ -474,6 +487,7 @@ namespace quest
 
         /**
          * \brief Mortonizes a 2D point
+         *
          * \param [in] pt The 2D point
          * \returns The morton index of the point
          */
@@ -484,6 +498,7 @@ namespace quest
 
         /**
          * \brief Mortonizes a 3D point
+         *
          * \param [in] pt The 3D point
          * \returns The morton index of the point
          */
@@ -494,6 +509,7 @@ namespace quest
 
         /**
          * \brief Mortonizes a 4D point
+         *
          * \param [in] pt The 4D point
          * \returns A morton index of the point
          */

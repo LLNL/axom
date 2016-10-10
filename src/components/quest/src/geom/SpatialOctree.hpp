@@ -42,6 +42,7 @@ public:
 public:
     /**
      * \brief Construct a spatial octree from a spatial bounding box
+     *
      * \param [in] bb The spatial extent to be indexed by the octree
      */
     SpatialOctree(const GeometricBoundingBox& bb)
@@ -106,6 +107,7 @@ public:
 
     /**
      * \brief Finds the index of the leaf block covering the query point pt
+     *
      * \param [in] pt The query point in space
      * \param [in] startingLevel (Optional) starting level for the query
      * \pre pt must be in the bounding box of the octree (i.e. boundingBox.contains(pt) == true )
@@ -152,6 +154,7 @@ public:
 
     /**
      * \brief Utility function to find the quantized grid cell at level lev for query point pt
+     *
      * \param [in] pt The point at which we are querying.
      * \param [in] lev The level or resolution.
      * \pre \f$ 0 \le lev < octree.maxLeafLevel() \f$

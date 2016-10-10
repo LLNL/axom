@@ -8,14 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/*!
- *******************************************************************************
- * \file
- *
- * \date Jan 23, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
 
 #ifndef BVHTREE_HPP_
 #define BVHTREE_HPP_

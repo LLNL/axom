@@ -1,3 +1,7 @@
+/**
+ * \file
+ * \brief Defines templated OctreeBase class and its inner class BlockIndex
+ */
 
 #ifndef OCTREE_BASE__HXX_
 #define OCTREE_BASE__HXX_
@@ -21,17 +25,12 @@
 #include "slam/Map.hpp"
 
 
-/**
- * \file
- * \brief Defines templated OctreeBase class and its inner class BlockIndex
- */
-
-
 namespace quest
 {
 
   /**
    * \brief Minimal implementation of a BlockDataType for an OctreeBase.
+   *
    * BlockData is default constructible and provides the following functions:
    *    isLeaf(), setInternal(), setNonBlock() and isBlock().
    * \note This implementation uses ones-complement to differentiate between leaf and internal blocks.
@@ -180,24 +179,28 @@ public:
 
       /**
        * \brief Accessor for the BlockIndex instance's point
+       *
        * \returns const reference to the instance's point
        */
       const GridPt& pt() const  { return m_pt; }
 
       /**
        * \brief Accessor for the BlockIndex instance's point
+       *
        * \returns reference to the instance's point
        */
       GridPt& pt()        { return m_pt; }
 
       /**
        * \brief Accessor for the BlockIndex instance's level
+       *
        * \returns const reference to the instance's level
        */
       const int& level() const  { return m_lev; }
 
       /**
        * \brief Accessor for the BlockIndex instance's level
+       *
        * \returns reference to the instance's level
        */
       int& level()        { return m_lev; }
@@ -223,6 +226,7 @@ public:
 
         /**
          * \brief Returns the grid point of the block's child at index childIndex
+         *
          * \param [in] childIndex The index of the child whose grid point we are finding
          * \pre \f$ 0 \le childIndex < \f$ Octree::NUM_CHILDREN
          */
@@ -259,6 +263,7 @@ public:
 
         /**
          * \brief Returns the parent BlockIndex of this block
+         *
          * \note Returns an invalid BlockIndex if we attempt to find
          *       the parent of the root block
          */
@@ -269,6 +274,7 @@ public:
 
         /**
          * \brief Returns the child BlockIndex of this block
+         *
          * \param [in] childIndex The index of the child whose grid point we are finding
          * \pre \f$ 0 \le childIndex < \f$ Octree::NUM_CHILDREN
          */
@@ -280,6 +286,7 @@ public:
 
         /**
          * \brief Returns the face neighbor grid point of this block
+         *
          * \pre 0 <= neighborIndex < 2 * DIM
          * \note The face neighbors indices cycle through the dimensions, two per dimension,
          *   e.g. Neighbor 0 is at offset (-1, 0,0,...,0), neighbor 1 is at offset (1,0,0,..,0)
@@ -323,6 +330,7 @@ public:
 
         /**
          * \brief Checks the validity of the index.
+         *
          * A block index is valid when its level is \f$ \ge 0 \f$
          * and  it is inBounds
          * \returns true if the block index is valid, else false
@@ -335,6 +343,7 @@ public:
 
         /**
         * \brief Checks the if the block is in bounds for the level.
+        *
         * A block index is in bounds when each coordinate p[i]
         * of its grid point is \f$ 0 \le p[i] < 2^{level()} \f$.
         *
@@ -351,6 +360,7 @@ public:
 
         /**
          * \brief Predicate to determine if the block instance is a descendant of ancestor block
+         *
          * \param ancestor The potential ancestor of the block
          * \note A block is an ancestor of another block if neither block is an invalid_index()
          *      and the block's are equivalent after 0 or more calls to BlockIndex::parent()
@@ -389,6 +399,7 @@ public:
 
     /**
      * \brief Helper function to generate an invalid block index.
+     *
      * \return A new BlockIndex instance blk
      * \post  blk.isValid() will return false
      */
@@ -433,6 +444,7 @@ private:
 
   /**
    * \brief Simple utility to check if a pointer of type BasePtrType
+   *
    *        can be cast to a pointer of type DerivedPtrType
    */ 
   template<typename DerivedPtrType, typename BasePtrType>
@@ -444,7 +456,6 @@ private:
 
 public:
   /**
-   * \brief Default constructor.
    * Sets up an octree containing only the root block
    */
   OctreeBase()
@@ -502,6 +513,7 @@ public:
 
   /**
    * \brief Utility function to find the number of (possible) grid cells at a given level or resolution
+   *
    * \param [in] level The level or resolution.
    * \pre \f$ 0 \le lev
    */
@@ -512,6 +524,7 @@ public:
 
   /**
    * \brief Finds the highest coordinate value at a given level or resolution
+   *
    * \param [in] level The level or resolution.
    * \pre \f$ 0 \le lev
    */
@@ -538,6 +551,7 @@ public:
 
   /**
    * \brief Finds the grid index and level of the current octree block's parent.
+   *
    * \note The root level is 0 and its children are at level 1
    * \note The root node has no parent.  The returned level will be '-1'
    * \param [in] pt The grid index of the block whose parent we want to find.
@@ -551,6 +565,7 @@ public:
 
   /**
    * \brief Finds the BlockIndex of the given block's parent.
+   *
    * \param [in] block The block whose parent we want to find
    * \return The BlockIndex of the parent of the provided octree leaf.
    */
@@ -562,6 +577,7 @@ public:
 
   /**
    * \brief Finds the BlockIndex of the given block's child
+   *
    * \param [in] pt The grid index of the block whose child we want to find.
    * \param [in] level The level of the block whose child we want to find.
    * \param [in] childIndex The index of the child to find
@@ -575,6 +591,7 @@ public:
 
   /**
    * \brief Finds the BlockIndex of the given block's child.
+   *
    * \param [in] block The block whose child we want to find
    * \param [in] childIndex The index of the child to find
    * \pre \f$ 0 \le childIndex < 2^{DIM} \f$
@@ -607,6 +624,7 @@ public:
 
   /**
    * \brief Predicate to determine if level lev is in the range
+   *
    * \note lev is in range if 0 <= lev <= maxLeafLevel()
    */
   bool isLevelValid(int lev) const
@@ -616,6 +634,7 @@ public:
 
   /**
    * \brief Determine whether the octree contains a leaf block associated with grid point pt at level lev
+   *
    * \param [in] pt The grid point to check
    * \param [in] lev The level of the grid point
    * \returns true if the associated block is a leaf in the octree, false otherwise
@@ -627,6 +646,7 @@ public:
 
   /**
    * \brief Determine whether the octree contains a leaf block associated with this BlockIndex
+   *
    * \param [in] block The BlockIndex of the tree to check
    * \returns true if the associated block is a leaf in the octree, false otherwise
    */
@@ -639,6 +659,7 @@ public:
 
   /**
    * \brief Determine whether the octree contains an internal block associated with grid point pt at level lev
+   *
    * \param [in] pt The grid point to check
    * \param [in] lev The level of the grid point
    * \returns true if the associated block is an internal block of the octree, false otherwise
@@ -650,6 +671,7 @@ public:
 
   /**
    * \brief Determine whether the octree contains an internal block associated with this BlockIndex
+   *
    * \param [in] block The BlockIndex of the tree to check
    * \returns true if the associated block is an internal block of the octree, false otherwise
    */
@@ -661,6 +683,7 @@ public:
 
   /**
    * \brief Determine whether the octree contains a block (internal or leaf) associated with grid point pt at level lev
+   *
    * \param [in] pt The grid point to check
    * \param [in] lev The level of the grid point
    * \returns true if the associated block is in the octree, false otherwise
@@ -703,6 +726,7 @@ public:
 
   /**
    * \brief Determine whether the octree contains a block (internal or leaf) associated with this BlockIndex
+   *
    * \param [in] block The BlockIndex of the tree to check
    * \returns true if the associated block is a block of the octree, false otherwise
    */
@@ -713,6 +737,7 @@ public:
 
   /**
    * \brief Determine whether the octree block associated with grid point pt and level lev is a possible block in this octree
+   *
    * \note A block index is out of bounds if its level is not in the tree, or its grid point is out of the
    * range of possible grid points for its level
    */
@@ -724,6 +749,7 @@ public:
 
   /**
    * \brief Determine whether the octree block associated with BlockIndex is a possible block in this octree
+   *
    * \note A block index is out of bounds if its level is not in the tree, or its grid point is out of the
    * range of possible grid points for its level
    */
@@ -734,6 +760,7 @@ public:
 
   /**
    * \brief Refines the given leaf block in the octree
+   *
    * Marks leafBlock as internal (non-leaf) and adds its children to the tree
    * \pre leafBlock is a valid leaf block in the octree.
    */
@@ -752,6 +779,7 @@ public:
 
   /**
    * \brief Accessor to the data associated with block
+   *
    * \param block A block (internal or leaf) in the tree
    * \pre block is a leaf in the tree
    */
@@ -791,6 +819,7 @@ public:
 
   /**
    * \brief Const accessor to the data associated with block
+   *
    * \param block A block (internal or leaf) in the tree
    * \pre block is a leaf in the tree
    */
@@ -830,6 +859,7 @@ public:
 
   /**
    * \brief Finds the finest octree leaf covering BlockIndex blk
+   *
    * \param blk A BlockIndex, not necessarily in the octree
    * \param checkInBounds A flag to determine if we should check that
    *        the block lies within the octree bounds (default=true)
@@ -870,6 +900,7 @@ protected:
 
   /**
    * \brief Helper function to determine the status of a BlockIndex within an octree instance
+   *
    * \note This function is meant to help with implementing basic octree functionality
    *       and is not meant to be exposed in the public API
    * \param pt The grid point of the block index that we are testing
@@ -912,6 +943,7 @@ protected:
 
   /**
    * \brief Helper function to determine the status of a BlockIndex within an octree instance
+   *
    * \note This function is meant to help with implementing basic octree functionality
    *       and is not meant to be exposed in the public API
    * \param blk The block index we are testing

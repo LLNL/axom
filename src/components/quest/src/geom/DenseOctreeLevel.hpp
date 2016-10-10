@@ -47,6 +47,7 @@ namespace quest
 
         /**
          * \brief Concrete instance of the BlockIteratorHelper class defined in the OctreeLevel base class.
+         *
          * \note ParenType must be either BlockIteratorHelper or ConstBlockIteratorHelper,
          *       both are defined in the OctreeLevel base class
          */
@@ -155,6 +156,7 @@ namespace quest
 
         /**
          * \brief Factory function to return a GridBlockIterHelper for this level
+         *
          *  \param begin A boolean to determine if this is to be a begin (true) or end (false) iterator
          */
         BaseBlockIteratorHelper* getIteratorHelper(bool begin)
@@ -164,6 +166,7 @@ namespace quest
 
         /**
          * \brief Factory function to return a ConstGridBlockIterHelper for this level
+         *
          *  \param begin A boolean to determine if this is to be a begin (true) or end (false) iterator
          */
         ConstBaseBlockIteratorHelper* getIteratorHelper(bool begin) const
@@ -183,6 +186,7 @@ namespace quest
 
         /**
          * \brief Adds all children of the given grid point to the octree level
+         *
          * \param [in] pt The gridPoint associated with the parent of the children that are being added
          * \pre pt must be in bounds for the level
          * \sa inBounds()
@@ -272,6 +276,7 @@ namespace quest
 
         /**
          * \brief Helper function to determine the status of an octree block within this octree level
+         *
          * \param pt The grid point of the block index that we are testing
          * \return The status of the grid point pt (e.g. LeafBlock, InternalBlock, ...)
          */

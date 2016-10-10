@@ -92,9 +92,9 @@ namespace quest
     /**
      * \class
      * \brief A representation of a sparse OctreeLevel.
-     *  It is a concrete implementation of an OctreeLevel
      *
-     *  It associates data with its Octree block using a hash map
+     *  A SparseOctreeLevel is a concrete implementation of an OctreeLevel
+     *  that associates data with its Octree block using a hash map
      *  whose key type is of type PointRepresentationType
      *  (either an integer grid point hashed by a Morton index,
      *   or an Morton index (unsigned integer of a specified bitwidth)
@@ -195,6 +195,7 @@ namespace quest
 
         /**
          * \brief Factory function to return a SparseBlockIterHelper for this level
+         *
          * \param begin A boolean to determine if this is to be a begin (true) or end (false) iterator
          */
         BaseBlockIteratorHelper* getIteratorHelper(bool begin)
@@ -204,6 +205,7 @@ namespace quest
 
         /**
          * \brief Factory function to return a ConstSparseBlockIterHelper for this level
+         *
          * \param begin A boolean to determine if this is to be a begin (true) or end (false) iterator
          */
         ConstBaseBlockIteratorHelper* getIteratorHelper(bool begin) const
@@ -224,6 +226,7 @@ namespace quest
 
         /**
          * \brief Adds all children of the given grid point to the octree level
+         *
          * \param [in] pt The gridPoint associated with the parent of the children that are being added
          * \pre pt must be in bounds for the level
          * \sa inBounds()
@@ -313,6 +316,7 @@ namespace quest
 
         /**
          * \brief Helper function to determine the status of an octree block within this octree level
+         *
          * \param pt The grid point of the block index that we are testing
          * \return The status of the grid point pt (e.g. LeafBlock, InternalBlock, ...)
          */

@@ -17,6 +17,7 @@ namespace quest
     /**
      * \class
      * \brief Helper class to handle subindexing of block data within octree siblings
+     *
      * \note A brood is a collection of siblings that are generated simultaneously.
      * \note This class converts a grid point at the given level into a brood index of the point.
      *       The base brood is the MortonIndex of the grid point's octree parent
@@ -33,6 +34,7 @@ namespace quest
 
         /**
         * \brief Constructor for a brood offset relative to the given grid point pt
+        *
         * \param [in] pt The grid point within the octree level
         */
         Brood(const GridPt& pt)
@@ -44,6 +46,7 @@ namespace quest
 
         /**
          * \brief Accessor for the base point of the entire brood
+         *
          * \return MortonIndex of the base point
          */
         const MortonIndexType& base() const { return m_broodIdx; }
@@ -65,6 +68,7 @@ namespace quest
     /**
      * \class
      * \brief Template specialization of Brood which does not use MortonIndexing
+     *
      * \note A brood is a collection of siblings that are generated simultaneously.
      * \note This class converts a grid point at the given level into a brood index of the point.
      *       The base brood point has the coordinates of the grid point's octree parent
@@ -78,6 +82,7 @@ namespace quest
 
         /**
         * \brief Constructor for a brood offset relative to the given grid point pt
+        *
         * \param [in] pt The grid point within the octree level
         */
         Brood(const GridPt& pt)

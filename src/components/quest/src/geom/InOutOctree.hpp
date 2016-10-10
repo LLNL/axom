@@ -1,3 +1,9 @@
+/**
+ * \file
+ *
+ * \brief Defines an InOutOctree for containment queries on a surface.
+ */
+
 #ifndef INOUT_OCTREE__HXX_
 #define INOUT_OCTREE__HXX_
 
@@ -60,15 +66,15 @@
 #endif
 
 
-
-/**
- * \file
- *
- * \brief Defines an InOutOctree for containment queries on a surface.
- */
 namespace quest
 {
 
+    /**
+     * \brief Compact BlockDataType for an InOutOctree
+     *
+     * Storage requirement is one integer per block, which can implicitly determine
+     * the color of a block, and for gray block, the index of the associated triangles
+     */
     class InOutBlockData
     {
         // Some internal constants for keeping tracking of the associated block
@@ -88,6 +94,7 @@ namespace quest
     public:
         /**
          * \brief Default constructor for an InOutBlockData
+         *
          * \note Default constructed InOutBlockData instances are assumed to be leaf blocks
          */
         InOutBlockData()
@@ -110,23 +117,46 @@ namespace quest
 
     public:     // API for a BlockData
 
+        /**
+         * \brief Predicate to determine if the associated block is a leaf
+         *
+         * \return True, if the block is a leaf, False otherwise
+         */
         bool isLeaf() const { return m_idx > INTERNAL_BLOCK; }
 
+        /** \brief Marks the associated block as internal */
         void setInternal()  { m_idx = INTERNAL_BLOCK; }
 
+        /** \brief Marks the associated block as a non-block (i.e. not in the tree) */
         void setNonBlock()  { m_idx = NON_BLOCK; }
 
+        /**
+         * \brief Predicate to determine if the associated block is in the tree
+         *
+         * \return True, if the block is in the tree (internal or leaf), False otherwise
+         */
         bool isBlock() const { return m_idx != NON_BLOCK; }
 
     public:     // Other functions
 
+        /**
+         * Clears the data associated with the block
+         * \note This function is currently a no-op
+         * */
         void clear()
         {
             // No-op for now -- eventually, will need to do something about the index
         }
 
+        /**
+         * Predicate to determine if the associated block has data (i.e. it is a gray block)
+         * \return True, if the block has data, False otherwise
+         * */
         bool hasData() const { return m_idx >= 0; }
 
+        /**
+         * Returns the index of the data associated with the block
+         */
         const int& dataIndex() const
         {
             //SLIC_ASSERT(hasData());
@@ -135,6 +165,7 @@ namespace quest
 
         /**
          * \brief Sets the block as gray, and provides the index of its associated data
+         *
          * \param idx The index of the data associated with the gray leaf block
          * \pre The block must be a leaf block
          * \pre The passed in index, idx, must be a non-negative integer
@@ -146,23 +177,27 @@ namespace quest
             m_idx = idx;
         }
 
+        /** Marks the block as Black (the entire domain is inside the surface) */
         void setBlack()
         {
             SLIC_ASSERT( isLeaf() );
             m_idx = LEAF_BLOCK_BLACK;
         }
 
+        /** Marks the block as Black (the entire domain is outside the surface) */
         void setWhite()
         {
             SLIC_ASSERT( isLeaf() );
             m_idx = LEAF_BLOCK_WHITE;
         }
 
+        /** Sets the data associated with the block to the given index idx */
         void setData(int idx)
         {
             m_idx = idx;
         }
 
+        /** Marks the block as uncolored */
         void setUncoloredLeaf()
         {
             SLIC_ASSERT( isLeaf() );
@@ -171,6 +206,7 @@ namespace quest
 
         /**
          * \brief Find the 'color' of this LeafBlock
+         *
          * 'Black' indicates that the entire block is within the surface
          * 'White' indicates that the entire block is outside the surface
          * 'Gray' indicates that the block intersects the surface geometry
@@ -192,11 +228,16 @@ namespace quest
             return Undetermined;
         }
 
+        /** Predicate to determine if the associated block has a color
+         * \return True if the block has a color, false otherwise
+         * \sa color()
+         */
         bool isColored() const
         {
             return color() != Undetermined;
         }
 
+        /** Friend function to compare equality of two InOutBlockData instances  */
         friend bool operator==(const InOutBlockData& lhs, const InOutBlockData& rhs)
         {
             return lhs.m_idx == rhs.m_idx;
@@ -205,6 +246,11 @@ namespace quest
         int m_idx;
     };
 
+    /**
+     * Free function to print an InOutBlockData to an output stream
+     * \param os The output stream to write to
+     * \param iob The InOUtBlockData instance that we are writing
+     */
     std::ostream& operator<<(std::ostream& os, const InOutBlockData& iob)
     {
         os << "InOutBlockData{"
@@ -249,9 +295,9 @@ namespace quest
     }
 
     /**
-     * \brief DataType for InOut octree leaf nodes
-     * Contains a reference to a vertex ID in the mesh
-     * (and has a unique ID from its parent class)
+     * \brief Verbose BlockDataType for an InOutOctree
+     *
+     * \note Used when generating the octree.
      */
     class DynamicGrayBlockData
     {
@@ -271,6 +317,7 @@ namespace quest
 
         /**
          * \brief Constructor for an InOutLeafData
+         *
          * \param vInd The index of a vertex (optional; default is to not set a vertex)
          */
         DynamicGrayBlockData(VertexIndex vInd, bool isLeaf): m_vertIndex(vInd), m_isLeaf(isLeaf) {}
@@ -326,7 +373,11 @@ namespace quest
 
 
     public: // Functions related to whether this is a leaf
+
+        /** Predicate to determine if the associated block is a leaf in the octree */
         bool isLeaf() const { return m_isLeaf; }
+
+        /** Sets a flag to determine whether the associated block is a leaf or internal */
         void setLeafFlag(bool isLeaf) { m_isLeaf = isLeaf; }
 
     public: // Functions related to the associated vertex
@@ -336,42 +387,39 @@ namespace quest
          */
         bool hasVertex() const { return m_vertIndex >= 0; }
 
-        /**
-         * \brief Sets the vertex associated with this leaf
-         */
+        /** Sets the vertex associated with this leaf */
         void setVertex(VertexIndex vInd) { m_vertIndex = vInd; }
 
+        /** Clears the associated vertex index */
         void clearVertex() { m_vertIndex = NO_VERTEX; }
 
-        /**
-         * \brief Accessor for the index of the vertex associated with this leaf
-         */
+        /** Accessor for the index of the vertex associated with this leaf */
         VertexIndex& vertexIndex() { return m_vertIndex; }
 
-        /**
-         * \brief Constant accessor for the index of the vertex associated with this leaf
-         */
+        /** Constant accessor for the index of the vertex associated with this leaf */
         const VertexIndex& vertexIndex() const { return m_vertIndex; }
 
 
     public: // Functions related to the associated triangles
-        /**
-         * \brief Check whether this Leaf has any associated triangles
-         */
+        /** Check whether this Leaf has any associated triangles */
         bool hasTriangles() const { return !m_tris.empty(); }
 
+        /**
+         * Reserves space for a given number of triangles
+         * \param count The number of triangles for which to reserve space
+         */
         void reserveTriangles(int count) { m_tris.reserve(count); }
 
-        /**
-         * \brief Find the number of triangles associated with this leaf
-         */
+        /** Find the number of triangles associated with this leaf */
         int numTriangles() const { return m_tris.size(); }
 
-
-
+        /** Associates the surface triangle with the given index with this block */
         void addTriangle(TriangleIndex tInd) { m_tris.push_back(tInd); }
 
+        /** Returns a const reference to the list of triangle indexes associated with the block */
         const TriangleList& triangles() const { return m_tris; }
+
+        /** Returns a reference to the list of triangle indexes associated with the block */
         TriangleList& triangles() { return m_tris;}
 
     private:
@@ -380,6 +428,9 @@ namespace quest
         bool m_isLeaf;
     };
 
+    /**
+     * Free function to print a DynamicGrayBlockData instance to an output stream
+     */
     std::ostream& operator<<(std::ostream& os, const DynamicGrayBlockData& bData)
     {
         os << "DynamicGrayBlockData{";
@@ -409,9 +460,10 @@ namespace quest
 
 /**
  * \class
- * \brief Handles generation of the spatial index on a surface mesh
- * for containment queries -- given an arbitrary point in space,
- * is it inside or outside of the surface
+ * \brief Handles generation of a point containment spatial index over a surface mesh
+ *
+ * The point containment queries determines whether a given arbitrary point in space
+ * lies inside or outside of the surface
  */
 template<int DIM>
 class InOutOctree : public SpatialOctree<DIM, InOutBlockData>
@@ -482,12 +534,19 @@ private:
             , m_meshWasReindexed(false)
         {}
 
+        /** Const accessor to the vertex set of the wrapped surface mesh */
         const MeshVertexSet& vertexSet() const { return m_vertexSet; }
+
+        /** Const accessor to the element set of the wrapped surface mesh */
         const MeshElementSet& elementSet() const { return m_elementSet; }
 
+        /** Accessor to the vertex set of the wrapped surface mesh */
         MeshVertexSet& vertexSet() { return m_vertexSet; }
+
+        /** Accessor to the element set of the wrapped surface mesh */
         MeshElementSet& elementSet() { return m_elementSet; }
 
+        /** Accessor for the number of vertices in the wrapped surface mesh */
         int numMeshVertices() const
         {
             if(m_meshWasReindexed)
@@ -496,6 +555,7 @@ private:
                 return m_surfaceMesh->getMeshNumberOfNodes();
         }
 
+        /** Accessor for the number of elements in the wrapped surface mesh */
         int numMeshElements() const
         {
             if(m_meshWasReindexed)
@@ -504,6 +564,7 @@ private:
                 return m_surfaceMesh->getMeshNumberOfCells();
         }
 
+        /** Predicate to determine if the wrapped surface mesh has been reindexed */
         bool meshWasReindexed() const { return m_meshWasReindexed;}
 
 
@@ -525,6 +586,7 @@ private:
             }
         }
 
+        /** Returns the spatial position of the vertex with index idx of the wrapped surface mesh */
         const SpacePt& vertexPosition(VertexIndex idx) const
         {
             return m_vertexPositions[idx];
@@ -532,8 +594,8 @@ private:
 
 
         /**
-         * Utility function to get the indices of the boundary vertices of a triangle
-         * \param idx The index of a triangle within the surface mesh
+         * Returns the indices of the boundary vertices of the element of the wrapped surface mesh with the given index
+         * \param idx The index of an element within the surface mesh
          */
         TriVertIndices triangleVertexIndices(TriangleIndex idx) const
         {
@@ -542,6 +604,7 @@ private:
 
         /**
          * \brief Helper function to compute the bounding box of a triangle
+         *
          * \param idx The triangle's index within the surface mesh
          */
         GeometricBoundingBox triangleBoundingBox(TriangleIndex idx) const
@@ -558,6 +621,7 @@ private:
 
         /**
          * \brief Utility function to retrieve the positions of the triangle's vertices
+         *
          * \return A triangle instance whose vertices are positioned in space
          */
         SpaceTriangle trianglePositions(TriangleIndex idx) const
@@ -579,6 +643,7 @@ private:
 
         /**
          * \brief Finds the index of a vertex in triangle t1 that is not in triangle t0
+         *
          * \param t0 The index of the first triangle
          * \param t1 The index of the second triangle
          * \pre t0 and t1 must be distinct triangles
@@ -605,6 +670,7 @@ private:
 
         /**
          * \brief Determine if the two given triangles have a vertex in common
+         *
          * \param t0 The index of the first triangle
          * \param t1 The index of the second triangle
          * \param [out] sharedVert The index of the shared vertex, if it exists
@@ -629,6 +695,7 @@ private:
 
         /**
          * \brief Determine if the three given triangles have a vertex in common
+         *
          * \param t0 The index of the first triangle
          * \param t1 The index of the second triangle
          * \param t2 The index of the second triangle
@@ -657,6 +724,7 @@ private:
 
         /**
          * \brief Reindexes the mesh vertices and triangle indices using the given map
+         *
          * \param numVertices The number of vertices in the new mesh
          * \param vertexIndexMap A mapping from the old vertex indices to the new ones
          * \note This step clears out the original mesh,
@@ -785,6 +853,7 @@ public:
 public:
     /**
      * \brief Construct an InOutOctree to handle containment queries on a surface mesh
+     *
      * \param [in] bb The spatial extent covered by the octree
      * \note We slightly scale the bounding box so all mesh elements are guaranteed
      *       to be enclosed by the octree
@@ -811,6 +880,7 @@ public:
 
     /**
      * \brief The point containment query.
+     *
      * \param pt The point that we want to check for containment within the surface
      * \return True if the point is within (or on) the surface, false otherwise
      * \note Points outside the octree's bounding box are considered outside the surface
@@ -821,6 +891,7 @@ private:
 
     /**
      * \brief Helper function to insert a vertex into the octree
+     *
      * \param idx The index of the vertex that we are inserting
      * \param startingLevel (optional, default = 0) The octree level at which
      * to begin the search for the leaf node covering this vertex
@@ -835,6 +906,7 @@ private:
 
     /**
      * \brief Set a color for each leaf block of the octree.
+     *
      * Black blocks are entirely within the surface, white blocks are entirely outside the surface
      * and Gray blocks intersect the surface.
      */
@@ -854,6 +926,7 @@ private:
 
     /**
      * \brief Checks if all indexed triangles in the block share a common vertex
+     *
      * \param leafBlock [in] The current octree block
      * \param leafData [inout] The data associated with this block
      * \note A side effect of this function is that we set the leafData's vertex to the common
@@ -864,6 +937,7 @@ private:
 
     /**
      * \brief Finds a color for the given block blk and propagates to neighbors
+     *
      * \note Propagates color to same-level and coarser level neighbors
      * \param blk The block to color
      * \param blkData The data associated with this block
@@ -874,6 +948,7 @@ private:
 
     /**
      * \brief Predicate to determine if the vertex is indexed by the blk
+     *
      * \pre This function assumes the vertices have been inserted and the mesh has been reordered
      * \param vIdx The index of the vertex to check
      * \param blk The block that we are checking against
@@ -887,6 +962,7 @@ private:
 
     /**
      * \brief Predicate to determine if any of the elements vertices are indexed by the given BlockIndex
+     *
      * \pre This function assumes the vertices have been inserted and the mesh has been reordered
      * \param tIdx The index of the triangle to check
      * \param blk The block that we are checking against
@@ -908,6 +984,7 @@ private:
 
     /**
      * \brief Determines whether the specified point is within the gray leaf
+     *
      * \param pt The point we are querying
      * \param leafBlk The block of the gray leaf
      * \param data The data associated with the leaf block
@@ -917,6 +994,7 @@ private:
 
     /**
      * \brief Returns the index of the mesh vertex associated with the given leaf block
+     *
      * \pre leafBlk is a leaf block of the octree
      * \param leafBlk The BlockIndex of a leaf block in the octree
      * \param leafData The data associated with this leaf block
@@ -926,6 +1004,7 @@ private:
 
     /**
      * \brief Returns the set of mesh triangle indices associated with the given leaf block
+     *
      * \pre leafBlk is a leaf block of the octree
      * \param leafBlk The BlockIndex of a leaf block in the octree
      * \param leafData The data associated with this leaf block
@@ -959,6 +1038,7 @@ private:
 
     /**
      * \brief Utility function to dump any Inside blocks whose neighbors are outside (and vice-versa)
+     *
      * \note There should not be any such blocks in a valid InOutOctree
      */
     void dumpDifferentColoredNeighborsMeshVTK(const std::string& name) const;

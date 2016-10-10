@@ -8,14 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/*!
- *******************************************************************************
- * \file SignedDistance.hpp
- *
- * \date Feb 15, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
 
 #ifndef SIGNEDDISTANCE_HPP_
 #define SIGNEDDISTANCE_HPP_

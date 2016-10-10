@@ -1,4 +1,16 @@
 
+/**
+ * \file
+ * \brief Defines templated OctreeLevel class
+ *
+ * An OctreeLevel associates data with the integer points on a sparse grid.
+ * OctreeLevel is an abstract base class.
+ * This file also defines two concrete instantiations:
+ * * GridPointOctreeLevel uses a GridPoint as a hash table key for its octree blocks
+ * * MortonOctreeLevel uses a Morton index (of the given bit width) as a hash key
+ *   for its octree blocks.
+ */
+
 #ifndef OCTREE_LEVEL__HXX_
 #define OCTREE_LEVEL__HXX_
 
@@ -17,16 +29,6 @@
 
 #include <boost/iterator/iterator_facade.hpp>
 
-/**
- * \file
- * \brief Defines templated OctreeLevel class
- * An OctreeLevel associates data with the integer points on a sparse grid.
- * OctreeLevel is an abstract base class.
- * This file also defines two concrete instantiations:
- * * GridPointOctreeLevel uses a GridPoint as a hash table key for its octree blocks
- * * MortonOctreeLevel uses a Morton index (of the given bit width) as a hash key
- *   for its octree blocks.
- */
 
 namespace quest
 {
@@ -43,6 +45,7 @@ namespace quest
     /**
      * \class
      * \brief An abstract base class to represent a sparse level of blocks within an octree.
+     *
      * Each block is associated with an integer grid point whose coordinates
      * have values between 0 and 2^L (where L = this->level() is the encoded level).
      * The OctreeLevel associates data of (templated) type BlockDataType with each such block.
@@ -132,6 +135,7 @@ namespace quest
 
       /**
        * \brief Returns the maximum coordinate value in the level
+       *
        * \note This is (2^l -1), where L is the current level
        */
       CoordType maxCoord() const
@@ -141,6 +145,7 @@ namespace quest
 
       /**
        * \brief Returns a GridPt whose coordinates are set to maxCoord
+       *
        * \sa maxCoord()
        */
       GridPt maxGridCell() const
@@ -153,6 +158,7 @@ namespace quest
 
       /**
        * \brief Predicate to check whether the block associated with the given GridPt pt is an allowed block in the level
+       *
        * \param [in] pt The gridpoint of the block to check
        * \note pt is inBounds if each of its coordinates is a non-negative integer less than maxCoord()
        * \sa maxCoord()
@@ -172,6 +178,7 @@ namespace quest
       /**
        * \class
        * \brief An iterator type for the blocks of an octree level
+       *
        * \note Uses a helper class to manage the polymorphic OctreeLevel's iteration
        *       The helper defines the following functions: increment(), equal() update(), pt() and data()
        */
@@ -278,6 +285,7 @@ namespace quest
       virtual BlockIteratorHelper* getIteratorHelper(bool) = 0;
       /**
        * \brief Virtual factory function to create a const iterator helper
+       *
        * \param A boolean to determine if the iterator should be a begin iterator (true) or an end iterator (false)
        */
       virtual ConstBlockIteratorHelper* getIteratorHelper(bool) const = 0;
