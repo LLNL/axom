@@ -109,6 +109,8 @@ properly and client-side hooks we use are installed; i.e.,::
 
 More about the Git hooks later.
 
+.. _topicdev-label:
+
 Performing topic branch development
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

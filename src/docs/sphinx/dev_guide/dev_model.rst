@@ -58,47 +58,76 @@ interaction hub for CS Toolkit code development.
 The CS Toolkit team follows the 'Gitflow' branch development model, which is
 summarized here. See the `Atlassian Gitflow Description <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_ for more details.
 
-Gitflow is a branching model centered around software 
-releases. It is a simple workflow that makes clear which branches correspond
-to which phases of development. In particular, those phases are represented 
-explicitly in the structure of the repository. As in other branching models, 
-developers develop code locally and push their work to a central repository. 
-The two main repository branches are *master* and *develop*, which always 
-exist. Other branches are temporary. The master branch records the official 
-release history of the project. Each time the master branch is changed, it 
-is tagged with a new version number. For a description of our versioning 
-scheme, see :ref:`versioning-label`. The develop branch is used to
-integrate new features and most bug fixes before they are merged into master. 
-The distinction between these two main branches is central to Gitflow.
+Gitflow is a branching model centered around software releases. It is a simple 
+workflow that makes clear which branches correspond to which phases of 
+development and those phases are represented explicitly in the structure of 
+the repository. As in other branching models, developers develop code locally 
+and push their work to a central repository. 
 
-Each new feature, or other well-defined portion of work, is 
-developed on its own branch, with changes being pushed to the central 
-repository regularly for backup. Feature branches are created off the
-develop branch. When a feature is complete, a pull request is submitted
-for review by other team members. When all issues arising in a review 
-have been addressed and reviewers have approved the pull request, the 
-feature branch is merged into develop. 
+The two main branches used in Gitflow are:
 
-.. important:: **Feature branches never interact directly with the master branch.**
+  * **master branch.** The master branch records the official release history 
+    of the project. Each time the master branch is changed, it is tagged with 
+    a new version number. For a description of our versioning scheme, 
+    see :ref:`versioning-label`.
 
-When the team has decided that enough features, bug fixes, etc. have been 
-merged into develop (for example, all items identified for a release have
-been completed), a *release* branch is created off of develop to finalize 
-the release. Creating a release branch starts the next release cycle on 
-develop. At that point, new work can start on feature branches for the 
-next release. No new features are added to a release branch. Only bug fixes, 
-documentation, and other release-oriented changes go into a release 
-branch. When a release branch is ready, it is merged into master and 
-master is tagged with a new version number. Finally, master is merged back 
-into develop since it may have changed since the release was initiated.
+  * **develop branch.** The develop branch is used to integrate and test
+    new features and most bug fixes before they are merged into master. 
 
-Sometimes, there is a need for a *hotfix* branch to resolve an issue in
-a released version. This is the only time a branch is created off of
-master. When the fix is complete, it is reviewed using a pull request and 
-then merged into both master and develop. At this point, master is
-tagged with a new version number. A dedicated line of development for
-bug fixes, using a hotfix branch, allows the team to quickly address issues 
-without disrupting other parts of the workflow. 
+The *master* and *develop* branches always exist and the distinction between 
+them is central to Gitflow. Other branches are temporary and used to 
+perform specific development tasks.
+
+.. important:: **Development never occurs directly on the master or develop
+               branches.**  
+
+Most development is performed on temporary topic branches created off of the
+develop branch:
+
+  * **topic branches.** Each new feature, or other well-defined portion of 
+    work, is developed on its own branch, with changes being pushed to the 
+    central repository regularly for backup. Topic branches are created off 
+    of the develop branch to perform feature development, bug fixes, etc. 
+    We typically include a label, such as  "feature" or "bugfix", in the name 
+    of a topic branch to make it clear what type of work is being done on the 
+    branch. See :ref:`topicdev-label` for details about topic branch 
+    development. When a feature is complete, a pull request is submitted for 
+    review by other team members. When all issues arising in a review have been 
+    addressed and reviewers have approved the pull request, the feature branch 
+    is merged into develop. See :ref:`review-label` for more information about
+    code reviews and pull request approval.
+
+.. important:: **Feature branches never interact directly with the master 
+               branch.**
+
+Release branches are another important temporary branch type in Gitflow:
+
+  * **release branches.** When the team has decided that enough features, bug 
+    fixes, etc. have been merged into develop (for example, all items 
+    identified for a release have been completed), a release branch is created 
+    off of develop to finalize the release. Creating a release branch starts 
+    the next release cycle on develop. At that point, new work can start on 
+    feature branches for the next release. Only changes required to complete
+    the release are added to a release branch. When a release branch is ready, 
+    it is merged into master and master is tagged with a new version number. 
+    Finally, master is merged back into develop since it may have changed 
+    since the release was initiated.
+
+The last important temporary branch type in Gitflow is a *hotfix* branch:
+
+  * **hotfix branches.** Sometimes, there is a need to resolve an issue in
+    a released version on the master branch. This is the only time a branch 
+    is created off of master. When the fix is complete, it is reviewed using 
+    a pull request and then merged into both master and develop. At this point,
+    master is tagged with a new version number. A dedicated line of development 
+    for a bug fix, using a hotfix branch, allows the team to quickly address 
+    issues without disrupting other parts of the workflow. 
+
+.. important:: **No new features are added to a release branch. Only bug fixes, 
+               documentation, and other release-oriented changes go into a 
+               release branch.**
+
+The figure below illustrates how branches interact in Gitflow.
 
 .. figure:: gitflow-workflow.png
 
@@ -110,26 +139,6 @@ without disrupting other parts of the workflow.
    When one feature branch was done, it was merged into develop. Then, a 
    release branch was created and it was merged into master when the release 
    was finalized. Finally, master was tagged with version v1.0.
-
-----------------
-Gitflow Summary
-----------------
-
-   * Features are developed and most bugs are addressed on *feature* branches 
-     created off of the *develop* branch. 
-   * When work is complete on a feature branch, it is merged into develop.
-   * At a release point, a *release* branch is created off of develop. At this
-     point, development can continue on develop for the next release.
-   * No features are added to a release branch -- only bug fixes, 
-     documentation, and other release-oriented changes go into a release 
-     branch. 
-   * When a release is ready, the release branch is merged into 
-     master and master is tagged with a new version number. Master is also 
-     merged into develop at this time.
-   * Issues that need to be addressed on master, are fixed on a *hotfix* 
-     branch is created off of master. When the fix is complete, the
-     hotfix branch is merged into master and develop and master is tagged 
-     with a new version number.
 
 
 .. _versioning-label:
@@ -236,7 +245,7 @@ other tools. For example:
   conditions are encountered.
 
 * Static analysis tools **should** be applied to the code using tools such
-  as `cppcheck`, etc. to identify potential implementation issues.
+  as `paycheck`, etc. to identify potential implementation issues.
 
 * Runtime memory checking, using a  tool such as Valgrind, **should** be 
   performed to verify that there are no leaks or other memory issues. 
