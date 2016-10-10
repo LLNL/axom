@@ -100,6 +100,47 @@ int main(int argc, char** argv)
   }
   MPI_Barrier(MPI_COMM_WORLD);
 
+  int return_val = 0;
+  /*
+   * Read the root file on rank 1, unless this is a serial run.
+   */
+  if (my_rank == 1 || num_ranks == 1) {
+
+    conduit::Node n;
+    conduit::relay::io::load("hdf5", root_name + ":extra", n);
+
+    double dval = n["dval"].to_double();
+
+    if (dval < 1.0000009 || dval > 1.1000001) {
+      return_val = 1;
+    }
+
+    if (n["child"]["ival"].to_int() != 7) {
+      return_val = 1;
+    }
+
+    if (n["child"]["word0"].as_string() != "hello") {
+      return_val = 1;
+    }
+
+    if (n["child"]["word1"].as_string() != "world") {
+      return_val = 1;
+    }
+
+    if (n["child"]["path_test"]["path_val"].to_int() != 9) {
+      return_val = 1;
+    }
+
+    if (n["child"]["path_test"]["word2"].as_string() != "again") {
+      return_val = 1;
+    }
+
+    if (n["child"]["path_test"]["word3"].as_string() != "new_view") {
+      return_val = 1;
+    }
+
+  }
+
   /*
    * Create another DataStore that holds nothing but the root group.
    */
@@ -116,7 +157,6 @@ int main(int argc, char** argv)
   /*
    * Verify that the contents of ds2 match those written from ds.
    */
-  int return_val = 0;
   if (!ds2->getRoot()->isEquivalentTo(root)) {
     return_val = 1; 
   }
