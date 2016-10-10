@@ -19,6 +19,10 @@ variety of tools to manage our workflow and software development. This guide
 contains descriptions of our processes and information about how we use tools 
 and getting started with them.
 
+The CS Toolkit Git repository lives in a
+`Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_
+on the Livermore Computing CZ Atlassian Space. The repository is the central
+interaction hub for CS Toolkit code development.
 
 ===================
 First Things First
@@ -49,11 +53,6 @@ to anyone. You just have to log on to Jabber and join.
 ======================================================
 Gitflow Branching Model
 ======================================================
-
-The CS Toolkit Git repository lives in a 
-`Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_ 
-on the Livermore Computing CZ Atlassian Space. The repository is the central 
-interaction hub for CS Toolkit code development. 
 
 The CS Toolkit team follows the 'Gitflow' branch development model, which is
 summarized here. See the `Atlassian Gitflow Description <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_ for more details.
@@ -245,7 +244,7 @@ other tools. For example:
   conditions are encountered.
 
 * Static analysis tools **should** be applied to the code using tools such
-  as `paycheck`, etc. to identify potential implementation issues.
+  as `cppcheck`, etc. to identify potential implementation issues.
 
 * Runtime memory checking, using a  tool such as Valgrind, **should** be 
   performed to verify that there are no leaks or other memory issues. 
@@ -287,7 +286,7 @@ Beyond build and test correctness, we also want to ensure that code follows
 common conventions before acceptance. The following list summarizes concerns 
 we want to identify during pull request reviews and resolve before a pull 
 request is approved for merging. The list contains references to details 
-in the coding guidelines section.
+in the coding guidelines.
 
  #. A new file or directory must be located in in the proper location; e.g.,
     in the same directory with existing files supporting related functionality.
