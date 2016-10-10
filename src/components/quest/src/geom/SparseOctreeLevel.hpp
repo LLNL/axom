@@ -5,6 +5,7 @@
 #include "common/config.hpp"
 #include "common/CommonTypes.hpp"
 
+#include "quest/Brood.hpp"
 #include "quest/OctreeLevel.hpp"
 
 #ifdef USE_CXX11
@@ -140,8 +141,8 @@ namespace quest
             typedef ParentType     BaseBlockItType;
 
             IteratorHelper(OctreeLevelType* octLevel, bool begin)
-                : m_offset(0)
-                , m_isLevelZero( octLevel->level() == 0)
+                : m_offset(0),
+                  m_isLevelZero( octLevel->level() == 0)
             {
                 m_currentIter = begin
                         ? octLevel->m_map.begin()

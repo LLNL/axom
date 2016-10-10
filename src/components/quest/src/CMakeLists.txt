@@ -15,6 +15,7 @@ set( quest_headers
     ## Geometry Headers
     geom/BVHTree.hpp
     geom/BoundingBox.hpp
+    geom/Brood.hpp
     geom/Determinants.hpp
     geom/DenseOctreeLevel.hpp
     geom/HyperSphere.hpp

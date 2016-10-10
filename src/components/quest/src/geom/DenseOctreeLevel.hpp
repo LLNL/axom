@@ -5,6 +5,7 @@
 #include "common/config.hpp"
 #include "common/CommonTypes.hpp"
 
+#include "quest/Brood.hpp"
 #include "quest/OctreeLevel.hpp"
 
 
@@ -57,10 +58,10 @@ namespace quest
             typedef ParentType     BaseBlockItType;
 
             IteratorHelper(OctreeLevelType* octLevel, bool begin)
-                : m_octreeLevel(octLevel)
-                , m_endIdx( octLevel->m_broodCapacity)
-                , m_offset(0)
-                , m_isLevelZero( octLevel->level() == 0)
+                : m_octreeLevel(octLevel),
+                  m_endIdx( octLevel->m_broodCapacity),
+                  m_offset(0),
+                  m_isLevelZero( octLevel->level() == 0)
             {
                 m_currentIdx = begin? 0 : m_endIdx;
 
