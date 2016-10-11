@@ -333,33 +333,33 @@ namespace {
 
   /*!
    *****************************************************************************
-   * \brief Check for 2D triangle-edge intersection.
-   * \param [in] Ai first corner of triangle
-   * \param [in] Bi second corner of triangle
-   * \param [in] Ci third corner of triangle
-   * \param [in] Aj first point of segment
-   * \param [in] Bj second corner of segment
-   * \return status true iff the edge  Aj Cj intersects the triangle Ai Bi Ci.
+   * \brief Check for 2D triangle-edge intersection, p1 close to r2p2
+   * \param [in] p1 first corner of triangle 1
+   * \param [in] q1 second corner of triangle 1
+   * \param [in] r1 third corner of triangle 1
+   * \param [in] p2 first point of triangle 2
+   * \param [in] r2 third corner of triangle 2
+   * \return status true iff coplanar CCW triangles 1 and 2 intersect.
    *
    * Helper function for T-T intersect.
    *****************************************************************************
    */
-  inline bool checkEdge(const Point2 Ai,
-			const Point2 Bi,
-			const Point2 Ci,
-			const Point2 Aj,
-			const Point2 Cj)
+  inline bool checkEdge(const Point2 p1,
+			const Point2 q1,
+			const Point2 r1,
+			const Point2 p2,
+			const Point2 r2)
   {
-    if (isGeq(checkCCW(Cj,Aj,Bi),0.0)) {
-      if (isGeq(checkCCW(Ai,Aj,Bi), 0.0)) {
-	if (isGeq(checkCCW(Ai,Bi,Cj), 0.0))
+    if (isGeq(checkCCW(r2,p2,q1),0.0)) {
+      if (isGeq(checkCCW(p1,p2,q1), 0.0)) {
+	if (isGeq(checkCCW(p1,q1,r2), 0.0))
 	  return true;
 	else
 	  return false;
       }
       else {
-	if (isGeq(checkCCW(Bi,Ci,Aj), 0.0)) {
-	  if (isGeq(checkCCW(Ci,Ai,Aj), 0.0))
+	if (isGeq(checkCCW(q1,r1,p2), 0.0)) {
+	  if (isGeq(checkCCW(r1,p1,p2), 0.0))
 	    return true;
 	  else
 	    return false;
@@ -369,71 +369,12 @@ namespace {
       }
     }
     else {
-      if (isGeq(checkCCW(Cj,Aj,Ci), 0.0)) {
-	if (isGeq(checkCCW(Ai,Aj,Ci), 0.0)) {
-	  if (isGeq(checkCCW(Ai,Ci,Cj), 0.0))
-	    return true;
-	  else {
-	    if (isGeq(checkCCW(Bi,Ci,Cj), 0.0))
-	      return true;
-	    else
-	      return false;
-	  }
-	}
-	else
-	  return false;
-      }
-      else
-	return false;
-    }
-  }
-
-  /* Note that Evan's original code had checkVertex() with exactly the same
-     text as checkEdge().  This is almost certainly not what he intended, since
-     the two functions are called from intersectPermuted2DTriangles() in different
-     code paths.
-
-     2016-09-16 Until I (Arlie Capps) understand this code better, I'm including
-     checkVertex() as a stub that calls checkEdge() in order to let the code
-     compile.
-  */
-  inline bool checkVertex(const Point2 Ai,
-			const Point2 Bi,
-			const Point2 Ci,
-			const Point2 Aj,
-			const Point2 Cj)
-  {
-    // TODO:  FIXME:  Properly implement the body of this function.
-
-    if (isGeq(checkCCW(Cj,Aj,Bi),0.0)) {
-      if (isGeq(checkCCW(Ai,Aj,Bi), 0.0)) {
-	if (isGeq(checkCCW(Ai,Bi,Cj), 0.0))
-	  return true;
-	else
-	  return false;
-      }
-      else {
-	if (isGeq(checkCCW(Bi,Ci,Aj), 0.0)) {
-	  if (isGeq(checkCCW(Ci,Ai,Aj), 0.0))
+      if (isGeq(checkCCW(r2,p2,r1), 0.0)) {
+	if (isGeq(checkCCW(p1,p2,r1), 0.0)) {
+	  if (isGeq(checkCCW(q1,r1,r2), 0.0))
 	    return true;
 	  else
 	    return false;
-	}
-	else
-	  return false;
-      }
-    }
-    else {
-      if (isGeq(checkCCW(Cj,Aj,Ci), 0.0)) {
-	if (isGeq(checkCCW(Ai,Aj,Ci), 0.0)) {
-	  if (isGeq(checkCCW(Ai,Ci,Cj), 0.0))
-	    return true;
-	  else {
-	    if (isGeq(checkCCW(Bi,Ci,Cj), 0.0))
-	      return true;
-	    else
-	      return false;
-	  }
 	}
 	else
 	  return false;
@@ -445,24 +386,103 @@ namespace {
 
   /*!
    *****************************************************************************
-   * \brief Runs tri-tri intersection tests, allowing for corner permutation.
-   * \param [in] Ai first corner of triangle 1
-   * \param [in] Bi second corner of triangle 1
-   * \param [in] Ci third corner of triangle 1
-   * \param [in] Aj first corner of triangle 2
-   * \param [in] Bj second corner of triangle 2
-   * \param [in] Cj third corner of triangle 2
-   * \return status true iff triangle Ai Bi Ci intersects triangle Aj Bj Cj.
+   * \brief Check for 2D triangle-edge intersection, p1 close to r2
+   * \param [in] p1 first corner of triangle 1
+   * \param [in] q1 second corner of triangle 1
+   * \param [in] r1 third corner of triangle 1
+   * \param [in] p2 first point of triangle 2
+   * \param [in] q2 second point of triangle 2
+   * \param [in] r2 third corner of triangle 2
+   * \return status true iff coplanar CCW triangles 1 and 2 intersect.
    *
    * Helper function for T-T intersect.
    *****************************************************************************
    */
-  inline bool intersectPermuted2DTriangles(const Point2& Ai,
-				      const Point2& Bi,
-				      const Point2& Ci,
-				      const Point2& Aj,
-				      const Point2& Bj,
-				      const Point2& Cj)
+  inline bool checkVertex(const Point2 p1,
+			  const Point2 q1,
+			  const Point2 r1,
+			  const Point2 p2,
+			  const Point2 q2,
+			  const Point2 r2)
+  {
+    if (isGeq(checkCCW(r2,p2,q1),0.0)) {
+      if (isGeq(checkCCW(q2,r2,q1),0.0)) {
+	if (isGeq(checkCCW(p1,p2,q1),0.0)) {
+	  if (isLeq(checkCCW(p1,q2,q1),0.0))
+	    return true;
+	  else
+	    return false;
+	}
+	else {
+	  if (isGeq(checkCCW(p1,p2,r1),0.0)) {
+	    if (isGeq(checkCCW(r2,p2,r1),0.0))
+	      return true;
+	    else
+	      return false;
+	  }
+	  else
+	    return false;
+	}
+      }
+      else {
+	if (isLeq(checkCCW(p1,q2,q1),0.0)) {
+	  if (isGeq(checkCCW(q2,r2,r1),0.0)) {
+	    if (isGeq(checkCCW(q1,r1,q2),0.0))
+	      return true;
+	    else
+	      return false;
+	  }
+	  else
+	    return false;
+	}
+	else
+	  return false;
+      }
+    }
+    else {
+      if (isGeq(checkCCW(r2,p2,r1),0.0)) {
+	if (isGeq(checkCCW(q1,r1,r2),0.0)) {
+	  if (isGeq(checkCCW(r1,p1,p2),0.0))
+	      return true;
+	    else
+	      return false;
+	}
+	else {
+	  if (isGeq(checkCCW(q1,r1,q2),0.0)) {
+	    if (isGeq(checkCCW(q2,r2,r1),0.0))
+	      return true;
+	    else
+	      return false;
+	  }
+	  else
+	    return false;
+	}
+      }
+      else
+	return false;
+    }
+  }
+  
+  /*!
+   *****************************************************************************
+   * \brief Runs tri-tri intersection tests, allowing for corner permutation.
+   * \param [in] p1 first corner of triangle 1
+   * \param [in] q1 second corner of triangle 1
+   * \param [in] r1 third corner of triangle 1
+   * \param [in] p2 first corner of triangle 2
+   * \param [in] q2 second corner of triangle 2
+   * \param [in] r2 third corner of triangle 2
+   * \return status true iff triangle p1 q1 r1 intersects triangle p2 q2 r2.
+   *
+   * Helper function for T-T intersect.
+   *****************************************************************************
+   */
+  inline bool intersectPermuted2DTriangles(const Point2& p1,
+				      const Point2& q1,
+				      const Point2& r1,
+				      const Point2& p2,
+				      const Point2& q2,
+				      const Point2& r2)
   {
     // Step 2: Orient triangle 2 to be counter clockwise and break the problem
     // into two generic cases (where we test the vertex for intersection or the
@@ -470,30 +490,30 @@ namespace {
     //
     // See paper at https://hal.inria.fr/inria-00072100/document for more details
 
-    if (isGeq(checkCCW(Aj,Bj,Ai), 0.0 )) {
-      if (isGeq(checkCCW(Bj,Cj,Ai), 0.0 )) {
-	if (isGeq(checkCCW(Cj,Aj,Ai), 0.0)) {
+    if (isGeq(checkCCW(p2,q2,p1), 0.0 )) {
+      if (isGeq(checkCCW(q2,r2,p1), 0.0 )) {
+	if (isGeq(checkCCW(r2,p2,p1), 0.0)) {
 	  return true;
 	}
-	else return checkEdge(Ai,Bi,Ci,Aj,Cj); //T1 clockwise
+	else return checkEdge(p1,q1,r1,p2,r2); //T1 clockwise
       }
       else {
-	if (isGeq(checkCCW(Cj,Aj,Ai), 0.0)){
-	  //5 region decomposistion with Ai in the +-- region
-	  return checkEdge(Ai,Bi,Ci,Cj,Bj);
+	if (isGeq(checkCCW(r2,p2,p1), 0.0)){
+	  //5 region decomposistion with p1 in the +-- region
+	  return checkEdge(p1,q1,r1,r2,q2);
 	}
-	else return checkVertex(Ai,Bi,Ci,Aj,Cj);
+	else return checkVertex(p1,q1,r1,p2,q2,r2);
       }
     }
     else {
-      if (isGeq(checkCCW(Bj,Cj,Ai), 0.0)) {
-	if (isGeq(checkCCW(Cj,Aj,Ai), 0.0)) {
+      if (isGeq(checkCCW(q2,r2,p1), 0.0)) {
+	if (isGeq(checkCCW(r2,p2,p1), 0.0)) {
 	  //four region decomposistion.  ++- region
-	  return checkEdge(Ai,Bi,Ci,Bj,Aj);
+	  return checkEdge(p1,q1,r1,q2,p2);
 	}
-	else return checkVertex(Ai,Bi,Ci,Bj,Aj);
+	else return checkVertex(p1,q1,r1,q2,r2,p2);
       }
-      else return checkVertex(Ai,Bi,Ci,Cj,Bj);
+      else return checkVertex(p1,q1,r1,r2,p2,q2);
     }
   }
 
