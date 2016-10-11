@@ -390,7 +390,7 @@ namespace {
 
   /* Note that Evan's original code had checkVertex() with exactly the same
      text as checkEdge().  This is almost certainly not what he intended, since
-     the two functions are called from CheckReorientedPoints2D() in different
+     the two functions are called from intersectPermuted2DTriangles() in different
      code paths.
 
      2016-09-16 Until I (Arlie Capps) understand this code better, I'm including
@@ -457,7 +457,7 @@ namespace {
    * Helper function for T-T intersect.
    *****************************************************************************
    */
-  inline bool CheckReorientedPoints2D(const Point2& Ai,
+  inline bool intersectPermuted2DTriangles(const Point2& Ai,
 				      const Point2& Bi,
 				      const Point2& Ci,
 				      const Point2& Aj,
@@ -515,19 +515,19 @@ namespace {
   {
     if (isLt(checkCCW(t1.A(),t1.B(),t1.C()),0.0)) {
       if ((isLt(checkCCW(t2.A(), t2.B(), t2.C()),0.0))) {
-	return CheckReorientedPoints2D(t1.A(), t1.C(), t1.B(),
+	return intersectPermuted2DTriangles(t1.A(), t1.C(), t1.B(),
 				       t2.A(), t2.C(), t2.B());
       }
-      else return CheckReorientedPoints2D(t1.A(), t1.C(), t1.B(),
+      else return intersectPermuted2DTriangles(t1.A(), t1.C(), t1.B(),
 					  t2.A(), t2.B(), t2.C());
     }
     else {
       if (isLt(checkCCW(t2.A(), t2.B(), t2.C()),0.0)) {
-	return CheckReorientedPoints2D(t1.A(), t1.B(), t1.C(),
+	return intersectPermuted2DTriangles(t1.A(), t1.B(), t1.C(),
 				       t2.A(), t2.C(), t2.B());
       }
       else {
-	return CheckReorientedPoints2D(t1.A(), t1.B(), t1.C(),
+	return intersectPermuted2DTriangles(t1.A(), t1.B(), t1.C(),
 				       t2.A(), t2.B(), t2.C());
       }
     }
@@ -562,8 +562,12 @@ namespace {
    * Helper function for T-T intersect.
    *****************************************************************************
    */
-  inline bool intervalCheck(const Point3 Ai, const Point3 Bi, const Point3 Ci,
-			    const Point3 Aj, const Point3 Bj, const Point3 Cj)
+  inline bool intersectTwoPermutedTriangles(const Point3 Ai,
+			    const Point3 Bi,
+			    const Point3 Ci,
+			    const Point3 Aj,
+			    const Point3 Bj,
+			    const Point3 Cj)
   {
     /* Step 5: From step's 1 through 4, we now have two triangles that,
        if intersecting, have a line that intersects segments AiCi, AiBi,
@@ -591,8 +595,12 @@ namespace {
    * \return status true iff triangle Ai Bi Ci is coplanar to triangle Aj Bj Cj
    *****************************************************************************
    */
-  inline bool coplanarCheck(const Point3& Ai, const Point3& Bi, const Point3& Ci,
-			    const Point3& Aj, const Point3& Bj, const Point3& Cj,
+  inline bool intersectCoplanar3D(const Point3& Ai,
+			    const Point3& Bi,
+			    const Point3& Ci,
+			    const Point3& Aj,
+			    const Point3& Bj,
+			    const Point3& Cj,
 			    Vector3 normal)
   {
     /* Co-planar triangles are projected onto the axis that maximizes their
@@ -671,48 +679,50 @@ namespace {
    * Helper function for TT-intersect
    *****************************************************************************
    */
-  inline bool checkTriangleIntersect(const Point3 &Ai, const Point3 &Bi, const Point3 &Ci,
-				     const Point3 &Aj, const Point3 &Bj, const Point3 &Cj,
-				     double dAj, double dBj, double dCj,  Vector3 &normal)
+  inline bool intersectOnePermutedTriangle(
+    const Point3 &Ai, const Point3 &Bi, const Point3 &Ci,
+    const Point3 &Aj, const Point3 &Bj, const Point3 &Cj,
+    double dAj, double dBj, double dCj,  Vector3 &normal)
   {
-    /*Step 4: repeat Step 3, except doing it for triangle 2 instead of triangle 1 */
+    /* Step 4: repeat Step 3, except doing it for triangle 2 
+       instead of triangle 1 */
     if (isGt(dAj, 0.0))
     {
       if (isGt(dBj, 0.0))
-	return intervalCheck(Ai,Ci,Bi,Cj,Aj,Bj);
+	return intersectTwoPermutedTriangles(Ai,Ci,Bi,Cj,Aj,Bj);
       else if (isGt(dCj, 0.0))
-	return intervalCheck(Ai,Ci,Bi,Bj,Cj,Aj);
+	return intersectTwoPermutedTriangles(Ai,Ci,Bi,Bj,Cj,Aj);
       else
-	return intervalCheck(Ai,Bi,Ci,Aj,Bj,Cj);
+	return intersectTwoPermutedTriangles(Ai,Bi,Ci,Aj,Bj,Cj);
     }
     else if (isLt(dAj,  0.0))
     {
       if (isLt(dBj, 0.0))
-	return intervalCheck(Ai,Bi,Ci,Cj,Aj,Bj);
+	return intersectTwoPermutedTriangles(Ai,Bi,Ci,Cj,Aj,Bj);
       else if (isLt(dCj, 0.0))
-	return intervalCheck(Ai,Bi,Ci,Bj,Cj,Aj);
+	return intersectTwoPermutedTriangles(Ai,Bi,Ci,Bj,Cj,Aj);
       else
-	return intervalCheck(Ai,Ci,Bi,Aj,Bj,Cj);
+	return intersectTwoPermutedTriangles(Ai,Ci,Bi,Aj,Bj,Cj);
     } else {
       if (isLt(dBj, 0.0)) {
 	if (isGeq(dCj, 0.0))
-	  return intervalCheck(Ai,Ci,Bi,Bj,Cj,Aj);
+	  return intersectTwoPermutedTriangles(Ai,Ci,Bi,Bj,Cj,Aj);
 	else
-	  return intervalCheck(Ai,Bi,Ci,Aj,Bj,Cj);
+	  return intersectTwoPermutedTriangles(Ai,Bi,Ci,Aj,Bj,Cj);
       }
       else if (isGt(dBj, 0.0)) {
 	if (isGt(dCj, 0.0))
-	  return intervalCheck(Ai,Ci,Bi,Aj,Bj,Cj);
+	  return intersectTwoPermutedTriangles(Ai,Ci,Bi,Aj,Bj,Cj);
 	else
-	  return intervalCheck(Ai,Bi,Ci,Bj,Cj,Aj);
+	  return intersectTwoPermutedTriangles(Ai,Bi,Ci,Bj,Cj,Aj);
       }
       else {
 	if (isGt(dCj, 0.0))
-	  return intervalCheck(Ai,Bi,Ci,Cj,Aj,Bj);
+	  return intersectTwoPermutedTriangles(Ai,Bi,Ci,Cj,Aj,Bj);
 	else if (isLt(dCj, 0.0))
-	  return intervalCheck(Ai,Ci,Bi,Cj,Aj,Bj);
+	  return intersectTwoPermutedTriangles(Ai,Ci,Bi,Cj,Aj,Bj);
 	else
-	  return coplanarCheck(Ai,Bi,Ci,Aj,Bj,Cj,normal);
+	  return intersectCoplanar3D(Ai,Bi,Ci,Aj,Bj,Cj,normal);
       }
     }
   }
@@ -816,71 +826,71 @@ bool intersect( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
 
   if (isGt(dAi, 0.0)) {
     if (isGt(dBi, 0.0)) {
-      return checkTriangleIntersect(t1.C(), t1.A(), t1.B(),
+      return intersectOnePermutedTriangle(t1.C(), t1.A(), t1.B(),
 				    t2.A(), t2.C(), t2.B(),
 				    dAj, dCj, dBj, t1Normal);
     }
     else if (isGt(dCi, 0.0)) {
-      return checkTriangleIntersect(t1.B(), t1.C(), t1.A(),
+      return intersectOnePermutedTriangle(t1.B(), t1.C(), t1.A(),
 				    t2.A(), t2.C(), t2.B(),
 				    dAj, dCj, dBj, t1Normal);
     }
-    else return checkTriangleIntersect(t1.A(), t1.B(), t1.C(),
+    else return intersectOnePermutedTriangle(t1.A(), t1.B(), t1.C(),
 				       t2.A(), t2.B(), t2.C(),
 				       dAj, dBj, dCj, t1Normal);
   }
   else if (isLt(dAi, 0.0)) {
     if (isLt(dBi, 0.0)) {
-      return checkTriangleIntersect(t1.C(), t1.A(), t1.B(),
+      return intersectOnePermutedTriangle(t1.C(), t1.A(), t1.B(),
 				    t2.A(), t2.B(), t2.C(),
 				    dAj, dBj, dCj, t1Normal);
     }
     else if (isLt(dCi, 0.0f)) {
-      return checkTriangleIntersect(t1.B(), t1.C(), t1.A(),
+      return intersectOnePermutedTriangle(t1.B(), t1.C(), t1.A(),
 				    t2.A(), t2.B(), t2.C(),
 				    dAj, dBj, dCj, t1Normal);
     }
-    else return checkTriangleIntersect(t1.A(), t1.B(), t1.C(),
+    else return intersectOnePermutedTriangle(t1.A(), t1.B(), t1.C(),
 				       t2.A(), t2.C(), t2.B(),
 				       dAj, dCj, dBj, t1Normal);
   }
   else { //dAi ~= 0
     if (isLt(dBi, 0.0)) {
       if (isGeq(dCi, 0.0)) {
-	return checkTriangleIntersect(t1.B(), t1.C(), t1.A(),
+	return intersectOnePermutedTriangle(t1.B(), t1.C(), t1.A(),
 				      t2.A(), t2.C(), t2.B(),
 				      dAj, dCj, dBj, t1Normal);
       }
       else {
-	return checkTriangleIntersect(t1.A(), t1.B(), t1.C(),
+	return intersectOnePermutedTriangle(t1.A(), t1.B(), t1.C(),
 				      t2.A(), t2.B(), t2.C(),
 				      dAj, dBj, dCj, t1Normal);
       }
     }
     else if (isGt(dBi, 0.0)) {
       if (isGt(dCi, 0.0)) {
-	return checkTriangleIntersect(t1.A(), t1.B(), t1.C(),
+	return intersectOnePermutedTriangle(t1.A(), t1.B(), t1.C(),
 				      t2.A(), t2.C(), t2.B(),
 				      dAj, dCj, dBj, t1Normal);
       }
       else {
-	return checkTriangleIntersect(t1.B(), t1.C(), t1.A(),
+	return intersectOnePermutedTriangle(t1.B(), t1.C(), t1.A(),
 				      t2.A(), t2.B(), t2.C(),
 				      dAj, dBj, dCj, t1Normal);
       }
     }
     else  {
       if (isGt(dCi, 0.0)) {
-	return checkTriangleIntersect(t1.C(), t1.A(), t1.B(),
+	return intersectOnePermutedTriangle(t1.C(), t1.A(), t1.B(),
 				      t2.A(), t2.B(), t2.C(),
 				      dAj, dBj, dCj, t1Normal);
       }
       else if (isLt(dCi, 0.0)) {
-	return checkTriangleIntersect(t1.C(), t1.A(), t1.B(),
+	return intersectOnePermutedTriangle(t1.C(), t1.A(), t1.B(),
 				      t2.A(), t2.C(), t2.B(),
 				      dAj, dCj, dBj, t1Normal);
       }
-      else return coplanarCheck(t1.A(), t1.B(), t1.C(),
+      else return intersectCoplanar3D(t1.A(), t1.B(), t1.C(),
 				t2.A(), t2.B(), t2.C(), t1Normal);
     }
   }

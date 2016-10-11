@@ -9,13 +9,13 @@
  */
 
 /*!
- *******************************************************************************
- * \file
- *
- * \date Jan 5, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
+*******************************************************************************
+* \file
+*
+* \date Jan 5, 2016
+* \author George Zagaris (zagaris2@llnl.gov)
+*******************************************************************************
+*/
 
 #include "gtest/gtest.h"
 
@@ -171,93 +171,93 @@ TEST( quest_intersection, triangle_aabb_intersection )
 
 TEST( quest_intersection, triangle_aabb_intersection_fromData )
 {
-    static int const DIM = 3;
-    typedef quest::Point< double,DIM >   PointType;
-    typedef quest::Triangle< double,DIM > TriangleType;
-    typedef quest::BoundingBox< double,DIM > BoundingBoxType;
+  static int const DIM = 3;
+  typedef quest::Point< double,DIM >   PointType;
+  typedef quest::Triangle< double,DIM > TriangleType;
+  typedef quest::BoundingBox< double,DIM > BoundingBoxType;
 
 
-    PointType v0 = PointType::make_point(-31.015,63.7756,55.0043);
-    PointType v1 = PointType::make_point(-29.0086,59.2982,58.0078);
-    PointType v2 = PointType::make_point(-29.2009,70.1039,61.3229);
+  PointType v0 = PointType::make_point(-31.015,63.7756,55.0043);
+  PointType v1 = PointType::make_point(-29.0086,59.2982,58.0078);
+  PointType v2 = PointType::make_point(-29.2009,70.1039,61.3229);
 
-    TriangleType tri(v0,v1,v2);
+  TriangleType tri(v0,v1,v2);
 
-    BoundingBoxType box0(PointType::make_point(-39.2793,46.3735,53.3791), PointType::make_point(-26.1692,60.1549,57.0148));
-    BoundingBoxType box1(PointType::make_point(-39.2793,60.1549,53.3791), PointType::make_point(-26.1692,73.9362,57.0148));
-    BoundingBoxType box2(PointType::make_point(-39.2793,46.3735,57.0148), PointType::make_point(-26.1692,60.1549,60.6506));
-    BoundingBoxType box3(PointType::make_point(-39.2793,60.1549,57.0148), PointType::make_point(-26.1692,73.9362,60.6506));
-    BoundingBoxType box4(PointType::make_point(-39.2793,46.3735,60.6506), PointType::make_point(-26.1692,60.1549,64.2863));
-    BoundingBoxType box5(PointType::make_point(-39.2793,60.1549,60.6506), PointType::make_point(-26.1692,73.9362,64.2863));
+  BoundingBoxType box0(PointType::make_point(-39.2793,46.3735,53.3791), PointType::make_point(-26.1692,60.1549,57.0148));
+  BoundingBoxType box1(PointType::make_point(-39.2793,60.1549,53.3791), PointType::make_point(-26.1692,73.9362,57.0148));
+  BoundingBoxType box2(PointType::make_point(-39.2793,46.3735,57.0148), PointType::make_point(-26.1692,60.1549,60.6506));
+  BoundingBoxType box3(PointType::make_point(-39.2793,60.1549,57.0148), PointType::make_point(-26.1692,73.9362,60.6506));
+  BoundingBoxType box4(PointType::make_point(-39.2793,46.3735,60.6506), PointType::make_point(-26.1692,60.1549,64.2863));
+  BoundingBoxType box5(PointType::make_point(-39.2793,60.1549,60.6506), PointType::make_point(-26.1692,73.9362,64.2863));
 
-    SLIC_INFO("Testing point bounding box: " << box0 << " against triangle " << tri );
-    EXPECT_FALSE( quest::intersect(tri, box0 ));
+  SLIC_INFO("Testing point bounding box: " << box0 << " against triangle " << tri );
+  EXPECT_FALSE( quest::intersect(tri, box0 ));
 
-    SLIC_INFO("Testing point bounding box: " << box1 << " against triangle " << tri );
-    EXPECT_TRUE( quest::intersect(tri, box1 ));
+  SLIC_INFO("Testing point bounding box: " << box1 << " against triangle " << tri );
+  EXPECT_TRUE( quest::intersect(tri, box1 ));
 
-    //
-    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  //
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
 
-    SLIC_INFO("Testing point bounding box: " << box2 << " against triangle " << tri );
-    EXPECT_TRUE( quest::intersect(tri, box2 ));
+  SLIC_INFO("Testing point bounding box: " << box2 << " against triangle " << tri );
+  EXPECT_TRUE( quest::intersect(tri, box2 ));
 
-    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 
-    SLIC_INFO("Testing point bounding box: " << box3 << " against triangle " << tri );
-    EXPECT_TRUE( quest::intersect(tri, box3 ));
+  SLIC_INFO("Testing point bounding box: " << box3 << " against triangle " << tri );
+  EXPECT_TRUE( quest::intersect(tri, box3 ));
 
-    SLIC_INFO("Testing point bounding box: " << box4 << " against triangle " << tri );
-    EXPECT_FALSE( quest::intersect(tri, box4 ));
+  SLIC_INFO("Testing point bounding box: " << box4 << " against triangle " << tri );
+  EXPECT_FALSE( quest::intersect(tri, box4 ));
 
-    SLIC_INFO("Testing point bounding box: " << box5 << " against triangle " << tri );
-    EXPECT_TRUE( quest::intersect(tri, box5 ));
+  SLIC_INFO("Testing point bounding box: " << box5 << " against triangle " << tri );
+  EXPECT_TRUE( quest::intersect(tri, box5 ));
 
 
 }
 
 TEST( quest_intersection, triangle_aabb_intersection_fromData2 )
 {
-    static int const DIM = 3;
-    typedef quest::Point< double,DIM >   PointType;
-    typedef quest::Triangle< double,DIM > TriangleType;
-    typedef quest::BoundingBox< double,DIM > BoundingBoxType;
+  static int const DIM = 3;
+  typedef quest::Point< double,DIM >   PointType;
+  typedef quest::Triangle< double,DIM > TriangleType;
+  typedef quest::BoundingBox< double,DIM > BoundingBoxType;
 
-    // Triangle 569
-    TriangleType tri(PointType::make_point(0,5,0), PointType::make_point(-0.665356,4.93844,-0.411212), PointType::make_point(-0.665356,4.93844,0.411212));
+  // Triangle 569
+  TriangleType tri(PointType::make_point(0,5,0), PointType::make_point(-0.665356,4.93844,-0.411212), PointType::make_point(-0.665356,4.93844,0.411212));
 
-    // {pt: (8,15,8); level: 4}
-    BoundingBoxType box0(PointType::make_point(0,4.375,0), PointType::make_point(0.625,5,0.625));
-    // {pt: (6,15,7); level: 4}
-    BoundingBoxType box1(PointType::make_point(-1.25,4.375,-0.625), PointType::make_point(-0.625,5,0));
-    // {pt: (6,15,8); level: 4}
-    BoundingBoxType box2(PointType::make_point(-1.25,4.375,0), PointType::make_point(-0.625,5,0.625));
+  // {pt: (8,15,8); level: 4}
+  BoundingBoxType box0(PointType::make_point(0,4.375,0), PointType::make_point(0.625,5,0.625));
+  // {pt: (6,15,7); level: 4}
+  BoundingBoxType box1(PointType::make_point(-1.25,4.375,-0.625), PointType::make_point(-0.625,5,0));
+  // {pt: (6,15,8); level: 4}
+  BoundingBoxType box2(PointType::make_point(-1.25,4.375,0), PointType::make_point(-0.625,5,0.625));
 
-    // Block index {pt: (16,31,16); level: 5}
-    BoundingBoxType box3(PointType::make_point(0,4.6875,0), PointType::make_point(0.3125,5,0.3125));
+  // Block index {pt: (16,31,16); level: 5}
+  BoundingBoxType box3(PointType::make_point(0,4.6875,0), PointType::make_point(0.3125,5,0.3125));
 
-    // Block index {pt: (8,15,8); level: 4}
-    BoundingBoxType box4(PointType::make_point(0,4.375,0), PointType::make_point(0.625,5,0.625));
+  // Block index {pt: (8,15,8); level: 4}
+  BoundingBoxType box4(PointType::make_point(0,4.375,0), PointType::make_point(0.625,5,0.625));
 
-    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
 
 
-    SLIC_INFO("Testing point bounding box: " << box0 << " against triangle " << tri );
-    EXPECT_TRUE( quest::intersect(tri, box0));
+  SLIC_INFO("Testing point bounding box: " << box0 << " against triangle " << tri );
+  EXPECT_TRUE( quest::intersect(tri, box0));
 
-    SLIC_INFO("Testing point bounding box: " << box1 << " against triangle " << tri );
-    EXPECT_TRUE( quest::intersect(tri, box1));
+  SLIC_INFO("Testing point bounding box: " << box1 << " against triangle " << tri );
+  EXPECT_TRUE( quest::intersect(tri, box1));
 
-    SLIC_INFO("Testing point bounding box: " << box2 << " against triangle " << tri );
-    EXPECT_TRUE( quest::intersect(tri, box2));
+  SLIC_INFO("Testing point bounding box: " << box2 << " against triangle " << tri );
+  EXPECT_TRUE( quest::intersect(tri, box2));
 
-    SLIC_INFO("Testing point bounding box: " << box3 << " against triangle " << tri );
-    EXPECT_TRUE( quest::intersect(tri, box3));
+  SLIC_INFO("Testing point bounding box: " << box3 << " against triangle " << tri );
+  EXPECT_TRUE( quest::intersect(tri, box3));
 
-    SLIC_INFO("Testing point bounding box: " << box4 << " against triangle " << tri );
-    EXPECT_TRUE( quest::intersect(tri, box4));
+  SLIC_INFO("Testing point bounding box: " << box4 << " against triangle " << tri );
+  EXPECT_TRUE( quest::intersect(tri, box4));
 
-    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
 
 TEST( quest_intersection, triangle_triangle_intersection )
@@ -413,13 +413,13 @@ TEST( quest_intersection, triangle_triangle_intersection )
 
     //SLIC_INFO("Testing randomly generated traingle: " << randomTriangle << " against triangle " << 
     //intersectingTriangle );
-  EXPECT_TRUE( test);
-  if (!test)  SLIC_INFO("Testing randomly generated traingle failed: " <<
-			randomTriangle << " against triangle " << intersectingTriangle );
+    EXPECT_TRUE( test);
+    if (!test)  SLIC_INFO("Testing randomly generated traingle failed: " <<
+			  randomTriangle << " against triangle " << intersectingTriangle );
+    
+  }
 
-}
-
-asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
 
 
@@ -506,40 +506,40 @@ TEST( quest_intersection, ray_aabb_intersection_general3D )
 
 TEST( quest_intersection, ray_aabb_intersection_tinyDirectionVector3D )
 {
-    static int const DIM = 3;
-    typedef quest::Point< double, DIM >   PointType;
-    typedef quest::Ray< double,DIM > RayType;
-    typedef quest::BoundingBox< double, DIM > BoundingBoxType;
-    typedef quest::Vector< double, DIM >  VectorType;
+  static int const DIM = 3;
+  typedef quest::Point< double, DIM >   PointType;
+  typedef quest::Ray< double,DIM > RayType;
+  typedef quest::BoundingBox< double, DIM > BoundingBoxType;
+  typedef quest::Vector< double, DIM >  VectorType;
 
 
-    // STEP 1: construct ray
-    PointType origin = PointType::make_point( 11.0,11.0,11.0 );
-    VectorType direction;
-    direction[0] = 0.0;
-    direction[1] = 0.0;
-    direction[2] = 0.0;
-    RayType R( origin,direction.unitVector() );
+  // STEP 1: construct ray
+  PointType origin = PointType::make_point( 11.0,11.0,11.0 );
+  VectorType direction;
+  direction[0] = 0.0;
+  direction[1] = 0.0;
+  direction[2] = 0.0;
+  RayType R( origin,direction.unitVector() );
 
 
-    BoundingBoxType box0(PointType::make_point(5.0,5.0,5.0), PointType::make_point(10.0,10.0,10.0));
-    BoundingBoxType box1(PointType::make_point(-5.0,-5.0,-5.0), PointType::make_point(-1.0,-1.0,-1.0));
+  BoundingBoxType box0(PointType::make_point(5.0,5.0,5.0), PointType::make_point(10.0,10.0,10.0));
+  BoundingBoxType box1(PointType::make_point(-5.0,-5.0,-5.0), PointType::make_point(-1.0,-1.0,-1.0));
 
-    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
-    PointType ip;
+  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  PointType ip;
 
-    bool intersects = quest::intersect(R, box0, ip);
-    SLIC_INFO("Testing point bounding box: " << box0 << " against ray ");
-    SLIC_INFO("Point at: "<<ip);
-    EXPECT_FALSE(intersects);
+  bool intersects = quest::intersect(R, box0, ip);
+  SLIC_INFO("Testing point bounding box: " << box0 << " against ray ");
+  SLIC_INFO("Point at: "<<ip);
+  EXPECT_FALSE(intersects);
 
-    intersects = quest::intersect(R, box1, ip);
-    SLIC_INFO("Testing point bounding box: " << box1 << " against ray ");
-    SLIC_INFO("Point at: "<<ip);
-    EXPECT_TRUE( !(intersects));
+  intersects = quest::intersect(R, box1, ip);
+  SLIC_INFO("Testing point bounding box: " << box1 << " against ray ");
+  SLIC_INFO("Point at: "<<ip);
+  EXPECT_TRUE( !(intersects));
 
 
-    //asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  //asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
 
 //------------------------------------------------------------------------------
