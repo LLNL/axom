@@ -16,11 +16,10 @@ class SparsehashHeaders(Package):
        sparse_hash_map or dense_hash_map in C++ code. 
     """
     homepage = "https://code.google.com/p/sparsehash"
-    url      = "https://sparsehash.googlecode.com/files/sparsehash-2.0.2.tar.gz"
-    list_url = "https://code.google.com/p/sparsehash/downloads/list/"
-    list_depth = 2
+    url      = "https://github.com/sparsehash/sparsehash/archive/sparsehash-2.0.2.tar.gz"
 
-    version('2.0.2', '1db92ed7f257d9b5f14a309d75e8a1d4')    
+
+    version('2.0.2', '3d946fb1eabf2a1990bb50b04de0fa12')    
 
     def install(self, spec, prefix):
         # simply install the headers
