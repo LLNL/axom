@@ -1810,7 +1810,7 @@ void DataGroup::importFrom(conduit::Node& node,
     while (views_itr.has_next())
     {
       Node& n_view = views_itr.next();
-      std::string view_name = views_itr.path();
+      std::string view_name = views_itr.name();
 
       DataView * view = createView( view_name );
       view->importFrom(n_view, buffer_id_map);
@@ -1823,7 +1823,7 @@ void DataGroup::importFrom(conduit::Node& node,
     while (groups_itr.has_next())
     {
       Node& n_group = groups_itr.next();
-      std::string group_name = groups_itr.path();
+      std::string group_name = groups_itr.name();
       DataGroup * group = createGroup(group_name);
       group->importFrom(n_group, buffer_id_map);
     }
@@ -1853,7 +1853,7 @@ void DataGroup::importConduitTree(conduit::Node &node)
       while (itr.has_next())
       {
           Node&       cld_node  = itr.next();
-          std::string cld_name  = itr.path();
+          std::string cld_name  = itr.name();
           DataType    cld_dtype = cld_node.dtype();
 
           if(cld_dtype.is_object())
