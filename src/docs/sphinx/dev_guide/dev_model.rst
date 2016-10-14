@@ -24,9 +24,9 @@ The CS Toolkit Git repository lives in a
 on the Livermore Computing CZ Atlassian Space. The repository is the central
 interaction hub for CS Toolkit code development.
 
-===================
-First Things First
-===================
+=======================
+First Things First...
+=======================
 
 The CS Toolkit team uses a variety of means for communication and interaction.
 

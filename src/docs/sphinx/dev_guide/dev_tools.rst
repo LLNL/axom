@@ -48,8 +48,8 @@ We use `Spack <https:://github.com/LLNL/spack>`_ to manage and build the
 third-party libraries on which the Toolkit depends. We also maintain some
 custom python scripts (in our 'scripts directory') to bootstrap Spack.
 
-More on building the code and third-party libraries in Section 
-:ref:`configbuild-label`:
+More information on building the code and third-party libraries can be found
+in :ref:`configbuild-label`.
 
 .. note :: BLT is supported as a standalone product and used by other 
            software projects.
@@ -115,7 +115,7 @@ Performing topic branch development
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is worth emphasizing a fundamental principle of the Gitflow development
-model that we described in :ref:`gitflow-label`
+model that we described in :ref:`gitflow-label`.
 
 .. important:: **We never work directly on the develop or master branches. 
                We use topic branches instead.**
@@ -328,6 +328,13 @@ An open issue can transition to either in progress (work has started on it)
 or closed. An in progress issue can transition to either open (work on it
 has stopped, but it is not finished) or closed. Finally, a closed issue
 can be re-opened, which changes its state to open.
+
+The figure below shows issue state transitions in our JIRA workflow.
+
+.. figure:: jira-issue.png
+
+   This figure shows allowed state transitions in our JIRA issue workflow.
+
 
 Creating a new issue
 ^^^^^^^^^^^^^^^^^^^^^
