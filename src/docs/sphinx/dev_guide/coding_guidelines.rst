@@ -10,14 +10,14 @@
 .. ##
 
 *********************************
-RAJA Coding Guidelines
+CS Toolkit Coding Guidelines
 *********************************
 
 ======================================================
 0 Intent of the Guidelines
 ======================================================
 
-These guidelines define code style conventions for RAJA. Most of the 
+These guidelines define code style conventions for the CS Toolkit. Most of the 
 guidelines were taken from the cited references, sometimes with 
 modifications and simplifications; see :ref:`codingrefs-label`.
 
@@ -43,22 +43,35 @@ Whether and how to apply items qualified with "should" or "may" often depends
 on the particular code situation. It is best to use them in a manner that
 enhances code readability and help to reduce user and developer errors.
 
+.. note :: This guide is not a C++ language tutorial. Developers should be 
+           familiar with the language and educate themselves on various 
+           topics as needed.
+
 
 =========================================================
 1 General Considerations
 =========================================================
 
-1.1 When modifying existing code, the style conventions already in
+1.1 The CS Toolkit contains software developed from scratch as well as code 
+adopted from other sources developed independently. These guidelines apply to 
+software developed for the Toolkit specifically. Modifying other code to be 
+compliant with these guidelines should typically be done only if a significant 
+rewrite is undertaken for other reasons.
+
+1.2 When modifying existing code, the style conventions already in
 use in the file **must** be followed. This is not intended to
 stifle personal creativity - mixing style is disruptive and 
 may cause confusion for users and fellow developers.
 
-1.2 When making stylistic changes to existing code, those changes **should** 
+1.3 When making stylistic changes to existing code, those changes **should** 
 extend to a point where the style is consistent across a reasonable scope. 
 This may mean that an entire source or header file is changed to prevent
 multiple conflicting styles.
 
-1.3 Significant deviations from these guidelines **must** be discussed and
+1.4 Variations in coding style for different Toolkit components is permitted.
+However, coding style within each component **must** be consistent.
+
+1.5 Significant deviations from these guidelines **must** be discussed and
 agreed upon by the development team. If the guidelines need to be changed,
 they **should** be.
 
@@ -119,9 +132,9 @@ users **may** be used.
 of the files it contains is clear. Directory names **should** follow
 the same style conventions. 
 
-      RAJA directory names use all lower case letters and consist of a single 
-      word in most cases. A directory name with more than one word uses 
-      a 'hyphen' to separate words.
+      All directory names **should** use all lower case letters and consist 
+      of a single word in most cases. A directory name with more than one 
+      word **should** use a 'hyphen' to separate words.
 
 
 --------------
@@ -133,7 +146,7 @@ In this section and throughout the guidelines, we refer to "header" and
 (either header or source). Source files are not included in other files and
 form distinct translation units when a program is compiled.
 
-2.3.1 C++ header and source file extensions **must** be: \*.hxx and \*.cxx, 
+2.3.1 C++ header and source file extensions **must** be: \*.hpp and \*.cpp, 
 respectively.
 
 2.3.4 The name of each file **must** clearly indicate its contents.
@@ -142,13 +155,13 @@ respectively.
       implementation of a major type, such as a class **must** include the 
       type name of the type in the file name. For example, the header and
       implementation file for a class called "MyClass" should be named 
-      "MyClass.hxx" and "MyClass.cxx", respectively.
+      "MyClass.hpp" and "MyClass.cpp", respectively.
 
       Files that are not associated with a single type, but which contain 
       closely related functionality or concepts, **must** be named so that
       the functionality or concepts are clear from the name. For example,
       files that define and implement methods that handle file I/O **should** 
-      be named "FileIO.hxx" and "FileUtils.cxx", or similar.
+      be named "FileIO.hpp" and "FileUtils.cpp", or similar.
 
 2.3.3 Header and source files that are closely related, such as a header file
 containing prototypes for a set of methods and a source file containing
@@ -159,42 +172,53 @@ relationship is clear.
 2.3.4 File names that differ only in letter case **must** not be used.
 
       Since we aim to support Windows platforms, which has limited case
-      sensitivity for file names, having files with names "MyClass.hxx" 
-      and "myclass.hxx", for example, is not acceptable. 
+      sensitivity for file names, having files with names "MyClass.hpp" 
+      and "myclass.hpp", for example, is not acceptable. 
 
 
 ------------------------
-2.4 Types
+2.4 Scopes and Types
 ------------------------
 
-2.4.1 Type names (i.e., classes, structs, typedefs, enums, etc.) **must** be 
+2.4.1 All namespaces defined **must** use all lowercase letters.
+
+      For example, most C++ entities in the CS Toolkit are inluded in the
+      namespace "asctoolkit"; for example::
+
+         namespace asctoolkit {
+              // . . .
+         }
+
+.. note :: Change this when we change the namespace
+
+2.4.2 Type names (i.e., classes, structs, typedefs, enums, etc.) **must** be 
 nouns and **should** be in mixed case with each word starting with 
 an upper case letter and all other letters in lower cases.
 
       For example, these are preferred type names::
 
-         IndexSet, RangeSegment, PolicyBase
+         DataStore, MyCollection, TypeUtils
 
       These type names should not be used::
 
-         indexSet, rangesegment, POLICYBASE
+         dataStore, mycollection, TYPEUTILS
 
-2.4.2 Separating characters, such as underscores, **should** not be used 
+2.4.3 Separating characters, such as underscores, **should** not be used 
 between words in a type name.
 
       For example, these names are not preferred type names::
 
-         Index_set, Range_Segment
+         Data_store, My_Collection
 
       **Exceptions to the guidelines above** include cases where types
-      play a similar role to those in common use elsewhere. For example, RAJA 
-      has iterator classes, such as "base_iterator" and "numeric_iterator". 
+      play a similar role to those in common use elsewhere. For example, we
+      define iterator classes, such as "base_iterator" and "numeric_iterator". 
       These names are acceptable since they are consistent with those found 
       in the C++ standard library.
 
-2.4.3 Suffixes that may be used by compilers for name mangling, or 
+2.4.4 Suffixes that may be used by compilers for name mangling, or 
 which are used in the C++ standard library, such as "\_t", **must** not 
-be used in RAJA type names.
+be used in type names.
 
 
 ------------------------
@@ -420,7 +444,7 @@ recompiling after header files change.
 
       **Exceptions:**
 
-      * Header files that define external APIs for RAJA **must**
+      * Header files that define external APIs for the Toolkit project **must**
         include all header files for all types that appear in the API. This
         makes use of the API much easier.
       * When using a function, such as an inline method or template, that is
@@ -474,7 +498,7 @@ for all files.
          #include <vector>
 
          // "base" library headers
-         #include "base/Port.hxx"
+         #include "base/Port.hpp"
 
          // Headers from this project
          #include "MyOtherClass.hpp"
@@ -517,10 +541,16 @@ be documented according to the guidelines in Section 4.
 3.4 Header file content organization
 ---------------------------------------------------------
 
+.. note :: I removed the C-only header file content. Is there any reason we 
+           need it? I think the only strictly C-only files we would have
+           would be auto-generated by Shroud.
+
 Content **must** be organized consistently in all header files. The file 
 layout described here is recommended. The following summary uses numbers 
 and text to illustrate the basic structure. Details about individual items 
 are contained in the guidelines after the summary.
+
+.. note :: Change this when we change the project namespace.
 
 .. code-block:: cpp
 
@@ -530,21 +560,21 @@ are contained in the guidelines after the summary.
    #ifndef MYCLASS_HPP
    #define MYCLASS_HPP
 
-   // (3) RAJA copyright and release statement
+   // (3) CS Toolkit copyright and release statement
 
    // (4) Header file inclusions (when NEEDED in lieu of forward declarations)
    #include "..."
 
-   // (5) Forward declarations NEEDED in header file (outside of RAJA namespace)
+   // (5) Forward declarations NEEDED in header file (outside of project namespace)
    class ...;
 
-   // (6a) RAJA namespace declaration
-   namespace RAJA {
+   // (6a) Toolkit project namespace declaration
+   namespace asctoolkit {
 
-   // (7a) RAJA internal namespace (if used); e.g.,
+   // (7a) Internal namespace (if used); e.g.,
    namespace awesome {
 
-   // (8) Forward declarations NEEDED in header file (in RAJA namespace(s))
+   // (8) Forward declarations NEEDED in header file (in project namespace(s))
    class ...;
 
    // (9) Type definitions (class, enum, etc.) with Doxygen comments e.g.,
@@ -557,11 +587,11 @@ are contained in the guidelines after the summary.
       ...
    };
 
-   // (7b) RAJA internal namespace closing brace (if needed)
+   // (7b) Internal namespace closing brace (if needed)
    } // awesome namespace closing brace
 
-   // (6b) RAJA namespace closing brace
-   } // RAJA namespace closing brace
+   // (6b) Project namespace closing brace
+   } // asctoolkit namespace closing brace
 
    // (2b) Header file include guard closing endif */
    #endif // closing endif for header file include guard
@@ -569,7 +599,7 @@ are contained in the guidelines after the summary.
 
 3.4.1 Each header file **must** begin with a Doxygen file prologue (item 1).
 
-      See Section 4 for details.
+      See :ref:`docsec-label` for details.
 
 3.4.2 The contents of each header file **must** be guarded using a 
 preprocessor directive that defines a unique "guard name" for the header.
@@ -580,29 +610,33 @@ preprocessor directive that defines a unique "guard name" for the header.
       must use the file name followed by "_HPP"; e.g., "MYCLASS_HPP" as above.
 
 3.4.3 Each header file **must** contain a comment section that includes the 
-RAJA copyright and release statement (item 3).
+CS Toolkit copyright and release statement (item 3).
 
-      See Section 4 for details.
+      See :ref:`docsec-label` for details.
 
 3.4.4 All necessary header file inclusion statements (item 4) **must** 
 appear immediately after copyright and release statement and before any 
 forward declarations, type definitions, etc.
 
 3.4.5 Any necessary forward declarations (item 5) for types defined outside 
-the RAJA namespace **must** appear after the header include statements
-and before the RAJA namespace statement.
+the project namespace **must** appear after the header include statements
+and before the Toolkit project namespace statement.
 
 3.4.6 All types defined and methods defined in a header file **must** be 
 included in a namespace.
 
-      Either the main "RAJA" namespace (item 6) or a namespace
-      nested within the RAJA namespace (item 7) may be used, or 
+      Either the project "asctoolkit" namespace (item 6) or a namespace
+      nested within the project namespace (item 7) may be used, or 
       both may be used. A closing brace ( "}" ) is required to close each
       namespace declaration (items 6b and 7b) before the closing '#endif' 
       for the header file include guard.
 
-3.4.7 Forward declarations needed **must** appear first in the "RAJA" or 
+.. note :: Change this when we change the namespace.
+
+3.4.7 Forward declarations needed **must** appear first in the "asctoolkit" or 
 nested namespace before any other statements (item 8).
+
+.. note :: Change this when we change the namespace.
 
 3.4.8 All class and other type definitions (item 9) **must** appear 
 after header file inclusions and forward declarations. A proper class 
@@ -622,7 +656,7 @@ guidelines. In section :ref:`sourceorg-label`, we describe recommended source
 file organization.
 
 3.5.1 Each source file **must** have an associated header file with a matching
-name, such as "Foo.hxx" for the source file Foo.cxx".
+name, such as "Foo.hpp" for the source file Foo.cpp".
 
       **Exceptions:** Test files may not require headers.
 
@@ -653,19 +687,21 @@ layout described here is recommended. The following summary uses numbers
 and text to illustrate the basic structure. Details about individual items 
 are contained in the guidelines after the summary.
 
+.. note :: Change this when we change the project namespace.
+
 .. code-block:: cpp
 
    // (1) Doxygen file prologue
 
-   // (2) RAJA copyright and release statement
+   // (2) CS Toolkit copyright and release statement
 
    // (3) Header file inclusions (only those that are NECESSARY)
    #include "..."
 
-   // (4a) RAJA namespace declaration
-   namespace RAJA {
+   // (4a) Toolkit project namespace declaration
+   namespace asctoolkit {
 
-   // (5a) RAJA internal namespace (if used); e.g.,
+   // (5a) Internal namespace (if used); e.g.,
    namespace awesome {
 
    // (6) Initialization of static variables and data members, if any; e.g.,
@@ -678,27 +714,27 @@ are contained in the guidelines after the summary.
    // (5b) Internal namespace closing brace (if needed)
    } // awesome namespace closing brace
 
-   // (4b) RAJA namespace closing brace
-   } // RAJA namespace closing brace
+   // (4b) Project namespace closing brace
+   } // asctoolkit namespace closing brace
 
 
 3.6.1 Each source file **must** begin with a Doxygen file prologue (item 1).
 
-      See Section 4 for details.
+      See :ref:`docsec-label` for details.
 
 3.6.2 Each source file **must** contain a comment section that includes the
-      RAJA copyright and release statement (item 3).
+      CS Toolkit copyright and release statement (item 2).
 
-      See Section 4 for details.
+      See :ref:`docsec-label` for details.
 
-3.6.3 All necessary header file include statements (item 2) **must**
+3.6.3 All necessary header file include statements (item 3) **must**
       appear immediately after the copyright and release statement and 
       before any implementation statements in the file.
 
 3.6.4 All contents in a source file **must** follow the same namespace 
 inclusion pattern as its corresponding header file (see item 3.4.6).
 
-      Either the main "RAJA" namespace (item 4a) or internal namespace 
+      Either the main project namespace (item 4a) or internal namespace 
       (item 5a) may be used, or both may be used. A closing brace ( "}" ) 
       is required to close each namespace declaration (items 4b and 5b).
 
@@ -717,10 +753,13 @@ inclusion pattern as its corresponding header file (see item 3.4.6).
 4.1 Namespaces
 ---------------------------------------------------------
 
-4.1.1 All RAJA code **must** be included in the RAJA namespace.
+4.1.1 All Toolkit code **must** be included in the project namespace 
+'asctoolkit'.
 
-4.1.2 When appropriate, RAJA code should be included in a nested namespace
-with the RAJA namespace.
+.. note :: Change this when we change the project namespace.
+
+4.1.2 When appropriate, code should be included in a nested namespace
+with the project namespace.
 
 4.1.3 The 'using directive' **must not** be used in any header file.
 
@@ -757,44 +796,6 @@ them invisible outside the file.
          namespace {
             void myInternalFunction();
          }
-
-4.1.7 Local variables **should** be declared in the narrowest scope possible 
-and as close to first use as possible.
-
-      Minimizing variable scope makes source code easier to comprehend and
-      may have performance and other benefits. For example, declaring a loop 
-      index inside a for-loop statement such as::
-
-         for (int ii = 0; ...) {
-
-      is preferable to::
-
-         int ii;
-         ...
-         for (ii = 0; ...) {
-
-      **Exception:** When a local variable is an object, its constructor and
-      destructor may be invoked every time a scope (such as a loop) is entered
-      and exited, respectively. Thus, instead of this::
-
-         for (int ii = 0; ii < 1000000; ++ii) {
-            Foo f;
-            f.doSomethingCool(ii);
-         }
-
-      it may be more efficient to do this::
-
-         Foo f;
-         for (int ii = 0; ii < 1000000; ++ii) {
-            f.doSomethingCool(ii);
-         }
-
-4.1.8 A reference to any item in the global namespace (which should be rare 
-if needed at all) **should** use the scope operator ("::") to make this clear.
-
-      For example::
-
-         int local_val = ::global_val;
 
 
 ---------------------------------------------------------
@@ -863,7 +864,7 @@ enclosing class interface.
             // use name 'Inner' in Outer class definition
          };
 
-         // In Outer.cxx implementation file...
+         // In Outer.cpp implementation file...
          class Outer::Inner
          {
             // Inner class definition
@@ -871,6 +872,50 @@ enclosing class interface.
 
       This makes it clear that the nested class is only needed in the
       implementation and does not clutter the class definition.
+
+
+---------------------------------------------------------
+4.2 Local variables
+---------------------------------------------------------
+
+4.2.1 Local variables **should** be declared in the narrowest scope possible 
+and as close to first use as possible.
+
+      Minimizing variable scope makes source code easier to comprehend and
+      may have performance and other benefits. For example, declaring a loop 
+      index inside a for-loop statement such as::
+
+         for (int ii = 0; ...) {
+
+      is preferable to::
+
+         int ii;
+         ...
+         for (ii = 0; ...) {
+
+      **Exception:** When a local variable is an object, its constructor and
+      destructor may be invoked every time a scope (such as a loop) is entered
+      and exited, respectively. Thus, instead of this::
+
+         for (int ii = 0; ii < 1000000; ++ii) {
+            Foo f;
+            f.doSomethingCool(ii);
+         }
+
+      it may be more efficient to do this::
+
+         Foo f;
+         for (int ii = 0; ii < 1000000; ++ii) {
+            f.doSomethingCool(ii);
+         }
+
+4.2.2 A local reference to any item in the global namespace (which should be 
+rare if needed at all) **should** use the scope operator ("::") to make 
+this clear.
+
+      For example::
+
+         int local_val = ::global_val;
 
 
 .. _docsec-label: 
@@ -1099,29 +1144,26 @@ described here.
 5.3 Copyright and release statement
 --------------------------------------------------------------------
 
-5.3.1 Each file **must** contain a comment section that includes the RAJA 
-release information (using whichever comment characters are appropriate for the language the file is written in). In the interest of brevity, the complete
-release statement is summarized here to show the essential information. It 
-can be found in any of the RAJA files.
+5.3.1 Each file **must** contain a comment section that includes the project
+software release information (using whichever comment characters are 
+appropriate for the language the file is written in). In the interest of 
+brevity, the complete release statement is summarized here to show the 
+essential information. The full version can be found in any of the project 
+files.
+
+.. note :: Change this when we release the code.
 
 .. code-block:: cpp
 
-   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-   // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
-   // 
-   // Produced at the Lawrence Livermore National Laboratory.
-   //
-   // LLNL-CODE-689114
-   //
-   // All rights reserved.
-   //
-   // This file is part of RAJA.
-   //
-   // For additional details, please also read RAJA/README-license.txt.
-   //
-   // ...
-   //
-   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+   /*
+    * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+    * Produced at the Lawrence Livermore National Laboratory.
+    *
+    * All rights reserved.
+    *
+    * This source code cannot be distributed without permission and
+    * further review from Lawrence Livermore National Laboratory.
+    */
 
 
 --------------------------------------------------------------------
