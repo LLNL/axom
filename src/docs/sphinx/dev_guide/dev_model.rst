@@ -232,7 +232,7 @@ should be deleted.
 
 In addition to successful compilation and passing tests, changes to the 
 develop and master branches should be scrutinized in other ways and using 
-other tools. For example:
+other tools. In particular :
 
 * The code should compile cleanly at the highest warning level with the 
   main compilers supported by the project. All warnings **must** be 

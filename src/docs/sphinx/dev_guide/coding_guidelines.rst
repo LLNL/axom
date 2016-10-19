@@ -182,7 +182,7 @@ relationship is clear.
 
 2.4.1 All namespaces defined **must** use all lowercase letters.
 
-      For example, most C++ entities in the CS Toolkit are inluded in the
+      For example, most C++ entities in the CS Toolkit are included in the
       namespace "asctoolkit"; for example::
 
          namespace asctoolkit {
@@ -1488,6 +1488,27 @@ which makes maintenance and modification difficult.
       to class types **may** be used and must be initialized properly in a
       single source file.
 
+6.1.5 Preprocessor macros **should not** be used when there is a better 
+alternative, such as an inline function or a constant variable definition.
+
+      For example, this::
+
+         const double PI = 3.1415926535897932384626433832;
+
+      is preferable to this::
+
+         #define PI (3.1415926535897932384626433832)
+
+      Macros circumvent the ability of a compiler to enforce beneficial
+      language concepts such as scope and type safety. Macros are also
+      context-specific and can produce errors that cannot be understood
+      easily in a debugger. Macros **should be used only** when there is
+      no better choice for a particular situation.
+
+6.1.6 Hard-coded numerical constants and other "magic numbers" **must not** 
+be used directly in source code. When such values are needed, they **should** 
+be declared as named constants to enhance code readability and consistency.
+
 
 ---------------------------------------------------
 6.2 Compiler-generated class methods
@@ -1758,7 +1779,7 @@ to insure that each object is properly allocated and initialized.
 ---------------------------------------------------
 
 6.4.1 Polymorphism via inheritance and virtual methods **must** be used
-judiciously in RAJA, if used at all. In the context of heterogeneous 
+judiciously, if used at all. In the context of heterogeneous 
 hardware environments, runtime polymorphism using virtual methods is
 problematic; e.g., when objects are passed between host and device code using
 CUDA, virtual methods cannot be called.
@@ -1799,37 +1820,7 @@ correctly, it is fragile and potentially non-portable.
 
 
 --------------------------------------------------------------------
-6.5 Const 
---------------------------------------------------------------------
-
-6.4.1 The "const" qualifier **should** be used for variables and methods 
-when appropriate to clearly indicate usage and to take advantage of 
-compiler-based error-checking. For example, any class member function 
-that does not change the state of the object on which it is called 
-**should** be declared "const"
-
-      Constant declarations can make code safer and less error-prone since they 
-      enforce intent at compile time. They also improve code understanding
-      because a constant declaration clearly indicates that the state
-      of a variable or object will not change in the scope in which the 
-      declaration appears.
-
-6.5.2 Any class member function that does not change a data member of the 
-associated class **must** be declared "const".
-
-      This enables the compiler to detect unintended usage.
-
-6.5.3 Any class member function that returns a class data member that 
-should not be changed by the caller **must** be declared "const" and 
-**must** return the data member as a "const" reference or pointer.
-
-       Often, both "const" and non-"const" versions of member access functions
-       are needed so that callers may declare the variable that holds the
-       return value with the appropriate "const-ness".
-
-
---------------------------------------------------------------------
-6.6 Inline Functions
+6.5 Inline Functions
 --------------------------------------------------------------------
 
 Function inlining is a compile time operation and the full definition of an 
@@ -1852,11 +1843,11 @@ may make debugging difficult.
 **When in doubt, don't use the "inline" keyword and let the compiler decide 
 whether to inline a function.**
 
-6.6.1 Simple, short frequently called functions, such as accessors, that will
+6.5.1 Simple, short frequently called functions, such as accessors, that will
 almost certainly be inlined by most compilers **should** be implemented inline 
 in header files.
 
-6.6.2 Class constructors **should not** be inlined. 
+6.5.2 Class constructors **should not** be inlined. 
 
       A class constructor implicitly calls the constructors for its base 
       classes and initializes some or all of its data members, potentially 
@@ -1868,7 +1859,7 @@ in header files.
       members, is not a subclass, and does not explicitly declare a destructor,
       can have its constructor safely inlined in most cases. 
 
-6.6.3 Virtual functions **must not** be inlined due to polymorphism. 
+6.5.3 Virtual functions **must not** be inlined due to polymorphism. 
 
       For example, do not declare a virtual class member function as::
 
@@ -1883,17 +1874,17 @@ in header files.
 
 
 --------------------------------------------------------------------
-6.7 Function and Operator Overloading
+6.6 Function and Operator Overloading
 --------------------------------------------------------------------
 
-6.7.1 Function overloading **must not** be used to define functions that 
+6.6.1 Function overloading **must not** be used to define functions that 
 do conceptually different things. 
 
       Someone reading declarations of overloaded functions should be able to 
       assume (and rightfully so!) that functions with the same name do 
       something very similar.
 
-6.7.2 If an overloaded virtual method in a base class is overridden in a 
+6.6.2 If an overloaded virtual method in a base class is overridden in a 
 derived class, all overloaded methods with the same name in the base class 
 **must** be overridden in the derived class. 
 
@@ -1901,7 +1892,7 @@ derived class, all overloaded methods with the same name in the base class
       Remember that when a virtual function is overridden, the overloads of 
       that function in the base class **are not visible** to the derived class.
 
-6.7.3 Operator overloading **must not** be used to be clever to the point of 
+6.6.3 Operator overloading **must not** be used to be clever to the point of 
 obfuscation and cause others to think too hard about an operation. 
 Specifically, an overloaded operator must preserve "natural" semantics 
 by appealing to common conventions and **must** have meaning similar 
@@ -1916,7 +1907,7 @@ to non-overloaded operators of the same name.
       understand, and it may be more efficient since it may allow the compiler
       to take advantage of longer expressions than it could otherwise.
 
-6.7.4 Both boolean operators "==" and "!=" **should** be implemented if one 
+6.6.4 Both boolean operators "==" and "!=" **should** be implemented if one 
 of them is. 
 
       For consistency and correctness, the "!=" operator **should** be 
@@ -1927,7 +1918,7 @@ of them is.
             return !(this == rhs);
          }
 
-6.7.5 Standard operators, such as "&&", "||", and "," (i.e., comma), 
+6.6.5 Standard operators, such as "&&", "||", and "," (i.e., comma), 
 **must not** be overloaded.
 
       Built-in versions of these operators are typically treated specially 
@@ -1938,17 +1929,173 @@ of them is.
       order is the same as the built-in versions.
 
 
+--------------------------------------
+6.7 Miscellaneous Function Guidelines
+--------------------------------------
+
+6.7.1 Function arguments **must** be ordered the same way for all routines 
+in a Toolkit component.
+
+      Common conventions are either to put all input arguments first, then
+      outputs, or the other way around. Input and output and outputs
+      **must not** be mixed in a function signature. Parameters that are both
+      input and output can make the best choice unclear. Conventions consistent
+      with related functions **must** always be followed. When adding new
+      parameters to an existing method, the established ordering convention
+      **must** be followed. Do not just stick new parameters at the end of
+      the argument list.
+
+6.7.2 Each function argument that is not a built-in type (i.e., int, double, 
+char, etc.) **should** be passed either by reference or as a pointer to avoid 
+unnecessary copies.
+
+      **Exception:** When pass-by-value behavior is desired.
+
+6.7.3 Each function reference or pointer argument that is not changed by t
+he function **must** be declared "const".
+
+6.7.4 Each argument in a function declaration **must** be given a name that 
+exactly matches the function implementation.
+
+      For example, use::
+
+         void computeSomething(int op_count, int mode);
+
+      not::
+
+         void computeSomething(int, int);
+
+6.7.5 Each function **should** have exactly one return point to make 
+control logic clear.
+
+      Functions with multiple return points tend to be a source of errors when
+      modifying code. Such routines can always be refactored to have a single
+      return point by using local scope boolean variables and/or different
+      control logic.
+
+      A function **may** have two return points if the first return statement
+      is associated with error condition check, for example. In this case,
+      the error check **should** be performed at the start of the function body
+      before other statements are reached. For example, the following is a
+      reasonable use of two function return points because the error condition
+      check and the return value for successful completion are clearly visible::
+
+         int computeSomething(int in_val)
+         {
+            if (in_val < 0) { return -1; }
+
+            // ...rest of function implementation...
+
+            return 0;
+         }
+
+6.7.6 "Sanity checks" should be performed on values of function arguments 
+(e.g., range checking, null pointer checking, etc.) upon entry to a function.
+
+      This is an excellent way to provide run-time debugging capabilities in
+      code. We have macros for this to make syntax consistent. When triggered, 
+      they can emit a failed boolean expression and descriptive message that 
+      help to understand the violation. They are active or not based on the 
+      compilation mode, either debug (active) or optimized (inactive). For 
+      example::
+
+         void doSomething(int in_val, Foo* in_foo)
+         {
+            ATK_ASSERT_MSG( in_val >= 0, "in_val must be positive or zero" );
+            ATK_ASSERT( in_foo != ATK_NULL_PTR );
+
+            // ...function implementation...
+         }
+
+.. note :: We should add specific guidelines for error handling, etc.
+
+
+-------------
+6.8 Types
+-------------
+
+6.8.1 The "bool" type **should** be used instead of "int" for boolean 
+true/false values.
+
+6.8.2 The "string" type **should** be used instead of "char\*".
+
+      The string type supports and optimizes many character string manipulation
+      operations which can be error-prone and less efficient if implemented
+      explicitly using "char\*" and standard C library functions. Note that
+      "string" and "char\*" types are easily interchangeable, which allows C++
+      string data to be used when interacting with C routines.
+
+6.8.3 Class type variables **should** be defined using direct initialization 
+instead of copy initialization to avoid unwanted and spurious type conversions 
+and constructor calls that may be generated by compilers.
+
+      For example, use::
+
+         std::string name("Bill");
+
+      instead of::
+
+         std::string name = "Bill";
+
+      or::
+
+         std::string name = std::string("Bill");
+
+6.8.4 An enumeration type **should** be used instead of macro definitions 
+or "int" data for sets of related constant values. 
+
+      Since C++ enums are distinct types with a compile-time specified set of 
+      values, there values cannot be implicitly cast to integers or 
+      vice versa -- a "static_cast" operator must be used to make the 
+      conversion explicit. Thus, enums provide type and value safety and 
+      scoping benefits.
+
+      In many cases, the C++11 `enum class` construct **should** be used 
+      since it provides stronger type safety and better scoping than regular
+      enum types.
+
+
 --------------------------------------------------------------------
-6.8 Casts and Type Conversions
+6.9 Const 
 --------------------------------------------------------------------
 
-6.8.1 C-style casts **must not** be used.
+6.9.1 The "const" qualifier **should** be used for variables and methods 
+when appropriate to clearly indicate usage and to take advantage of 
+compiler-based error-checking. For example, any class member function 
+that does not change the state of the object on which it is called 
+**should** be declared "const"
+
+      Constant declarations can make code safer and less error-prone since they 
+      enforce intent at compile time. They also improve code understanding
+      because a constant declaration clearly indicates that the state
+      of a variable or object will not change in the scope in which the 
+      declaration appears.
+
+6.9.2 Any class member function that does not change a data member of the 
+associated class **must** be declared "const".
+
+      This enables the compiler to detect unintended usage.
+
+6.9.3 Any class member function that returns a class data member that 
+should not be changed by the caller **must** be declared "const" and 
+**must** return the data member as a "const" reference or pointer.
+
+       Often, both "const" and non-"const" versions of member access functions
+       are needed so that callers may declare the variable that holds the
+       return value with the appropriate "const-ness".
+
+
+--------------------------------------------------------------------
+6.10 Casts and Type Conversions
+--------------------------------------------------------------------
+
+6.10.1 C-style casts **must not** be used.
 
       All type conversions **must** be done explicitly using the named C++ 
       casting operators; i.e., "static_cast", "const_cast", "dynamic_cast", 
       "reinterpret_cast".
 
-6.8.2 The "const_cast" operator **should** be avoided. 
+6.10.2 The "const_cast" operator **should** be avoided. 
 
        Casting away "const-ness" is usually a poor programming decision and can 
        introduce errors.
@@ -1956,13 +2103,13 @@ of them is.
        **Exception:** It may be necessary in some circumstances to cast away 
        const-ness, such as when calling const-incorrect APIs.
 
-6.8.3 The "reinterpret_cast" **must not** be used unless absolutely necessary.
+6.10.3 The "reinterpret_cast" **must not** be used unless absolutely necessary.
 
        This operator was designed to perform a low-level reinterpretation of 
        the bit pattern of an operand. This is needed only in special 
        circumstances and circumvents type safety.
 
-6.8.4  A class constructor that takes a single *non-default* argument, or a 
+6.10.4  A class constructor that takes a single *non-default* argument, or a 
 single argument with a *default* value, **must** be declared"explicit".
 
        This prevents compilers from performing unexpected (and, in many
@@ -1988,22 +2135,38 @@ single argument with a *default* value, **must** be declared"explicit".
        to get the same result, which is much more clear.
 
 
---------------------------------------------------------------------
-6.9 Enumerations
---------------------------------------------------------------------
+-----------------------------
+6.11 Memory management
+-----------------------------
 
-6.9.1 An enumeration type **should** be used instead of macro definitions 
-or "int" data for sets of related constant values. 
+6.11.1 Memory **should** be deallocated in the same scope in which it is 
+allocated.
 
-      Since C++ enums are distinct types with a compile-time specified set of 
-      values, there values cannot be implicitly cast to integers or 
-      vice versa -- a "static_cast" operator must be used to make the 
-      conversion explicit. Thus, enums provide type and value safety and 
-      scoping benefits.
+6.11.2 Memory **should** be deallocated as soon as it is no longer needed.
 
-      In many cases, the C++11 `enum class` construct **should** be used 
-      since it provides stronger type safety and better scoping than regular
-      enum types.
+6.11.3 Pointers **should** be set to null explicitly when memory is deallocated.
+
+      For uniformity across the CS Toolkit and to facilitate C++11 and
+      non-C++11 usage, this should be done using the common macro
+      "ATK\_NULLPTR"; For example::
+
+         double* data = new double[10];
+         // ...
+         delete [ ] data;
+         data = ATK_NULLPTR;
+
+6.11.4 Data managed exclusively within C++ code **must** be allocated and 
+deallocated using the "new" and "delete" operators.
+
+      The operator "new" is type-safe, simpler to use, and less error-prone
+      than the "malloc" family of C functions.  C++ new/delete operators
+      **must not** be combined with C malloc/free functions.
+
+6.11.5 Every C++ array deallocation statement **must** include "[ ]" 
+(i.e., "delete[ ]") to avoid memory leaks.
+
+      The rule of thumb is: when "[ ]" appears in the allocation, then "[ ]"
+      **must** appear in the corresponding deallocation statement.
 
 
 =====================================
@@ -2065,17 +2228,13 @@ unless the tested quantity is a boolean or pointer type.
 --------------------------------------------------------------------
 
 Most conventions for indentation, spacing and code alignment 
-preferred by the RAJA team are enforced by using the `clang-format` tool. 
-It can be run from the top-level RAJA directory using a python script 
-in the scripts directory; i.e.,::
+preferred by the team are enforced by using the `uncrustify` tool. 
+It can be run from the top-level CS Toolkit directory...
 
-   $ ./scripts/clang-format-all.py
+The format options are defined in the file `*` 
 
-The format options are defined in the file `.clang-format` in the top-level
-RAJA directory. 
-
-Not all preferred formatting conventions are supported by the clang format 
-tool. The following guidelines provide additional recommendations to make
+Not all preferred formatting conventions are supported by uncrustify.
+The following guidelines provide additional recommendations to make
 code easier to read and understand.
 
 7.2.1 Blank lines and indentation **should** be used throughout code to 
@@ -2145,7 +2304,7 @@ compilers we need to support.
 8.2 Compilation
 --------------------------------------------------------------------
 
-8.2.3 Excessive use of the preprocessor for conditional compilation at a 
+8.2.1 Excessive use of the preprocessor for conditional compilation at a 
 fine granularity (e.g., selectively including or removing individual source 
 lines) **should** be avoided. 
 
@@ -2156,22 +2315,23 @@ lines) **should** be avoided.
 
       Code reviews by team members will dictate what is/is not acceptable.
 
-8.2.4 Developers **should** rely on compile-time and link-time errors to 
+8.2.2 Developers **should** rely on compile-time and link-time errors to 
 check for code correctness and invariants. 
 
       Errors that occur at run-time and which depend on specific control flow 
       and program state are inconvenient for users and can be difficult to 
       detect and fix.
 
-      Add some specific guidance here on how this should be done...
+.. note ::      Add some specific guidance here on how this should be done...
+
 
 --------------------------------------------------------------------
 8.3 Dependencies
 --------------------------------------------------------------------
 
-8.3.1 RAJA **should** only require a C++11 standard-complaint compiler and
-the parallel programming model backends it encapsulates. Support for those
-models should be provided by compilers, associated libraries, and runtimes.
+8.3.1 C++ standard....
+
+8.3.2 TPLs....
 
 
 
