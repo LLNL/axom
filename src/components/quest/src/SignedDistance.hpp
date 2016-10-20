@@ -85,6 +85,7 @@ public:
    * \param [in]  queryPnt user-supplied point.
    * \param [out] bvh_buckets the buckets of the BVH used to satisfy the query.
    * \param [out] triangles the triangles of the BVH used to satisfy the query.
+   * \param [out] my_triangles the triangle used to compute the pseudo-normal.
    * \return minDist the minimum signed distance to the surface mesh.
    *****************************************************************************
    */
