@@ -22,8 +22,8 @@
 
 namespace quest {
 
-/// \name Overloaded Operators
 /// @{
+/// \name Overloaded Operators
 
 // Forward declare the templated classes and operator functions
 template<typename T, int DIM> class Vector;

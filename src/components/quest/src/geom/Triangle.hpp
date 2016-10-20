@@ -71,60 +71,6 @@ public:
    */
    ~Triangle() { }
 
-  /*!
-   *****************************************************************************
-   * \brief Returns a reference to vertex A of the triangle.
-   * \return A reference to vertex A of the triangle.
-   * \see quest::Point
-   *****************************************************************************
-   */
-  PointType& A( ) { return m_points[0]; };
-
-  /*!
-   *****************************************************************************
-   * \brief Returns a const reference to vertex A of the triangle.
-   * \return A const reference to vertex A of the triangle.
-   * \see quest::Point
-   *****************************************************************************
-   */
-  const PointType& A() const { return m_points[0]; };
-
-  /*!
-   *****************************************************************************
-   * \brief Returns a reference to vertex B of the triangle.
-   * \return B reference to vertex B of the triangle.
-   * \see quest::Point
-   *****************************************************************************
-   */
-  PointType& B( ) { return m_points[1]; };
-
-  /*!
-   *****************************************************************************
-   * \brief Returns a const reference to vertex B of the triangle.
-   * \return B const reference to vertex B of the triangle.
-   * \see quest::Point
-   *****************************************************************************
-   */
-  const PointType& B() const { return m_points[1]; };
-
-  /*!
-   *****************************************************************************
-   * \brief Returns a reference to vertex C of the triangle.
-   * \return C reference to vertex C of the triangle.
-   * \see quest::Point
-   *****************************************************************************
-   */
-  PointType& C( ) { return m_points[2]; };
-
-  /*!
-   *****************************************************************************
-   * \brief Returns a const reference to vertex C of the triangle.
-   * \return C const reference to vertex C of the triangle.
-   * \see quest::Point
-   *****************************************************************************
-   */
-  const PointType& C() const { return m_points[2]; };
-
   /**
    *****************************************************************************
    * \brief Index operator to get the i^th vertex
@@ -155,7 +101,7 @@ public:
    *****************************************************************************
    * \brief Returns the normal of the triangle (not normalized)
    * \pre This function is only valid when DIM = 3
-   * \return The normal vector to the triangle, zero vector otherwise
+   * \return n triangle normal when DIM=3, zero vector otherwise
    *****************************************************************************
    */
   VectorType normal() const
@@ -246,7 +192,7 @@ inline double Triangle< T,DIM >::angle( int idx ) const
   const int idx1 = (idx+1)%NUM_TRI_VERTS;
   const int idx2 = (idx+2)%NUM_TRI_VERTS;
 
-  PointType pt = m_points[idx];
+  const PointType& pt = m_points[idx];
   VectorType V1( pt, m_points[idx1] );
   VectorType V2( pt, m_points[idx2] );
   V1 /= V1.norm();
