@@ -78,7 +78,7 @@ up you prompt to show which branch you are on, etc.
 SSH keys
 ^^^^^^^^^^^^^^^
 
-If you've not used Bitbucket before, you will need to 
+If you have not used Bitbucket before, you will need to 
 `create an SSH key <https://confluence.atlassian.com/bitbucketserver/creating-ssh-keys-776639788.html>`_ and `add the key to your Bitbucket profile <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_.
 
 .. _repoclone-label:

@@ -9,29 +9,21 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
-.. _configbuild-label:
-
 ======================================================
-Configuration, Building, and Testing
+Configuration and Building
 ======================================================
 
-This section describes how to configure and build our code and how
-to run tests and other code development tasks. See :ref:`repoclone-label`
-for information about accessing the code.
+This section describes how to configure and build our code.
 
-.. note :: Some of these sections are redundant with those in the user 
-           quick-start guide. Figure out what should go where and how to 
-           cross link things...
+.. note :: These sections need work...
 
-
-.. _build-label:
 
 --------------------------
 Configuration and building
 --------------------------
 
 We use a CMake-based system to configure and build our code, called *BLT*
-(see :ref:`tooleco-label` for more information). 
+(see **add link to BLT docs** for more information). 
 
 Python helper script
 ^^^^^^^^^^^^^^^^^^^^^
@@ -74,9 +66,21 @@ i.e.,::
 Run CMake directly
 ^^^^^^^^^^^^^^^^^^^
 
-You can also configure the code by running CMake directly and passing it 
-the appropriate arguments. For example, to configure a release build with
-the gcc compiler, you could do the following::
+You can configure the code by running CMake directly and passing it the 
+appropriate arguments. For example, to configure, build and install a release 
+build with the gcc compiler, you could pass a host-config file CMake::
+
+   $ mkdir build-gnu-release
+   $ cd build-gnu-release
+   $ cmake -C ./host-configd/surface-chaos_5_x86_64_ib-gcc@4.9.3.cmake \
+     -DCMAKE_BUILD_TYPE=Release \
+     -DCMAKE_INSTALL_PREFIX=../install-gnu-release \
+     ../src/
+   $ make
+   $ make install
+
+Alternatively, you could forego the host-config file entirely and pass all the 
+argeuments you need to CMakel; for example:: 
 
    $ mkdir build-gnu-release
    $ cd build-gnu-release
@@ -84,14 +88,13 @@ the gcc compiler, you could do the following::
      -DCMAKE_CXX_COMPILER=/usr/apps/gnu/4.9.3/bin/g++ \
      -DCMAKE_BUILD_TYPE=Release \
      -DCMAKE_INSTALL_PREFIX=../install-gnu-release \
+     ... \
      ../src/
    $ make
    $ make install
 
-.. note :: Actually, this will not work because the locations of several 
-           third-party libraries must be provided. We should maintain a 
-           list of dependencies required for the Toolkit components and
-           make it clear what users need to provide to use what they need.
+.. note :: The locations of all required third-party libraries must be 
+           provided here. These are encoded in our host-config files.
 
 
 .. _hostconfig-label:
@@ -122,28 +125,13 @@ all evailable targets by passing 'help' to make; i.e.,::
    $ make help
 
 The name of each target should be sufficiently descriptive to indicate
-what the target does. For example, to generate this developer guide, run the
-following command::
+what the target does. For example, to run all tests and make sure the
+Toolkit components are build properly, execute the following command::
 
-   $ make dev_guide_docs
+   $ make test
 
-
-.. _testing-label:
-
---------------------------
-Testing
---------------------------
-
-Running tests
-^^^^^^^^^^^^^^^
-
-Describe how to run tests...
-
-Adding tests
-^^^^^^^^^^^^^^^
-
-Describe how to add tests...
-
+.. note :: Add a table listing and describing the most common make targets
+           users may want to use.
 
 
 .. _tpl-label:
@@ -152,7 +140,5 @@ Describe how to add tests...
 Third-party libraries
 --------------------------
 
-Describe how to run the scripts to install third-party libraries for 
-testing different versions locally on a branch and for installing new
-libraries for the team to use...
+Describe how to run the scripts to install third-party libraries...
 
