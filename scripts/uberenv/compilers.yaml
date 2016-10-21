@@ -27,10 +27,10 @@ compilers:
             fc: /usr/local/tools/ic-16.0.109/bin/ifort
     bgqos_0:
           gcc@4.7.2:
-             cc:  /usr/local/tools/compilers/ibm/mpicxx-4.7.2
-             cxx: /usr/local/tools/compilers/ibm/mpicxx-4.7.2
-             f77: /usr/local/tools/compilers/ibm/mpif90-4.7.2
-             fc:  /usr/local/tools/compilers/ibm/mpif90-4.7.2
+             cc:  /usr/local/tools/compilers/ibm/bggcc-4.7.2
+             cxx: /usr/local/tools/compilers/ibm/bgg++-4.7.2
+             f77: /usr/local/tools/compilers/ibm/bggfortran-4.7.2
+             fc:  /usr/local/tools/compilers/ibm/bggfortran-4.7.2
           xlc@12.1:
             cc:  /usr/local/bin/bgxlc_r
             cxx: /usr/local/bin/bgxlc++_r
