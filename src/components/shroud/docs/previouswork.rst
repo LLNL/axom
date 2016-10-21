@@ -95,3 +95,8 @@ Links
 -----
 
   * `Generating C Interfaces <http://fortranwiki.org/fortran/show/Generating+C+Interfaces>`_
+  * `Shadow-object interface between Fortran95 and C++ <http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=753048>`_
+     Mark G. Gray, Randy M. Roberts, and Tom M. Evans
+
+
+
