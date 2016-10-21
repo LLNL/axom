@@ -13,14 +13,13 @@
 Configuration and Building
 ======================================================
 
-This section describes how to configure and build our code.
+This section provides basic information about configurings and building
+the CS Toolkit.
 
-.. note :: These sections need work...
 
-
---------------------------
-Configuration and building
---------------------------
+------------------------------
+Configure, Build, and Install
+------------------------------
 
 We use a CMake-based system to configure and build our code, called *BLT*
 (see **add link to BLT docs** for more information). 
@@ -42,7 +41,7 @@ for more information.
 Running the script, as in the example above, creates two directories to hold
 the build and install contents for the platform and compiler specified by the
 host-config file - in this case, a CHAOS 5 platform with the GNU gcc 4.9.3
-compiler. The The name 'surface' in the file name indicates the particular 
+compiler. The name 'surface' in the file name indicates the particular 
 machine on which the host-config file was generated. Livermore Computing 
 platforms are generally configured similarly so that the configuration will 
 usually also work on other CHAOS 5 Linux platforms. 
@@ -96,6 +95,42 @@ argeuments you need to CMakel; for example::
 .. note :: The locations of all required third-party libraries must be 
            provided here. These are encoded in our host-config files.
 
+CMake options
+^^^^^^^^^^^^^^^
+
+Need to describe CMake options that users would want to provide....Is this 
+table correct and up-to-date?
+
++-----------------------------------+-------------------------------+--------+
+|OPTION                             |   Description                 | Default|
++===================================+===============================+========+
+|ENABLE_SHARED_LIBS                 |Build shared libraries.        |        |
+|                                   |Default is Static libraries    |  OFF   |
++-----------------------------------+-------------------------------+--------+
+|ENABLE_TESTS                       |Builds unit tests              |  ON    |
++-----------------------------------+-------------------------------+--------+
+|ENABLE_BOOST                       |Enable Boost                   |  OFF   |
++-----------------------------------+-------------------------------+--------+
+|ENABLE_CODECOV                     |Enable code coverage via gcov  |  ON    |
++-----------------------------------+-------------------------------+--------+
+|ENABLE_CXX11                       |Enables C++11 language support |  ON    | 
++-----------------------------------+-------------------------------+--------+
+|ENABLE_FORTRAN                     |Enables Fortran compiler       |  ON    |
+|                                   |support                        |        |
++-----------------------------------+-------------------------------+--------+
+|ENABLE_ALL_WARNINGS                |Enable extra compiler warnings |        | 
+|                                   |in all build targets           |  ON    |
++-----------------------------------+-------------------------------+--------+
+|ENABLE_WARNINGS_AS_ERRORS          |Compiler warnings treated as   |        |
+|                                   |errors.                        | OFF    |
++-----------------------------------+-------------------------------+--------+
+|ENABLE_MPI                         |ENABLE MPI                     | OFF    |
++-----------------------------------+-------------------------------+--------+
+|ENABLE_OPENMP                      |ENABLE OpenMP                  | OFF    |
++-----------------------------------+-------------------------------+--------+
+|ENABLE_BENCHMARKS                  |ENABLE google benchmark        | OFF    |
++-----------------------------------+-------------------------------+--------+
+
 
 .. _hostconfig-label:
 
@@ -108,8 +143,8 @@ maintain reproducibility. We maintain a collection of such files in the
 When passed to CMake, using the '-C' option, a host-config file initializes 
 the CMake cache with the configuration specified in the file. 
 
-.. note :: Need to describe how the host config files get generated and how
-           to generate new ones.
+.. note :: Need to describe how users would go about generating new
+           host config files if they need to...
 
 
 
@@ -131,7 +166,7 @@ Toolkit components are build properly, execute the following command::
    $ make test
 
 .. note :: Add a table listing and describing the most common make targets
-           users may want to use.
+           users may want to use (see table above for format).
 
 
 .. _tpl-label:

@@ -12,29 +12,21 @@
 .. _configbuild-label:
 
 ======================================================
-Configuration, Building, and Testing
+Configure and Build
 ======================================================
 
-This section describes how to configure and build our code and how
-to run tests and other code development tasks. See :ref:`repoclone-label`
-for information about accessing the code.
-
-.. note :: Some of these sections are redundant with those in the user 
-           quick-start guide. Figure out what should go where and how to 
-           cross link things...
-
-
-.. _build-label:
-
---------------------------
-Configuration and building
---------------------------
+This section describes more advanced CS Toolkit build and configuration 
+tasks that all developers should be aware of and be able to perform. 
+More basic build instructions can be found in the User Quick Start Guide
+**add link to that guide**. See :ref:`repoclone-label` for information 
+about accessing the code.
 
 We use a CMake-based system to configure and build our code, called *BLT*
 (see :ref:`tooleco-label` for more information). 
 
-Python helper script
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
+Python Helper Script
+---------------------
 
 The easiest way to configure the code for compilation is to use the 
 'config-build.py' python script in the 'scripts' directory; 
@@ -50,7 +42,7 @@ for more information.
 Running the script, as in the example above, creates two directories to hold
 the build and install contents for the platform and compiler specified by the
 host-config file - in this case, a CHAOS 5 platform with the GNU gcc 4.9.3
-compiler. The The name 'surface' in the file name indicates the particular 
+compiler. The name 'surface' in the file name indicates the particular 
 machine on which the host-config file was generated. Livermore Computing 
 platforms are generally configured similarly so that the configuration will 
 usually also work on other CHAOS 5 Linux platforms. 
@@ -70,34 +62,30 @@ i.e.,::
 
    $ ./scripts/config-build.py 
 
-
-Run CMake directly
-^^^^^^^^^^^^^^^^^^^
+---------------------
+Run CMake Directly
+---------------------
 
 You can also configure the code by running CMake directly and passing it 
-the appropriate arguments. For example, to configure a release build with
-the gcc compiler, you could do the following::
+the appropriate arguments. For example, to configure, build and install 
+a release build with the gcc compiler, you could pass a host-config file 
+CMake::
 
    $ mkdir build-gnu-release
    $ cd build-gnu-release
-   $ cmake -DCMAKE_C_COMPILER=/usr/apps/gnu/4.9.3/bin/gcc \
-     -DCMAKE_CXX_COMPILER=/usr/apps/gnu/4.9.3/bin/g++ \
+   $ cmake -C ./host-configd/surface-chaos_5_x86_64_ib-gcc@4.9.3.cmake \
      -DCMAKE_BUILD_TYPE=Release \
      -DCMAKE_INSTALL_PREFIX=../install-gnu-release \
      ../src/
    $ make
    $ make install
 
-.. note :: Actually, this will not work because the locations of several 
-           third-party libraries must be provided. We should maintain a 
-           list of dependencies required for the Toolkit components and
-           make it clear what users need to provide to use what they need.
-
 
 .. _hostconfig-label:
 
-Host-config files
-^^^^^^^^^^^^^^^^^^^
+------------------
+Host-config Files
+------------------
 
 We use *host-config* files to track build configurations we support and 
 maintain reproducibility. We maintain a collection of such files in the 
@@ -109,9 +97,8 @@ the CMake cache with the configuration specified in the file.
            to generate new ones.
 
 
-
 --------------------------
-Make targets
+Make Targets
 --------------------------
 
 Our system provides a variety of make targets to build individual Toolkit 
@@ -127,32 +114,36 @@ following command::
 
    $ make dev_guide_docs
 
-
-.. _testing-label:
-
---------------------------
-Testing
---------------------------
-
-Running tests
-^^^^^^^^^^^^^^^
-
-Describe how to run tests...
-
-Adding tests
-^^^^^^^^^^^^^^^
-
-Describe how to add tests...
-
+.. note :: Add a table that provides an overview of our make targets.
 
 
 .. _tpl-label:
 
 --------------------------
-Third-party libraries
+Third-party Libraries
 --------------------------
 
 Describe how to run the scripts to install third-party libraries for 
 testing different versions locally on a branch and for installing new
 libraries for the team to use...
+
+Building and installing TPLs for all compilers on LC CHAOS platforms (CZ)::
+
+   $ python ./scripts/uberenv/llnl_install_scripts/llnl_cz_uberenv_install_chaos_5_x86_64_ib_all_compilers.py
+
+Questions we need to answer include:
+
+  * How does one add a new compiler or platform to the mix?
+  * How does one build a new set of TPLs with for a single platform or compiler
+    for testing?
+  * What is the procedure for changing versions of one or more TPLs?
+  * How do we keep things straight when using different TPL versions for 
+    different branches?
+  * How to use the scripts for team TPL support vs. local development 
+    experimentation?
+  * Others?
+
+.. note :: Pull in content from ../web/build_system/thirdparty_deps.rst ...
+           fill in gaps and make sure it it up-to-date...
+           
 
