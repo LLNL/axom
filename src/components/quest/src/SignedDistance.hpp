@@ -47,6 +47,25 @@ public:
   typedef BoundingBox< double,NDIMS > BoxType;
   typedef BVHTree< int,NDIMS > BVHTreeType;
 
+private:
+
+  /// @{
+  /// \name Internal Datatype Definitions
+
+  struct cpt_data {
+    PointType closest_point;
+    int candidate_index;
+    int cpt_location;
+
+    int nelems;
+    std::vector< TriangleType > surface_elements;
+    std::vector< int > element_ids;
+    std::vector< PointType > closest_pts;
+    std::vector< int > cpt_locs;
+  };
+
+ /// @}
+
 public:
 
   /*!
@@ -126,13 +145,7 @@ private:
    * \param [in]  pt the query point.
    * \param [in]  candidates list of IDs to the candidate surface elements
    * \param [in]  nelems total number of candidates
-   * \param [out] cpt the computed closest point (CPT)
-   * \param [out] index corresponding candidate ID of the surface element
-   * \param [out] cpt_loc location of the CPT, e.g.node, edge
-   * \param [out] surface_elements supplied buffer to store surface elements
-   * \param [out] elementIds stores corresponding surface element IDs
-   * \param [out] closest_pts supplied buffer to store corresponding CPTs.
-   * \param [out] clocs supplied buffer to store corresponding CPT locations.
+   * \param [out] cpt_data closest point data
    *
    * \note The list of candidates is provided by getCandidateSurfaceElements
    *
@@ -153,13 +166,7 @@ private:
   double getMinSqDistance( const PointType& pt,
                            const int* candidates,
                            int nelems,
-                           PointType& cpt,
-                           int& index,
-                           int& cpt_loc,
-                           TriangleType* surface_elements,
-                           int* elementIds,
-                           PointType* closest_pts,
-                           int* clocs ) const;
+                           cpt_data* cpt) const;
 
   /*!
    *****************************************************************************
@@ -167,14 +174,7 @@ private:
    *  and surface element on the surface mesh and neighboring surface elements.
    *
    * \param [in] pt the query point
-   * \param [in] cpt the pre-computed closest point (CPT) on the surface
-   * \param [in] index the closest surface element candidate list index
-   * \param [in] cpt_loc location of CPT on the surface element
-   * \param [in] nelems total number of candidates
-   * \param [in] elementIds corresponding IDs on the surface mesh
-   * \param [in] surface_elements list of surface elements
-   * \param [in] closest_pts corresponding list of closest points.
-   * \param [in] clocs corresponding location of closest points.
+   * \param [in] cpt pointer to the closest point data for this point query.
    * \param [out] my_elements list of element used to calculate pseudo-normal
    *
    * \return sign the calculated sign, 1.0 if outside, -1.0 if inside
@@ -186,14 +186,7 @@ private:
    *****************************************************************************
    */
   double computeSign( const PointType& pt,
-                      const PointType& cpt,
-                      int index,
-                      int cpt_loc,
-                      int nelems,
-                      const int* elementIds,
-                      const TriangleType* surface_elements,
-                      const PointType* closest_pts,
-                      const int* clocs,
+                      const cpt_data* cpt,
                       std::vector< int >& my_elements ) const;
 
   /*!
@@ -241,7 +234,6 @@ private:
   SignedDistance(): m_surfaceMesh(ATK_NULLPTR), m_bvhTree(ATK_NULLPTR) { };
 
 private:
-
   mint::Mesh* m_surfaceMesh;     /*!< User-supplied surface mesh. */
   BoxType m_boxDomain;           /*!< bounding box containing surface mesh */
   BVHTreeType* m_bvhTree;        /*!< Spatial acceleration data-structure. */
@@ -347,26 +339,16 @@ inline double SignedDistance< NDIMS >::computeDistance( const PointType& pt,
   this->getCandidateSurfaceElements( pt, &buckets[0], nbuckets, candidates );
 
   const int nelems = candidates.size();
-  elementIds.resize( nelems );
 
-  // STEP 2: process surface elements and compute minimum distance,
-  // corresponding closest point and
-  int cpt_loc = 0;
-  int index   = -1;
-  std::vector< TriangleType > triangles;
-  std::vector< PointType >    closest_pts;
-  std::vector< int >          cpt_locs;
-  triangles.resize( nelems );
-  closest_pts.resize( nelems );
-  cpt_locs.resize( nelems );
-  double minSqDist =
-      this->getMinSqDistance( pt, &candidates[0], nelems, closest_pt, index,
-       cpt_loc, &triangles[0], &elementIds[0], &closest_pts[0], &cpt_locs[0] );
+  // STEP 2: process surface elements and compute minimum distance and
+  // corresponding closest point.
+  cpt_data cpt;
+  double minSqDist = this->getMinSqDistance( pt, &candidates[0], nelems, &cpt );
+  closest_pt = cpt.closest_point;
+  elementIds = cpt.element_ids;
 
   // STEP 3: compute sign
-  double sign =
-      this->computeSign( pt, closest_pt, index, cpt_loc, nelems, &elementIds[0],
-                &triangles[0], &closest_pts[0], &cpt_locs[0], my_elements );
+  double sign = this->computeSign( pt, &cpt, my_elements );
 
   // STEP 4: return computed signed distance
   return ( sign*std::sqrt( minSqDist) );
@@ -374,23 +356,12 @@ inline double SignedDistance< NDIMS >::computeDistance( const PointType& pt,
 
 //------------------------------------------------------------------------------
 template < int NDIMS >
-double SignedDistance< NDIMS >::computeSign(
-                                       const PointType& pt,
-                                       const PointType& cpt,
-                                       int index,
-                                       int cpt_loc,
-                                       int nelems,
-                                       const int* elementIds,
-                                       const TriangleType* surface_elements,
-                                       const PointType* closest_pts,
-                                       const int* clocs,
-                                       std::vector< int >& my_elements ) const
+double SignedDistance< NDIMS >::computeSign( const PointType& pt,
+                                        const cpt_data* cpt,
+                                        std::vector< int >& my_elements ) const
 {
   // Sanity checks
-  SLIC_ASSERT( elementIds != ATK_NULLPTR );
-  SLIC_ASSERT( surface_elements != ATK_NULLPTR );
-  SLIC_ASSERT( closest_pts != ATK_NULLPTR );
-  SLIC_ASSERT( clocs != ATK_NULLPTR );
+  SLIC_ASSERT( cpt != ATK_NULLPTR );
 
   // STEP 0: if point is outside the bounding box of the surface mesh, then
   // it is outside, just return 1.0
@@ -405,23 +376,29 @@ double SignedDistance< NDIMS >::computeSign(
 
   VectorType N; // the pseudo-normal, computed below
 
-  if ( cpt_loc == TriangleType::NUM_TRI_VERTS ) {
+  const int cpt_loc = cpt->cpt_location;
+  const int index   = cpt->candidate_index;
+  const int nelems  = cpt->nelems;
+
+  if ( cpt_loc >= TriangleType::NUM_TRI_VERTS ) {
 
     // CASE 1: closest point is on the face of the surface element
-    N = surface_elements[ index ].normal();
-    my_elements.push_back( elementIds[ index ] );
+    N = cpt->surface_elements[ index ].normal();
+    my_elements.push_back( cpt->element_ids[ index ] );
 
   } else if ( cpt_loc < 0 ) {
 
     // CASE 2: closest point is on an edge, sum normals of adjacent facets
     for ( int i=0; i < nelems; ++i ) {
 
-      double dist = quest::squared_distance(cpt,closest_pts[i]);
-      if ( utilities::isNearlyEqual( dist, 0.0 ) ) {
-        N += surface_elements[ i ].normal();
-        my_elements.push_back( elementIds[ i ] );
+      double dist = quest::squared_distance( cpt->closest_point,
+                                             cpt->closest_pts[i]  );
 
+      if ( utilities::isNearlyEqual( dist, 0.0 ) ) {
+        N += cpt->surface_elements[ i ].normal();
+        my_elements.push_back( cpt->element_ids[ i ] );
       }
+
     } // END for
 
   } else {
@@ -429,12 +406,14 @@ double SignedDistance< NDIMS >::computeSign(
     // CASE 3: closest point is on a node, use angle weighted pseudo-normal
     for ( int i=0; i < nelems; ++i ) {
 
-      double dist = quest::squared_distance(cpt,closest_pts[i]);
+      double dist = quest::squared_distance( cpt->closest_point,
+                                             cpt->closest_pts[i] );
+
       if ( utilities::isNearlyEqual( dist, 0.0 ) ) {
 
-        double alpha = surface_elements[ i ].angle( clocs[i] );
-        N += ( surface_elements[ i ].normal().unitVector()*alpha );
-        my_elements.push_back( elementIds[i] );
+        double alpha = cpt->surface_elements[ i ].angle( cpt->cpt_locs[ i ] );
+        N += ( cpt->surface_elements[ i ].normal().unitVector()*alpha );
+        my_elements.push_back( cpt->element_ids[ i ] );
 
       }
     } // END for
@@ -444,7 +423,7 @@ double SignedDistance< NDIMS >::computeSign(
   // STEP 2: Given the pseudo-normal, N, and the vector r from the closest point
   // to the query point, compute the sign by checking the sign of their dot
   // product.
-  VectorType r( cpt, pt );
+  VectorType r( cpt->closest_point, pt );
   double dotprod = r.dot( N );
   double sign = ( dotprod >= 0.0 )? 1.0 : -1.0;
   SLIC_ASSERT( sign==-1.0 || sign==1.0 );
@@ -457,25 +436,26 @@ template < int NDIMS >
 double SignedDistance< NDIMS >::getMinSqDistance( const PointType& pt,
                                                   const int* candidates,
                                                   int nelems,
-                                                  PointType& cpt,
-                                                  int& index,
-                                                  int& cpt_loc,
-                                                  TriangleType* surface_elements,
-                                                  int* elementIds,
-                                                  PointType* closest_pts,
-                                                  int* clocs ) const
+                                                  cpt_data* cpt ) const
 {
   SLIC_ASSERT( candidates != ATK_NULLPTR );
-  SLIC_ASSERT( surface_elements != ATK_NULLPTR );
-  SLIC_ASSERT( closest_pts != ATK_NULLPTR );
-  SLIC_ASSERT( clocs != ATK_NULLPTR );
+  SLIC_ASSERT( cpt != ATK_NULLPTR );
+
+  cpt->nelems = nelems;
+  cpt->surface_elements.resize( nelems );
+  cpt->closest_pts.resize( nelems );
+  cpt->cpt_locs.resize( nelems );
+  cpt->element_ids.resize( nelems );
+
+  PointType* closest_pts = &(cpt->closest_pts)[0];
+  int* cpt_locs          = &(cpt->cpt_locs)[0];
 
   double minSqDist = std::numeric_limits< double >::max();
 
   for ( int i=0;  i < nelems; ++i ) {
 
      const int cellIdx = candidates[ i ];
-     elementIds[ i ]   = cellIdx;
+     cpt->element_ids[ i ] = cellIdx;
 
      int cellIds[3];
      m_surfaceMesh->getMeshCell( cellIdx, cellIds );
@@ -484,20 +464,17 @@ double SignedDistance< NDIMS >::getMinSqDistance( const PointType& pt,
      m_surfaceMesh->getMeshNode( cellIds[0], surface_element[0].data() );
      m_surfaceMesh->getMeshNode( cellIds[1], surface_element[1].data() );
      m_surfaceMesh->getMeshNode( cellIds[2], surface_element[2].data() );
-     surface_elements[ i ] = surface_element;
+     cpt->surface_elements[ i ] = surface_element;
 
-     int iloc = 0;
-     const PointType icpt = quest::closest_point( pt, surface_element, &iloc );
-     closest_pts[ i ]     = icpt;  // save cpt
-     clocs[ i ]           = iloc;  // save cpt location
+     closest_pts[ i ] = quest::closest_point( pt,surface_element,&cpt_locs[i] );
 
-     double sqDist = quest::squared_distance( pt,icpt );
+     double sqDist = quest::squared_distance( pt,closest_pts[i] );
      if ( sqDist < minSqDist ) {
 
-        minSqDist = sqDist;
-        cpt       = icpt;
-        cpt_loc   = iloc;
-        index     = i;
+        minSqDist             = sqDist;
+        cpt->closest_point    = closest_pts[i];
+        cpt->cpt_location     = cpt_locs[i];
+        cpt->candidate_index  = i;
      }
 
   } // END for all elements
