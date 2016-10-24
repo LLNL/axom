@@ -9,45 +9,6 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
-*********************************
-CS Toolkit Coding Guidelines
-*********************************
-
-======================================================
-0 Intent of the Guidelines
-======================================================
-
-These guidelines define code style conventions for the CS Toolkit. Most of the 
-guidelines were taken from the cited references, sometimes with 
-modifications and simplifications; see :ref:`codingrefs-label`.
-
-The guidelines emphasize code readability, correctness, portability, and 
-interoperability. Agreement on coding style and following common idioms 
-and patterns provides many benefits to a project with multiple developers. 
-A uniform "look and feel" makes it easier to read and understand source code, 
-which increases team productivity and reduces confusion and coding errors 
-when developers work with code they did not write. Also, guidelines 
-facilitate code reviews by enforcing consistency and focusing developers on 
-common concerns. Some of these guidelines are arbitrary, but all are based 
-on practical experience and widely accepted sound practices. For brevity, 
-most guidelines contain little detailed explanation or justification. 
-
-Each guideline is qualified by one of three auxiliary verbs: 
-"must", "should", or "may". 
-
-* A "must" item is an absolute requirement. 
-* A "should" item is a strong recommendation. 
-* A "may" item is a potentially beneficial stylistic suggestion. 
-
-Whether and how to apply items qualified with "should" or "may" often depends
-on the particular code situation. It is best to use them in a manner that
-enhances code readability and help to reduce user and developer errors.
-
-.. note :: This guide is not a C++ language tutorial. Developers should be 
-           familiar with the language and educate themselves on various 
-           topics as needed.
-
-
 =========================================================
 1 General Considerations
 =========================================================
@@ -285,7 +246,7 @@ follow the same style.
 
 
 -----------------------------------
-2.6 Data members and variables
+2.6 Data Members and Variables
 -----------------------------------
 
 2.6.1 All variables (class/struct members, function-scoped variables, function
@@ -341,7 +302,7 @@ indication of its type.
 
 
 ------------------------------------
-2.7 Macros and enumeration constants
+2.7 Macros and Enumerations
 ------------------------------------
 
 2.7.1 Preprocessor macro constants **must** be named using all uppercase 
@@ -389,7 +350,7 @@ too many or diverse concepts.
 
 
 -------------------------------------
-3.2 File location
+3.2 File Location
 -------------------------------------
 
 3.2.1 Header files and associated implementation files **should** reside in 
@@ -538,7 +499,7 @@ be documented according to the guidelines in Section 4.
 .. _headerorg-label:
 
 ---------------------------------------------------------
-3.4 Header file content organization
+3.4 Header File Content Organization
 ---------------------------------------------------------
 
 .. note :: I removed the C-only header file content. Is there any reason we 
@@ -647,7 +608,7 @@ for details.
 .. _sourceguide-label:
 
 ---------------------------------------------------------
-3.5 General source file guidelines
+3.5 General Source File Guidelines
 ---------------------------------------------------------
 
 Consistently-applied conventions and source file organization can help
@@ -679,7 +640,7 @@ following to the guidelines in Section 4.
 .. _sourceorg-label:
 
 ---------------------------------------------------------
-3.6 Source file content organization
+3.6 Source File Content Organization
 ---------------------------------------------------------
 
 Content **must** be organized consistently in all source files. The file 
@@ -875,7 +836,7 @@ enclosing class interface.
 
 
 ---------------------------------------------------------
-4.2 Local variables
+4.2 Local Variables
 ---------------------------------------------------------
 
 4.2.1 Local variables **should** be declared in the narrowest scope possible 
@@ -935,7 +896,7 @@ guidelines are to:
 
 
 -----------------------------------------
-5.1 General documentation considerations
+5.1 General Documentation Guidelines
 -----------------------------------------
 
 5.1.1 Documentation **should** only include what is essential for users and 
@@ -985,7 +946,7 @@ important information, etc.
 
 
 --------------------------------------------------------------------
-5.2 General Doxygen usage guidelines and summary of common commands
+5.2 General Doxygen Usage
 --------------------------------------------------------------------
 
 The Doxygen code documentation system uses C or C++ style comment sections 
@@ -1086,7 +1047,9 @@ and definitions, functions, etc. when needed. A detailed comment **must** be
 separated from a brief comment in the same comment block with a line containing
 no documentation text.
 
-5.2.7 Summary of commonly used Doxygen commands
+--------------------------------------------------------------------
+5.3 Summary of Common Doxygen Commands
+--------------------------------------------------------------------
 
 This Section provides an overview of commonly used Doxygen commands.
 Please see the `Doxygen guide <http://www.stack.nl/~dimitri/doxygen/manual/index.html>`_ for more details and information about other commands.
@@ -1141,10 +1104,10 @@ described here.
    
 
 --------------------------------------------------------------------
-5.3 Copyright and release statement
+5.4 Copyright and Release Statement
 --------------------------------------------------------------------
 
-5.3.1 Each file **must** contain a comment section that includes the project
+5.4.1 Each file **must** contain a comment section that includes the project
 software release information (using whichever comment characters are 
 appropriate for the language the file is written in). In the interest of 
 brevity, the complete release statement is summarized here to show the 
@@ -1167,10 +1130,10 @@ files.
 
 
 --------------------------------------------------------------------
-5.4 File documentation
+5.5 File Documentation
 --------------------------------------------------------------------
 
-5.4.1 Each header file that declares a global type, method, etc. **must** 
+5.5.1 Each header file that declares a global type, method, etc. **must** 
 have a Doxygen file prologue similar to the following:
 
 .. code-block:: cpp
@@ -1187,7 +1150,7 @@ have a Doxygen file prologue similar to the following:
     ****************************************************************************
     */
 
-5.4.2 The Doxygen command "\\file" **must** appear first in the file prologue.
+5.5.2 The Doxygen command "\\file" **must** appear first in the file prologue.
 
       The "\\file" command identifies the comment section as documentation 
       for the file. Doxygen requires that the file itself must be documented 
@@ -1200,20 +1163,20 @@ have a Doxygen file prologue similar to the following:
       the file in which it is located instead of the summary documentation 
       in the listing of documented files.
 
-5.4.3 A brief statement of purpose for the file **should** appear as the first 
+5.5.3 A brief statement of purpose for the file **should** appear as the first 
 comment after the file command. If included, the brief statement, **must** be 
 preceded by the "\\brief" command.
 
-5.4.4 Any detailed notes about the file **may** be included after the brief 
+5.5.4 Any detailed notes about the file **may** be included after the brief 
 comment. If this is done, the detailed comments **must** be separated from 
 the brief statement by a line containing no documentation text.
 
 
 --------------------------------------------------------------------
-5.5 Type documentation
+5.6 Type Documentation
 --------------------------------------------------------------------
 
-5.5.1 Each type and macro definition appearing in a header file **must** have 
+5.6.1 Each type and macro definition appearing in a header file **must** have 
 a Doxygen type definition comment prologue immediately before it. For example
 
 .. code-block:: cpp
@@ -1237,32 +1200,32 @@ a Doxygen type definition comment prologue immediately before it. For example
 **Note that Doxygen requires that a compound entity, such as a class, struct, 
 etc. be documented in order to document any of its members.**
 
-5.5.2 A brief statement describing the type **must** appear as the first text 
+5.6.2 A brief statement describing the type **must** appear as the first text 
 comment using the Doxygen command "\\brief".
 
-5.5.3 Important details about the item **should** be included after the brief 
+5.6.3 Important details about the item **should** be included after the brief 
 comment and, if included, **must** be separated from the brief comment by a 
 blank line.
 
-5.5.4 Cross-references to other items, such as other related types **should** 
+5.6.4 Cross-references to other items, such as other related types **should** 
 be included in the prologue to enhance the navigability of the documentation. 
 
       The Doxygen command "\\sa" (for "see also") **should** appear before each
       such cross-reference so that links are generated in the documentation.
 
-5.5.5 Caveats or limitations about the documented type **should** be noted 
+5.6.5 Caveats or limitations about the documented type **should** be noted 
 using the "\\warning" Doxygen command as shown above.
 
 
 --------------------------------------------------------------------
-5.6 Function documentation
+5.7 Function Documentation
 --------------------------------------------------------------------
 
-5.6.1 Each unbound function **should** be be documented with a function 
+5.7.1 Each unbound function **should** be be documented with a function 
 prologue in the header file where its prototype appears or in a source file 
 immediately preceding its implementation.
 
-5.6.2 Since C++ class member functions define the class interface, they 
+5.7.2 Since C++ class member functions define the class interface, they 
 **should** be documented with a function prologue immediately preceding 
 their declaration in the class definition.
 
@@ -1312,21 +1275,21 @@ The second example shows how to document the function argument inline.
 Note that the first example uses the "\\" character to identify Doxygen 
 commands; the second uses "@". 
 
-5.6.3 A brief statement of purpose for a function must appear as the first 
+5.7.3 A brief statement of purpose for a function must appear as the first 
 text comment after the Doxygen command "\\brief" (or "@brief"). 
 
-5.6.4 Any detailed function description, when included, **must** appear 
+5.7.4 Any detailed function description, when included, **must** appear 
 after the brief comment and **must** be separated from the brief comment by 
 a line containing no text.
 
-5.6.4 If the function has a non-void return type, the return value **should** 
+5.7.4 If the function has a non-void return type, the return value **should** 
 be documented in the prologue using the Doxygen command "\return" 
 (or "@return") preceding a description of the return value. 
 
       Functions with "void" return type and C++ class constructors and 
       destructors **should not** have such documentation.
 
-5.6.5 Function arguments **should** be documented in the function prologue 
+5.7.5 Function arguments **should** be documented in the function prologue 
 or inline (as shown above) when the intent or usage of the arguments is not 
 obvious. 
 
@@ -1345,11 +1308,11 @@ obvious.
       that impart no useful information are distracting and less helpful than 
       no comment at all.
 
-5.6.6 When a function argument is documented in the prologue comment section, 
+5.7.6 When a function argument is documented in the prologue comment section, 
 the Doxygen command "\param" **should** appear before the comment as in the 
 first example above.
 
-5.6.7. The "in/out" status of each function argument **should** be documented.
+5.7.7. The "in/out" status of each function argument **should** be documented.
 
        The Doxygen "\param" command supports this directly by allowing such an
        attribute to be specified as "\param[in]", "\param[out]", or 
@@ -1357,7 +1320,7 @@ first example above.
        this, such a description **should** be included; e.g., by using "[in]", 
        "[out]", or "[in,out]" in the comment.
 
-5.6.8 Short, simple functions (e.g., inline methods) **may** be grouped 
+5.7.8 Short, simple functions (e.g., inline methods) **may** be grouped 
 together and documented with a single descriptive comment when this is 
 sufficient.
 
@@ -1371,7 +1334,7 @@ sufficient.
 
          //@}
 
-5.6.9 Important implementation details (vs. usage detailed) about a function 
+5.7.9 Important implementation details (vs. usage detailed) about a function 
 **should** be documented in the source file where the function is implemented,
 rather than the header file where the function is declared.
 
@@ -1401,10 +1364,10 @@ rather than the header file where the function is declared.
 
 
 --------------------------------------------------------------------
-5.7 Data member documentation
+5.8 Data Member Documentation
 --------------------------------------------------------------------
 
-5.7.1 Each struct field or class data member **should** have a descriptive 
+5.8.1 Each struct field or class data member **should** have a descriptive 
 comment indicating its purpose. 
 
      This comment may as appear as a prologue before the item, such as::
@@ -1420,18 +1383,18 @@ comment indicating its purpose.
 
         int m_input_mode; /*!< \brief Brief statement describing the input mode.... */
 
-5.7.2 Regardless of which documentation form is used, a brief description 
+5.8.2 Regardless of which documentation form is used, a brief description 
 **must** be included using the Doxygen command "\\brief".
 
-5.7.3 Any detailed description of an item, if included, **must** appear after 
+5.8.3 Any detailed description of an item, if included, **must** appear after 
 the brief comment and be separated from the brief comment with a line
 containing no documentation text.
 
-5.7.4 When a detailed comment is provided, or the brief statement requires 
+5.8.4 When a detailed comment is provided, or the brief statement requires 
 more than one line, the prologue comment form **should** be used instead 
 of the inline form to make the documentation easier to read.
 
-5.7.6 If the names of data members are sufficiently clear that their meaning 
+5.8.6 If the names of data members are sufficiently clear that their meaning 
 and purpose are obvious to other developers (which should be determined in 
 a code review), then the members **may** be grouped together and documented 
 with a single descriptive comment.
@@ -1453,13 +1416,13 @@ with a single descriptive comment.
 6 Design and Implement for Correctness and Robustness
 =======================================================
 
-The guidelines in this section describe sound software engineering
-practices that help enforce correctness and robustness and help
-avoid mis-interpretation or confusion by others.
+The guidelines in this section describe sound software design and
+engineering practices that help enforce correctness and robustness 
+and help avoid mis-interpretation or confusion by others.
 
 
 --------------------------------------------------------------------
-6.1 General 
+6.1 General Guidelines 
 --------------------------------------------------------------------
 
 6.1.1 Simplicity, clarity, ease of modification and extension **should** 
@@ -1475,7 +1438,7 @@ one clear, well-defined concept.
       code coupling and complexity and introduce undesirable side effects. 
       Smaller, clearly constrained objects are easier to write, test, maintain,
       and use correctly. Also, small, simple objects tend to get used more 
-      often and reduce code redundancy. 
+      often and reduce code redundancy.
 
 6.1.3 Global, complex, or opaque data sharing **should** be avoided. Shared 
 data increases coupling and contention between different parts of a code base, 
@@ -1511,7 +1474,7 @@ be declared as named constants to enhance code readability and consistency.
 
 
 ---------------------------------------------------
-6.2 Compiler-generated class methods
+6.2 Compiler-generated Class Methods
 ---------------------------------------------------
 
 The guidelines in this section apply to class methods that may be 
@@ -1615,7 +1578,7 @@ copy-assignment operator.
 .. _automethods-label:
 
 --------------------------------------------------------
-6.3 Standard rules for compiler-generated class methods
+6.3 Standard Rules for Compiler-generated Class Methods
 --------------------------------------------------------
 
 This section provides some background information related to the guidelines
@@ -1722,9 +1685,8 @@ Other points worth noting:
      comparable.
 
 
-
 ---------------------------------------------------
-6.3 Class member initialization and copying
+6.3 Class Data Initialization and Copying
 ---------------------------------------------------
 
 6.3.1 Each class data member **must** be initialized (using default values 
@@ -1741,7 +1703,18 @@ every object is in a well-defined state upon construction.
       full member initialization, does not require a user-defined default 
       constructor since the compiler-generated version will suffice.
 
-6.3.2 When using initialization instead of assignment to set data member 
+6.3.2 Data member initialization **should** be used instead of assignment in 
+con structors, especially for small classes. Initialization prevents needless 
+run-time work and is often faster.
+
+6.3.3 For classes with complex data members, assignment within the body of 
+the constructor **may** be preferable.
+
+      If the initialization process is sufficiently complex, it **may** be
+      better to perform object initialization in a method that is called
+      after object creation, such as "init()".
+
+6.3.4 When using initialization instead of assignment to set data member 
 values in a constructor, data members **should** always be initialized 
 in the order in which they appear in the class definition. 
 
@@ -1775,22 +1748,27 @@ to insure that each object is properly allocated and initialized.
 
 
 ---------------------------------------------------
-6.4 Inheritance
+6.4 Class Inheritance
 ---------------------------------------------------
 
-6.4.1 Polymorphism via inheritance and virtual methods **must** be used
-judiciously, if used at all. In the context of heterogeneous 
-hardware environments, runtime polymorphism using virtual methods is
-problematic; e.g., when objects are passed between host and device code using
-CUDA, virtual methods cannot be called.
+6.4.1 Class composition **should** be used instead of inheritance to extend behavior.
 
-If inheritance is deemed a good solution for a particular situation, the 
-following guidelines should be observed.
+      Looser coupling between objects is typically more flexible and easier
+      to maintain and refactor.
 
-6.4.2 Deep inheritance hierarchies; i.e., more than 2 or 3 levels, **should**
+6.4.2 Class hierarchies **should** be designed so that subclasses inherit from abstract interfaces; i.e., pure virtual base classes.
+
+      Inheritance is often done to reuse code that exists in a base class.
+      However, there are usually better design choices to achieve reuse.
+      Good object-oriented use of inheritance is to reuse existing *calling*
+      code by exploiting base class interfaces using polymorphism. Put another
+      way, "interface inheritance" should be used instead of "implementation
+      inheritance".
+
+6.4.3 Deep inheritance hierarchies; i.e., more than 2 or 3 levels, **should**
 be avoided.
 
-6.4.3 Multiple inheritance **should** be restricted so that only one base 
+6.4.4 Multiple inheritance **should** be restricted so that only one base 
 class contains methods that are not "pure virtual".
 
 6.4.4 One **should not** inherit from a class that was not designed to be a 
@@ -1808,15 +1786,44 @@ be declared "virtual".
       when deletion through a pointer to a base class object should be 
       disallowed.
 
-6.4.6 If a virtual function in a base class is not expected to be overridden 
-in any derived class, then the method **should not** be declared virtual.
+6.4.6 "Private" and "protected" inheritance **must not** be used unless you 
+absolutely understand the ramifications of such a choice and are sure that 
+it will not create design and implementation problems.
 
-6.4.7 If each derived class has to provide specific behavior for a base class 
+      Such a choice **must** be reviewed with team members. There almost
+      always exist better alternatives.
+
+6.4.7 Virtual functions **should** be overridden responsibly. That is, the 
+pre- and post-conditions, default arguments, etc. of the virtual functions 
+should be preserved.
+
+      Also, the behavior of an overridden virtual function **should not**
+      deviate from the intent of the base class. Remember that derived classes
+      are subsets, not supersets, of their base classes.
+
+6.4.8 Inherited non-virtual methods **must not** be overloaded or hidden.
+
+6.4.9 A virtual function in a base class **should only** be implemented in
+the base class if its behavior is always valid default behavior for *any* 
+derived class.
+
+6.4.10 If a method in a base class is not expected to be overridden in any 
+derived class, then the method **should not** be declared virtual.
+
+6.4.11 If each derived class has to provide specific behavior for a base class 
 virtual function, then it **should** be declared *pure virtual*.
 
-6.4.8 Virtual functions **must not** be called in a class constructor or 
+6.4.12 Virtual functions **must not** be called in a class constructor or 
 destructor. Doing so is undefined behavior. Even if it seems to work 
 correctly, it is fragile and potentially non-portable.
+
+6.4.13 A constructor for a derived class **must** call the appropriate 
+constructor for each of its base classes to insure that each object 
+is properly allocated and initialized.
+
+6.4.14 Copy operations for a derived class **must** call the appropriate copy 
+operations for each of its base classes to insure that each object is properly 
+allocated and initialized.
 
 
 --------------------------------------------------------------------
@@ -2286,6 +2293,15 @@ expressions to clearly indicate structure and intended order of operations.
 8 Portability, Compilation, and Dependencies
 ===================================================
 
+C++ is a huge language with many advanced and powerful features. To avoid
+over-indulgence and obfuscation, we would like to avoid C++ feature bloat.
+By constraining, or even banning, the use of certain language features and
+libraries we hope to keep code simple, portable, and avoid errors and
+problems that may occur when language features are not completely
+understood or used consistently. This section lists such restrictions and
+explains why use of certain features is constrained or restricted.
+
+
 --------------------------------------------------------------------
 8.1 Portability
 --------------------------------------------------------------------
@@ -2296,8 +2312,58 @@ compilers we need to support.
 
       Changing this guideline requires full con census of all team members.
 
-8.1.2 Special non-standard language constructs, such as GNU extensions, 
+8.1.2 Whenever C++11 features are used, an alternative implementation **must** 
+be provided that conforms to the 2003 C++ standard.
+
+      Applications that use the CS Toolkit will rely on non-C++11 compilers 
+      for our current generation of computing platforms, and possibly beyond, 
+      so we must be able to compile and run our code with those compilers.
+      Applications that use the CS Toolkit will expect the code able to compile
+      and run with full functionality on all platforms they use. 
+
+8.1.3 All C++11 usage **must** be guarded using the macro constant "USE_CXX11" 
+so that it can be compiled out of the code when necessary.
+
+   For example, suppose you have a class that you want to support *move*
+   semantics when available (i.e., when using a C++11-compilant compiler)
+   and fall back to copy semantics otherwise:
+
+.. code-block:: cpp
+
+   class MyClass
+   {
+   public:
+
+      /// Default constructor.
+      MyClass();
+
+      /// Destructor.
+      ~MyClass();
+      /// Copy constructor.
+      MyClass(const MyClass& other);
+      /// Copy-assignment operator.
+      MyClass& operator=(const MyClass& rhs);
+   #if defined(USE_CXX11)
+      /// Move constructor.
+      MyClass(MyClass&& other);
+
+      /// Move-assignment operator.
+      MyClass& operator=(MyClass&& rhs);
+   #endif
+
+      // other methods...
+
+   private:
+      // data members...
+   };
+
+8.1.4 Special non-standard language constructs, such as GNU extensions, 
 **must not** be used if they hinder portability.
+
+
+.. note :: Any deviation from these C++ usage requirements must be 
+           agreed on by all members of the team and vetted with our
+           main application users.
 
 
 --------------------------------------------------------------------
@@ -2326,13 +2392,21 @@ check for code correctness and invariants.
 
 
 --------------------------------------------------------------------
-8.3 Dependencies
+8.3 Third-party Library (TPL) Dependencies
 --------------------------------------------------------------------
 
-8.3.1 C++ standard....
+8.3.1 While it is generally desirable to avoid recreating functionality that
+others have already implemented, we **should** limit third-party library
+dependencies for the CS Toolkit to make it easier for users. We are a library,
+and everything we necessarily depend on will become a dependency for our
+user.  
 
-8.3.2 TPLs....
+      **Before introducing any significant TPL dependency on the Toolkit
+      (e.g., Boost), it must be agreed on by the development team and vetted
+      with our main users.**
 
+8.3.2 Unless absolutely necessary, any TPL we depend on **must not** be 
+exposed through any public interface in the CS Toolkit.
 
 
 .. _codingrefs-label:

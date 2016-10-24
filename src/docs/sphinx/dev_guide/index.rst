@@ -13,12 +13,11 @@ CS Toolkit Developer Guide
 =========================================================
 
 This guide describes key aspects of the software development process for
-the CS Toolkit project and provides a set of coding guidelines used by
-the team. The guide is meant for all team members and contributors, and
-is especially helpful for "on-boarding" new team members and contributors. 
-The aim is that all code in the CS Tookit is developed following similar 
-practices to ensure that it is robust, consistent, easily understood and used, 
-and tested and documented well. Anyone who contributes to the CS Toolkit 
+the CS Toolkit project. The guide is meant for all team members and 
+contributors, and is especially helpful for "on-boarding" new individuals
+about how the team works. The aim is that all code in the CS Tookit is 
+developed following similar practices to ensure that it is robust, consistent, 
+easily used, and tested well. Anyone who contributes to the CS Toolkit 
 should be aware of and follow these guidelines. 
 
 The guidelines should not be viewed as fixed for all time. They should evolve 
@@ -50,6 +49,5 @@ please see the `Sphinx Guide <http://www.sphinx-doc.org/en/stable/index.html>`_.
    dev_tools
    add_new_component
    testing
-   coding_guidelines
 
 

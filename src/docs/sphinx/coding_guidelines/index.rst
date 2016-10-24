@@ -1,31 +1,53 @@
-.. Toolkit Coding Guidelines documentation master file, created by
-   sphinx-quickstart on Wed Apr 22 14:00:36 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. ##
+.. ## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. ##
+.. ## Produced at the Lawrence Livermore National Laboratory.
+.. ##
+.. ## All rights reserved.
+.. ##
+.. ## This file cannot be distributed without permission and
+.. ## further review from Lawrence Livermore National Laboratory.
+.. ##
 
-Welcome to ASC CS Toolkit Coding Guidelines
-=========================================================
+********************************
+CS Toolkit Coding Guidelines
+********************************
+
+These guidelines define code style conventions for the CS Toolkit. Most of the
+guidelines were taken from the cited references, sometimes with
+modifications and simplifications; see :ref:`codingrefs-label`.
+
+The guidelines emphasize code readability, correctness, portability, and
+interoperability. Agreement on coding style and following common idioms
+and patterns provides many benefits to a project with multiple developers.
+A uniform "look and feel" makes it easier to read and understand source code,
+which increases team productivity and reduces confusion and coding errors
+when developers work with code they did not write. Also, guidelines
+facilitate code reviews by enforcing consistency and focusing developers on
+common concerns. Some of these guidelines are arbitrary, but all are based
+on practical experience and widely accepted sound practices. For brevity,
+most guidelines contain little detailed explanation or justification.
+
+Each guideline is qualified by one of three auxiliary verbs:
+"must", "should", or "may".
+
+* A "must" item is an absolute requirement.
+* A "should" item is a strong recommendation.
+* A "may" item is a potentially beneficial stylistic suggestion.
+
+Whether and how to apply items qualified with "should" or "may" often depends
+on the particular code situation. It is best to use them in a manner that
+enhances code readability and help to reduce user and developer errors.
+
+.. note :: This guide is not a C++ language tutorial. Developers should be
+           familiar with the language and educate themselves on various
+           topics as needed.
+
 
 **Contents:**
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
-   Sec1_intro
-   Sec2_names
-   Sec3_scope
-   Sec4_doc
-   Sec5_code
-   Sec6_class
-   Sec7_restrictions
-   AppendixA_automethods
-   AppendixB_copymove
-   references
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   coding_guidelines
 

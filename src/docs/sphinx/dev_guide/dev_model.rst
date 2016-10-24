@@ -285,26 +285,24 @@ Code Review Checklist
 Beyond build and test correctness, we also want to ensure that code follows
 common conventions before acceptance. The following list summarizes concerns 
 we want to identify during pull request reviews and resolve before a pull 
-request is approved for merging. The list contains references to details 
-in the coding guidelines.
+request is approved for merging. Please see the CS Toolkit coding guidelines
+**(insert link here)**
+document for details. 
 
  #. A new file or directory must be located in in the proper location; e.g.,
     in the same directory with existing files supporting related functionality.
-    See :ref:`dirorgsec-label`.
  #. File contents must be organized clearly and structure must be consistent 
-    with conventions. See :ref:`headerguide-label` for header file guidelines
-    and :ref:`sourceguide-label` for source file guidelines.
+    with conventions. 
  #. Namespace and other scoping conventions must be followed. 
-    See :ref:`scopesec-label`.
  #. Names (files, types, methods, variables, etc.) must be clear, easily
     understood by others, and consistent with usage in other parts of the code.
     Terminology must be constrained; i.e., don't introduce a new term for 
     something that already exists and don't use the same term for different 
-    concepts. See :ref:`namesec-label`.
+    concepts.
  #. Documentation must be clear and follow conventions. Minimal, but adequate, 
-    documentation is preferred. See :ref:`docsec-label`.
+    documentation is preferred.
  #. Implementations must be correct, robust, portable, and understandable to
-    other developers. See :ref:`designsec-label` and :ref:`portsec-label`. 
+    other developers.
  #. Adequate tests (unit and performance) tests must be added for new 
     functionality.
 

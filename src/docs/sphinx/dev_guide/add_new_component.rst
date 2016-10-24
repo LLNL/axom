@@ -43,7 +43,7 @@ adding a new component.
 
     **Example: slic directory structure:**
 
-.. image:: ../images/slic_directory.png
+.. image:: ./slic_directory.png
 
 4. Optionally each component can have its own **uncrustify.cfg** file detailing formatting choices for the code.
 
