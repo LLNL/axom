@@ -250,8 +250,8 @@ public:
    *  out the bounding boxes of the supplied objects.
    *****************************************************************************
    */
-  void writeLegacyVtkFile( const std::string& fileName,
-                           bool include_objects=false ) const;
+  void writeVtkFile( const std::string& fileName,
+                     bool include_objects=false ) const;
 
   /*!
    *****************************************************************************
@@ -262,9 +262,9 @@ public:
    * \note Primarily used for debugging.
    *****************************************************************************
    */
-  void writeLegacyVtkFile( const std::string& fileName,
-                           const int* bins,
-                           int nbins ) const;
+  void writeVtkFile( const std::string& fileName,
+                     const int* bins,
+                     int nbins ) const;
 
 private:
 
@@ -1084,7 +1084,7 @@ int BVHTree< T,NDIMS >::getObjectBucketIndex( int objIdx ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void BVHTree< T,NDIMS >::writeLegacyVtkFile(
+void BVHTree< T,NDIMS >::writeVtkFile(
                     const std::string& fileName,
                     const int* bins,
                     int nbins ) const
@@ -1134,7 +1134,7 @@ void BVHTree< T,NDIMS >::writeLegacyVtkFile(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void BVHTree< T,NDIMS >::writeLegacyVtkFile(
+void BVHTree< T,NDIMS >::writeVtkFile(
                     const std::string& fileName,
                     bool ATK_NOT_USED(include_objects) ) const
 {

@@ -284,7 +284,7 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
   const quest::BVHTree< int, 3>* btree = signedDistance.getBVHTree();
   SLIC_ASSERT( btree != ATK_NULLPTR );
 
-  btree->writeLegacyVtkFile( "bucket-tree.vtk" );
+  btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
   const int ncells = surface_mesh->getMeshNumberOfCells();
@@ -344,7 +344,7 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
 #ifdef ATK_DEBUG
       std::ostringstream oss;
       oss << "BINS_" << inode << ".vtk";
-      signedDistance.getBVHTree()->writeLegacyVtkFile(
+      signedDistance.getBVHTree()->writeVtkFile(
             oss.str(), &buckets[0], buckets.size() );
 
       oss.str("");
