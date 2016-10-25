@@ -9,9 +9,9 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
-********************************
+
 CS Toolkit Coding Guidelines
-********************************
+==============================
 
 These guidelines define code style conventions for the CS Toolkit. Most of the
 guidelines were taken from the cited references, sometimes with

@@ -2177,7 +2177,7 @@ deallocated using the "new" and "delete" operators.
 
 
 =====================================
-7 Miscellaneous Code Formatting
+7 Code Formatting
 =====================================
 
 --------------------------------------------------------------------
