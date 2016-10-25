@@ -559,14 +559,14 @@ void SignedDistance< NDIMS >::getCandidateSurfaceElements(
 
   // STEP 3: filter out candidates
   candidates.push_back( surface_elements[ indx[0] ] );
-  BoxType bbox   = m_bvhTree->getObjectBox( objectIds[ indx[0] ] );
+  const BoxType& bbox = m_bvhTree->getObjectBox( objectIds[ indx[0] ] );
+  double maxDist = this->getMaxSqDistance( bbox, pt );
+
   for ( int i=1;  i < nelems; ++i ) {
     const int idx = indx[i];
-    BoxType ib = m_bvhTree->getObjectBox( objectIds[ idx ] );
-    if ( bbox.intersects( ib )  ) {
+    if ( dist[ idx ] < maxDist ) {
       candidates.push_back( surface_elements[ idx ] );
     }
-
   }
 
   // STEP 4: delete temporary distance array
