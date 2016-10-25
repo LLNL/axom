@@ -29,7 +29,7 @@ on practical experience and widely accepted sound practices. For brevity,
 most guidelines contain little detailed explanation or justification.
 
 Each guideline is qualified by one of three auxiliary verbs:
-"must", "should", or "may".
+"must", "should", or "may" (or "must not", "should not", "may npt").
 
 * A "must" item is an absolute requirement.
 * A "should" item is a strong recommendation.
@@ -51,3 +51,9 @@ enhances code readability and help to reduce user and developer errors.
 
    coding_guidelines
 
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`search`

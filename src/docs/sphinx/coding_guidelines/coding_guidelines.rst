@@ -5,7 +5,7 @@
 .. ##
 .. ## All rights reserved.
 .. ##
-.. ## This file cannot be distributed without permission and
+.. ## This file candistributed without permission and
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
@@ -67,8 +67,8 @@ be clear to other code developers and users, not just the author of the name.
 
 2.1.2 Terminology **must** be used consistently; i.e., in documentation and 
 for names of directories, types, functions, variables, etc. Multiple terms 
-**should** not be used to refer to the same concept and a concept **should** 
-not be referred to by multiple terms.
+**should not** be used to refer to the same concept and a concept 
+**should not** be referred to by multiple terms.
 
       Using a clear, limited set of terminology in a software project helps
       maintain the consistency and integrity of the software, and it makes
@@ -130,7 +130,7 @@ implementations of those methods **must** be named the same (excluding
 file extension, of course) or sufficiently similar so that their 
 relationship is clear.
 
-2.3.4 File names that differ only in letter case **must** not be used.
+2.3.4 File names that differ only in letter case **must not** be used.
 
       Since we aim to support Windows platforms, which has limited case
       sensitivity for file names, having files with names "MyClass.hpp" 
@@ -164,7 +164,7 @@ an upper case letter and all other letters in lower cases.
 
          dataStore, mycollection, TYPEUTILS
 
-2.4.3 Separating characters, such as underscores, **should** not be used 
+2.4.3 Separating characters, such as underscores, **should not** be used 
 between words in a type name.
 
       For example, these names are not preferred type names::
@@ -178,7 +178,7 @@ between words in a type name.
       in the C++ standard library.
 
 2.4.4 Suffixes that may be used by compilers for name mangling, or 
-which are used in the C++ standard library, such as "\_t", **must** not 
+which are used in the C++ standard library, such as "\_t", **must not** 
 be used in type names.
 
 
@@ -765,29 +765,19 @@ them invisible outside the file.
 
 4.2.1 Class members **must** be declared in the following order: 
 
-      # "public"
-      # "protected"
-      # "private"
+      #. "public"
+      #. "protected"
+      #. "private"
 
-      That is, order method and data members in terms of 
-      "decreasing scope of audience".
+      That is, order members using these access qualifiers in terms of 
+      "decreasing scope of visibility".
 
-4.2.2 "Friend" declarations **should** be used rarely. When used, they 
-**must** appear within the body of a class definition before any class 
-member declarations.
+.. note :: Declaring methods before data members is preferred because methods 
+           are more commonly considered part of a class interface. Also,
+           separating methods and data into their own access qualified 
+           sections usually helps make a class definition clearer.
 
-      Note that placing "friend" declarations before the "public:" keyword 
-      makes them private, which preserves encapsulation.
-
-4.2.3 Static class members (methods or data) **must** be used rarely. In 
-every case, their usage **must** be carefully reviewed by the team.
-
-      When it is determined that a static member is needed, it **must** appear 
-      first in the appropriate member section. Typically, static member 
-      functions **should** be "public" and static data members **should** be 
-      "private".
-
-4.2.4 Class data members **should** be "private". If "public" or "protected" 
+4.2.2 Class data members **should** be "private". If "public" or "protected" 
 data members are even considered, this choice **must** be reviewed carefully 
 by other team members.
 
@@ -797,6 +787,21 @@ by other team members.
       state can be modified to minimize side effects. In addition, restricting
       direct access to class data enforces encapsulation and facilitates 
       design changes through refactoring.
+
+4.2.3 "Friend" declarations **should** be used rarely. When used, they 
+**must** appear within the body of a class definition before any class 
+member declarations.
+
+      Note that placing "friend" declarations before the "public:" keyword 
+      makes them private, which preserves encapsulation.
+
+4.2.4 Static class members (methods or data) **must** be used rarely. In 
+every case, their usage **should** be carefully reviewed by the team.
+
+      When it is determined that a static member is needed, it **must** appear 
+      first in the appropriate member section. Typically, static member 
+      functions **should** be "public" and static data members **should** be 
+      "private".
 
 4.2.5 Nested classes **should** be private unless they are part of the 
 enclosing class interface.
@@ -920,7 +925,7 @@ these guidelines when appropriate.
       modifications are made (i.e., beyond bug fixes and small changes) and 
       when existing documentation is inadequate.
 
-5.1.3 End-of-line comments **should** not be used to document code logic, 
+5.1.3 End-of-line comments **should not** be used to document code logic, 
 since they tend to be less visible than other comment forms and may be 
 difficult to format cleanly. 
 
@@ -1027,7 +1032,7 @@ use the same comment forms as the existing documentation.
       examples in later sections.
 
 5.2.5 When an item is documented using the Doxygen inline form above, the
-comment **should** not span multiple lines.
+comment **should not** span multiple lines.
 
 5.2.5 A "brief" description **should** be provided in the Doxygen comment 
 section for each of the following items: 
@@ -1340,7 +1345,7 @@ rather than the header file where the function is declared.
 
       Header file documentation **should** include only purpose and usage 
       information germane to an interface. When a function has separate 
-      implementation documentation, the comments **must** not contain Doxygen 
+      implementation documentation, the comments **must not** contain Doxygen 
       syntax. Using Doxygen syntax to document an item in more than one location 
       (e.g., header file and source file) can cause undesired Doxygen 
       formatting issues and potentially confusing documentation.
@@ -2196,7 +2201,7 @@ even when the content inside the braces is a "one-liner".
 
           if (done) ...
 
-7.1.2 One-liners **may** not be used for "if" conditionals with 
+7.1.2 One-liners **may** be used for "if" conditionals with 
 "else/else if"  clauses when the resulting code is clear. 
 
        For example, either of the following styles **may** be used::
@@ -2238,7 +2243,8 @@ Most conventions for indentation, spacing and code alignment
 preferred by the team are enforced by using the `uncrustify` tool. 
 It can be run from the top-level CS Toolkit directory...
 
-The format options are defined in the file `*` 
+.. note :: Show how to run uncrustify on the code and where the format
+           options are defined.
 
 Not all preferred formatting conventions are supported by uncrustify.
 The following guidelines provide additional recommendations to make
