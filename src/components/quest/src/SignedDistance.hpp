@@ -101,10 +101,14 @@ public:
    * \brief Computes the distance of the given point to the surface mesh.
    * \note This is an overloaded method that also returns the BVH buckets and
    *  corresponding triangles used to calculate the signed distance.
+   *
    * \param [in]  queryPnt user-supplied point.
    * \param [out] bvh_buckets the buckets of the BVH used to satisfy the query.
    * \param [out] triangles the triangles of the BVH used to satisfy the query.
    * \param [out] my_triangles the triangle used to compute the pseudo-normal.
+   *
+   * \note The variables 'triangles'/'my_triangles' are relevant in debug mode.
+   *
    * \return minDist the minimum signed distance to the surface mesh.
    *****************************************************************************
    */
@@ -321,11 +325,12 @@ inline double SignedDistance< NDIMS >::computeDistance(
 
 //------------------------------------------------------------------------------
 template < int NDIMS >
-inline double SignedDistance< NDIMS >::computeDistance( const PointType& pt,
-                                          std::vector< int >& buckets,
-                                          std::vector< int >& elementIds,
-                                          std::vector< int >& my_elements,
-                                          PointType& closest_pt ) const
+inline double SignedDistance< NDIMS >::computeDistance(
+                                const PointType& pt,
+                                std::vector< int >& buckets,
+                                std::vector< int >& ATK_DEBUG_PARAM(elementIds),
+                                std::vector< int >& my_elements,
+                                PointType& closest_pt ) const
 {
   SLIC_ASSERT( m_surfaceMesh != ATK_NULLPTR );
   SLIC_ASSERT( m_bvhTree != ATK_NULLPTR );
@@ -345,7 +350,9 @@ inline double SignedDistance< NDIMS >::computeDistance( const PointType& pt,
   cpt_data cpt;
   double minSqDist = this->getMinSqDistance( pt, &candidates[0], nelems, &cpt );
   closest_pt = cpt.closest_point;
+#ifdef ATK_DEBUG
   elementIds = cpt.element_ids;
+#endif
 
   // STEP 3: compute sign
   double sign = this->computeSign( pt, &cpt, my_elements );
@@ -356,9 +363,10 @@ inline double SignedDistance< NDIMS >::computeDistance( const PointType& pt,
 
 //------------------------------------------------------------------------------
 template < int NDIMS >
-double SignedDistance< NDIMS >::computeSign( const PointType& pt,
-                                        const cpt_data* cpt,
-                                        std::vector< int >& my_elements ) const
+double SignedDistance< NDIMS >::computeSign(
+                       const PointType& pt,
+                       const cpt_data* cpt,
+                       std::vector< int >& ATK_DEBUG_PARAM(my_elements) ) const
 {
   // Sanity checks
   SLIC_ASSERT( cpt != ATK_NULLPTR );
@@ -384,7 +392,9 @@ double SignedDistance< NDIMS >::computeSign( const PointType& pt,
 
     // CASE 1: closest point is on the face of the surface element
     N = cpt->surface_elements[ index ].normal();
+#ifdef ATK_DEBUG
     my_elements.push_back( cpt->element_ids[ index ] );
+#endif
 
   } else if ( cpt_loc < 0 ) {
 
@@ -396,8 +406,10 @@ double SignedDistance< NDIMS >::computeSign( const PointType& pt,
 
       if ( utilities::isNearlyEqual( dist, 0.0 ) ) {
         N += cpt->surface_elements[ i ].normal();
+#ifdef ATK_DEBUG
         my_elements.push_back( cpt->element_ids[ i ] );
-      }
+#endif
+      } // END if
 
     } // END for
 
@@ -410,12 +422,13 @@ double SignedDistance< NDIMS >::computeSign( const PointType& pt,
                                              cpt->closest_pts[i] );
 
       if ( utilities::isNearlyEqual( dist, 0.0 ) ) {
-
         double alpha = cpt->surface_elements[ i ].angle( cpt->cpt_locs[ i ] );
         N += ( cpt->surface_elements[ i ].normal().unitVector()*alpha );
+#ifdef ATK_DEBUG
         my_elements.push_back( cpt->element_ids[ i ] );
+#endif
+      } // END if
 
-      }
     } // END for
 
   }
