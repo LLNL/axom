@@ -250,8 +250,21 @@ public:
    *  out the bounding boxes of the supplied objects.
    *****************************************************************************
    */
-  void writeLegacyVtkFile( const std::string& fileName,
-                           bool include_objects=false ) const;
+  void writeVtkFile( const std::string& fileName,
+                     bool include_objects=false ) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Writes the user-supplied set of bins in a VTK file.
+   * \param [in] fileName the name of the VTK formatted file to generate.
+   * \param [in] bins array of bins to dump in the VTK file.
+   * \param [in] nbins the number of bins.
+   * \note Primarily used for debugging.
+   *****************************************************************************
+   */
+  void writeVtkFile( const std::string& fileName,
+                     const int* bins,
+                     int nbins ) const;
 
 private:
 
@@ -1071,7 +1084,57 @@ int BVHTree< T,NDIMS >::getObjectBucketIndex( int objIdx ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void BVHTree< T,NDIMS >::writeLegacyVtkFile(
+void BVHTree< T,NDIMS >::writeVtkFile(
+                    const std::string& fileName,
+                    const int* bins,
+                    int nbins ) const
+{
+  // STEP 0: Write VTK header
+  std::ofstream ofs;
+  ofs.open( fileName.c_str() );
+  ofs << "# vtk DataFile Version 3.0\n";
+  ofs << " BVHTree \n";
+  ofs << "ASCII\n";
+  ofs << "DATASET UNSTRUCTURED_GRID\n";
+
+  std::ostringstream coordinates;
+  std::ostringstream cells;
+
+  int id=0;
+  for ( int ibin=0; ibin < nbins; ++ibin ) {
+
+    const int bucketIdx = bins[ ibin ];
+    const int nnodes = BVHTree::write_box(coordinates,m_tree[ bucketIdx ].Box);
+    coordinates << std::endl;
+
+    cells << nnodes << " ";
+    for ( int i=0; i < nnodes; ++i,++id ) {
+      cells << id << " ";
+    }
+    cells << std::endl;
+
+  }
+
+  ofs << "POINTS " << id << " double\n";
+  ofs << coordinates.str() << std::endl;
+
+  int nnodes = (NDIMS==2)? 4 : 8;
+  ofs << "CELLS " << nbins << " " << nbins*(nnodes+1) << std::endl;
+  ofs << cells.str() << std::endl;
+
+  ofs << "CELL_TYPES " << nbins << std::endl;
+  int cellType = (NDIMS==2)? 9 : 12;
+  for ( int i=0; i < nbins; ++i ) {
+     ofs << cellType << std::endl;
+  } // END for all cells
+  ofs << std::endl;
+
+  ofs.close();
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int NDIMS >
+void BVHTree< T,NDIMS >::writeVtkFile(
                     const std::string& fileName,
                     bool ATK_NOT_USED(include_objects) ) const
 {

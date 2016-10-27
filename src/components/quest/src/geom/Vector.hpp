@@ -22,6 +22,8 @@
 
 namespace quest {
 
+/// @{
+/// \name Overloaded Operators
 
 // Forward declare the templated classes and operator functions
 template<typename T, int DIM> class Vector;
@@ -29,38 +31,46 @@ template<typename T, int DIM> class Vector;
 /*!
  * \brief Forward declaration for vector addition
  */
-template<typename T, int DIM> Vector<T,DIM> operator+(const Vector<T, DIM> & vec1, const Vector<T, DIM> & vec2);
+template<typename T, int DIM> Vector<T,DIM>
+operator+(const Vector<T, DIM> & vec1, const Vector<T, DIM> & vec2);
 
 /*!
  * \brief Forward declaration for vector subtraction
  */
-template<typename T, int DIM> Vector<T,DIM> operator-(const Vector<T, DIM> & vec1, const Vector<T, DIM> & vec2);
+template<typename T, int DIM> Vector<T,DIM>
+operator-(const Vector<T, DIM> & vec1, const Vector<T, DIM> & vec2);
 
 /*!
  * \brief Forward declaration for vector (unary) negation
  */
-template<typename T, int DIM> Vector<T,DIM> operator-(const Vector<T, DIM> & vec1, const Vector<T, DIM> & vec2);
+template<typename T, int DIM> Vector<T,DIM>
+operator-(const Vector<T, DIM> & vec1, const Vector<T, DIM> & vec2);
 
 /*!
  * \brief Forward declaration for scalar multiplication of vector; Scalar on rhs.
  */
-template<typename T, int DIM> Vector<T,DIM> operator*(const Vector<T, DIM> & vec, const T scalar);
+template<typename T, int DIM> Vector<T,DIM>
+operator*(const Vector<T, DIM> & vec, const T scalar);
 
 /*!
  * \brief Forward declaration for scalar multiplication of vector; Scalar on lhs.
  */
-template<typename T, int DIM> Vector<T,DIM> operator*(const T scalar, const Vector<T, DIM> & vec);
+template<typename T, int DIM> Vector<T,DIM>
+operator*(const T scalar, const Vector<T, DIM> & vec);
 
 /*!
  * \brief Forward declaration for scalar division of vector; Scalar on rhs.
  */
-template<typename T, int DIM> Vector<T,DIM> operator/(const Vector<T, DIM> & vec, const T scalar);
+template<typename T, int DIM> Vector<T,DIM>
+operator/(const Vector<T, DIM> & vec, const T scalar);
 
 /*!
  * \brief Overloaded output operator for vectors
  */
-template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const Vector<T,DIM> & vec);
+template<typename T, int DIM>
+std::ostream& operator<<(std::ostream & os, const Vector<T,DIM> & vec);
 
+/// @}
 
 /*!
  *******************************************************************************
@@ -77,7 +87,7 @@ template < typename T, int DIM >
 class Vector
 {
 public:
-    typedef Point<T,DIM> PointType;
+  typedef Point<T,DIM> PointType;
 
 public:
 
@@ -138,8 +148,8 @@ public:
    * \pre A.dimension() == ndims
    *****************************************************************************
    */
-  Vector( const Point< T,DIM >& A, const Point< T,DIM >& B ) : m_components(B.array() - A.array()) {}
-
+  Vector( const Point< T,DIM >& A, const Point< T,DIM >& B ) :
+    m_components(B.array() - A.array()) {}
 
   /*!
    *****************************************************************************
@@ -148,75 +158,75 @@ public:
    */
    ~Vector() {}
 
+  /*!
+   *****************************************************************************
+   * \brief Returns the dimension of this vector instance.
+   * \return d the dimension (size) of the vector
+   * \post d >= 1.
+   *****************************************************************************
+   */
+  int dimension() const { return DIM; };
 
-   /*!
-    *****************************************************************************
-    * \brief Returns the dimension of this vector instance.
-    * \return d the dimension (size) of the vector
-    * \post d >= 1.
-    *****************************************************************************
-    */
-   int dimension() const { return DIM; };
+  /*!
+   *****************************************************************************
+   * \brief Access operator for individual components.
+   * \param [in] i the component index to access
+   * \return p[i] the value at the given component index.
+   * \pre (i >= 0) && (i < ndims)
+   *****************************************************************************
+   */
+  const T& operator[](int i) const { return m_components[i]; }
+  T& operator[](int i)             { return m_components[i]; }
 
+  /*!
+   *****************************************************************************
+   * \brief Returns a reference to the underlying NumericArray.
+   *****************************************************************************
+   */
+  const NumericArray<T,DIM> & array() const  { return m_components; }
+  NumericArray<T,DIM>& array()              { return m_components; }
 
-   /*!
-    *****************************************************************************
-    * \brief Access operator for individual components.
-    * \param [in] i the component index to access
-    * \return p[i] the value at the given component index.
-    * \pre (i >= 0) && (i < ndims)
-    *****************************************************************************
-    */
-   const T& operator[](int i) const { return m_components[i]; }
-   T& operator[](int i)             { return m_components[i]; }
+  /*!
+   *****************************************************************************
+   * \brief Returns a pointer to the underlying data.
+   *****************************************************************************
+   */
+  const T* data() const             { return m_components.data(); }
+  T* data()                         { return m_components.data(); }
 
-   /*!
-    *****************************************************************************
-    * \brief Returns a reference to the underlying NumericArray.
-    *****************************************************************************
-    */
-   const NumericArray<T,DIM> & array() const  { return m_components; }
-   NumericArray<T,DIM>& array()              { return m_components; }
+  /*!
+   *****************************************************************************
+   * \brief Equality comparison operator for points
+   *****************************************************************************
+   */
+  friend bool operator==(const Vector& lhs, const Vector& rhs)
+  { return lhs.m_components == rhs.m_components; }
 
+  /*!
+   *****************************************************************************
+   * \brief Inequality operator for points
+   *****************************************************************************
+   */
+  friend bool operator!=(const Vector& lhs, const Vector& rhs)
+  { return !(lhs == rhs); }
 
-   /*!
-    *****************************************************************************
-    * \brief Returns a pointer to the underlying data.
-    *****************************************************************************
-    */
-   const T* data() const             { return m_components.data(); }
-   T* data()                         { return m_components.data(); }
+  /*!
+   *****************************************************************************
+   * \brief Adds the vector to the Vector instance \f$\vec{u} +=\vec{v}\f$
+   * \param [in] v the vector to add.
+   * \return A reference to the Vector instance after vector addition.
+   *****************************************************************************
+   */
+  Vector< T,DIM >& operator+=( const Vector<T,DIM>& v );
 
-
-   /*!
-    * \brief Equality comparison operator for points
-    */
-   friend bool operator==(const Vector& lhs, const Vector& rhs)
-   { return lhs.m_components == rhs.m_components; }
-
-   /*!
-    * \brief Inequality operator for points
-    */
-   friend bool operator!=(const Vector& lhs, const Vector& rhs)
-   { return !(lhs == rhs); }
-
-   /*!
-    *****************************************************************************
-    * \brief Adds the vector to the Vector instance \f$\vec{u} +=\vec{v}\f$
-    * \param [in] v the vector to add.
-    * \return A reference to the Vector instance after vector addition.
-    *****************************************************************************
-    */
-   Vector< T,DIM >& operator+=( const Vector<T,DIM>& v );
-
-   /*!
-    *****************************************************************************
-    * \brief Adds the vector ot the Vector instance \f$\vec{u} -=\vec{v}\f$
-    * \param [in] v the vector to subtract.
-    * \return A reference to the Vector instance after vector subtraction.
-    *****************************************************************************
-    */
-   Vector< T,DIM >& operator-=( const Vector<T,DIM>& v );
+  /*!
+   *****************************************************************************
+   * \brief Adds the vector ot the Vector instance \f$\vec{u} -=\vec{v}\f$
+   * \param [in] v the vector to subtract.
+   * \return A reference to the Vector instance after vector subtraction.
+   *****************************************************************************
+   */
+  Vector< T,DIM >& operator-=( const Vector<T,DIM>& v );
 
   /*!
    *****************************************************************************
@@ -246,7 +256,6 @@ public:
    */
   T dot(const Vector<T,DIM>& v ) const;
 
-
   /*!
    *****************************************************************************
    * \brief Computes the squared \f$ l^2\f$ norm of this vector instance.
@@ -264,7 +273,6 @@ public:
    */
   double norm() const;
 
-
   /*!
    *****************************************************************************
    * \brief Component-wise negation of the vector.
@@ -281,7 +289,6 @@ public:
    */
   Vector unitVector() const ;
 
-
   /*!
    *****************************************************************************
    * \brief Simple formatted print of a Vector instance
@@ -290,8 +297,6 @@ public:
    *****************************************************************************
    */
   std::ostream& print(std::ostream& os) const;
-
-
 
   /*!
    *****************************************************************************
