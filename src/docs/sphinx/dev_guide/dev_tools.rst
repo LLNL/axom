@@ -194,7 +194,7 @@ into the develop branch and the merge could be difficult.
 Before you begin the merge, make sure all outstanding changes to your topic 
 branch are committed. Then, you need to make sure your local repo is 
 up-to-date with the main develop branch by checking it out and pulling in 
-the latest changes; i.e.,
+the latest changes; i.e.,::
 
   $ git checkout develop
   $ git pull
