@@ -10,31 +10,47 @@
 .. ##
 
 =========================================================
-1 General Considerations
+1 Modifying Code and Deviating from Guidelines
 =========================================================
 
-1.1 The CS Toolkit contains software developed from scratch as well as code 
-adopted from other sources developed independently. These guidelines apply to 
-software developed for the Toolkit specifically. Modifying other code to be 
-compliant with these guidelines should typically be done only if a significant 
-rewrite is undertaken for other reasons.
+-----------------------------------
+Follow Existing Toolkit Code Style
+-----------------------------------
 
-1.2 When modifying existing code, the style conventions already in
+1.1 When modifying existing code, the style conventions already in
 use in the file **must** be followed. This is not intended to
 stifle personal creativity - mixing style is disruptive and 
 may cause confusion for users and fellow developers.
 
-1.3 When making stylistic changes to existing code, those changes **should** 
+1.2 When making stylistic changes to existing code, those changes **should** 
 extend to a point where the style is consistent across a reasonable scope. 
-This may mean that an entire source or header file is changed to prevent
-multiple conflicting styles.
+This may mean that an entire file is changed to prevent multiple conflicting 
+styles.
 
-1.4 Variations in coding style for different Toolkit components is permitted.
-However, coding style within each component **must** be consistent.
+--------------------------------
+Deviating from These Guidelines
+--------------------------------
 
-1.5 Significant deviations from these guidelines **must** be discussed and
-agreed upon by the development team. If the guidelines need to be changed,
-they **should** be.
+1.3 Variations in coding style for different Toolkit components is permitted.
+However, coding style within each Toolkit component **must** be consistent.
+
+1.4 Significant deviations from these guidelines **must** be discussed and
+agreed upon by the development team. 
+
+.. important:: **When the team agrees on changes to these guidelines, this
+               guide **must** be changed accordinagly.
+
+--------------------------------
+Adopting Code From Other Sources
+--------------------------------
+
+1.5 The CS Toolkit contains software developed from scratch as well as code 
+adopted from other sources developed independently. These guidelines apply to 
+software developed within the Toolkit. The decision of whether and how to 
+modify externally-developed code that we pull in to the Toolkit will be 
+evaluated on a case-by-case basis. Modifying such code to be compliant with 
+these guidelines should typically be done only if a significant rewrite is 
+undertaken for other reasons.
 
 
 .. _namesec-label:
@@ -43,15 +59,15 @@ they **should** be.
 2 Names
 ========
 
-Good names are essential to sound software design.
-This section contains guidelines for naming files, types. functions, 
-class members, variables, etc. The main goal is to use a distinct and 
-consistent naming convention for each item so that the role of each entity 
-in the code is obvious from the form of its name.
+Good names are essential to sound software design. This section contains 
+guidelines for naming files, types. functions, class members, variables, etc. 
+The main goal is to use a distinct and consistent naming convention for each
+type of item so that the role of each entity in the code is obvious from the 
+form of its name.
 
------------
-2.1 General
------------
+----------------------------
+2.1 Choose Meaningful Names
+----------------------------
 
 2.1.1 Every name **must** be meaningful. In particular, its meaning **must** 
 be clear to other code developers and users, not just the author of the name.
@@ -65,7 +81,11 @@ be clear to other code developers and users, not just the author of the name.
       can be a substantial part of software and requires maintenance. 
       Minimizing the amount of documentation required reduces this burden.
 
-2.1.2 Terminology **must** be used consistently; i.e., in documentation and 
+------------------------------------
+2.2 Use Terminology Consistently
+------------------------------------
+
+2.2.1 Terminology **must** be used consistently; i.e., in documentation and 
 for names of directories, types, functions, variables, etc. Multiple terms 
 **should not** be used to refer to the same concept and a concept 
 **should not** be referred to by multiple terms.
@@ -74,15 +94,23 @@ for names of directories, types, functions, variables, etc. Multiple terms
       maintain the consistency and integrity of the software, and it makes
       the code easier to understand for developers and users.
 
-2.1.3 Each name **must** be consistent with other similar names in the code.
+2.2.2 Each name **must** be consistent with other similar names in the code.
 
       For example, if getter/setter methods follow the convention "getFoo"
       and "setFoo" respectively, then adding a new setter method called
       "putBar" is clearly inconsistent.
 
-2.1.4 Tersely abbreviated or cryptic names **should** be avoided. However, 
+------------------------------------
+2.3 Avoid Cryptic Names
+------------------------------------
+
+2.3.1 Tersely abbreviated or cryptic names **should** be avoided. However, 
 common acronyms and jargon that are well understood by team members and
 users **may** be used.
+
+.. note :: The previous items were renumbered to see if folks like this 
+           organization better. If we go with it, the following sections
+           and items will be renumbered. 
 
 
 --------------------
@@ -2274,6 +2302,10 @@ Not all preferred formatting conventions are supported by uncrustify.
 The following guidelines provide additional recommendations to make
 code easier to read and understand.
 
+
+Use White Space To Make Code Easier to Read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 7.2.1 Blank lines and indentation **should** be used throughout code to 
 enhance readability. 
 
@@ -2294,6 +2326,10 @@ the opening parenthesis.
 7.2.3 Tabs **must not** be used for indentation since this can be problematic 
 for developers with different text editor settings.
 
+
+Align Code Vertically to Show Scope
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 7.2.4 When function arguments (in either a declaration or implementation)
 appear on multiple lines, the arguments **should** be aligned vertically 
 for readability.
@@ -2304,17 +2340,24 @@ for readability.
 Continuation of previous lines **may** be indented if it make the code easier
 to read.
 
+
+Break Lines Where It Makes Sense
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 7.2.7 When a line is broken at a comma or semi-colon, it **must** be broken 
 after the comma or semi-colon, not before. 
 
 7.2.8 When a source line is broken at an arithmetic operator 
 (i.e., , -, etc.), it **should** be broken after the operator, not before. 
 
+
+Use Parentheses For Clarity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 7.2.9 Parentheses **should** be used in non-trivial mathematical and logical 
 expressions to clearly indicate structure and intended order of operations. 
-
-      Do not assume everyone who looks at the code knows all the rules for 
-      operator precedence.
+Do not assume everyone who reads the code knows all the rules for operator 
+precedence.
 
 
 .. _portsec-label: 
