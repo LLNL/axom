@@ -62,9 +62,9 @@ i.e.,::
 
    $ ./scripts/config-build.py 
 
----------------------
-Run CMake Directly
----------------------
+-----------------------
+Running CMake Directly
+-----------------------
 
 You can also configure the code by running CMake directly and passing it 
 the appropriate arguments. For example, to configure, build and install 
@@ -79,6 +79,11 @@ CMake::
      ../src/
    $ make
    $ make install
+
+You can also run CMake by explicitly passing all options you need. Here is 
+a summary of commonly used CMake options:
+
+.. note:: **Fill this in...** 
 
 
 .. _hostconfig-label:

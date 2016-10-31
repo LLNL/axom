@@ -31,6 +31,10 @@ in the sections that follow.
 * We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for issue tracking.
 * We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for continuous integration and automated testing.
 
+---------------------
+Build, Link, Triumph
+---------------------
+
 Our build system, called *BLT*, is maintained in its own repo in our 
 Bitbucket project. **Add link to BLT documentation when it is available** 
 BLT provides a "common sense" setup based on CMake. It manages our build 
@@ -83,8 +87,8 @@ If you have not used Bitbucket before, you will need to
 
 .. _repoclone-label:
 
-Getting a local copy of the code
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Getting a local working copy of the code
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Before starting work on the code, you must clone the repo into your working
 space. This is done by typing::
@@ -114,8 +118,8 @@ More about the Git hooks later.
 Performing topic branch development
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It is worth emphasizing a fundamental principle of the Gitflow development
-model that we described in :ref:`gitflow-label`.
+It is worth re-emphasizing a fundamental fundamental principle of the Gitflow 
+development model that we described in :ref:`gitflow-label`.
 
 .. important:: **We never work directly on the develop or master branches. 
                We use topic branches instead.**
@@ -432,7 +436,7 @@ Manually running a plan on a branch
 .. note :: **Fill in this section with a description of what can be run 
            manually, and how to do it.**
 
-Restricted Zone (RE) Bamboo Project
+Restricted Zone (RZ) Bamboo Project
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note :: **Fill in this section with a description of this when it is
