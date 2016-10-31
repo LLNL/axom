@@ -9,19 +9,12 @@
  */
 
 
-/*
- * $Id$
- */
-
 /*!
  *******************************************************************************
  * \file
  *
  * \brief Consists of a set of templated (overloaded) routines used to calculate
  *  the "signed" squared distance between two geometric entities.
- *
- * \date Dec 9, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
  *******************************************************************************
  */
 

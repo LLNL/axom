@@ -470,7 +470,7 @@ void computeUsingBucketTree( mint::Mesh* surface_mesh,
   const quest::BVHTree< int,NDIMS >* btree = signedDistance.getBVHTree();
   SLIC_ASSERT( btree != ATK_NULLPTR );
 
-  btree->writeLegacyVtkFile( "bucket-tree.vtk" );
+  btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
   const int ncells = surface_mesh->getMeshNumberOfCells();
