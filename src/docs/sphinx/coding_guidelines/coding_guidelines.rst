@@ -2066,12 +2066,36 @@ or "int" data for sets of related constant values.
       since it provides stronger type safety and better scoping than regular
       enum types.
 
+---------------
+6.9 Templates
+---------------
+
+6.9.1 A class or function **should** only be made a template when its 
+implementation is independent of the template type parameter.
+
+       Note that class member templates (e.g., member functions that are
+       templates of a class that is not a template) are often useful to
+       reduce code redundancy.
+
+6.9.2 Generic templates that have external linkage **must** be defined in the 
+header file where they are declared since template instantiation is a compile 
+time operation. Implementations of class templates and member templates that
+are non-trivial **should** be placed in the class header file after the class 
+definition.
+
+6.9.3 Complete specializations of member templates or function templates 
+**must not** appear in a header file.
+
+       Such methods **are not templates** (they are actually regular functions)
+       and thus may produce link errors if their definitions are seen more 
+       than once.
+
 
 --------------------------------------------------------------------
-6.9 Const 
+6.10 Const 
 --------------------------------------------------------------------
 
-6.9.1 The "const" qualifier **should** be used for variables and methods 
+6.10.1 The "const" qualifier **should** be used for variables and methods 
 when appropriate to clearly indicate usage and to take advantage of 
 compiler-based error-checking. For example, any class member function 
 that does not change the state of the object on which it is called 
@@ -2083,12 +2107,12 @@ that does not change the state of the object on which it is called
       of a variable or object will not change in the scope in which the 
       declaration appears.
 
-6.9.2 Any class member function that does not change a data member of the 
+6.10.2 Any class member function that does not change a data member of the 
 associated class **must** be declared "const".
 
       This enables the compiler to detect unintended usage.
 
-6.9.3 Any class member function that returns a class data member that 
+6.10.3 Any class member function that returns a class data member that 
 should not be changed by the caller **must** be declared "const" and 
 **must** return the data member as a "const" reference or pointer.
 
@@ -2098,16 +2122,16 @@ should not be changed by the caller **must** be declared "const" and
 
 
 --------------------------------------------------------------------
-6.10 Casts and Type Conversions
+6.11 Casts and Type Conversions
 --------------------------------------------------------------------
 
-6.10.1 C-style casts **must not** be used.
+6.11.1 C-style casts **must not** be used.
 
       All type conversions **must** be done explicitly using the named C++ 
       casting operators; i.e., "static_cast", "const_cast", "dynamic_cast", 
       "reinterpret_cast".
 
-6.10.2 The "const_cast" operator **should** be avoided. 
+6.11.2 The "const_cast" operator **should** be avoided. 
 
        Casting away "const-ness" is usually a poor programming decision and can 
        introduce errors.
@@ -2115,13 +2139,13 @@ should not be changed by the caller **must** be declared "const" and
        **Exception:** It may be necessary in some circumstances to cast away 
        const-ness, such as when calling const-incorrect APIs.
 
-6.10.3 The "reinterpret_cast" **must not** be used unless absolutely necessary.
+6.11.3 The "reinterpret_cast" **must not** be used unless absolutely necessary.
 
        This operator was designed to perform a low-level reinterpretation of 
        the bit pattern of an operand. This is needed only in special 
        circumstances and circumvents type safety.
 
-6.10.4  A class constructor that takes a single *non-default* argument, or a 
+6.11.4  A class constructor that takes a single *non-default* argument, or a 
 single argument with a *default* value, **must** be declared"explicit".
 
        This prevents compilers from performing unexpected (and, in many
@@ -2148,15 +2172,15 @@ single argument with a *default* value, **must** be declared"explicit".
 
 
 -----------------------------
-6.11 Memory management
+6.12 Memory management
 -----------------------------
 
-6.11.1 Memory **should** be deallocated in the same scope in which it is 
+6.12.1 Memory **should** be deallocated in the same scope in which it is 
 allocated.
 
-6.11.2 Memory **should** be deallocated as soon as it is no longer needed.
+6.12.2 Memory **should** be deallocated as soon as it is no longer needed.
 
-6.11.3 Pointers **should** be set to null explicitly when memory is deallocated.
+6.12.3 Pointers **should** be set to null explicitly when memory is deallocated.
 
       For uniformity across the CS Toolkit and to facilitate C++11 and
       non-C++11 usage, this should be done using the common macro
@@ -2167,14 +2191,14 @@ allocated.
          delete [ ] data;
          data = ATK_NULLPTR;
 
-6.11.4 Data managed exclusively within C++ code **must** be allocated and 
+6.12.4 Data managed exclusively within C++ code **must** be allocated and 
 deallocated using the "new" and "delete" operators.
 
       The operator "new" is type-safe, simpler to use, and less error-prone
       than the "malloc" family of C functions.  C++ new/delete operators
       **must not** be combined with C malloc/free functions.
 
-6.11.5 Every C++ array deallocation statement **must** include "[ ]" 
+6.12.5 Every C++ array deallocation statement **must** include "[ ]" 
 (i.e., "delete[ ]") to avoid memory leaks.
 
       The rule of thumb is: when "[ ]" appears in the allocation, then "[ ]"

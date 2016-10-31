@@ -39,9 +39,10 @@ Whether and how to apply items qualified with "should" or "may" often depends
 on the particular code situation. It is best to use them in a manner that
 enhances code readability and help to reduce user and developer errors.
 
-.. note :: This guide is not a C++ language tutorial. Developers should be
-           familiar with the language and educate themselves on various
-           topics as needed.
+.. note :: While this guide provides information about proper use of the C++ 
+           programming language, it is not a C++ tutorial. Developers should 
+           understand all language features that they use and educate 
+           themselves on various topics as needed.
 
 
 **Contents:**
