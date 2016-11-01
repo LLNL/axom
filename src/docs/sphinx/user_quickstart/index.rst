@@ -9,7 +9,7 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
-CS Toolkit User Quick Start Guide
+CS Toolkit Quick Start Guide
 =========================================================
 
 This guide provides information to help CS Toolkit users get up and
