@@ -13,13 +13,84 @@
 Configuration and Building
 ======================================================
 
-This section provides basic information about configurings and building
-the CS Toolkit.
+This section provides information about configuring and building
+the CS Toolkit software after you have obtained a copy of the repo.
+The main steps for using the Toolkit are:
+
+  #. Configure, build, and install third-party libraries (TPLs) that the Toolkit depends on.
+  #. Build and install the CS Toolkit and its libraries.
+  #. Build and link your application with the Toolkit installation.
+
+Depending on how your team uses the Toolkit, some of these steps, such as
+installing the Toolkit TPLs and the Toolkit itself, may need to be done 
+only once. These installations can be shared across the team.
 
 
-------------------------------
-Configure, Build, and Install
-------------------------------
+-----------------------------------------------------
+Requirements, Dependencies, and Supported Compilers
+-----------------------------------------------------
+
+List basic requirements, such as language standards (C++, Fortran), CMake
+version, etc.
+
+List the compilers we support; i.e., those we regularly build and test with...
+
+List any other dependencies folks need to know about...
+
+
+.. _tplbuild-label:
+
+----------------------------------------------
+Building and Installing Third-party Libraries
+----------------------------------------------
+
+We use the `Spack Package Manager <https://github.com/scalability-llnl/spack>`_ 
+to manage and build TPL dependencies for the Toolkit. To make the TPL process
+easier (you don't really need to learn much about Spack) and automatic, we 
+drive it with a python script called ``uberenv.py``, which located in the 
+directory 'scripts/uberenv'. Running this script does several things:
+
+  * Clone the Spack repo from GitHub (the most recent version we have tested 
+    and we know works!)
+  * Perform set up tasks for each version of the TPLs that will be built 
+    (e.g., for each compiler that will be used).
+  * Invokes Spack to build all TPLs versions an generate a *host-config* file,
+    that captures all details of the configuration and build, for each.
+
+The figure illustrates what the script does.
+
+.. figure:: Uberenv.jpg
+
+The uberenv script is run from the top-level Toolkit directory like this::
+
+    $ python ./scripts/uberenv/uberenv.py --prefix {install path} --spec spec  [ --mirror {mirror path} ]
+
+The 'install path' specifies the directory where the TPLs will be installed. 
+The 'spec' argument refers to Spack's specification syntax. Typically, a Spack
+spec (that's fun to say, no?) indicates a compiler and version for a build.
+You can see some examples of this in the python scripts we use to build 
+TPLs for the Toolkit development team on LC platforms at LLNL located in
+the directory 'scripts/uberenv/llnl_install_scripts'. For more details, please
+see the `Spack Spec Documentation <http://spack.readthedocs.io/en/latest/basic_usage.html#specs-dependencies>_`. The 'mirror' argument indicates the location 
+of a location where Spack will place the downloaded code for the TPLs. When
+building more than one installation of the TPLs, using a mirror will tell 
+Spack to only download the distribution for each once and use that for all
+installations. To setup a mirror for Spack, run the following before running
+the uberenv.py script::
+
+    $ spack mirror create -d {directory} --dependencies uberenv-asctoolkit
+
+Here, 'directory' is the location of the mirror.
+
+
+.. _toolkitbuild-label:
+
+--------------------------------------
+Building and Installing the CS Toolkit
+--------------------------------------
+
+We noted in the previous section that......
+
 
 We use a CMake-based system to configure and build our code, called *BLT*
 (see **add link to BLT docs** for more information). 
@@ -169,11 +240,10 @@ Toolkit components are build properly, execute the following command::
            users may want to use (see table above for format).
 
 
-.. _tpl-label:
+.. _appbuild-label:
 
---------------------------
-Third-party libraries
---------------------------
+------------------------------------------
+Compiling and Linking with an Application
+------------------------------------------
 
-Describe how to run the scripts to install third-party libraries...
-
+Fill this in...
