@@ -95,8 +95,6 @@ public:
    *****************************************************************************
    */
   double computeDistance( const PointType& queryPnt ) const;
-  double computeDistance( const PointType& queryPnt,
-			  int& totalobj ) const;
 
   /*!
    *****************************************************************************
@@ -333,16 +331,6 @@ inline double SignedDistance< NDIMS >::computeDistance(
                                 std::vector< int >& ATK_DEBUG_PARAM(elementIds),
                                 std::vector< int >& my_elements,
                                 PointType& closest_pt ) const
-{
-  int totalobj = 0;
-  return computeDistance(pt, totalobj);
-}
-
-template < int NDIMS >
-inline double
-SignedDistance< NDIMS >::computeDistance(
-  const PointType& pt,
-  int& totalobj ) const
 {
   SLIC_ASSERT( m_surfaceMesh != ATK_NULLPTR );
   SLIC_ASSERT( m_bvhTree != ATK_NULLPTR );

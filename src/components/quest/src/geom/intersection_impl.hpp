@@ -118,11 +118,11 @@ namespace detail {
     // Step 1: Check if all the vertices of triangle 1 lay on the same side of
     // the plane created by triangle 2:
 
-    Vector3 t2Normal = Vector3::cross_product(Vector3(t2.C(), t2.A()),
-					      Vector3(t2.C(), t2.B()));
-    double dp1 = (Vector3(t2.C(), t1.A())).dot(t2Normal);
-    double dq1 = (Vector3(t2.C(),t1.B())).dot(t2Normal);
-    double dr1 = (Vector3(t2.C(),t1.C())).dot(t2Normal);
+    Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
+					      Vector3(t2[2], t2[1]));
+    double dp1 = (Vector3(t2[2], t1[0])).dot(t2Normal);
+    double dq1 = (Vector3(t2[2],t1[1])).dot(t2Normal);
+    double dr1 = (Vector3(t2[2],t1[2])).dot(t2Normal);
     if (signMatch(dp1, dq1, dr1)) {
       return false;
     }
@@ -130,11 +130,11 @@ namespace detail {
     // Step 2: Check if all the vertices of triangle 2 lay on the same side of
     // the plane created by triangle 1:
 
-    Vector3 t1Normal = Vector3::cross_product(Vector3(t1.A(), t1.B()),
-					      Vector3(t1.A(), t1.C()));
-    double dp2 = (Vector3(t1.C(),t2.A())).dot(t1Normal);
-    double dq2 = (Vector3(t1.C(),t2.B())).dot(t1Normal);
-    double dr2 = (Vector3(t1.C(),t2.C())).dot(t1Normal);
+    Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]),
+					      Vector3(t1[0], t1[2]));
+    double dp2 = (Vector3(t1[2],t2[0])).dot(t1Normal);
+    double dq2 = (Vector3(t1[2],t2[1])).dot(t1Normal);
+    double dr2 = (Vector3(t1[2],t2[2])).dot(t1Normal);
     if (signMatch(dp2, dq2, dr2)) {
       return false;
     }
@@ -159,72 +159,72 @@ namespace detail {
 
     if (isGt(dp1, 0.0)) {
       if (isGt(dq1, 0.0)) {
-	return intersectOnePermutedTriangle(t1.C(), t1.A(), t1.B(),
-					    t2.A(), t2.C(), t2.B(),
+	return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
+					    t2[0], t2[2], t2[1],
 					    dp2, dr2, dq2, t1Normal);
       }
       else if (isGt(dr1, 0.0)) {
-	return intersectOnePermutedTriangle(t1.B(), t1.C(), t1.A(),
-					    t2.A(), t2.C(), t2.B(),
+	return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
+					    t2[0], t2[2], t2[1],
 					    dp2, dr2, dq2, t1Normal);
       }
-      else return intersectOnePermutedTriangle(t1.A(), t1.B(), t1.C(),
-					       t2.A(), t2.B(), t2.C(),
+      else return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
+					       t2[0], t2[1], t2[2],
 					       dp2, dq2, dr2, t1Normal);
     }
     else if (isLt(dp1, 0.0)) {
       if (isLt(dq1, 0.0)) {
-	return intersectOnePermutedTriangle(t1.C(), t1.A(), t1.B(),
-					    t2.A(), t2.B(), t2.C(),
+	return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
+					    t2[0], t2[1], t2[2],
 					    dp2, dq2, dr2, t1Normal);
       }
       else if (isLt(dr1, 0.0f)) {
-	return intersectOnePermutedTriangle(t1.B(), t1.C(), t1.A(),
-					    t2.A(), t2.B(), t2.C(),
+	return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
+					    t2[0], t2[1], t2[2],
 					    dp2, dq2, dr2, t1Normal);
       }
-      else return intersectOnePermutedTriangle(t1.A(), t1.B(), t1.C(),
-					       t2.A(), t2.C(), t2.B(),
+      else return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
+					       t2[0], t2[2], t2[1],
 					       dp2, dr2, dq2, t1Normal);
     }
     else { //dp1 ~= 0
       if (isLt(dq1, 0.0)) {
 	if (isGeq(dr1, 0.0)) {
-	  return intersectOnePermutedTriangle(t1.B(), t1.C(), t1.A(),
-					      t2.A(), t2.C(), t2.B(),
+	  return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
+					      t2[0], t2[2], t2[1],
 					      dp2, dr2, dq2, t1Normal);
 	}
 	else {
-	  return intersectOnePermutedTriangle(t1.A(), t1.B(), t1.C(),
-					      t2.A(), t2.B(), t2.C(),
+	  return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
+					      t2[0], t2[1], t2[2],
 					      dp2, dq2, dr2, t1Normal);
 	}
       }
       else if (isGt(dq1, 0.0)) {
 	if (isGt(dr1, 0.0)) {
-	  return intersectOnePermutedTriangle(t1.A(), t1.B(), t1.C(),
-					      t2.A(), t2.C(), t2.B(),
+	  return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
+					      t2[0], t2[2], t2[1],
 					      dp2, dr2, dq2, t1Normal);
 	}
 	else {
-	  return intersectOnePermutedTriangle(t1.B(), t1.C(), t1.A(),
-					      t2.A(), t2.B(), t2.C(),
+	  return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
+					      t2[0], t2[1], t2[2],
 					      dp2, dq2, dr2, t1Normal);
 	}
       }
       else  {
 	if (isGt(dr1, 0.0)) {
-	  return intersectOnePermutedTriangle(t1.C(), t1.A(), t1.B(),
-					      t2.A(), t2.B(), t2.C(),
+	  return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
+					      t2[0], t2[1], t2[2],
 					      dp2, dq2, dr2, t1Normal);
 	}
 	else if (isLt(dr1, 0.0)) {
-	  return intersectOnePermutedTriangle(t1.C(), t1.A(), t1.B(),
-					      t2.A(), t2.C(), t2.B(),
+	  return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
+					      t2[0], t2[2], t2[1],
 					      dp2, dr2, dq2, t1Normal);
 	}
-	else return intersectCoplanar3DTriangles(t1.A(), t1.B(), t1.C(),
-						 t2.A(), t2.B(), t2.C(), t1Normal);
+	else return intersectCoplanar3DTriangles(t1[0], t1[1], t1[2],
+						 t2[0], t2[1], t2[2], t1Normal);
       }
     }
   }
@@ -433,22 +433,22 @@ namespace detail {
   inline bool TriangleIntersection2D(const Triangle2& t1,
 				     const Triangle2& t2)
   {
-    if (isLt(checkCCW(t1.A(),t1.B(),t1.C()),0.0)) {
-      if ((isLt(checkCCW(t2.A(), t2.B(), t2.C()),0.0))) {
-	return intersectPermuted2DTriangles(t1.A(), t1.C(), t1.B(),
-				       t2.A(), t2.C(), t2.B());
+    if (isLt(checkCCW(t1[0],t1[1],t1[2]),0.0)) {
+      if ((isLt(checkCCW(t2[0], t2[1], t2[2]),0.0))) {
+	return intersectPermuted2DTriangles(t1[0], t1[2], t1[1],
+				       t2[0], t2[2], t2[1]);
       }
-      else return intersectPermuted2DTriangles(t1.A(), t1.C(), t1.B(),
-					  t2.A(), t2.B(), t2.C());
+      else return intersectPermuted2DTriangles(t1[0], t1[2], t1[1],
+					  t2[0], t2[1], t2[2]);
     }
     else {
-      if (isLt(checkCCW(t2.A(), t2.B(), t2.C()),0.0)) {
-	return intersectPermuted2DTriangles(t1.A(), t1.B(), t1.C(),
-				       t2.A(), t2.C(), t2.B());
+      if (isLt(checkCCW(t2[0], t2[1], t2[2]),0.0)) {
+	return intersectPermuted2DTriangles(t1[0], t1[1], t1[2],
+				       t2[0], t2[2], t2[1]);
       }
       else {
-	return intersectPermuted2DTriangles(t1.A(), t1.B(), t1.C(),
-				       t2.A(), t2.B(), t2.C());
+	return intersectPermuted2DTriangles(t1[0], t1[1], t1[2],
+				       t2[0], t2[1], t2[2]);
       }
     }
   }
@@ -911,9 +911,9 @@ namespace detail {
 
     // Make the AABB center the origin by moving the triangle vertices
     PointType center(bb.getMin().array() + e.array());
-    VectorType v[3] = { VectorType(center, tri.A())
-			, VectorType(center, tri.B())
-			, VectorType(center, tri.C()) };
+    VectorType v[3] = { VectorType(center, tri[0])
+			, VectorType(center, tri[1])
+			, VectorType(center, tri[2]) };
 
     // Create the edge vectors of the triangle
     VectorType f[3] = { v[1] - v[0], v[2] - v[1],  v[0] - v[2] };
@@ -953,7 +953,7 @@ namespace detail {
 
     /// Final test -- face normal of triangle's plane
     VectorType planeNormal  = VectorType::cross_product(f[0],f[1]);
-    double planeDist    = planeNormal.dot( tri.A());
+    double planeDist    = planeNormal.dot(tri[0]);
 
     double r = e[0]* std::abs( planeNormal[0]) + e[1]* std::abs( planeNormal[1]) + e[2]* std::abs( planeNormal[2]);
     double s = planeNormal.dot(center) - planeDist;

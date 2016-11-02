@@ -144,7 +144,7 @@ public:
   Point<T,3> barycenterCoords(const Point<T, DIM>& p) const{
 	//adapted from Real Time Collision Detection by Christer Ericson
 
-    VectorType u= VectorType(m_A, m_B);
+    VectorType u= VectorType(m_points[0], m_points[1]);
     T nu, nv, ood;
     T x= std::abs(u[0]);
     T y= std::abs(u[1]);
@@ -153,9 +153,9 @@ public:
 
     if (x>=y && x>= z) {
         Point<T,2> pP= Point<T,2>::make_point(p[1], p[2]);
-        Point<T,2> p1= Point<T,2>::make_point(m_A[1], m_A[2]);
-        Point<T,2> p2= Point<T,2>::make_point(m_B[1], m_B[2]);
-        Point<T,2> p3= Point<T,2>::make_point(m_C[1], m_C[2]);
+        Point<T,2> p1= Point<T,2>::make_point(m_points[0][1], m_points[0][2]);
+        Point<T,2> p2= Point<T,2>::make_point(m_points[1][1], m_points[1][2]);
+        Point<T,2> p3= Point<T,2>::make_point(m_points[2][1], m_points[2][2]);
         Triangle<T,2> t1(pP, p2, p3);
         Triangle<T,2> t2(pP, p3, p1);
         nu=t1.area2d();
@@ -165,9 +165,9 @@ public:
     }
     else if (y>=x && y>=z) {
         Point<T,2> pP= Point<T,2>::make_point(p[0], p[2]);
-        Point<T,2> p1= Point<T,2>::make_point(m_A[0], m_A[2]);
-        Point<T,2> p2= Point<T,2>::make_point(m_B[0], m_B[2]);
-        Point<T,2> p3= Point<T,2>::make_point(m_C[0], m_C[2]);
+        Point<T,2> p1= Point<T,2>::make_point(m_points[0][0], m_points[0][2]);
+        Point<T,2> p2= Point<T,2>::make_point(m_points[1][0], m_points[1][2]);
+        Point<T,2> p3= Point<T,2>::make_point(m_points[2][0], m_points[2][2]);
         Triangle<T,2> t1(pP, p2, p3);
         Triangle<T,2> t2(pP, p3, p1);
         nu=t1.area2d();
@@ -177,9 +177,9 @@ public:
     }
     else {
         Point<T,2> pP= Point<T,2>::make_point(p[0], p[1]);
-        Point<T,2> p1= Point<T,2>::make_point(m_A[0], m_A[1]);
-        Point<T,2> p2= Point<T,2>::make_point(m_B[0], m_B[1]);
-        Point<T,2> p3= Point<T,2>::make_point(m_C[0], m_C[1]);
+        Point<T,2> p1= Point<T,2>::make_point(m_points[0][0], m_points[0][1]);
+        Point<T,2> p2= Point<T,2>::make_point(m_points[1][0], m_points[1][1]);
+        Point<T,2> p3= Point<T,2>::make_point(m_points[2][0], m_points[2][1]);
         Triangle<T,2> t1(pP, p2, p3);
         Triangle<T,2> t2(pP, p3, p1);
         nu=t1.area2d();
