@@ -89,38 +89,50 @@ Here, 'directory' is the location of the mirror.
 Building and Installing the CS Toolkit
 --------------------------------------
 
-We noted in the previous section that......
+We use a CMake-based system, called *BLT* to configure and build the Toolkit
+(see **add link to BLT docs** for more information). This section 
+provides essential instructions for building the code.
 
 
-We use a CMake-based system to configure and build our code, called *BLT*
-(see **add link to BLT docs** for more information). 
+.. _hostconfig-label:
+
+Host-config files
+^^^^^^^^^^^^^^^^^^^
+
+We use host-config files to make building the Toolkit more automatic and
+easily reproducible. A host-config file captures all build configuration 
+information used for the build such as compiler version and options, 
+paths to all TPLs, etc. When passed to CMake, a host-config file initializes
+the CMake cache with the configuration specified in the file.
+
+We noted in the previous section that the uberenv script generates a
+'host-config' file for each item in the Spack spec list given to it.
+These files are located in the directory 'spack/bin/spack' where the
+TPLs were installed. The name of each file contains information about the
+platform and spec.
+
 
 Python helper script
 ^^^^^^^^^^^^^^^^^^^^^
 
 The easiest way to configure the code for compilation is to use the 
-'config-build.py' python script in the 'scripts' directory; 
+``config-build.py`` python script in the 'scripts' directory; 
 e.g.,::
 
-   $ ./scripts/config-build.py -hc ./host-configd/surface-chaos_5_x86_64_ib-gcc@4.9.3.cmake
+   $ ./scripts/config-build.py -hc {host-config file name}
 
 This script requires that you pass it a *host-config* file. The script runs 
-CMake and passes it the host-config to initialize the CMake cache with the
-configuration informarion contained in the file. See :ref:`hostconfig-label` 
+CMake and passes it the host-config. See :ref:`hostconfig-label` 
 for more information.
 
-Running the script, as in the example above, creates two directories to hold
-the build and install contents for the platform and compiler specified by the
-host-config file - in this case, a CHAOS 5 platform with the GNU gcc 4.9.3
-compiler. The name 'surface' in the file name indicates the particular 
-machine on which the host-config file was generated. Livermore Computing 
-platforms are generally configured similarly so that the configuration will 
-usually also work on other CHAOS 5 Linux platforms. 
+Running the script, as in the example above, will create two directories to 
+hold the build and install contents for the platform and compiler specified 
+in the name of the host-config file. 
 
 To build the code and intall the header files, libraries, and documentation 
 in the install directory, go into the build directory and run make; e.g.,::
 
-   $ cd build-rzmerl-chaos_5_x86_64_ib-gcc@4.9.3-debug
+   $ cd {build directory}
    $ make
    $ make install
 
@@ -136,29 +148,29 @@ i.e.,::
 Run CMake directly
 ^^^^^^^^^^^^^^^^^^^
 
-You can configure the code by running CMake directly and passing it the 
+You can also configure the code by running CMake directly and passing it the 
 appropriate arguments. For example, to configure, build and install a release 
 build with the gcc compiler, you could pass a host-config file CMake::
 
-   $ mkdir build-gnu-release
-   $ cd build-gnu-release
-   $ cmake -C ./host-configd/surface-chaos_5_x86_64_ib-gcc@4.9.3.cmake \
+   $ mkdir build-gcc-release
+   $ cd build-gcc-release
+   $ cmake -C {host config file for gcc compiler} \
      -DCMAKE_BUILD_TYPE=Release \
-     -DCMAKE_INSTALL_PREFIX=../install-gnu-release \
+     -DCMAKE_INSTALL_PREFIX=../install-gcc-release \
      ../src/
    $ make
    $ make install
 
 Alternatively, you could forego the host-config file entirely and pass all the 
-argeuments you need to CMakel; for example:: 
+argeuments you need to CMake; for example:: 
 
-   $ mkdir build-gnu-release
-   $ cd build-gnu-release
-   $ cmake -DCMAKE_C_COMPILER=/usr/apps/gnu/4.9.3/bin/gcc \
-     -DCMAKE_CXX_COMPILER=/usr/apps/gnu/4.9.3/bin/g++ \
+   $ mkdir build-gcc-release
+   $ cd build-gcc-release
+   $ cmake -DCMAKE_C_COMPILER={path to gcc compiler} \
+     -DCMAKE_CXX_COMPILER={path to g++ compiler} \
      -DCMAKE_BUILD_TYPE=Release \
-     -DCMAKE_INSTALL_PREFIX=../install-gnu-release \
-     ... \
+     -DCMAKE_INSTALL_PREFIX=../install-gcc-release \
+     {many other args} \
      ../src/
    $ make
    $ make install
@@ -169,8 +181,8 @@ argeuments you need to CMakel; for example::
 CMake options
 ^^^^^^^^^^^^^^^
 
-Need to describe CMake options that users would want to provide....Is this 
-table correct and up-to-date?
+.. note :: Summarize (in table) CMake options that users may want to provide
+           Check what's there now for correctness.
 
 +-----------------------------------+-------------------------------+--------+
 |OPTION                             |   Description                 | Default|
@@ -201,22 +213,6 @@ table correct and up-to-date?
 +-----------------------------------+-------------------------------+--------+
 |ENABLE_BENCHMARKS                  |ENABLE google benchmark        | OFF    |
 +-----------------------------------+-------------------------------+--------+
-
-
-.. _hostconfig-label:
-
-Host-config files
-^^^^^^^^^^^^^^^^^^^
-
-We use *host-config* files to track build configurations we support and 
-maintain reproducibility. We maintain a collection of such files in the 
-'host-configs' directory for platforms and compilers we support. 
-When passed to CMake, using the '-C' option, a host-config file initializes 
-the CMake cache with the configuration specified in the file. 
-
-.. note :: Need to describe how users would go about generating new
-           host config files if they need to...
-
 
 
 --------------------------
