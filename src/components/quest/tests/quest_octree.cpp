@@ -271,6 +271,87 @@ TEST( quest_octree, octree_block_is_descendant)
 
 }
 
+
+TEST( quest_octree, count_octree_blocks)
+{
+    static const int DIM = 2;
+    typedef quest::BlockData LeafNodeType;
+    typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
+    //typedef OctreeType::BlockIndex BlockIndex;
+
+    OctreeType octree;
+
+    // A default initialized octree should have a single leaf block -- the root
+    SLIC_INFO("Check number of blocks in empty octree");
+    EXPECT_EQ( 1, octree.getOctreeLevel(0).numBlocks());
+    EXPECT_EQ( 0, octree.getOctreeLevel(0).numInternalBlocks());
+    EXPECT_EQ( 1, octree.getOctreeLevel(0).numLeafBlocks());
+
+    for(int lev=1; lev< octree.maxLeafLevel(); ++lev)
+    {
+        EXPECT_EQ( 0, octree.getOctreeLevel(lev).numBlocks());
+        EXPECT_EQ( 0, octree.getOctreeLevel(lev).numInternalBlocks());
+        EXPECT_EQ( 0, octree.getOctreeLevel(lev).numLeafBlocks());
+    }
+
+    SLIC_INFO("Refine the root and check number of blocks in first three levels");
+    octree.refineLeaf(octree.root());
+    EXPECT_EQ( 1, octree.getOctreeLevel(0).numBlocks());
+    EXPECT_EQ( 1, octree.getOctreeLevel(0).numInternalBlocks());
+    EXPECT_EQ( 0, octree.getOctreeLevel(0).numLeafBlocks());
+
+    EXPECT_EQ( 4, octree.getOctreeLevel(1).numBlocks());
+    EXPECT_EQ( 0, octree.getOctreeLevel(1).numInternalBlocks());
+    EXPECT_EQ( 4, octree.getOctreeLevel(1).numLeafBlocks());
+
+    EXPECT_EQ( 0, octree.getOctreeLevel(2).numBlocks());
+    EXPECT_EQ( 0, octree.getOctreeLevel(2).numInternalBlocks());
+    EXPECT_EQ( 0, octree.getOctreeLevel(2).numLeafBlocks());
+
+
+
+    SLIC_INFO("Refine a child of the root and check blocks in first few levels");
+    octree.refineLeaf(octree.root().child(3));
+    EXPECT_EQ( 1, octree.getOctreeLevel(0).numBlocks());
+    EXPECT_EQ( 1, octree.getOctreeLevel(0).numInternalBlocks());
+    EXPECT_EQ( 0, octree.getOctreeLevel(0).numLeafBlocks());
+
+    EXPECT_EQ( 4, octree.getOctreeLevel(1).numBlocks());
+    EXPECT_EQ( 1, octree.getOctreeLevel(1).numInternalBlocks());
+    EXPECT_EQ( 3, octree.getOctreeLevel(1).numLeafBlocks());
+
+    EXPECT_EQ( 4, octree.getOctreeLevel(2).numBlocks());
+    EXPECT_EQ( 0, octree.getOctreeLevel(2).numInternalBlocks());
+    EXPECT_EQ( 4, octree.getOctreeLevel(2).numLeafBlocks());
+
+
+    SLIC_INFO("Refine another child of the root and check blocks in first few levels");
+    octree.refineLeaf(octree.root().child(2));
+    EXPECT_EQ( 4, octree.getOctreeLevel(1).numBlocks());
+    EXPECT_EQ( 2, octree.getOctreeLevel(1).numInternalBlocks());
+    EXPECT_EQ( 2, octree.getOctreeLevel(1).numLeafBlocks());
+
+    EXPECT_EQ( 8, octree.getOctreeLevel(2).numBlocks());
+    EXPECT_EQ( 0, octree.getOctreeLevel(2).numInternalBlocks());
+    EXPECT_EQ( 8, octree.getOctreeLevel(2).numLeafBlocks());
+
+
+    SLIC_INFO("Refine a grandchild of the root and check blocks in first few levels");
+    octree.refineLeaf(octree.root().child(2).child(1));
+    EXPECT_EQ( 4, octree.getOctreeLevel(1).numBlocks());
+    EXPECT_EQ( 2, octree.getOctreeLevel(1).numInternalBlocks());
+    EXPECT_EQ( 2, octree.getOctreeLevel(1).numLeafBlocks());
+
+    EXPECT_EQ( 8, octree.getOctreeLevel(2).numBlocks());
+    EXPECT_EQ( 1, octree.getOctreeLevel(2).numInternalBlocks());
+    EXPECT_EQ( 7, octree.getOctreeLevel(2).numLeafBlocks());
+
+    EXPECT_EQ( 4, octree.getOctreeLevel(3).numBlocks());
+    EXPECT_EQ( 0, octree.getOctreeLevel(3).numInternalBlocks());
+    EXPECT_EQ( 4, octree.getOctreeLevel(3).numLeafBlocks());
+
+}
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"

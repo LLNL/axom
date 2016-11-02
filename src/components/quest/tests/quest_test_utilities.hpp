@@ -143,7 +143,7 @@ mint::Mesh*  make_octahedron_mesh()
     }
 
     // Now create an unstructured triangle mesh from the two arrays
-    typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
+    typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
     TriangleMesh* triMesh = new TriangleMesh(3);
 
     // insert verts
@@ -152,7 +152,7 @@ mint::Mesh*  make_octahedron_mesh()
 
     // insert triangles
     for(int i=0; i< NUM_TRIS; ++i)
-        triMesh->insertCell( &tvRelation[i*VERTS_PER_TRI], mint::LINEAR_TRIANGLE, 3);
+        triMesh->insertCell( &tvRelation[i*VERTS_PER_TRI], MINT_TRIANGLE, 3);
 
     SLIC_ASSERT( NUM_VERTS == triMesh->getMeshNumberOfNodes() );
     SLIC_ASSERT( NUM_TRIS == triMesh->getMeshNumberOfCells() );

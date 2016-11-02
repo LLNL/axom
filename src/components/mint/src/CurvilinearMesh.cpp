@@ -34,7 +34,7 @@
 namespace mint {
 
 CurvilinearMesh::CurvilinearMesh() :
-        StructuredMesh( UNDEFINED_MESH, -1, ATK_NULLPTR ),
+        StructuredMesh( MINT_UNDEFINED_MESH, -1, ATK_NULLPTR ),
         m_coordinates( ATK_NULLPTR )
 {
 
@@ -42,7 +42,7 @@ CurvilinearMesh::CurvilinearMesh() :
 
 //------------------------------------------------------------------------------
 CurvilinearMesh::CurvilinearMesh( int ndims, int ext[6] ) :
-        StructuredMesh( STRUCTURED_CURVILINEAR_MESH, ndims, ext ),
+        StructuredMesh( MINT_STRUCTURED_CURVILINEAR_MESH, ndims, ext ),
         m_coordinates( new MeshCoordinates(ndims,m_extent->getNumNodes()) )
 {
 
@@ -51,7 +51,7 @@ CurvilinearMesh::CurvilinearMesh( int ndims, int ext[6] ) :
 //------------------------------------------------------------------------------
 CurvilinearMesh::CurvilinearMesh( int ndims, int ext[6],
                                   int blockId, int partId ) :
-     StructuredMesh( STRUCTURED_CURVILINEAR_MESH, ndims, ext, blockId, partId),
+     StructuredMesh( MINT_STRUCTURED_CURVILINEAR_MESH, ndims, ext, blockId, partId),
      m_coordinates( new MeshCoordinates(ndims,m_extent->getNumNodes()) )
 {
 

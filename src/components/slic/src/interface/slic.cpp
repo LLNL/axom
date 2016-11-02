@@ -51,30 +51,55 @@ bool isInitialized()
 //------------------------------------------------------------------------------
 void createLogger( const std::string& name, char imask )
 {
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return;
+  }
   Logger::createLogger( name, imask );
 }
 
 //------------------------------------------------------------------------------
 bool activateLogger( const std::string& name )
 {
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return false;
+  }
   return Logger::activateLogger( name );
 }
 
 //------------------------------------------------------------------------------
 std::string getActiveLoggerName()
 {
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return "";
+  }
   return ( Logger::getActiveLoggerName() );
 }
 
 //------------------------------------------------------------------------------
 void setLoggingMsgLevel( message::Level level )
 {
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return;
+  }
   Logger::getActiveLogger()->setLoggingMsgLevel( level );
 }
 
 //------------------------------------------------------------------------------
 void addStreamToMsgLevel( LogStream* ls, message::Level level )
 {
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return;
+  }
   Logger::getActiveLogger()->addStreamToMsgLevel( ls, level );
 }
 
@@ -160,12 +185,22 @@ void logWarningMessage( const std::string& message,
 //------------------------------------------------------------------------------
 void flushStreams()
 {
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return;
+  }
   Logger::getActiveLogger()->flushStreams();
 }
 
 //------------------------------------------------------------------------------
 void pushStreams()
 {
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return;
+  }
   Logger::getActiveLogger()->pushStreams();
 }
 

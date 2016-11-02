@@ -29,7 +29,7 @@
 namespace mint {
 
 RectilinearMesh::RectilinearMesh() :
-        StructuredMesh(UNDEFINED_MESH,-1,ATK_NULLPTR),
+        StructuredMesh(MINT_UNDEFINED_MESH,-1,ATK_NULLPTR),
         m_coordinates( ATK_NULLPTR )
 {
 
@@ -37,7 +37,7 @@ RectilinearMesh::RectilinearMesh() :
 
 //------------------------------------------------------------------------------
 RectilinearMesh::RectilinearMesh( int dimension, int ext[6] ) :
-       StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, ext )
+       StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext )
 {
   int ndims[3];
   this->getDimensions( ndims );
@@ -47,7 +47,7 @@ RectilinearMesh::RectilinearMesh( int dimension, int ext[6] ) :
 //------------------------------------------------------------------------------
 RectilinearMesh::RectilinearMesh( int dimension, int ext[6],
                                   int blockId, int partId ) :
- StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, ext, blockId, partId )
+ StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext, blockId, partId )
 {
   int ndims[3];
   this->getDimensions( ndims );
