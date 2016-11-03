@@ -141,56 +141,58 @@ public:
    * \brief Returns the barycentric coordinates of a triangle
    * \return The barycentric coordinates of the triangle inside a Point<T,3>
    */
-  Point<T,3> barycenterCoords(const Point<T, DIM>& p) const{
+  Point<T,3> barycenterCoords(const Point<T, DIM>& p) const
+  {
 	//adapted from Real Time Collision Detection by Christer Ericson
 
-    VectorType u= VectorType(m_points[0], m_points[1]);
-    T nu, nv, ood;
-    T x= std::abs(u[0]);
-    T y= std::abs(u[1]);
-    T z= std::abs(u[2]);
+    Point<T,3> bary;
 
+    VectorType u= VectorType::cross_product(VectorType(m_points[0],m_points[1]),
+                                            VectorType(m_points[0],m_points[2]));
+    T ood;
+    const T x= std::abs(u[0]);
+    const T y= std::abs(u[1]);
+    const T z= std::abs(u[2]);
 
-    if (x>=y && x>= z) {
-        Point<T,2> pP= Point<T,2>::make_point(p[1], p[2]);
-        Point<T,2> p1= Point<T,2>::make_point(m_points[0][1], m_points[0][2]);
-        Point<T,2> p2= Point<T,2>::make_point(m_points[1][1], m_points[1][2]);
-        Point<T,2> p3= Point<T,2>::make_point(m_points[2][1], m_points[2][2]);
-        Triangle<T,2> t1(pP, p2, p3);
-        Triangle<T,2> t2(pP, p3, p1);
-        nu=t1.area2d();
-        nv=t2.area2d();
+    int c0,c1;
+    if (x>=y && x>= z)       // compute in yz plane
+    {
+        c0 = 1;
+        c1 = 2;
         ood=1.0/u[0];
 
     }
-    else if (y>=x && y>=z) {
-        Point<T,2> pP= Point<T,2>::make_point(p[0], p[2]);
-        Point<T,2> p1= Point<T,2>::make_point(m_points[0][0], m_points[0][2]);
-        Point<T,2> p2= Point<T,2>::make_point(m_points[1][0], m_points[1][2]);
-        Point<T,2> p3= Point<T,2>::make_point(m_points[2][0], m_points[2][2]);
-        Triangle<T,2> t1(pP, p2, p3);
-        Triangle<T,2> t2(pP, p3, p1);
-        nu=t1.area2d();
-        nv=t2.area2d();
+    else if (y>=x && y>=z)  // compute in xz plane
+    {
+        c0 = 0;
+        c1 = 2;
         ood=-1.0/u[1];
 
     }
-    else {
-        Point<T,2> pP= Point<T,2>::make_point(p[0], p[1]);
-        Point<T,2> p1= Point<T,2>::make_point(m_points[0][0], m_points[0][1]);
-        Point<T,2> p2= Point<T,2>::make_point(m_points[1][0], m_points[1][1]);
-        Point<T,2> p3= Point<T,2>::make_point(m_points[2][0], m_points[2][1]);
-        Triangle<T,2> t1(pP, p2, p3);
-        Triangle<T,2> t2(pP, p3, p1);
-        nu=t1.area2d();
-        nv=t2.area2d();
-        ood=-1.0/u[2];
+    else                    // compute in xy plane
+    {
+        c0 = 0;
+        c1 = 1;
+        ood=1.0/u[2];
     }
 
-    T bX= nu*ood;
-    T bY = nv*ood;
+    // References to triangle vertices for convenience
+    const PointType& A = m_points[0];
+    const PointType& B = m_points[1];
+    const PointType& C = m_points[2];
 
-    return (Point<T,3>::make_point(bX, bY, 1.0-bX-bY));
+    // Macro to efficiently compute the area of a 2D triangle
+    // Note: Actually twice the area since we don't divide by two
+    #define TRI_DET_2D( _X1, _Y1, _X2, _Y2, _X3, _Y3)      \
+        (_X1-_X2)*(_Y2-_Y3) - (_X2-_X3)*(_Y1-_Y2)
+
+    bary[0] = ood * TRI_DET_2D( p[c0],p[c1], B[c0],B[c1], C[c0],C[c1]);
+    bary[1] = ood * TRI_DET_2D( p[c0],p[c1], C[c0],C[c1], A[c0],A[c1]);
+    bary[2] = 1. - bary[0] - bary[1];
+
+    #undef TRI_DET_2D
+
+    return bary;
   }
 
 
