@@ -649,7 +649,7 @@ TEST( quest_intersection, ray_aabb_intersection_general3D )
   intersects = quest::intersect(R, box1, ip);
   SLIC_INFO("Testing point bounding box: " << box1 << " against ray " << R);
   SLIC_INFO("Point at: "<<ip);
-  EXPECT_TRUE( !(intersects));
+  EXPECT_FALSE( intersects);
 
 
   //asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
@@ -688,7 +688,7 @@ TEST( quest_intersection, ray_aabb_intersection_tinyDirectionVector3D )
   intersects = quest::intersect(R, box1, ip);
   SLIC_INFO("Testing point bounding box: " << box1 << " against ray " << R);
   SLIC_INFO("Point at: "<<ip);
-  EXPECT_TRUE( !(intersects));
+  EXPECT_FALSE(intersects);
 
 
   //asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
