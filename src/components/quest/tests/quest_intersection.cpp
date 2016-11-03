@@ -642,12 +642,12 @@ TEST( quest_intersection, ray_aabb_intersection_general3D )
   PointType ip;
 
   bool intersects = quest::intersect(R, box0, ip);
-  SLIC_INFO("Testing point bounding box: " << box0 << " against ray ");
+  SLIC_INFO("Testing point bounding box: " << box0 << " against ray " << R);
   SLIC_INFO("Point at: "<<ip);
   EXPECT_TRUE( intersects);
 
   intersects = quest::intersect(R, box1, ip);
-  SLIC_INFO("Testing point bounding box: " << box1 << " against ray ");
+  SLIC_INFO("Testing point bounding box: " << box1 << " against ray " << R);
   SLIC_INFO("Point at: "<<ip);
   EXPECT_TRUE( !(intersects));
 
@@ -681,12 +681,12 @@ TEST( quest_intersection, ray_aabb_intersection_tinyDirectionVector3D )
   PointType ip;
 
   bool intersects = quest::intersect(R, box0, ip);
-  SLIC_INFO("Testing point bounding box: " << box0 << " against ray ");
+  SLIC_INFO("Testing point bounding box: " << box0 << " against ray " << R);
   SLIC_INFO("Point at: "<<ip);
   EXPECT_FALSE(intersects);
 
   intersects = quest::intersect(R, box1, ip);
-  SLIC_INFO("Testing point bounding box: " << box1 << " against ray ");
+  SLIC_INFO("Testing point bounding box: " << box1 << " against ray " << R);
   SLIC_INFO("Point at: "<<ip);
   EXPECT_TRUE( !(intersects));
 

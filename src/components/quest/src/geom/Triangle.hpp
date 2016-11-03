@@ -16,10 +16,10 @@
 #include "quest/Vector.hpp"
 #include "common/Utilities.hpp"
 
-#include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
 
 #include <cmath> // for acos()
+#include <ostream>
 
 namespace quest
 {
