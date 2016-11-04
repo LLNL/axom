@@ -15,11 +15,11 @@ class SparsehashHeaders(Package):
        characteristics. It's easy to replace hash_map or unordered_map by
        sparse_hash_map or dense_hash_map in C++ code. 
     """
-    homepage = "https://code.google.com/p/sparsehash"
+    homepage = "https://github.com/sparsehash/sparsehash"
     url      = "https://github.com/sparsehash/sparsehash/archive/sparsehash-2.0.2.tar.gz"
 
 
-    version('2.0.2', '3d946fb1eabf2a1990bb50b04de0fa12')    
+    version('2.0.2', '3d946fb1eabf2a1990bb50b04de0fa12')
 
     def install(self, spec, prefix):
         # simply install the headers

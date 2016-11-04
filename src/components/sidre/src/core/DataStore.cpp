@@ -22,7 +22,7 @@
 #include <fstream>
 
 #include "conduit.hpp"
-#include "relay.hpp"
+#include "conduit_relay.hpp"
 
 // Associated header file
 #include "DataStore.hpp"

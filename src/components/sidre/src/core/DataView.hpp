@@ -267,7 +267,7 @@ public:
    */
   SidreLength getTotalBytes() const
   {
-    return m_schema.total_bytes();
+    return m_schema.total_strided_bytes();
   }
 
   /*!

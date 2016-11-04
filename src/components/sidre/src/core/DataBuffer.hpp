@@ -150,7 +150,7 @@ public:
    */
   SidreLength getTotalBytes() const
   {
-    return m_node.dtype().total_bytes();
+    return m_node.dtype().strided_bytes();
   }
 
 
