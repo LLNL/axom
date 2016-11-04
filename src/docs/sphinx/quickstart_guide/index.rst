@@ -38,8 +38,8 @@ open to anyone. You just have to log on to Jabber and join the room.
 .. toctree::
    :maxdepth: 3
 
-   get_the_code
+   the_code
    config_build
-
+   license
 
 
