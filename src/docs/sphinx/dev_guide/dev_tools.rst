@@ -27,13 +27,13 @@ them and helpful information about getting started are provided
 in the sections that follow.
 
 * We use our `Confluence project space <https://lc.llnl.gov/confluence/display/ASCT/ASC+Simulation+CS+Toolkit+Home>`_ for team discussion, planning, maintaining meeting notes, etc.
-* Our Git repository houses the Toolkit source code, build configurations, scripts, test suites, documentation, etc. The repository lives in our `Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_
+* Our Git repository houses the Toolkit source code, build configurations, scripts, test suites, documentation, etc. The repository lives in our `Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 * We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for issue tracking.
 * We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for continuous integration and automated testing.
 
----------------------
-Build, Link, Triumph
----------------------
+--------------------------
+Build, Link, Triumph (BLT)
+--------------------------
 
 Our build system, called *BLT*, is maintained in its own repo in our 
 Bitbucket project. **Add link to BLT documentation when it is available** 
@@ -49,11 +49,10 @@ tools, all of which we use for Toolkit development:
 * Benchmarking - *Google Benchmark*
 
 We use `Spack <https:://github.com/LLNL/spack>`_ to manage and build the 
-third-party libraries on which the Toolkit depends. We also maintain some
-custom python scripts (in our 'scripts directory') to bootstrap Spack.
+third-party libraries on which the Toolkit depends.
 
-More information on building the code and third-party libraries can be found
-in :ref:`configbuild-label`.
+The Toolkit **Quick Start Guide (add link)** contains information about
+building the code and third-party libraries.
 
 .. note :: BLT is supported as a standalone product and used by other 
            software projects.
@@ -68,16 +67,29 @@ Bitbucket and describes operations related to topic branch development
 on the CS Toolkit project. Our Git repository lives in our 
 `Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 
-If you are new to the Git or want to brush up on its features, the 
-`Atlassian Git Tutorial <https://www.atlassian.com/git/>`_ has a lot of good 
-information, and `Learn Git Branching <http://learngitbranching.js.org/>`_ 
-is nice for visual, hands-on learners. Also, the book 
-`Pro Git, by Scott Chacon <https://git-scm.com/book/en/v2>`_ is an
-excellent comprehensive guide to Git. 
+If you are new to the Git or want to brush up on its features, there are 
+several good source of information available on the web::
 
-To make Git easier to work with, folks have written some useful scripts. For 
-example, see `Git scripts <https://github.com/git/git/tree/master/contrib/completion>`_ for scripts that enable tab-autocompletion for Git commands and set 
-up you prompt to show which branch you are on, etc.
+  * `Atlassian Git Tutorial <https://www.atlassian.com/git/>`_ has a lot of 
+     useful stuff.
+  * The `Git Docs <https://git-scm.com/docs/>`_ is a complete reference for
+    Git commands and options. It also provides soem *cheat sheets* you can 
+    download.
+  * `Learn Git Branching <http://learngitbranching.js.org/>`_ is nice for 
+     visual, hands-on learners. 
+  * The e-book `Pro Git, by Scott Chacon <https://git-scm.com/book/en/v2>`_ 
+    is an excellent overview guide to using Git effectively.
+
+To make Git easier to work with, you can define aliases in your shell
+environment to do things like set your prompt to show which branch you are on.
+If you are a csh/tcsh user, for example, you can add the following to the
+file that defines your profile::
+
+   alias __git_current_branch 'git rev-parse --abbrev-ref HEAD >& /dev/null && echo "{`git rev-parse --abbrev-ref HEAD`}"'
+   alias precmd 'set prompt="%n@%m>`__git_current_branch` "'
+
+See also `Git scripts <https://github.com/git/git/tree/master/contrib/completion>`_ and elsewhere for useful scripts that folks have written to enable features
+like tab-autocompletion for Git commands.
 
 SSH keys
 ^^^^^^^^^^^^^^^
@@ -141,10 +153,10 @@ on a topic branch is:
 
 Here are some details about each of these steps.
 
-**Step 1.** A topic branch name should include your user id and a brief 
-description indicating the purpose of the branch. We typically label such 
-branches using "feature", "bugfix", etc. to make it clear what type of work 
-is being performed on a branch. For example,::
+**Step 1 Create a topic branch**. A topic branch name should include your 
+user id and a brief description indicating the purpose of the branch. We 
+typically label such branches using "feature", "bugfix", etc. to make it 
+clear what type of work is being performed on a branch. For example,::
 
   $ git checkout -b feature/<userid>/some_cool_new_feature
   $ git push -u
@@ -160,8 +172,8 @@ In each of these examples, the 'git push -u' command pushes the branch to
 Bitbucket and it will appear in the list of branches you and other developers 
 can see there.
 
-**Step 2.** After the topic branch is created, and you've pushed it to 
-Bitbucket, perform your development; i.e., edit files, add files, etc. 
+**Step 2 Edit Files.** After the topic branch is created, and you've pushed 
+it to Bitbucket, perform your development; i.e., edit files, add files, etc. 
 Common commands you will use are::
 
   $ git add <file>
@@ -185,9 +197,9 @@ on the commit message you provide when you execute the 'commit' command. The
 constraints are recommended Git practices that help make it easier to use 
 various tools with the Git version control system.
 
-**Step 3.** If you will be working on your branch for a while, it is a good 
-idea to merge from the develop branch to your topic branch at reasonable 
-intervals to avoid getting too far out of sync. Otherwise, you may have 
+**Step 3 Keep current with develop.** If you will be working on your branch 
+for a while, it is a good idea to merge from the develop branch to your topic 
+branch regularly to avoid getting too far out of sync. Otherwise, you may have 
 many conflicts to resolve when you are ready to merge your topic branch
 into the develop branch and the merge could be difficult. 
 
@@ -233,8 +245,9 @@ conflicts.
 .. important:: **Git will not let you commit a file with merge conflicts.**
 
 
-**Step 4.** When you are ready to merge your topic branch to the develop 
-branch, you must initiate a pull request in Bitbucket. This is done by going 
+**Step 4 Create a pull request.** When your work is complete, and you are 
+ready to merge your topic branch to the develop branch, you must initiate a 
+pull request in Bitbucket. This is done by going 
 into the Toolkit Bitbucket project, selecting your branch, and clicking the 
 pull request button -- make sure you select the correct destination branch. 
 The default destination branch in our project is set up to be the develop 
@@ -263,7 +276,7 @@ The 'fetch' command pulls changes from the remote branch into your local
 branch. Running the 'merge' command will show which files have conflicts 
 as we described in the previous step. Fix the conflicts as described in 
 the previous step. After all conflicts are resolved, run the 'commit' and 
-'push' commands as usual. 
+'push' commands as usual::
 
   $ git commit
   $ git push
@@ -272,23 +285,25 @@ Lastly, complete the merge in Bitbucket by clicking the merge button.
 
 .. important:: **To keep things tidy, please delete your topic branch in 
                Bitbucket after it is merged if you no longer need it for 
-               further development. Bitbucket also provides an option to 
-               do this before doing the merge.**
+               further development. Bitbucket also provides to click on to 
+               do this after the merge is complete.**
 
 Checking out an existing branch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When working on multiple branches, or working on one with someone else, you
-will need to checkout a specific branch. Any existing branch can be checked 
-out from the Git repository and cloned from, etc. Here are some useful 
-commands::
+When working on multiple branches, or working on one with someone else on
+the team, you will need to checkout a specific branch. Any existing branch 
+can be checked out from the Git repository and cloned from, etc. Here are 
+some useful commands::
 
   $ git fetch
   $ git branch -a
   $ git checkout <branch name>
 
-The 'fetch' command updates the list of remote branches and the 'branch'
-command lists the available branches. The 'checkout' command checks out
+The 'fetch' command retrieves new work committed by others on branches you may
+have checked out, but *without merging* those changes into your local
+copies of those branches. The 'branch' command lists all available remote 
+branches. The 'checkout' command checks out
 the specified branch into your local working space. **Note that you do not
 give the '-b' option when checking out an existing branch.** The option is
 only used when creating a new branch.

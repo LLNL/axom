@@ -45,9 +45,9 @@ please see the `Sphinx Guide <http://www.sphinx-doc.org/en/stable/index.html>`_.
    :maxdepth: 3
 
    dev_model
-   config_build
    dev_tools
    add_new_component
    testing
+   config_build
 
 

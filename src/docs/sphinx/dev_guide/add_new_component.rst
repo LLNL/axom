@@ -11,7 +11,8 @@
 
 .. _addcomponent-label:
 
-.. note :: double-check, update, and fill in gaps in the following...
+.. note :: This stuff is pulled from older content we had lying around. 
+           It needs to be updated, checked for correctness, gaps filled in, etc.
 
 ======================================================
 Adding a New CS Toolkit Component
