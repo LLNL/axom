@@ -312,6 +312,17 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Computes the 3-D cross product of vector u and v, treating them as 3D.
+   * \param [in] u the vector on the right-hand side.
+   * \param [in] v the vector on the left-hand side.
+   * \return C the resulting vector from A x B.
+   *****************************************************************************
+   */
+  static Vector< T,3 > cross_product( const Vector< T,2 >& u,
+                                      const Vector< T,2 >& v );
+
+  /*!
+   *****************************************************************************
    * \brief Computes the 3-D cross product of vector u and v.
    * \param [in] u the vector on the right-hand side.
    * \param [in] v the vector on the left-hand side.
@@ -462,6 +473,18 @@ inline T Vector< T,DIM >::dot_product( const Vector< T,DIM >& u,
   } // END for all DIM
 
   return static_cast<T>(dotprod);
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+inline Vector< T,3 > Vector< T,DIM >::cross_product(
+        const Vector< T,2 >& u, const Vector< T,2 >& v )
+{
+  Vector< T,3 > c;
+  c[ 0 ] = 0;
+  c[ 1 ] = 0;
+  c[ 2 ] = math::determinant( u[0],u[1], v[0],v[1] );
+  return( c );
 }
 
 //------------------------------------------------------------------------------

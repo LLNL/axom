@@ -23,7 +23,8 @@
 namespace quest {
 
 // Forward declare the templated classes and operator functions
-template<typename T, int DIM> class Ray;
+template<typename T, int DIM>
+class Ray;
 
 /*!
  * \brief Overloaded output operator for rays

@@ -15,9 +15,6 @@
  * 
  * This file provides several functions to test whether geometric primitives 
  * intersect.
- *
- * \date Jan 5, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
  *******************************************************************************
  */
 
@@ -37,7 +34,7 @@ namespace quest {
 
 /*!
  *******************************************************************************
- * \brief Tests if 3D Triangles t1 and t2 intersect.
+ * \brief Tests if 3D Triangles t1 and t2 (interiors or boundaries) intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
  *******************************************************************************
  */
@@ -49,7 +46,7 @@ bool intersect( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
 
 /*!
  *******************************************************************************
- * \brief Tests if 2D Triangles t1 and t2 intersect.
+ * \brief Tests if 2D Triangles t1 and t2 (interiors or boundaries) intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
  *******************************************************************************
  */
@@ -84,8 +81,8 @@ bool intersect( const Ray<T,2>& R, const Segment<T,2>& S, Point<T,2>& ip )
  */
 template < typename T, int DIM>
 bool intersect( const Ray<T,DIM> & R,
-		const BoundingBox<T,DIM> & bb,
-		Point<T,DIM> & ip)
+                const BoundingBox<T,DIM> & bb,
+                Point<T,DIM> & ip)
 {
   return detail::intersect_ray_bbox(R, bb, ip);
 }
@@ -103,8 +100,8 @@ bool intersect( const Ray<T,DIM> & R,
  */
 template < typename T, int DIM>
 bool intersect( const Segment<T,DIM> & S,
-		const BoundingBox<T,DIM> & bb,
-		Point<T,DIM> & ip)
+                const BoundingBox<T,DIM> & bb,
+                Point<T,DIM> & ip)
 {
   return detail::intersect_seg_bbox(S, bb, ip);
 }
@@ -119,15 +116,14 @@ bool intersect( const Segment<T,DIM> & S,
  */
 template < typename T, int DIM>
 bool intersect( const BoundingBox<T, DIM>& bb1, 
-		const BoundingBox<T, DIM>& bb2)
+                const BoundingBox<T, DIM>& bb2)
 {
-    return bb1.intersects(bb2);
+  return bb1.intersects(bb2);
 }
 
 /*!
  *******************************************************************************
  * \brief Determines if a triangle and a bounding box intersect
- *        (but does not find the point of intersection)
  * \param [in] tri user-supplied triangle (with three vertices).
  * \param [in] bb user-supplied axis aligned bounding box.
  * \return true iff tri intersects with bb, otherwise, false.

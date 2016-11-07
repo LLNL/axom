@@ -40,7 +40,7 @@ TEST( quest_triangle, triangle_area_2D)
     QTri tri(pt[0],pt[1],pt[2]);
     EXPECT_NEAR(tri.area(), 0.5, EPS );
 
-    tri = QTri(pt[1],pt[2],pt[3]);
+    tri = QTri(pt[1],pt[2],pt[0]);
     EXPECT_NEAR(tri.area(), 0.5, EPS );
 
     tri = QTri(pt[2],pt[1],pt[0]);
@@ -126,7 +126,7 @@ TEST( quest_triangle, triangle_barycentric)
   {
     const QPoint& query = it->first;
     const QPoint& expBary = it->second;
-    QPoint bary = tri.barycenterCoords(query);
+    QPoint bary = tri.computeBarycenterCoords(query);
 
     SLIC_DEBUG(fmt::format(
             "Computed barycentric coordinates for triangle {} and point {} are {}",

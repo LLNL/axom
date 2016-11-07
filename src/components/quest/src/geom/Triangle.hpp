@@ -27,7 +27,7 @@ namespace quest
 // Forward declare the templated classes and operator functions
 template<typename T, int DIM> class Triangle;
 
-/*!
+/**
  * \brief Overloaded output operator for triangles
  */
 template<typename T, int DIM>
@@ -48,14 +48,14 @@ public:
 
 public:
 
-  /*!
+  /**
    *****************************************************************************
    * \brief Default constructor. Creates a degenerate triangle.
    *****************************************************************************
    */
   Triangle() { }
 
-  /*!
+  /**
    *****************************************************************************
    * \brief Custom Constructor. Creates a triangle from the 3 points A,B,C.
    * \param [in] A point instance corresponding to vertex A of the triangle.
@@ -68,7 +68,7 @@ public:
             const PointType& C );
 
 
-  /*!
+  /**
    *****************************************************************************
    * \brief Destructor
    *****************************************************************************
@@ -101,7 +101,7 @@ public:
       return m_points[ idx ];
   }
 
-  /*!
+  /**
    *****************************************************************************
    * \brief Returns the normal of the triangle (not normalized)
    * \pre This function is only valid when DIM = 3
@@ -132,29 +132,31 @@ public:
       VectorType v(m_points[0], m_points[1]);
       VectorType w(m_points[0], m_points[2]);
 
-      return (DIM==2)
-	? 0.5 * std::fabs(v[0]*w[1] - v[1]*w[0])
-	: 0.5 * Vector<T,3>::cross_product(Vector<T,3>(v.data(), 3), Vector<T,3>(w.data(), 3)).norm();
+      return 0.5 * VectorType::cross_product(v, w).norm();
   }
 
-  /*!
-   * \brief Returns the barycentric coordinates of a triangle
+  /**
+   * \brief Returns the barycentric coordinates of a point within a triangle
    * \return The barycentric coordinates of the triangle inside a Point<T,3>
+   *
+   * \post The barycentric coordinates sum to 1.
+   *
+   * Adapted from Real Time Collision Detection by Christer Ericson.
    */
-  Point<T,3> barycenterCoords(const Point<T, DIM>& p) const
+  Point<T,3> computeBarycenterCoords(const PointType& p) const
   {
-	//adapted from Real Time Collision Detection by Christer Ericson
-
     Point<T,3> bary;
 
     VectorType u= VectorType::cross_product(VectorType(m_points[0],m_points[1]),
                                             VectorType(m_points[0],m_points[2]));
-    T ood;
     const T x= std::abs(u[0]);
     const T y= std::abs(u[1]);
     const T z= std::abs(u[2]);
 
-    int c0,c1;
+    T ood = 1.0 / u[2];      // compute in xy plane by default 
+    int c0 = 0;
+    int c1 = 1;
+
     if (x>=y && x>= z)       // compute in yz plane
     {
         c0 = 1;
@@ -169,34 +171,23 @@ public:
         ood=-1.0/u[1];
 
     }
-    else                    // compute in xy plane
-    {
-        c0 = 0;
-        c1 = 1;
-        ood=1.0/u[2];
-    }
 
     // References to triangle vertices for convenience
     const PointType& A = m_points[0];
     const PointType& B = m_points[1];
     const PointType& C = m_points[2];
 
-    // Macro to efficiently compute the area of a 2D triangle
-    // Note: Actually twice the area since we don't divide by two
-    #define TRI_DET_2D( _X1, _Y1, _X2, _Y2, _X3, _Y3)      \
-        (_X1-_X2)*(_Y2-_Y3) - (_X2-_X3)*(_Y1-_Y2)
-
-    bary[0] = ood * TRI_DET_2D( p[c0],p[c1], B[c0],B[c1], C[c0],C[c1]);
-    bary[1] = ood * TRI_DET_2D( p[c0],p[c1], C[c0],C[c1], A[c0],A[c1]);
+    // Compute ood * area of each sub-triangle
+    bary[0] = ood * math::determinant(p[c0] - B[c0], p[c1] - B[c1], 
+                                      B[c0] - C[c0], B[c1] - C[c1]);
+    bary[1] = ood * math::determinant(p[c0] - C[c0], p[c1] - C[c1],
+                                      C[c0] - A[c0], C[c1] - A[c1]);
     bary[2] = 1. - bary[0] - bary[1];
-
-    #undef TRI_DET_2D
 
     return bary;
   }
 
-
-  /*!
+  /**
    *****************************************************************************
    * \brief Returns whether the triangle is degenerate
    * \return true iff the triangle is degenerate (0 area)
@@ -208,15 +199,13 @@ public:
     return asctoolkit::utilities::isNearlyEqual(area(),  0.0, 1.0e-12);
   }
 
-
-  /*!
+  /**
    *****************************************************************************
    * \brief Returns whether Point P is in the triangle for some 3d Triangle
    * \return true iff P is in the triangle
    * \see quest::Point
    *****************************************************************************
    */
-
   bool checkInTriangle(const Point<double, DIM>& P) const{
     Point<T,3> bC= barycenterCoords(P);
     return ((bC[0]>=0.0) && (bC[1] >= 0.0) && (bC[2]>=0.0) &&
@@ -225,7 +214,7 @@ public:
   }
 
 
-  /*!
+  /**
    *****************************************************************************
    * \brief Computes the request angle corresponding to the given vertex ID.
    * \param [in] idx the index of the corresponding vertex
@@ -235,7 +224,7 @@ public:
    */
   double angle( int idx ) const;
 
-  /*!
+  /**
    *****************************************************************************
    * \brief Simple formatted print of a triangle instance
    * \param os The output stream to write to
