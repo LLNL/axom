@@ -21,70 +21,6 @@ More basic build instructions can be found in the User Quick Start Guide
 **add link to that guide**. See :ref:`repoclone-label` for information 
 about accessing the code.
 
-We use a CMake-based system to configure and build our code, called *BLT*
-(see :ref:`tooleco-label` for more information). 
-
----------------------
-Python Helper Script
----------------------
-
-The easiest way to configure the code for compilation is to use the 
-'config-build.py' python script in the 'scripts' directory; 
-e.g.,::
-
-   $ ./scripts/config-build.py -hc ./host-configd/surface-chaos_5_x86_64_ib-gcc@4.9.3.cmake
-
-This script requires that you pass it a *host-config* file. The script runs 
-CMake and passes it the host-config to initialize the CMake cache with the
-configuration informarion contained in the file. See :ref:`hostconfig-label` 
-for more information.
-
-Running the script, as in the example above, creates two directories to hold
-the build and install contents for the platform and compiler specified by the
-host-config file - in this case, a CHAOS 5 platform with the GNU gcc 4.9.3
-compiler. The name 'surface' in the file name indicates the particular 
-machine on which the host-config file was generated. Livermore Computing 
-platforms are generally configured similarly so that the configuration will 
-usually also work on other CHAOS 5 Linux platforms. 
-
-To build the code and intall the header files, libraries, and documentation 
-in the install directory, go into the build directory and run make; e.g.,::
-
-   $ cd build-rzmerl-chaos_5_x86_64_ib-gcc@4.9.3-debug
-   $ make
-   $ make install
-
-The python helper script accepts other arguments that allow you to specify
-explicitly the build and install paths and build type. Following CMake 
-conventions, we support three build types: 'Release', 'RelWithDebInfo', and 
-'Debug'. To see the script options, run the script without any arguments; 
-i.e.,::
-
-   $ ./scripts/config-build.py 
-
------------------------
-Running CMake Directly
------------------------
-
-You can also configure the code by running CMake directly and passing it 
-the appropriate arguments. For example, to configure, build and install 
-a release build with the gcc compiler, you could pass a host-config file 
-CMake::
-
-   $ mkdir build-gnu-release
-   $ cd build-gnu-release
-   $ cmake -C ./host-configd/surface-chaos_5_x86_64_ib-gcc@4.9.3.cmake \
-     -DCMAKE_BUILD_TYPE=Release \
-     -DCMAKE_INSTALL_PREFIX=../install-gnu-release \
-     ../src/
-   $ make
-   $ make install
-
-You can also run CMake by explicitly passing all options you need. Here is 
-a summary of commonly used CMake options:
-
-.. note:: **Fill this in...** 
-
 
 .. _hostconfig-label:
 
@@ -106,20 +42,7 @@ the CMake cache with the configuration specified in the file.
 Make Targets
 --------------------------
 
-Our system provides a variety of make targets to build individual Toolkit 
-components, documentation, run tests, examples, etc. After running CMake 
-(using either the python helper script or directly), you can see a listing of
-all evailable targets by passing 'help' to make; i.e.,::
-
-   $ make help
-
-The name of each target should be sufficiently descriptive to indicate
-what the target does. For example, to generate this developer guide, run the
-following command::
-
-   $ make dev_guide_docs
-
-.. note :: Add a table that provides an overview of our make targets.
+Anything new to add, or is quickstart guide sufficient?
 
 
 .. _tpl-label:
@@ -152,3 +75,50 @@ Questions we need to answer include:
            fill in gaps and make sure it it up-to-date...
            
 
+Our lc_install scripts have diverged from their original intended purpose of allowing anyone on the team to easily build TPLs on the LC platforms we care about. Recall, we want as close to a 1-button push build solution as we can feasibly support. To achieve this dream – we need scripts that don't take any arguments and just work when called. Of course things will break occasionally, the process itself should be as simple as possible.  Here is a strawman for an ideal process:
+
+    Submit a batch job to build and check a set of tpl installs:
+        build the TPLs for all compilers to a unique shared install directory 
+        patch the generated host config files with extra settings from revision controlled "manual.edits.txt" files
+        build and test the current toolkit checkout against all host-configs
+    If you need to update the host-configs for a branch (develop, your work, etc) to use the new libs:
+        Copy the generated host configs into the branch and follow the right procedure for that branch. 
+            For example:
+                (for develop, use branch and a PR to merge -- hopefully the PR will provide evidence from step 2 that the new TPLs work)
+                (for your branch, other branches – commit, or use a PR, whatever is appropriate)
+    Remove stale TPL sets (the group needs to coordinate on when this can happen)
+        (we could write a tool to check if any branches are using host configs that link them to a given unique shared install directory)
+
+To move towards this solution, this PR includes a simplified set of scripts that allow us to build TPLs for the all compilers we want to use on the chaos5 systems on the CZ and RZ.  This PR does not change the existing scripts.
+
+On both the RZ and CZ, these scripts install to the new /usr/workspace file system. This file system has a much higher space quota than the /usr/gapps/ file system, however,  our team's shared toolkit directory exists in different places on the CZ and the RZ, so the PR includes separate scripts for the CZ and RZ.
+Using a batch job to build and test chaos5 TPLs on the CZ and RZ
+
+CZ: (from surface, cab, etc)
+# from asctoolkit git root
+cd scripts/uberenv/lc_install_scripts
+msub msub_llnl_cz_chaos5_all_compilers.sh
+
+This submits a job to the batch system that asks for 1 node for 8 hours to do the builds.
+
+The batch job runs llnl_cz_uberenv_install_chaos_5_x86_64_ib_all_compilers.py to build TPL sets for all compiler combos we want for chaos5 on the CZ.
+
+This python script creates a time-stamped directory under /usr/workspace/wsa/toolkit/thirdparty_libs/builds/ and uses uberenv to install TPLs for a list of Spack specs.
+
+It will also patch the generated host config files using "manual.edits.txt" files  and build the toolkit against all host configs
+
+The batch job will log its output to a file created using the pattern: m.out.r.uberenv.chaos5.all.compilers.{job_id}.{hostname}.txt
+RZ: (from rzmerl)
+# from asctoolkit git root
+cd scripts/uberenv/lc_install_scripts
+msub msub_llnl_rz_chaos5_all_compilers.sh
+
+This submits a job to the batch system that asks for 1 node for 4 hours to do the builds.
+
+The batch job runs llnl_rz_uberenv_install_chaos_5_x86_64_ib_all_compilers.py to build TPL sets for all compiler combos we want for chaos5 on the RZ.
+
+This python script creates a time-stamped directory under /usr/workspace/wsrzc/toolkit/thirdparty_libs/builds/ and uses uberenv to install TPLs for a list of Spack specs.
+
+It will also patch the generated host config files using "manual.edits.txt" files  and build the toolkit against all host configs
+
+The batch job will log its output to a file created using the pattern: m.out.r.uberenv.chaos5.all.compilers.{job_id}.{hostname}.txt
