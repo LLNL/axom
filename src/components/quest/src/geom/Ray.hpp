@@ -8,15 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/*!
- *******************************************************************************
- * \file Ray.hpp
- *
- * \date Jan 5, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef RAY_HPP_
 #define RAY_HPP_
 

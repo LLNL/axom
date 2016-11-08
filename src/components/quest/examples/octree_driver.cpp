@@ -58,7 +58,7 @@
 
 using namespace asctoolkit;
 
-typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
 typedef quest::InOutOctree<3> Octree3D;
 
@@ -252,7 +252,7 @@ void testIntersectionOnRegularGrid()
 
     TriangleType unitTri( ptX, ptY, ptZ );
 
-    typedef mint::UnstructuredMesh<mint::MIXED> DebugMesh;
+    typedef mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
     DebugMesh* debugMesh = new DebugMesh(3);
 
     // Add triangle to mesh
@@ -261,7 +261,7 @@ void testIntersectionOnRegularGrid()
     debugMesh->insertNode( ptZ[0], ptZ[1], ptZ[2]);
 
     int tArr[3] = {0,1,2};
-    debugMesh->insertCell(tArr, mint::LINEAR_TRIANGLE, 3);
+    debugMesh->insertCell(tArr, MINT_TRIANGLE, 3);
 
     PointType bbMin(-0.1);
     PointType bbMax(1.1);
@@ -300,7 +300,7 @@ void testIntersectionOnRegularGrid()
                     for(int i=0; i< 8; ++i)
                         data[i] = vStart + i;
 
-                    debugMesh->insertCell( data, mint::LINEAR_HEX, 8);
+                    debugMesh->insertCell( data, MINT_HEX, 8);
                 }
             }
         }

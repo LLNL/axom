@@ -176,7 +176,7 @@ private:
 //------------------------------------------------------------------------------
 
 template < typename index_type >
-class CellConnectivity< index_type, MIXED >
+class CellConnectivity< index_type, MINT_MIXED_CELL >
 {
 public:
 
@@ -189,7 +189,7 @@ public:
   {
     m_offset.reserve( 101 );
     m_cell_type.reserve( 100 );
-    m_connectivity.reserve( 100*cell::num_nodes[ MIXED ] );
+    m_connectivity.reserve( 100*cell::num_nodes[ MINT_MIXED_CELL ] );
   };
 
   /*!
@@ -346,18 +346,6 @@ private:
   CellConnectivity& operator=(const CellConnectivity& );
 };
 
-/// \name CellConnectivity Type Definitions
-/// \brief Defined here for convenience.
-/// @{
-
-typedef CellConnectivity< int, LINE >     LineCellConnectivity;
-typedef CellConnectivity< int, LINEAR_QUAD >     QuadCellConnectivity;
-typedef CellConnectivity< int, LINEAR_TRIANGLE > TriangleCellConnectivity;
-typedef CellConnectivity< int, LINEAR_TET >      TetCellConnectivity;
-typedef CellConnectivity< int, LINEAR_HEX >      HexCellConnectivity;
-
-typedef CellConnectivity< int, MIXED  > MixedCellConnectivity;
-/// @}
 
 } /* namespace mint */
 

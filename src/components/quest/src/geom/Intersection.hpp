@@ -9,15 +9,6 @@
  */
 
 
-/*!
- *******************************************************************************
- * \file Intersection.hpp
- *
- * \date Jan 5, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef INTERSECTION_HPP_
 #define INTERSECTION_HPP_
 
@@ -163,9 +154,9 @@ bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
 
     // Make the AABB center the origin by moving the triangle vertices
     PointType center(bb.getMin().array() + e.array());
-    VectorType v[3] = { VectorType(center, tri.A())
-                      , VectorType(center, tri.B())
-                      , VectorType(center, tri.C()) };
+    VectorType v[3] = { VectorType(center, tri[0])
+                      , VectorType(center, tri[1])
+                      , VectorType(center, tri[2]) };
 
     // Create the edge vectors of the triangle
     VectorType f[3] = { v[1] - v[0], v[2] - v[1],  v[0] - v[2] };
@@ -205,7 +196,7 @@ bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
 
     /// Final test -- face normal of triangle's plane
     VectorType planeNormal  = VectorType::cross_product(f[0],f[1]);
-    double planeDist    = planeNormal.dot( tri.A());
+    double planeDist    = planeNormal.dot( tri[0]);
 
     double r = e[0]* std::abs( planeNormal[0]) + e[1]* std::abs( planeNormal[1]) + e[2]* std::abs( planeNormal[2]);
     double s = planeNormal.dot(center) - planeDist;

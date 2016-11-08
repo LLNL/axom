@@ -34,7 +34,7 @@ namespace quest
     // Note: Define everything in a local namespace
   namespace
   {
-    typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
+    typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
     enum QueryMode { QUERY_MODE_NONE, QUERY_MODE_CONTAINMENT, QUERY_MODE_SIGNED_DISTANCE };
 
     /**

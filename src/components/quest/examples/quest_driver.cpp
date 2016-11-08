@@ -45,8 +45,6 @@
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
 
-#include "slam/Utilities.hpp"
-
 // C/C++ includes
 #include <algorithm>
 #include <cmath>
@@ -56,7 +54,98 @@
 
 using namespace asctoolkit;
 
-typedef mint::UnstructuredMesh< mint::LINEAR_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+
+struct {
+  std::string fileName;
+  int maxLevels;
+  int maxObjects;
+  int nx;
+  int ny;
+  int nz;
+} Arguments;
+
+//------------------------------------------------------------------------------
+void showHelp()
+{
+  SLIC_INFO("Usage: ./quest_driver --file <myfile.stl> [options]" );
+  SLIC_INFO("--file <file> specifies the STL file of the input surface mesh.");
+  SLIC_INFO("--maxLevels <N> max levels for BVH decomposition.");
+  SLIC_INFO("--maxObjects <N> max objects in a BVH bin (for refinement).");
+  SLIC_INFO("--nx <N> number of cells in x-direction for sample grid.");
+  SLIC_INFO("--ny <N> number of cells in y-direction for sample grid.");
+  SLIC_INFO("--nz <N> number of cells in z-direction for sample grid.");
+  SLIC_INFO("--help prints this help information.");
+}
+
+//------------------------------------------------------------------------------
+void parse_args( int argc, char** argv )
+{
+  // Defaults
+  Arguments.fileName   = "";
+  Arguments.maxLevels  = 15;
+  Arguments.maxObjects = 5;
+  Arguments.nx         = 32;
+  Arguments.ny         = 32;
+  Arguments.nz         = 32;
+
+  for ( int i=1; i < argc; ++i ) {
+
+    if ( strcmp( argv[i],"--file")==0 ) {
+
+      Arguments.fileName = std::string( argv[ ++i ] );
+
+    } else if ( strcmp(argv[i],"--maxLevels")==0 ) {
+
+      Arguments.maxLevels = std::atoi( argv[++i] );
+
+    } else if ( strcmp(argv[i], "--maxObjects" )==0 ) {
+
+      Arguments.maxObjects = std::atoi( argv[++i] );
+
+    } else if ( strcmp(argv[i],"--nx")==0 ) {
+
+      Arguments.nx = std::atoi( argv[++i] );
+
+    } else if ( strcmp(argv[i],"--ny")==0 ) {
+
+      Arguments.ny = std::atoi( argv[++i] );
+
+    } else if ( strcmp(argv[i],"--nz")==0 ) {
+
+      Arguments.nz = std::atoi( argv[++i] );
+
+    } else if ( strcmp(argv[i],"--help")==0 ) {
+      showHelp();
+      exit(0);
+    }
+
+  } // END for
+
+  if ( Arguments.fileName == "" ) {
+    SLIC_ERROR( "NO STL input file provided. Provide one with --file" );
+  }
+
+}
+
+//------------------------------------------------------------------------------
+void write_point( const quest::Point< double, 3 >& pt,
+                  const std::string& fileName )
+{
+  std::ofstream ofs;
+  ofs.open( fileName.c_str() );
+  ofs << "# vtk DataFile Version 3.0\n";
+  ofs << "Point " << fileName << "\n";
+  ofs << "ASCII\n";
+  ofs << "DATASET UNSTRUCTURED_GRID\n";
+  ofs << "POINTS 1 double\n";
+  ofs << pt[0] << " " << pt[1] << " " << pt[2] << std::endl;
+  ofs << "CELLS 1 2\n";
+  ofs << "1 0\n";
+  ofs << "CELL_TYPES 1\n";
+  ofs << "1\n";
+  ofs.close();
+}
 
 //------------------------------------------------------------------------------
 void write_vtk( mint::Mesh* mesh, const std::string& fileName )
@@ -190,6 +279,47 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
 }
 
 //------------------------------------------------------------------------------
+void write_triangles( mint::Mesh* mesh, const int* cells, int ncells,
+                      const std::string& fileName )
+{
+  SLIC_ASSERT( mesh != ATK_NULLPTR );
+
+  TriangleMesh* subset = new TriangleMesh(3);
+  SLIC_ASSERT( subset->getMeshType() == mesh->getMeshType() );
+
+  int cellIds[3];
+  quest::Point< double, 3 > n1;
+  quest::Point< double, 3 > n2;
+  quest::Point< double, 3 > n3;
+
+  int icount = 0;
+  int new_cell[3];
+
+  for ( int i=0; i < ncells; ++i ) {
+
+     const int cellIdx = cells[ i ];
+     mesh->getMeshCell( cellIdx, cellIds );
+
+     mesh->getMeshNode( cellIds[0], n1.data() );
+     mesh->getMeshNode( cellIds[1], n2.data() );
+     mesh->getMeshNode( cellIds[2], n3.data() );
+
+     subset->insertNode( n1[0], n1[1], n1[2] );
+     new_cell[0] = icount; ++icount;
+     subset->insertNode( n2[0], n2[1], n2[2] );
+     new_cell[1] = icount; ++icount;
+     subset->insertNode( n3[0], n3[1], n3[2] );
+     new_cell[2] = icount; ++icount;
+
+     subset->insertCell( new_cell, MINT_TRIANGLE,3 );
+  }
+
+  write_vtk( subset, fileName );
+
+  delete subset;
+}
+
+//------------------------------------------------------------------------------
 quest::BoundingBox< double,3 > compute_bounds( mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
@@ -217,14 +347,23 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
   SLIC_ASSERT( umesh != ATK_NULLPTR );
 
-  quest::SignedDistance< 3 > signedDistance( surface_mesh, 25, 10 );
+  SLIC_INFO("Max BVH levels: " << Arguments.maxLevels );
+  SLIC_INFO("Max Object Threshold: " << Arguments.maxObjects );
+  utilities::Timer timer1;
+  timer1.start();
+
+  quest::SignedDistance< 3 > signedDistance(
+      surface_mesh, Arguments.maxObjects, Arguments.maxLevels);
+
+  timer1.stop();
+  SLIC_INFO("Constructed BVH in " << timer1.elapsed() << "s" );
 
 #ifdef ATK_DEBUG
   // write the bucket tree to a file
   const quest::BVHTree< int, 3>* btree = signedDistance.getBVHTree();
   SLIC_ASSERT( btree != ATK_NULLPTR );
 
-  btree->writeLegacyVtkFile( "bucket-tree.vtk" );
+  btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
   const int ncells = surface_mesh->getMeshNumberOfCells();
@@ -249,17 +388,74 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
   SLIC_ASSERT( PD != ATK_NULLPTR );
 
   PD->addField( new mint::FieldVariable< double >("phi",nnodes) );
-  double* phi = PD->getField( "phi" )->getDoublePtr();
+  PD->addField( new mint::FieldVariable< int >("nbuckets",nnodes) );
+  PD->addField( new mint::FieldVariable< int >("ntriangles", nnodes) );
+
+  double* phi     = PD->getField( "phi" )->getDoublePtr();
+  int*  nbuckets  = PD->getField( "nbuckets" )->getIntPtr();
+  int* ntriangles = PD->getField( "ntriangles" )->getIntPtr();
+
   SLIC_ASSERT( phi != ATK_NULLPTR );
+  SLIC_ASSERT( nbuckets != ATK_NULLPTR );
+  SLIC_ASSERT( ntriangles != ATK_NULLPTR );
+
+  utilities::Timer timer2;
+  timer2.start();
 
   for ( int inode=0; inode < nnodes; ++inode ) {
 
       quest::Point< double,3 > pt;
       umesh->getMeshNode( inode, pt.data() );
 
-      phi[ inode ] = signedDistance.computeDistance( pt );
+      std::vector< int > buckets;
+      std::vector< int > triangles;
+      std::vector< int > my_triangles;
+      triangles.clear();
+      buckets.clear();
+
+      quest::Point< double,3 > closest_pt;
+      phi[ inode ] = signedDistance.computeDistance( pt,
+                                                     buckets,
+                                                     triangles,
+                                                     my_triangles,
+                                                     closest_pt );
+
+      nbuckets[ inode ]   = static_cast< int >( buckets.size() );
+      ntriangles[ inode ] = static_cast< int >( triangles.size() );
+
+#ifdef ATK_DEBUG
+      std::ostringstream oss;
+      oss << "BINS_" << inode << ".vtk";
+      signedDistance.getBVHTree()->writeVtkFile(
+            oss.str(), &buckets[0], buckets.size() );
+
+      oss.str("");
+      oss.clear();
+      oss << "POINT_" << inode << ".vtk";
+      write_point( pt, oss.str() );
+
+      oss.str("");
+      oss.clear();
+      oss << "CLOSEST_POINT_" << inode << ".vtk";
+      write_point( closest_pt, oss.str() );
+
+      oss.str("");
+      oss.clear( );
+      oss << "TRIANGLES_" << inode << ".vtk";
+      write_triangles( surface_mesh, &triangles[0],
+                       ntriangles[inode], oss.str() );
+
+      oss.str("");
+      oss.clear();
+      oss << "MY_TRIANGLES_" << inode << ".vtk";
+      write_triangles( surface_mesh, &my_triangles[0], my_triangles.size(),
+                       oss.str() );
+#endif
 
   } // END for all nodes
+
+  timer2.stop();
+  SLIC_INFO("BVH Query Time: " << timer2.elapsed() << "s" );
 
 }
 
@@ -282,31 +478,13 @@ int main( int argc, char** argv )
   slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Info);
   slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Debug);
 
-  bool hasInputArgs = argc > 1;
-
   // STEP 1: get file from user or use default
-  std::string stlFile;
-  if( hasInputArgs ) {
-
-    stlFile = std::string( argv[1] );
-
-  }
-  else {
-
-    const std::string defaultFileName = "plane_simp.stl";
-    const std::string defaultDir = "src/components/quest/data/";
-
-    stlFile =
-       asctoolkit::utilities::filesystem::joinPath(defaultDir, defaultFileName);
-
-  }
-  stlFile = asctoolkit::slam::util::findFileInAncestorDirs(stlFile);
-  SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists(stlFile));
+  parse_args( argc, argv );
 
   // STEP 2: read file
-  SLIC_INFO( "Reading file: " << stlFile << "...");
+  SLIC_INFO( "Reading file: " << Arguments.fileName << "...");
   quest::STLReader* reader = new quest::STLReader();
-  reader->setFileName( stlFile );
+  reader->setFileName( Arguments.fileName );
   reader->read();
   SLIC_INFO("done");
 
@@ -328,36 +506,27 @@ int main( int argc, char** argv )
   quest::BoundingBox< double,3 > meshBB = compute_bounds( surface_mesh);
   SLIC_INFO("Mesh bounding box: " << meshBB );
 
-  // STEP 7: get dimensions from user
-  int nx, ny, nz;
-  if ( hasInputArgs ) {
-
-    std::cout << "Enter Nx Ny Nz:";
-    std::cin >> nx >> ny >> nz;
-
-  } else {
-
-    nx = ny = nz = 32;
-
-  }
 
   quest::BoundingBox< double,3 > queryBounds = meshBB;
-  queryBounds.scale(2.);
+  queryBounds.expand( 10 );
 
   double h[3];
   const quest::Vector< double,3 >& bbDiff = queryBounds.range();
-  h[0] = bbDiff[0] / nx;
-  h[1] = bbDiff[1] / ny;
-  h[2] = bbDiff[2] / nz;
+  h[0] = bbDiff[0] / Arguments.nx;
+  h[1] = bbDiff[1] / Arguments.ny;
+  h[2] = bbDiff[2] / Arguments.nz;
+  SLIC_INFO("grid dimensions:" << Arguments.nx << ", "
+                               << Arguments.ny << ", "
+                               << Arguments.nz );
   SLIC_INFO("grid cell size:(" << h[0] << "," << h[1] << "," << h[2] << ")\n" );
 
   int node_ext[6];
   node_ext[0] = 0;
-  node_ext[1] = nx;
+  node_ext[1] = Arguments.nx;
   node_ext[2] = 0;
-  node_ext[3] = ny;
+  node_ext[3] = Arguments.ny;
   node_ext[4] = 0;
-  node_ext[5] = nz;
+  node_ext[5] = Arguments.nz;
 
   // STEP 8: Construct uniform mesh
   mint::UniformMesh* umesh =
