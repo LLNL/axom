@@ -10,6 +10,7 @@
 
 #include "spio/IOManager.hpp"
 #include "sidre/sidre.hpp"
+#include "conduit_relay.hpp"
 
 using asctoolkit::spio::IOManager;
 using asctoolkit::sidre::DataGroup;
