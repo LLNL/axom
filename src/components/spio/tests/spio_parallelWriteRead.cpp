@@ -108,7 +108,7 @@ int main(int argc, char** argv)
   if (my_rank == 1 || num_ranks == 1) {
 
     conduit::Node n;
-    conduit::relay::io::load("hdf5", root_name + ":extra", n);
+    conduit::relay::io::load(root_name + ":extra", "hdf5", n);
 
     double dval = n["dval"].to_double();
 
