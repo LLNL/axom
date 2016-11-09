@@ -8,7 +8,7 @@
 # uberenv host-config for asctoolkit
 #######
 # cmake from uberenv
-# cmake executable path: /usr/global/tools/CMake/bgqos_0/cmake-3.1.2/bin
+# cmake executable path: /usr/global/tools/CMake/bgqos_0/cmake-3.1.2/bin/cmake
 ###############################################################################
 
 # Select the c and c++ compiler though the standard CMake Variables.
