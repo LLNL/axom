@@ -13,7 +13,7 @@
 
 # Select the c and c++ compiler though the standard CMake Variables.
 ###############################################################################
-set(CMAKE_C_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/local/tools/compilers/ibm/mpicc-4.7.2" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2" CACHE PATH "")
 set(CMAKE_Fortran_COMPILER "/usr/local/tools/compilers/ibm/mpif90-4.7.2" CACHE PATH "")
 
