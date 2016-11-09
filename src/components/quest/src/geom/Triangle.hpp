@@ -19,7 +19,7 @@
 #include "slic/slic.hpp"
 
 #include <cmath> // for acos()
-#include <ostream>
+#include <ostream> // for std::ostream
 
 namespace quest
 {
@@ -132,6 +132,10 @@ public:
       VectorType v(m_points[0], m_points[1]);
       VectorType w(m_points[0], m_points[2]);
 
+      // While this code is correct and clear, in the 2D case it may be doing
+      // too much work by taking the square root (norm()) of a just-computed
+      // square (cross_product()).  This should be revisited if this turns out
+      // to be a bottleneck.
       return 0.5 * VectorType::cross_product(v, w).norm();
   }
 
@@ -206,7 +210,7 @@ public:
    * \see quest::Point
    *****************************************************************************
    */
-  bool checkInTriangle(const Point<double, DIM>& P) const{
+  bool checkInTriangle(const PointType& P) const{
     Point<T,3> bC= barycenterCoords(P);
     return ((bC[0]>=0.0) && (bC[1] >= 0.0) && (bC[2]>=0.0) &&
 	    (bC[0]<=1.0) && (bC[1]<=1.0) && (bC[2]<=1.0) &&

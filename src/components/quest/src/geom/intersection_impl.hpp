@@ -103,12 +103,8 @@ bool intersect_tri3D_tri3D( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
 {
   typedef quest::Vector<T, 3> Vector3;
 
-  if (t1.degenerate() || t2.degenerate()) {
-    if (t1.degenerate())
-      SLIC_DEBUG("\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
-    if (t2.degenerate())
-      SLIC_DEBUG("\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
-  }
+  SLIC_CHECK_MSG(t1.degenerate(), "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
+  SLIC_CHECK_MSG(t2.degenerate(), "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
 
   // Step 1: Check if all the vertices of triangle 1 lay on the same side of
   // the plane created by triangle 2:
@@ -225,16 +221,16 @@ bool intersect_tri3D_tri3D( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
 }
 
 /*!
-*****************************************************************************
-* Triangle 1 vertices have been permuted to CCW: permute t2 to CCW 
-* and call worker function to test for intersection.
-*
-* q1 and r1 both lie in the negative half-space defined by t2; p1 lies in
-* t2's plane or in its positive half-space.
-* The sign of dp2, dq2, and dr2 indicates whether the associated vertex
-* of t2 lies in the positive or negative half-space defined by t1.
-*****************************************************************************
-*/
+ *****************************************************************************
+ * Triangle 1 vertices have been permuted to CCW: permute t2 to CCW 
+ * and call worker function to test for intersection.
+ *
+ * q1 and r1 both lie in the negative half-space defined by t2; p1 lies in
+ * t2's plane or in its positive half-space.
+ * The sign of dp2, dq2, and dr2 indicates whether the associated vertex
+ * of t2 lies in the positive or negative half-space defined by t1.
+ *****************************************************************************
+ */
 inline bool intersectOnePermutedTriangle(
   const Point3 &p1, const Point3 &q1, const Point3 &r1,
   const Point3 &p2, const Point3 &q2, const Point3 &r2,
@@ -284,29 +280,29 @@ inline bool intersectOnePermutedTriangle(
 }
 
 /*!
-*****************************************************************************
-* \brief Tests for general 3D triangle-triangle intersection.
-* \return status true iff triangles 1 and 2 intersect.
-*
-* Previous tests have ruled out cases where planes of triangles 1 and 2 
-* are parallel or identical, as well as cases where plane 1 does not 
-* intersect triangle 2 (and vice versa).  The vertices have been permuted 
-* so p1 is across plane 2 from q1 and r1, and p2 is across plane 1 
-* from q2 and r2.
-*
-* The core of the Devillers and Guigue's method examines the line l0 
-* defined by the intersection of
-* planes 1 and 2.  Assume triangles 1 and 2 both intersect this line, which
-* they must if they intersect each other.  Then, the intersection of triangle
-* 1 with l0 is a segment s1, and the intersection of triangle 2 with l0 is
-* a segment s2.  If s1 and s2 overlap, triangles 1 and 2 intersect.  
-*
-* This function implements Equation 1 from Devillers and Guigue (2002), p.8
-* using a hint from p.10 that greatly simplifies the computation.
-*
-* Helper function for T-T intersect.
-*****************************************************************************
-*/
+ *****************************************************************************
+ * \brief Tests for general 3D triangle-triangle intersection.
+ * \return status true iff triangles 1 and 2 intersect.
+ *
+ * Previous tests have ruled out cases where planes of triangles 1 and 2 
+ * are parallel or identical, as well as cases where plane 1 does not 
+ * intersect triangle 2 (and vice versa).  The vertices have been permuted 
+ * so p1 is across plane 2 from q1 and r1, and p2 is across plane 1 
+ * from q2 and r2.
+ *
+ * The core of the Devillers and Guigue's method examines the line l0 
+ * defined by the intersection of
+ * planes 1 and 2.  Assume triangles 1 and 2 both intersect this line, which
+ * they must if they intersect each other.  Then, the intersection of triangle
+ * 1 with l0 is a segment s1, and the intersection of triangle 2 with l0 is
+ * a segment s2.  If s1 and s2 overlap, triangles 1 and 2 intersect.  
+ *
+ * This function implements Equation 1 from Devillers and Guigue (2002), p.8
+ * using a hint from p.10 that greatly simplifies the computation.
+ *
+ * Helper function for T-T intersect.
+ *****************************************************************************
+ */
 inline bool intersectTwoPermutedTriangles(const Point3 p1,
                                           const Point3 q1,
                                           const Point3 r1,
@@ -328,11 +324,11 @@ inline bool intersectTwoPermutedTriangles(const Point3 p1,
 }
 
 /*!
-*****************************************************************************
-* Project (nearly) coplanar triangles 1 and 2 on an axis; call 2D worker 
-* function to test for intersection.
-*****************************************************************************
-*/
+ *****************************************************************************
+ * Project (nearly) coplanar triangles 1 and 2 on an axis; call 2D worker 
+ * function to test for intersection.
+ *****************************************************************************
+ */
 inline bool intersectCoplanar3DTriangles(const Point3& p1,
                                          const Point3& q1,
                                          const Point3& r1,
@@ -398,11 +394,11 @@ inline bool intersectCoplanar3DTriangles(const Point3& p1,
 
 /** @{ @name 2D triangle-triangle intersection */
 /*
-*******************************************************************************
-* \brief Tests if 2D Triangles t1 and t2 intersect.
-* \return status true iff t1 intersects with t2, otherwise, false.
-*******************************************************************************
-*/
+ *******************************************************************************
+ * \brief Tests if 2D Triangles t1 and t2 intersect.
+ * \return status true iff t1 intersects with t2, otherwise, false.
+ *******************************************************************************
+ */
 template < typename T>
 bool intersect_tri2D_tri2D( const quest::Triangle<T, 2>& t1, 
                             const quest::Triangle<T, 2>& t2)
@@ -417,13 +413,13 @@ bool intersect_tri2D_tri2D( const quest::Triangle<T, 2>& t1,
 }
 
 /*!
-*****************************************************************************
-* \brief Orients triangle vertices so both triangles are CCW; calls worker.
-* \return status true iff t1 and t2 intersect
-*
-* Determine triangle orientation, then call the worker function with
-* vertices from t1 and t2 permuted to ensure CCW orientation.
-*****************************************************************************
+ *****************************************************************************
+ * \brief Orients triangle vertices so both triangles are CCW; calls worker.
+ * \return status true iff t1 and t2 intersect
+ *
+ * Determine triangle orientation, then call the worker function with
+ * vertices from t1 and t2 permuted to ensure CCW orientation.
+ *****************************************************************************
 */
 inline bool TriangleIntersection2D(const Triangle2& t1,
                                    const Triangle2& t2)
@@ -449,12 +445,12 @@ inline bool TriangleIntersection2D(const Triangle2& t1,
 }
 
 /*!
-*****************************************************************************
-* This function finds where p1 lies in relation to the vertices of t2 
-* and calls either checkEdge() or checkVertex().
-* \return status true iff triangle p1 q1 r1 intersects triangle p2 q2 r2.
-*****************************************************************************
-*/
+ *****************************************************************************
+ * This function finds where p1 lies in relation to the vertices of t2 
+ * and calls either checkEdge() or checkVertex().
+ * \return status true iff triangle p1 q1 r1 intersects triangle p2 q2 r2.
+ *****************************************************************************
+ */
 inline bool intersectPermuted2DTriangles(const Point2& p1,
                                          const Point2& q1,
                                          const Point2& r1,
@@ -496,11 +492,11 @@ inline bool intersectPermuted2DTriangles(const Point2& p1,
 }
 
 /*!
-*****************************************************************************
-* \brief Check for 2D triangle-edge intersection, given p1 close to r2p2.
-* \return status true iff coplanar CCW triangles 1 and 2 intersect.
-*****************************************************************************
-*/
+ *****************************************************************************
+ * \brief Check for 2D triangle-edge intersection, given p1 close to r2p2.
+ * \return status true iff coplanar CCW triangles 1 and 2 intersect.
+ *****************************************************************************
+ */
 inline bool checkEdge(const Point2 p1,
                       const Point2 q1,
                       const Point2 r1,
@@ -542,11 +538,11 @@ inline bool checkEdge(const Point2 p1,
 }
 
 /*!
-*****************************************************************************
-* \brief Check for 2D triangle-edge intersection, given p1 close to r2.
-* \return status true iff coplanar CCW triangles 1 and 2 intersect.
-*****************************************************************************
-*/
+ *****************************************************************************
+ * \brief Check for 2D triangle-edge intersection, given p1 close to r2.
+ * \return status true iff coplanar CCW triangles 1 and 2 intersect.
+ *****************************************************************************
+ */
 inline bool checkVertex(const Point2 p1,
                         const Point2 q1,
                         const Point2 r1,
@@ -613,66 +609,66 @@ inline bool checkVertex(const Point2 p1,
 }
 
 /*!
-*****************************************************************************
-* \brief Check 2D triangle orientation.
-* \return Cross product of A C and B C.
-*
-* This function treats three Point2 values as corners of a 3D triangle with
-* zero Z-coordinate.  Thus we can calculate the cross product of A C with
-* B C using only the k-hat term, since the other terms go to zero.  A
-* positive value indicates CCW orientation.
-*****************************************************************************
-*/
+ *****************************************************************************
+ * \brief Check 2D triangle orientation.
+ * \return Cross product of A C and B C.
+ *
+ * This function treats three Point2 values as corners of a 3D triangle with
+ * zero Z-coordinate.  Thus we can calculate the cross product of A C with
+ * B C using only the k-hat term, since the other terms go to zero.  A
+ * positive value indicates CCW orientation.
+ *****************************************************************************
+ */
 inline double checkCCW(const Point2& A, const Point2& B, const Point2& C)
 {
   return  (((A[0]-C[0])*(B[1]-C[1])-(A[1]-C[1])*(B[0]-C[0])));
 }
 
 /*!
-*****************************************************************************
-* \brief Checks if x > y, within a specified tolerance.
-*****************************************************************************
-*/
+ *****************************************************************************
+ * \brief Checks if x > y, within a specified tolerance.
+ *****************************************************************************
+ */
 inline bool isGt(double x, double y, double EPS)
 {
   return ((x > y) && !(asctoolkit::utilities::isNearlyEqual(x, y, EPS)));
 }
 
 /*!
-*****************************************************************************
-* \brief Checks if x < y, within a specified tolerance.
-*****************************************************************************
-*/
+ *****************************************************************************
+ * \brief Checks if x < y, within a specified tolerance.
+ *****************************************************************************
+ */
 inline bool isLt(double x, double y, double EPS)
 {
   return ((x < y) && !(asctoolkit::utilities::isNearlyEqual(x, y, EPS)));
 }
 
 /*!
-*****************************************************************************
-* \brief Checks if x <= y, within a specified tolerance.
-*****************************************************************************
-*/
+ *****************************************************************************
+ * \brief Checks if x <= y, within a specified tolerance.
+ *****************************************************************************
+ */
 inline bool isLeq(double x, double y, double EPS)
 {
   return !(isGt(x,y,EPS));
 }
 
 /*!
-*****************************************************************************
-* \brief Checks if x >= y, within a specified tolerance.
-*****************************************************************************
-*/
+ *****************************************************************************
+ * \brief Checks if x >= y, within a specified tolerance.
+ *****************************************************************************
+ */
 inline bool isGeq(double x, double y, double EPS)
 {
   return !(isLt(x,y,EPS));
 }
 
 /*!
-*****************************************************************************
-* \brief Check if x, y, and z all have the same sign.
-****************************************************************************
-*/
+ *****************************************************************************
+ * \brief Check if x, y, and z all have the same sign.
+ ****************************************************************************
+ */
 inline bool signMatch(double x, double y, double z, double EPS)
 {
   return ((isGt(x*y, 0.0, EPS)) &&  (isGt(x*z, 0.0, EPS)));
@@ -681,12 +677,12 @@ inline bool signMatch(double x, double y, double z, double EPS)
 /** @} */  
 
 /*!
-*******************************************************************************
-* \brief Computes the intersection of the given ray, R, with the segment, S.
-*      ip returns the intersection point on S.
-* \return status true iff R intersects with S, otherwise, false.
-*******************************************************************************
-*/
+ *******************************************************************************
+ * \brief Computes the intersection of the given ray, R, with the segment, S.
+ *      ip returns the intersection point on S.
+ * \return status true iff R intersects with S, otherwise, false.
+ *******************************************************************************
+ */
 template < typename T >
 bool intersect_ray_seg( const quest::Ray<T,2>& R, 
                         const quest::Segment<T,2>& S, 
@@ -742,15 +738,15 @@ bool intersect_ray_seg( const quest::Ray<T,2>& R,
 }
 
 /*!
-*******************************************************************************
-* \brief Computes the intersection of the given ray, R, with the Box, bb.
-*      ip the point of intersection on R.
-* \return status true iff bb intersects with R, otherwise, false.
-*
-* Computes Ray Box intersection using the slab method from pg 180 of
-* Real Time Collision Detection by Christer Ericson.
-*******************************************************************************
-*/
+ *******************************************************************************
+ * \brief Computes the intersection of the given ray, R, with the Box, bb.
+ *      ip the point of intersection on R.
+ * \return status true iff bb intersects with R, otherwise, false.
+ *
+ * Computes Ray Box intersection using the slab method from pg 180 of
+ * Real Time Collision Detection by Christer Ericson.
+ *******************************************************************************
+ */
 template < typename T, int DIM>
 bool intersect_ray_bbox(const quest::Ray<T,DIM> & R,
                         const quest::BoundingBox<T,DIM> & bb,
@@ -802,16 +798,16 @@ bool intersect_ray_bbox(const quest::Ray<T,DIM> & R,
 }
 
 /*!
-*******************************************************************************
-* \brief Computes the intersection of the given segment, S, with the Box, bb.
-*     ip the point of intersection on S.
-* \return status true iff bb intersects with S, otherwise, false.
-*
-* Computes Segment Box intersection using the slab method from pg 180 of
-* Real Time Collision Detection by Christer Ericson.
-* WIP: More test cases for this
-*******************************************************************************
-*/
+ *******************************************************************************
+ * \brief Computes the intersection of the given segment, S, with the Box, bb.
+ *     ip the point of intersection on S.
+ * \return status true iff bb intersects with S, otherwise, false.
+ *
+ * Computes Segment Box intersection using the slab method from pg 180 of
+ * Real Time Collision Detection by Christer Ericson.
+ * WIP: More test cases for this
+ *******************************************************************************
+ */
 template < typename T, int DIM>
 bool intersect_seg_bbox( const quest::Segment<T,DIM> & S,
                          const quest::BoundingBox<T,DIM> & bb,
@@ -875,14 +871,14 @@ bool crossEdgesDisjoint(double d0, double d1, double r);
 /** @{ @name Triangle-bbox intersection */
 
 /*!
-*******************************************************************************
-* \brief Determines if a triangle and a bounding box intersect
-*        (but does not find the point of intersection)
-* \param [in] tri user-supplied triangle (with three vertices).
-* \param [in] bb user-supplied axis aligned bounding box.
-* \return true iff tri intersects with bb, otherwise, false.
-*******************************************************************************
-*/
+ *******************************************************************************
+ * \brief Determines if a triangle and a bounding box intersect
+ *        (but does not find the point of intersection)
+ * \param [in] tri user-supplied triangle (with three vertices).
+ * \param [in] bb user-supplied axis aligned bounding box.
+ * \return true iff tri intersects with bb, otherwise, false.
+ *******************************************************************************
+ */
 template < typename T>
 bool intersect_tri_bbox( const quest::Triangle<T, 3>& tri, 
                          const quest::BoundingBox<T, 3>& bb)
