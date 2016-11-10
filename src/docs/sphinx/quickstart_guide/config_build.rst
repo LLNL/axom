@@ -30,12 +30,59 @@ only once. These installations can be shared across the team.
 Requirements, Dependencies, and Supported Compilers
 -----------------------------------------------------
 
-List basic requirements, such as language standards (C++, Fortran), CMake
-version, etc.
+Basic requirements:
 
-List the compilers we support; i.e., those we regularly build and test with...
+  * C++ 98/11
+  * CMake 3.1.2
+  * Fortran (Optional)
 
-List any other dependencies folks need to know about...
+
+Compilers we support:
+
+  * Clang - 3.5.0
+  * GCC - 4.7.1, 4.9.3
+  * IBM BGQOS - 12.1.012a
+  * Intel - 15.0.187, 16.0.109
+
+Package Dependencies:
+
+  * Bison 3.0.4
+  * Boost 1.58.0
+  * bzip2 1.0.6
+  * Conduit 2016-05-18
+  * Doxygen 1.8.11
+  * Flex 2.6.0
+  * HDF5 1.8.16
+  * lcov-1.11
+  * libsigsegv 2.10
+  * lua 5.1.5
+  * m4 1.4.17
+  * ncurses 6.0
+  * openssl 1.0.2h
+  * py-alabaster 0.7.7
+  * py-babel 1.3
+  * py-breathe 4.0.0
+  * py-cogapp 2.4
+  * py-docutils 0.12
+  * py-jinja2 2.8
+  * py-markupsafe 0.23
+  * py-parsley 1.2
+  * py-pygments 2.1
+  * py-pyyaml 3.11
+  * py-setuptools 18.1
+  * py-six 1.9.0
+  * py-snowballstemmer 1.2.1
+  * py-sphinx-rtd-theme 0.1.9
+  * py-sphinx 1.3.6
+  * py-tz 2015.7
+  * python 2.7.11
+  * readline 6.3
+  * sparsehash-headers 2.0.2
+  * sqlite 3.8.5
+  * uberenv-asctoolkit 0.1
+  * uncrustify 0.61
+  * zlib 1.2.8
+
 
 
 .. _tplbuild-label:
@@ -71,7 +118,7 @@ spec (that's fun to say, no?) indicates a compiler and version for a build.
 You can see some examples of this in the python scripts we use to build 
 TPLs for the Toolkit development team on LC platforms at LLNL located in
 the directory 'scripts/uberenv/llnl_install_scripts'. For more details, please
-see the `Spack Spec Documentation <http://spack.readthedocs.io/en/latest/basic_usage.html#specs-dependencies>_`. The 'mirror' argument indicates the location 
+see the `Spack Spec Documentation <http://spack.readthedocs.io/en/latest/basic_usage.html#specs-dependencies>`_. The 'mirror' argument indicates the location 
 of a location where Spack will place the downloaded code for the TPLs. When
 building more than one installation of the TPLs, using a mirror will tell 
 Spack to only download the distribution for each once and use that for all
@@ -89,7 +136,7 @@ Here, 'directory' is the location of the mirror.
 Building and Installing the CS Toolkit
 --------------------------------------
 
-We use a CMake-based system, called *BLT* to configure and build the Toolkit
+We use a CMake-based system, *BLT*, to configure and build the Toolkit
 (see **add link to BLT docs** for more information). This section 
 provides essential instructions for building the code.
 
@@ -107,7 +154,7 @@ the CMake cache with the configuration specified in the file.
 
 We noted in the previous section that the uberenv script generates a
 'host-config' file for each item in the Spack spec list given to it.
-These files are located in the directory 'spack/bin/spack' where the
+These files are located in the directory ``spack/bin/spack`` where the
 TPLs were installed. The name of each file contains information about the
 platform and spec.
 
@@ -130,7 +177,7 @@ hold the build and install contents for the platform and compiler specified
 in the name of the host-config file. 
 
 To build the code and intall the header files, libraries, and documentation 
-in the install directory, go into the build directory and run make; e.g.,::
+in the install directory, go into the build directory and run ``make``; e.g.,::
 
    $ cd {build directory}
    $ make
@@ -150,7 +197,7 @@ Run CMake directly
 
 You can also configure the code by running CMake directly and passing it the 
 appropriate arguments. For example, to configure, build and install a release 
-build with the gcc compiler, you could pass a host-config file CMake::
+build with the gcc compiler, you could pass a host-config file to CMake::
 
    $ mkdir build-gcc-release
    $ cd build-gcc-release
@@ -187,31 +234,35 @@ CMake options
 +-----------------------------------+-------------------------------+--------+
 |OPTION                             |   Description                 | Default|
 +===================================+===============================+========+
-|ENABLE_SHARED_LIBS                 |Build shared libraries.        |        |
-|                                   |Default is Static libraries    |  OFF   |
+|ENABLE_ALL_COMPONENTS              |Enables all components         |  ON    |
 +-----------------------------------+-------------------------------+--------+
-|ENABLE_TESTS                       |Builds unit tests              |  ON    |
+|ENABLE_ALL_WARNINGS                |Enable extra compiler warnings |  ON    | 
+|                                   |in all build targets           |        |
++-----------------------------------+-------------------------------+--------+
+|ENABLE_BENCHMARKS                  |Enable google benchmark        |  OFF   |
 +-----------------------------------+-------------------------------+--------+
 |ENABLE_BOOST                       |Enable Boost                   |  OFF   |
 +-----------------------------------+-------------------------------+--------+
+|ENABLE_CFORTRAN_API                |Enable C to Fortran interface  |  ON    |
++-----------------------------------+-------------------------------+--------+
 |ENABLE_CODECOV                     |Enable code coverage via gcov  |  ON    |
 +-----------------------------------+-------------------------------+--------+
-|ENABLE_CXX11                       |Enables C++11 language support |  ON    | 
+|ENABLE_CXX11                       |Enable C++11 language support  |  ON    | 
 +-----------------------------------+-------------------------------+--------+
-|ENABLE_FORTRAN                     |Enables Fortran compiler       |  ON    |
+|ENABLE_FORTRAN                     |Enable Fortran compiler        |  ON    |
 |                                   |support                        |        |
 +-----------------------------------+-------------------------------+--------+
-|ENABLE_ALL_WARNINGS                |Enable extra compiler warnings |        | 
-|                                   |in all build targets           |  ON    |
+|ENABLE_MPI                         |Enable MPI                     |  OFF   |
 +-----------------------------------+-------------------------------+--------+
-|ENABLE_WARNINGS_AS_ERRORS          |Compiler warnings treated as   |        |
-|                                   |errors.                        | OFF    |
+|ENABLE_OPENMP                      |Enable OpenMP                  |  OFF   |
 +-----------------------------------+-------------------------------+--------+
-|ENABLE_MPI                         |ENABLE MPI                     | OFF    |
+|ENABLE_SHARED_LIBS                 |Build shared libraries.        |  OFF   |
+|                                   |Default is Static libraries    |        |
 +-----------------------------------+-------------------------------+--------+
-|ENABLE_OPENMP                      |ENABLE OpenMP                  | OFF    |
+|ENABLE_TESTS                       |Builds unit tests              |  ON    |
 +-----------------------------------+-------------------------------+--------+
-|ENABLE_BENCHMARKS                  |ENABLE google benchmark        | OFF    |
+|ENABLE_WARNINGS_AS_ERRORS          |Compiler warnings treated as   |  OFF   |
+|                                   |errors.                        |        |
 +-----------------------------------+-------------------------------+--------+
 
 

@@ -16,7 +16,7 @@ The Code
 Our Git repository contains the Toolkit source code, documentation, test 
 suites, and all files and scripts used for configuring and building the code.
 The repo lives in our 
-`CZ Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_
+`CZ Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 
 We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for 
 issue tracking.
@@ -26,7 +26,7 @@ issue tracking.
 Getting the Code
 --------------------------------
 
-Access to our repo and Atlassian tools requires membership in the LC group 
+Access to our repository and Atlassian tools requires membership in the LC group 
 ``toolkit``. If you're not in the group, please send email to 
 'asctoolkit-dev@llnl.gov' and request to be added.
 
