@@ -497,10 +497,11 @@ int SIDRE_dataview_get_num_dimensions(const SIDRE_dataview * self)
 // splicer end class.DataView.method.get_num_dimensions
 }
 
-int SIDRE_dataview_get_shape(SIDRE_dataview * self, int ndims,
+int SIDRE_dataview_get_shape(const SIDRE_dataview * self, int ndims,
                              SIDRE_SidreLength * shape)
 {
-  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+  const DataView * selfobj =
+    static_cast<const DataView *>(static_cast<const void *>(self));
 // splicer begin class.DataView.method.get_shape
   int rv = selfobj->getShape(ndims, shape);
   return rv;

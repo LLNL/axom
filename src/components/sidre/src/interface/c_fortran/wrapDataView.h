@@ -160,7 +160,7 @@ size_t SIDRE_dataview_get_num_elements(const SIDRE_dataview * self);
 
 int SIDRE_dataview_get_num_dimensions(const SIDRE_dataview * self);
 
-int SIDRE_dataview_get_shape(SIDRE_dataview * self, int ndims,
+int SIDRE_dataview_get_shape(const SIDRE_dataview * self, int ndims,
                              SIDRE_SidreLength * shape);
 
 void SIDRE_dataview_print(const SIDRE_dataview * self);
