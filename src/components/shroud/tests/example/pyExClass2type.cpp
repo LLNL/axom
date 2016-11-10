@@ -182,8 +182,8 @@ static char PP_exclass2_get_name2__doc__[] =
 static PyObject *
 PP_exclass2_get_name2(
   PP_ExClass2 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass2.method.get_name2
     const std::string & rv = self->BBB->getName2();
@@ -199,8 +199,8 @@ static char PP_exclass2_get_name3__doc__[] =
 static PyObject *
 PP_exclass2_get_name3(
   PP_ExClass2 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass2.method.get_name3
     std::string & rv = self->BBB->getName3();
@@ -216,8 +216,8 @@ static char PP_exclass2_get_name4__doc__[] =
 static PyObject *
 PP_exclass2_get_name4(
   PP_ExClass2 *self,
-  PyObject *args,
-  PyObject *kwds)
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
 {
 // splicer begin class.ExClass2.method.get_name4
     std::string & rv = self->BBB->getName4();
