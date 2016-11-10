@@ -2121,14 +2121,14 @@ module sidre_mod
             integer(C_INT) :: rv
         end function c_dataview_get_num_dimensions
         
-        pure function c_dataview_get_shape(self, ndims, shape) &
+        function c_dataview_get_shape(self, ndims, shape) &
                 result(rv) &
                 bind(C, name="SIDRE_dataview_get_shape")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: ndims
-            integer(C_LONG), intent(IN) :: shape(*)
+            integer(C_LONG), intent(OUT) :: shape(*)
             integer(C_INT) :: rv
         end function c_dataview_get_shape
         
@@ -5124,7 +5124,7 @@ contains
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: ndims
-        integer(C_LONG), intent(IN) :: shape(*)
+        integer(C_LONG), intent(OUT) :: shape(*)
         integer(C_INT) :: rv
         ! splicer begin class.DataView.method.get_shape
         rv = c_dataview_get_shape(  &

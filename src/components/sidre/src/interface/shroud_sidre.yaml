@@ -434,7 +434,11 @@ classes:
     - decl: size_t getTotalBytes() const
     - decl: size_t getNumElements() const
     - decl: int getNumDimensions() const
-    - decl: int getShape(int ndims, SidreLength * shape+dimension) const
+    
+      # Note KW (11/2016): I had to remove 'const' from the signature 
+      #   of the following function due to a bug in shroud. See ATK-843.
+      #   It should be added back once the issue is resolved. 
+    - decl: int getShape(int ndims, SidreLength * shape+dimension+intent(OUT) ) 
 #    - decl: void info(Node& n) const
     - decl: void print() const
 #    - decl: void createNativeLayout(Node &) const

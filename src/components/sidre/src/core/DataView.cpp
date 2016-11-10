@@ -1102,7 +1102,7 @@ void DataView::importFrom(conduit::Node& data_holder,
 /*
  *************************************************************************
  *
- * PRIVATE method to save view's desciption to a conduit tree.
+ * PRIVATE method to save view's description to a conduit tree.
  * The shape information is only written if there is more than
  * one dimension.
  *
