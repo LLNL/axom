@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# CMake Cache Seed file for bgqos_0 machines using gcc/g++ 4.8.4.
+# CMake Cache Seed file for bgqos_0 machines using gcc/g++ 4.7.2
 #
 ###############################################################################
 
@@ -8,7 +8,7 @@
 # uberenv host-config for asctoolkit
 #######
 # cmake from uberenv
-# cmake executable path: /usr/global/tools/CMake/bgqos_0/cmake-3.1.2/bin/cmake
+# cmake executable path: /usr/workspace/wsa/toolkit/thirdparty_libs/builds/mirrorbgq/cmake/cmake_3.3.1/cmake-3.3.1/bin/cmake 
 ###############################################################################
 
 # Select the c and c++ compiler though the standard CMake Variables.
