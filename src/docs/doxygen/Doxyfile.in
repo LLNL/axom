@@ -441,13 +441,17 @@ WARN_LOGFILE           = dox.warnings
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = @PROJECT_SOURCE_DIR@/components/mainpage.dox \
+INPUT                  = @PROJECT_SOURCE_DIR@/components/mainpage.md \
                          @PROJECT_SOURCE_DIR@/components/common/src \
+                         @PROJECT_SOURCE_DIR@/components/common/README.md \
                          @PROJECT_SOURCE_DIR@/components/lumberjack/src \
+                         @PROJECT_SOURCE_DIR@/components/lumberjack/README.md \
                          @PROJECT_SOURCE_DIR@/components/quest/src/mesh \
                          @PROJECT_SOURCE_DIR@/components/quest/src/geom \
+                         @PROJECT_SOURCE_DIR@/components/quest/README.md \
                          @PROJECT_SOURCE_DIR@/components/sidre/src/core \
                          @PROJECT_SOURCE_DIR@/components/sidre/src/capi \
+                         @PROJECT_SOURCE_DIR@/components/sidre/README.md \
                          @PROJECT_SOURCE_DIR@/components/slam/src \
                          @PROJECT_SOURCE_DIR@/components/slam/src/policies \
                          @PROJECT_SOURCE_DIR@/components/slam/examples \
@@ -456,7 +460,13 @@ INPUT                  = @PROJECT_SOURCE_DIR@/components/mainpage.dox \
                          @PROJECT_SOURCE_DIR@/components/slam/README.md \
                          @PROJECT_SOURCE_DIR@/components/slic/src/core \
                          @PROJECT_SOURCE_DIR@/components/slic/src/interface \
-                         @PROJECT_SOURCE_DIR@/components/slic/src/streams
+                         @PROJECT_SOURCE_DIR@/components/slic/src/streams \
+                         @PROJECT_SOURCE_DIR@/components/slic/README.md \
+                         @PROJECT_SOURCE_DIR@/components/spio/README.md 
+
+# Allow Markdown files to provide the Doxygen main page
+
+USE_MDFILE_AS_MAINPAGE = mainpage.md
 
 
 # If the value of the INPUT tag contains directories, you can use the 

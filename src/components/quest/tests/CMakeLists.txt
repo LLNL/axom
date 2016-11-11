@@ -21,12 +21,14 @@ set(quest_tests
     quest_signed_distance.cpp
     quest_spatial_octree.cpp
     quest_squared_distance.cpp
+    quest_triangle.cpp
     quest_vector.cpp
    )
 
 set(quest_tests_depends
     quest
     slic
+    fmt
     gtest
    )
 

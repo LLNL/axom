@@ -21,6 +21,7 @@ set( quest_headers
     geom/HyperSphere.hpp
     geom/InOutOctree.hpp
     geom/Intersection.hpp
+    geom/intersection_impl.hpp
     geom/MortonIndex.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp
