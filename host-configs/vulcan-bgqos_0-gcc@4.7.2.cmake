@@ -38,7 +38,7 @@ set(PYTHON_EXECUTABLE "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/mirrorb
 set(HDF5_DIR "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/mirrorbgq/hdf5/hdf5-1.8.16" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/mirrorbgq/conduit/conduit" CACHE PATH "")
+set(CONDUIT_DIR "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/mirrorbgq/conduit/conduit/build-debug/CMakeFiles/Export" CACHE PATH "")
 
 ##################################
 # end uberenv host-config
