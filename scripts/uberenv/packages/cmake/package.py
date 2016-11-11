@@ -72,9 +72,17 @@ class Cmake(Package):
         self.validate(spec)
 
         # configure, build, install:
-        options = ['--prefix=%s' % prefix]
-        options.append('--parallel=%s' % str(make_jobs))
+        options = [
+            '--prefix={0}'.format(prefix),
+            '--parallel={0}'.format(make_jobs)]
 
+        if spec.satisfies("@3:"):
+            options.append(
+                # jsoncpp requires CMake to build
+                # use CMake-provided library to avoid circular dependency
+                '--no-system-jsoncpp'
+            )
+            
         if '+qt' in spec:
             options.append('--qt-gui')
 
@@ -86,6 +94,8 @@ class Cmake(Package):
             options.append('--')
             options.append('-DCMAKE_USE_OPENSSL=ON')
 
-        configure(*options)
+        bootstrap = Executable('./bootstrap')
+        bootstrap(*options)
+        
         make()
         make('install')
