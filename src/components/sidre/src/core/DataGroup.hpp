@@ -1140,7 +1140,7 @@ public:
    *
    */
   void save( const std::string& path,
-             const std::string& protocol) const;
+             const std::string& protocol = "sidre_hdf5") const;
 
   /*!
    * \brief Save the Group to an hdf5 handle.
@@ -1153,7 +1153,7 @@ public:
    * \brief Load the Group from a file.
    */
   void load(const std::string& path,
-            const std::string& protocol);
+            const std::string& protocol = "sidre_hdf5");
 
   /*!
    * \brief Load the Group from an hdf5 handle.
