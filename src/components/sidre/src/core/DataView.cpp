@@ -582,11 +582,19 @@ int DataView::getShape(int ndims, SidreLength * shape) const
     return -1;
   }
 
-  for(std::vector<SidreLength>::size_type i = 0 ;
-      i != m_shape.size() ;
-      ++i)
+  const int shapeSize = getNumDimensions();
+  for(int i = 0 ; i < shapeSize ; ++i)
   {
     shape[i] = m_shape[i];
+  }
+
+  // Fill the rest of the array with zeros (when ndims > shapeSize)s
+  if(ndims > shapeSize)
+  {
+    for(int i = shapeSize; i < ndims ; ++i)
+    {
+      shape[i] = SidreLength();
+    }
   }
 
   return m_shape.size();

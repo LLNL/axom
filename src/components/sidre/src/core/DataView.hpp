@@ -38,10 +38,6 @@ namespace asctoolkit
 namespace sidre
 {
 
-// using directives to make Conduit usage easier and less visible
-using conduit::Node;
-using conduit::Schema;
-
 class DataBuffer;
 class DataGroup;
 class DataStore;

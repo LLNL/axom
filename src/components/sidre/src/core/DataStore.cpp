@@ -21,8 +21,7 @@
 // Standard C++ headers
 #include <fstream>
 
-#include "conduit.hpp"
-#include "conduit_relay.hpp"
+#include "conduit_utils.hpp" // for setting conduit's message logging handlers
 
 // Associated header file
 #include "DataStore.hpp"
