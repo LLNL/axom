@@ -39,9 +39,6 @@ namespace asctoolkit
 namespace sidre
 {
 
-// using directives to make Conduit usage easier and less visible
-using conduit::Node;
-
 class DataBuffer;
 class DataGroup;
 
@@ -231,7 +228,7 @@ public:
 
   /*!
    * \brief Save the DataStore to a new file.
-   * Supported protocols are "conduit" (binary), "conduit_hdf5", and "text" (for debugging).
+   * \see DataGroup::save() for supported protocols
    */
   void save( const std::string& file_path,
              const std::string& protocol ) const;

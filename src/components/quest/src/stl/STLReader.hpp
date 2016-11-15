@@ -9,16 +9,6 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file STLReader.hpp
- *******************************************************************************
- */
-
 #ifndef STLREADER_HPP_
 #define STLREADER_HPP_
 
@@ -79,7 +69,7 @@ public:
      * \pre mesh != ATK_NULLPTR.
      ***************************************************************************
      */
-    void getMesh( mint::UnstructuredMesh< mint::LINEAR_TRIANGLE >* mesh );
+    void getMesh( mint::UnstructuredMesh< MINT_TRIANGLE >* mesh );
 
 
 private:

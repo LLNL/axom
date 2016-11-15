@@ -52,14 +52,15 @@ size_t SIDRE_datagroup_get_num_views(const SIDRE_datagroup * self);
 
 size_t SIDRE_datagroup_get_num_groups(const SIDRE_datagroup * self);
 
-bool SIDRE_datagroup_has_view(SIDRE_datagroup * self, const char * path);
+bool SIDRE_datagroup_has_view(const SIDRE_datagroup * self, const char * path);
 
-bool SIDRE_datagroup_has_view_bufferify(SIDRE_datagroup * self,
+bool SIDRE_datagroup_has_view_bufferify(const SIDRE_datagroup * self,
                                         const char * path, int Lpath);
 
-bool SIDRE_datagroup_has_child_view(SIDRE_datagroup * self, const char * name);
+bool SIDRE_datagroup_has_child_view(const SIDRE_datagroup * self,
+                                    const char * name);
 
-bool SIDRE_datagroup_has_child_view_bufferify(SIDRE_datagroup * self,
+bool SIDRE_datagroup_has_child_view_bufferify(const SIDRE_datagroup * self,
                                               const char * name, int Lname);
 
 SIDRE_dataview * SIDRE_datagroup_get_view_from_name(SIDRE_datagroup * self,

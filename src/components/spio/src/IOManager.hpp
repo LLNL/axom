@@ -83,6 +83,8 @@ public:
    * Should be called after write().  The native layout of the group will
    * be added to the root file.
    *
+   * This may be called more than once to write multiple groups to the file.
+   *
    * This is not an MPI collective call.  It writes one group from one rank to
    * one root file.
    *
@@ -91,6 +93,50 @@ public:
    */
   void writeGroupToRootFile(sidre::DataGroup * group,
                             const std::string& file_name);
+
+  /*!
+   * \brief write additional group to a path inside an existing root file
+   *
+   * This should be called on an existing root file that already contains a
+   * DataGroup, most likely from a previous call to writeGroupToRootFile.
+   *
+   * group_path is a path that specifies a location somewhere in the native
+   * layout of a DataGroup already in the file.  The group added in this
+   * method will be stored as a child group of the group specified by the
+   * path.
+   *
+   * This is not an MPI collective call.  It writes one group from one rank to
+   * one root file.
+   *
+   * \param group         DataGroup to add to root file
+   * \param file_name     name of existing root file
+   * \param group_path    path to a location within the root file
+   */
+  void writeGroupToRootFileAtPath(sidre::DataGroup * group,
+                                  const std::string& file_name,
+                                  const std::string& group_path);
+
+  /*!
+   * \brief write additional group to a path inside an existing root file
+   *
+   * This should be called on an existing root file that already contains a
+   * DataGroup, most likely from a previous call to writeGroupToRootFile.
+   *
+   * group_path is a path that specifies a location somewhere in the native
+   * layout of a DataGroup already in the file.  The view added in this
+   * method will be stored as a child view of the group specified by the
+   * path.
+   *
+   * This is not an MPI collective call.  It writes one view from one rank to
+   * one root file.
+   *
+   * \param group         DataView to add to root file
+   * \param file_name     name of existing root file
+   * \param group_path    path to a location within the root file
+   */
+  void writeViewToRootFileAtPath(sidre::DataView * view,
+                                 const std::string& file_name,
+                                 const std::string& group_path);
 
   /*!
    * \brief read from input files

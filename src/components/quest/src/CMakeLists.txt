@@ -15,10 +15,13 @@ set( quest_headers
     ## Geometry Headers
     geom/BVHTree.hpp
     geom/BoundingBox.hpp
+    geom/Brood.hpp
     geom/Determinants.hpp
+    geom/DenseOctreeLevel.hpp
     geom/HyperSphere.hpp
     geom/InOutOctree.hpp
     geom/Intersection.hpp
+    geom/intersection_impl.hpp
     geom/MortonIndex.hpp
     geom/NumericArray.hpp
     geom/OctreeBase.hpp
@@ -27,6 +30,7 @@ set( quest_headers
     geom/Point.hpp
     geom/Ray.hpp
     geom/Segment.hpp
+    geom/SparseOctreeLevel.hpp
     geom/SpatialOctree.hpp
     geom/SquaredDistance.hpp
     geom/Triangle.hpp

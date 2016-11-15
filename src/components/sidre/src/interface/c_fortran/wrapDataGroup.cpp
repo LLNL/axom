@@ -85,9 +85,10 @@ size_t SIDRE_datagroup_get_num_groups(const SIDRE_datagroup * self)
 // splicer end class.DataGroup.method.get_num_groups
 }
 
-bool SIDRE_datagroup_has_view(SIDRE_datagroup * self, const char * path)
+bool SIDRE_datagroup_has_view(const SIDRE_datagroup * self, const char * path)
 {
-  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+  const DataGroup * selfobj =
+    static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.has_view
   const std::string SH_path(path);
   bool rv = selfobj->hasView(SH_path);
@@ -95,10 +96,11 @@ bool SIDRE_datagroup_has_view(SIDRE_datagroup * self, const char * path)
 // splicer end class.DataGroup.method.has_view
 }
 
-bool SIDRE_datagroup_has_view_bufferify(SIDRE_datagroup * self,
+bool SIDRE_datagroup_has_view_bufferify(const SIDRE_datagroup * self,
                                         const char * path, int Lpath)
 {
-  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+  const DataGroup * selfobj =
+    static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.has_view_bufferify
   const std::string SH_path(path, Lpath);
   bool rv = selfobj->hasView(SH_path);
@@ -106,9 +108,11 @@ bool SIDRE_datagroup_has_view_bufferify(SIDRE_datagroup * self,
 // splicer end class.DataGroup.method.has_view_bufferify
 }
 
-bool SIDRE_datagroup_has_child_view(SIDRE_datagroup * self, const char * name)
+bool SIDRE_datagroup_has_child_view(const SIDRE_datagroup * self,
+                                    const char * name)
 {
-  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+  const DataGroup * selfobj =
+    static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.has_child_view
   const std::string SH_name(name);
   bool rv = selfobj->hasChildView(SH_name);
@@ -116,10 +120,11 @@ bool SIDRE_datagroup_has_child_view(SIDRE_datagroup * self, const char * name)
 // splicer end class.DataGroup.method.has_child_view
 }
 
-bool SIDRE_datagroup_has_child_view_bufferify(SIDRE_datagroup * self,
+bool SIDRE_datagroup_has_child_view_bufferify(const SIDRE_datagroup * self,
                                               const char * name, int Lname)
 {
-  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+  const DataGroup * selfobj =
+    static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.has_child_view_bufferify
   const std::string SH_name(name, Lname);
   bool rv = selfobj->hasChildView(SH_name);

@@ -9,16 +9,6 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file STLReader.cpp
- *******************************************************************************
- */
-
 #include "STLReader.hpp"
 
 // ATK includes
@@ -168,7 +158,7 @@ void STLReader::read()
 
 //------------------------------------------------------------------------------
 void STLReader::getMesh(
-        mint::UnstructuredMesh< mint::LINEAR_TRIANGLE >* mesh )
+        mint::UnstructuredMesh< MINT_TRIANGLE >* mesh )
 {
   /* Sanity checks */
   SLIC_ASSERT( mesh != ATK_NULLPTR );
@@ -182,7 +172,7 @@ void STLReader::getMesh(
   // Load the triangles.  Note that the indices are implicitly defined.
   for ( int i=0; i < m_num_faces; ++i ) {
       int tv[3] = {3*i, 3*i+1, 3*i+2};
-      mesh->insertCell( tv,mint::LINEAR_TRIANGLE,3);
+      mesh->insertCell( tv, MINT_TRIANGLE, 3);
   }
 
 }

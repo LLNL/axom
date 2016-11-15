@@ -8,15 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/*!
- *******************************************************************************
- * \file Ray.hpp
- *
- * \date Jan 5, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef RAY_HPP_
 #define RAY_HPP_
 
@@ -26,7 +17,21 @@
 
 #include "slic/slic.hpp"
 
+#include <ostream>
+
+
 namespace quest {
+
+// Forward declare the templated classes and operator functions
+template<typename T, int DIM>
+class Ray;
+
+/*!
+ * \brief Overloaded output operator for rays
+ */
+template<typename T, int NDIMS>
+std::ostream& operator<<(std::ostream & os, const Ray<T,NDIMS> & ray);
+
 
 /*!
  *******************************************************************************
@@ -99,6 +104,20 @@ public:
      */
     const VectorType& direction() const { return m_direction; };
 
+
+    /*!
+     *****************************************************************************
+     * \brief Simple formatted print of a ray instance
+     * \param os The output stream to write to
+     * \return A reference to the modified ostream
+     *****************************************************************************
+     */
+    std::ostream& print(std::ostream& os) const
+    {
+        os <<"{origin:"<< m_origin<<"; direction:"<< m_direction << "}";
+
+        return os;
+    }
 private:
 
     /*!
@@ -157,6 +176,17 @@ inline Point<T,NDIMS> Ray< T,NDIMS >::at( const T& t ) const
    }
    return ( p );
 }
+
+//------------------------------------------------------------------------------
+/// Free functions implementing Ray's operators
+//------------------------------------------------------------------------------
+template<typename T, int NDIMS>
+std::ostream& operator<<(std::ostream & os, const Ray<T,NDIMS> & ray)
+{
+    ray.print(os);
+    return os;
+}
+
 
 } /* end namespace quest */
 

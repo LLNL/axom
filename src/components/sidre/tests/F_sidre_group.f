@@ -104,7 +104,7 @@ contains
     call assert_true( child == child1 )
 
     ! check error condition
-    errgrp = parent%get_group("non-existant group")
+    errgrp = parent%get_group("non-existent group")
     call assert_false( c_associated(errgrp%get_instance()) )
 
     call ds%delete()
@@ -130,7 +130,7 @@ contains
     call assert_true( view == view2 )
 
     ! check error condition
-    view2 = parent%get_view("non-existant view")
+    view2 = parent%get_view("non-existent view")
     call assert_false( view2%associated() )
 
     call ds%delete()
@@ -608,7 +608,7 @@ contains
 
     call ds1%delete()
 
-    ! Only restore conduit_hdf5
+    ! Only restore sidre_hdf5 protocol
     do i = 2,2
        file_path = file_path_base //  protocols(i)
 
@@ -655,7 +655,7 @@ contains
        call ds1%save(file_path, protocols(i))
     enddo
 
-    ! only restore conduit_hdf
+    ! Only restore sidre_hdf5 protocol
     do i = 2,2
        file_path = file_path_base //  protocols(i)
 
@@ -732,8 +732,7 @@ contains
 
     call ds1%delete()
     
-    ! now load back in.
-    ! only restore conduit protocol_hdf5
+    ! Now load back in; Only restore sidre_hdf5 protocol
     do i = 2, 2
        file_path = file_path_base //  protocols(i)
 
@@ -823,9 +822,7 @@ contains
 
     call ds1%delete()
 
-    ! now load back in.
-    ! only restore conduit protocol_hdf5
-    ! Only restore conduit_hdf5
+    ! Now load back in; Only restore sidre_hdf5 protocol
     do i = 2,2
        file_path = file_path_base //  protocols(i)
 

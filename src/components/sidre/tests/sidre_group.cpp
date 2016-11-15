@@ -156,22 +156,25 @@ TEST(sidre_group,destroy_group_with_path)
   DataGroup * group = root->createGroup("test1/test2/test3");
   (void)group;
 
-  EXPECT_EQ(root->getNumGroups(), 1);
-  EXPECT_EQ(root->getGroup("test1")->getNumGroups(), 1);
-  EXPECT_EQ(root->getGroup("test1/test2")->getNumGroups(), 1);
-  EXPECT_EQ(root->getGroup("test1/test2/test3")->getNumGroups(), 0);
+  const std::size_t exp_no_groups = 0;
+  const std::size_t exp_one_group = 1;
+
+  EXPECT_EQ(exp_one_group, root->getNumGroups());
+  EXPECT_EQ(exp_one_group, root->getGroup("test1")->getNumGroups());
+  EXPECT_EQ(exp_one_group, root->getGroup("test1/test2")->getNumGroups());
+  EXPECT_EQ(exp_no_groups, root->getGroup("test1/test2/test3")->getNumGroups());
 
   root->destroyGroup("test1/test2");
 
-  EXPECT_EQ(root->getNumGroups(), 1);
-  EXPECT_EQ(root->getGroup("test1")->getNumGroups(), 0);
+  EXPECT_EQ(exp_one_group, root->getNumGroups());
+  EXPECT_EQ(exp_no_groups, root->getGroup("test1")->getNumGroups());
   EXPECT_FALSE(root->hasGroup("test1/test2/test3"));
   EXPECT_FALSE(root->hasGroup("test1/test2"));
 
   root->destroyGroup("test1/BAD");
   
-  EXPECT_EQ(root->getNumGroups(), 1);
-  EXPECT_EQ(root->getGroup("test1")->getNumGroups(), 0);
+  EXPECT_EQ(exp_one_group, root->getNumGroups());
+  EXPECT_EQ(exp_no_groups, root->getGroup("test1")->getNumGroups());
 
   delete ds;
 }
@@ -281,26 +284,31 @@ TEST(sidre_group,view_with_path)
   EXPECT_EQ(v_bad2, static_cast<void *>(ATK_NULLPTR));
   EXPECT_EQ(v_bad3, static_cast<void *>(ATK_NULLPTR));
 
-  EXPECT_EQ(root->getNumGroups(), 2);
+  const std::size_t exp_no_groups = 0;
+  const std::size_t exp_one_group = 1;
+  const std::size_t exp_two_group = 2;
+
+
+  EXPECT_EQ(exp_two_group, root->getNumGroups());
   EXPECT_TRUE(root->hasGroup("group1"));
   EXPECT_TRUE(root->hasGroup("groupA"));
-  EXPECT_EQ(root->getGroup("group1")->getNumGroups(), 1);
+  EXPECT_EQ(exp_one_group, root->getGroup("group1")->getNumGroups());
   EXPECT_TRUE(root->hasGroup("group1/group2"));
-  EXPECT_EQ(root->getGroup("group1/group2")->getNumGroups(), 0);
-  EXPECT_EQ(root->getGroup("group1/group2")->getNumViews(), 1);
+  EXPECT_EQ(exp_no_groups, root->getGroup("group1/group2")->getNumGroups());
+  EXPECT_EQ(exp_one_group, root->getGroup("group1/group2")->getNumViews());
   EXPECT_EQ(root->getGroup("group1/group2")->getView("view1"), view);
   EXPECT_EQ(root->getGroup("group1")->getView("group2/view1"), view);
 
-  EXPECT_EQ(root->getGroup("groupA")->getNumGroups(), 1);
+  EXPECT_EQ(exp_one_group, root->getGroup("groupA")->getNumGroups());
   EXPECT_TRUE(root->hasGroup("groupA/groupB"));
-  EXPECT_EQ(root->getGroup("groupA/groupB")->getNumGroups(), 0);
-  EXPECT_EQ(root->getGroup("groupA/groupB")->getNumViews(), 1);
+  EXPECT_EQ(exp_no_groups, root->getGroup("groupA/groupB")->getNumGroups());
+  EXPECT_EQ(exp_one_group, root->getGroup("groupA/groupB")->getNumViews());
   EXPECT_EQ(root->getGroup("groupA/groupB")->getView("viewA"), viewP);
   EXPECT_EQ(root->getGroup("groupA")->getView("groupB/viewA"), viewP);
 
   root->destroyView("group1/group2/view1");
 
-  EXPECT_EQ(root->getGroup("group1/group2")->getNumViews(), 0);
+  EXPECT_EQ(exp_no_groups, root->getGroup("group1/group2")->getNumViews());
   EXPECT_FALSE(root->getGroup("group1/group2")->hasView("view1"));
   EXPECT_EQ(root->getGroup("group1/group2")->getView("view1"), static_cast<void *>(ATK_NULLPTR));
   EXPECT_FALSE(root->hasView("group1/group2/view1"));
@@ -314,7 +322,7 @@ TEST(sidre_group,view_with_path)
 
   groupA->destroyView("groupB/viewA");
 
-  EXPECT_EQ(groupA->getGroup("groupB")->getNumViews(), 0);
+  EXPECT_EQ(exp_no_groups, groupA->getGroup("groupB")->getNumViews());
   EXPECT_FALSE(groupA->getGroup("groupB")->hasView("viewA"));
   EXPECT_EQ(groupA->getGroup("groupB")->getView("viewA"), static_cast<void *>(ATK_NULLPTR));
   EXPECT_FALSE(groupA->hasView("groupB/viewA"));
@@ -558,9 +566,9 @@ TEST(sidre_group,group_name_collisions)
   // attempt to create a view named the same as an existing group
   EXPECT_TRUE(ds->getRoot()->createView("fields") == ATK_NULLPTR);
 
-  DataGroup * irrgroup1 = ds->getRoot()->createGroup("here//is/path");
-  DataGroup * irrgroup2 = ds->getRoot()->createGroup("éch≈o/Ωd");
-  DataGroup * irrgroup3 = ds->getRoot()->createGroup("../group/..");
+  ds->getRoot()->createGroup("here//is/path");
+  ds->getRoot()->createGroup("éch≈o/Ωd");
+  ds->getRoot()->createGroup("../group/..");
 
   IndexType idx = ds->getRoot()->getFirstValidGroupIndex();
   while (idx != InvalidIndex)

@@ -347,7 +347,7 @@ TEST(sidre_databuffer,buffer_delete_view_detach)
 
   int vAtest[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
   int vB1test[] = { 1, 2, 3, 4, 5, 6, 7 };
-  int vB2test[] = { 16, 15, 14, -2 };
+  //int vB2test[] = { 16, 15, 14, -2 };
 
   DataTypeId tid = getTypeID(SIDRE_INT_ID);
   int eltsize = sizeof(int);

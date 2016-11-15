@@ -20,7 +20,7 @@ class UberenvAsctoolkit(Package):
     depends_on("lua@5.1.5")
 
     # custom spack packages
-    depends_on("cmake~ncurses~openssl@3.3.1")
+    depends_on("cmake@3.3.1")
     depends_on("conduit~shared")
     depends_on("py-sphinx")
     depends_on("py-breathe")
