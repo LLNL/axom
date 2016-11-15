@@ -2,16 +2,16 @@
 Core concepts
 ******************************************************
 
-Describe SPIO concept
-
 IOManager
-------
+---------
 
 The API for the SPIO component is provided by class IOManager.  An IOManager
 is constructed with an MPI communicator and does I/O operations on all ranks
 associated with that communicator
 
 The core functionality of IOManager is contained in the write and read methods.
+
+.. code-block:: cpp
 
   void write(sidre::DataGroup * group,
              int num_files,
@@ -28,6 +28,8 @@ suffix indicating the file format according tot he protocol argument.
 Additionally write() will produce a root file with the name file_string.root
 that holds some bookkeeping data about the other files and can also receive
 extra user-specified data.
+
+.. code-block:: cpp
 
   void read(sidre::DataGroup * group,
             const std::string& root_file);
@@ -58,6 +60,8 @@ knowledge that the root group contains a single external view at the location
 documentation for information about how to query the Sidre data structures for
 this type of information when the code does not have a priori knowledge.
 
+.. code-block:: cpp
+
   // Construct a DataStore with an empty root group.
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
@@ -79,6 +83,7 @@ this type of information when the code does not have a priori knowledge.
 
 
 User-specified data in the root file
+------------------------------------
 
 The root file is automatically created to provide the IOManager with
 bookkeeping information that is used when reading data, but it can also
@@ -87,6 +92,8 @@ is needed to allow other tools to interact with the data in the output files,
 such as for visualization.  For example, Conduit's blueprint index can be
 stored in a DataGroup written to the root file to provide metadata about the
 mesh layout and data fields that can be visualized from the output files.
+
+.. code-block:: cpp
 
   void writeGroupToRootFile(sidre::DataGroup * group,
                             const std::string& file_name);

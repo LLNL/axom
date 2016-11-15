@@ -34,3 +34,5 @@ Sidre objects that exists across all the MPI ranks of a parallel run.
    first_example
    core_concepts
 
+`Class documentation <../../doxygen/html/annotated.html>`_
+

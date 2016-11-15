@@ -130,7 +130,7 @@ public:
    * This is not an MPI collective call.  It writes one view from one rank to
    * one root file.
    *
-   * \param group         DataView to add to root file
+   * \param view          DataView to add to root file
    * \param file_name     name of existing root file
    * \param group_path    path to a location within the root file
    */
@@ -161,7 +161,7 @@ public:
    * \brief load external data into a group
    *
    * \param group         DataGroup to fill with external data from input
-   * \param root_fil      root file containing input data
+   * \param root_file     root file containing input data
    */
   void loadExternalData(sidre::DataGroup * group,
                         const std::string& root_file);
