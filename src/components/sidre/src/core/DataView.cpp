@@ -588,12 +588,12 @@ int DataView::getShape(int ndims, SidreLength * shape) const
     shape[i] = m_shape[i];
   }
 
-  // Fill the rest of the array with zeros (when ndims > shapeSize)s
+  // Fill the rest of the array with zeros (when ndims > shapeSize)
   if(ndims > shapeSize)
   {
     for(int i = shapeSize; i < ndims ; ++i)
     {
-      shape[i] = SidreLength();
+      shape[i] = 0;
     }
   }
 

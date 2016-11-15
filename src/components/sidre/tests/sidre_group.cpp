@@ -567,7 +567,7 @@ TEST(sidre_group,group_name_collisions)
   EXPECT_TRUE(ds->getRoot()->createView("fields") == ATK_NULLPTR);
 
   ds->getRoot()->createGroup("here//is/path");
-  ds->getRoot()->createGroup("��ch���o/��d");
+  ds->getRoot()->createGroup("éch≈o/Ωd");
   ds->getRoot()->createGroup("../group/..");
 
   IndexType idx = ds->getRoot()->getFirstValidGroupIndex();
