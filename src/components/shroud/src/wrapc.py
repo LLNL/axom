@@ -86,26 +86,30 @@ class Wrapc(util.WrapperMixin):
         self._push_splicer('class')
         for node in self.tree['classes']:
             self._push_splicer(node['name'])
-            self.write_file(node, self.wrap_class, True)
+            self.write_file(self.tree, node)
             self._pop_splicer(node['name'])
         self._pop_splicer('class')
 
         if self.tree['functions']:
-            self.write_file(self.tree, self.wrap_functions, False)
+            self.write_file(self.tree, None)
 
         self.write_helper_files()
 
-    def write_file(self, node, worker, cls):
+    def write_file(self, library, cls):
         """Write a file for the library and its functions or
         a class and its methods.
         """
+        node = cls or library
         fmt = node['fmt']
         self._begin_output_file()
-        worker(node)    # self.wrap_class or self.wrap_functions
+        if cls:
+            self.wrap_class(cls)
+        else:
+            self.wrap_functions(library)
         c_header = fmt.C_header_filename
         c_impl   = fmt.C_impl_filename
-        self.write_header(node, c_header, cls)
-        self.write_impl(node, c_header, c_impl, cls)
+        self.write_header(library, cls, c_header)
+        self.write_impl(library, cls, c_header, c_impl)
 
     def wrap_functions(self, tree):
         # worker function for write_file
@@ -114,14 +118,17 @@ class Wrapc(util.WrapperMixin):
             self.wrap_function(None, node)
         self._pop_splicer('function')
 
-    def write_header(self, node, fname, cls=False):
+    def write_header(self, library, cls, fname):
+        """ Write header file for a library node or a class node.
+        """
         guard = fname.replace(".", "_").upper()
+        node = cls or library
         options = node['options']
 
         output = []
 
         if options.doxygen:
-            self.write_doxygen_file(output, fname, node, cls)
+            self.write_doxygen_file(output, fname, library, cls)
 
         output.extend([
                 '// For C users and C++ implementation',
@@ -164,8 +171,10 @@ class Wrapc(util.WrapperMixin):
         self.config.cfiles.append(os.path.join(self.config.c_fortran_dir, fname))
         self.write_output_file(fname, self.config.c_fortran_dir, output)
 
-    def write_impl(self, node, hname, fname, cls=False):
-        # node = class node
+    def write_impl(self, library, cls, hname, fname):
+        """Write implementation
+        """
+        node = cls or library
         options = node['options']
         namespace = options.namespace
 

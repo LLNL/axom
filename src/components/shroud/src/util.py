@@ -239,9 +239,10 @@ class WrapperMixin(object):
                     fp.write(subline)
                     fp.write('\n')
 
-    def write_doxygen_file(self, output, fname, node, cls):
+    def write_doxygen_file(self, output, fname, library, cls):
         """ Write a doxygen comment block for a file.
         """
+        node = cls or library
         output.append(self.doxygen_begin)
         output.append(self.doxygen_cont + ' \\file %s' % fname)
         if cls:

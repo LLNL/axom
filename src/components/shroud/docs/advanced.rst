@@ -4,6 +4,21 @@ Advanced Usage
 Customizing Behavior
 --------------------
 
+Fields
+^^^^^^
+
+Fields only apply to the type, class or function to which it belongs.
+They are not inherited.
+For example, *C_name* is a field which is used to name
+a single C wrapper function.  While *C_name_template* is an option which
+controls the default value of *C_name*.
+
+Annotations
+^^^^^^^^^^^
+
+Annotations or attributes apply to specific arguments or results.
+They describe semantic behavior for an argument.
+
 Options
 ^^^^^^^
 
@@ -31,22 +46,22 @@ This allows the user to modifiy behavior for all functions or just a single one:
     #     option_b = true     # ihherited
           option_c = true
 
+What files are created
+----------------------
 
-Fields
-^^^^^^
+Shroud will create multiple output file which must be compiled with C++ or Fortran compilers.
 
-Fields only apply to the type, class or function to which it belongs.
-They are not inherited.
-For example, *C_name* is a field which is used to name
-a single C wrapper function.  While *C_name_template* is an option which
-controls the default value of *C_name*.
+One C++ file will be created for the library and one file for each C++ class.
 
-Annotations
-^^^^^^^^^^^
+By default, Fortran will create one file per class similar to the way C is handled.
 
-Annotations or attributes apply to specific arguments or results.
-They describe semantic behavior for an argument.
+If one class makes use of another class, it is necessary to put all of the class
+into a single file using the *F_module_per_class* option.
 
+Each Fortran file will only contain one module to make it easier to create makefile
+dependencies using pattern rules::
+
+    %.o %.mod : %.f
 
 
 How Names are Computed
@@ -108,6 +123,33 @@ Function name - Updated before processing each function or method.
 +------------------------+---------------------------------+------------------+
 | Fortran generic name   | *F_name_generic_template*       | *F_name_generic* |
 +------------------------+---------------------------------+------------------+
+
+Header Files
+^^^^^^^^^^^^
+
+The header files for the library are included by the C wrapper source files.
+
+
+There are two groups of header files: files which are included in the
+implementation and files which are included in the interface.
+
+To include a file in the implementation list it in the global or class options::
+
+    options:
+        cpp_header: global.hpp
+
+    classes:
+        options:
+           cpp_header:
+
+For the header file it can be set in the type::
+
+    types:
+       CustomType:
+          typedef: int
+          c_header:  custom.h
+          cpp_header : custom.hpp
+
 
 Local Variable
 ^^^^^^^^^^^^^^

@@ -182,7 +182,7 @@ class Wrapf(util.WrapperMixin):
             self.wrap_class(node)
             if options.F_module_per_class:
                 self._end_output_file()
-                self.write_module(node, cls=True)
+                self.write_module(self.tree, node)
                 self._begin_output_file()
         self._pop_splicer('class')
 
@@ -220,13 +220,13 @@ class Wrapf(util.WrapperMixin):
                 # library module
                 self._end_output_file()
                 self._create_splicer('module_use', self.use_stmts)
-                self.write_module(self.tree)
+                self.write_module(self.tree, None)
 
         if not options.F_module_per_class:
             # put all functions and classes into one module
             self.tree['F_module_dependencies'] = []
             self._end_output_file()
-            self.write_module(self.tree)
+            self.write_module(self.tree, None)
 
         self.write_c_helper()
 
@@ -875,7 +875,10 @@ class Wrapf(util.WrapperMixin):
             F_code.append(parts[-1])
             F_code.append(-1)
 
-    def write_module(self, node, cls=False):
+    def write_module(self, library, cls):
+        """ Write Fortran wrapper module.
+        """
+        node = cls or library
         options = node['options']
         fmt_node = node['fmt']
         fname = fmt_node.F_impl_filename
@@ -884,7 +887,7 @@ class Wrapf(util.WrapperMixin):
         output = []
 
         if options.doxygen:
-            self.write_doxygen_file(output, fname, node, cls)
+            self.write_doxygen_file(output, fname, library, cls)
 
         output.append('module %s' % module_name)
         output.append(1)

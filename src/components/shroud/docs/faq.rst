@@ -74,27 +74,3 @@ of use if there is a conflict with other modules::
 
    call library_initialize
 
-
-
-How do I control header files which appear in the generated source
-------------------------------------------------------------------
-
-There are two groups of header files: files which are included in the
-implementation and files which are included in the interface.
-
-To include a file in the implementation list it in the global or class options::
-
-    options:
-        cpp_header: global.hpp
-
-    classes:
-        options:
-           cpp_header:
-
-For the header file it can be set in the type::
-
-    types:
-       CustomType:
-          typedef: int
-          c_header:  custom.h
-          cpp_header : custom.hpp
