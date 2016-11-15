@@ -14,7 +14,36 @@ module sidre_view
   use sidre_mod
   implicit none
 
+  integer, parameter :: &
+       EMPTY = 1, &
+       BUFFER = 2, &
+       EXTERNAL = 3, &
+       SCALAR = 4, &
+       STRING = 5, &
+       NOTYPE = 6
+
 contains
+!------------------------------------------------------------------------------
+
+  function get_state(view) result(state)
+    type(dataview), intent(IN) :: view
+    integer state
+
+    if (view%is_empty()) then
+       state = EMPTY
+    else if (view%has_buffer()) then
+       state = BUFFER
+    else if (view%is_external()) then
+       state = EXTERNAL
+    else if (view%is_scalar()) then
+       state = SCALAR
+    else if (view%is_string()) then
+       state = STRING
+    else
+       state = NOTYPE
+    endif
+  end function get_state
+
 !------------------------------------------------------------------------------
 
   subroutine create_views()
@@ -38,6 +67,118 @@ contains
     call assert_equals(db_1%get_index(), 1, "db_1%get_index(), 1")
     call ds%delete()
   end subroutine create_views
+
+!------------------------------------------------------------------------------
+
+  subroutine scalar_view
+    type(datastore) ds
+    type(datagroup) root
+    type(dataview) i0view, i1view, s0view, s1view
+    integer(C_INT) i1, i2
+    character(80) s1, s2
+
+    call set_case_name("scalar_view")
+
+    ds = datastore_new()
+    root = ds%get_root()
+
+    i1 = 1
+    i0view = root%create_view("i0")
+    call i0view%set_scalar(i1)
+    call check_scalar_values(i0view, SCALAR, .true., .true., .true., SIDRE_INT_ID, 1)
+    i2 = i0view%get_data_int()
+    call assert_equals(i1, i2)
+
+    i1 = 2
+    i1view = root%create_view_scalar("i1", i1)
+    call check_scalar_values(i1view, SCALAR, .true., .true., .true., SIDRE_INT_ID, 1)
+    i2 = i1view%get_data_int()
+    call assert_equals(i1, i2)
+
+    ! TODO: passing len_trim to account for non-existent NULL
+    s1 = "i am a string"
+    s0view = root%create_view("s0")
+    call s0view%set_string(trim(s1))
+    call check_scalar_values(s0view, STRING, .true., .true., .true., &
+         SIDRE_CHAR8_STR_ID, len_trim(s1) + 1)
+    call s0view%get_string(s2)
+    call assert_equals(s1, s2)
+
+    s1 = "i too am a string"
+    s1view = root%create_view_string("s1", trim(s1))
+    call check_scalar_values(s1view, STRING, .true., .true., .true., &
+         SIDRE_CHAR8_STR_ID, len_trim(s1) + 1)
+    call s1view%get_string(s2)
+    call assert_equals(s1, s2)
+
+  ! check illegal operations
+!  call i0view%apply(int_id, 1)
+!  call i0view%allocate()
+!  call i0view%deallocate()
+
+!  call s0view%apply(int_id, 1)
+!  call s0view%allocate()
+!  call s0view%deallocate()
+
+!type(dataview) empty
+!empty = root%create_view("empty")
+!#if 0
+!  try
+!  {
+!type(int) j
+!j = empty%get_scalar()
+!    !int j = empty%get_scalar()
+!    call assert_equals(0, *j)
+!  }
+!  catch ( conduit::error e)
+!  {}
+!#endif
+!  const char * svalue = empty%get_string()
+!  call assert_equals(null, svalue)
+
+    ! Test group access to scalars
+    i1 = 100
+    i2 = 0
+    call root%set_scalar("i0", i1)
+    call root%get_scalar("i0", i2)
+    call assert_equals(i1, i2)
+
+    s1 = "Replacement string value"
+    s2 = " "
+    call root%set_string("s0", s1)
+    call root%get_string("s0", s2)
+    call assert_equals(s1, s2)
+
+    call ds%delete()
+
+    contains
+
+      subroutine check_scalar_values(view, state, is_described, is_allocated, &
+           is_applied, type, length)
+
+        type(dataview), intent(IN) :: view
+        integer, intent(IN) :: state
+        logical, intent(IN) :: is_described, is_allocated, is_applied
+        integer, intent(IN) :: type
+        integer, intent(IN) :: length
+        character(30) name
+
+        integer(SIDRE_LENGTH) dims(2)
+
+        name = view%get_name()
+
+        call assert_equals(get_state(view), state)
+        call assert_equals(view%is_described(), is_described, trim(name) // " is_described")
+        call assert_equals(view%is_allocated(), is_allocated, trim(name) // "is_allocated")
+        call assert_equals(view%is_applied(), is_applied, trim(name) // " is_applied")
+
+        call assert_equals(view%get_type_id(), type, trim(name) // " get_type_id")
+        call assert_equals(int(view%get_num_elements(), kind(length)), length, trim(name) // " get_num_elements")
+        call assert_equals(view%get_num_dimensions(), 1, trim(name) // " get_num_dimensions")
+        call assert_true(view%get_shape(1, dims) == 1 .and. dims(1) == length)
+      end subroutine check_scalar_values
+
+  end subroutine scalar_view
 
 !------------------------------------------------------------------------------
 
@@ -669,6 +810,11 @@ program fortran_test
   call init_fruit
 
   call create_views
+! create_view_from_path
+  call scalar_view
+! dealloc
+! alloc_zero_items
+! alloc_and_dealloc_multiview
   call int_buffer_from_view
   call int_buffer_from_view_conduit_value
   call int_array_multi_view

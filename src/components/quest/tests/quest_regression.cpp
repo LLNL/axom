@@ -686,7 +686,7 @@ void saveBaseline(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& clarg
 
 
     std::string outfile = fmt::format("{}_{}_{}", meshNameNoExt, resStr, "baseline");
-    std::string protocol = "conduit_hdf5";
+    std::string protocol = "sidre_hdf5";
     asctoolkit::spio::IOManager writer(MPI_COMM_WORLD);
     writer.write(grp,1, outfile, protocol);
     SLIC_INFO(fmt::format("** Saved baseline file '{}' using '{}' protocol.", outfile , protocol));

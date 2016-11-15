@@ -32,10 +32,6 @@ contains
 
 end module {F_module_name}
 ----------
-TODO:
-  intent is kludged for now.  They're all intent(IN) because ifort
-  requires them for pure functions
-
 """
 from __future__ import print_function
 
@@ -524,8 +520,6 @@ class Wrapf(util.WrapperMixin):
         else:
             fmt.F_C_subprogram = 'function'
             fmt.F_C_result_clause = 'result(%s)' % fmt.F_result
-            if is_pure or func_is_const:
-                fmt.F_C_pure_clause = 'pure '
 
         if cls:
             # Add 'this' argument
@@ -533,12 +527,16 @@ class Wrapf(util.WrapperMixin):
                 arg_c_names.append(fmt.C_this)
                 arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + fmt.C_this)
 
+        args_all_in = True   # assume all arguments are intent(in)
         for arg in node['args']:
             # default argument's intent
             # XXX look at const, ptr
             arg_typedef = self.typedef[arg['type']]
             fmt.c_var = arg['name']
             attrs = arg['attrs']
+
+            if attrs.get('intent', 'inout') != 'in':
+                args_all_in = False
 
             # argument names
             if arg_typedef.f_c_args:
@@ -554,14 +552,17 @@ class Wrapf(util.WrapperMixin):
             else:
                 arg_c_decl.append(self._c_decl(arg))
 
-            len_trim = arg['attrs'].get('len_trim', None)
+            len_trim = attrs.get('len_trim', None)
             if len_trim:
                 arg_c_names.append(len_trim)
                 arg_c_decl.append('integer(C_INT), value, intent(IN) :: %s' % len_trim)
-            len_arg = arg['attrs'].get('len', None)
+            len_arg = attrs.get('len', None)
             if len_arg:
                 arg_c_names.append(len_arg)
                 arg_c_decl.append('integer(C_INT), value, intent(IN) :: %s' % len_arg)
+
+        if subprogram == 'function' and (is_pure or (func_is_const and args_all_in)):
+            fmt.F_C_pure_clause = 'pure '
 
         fmt.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
 

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2014-2015, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2014-2016, Lawrence Livermore National Security, LLC.
 # 
 # Produced at the Lawrence Livermore National Laboratory
 # 
@@ -9,7 +9,7 @@
 # 
 # This file is part of Conduit. 
 # 
-# For details, see https://lc.llnl.gov/conduit/.
+# For details, see: http://software.llnl.gov/conduit/.
 # 
 # Please also read conduit/LICENSE
 # 
@@ -41,28 +41,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # 
 ###############################################################################
-#
-# Setup Conduit
-# This file defines:
-#  CONDUIT_FOUND - If Conduit was found
-#  CONDUIT_INCLUDE_DIRS - The Conduit include directories
-#  
-#  If found, the conduit CMake targets will also be imported
+from spack import *
 
-# first Check for CONDUIT_DIR
+class PyNumpy(Package):
+    """array processing for numbers, strings, records, and objects."""
+    homepage = "https://pypi.python.org/pypi/numpy"
+    url      = "https://pypi.python.org/packages/source/n/numpy/numpy-1.9.1.tar.gz"
 
-if(NOT CONDUIT_DIR)
-    MESSAGE(FATAL_ERROR "Could not find Conduit. Conduit requires explicit CONDUIT_DIR.")
-endif()
+    version('1.11.0', 'bc56fb9fc2895aa4961802ffbdb31d0b')
+    version('1.9.1',  '78842b73560ec378142665e712ae4ad9')
 
-if(NOT EXISTS ${CONDUIT_DIR}/lib/cmake/conduit.cmake)
-    MESSAGE(FATAL_ERROR "Could not find Conduit cmake include file (${CONDUIT_DIR}/lib/cmake/conduit.cmake)")
-endif()
+    extends('python')
+    depends_on("py-setuptools")
 
-include(${CONDUIT_DIR}/lib/cmake/conduit.cmake)
-set(CONDUIT_FOUND TRUE)
-set(CONDUIT_INCLUDE_DIRS ${CONDUIT_DIR}/include/conduit)
-
-
-
-
+    def install(self, spec, prefix):
+        # don't
+        python('setup.py', 'install')

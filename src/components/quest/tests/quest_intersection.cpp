@@ -27,6 +27,8 @@
 #include "quest/Triangle.hpp"
 #include "quest/Vector.hpp"
 
+#include "quest_test_utilities.hpp"
+
 
 template<int DIM>
 quest::Triangle<double, DIM> roll(const quest::Triangle<double, DIM> & t, 
@@ -469,16 +471,12 @@ TEST( quest_intersection, triangle_triangle_intersection )
 
   srand (1);  //we want same random number sequence everytime to make sure our tests don't differ on a case to case basis
 
-  double scaleFactor=3.0;
-#define RANDOM_NUM(SCALE) 1.0*( (double)rand() / (double)RAND_MAX )
-
-
   //Randomly generate a bunch of intersecting triangles (whose intersections form segments) and test them
   for (int i=0; i<5000; i++) {
     //Step 1: Construct a random triangle
-    Point3 A= Point3::make_point(RANDOM_NUM(1.0), RANDOM_NUM(1.0), RANDOM_NUM(1.0));
-    Point3 B= Point3::make_point(RANDOM_NUM(1.0), RANDOM_NUM(1.0), RANDOM_NUM(1.0));
-    Point3 C= Point3::make_point(RANDOM_NUM(1.0), RANDOM_NUM(1.0), RANDOM_NUM(1.0));
+    Point3 A= quest::utilities::randomSpacePt<3>(0.,1.);
+    Point3 B= quest::utilities::randomSpacePt<3>(0.,1.);
+    Point3 C= quest::utilities::randomSpacePt<3>(0.,1.);
     Triangle3 randomTriangle= Triangle3(A,B,C);
 
     //Step 2: Construct two random points on the triangle.  Rarely, a point is not made correctly, so
@@ -486,9 +484,9 @@ TEST( quest_intersection, triangle_triangle_intersection )
     Point3 P= Point3::make_point(-1.0,-1.0,-1.0);
     Point3 Q= Point3::make_point(-1.0,-1.0,-1.0);
 
-    double a1= RANDOM_NUM(1.0);
-    double a2= RANDOM_NUM(1.0);
-    double a3= RANDOM_NUM(1.0);
+    double a1= quest::utilities::randomDouble();
+    double a2= quest::utilities::randomDouble();
+    double a3= quest::utilities::randomDouble();
 
     double n1= (a1/(a1+a2+a3));
     double n2= (a2/(a1+a2+a3));
@@ -500,9 +498,9 @@ TEST( quest_intersection, triangle_triangle_intersection )
     double P_z= n1*A[2]+n2*B[2]+n3*C[2];
     P= Point3::make_point(P_x,P_y,P_z);
 
-    a1= RANDOM_NUM(1.0);
-    a2= RANDOM_NUM(1.0);
-    a3= RANDOM_NUM(1.0);
+    a1= quest::utilities::randomDouble();
+    a2= quest::utilities::randomDouble();
+    a3= quest::utilities::randomDouble();
 
     n1= (a1/(a1+a2+a3));
     n2= (a2/(a1+a2+a3));
@@ -519,15 +517,13 @@ TEST( quest_intersection, triangle_triangle_intersection )
       it to create the triangle formed by P', Q' and vertex1. */
 
     //Step 3: choose some vertex away from the triangle
-    Point3 vertex1 = Point3::make_point(RANDOM_NUM(1.0),RANDOM_NUM(1.0),RANDOM_NUM(1.0));
+    Point3 vertex1 = quest::utilities::randomSpacePt<3>(0.,1.);
 
     //Step 4:
     //we scale the segments formed by both vertex 1 and P and by vertex 1 and Q so that we now
     //have a triangle whose base is not necessarily on the plane formed by ABC
     Vector3 vertex2Direction = Vector3(Q, vertex1);
     Vector3 vertex3Direction = Vector3(P, vertex1);
-
-    double randomScale = RANDOM_NUM(scaleFactor)+2.0;
 
     //construct the other two vertices of the triangle
     Point3 vertex2 = Point3::make_point(vertex1[0]-2*vertex2Direction[0], vertex1[1]-2*vertex2Direction[1],
@@ -545,7 +541,8 @@ TEST( quest_intersection, triangle_triangle_intersection )
       // SLIC_INFO("\n\n\n Triangles are not degenerate... testing "<< randomTriangle<<intersectingTriangle);
       test=quest::intersect(randomTriangle, intersectingTriangle);
     }
-    char coords[3]={'x','y','z'};
+
+    // char coords[3]={'x','y','z'};
     // if (!test) {
 
     //   std::ofstream failure; //still don't know where this is writing too...

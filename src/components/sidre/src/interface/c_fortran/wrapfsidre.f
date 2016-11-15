@@ -73,12 +73,9 @@ module sidre_mod
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_num_buffers => datastore_get_num_buffers
         procedure :: print => datastore_print
-        procedure :: save_0 => datastore_save_0
-        procedure :: save_1 => datastore_save_1
-        procedure :: load_0 => datastore_load_0
-        procedure :: load_1 => datastore_load_1
-        procedure :: load_external_data_0 => datastore_load_external_data_0
-        procedure :: load_external_data_1 => datastore_load_external_data_1
+        procedure :: save => datastore_save
+        procedure :: load => datastore_load
+        procedure :: load_external_data => datastore_load_external_data
         procedure :: get_instance => datastore_get_instance
         procedure :: set_instance => datastore_set_instance
         procedure :: associated => datastore_associated
@@ -88,21 +85,6 @@ module sidre_mod
             create_buffer_empty,  &
             create_buffer_from_type_int,  &
             create_buffer_from_type_long
-        generic :: load => &
-            ! splicer begin class.DataStore.generic.load
-            ! splicer end class.DataStore.generic.load
-            load_0,  &
-            load_1
-        generic :: load_external_data => &
-            ! splicer begin class.DataStore.generic.load_external_data
-            ! splicer end class.DataStore.generic.load_external_data
-            load_external_data_0,  &
-            load_external_data_1
-        generic :: save => &
-            ! splicer begin class.DataStore.generic.save
-            ! splicer end class.DataStore.generic.save
-            save_0,  &
-            save_1
         ! splicer begin class.DataStore.type_bound_procedure_part
         ! splicer end class.DataStore.type_bound_procedure_part
     end type datastore
@@ -166,6 +148,9 @@ module sidre_mod
         procedure :: move_group => datagroup_move_group
         procedure :: print => datagroup_print
         procedure :: is_equivalent_to => datagroup_is_equivalent_to
+        procedure :: save => datagroup_save
+        procedure :: load => datagroup_load
+        procedure :: load_external_data => datagroup_load_external_data
         procedure :: get_instance => datagroup_get_instance
         procedure :: set_instance => datagroup_set_instance
         procedure :: associated => datagroup_associated
@@ -213,6 +198,24 @@ module sidre_mod
             get_view_from_name,  &
             get_view_from_index
         ! splicer begin class.DataGroup.type_bound_procedure_part
+        procedure :: get_scalar_int => datagroup_get_scalar_int
+        procedure :: get_scalar_long => datagroup_get_scalar_long
+        procedure :: get_scalar_float => datagroup_get_scalar_float
+        procedure :: get_scalar_double => datagroup_get_scalar_double
+        generic :: get_scalar => &
+            get_scalar_int,  &
+            get_scalar_long,  &
+            get_scalar_float,  &
+            get_scalar_double
+        procedure :: set_scalar_int => datagroup_set_scalar_int
+        procedure :: set_scalar_long => datagroup_set_scalar_long
+        procedure :: set_scalar_float => datagroup_set_scalar_float
+        procedure :: set_scalar_double => datagroup_set_scalar_double
+        generic :: set_scalar => &
+            set_scalar_int,  &
+            set_scalar_long,  &
+            set_scalar_float,  &
+            set_scalar_double
         procedure :: create_array_view_int_scalar => datagroup_create_array_view_int_scalar
         procedure :: create_array_view_int_1d => datagroup_create_array_view_int_1d
         procedure :: create_array_view_int_2d => datagroup_create_array_view_int_2d
@@ -295,6 +298,8 @@ module sidre_mod
             set_array_data_ptr_double_2d,  &
             set_array_data_ptr_double_3d,  &
             set_array_data_ptr_double_4d
+        procedure :: get_string => datagroup_get_string
+        procedure :: set_string => datagroup_set_string
         ! splicer end class.DataGroup.type_bound_procedure_part
     end type datagroup
     
@@ -370,10 +375,13 @@ module sidre_mod
         procedure :: apply_type_shape => dataview_apply_type_shape
         procedure :: has_buffer => dataview_has_buffer
         procedure :: is_external => dataview_is_external
+        procedure :: is_allocated => dataview_is_allocated
         procedure :: is_applied => dataview_is_applied
         procedure :: is_described => dataview_is_described
         procedure :: is_empty => dataview_is_empty
         procedure :: is_opaque => dataview_is_opaque
+        procedure :: is_scalar => dataview_is_scalar
+        procedure :: is_string => dataview_is_string
         procedure :: get_name => dataview_get_name
         procedure :: get_buffer => dataview_get_buffer
         procedure :: get_void_ptr => dataview_get_void_ptr
@@ -384,7 +392,9 @@ module sidre_mod
         procedure :: set_external_data_ptr_only => dataview_set_external_data_ptr_only
         procedure :: set_external_data_ptr_type_int => dataview_set_external_data_ptr_type_int
         procedure :: set_external_data_ptr_type_long => dataview_set_external_data_ptr_type_long
+        procedure :: set_string => dataview_set_string
         procedure :: set_external_data_ptr_shape => dataview_set_external_data_ptr_shape
+        procedure :: get_string => dataview_get_string
         procedure :: get_data_int => dataview_get_data_int
         procedure :: get_data_long => dataview_get_data_long
         procedure :: get_data_float => dataview_get_data_float
@@ -623,17 +633,17 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine c_datastore_print
         
-        subroutine c_datastore_save_0(self, file_path, protocol) &
-                bind(C, name="SIDRE_datastore_save_0")
+        subroutine c_datastore_save(self, file_path, protocol) &
+                bind(C, name="SIDRE_datastore_save")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine c_datastore_save_0
+        end subroutine c_datastore_save
         
-        subroutine c_datastore_save_0_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
-                bind(C, name="SIDRE_datastore_save_0_bufferify")
+        subroutine c_datastore_save_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+                bind(C, name="SIDRE_datastore_save_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -641,41 +651,19 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lfile_path
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine c_datastore_save_0_bufferify
+        end subroutine c_datastore_save_bufferify
         
-        subroutine c_datastore_save_1(self, file_path, protocol, group) &
-                bind(C, name="SIDRE_datastore_save_1")
+        subroutine c_datastore_load(self, file_path, protocol) &
+                bind(C, name="SIDRE_datastore_load")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
-            type(C_PTR), value, intent(IN) :: group
-        end subroutine c_datastore_save_1
+        end subroutine c_datastore_load
         
-        subroutine c_datastore_save_1_bufferify(self, file_path, Lfile_path, protocol, Lprotocol, group) &
-                bind(C, name="SIDRE_datastore_save_1_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            integer(C_INT), value, intent(IN) :: Lfile_path
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            integer(C_INT), value, intent(IN) :: Lprotocol
-            type(C_PTR), value, intent(IN) :: group
-        end subroutine c_datastore_save_1_bufferify
-        
-        subroutine c_datastore_load_0(self, file_path, protocol) &
-                bind(C, name="SIDRE_datastore_load_0")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine c_datastore_load_0
-        
-        subroutine c_datastore_load_0_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
-                bind(C, name="SIDRE_datastore_load_0_bufferify")
+        subroutine c_datastore_load_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+                bind(C, name="SIDRE_datastore_load_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -683,41 +671,19 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lfile_path
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine c_datastore_load_0_bufferify
+        end subroutine c_datastore_load_bufferify
         
-        subroutine c_datastore_load_1(self, file_path, protocol, group) &
-                bind(C, name="SIDRE_datastore_load_1")
+        subroutine c_datastore_load_external_data(self, file_path, protocol) &
+                bind(C, name="SIDRE_datastore_load_external_data")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
-            type(C_PTR), value, intent(IN) :: group
-        end subroutine c_datastore_load_1
+        end subroutine c_datastore_load_external_data
         
-        subroutine c_datastore_load_1_bufferify(self, file_path, Lfile_path, protocol, Lprotocol, group) &
-                bind(C, name="SIDRE_datastore_load_1_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            integer(C_INT), value, intent(IN) :: Lfile_path
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            integer(C_INT), value, intent(IN) :: Lprotocol
-            type(C_PTR), value, intent(IN) :: group
-        end subroutine c_datastore_load_1_bufferify
-        
-        subroutine c_datastore_load_external_data_0(self, file_path, protocol) &
-                bind(C, name="SIDRE_datastore_load_external_data_0")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine c_datastore_load_external_data_0
-        
-        subroutine c_datastore_load_external_data_0_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
-                bind(C, name="SIDRE_datastore_load_external_data_0_bufferify")
+        subroutine c_datastore_load_external_data_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+                bind(C, name="SIDRE_datastore_load_external_data_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -725,29 +691,7 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lfile_path
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine c_datastore_load_external_data_0_bufferify
-        
-        subroutine c_datastore_load_external_data_1(self, file_path, protocol, group) &
-                bind(C, name="SIDRE_datastore_load_external_data_1")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            type(C_PTR), value, intent(IN) :: group
-        end subroutine c_datastore_load_external_data_1
-        
-        subroutine c_datastore_load_external_data_1_bufferify(self, file_path, Lfile_path, protocol, Lprotocol, group) &
-                bind(C, name="SIDRE_datastore_load_external_data_1_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            integer(C_INT), value, intent(IN) :: Lfile_path
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            integer(C_INT), value, intent(IN) :: Lprotocol
-            type(C_PTR), value, intent(IN) :: group
-        end subroutine c_datastore_load_external_data_1_bufferify
+        end subroutine c_datastore_load_external_data_bufferify
         
         ! splicer begin class.DataStore.additional_interfaces
         ! splicer end class.DataStore.additional_interfaces
@@ -1596,6 +1540,66 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function c_datagroup_is_equivalent_to
         
+        subroutine c_datagroup_save(self, file_path, protocol) &
+                bind(C, name="SIDRE_datagroup_save")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+        end subroutine c_datagroup_save
+        
+        subroutine c_datagroup_save_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+                bind(C, name="SIDRE_datagroup_save_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            integer(C_INT), value, intent(IN) :: Lfile_path
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+        end subroutine c_datagroup_save_bufferify
+        
+        subroutine c_datagroup_load(self, file_path, protocol) &
+                bind(C, name="SIDRE_datagroup_load")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+        end subroutine c_datagroup_load
+        
+        subroutine c_datagroup_load_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+                bind(C, name="SIDRE_datagroup_load_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            integer(C_INT), value, intent(IN) :: Lfile_path
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+        end subroutine c_datagroup_load_bufferify
+        
+        subroutine c_datagroup_load_external_data(self, file_path, protocol) &
+                bind(C, name="SIDRE_datagroup_load_external_data")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+        end subroutine c_datagroup_load_external_data
+        
+        subroutine c_datagroup_load_external_data_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+                bind(C, name="SIDRE_datagroup_load_external_data_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            integer(C_INT), value, intent(IN) :: Lfile_path
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+        end subroutine c_datagroup_load_external_data_bufferify
+        
         ! splicer begin class.DataGroup.additional_interfaces
         ! splicer end class.DataGroup.additional_interfaces
         
@@ -1841,6 +1845,15 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function c_dataview_is_external
         
+        function c_dataview_is_allocated(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_is_allocated")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            logical(C_BOOL) :: rv
+        end function c_dataview_is_allocated
+        
         pure function c_dataview_is_applied(self) &
                 result(rv) &
                 bind(C, name="SIDRE_dataview_is_applied")
@@ -1876,6 +1889,24 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             logical(C_BOOL) :: rv
         end function c_dataview_is_opaque
+        
+        pure function c_dataview_is_scalar(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_is_scalar")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            logical(C_BOOL) :: rv
+        end function c_dataview_is_scalar
+        
+        pure function c_dataview_is_string(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_is_string")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            logical(C_BOOL) :: rv
+        end function c_dataview_is_string
         
         pure function c_dataview_get_name(self) &
                 result(rv) &
@@ -1963,6 +1994,23 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: external_ptr
         end subroutine c_dataview_set_external_data_ptr_type
         
+        subroutine c_dataview_set_string(self, value) &
+                bind(C, name="SIDRE_dataview_set_string")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: value(*)
+        end subroutine c_dataview_set_string
+        
+        subroutine c_dataview_set_string_bufferify(self, value, Lvalue) &
+                bind(C, name="SIDRE_dataview_set_string_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: value(*)
+            integer(C_INT), value, intent(IN) :: Lvalue
+        end subroutine c_dataview_set_string_bufferify
+        
         subroutine c_dataview_set_external_data_ptr_shape(self, type, ndims, shape, external_ptr) &
                 bind(C, name="SIDRE_dataview_set_external_data_ptr_shape")
             use iso_c_binding
@@ -1973,6 +2021,24 @@ module sidre_mod
             integer(C_LONG), intent(IN) :: shape(*)
             type(C_PTR), value, intent(IN) :: external_ptr
         end subroutine c_dataview_set_external_data_ptr_shape
+        
+        function c_dataview_get_string(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_get_string")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR) rv
+        end function c_dataview_get_string
+        
+        subroutine c_dataview_get_string_bufferify(self, name, Lname) &
+                bind(C, name="SIDRE_dataview_get_string_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(OUT) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine c_dataview_get_string_bufferify
         
         function c_dataview_get_data_int(self) &
                 result(rv) &
@@ -2055,14 +2121,14 @@ module sidre_mod
             integer(C_INT) :: rv
         end function c_dataview_get_num_dimensions
         
-        pure function c_dataview_get_shape(self, ndims, shape) &
+        function c_dataview_get_shape(self, ndims, shape) &
                 result(rv) &
                 bind(C, name="SIDRE_dataview_get_shape")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: ndims
-            integer(C_LONG), intent(IN) :: shape(*)
+            integer(C_LONG), intent(OUT) :: shape(*)
             integer(C_INT) :: rv
         end function c_dataview_get_shape
         
@@ -2213,107 +2279,53 @@ contains
         ! splicer end class.DataStore.method.print
     end subroutine datastore_print
     
-    subroutine datastore_save_0(obj, file_path, protocol)
+    subroutine datastore_save(obj, file_path, protocol)
         use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         character(*), intent(IN) :: file_path
         character(*), intent(IN) :: protocol
-        ! splicer begin class.DataStore.method.save_0
-        call c_datastore_save_0_bufferify(  &
+        ! splicer begin class.DataStore.method.save
+        call c_datastore_save_bufferify(  &
             obj%voidptr,  &
             file_path,  &
             len_trim(file_path, kind=C_INT),  &
             protocol,  &
             len_trim(protocol, kind=C_INT))
-        ! splicer end class.DataStore.method.save_0
-    end subroutine datastore_save_0
+        ! splicer end class.DataStore.method.save
+    end subroutine datastore_save
     
-    subroutine datastore_save_1(obj, file_path, protocol, group)
+    subroutine datastore_load(obj, file_path, protocol)
         use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         character(*), intent(IN) :: file_path
         character(*), intent(IN) :: protocol
-        type(datagroup), value, intent(IN) :: group
-        ! splicer begin class.DataStore.method.save_1
-        call c_datastore_save_1_bufferify(  &
-            obj%voidptr,  &
-            file_path,  &
-            len_trim(file_path, kind=C_INT),  &
-            protocol,  &
-            len_trim(protocol, kind=C_INT),  &
-            group%voidptr)
-        ! splicer end class.DataStore.method.save_1
-    end subroutine datastore_save_1
-    
-    subroutine datastore_load_0(obj, file_path, protocol)
-        use iso_c_binding, only : C_INT
-        implicit none
-        class(datastore) :: obj
-        character(*), intent(IN) :: file_path
-        character(*), intent(IN) :: protocol
-        ! splicer begin class.DataStore.method.load_0
-        call c_datastore_load_0_bufferify(  &
+        ! splicer begin class.DataStore.method.load
+        call c_datastore_load_bufferify(  &
             obj%voidptr,  &
             file_path,  &
             len_trim(file_path, kind=C_INT),  &
             protocol,  &
             len_trim(protocol, kind=C_INT))
-        ! splicer end class.DataStore.method.load_0
-    end subroutine datastore_load_0
+        ! splicer end class.DataStore.method.load
+    end subroutine datastore_load
     
-    subroutine datastore_load_1(obj, file_path, protocol, group)
+    subroutine datastore_load_external_data(obj, file_path, protocol)
         use iso_c_binding, only : C_INT
         implicit none
         class(datastore) :: obj
         character(*), intent(IN) :: file_path
         character(*), intent(IN) :: protocol
-        type(datagroup), value, intent(IN) :: group
-        ! splicer begin class.DataStore.method.load_1
-        call c_datastore_load_1_bufferify(  &
-            obj%voidptr,  &
-            file_path,  &
-            len_trim(file_path, kind=C_INT),  &
-            protocol,  &
-            len_trim(protocol, kind=C_INT),  &
-            group%voidptr)
-        ! splicer end class.DataStore.method.load_1
-    end subroutine datastore_load_1
-    
-    subroutine datastore_load_external_data_0(obj, file_path, protocol)
-        use iso_c_binding, only : C_INT
-        implicit none
-        class(datastore) :: obj
-        character(*), intent(IN) :: file_path
-        character(*), intent(IN) :: protocol
-        ! splicer begin class.DataStore.method.load_external_data_0
-        call c_datastore_load_external_data_0_bufferify(  &
+        ! splicer begin class.DataStore.method.load_external_data
+        call c_datastore_load_external_data_bufferify(  &
             obj%voidptr,  &
             file_path,  &
             len_trim(file_path, kind=C_INT),  &
             protocol,  &
             len_trim(protocol, kind=C_INT))
-        ! splicer end class.DataStore.method.load_external_data_0
-    end subroutine datastore_load_external_data_0
-    
-    subroutine datastore_load_external_data_1(obj, file_path, protocol, group)
-        use iso_c_binding, only : C_INT
-        implicit none
-        class(datastore) :: obj
-        character(*), intent(IN) :: file_path
-        character(*), intent(IN) :: protocol
-        type(datagroup), value, intent(IN) :: group
-        ! splicer begin class.DataStore.method.load_external_data_1
-        call c_datastore_load_external_data_1_bufferify(  &
-            obj%voidptr,  &
-            file_path,  &
-            len_trim(file_path, kind=C_INT),  &
-            protocol,  &
-            len_trim(protocol, kind=C_INT),  &
-            group%voidptr)
-        ! splicer end class.DataStore.method.load_external_data_1
-    end subroutine datastore_load_external_data_1
+        ! splicer end class.DataStore.method.load_external_data
+    end subroutine datastore_load_external_data
     
     function datastore_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
@@ -3091,6 +3103,54 @@ contains
         ! splicer end class.DataGroup.method.is_equivalent_to
     end function datagroup_is_equivalent_to
     
+    subroutine datagroup_save(obj, file_path, protocol)
+        use iso_c_binding, only : C_INT
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: file_path
+        character(*), intent(IN) :: protocol
+        ! splicer begin class.DataGroup.method.save
+        call c_datagroup_save_bufferify(  &
+            obj%voidptr,  &
+            file_path,  &
+            len_trim(file_path, kind=C_INT),  &
+            protocol,  &
+            len_trim(protocol, kind=C_INT))
+        ! splicer end class.DataGroup.method.save
+    end subroutine datagroup_save
+    
+    subroutine datagroup_load(obj, file_path, protocol)
+        use iso_c_binding, only : C_INT
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: file_path
+        character(*), intent(IN) :: protocol
+        ! splicer begin class.DataGroup.method.load
+        call c_datagroup_load_bufferify(  &
+            obj%voidptr,  &
+            file_path,  &
+            len_trim(file_path, kind=C_INT),  &
+            protocol,  &
+            len_trim(protocol, kind=C_INT))
+        ! splicer end class.DataGroup.method.load
+    end subroutine datagroup_load
+    
+    subroutine datagroup_load_external_data(obj, file_path, protocol)
+        use iso_c_binding, only : C_INT
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: file_path
+        character(*), intent(IN) :: protocol
+        ! splicer begin class.DataGroup.method.load_external_data
+        call c_datagroup_load_external_data_bufferify(  &
+            obj%voidptr,  &
+            file_path,  &
+            len_trim(file_path, kind=C_INT),  &
+            protocol,  &
+            len_trim(protocol, kind=C_INT))
+        ! splicer end class.DataGroup.method.load_external_data
+    end subroutine datagroup_load_external_data
+    
     function datagroup_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
         implicit none
@@ -3118,6 +3178,118 @@ contains
     ! splicer begin class.DataGroup.additional_functions
     
     ! Generated by genfsidresplicer.py
+    subroutine datagroup_get_scalar_int(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_INT), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        value = c_dataview_get_data_int(view)
+    end subroutine datagroup_get_scalar_int
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_get_scalar_long(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_LONG), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        value = c_dataview_get_data_long(view)
+    end subroutine datagroup_get_scalar_long
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_get_scalar_float(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_FLOAT), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        value = c_dataview_get_data_float(view)
+    end subroutine datagroup_get_scalar_float
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_get_scalar_double(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_DOUBLE), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        value = c_dataview_get_data_double(view)
+    end subroutine datagroup_get_scalar_double
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_set_scalar_int(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_INT), intent(IN) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_set_scalar_int(view, value)
+    end subroutine datagroup_set_scalar_int
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_set_scalar_long(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_LONG), intent(IN) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_set_scalar_long(view, value)
+    end subroutine datagroup_set_scalar_long
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_set_scalar_float(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_FLOAT), intent(IN) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_set_scalar_float(view, value)
+    end subroutine datagroup_set_scalar_float
+    
+    ! Generated by genfsidresplicer.py
+    subroutine datagroup_set_scalar_double(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_DOUBLE), intent(IN) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_set_scalar_double(view, value)
+    end subroutine datagroup_set_scalar_double
+    
+    ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_int_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
@@ -3135,12 +3307,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end function datagroup_create_array_view_int_scalar
     
     ! Generated by genfsidresplicer.py
@@ -3161,12 +3334,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end function datagroup_create_array_view_int_1d
     
     ! Generated by genfsidresplicer.py
@@ -3187,12 +3361,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end function datagroup_create_array_view_int_2d
     
     ! Generated by genfsidresplicer.py
@@ -3213,12 +3388,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end function datagroup_create_array_view_int_3d
     
     ! Generated by genfsidresplicer.py
@@ -3239,12 +3415,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
     end function datagroup_create_array_view_int_4d
     
     ! Generated by genfsidresplicer.py
@@ -3265,12 +3442,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end function datagroup_create_array_view_long_scalar
     
     ! Generated by genfsidresplicer.py
@@ -3291,12 +3469,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end function datagroup_create_array_view_long_1d
     
     ! Generated by genfsidresplicer.py
@@ -3317,12 +3496,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end function datagroup_create_array_view_long_2d
     
     ! Generated by genfsidresplicer.py
@@ -3343,12 +3523,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end function datagroup_create_array_view_long_3d
     
     ! Generated by genfsidresplicer.py
@@ -3369,12 +3550,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
     end function datagroup_create_array_view_long_4d
     
     ! Generated by genfsidresplicer.py
@@ -3395,12 +3577,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end function datagroup_create_array_view_float_scalar
     
     ! Generated by genfsidresplicer.py
@@ -3421,12 +3604,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end function datagroup_create_array_view_float_1d
     
     ! Generated by genfsidresplicer.py
@@ -3447,12 +3631,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end function datagroup_create_array_view_float_2d
     
     ! Generated by genfsidresplicer.py
@@ -3473,12 +3658,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end function datagroup_create_array_view_float_3d
     
     ! Generated by genfsidresplicer.py
@@ -3499,12 +3685,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
     end function datagroup_create_array_view_float_4d
     
     ! Generated by genfsidresplicer.py
@@ -3525,12 +3712,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end function datagroup_create_array_view_double_scalar
     
     ! Generated by genfsidresplicer.py
@@ -3551,12 +3739,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end function datagroup_create_array_view_double_1d
     
     ! Generated by genfsidresplicer.py
@@ -3577,12 +3766,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end function datagroup_create_array_view_double_2d
     
     ! Generated by genfsidresplicer.py
@@ -3603,12 +3793,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end function datagroup_create_array_view_double_3d
     
     ! Generated by genfsidresplicer.py
@@ -3629,12 +3820,13 @@ contains
         addr = c_loc(value)
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
+          rv%voidptr = c_datagroup_create_view_external_bufferify( &
+              group%voidptr, name, lname, addr)
+          call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
         else
-          extents = 0
+          rv%voidptr = c_datagroup_create_view_from_type_bufferify( &
+              group%voidptr, name, lname, type, 0_C_LONG)
         endif
-        rv%voidptr = c_datagroup_create_view_external_bufferify( &
-            group%voidptr, name, lname, addr)
-        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
     end function datagroup_create_array_view_double_4d
     
     ! Generated by genfsidresplicer.py
@@ -4136,6 +4328,33 @@ contains
     !        call c_dataview_apply_type_shape(rv%voidptr, type, 4, extents)
         endif
     end subroutine datagroup_set_array_data_ptr_double_4d
+    
+    subroutine datagroup_get_string(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        character(*), intent(OUT) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_get_string_bufferify(view, value, len(value, kind=C_INT))
+    end subroutine datagroup_get_string
+    
+    subroutine datagroup_set_string(group, name, value)
+        use iso_c_binding
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        character(*), intent(IN) :: value
+        integer(C_INT) :: lname
+        type(C_PTR) view
+    
+        lname = len_trim(name)
+        view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
+        call c_dataview_set_string_bufferify(view, value, len_trim(value, kind=C_INT))
+    end subroutine datagroup_set_string
+    
     ! splicer end class.DataGroup.additional_functions
     
     function databuffer_get_index(obj) result(rv)
@@ -4575,6 +4794,16 @@ contains
         ! splicer end class.DataView.method.is_external
     end function dataview_is_external
     
+    function dataview_is_allocated(obj) result(rv)
+        use iso_c_binding, only : C_BOOL
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin class.DataView.method.is_allocated
+        rv = c_dataview_is_allocated(obj%voidptr)
+        ! splicer end class.DataView.method.is_allocated
+    end function dataview_is_allocated
+    
     function dataview_is_applied(obj) result(rv)
         use iso_c_binding, only : C_BOOL
         implicit none
@@ -4614,6 +4843,26 @@ contains
         rv = c_dataview_is_opaque(obj%voidptr)
         ! splicer end class.DataView.method.is_opaque
     end function dataview_is_opaque
+    
+    function dataview_is_scalar(obj) result(rv)
+        use iso_c_binding, only : C_BOOL
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin class.DataView.method.is_scalar
+        rv = c_dataview_is_scalar(obj%voidptr)
+        ! splicer end class.DataView.method.is_scalar
+    end function dataview_is_scalar
+    
+    function dataview_is_string(obj) result(rv)
+        use iso_c_binding, only : C_BOOL
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin class.DataView.method.is_string
+        rv = c_dataview_is_string(obj%voidptr)
+        ! splicer end class.DataView.method.is_string
+    end function dataview_is_string
     
     function dataview_get_name(obj) result(rv)
         use iso_c_binding, only : C_CHAR, C_INT
@@ -4737,6 +4986,19 @@ contains
         ! splicer end class.DataView.method.set_external_data_ptr_type_long
     end subroutine dataview_set_external_data_ptr_type_long
     
+    subroutine dataview_set_string(obj, value)
+        use iso_c_binding, only : C_INT
+        implicit none
+        class(dataview) :: obj
+        character(*), intent(IN) :: value
+        ! splicer begin class.DataView.method.set_string
+        call c_dataview_set_string_bufferify(  &
+            obj%voidptr,  &
+            value,  &
+            len_trim(value, kind=C_INT))
+        ! splicer end class.DataView.method.set_string
+    end subroutine dataview_set_string
+    
     subroutine dataview_set_external_data_ptr_shape(obj, type, ndims, shape, external_ptr)
         use iso_c_binding, only : C_LONG, C_INT
         implicit none
@@ -4754,6 +5016,19 @@ contains
             external_ptr)
         ! splicer end class.DataView.method.set_external_data_ptr_shape
     end subroutine dataview_set_external_data_ptr_shape
+    
+    subroutine dataview_get_string(obj, name)
+        use iso_c_binding, only : C_INT
+        implicit none
+        class(dataview) :: obj
+        character(*), intent(OUT) :: name
+        ! splicer begin class.DataView.method.get_string
+        call c_dataview_get_string_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len(name, kind=C_INT))
+        ! splicer end class.DataView.method.get_string
+    end subroutine dataview_get_string
     
     function dataview_get_data_int(obj) result(rv)
         use iso_c_binding, only : C_INT
@@ -4849,7 +5124,7 @@ contains
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: ndims
-        integer(C_LONG), intent(IN) :: shape(*)
+        integer(C_LONG), intent(OUT) :: shape(*)
         integer(C_INT) :: rv
         ! splicer begin class.DataView.method.get_shape
         rv = c_dataview_get_shape(  &
