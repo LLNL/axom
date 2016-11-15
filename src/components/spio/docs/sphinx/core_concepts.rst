@@ -52,11 +52,54 @@ to associate the pointer with the view.  Once this is done, IOManager's
 loadExternalData can be used to load the data from the file into the
 user-allocated arrays.
 
-  code example here
+Code example for loading external data.  We assume that this code somehow has
+knowledge that the root group contains a single external view at the location
+"fields/external_array" describing an array of doubles.  See the Sidre
+documentation for information about how to query the Sidre data structures for
+this type of information when the code does not have a priori knowledge.
+
+  // Construct a DataStore with an empty root group.
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  // Read from file into the root group.  The full Sidre hierarchy is built,
+  // but the external view is created without allocating a data buffer.
+  IOManager reader(MPI_COMM_WORLD);
+  reader.read(root, "checkpoint.root");
+
+  // Get a pointer to the external view. 
+  DataView * external_view = root->getView("fields/external_array");
+
+  // Allocate storage for the array and associate it with the view.
+  double * external_array = new double[external_view->getNumElements()];
+  external_view->setExternalDataPtr(external_array);
+
+  // Load the data values from file into the external view.
+  reader.loadExternalData(root, "checkpoint.root");
 
 
-Root file
+User-specified data in the root file
 
-  User can write additional data to root file
-  blueprint index to provide metadata to VisIt
+The root file is automatically created to provide the IOManager with
+bookkeeping information that is used when reading data, but it can also
+be used to store additional data that may be useful to the calling code or
+is needed to allow other tools to interact with the data in the output files,
+such as for visualization.  For example, Conduit's blueprint index can be
+stored in a DataGroup written to the root file to provide metadata about the
+mesh layout and data fields that can be visualized from the output files.
 
+  void writeGroupToRootFile(sidre::DataGroup * group,
+                            const std::string& file_name);
+
+  void writeGroupToRootFileAtPath(sidre::DataGroup * group,
+                                  const std::string& file_name,
+                                  const std::string& group_path);
+
+  void writeViewToRootFileAtPath(sidre::DataView * view,
+                                 const std::string& file_name,
+                                 const std::string& group_path);
+
+The above methods are used to write this extra data to the root file.  The
+first simply writes data from the given group to the top of the root file,
+while the latter two methods write their Sidre objects to a path that must
+already exist in the root file.
