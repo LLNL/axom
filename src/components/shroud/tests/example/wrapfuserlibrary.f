@@ -141,7 +141,7 @@ contains
     
     ! bool isNameValid(const std::string & name+intent(in))
     ! string_to_buffer_and_len
-    ! function_index=42
+    ! function_index=48
     function is_name_valid(name) result(rv)
         use iso_c_binding, only : C_BOOL, C_INT
         implicit none
@@ -153,7 +153,7 @@ contains
     end function is_name_valid
     
     ! bool isInitialized()
-    ! function_index=43
+    ! function_index=49
     function is_initialized() result(rv)
         use iso_c_binding, only : C_BOOL
         implicit none
@@ -165,7 +165,7 @@ contains
     
     ! void test_names(const std::string & name+intent(in))
     ! string_to_buffer_and_len
-    ! function_index=44
+    ! function_index=50
     subroutine test_names(name)
         use iso_c_binding, only : C_INT
         implicit none
@@ -179,7 +179,7 @@ contains
     
     ! void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
     ! string_to_buffer_and_len
-    ! function_index=45
+    ! function_index=51
     subroutine test_names_flag(name, flag)
         use iso_c_binding, only : C_INT
         implicit none
@@ -195,7 +195,7 @@ contains
     
     ! void testoptional()
     ! has_default_arg
-    ! function_index=50
+    ! function_index=56
     subroutine testoptional_0()
         implicit none
         ! splicer begin testoptional_0
@@ -205,7 +205,7 @@ contains
     
     ! void testoptional(int i+default(1)+intent(in)+value)
     ! has_default_arg
-    ! function_index=51
+    ! function_index=57
     subroutine testoptional_1(i)
         use iso_c_binding, only : C_INT
         implicit none
@@ -216,7 +216,7 @@ contains
     end subroutine testoptional_1
     
     ! void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
-    ! function_index=46
+    ! function_index=52
     subroutine testoptional_2(i, j)
         use iso_c_binding, only : C_LONG, C_INT
         implicit none
@@ -230,7 +230,7 @@ contains
     end subroutine testoptional_2
     
     ! void testgroup1(DataGroup * grp+intent(in)+value)
-    ! function_index=48
+    ! function_index=54
     subroutine testgroup1(grp)
         use sidre_mod, only : datagroup
         implicit none
@@ -241,7 +241,7 @@ contains
     end subroutine testgroup1
     
     ! void testgroup2(const DataGroup * grp+intent(in)+value)
-    ! function_index=49
+    ! function_index=55
     subroutine testgroup2(grp)
         use sidre_mod, only : datagroup
         implicit none

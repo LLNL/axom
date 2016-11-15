@@ -32,6 +32,8 @@
 #include "sidre/DataStore.hpp"
 #include "sidre/SidreTypes.hpp"
 
+#include "conduit_relay.hpp"
+#include "conduit_relay_hdf5.hpp"
 #include "fmt/fmt.hpp"
 
 namespace asctoolkit
@@ -95,13 +97,12 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
 
   std::string root_name = file_string + ".root";
 
-  if (m_my_rank == 0 && protocol == "conduit_hdf5") {
+  if (m_my_rank == 0 && protocol == "sidre_hdf5") {
      createRootFile(root_name, file_string, num_files);
   }
   MPI_Barrier(m_mpi_comm);
 
-  if (protocol == "conduit_hdf5") {
-
+  if (protocol == "sidre_hdf5") {
     std::string file_pattern = getHDF5FilePattern(root_name);
 
     int group_id = m_baton->wait();
@@ -134,7 +135,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
                             H5P_DEFAULT);
     SLIC_ASSERT(h5_group_id >= 0);
 
-    datagroup->getDataStore()->save(h5_group_id, datagroup);
+    datagroup->save(h5_group_id);
 
     herr_t status = H5Gclose(h5_group_id);
     SLIC_ASSERT(status >= 0);
@@ -143,12 +144,12 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
     status = H5Fclose(h5_file_id);
     SLIC_ASSERT(status >= 0);
 
-  } else if (protocol == "conduit") {
+  } else {
     int group_id = m_baton->wait();
     std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
 
     std::string obase = file_name + ".group";
-    datagroup->getDataStore()->save(obase, protocol, datagroup);
+    datagroup->save(obase, protocol);
   }
   (void)m_baton->pass();
 }
@@ -165,8 +166,7 @@ void IOManager::read(
   const std::string& file_string,
   const std::string& protocol)
 {
-  if (protocol == "conduit_hdf5") {
-
+  if (protocol == "sidre_hdf5") {
     std::string root_name = file_string + ".root";
 
     std::string file_pattern = getHDF5FilePattern(root_name);
@@ -186,7 +186,7 @@ void IOManager::read(
     std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
     hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
     SLIC_ASSERT(h5_file_id >= 0);
-    datagroup->getDataStore()->load(h5_group_id, datagroup);
+    datagroup->load(h5_group_id);
 
     errv = H5Gclose(h5_group_id);
     SLIC_ASSERT(errv >= 0);
@@ -199,7 +199,7 @@ void IOManager::read(
     std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
 
     std::string obase = file_name + ".group";
-    datagroup->getDataStore()->load(obase, protocol, datagroup);
+    datagroup->load(obase, protocol);
   }
 
   (void)m_baton->pass();
@@ -245,7 +245,7 @@ void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
   hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
   SLIC_ASSERT(h5_group_id >= 0);
 
-  datagroup->getDataStore()->load(h5_group_id, datagroup);
+  datagroup->load(h5_group_id);
 
   errv = H5Gclose(h5_group_id);
   SLIC_ASSERT(errv >= 0);
@@ -290,7 +290,7 @@ void IOManager::loadExternalData(sidre::DataGroup * datagroup, const std::string
   hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
   SLIC_ASSERT(h5_group_id >= 0);
 
-  datagroup->getDataStore()->loadExternalData(h5_group_id, datagroup);
+  datagroup->loadExternalData(h5_group_id);
 
   errv = H5Gclose(h5_group_id);
   SLIC_ASSERT(errv >= 0);
@@ -321,10 +321,12 @@ void IOManager::createRootFile(const std::string& root_name,
   conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
   n["file_pattern"] = local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
   n["number_of_trees"] = m_comm_size;
-
+  
   n["tree_pattern"] = "datagroup_%07d";
-
-  conduit::relay::io::save("hdf5",n,root_name);
+  n["protocol/name"] = "sidre_hdf5";
+  n["protocol/version"] = "0.0";
+  
+  conduit::relay::io::save(n,root_name,"hdf5");
 }
 
 /*
@@ -341,7 +343,7 @@ std::string IOManager::getHDF5FilePattern(
   int buf_size = 0;
   if (m_my_rank == 0) {
     conduit::Node n;
-    conduit::relay::io::load("hdf5", root_name + ":file_pattern", n);
+    conduit::relay::io::load(root_name + ":file_pattern", "hdf5", n);
 
     file_pattern = n.as_string();
 
@@ -409,7 +411,7 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
   int read_num_files = 0;
   if (m_my_rank == 0) {
     conduit::Node n;
-    conduit::relay::io::load("hdf5", root_file + ":number_of_files", n);
+    conduit::relay::io::load(root_file + ":number_of_files","hdf5",n);
     read_num_files = n.to_int();
     SLIC_ASSERT(read_num_files > 0);
   }

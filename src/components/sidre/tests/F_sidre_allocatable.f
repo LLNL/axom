@@ -269,7 +269,7 @@ contains
     integer num_elements
     integer i, j, k
     integer rank
-    integer(SIDRE_LENGTH) extents_in(3), extents(3)
+    integer(SIDRE_LENGTH) extents_in(3), extents(7)
 
     call set_case_name("datastore_int_3d")
 

@@ -268,6 +268,8 @@ static void checkScalarValues(DataView * view,
 {
   SidreLength dims[2];
 
+  SCOPED_TRACE(view->getName());
+
   EXPECT_EQ(getState(view), state);
 
   EXPECT_EQ(view->isDescribed(), isDescribed);
@@ -1224,4 +1226,31 @@ TEST(sidre_datastore,destroy_buffer)
   EXPECT_FALSE(view1b->hasBuffer());
 
   delete ds;
+}
+
+
+//------------------------------------------------------------------------------
+TEST(sidre_view,value_from_uninited_view)
+{
+    DataStore ds;
+    DataView * view = ds.getRoot()->createView("empty");
+
+    // check getScalar
+    int val = view->getScalar();
+    EXPECT_EQ(val,0);
+
+    // check getArray
+    int *aval_ptr =    view->getArray();
+    EXPECT_TRUE( aval_ptr == NULL );
+
+    int aval = view->getArray();
+    EXPECT_EQ(aval,0);
+    
+    // check getData
+    int *dval_ptr =    view->getData();
+    EXPECT_TRUE( dval_ptr == NULL );
+
+    int dval = view->getData();
+    EXPECT_EQ(dval,0);
+    
 }

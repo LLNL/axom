@@ -6,7 +6,9 @@ endif(ENABLE_PYTHON_API)
 ## Note: Default state of components is controlled by the ENABLE_ALL_COMPONENTS 
 ## option. However, the 'common' component is always enabled.
 
-blt_add_component(COMPONENT_NAME shroud DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+if(ENABLE_SHROUD)
+    blt_add_component(COMPONENT_NAME shroud DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+endif(ENABLE_SHROUD)
 
 blt_add_component(COMPONENT_NAME common DEFAULT_STATE ON)
 

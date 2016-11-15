@@ -1,4 +1,4 @@
-SLAM: A (S)et-theoretic (L)ightweight (A)PI for (M)eshes {#mainpage}
+SLAM: A (S)et-theoretic (L)ightweight (A)PI for (M)eshes {#slamtop}
 =========
 
 The ASC toolkit's MeshAPI provides a collection of high performance, thoroughly tested, reusable components that can be combined to define distributed mesh data structures for [the lab's multiphysics] simulation codes. 

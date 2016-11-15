@@ -21,12 +21,14 @@ set(quest_tests
     quest_signed_distance.cpp
     quest_spatial_octree.cpp
     quest_squared_distance.cpp
+    quest_triangle.cpp
     quest_vector.cpp
    )
 
 set(quest_tests_depends
     quest
     slic
+    fmt
     gtest
    )
 
@@ -56,7 +58,7 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         NAME quest_regression
         SOURCES quest_regression.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends} conduit sidre spio
+        DEPENDS_ON ${quest_tests_depends} conduit sidre spio hdf5
     )
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
     

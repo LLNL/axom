@@ -143,7 +143,7 @@ if args.eclipse:
     cmakeline += ' -G "Eclipse CDT4 - Unix Makefiles"'
 
 if args.xcode:
-    cmakeline += ' -G "XCode"'
+    cmakeline += ' -G "Xcode"'
 
 if unknown_args:
     cmakeline += " " + " ".join( unknown_args )
