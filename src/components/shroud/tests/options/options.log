@@ -1,0 +1,10 @@
+Read yaml options.yaml
+class Class1
+C method void method1(CustomType arg1+intent(in)+value)
+Close wrapClass1.h
+Close wrapClass1.cpp
+Close shroudrt.hpp
+Close shroudrt.cpp
+class Class1
+C-interface, Fortran method void method1(CustomType arg1+intent(in)+value)
+Close wrapfClass1.f

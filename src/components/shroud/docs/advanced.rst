@@ -8,7 +8,7 @@ Options
 ^^^^^^^
 
 Options are used to customize the behavior of Shroud.
-The are defined in the YAML files as a dictionary.
+They are defined in the YAML files as a dictionary.
 Options can be defined at the global, class, or function level.
 Each level creates a new scope which can access all upper level options.
 This allows the user to modifiy behavior for all functions or just a single one::
@@ -84,9 +84,10 @@ Class name - Updated before processing each class.
 
 Function name - Updated before processing each function or method.
    * function_name - Name of function in the YAML file.
-   * underscore_name - *method_name* converted from CamelCase to snake_case.
+   * underscore_name - *function_name* converted from CamelCase to snake_case.
    * function_suffix - Suffix append to name.  Used to differentiate overloaded functions.
-     Set from function field *function_suffix*.
+     Defaults to a sequence number (e.g. `_0`, `_1`, ...) but can be set
+     by using the function field *function_suffix*.
      Mulitple suffixes may be applied.
 
 

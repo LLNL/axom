@@ -113,11 +113,13 @@ Options
 debug
   Print additional comments in generated files that may 
   be useful for debugging.
+  Defaults to *false*.
 
 library
   The name of the library.
   Used to name output files and modules.
   The first three letters are used as the default for **C_prefix**.
+  Defaults to *default_library*.
 
 C_prefix
   Prefix added to name of generated C routines.
@@ -162,6 +164,7 @@ F_force_wrapper
 
 namespace
   Blank delimited list of namespaces for **cpp_header**.
+  The namespaces will be nested.
 
 wrap_c
   If *true*, create C wrappers.

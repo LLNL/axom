@@ -1,0 +1,628 @@
+{
+    "classes": [
+        {
+            "F_module_dependencies": [
+                [
+                    "iso_c_binding", 
+                    [
+                        "C_INT", 
+                        "C_PTR"
+                    ]
+                ]
+            ], 
+            "fmt": {
+                "C_header_filename": "wrapClass1.h", 
+                "C_impl_filename": "wrapClass1.cpp", 
+                "C_type_name": "DEF_class1", 
+                "F_C_prefix": "c_", 
+                "F_derived_name": "class1", 
+                "F_impl_filename": "wrapfClass1.f", 
+                "F_module_name": "class1_mod", 
+                "class_lower": "class1", 
+                "class_name": "class1_", 
+                "class_upper": "CLASS1", 
+                "cpp_class": "Class1"
+            }, 
+            "methods": [
+                {
+                    "_decl": "void method1(CustomType arg1+intent(in)+value)", 
+                    "_function_index": 0, 
+                    "_subprogram": "subroutine", 
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "arg1", 
+                            "type": "CustomType"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void method1(CustomType arg1)", 
+                    "fmt": {
+                        "C_name": "DEF_class1_method1", 
+                        "F_C_name": "c_class1_method1", 
+                        "F_name_generic": "method1", 
+                        "F_name_impl": "class1_method1", 
+                        "F_name_method": "method1", 
+                        "function_name": "method1", 
+                        "underscore_name": "method1"
+                    }, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "method1", 
+                        "type": "void"
+                    }
+                }
+            ], 
+            "name": "Class1", 
+            "options": {
+                "cpp_header": "class_header.hpp"
+            }
+        }
+    ], 
+    "fmt": {
+        "C_const": "", 
+        "C_header_filename": "wrapdefault_library.h", 
+        "C_impl_filename": "wrapdefault_library.cpp", 
+        "C_prefix": "DEF_", 
+        "C_this": "self", 
+        "F_C_prefix": "c_", 
+        "F_C_pure_clause": "", 
+        "F_C_result_clause": "", 
+        "F_derived_member": "voidptr", 
+        "F_impl_filename": "wrapfdefault_library.f", 
+        "F_module_name": "default_library_mod", 
+        "F_pure_clause": "", 
+        "F_result": "rv", 
+        "F_result_clause": "", 
+        "F_this": "obj", 
+        "class_name": "", 
+        "function_suffix": "", 
+        "library": "default_library", 
+        "library_lower": "default_library", 
+        "library_upper": "DEFAULT_LIBRARY", 
+        "namespace_scope": "", 
+        "overloaded": false, 
+        "rv": "rv"
+    }, 
+    "functions": [], 
+    "options": {
+        "C_header_filename_class_template": "wrap{cpp_class}.h", 
+        "C_header_filename_library_template": "wrap{library}.h", 
+        "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 
+        "C_impl_filename_library_template": "wrap{library}.cpp", 
+        "C_name_template": "{C_prefix}{class_name}{underscore_name}{function_suffix}", 
+        "F_C_name_template": "{F_C_prefix}{class_name}{underscore_name}{function_suffix}", 
+        "F_C_prefix": "c_", 
+        "F_force_wrapper": false, 
+        "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
+        "F_impl_filename_library_template": "wrapf{library_lower}.f", 
+        "F_module_name_class_template": "{class_lower}_mod", 
+        "F_module_name_library_template": "{library_lower}_mod", 
+        "F_module_per_class": true, 
+        "F_name_associated": "associated", 
+        "F_name_generic_template": "{underscore_name}", 
+        "F_name_impl_template": "{class_name}{underscore_name}{function_suffix}", 
+        "F_name_instance_get": "get_instance", 
+        "F_name_instance_set": "set_instance", 
+        "F_name_method_template": "{underscore_name}{function_suffix}", 
+        "F_string_len_trim": true, 
+        "LUA_class_reg_template": "{LUA_prefix}{cpp_class}_Reg", 
+        "LUA_ctor_name_template": "{cpp_class}", 
+        "LUA_header_filename_template": "lua{library}module.hpp", 
+        "LUA_metadata_template": "{cpp_class}.metatable", 
+        "LUA_module_filename_template": "lua{library}module.cpp", 
+        "LUA_module_name_template": "{library_lower}", 
+        "LUA_module_reg_template": "{LUA_prefix}{library}_Reg", 
+        "LUA_name_impl_template": "{LUA_prefix}{class_name}{underscore_name}", 
+        "LUA_name_template": "{function_name}", 
+        "LUA_userdata_member_template": "self", 
+        "LUA_userdata_type_template": "{LUA_prefix}{cpp_class}_Type", 
+        "PY_PyObject_template": "{PY_prefix}{cpp_class}", 
+        "PY_PyTypeObject_template": "{PY_prefix}{cpp_class}_Type", 
+        "PY_header_filename_template": "py{library}module.hpp", 
+        "PY_helper_filename_template": "py{library}helper.cpp", 
+        "PY_module_filename_template": "py{library}module.cpp", 
+        "PY_name_impl_template": "{PY_prefix}{class_name}{underscore_name}{function_suffix}", 
+        "PY_type_filename_template": "py{cpp_class}type.cpp", 
+        "class_name_template": "{class_lower}_", 
+        "cpp_header": "global_header.hpp", 
+        "debug": false, 
+        "doxygen": true, 
+        "library": "default_library", 
+        "namespace": "", 
+        "wrap_c": true, 
+        "wrap_fortran": true, 
+        "wrap_lua": false, 
+        "wrap_python": false
+    }, 
+    "patterns": [], 
+    "types": {
+        "Class1": {
+            "LUA_pop": "({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
+            "LUA_type": "LUA_TUSERDATA", 
+            "base": "wrapped", 
+            "c_fortran": "type(C_PTR)", 
+            "c_to_cpp": "static_cast<{C_const}Class1{ptr}>(static_cast<{C_const}void *>({c_var}))", 
+            "c_type": "DEF_class1", 
+            "cpp_to_c": "static_cast<{C_const}DEF_class1 *>(static_cast<{C_const}void *>({cpp_var}))", 
+            "cpp_type": "Class1", 
+            "f_args": "{c_var}%{F_derived_member}", 
+            "f_derived_type": "class1", 
+            "f_module": {
+                "class1_mod": [
+                    "class1"
+                ]
+            }, 
+            "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
+            "f_type": "type(class1)", 
+            "forward": "Class1", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;"
+                    ]
+                }, 
+                "intent_out": {
+                    "ctor": [
+                        "{PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});", 
+                        "{py_var}->{BBB} = {cpp_var};"
+                    ]
+                }
+            }
+        }, 
+        "CustomType": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_header": "type_header.h", 
+            "c_type": "int", 
+            "cpp_header": "type_header.hpp", 
+            "cpp_type": "int", 
+            "f_cast": "int({f_var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)", 
+            "typedef": "int"
+        }, 
+        "MPI_Comm": {
+            "c_fortran": "integer(C_INT)", 
+            "c_header": "mpi.h", 
+            "c_to_cpp": "MPI_Comm_f2c({c_var})", 
+            "c_type": "MPI_Fint", 
+            "cpp_to_c": "MPI_Comm_c2f({cpp_var})", 
+            "cpp_type": "MPI_Comm", 
+            "f_type": "integer"
+        }, 
+        "bool": {
+            "LUA_pop": "lua_toboolean({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushboolean({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TBOOLEAN", 
+            "PY_PyTypeObject": "PyBool_Type", 
+            "PY_ctor": "PyBool_FromLong({rv})", 
+            "c_fortran": "logical(C_BOOL)", 
+            "c_type": "bool", 
+            "cpp_type": "bool", 
+            "f_kind": "C_BOOL", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_BOOL"
+                ]
+            }, 
+            "f_statements": {
+                "intent_in": {
+                    "declare": [
+                        "logical(C_BOOL) {c_var}"
+                    ], 
+                    "pre_call": [
+                        "{c_var} = {f_var}  ! coerce to C_BOOL"
+                    ]
+                }, 
+                "result": {
+                    "need_wrapper": true
+                }
+            }, 
+            "f_type": "logical", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = PyObject_IsTrue({py_var});"
+                    ]
+                }
+            }
+        }, 
+        "char": {
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TSTRING", 
+            "PY_ctor": "PyString_FromString({c_var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "cpp_local_var": true, 
+                    "post_call": [
+                        "delete [] {cpp_var};"
+                    ], 
+                    "pre_call": [
+                        "int {c_var_len} = strlen({c_var});", 
+                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
+                        "{cpp_var}[{c_var_len}] = '\\0';"
+                    ], 
+                    "pre_call_trim": [
+                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
+                        "{cpp_var}[{c_var_len}] = '\\0';"
+                    ]
+                }, 
+                "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "cpp_local_var": true, 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "delete [] {cpp_var};"
+                    ], 
+                    "pre_call": [
+                        "char * {cpp_var} = new char [{c_var_num} + 1];"
+                    ]
+                }, 
+                "result": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_type": "char", 
+            "cpp_type": "char", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)"
+        }, 
+        "char_scalar": {
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TSTRING", 
+            "PY_ctor": "PyString_FromString({c_var})", 
+            "PY_format": "s", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "result": {
+                    "post_call": [
+                        "// {c_var_len} is always 1, test to silence warning about unused variable", 
+                        "if ({c_var_len} == 1) *{c_var} = {cpp_val};"
+                    ]
+                }
+            }, 
+            "c_type": "char", 
+            "cpp_type": "char", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character"
+        }, 
+        "double": {
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
+            "PY_format": "d", 
+            "c_fortran": "real(C_DOUBLE)", 
+            "c_type": "double", 
+            "cpp_type": "double", 
+            "f_cast": "real({f_var}, C_DOUBLE)", 
+            "f_kind": "C_DOUBLE", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_DOUBLE"
+                ]
+            }, 
+            "f_type": "real(C_DOUBLE)"
+        }, 
+        "float": {
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
+            "PY_format": "f", 
+            "c_fortran": "real(C_FLOAT)", 
+            "c_type": "float", 
+            "cpp_type": "float", 
+            "f_cast": "real({f_var}, C_FLOAT)", 
+            "f_kind": "C_FLOAT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_FLOAT"
+                ]
+            }, 
+            "f_type": "real(C_FLOAT)"
+        }, 
+        "int": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_type": "int", 
+            "cpp_type": "int", 
+            "f_cast": "int({f_var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)"
+        }, 
+        "integer(C_INT)": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_type": "int", 
+            "cpp_type": "int", 
+            "f_cast": "int({f_var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)"
+        }, 
+        "integer(C_LONG)": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
+            "PY_format": "l", 
+            "c_fortran": "integer(C_LONG)", 
+            "c_type": "long", 
+            "cpp_type": "long", 
+            "f_cast": "int({f_var}, C_LONG)", 
+            "f_kind": "C_LONG", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
+            "f_type": "integer(C_LONG)"
+        }, 
+        "long": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
+            "PY_format": "l", 
+            "c_fortran": "integer(C_LONG)", 
+            "c_type": "long", 
+            "cpp_type": "long", 
+            "f_cast": "int({f_var}, C_LONG)", 
+            "f_kind": "C_LONG", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
+            "f_type": "integer(C_LONG)"
+        }, 
+        "real(C_DOUBLE)": {
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
+            "PY_format": "d", 
+            "c_fortran": "real(C_DOUBLE)", 
+            "c_type": "double", 
+            "cpp_type": "double", 
+            "f_cast": "real({f_var}, C_DOUBLE)", 
+            "f_kind": "C_DOUBLE", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_DOUBLE"
+                ]
+            }, 
+            "f_type": "real(C_DOUBLE)"
+        }, 
+        "real(C_FLOAT)": {
+            "LUA_pop": "lua_tonumber({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
+            "PY_format": "f", 
+            "c_fortran": "real(C_FLOAT)", 
+            "c_type": "float", 
+            "cpp_type": "float", 
+            "f_cast": "real({f_var}, C_FLOAT)", 
+            "f_kind": "C_FLOAT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_FLOAT"
+                ]
+            }, 
+            "f_type": "real(C_FLOAT)"
+        }, 
+        "size_t": {
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
+            "PY_ctor": "PyInt_FromLong({rv})", 
+            "c_fortran": "integer(C_SIZE_T)", 
+            "c_header": "stdlib.h", 
+            "c_type": "size_t", 
+            "cpp_type": "size_t", 
+            "f_cast": "int({f_var}, C_SIZE_T)", 
+            "f_kind": "C_SIZE_T", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_SIZE_T"
+                ]
+            }, 
+            "f_type": "integer(C_SIZE_T)"
+        }, 
+        "std::string": {
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TSTRING", 
+            "PY_ctor": "PyString_FromString({c_var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "cpp_local_var": true, 
+                    "pre_call": [
+                        "{C_const}std::string {cpp_var}({c_var});"
+                    ], 
+                    "pre_call_trim": [
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                    ]
+                }, 
+                "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_type": "char", 
+            "cpp_header": "<string>", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)", 
+            "py_statements": {
+                "intent_in": {
+                    "cpp_local_var": true, 
+                    "post_parse": [
+                        "{C_const}std::string {cpp_var}({c_var});"
+                    ]
+                }
+            }
+        }, 
+        "string": {
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TSTRING", 
+            "PY_ctor": "PyString_FromString({c_var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "cpp_local_var": true, 
+                    "pre_call": [
+                        "{C_const}std::string {cpp_var}({c_var});"
+                    ], 
+                    "pre_call_trim": [
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                    ]
+                }, 
+                "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_type": "char", 
+            "cpp_header": "<string>", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)", 
+            "py_statements": {
+                "intent_in": {
+                    "cpp_local_var": true, 
+                    "post_parse": [
+                        "{C_const}std::string {cpp_var}({c_var});"
+                    ]
+                }
+            }
+        }, 
+        "string_result_fstr": {
+            "LUA_pop": "lua_tostring({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushstring({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TSTRING", 
+            "PY_ctor": "PyString_FromString({c_var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_statements": {
+                "intent_in": {
+                    "cpp_local_var": true, 
+                    "pre_call": [
+                        "{C_const}std::string {cpp_var}({c_var});"
+                    ], 
+                    "pre_call_trim": [
+                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                    ]
+                }, 
+                "intent_out": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }, 
+                "result": {
+                    "cpp_header": "shroudrt.hpp", 
+                    "post_call": [
+                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                    ]
+                }
+            }, 
+            "c_type": "char", 
+            "cpp_header": "<string>", 
+            "cpp_to_c": "{cpp_var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_helper": {
+                "f_return_code": {
+                    "fstr": true
+                }
+            }, 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "character(*)", 
+            "py_statements": {
+                "intent_in": {
+                    "cpp_local_var": true, 
+                    "post_parse": [
+                        "{C_const}std::string {cpp_var}({c_var});"
+                    ]
+                }
+            }
+        }, 
+        "void": {
+            "PY_ctor": "PyCapsule_New({cpp_var}, NULL, NULL)", 
+            "c_fortran": "type(C_PTR)", 
+            "c_type": "void", 
+            "cpp_type": "void", 
+            "f_type": "type(C_PTR)"
+        }
+    }
+}
