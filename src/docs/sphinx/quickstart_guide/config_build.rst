@@ -43,8 +43,16 @@ Compilers we support:
   * GCC - 4.7.1, 4.9.3
   * IBM BGQOS - 12.1.012a
   * Intel - 15.0.187, 16.0.109
+  
 
 Package Dependencies:
+
+.. danger::
+  Instead of this exhaustive list (which will go stale fast), the more important things to list are the 
+  the TPLs we directly use and the  **ZZZ_DIR**, **ZZZ_EXECUTABLE**, etc  
+  cmake args we use to pull those TPLS in our build system. For example, folks really don't need to know that Bison is used, we have no logic for it in our build system. It actually it may only be needed due to some spack dependency chain that could change over time. If people do want to know this info, we could point them 
+  a few spack commands that could show whatever the current deps are (I don't know what those commands are off hand)
+
 
   * Bison 3.0.4
   * Boost 1.58.0
@@ -95,14 +103,12 @@ We use the `Spack Package Manager <https://github.com/scalability-llnl/spack>`_
 to manage and build TPL dependencies for the Toolkit. To make the TPL process
 easier (you don't really need to learn much about Spack) and automatic, we 
 drive it with a python script called ``uberenv.py``, which located in the 
-directory 'scripts/uberenv'. Running this script does several things:
+directory ``scripts/uberenv``. Running this script does several things:
 
-  * Clone the Spack repo from GitHub (the most recent version we have tested 
-    and we know works!)
-  * Perform set up tasks for each version of the TPLs that will be built 
-    (e.g., for each compiler that will be used).
-  * Invokes Spack to build all TPLs versions an generate a *host-config* file,
-    that captures all details of the configuration and build, for each.
+  * Clones the Spack repo from GitHub and checks out a specific version that we have tested.
+  * Configures Spack compiler sets, adds custom package build rules and set any options specific to the Toolkit. 
+  * Invokes Spack to build a complete set of TPLs for a configuration an generates a *host-config* file,
+    that captures all details of the configuration and the built dependencies.
 
 The figure illustrates what the script does.
 
@@ -112,23 +118,67 @@ The uberenv script is run from the top-level Toolkit directory like this::
 
     $ python ./scripts/uberenv/uberenv.py --prefix {install path} --spec spec  [ --mirror {mirror path} ]
 
+Here is a break down of the options that control how ``uberenv.py`` builds dependencies:
+
+ ================== ==================================== ======================================
+  Option             Description                          Default
+ ================== ==================================== ======================================
+  --prefix           Destination directory                ``uberenv_libs``
+  --spec             Spack spec                           linux: **%gcc**
+                                                          osx: **%clang**
+  --compilers-yaml   Spack compilers settings file        ``scripts/uberenv/compilers.yaml``
+  --mirror           Spack source mirror location         **Not used**
+ ================== ==================================== ======================================
+
+Default invocation on Linux:
+
+.. code:: bash
+
+    python scripts/uberenv/uberenv.py --prefix uberenv_libs \
+                                      --spec %gcc \
+                                      --compilers-yaml scripts/uberenv/compilers.yaml
+
+Default invocation on OSX:
+
+.. code:: bash
+
+    python scripts/uberenv/uberenv.py --prefix uberenv_libs \
+                                      --spec %clang \
+                                      --compilers-yaml scripts/uberenv/compilers.yaml
+ 
+
 The 'install path' specifies the directory where the TPLs will be installed. 
 The 'spec' argument refers to Spack's specification syntax. Typically, a Spack
-spec (that's fun to say, no?) indicates a compiler and version for a build.
-You can see some examples of this in the python scripts we use to build 
-TPLs for the Toolkit development team on LC platforms at LLNL located in
-the directory 'scripts/uberenv/llnl_install_scripts'. For more details, please
-see the `Spack Spec Documentation <http://spack.readthedocs.io/en/latest/basic_usage.html#specs-dependencies>`_. The 'mirror' argument indicates the location 
-of a location where Spack will place the downloaded code for the TPLs. When
-building more than one installation of the TPLs, using a mirror will tell 
-Spack to only download the distribution for each once and use that for all
-installations. To setup a mirror for Spack, run the following before running
-the uberenv.py script::
+spec (that's fun to say, no?) indicates the specific version of a specific compiler to use for the build.
+We manage the set of compilers Spack supports in the ``scripts/uberenv/compilers.yaml`` file. 
+
+You can edit ``scripts/uberenv/compilers.yaml`` or use the **--compilers-yaml** option to select another file to set the  compiler settings used by Spack. See the `Spack Compiler Configuration <http://spack.readthedocs.io/en/latest/getting_started.html#manual-compiler-configuration>`_
+documentation for details.
+
+For OSX, the defaults in ``compilers.yaml`` are X-Code's clang and gfortran from https://gcc.gnu.org/wiki/GFortranBinaries#MacOS. 
+
+.. note::
+    uberenv.py forces Spack to ignore ``~/.spack/compilers.yaml`` to avoid conflicts
+    and surprises from a user's specific Spack settings on HPC platforms.
+
+
+You can also see examples of how Spack spec names are passed to ``uberenv.py`` in the python scripts we use to build 
+TPLs for the Toolkit development team on LLNL's LC platforms. These scripts are located in
+the directory ``scripts/uberenv/llnl_install_scripts``. 
+
+The 'mirror' argument indicates a location for Spack to store the downloaded source code for TPL dependencies. When
+building more than one installation of the TPLs, using a mirror will allow Spack
+to skip downloads for source code was already already obtained during a prior build. 
+
+.. danger::
+  uberenv may do this? need to double check
+  
+To setup a mirror for Spack, run the following before running
+the uberenv.py script:
 
     $ spack mirror create -d {directory} --dependencies uberenv-asctoolkit
 
 Here, 'directory' is the location of the mirror.
-
 
 .. _toolkitbuild-label:
 
@@ -273,13 +323,13 @@ Make targets
 Our system provides a variety of make targets to build individual Toolkit 
 components, documentation, run tests, examples, etc. After running CMake 
 (using either the python helper script or directly), you can see a listing of
-all evailable targets by passing 'help' to make; i.e.,::
+all available targets by passing 'help' to make; i.e.,::
 
    $ make help
 
 The name of each target should be sufficiently descriptive to indicate
 what the target does. For example, to run all tests and make sure the
-Toolkit components are build properly, execute the following command::
+Toolkit components are built properly, execute the following command::
 
    $ make test
 
