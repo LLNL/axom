@@ -50,11 +50,6 @@ class Cmake(Package):
     depends_on('qt', when='+qt')
     depends_on('python@2.7.11:', when='+doc')
     depends_on('py-sphinx', when='+doc')
-# chang28 11-09-2016
-        if spec.satisfies("=bgqos_0"):
-            env['PATH'] = "%s:." % env['PATH']
-            env['CC'] = 'gcc' # Build generically with front end compiler
-            env['CXX'] = 'g++' # Build generically with front end compiler
 
 
     def url_for_version(self, version):
