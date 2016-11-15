@@ -12,8 +12,9 @@ copyright:
   - further review from Lawrence Livermore National Laboratory.
   -
 
+library: SLIC
+
 options:
-  library: SLIC
   C_prefix: SLIC_
   namespace: asctoolkit slic
 #  F_module_per_class: False

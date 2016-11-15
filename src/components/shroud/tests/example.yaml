@@ -1,3 +1,5 @@
+library: UserLibrary
+
 copyright:
   - blah blah
   - yada yada
@@ -14,7 +16,6 @@ splicer:
 options:
 #  module_name: exclass1_mod
   debug: True
-  library: UserLibrary
   C_prefix: AA_
   namespace: example nested
   F_module_per_class: True

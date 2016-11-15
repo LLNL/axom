@@ -2476,6 +2476,7 @@
             }
         }
     ], 
+    "library": "UserLibrary", 
     "options": {
         "C_header_filename_class_template": "wrap{cpp_class}.h", 
         "C_header_filename_library_template": "wrap{library}.h", 
@@ -2521,7 +2522,6 @@
         "cpp_header": "", 
         "debug": true, 
         "doxygen": true, 
-        "library": "UserLibrary", 
         "namespace": "example nested", 
         "wrap_c": true, 
         "wrap_fortran": true, 

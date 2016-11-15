@@ -12,8 +12,9 @@ copyright:
   - further review from Lawrence Livermore National Laboratory.
   -
 
+library: Sidre
+
 options:
-  library: Sidre
   C_prefix: SIDRE_
   namespace: asctoolkit sidre
   F_module_per_class: False

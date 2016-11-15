@@ -65,7 +65,7 @@ The replacement fields are defined by the format dictionary.  Shroud
 defines values which may be used.
 
 Library name - Updated after reading YAML file.
-   * library - The value of **option** *library*.
+   * library - The value of **field** *library*.
    * lower_library - Lowercase version of *library*.
    * upper_library - Uppercase version of *library*.
 

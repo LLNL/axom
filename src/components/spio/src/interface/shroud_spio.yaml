@@ -12,8 +12,9 @@ copyright:
   - further review from Lawrence Livermore National Laboratory.
   -
 
+library: SPIO
+
 options:
-  library: SPIO
   C_prefix: SPIO_
   namespace: asctoolkit spio
   F_module_per_class: False

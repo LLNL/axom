@@ -107,6 +107,49 @@ be controlled directly by the input file::
     end module {F_module_name}
 
 
+Top Level Fields
+----------------
+
+copyright
+   A list of lines to add to the top of each generate file.
+   Do not include any language specific comment characters since
+   Shroud will add the appropriate comment delimiters for each language.
+
+library
+  The name of the library.
+  Used to name output files and modules.
+  The first three letters are used as the default for **C_prefix** option.
+  Defaults to *default_library*.
+  Each YAML file is intended to wrap a single library.
+
+patterns
+   Code blocks to insert into generated code.
+
+C_header_filename
+   Output file name for header for  wrapper routines.
+   Defaults to option *C_header_filename_library_template*.
+
+C_impl_filename
+   Output file name for implementation of wrapper routines.
+   Defaults to option *C_impl_filename_library_template*.
+
+F_module_name
+   Name of Fortran module for this class.
+   Defaults to option *F_module_name_library_template*.
+
+F_impl_filename
+   Name of Fortran file for functions.
+   Defaults to option *F_impl_name_library_template*.
+
+splicers
+   A dictionary mapping file suffix to a list of splicer files
+   to read.
+
+types
+   A dictionary of user define types.
+   Each type is a dictionary for members describing how to
+   map a type between languages.
+
 Options
 -------
 
@@ -114,12 +157,6 @@ debug
   Print additional comments in generated files that may 
   be useful for debugging.
   Defaults to *false*.
-
-library
-  The name of the library.
-  Used to name output files and modules.
-  The first three letters are used as the default for **C_prefix**.
-  Defaults to *default_library*.
 
 C_prefix
   Prefix added to name of generated C routines.
@@ -132,7 +169,7 @@ C_return_type
    XXX   override return type of function
 
 cpp_header
-  C++ header file name.
+  C++ header file name which will be included in the implementation file.
 
 F_C_prefix
   Prefix added to name of generated Fortran interface for C routines.
@@ -310,39 +347,6 @@ F_derived_member
     Defaults to *voidptr*.
 
 
-Top Level Fields
-----------------
-
-copyright
-   A list of lines to add to the top of each generate file.
-
-splicers
-   A dictionary mapping file suffix to a list of splicer files
-   to read.
-
-types
-   A dictionary of user define types.
-   Each type is a dictionary for members describing how to
-   map a type between languages.
-
-patterns
-   Code blocks to insert into generated code.
-
-C_header_filename
-   Output file name for header for  wrapper routines.
-   Defaults to option *C_header_filename_library_template*.
-
-C_impl_filename
-   Output file name for implementation of wrapper routines.
-   Defaults to option *C_impl_filename_library_template*.
-
-F_module_name
-   Name of Fortran module for this class.
-   Defaults to option *F_module_name_library_template*.
-
-F_impl_filename
-   Name of Fortran file for functions.
-   Defaults to option *F_impl_name_library_template*.
 
 Types Dictionary
 ----------------

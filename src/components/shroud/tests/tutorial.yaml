@@ -1,9 +1,10 @@
 # Create a runnable program for the tutorial
 #
 
+library: Tutorial
+
 options:
   debug: True
-  library: Tutorial
   cpp_header: tutorial.hpp
   namespace: tutorial
   F_module_per_class: False

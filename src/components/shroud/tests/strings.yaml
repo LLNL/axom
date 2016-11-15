@@ -2,9 +2,10 @@
 # Test the many variations of strings
 #
 
+library: strings
+
 options:
   debug: True
-  library: strings
   cpp_header: strings.hpp
   wrap_python: True
 

@@ -120,7 +120,6 @@ class Schema(object):
             parent=None,
             debug=False,   # print additional debug info
 
-            library='default_library',
             namespace='',
             cpp_header='',
 
@@ -175,7 +174,7 @@ class Schema(object):
         node['options'] = def_options
 
         fmt_library = node['fmt'] = util.Options(None)
-        fmt_library.library       = def_options['library']
+        fmt_library.library       = node['library']
         fmt_library.library_lower = fmt_library.library.lower()
         fmt_library.library_upper = fmt_library.library.upper()
         fmt_library.function_suffix = ''   # assume no suffix
@@ -1453,7 +1452,9 @@ def main():
     config.ffiles = []  # list of Fortran files created
 
     # accumulated input
-    all = {}
+    all = dict(
+        library = 'default_library',
+        )
     splicers = dict(c={}, f={}, py={}, lua={})
 
     for filename in args.filename:

@@ -2046,6 +2046,7 @@
             }
         }
     ], 
+    "library": "Tutorial", 
     "options": {
         "C_header_filename_class_template": "wrap{cpp_class}.h", 
         "C_header_filename_library_template": "wrap{library}.h", 
@@ -2089,7 +2090,6 @@
         "cpp_header": "tutorial.hpp", 
         "debug": true, 
         "doxygen": true, 
-        "library": "Tutorial", 
         "namespace": "tutorial", 
         "wrap_c": true, 
         "wrap_fortran": true, 

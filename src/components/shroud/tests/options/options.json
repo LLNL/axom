@@ -89,6 +89,7 @@
         "rv": "rv"
     }, 
     "functions": [], 
+    "library": "default_library", 
     "options": {
         "C_header_filename_class_template": "wrap{cpp_class}.h", 
         "C_header_filename_library_template": "wrap{library}.h", 
@@ -132,7 +133,6 @@
         "cpp_header": "global_header.hpp", 
         "debug": false, 
         "doxygen": true, 
-        "library": "default_library", 
         "namespace": "", 
         "wrap_c": true, 
         "wrap_fortran": true, 
