@@ -85,7 +85,7 @@ if [ "$INSTALL_DOCS" = true ]; then
     fi
    fi
 
-   cp -R ./${IP}/docs ${TOOLKIT_WEB_ROOT}/
+   cp -R ./${INSTALL_PATH}/docs ${TOOLKIT_WEB_ROOT}/
    if [ $? -ne 0 ]; then
     echo "Error: 'cp' failed"
     exit 1

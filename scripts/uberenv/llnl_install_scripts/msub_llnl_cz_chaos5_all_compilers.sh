@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 #MSUB -l nodes=1
 #MSUB -q pbatch
 #MSUB -l walltime=8:00:00

@@ -582,21 +582,21 @@ int DataView::getShape(int ndims, SidreLength * shape) const
     return -1;
   }
 
-#if 0
-  for(std::vector<SidreLength>::iterator it = v.begin() ;
-      it != v.end() ;
-      ++it)
-  {
-    *shape++ = it.
-  }
-#else
-  for(std::vector<SidreLength>::size_type i = 0 ;
-      i != m_shape.size() ;
-      ++i)
+  const int shapeSize = getNumDimensions();
+  for(int i = 0 ; i < shapeSize ; ++i)
   {
     shape[i] = m_shape[i];
   }
-#endif
+
+  // Fill the rest of the array with zeros (when ndims > shapeSize)
+  if(ndims > shapeSize)
+  {
+    for(int i = shapeSize; i < ndims ; ++i)
+    {
+      shape[i] = 0;
+    }
+  }
+
   return m_shape.size();
 }
 
@@ -654,8 +654,8 @@ void DataView::copyToConduitNode(Node &n) const
 {
   n["name"] = m_name;
   n["schema"] = m_schema.to_json();
-  n["node"] = m_node.to_json();
-  n["state"] = getStateStringName(m_state);
+  n["value"]  = m_node.to_json();
+  n["state"]  = getStateStringName(m_state);
   n["is_applied"] = m_is_applied;
 }
 
@@ -679,32 +679,6 @@ void DataView::createNativeLayout(Node &n) const
   void * data_ptr = const_cast<void *>(m_node.data_ptr());
   n.set_external( m_node.schema(), data_ptr);
 }
-
-/*
- *************************************************************************
- *
- * Copy data view native layout to given Conduit node.
- *
- *************************************************************************
- */
-void DataView::createExternalLayout(Node &parent) const
-{
-  // see ATK-726 - Handle undescribed and unallocated views in Sidre's createNativeLayout()
-  // TODO: Need to handle cases where the view is not described
-  // TODO: Need to handle cases where the view is not allocated
-  // TODO: Need to handle cases where the view is not applied
-
-  // Note: We are using conduit's pointer rather than the DataView pointer
-  //    since the conduit pointer handles offsetting
-  // Note: const_cast the pointer to satisfy conduit's interface
-  if (isExternal() && isDescribed())
-  {
-    Node & n = parent[ m_name ];
-    void * data_ptr = const_cast<void *>(m_node.data_ptr());
-    n.set_external( m_node.schema(), data_ptr);
-  }
-}
-
 
 /*
  *************************************************************************
@@ -929,8 +903,8 @@ bool DataView::isApplyValid() const
   case STRING:
   case SCALAR:
     SLIC_CHECK_MSG( false,
-                    "Apply is not valid for " <<
-                    getStateStringName(m_state) << " view");
+                    "Apply is not valid for view " <<
+                    getStateStringName(m_state) << " with scalar data type.");
     break;
   case EXTERNAL:
     SLIC_ASSERT ( m_external_ptr != ATK_NULLPTR );
@@ -939,6 +913,10 @@ bool DataView::isApplyValid() const
   case BUFFER:
     rv = 0 < getTotalBytes() &&
          getTotalBytes() <= m_data_buffer->getTotalBytes();;
+    SLIC_CHECK_MSG( 0 < getTotalBytes(), 
+                    "Apply is not valid on data with zero length." );
+    SLIC_CHECK_MSG( getTotalBytes() <= m_data_buffer->getTotalBytes(),
+                    "Apply is not valid, view's datatype length exceeds bytes in buffer.");
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
@@ -985,6 +963,45 @@ char const * DataView::getStateStringName(State state)
 /*
  *************************************************************************
  *
+ * PRIVATE method returns state enum value when given string with a
+ * state name.
+ *
+ *************************************************************************
+ */
+DataView::State DataView::getStateId(const std::string &name)
+{
+  State res = EMPTY;
+  if(name == "EMPTY")
+  {
+    res = EMPTY;
+  }
+  else if(name == "BUFFER")
+  {
+    res = BUFFER;
+  }
+  else if(name == "EXTERNAL")
+  {
+    res = EXTERNAL;
+  }
+  else if(name == "SCALAR")
+  {
+    res = SCALAR;
+  }
+  else if(name == "STRING")
+  {
+    res = STRING;
+  }
+  else if(name == "UNKNOWN")
+  {
+    res = EMPTY;
+  }
+  
+  return res;
+}
+
+/*
+ *************************************************************************
+ *
  * PRIVATE method to copy view data to given Conduit node using
  * given set of ids to maintain correct association of data buffers
  * to data views.
@@ -994,14 +1011,14 @@ char const * DataView::getStateStringName(State state)
 void DataView::exportTo(conduit::Node& data_holder,
                         std::set<IndexType>& buffer_indices) const
 {
-  data_holder["state"] = static_cast<unsigned int>(m_state);
+  data_holder["state"] = getStateStringName(m_state);
 
   switch (m_state)
   {
   case EMPTY:
     if (isDescribed())
     {
-      data_holder["schema"] = m_schema.to_json();
+      exportDescription(data_holder);
     }
     break;
   case BUFFER: {
@@ -1009,7 +1026,7 @@ void DataView::exportTo(conduit::Node& data_holder,
     data_holder["buffer_id"] = buffer_id;
     if (isDescribed())
     {
-      data_holder["schema"] = m_schema.to_json();
+      exportDescription(data_holder);
     }
     data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
     buffer_indices.insert(buffer_id);
@@ -1018,17 +1035,17 @@ void DataView::exportTo(conduit::Node& data_holder,
   case EXTERNAL:
     if (isDescribed())
     {
-      data_holder["schema"] = m_schema.to_json();
+      exportDescription(data_holder);
     }
     else
     {
       // If there is no description, make it an EMPTY view
-      data_holder["state"] = static_cast<unsigned int>(EMPTY);
+      data_holder["state"] = getStateStringName(EMPTY);
     }
     break;
   case SCALAR:
   case STRING:
-    data_holder["node"] = getNode();
+    data_holder["value"] = getNode();
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
@@ -1044,16 +1061,12 @@ void DataView::exportTo(conduit::Node& data_holder,
 void DataView::importFrom(conduit::Node& data_holder,
                           const std::map<IndexType, IndexType>& buffer_id_map)
 {
-  m_state = static_cast<State>(data_holder["state"].as_unsigned_int());
+  m_state = getStateId(data_holder["state"].as_string());
 
   switch (m_state)
   {
   case EMPTY:
-    if (data_holder.has_path("schema"))
-    {
-      conduit::Schema schema( data_holder["schema"].as_string() );
-      describe( schema.dtype() );
-    }
+    importDescription(data_holder);
     break;
   case BUFFER: {
     // If view has a buffer, the easiest way to restore it is to use a series of
@@ -1072,11 +1085,7 @@ void DataView::importFrom(conduit::Node& data_holder,
     DataBuffer * buffer = m_owning_group->getDataStore()->
                           getBuffer( buffer_id_map.at(old_buffer_id) );
 
-    if (data_holder.has_path("schema"))
-    {
-      conduit::Schema schema( data_holder["schema"].as_string() );
-      describe( schema.dtype() );
-    }
+    importDescription(data_holder);
     attachBuffer( buffer );
     if ( is_applied )
     {
@@ -1085,25 +1094,60 @@ void DataView::importFrom(conduit::Node& data_holder,
     break;
   }
   case EXTERNAL:
-    m_schema.set( data_holder["schema"].as_string() );
+    importDescription(data_holder);
     break;
   case SCALAR:
   case STRING:
-    m_node = data_holder["node"];
+    m_node = data_holder["value"];
     m_schema.set(m_node.schema());
     m_is_applied = true;
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
   }
-
-  // We don't save the shape vector, just call this to set it after the schema
-  // has been restored..
-  // TODO - Check with Lee to see if this is sufficient.  We might need to save
-  // /restore the shape vector.
-  describeShape();
-
 }
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to save view's description to a conduit tree.
+ * The shape information is only written if there is more than
+ * one dimension.
+ *
+ *************************************************************************
+ */
+void DataView::exportDescription(conduit::Node& data_holder) const
+{
+  data_holder["schema"] = m_schema.to_json();
+  if (getNumDimensions() > 1)
+  {
+    data_holder["shape"].set(m_shape);
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to restore a view's description from a conduit tree.
+ *
+ *************************************************************************
+ */
+void DataView::importDescription(conduit::Node& data_holder)
+{
+  if (data_holder.has_path("schema"))
+  {
+    conduit::Schema schema( data_holder["schema"].as_string() );
+    describe( schema.dtype() );
+    if (data_holder.has_path("shape"))
+    {
+	  Node & n = data_holder["shape"];
+	  SidreLength * shape = n.as_long_ptr();
+	  int ndims = n.dtype().number_of_elements();
+	  describeShape(ndims, shape);
+    }
+  }
+}
+
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */

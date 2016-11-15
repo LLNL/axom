@@ -67,10 +67,10 @@ inline
 int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
 {
 
-   double det = math::determinant( tri.A()[0], tri.A()[1], tri.A()[2], 1.0,
-                                   tri.B()[0], tri.B()[1], tri.B()[2], 1.0,
-                                   tri.C()[0], tri.C()[1], tri.C()[2], 1.0,
-                                         p[0],       p[1],       p[2], 1.0  );
+   double det = math::determinant( tri[0][0], tri[0][1], tri[0][2], 1.0,
+                                   tri[1][0], tri[1][1], tri[1][2], 1.0,
+                                   tri[2][0], tri[2][1], tri[2][2], 1.0,
+                                        p[0],      p[1],      p[2], 1.0  );
 
    int orient = -1;
 

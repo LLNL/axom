@@ -10,6 +10,7 @@
 
 #include "spio/IOManager.hpp"
 #include "sidre/sidre.hpp"
+#include "conduit_relay.hpp"
 
 using asctoolkit::spio::IOManager;
 using asctoolkit::sidre::DataGroup;
@@ -64,7 +65,7 @@ int main(int argc, char** argv)
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root, num_files, "out_spio_parallel_write_read", "conduit_hdf5");
+  writer.write(root, num_files, "out_spio_parallel_write_read", "sidre_hdf5");
 
   std::string root_name = "out_spio_parallel_write_read.root";
 
@@ -107,7 +108,7 @@ int main(int argc, char** argv)
   if (my_rank == 1 || num_ranks == 1) {
 
     conduit::Node n;
-    conduit::relay::io::load("hdf5", root_name + ":extra", n);
+    conduit::relay::io::load(root_name + ":extra", "hdf5", n);
 
     double dval = n["dval"].to_double();
 

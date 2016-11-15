@@ -95,9 +95,9 @@ return rv.c_str();
 
 // void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 // function_index=14
-void AA_exclass1_get_name_bufferify(AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv)
+void AA_exclass1_get_name_bufferify(const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv)
 {
-ExClass1 *selfobj = static_cast<ExClass1 *>(static_cast<void *>(self));
+const ExClass1 *selfobj = static_cast<const ExClass1 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass1.method.get_name_bufferify
 const std::string & rv = selfobj->getName();
 asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
@@ -111,9 +111,9 @@ return;
  * \brief helper function for Fortran
  *
  */
-int AA_exclass1_get_name_length(AA_exclass1 * self)
+int AA_exclass1_get_name_length(const AA_exclass1 * self)
 {
-ExClass1 *selfobj = static_cast<ExClass1 *>(static_cast<void *>(self));
+const ExClass1 *selfobj = static_cast<const ExClass1 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass1.method.get_name_length
 return selfobj->getName().length();
 // splicer end class.ExClass1.method.get_name_length
@@ -132,9 +132,9 @@ return rv.c_str();
 
 // void getNameErrorCheck(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
 // function_index=15
-void AA_exclass1_get_name_error_check_bufferify(AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv)
+void AA_exclass1_get_name_error_check_bufferify(const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv)
 {
-ExClass1 *selfobj = static_cast<ExClass1 *>(static_cast<void *>(self));
+const ExClass1 *selfobj = static_cast<const ExClass1 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass1.method.get_name_error_check_bufferify
 const std::string & rv = selfobj->getNameErrorCheck();
 asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
@@ -155,9 +155,9 @@ return rv.c_str();
 
 // void getNameArg(string & name+intent(out)+len(Lname)) const
 // function_index=16
-void AA_exclass1_get_name_arg_bufferify(AA_exclass1 * self, char * name, int Lname)
+void AA_exclass1_get_name_arg_bufferify(const AA_exclass1 * self, char * name, int Lname)
 {
-ExClass1 *selfobj = static_cast<ExClass1 *>(static_cast<void *>(self));
+const ExClass1 *selfobj = static_cast<const ExClass1 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass1.method.get_name_arg_bufferify
 const std::string & rv = selfobj->getNameArg();
 asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());

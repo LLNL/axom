@@ -2658,9 +2658,9 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name
     {
         SpaceTriangle triPos = m_meshWrapper.trianglePositions(idx);
 
-        debugMesh->insertNode( triPos.A()[0], triPos.A()[1], triPos.A()[2]);
-        debugMesh->insertNode( triPos.B()[0], triPos.B()[1], triPos.B()[2]);
-        debugMesh->insertNode( triPos.C()[0], triPos.C()[1], triPos.C()[2]);
+        debugMesh->insertNode( triPos[0][0], triPos[0][1], triPos[0][2]);
+        debugMesh->insertNode( triPos[1][0], triPos[1][1], triPos[1][2]);
+        debugMesh->insertNode( triPos[2][0], triPos[2][1], triPos[2][2]);
 
         int verts[3] = {0,1,2};
         debugMesh->insertCell(verts, mint::LINEAR_TRIANGLE, 3);
@@ -2668,9 +2668,9 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name
         fNameStr << name << idx << ".vtk";
 
         SLIC_INFO("// Triangle " << idx );
-        SLIC_INFO("TriangleType tri(PointType::make_point" << triPos.A()
-                              << ", PointType::make_point" << triPos.B()
-                              << ", PointType::make_point" << triPos.C()<<");" );
+        SLIC_INFO("TriangleType tri(PointType::make_point" << triPos[0]
+                              << ", PointType::make_point" << triPos[1]
+                              << ", PointType::make_point" << triPos[2]<<");" );
 
     }
     else
