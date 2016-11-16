@@ -5,6 +5,7 @@ Close wrapClass1.h
 Close wrapClass1.cpp
 class Class2
 C method void method1(MPI_Comm comm+intent(in)+value)
+C method void method2(Class1 * c2+intent(in)+value)
 Close wrapClass2.h
 Close wrapClass2.cpp
 C function void function1()
@@ -17,6 +18,7 @@ C-interface, Fortran method void method1(CustomType arg1+intent(in)+value)
 Close wrapfClass1.f
 class Class2
 C-interface, Fortran method void method1(MPI_Comm comm+intent(in)+value)
+C-interface, Fortran method void method2(Class1 * c2+intent(in)+value)
 Close wrapfClass2.f
 C-interface, Fortran function void function1()
 Close wrapfdefault_library.f

@@ -67,6 +67,12 @@
         {
             "F_module_dependencies": [
                 [
+                    "class1_mod", 
+                    [
+                        "class1"
+                    ]
+                ], 
+                [
                     "iso_c_binding", 
                     [
                         "C_PTR"
@@ -119,6 +125,39 @@
                         "name": "method1", 
                         "type": "void"
                     }
+                }, 
+                {
+                    "_decl": "void method2(Class1 * c2+intent(in)+value)", 
+                    "_function_index": 2, 
+                    "_subprogram": "subroutine", 
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "ptr": true, 
+                                "value": true
+                            }, 
+                            "name": "c2", 
+                            "type": "Class1"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void method2(Class1 * c2)", 
+                    "fmt": {
+                        "C_name": "DEF_class2_method2", 
+                        "F_C_name": "c_class2_method2", 
+                        "F_name_generic": "method2", 
+                        "F_name_impl": "class2_method2", 
+                        "F_name_method": "method2", 
+                        "function_name": "method2", 
+                        "underscore_name": "method2"
+                    }, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "method2", 
+                        "type": "void"
+                    }
                 }
             ], 
             "name": "Class2", 
@@ -154,7 +193,7 @@
     "functions": [
         {
             "_decl": "void function1()", 
-            "_function_index": 2, 
+            "_function_index": 3, 
             "_subprogram": "subroutine", 
             "args": [], 
             "attrs": {}, 

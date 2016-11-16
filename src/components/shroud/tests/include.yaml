@@ -29,6 +29,8 @@ classes:
     methods:
              # do not use CustomType to avoid header file
     -  decl: void method1(MPI_Comm comm)
+             # Use another class in the file
+    -  decl: void method2(Class1 * c2)
 
 functions:
 -  decl: void function1()

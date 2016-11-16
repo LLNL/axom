@@ -17,6 +17,15 @@ return;
 // splicer end class.Class2.method.method1
 }
 
+void DEF_class2_method2(DEF_class2 * self, DEF_class1 * c2)
+{
+Class2 *selfobj = static_cast<Class2 *>(static_cast<void *>(self));
+// splicer begin class.Class2.method.method2
+selfobj->method2(static_cast<Class1 *>(static_cast<void *>(c2)));
+return;
+// splicer end class.Class2.method.method2
+}
+
 // splicer begin class.Class2.additional_functions
 // splicer end class.Class2.additional_functions
 

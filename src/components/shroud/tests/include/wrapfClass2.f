@@ -5,6 +5,7 @@
 !! \brief Shroud generated wrapper for Class2 class
 !<
 module class2_mod
+    use class1_mod, only : class1
     use iso_c_binding, only : C_PTR
     ! splicer begin class.Class2.module_use
     ! splicer end class.Class2.module_use
@@ -20,6 +21,7 @@ module class2_mod
         ! splicer end class.Class2.component_part
     contains
         procedure :: method1 => class2_method1
+        procedure :: method2 => class2_method2
         procedure :: get_instance => class2_get_instance
         procedure :: set_instance => class2_set_instance
         procedure :: associated => class2_associated
@@ -46,6 +48,14 @@ module class2_mod
             integer(C_INT), value, intent(IN) :: comm
         end subroutine c_class2_method1
         
+        subroutine c_class2_method2(self, c2) &
+                bind(C, name="DEF_class2_method2")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: c2
+        end subroutine c_class2_method2
+        
         ! splicer begin class.Class2.additional_interfaces
         ! splicer end class.Class2.additional_interfaces
     end interface
@@ -62,6 +72,18 @@ contains
             comm)
         ! splicer end class.Class2.method.method1
     end subroutine class2_method1
+    
+    subroutine class2_method2(obj, c2)
+        use class1_mod, only : class1
+        implicit none
+        class(class2) :: obj
+        type(class1), value, intent(IN) :: c2
+        ! splicer begin class.Class2.method.method2
+        call c_class2_method2(  &
+            obj%voidptr,  &
+            c2%voidptr)
+        ! splicer end class.Class2.method.method2
+    end subroutine class2_method2
     
     function class2_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
