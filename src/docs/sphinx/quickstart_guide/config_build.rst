@@ -92,6 +92,32 @@ Package Dependencies:
   * zlib 1.2.8
 
 
+.. danger::
+  Here is one possible format, we can also add urls and version info
+
+
+
+================== ==================================== 
+  Library            Dependent Components
+================== ==================================== 
+  HDF5               Sidre, Spio
+  Conduit            Sidre, Spio
+  Sparse Hash        Sidre (optional)
+  Boost              Slam, Quest
+================== ==================================== 
+
+================== ==================================== 
+  Tool               Purpose
+================== ==================================== 
+  Shroud            Multi-language binding generation 
+  Doxygen            Source Code Docs
+  Sphinx             User Docs
+  Breathe            Doxygen integration for Sphinx
+  Uncrustify         Code Style Checks 
+  Lcov               Code Coverage Reports
+================== ==================================== 
+
+
 
 .. _tplbuild-label:
 
@@ -128,6 +154,8 @@ Here is a break down of the options that control how ``uberenv.py`` builds depen
                                                           osx: **%clang**
   --compilers-yaml   Spack compilers settings file        ``scripts/uberenv/compilers.yaml``
   --mirror           Spack source mirror location         **Not used**
+  --create-mirror    Establish a new Spack source mirror  ``False``
+                     with out building TPLs
  ================== ==================================== ======================================
 
 Default invocation on Linux:
@@ -166,19 +194,10 @@ You can also see examples of how Spack spec names are passed to ``uberenv.py`` i
 TPLs for the Toolkit development team on LLNL's LC platforms. These scripts are located in
 the directory ``scripts/uberenv/llnl_install_scripts``. 
 
-The 'mirror' argument indicates a location for Spack to store the downloaded source code for TPL dependencies. When
-building more than one installation of the TPLs, using a mirror will allow Spack
-to skip downloads for source code was already already obtained during a prior build. 
+The 'mirror' argument provides a location for Spack to store the downloaded source code for TPL dependencies. When
+building more than one installation of the TPLs, using a mirror will allow Spack to skip downloads for source code that was already already obtained during a prior build. 
 
-.. danger::
-  uberenv may do this? need to double check
-  
-To setup a mirror for Spack, run the following before running
-the uberenv.py script:
-
-    $ spack mirror create -d {directory} --dependencies uberenv-asctoolkit
-
-Here, 'directory' is the location of the mirror.
+When the 'create-mirror' argument is used, ``uberenv.py`` establishes a Spack mirror and downloads the source for all TPL dependencies into this mirror. It does not build any TPLs. This option is used to obtain a copy of source code for all necessary TPLs so it can be transfered to another system for builds.
 
 .. _toolkitbuild-label:
 
