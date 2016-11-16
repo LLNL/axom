@@ -192,6 +192,8 @@ class WrapperMixin(object):
     def namespace(self, library, cls, position, output):
         if cls and 'namespace' in cls:
             namespace = cls['namespace']
+            if namespace.startswith('-'):
+                return
         else:
             namespace = library['namespace']
         if position == 'begin':

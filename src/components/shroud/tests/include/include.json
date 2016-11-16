@@ -160,6 +160,7 @@
                 }
             ], 
             "name": "Class2", 
+            "namespace": "-no namespace", 
             "options": {}
         }
     ], 

@@ -21,8 +21,8 @@ classes:
     -  decl: void method1(CustomType arg1)
 
   - name: Class2
-#    cpp_header: no header
-#    namespace: no namespace
+#    cpp_header: no header, will use global.cpp_header
+    namespace: -no namespace
     methods:
              # do not use CustomType to avoid header file
     -  decl: void method1(MPI_Comm comm)

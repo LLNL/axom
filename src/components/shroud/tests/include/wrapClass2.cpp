@@ -5,8 +5,6 @@
 #include "global_header.hpp"
 
 extern "C" {
-namespace one {
-namespace two {
 
 void DEF_class2_method1(DEF_class2 * self, MPI_Fint comm)
 {
@@ -29,6 +27,4 @@ return;
 // splicer begin class.Class2.additional_functions
 // splicer end class.Class2.additional_functions
 
-}  // namespace one
-}  // namespace two
 }  // extern "C"
