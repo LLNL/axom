@@ -439,8 +439,25 @@ continuous integration and automated testing. We maintain a collection of
 test plans for performing automated and manual builds, tests, and other
 code health monitoring tasks.
 
+Bamboo Agent Notes
+^^^^^^^^^^^^^^^^^^^
+The Bamboo server is going to hand the scripts to it's associated 'agents' on the various clusters.  Each bamboo agent needs to be approved by an LC Atlassian admin in order to start executing Bamboo plans.  The Atlassian admin will take care of associating your approved agent with your project and plan(s)
+
+  * ** Restarting the Agent**, On occasion, the agent can die.  This results in bamboo jobs being queued and stalled until the agent is restarted.  You must have access to the toolkit 'ATK' user to restart the agent.
+
+
+.. note :: **ssh cab687 xsu atk
+cd /g/g16/atk/bambooAgent/asctoolkit.cab.llnl.gov
+./bin/bamboo-agent.sh stop/start **
+
+
 Automated plans
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
+
+Current we have the following test plans on CZ:
+
+  * **Build and Test Develop Branch (all compilers, nightly)**, this is done on a nightly basis on the develop branch. 
+  * **Develop and Test TPL (weekly)**, this is done on a weekly basis on the develop branch. 
 
 .. note :: **Fill in this section with a description of these plans: what is
            built, tested, other tasks performed, when they are run, etc.**
