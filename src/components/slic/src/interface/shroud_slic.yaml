@@ -13,14 +13,12 @@ copyright:
   -
 
 library: SLIC
+cpp_header: slic/slic.hpp
 
 options:
   C_prefix: SLIC_
   namespace: asctoolkit slic
 #  F_module_per_class: False
-
-  # header file for function, each class has its own header file
-  cpp_header: slic/slic.hpp
 
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument

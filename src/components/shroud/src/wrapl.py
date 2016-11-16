@@ -546,9 +546,8 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                 ])
         util.extern_C(output, 'begin')
 
-        if options.cpp_header:
-            for include in options.cpp_header.split():
-                output.append('#include "%s"' % include)
+        for include in node['cpp_header'].split():
+            output.append('#include "%s"' % include)
 
         output.append('#include "lua.h"')
         output.extend(self.lua_type_structs)
@@ -583,9 +582,8 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 
         output = []
 
-        if options.cpp_header:
-            for include in options.cpp_header.split():
-                output.append('#include "{}"'.format(include))
+        for include in node['cpp_header'].split():
+            output.append('#include "{}"'.format(include))
         output.append(wformat('#include "{LUA_header_filename}"', fmt))
 
         util.extern_C(output, 'begin')

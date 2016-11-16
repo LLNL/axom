@@ -127,29 +127,32 @@ Function name - Updated before processing each function or method.
 Header Files
 ^^^^^^^^^^^^
 
-The header files for the library are included by the C wrapper source files.
+The header files for the library are included by the generated C++ source files.
 
-
-There are two groups of header files: files which are included in the
-implementation and files which are included in the interface.
+The library source file will include the global *cpp_header* field.
+Each class source file will include the class *cpp_header* field unless it is blank.
+In that case the global *cpp_header* field will be used.
 
 To include a file in the implementation list it in the global or class options::
 
-    options:
-        cpp_header: global.hpp
+    cpp_header: global_header.hpp
 
     classes:
-        options:
-           cpp_header:
-
-For the header file it can be set in the type::
+       cpp_header: class_header.hpp
 
     types:
        CustomType:
           typedef: int
-          c_header:  custom.h
-          cpp_header : custom.hpp
+          c_header:  type_header.h
+          cpp_header : type_header.hpp
 
+
+The *c_header* field will be added to the header file of contains functions
+which reference the type.
+This is used for files which are not part of the library but which contain code
+which helps map C++ constants to C constants
+
+.. FILL IN MORE
 
 Local Variable
 ^^^^^^^^^^^^^^

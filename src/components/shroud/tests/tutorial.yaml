@@ -2,10 +2,10 @@
 #
 
 library: Tutorial
+cpp_header: tutorial.hpp
 
 options:
   debug: True
-  cpp_header: tutorial.hpp
   namespace: tutorial
   F_module_per_class: False
   wrap_python: True

@@ -19,9 +19,6 @@ options:
   namespace: asctoolkit spio
   F_module_per_class: False
 
-  # header file for function, each class has its own header file
-#  cpp_header:
-
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
   # for the result.
@@ -44,8 +41,7 @@ types:
 
 classes:
   - name: IOManager
-    options:
-      cpp_header: spio/IOManager.hpp
+    cpp_header: spio/IOManager.hpp
     methods:
     - decl: IOManager * new(MPI_Comm com) +constructor
     - decl: void delete() +destructor

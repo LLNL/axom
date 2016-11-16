@@ -785,9 +785,8 @@ return 1;""", fmt)
                 '#define IS_PY3K',
                 '#endif'])
         
-        if options.cpp_header:
-            for include in options.cpp_header.split():
-                output.append('#include "%s"' % include)
+        for include in node['cpp_header'].split():
+            output.append('#include "%s"' % include)
 
         self._push_splicer('header')
         self._create_splicer('include', output)

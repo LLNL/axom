@@ -16,6 +16,7 @@
                     ]
                 ]
             ], 
+            "cpp_header": "", 
             "fmt": {
                 "C_header_filename": "wrapClass1.h", 
                 "C_impl_filename": "wrapClass1.cpp", 
@@ -128,6 +129,7 @@
             "options": {}
         }
     ], 
+    "cpp_header": "tutorial.hpp", 
     "fmt": {
         "BBB": "BBB", 
         "C_const": "", 
@@ -2087,7 +2089,6 @@
         "PY_name_impl_template": "{PY_prefix}{class_name}{underscore_name}{function_suffix}", 
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "class_name_template": "{class_lower}_", 
-        "cpp_header": "tutorial.hpp", 
         "debug": true, 
         "doxygen": true, 
         "namespace": "tutorial", 

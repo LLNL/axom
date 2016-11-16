@@ -121,7 +121,6 @@ class Schema(object):
             debug=False,   # print additional debug info
 
             namespace='',
-            cpp_header='',
 
             F_module_per_class=True,
             F_string_len_trim=True,
@@ -530,6 +529,13 @@ class Schema(object):
             raise RuntimeError('Expected name for class')
         name = node['name']
 
+        # default cpp_header to blank
+        if 'cpp_header' not in node:
+            node['cpp_header'] = ''
+        if node['cpp_header'] is None:
+            # YAML turns blank strings into None
+            node['cpp_header'] = ''
+
         options = self.push_options(node)
         fmt_class = self.push_fmt(node)
         fmt_class.cpp_class = name
@@ -571,7 +577,7 @@ class Schema(object):
             values = parse_decl.check_decl(node['decl'])
             util.update(node, values)  # recursive update
         if 'function_suffix' in node and node['function_suffix'] is None:
-            # YAML turns blanks strings to None
+            # YAML turns blanks strings into None
             node['function_suffix'] = ''
         if 'default_arg_suffix' in node:
             default_arg_suffix = node['default_arg_suffix']
@@ -1454,6 +1460,7 @@ def main():
     # accumulated input
     all = dict(
         library = 'default_library',
+        cpp_header = '',
         )
     splicers = dict(c={}, f={}, py={}, lua={})
 

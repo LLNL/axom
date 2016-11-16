@@ -10,6 +10,7 @@
                     ]
                 ]
             ], 
+            "cpp_header": "class_header.hpp", 
             "fmt": {
                 "C_header_filename": "wrapClass1.h", 
                 "C_impl_filename": "wrapClass1.cpp", 
@@ -58,11 +59,10 @@
                 }
             ], 
             "name": "Class1", 
-            "options": {
-                "cpp_header": "class_header.hpp"
-            }
+            "options": {}
         }
     ], 
+    "cpp_header": "global_header.hpp", 
     "fmt": {
         "C_const": "", 
         "C_header_filename": "wrapdefault_library.h", 
@@ -130,7 +130,6 @@
         "PY_name_impl_template": "{PY_prefix}{class_name}{underscore_name}{function_suffix}", 
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "class_name_template": "{class_lower}_", 
-        "cpp_header": "global_header.hpp", 
         "debug": false, 
         "doxygen": true, 
         "namespace": "", 

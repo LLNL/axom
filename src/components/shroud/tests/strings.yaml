@@ -3,10 +3,10 @@
 #
 
 library: strings
+cpp_header: strings.hpp
 
 options:
   debug: True
-  cpp_header: strings.hpp
   wrap_python: True
 
 functions:

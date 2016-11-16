@@ -182,9 +182,15 @@ class Wrapc(util.WrapperMixin):
         output.append('// ' + fname)
 
         output.append('#include "%s"' % hname)
-        if options.cpp_header:
-            for include in options.cpp_header.split():
+
+        # Use headers from class if they exist or else library
+        if cls and cls['cpp_header']:
+            for include in cls['cpp_header'].split():
                 self.header_impl_include[include] = True
+        else:
+            for include in library['cpp_header'].split():
+                self.header_impl_include[include] = True
+
         # headers required by implementation
         if self.header_impl_include:
             headers = self.header_impl_include.keys()

@@ -77,9 +77,8 @@ types:
 
 classes:
   - name: ExClass1
-    options:
-      cpp_header: ExClass1.hpp
-      # include files to add to module
+    cpp_header: ExClass1.hpp
+    # include files to add to module
 
     python:
       type: [ init, repr, richcompare ]
@@ -135,8 +134,7 @@ classes:
 
   ######################################################################
   - name: ExClass2
-    options:
-      cpp_header: ExClass2.hpp
+    cpp_header: ExClass2.hpp
     python:
       type: [dealloc, print, compare, getattr, setattr,
              getattro, setattro,
