@@ -11,6 +11,7 @@
 #  msub -d `pwd` msub_llnl_bgq_toss3_all_compilers.sh
 
 date
-/usr/local/bin/python llnl_bgq_uberenv_install_bgqos_all_compilers.py
+/collab/usr/gapps/python/bgqos_0/opt-2.7.10/bin/python llnl_bgq_uberenv_install_bgqos_all_compilers.py 
+#/usr/local/bin/python llnl_bgq_uberenv_install_bgqos_all_compilers.py
 date
 
