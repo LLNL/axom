@@ -10,15 +10,15 @@
 .. ##
 
 =========================================================
-1 Modifying Code and Deviating from Guidelines
+1 Changing Existing Code
 =========================================================
 
 -----------------------------------
-Follow Existing Toolkit Code Style
+Follow Existing Code Style
 -----------------------------------
 
 1.1 When modifying existing code, the style conventions already in
-use in the file **must** be followed. This is not intended to
+use in each file **must** be followed. This is not intended to
 stifle personal creativity - mixing style is disruptive and 
 may cause confusion for users and fellow developers.
 
@@ -28,48 +28,34 @@ This may mean that an entire file is changed to prevent multiple conflicting
 styles.
 
 --------------------------------
-Deviating from These Guidelines
---------------------------------
-
-1.3 Variations in coding style for different Toolkit components is permitted.
-However, coding style within each Toolkit component **must** be consistent.
-
-1.4 Significant deviations from these guidelines **must** be discussed and
-agreed upon by the development team. 
-
-.. important:: **When the team agrees on changes to these guidelines, this
-               guide **must** be changed accordinagly.
-
---------------------------------
 Adopting Code From Other Sources
 --------------------------------
 
-1.5 The CS Toolkit contains software developed from scratch as well as code 
-adopted from other sources developed independently. These guidelines apply to 
-software developed within the Toolkit. The decision of whether and how to 
-modify externally-developed code that we pull in to the Toolkit will be 
-evaluated on a case-by-case basis. Modifying such code to be compliant with 
-these guidelines should typically be done only if a significant rewrite is 
-undertaken for other reasons.
+1.3 The CS Toolkit may contain code pulled in from sources outside the 
+Toolkit. These guidelines apply to code developed within the Toolkit 
+primarily. The decision to modify externally-developed code that we pull 
+in to the Toolkit will be evaluated on a case-by-case basis. Modifying such 
+code to be compliant with these guidelines should typically be done only if 
+a significant rewrite is undertaken for other reasons.
 
 
 .. _namesec-label:
 
-========
-2 Names
-========
+===========================
+2 Good Names Are Important
+===========================
 
 Good names are essential to sound software design. This section contains 
 guidelines for naming files, types. functions, class members, variables, etc. 
-The main goal is to use a distinct and consistent naming convention for each
-type of item so that the role of each entity in the code is obvious from the 
-form of its name.
+The main goal is to use clear and unambiguous names. Also, we want naming 
+conventions for different entities so that, when applied, the role of each 
+is obvious from the form of its name.
 
-----------------------------
-2.1 Choose Meaningful Names
-----------------------------
+--------------------------------
+Choose Names with Clear Meaning
+--------------------------------
 
-2.1.1 Every name **must** be meaningful. In particular, its meaning **must** 
+2.1 Every name **must** be meaningful. In particular, its meaning **must** 
 be clear to other code developers and users, not just the author of the name.
 
       A substantial benefit of good name selection is that it can greatly
@@ -82,63 +68,50 @@ be clear to other code developers and users, not just the author of the name.
       Minimizing the amount of documentation required reduces this burden.
 
 ------------------------------------
-2.2 Use Terminology Consistently
+Avoid Cryptic Names
 ------------------------------------
 
-2.2.1 Terminology **must** be used consistently; i.e., in documentation and 
-for names of directories, types, functions, variables, etc. Multiple terms 
-**should not** be used to refer to the same concept and a concept 
-**should not** be referred to by multiple terms.
+2.2 Tersely abbreviated or cryptic names **should** be avoided. However, 
+common acronyms and jargon that are well understood by team members and
+users **may** be used.
+
+------------------------------------
+Use Terminology Consistently
+------------------------------------
+
+2.3 Terminology **must** be used consistently; i.e., for names and concepts
+in the code and in documentation. Multiple terms **should not** be used to 
+refer to the same concept and a concept **should not** be referred to by 
+multiple terms.
 
       Using a clear, limited set of terminology in a software project helps
       maintain the consistency and integrity of the software, and it makes
       the code easier to understand for developers and users.
 
-2.2.2 Each name **must** be consistent with other similar names in the code.
+2.4 Each name **must** be consistent with other similar names in the code.
 
       For example, if getter/setter methods follow the convention "getFoo"
       and "setFoo" respectively, then adding a new setter method called
       "putBar" is clearly inconsistent.
 
-------------------------------------
-2.3 Avoid Cryptic Names
-------------------------------------
 
-2.3.1 Tersely abbreviated or cryptic names **should** be avoided. However, 
-common acronyms and jargon that are well understood by team members and
-users **may** be used.
+----------------------------------------------------------
+A Directory Name Should Indicate Purpose of its Contents
+----------------------------------------------------------
 
-.. note :: The previous items were renumbered to see if folks like this 
-           organization better. If we go with it, the following sections
-           and items will be renumbered. 
-
-
---------------------
-2.2 Directories
---------------------
-
-2.2.1 Each source directory **must** be named so that the collective purpose 
-of the files it contains is clear. Directory names **should** follow
+2.5 Each source directory **must** be named so that the collective purpose 
+of the files it contains is clear. All directory names **should** follow
 the same style conventions. 
 
       All directory names **should** use all lower case letters and consist 
       of a single word in most cases. A directory name with more than one 
       word **should** use a 'hyphen' to separate words.
 
+------------------------------------
+File Names Should Indicate Contents
+------------------------------------
 
---------------
-2.3 Files
---------------
-
-In this section and throughout the guidelines, we refer to "header" and
-"source" files. Header files are those that are included in other files
-(either header or source). Source files are not included in other files and
-form distinct translation units when a program is compiled.
-
-2.3.1 C++ header and source file extensions **must** be: \*.hpp and \*.cpp, 
-respectively.
-
-2.3.4 The name of each file **must** clearly indicate its contents.
+2.6 The name of each file **must** clearly indicate its contents.
 
       For example, the header and source file containing the definition and
       implementation of a major type, such as a class **must** include the 
@@ -152,13 +125,21 @@ respectively.
       files that define and implement methods that handle file I/O **should** 
       be named "FileIO.hpp" and "FileUtils.cpp", or similar.
 
-2.3.3 Header and source files that are closely related, such as a header file
+2.7 Header and source files that are closely related, such as a header file
 containing prototypes for a set of methods and a source file containing
 implementations of those methods **must** be named the same (excluding 
 file extension, of course) or sufficiently similar so that their 
 relationship is clear.
 
-2.3.4 File names that differ only in letter case **must not** be used.
+
+-----------------------------
+File Extensions and Case
+-----------------------------
+
+2.8 C++ header and source file extensions **must** be: \*.hpp and \*.cpp, 
+respectively.
+
+2.9 File names that differ only in letter case **must not** be used.
 
       Since we aim to support Windows platforms, which has limited case
       sensitivity for file names, having files with names "MyClass.hpp" 
@@ -166,21 +147,28 @@ relationship is clear.
 
 
 ------------------------
-2.4 Scopes and Types
+Namespaces
 ------------------------
 
-2.4.1 All namespaces defined **must** use all lowercase letters.
+2.10 All namespaces defined **must** use all lowercase letters.
 
-      For example, most C++ entities in the CS Toolkit are included in the
-      namespace "asctoolkit"; for example::
+2.11 All C++ entities in the CS Toolkit **must** be included in the 
+namespace "asctoolkit"::
 
          namespace asctoolkit {
               // . . .
          }
 
-.. note :: Change this when we change the namespace
+2.12 Each Toolkit component **must** define its own unique namespace within
+the "asctoolkit" namespace. Additional namespaces within each component **may**
+be used. 
 
-2.4.2 Type names (i.e., classes, structs, typedefs, enums, etc.) **must** be 
+
+--------------------------
+Type Name Format
+--------------------------
+
+2.13 Type names (i.e., classes, structs, typedefs, enums, etc.) **must** be 
 nouns and **should** be in mixed case with each word starting with 
 an upper case letter and all other letters in lower cases.
 
@@ -192,7 +180,7 @@ an upper case letter and all other letters in lower cases.
 
          dataStore, mycollection, TYPEUTILS
 
-2.4.3 Separating characters, such as underscores, **should not** be used 
+2.14 Separating characters, such as underscores, **should not** be used 
 between words in a type name.
 
       For example, these names are not preferred type names::
@@ -205,45 +193,16 @@ between words in a type name.
       These names are acceptable since they are consistent with those found 
       in the C++ standard library.
 
-2.4.4 Suffixes that may be used by compilers for name mangling, or 
+2.15 Suffixes that may be used by compilers for name mangling, or 
 which are used in the C++ standard library, such as "\_t", **must not** 
 be used in type names.
 
 
-------------------------
-2.5 Functions
-------------------------
+-------------------------------------------------------
+Function Name Format
+-------------------------------------------------------
 
-2.5.1 Each function name **must** indicate clearly indicate what the 
-function does. 
-
-      For example::
-
-        calculateDensity() and getDensity()
-
-      are good function names because they distinguish the fact that the
-      first performs a computation and the second returns a value. If a
-      function were named::
-
-        density()
-
-      what it actually does is murky.
-
-2.5.2 Function names **should** begin with a verb.
-
-2.5.3 Complementary verbs such as  "get/set", "add/remove" and "create/destroy"
-**must** be used for routines that perform complementary operations.
-
-      Such symmetry prevents confusion and makes interfaces easier to use.
-
-2.5.4 Verbs such as "is", "has", "can", etc. **should** be used for functions 
-with a boolean return type.
-
-      For example, the following names are preferred::
-
-         isInitialized(), isAllocated()
-
-2.5.5 Function names **must** use "camelCase" or "pot_hole" style. camelCase 
+2.16 Function names **must** use "camelCase" or "pot_hole" style. camelCase 
 is preferred. 
 
       **camelCase style:** The first word has all lower case letters.
@@ -263,7 +222,41 @@ is preferred.
 
          push_front(), push_back_2()
 
-2.5.6 Names of related functions, such as methods for a class, **should** 
+
+-------------------------------------------------------
+Function Names Should Indicate Behavior
+-------------------------------------------------------
+
+2.17 Each function name **must** indicate clearly indicate what the 
+function does. 
+
+      For example::
+
+        calculateDensity(), getDensity()
+
+      are good function names because they distinguish the fact that the
+      first performs a computation and the second returns a value. If a
+      function were named::
+
+        density()
+
+      what it actually does is murky.
+
+2.18 Function names **should** begin with a verb because they perform an action.
+
+2.19 Verbs such as "is", "has", "can", etc. **should** be used for functions 
+with a boolean return type.
+
+      For example, the following names are preferred::
+
+         isInitialized(), isAllocated()
+
+
+-------------------------------------------------------
+Related Functions Should be Named Similarly
+-------------------------------------------------------
+
+2.20 Names of related functions, such as methods for a class, **should** 
 follow the same style.
  
       **Exception:** While consistency is important, name style may be mixed 
@@ -272,12 +265,17 @@ follow the same style.
       that follow pot_hole style if those methods perform operations that are
       similar to C++ standard library functions.
 
+2.21 Complementary verbs such as  "get/set", "add/remove" and "create/destroy"
+**must** be used for routines that perform complementary operations.
 
------------------------------------
-2.6 Data Members and Variables
------------------------------------
+      Such symmetry prevents confusion and makes interfaces easier to use.
 
-2.6.1 All variables (class/struct members, function-scoped variables, function
+
+-------------------------------------------
+Data Member and Variable Name Format
+-------------------------------------------
+
+2.22 All variables (class/struct members, function-scoped variables, function
 arguments, etc.) **must** use either "camelCase" style or "pot_hole" style. 
 Pot_hole style is preferred since it distinguishes variable names from 
 method names.
@@ -286,7 +284,7 @@ method names.
 
          myAverage, person_name, pressure2
 
-2.6.2 Non-static class and struct data member names **must** have the 
+2.23 Non-static class and struct data member names **must** have the 
 prefix "m\_".
 
       This convention makes it obvious which variables are class 
@@ -300,13 +298,18 @@ prefix "m\_".
 
          m_my_average, m_person_name
 
-2.6.3 Static class and struct data member names and static file scope variables
+2.24 Static class and struct data member names and static file scope variables
 **must** have the prefixes "s\_".
 
       Similar to the guideline above, this makes it obvious that the variable
       is static.
 
-2.6.4 Verbs, such as "is", "has", "can", etc., **should** be used for boolean 
+
+-------------------------------------------
+Variable Names Should Give a Hint to Type
+-------------------------------------------
+
+2.25 Verbs, such as "is", "has", "can", etc., **should** be used for boolean 
 variables (i.e., either type bool or integer that indicates true/false).
 
       For example, these names are preferred::
@@ -317,7 +320,7 @@ variables (i.e., either type bool or integer that indicates true/false).
 
          m_initialized, license
 
-2.6.5 A variable that refers to a non-fundamental type **should** give an 
+2.26 variable that refers to a non-fundamental type **should** give an 
 indication of its type.
 
       For example,::
@@ -330,10 +333,10 @@ indication of its type.
 
 
 ------------------------------------
-2.7 Macros and Enumerations
+Macro and Enumeration Name Format
 ------------------------------------
 
-2.7.1 Preprocessor macro constants **must** be named using all uppercase 
+2.27 Preprocessor macro constants **must** be named using all uppercase 
 letters and underscores should be used between words.
 
       For example, these are acceptable macro names::
@@ -344,7 +347,7 @@ letters and underscores should be used between words.
 
          maxiterations, readMode
 
-2.7.2 The name of each enumeration value **should** start with a capital letter
+2.28 The name of each enumeration value **should** start with a capital letter
 and use an underscore between words when multiple words are used.
 
        For example,::
@@ -360,58 +363,72 @@ and use an underscore between words when multiple words are used.
 .. _dirorgsec-label:
 
 =====================================
-3 Directory and File Organization
+3 Directory Organization
 =====================================
 
-This section contains basic directory and file organization guidelines.
-These guidelines help make it easy to locate a file and
-to locate essential information in a file easily and quickly.
+The goal of the guidelines in this section is to make it easy to locate a file
+file easily and quickly. Make it easy for your fellow developers to find stuff.
 
-----------------
-3.1 Directories
-----------------
+------------------------------------------
+Keep Directory Contents Limited in Scope
+------------------------------------------
 
-3.1.1 The contents of each directory and file **must** be well-defined and
+3.1 The contents of each directory and file **must** be well-defined and
 limited so that it can be named to clearly indicate its contents. 
 The goal is to prevent directories and files from becoming bloated with 
 too many or diverse concepts.
 
 
--------------------------------------
-3.2 File Location
--------------------------------------
+----------------------------------------------------------
+Put Files In Directories Where They Can Be Found Easily
+----------------------------------------------------------
 
-3.2.1 Header files and associated implementation files **should** reside in 
+3.2 Header files and associated implementation files **should** reside in 
 the same directory, which is a common practice for C++ libraries, unless
 there is a good reason to do otherwise.
 
-3.2.2 Each file **must** reside in the directory that corresponds to the code 
+3.3 Each file **must** reside in the directory that corresponds to the code 
 functionality supported by the contents of the file.
 
 
 .. _headerguide-label:
 
+=====================================
+4 Header File Organization
+=====================================
+
+The goal is to make it easy to locate essential information in a file easily 
+and quickly. Consistently-applied conventions for file organization
+can significantly improve user understanding and developer productivity. 
+
 ---------------------------------------------------------
-3.3 General header file guidelines
+All Content In A Header File Should Be Related
 ---------------------------------------------------------
 
-Consistently-applied conventions and header file organization can significantly
-improve user understanding and developer productivity. This section provides 
-general header file guidelines. In section :ref:`headerorg-label`, we describe 
-recommended header file organization.
-
-3.3.1 A header file **may** contain multiple type definitions (e.g., structs, 
+4.1 A header file **may** contain multiple type definitions (e.g., structs, 
 classes, enums, etc.). However, type definitions and function declarations in 
 a header file **must** be related closely and/or support the primary type for 
 which the file is named.
 
-3.3.2 A header file **must** be self-contained and self-sufficient.
+4.2 A "typedef" statement, when used, **should** appear in the header file 
+where the type is defined. 
+
+      This practice helps ensure that all names associated with a given type
+      are available when the appropriate header file is used and eliminates
+      potentially inconsistent type names.
+
+
+-----------------------------------------------------------------------
+A Header File Should Contain Enough to Compile Standalone, But No More 
+-----------------------------------------------------------------------
+
+4.3 A header file **must** be self-contained and self-sufficient.
 
       Specifically, each header file
 
       * **Must** have proper header file include guards 
-        (see :ref:`headerorg-label`) to prevent multiple inclusion. The macro 
-        symbol name for each guard must be chosen to guarantee uniqueness 
+        (see :ref:`headerlayout-label`) to prevent multiple inclusion. The 
+        macro symbol name for each guard must be chosen to guarantee uniqueness 
         within a compilation unit.
       * **Must** include all other headers and/or forward declarations it 
         needs to be compiled standalone. In addition, a file **should not** 
@@ -427,9 +444,20 @@ which the file is named.
         errors. Fully specialized templates are not templates and 
         are treated just like regular functions.
 
-3.3.3 Header files **should** use forward declarations instead of header file 
+4.4 Extraneous header files or forward declarations (i.e., those not 
+required for standalone compilation) **must not** be included in header files.
+
+      Spurious header file inclusions, in particular, introduce spurious file
+      dependencies, which can increase compilation time unnecessarily.
+
+
+---------------------------------------------------------
+Use Forward Declarations in Header Files
+---------------------------------------------------------
+
+4.5 Header files **should** use forward declarations instead of header file 
 inclusions when possible. This may speed up compilation, especially when 
-recompiling after header files change.
+recompiling after header file changes.
 
       **Exceptions:**
 
@@ -445,16 +473,15 @@ recompiling after header files change.
         make it easier to use. This avoids having explicit
         inclusion of standard headers wherever the header file is used.
 
-3.3.4 A forward type declaration **must** be used in a header file when an 
+4.6 A forward type declaration **must** be used in a header file when an 
 include statement would result in a circular dependency among header files. 
 
-3.3.5 Extraneous header files or forward declarations (i.e., those not 
-required for standalone compilation) **must not** be included in header files.
 
-      Spurious header file inclusions, in particular, introduce spurious file
-      dependencies, which can increase compilation time unnecessarily.
+---------------------------------------------------------
+Order and Group Header Contents to Improve Readability
+---------------------------------------------------------
 
-3.3.6 Header file include statements **should** use the same ordering pattern 
+4.7 Header file include statements **should** use the same ordering pattern 
 for all files.
 
       This improves code readability, helps to avoid misunderstood
@@ -492,21 +519,20 @@ for all files.
          // Headers from this project
          #include "MyOtherClass.hpp"
 
-3.3.7 A "typedef" statement, when used, **should** appear in the header file 
-where the type is defined. 
 
-      This practice helps ensure that all names associated with a given type
-      are available when the appropriate header file is used and eliminates
-      potentially inconsistent type names.
-
-3.3.8 Routines **should** be ordered and grouped in a header file so that
+4.8 Routines **should** be ordered and grouped in a header file so that
 code readability and understanding are enhanced.
 
       For example, all related methods should be grouped together. Also,
       public methods, which are part of an interface, should appear before 
       private methods.
 
-3.3.9 The name of each function argument **must** be specified in a header 
+
+---------------------------------------------------------
+All Function Arguments In Headers Should Be Named
+---------------------------------------------------------
+
+4.9 The name of each function argument **must** be specified in a header 
 file declaration. Also, names in function declarations and definitions 
 **must** match.
 
@@ -514,32 +540,17 @@ file declaration. Also, names in function declarations and definitions
 
           void doSomething(int, int, int);
 
-3.3.10 Each function, type, and variable declaration in a header file **must** 
-be documented according to the guidelines in Section 4.
 
-       **Exception:** A set of short, simple functions (e.g., inline functions)
-       with related functionality **may** be grouped together and described 
-       with a single documentation prologue if the result is clearer and more 
-       concise documentation. Good names that are self-explanatory are 
-       generally preferable to writing (and maintaining!) documentation.
-
-
-.. _headerorg-label:
+.. _headerlayout-label:
 
 ---------------------------------------------------------
-3.4 Header File Content Organization
+Header File Content Layout
 ---------------------------------------------------------
-
-.. note :: I removed the C-only header file content. Is there any reason we 
-           need it? I think the only strictly C-only files we would have
-           would be auto-generated by Shroud.
 
 Content **must** be organized consistently in all header files. The file 
 layout described here is recommended. The following summary uses numbers 
 and text to illustrate the basic structure. Details about individual items 
 are contained in the guidelines after the summary.
-
-.. note :: Change this when we change the project namespace.
 
 .. code-block:: cpp
 
@@ -586,11 +597,11 @@ are contained in the guidelines after the summary.
    #endif // closing endif for header file include guard
 
 
-3.4.1 Each header file **must** begin with a Doxygen file prologue (item 1).
+4.10 Each header file **must** begin with a Doxygen file prologue (item 1).
 
       See :ref:`docsec-label` for details.
 
-3.4.2 The contents of each header file **must** be guarded using a 
+4.11 The contents of each header file **must** be guarded using a 
 preprocessor directive that defines a unique "guard name" for the header.
 
       The guard must appear immediately after the file prologue and use the
@@ -598,20 +609,20 @@ preprocessor directive that defines a unique "guard name" for the header.
       statement at the end of the file (item 2b). The preprocessor constant 
       must use the file name followed by "_HPP"; e.g., "MYCLASS_HPP" as above.
 
-3.4.3 Each header file **must** contain a comment section that includes the 
+4.12 Each header file **must** contain a comment section that includes the 
 CS Toolkit copyright and release statement (item 3).
 
       See :ref:`docsec-label` for details.
 
-3.4.4 All necessary header file inclusion statements (item 4) **must** 
+4.13 All necessary header file inclusion statements (item 4) **must** 
 appear immediately after copyright and release statement and before any 
 forward declarations, type definitions, etc.
 
-3.4.5 Any necessary forward declarations (item 5) for types defined outside 
+4.14 Any necessary forward declarations (item 5) for types defined outside 
 the project namespace **must** appear after the header include statements
 and before the Toolkit project namespace statement.
 
-3.4.6 All types defined and methods defined in a header file **must** be 
+4.15 All types defined and methods defined in a header file **must** be 
 included in a namespace.
 
       Either the project "asctoolkit" namespace (item 6) or a namespace
@@ -620,14 +631,10 @@ included in a namespace.
       namespace declaration (items 6b and 7b) before the closing '#endif' 
       for the header file include guard.
 
-.. note :: Change this when we change the namespace.
-
-3.4.7 Forward declarations needed **must** appear first in the "asctoolkit" or 
+4.16 Forward declarations needed **must** appear first in the "asctoolkit" or 
 nested namespace before any other statements (item 8).
 
-.. note :: Change this when we change the namespace.
-
-3.4.8 All class and other type definitions (item 9) **must** appear 
+4.17 All class and other type definitions (item 9) **must** appear 
 after header file inclusions and forward declarations. A proper class 
 prologue **must** appear before the class definition; see Section 4 
 for details.
@@ -635,48 +642,55 @@ for details.
 
 .. _sourceguide-label:
 
+=====================================
+5 Source File Organization
+=====================================
+
+The goal is to make it easy to locate essential information in a file easily 
+and quickly. Consistently-applied conventions for file organization
+can significantly improve user understanding and developer productivity. 
+
 ---------------------------------------------------------
-3.5 General Source File Guidelines
+Associated Source and Header File Names Should Match
 ---------------------------------------------------------
 
-Consistently-applied conventions and source file organization can help
-developer productivity. This section provides general source file 
-guidelines. In section :ref:`sourceorg-label`, we describe recommended source
-file organization.
-
-3.5.1 Each source file **must** have an associated header file with a matching
+5.1 Each source file **must** have an associated header file with a matching
 name, such as "Foo.hpp" for the source file Foo.cpp".
 
       **Exceptions:** Test files may not require headers.
 
-3.5.2 Unnecessary header files **should not** be included in source files 
-(i.e.,headers not needed to compile the file standalone).
+
+---------------------------------------------------------
+Avoid Extraneous Header File Inclusions
+---------------------------------------------------------
+
+5.2 Unnecessary header files **should not** be included in source files 
+(i.e., headers not needed to compile the file standalone).
 
       Such header file inclusions introduce spurious file dependencies, which
       may increases compilation time unnecessarily.
 
-3.5.3 The order of routines implemented in a source file **should** match the 
+---------------------------------------------------------
+Function Order in Source Files Should Match Header Files
+---------------------------------------------------------
+
+5.3 The order of functions implemented in a source file **should** match the 
 order in which they appear in the associated header file.
 
       This makes the methods easier to locate and compare with documentation
       in the header file.
 
-3.5.4 Each function implementation in a source file **should** be documented 
-following to the guidelines in Section 4.
 
-
-.. _sourceorg-label:
+.. _sourcelayout-label:
 
 ---------------------------------------------------------
-3.6 Source File Content Organization
+Source File Content Layout
 ---------------------------------------------------------
 
 Content **must** be organized consistently in all source files. The file 
 layout described here is recommended. The following summary uses numbers 
 and text to illustrate the basic structure. Details about individual items 
 are contained in the guidelines after the summary.
-
-.. note :: Change this when we change the project namespace.
 
 .. code-block:: cpp
 
@@ -707,29 +721,27 @@ are contained in the guidelines after the summary.
    } // asctoolkit namespace closing brace
 
 
-3.6.1 Each source file **must** begin with a Doxygen file prologue (item 1).
+5.4 Each source file **must** begin with a Doxygen file prologue (item 1).
 
       See :ref:`docsec-label` for details.
 
-3.6.2 Each source file **must** contain a comment section that includes the
-      CS Toolkit copyright and release statement (item 2).
+5.5 Each source file **must** contain a comment section that includes the CS Toolkit copyright and release statement (item 2).
 
       See :ref:`docsec-label` for details.
 
-3.6.3 All necessary header file include statements (item 3) **must**
-      appear immediately after the copyright and release statement and 
-      before any implementation statements in the file.
+5.6 All necessary header file include statements (item 3) **must** appear 
+immediately after the copyright and release statement and before any i
+mplementation statements in the file.
 
-3.6.4 All contents in a source file **must** follow the same namespace 
+5.7 All contents in a source file **must** follow the same namespace 
 inclusion pattern as its corresponding header file (see item 3.4.6).
 
       Either the main project namespace (item 4a) or internal namespace 
       (item 5a) may be used, or both may be used. A closing brace ( "}" ) 
       is required to close each namespace declaration (items 4b and 5b).
 
-3.6.5 When used, static variables and class data members **must** be 
-      initialized explicitly in the class source file before any method
-      implementations (item 6).
+5.8 When used, static variables and class data members **must** be initialized 
+explicitly in the class source file before any method implementations (item 6).
 
 
 .. _scopesec-label:
