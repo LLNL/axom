@@ -120,8 +120,6 @@ class Schema(object):
             parent=None,
             debug=False,   # print additional debug info
 
-            namespace='',
-
             F_module_per_class=True,
             F_string_len_trim=True,
             F_force_wrapper=False,
@@ -182,8 +180,8 @@ class Schema(object):
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.library_upper[:3] + '_')
         fmt_library.F_C_prefix    = def_options['F_C_prefix']
         fmt_library.rv            = 'rv'  # return value
-        if def_options.namespace:
-            fmt_library.namespace_scope = '::'.join(def_options.namespace.split()) + '::'
+        if node['namespace']:
+            fmt_library.namespace_scope = '::'.join(node['namespace'].split()) + '::'
         else:
             fmt_library.namespace_scope = ''
         util.eval_template(node, 'C_header_filename', '_library')
@@ -1461,6 +1459,7 @@ def main():
     all = dict(
         library = 'default_library',
         cpp_header = '',
+        namespace = '',
         )
     splicers = dict(c={}, f={}, py={}, lua={})
 

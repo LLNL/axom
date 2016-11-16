@@ -576,6 +576,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                 ])
 
     def write_module(self, node):
+        # node is library
         options = node['options']
         fmt = node['fmt']
         fname = fmt.LUA_module_filename
@@ -593,7 +594,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         self._create_splicer('include', output)
 
         output.append('')
-        self.namespace(node, 'begin', output)
+        self.namespace(node, None, 'begin', output)
         self._create_splicer('C_definition', output)
 
         output.extend(self.body_lines)
@@ -619,7 +620,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                 ])
         util.extern_C(output, 'end')
 
-        self.namespace(node, 'end', output)
+        self.namespace(node, None, 'end', output)
 
         self.write_output_file(fname, self.config.lua_dir, output)
 

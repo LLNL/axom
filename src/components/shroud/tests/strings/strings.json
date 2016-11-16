@@ -1062,6 +1062,7 @@
         }
     ], 
     "library": "strings", 
+    "namespace": "", 
     "options": {
         "C_header_filename_class_template": "wrap{cpp_class}.h", 
         "C_header_filename_library_template": "wrap{library}.h", 
@@ -1104,7 +1105,6 @@
         "class_name_template": "{class_lower}_", 
         "debug": true, 
         "doxygen": true, 
-        "namespace": "", 
         "wrap_c": true, 
         "wrap_fortran": true, 
         "wrap_lua": false, 

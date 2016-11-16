@@ -189,9 +189,11 @@ class WrapperMixin(object):
 
 #####
 
-    def namespace(self, node, position, output):
-        options = node['options']
-        namespace = options.namespace
+    def namespace(self, library, cls, position, output):
+        if cls and 'namespace' in cls:
+            namespace = cls['namespace']
+        else:
+            namespace = library['namespace']
         if position == 'begin':
             for name in namespace.split():
                 output.append('namespace %s {' % name)

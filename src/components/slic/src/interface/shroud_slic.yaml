@@ -14,10 +14,10 @@ copyright:
 
 library: SLIC
 cpp_header: slic/slic.hpp
+namespace: asctoolkit slic
 
 options:
   C_prefix: SLIC_
-  namespace: asctoolkit slic
 #  F_module_per_class: False
 
   # Any C++ function which returns a string will be wrapped in

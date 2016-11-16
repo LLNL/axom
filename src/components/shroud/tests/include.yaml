@@ -5,8 +5,7 @@
 
 
 cpp_header: global_header.hpp
-options:
-  namespace: one two
+namespace: one two
 
 types:
    CustomType:
@@ -17,15 +16,13 @@ types:
 classes:
   - name: Class1
     cpp_header: class_header.hpp
-    options:
-      namespace: three
+    namespace: three
     methods:
     -  decl: void method1(CustomType arg1)
 
   - name: Class2
 #    cpp_header: no header
-#    options:
-#      namespace: no namespace
+#    namespace: no namespace
     methods:
              # do not use CustomType to avoid header file
     -  decl: void method1(MPI_Comm comm)

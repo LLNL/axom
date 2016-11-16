@@ -154,6 +154,11 @@ which helps map C++ constants to C constants
 
 .. FILL IN MORE
 
+Namespace
+---------
+
+
+
 Local Variable
 ^^^^^^^^^^^^^^
 

@@ -13,10 +13,10 @@ copyright:
   -
 
 library: SPIO
+namespace: asctoolkit spio
 
 options:
   C_prefix: SPIO_
-  namespace: asctoolkit spio
   F_module_per_class: False
 
   # Any C++ function which returns a string will be wrapped in

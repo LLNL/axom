@@ -60,9 +60,8 @@
                 }
             ], 
             "name": "Class1", 
-            "options": {
-                "namespace": "three"
-            }
+            "namespace": "three", 
+            "options": {}
         }, 
         {
             "F_module_dependencies": [
@@ -216,6 +215,7 @@
         }
     ], 
     "library": "default_library", 
+    "namespace": "one two", 
     "options": {
         "C_header_filename_class_template": "wrap{cpp_class}.h", 
         "C_header_filename_library_template": "wrap{library}.h", 
@@ -258,7 +258,6 @@
         "class_name_template": "{class_lower}_", 
         "debug": false, 
         "doxygen": true, 
-        "namespace": "one two", 
         "wrap_c": true, 
         "wrap_fortran": true, 
         "wrap_lua": false, 

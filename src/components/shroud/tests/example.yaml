@@ -1,4 +1,5 @@
 library: UserLibrary
+namespace: example nested
 
 copyright:
   - blah blah
@@ -17,7 +18,6 @@ options:
 #  module_name: exclass1_mod
   debug: True
   C_prefix: AA_
-  namespace: example nested
   F_module_per_class: True
   # include files to add to module
   wrap_python: True

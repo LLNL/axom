@@ -14,10 +14,10 @@ copyright:
 
 library: Sidre
 # cpp_header: each class has its own header file
+namespace: asctoolkit sidre
 
 options:
   C_prefix: SIDRE_
-  namespace: asctoolkit sidre
   F_module_per_class: False
 
   # Any C++ function which returns a string will be wrapped in

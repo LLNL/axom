@@ -176,7 +176,6 @@ class Wrapc(util.WrapperMixin):
         """
         node = cls or library
         options = node['options']
-        namespace = options.namespace
 
         output = []
         output.append('// ' + fname)
@@ -197,12 +196,12 @@ class Wrapc(util.WrapperMixin):
             self.write_headers(headers, output)
 
         output.append('\nextern "C" {')
-        self.namespace(node, 'begin', output)
+        self.namespace(library, cls, 'begin', output)
         output.extend(self.impl)
         output.append('')
         self._create_splicer('additional_functions', output)
         output.append('')
-        self.namespace(node, 'end', output)
+        self.namespace(library, cls, 'end', output)
 
         output.append('}  // extern "C"')
 

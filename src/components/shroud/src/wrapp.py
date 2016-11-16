@@ -102,7 +102,7 @@ class Wrapp(util.WrapperMixin):
             self.reset_file()
             self._push_splicer(name)
             self.wrap_class(node)
-            self.write_extension_type(node)
+            self.write_extension_type(self.tree, node)
             self._pop_splicer(name)
         self._pop_splicer('class')
 
@@ -668,7 +668,7 @@ return 1;""", fmt)
             output.append('}')
         self._pop_splicer('type')
 
-    def write_extension_type(self, node):
+    def write_extension_type(self, library, node):
         fmt = node['fmt']
         fname = fmt.PY_type_filename
 
@@ -677,7 +677,7 @@ return 1;""", fmt)
         output.append(wformat('#include "{PY_header_filename}"', fmt))
         self._push_splicer('impl')
         self._create_splicer('include', output)
-        self.namespace(node, 'begin', output)
+        self.namespace(library, node, 'begin', output)
         self._create_splicer('C_definition', output)
         self._create_splicer('additional_methods', output)
         self._pop_splicer('impl')
@@ -704,7 +704,7 @@ return 1;""", fmt)
         output.append('};')
 
         output.append(wformat(PyTypeObject_template, fmt_type))
-        self.namespace(node, 'end', output)
+        self.namespace(library, node, 'end', output)
 
         self.write_output_file(fname, self.config.python_dir, output)
 
@@ -766,6 +766,7 @@ return 1;""", fmt)
             self.create_method(cls, True, fmt, body)
 
     def write_header(self, node):
+        # node is library
         options = node['options']
         fmt = node['fmt']
         fname = fmt.PY_header_filename
@@ -790,7 +791,7 @@ return 1;""", fmt)
 
         self._push_splicer('header')
         self._create_splicer('include', output)
-        self.namespace(node, 'begin', output)
+        self.namespace(node, None, 'begin', output)
         output.extend(self.py_type_extern)
         self._create_splicer('C_declaration', output)
         self._pop_splicer('header')
@@ -818,11 +819,12 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
 }}
 #endif
 """, fmt))
-        self.namespace(node, 'end', output)
+        self.namespace(node, None, 'end', output)
         output.append('#endif  /* %s */' % guard)
         self.write_output_file(fname, self.config.python_dir, output)
 
     def write_module(self, node):
+        # node is library.
         options = node['options']
         fmt = node['fmt']
         fname = fmt.PY_module_filename
@@ -834,7 +836,7 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         output.append(wformat('#include "{PY_header_filename}"', fmt))
         self._create_splicer('include', output)
         output.append('')
-        self.namespace(node, 'begin', output)
+        self.namespace(node, None, 'begin', output)
         self._create_splicer('C_definition', output)
 
         output.append(wformat('PyObject *{PY_prefix}error_obj;', fmt))
@@ -854,7 +856,7 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         output.append(wformat(module_middle2, fmt))
         self._create_splicer('C_init_body', output)
         output.append(wformat(module_end, fmt))
-        self.namespace(node, 'end', output)
+        self.namespace(node, None, 'end', output)
 
         self.write_output_file(fname, self.config.python_dir, output)
 
@@ -863,11 +865,11 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         fmt = node['fmt']
         output = []
         output.append(wformat('#include "{PY_header_filename}"', fmt))
-        self.namespace(node, 'begin', output)
+        self.namespace(node, None, 'begin', output)
         output.extend(self.py_helper_definition)
         output.append('')
         output.extend(self.py_helper_functions)
-        self.namespace(node, 'end', output)
+        self.namespace(node, None, 'end', output)
         self.write_output_file(fmt.PY_helper_filename, self.config.python_dir, output)
 
     def not_implemented_error(self, msg, ret):
