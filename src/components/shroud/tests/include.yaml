@@ -28,7 +28,7 @@ classes:
 #      namespace: no namespace
     methods:
              # do not use CustomType to avoid header file
-    -  decl: void method1()
+    -  decl: void method1(MPI_Comm comm)
 
 functions:
 -  decl: void function1()

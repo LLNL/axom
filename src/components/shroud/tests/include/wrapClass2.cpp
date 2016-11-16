@@ -8,11 +8,11 @@ extern "C" {
 namespace one {
 namespace two {
 
-void DEF_class2_method1(DEF_class2 * self)
+void DEF_class2_method1(DEF_class2 * self, MPI_Fint comm)
 {
 Class2 *selfobj = static_cast<Class2 *>(static_cast<void *>(self));
 // splicer begin class.Class2.method.method1
-selfobj->method1();
+selfobj->method1(MPI_Comm_f2c(comm));
 return;
 // splicer end class.Class2.method.method1
 }

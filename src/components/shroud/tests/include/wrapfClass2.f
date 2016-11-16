@@ -38,11 +38,12 @@ module class2_mod
     
     interface
         
-        subroutine c_class2_method1(self) &
+        subroutine c_class2_method1(self, comm) &
                 bind(C, name="DEF_class2_method1")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: comm
         end subroutine c_class2_method1
         
         ! splicer begin class.Class2.additional_interfaces
@@ -51,11 +52,14 @@ module class2_mod
 
 contains
     
-    subroutine class2_method1(obj)
+    subroutine class2_method1(obj, comm)
         implicit none
         class(class2) :: obj
+        integer, value, intent(IN) :: comm
         ! splicer begin class.Class2.method.method1
-        call c_class2_method1(obj%voidptr)
+        call c_class2_method1(  &
+            obj%voidptr,  &
+            comm)
         ! splicer end class.Class2.method.method1
     end subroutine class2_method1
     

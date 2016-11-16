@@ -9,6 +9,8 @@
 #ifndef WRAPCLASS2_H
 #define WRAPCLASS2_H
 
+#include "mpi.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,7 +22,7 @@ typedef struct s_DEF_class2 DEF_class2;
 // splicer begin class.Class2.C_definition
 // splicer end class.Class2.C_definition
 
-void DEF_class2_method1(DEF_class2 * self);
+void DEF_class2_method1(DEF_class2 * self, MPI_Fint comm);
 
 #ifdef __cplusplus
 }

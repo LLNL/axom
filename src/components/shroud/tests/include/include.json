@@ -89,12 +89,21 @@
             }, 
             "methods": [
                 {
-                    "_decl": "void method1()", 
+                    "_decl": "void method1(MPI_Comm comm+intent(in)+value)", 
                     "_function_index": 1, 
                     "_subprogram": "subroutine", 
-                    "args": [], 
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "comm", 
+                            "type": "MPI_Comm"
+                        }
+                    ], 
                     "attrs": {}, 
-                    "decl": "void method1()", 
+                    "decl": "void method1(MPI_Comm comm)", 
                     "fmt": {
                         "C_name": "DEF_class2_method1", 
                         "F_C_name": "c_class2_method1", 
