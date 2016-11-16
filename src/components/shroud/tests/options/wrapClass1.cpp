@@ -6,6 +6,7 @@
 #include "type_header.hpp"
 
 extern "C" {
+namespace three {
 
 void DEF_class1_method1(DEF_class1 * self, int arg1)
 {
@@ -19,4 +20,5 @@ return;
 // splicer begin class.Class1.additional_functions
 // splicer end class.Class1.additional_functions
 
+}  // namespace three
 }  // extern "C"

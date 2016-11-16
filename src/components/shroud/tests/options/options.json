@@ -1,4 +1,5 @@
 {
+    "F_module_dependencies": [], 
     "classes": [
         {
             "F_module_dependencies": [
@@ -59,6 +60,59 @@
                 }
             ], 
             "name": "Class1", 
+            "options": {
+                "namespace": "three"
+            }
+        }, 
+        {
+            "F_module_dependencies": [
+                [
+                    "iso_c_binding", 
+                    [
+                        "C_PTR"
+                    ]
+                ]
+            ], 
+            "cpp_header": "", 
+            "fmt": {
+                "C_header_filename": "wrapClass2.h", 
+                "C_impl_filename": "wrapClass2.cpp", 
+                "C_type_name": "DEF_class2", 
+                "F_C_prefix": "c_", 
+                "F_derived_name": "class2", 
+                "F_impl_filename": "wrapfClass2.f", 
+                "F_module_name": "class2_mod", 
+                "class_lower": "class2", 
+                "class_name": "class2_", 
+                "class_upper": "CLASS2", 
+                "cpp_class": "Class2"
+            }, 
+            "methods": [
+                {
+                    "_decl": "void method1()", 
+                    "_function_index": 1, 
+                    "_subprogram": "subroutine", 
+                    "args": [], 
+                    "attrs": {}, 
+                    "decl": "void method1()", 
+                    "fmt": {
+                        "C_name": "DEF_class2_method1", 
+                        "F_C_name": "c_class2_method1", 
+                        "F_name_generic": "method1", 
+                        "F_name_impl": "class2_method1", 
+                        "F_name_method": "method1", 
+                        "function_name": "method1", 
+                        "underscore_name": "method1"
+                    }, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "method1", 
+                        "type": "void"
+                    }
+                }
+            ], 
+            "name": "Class2", 
             "options": {}
         }
     ], 
@@ -84,11 +138,35 @@
         "library": "default_library", 
         "library_lower": "default_library", 
         "library_upper": "DEFAULT_LIBRARY", 
-        "namespace_scope": "", 
+        "namespace_scope": "one::two::", 
         "overloaded": false, 
         "rv": "rv"
     }, 
-    "functions": [], 
+    "functions": [
+        {
+            "_decl": "void function1()", 
+            "_function_index": 2, 
+            "_subprogram": "subroutine", 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "void function1()", 
+            "fmt": {
+                "C_name": "DEF_function1", 
+                "F_C_name": "function1", 
+                "F_name_generic": "function1", 
+                "F_name_impl": "function1", 
+                "F_name_method": "function1", 
+                "function_name": "function1", 
+                "underscore_name": "function1"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "function1", 
+                "type": "void"
+            }
+        }
+    ], 
     "library": "default_library", 
     "options": {
         "C_header_filename_class_template": "wrap{cpp_class}.h", 
@@ -132,7 +210,7 @@
         "class_name_template": "{class_lower}_", 
         "debug": false, 
         "doxygen": true, 
-        "namespace": "", 
+        "namespace": "one two", 
         "wrap_c": true, 
         "wrap_fortran": true, 
         "wrap_lua": false, 
@@ -159,6 +237,39 @@
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
             "f_type": "type(class1)", 
             "forward": "Class1", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;"
+                    ]
+                }, 
+                "intent_out": {
+                    "ctor": [
+                        "{PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});", 
+                        "{py_var}->{BBB} = {cpp_var};"
+                    ]
+                }
+            }
+        }, 
+        "Class2": {
+            "LUA_pop": "({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
+            "LUA_type": "LUA_TUSERDATA", 
+            "base": "wrapped", 
+            "c_fortran": "type(C_PTR)", 
+            "c_to_cpp": "static_cast<{C_const}Class2{ptr}>(static_cast<{C_const}void *>({c_var}))", 
+            "c_type": "DEF_class2", 
+            "cpp_to_c": "static_cast<{C_const}DEF_class2 *>(static_cast<{C_const}void *>({cpp_var}))", 
+            "cpp_type": "Class2", 
+            "f_args": "{c_var}%{F_derived_member}", 
+            "f_derived_type": "class2", 
+            "f_module": {
+                "class2_mod": [
+                    "class2"
+                ]
+            }, 
+            "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
+            "f_type": "type(class2)", 
+            "forward": "Class2", 
             "py_statements": {
                 "intent_in": {
                     "post_parse": [
