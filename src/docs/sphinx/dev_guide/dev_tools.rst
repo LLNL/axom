@@ -12,35 +12,34 @@
 .. _tooleco-label:
 
 ======================================================
-Software Development Tool Ecosystem
+Software Development Tools and Usage
 ======================================================
 
 We use a variety of tools for software development. Our tool philosophy has
 three main tenets:
 
-  * Use robust, commonly-used tools - don't invent something if we don't need to
-  * Use the tools in ways that are easy for non-experts
+  * Employ robust, commonly-used tools - don't re-invent something that already exists
+  * Apply tools in ways that are easy for non-experts
   * Strive for automation and reproducibility
 
-The main tools we use are listed in this section. Details about how we use 
+The main tools we use are listed below. Details about how we use 
 them and helpful information about getting started are provided 
 in the sections that follow.
 
-* We use our `Confluence project space <https://lc.llnl.gov/confluence/display/ASCT/ASC+Simulation+CS+Toolkit+Home>`_ for team discussion, planning, maintaining meeting notes, etc.
-* Our Git repository houses the Toolkit source code, build configurations, scripts, test suites, documentation, etc. The repository lives in our `Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_.
-* We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for issue tracking.
+* We use our `Confluence space <https://lc.llnl.gov/confluence/display/ASCT/ASC+Simulation+CS+Toolkit+Home>`_ for team discussion, planning, maintaining meeting notes, etc.
+* Our Git repository contains Toolkit source code, build configurations, scripts, test suites, documentation, etc. The repository lives in our `Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
+* We use our `JIRA project <https://lc.llnl.gov/jira/projects/ATK>`_ for issue tracking.
 * We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for continuous integration and automated testing.
+
 
 --------------------------
 Build, Link, Triumph (BLT)
 --------------------------
 
 Our build system, called *BLT*, is maintained in its own repo in our 
-Bitbucket project. **Add link to BLT documentation when it is available** 
-BLT provides a "common sense" setup based on CMake. It manages our build 
-environment (compilers, programming models - OpenMP, MPI, CUDA, etc., and 
-third-party library locations) as well as our software development tool 
-integration via *make targets*. BLT has built-in support for the following
+Bitbucket project. BLT provides a "common sense" setup based on CMake for 
+configuring and builg the Toolkit code. It also enables software development 
+tool integration via *make targets*. BLT has built-in support for the following
 tools, all of which we use for Toolkit development:
 
 * Documentation - *Doxygen* (source code docs) and *Sphinx* (user docs)
@@ -48,11 +47,13 @@ tools, all of which we use for Toolkit development:
 * Code Health - *Uncrustify* (code style), *gcov* and *lcov* (code coverage), and *Valgrind* (memory checking)
 * Benchmarking - *Google Benchmark*
 
+See **BLT documentation (add link)** for more information.  
+
 We use `Spack <https:://github.com/LLNL/spack>`_ to manage and build the 
 third-party libraries on which the Toolkit depends.
 
-The Toolkit **Quick Start Guide (add link)** contains information about
-building the code and third-party libraries.
+The Toolkit **Quick Start Guide (add link)** describes how to build the
+code and third-party libraries.
 
 .. note :: BLT is supported as a standalone product and used by other 
            software projects.
@@ -65,30 +66,27 @@ Git/Bitbucket
 This section provides some information about getting started with Git and 
 Bitbucket and describes operations related to topic branch development 
 on the CS Toolkit project. Our Git repository lives in our 
-`Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_.
+`Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 
 If you are new to the Git or want to brush up on its features, there are 
-several good source of information available on the web::
+several good source of information available on the web:
 
-  * `Atlassian Git Tutorial <https://www.atlassian.com/git/>`_ has a lot of 
-     useful stuff.
-  * The `Git Docs <https://git-scm.com/docs/>`_ is a complete reference for
-    Git commands and options. It also provides soem *cheat sheets* you can 
-    download.
-  * `Learn Git Branching <http://learngitbranching.js.org/>`_ is nice for 
-     visual, hands-on learners. 
-  * The e-book `Pro Git, by Scott Chacon <https://git-scm.com/book/en/v2>`_ 
-    is an excellent overview guide to using Git effectively.
+  * `Atlassian Git Tutorial <https://www.atlassian.com/git/>`_ has a lot of useful stuff.
+  * The `Git Docs <https://git-scm.com/docs/>`_ is a complete reference for Git commands and options. It also provides soem *cheat sheets* you can download.
+  * `Learn Git Branching <http://learngitbranching.js.org/>`_ is nice for visual, hands-on learners. 
+  * The e-book `Pro Git, by Scott Chacon <https://git-scm.com/book/en/v2>`_ is an excellent overview guide to using Git effectively.
 
 To make Git easier to work with, you can define aliases in your shell
 environment to do things like set your prompt to show which branch you are on.
 If you are a csh/tcsh user, for example, you can add the following to the
-file that defines your profile::
+file (e.g., .cshrc) that defines your profile::
 
    alias __git_current_branch 'git rev-parse --abbrev-ref HEAD >& /dev/null && echo "{`git rev-parse --abbrev-ref HEAD`}"'
    alias precmd 'set prompt="%n@%m>`__git_current_branch` "'
 
-See also `Git scripts <https://github.com/git/git/tree/master/contrib/completion>`_ and elsewhere for useful scripts that folks have written to enable features
+See also 
+`Git scripts <https://github.com/git/git/tree/master/contrib/completion>`_ 
+and elsewhere for useful scripts that folks have written to enable features
 like tab-autocompletion for Git commands.
 
 SSH keys
@@ -153,7 +151,7 @@ on a topic branch is:
 
 Here are some details about each of these steps.
 
-**Step 1 Create a topic branch**. A topic branch name should include your 
+**Step 1 -- Create a topic branch**. A topic branch name should include your 
 user id and a brief description indicating the purpose of the branch. We 
 typically label such branches using "feature", "bugfix", etc. to make it 
 clear what type of work is being performed on a branch. For example,::
@@ -172,7 +170,7 @@ In each of these examples, the 'git push -u' command pushes the branch to
 Bitbucket and it will appear in the list of branches you and other developers 
 can see there.
 
-**Step 2 Edit Files.** After the topic branch is created, and you've pushed 
+**Step 2 -- Edit Files.** After the topic branch is created, and you've pushed 
 it to Bitbucket, perform your development; i.e., edit files, add files, etc. 
 Common commands you will use are::
 
@@ -197,7 +195,7 @@ on the commit message you provide when you execute the 'commit' command. The
 constraints are recommended Git practices that help make it easier to use 
 various tools with the Git version control system.
 
-**Step 3 Keep current with develop.** If you will be working on your branch 
+**Step 3 -- Keep current with develop.** If you will be working on your branch 
 for a while, it is a good idea to merge from the develop branch to your topic 
 branch regularly to avoid getting too far out of sync. Otherwise, you may have 
 many conflicts to resolve when you are ready to merge your topic branch
@@ -245,7 +243,7 @@ conflicts.
 .. important:: **Git will not let you commit a file with merge conflicts.**
 
 
-**Step 4 Create a pull request.** When your work is complete, and you are 
+**Step 4 -- Create a pull request.** When your work is complete, and you are 
 ready to merge your topic branch to the develop branch, you must initiate a 
 pull request in Bitbucket. This is done by going 
 into the Toolkit Bitbucket project, selecting your branch, and clicking the 
@@ -428,6 +426,16 @@ Issue assignee
 Note that an assigned issue can be assigned to someone else to work on it.
 An assigned issue can also be set back to 'Unassigned' if it needs further 
 discussion by the team.
+
+JIRA tips
+^^^^^^^^^^
+
+Here are some links to short videos (a couple of minutes each) that 
+demonstrate how to use JIRA features:
+
+   * `JIRA Instant Search Bar Demo <https://www.youtube.com/watch?v=ZmACxhzXLco&list=PLlALqRAjvdnGB_T0GAB1Fk2rVZgnJJAOa&index=3>`_
+   * `JIRA System Files Demo <https://www.youtube.com/watch?v=O08oySq043w&list=PLlALqRAjvdnGB_T0GAB1Fk2rVZgnJJAOa&index=4>`_
+   * `Creating and Editing JIRA Issues <https://www.youtube.com/watch?v=EsQ__dR6Nrw&list=PLlALqRAjvdnGB_T0GAB1Fk2rVZgnJJAOa&index=5>`_
 
 
 --------------------------------------
