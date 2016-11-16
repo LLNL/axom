@@ -207,7 +207,7 @@ if __name__ == '__main__':
     if args.testname:
         test_names = args.testname
     else:
-        test_names = [ 'options', 'tutorial', 'example', 'names', 'strings' ]
+        test_names = [ 'tutorial', 'example', 'include', 'names', 'strings' ]
 
     logging.info('Tests to run: {}'.format( ' '.join(test_names)))
 

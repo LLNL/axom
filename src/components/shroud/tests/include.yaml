@@ -1,0 +1,34 @@
+#
+# Test fields
+#
+#  cpp_header  namespace
+
+
+cpp_header: global_header.hpp
+options:
+  namespace: one two
+
+types:
+   CustomType:
+      typedef : int
+      c_header : type_header.h
+      cpp_header : type_header.hpp
+
+classes:
+  - name: Class1
+    cpp_header: class_header.hpp
+    options:
+      namespace: three
+    methods:
+    -  decl: void method1(CustomType arg1)
+
+  - name: Class2
+#    cpp_header: no header
+#    options:
+#      namespace: no namespace
+    methods:
+             # do not use CustomType to avoid header file
+    -  decl: void method1()
+
+functions:
+-  decl: void function1()

@@ -1,4 +1,4 @@
-Read yaml options.yaml
+Read yaml include.yaml
 class Class1
 C method void method1(CustomType arg1+intent(in)+value)
 Close wrapClass1.h
