@@ -334,6 +334,43 @@ CMake options
 |                                   |errors.                        |        |
 +-----------------------------------+-------------------------------+--------+
 
+.. danger:: 
+    We are going to pull out boost, but if we kept it in - we should simply support
+    via BOOST_DIR, not ENABLE_BOOST + BOOST_ROOT
+    
+
+
+CMake Options used to include Third-party Libraries:
+
++-----------------------------------+---------------------------------------------------+
+|OPTION                             |   Description                                     |
++===================================+===================================================+
+|HDF5_DIR                           | Path to HDF5 install                              |
++-----------------------------------+---------------------------------------------------+
+|CONDUIT_DIR                        | Path to Conduit install                           |
++-----------------------------------+---------------------------------------------------+
+|PYTHON_EXECUTABLE                  | Path to Python executable                         |
++-----------------------------------+---------------------------------------------------+
+|SPARSEHASH_DIR                     | Path to Sparsehash install                        |
++-----------------------------------+---------------------------------------------------+
+
+CMake Options used to enable Software Development Tools (should these go in BLT docs and link here?):
+
++-----------------------------------+---------------------------------------------------+
+|OPTION                             |   Description                                     |
++===================================+===================================================+
+|SPHINX_EXECUTABLE                  | Path to sphinx-build executable (support via BLT) |
++-----------------------------------+---------------------------------------------------+
+|DOXYGEN_EXECUTABLE                 | Path to doxygen executable (support via BLT)      |
++-----------------------------------+---------------------------------------------------+
+|UNCRUSTIFY_EXECUTABLE              | Path to uncrustify executable (support via BLT)   |
++-----------------------------------+---------------------------------------------------+
+
+
+.. danger::
+    TODO: LCOV_PATH, GENHTML_PATH, GCOV_PATH  -- these aren't named consistently (_EXECUTABLE suffix?) 
+
+
 
 --------------------------
 Make targets
