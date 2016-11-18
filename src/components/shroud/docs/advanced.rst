@@ -138,6 +138,7 @@ To include a file in the implementation list it in the global or class options::
     cpp_header: global_header.hpp
 
     classes:
+    -  name: Class1
        cpp_header: class_header.hpp
 
     types:
@@ -157,6 +158,30 @@ which helps map C++ constants to C constants
 Namespace
 ---------
 
+Each library or class can be associated with a namespace::
+
+    namespace one {
+    namespace two {
+       void function();
+
+       namespace three {
+         class Class1 {
+         };
+       }
+
+       class Class2 {
+       };
+    }
+    }
+
+The YAML file would look like::
+
+    namespace: one two
+
+    classes:
+    -  Class1
+       cpp_header: one two three
+    -  Class2
 
 
 Local Variable
