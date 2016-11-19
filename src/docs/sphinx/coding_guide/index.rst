@@ -40,12 +40,12 @@ on the particular code situation. It is best to use them in a manner that
 enhances code readability and help to reduce user and developer errors.
 
 .. important:: * Variations in coding style for different Toolkit components 
-                 is permitted.However, coding style within each Toolkit 
+                 is permitted. However, coding style *within each* Toolkit 
                  component **must** be consistent.
-               * Significant deviations from these guidelines **must** be 
+               * Deviations from these guidelines **must** be 
                  discussed and agreed upon by the development team.
                * When the team agrees on changes to these guidelines, this
-                 guide **must** be changed accordinagly.
+                 guide **must** be updated.
 
 
 **Contents:**
@@ -53,7 +53,14 @@ enhances code readability and help to reduce user and developer errors.
 .. toctree::
    :maxdepth: 3
 
-   coding_guidelines
+   changing_code_sec1
+   names_sec2
+   dirorg_sec3
+   headerorg_sec4
+   sourceorg_sec5
+   scope_sec6
+   documentation_sec7
+   remaining
 
 
 Indices and tables

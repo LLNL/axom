@@ -402,7 +402,7 @@ and quickly. Consistently-applied conventions for file organization
 can significantly improve user understanding and developer productivity. 
 
 ---------------------------------------------------------
-All Content In A Header File Should Be Related
+All Header File Content Should Be Related
 ---------------------------------------------------------
 
 4.1 A header file **may** contain multiple type definitions (e.g., structs, 
@@ -597,44 +597,44 @@ are contained in the guidelines after the summary.
    #endif // closing endif for header file include guard
 
 
-4.10 Each header file **must** begin with a Doxygen file prologue (item 1).
+4.10 **(Item 1)** Each header file **must** begin with a Doxygen file prologue.
 
       See :ref:`docsec-label` for details.
 
-4.11 The contents of each header file **must** be guarded using a 
-preprocessor directive that defines a unique "guard name" for the header.
+4.11 **(Items 2a,2b)** The contents of each header file **must** be guarded 
+using a preprocessor directive that defines a unique "guard name" for the file.
 
       The guard must appear immediately after the file prologue and use the
       '#ifndef' directive (item 2a); this requires a closing '#endif' 
       statement at the end of the file (item 2b). The preprocessor constant 
       must use the file name followed by "_HPP"; e.g., "MYCLASS_HPP" as above.
 
-4.12 Each header file **must** contain a comment section that includes the 
-CS Toolkit copyright and release statement (item 3).
+4.12 **(Item 3)** Each header file **must** contain a comment section that 
+includes the CS Toolkit copyright and release statement.
 
       See :ref:`docsec-label` for details.
 
-4.13 All necessary header file inclusion statements (item 4) **must** 
+4.13 **(Item 4)** All necessary header file inclusion statements **must** 
 appear immediately after copyright and release statement and before any 
 forward declarations, type definitions, etc.
 
-4.14 Any necessary forward declarations (item 5) for types defined outside 
+4.14 **(Item 5)** Any necessary forward declarations for types defined outside 
 the project namespace **must** appear after the header include statements
 and before the Toolkit project namespace statement.
 
-4.15 All types defined and methods defined in a header file **must** be 
-included in a namespace.
+4.15 **(Items 6a, 6b, 7a, 7b)** All types defined and methods defined in a 
+header file **must** be included in a namespace.
 
-      Either the project "asctoolkit" namespace (item 6) or a namespace
-      nested within the project namespace (item 7) may be used, or 
+      Either the project "asctoolkit" namespace (item 6a) or a namespace
+      nested within the project namespace (item 7a) may be used, or 
       both may be used. A closing brace ( "}" ) is required to close each
       namespace declaration (items 6b and 7b) before the closing '#endif' 
       for the header file include guard.
 
-4.16 Forward declarations needed **must** appear first in the "asctoolkit" or 
-nested namespace before any other statements (item 8).
+4.16 **(Item 8)** Forward declarations needed **must** appear in the 
+appropriate  namespace before any other statements (item 8).
 
-4.17 All class and other type definitions (item 9) **must** appear 
+4.17 **(Item 9)** All class and other type definitions **must** appear 
 after header file inclusions and forward declarations. A proper class 
 prologue **must** appear before the class definition; see Section 4 
 for details.
@@ -721,27 +721,36 @@ are contained in the guidelines after the summary.
    } // asctoolkit namespace closing brace
 
 
-5.4 Each source file **must** begin with a Doxygen file prologue (item 1).
+5.4 **(Item 1)** Each source file **must** begin with a Doxygen file prologue.
 
       See :ref:`docsec-label` for details.
 
-5.5 Each source file **must** contain a comment section that includes the CS Toolkit copyright and release statement (item 2).
+5.5 **(Item 2)** Each source file **must** contain a comment section that 
+includes the CS Toolkit copyright and release statement.
 
       See :ref:`docsec-label` for details.
 
-5.6 All necessary header file include statements (item 3) **must** appear 
-immediately after the copyright and release statement and before any i
-mplementation statements in the file.
+5.6 **(Item 3)** All necessary header file include statements **must** appear 
+immediately after the copyright and release statement and before any 
+implementation statements in the file.
 
-5.7 All contents in a source file **must** follow the same namespace 
-inclusion pattern as its corresponding header file (see item 3.4.6).
+.. note :: If a header is included in a header file, it **should not** be 
+           included in the associated source file.
+
+5.7 **(Items 4a, 4b, 5a, 5b)** All contents in a source file **must** follow 
+the same namespace inclusion pattern as its corresponding header file 
+(See :ref:`headerlayout-label`).
 
       Either the main project namespace (item 4a) or internal namespace 
       (item 5a) may be used, or both may be used. A closing brace ( "}" ) 
       is required to close each namespace declaration (items 4b and 5b).
 
-5.8 When used, static variables and class data members **must** be initialized 
-explicitly in the class source file before any method implementations (item 6).
+5.8 **(Item 6)** Any static variables and class data members that are 
+defined in a header file **must** be initialized in the associated source 
+file before any method implementations.
+
+5.9 **(Items 7, 8)** Static method implementations **must** appear before 
+non-static method implementations.
 
 
 .. _scopesec-label:

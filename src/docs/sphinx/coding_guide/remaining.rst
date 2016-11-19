@@ -1,0 +1,1085 @@
+.. ##
+.. ## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. ##
+.. ## Produced at the Lawrence Livermore National Laboratory.
+.. ##
+.. ## All rights reserved.
+.. ##
+.. ## This file cannot be distributed without permission and
+.. ## further review from Lawrence Livermore National Laboratory.
+.. ##
+
+.. _designsec-label:
+
+=======================================================
+6 Design and Implement for Correctness and Robustness
+=======================================================
+
+The guidelines in this section describe sound software design and
+engineering practices that help enforce correctness and robustness 
+and help avoid mis-interpretation or confusion by others.
+
+
+--------------------------------------------------------------------
+6.1 General Guidelines 
+--------------------------------------------------------------------
+
+6.1.1 Simplicity, clarity, ease of modification and extension **should** 
+always be a main goal when writing new code or changing existing code. 
+
+6.1.2 Each entity (class, struct, variable, function, etc.) **should** embody 
+one clear, well-defined concept. 
+
+      The responsibilities of an entity may increase as it is used in new and 
+      different ways. However, changes that divert it from its original intent 
+      **should** be avoided. Also, large, monolithic entities that provide too 
+      much functionality or which include too many concepts tend to increase 
+      code coupling and complexity and introduce undesirable side effects. 
+      Smaller, clearly constrained objects are easier to write, test, maintain,
+      and use correctly. Also, small, simple objects tend to get used more 
+      often and reduce code redundancy.
+
+6.1.3 Global, complex, or opaque data sharing **should** be avoided. Shared 
+data increases coupling and contention between different parts of a code base, 
+which makes maintenance and modification difficult.
+
+6.1.4 Static or global variables of class type **must not** be used.
+
+      Due to indeterminate order of construction, their use may cause bugs
+      that are very hard to find. Static or global variables that are pointers
+      to class types **may** be used and must be initialized properly in a
+      single source file.
+
+6.1.5 Preprocessor macros **should not** be used when there is a better 
+alternative, such as an inline function or a constant variable definition.
+
+      For example, this::
+
+         const double PI = 3.1415926535897932384626433832;
+
+      is preferable to this::
+
+         #define PI (3.1415926535897932384626433832)
+
+      Macros circumvent the ability of a compiler to enforce beneficial
+      language concepts such as scope and type safety. Macros are also
+      context-specific and can produce errors that cannot be understood
+      easily in a debugger. Macros **should be used only** when there is
+      no better choice for a particular situation.
+
+6.1.6 Hard-coded numerical constants and other "magic numbers" **must not** 
+be used directly in source code. When such values are needed, they **should** 
+be declared as named constants to enhance code readability and consistency.
+
+
+---------------------------------------------------
+6.2 Compiler-generated Class Methods
+---------------------------------------------------
+
+The guidelines in this section apply to class methods that may be 
+*automatically generated* by a compiler, including constructors, destructors,
+copy, and move methods. Developers should be aware of the conditions under
+which compilers will and will not generate these methods. Developers should
+also be aware of when compiler-generated methods suffice and when they do not.
+After providing some guidelines, we discuss standard C++ rules that compilers
+follow for generating class methods when they are not explicitly defined. 
+See :ref:`automethods-label`.
+
+The most important cases to pay attention to involve the destructor, copy
+constructor, and copy-assignment operator. Classes that provide these methods,
+either explicitly or compiler-generated, are referred to as *copyable*. Failing 
+to follow the rules for these methods can be damaging due to errors or 
+unexpected behavior. Rules involving the move constructor and move-assignment 
+operator are less important since they mostly affect efficiency and not 
+correctness. Copy operations can be used to accomplish the same end result
+as move operations, just less efficiently. Move semantics are an important
+optimization feature of C++. The C++11 standard requires compilers to use 
+move operations instead of copy operations when certain conditions are 
+fulfilled. Classes that provide move operations, either explicitly or 
+compiler-generated, are referred to as *movable*.
+
+6.2.1 Each class **must** follow the *Rule of Three* which states: if the 
+destructor, copy constructor, or copy-assignment operator is explicitly 
+defined, then the others **must** be defined.
+
+      Compiler-generated and explicit versions of these methods **must not**
+      be mixed. If a class requires one of these methods to be implemented, 
+      it almost certainly requires all three to be implemented. 
+
+      This rule helps guarantee that class resources are managed properly. 
+      C++ copies and copy-assigns objects of user-defined types in various 
+      situations (e.g., passing/returning by value, container manipulations, 
+      etc.). These special member functions will be called, if accessible. 
+      If they are not user-defined, they are implicitly-defined by the compiler.
+
+      Compiler-generated special member functions are often incorrect 
+      if a class manages a resource whose handle is an object of 
+      non-class type. Consider a class data member which is a raw pointer to 
+      an object. The compiler-generated class destructor will not free the 
+      object. Also, the compiler-generated copy constructor and copy-assignment
+      operator will perform a "shallow copy"; i.e., they will copy the value 
+      of the pointer without duplicating the underlying resource.
+
+6.2.2 A class that manages non-copyable resources through non-copyable handles, 
+such as pointers, **should** declare the copy methods private and and leave 
+them unimplemented.
+
+      When the intent is that such methods should never be called, this is a 
+      good way to help a compiler to catch unintended usage. For example::
+
+	   class MyClass
+	   {
+	      // ...
+
+	   private:
+	      // The following methods are not implemented
+	      MyClass();
+	      MyClass(const MyClass&);
+	      void operator=(const MyClass&);
+
+	      // ...
+	   };
+
+      When code does not have access to the private members of a class tries 
+      to use such a method, a compile-time error will result. If a class does 
+      have private access and tries to use one of these methods an link-time 
+      error will result. 
+
+      This is another application of the "Rule of Three".
+
+      **Exception:** If a class inherits from a base class that declares
+      these methods private, the subclass need not declare the methods
+      private. Including comments in the derived class header indicating that
+      the the parent class enforces the non-copyable properties of the class
+      is helpful.
+
+6.2.3 When the compiler-generated versions are appropriate (i.e.,
+correct and sufficiently fast), the default constructor, copy constructor, 
+destructor, and copy assignment **may** be left undeclared. In this case, 
+it is often helpful to add comments to the class header file indicating that 
+the compiler-generated versions of these methods will be used.
+
+6.2.4 If a class is default-constructable and has POD or bare pointer data 
+members, its default constructor **must** be defined explicitly and the 
+data members **must** be initialized explicitly. A compiler-generated version 
+of a default constructor will not initialize such members, in general.
+
+6.2.5 By convention, a functor class **should** have a copy constructor and 
+copy-assignment operator. 
+
+      Typically, the compiler-generated versions are sufficient when the class 
+      has no state or non-POD data members. Since such classes are usually 
+      small and simple, the compiler-generated versions of these methods 
+      **may** be used without documenting the use of default value semantics 
+      in the functor definition.
+
+
+.. _automethods-label:
+
+--------------------------------------------------------
+6.3 Standard Rules for Compiler-generated Class Methods
+--------------------------------------------------------
+
+This section provides some background information related to the guidelines
+in the previous section. There, we provide guidelines that help to decide 
+when to define class methods that may be generated automatically by a compiler 
+and when relying on compiler-generated versions suffices.  Here, we describe
+the conditions under which compilers generate methods automatically.
+
+Consider the following simple class::
+
+   class MyClass
+   {
+   public:
+      int x;
+   };
+
+How many methods does it have? None?
+
+Actually, MyClass may have as many as **six** methods depending on how it is 
+used: a default constructor, destructor, copy constructor, copy-assignment 
+operator, move constructor, and move-assignment operator. Any of these may 
+be generated by a compiler.
+
+C++ compiler rules for generating class member functions are:
+
+   * The parameter-less default constructor is generated if a class does
+     not define *any* constructor and all base classes and data members
+     are default-constructable. This means that once you declare a copy
+     constructor (perhaps to disable the automatically provided one),
+     the compiler will not supply a default constructor.
+   * The destructor is automatically supplied if possible, based on the
+     members and the base classes.
+   * A copy constructor is generated if all base classes and members are
+     copy-constructable. Note that reference members are copy-constructable.
+   * The copy-assignment operator is generated if all base classes and members
+     are copy-assignable. For this purpose, reference members are not
+     considered copy-assignable.
+   * A move constructor is supplied unless the class has any of the following: 
+     a user-defined copy constructor, copy-assignment operator, 
+     move-assignment operator, or destructor. If the move constructor cannot
+     be implemented because not all base classes or members are
+     move-constructable, the supplied move constructor will be defined
+     as deleted.
+   * A move-assignment operator is generated under the same conditions as 
+     the move constructor.
+
+The importance of understanding these rules and applying the guidelines in 
+the previous section is underscored by the fact that compiler-generated 
+methods may have different behaviors depending on how they are used. Here 
+we provide some examples based on MyClass defined above.
+
+If MyClass has a user-defined constructor, then
+
+.. code-block:: cpp
+
+    MyClass item1;
+
+and
+
+.. code-block:: cpp
+
+    MyClass item2 = MyClass();
+
+will both call the user-defined default constructor "MyClass()" and there is
+only one behavior.
+
+However, if MyClass relies on the compiler-generated constructor
+
+.. code-block:: cpp
+
+    MyClass item1;
+
+performs *default initialization*, while
+
+.. code-block:: cpp
+
+    MyClass item2 = MyClass();
+
+performs *value initialization*.
+
+Default initialization calls the constructors of any base classes, and nothing
+else. Since constructors for intrinsic types do not do anything, that means
+all member variables will have garbage values; specifically, whatever values 
+happen to reside in the corresponding addresses.
+
+Value initialization also calls the constructors of any base classes. Then,
+one of two things happens:
+
+   * If MyClass is a POD class (all member variables are either intrinsic
+     types or classes that only contain intrinsic types and have no
+     user-defined constructor/destructor), all data is initialized to 0.
+   * If MyClass is not a POD class, the constructor does not touch any data,
+     which is the same as default initialization (so member variables have
+     garbage values unless explicitly constructed otherwise).
+
+Other points worth noting:
+
+   * Intrinsic types, such as int, float, bool, pointers, etc. have
+     constructors that do nothing (not even initialize to zero), destructors
+     that do nothing, and copy constructors and copy assignment-ers that
+     blindly copy bytes.
+   * Comparison operators, such as "==" or "!=" are never automatically
+     generated by a compiler, even if all base classes and members are
+     comparable.
+
+
+---------------------------------------------------
+6.3 Class Data Initialization and Copying
+---------------------------------------------------
+
+6.3.1 Each class data member **must** be initialized (using default values 
+when appropriate) in every class constructor. That is, an initializer or
+initialization **must** be provided for each class data member so that 
+every object is in a well-defined state upon construction. 
+
+      Generally, this requires a user-defined default constructor when a class 
+      has POD members. Do not assume that a compiler-generated default 
+      constructor will leave any member variable in a well-defined state.
+
+      **Exception:** A class that has no data members, including one that 
+      is derived from a base class with a default constructor that provides 
+      full member initialization, does not require a user-defined default 
+      constructor since the compiler-generated version will suffice.
+
+6.3.2 Data member initialization **should** be used instead of assignment in 
+con structors, especially for small classes. Initialization prevents needless 
+run-time work and is often faster.
+
+6.3.3 For classes with complex data members, assignment within the body of 
+the constructor **may** be preferable.
+
+      If the initialization process is sufficiently complex, it **may** be
+      better to perform object initialization in a method that is called
+      after object creation, such as "init()".
+
+6.3.4 When using initialization instead of assignment to set data member 
+values in a constructor, data members **should** always be initialized 
+in the order in which they appear in the class definition. 
+
+      Compilers adhere to this order regardless of the order that members 
+      appear in the class initialization list. So you may as well agree with 
+      the compiler rules and avoid potential errors that could result when
+      one member depends on the state of another.
+
+6.3.3 A constructor **must not** call a virtual function on any data member 
+object since an overridden method defined in a subclass cannot be called 
+until the object is fully constructed. 
+
+      There is no general guarantee that data members are fully-created 
+      before a constructor exits.
+
+6.3.4 All memory allocated in a class constructor **should** be de-allocated 
+in the class destructor. 
+
+      Note that the intent of constructors is to acquire resources and the 
+      intent of destructors is to free those resources.
+
+6.3.5 A user-supplied implementation of a class copy-assignment operator 
+**should** check for assignment to self, **must** copy all data members 
+from the object passed to operator, and **must** return a reference to "\*this".
+
+      The *copy-and-swap* idiom **should** be used. 
+
+6.3.6 All constructors and copy operations for a derived class **must** call 
+the necessary constructors and copy operations for each of its base classes 
+to insure that each object is properly allocated and initialized.
+
+
+---------------------------------------------------
+6.4 Class Inheritance
+---------------------------------------------------
+
+6.4.1 Class composition **should** be used instead of inheritance to extend behavior.
+
+      Looser coupling between objects is typically more flexible and easier
+      to maintain and refactor.
+
+6.4.2 Class hierarchies **should** be designed so that subclasses inherit from abstract interfaces; i.e., pure virtual base classes.
+
+      Inheritance is often done to reuse code that exists in a base class.
+      However, there are usually better design choices to achieve reuse.
+      Good object-oriented use of inheritance is to reuse existing *calling*
+      code by exploiting base class interfaces using polymorphism. Put another
+      way, "interface inheritance" should be used instead of "implementation
+      inheritance".
+
+6.4.3 Deep inheritance hierarchies; i.e., more than 2 or 3 levels, **should**
+be avoided.
+
+6.4.4 Multiple inheritance **should** be restricted so that only one base 
+class contains methods that are not "pure virtual".
+
+6.4.4 One **should not** inherit from a class that was not designed to be a 
+base class; e.g., if it does not have a virtual destructor.
+
+      Doing so is bad practice and can cause problems that may not be reported 
+      by a compiler; e.g., hiding base class members. To add functionality, 
+      one **should** employ class composition rather than by "tweaking" an 
+      existing class.
+
+6.4.5 The destructor of a class that is designed to be a base class **must** 
+be declared "virtual". 
+
+      However, sometimes a destructor should not be declared virtual, such as 
+      when deletion through a pointer to a base class object should be 
+      disallowed.
+
+6.4.6 "Private" and "protected" inheritance **must not** be used unless you 
+absolutely understand the ramifications of such a choice and are sure that 
+it will not create design and implementation problems.
+
+      Such a choice **must** be reviewed with team members. There almost
+      always exist better alternatives.
+
+6.4.7 Virtual functions **should** be overridden responsibly. That is, the 
+pre- and post-conditions, default arguments, etc. of the virtual functions 
+should be preserved.
+
+      Also, the behavior of an overridden virtual function **should not**
+      deviate from the intent of the base class. Remember that derived classes
+      are subsets, not supersets, of their base classes.
+
+6.4.8 Inherited non-virtual methods **must not** be overloaded or hidden.
+
+6.4.9 A virtual function in a base class **should only** be implemented in
+the base class if its behavior is always valid default behavior for *any* 
+derived class.
+
+6.4.10 If a method in a base class is not expected to be overridden in any 
+derived class, then the method **should not** be declared virtual.
+
+6.4.11 If each derived class has to provide specific behavior for a base class 
+virtual function, then it **should** be declared *pure virtual*.
+
+6.4.12 Virtual functions **must not** be called in a class constructor or 
+destructor. Doing so is undefined behavior. Even if it seems to work 
+correctly, it is fragile and potentially non-portable.
+
+6.4.13 A constructor for a derived class **must** call the appropriate 
+constructor for each of its base classes to insure that each object 
+is properly allocated and initialized.
+
+6.4.14 Copy operations for a derived class **must** call the appropriate copy 
+operations for each of its base classes to insure that each object is properly 
+allocated and initialized.
+
+
+--------------------------------------------------------------------
+6.5 Inline Functions
+--------------------------------------------------------------------
+
+Function inlining is a compile time operation and the full definition of an 
+inline function must be seen wherever it is called. Thus, the implementation
+of every function to be inlined must be provided in a header file. 
+
+Whether or not a function implemented in a header file is explicitly declared
+inline using the "inline" keyword, the compiler decides if the function will 
+be inlined. A compiler will not inline a function that it considers too 
+long or too complex (e.g., if it contains complicated conditional logic). 
+When a compiler inlines a function, it replace the function call with the 
+body of the function. Most modern compilers do a good job of deciding when 
+inlining is a good choice.
+
+It is possible to specify function attributes and compiler flags that can
+force a compiler to inline a function. Such options should be applied with 
+care to prevent excessive inlining that may cause executable code bloat and/or 
+may make debugging difficult.
+
+**When in doubt, don't use the "inline" keyword and let the compiler decide 
+whether to inline a function.**
+
+6.5.1 Simple, short frequently called functions, such as accessors, that will
+almost certainly be inlined by most compilers **should** be implemented inline 
+in header files.
+
+6.5.2 Class constructors **should not** be inlined. 
+
+      A class constructor implicitly calls the constructors for its base 
+      classes and initializes some or all of its data members, potentially 
+      calling more constructors. If a constructor is inlined, the construction 
+      and initialization needed for its members and bases will appear at every 
+      object declaration.
+
+      **Exception:** A class/struct that has only POD ("plain old data") 
+      members, is not a subclass, and does not explicitly declare a destructor,
+      can have its constructor safely inlined in most cases. 
+
+6.5.3 Virtual functions **must not** be inlined due to polymorphism. 
+
+      For example, do not declare a virtual class member function as::
+
+         virtual void foo( ) { }
+
+      In most circumstances, a virtual method cannot be inlined because a
+      compiler must do runtime dispatch on a virtual method when it doesn't 
+      know the complete type at compile time.
+
+      **Exception:** It is safe to define an empty destructor inline in an
+      abstract base class with no data members.
+
+
+--------------------------------------------------------------------
+6.6 Function and Operator Overloading
+--------------------------------------------------------------------
+
+6.6.1 Function overloading **must not** be used to define functions that 
+do conceptually different things. 
+
+      Someone reading declarations of overloaded functions should be able to 
+      assume (and rightfully so!) that functions with the same name do 
+      something very similar.
+
+6.6.2 If an overloaded virtual method in a base class is overridden in a 
+derived class, all overloaded methods with the same name in the base class 
+**must** be overridden in the derived class. 
+
+      This prevents unexpected behavior when calling such member functions. 
+      Remember that when a virtual function is overridden, the overloads of 
+      that function in the base class **are not visible** to the derived class.
+
+6.6.3 Operator overloading **must not** be used to be clever to the point of 
+obfuscation and cause others to think too hard about an operation. 
+Specifically, an overloaded operator must preserve "natural" semantics 
+by appealing to common conventions and **must** have meaning similar 
+to non-overloaded operators of the same name.
+
+      Overloading operators can be beneficial, but **should not** be overused 
+      or abused. Operator overloading is essentially "syntactic sugar" and an
+      overloaded operator is just a function like any other function. An 
+      important benefit of overloading is that it often allows more 
+      appropriate syntax that more easily communicates the meaning of an 
+      operation. The resulting code can be easier to write, maintain, and 
+      understand, and it may be more efficient since it may allow the compiler
+      to take advantage of longer expressions than it could otherwise.
+
+6.6.4 Both boolean operators "==" and "!=" **should** be implemented if one 
+of them is. 
+
+      For consistency and correctness, the "!=" operator **should** be 
+      implemented using the "==" operator implementation. For example::
+
+         bool MyClass::operator!= (const MyClass& rhs)
+         {
+            return !(this == rhs);
+         }
+
+6.6.5 Standard operators, such as "&&", "||", and "," (i.e., comma), 
+**must not** be overloaded.
+
+      Built-in versions of these operators are typically treated specially 
+      by a compiler. Thus, programmers cannot implement their full semantics. 
+      This can cause confusion. For example, the order of operand evaluation 
+      cannot be guaranteed when overloading operators "&&" or "||". This may 
+      cause problems as someone may write code that assumes that evaluation 
+      order is the same as the built-in versions.
+
+
+--------------------------------------
+6.7 Miscellaneous Function Guidelines
+--------------------------------------
+
+6.7.1 Function arguments **must** be ordered the same way for all routines 
+in a Toolkit component.
+
+      Common conventions are either to put all input arguments first, then
+      outputs, or the other way around. Input and output and outputs
+      **must not** be mixed in a function signature. Parameters that are both
+      input and output can make the best choice unclear. Conventions consistent
+      with related functions **must** always be followed. When adding new
+      parameters to an existing method, the established ordering convention
+      **must** be followed. Do not just stick new parameters at the end of
+      the argument list.
+
+6.7.2 Each function argument that is not a built-in type (i.e., int, double, 
+char, etc.) **should** be passed either by reference or as a pointer to avoid 
+unnecessary copies.
+
+      **Exception:** When pass-by-value behavior is desired.
+
+6.7.3 Each function reference or pointer argument that is not changed by t
+he function **must** be declared "const".
+
+6.7.4 Each argument in a function declaration **must** be given a name that 
+exactly matches the function implementation.
+
+      For example, use::
+
+         void computeSomething(int op_count, int mode);
+
+      not::
+
+         void computeSomething(int, int);
+
+6.7.5 Each function **should** have exactly one return point to make 
+control logic clear.
+
+      Functions with multiple return points tend to be a source of errors when
+      modifying code. Such routines can always be refactored to have a single
+      return point by using local scope boolean variables and/or different
+      control logic.
+
+      A function **may** have two return points if the first return statement
+      is associated with error condition check, for example. In this case,
+      the error check **should** be performed at the start of the function body
+      before other statements are reached. For example, the following is a
+      reasonable use of two function return points because the error condition
+      check and the return value for successful completion are clearly visible::
+
+         int computeSomething(int in_val)
+         {
+            if (in_val < 0) { return -1; }
+
+            // ...rest of function implementation...
+
+            return 0;
+         }
+
+6.7.6 "Sanity checks" should be performed on values of function arguments 
+(e.g., range checking, null pointer checking, etc.) upon entry to a function.
+
+      This is an excellent way to provide run-time debugging capabilities in
+      code. We have macros for this to make syntax consistent. When triggered, 
+      they can emit a failed boolean expression and descriptive message that 
+      help to understand the violation. They are active or not based on the 
+      compilation mode, either debug (active) or optimized (inactive). For 
+      example::
+
+         void doSomething(int in_val, Foo* in_foo)
+         {
+            ATK_ASSERT_MSG( in_val >= 0, "in_val must be positive or zero" );
+            ATK_ASSERT( in_foo != ATK_NULL_PTR );
+
+            // ...function implementation...
+         }
+
+.. note :: We should add specific guidelines for error handling, etc.
+
+
+-------------
+6.8 Types
+-------------
+
+6.8.1 The "bool" type **should** be used instead of "int" for boolean 
+true/false values.
+
+6.8.2 The "string" type **should** be used instead of "char\*".
+
+      The string type supports and optimizes many character string manipulation
+      operations which can be error-prone and less efficient if implemented
+      explicitly using "char\*" and standard C library functions. Note that
+      "string" and "char\*" types are easily interchangeable, which allows C++
+      string data to be used when interacting with C routines.
+
+6.8.3 Class type variables **should** be defined using direct initialization 
+instead of copy initialization to avoid unwanted and spurious type conversions 
+and constructor calls that may be generated by compilers.
+
+      For example, use::
+
+         std::string name("Bill");
+
+      instead of::
+
+         std::string name = "Bill";
+
+      or::
+
+         std::string name = std::string("Bill");
+
+6.8.4 An enumeration type **should** be used instead of macro definitions 
+or "int" data for sets of related constant values. 
+
+      Since C++ enums are distinct types with a compile-time specified set of 
+      values, there values cannot be implicitly cast to integers or 
+      vice versa -- a "static_cast" operator must be used to make the 
+      conversion explicit. Thus, enums provide type and value safety and 
+      scoping benefits.
+
+      In many cases, the C++11 `enum class` construct **should** be used 
+      since it provides stronger type safety and better scoping than regular
+      enum types.
+
+---------------
+6.9 Templates
+---------------
+
+6.9.1 A class or function **should** only be made a template when its 
+implementation is independent of the template type parameter.
+
+       Note that class member templates (e.g., member functions that are
+       templates of a class that is not a template) are often useful to
+       reduce code redundancy.
+
+6.9.2 Generic templates that have external linkage **must** be defined in the 
+header file where they are declared since template instantiation is a compile 
+time operation. Implementations of class templates and member templates that
+are non-trivial **should** be placed in the class header file after the class 
+definition.
+
+6.9.3 Complete specializations of member templates or function templates 
+**must not** appear in a header file.
+
+       Such methods **are not templates** (they are actually regular functions)
+       and thus may produce link errors if their definitions are seen more 
+       than once.
+
+
+--------------------------------------------------------------------
+6.10 Const 
+--------------------------------------------------------------------
+
+6.10.1 The "const" qualifier **should** be used for variables and methods 
+when appropriate to clearly indicate usage and to take advantage of 
+compiler-based error-checking. For example, any class member function 
+that does not change the state of the object on which it is called 
+**should** be declared "const"
+
+      Constant declarations can make code safer and less error-prone since they 
+      enforce intent at compile time. They also improve code understanding
+      because a constant declaration clearly indicates that the state
+      of a variable or object will not change in the scope in which the 
+      declaration appears.
+
+6.10.2 Any class member function that does not change a data member of the 
+associated class **must** be declared "const".
+
+      This enables the compiler to detect unintended usage.
+
+6.10.3 Any class member function that returns a class data member that 
+should not be changed by the caller **must** be declared "const" and 
+**must** return the data member as a "const" reference or pointer.
+
+       Often, both "const" and non-"const" versions of member access functions
+       are needed so that callers may declare the variable that holds the
+       return value with the appropriate "const-ness".
+
+
+--------------------------------------------------------------------
+6.11 Casts and Type Conversions
+--------------------------------------------------------------------
+
+6.11.1 C-style casts **must not** be used.
+
+      All type conversions **must** be done explicitly using the named C++ 
+      casting operators; i.e., "static_cast", "const_cast", "dynamic_cast", 
+      "reinterpret_cast".
+
+6.11.2 The "const_cast" operator **should** be avoided. 
+
+       Casting away "const-ness" is usually a poor programming decision and can 
+       introduce errors.
+
+       **Exception:** It may be necessary in some circumstances to cast away 
+       const-ness, such as when calling const-incorrect APIs.
+
+6.11.3 The "reinterpret_cast" **must not** be used unless absolutely necessary.
+
+       This operator was designed to perform a low-level reinterpretation of 
+       the bit pattern of an operand. This is needed only in special 
+       circumstances and circumvents type safety.
+
+6.11.4  A class constructor that takes a single *non-default* argument, or a 
+single argument with a *default* value, **must** be declared"explicit".
+
+       This prevents compilers from performing unexpected (and, in many
+       cases, unwanted!) implicit type conversions. For example::
+
+          class MyClass
+          {
+          public:
+             explicit MyClass(int i, double x = 0.0);
+          };
+
+       Note that, without the explicit declaration, an implicit conversion 
+       from an integer to an object of type MyClass could be allowed. For 
+       example::
+
+          MyClass mc = 2;
+
+       Clearly, this is confusing. The "explicit" keyword forces the 
+       following usage pattern::
+
+          MyClass mc(2);
+
+       to get the same result, which is much more clear.
+
+
+-----------------------------
+6.12 Memory management
+-----------------------------
+
+6.12.1 Memory **should** be deallocated in the same scope in which it is 
+allocated.
+
+6.12.2 Memory **should** be deallocated as soon as it is no longer needed.
+
+6.12.3 Pointers **should** be set to null explicitly when memory is deallocated.
+
+      For uniformity across the CS Toolkit and to facilitate C++11 and
+      non-C++11 usage, this should be done using the common macro
+      "ATK\_NULLPTR"; For example::
+
+         double* data = new double[10];
+         // ...
+         delete [ ] data;
+         data = ATK_NULLPTR;
+
+6.12.4 Data managed exclusively within C++ code **must** be allocated and 
+deallocated using the "new" and "delete" operators.
+
+      The operator "new" is type-safe, simpler to use, and less error-prone
+      than the "malloc" family of C functions.  C++ new/delete operators
+      **must not** be combined with C malloc/free functions.
+
+6.12.5 Every C++ array deallocation statement **must** include "[ ]" 
+(i.e., "delete[ ]") to avoid memory leaks.
+
+      The rule of thumb is: when "[ ]" appears in the allocation, then "[ ]"
+      **must** appear in the corresponding deallocation statement.
+
+
+=====================================
+7 Code Formatting
+=====================================
+
+--------------------------------------------------------------------
+7.1 Conditional statements and loops
+--------------------------------------------------------------------
+
+7.1.1 Curly braces **should** be used in all conditionals, loops, etc. 
+even when the content inside the braces is a "one-liner". 
+
+       This helps prevent coding errors and misinterpretation of intent. 
+       For example, this::
+
+          if (done) { ... }
+
+       is preferable to this::
+
+          if (done) ...
+
+7.1.2 One-liners **may** be used for "if" conditionals with 
+"else/else if"  clauses when the resulting code is clear. 
+
+       For example, either of the following styles **may** be used::
+
+          if (done) {
+             id = 3;
+          } else {
+             id = 0;
+          }
+
+       or::
+
+          if (done) { id = 3; } else { id = 0; }
+
+7.1.3 Complex "if/else if" conditionals with many "else if" clauses 
+**should** be avoided.
+
+      Such statements can always be refactored using local boolean variables 
+      or "switch" statements. Doing so often makes code easier to read and 
+      understand and may improve performance.
+
+7.1.4 An explicit test for zero/nonzero **must** be used in a conditional 
+unless the tested quantity is a boolean or pointer type. 
+
+      For example, a conditional based on an integer value should use::
+
+         if (num_lines != 0) {
+
+      not::
+
+         if (num_lines) {
+
+
+--------------------------------------------------------------------
+7.2 White Space and Code Alignment
+--------------------------------------------------------------------
+
+Most conventions for indentation, spacing and code alignment 
+preferred by the team are enforced by using the `uncrustify` tool. 
+It can be run from the top-level CS Toolkit directory...
+
+.. note :: Show how to run uncrustify on the code and where the format
+           options are defined.
+
+Not all preferred formatting conventions are supported by uncrustify.
+The following guidelines provide additional recommendations to make
+code easier to read and understand.
+
+
+Use White Space To Make Code Easier to Read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+7.2.1 Blank lines and indentation **should** be used throughout code to 
+enhance readability. 
+
+      Examples of helpful white space include:
+
+         * Between operands and operators in arithmetic expressions.
+         * After reserved words, such as "while", "for", "if", "switch", etc. 
+           and before the parenthesis or curly brace that follows.
+         * After commas separating arguments in functions.
+         * After semi-colons in for-loop expressions.
+         * Before and after curly braces in almost all cases.
+
+7.2.2 White space **must not** appear between a function name and the opening 
+parenthesis to the argument list. In particular, if a function call is broken 
+across source lines, the break **must not** come between the function name and 
+the opening parenthesis.
+
+7.2.3 Tabs **must not** be used for indentation since this can be problematic 
+for developers with different text editor settings.
+
+
+Align Code Vertically to Show Scope
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+7.2.4 When function arguments (in either a declaration or implementation)
+appear on multiple lines, the arguments **should** be aligned vertically 
+for readability.
+
+7.2.5 All statements within a function body **should** be indented within the surrounding curly braces.
+
+7.2.6 All source lines in the same scope **should** be aligned vertically.
+Continuation of previous lines **may** be indented if it make the code easier
+to read.
+
+
+Break Lines Where It Makes Sense
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+7.2.7 When a line is broken at a comma or semi-colon, it **must** be broken 
+after the comma or semi-colon, not before. 
+
+7.2.8 When a source line is broken at an arithmetic operator 
+(i.e., , -, etc.), it **should** be broken after the operator, not before. 
+
+
+Use Parentheses For Clarity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+7.2.9 Parentheses **should** be used in non-trivial mathematical and logical 
+expressions to clearly indicate structure and intended order of operations. 
+Do not assume everyone who reads the code knows all the rules for operator 
+precedence.
+
+
+.. _portsec-label: 
+
+===================================================
+8 Portability, Compilation, and Dependencies
+===================================================
+
+C++ is a huge language with many advanced and powerful features. To avoid
+over-indulgence and obfuscation, we would like to avoid C++ feature bloat.
+By constraining, or even banning, the use of certain language features and
+libraries we hope to keep code simple, portable, and avoid errors and
+problems that may occur when language features are not completely
+understood or used consistently. This section lists such restrictions and
+explains why use of certain features is constrained or restricted.
+
+
+--------------------------------------------------------------------
+8.1 Portability
+--------------------------------------------------------------------
+
+8.1.1 C++ language features beyond standard C++11 **must not** be used unless
+reviewed by the team and verified that the features are supported by all 
+compilers we need to support.
+
+      Changing this guideline requires full con census of all team members.
+
+8.1.2 Whenever C++11 features are used, an alternative implementation **must** 
+be provided that conforms to the 2003 C++ standard.
+
+      Applications that use the CS Toolkit will rely on non-C++11 compilers 
+      for our current generation of computing platforms, and possibly beyond, 
+      so we must be able to compile and run our code with those compilers.
+      Applications that use the CS Toolkit will expect the code able to compile
+      and run with full functionality on all platforms they use. 
+
+8.1.3 All C++11 usage **must** be guarded using the macro constant "USE_CXX11" 
+so that it can be compiled out of the code when necessary.
+
+   For example, suppose you have a class that you want to support *move*
+   semantics when available (i.e., when using a C++11-compilant compiler)
+   and fall back to copy semantics otherwise:
+
+.. code-block:: cpp
+
+   class MyClass
+   {
+   public:
+
+      /// Default constructor.
+      MyClass();
+
+      /// Destructor.
+      ~MyClass();
+      /// Copy constructor.
+      MyClass(const MyClass& other);
+      /// Copy-assignment operator.
+      MyClass& operator=(const MyClass& rhs);
+   #if defined(USE_CXX11)
+      /// Move constructor.
+      MyClass(MyClass&& other);
+
+      /// Move-assignment operator.
+      MyClass& operator=(MyClass&& rhs);
+   #endif
+
+      // other methods...
+
+   private:
+      // data members...
+   };
+
+8.1.4 Special non-standard language constructs, such as GNU extensions, 
+**must not** be used if they hinder portability.
+
+
+.. note :: Any deviation from these C++ usage requirements must be 
+           agreed on by all members of the team and vetted with our
+           main application users.
+
+
+--------------------------------------------------------------------
+8.2 Compilation
+--------------------------------------------------------------------
+
+8.2.1 Excessive use of the preprocessor for conditional compilation at a 
+fine granularity (e.g., selectively including or removing individual source 
+lines) **should** be avoided. 
+
+      While it may seem convenient, this practice typically produces confusing 
+      and error-prone code. Often, it is better to refactor the code into 
+      separate routines or large code blocks subject to conditional compilation
+      where it is more clear. 
+
+      Code reviews by team members will dictate what is/is not acceptable.
+
+8.2.2 Developers **should** rely on compile-time and link-time errors to 
+check for code correctness and invariants. 
+
+      Errors that occur at run-time and which depend on specific control flow 
+      and program state are inconvenient for users and can be difficult to 
+      detect and fix.
+
+.. note ::      Add some specific guidance here on how this should be done...
+
+
+--------------------------------------------------------------------
+8.3 Third-party Library (TPL) Dependencies
+--------------------------------------------------------------------
+
+8.3.1 While it is generally desirable to avoid recreating functionality that
+others have already implemented, we **should** limit third-party library
+dependencies for the CS Toolkit to make it easier for users. We are a library,
+and everything we necessarily depend on will become a dependency for our
+user.  
+
+      **Before introducing any significant TPL dependency on the Toolkit
+      (e.g., Boost), it must be agreed on by the development team and vetted
+      with our main users.**
+
+8.3.2 Unless absolutely necessary, any TPL we depend on **must not** be 
+exposed through any public interface in the CS Toolkit.
+
+
+.. _codingrefs-label:
+
+======================================
+References and useful resources
+======================================
+
+Most of the guidelines here were gathered from the following list sources. 
+The list contains a variety of useful resources for programming in C++
+beyond what is presented in these guidelines.
+
+#. *The Chromium Projects: C++ Dos and Don'ts*. https://www.chromium.org/developers/coding-style/cpp-dos-and-donts
+
+#. Dewhurst, S., *C++ Gotchas: Avoiding Common Problems in Coding and Design*, Addison-Wesley, 2003.
+
+#. Dewhurst S., *C++ Common Knowledge: Essential Intermediate Programming*, Addison-Wesley, 2005.
+
+#. *Doxygen manual*, http://www.stack.nl/~dimitri/doxygen/manual/index.html
+
+#. *Google C++ Style Guide*, https://google-styleguide.googlecode.com/svn/trunk/cppguide.html
+
+#. *ISO/IEC 14882:2011 C++ Programming Language Standard*.
+
+#. Josuttis, N., *The C++ Standard Library: A Tutorial and Reference, Second Edition*, Addison-Wesley, 2012.
+
+#. Meyers, S., *More Effective C++: 35 New Ways to Improve Your Programs and Designs*, Addison-Wesley, 1996.
+
+#. Meyers, S., *Effective STL: 50 Specific Ways to Improve Your Use of the Standard Template Library*, Addison-Wesley, 2001.
+
+#. Meyers, S., *Effective C++: 55 Specific Ways to Improve Your Programs and Designs (3rd Edition)*, Addison-Wesley, 2005.
+
+#. Meyers, S., *Effective Modern C++: 42 Specific Ways to Improve Your Use of C++11 and C++14*, O'Reilly.
+
+#. Programming Research Ltd., *High-integrity C++ Coding Standard, Version 4.0*, 2013.
+
+#. Sutter, H. and A. Alexandrescu, *C++ Coding Standards: 101 Rules, Guidelines, and Best Practices*, Addison-Wesley, 2005.
