@@ -62,7 +62,7 @@ class DataStore;
  *      owns it.
  *    - A DataView object can describe and provide access to data in one of
  *      four ways:
- *        # A view can decribe (a subset of) data owned by an existing
+ *        # A view can describe (a subset of) data owned by an existing
  *          DataBuffer. In this case, the data can be (re)allocated or
  *          deallocated by the view if and only if it is the only view
  *          attached to the buffer.

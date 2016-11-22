@@ -14,6 +14,9 @@
 
 #include "mpi.h"
 
+#include "slic/slic.hpp"
+#include "slic/UnitTestLogger.hpp"
+
 #include "sidre/DataGroup.hpp"
 #include "sidre/DataStore.hpp"
 #include "spio/IOManager.hpp"
@@ -30,6 +33,7 @@ using asctoolkit::spio::IOManager;
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
+  asctoolkit::slic::UnitTestLogger logger;
 
   SLIC_ASSERT(argc == 2);
 
