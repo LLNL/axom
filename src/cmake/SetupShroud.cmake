@@ -123,5 +123,9 @@ macro(add_shroud)
 endmacro(add_shroud)
 
 
-
-add_custom_target(generate)
+if(ENABLE_SHROUD)
+    message(STATUS "Shroud is enabled.")
+    add_custom_target(generate)
+else()
+    message(STATUS "Shroud is disabled.")
+endif()
