@@ -403,6 +403,8 @@ module sidre_mod
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
         procedure :: get_num_elements => dataview_get_num_elements
+        procedure :: get_offset => dataview_get_offset
+        procedure :: get_stride => dataview_get_stride
         procedure :: get_num_dimensions => dataview_get_num_dimensions
         procedure :: get_shape => dataview_get_shape
         procedure :: print => dataview_print
@@ -2111,6 +2113,24 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function c_dataview_get_num_elements
+        
+        pure function c_dataview_get_offset(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_get_offset")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_SIZE_T) :: rv
+        end function c_dataview_get_offset
+        
+        pure function c_dataview_get_stride(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_get_stride")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_SIZE_T) :: rv
+        end function c_dataview_get_stride
         
         pure function c_dataview_get_num_dimensions(self) &
                 result(rv) &
@@ -5108,6 +5128,26 @@ contains
         rv = c_dataview_get_num_elements(obj%voidptr)
         ! splicer end class.DataView.method.get_num_elements
     end function dataview_get_num_elements
+    
+    function dataview_get_offset(obj) result(rv)
+        use iso_c_binding, only : C_SIZE_T
+        implicit none
+        class(dataview) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin class.DataView.method.get_offset
+        rv = c_dataview_get_offset(obj%voidptr)
+        ! splicer end class.DataView.method.get_offset
+    end function dataview_get_offset
+    
+    function dataview_get_stride(obj) result(rv)
+        use iso_c_binding, only : C_SIZE_T
+        implicit none
+        class(dataview) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin class.DataView.method.get_stride
+        rv = c_dataview_get_stride(obj%voidptr)
+        ! splicer end class.DataView.method.get_stride
+    end function dataview_get_stride
     
     function dataview_get_num_dimensions(obj) result(rv)
         use iso_c_binding, only : C_INT

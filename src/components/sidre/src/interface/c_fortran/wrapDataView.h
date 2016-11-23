@@ -158,6 +158,10 @@ size_t SIDRE_dataview_get_total_bytes(const SIDRE_dataview * self);
 
 size_t SIDRE_dataview_get_num_elements(const SIDRE_dataview * self);
 
+size_t SIDRE_dataview_get_offset(const SIDRE_dataview * self);
+
+size_t SIDRE_dataview_get_stride(const SIDRE_dataview * self);
+
 int SIDRE_dataview_get_num_dimensions(const SIDRE_dataview * self);
 
 int SIDRE_dataview_get_shape(const SIDRE_dataview * self, int ndims,
