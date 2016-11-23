@@ -528,6 +528,105 @@ contains
 
 !------------------------------------------------------------------------------
 
+  subroutine int_array_offset_stride()
+    type(datastore) ds
+    type(datagroup) root, other
+    type(databuffer) dbuff
+    type(dataview) field0, view1, view2, view3
+
+    real(C_DOUBLE), pointer :: data(:)
+    type(C_PTR) data_ptr
+    integer i
+    integer(C_LONG) field_nelems
+    integer(C_LONG) v1_nelems, v1_stride, v1_offset
+    integer(C_LONG) v2_nelems, v2_stride, v2_offset
+    integer(C_LONG) v3_nelems, v3_stride, v3_offset
+
+    call set_case_name("int_array_offset_stride")
+
+    ! create our main data store
+    ds = datastore_new()
+
+    ! get access to our root data Group
+    root = ds%get_root()
+
+    field_nelems = 20
+    field0 = root%create_view_and_allocate("field0", SIDRE_DOUBLE_ID, field_nelems)
+    call assert_true(field0%get_num_elements() == field_nelems)
+    call assert_true(field0%get_offset() == 0)
+    call assert_true(field0%get_stride() == 1)
+
+    dbuff = field0%get_buffer()
+
+    ! Initilize buffer data for testing below
+    data_ptr = dbuff%get_void_ptr()
+    call c_f_pointer(data_ptr, data, [ field_nelems ])
+
+    do i = 1, field_nelems
+       data(i) = 1.001 * i
+    enddo
+
+    call dbuff%print()
+
+    ! create two more views into field0's buffer and test stride and offset
+    v1_nelems = 3
+    v1_stride = 3
+    v1_offset = 2
+    view1 = root%create_view_into_buffer("offset_stride_1", dbuff)
+    call view1%apply_nelems_offset_stride(v1_nelems, v1_offset, v1_stride)
+
+    v2_nelems = 3
+    v2_stride = 3
+    v2_offset = 3
+    view2 = root%create_view_into_buffer("offset_stride_2", dbuff)
+    call view2%apply_nelems_offset_stride(v2_nelems, v2_offset, v2_stride)
+
+    v3_nelems = 5
+    v3_stride = 1
+    v3_offset = 12
+    view3 = root%create_view_into_buffer("offset_stride_3", dbuff)
+    call view3%apply_nelems_offset_stride(v3_nelems, v3_offset, v3_stride)
+
+
+    call assert_true(view1%get_num_elements() == v1_nelems)
+    call assert_true(view1%get_offset() == v1_offset)
+    call assert_true(view1%get_stride() == v1_stride)
+
+    call assert_true(view2%get_num_elements() == v2_nelems)
+    call assert_true(view2%get_offset() == v2_offset)
+    call assert_true(view2%get_stride() == v2_stride)
+
+    call assert_true(view3%get_num_elements() == v3_nelems)
+    call assert_true(view3%get_offset() == v3_offset)
+    call assert_true(view3%get_stride() == v3_stride)
+
+
+    ! test stride and offset against other types of  views
+    other = root%create_group("other")
+    view1 = other%create_view("key_empty")
+    call assert_true(view1%get_offset() == 0)
+    call assert_true(view1%get_stride() == 1)
+
+    view1 = other%create_view("key_opaque", data_ptr) ! opaque -- not described
+    call assert_true(view1%get_offset() == 0)
+    call assert_true(view1%get_stride() == 1)
+
+    view1 = other%create_view_string("key_str", "val_str")
+    call assert_true(view1%get_offset() == 0)
+    call assert_true(view1%get_stride() == 1)
+
+    view1 = other%create_view_scalar_int("key_int", 5)
+    call assert_true(view1%get_offset() == 0)
+    call assert_true(view1%get_stride() == 1)
+
+    ! cleanup
+    call ds%print()
+    call ds%delete()
+
+  end subroutine int_array_offset_stride
+
+!------------------------------------------------------------------------------
+
   subroutine int_array_multi_view_resize()
      !
      ! This example creates a 4 * 10 buffer of ints,
@@ -821,6 +920,7 @@ program fortran_test
   call init_int_array_multi_view
   call int_array_depth_view
   call int_array_view_attach_buffer
+  call int_array_offset_stride
   call int_array_multi_view_resize
   call int_array_realloc
   call simple_opaque

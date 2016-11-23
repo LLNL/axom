@@ -117,6 +117,16 @@ TEST(C_sidre_view,int_array_strided_views)
   SIDRE_dataview_apply_nelems_offset_stride(dv_e, 5, 0, 2);
   SIDRE_dataview_apply_nelems_offset_stride(dv_o, 5, 1, 2);
 
+  // Test offsets and strides for dv_e and dv_o
+  EXPECT_EQ(5u, SIDRE_dataview_get_num_elements(dv_e));
+  EXPECT_EQ(0u, SIDRE_dataview_get_offset(dv_e));
+  EXPECT_EQ(2u, SIDRE_dataview_get_stride(dv_e));
+
+  EXPECT_EQ(5u, SIDRE_dataview_get_num_elements(dv_o));
+  EXPECT_EQ(1u, SIDRE_dataview_get_offset(dv_o));
+  EXPECT_EQ(2u, SIDRE_dataview_get_stride(dv_o));
+
+
   SIDRE_dataview_print(dv_e);
   SIDRE_dataview_print(dv_o);
 
@@ -140,6 +150,16 @@ TEST(C_sidre_view,int_array_strided_views)
 
   SIDRE_dataview_apply_type_nelems_offset_stride(dv_e1, SIDRE_INT_ID, 5, 0, 2);
   SIDRE_dataview_apply_type_nelems_offset_stride(dv_o1, SIDRE_INT_ID, 5, 1, 2);
+
+  // Test offsets and strides for dv_e and dv_o
+  EXPECT_EQ(5u, SIDRE_dataview_get_num_elements(dv_e1));
+  EXPECT_EQ(0u, SIDRE_dataview_get_offset(dv_e1));
+  EXPECT_EQ(2u, SIDRE_dataview_get_stride(dv_e1));
+
+  EXPECT_EQ(5u, SIDRE_dataview_get_num_elements(dv_o1));
+  EXPECT_EQ(1u, SIDRE_dataview_get_offset(dv_o1));
+  EXPECT_EQ(2u, SIDRE_dataview_get_stride(dv_o1));
+
 
   SIDRE_dataview_print(dv_e1);
   SIDRE_dataview_print(dv_o1);
