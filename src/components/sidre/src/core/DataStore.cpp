@@ -292,54 +292,6 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
           : InvalidIndex);
 }
 
-/*
- *************************************************************************
- *
- * Copy Buffer descriptions and Group tree, starting at root, to given
- * Conduit node.
- *
- *************************************************************************
- */
-void DataStore::copyToConduitNode(Node& n) const
-{
-  m_RootGroup->copyToConduitNode(n["DataStore/root"]);
-
-  IndexType bidx = getFirstValidBufferIndex();
-  while ( indexIsValid(bidx) )
-  {
-    Node& b = n["DataStore/buffers"].append();
-    m_data_buffers[bidx]->copyToConduitNode(b);
-
-    bidx = getNextValidBufferIndex(bidx);
-  }
-}
-
-
-/*
- *************************************************************************
- *
- * Copy DataStore native layout, starting at root, to given Conduit node.
- *
- *************************************************************************
- */
-void DataStore::createNativeLayout(Node& n) const
-{
-  m_RootGroup->createNativeLayout(n);
-}
-
-
-/*
- *************************************************************************
- *
- * Copy DataStore native external layout, starting at root, to given Conduit node.
- *
- *************************************************************************
- */
-void DataStore::createExternalLayout(Node& n) const
-{
-  m_RootGroup->createExternalLayout(n);
-}
-
 
 /*
  *************************************************************************
@@ -365,7 +317,7 @@ void DataStore::print() const
 void DataStore::print(std::ostream& os) const
 {
   Node n;
-  copyToConduitNode(n);
+  m_RootGroup->copyToConduitNode(n);
   n.to_json_stream(os);
 }
 
