@@ -595,15 +595,16 @@ contains
     character(80) file_path
     integer i
     type(datastore) ds1, ds2
-    type(datagroup) root2
+    type(datagroup) root1, root2
 
     call set_case_name("save_restore_empty")
 
     ds1 = datastore_new()
+    root1 = ds1%get_root()
 
     do i = 1, nprotocols
        file_path = file_path_base //  protocols(i)
-       call ds1%save(file_path, protocols(i))
+       call root1%save(file_path, protocols(i))
     enddo
 
     call ds1%delete()
@@ -615,7 +616,7 @@ contains
        ds2 = datastore_new()
        root2 = ds2%get_root()
 
-       call ds2%load(file_path, protocols(i))
+       call root2%load(file_path, protocols(i))
 
        call assert_true(ds2%get_num_buffers() == 0 )
        call assert_true(root2%get_num_groups() == 0 )
@@ -652,7 +653,7 @@ contains
 
     do i = 1, nprotocols
        file_path = file_path_base // protocols(i)
-       call ds1%save(file_path, protocols(i))
+       call root1%save(file_path, protocols(i))
     enddo
 
     ! Only restore sidre_hdf5 protocol
@@ -662,7 +663,7 @@ contains
        ds2 = datastore_new()
        root2 = ds2%get_root()
 
-       call ds2%load(file_path, protocols(i))
+       call root2%load(file_path, protocols(i))
 
        call assert_true( root1%is_equivalent_to( root2 ))
 
@@ -727,7 +728,7 @@ contains
 
     do i = 1, nprotocols
        file_path = file_path_base //  protocols(i)
-       call ds1%save(file_path, protocols(i))
+       call root1%save(file_path, protocols(i))
     enddo
 
     call ds1%delete()
@@ -739,7 +740,7 @@ contains
        ds2 = datastore_new()
        root2 = ds2%get_root()
 
-       call ds2%load(file_path, protocols(i))
+       call root2%load(file_path, protocols(i))
 
        ! load has set the type and size of the view.
        ! now set the external address before calling load_external.
@@ -774,7 +775,7 @@ contains
        call view4%set_array_data_ptr(int2d2)
 
        ! read external data into views
-       call ds2%load_external_data(file_path, protocols(i))
+       call root2%load_external_data(file_path, protocols(i))
 
        call assert_true( all(foo1 == foo2), "compare foo1 foo2" )
 
@@ -817,7 +818,7 @@ contains
 
     do i = 1, nprotocols
        file_path = file_path_base //  protocols(i)
-       call ds1%save(file_path, protocols(i))
+       call root1%save(file_path, protocols(i))
     enddo
 
     call ds1%delete()
@@ -829,7 +830,7 @@ contains
        ds2 = datastore_new()
        root2 = ds2%get_root()
 
-       call ds2%load(file_path, protocols(i))
+       call root2%load(file_path, protocols(i))
 
        view1 = root2%get_view("empty_view")
        call assert_true(view1%is_empty(), "empty_view is_empty")
