@@ -278,6 +278,35 @@ public:
   }
 
   /*!
+   * \brief Return the offset in number of elements for the data described by this DataView object.
+   *
+   * \warning The code currently assumes that offsets into a view are given in terms of whole elements.
+   *       And it is an assertion error if this is not the case.
+   *       If you have a different use case, please talk to the Sidre team
+   *
+   * \note The following functions already account for the offset, and return a pointer to the
+   *        first element in an array: DataView::getData(), DataView::getVoidPtr() and DataView::getArray()
+   *
+   * IMPORTANT: This function is based on the view description, it does not imply that the data is allocated
+   *
+   * \return The offset, in terms of the number of elements, from the described array to the first element.
+   */
+  SidreLength getOffset() const;
+
+  /*!
+   * \brief Return the stride in number of elements for the data described by this DataView object.
+   *
+   * \warning The code currently assumes that strides into a view are given in terms of whole elements.
+   *       And it is an assertion error if this is not the case.
+   *       If you have a different use case, please talk to the Sidre team
+   *
+   * IMPORTANT: This function is based on the view description, it does not imply that the data is allocated
+   *
+   * \return The stride, in terms of the number of elements, between elements in the described array.
+   */
+  SidreLength getStride() const;
+
+  /*!
    * \brief Return number of dimensions in data view.
    */
   int getNumDimensions() const

@@ -21,6 +21,7 @@ using asctoolkit::sidre::IndexType;
 using asctoolkit::sidre::TypeID;
 using asctoolkit::sidre::NO_TYPE_ID;
 using asctoolkit::sidre::INT_ID;
+using asctoolkit::sidre::DOUBLE_ID;
 using asctoolkit::sidre::CHAR8_STR_ID;
 
 using namespace conduit;
@@ -877,6 +878,145 @@ TEST(sidre_view,int_array_depth_view)
   ds->print();
   delete ds;
 }
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_view,view_offset_and_stride)
+{
+    DataStore * ds = new DataStore();
+    DataGroup * root = ds->getRoot();
+
+    const SidreLength nelems = 15;
+    DataBuffer * dbuff = ds->createBuffer(DOUBLE_ID, nelems)
+                           ->allocate();
+
+    double * data_ptr = dbuff->getData();
+    for(int i=0; i< nelems; ++i)
+    {
+        data_ptr[i] = 1.01 * i;
+    }
+
+    // Array layout:
+    //   [-,a,b,c,a,b,c,a,b,c,d,d,d,d,d]
+    const int NUM_GROUPS   = 4;
+    int size[NUM_GROUPS]   = {3, 3, 3, 5};
+    int stride[NUM_GROUPS] = {3, 3, 3, 1};
+    int offset[NUM_GROUPS] = {1, 2, 3, 10};
+    std::string names[NUM_GROUPS] = {"a","b","c","d"};
+
+
+    // -- Test offsets and strides on buffer-based views
+
+    DataGroup* bufferGroup = root->createGroup("buffer");
+
+    // Create the views off of the buffer
+    for(int i=0; i < NUM_GROUPS; ++i)
+    {
+        bufferGroup->createView(names[i], dbuff)
+                   ->apply(size[i], offset[i], stride[i]);
+    }
+
+    // Test the sizes, offsets and strides of the views
+    for(int i=0; i < NUM_GROUPS; ++i)
+    {
+        DataView* view = bufferGroup->getView(names[i]);
+        EXPECT_EQ(size[i],   view->getNumElements());
+        EXPECT_EQ(offset[i], view->getOffset());
+        EXPECT_EQ(stride[i], view->getStride());
+    }
+
+    // test the offsets and strides applied to the data
+    // Note: DataView::getData() already incorporates the offset
+    //       of the view, so we are comparing against
+    //       the offsets applied to the raw buffer
+    for(int i=0; i < NUM_GROUPS; ++i)
+    {
+        DataView* view = bufferGroup->getView(names[i]);
+        EXPECT_EQ(view->getData<double*>(), data_ptr + view->getOffset());
+        EXPECT_EQ(stride[i], view->getStride());
+
+    }
+
+
+    // -- Test offsets and strudes on external pointer based views
+    DataGroup* extGroup = root->createGroup("ext");
+
+    // Create the views off of external data pointer
+    for(int i=0; i < NUM_GROUPS; ++i)
+    {
+        extGroup->createView(names[i], data_ptr)
+                ->apply(DOUBLE_ID, size[i], offset[i], stride[i]);
+    }
+
+    // Test the sizes, offsets and strides of the views
+    for(int i=0; i < NUM_GROUPS; ++i)
+    {
+        DataView* view = extGroup->getView(names[i]);
+        EXPECT_EQ(size[i],   view->getNumElements());
+        EXPECT_EQ(offset[i], view->getOffset());
+        EXPECT_EQ(stride[i], view->getStride());
+    }
+
+    // test the offsets and strides applied to the data
+    for(int i=0; i < NUM_GROUPS; ++i)
+    {
+        DataView* view = extGroup->getView(names[i]);
+        EXPECT_EQ(view->getData<double*>(), data_ptr + view->getOffset());
+        EXPECT_EQ(stride[i], view->getStride());
+
+    }
+
+    // -- Test offset and stride on the other view types:
+    //          string, scalar, empty, opaque
+    DataGroup* othersGroup = root->createGroup("others");
+
+    typedef std::vector<DataView*> ViewVec;
+    ViewVec views;
+    asctoolkit::sidre::detail::sidre_uint8  ui8  = 3;
+    asctoolkit::sidre::detail::sidre_uint16 ui16 = 4;
+    asctoolkit::sidre::detail::sidre_uint32 ui32 = 5;
+    asctoolkit::sidre::detail::sidre_uint64 ui64 = 6;
+    asctoolkit::sidre::detail::sidre_int8   i8   = -3;
+    asctoolkit::sidre::detail::sidre_int16 i16   = -4;
+    asctoolkit::sidre::detail::sidre_int32 i32   = -5;
+    asctoolkit::sidre::detail::sidre_int64 i64   = -6;
+    asctoolkit::sidre::detail::sidre_float32 f32 = 7.7f;
+    asctoolkit::sidre::detail::sidre_float64 f64 = 8.8;
+
+
+    views.push_back( othersGroup->createView("key_empty"));
+    views.push_back( othersGroup->createView("key_opaque", data_ptr)); // not described
+    views.push_back( othersGroup->createViewString("key_string", "string_value"));
+
+    views.push_back( othersGroup->createViewScalar("key_uint8",   ui8));
+    views.push_back( othersGroup->createViewScalar("key_uint16",  ui16));
+    views.push_back( othersGroup->createViewScalar("key_uint32",  ui32));
+    views.push_back( othersGroup->createViewScalar("key_uint64",  ui64));
+
+    views.push_back( othersGroup->createViewScalar("key_int8",    i8));
+    views.push_back( othersGroup->createViewScalar("key_int16",   i16));
+    views.push_back( othersGroup->createViewScalar("key_int32",   i32));
+    views.push_back( othersGroup->createViewScalar("key_int64",   i64));
+
+    views.push_back( othersGroup->createViewScalar("key_float32", f32));
+    views.push_back( othersGroup->createViewScalar("key_float64", f64));
+
+
+    for(ViewVec::iterator it=views.begin(); it != views.end(); ++it)
+    {
+        DataView* view = *it;
+        EXPECT_EQ(0, view->getOffset());
+        EXPECT_EQ(1, view->getStride());
+    }
+
+
+    // -- cleanup
+
+    ds->print();
+    delete ds;
+}
+
+
 
 //------------------------------------------------------------------------------
 

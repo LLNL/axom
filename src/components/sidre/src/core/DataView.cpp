@@ -68,6 +68,7 @@ std::string DataView::getPathName() const
   return getPath() + getOwningGroup()->getPathDelimiter() + getName();
 }
 
+
 /*
  *************************************************************************
  *
@@ -598,6 +599,72 @@ int DataView::getShape(int ndims, SidreLength * shape) const
   }
 
   return m_shape.size();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return offset from description in terms of number of elements (0 if not described)
+ *
+ *************************************************************************
+ */
+SidreLength DataView::getOffset() const
+{
+  int offset = 0;
+
+  if( isDescribed() )
+  {
+      const int bytes_per_elem = m_schema.dtype().element_bytes();
+      offset = m_schema.dtype().offset();
+
+      if(bytes_per_elem != 0)
+      {
+         SLIC_ERROR_IF(offset % bytes_per_elem != 0,
+                       "Unsupported operation.  Sidre assumes that offsets "
+                       "are given as integral number of elements into the array. "
+                       "In this case, the offset was " << offset << " bytes and each "
+                       "element is " << bytes_per_elem << " bytes. "
+                       "If you have a need for nonintegral offsets, please contact "
+                       "the Sidre team");
+
+         offset /= bytes_per_elem;
+      }
+  }
+
+  return static_cast<SidreLength>(offset);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return stride from description in terms of number of elements (1 if not described)
+ *
+ *************************************************************************
+ */
+SidreLength DataView::getStride() const
+{
+  int stride = 1;
+
+  if( isDescribed() )
+  {
+      const int bytes_per_elem = m_schema.dtype().element_bytes();
+      stride = m_schema.dtype().stride();
+
+      if(bytes_per_elem != 0)
+      {
+          SLIC_ERROR_IF(stride % bytes_per_elem != 0,
+                        "Unsupported operation.  Sidre assumes that strides "
+                        "are given as integral number of elements into the array. "
+                        "In this case, the stride was " << stride << " bytes and each "
+                        "element is " << bytes_per_elem << " bytes. "
+                        "If you have a need for nonintegral strides, please contact "
+                        "the Sidre team");
+
+         stride /= bytes_per_elem;
+      }
+  }
+
+  return static_cast<SidreLength>(stride);
 }
 
 /*
