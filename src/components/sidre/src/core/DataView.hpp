@@ -278,6 +278,17 @@ public:
   }
 
   /*!
+   * \brief Return number of bytes per element in the described view.
+   *
+   * IMPORTANT: This is the number of bytes per element described by the view
+   *            which may not yet be allocated.
+   */
+  SidreLength getBytesPerElement() const
+  {
+    return m_schema.dtype().element_bytes();
+  }
+
+  /*!
    * \brief Return the offset in number of elements for the data described by this DataView object.
    *
    * \warning The code currently assumes that offsets into a view are given in terms of whole elements.

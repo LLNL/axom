@@ -903,7 +903,7 @@ TEST(sidre_view,view_offset_and_stride)
     int stride[NUM_GROUPS] = {3, 3, 3, 1};
     int offset[NUM_GROUPS] = {1, 2, 3, 10};
     std::string names[NUM_GROUPS] = {"a","b","c","d"};
-
+    const int ELT_SIZE = sizeof(double);
 
     // -- Test offsets and strides on buffer-based views
 
@@ -923,6 +923,7 @@ TEST(sidre_view,view_offset_and_stride)
         EXPECT_EQ(size[i],   view->getNumElements());
         EXPECT_EQ(offset[i], view->getOffset());
         EXPECT_EQ(stride[i], view->getStride());
+        EXPECT_EQ(ELT_SIZE, view->getBytesPerElement());
     }
 
     // test the offsets and strides applied to the data
@@ -934,11 +935,10 @@ TEST(sidre_view,view_offset_and_stride)
         DataView* view = bufferGroup->getView(names[i]);
         EXPECT_EQ(view->getData<double*>(), data_ptr + view->getOffset());
         EXPECT_EQ(stride[i], view->getStride());
-
     }
 
 
-    // -- Test offsets and strudes on external pointer based views
+    // -- Test offsets and strides on external pointer based views
     DataGroup* extGroup = root->createGroup("ext");
 
     // Create the views off of external data pointer
@@ -955,6 +955,7 @@ TEST(sidre_view,view_offset_and_stride)
         EXPECT_EQ(size[i],   view->getNumElements());
         EXPECT_EQ(offset[i], view->getOffset());
         EXPECT_EQ(stride[i], view->getStride());
+        EXPECT_EQ(ELT_SIZE, view->getBytesPerElement());
     }
 
     // test the offsets and strides applied to the data
@@ -1001,12 +1002,27 @@ TEST(sidre_view,view_offset_and_stride)
     views.push_back( othersGroup->createViewScalar("key_float32", f32));
     views.push_back( othersGroup->createViewScalar("key_float64", f64));
 
+    std::map<std::string, int> sizeMap;
+    sizeMap["key_empty"] = 0;
+    sizeMap["key_opaque"] = 0;
+    sizeMap["key_string"] = 1;
+    sizeMap["key_uint8"] = sizeof(ui8);
+    sizeMap["key_uint16"] = sizeof(ui16);
+    sizeMap["key_uint32"] = sizeof(ui32);
+    sizeMap["key_uint64"] = sizeof(ui64);
+    sizeMap["key_int8"] = sizeof(i8);
+    sizeMap["key_int16"] = sizeof(i16);
+    sizeMap["key_int32"] = sizeof(i32);
+    sizeMap["key_int64"] = sizeof(i64);
+    sizeMap["key_float32"] = sizeof(f32);
+    sizeMap["key_float64"] = sizeof(f64);
 
     for(ViewVec::iterator it=views.begin(); it != views.end(); ++it)
     {
         DataView* view = *it;
         EXPECT_EQ(0, view->getOffset());
         EXPECT_EQ(1, view->getStride());
+        EXPECT_EQ(sizeMap[ view->getName() ], view->getBytesPerElement());
     }
 
 
