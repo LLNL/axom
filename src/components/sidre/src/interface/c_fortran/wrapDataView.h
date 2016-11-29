@@ -156,6 +156,8 @@ int SIDRE_dataview_get_type_id(const SIDRE_dataview * self);
 
 size_t SIDRE_dataview_get_total_bytes(const SIDRE_dataview * self);
 
+size_t SIDRE_dataview_get_bytes_per_element(const SIDRE_dataview * self);
+
 size_t SIDRE_dataview_get_num_elements(const SIDRE_dataview * self);
 
 size_t SIDRE_dataview_get_offset(const SIDRE_dataview * self);

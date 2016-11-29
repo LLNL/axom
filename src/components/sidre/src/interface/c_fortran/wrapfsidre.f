@@ -324,6 +324,7 @@ module sidre_mod
         procedure :: get_type_id => databuffer_get_type_id
         procedure :: get_num_elements => databuffer_get_num_elements
         procedure :: get_total_bytes => databuffer_get_total_bytes
+        procedure :: get_bytes_per_element => databuffer_get_bytes_per_element
         procedure :: print => databuffer_print
         procedure :: get_instance => databuffer_get_instance
         procedure :: set_instance => databuffer_set_instance
@@ -402,6 +403,7 @@ module sidre_mod
         procedure :: get_owning_group => dataview_get_owning_group
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
+        procedure :: get_bytes_per_element => dataview_get_bytes_per_element
         procedure :: get_num_elements => dataview_get_num_elements
         procedure :: get_offset => dataview_get_offset
         procedure :: get_stride => dataview_get_stride
@@ -1692,6 +1694,15 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function c_databuffer_get_total_bytes
         
+        pure function c_databuffer_get_bytes_per_element(self) &
+                result(rv) &
+                bind(C, name="SIDRE_databuffer_get_bytes_per_element")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_SIZE_T) :: rv
+        end function c_databuffer_get_bytes_per_element
+        
         subroutine c_databuffer_print(self) &
                 bind(C, name="SIDRE_databuffer_print")
             use iso_c_binding
@@ -2104,6 +2115,15 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function c_dataview_get_total_bytes
+        
+        pure function c_dataview_get_bytes_per_element(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_get_bytes_per_element")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_SIZE_T) :: rv
+        end function c_dataview_get_bytes_per_element
         
         pure function c_dataview_get_num_elements(self) &
                 result(rv) &
@@ -4524,6 +4544,16 @@ contains
         ! splicer end class.DataBuffer.method.get_total_bytes
     end function databuffer_get_total_bytes
     
+    function databuffer_get_bytes_per_element(obj) result(rv)
+        use iso_c_binding, only : C_SIZE_T
+        implicit none
+        class(databuffer) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin class.DataBuffer.method.get_bytes_per_element
+        rv = c_databuffer_get_bytes_per_element(obj%voidptr)
+        ! splicer end class.DataBuffer.method.get_bytes_per_element
+    end function databuffer_get_bytes_per_element
+    
     subroutine databuffer_print(obj)
         implicit none
         class(databuffer) :: obj
@@ -5118,6 +5148,16 @@ contains
         rv = c_dataview_get_total_bytes(obj%voidptr)
         ! splicer end class.DataView.method.get_total_bytes
     end function dataview_get_total_bytes
+    
+    function dataview_get_bytes_per_element(obj) result(rv)
+        use iso_c_binding, only : C_SIZE_T
+        implicit none
+        class(dataview) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin class.DataView.method.get_bytes_per_element
+        rv = c_dataview_get_bytes_per_element(obj%voidptr)
+        ! splicer end class.DataView.method.get_bytes_per_element
+    end function dataview_get_bytes_per_element
     
     function dataview_get_num_elements(obj) result(rv)
         use iso_c_binding, only : C_SIZE_T

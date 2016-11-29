@@ -46,6 +46,7 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
 
   EXPECT_EQ(SIDRE_databuffer_get_type_id(dbuff), SIDRE_INT_ID);
   EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 10u);
+  EXPECT_EQ(SIDRE_databuffer_get_bytes_per_element(dbuff), sizeof(int));
   EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
   int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
@@ -72,6 +73,7 @@ TEST(C_sidre_buffer,init_buffer_for_int_array)
 
   EXPECT_EQ(SIDRE_databuffer_get_type_id(dbuff), SIDRE_INT_ID);
   EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 10u);
+  EXPECT_EQ(SIDRE_databuffer_get_bytes_per_element(dbuff), sizeof(int));
   EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
   int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
@@ -99,6 +101,7 @@ TEST(C_sidre_buffer,realloc_buffer)
 
   EXPECT_EQ(SIDRE_databuffer_get_type_id(dbuff), SIDRE_LONG_ID);
   EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 5u);
+  EXPECT_EQ(SIDRE_databuffer_get_bytes_per_element(dbuff), sizeof(long));
   EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff), sizeof(long) * 5);
 
   long * data_ptr = (long *) SIDRE_databuffer_get_void_ptr(dbuff);
@@ -114,6 +117,7 @@ TEST(C_sidre_buffer,realloc_buffer)
 
   EXPECT_EQ(SIDRE_databuffer_get_type_id(dbuff), SIDRE_LONG_ID);
   EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 10u);
+  EXPECT_EQ(SIDRE_databuffer_get_bytes_per_element(dbuff), sizeof(long));
   EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff), sizeof(long) * 10);
 
   // data buffer changes

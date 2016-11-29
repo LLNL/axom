@@ -188,24 +188,30 @@ contains
     type(dataview) dv
     integer(C_INT), pointer :: data(:)
     integer i
+    integer int_size, elem_count
+
+    int_size = sizeof(i)
+    elem_count = 10
 
     call set_case_name("int_buffer_from_view")
 
     ds = datastore_new()
     root = ds%get_root()
 
-    dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, 10_8)
+    dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, elem_count)
     call assert_equals(dv%get_type_id(), SIDRE_INT_ID, "dv%get_type_id(), SIDRE_INT_ID")
     call dv%get_data(data)
 
-    do i = 1, 10
+    do i = 1, elem_count
        data(i) = i * i
     enddo
 
     call dv%print()
 
-!--    !  EXPECT_EQ(ATK_dataview_get_total_bytes(dv), dv->getSchema().total_bytes())
-!--    call assert_equals(dv%get_total_bytes(), sizeof(int) * 10)
+    call assert_true(dv%get_num_elements() == elem_count)
+    call assert_true(dv%get_bytes_per_element() == int_size)
+    call assert_true(dv%get_total_bytes() == int_size * elem_count)
+
     call ds%delete()
   end subroutine int_buffer_from_view
 
@@ -541,6 +547,11 @@ contains
     integer(C_LONG) v1_nelems, v1_stride, v1_offset
     integer(C_LONG) v2_nelems, v2_stride, v2_offset
     integer(C_LONG) v3_nelems, v3_stride, v3_offset
+    real(C_DOUBLE) :: elem
+    integer int_size, double_size
+
+    int_size = sizeof(i)
+    double_size = sizeof(elem)
 
     call set_case_name("int_array_offset_stride")
 
@@ -553,6 +564,8 @@ contains
     field_nelems = 20
     field0 = root%create_view_and_allocate("field0", SIDRE_DOUBLE_ID, field_nelems)
     call assert_true(field0%get_num_elements() == field_nelems)
+    call assert_true(field0%get_bytes_per_element() == double_size)
+    call assert_true(field0%get_total_bytes() == double_size * field_nelems)
     call assert_true(field0%get_offset() == 0)
     call assert_true(field0%get_stride() == 1)
 
@@ -587,18 +600,23 @@ contains
     view3 = root%create_view_into_buffer("offset_stride_3", dbuff)
     call view3%apply_nelems_offset_stride(v3_nelems, v3_offset, v3_stride)
 
-
     call assert_true(view1%get_num_elements() == v1_nelems)
+    call assert_true(view1%get_bytes_per_element() == double_size)
     call assert_true(view1%get_offset() == v1_offset)
     call assert_true(view1%get_stride() == v1_stride)
+    call assert_true(view1%get_total_bytes() == double_size * (1 + (v1_stride * (v1_nelems-1))))
 
     call assert_true(view2%get_num_elements() == v2_nelems)
+    call assert_true(view2%get_bytes_per_element() == double_size, "view 2 byes per elt")
     call assert_true(view2%get_offset() == v2_offset)
     call assert_true(view2%get_stride() == v2_stride)
+    call assert_true(view2%get_total_bytes() == double_size * (1 + (v2_stride * (v2_nelems-1))))
 
     call assert_true(view3%get_num_elements() == v3_nelems)
+    call assert_true(view3%get_bytes_per_element() == double_size)
     call assert_true(view3%get_offset() == v3_offset)
     call assert_true(view3%get_stride() == v3_stride)
+    call assert_true(view3%get_total_bytes() == double_size * (1 + (v3_stride * (v3_nelems-1))))
 
 
     ! test stride and offset against other types of  views
@@ -606,18 +624,27 @@ contains
     view1 = other%create_view("key_empty")
     call assert_true(view1%get_offset() == 0)
     call assert_true(view1%get_stride() == 1)
+    call assert_true(view1%get_num_elements() == 0)
+    call assert_true(view1%get_bytes_per_element() == 0)
 
     view1 = other%create_view("key_opaque", data_ptr) ! opaque -- not described
     call assert_true(view1%get_offset() == 0)
     call assert_true(view1%get_stride() == 1)
+    call assert_true(view1%get_num_elements() == 0)
+    call assert_true(view1%get_bytes_per_element() == 0)
+    call assert_true(view1%get_total_bytes() == 0)
 
     view1 = other%create_view_string("key_str", "val_str")
     call assert_true(view1%get_offset() == 0)
     call assert_true(view1%get_stride() == 1)
+    call assert_true(view1%get_bytes_per_element() == 1)
 
     view1 = other%create_view_scalar_int("key_int", 5)
     call assert_true(view1%get_offset() == 0)
     call assert_true(view1%get_stride() == 1)
+    call assert_true(view1%get_num_elements() == 1)
+    call assert_true(view1%get_bytes_per_element() == int_size)
+    call assert_true(view1%get_total_bytes() == int_size)
 
     ! cleanup
     call ds%print()

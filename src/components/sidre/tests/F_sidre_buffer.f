@@ -47,22 +47,27 @@ contains
     type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
     integer i
+    integer int_size, elem_count
+
+    int_size = sizeof(i)
+    elem_count = 10
     
     call set_case_name("alloc_buffer_for_int_array")
 
     ds = datastore_new()
     dbuff = ds%create_buffer()
 
-    call dbuff%allocate(SIDRE_INT_ID, 10_8)
+    call dbuff%allocate(SIDRE_INT_ID, elem_count)
 
     call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID, "dbuff%get_typeid()")
-    call assert_true(dbuff%get_num_elements() == 10, "dbuff%get_num_elements()")
-!    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
+    call assert_true(dbuff%get_num_elements() == elem_count, "dbuff%get_num_elements()")
+    call assert_true(dbuff%get_bytes_per_element() == int_size)
+    call assert_true(dbuff%get_total_bytes() == int_size * elem_count)
 
     data_ptr = dbuff%get_void_ptr()
-    call c_f_pointer(data_ptr, data, [ 10 ])
+    call c_f_pointer(data_ptr, data, [ elem_count ])
 
-    do i = 1, 10
+    do i = 1, elem_count
        data(i) = i * i
     enddo
 
@@ -80,22 +85,27 @@ contains
     type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
     integer i
+    integer int_size, elem_count
+
+    int_size = sizeof(i)
+    elem_count = 10
 
     call set_case_name("init_buffer_for_int_array")
 
     ds = datastore_new()
     dbuff = ds%create_buffer()
 
-    call dbuff%allocate(SIDRE_INT_ID, 10_8)
+    call dbuff%allocate(SIDRE_INT_ID, elem_count)
 
     call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID, "dbuff%get_type_id()")
-    call assert_true(dbuff%get_num_elements() == 10, "dbuff%get_num_elements")
-!    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
+    call assert_true(dbuff%get_num_elements() == elem_count, "dbuff%get_num_elements")
+    call assert_true(dbuff%get_bytes_per_element() == int_size)
+    call assert_true(dbuff%get_total_bytes() == int_size * elem_count)
 
     data_ptr = dbuff%get_void_ptr()
-    call c_f_pointer(data_ptr, data, [ 10 ])
+    call c_f_pointer(data_ptr, data, [ elem_count ])
 
-    do i = 1, 10
+    do i = 1, elem_count
        data(i) = i * i
     enddo
 
@@ -113,6 +123,12 @@ contains
     type(C_PTR) data_ptr
     integer(C_LONG), pointer :: data(:)
     integer i
+    integer(C_LONG) elem
+    integer long_size, orig_elem_count, mod_elem_count
+
+    long_size = sizeof(elem)
+    orig_elem_count = 5
+    mod_elem_count = 10
 
     call set_case_name("realloc_buffer")
 
@@ -120,33 +136,35 @@ contains
 
     dbuff = ds%create_buffer()
 
-    call dbuff%allocate(SIDRE_LONG_ID, 5_8)
+    call dbuff%allocate(SIDRE_LONG_ID, orig_elem_count)
 
     call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID, "dbuff%get_type_id()")
-    call assert_true(dbuff%get_num_elements() == 5, "dbuff%get_num_elements()")
-!    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
+    call assert_true(dbuff%get_num_elements() == orig_elem_count, "dbuff%get_num_elements()")
+    call assert_true(dbuff%get_bytes_per_element() == long_size)
+    call assert_true(dbuff%get_total_bytes() == long_size * orig_elem_count)
 
     data_ptr = dbuff%get_void_ptr()
-    call c_f_pointer(data_ptr, data, [ 5 ])
+    call c_f_pointer(data_ptr, data, [ orig_elem_count ])
 
-    data(:) = 5
+    data(:) = orig_elem_count
 
     call dbuff%print()
   
-    call dbuff%reallocate(10)
+    call dbuff%reallocate( mod_elem_count )
 
     call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID, "dbuff%get_type_id() after realloc")
-    call assert_true(dbuff%get_num_elements() == 10, "dbuff%get_num_elments() after realloc")
-!    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
+    call assert_true(dbuff%get_num_elements() == mod_elem_count, "dbuff%get_num_elements() after realloc")
+    call assert_true(dbuff%get_bytes_per_element() == long_size)
+    call assert_true(dbuff%get_total_bytes() == long_size * mod_elem_count)
 
     ! data buffer changes
     data_ptr = dbuff%get_void_ptr()
-    call c_f_pointer(data_ptr, data, [ 10 ])
+    call c_f_pointer(data_ptr, data, [ mod_elem_count ])
 
-    call assert_true(size(data) == 10, "data_ptr is wrong size")
-    call assert_true(all(data(1:5) == 5), "data has wrong values")
+    call assert_true(size(data) == mod_elem_count, "data_ptr is wrong size")
+    call assert_true(all(data(1:5) == orig_elem_count), "data has wrong values")
 
-    data(6:10) = 10
+    data(6:10) = mod_elem_count
 
     call dbuff%print()
 

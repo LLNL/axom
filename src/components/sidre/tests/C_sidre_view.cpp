@@ -55,6 +55,7 @@ TEST(C_sidre_view,int_buffer_from_view)
 
   SIDRE_dataview_print(dv);
 
+  EXPECT_EQ(SIDRE_dataview_get_bytes_per_element(dv), sizeof(int) );
   EXPECT_EQ(SIDRE_dataview_get_total_bytes(dv), sizeof(int) * 10);
   SIDRE_datastore_delete(ds);
 
@@ -79,6 +80,7 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
 
   SIDRE_dataview_print(dv);
 
+  EXPECT_EQ(SIDRE_dataview_get_bytes_per_element(dv), sizeof(int) );
   EXPECT_EQ(SIDRE_dataview_get_total_bytes(dv), sizeof(int) * 10);
   SIDRE_datastore_delete(ds);
 
@@ -498,7 +500,10 @@ TEST(C_sidre_view,int_array_realloc)
     a2_ptr[i] = -5;
   }
 
+  EXPECT_EQ(SIDRE_dataview_get_bytes_per_element(a1), sizeof(float));
   EXPECT_EQ(SIDRE_dataview_get_total_bytes(a1), sizeof(float)*5);
+
+  EXPECT_EQ(SIDRE_dataview_get_bytes_per_element(a2), sizeof(int));
   EXPECT_EQ(SIDRE_dataview_get_total_bytes(a2), sizeof(int)*5);
 
 
@@ -525,7 +530,10 @@ TEST(C_sidre_view,int_array_realloc)
     a2_ptr[i] = -15;
   }
 
+  EXPECT_EQ(SIDRE_dataview_get_bytes_per_element(a1), sizeof(float));
   EXPECT_EQ(SIDRE_dataview_get_total_bytes(a1), sizeof(float)*10);
+
+  EXPECT_EQ(SIDRE_dataview_get_bytes_per_element(a2), sizeof(int));
   EXPECT_EQ(SIDRE_dataview_get_total_bytes(a2), sizeof(int)*15);
 
 
@@ -558,6 +566,12 @@ TEST(C_sidre_view,simple_opaque)
   EXPECT_TRUE(SIDRE_dataview_is_external(opq_view));
   EXPECT_TRUE(!SIDRE_dataview_is_applied(opq_view));
   EXPECT_TRUE(SIDRE_dataview_is_opaque(opq_view));
+
+  // Opaque views do not know their sizes
+  EXPECT_EQ(0u, SIDRE_dataview_get_bytes_per_element(opq_view));
+  EXPECT_EQ(0u, SIDRE_dataview_get_total_bytes(opq_view));
+  EXPECT_EQ(0u, SIDRE_dataview_get_offset(opq_view));
+  EXPECT_EQ(1u, SIDRE_dataview_get_stride(opq_view));
 
   void * opq_ptr = SIDRE_dataview_get_void_ptr(opq_view);
 

@@ -477,6 +477,16 @@ size_t SIDRE_dataview_get_total_bytes(const SIDRE_dataview * self)
 // splicer end class.DataView.method.get_total_bytes
 }
 
+size_t SIDRE_dataview_get_bytes_per_element(const SIDRE_dataview * self)
+{
+  const DataView * selfobj =
+    static_cast<const DataView *>(static_cast<const void *>(self));
+// splicer begin class.DataView.method.get_bytes_per_element
+  size_t rv = selfobj->getBytesPerElement();
+  return rv;
+// splicer end class.DataView.method.get_bytes_per_element
+}
+
 size_t SIDRE_dataview_get_num_elements(const SIDRE_dataview * self)
 {
   const DataView * selfobj =
