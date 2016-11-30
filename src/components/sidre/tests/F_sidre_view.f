@@ -416,16 +416,16 @@ contains
     call assert_true( dbuff%get_num_elements() == 4 * depth_nelems, "dbuff%get_num_elements() == 4 * depth_nelems" )
 
     ! create 4 "depth" views and apply offsets into buffer
-    view0 = root%create_view_into_buffer("view0", dbuff)
+    view0 = root%create_view_into_buffer("depth_view_0", dbuff)
     call view0%apply_nelems_offset(depth_nelems, 0 * depth_nelems)
 
-    view1 = root%create_view_into_buffer("view1", dbuff)
+    view1 = root%create_view_into_buffer("depth_view_1", dbuff)
     call view1%apply_nelems_offset(depth_nelems, 1 * depth_nelems)
 
-    view2 = root%create_view_into_buffer("view2", dbuff)
+    view2 = root%create_view_into_buffer("depth_view_2", dbuff)
     call view2%apply_nelems_offset(depth_nelems, 2 * depth_nelems)
 
-    view3 = root%create_view_into_buffer("view3", dbuff)
+    view3 = root%create_view_into_buffer("depth_view_3", dbuff)
     call view3%apply_nelems_offset(depth_nelems, 3 * depth_nelems)
 
     call assert_true( dbuff%get_num_views() == 4, "dbuff%get_num_views() == 4" )
@@ -466,6 +466,7 @@ contains
     integer i
     integer(C_LONG) field_nelems
     integer(C_LONG) elem_count
+    integer(C_LONG) offset0, offset1
 
     call set_case_name("int_array_view_attach_buffer")
 
@@ -505,10 +506,13 @@ contains
     call dbuff%print()
 
     ! attach field views to buffer and apply offsets into buffer
+    offset0 = 0 * field_nelems
     call field0%attach_buffer(dbuff)
-    call field0%apply_nelems_offset(field_nelems, 0 * field_nelems);
+    call field0%apply_nelems_offset(field_nelems, offset0);
+
+    offset1 = 1 * field_nelems
     call field1%attach_buffer(dbuff)
-    call field1%apply_nelems_offset(field_nelems, 1 * field_nelems);
+    call field1%apply_nelems_offset(field_nelems, offset1);
 
     call assert_true( dbuff%get_num_views() == 2, "dbuff%get_num_views() == 2" )
 
@@ -521,11 +525,13 @@ contains
     call assert_true(size(data) == field_nelems, &
          "depth 0 is incorrect size")
     call assert_true(all(data == 0), "depth 0 does not compare")
+    call assert_true(offset0 == field0%get_offset())
 
     call field1%get_data(data)
     call assert_true(size(data) == field_nelems, &
          "depth 1 is incorrect size")
     call assert_true(all(data == 1), "depth 0 does not compare")
+    call assert_true(offset1 == field1%get_offset())
 
     call ds%print()
     call ds%delete()
@@ -547,8 +553,10 @@ contains
     integer(C_LONG) v1_nelems, v1_stride, v1_offset
     integer(C_LONG) v2_nelems, v2_stride, v2_offset
     integer(C_LONG) v3_nelems, v3_stride, v3_offset
+    real(C_DOUBLE), pointer :: data1(:), data2(:), data3(:)
     real(C_DOUBLE) :: elem
     integer int_size, double_size
+    integer(C_INT), pointer :: int_data
 
     int_size = sizeof(i)
     double_size = sizeof(elem)
@@ -587,36 +595,42 @@ contains
     v1_offset = 2
     view1 = root%create_view_into_buffer("offset_stride_1", dbuff)
     call view1%apply_nelems_offset_stride(v1_nelems, v1_offset, v1_stride)
+    call view1%get_data(data1)
 
     v2_nelems = 3
     v2_stride = 3
     v2_offset = 3
     view2 = root%create_view_into_buffer("offset_stride_2", dbuff)
     call view2%apply_nelems_offset_stride(v2_nelems, v2_offset, v2_stride)
+    call view2%get_data(data2)
 
     v3_nelems = 5
     v3_stride = 1
     v3_offset = 12
     view3 = root%create_view_into_buffer("offset_stride_3", dbuff)
     call view3%apply_nelems_offset_stride(v3_nelems, v3_offset, v3_stride)
+    call view3%get_data(data3)
 
     call assert_true(view1%get_num_elements() == v1_nelems)
     call assert_true(view1%get_bytes_per_element() == double_size)
     call assert_true(view1%get_offset() == v1_offset)
     call assert_true(view1%get_stride() == v1_stride)
     call assert_true(view1%get_total_bytes() == double_size * (1 + (v1_stride * (v1_nelems-1))))
+    call assert_true(data1(0) == data(v1_offset))
 
     call assert_true(view2%get_num_elements() == v2_nelems)
     call assert_true(view2%get_bytes_per_element() == double_size, "view 2 byes per elt")
     call assert_true(view2%get_offset() == v2_offset)
     call assert_true(view2%get_stride() == v2_stride)
     call assert_true(view2%get_total_bytes() == double_size * (1 + (v2_stride * (v2_nelems-1))))
+    call assert_true(data2(0) == data(v2_offset))
 
     call assert_true(view3%get_num_elements() == v3_nelems)
     call assert_true(view3%get_bytes_per_element() == double_size)
     call assert_true(view3%get_offset() == v3_offset)
     call assert_true(view3%get_stride() == v3_stride)
     call assert_true(view3%get_total_bytes() == double_size * (1 + (v3_stride * (v3_nelems-1))))
+    call assert_true(data3(0) == data(v3_offset))
 
 
     ! test stride and offset against other types of  views
@@ -640,6 +654,8 @@ contains
     call assert_true(view1%get_bytes_per_element() == 1)
 
     view1 = other%create_view_scalar_int("key_int", 5)
+    call view1%get_data(int_data)
+    call assert_true(int_data == 5)
     call assert_true(view1%get_offset() == 0)
     call assert_true(view1%get_stride() == 1)
     call assert_true(view1%get_num_elements() == 1)

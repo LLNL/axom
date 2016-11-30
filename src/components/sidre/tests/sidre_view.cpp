@@ -698,31 +698,42 @@ TEST(sidre_view,int_buffer_view)
 
 TEST(sidre_view,int_array_strided_views)
 {
+  const SidreLength num_elts = 10;
+  const SidreLength num_view_elts = 5;
+  const SidreLength elt_offset_e = 0;
+  const SidreLength elt_offset_o = 1;
+  const SidreLength elt_stride = 2;
+  const SidreLength elt_bytes = sizeof(int);
+
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  DataBuffer * dbuff = ds->createBuffer(INT_ID, 10);
+  DataBuffer * dbuff = ds->createBuffer(INT_ID, num_elts);
 
   dbuff->allocate();
   int * data_ptr = dbuff->getData();
 
-  for(int i=0 ; i<10 ; i++)
+  for(int i=0 ; i< num_elts ; i++)
   {
     data_ptr[i] = i;
   }
 
   dbuff->print();
 
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<SidreLength>(sizeof(int) * 10));
+  EXPECT_EQ(dbuff->getTotalBytes(), num_elts * elt_bytes);
 
   DataView * dv_e = root->createView("even",dbuff);
   DataView * dv_o = root->createView("odd",dbuff);
   EXPECT_EQ(dbuff->getNumViews(), 2);
 
-  // c_int(num_elems, offset [in bytes], stride [in bytes])
-  dv_e->apply(DataType::c_int(5,0,8));
 
+  // Set up views through conduit DataType interface
   // c_int(num_elems, offset [in bytes], stride [in bytes])
-  dv_o->apply(DataType::c_int(5,4,8));
+  dv_e->apply(DataType::c_int(num_view_elts,elt_offset_e * elt_bytes, elt_stride * elt_bytes));
+  dv_o->apply(DataType::c_int(num_view_elts,elt_offset_o * elt_bytes, elt_stride * elt_bytes));
+
+  // check that the view base pointers match that of the buffer
+  EXPECT_EQ(dbuff->getVoidPtr(), dv_e->getVoidPtr());
+  EXPECT_EQ(dbuff->getVoidPtr(), dv_o->getVoidPtr());
 
   dv_e->print();
   dv_o->print();
@@ -730,7 +741,10 @@ TEST(sidre_view,int_array_strided_views)
   // Check base pointer case:
   int * v_e_ptr = dv_e->getData();
   int * v_o_ptr = dv_o->getData();
-  for(int i=0 ; i<10 ; i += 2)
+
+  EXPECT_EQ(v_e_ptr, static_cast<int*>(dv_e->getVoidPtr())+dv_e->getOffset());
+  EXPECT_EQ(v_o_ptr, static_cast<int*>(dv_o->getVoidPtr())+dv_o->getOffset());
+  for(int i=0 ; i< num_elts ; i += 2)
   {
     std::cout << "idx:" <<  i
               << " e:" << v_e_ptr[i]
@@ -760,15 +774,18 @@ TEST(sidre_view,int_array_strided_views)
   }
 
   // Run similar test to above with different view apply method
+  // Set up views through Sidre's native interface
   DataView * dv_e1 = root->createView("even1",dbuff);
   DataView * dv_o1 = root->createView("odd1",dbuff);
   EXPECT_EQ(dbuff->getNumViews(), 4);
 
   // (num_elems, offset [in # elems], stride [in # elems])
-  dv_e1->apply(INT_ID, 5,0,2);
+  dv_e1->apply(INT_ID, num_view_elts, elt_offset_e, elt_stride);
+  dv_o1->apply(INT_ID, num_view_elts, elt_offset_o, elt_stride);
 
-  // (num_elems, offset [in # elems], stride [in # elems])
-  dv_o1->apply(INT_ID, 5,1,2);
+  // check that the view base pointers match that of the buffer
+  EXPECT_EQ(dbuff->getVoidPtr(), dv_e1->getVoidPtr());
+  EXPECT_EQ(dbuff->getVoidPtr(), dv_o1->getVoidPtr());
 
   dv_e1->print();
   dv_o1->print();
@@ -776,7 +793,10 @@ TEST(sidre_view,int_array_strided_views)
   // Check base pointer case:
   int * v_e1_ptr = dv_e1->getData();
   int * v_o1_ptr = dv_o1->getData();
-  for(int i=0 ; i<10 ; i += 2)
+  EXPECT_EQ(v_e1_ptr, static_cast<int*>(dv_e1->getVoidPtr())+dv_e1->getOffset());
+  EXPECT_EQ(v_o1_ptr, static_cast<int*>(dv_o1->getVoidPtr())+dv_o1->getOffset());
+
+  for(int i=0 ; i< num_elts ; i += 2)
   {
     std::cout << "idx:" <<  i
               << " e1:" << v_e1_ptr[i]
@@ -847,8 +867,8 @@ TEST(sidre_view,int_array_depth_view)
 
   for (int id = 0 ; id < 2 ; ++id)
   {
-    views[id] = root->createView(view_names[id], dbuff)->apply(depth_nelems,
-                                                               id*depth_nelems);
+    views[id] = root->createView(view_names[id], dbuff)
+                  ->apply(depth_nelems,id*depth_nelems);
   }
   //
   // call path including type
@@ -858,6 +878,16 @@ TEST(sidre_view,int_array_depth_view)
                 ->apply(INT_ID, depth_nelems, id*depth_nelems);
   }
   EXPECT_EQ(dbuff->getNumViews(), 4);
+
+  // Verify that the pointers for each view match that of the buffer
+  for (int id = 0 ; id < 4 ; ++id)
+  {
+    void* vptr = views[id]->getVoidPtr();
+    SidreLength off = views[id]->getOffset();
+
+    EXPECT_EQ(dbuff->getVoidPtr(), vptr);
+    EXPECT_EQ(views[id]->getData<int*>(), static_cast<int*>(vptr)+off);
+  }
 
   // print depth views...
   for (int id = 0 ; id < 4 ; ++id)
@@ -928,12 +958,16 @@ TEST(sidre_view,view_offset_and_stride)
 
     // test the offsets and strides applied to the data
     // Note: DataView::getData() already incorporates the offset
-    //       of the view, so we are comparing against
-    //       the offsets applied to the raw buffer
+    //       of the view, DataView::getVoidPtr() does not
     for(int i=0; i < NUM_GROUPS; ++i)
     {
         DataView* view = bufferGroup->getView(names[i]);
-        EXPECT_EQ(view->getData<double*>(), data_ptr + view->getOffset());
+        void* raw_vp = view->getVoidPtr();
+        double* offset_ptr = static_cast<double*>(raw_vp) + view->getOffset();
+        double* getData_ptr = view->getData();
+
+        EXPECT_EQ(data_ptr, raw_vp);
+        EXPECT_EQ(offset_ptr, getData_ptr);
         EXPECT_EQ(stride[i], view->getStride());
     }
 
@@ -959,10 +993,17 @@ TEST(sidre_view,view_offset_and_stride)
     }
 
     // test the offsets and strides applied to the data
+    // Note: DataView::getData() already incorporates the offset
+    //       of the view, DataView::getVoidPtr() does not
     for(int i=0; i < NUM_GROUPS; ++i)
     {
         DataView* view = extGroup->getView(names[i]);
-        EXPECT_EQ(view->getData<double*>(), data_ptr + view->getOffset());
+        void* raw_vp = view->getVoidPtr();
+        double* offset_ptr = static_cast<double*>(raw_vp) + view->getOffset();
+        double* getData_ptr = view->getData();
+
+        EXPECT_EQ(data_ptr, raw_vp);
+        EXPECT_EQ(offset_ptr, getData_ptr);
         EXPECT_EQ(stride[i], view->getStride());
 
     }
@@ -1343,6 +1384,7 @@ TEST(sidre_view,simple_opaque)
   EXPECT_TRUE(opq_view->isOpaque());
 
   void * opq_ptr = opq_view->getVoidPtr();
+  EXPECT_EQ(src_ptr, opq_ptr);
 
   int * out_data = (int *)opq_ptr;
   EXPECT_EQ(opq_ptr,src_ptr);

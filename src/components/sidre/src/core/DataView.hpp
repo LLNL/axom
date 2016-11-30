@@ -295,8 +295,9 @@ public:
    *       And it is an assertion error if this is not the case.
    *       If you have a different use case, please talk to the Sidre team
    *
-   * \note The following functions already account for the offset, and return a pointer to the
-   *        first element in an array: DataView::getData(), DataView::getVoidPtr() and DataView::getArray()
+   * \note DataView::getData() and DataView::getArray() already account for the offset,
+   *        and return a pointer to the first element in the array:
+   *        DataView::getVoidPtr() does not account for the offset.
    *
    * IMPORTANT: This function is based on the view description, it does not imply that the data is allocated
    *
@@ -784,6 +785,9 @@ public:
    *    int* a = view->getArray();      // Get array as int pointer
    *    int_array a = view->getArray(); // Get array as Conduit array struct.
    * \endverbatim
+   *
+   * \note The returned pointer accounts for the View's offset, so getArray()[0]
+   *       always points to the first element in the array.
    */
   Node::Value getArray()
   {
@@ -830,6 +834,9 @@ public:
    *
    *  If view does not contain allocated data, an empty Node::Value will be
    *  returned.
+   *
+   *  \note The return value already accounts for the View's offset (when present),
+   *        so, if the View is an array, getData()[0] already points to the first element
    */
   Node::Value getData()
   {
@@ -845,12 +852,11 @@ public:
   }
 
   /*!
-   * \brief Lightweight templated wrapper around getData() that can be used when you are calling getData(), but not
-   * assigning the return.
+   * \brief Lightweight templated wrapper around getData() that can be used when you are calling getData(),
+   *        but not assigning the return type.
    *
+   * \sa getData()
    */
-  // TODO - Will a app code ever use this?  We are just using it for internal tests, so maybe we can move this function
-  // to a 'test helper' source file and remove it from the core API.
   template<typename DataType>
   DataType getData()
   {
@@ -859,10 +865,21 @@ public:
   }
 
   /*!
-   * \brief Returns a void pointer to data in the view (if described, it will take into account any
-   * offset, stride, schema, etc. applied).
+   * \brief Returns a void pointer to the view's data
+   *
+   * \note This function returns the base pointer that was used to set up the view.
+   *       It does not account for any offsets or strides in the View's description.
+   *
+   * To access the first data element, you will need to cast to the appropriate type
+   * and add the offset.  E.g. if the underlying data is an array of integers
+   * you can access the first element as follows:
+   * \verbatim
+   *    void* vptr = view->getVoidPtr();
+   *    int*  iptr = static_cast<int*>(vptr) + view->getOffset();
+   * \endverbatim
+   *
+   * \sa getData(), getArray()
    */
-  // TODO - Would like this to be a const function, but it calls a conduit function which is not const.
   void * getVoidPtr() const;
 
 //@}

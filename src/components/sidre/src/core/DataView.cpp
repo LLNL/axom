@@ -468,7 +468,7 @@ void * DataView::getVoidPtr() const
   case EXTERNAL:
     if (isApplied())
     {
-      rv = const_cast<void *>(m_node.element_ptr(0));
+      rv = const_cast<void *>(m_node.data_ptr());
     }
     else
     {
@@ -478,7 +478,7 @@ void * DataView::getVoidPtr() const
   case BUFFER:
     if (isApplied())
     {
-      rv = const_cast<void *>(m_node.element_ptr(0));
+      rv = const_cast<void *>(m_node.data_ptr());
     }
     else
     {
@@ -487,7 +487,7 @@ void * DataView::getVoidPtr() const
     break;
   case STRING:
   case SCALAR:
-    rv = const_cast<void *>(m_node.element_ptr(0));
+      rv = const_cast<void *>(m_node.data_ptr());
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
