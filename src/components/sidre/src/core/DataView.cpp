@@ -360,9 +360,11 @@ DataView * DataView::apply(SidreLength num_elems,
     dtype = conduit::DataType::default_dtype(m_data_buffer->getTypeID());
   }
 
+  const size_t bytes_per_elem = dtype.element_bytes();
+
   dtype.set_number_of_elements(num_elems);
-  dtype.set_offset(offset * dtype.element_bytes() );
-  dtype.set_stride(stride * dtype.element_bytes() );
+  dtype.set_offset(offset * bytes_per_elem );
+  dtype.set_stride(stride * bytes_per_elem );
 
   describe(dtype);
 
@@ -391,7 +393,7 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
 
   DataType dtype = conduit::DataType::default_dtype(type);
 
-  size_t bytes_per_elem = dtype.element_bytes();
+  const size_t bytes_per_elem = dtype.element_bytes();
 
   dtype.set_number_of_elements(num_elems);
   dtype.set_offset(offset * bytes_per_elem);
@@ -614,9 +616,9 @@ SidreLength DataView::getOffset() const
 
   if( isDescribed() )
   {
-      const int bytes_per_elem = m_schema.dtype().element_bytes();
       offset = m_schema.dtype().offset();
 
+      const int bytes_per_elem = getBytesPerElement();
       if(bytes_per_elem != 0)
       {
          SLIC_ERROR_IF(offset % bytes_per_elem != 0,
@@ -624,7 +626,7 @@ SidreLength DataView::getOffset() const
                        "are given as integral number of elements into the array. "
                        "In this case, the offset was " << offset << " bytes and each "
                        "element is " << bytes_per_elem << " bytes. "
-                       "If you have a need for nonintegral offsets, please contact "
+                       "If you have a need for non-integral offsets, please contact "
                        "the Sidre team");
 
          offset /= bytes_per_elem;
@@ -647,9 +649,9 @@ SidreLength DataView::getStride() const
 
   if( isDescribed() )
   {
-      const int bytes_per_elem = m_schema.dtype().element_bytes();
       stride = m_schema.dtype().stride();
 
+      const int bytes_per_elem = getBytesPerElement();
       if(bytes_per_elem != 0)
       {
           SLIC_ERROR_IF(stride % bytes_per_elem != 0,
@@ -657,7 +659,7 @@ SidreLength DataView::getStride() const
                         "are given as integral number of elements into the array. "
                         "In this case, the stride was " << stride << " bytes and each "
                         "element is " << bytes_per_elem << " bytes. "
-                        "If you have a need for nonintegral strides, please contact "
+                        "If you have a need for non-integral strides, please contact "
                         "the Sidre team");
 
          stride /= bytes_per_elem;

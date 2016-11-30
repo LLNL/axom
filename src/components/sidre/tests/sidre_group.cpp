@@ -1111,7 +1111,7 @@ TEST(sidre_group,save_restore_external_data)
     EXPECT_TRUE(view3->getVoidPtr() == ATK_NULLPTR);
     // Set "external_array" and "external_undescribed" to the same external array
     // since it was created that way.  However, "external_undescribed" was not
-    // written to the dump sice it is undescribed.
+    // written to the dump since it is undescribed.
     view3->setExternalDataPtr(foo2);
 
     DataView * view4 = root2->getView("int2d");
