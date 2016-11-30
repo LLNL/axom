@@ -23,8 +23,8 @@ for its local data.  The calling code specifies the number of output files,
 and IOManager organizes the output so that each file receives data from a
 roughly equal number of ranks.  The files containing the data from the group
 will have names of the format "file_string/file_string_*******.suffix", with a
-7-digin integer value identifying the files from 0 to num_files-1, and the
-suffix indicating the file format according tot he protocol argument.
+7-digit integer value identifying the files from 0 to num_files-1, and the
+suffix indicating the file format according to the protocol argument.
 Additionally write() will produce a root file with the name file_string.root
 that holds some bookkeeping data about the other files and can also receive
 extra user-specified data.
@@ -37,7 +37,7 @@ extra user-specified data.
 read() is called in parallel with the root file as an argument.  It must be
 called on a run with the same processor count as the run that called write().
 The first argument is a pointer to a group that contains no child groups or
-vies, and the information in the root file is used to identify the files that
+views, and the information in the root file is used to identify the files that
 each processor will read to load data into the argument group.
 
 The write and read methods above are sufficient to do a restart save/load
@@ -54,11 +54,12 @@ to associate the pointer with the view.  Once this is done, IOManager's
 loadExternalData can be used to load the data from the file into the
 user-allocated arrays.
 
-Code example for loading external data.  We assume that this code somehow has
-knowledge that the root group contains a single external view at the location
-"fields/external_array" describing an array of doubles.  See the Sidre
-documentation for information about how to query the Sidre data structures for
-this type of information when the code does not have a priori knowledge.
+Below is a code example for loading external data.  We assume that this code
+somehow has knowledge that the root group contains a single external view at
+the location "fields/external_array" describing an array of doubles.  See the
+Sidre documentation for information about how to query the Sidre data
+structures for this type of information when the code does not have a priori
+knowledge.
 
 .. code-block:: cpp
 
