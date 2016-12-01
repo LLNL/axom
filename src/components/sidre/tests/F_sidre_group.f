@@ -775,7 +775,7 @@ contains
        call view4%set_array_data_ptr(int2d2)
 
        ! read external data into views
-       call root2%load_external_data(file_path, protocols(i))
+       call root2%load_external_data(file_path)
 
        call assert_true( all(foo1 == foo2), "compare foo1 foo2" )
 

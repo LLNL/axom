@@ -1131,7 +1131,7 @@ TEST(sidre_group,save_restore_external_data)
     view4->setExternalDataPtr(int2d2);
 
     // Read external data into views
-    root2->loadExternalData(file_path, protocols[i]);
+    root2->loadExternalData(file_path);
 
     // Make sure addresses have not changed
     EXPECT_TRUE(view1->getVoidPtr() == static_cast<void *>(foo2));

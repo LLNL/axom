@@ -1517,24 +1517,21 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lprotocol
         end subroutine c_datagroup_load_bufferify
         
-        subroutine c_datagroup_load_external_data(self, file_path, protocol) &
+        subroutine c_datagroup_load_external_data(self, file_path) &
                 bind(C, name="SIDRE_datagroup_load_external_data")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
         end subroutine c_datagroup_load_external_data
         
-        subroutine c_datagroup_load_external_data_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+        subroutine c_datagroup_load_external_data_bufferify(self, file_path, Lfile_path) &
                 bind(C, name="SIDRE_datagroup_load_external_data_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             integer(C_INT), value, intent(IN) :: Lfile_path
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            integer(C_INT), value, intent(IN) :: Lprotocol
         end subroutine c_datagroup_load_external_data_bufferify
         
         ! splicer begin class.DataGroup.additional_interfaces
@@ -3024,19 +3021,16 @@ contains
         ! splicer end class.DataGroup.method.load
     end subroutine datagroup_load
     
-    subroutine datagroup_load_external_data(obj, file_path, protocol)
+    subroutine datagroup_load_external_data(obj, file_path)
         use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: file_path
-        character(*), intent(IN) :: protocol
         ! splicer begin class.DataGroup.method.load_external_data
         call c_datagroup_load_external_data_bufferify(  &
             obj%voidptr,  &
             file_path,  &
-            len_trim(file_path, kind=C_INT),  &
-            protocol,  &
-            len_trim(protocol, kind=C_INT))
+            len_trim(file_path, kind=C_INT))
         ! splicer end class.DataGroup.method.load_external_data
     end subroutine datagroup_load_external_data
     
