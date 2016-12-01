@@ -988,6 +988,130 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
 
 /** @} */
 
+/** @{ @name Triangle-ray intersection */
+
+template < typename T >
+bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
+{
+  //ray origins inside of the triangle are considered a miss
+  //coplanar rays, evidenced by det == 0, are also conisdered as a miss
+
+  //find out dimension where ray direction is maximal
+  int kx,ky,kz;
+  float rX,rY,rZ;
+    
+  //assign initial directions
+  rX = R.direction()[0];
+  rY = R.direction()[1];
+  rZ = R.direction()[2];
+    
+  //make all dimensions positive
+  if(rX < 0.0f) rX *= -1.0f;
+  if(rY < 0.0f) rY *= -1.0f;
+  if(rZ < 0.0f) rZ *= -1.0f;
+    
+  //z-direction largest
+  if((rZ>=rX) && (rZ >= rY)){
+    kz=2;
+  }
+  //y direction largest
+  else if((rY >= rX) && (rY >= rZ)){
+    kz=1;
+  }
+  //x direction largest
+  else{
+    kz=0;
+  }
+   
+  //assign other dimensions of the ray
+  kx = (kz+1) % 3;
+  ky = (kz+1) % 3;
+
+  //if necessary swap  ky and kx to preserve triangle winding
+  if(R.direction()[kz] < 0.0f){
+    int temp = kx;
+    kx = ky;
+    ky = temp;
+  }
+
+  //calculate shear constants
+  float Sx = R.direction()[kx]/R.direction()[kz];
+  float Sy = R.direction()[ky]/R.direction()[kz];
+  float Sz = 1.0f/R.direction()[kz];
+
+  //A,B,C are the triangle vertices 
+  float A[3],B[3],C[3];
+
+  //calculate vertices relative to the ray origin
+  A[kx] = tri.A().array()[kx] - R.origin()[kx];
+  A[ky] = tri.A().array()[ky] - R.origin()[ky];
+  A[kz] = tri.A().array()[kz] - R.origin()[kz];
+
+  B[kx] = tri.B().array()[kx] - R.origin()[kx];
+  B[ky] = tri.B().array()[ky] - R.origin()[ky];
+  B[kz] = tri.B().array()[kz] - R.origin()[kz];
+
+  C[kx] = tri.C().array()[kx] - R.origin()[kx];
+  C[ky] = tri.C().array()[ky] - R.origin()[ky];
+  C[kz] = tri.C().array()[kz] - R.origin()[kz];
+  
+
+  //shear and scale the vertices
+  const float Ax = A[kx] - Sx*A[kz];
+  const float Ay = A[ky] - Sy*A[kz];
+  const float Bx = B[kx] - Sx*B[kz];
+  const float By = B[ky] - Sy*B[kz];
+  const float Cx = C[kx] - Sx*C[kz];
+  const float Cy = C[ky] - Sy*C[kz];
+ 
+  //scaled barycentric coordinates
+  float U = Cx*By - Cy*Bx;
+  float V = Ax*Cy - Ay*Cx;
+  float W = Bx*Ay - By*Ax;
+
+  //fallback to test against edges using double precision
+  if(U == 0.0f || V == 0.0f || W == 0.0f){
+    double CxBy = (double)Cx*(double)By;
+    double CyBx = (double)Cy*(double)Bx;
+    U = (float)(CxBy - CyBx);
+
+    double AxCy = (double)Ax*(double)Cy;
+    double AyCx = (double)Cy*(double)Cx;
+    V = (float)(AxCy - AyCx);
+
+    double BxAy = (double)Bx*(double)Ay;
+    double ByAx = (double)By*(double)Ax;
+    W = (float)(BxAy - ByAx);
+  }
+
+  //edge testing
+  if((U<0.0f || V<0.0f || W<0.0f) && (U>0.0f || V>0.0f || W>0.0f)){
+    return false;
+  }
+
+  //clalculate determinant
+  float det = U + V + W;
+    
+  if(det == 0.0f){
+    return false;
+  }
+
+  //calculate scaled z-coordinates of the vertices and use them to calculate hit distance
+  const float Az = Sz*A[kz];
+  const float Bz = Sz*B[kz];
+  const float Cz = Sz*C[kz];
+  const float Q = U*Az + V*Bz +W*Cz;    
+
+  //make sure hit is in correct direction
+  bool dir = ((Q<0.0f) && !(det<0.0f)) || ((det < 0.0f) && !(Q<0.0f));
+  if(dir){
+    return false;
+  }
+  return true;
+}
+
+/** @} */
+
 } /* end namespace detail */
 } /* end namespace quest */
 

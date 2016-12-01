@@ -135,6 +135,20 @@ bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
   return detail::intersect_tri_bbox(tri, bb);
 }
 
+/*!
+ *******************************************************************************
+ * \brief Determines if a 3D triangle intersects a 3D ray.
+ * \param [in] tri A 3D triangle
+ * \param [in] ray A 3D ray
+ * \return true iff tri intersects with ray, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T >
+bool intersect(const Triangle<T, 3>& tri, const Ray<T,3>& ray)
+{
+  return detail::intersect_tri_ray(tri, ray);
+}
+
 } /* end namespace quest */
 
 #endif /* INTERSECTION_HPP_ */
