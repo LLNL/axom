@@ -65,7 +65,20 @@ public:
   ~IOManager();
 
   /*!
-   * \brief write
+   * \brief write a DataGroup to output files
+   *
+   * The DataGroup, including all of its child groups and views, is written
+   * to files according to the given protocol.
+   *
+   * valid protocols:
+   *
+   *    sidre_hdf5
+   *    sidre_conduit_json
+   *    sidre_json
+   *    conduit_hdf5
+   *    conduit_bin
+   *    conduit_json
+   *    json
    *
    * \param group         DataGroup to write to output
    * \param num_files     number of output data files

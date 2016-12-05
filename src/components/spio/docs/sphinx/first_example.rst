@@ -44,7 +44,9 @@ Now, an example of reading files written by the above example
   // Create a Group called "domain"
   Group * domain_group = root->createGroup("domain");
 
-  // Create IOManager and read from files into domain_group.
+  // Create IOManager and read from files into domain_group.  The file
+  // contains the necessary information about the protocol and the number
+  // of files.
   IOManager reader(MPI_COMM_WORLD);
   reader.read(domain_group, "domain_output.root");
  

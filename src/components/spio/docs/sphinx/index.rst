@@ -23,7 +23,7 @@ Sidre objects that exists across all the MPI ranks of a parallel run.
 * When saving output, a root file is created that contains some bookkeeping
   data that is used to coordinate a subsequent restart read.
 * The calling code can also add extra data to the root file to provide 
-  metadata that gives necessary instructions to visualization tools 
+  metadata that gives necessary instructions to visualization tools.
 
 
 **Contents:**
