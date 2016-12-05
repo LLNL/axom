@@ -120,13 +120,18 @@ TEST( quest_triangle, triangle_barycentric)
           QPoint( 1./3. * (pt[0].array() + pt[1].array() + pt[2].array())),
           QPoint::make_point(1./3.,1./3.,1./3.)));
 
+  // Test a point outside the triangle
+  testData.push_back(std::make_pair(
+          QPoint(-0.4*pt[0].array() + 1.2*pt[1].array() + 0.2*pt[2].array()),
+          QPoint::make_point(-0.4, 1.2, 0.2)));
+
 
   // Now run the actual tests
   for(TestVec::const_iterator it= testData.begin(); it != testData.end(); ++it)
   {
     const QPoint& query = it->first;
     const QPoint& expBary = it->second;
-    QPoint bary = tri.computeBarycenterCoords(query);
+    QPoint bary = tri.barycentricCoords(query);
 
     SLIC_DEBUG(fmt::format(
             "Computed barycentric coordinates for triangle {} and point {} are {}",
@@ -136,6 +141,111 @@ TEST( quest_triangle, triangle_barycentric)
     EXPECT_NEAR(bary[2], expBary[2], EPS );
   }
 
+}
+
+//----------------------------------------------------------------------
+TEST( quest_triangle, triangle_2D_point_containment)
+{
+  static const int DIM = 2;
+  static const double EPS = 1e-12;
+  typedef double CoordType;
+  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef quest::Triangle<CoordType, DIM> QTri;
+
+  // Test triangle
+  QPoint pt[3] = {
+                 QPoint::make_point(1,0),
+                 QPoint::make_point(1,1),
+                 QPoint::make_point(0,0),
+          };
+
+  QTri tri(pt[0],pt[1],pt[2]);
+
+  typedef std::vector<QPoint> TestVec;
+  TestVec successes, failures;
+
+  // Tests that should succeed:
+  // Test the three vertices
+  successes.push_back(pt[0]);
+  successes.push_back(pt[1]);
+  successes.push_back(pt[2]);
+  // Test points on the edges
+  successes.push_back(QPoint::make_point(0.3, 0.3));
+  successes.push_back(QPoint::make_point(0.5, 0.0));
+  successes.push_back(QPoint::make_point(1.0, 0.7));
+  // Test some points in the interior
+  successes.push_back(QPoint::make_point(0.2, 0.15));
+  successes.push_back(QPoint::make_point(0.6, 0.3));
+
+  // Tests that should fail:
+  // Point not coplanar with tri (only applicable in 3D)
+  // Points outside triangle boundaries
+  failures.push_back(QPoint::make_point(1, 1.01));
+  failures.push_back(QPoint::make_point(50, 1000));
+  // Points very close to vertices
+  failures.push_back(QPoint::make_point(1.00001, 1.000001));
+
+  // Actually run the tests
+  for (TestVec::const_iterator it = successes.begin(); it != successes.end(); ++it) {
+    EXPECT_TRUE(tri.checkInTriangle(*it, EPS));
+  }
+  for (TestVec::const_iterator it = failures.begin(); it != failures.end(); ++it) {
+    EXPECT_FALSE(tri.checkInTriangle(*it, EPS));
+  }
+}
+
+//----------------------------------------------------------------------
+TEST( quest_triangle, triangle_3D_point_containment)
+{
+  static const int DIM = 3;
+  static const double EPS = 1e-12;
+  typedef double CoordType;
+  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef quest::Triangle<CoordType, DIM> QTri;
+
+  // Test triangle
+  QPoint pt[3] = {
+                 QPoint::make_point(1,0,0),
+                 QPoint::make_point(1,1,0),
+                 QPoint::make_point(0,0,0),
+          };
+
+  QTri tri(pt[0],pt[1],pt[2]);
+
+  typedef std::vector<QPoint> TestVec;
+  TestVec successes, failures;
+
+  // Tests that should succeed:
+  // Test the three vertices
+  successes.push_back(pt[0]);
+  successes.push_back(pt[1]);
+  successes.push_back(pt[2]);
+  // Test points on the edges
+  successes.push_back(QPoint::make_point(0.3, 0.3, 0));
+  successes.push_back(QPoint::make_point(0.5, 0.0, 0));
+  successes.push_back(QPoint::make_point(1.0, 0.7, 0));
+  // Test some points in the interior
+  successes.push_back(QPoint::make_point(0.2, 0.15, 0));
+  successes.push_back(QPoint::make_point(0.6, 0.3, 0));
+
+  // Tests that should fail:
+  // Point not coplanar with tri (only applicable in 3D)
+  failures.push_back(QPoint::make_point(0.2, 0.15, 0.00001));
+  failures.push_back(QPoint::make_point(0.6, 0.3, 0.1));
+  failures.push_back(QPoint::make_point(0.9999, 0.99, -0.0000001));
+  // Points outside triangle boundaries
+  failures.push_back(QPoint::make_point(1, 1.01, 0));
+  failures.push_back(QPoint::make_point(50, 1000, 0));
+  // Points very close to vertices
+  failures.push_back(QPoint::make_point(1.00001, 1.000001, 0));
+
+  // Actually run the tests
+  for (TestVec::const_iterator it = successes.begin(); it != successes.end(); ++it) {
+    EXPECT_TRUE(tri.checkInTriangle(*it, EPS));
+  }
+  for (TestVec::const_iterator it = failures.begin(); it != failures.end(); ++it) {
+    EXPECT_FALSE(tri.checkInTriangle(*it, EPS));
+  }
 }
 
 
