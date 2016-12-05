@@ -121,6 +121,9 @@ This is declared at the top of the 'cmake' configuration, and provides a central
 |ENABLE_FORTRAN                       |Enables Fortran compiler       |  ON    |
 |                                     |support                        |        |
 +-------------------------------------+-------------------------------+--------+
+|ENABLE_SHROUD                        |Enables Shroud for generating  |  OFF   |
+|                                     |language bindings              |        | 
++-------------------------------------+-------------------------------+--------+
 |ENABLE_ALL_WARNINGS                  |Enable extra compiler warnings |        | 
 |                                     |in all build targets           |  ON    |
 +-------------------------------------+-------------------------------+--------+

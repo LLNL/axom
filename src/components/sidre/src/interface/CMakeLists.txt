@@ -1,4 +1,4 @@
-add_shroud( YAML_INPUT_FILE shroud_sidre.yaml
+add_shroud( YAML_INPUT_FILE sidre_shroud.yaml
             C_FORTRAN_OUTPUT_DIR c_fortran
             PYTHON_OUTPUT_DIR python
             DEPENDS_SOURCE
