@@ -15,15 +15,24 @@
  *        from the sidre_hdf5 protocol to another supported protocol.
  *
  * Users must supply a path to a sidre_hdf5 rootfile and base name for
- * the output datastores.  Can optionally provide a --protocol option
- * and/or  a --strip option to truncate the data to at most N elements.
+ * the output datastores.  Optional command line arguments include
+ * a --protocol option (the default is 'json')
+ * and  a --strip option to truncate the array data to at most N elements.
+ * The strip option also prepends each array with its original size and a filler entry
+ * of 0 for integer arrays or nan for floating point arrays.
+ * E.g. if the array had 6 entries [1.01. 2.02, 3.03, 4.04, 5.05, 6.06]
+ * and the user passed in --strip 3, the array would be converted to
+ * [6, nan, 1.01, 2.02, 3.03].
+ *
+ * \note The strip option is intended as a temporary solution to truncating
+ * a dataset to allow easier debugging.  In the future, we intend to separate
+ * the conversion and truncation/display functionality into separate utilities.
  *
  * Usage:
- *    ./convert_sidre_protocol     -- prints out usage information
  *    ./convert_sidre_protocol --input path_to_datastore_root_file \
  *                             --output path_to_output_datastore \
- *                             --protocol a_supported_protocol  (default json) \
- *                             --strip N
+ *                             [--protocol a_supported_protocol] \
+ *                             [--strip N]
  */
 #include "mpi.h"
 
@@ -111,7 +120,7 @@ struct CommandLineArguments
        out.write("\n\t{:<30}{}", "--output <file>", "(required) Filename of output datastore");
        out.write("\n\t{:<30}{}", "--strip <N>", "Indicates if data in output file should be "
                                                     "stripped (to first N entries) (default: off)");
-       out.write("\n\t{:<30}{}", "--protocol <str>", "Desired protocol for output datastore");
+       out.write("\n\t{:<30}{}", "--protocol <str>", "Desired protocol for output datastore (default: json)");
 
        out.write("\n\n\t{: <40}","Available protocols:");
        for(int i=0; i< NUM_SIDRE_PROTOCOLS; ++i)
@@ -230,8 +239,8 @@ CommandLineArguments parseArguments(int argc, char** argv, int myRank)
  * Iterates recursively through the views and groups of the provided group to find
  * the external data views and allocates the required storage within the extPtrs vector
  *
- * \param grp  The group on which we are traversing
- * \param extPtrs [in] An input vector to hold pointers to the allocated data
+ * \param grp  The group to traverse
+ * \param extPtrs [out] A vector to hold pointers to the allocated data
  *
  * \note We also set the data in each allocated array to zeros
  */
@@ -453,6 +462,7 @@ void teardownLogging()
     asctoolkit::slic::finalize();
 }
 
+
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
@@ -492,7 +502,7 @@ int main(int argc, char * argv[])
 
       // Add a string view to the datastore to indicate that we modified the data
       fmt::MemoryWriter fout;
-      fout << "This datastore was created by the spio_convert_format utility "
+      fout << "This datastore was created by the convert_sidre_protocol utility "
            << "with option '--strip " << numElts <<  "'. "
            << "To simplify debugging, the bulk data in this datastore has been truncated to have "
            << "at most " << numElts << " actual values. The first value is the original array size, "
