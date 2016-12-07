@@ -61,7 +61,9 @@ and help reduce user and developer errors.
    scope_sec6
    documentation_sec7
    design_implement_sec8
-   remaining
+   format_sec9
+   portability_sec10
+   references
 
 
 Indices and tables
