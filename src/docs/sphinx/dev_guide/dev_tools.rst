@@ -454,9 +454,9 @@ The Bamboo server is going to hand the scripts to it's associated 'agents' on th
   * ** Restarting the Agent**, On occasion, the agent can die.  This results in bamboo jobs being queued and stalled until the agent is restarted.  You must have access to the toolkit 'ATK' user to restart the agent.
 
 
-.. note :: **ssh cab687 xsu atk
-cd /g/g16/atk/bambooAgent/asctoolkit.cab.llnl.gov
-./bin/bamboo-agent.sh stop/start **
+.. note :: **ssh cab687 xsu atk 
+           cd /g/g16/atk/bambooAgent/asctoolkit.cab.llnl.gov
+           ./bin/bamboo-agent.sh stop/start**
 
 
 Automated plans
