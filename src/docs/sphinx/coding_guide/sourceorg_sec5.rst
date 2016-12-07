@@ -39,9 +39,6 @@ Avoid extraneous header file inclusions
       Such header file inclusions introduce spurious file dependencies, which
       may increases compilation time unnecessarily.
 
-.. note:: Forward references, or C++ standard '*fwd' headers, are preferred 
-          over detailed header file inclusions when you can use them.
- 
 
 ---------------------------------------------------------
 Function order in source and header files should match
@@ -60,9 +57,9 @@ order in which they appear in the associated header file.
 Source file layout details
 ---------------------------------------------------------
 
-Content **must** be organized consistently in all source files. The file 
-layout described here is recommended. The following summary uses numbers 
-and text to illustrate the basic structure. Details about individual items 
+Content **must** be organized consistently in all source files.
+This section summarizes the recommended source file layout using numbers
+and text to illustrate the basic structure. Details about individual items
 are contained in the guidelines after the summary.
 
 .. code-block:: cpp

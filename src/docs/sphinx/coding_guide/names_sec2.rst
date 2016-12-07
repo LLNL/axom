@@ -21,9 +21,9 @@ The main goal is to use clear and unambiguous names. Also, we want naming
 conventions for different entities so that, when applied, the role of each 
 is obvious from the form of its name.
 
---------------------------------
-Choose names with clear meaning
---------------------------------
+------------------------------------
+Good names are clear and meaningful
+------------------------------------
 
 2.1 Every name **must** be meaningful. In particular, its meaning **must** 
 be clear to other code developers and users, not just the author of the name.
@@ -79,7 +79,7 @@ the same style conventions.
 
 
 --------------------------------------------------------
-File extension conventions
+Follow file extension conventions
 --------------------------------------------------------
 
 2.6 C++ header and source file extensions **must** be: \*.hpp and \*.cpp, 
@@ -110,7 +110,7 @@ the file extension, to make their association clear.
  
 
 -------------------------------------------------
-Contents of a file should be clear from its name
+A file's contents should clear from its name
 -------------------------------------------------
 
 2.10 The name of each file **must** clearly indicate its contents.
@@ -129,7 +129,7 @@ Contents of a file should be clear from its name
 
 
 -------------------------------------------
-File names should not differ only in case 
+File names should not differ only by case 
 -------------------------------------------
 
 2.11 File names that differ only in letter case **must not** be used.
@@ -216,7 +216,7 @@ follow the same style.
       similar to C++ standard library functions.
 
       For example, the following method names are acceptable for a class with
-      camelCase syle names::
+      camelCase style names::
 
         push_back(), push_front()
 
@@ -232,7 +232,7 @@ function does.
 
       For example::
 
-        calculateDensity(), getDensity()
+        calculate Density(), getDensity()
 
       are good function names because they distinguish the fact that the
       first performs a calculation and the second returns a value. If a

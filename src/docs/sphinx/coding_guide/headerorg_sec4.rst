@@ -15,13 +15,13 @@
 4 Header File Organization
 =====================================
 
-The goal of these guidelines is to make it easy to find essential 
-information in a file easily and quickly. Consistently-applied conventions 
-for file organization can significantly improve user understanding and 
-developer productivity. 
+The goal of these guidelines is to make it easy to find essential information 
+in header files easily and quickly. Header files define software interfaces so
+consistently-applied conventions for file organization can significantly 
+improve user understanding and developer productivity. 
 
 ---------------------------------------------------------
-Everything in a header file should be related
+All header file contents should be related
 ---------------------------------------------------------
 
 4.1 A header file **may** contain multiple type definitions (e.g., structs, 
@@ -38,7 +38,7 @@ where the type is defined.
 
 
 -----------------------------------------------------------------------
-Each header file should include only what's needed to compile it
+Include in a header file only what's needed to compile it
 -----------------------------------------------------------------------
 
 4.3 A header file **must** be self-contained and self-sufficient.
@@ -48,7 +48,7 @@ Each header file should include only what's needed to compile it
       * **Must** have proper header file include guards 
         (see :ref:`headerlayout-label`) to prevent multiple inclusion. The 
         macro symbol name for each guard must be chosen to guarantee uniqueness 
-        within a compilation unit.
+        within *every* compilation unit in which it appears.
       * **Must** include all other headers and/or forward declarations it 
         needs to be compiled standalone. In addition, a file **should not** 
         rely on symbols defined in other header files it includes; the 
@@ -57,11 +57,11 @@ Each header file should include only what's needed to compile it
         methods defined in it. A compiler will require the full definitions of
         these constructs to be seen in every source file that uses them.
 
-        **Note:** Function templates or class template members whose 
-        implementations are fully specialized with all template arguments 
-        **must** be defined in an associated source file to avoid linker 
-        errors. Fully specialized templates are not templates and 
-        are treated just like regular functions.
+.. note:: Function templates or class template members whose implementations 
+          are fully specialized with all template arguments **must** be 
+          defined in an associated source file to avoid linker errors. Fully 
+          specialized templates *are not* templates and are treated just like 
+          regular functions.
 
 4.4 Extraneous header files or forward declarations (i.e., those not 
 required for standalone compilation) **must not** be included in header files.
@@ -95,9 +95,12 @@ recompiling after header file changes.
 4.6 A forward type declaration **must** be used in a header file when an 
 include statement would result in a circular dependency among header files. 
 
+.. note:: Forward references, or C++ standard 'fwd' headers, are preferred
+          over header file inclusions when they are sufficient.
+
 
 ---------------------------------------------------------
-Organize header file contents to improve understanding
+Organize header file contents for easy understanding
 ---------------------------------------------------------
 
 4.7 Header file include statements **should** use the same ordering pattern 
@@ -169,8 +172,8 @@ file declaration. Also, names in function declarations and definitions
 Header file layout details
 ---------------------------------------------------------
 
-Content **must** be organized consistently in all header files. The file 
-layout described here is recommended. The following summary uses numbers 
+Content **must** be organized consistently in all header files. 
+This section summarizes the recommended header file layout using numbers 
 and text to illustrate the basic structure. Details about individual items 
 are contained in the guidelines after the summary.
 

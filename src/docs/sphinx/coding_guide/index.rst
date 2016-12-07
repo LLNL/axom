@@ -14,8 +14,8 @@ CS Toolkit Coding Guidelines
 ==============================
 
 These guidelines define code style conventions for the CS Toolkit. Most of the
-guidelines were taken from the cited references, sometimes with
-modifications and simplifications; see :ref:`codingrefs-label`.
+items were taken from the cited references, sometimes with modifications and 
+simplifications; see :ref:`codingrefs-label`.
 
 The guidelines emphasize code readability, correctness, portability, and
 interoperability. Agreement on coding style and following common idioms
@@ -29,22 +29,22 @@ on practical experience and widely accepted sound practices. For brevity,
 most guidelines contain little detailed explanation or justification.
 
 Each guideline is qualified by one of three auxiliary verbs:
-"must", "should", or "may" (or "must not", "should not", "may npt").
+"must", "should", or "may" (or "must not", "should not", "may not").
 
 * A "must" item is an absolute requirement.
 * A "should" item is a strong recommendation.
 * A "may" item is a potentially beneficial stylistic suggestion.
 
-Whether and how to apply items qualified with "should" or "may" often depends
-on the particular code situation. It is best to use them in a manner that
-enhances code readability and help to reduce user and developer errors.
+How to apply "should" and "may" items often depends on the particular code 
+situation. It is best to use these in ways that enhance code readability 
+and help reduce user and developer errors.
 
 .. important:: * Variations in coding style for different Toolkit components 
                  is permitted. However, coding style *within each* Toolkit 
                  component **must** be consistent.
                * Deviations from these guidelines **must** be 
-                 discussed and agreed upon by the development team.
-               * When the team agrees on changes to these guidelines, this
+                 agreed upon by the Toolkit team.
+               * When the team agrees to change the guidelines, this
                  guide **must** be updated.
 
 
@@ -60,6 +60,7 @@ enhances code readability and help to reduce user and developer errors.
    sourceorg_sec5
    scope_sec6
    documentation_sec7
+   design_implement_sec8
    remaining
 
 

@@ -19,12 +19,14 @@
 Use namespaces to avoid name collisions
 ---------------------------------------------------------
 
-6.1 All Toolkit code **must** be included in the project namespace 
+6.1 All CS Toolkit code **must** be included in the project namespace 
 'asctoolkit'; e.g.,::
 
          namespace asctoolkit {
               // . . .
          }
+
+.. note:: We will change the top-level namespace at some point to shorten it.
 
 6.2 Each Toolkit component **must** define its own unique namespace within
 the "asctoolkit" namespace. All contents of each component **must** reside
@@ -100,11 +102,10 @@ Use access qualifiers to control class interfaces
            separating methods and data into their own access qualified 
            sections usually helps make a class definition clearer.
 
-6.9 Class data members **should** be "private". If "public" or "protected" 
-data members are even considered, this choice **must** be reviewed carefully 
-by other team members.
+6.9 Class data members **should** be "private". The choice to use "public" 
+or "protected" data members **must** be scrutinized by other team members.
 
-      Information hiding is an essential aspect of good software engineering 
+      Information hiding is an essential part of good software engineering 
       and private data is the best means for a class to preserve its 
       invariants. Specifically, a class should maintain control of how object 
       state can be modified to minimize side effects. In addition, restricting
@@ -118,7 +119,7 @@ Use 'friend' and 'static' rarely
 
 6.10 "Friend" declarations **should** be used rarely. When used, they 
 **must** appear within the body of a class definition before any class 
-member declarations.
+member declarations. This helps make the friend relationship obvious.
 
       Note that placing "friend" declarations before the "public:" keyword 
       makes them private, which preserves encapsulation.
@@ -152,9 +153,10 @@ enclosing class interface.
          };
 
       When only the enclosing class uses a nested class, making it private
-      does not pollute the outer scope needlessly. Furthermore, nested classes
-      may be forward declared within the enclosing class definition and then
-      defined in the implementation file for the enclosing class. For example::
+      does not pollute the enclosing scope needlessly. Furthermore, nested 
+      classes may be forward declared within the enclosing class definition 
+      and then defined in the implementation file of the enclosing class. 
+      For example::
 
          class Outer
          {
@@ -174,10 +176,10 @@ enclosing class interface.
 
 
 ---------------------------------------------------------
-4.2 Local Variables
+Limit scope of local variables
 ---------------------------------------------------------
 
-4.2.1 Local variables **should** be declared in the narrowest scope possible 
+6.13 Local variables **should** be declared in the narrowest scope possible 
 and as close to first use as possible.
 
       Minimizing variable scope makes source code easier to comprehend and
@@ -191,6 +193,8 @@ and as close to first use as possible.
          int ii;
          ...
          for (ii = 0; ...) {
+
+      Beyond readability, this rule has benefits for thread safety, etc.
 
       **Exception:** When a local variable is an object, its constructor and
       destructor may be invoked every time a scope (such as a loop) is entered
@@ -208,9 +212,9 @@ and as close to first use as possible.
             f.doSomethingCool(ii);
          }
 
-4.2.2 A local reference to any item in the global namespace (which should be 
+6.14 A local reference to any item in the global namespace (which should be 
 rare if needed at all) **should** use the scope operator ("::") to make 
-this clear.
+the fact that it resides in the global namespace clear.
 
       For example::
 
