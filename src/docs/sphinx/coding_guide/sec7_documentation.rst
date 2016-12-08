@@ -26,7 +26,7 @@ guidelines are to:
 
 
 -----------------------------------------
-Only document what's necessary
+Document only what's needed
 -----------------------------------------
 
 7.1 Documentation **should** only include what is essential for users and 
