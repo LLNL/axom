@@ -1043,17 +1043,17 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
   float A[3],B[3],C[3];
 
   //calculate vertices relative to the ray origin
-  A[kx] = tri.A().array()[kx] - R.origin()[kx];
-  A[ky] = tri.A().array()[ky] - R.origin()[ky];
-  A[kz] = tri.A().array()[kz] - R.origin()[kz];
+  A[kx] = tri[0].array()[kx] - R.origin()[kx];
+  A[ky] = tri[0].array()[ky] - R.origin()[ky];
+  A[kz] = tri[0].array()[kz] - R.origin()[kz];
 
-  B[kx] = tri.B().array()[kx] - R.origin()[kx];
-  B[ky] = tri.B().array()[ky] - R.origin()[ky];
-  B[kz] = tri.B().array()[kz] - R.origin()[kz];
+  B[kx] = tri[1].array()[kx] - R.origin()[kx];
+  B[ky] = tri[1].array()[ky] - R.origin()[ky];
+  B[kz] = tri[1].array()[kz] - R.origin()[kz];
 
-  C[kx] = tri.C().array()[kx] - R.origin()[kx];
-  C[ky] = tri.C().array()[ky] - R.origin()[ky];
-  C[kz] = tri.C().array()[kz] - R.origin()[kz];
+  C[kx] = tri[2].array()[kx] - R.origin()[kx];
+  C[ky] = tri[2].array()[ky] - R.origin()[ky];
+  C[kz] = tri[2].array()[kz] - R.origin()[kz];
   
 
   //shear and scale the vertices
@@ -1089,7 +1089,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
     return false;
   }
 
-  //clalculate determinant
+  //calculate determinant
   float det = U + V + W;
     
   if(det == 0.0f){

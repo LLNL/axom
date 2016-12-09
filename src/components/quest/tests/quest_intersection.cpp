@@ -694,6 +694,91 @@ TEST( quest_intersection, ray_aabb_intersection_tinyDirectionVector3D )
   //asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
 
+TEST(quest_intersection, triangle_ray_intersection)
+{
+  static int const DIM = 3;
+  typedef quest::Point< double,DIM >   PointType;
+  typedef quest::Triangle< double, DIM > TriangleType;
+  typedef quest::Ray< double, DIM > RayType;
+  typedef quest::Segment< double, DIM >  SegmentType;
+
+  double xArr[3] = { 1., 0., 0.};
+  double yArr[3] = { 0., 1., 0.};
+  double zArr[3] = { 0., 0., 1.};
+  double mArr[3] = { 1./3., 1./3., 1./3.};
+
+  PointType ptX(xArr);
+  PointType ptY(yArr);
+  PointType ptZ(zArr);
+  PointType ptM(mArr);
+  PointType r0 = PointType::make_point(5., 5., 5.);
+
+  TriangleType tri( ptX, ptY, ptZ );
+  RayType testRay(SegmentType(ptX, ptY));
+
+  // Clear miss
+  testRay = RayType(SegmentType(r0, PointType::make_point(6., 5., 5.)));
+  EXPECT_FALSE(intersect(tri, testRay));
+
+  // Misses
+  testRay = RayType(SegmentType(r0, PointType::make_point(6., 5., 5.)));
+  EXPECT_FALSE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, PointType::make_point(0., 1., .6)));
+  EXPECT_FALSE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, PointType::make_point(0., .5, .6)));
+  EXPECT_FALSE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, PointType::make_point(0., .85, .16)));
+  EXPECT_FALSE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, PointType::make_point(.4, 1.2, 0)));
+  EXPECT_FALSE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, PointType::make_point(1., 0.000001, 0)));
+  EXPECT_FALSE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, PointType::make_point(0.4, 0, 0.7)));
+  EXPECT_FALSE(intersect(tri, testRay));
+
+  // Edge intersections (should these be reported as misses or hits?)
+  testRay = RayType(SegmentType(r0, ptX));
+  EXPECT_FALSE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, ptY));
+  EXPECT_FALSE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, ptZ));
+  EXPECT_FALSE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, PointType::make_point(0., 0.7, 0.3)));
+  EXPECT_FALSE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, PointType::make_point(0.7, 0.3, 0.)));
+  EXPECT_FALSE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, PointType::make_point(0.2, 0., 0.8)));
+  EXPECT_FALSE(intersect(tri, testRay));
+
+  // Hits
+  testRay = RayType(SegmentType(r0, PointType::make_point(0.2, 0., 0.2)));
+  EXPECT_TRUE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, PointType::make_point(0., 0., 0.)));
+  EXPECT_TRUE(intersect(tri, testRay));
+  testRay = RayType(SegmentType(r0, PointType::make_point(0.1, 0.6, 0.)));
+  EXPECT_TRUE(intersect(tri, testRay));
+
+  // Coplanar miss
+  testRay = RayType(SegmentType(PointType::make_point(-0.1, 1.1, 0.), 
+                                PointType::make_point(-0.1, 0., 1.1)));
+  EXPECT_FALSE(intersect(tri, testRay));
+
+  // Coplanar intersection (reported as miss by function)
+  testRay = RayType(SegmentType(PointType::make_point(-0.1, 1.1, 0.), 
+                                PointType::make_point(0.5, 0., 0.5)));
+  EXPECT_FALSE(intersect(tri, testRay));
+
+  // Coplanar, interior ray origin (reported as miss by function)
+  testRay = RayType(SegmentType(ptM,
+                                PointType::make_point(0.5, 0., 0.5)));
+  EXPECT_FALSE(intersect(tri, testRay));
+
+  // Not coplanar, interior ray origin (reported as miss by function)
+  testRay = RayType(SegmentType(ptM,
+                                PointType::make_point(0., 0., 0.5)));
+  EXPECT_FALSE(intersect(tri, testRay));
+}
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
