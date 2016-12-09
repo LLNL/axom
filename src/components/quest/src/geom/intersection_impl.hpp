@@ -1025,7 +1025,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
    
   //assign other dimensions of the ray
   kx = (kz+1) % 3;
-  ky = (kz+1) % 3;
+  ky = (kz+2) % 3;
 
   //if necessary swap  ky and kx to preserve triangle winding
   if(R.direction()[kz] < 0.0f){
