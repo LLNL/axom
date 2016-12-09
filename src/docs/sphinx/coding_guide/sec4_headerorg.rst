@@ -59,9 +59,9 @@ Include in a header file only what's needed to compile it
 
 .. note:: Function templates or class template members whose implementations 
           are fully specialized with all template arguments **must** be 
-          defined in an associated source file to avoid linker errors. Fully 
-          specialized templates *are not* templates and are treated just like 
-          regular functions.
+          defined in an associated source file to avoid linker errors 
+          (e.g., multiply-defined symbols). Fully specialized templates 
+          *are not* templates and are treated just like regular functions.
 
 4.4 Extraneous header files or forward declarations (i.e., those not 
 required for standalone compilation) **must not** be included in header files.
@@ -78,19 +78,18 @@ Use forward declarations when you can
 inclusions when possible. This may speed up compilation, especially when 
 recompiling after header file changes.
 
-      **Exceptions:**
-
-      * Header files that define external APIs for the Toolkit project **must**
-        include all header files for all types that appear in the API. This
-        makes use of the API much easier.
-      * When using a function, such as an inline method or template, that is
-        implemented in a header file, the header file containing the
-        implementation **must** be included.
-      * Similarly, when using C++ standard library types in a header file, it
-        **may** be preferable to include the actual headers (rather than 
-        forward reference headers (e.g., 'iosfwd') in the header file to 
-        make it easier to use. This avoids having explicit
-        inclusion of standard headers wherever the header file is used.
+.. note:: **Exceptions to this guideline:**
+          * Header files that define external APIs for the Toolkit project 
+            **must** include all header files for all types that appear in 
+            the API. This makes use of the API much easier.
+          * When using a function, such as an inline method or template, that 
+            is implemented in a header file, the header file containing the
+            implementation **must** be included.
+          * Similarly, when using C++ standard library types in a header file, 
+            it **may** be preferable to include the actual headers (rather 
+            than forward reference headers (e.g., 'iosfwd') in the header file 
+            to make it easier to use. This avoids having explicit inclusion 
+            of standard headers wherever the header file is used.
 
 4.6 A forward type declaration **must** be used in a header file when an 
 include statement would result in a circular dependency among header files. 

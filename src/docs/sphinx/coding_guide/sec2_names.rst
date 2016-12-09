@@ -171,11 +171,10 @@ between words in a type name.
 
          Data_store, My_Collection
 
-      **Exceptions to the guidelines above** include cases where types
-      play a similar role to those in common use elsewhere. For example, we
-      define iterator classes, such as "base_iterator" and "numeric_iterator". 
-      These names are acceptable since they are consistent with those found 
-      in the C++ standard library.
+.. note:: **Exceptions to the guidelines above** include cases where types
+          play a similar role to those in common use elsewhere. For example, 
+          naming an iterator class "base_iterator" would be acceptable if 
+          it is conceptually similar with the C++ standard library class.
 
 2.15 Suffixes that may be used by compilers for name mangling, or 
 which are used in the C++ standard library, such as "\_t", **must not** 
@@ -208,12 +207,12 @@ is preferred.
 
 2.17 Names of related functions, such as methods for a class, **should** 
 follow the same style.
- 
-      **Exception:** While consistency is important, name style may be mixed 
-      when it makes sense to do so. For example, most methods for a class may 
-      follow camelCase style. But, that same class may also contain methods 
-      that follow pot_hole style if those methods perform operations that are
-      similar to C++ standard library functions.
+
+.. note:: **Exception:** While consistency is important, name style may be 
+          mixed when it makes sense to do so. For example, most methods for 
+          a class may follow camelCase style. But, that same class may also 
+          contain methods that follow pot_hole style if those methods perform 
+          operations that are similar to C++ standard library functions.
 
       For example, the following method names are acceptable for a class with
       camelCase style names::

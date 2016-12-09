@@ -13,7 +13,7 @@
 .. _portsec-label: 
 
 ===================================================
-8 Portability, Compilation, and Dependencies
+11 Portability, Compilation, and Dependencies
 ===================================================
 
 C++ is a huge language with many advanced and powerful features. To avoid
@@ -26,16 +26,23 @@ explains why use of certain features is constrained or restricted.
 
 
 --------------------------------------------------------------------
-8.1 Portability
+Portability
 --------------------------------------------------------------------
 
-8.1.1 C++ language features beyond standard C++11 **must not** be used unless
+Nothing beyond C++11
+^^^^^^^^^^^^^^^^^^^^
+
+11.1 C++ language features beyond standard C++11 **must not** be used unless
 reviewed by the team and verified that the features are supported by all 
 compilers we need to support.
 
       Changing this guideline requires full con census of all team members.
 
-8.1.2 Whenever C++11 features are used, an alternative implementation **must** 
+
+Use C++11, but don't depend on it
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+11.2 Whenever C++11 features are used, an alternative implementation **must** 
 be provided that conforms to the 2003 C++ standard.
 
       Applications that use the CS Toolkit will rely on non-C++11 compilers 
@@ -44,11 +51,11 @@ be provided that conforms to the 2003 C++ standard.
       Applications that use the CS Toolkit will expect the code able to compile
       and run with full functionality on all platforms they use. 
 
-8.1.3 All C++11 usage **must** be guarded using the macro constant "USE_CXX11" 
+11.3 All C++11 usage **must** be guarded using the macro constant "USE_CXX11" 
 so that it can be compiled out of the code when necessary.
 
    For example, suppose you have a class that you want to support *move*
-   semantics when available (i.e., when using a C++11-compilant compiler)
+   semantics when available (i.e., when using a C++11-compliant compiler)
    and fall back to copy semantics otherwise:
 
 .. code-block:: cpp
@@ -80,7 +87,11 @@ so that it can be compiled out of the code when necessary.
       // data members...
    };
 
-8.1.4 Special non-standard language constructs, such as GNU extensions, 
+
+No non-standard language constructs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+11.4 Special non-standard language constructs, such as GNU extensions, 
 **must not** be used if they hinder portability.
 
 
@@ -90,10 +101,13 @@ so that it can be compiled out of the code when necessary.
 
 
 --------------------------------------------------------------------
-8.2 Compilation
+Compilation
 --------------------------------------------------------------------
 
-8.2.1 Excessive use of the preprocessor for conditional compilation at a 
+Avoid conditional compilation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+11.5 Excessive use of the preprocessor for conditional compilation at a 
 fine granularity (e.g., selectively including or removing individual source 
 lines) **should** be avoided. 
 
@@ -104,21 +118,25 @@ lines) **should** be avoided.
 
       Code reviews by team members will dictate what is/is not acceptable.
 
-8.2.2 Developers **should** rely on compile-time and link-time errors to 
+
+The compiler is your friend
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+11.6 Developers **should** rely on compile-time and link-time errors to 
 check for code correctness and invariants. 
 
       Errors that occur at run-time and which depend on specific control flow 
       and program state are inconvenient for users and can be difficult to 
       detect and fix.
 
-.. note ::      Add some specific guidance here on how this should be done...
+.. important::  Add specific guidance on how this should be done...
 
 
 --------------------------------------------------------------------
-8.3 Third-party Library (TPL) Dependencies
+Minimize dependencies on third-party libraries (TPLs)
 --------------------------------------------------------------------
 
-8.3.1 While it is generally desirable to avoid recreating functionality that
+11.7 While it is generally desirable to avoid recreating functionality that
 others have already implemented, we **should** limit third-party library
 dependencies for the CS Toolkit to make it easier for users. We are a library,
 and everything we necessarily depend on will become a dependency for our
@@ -128,5 +146,5 @@ user.
       (e.g., Boost), it must be agreed on by the development team and vetted
       with our main users.**
 
-8.3.2 Unless absolutely necessary, any TPL we depend on **must not** be 
+11.8 Unless absolutely necessary, any TPL we depend on **must not** be 
 exposed through any public interface in the CS Toolkit.

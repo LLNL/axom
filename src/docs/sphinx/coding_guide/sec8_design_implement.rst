@@ -12,22 +12,22 @@
 .. _designsec-label:
 
 =======================================================
-6 Design and Implement for Correctness and Robustness
+8 Design and Implement for Correctness and Robustness
 =======================================================
 
-The guidelines in this section describe sound software design and
-engineering practices that help enforce correctness and robustness 
-and help avoid mis-interpretation or confusion by others.
+The guidelines in this section describe various software design and
+implementation practices that help enforce correctness and robustness 
+and avoid mis-interpretation or confusion by others.
 
 
 --------------------------------------------------------------------
-6.1 General Guidelines 
+Keep it simple...
 --------------------------------------------------------------------
 
-6.1.1 Simplicity, clarity, ease of modification and extension **should** 
+8.1 Simplicity, clarity, ease of modification and extension **should** 
 always be a main goal when writing new code or changing existing code. 
 
-6.1.2 Each entity (class, struct, variable, function, etc.) **should** embody 
+8.2 Each entity (class, struct, variable, function, etc.) **should** embody 
 one clear, well-defined concept. 
 
       The responsibilities of an entity may increase as it is used in new and 
@@ -39,18 +39,28 @@ one clear, well-defined concept.
       and use correctly. Also, small, simple objects tend to get used more 
       often and reduce code redundancy.
 
-6.1.3 Global, complex, or opaque data sharing **should** be avoided. Shared 
+
+--------------------------------------------------------------------
+Avoid global and static data
+--------------------------------------------------------------------
+
+8.3 Global, complex, or opaque data sharing **should not** be used. Shared 
 data increases coupling and contention between different parts of a code base, 
 which makes maintenance and modification difficult.
 
-6.1.4 Static or global variables of class type **must not** be used.
+8.4 Static or global variables of class type **must not** be used.
 
       Due to indeterminate order of construction, their use may cause bugs
       that are very hard to find. Static or global variables that are pointers
       to class types **may** be used and must be initialized properly in a
       single source file.
 
-6.1.5 Preprocessor macros **should not** be used when there is a better 
+
+--------------------------------------------------------------------
+Avoid macros and magic numbers for constants
+--------------------------------------------------------------------
+
+8.5 Preprocessor macros **should not** be used when there is a better 
 alternative, such as an inline function or a constant variable definition.
 
       For example, this::
@@ -67,14 +77,14 @@ alternative, such as an inline function or a constant variable definition.
       easily in a debugger. Macros **should be used only** when there is
       no better choice for a particular situation.
 
-6.1.6 Hard-coded numerical constants and other "magic numbers" **must not** 
+8.6 Hard-coded numerical constants and other "magic numbers" **must not** 
 be used directly in source code. When such values are needed, they **should** 
 be declared as named constants to enhance code readability and consistency.
 
 
----------------------------------------------------
-6.2 Compiler-generated Class Methods
----------------------------------------------------
+------------------------------------------------------
+Avoid issues with compiler-generated class methods
+------------------------------------------------------
 
 The guidelines in this section apply to class methods that may be 
 *automatically generated* by a compiler, including constructors, destructors,
@@ -98,7 +108,11 @@ move operations instead of copy operations when certain conditions are
 fulfilled. Classes that provide move operations, either explicitly or 
 compiler-generated, are referred to as *movable*.
 
-6.2.1 Each class **must** follow the *Rule of Three* which states: if the 
+
+Rule of three
+^^^^^^^^^^^^^^
+
+8.7 Each class **must** follow the *Rule of Three* which states: if the 
 destructor, copy constructor, or copy-assignment operator is explicitly 
 defined, then the others **must** be defined.
 
@@ -120,7 +134,11 @@ defined, then the others **must** be defined.
       operator will perform a "shallow copy"; i.e., they will copy the value 
       of the pointer without duplicating the underlying resource.
 
-6.2.2 A class that manages non-copyable resources through non-copyable handles, 
+
+Restrict copying of non-copyable resources
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.8 A class that manages non-copyable resources through non-copyable handles, 
 such as pointers, **should** declare the copy methods private and and leave 
 them unimplemented.
 
@@ -153,18 +171,26 @@ them unimplemented.
       the the parent class enforces the non-copyable properties of the class
       is helpful.
 
-6.2.3 When the compiler-generated versions are appropriate (i.e.,
+
+Rely on compiler-generated methods when appropriate
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.9 When the compiler-generated methods are appropriate (i.e.,
 correct and sufficiently fast), the default constructor, copy constructor, 
 destructor, and copy assignment **may** be left undeclared. In this case, 
 it is often helpful to add comments to the class header file indicating that 
 the compiler-generated versions of these methods will be used.
 
-6.2.4 If a class is default-constructable and has POD or bare pointer data 
+8.10 If a class is default-constructable and has POD or bare pointer data 
 members, its default constructor **must** be defined explicitly and the 
 data members **must** be initialized explicitly. A compiler-generated version 
 of a default constructor will not initialize such members, in general.
 
-6.2.5 By convention, a functor class **should** have a copy constructor and 
+
+Functors should always be copyable 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.11 By convention, a functor class **should** have a copy constructor and 
 copy-assignment operator. 
 
       Typically, the compiler-generated versions are sufficient when the class 
@@ -177,7 +203,7 @@ copy-assignment operator.
 .. _automethods-label:
 
 --------------------------------------------------------
-6.3 Standard Rules for Compiler-generated Class Methods
+Understand standard rules for compiler-generated methods
 --------------------------------------------------------
 
 This section provides some background information related to the guidelines
@@ -200,6 +226,9 @@ Actually, MyClass may have as many as **six** methods depending on how it is
 used: a default constructor, destructor, copy constructor, copy-assignment 
 operator, move constructor, and move-assignment operator. Any of these may 
 be generated by a compiler.
+
+.. note:: See :ref:`portsec-label` for discussion about using C++11 features
+          such as *move semantics*.
 
 C++ compiler rules for generating class member functions are:
 
@@ -285,10 +314,29 @@ Other points worth noting:
 
 
 ---------------------------------------------------
-6.3 Class Data Initialization and Copying
+Initializing and copying class members
 ---------------------------------------------------
 
-6.3.1 Each class data member **must** be initialized (using default values 
+Initialize all members at construction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.12 Class type variables **should** be defined using direct initialization 
+instead of copy initialization to avoid unwanted and spurious type conversions 
+and constructor calls that may be generated by compilers.
+
+      For example, use::
+
+         std::string name("Bill");
+
+      instead of::
+
+         std::string name = "Bill";
+
+      or::
+
+         std::string name = std::string("Bill");
+
+8.13 Each class data member **must** be initialized (using default values 
 when appropriate) in every class constructor. That is, an initializer or
 initialization **must** be provided for each class data member so that 
 every object is in a well-defined state upon construction. 
@@ -302,18 +350,15 @@ every object is in a well-defined state upon construction.
       full member initialization, does not require a user-defined default 
       constructor since the compiler-generated version will suffice.
 
-6.3.2 Data member initialization **should** be used instead of assignment in 
-con structors, especially for small classes. Initialization prevents needless 
+
+Know when to use initialization vs. assignment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.14 Data member initialization **should** be used instead of assignment in 
+constructors, especially for small classes. Initialization prevents needless 
 run-time work and is often faster.
 
-6.3.3 For classes with complex data members, assignment within the body of 
-the constructor **may** be preferable.
-
-      If the initialization process is sufficiently complex, it **may** be
-      better to perform object initialization in a method that is called
-      after object creation, such as "init()".
-
-6.3.4 When using initialization instead of assignment to set data member 
+8.15 When using initialization instead of assignment to set data member 
 values in a constructor, data members **should** always be initialized 
 in the order in which they appear in the class definition. 
 
@@ -322,40 +367,56 @@ in the order in which they appear in the class definition.
       the compiler rules and avoid potential errors that could result when
       one member depends on the state of another.
 
-6.3.3 A constructor **must not** call a virtual function on any data member 
+8.16 For classes with complex data members, assignment within the body of 
+the constructor **may** be preferable.
+
+      If the initialization process is sufficiently complex, it **may** be
+      better to initialize (i.e., assign) member objects in a method that 
+      is called after object creation, such as "init()".
+
+
+Use the copy-and-swap idiom
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.17 A user-supplied implementation of a class copy-assignment operator 
+**should** check for assignment to self, **must** copy all data members 
+from the object passed to operator, and **must** return a reference to "\*this".
+
+      The *copy-and-swap* idiom **should** be used. 
+
+
+Initializing, copying, and inheritance
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.18 A constructor **must not** call a virtual function on any data member 
 object since an overridden method defined in a subclass cannot be called 
 until the object is fully constructed. 
 
       There is no general guarantee that data members are fully-created 
       before a constructor exits.
 
-6.3.4 All memory allocated in a class constructor **should** be de-allocated 
-in the class destructor. 
-
-      Note that the intent of constructors is to acquire resources and the 
-      intent of destructors is to free those resources.
-
-6.3.5 A user-supplied implementation of a class copy-assignment operator 
-**should** check for assignment to self, **must** copy all data members 
-from the object passed to operator, and **must** return a reference to "\*this".
-
-      The *copy-and-swap* idiom **should** be used. 
-
-6.3.6 All constructors and copy operations for a derived class **must** call 
+8.19 All constructors and copy operations for a derived class **must** call 
 the necessary constructors and copy operations for each of its base classes 
 to insure that each object is properly allocated and initialized.
 
 
 ---------------------------------------------------
-6.4 Class Inheritance
+Prefer composition to inheritance
 ---------------------------------------------------
 
-6.4.1 Class composition **should** be used instead of inheritance to extend behavior.
+8.20 Class composition **should** be used instead of inheritance to extend 
+behavior.
 
       Looser coupling between objects is typically more flexible and easier
       to maintain and refactor.
 
-6.4.2 Class hierarchies **should** be designed so that subclasses inherit from abstract interfaces; i.e., pure virtual base classes.
+
+---------------------------------------------------
+Keep inheritance relationships simple
+---------------------------------------------------
+
+8.21 Class hierarchies **should** be designed so that subclasses inherit 
+from abstract interfaces; i.e., pure virtual base classes.
 
       Inheritance is often done to reuse code that exists in a base class.
       However, there are usually better design choices to achieve reuse.
@@ -364,13 +425,25 @@ to insure that each object is properly allocated and initialized.
       way, "interface inheritance" should be used instead of "implementation
       inheritance".
 
-6.4.3 Deep inheritance hierarchies; i.e., more than 2 or 3 levels, **should**
+8.22 Deep inheritance hierarchies; i.e., more than 2 or 3 levels, **should**
 be avoided.
 
-6.4.4 Multiple inheritance **should** be restricted so that only one base 
+8.23 Multiple inheritance **should** be restricted so that only one base 
 class contains methods that are not "pure virtual".
 
-6.4.4 One **should not** inherit from a class that was not designed to be a 
+8.24 "Private" and "protected" inheritance **must not** be used unless you 
+absolutely understand the ramifications of such a choice and are sure that 
+it will not create design and implementation problems.
+
+      Such a choice **must** be reviewed with team members. There almost
+      always exist better alternatives.
+
+
+---------------------------------------------------
+Design for/against inheritance
+---------------------------------------------------
+
+8.25 One **should not** inherit from a class that was not designed to be a 
 base class; e.g., if it does not have a virtual destructor.
 
       Doing so is bad practice and can cause problems that may not be reported 
@@ -378,21 +451,19 @@ base class; e.g., if it does not have a virtual destructor.
       one **should** employ class composition rather than by "tweaking" an 
       existing class.
 
-6.4.5 The destructor of a class that is designed to be a base class **must** 
+8.26 The destructor of a class that is designed to be a base class **must** 
 be declared "virtual". 
 
       However, sometimes a destructor should not be declared virtual, such as 
       when deletion through a pointer to a base class object should be 
       disallowed.
 
-6.4.6 "Private" and "protected" inheritance **must not** be used unless you 
-absolutely understand the ramifications of such a choice and are sure that 
-it will not create design and implementation problems.
 
-      Such a choice **must** be reviewed with team members. There almost
-      always exist better alternatives.
+---------------------------------------------------
+Use virtual functions responsibly
+---------------------------------------------------
 
-6.4.7 Virtual functions **should** be overridden responsibly. That is, the 
+8.27 Virtual functions **should** be overridden responsibly. That is, the 
 pre- and post-conditions, default arguments, etc. of the virtual functions 
 should be preserved.
 
@@ -400,33 +471,25 @@ should be preserved.
       deviate from the intent of the base class. Remember that derived classes
       are subsets, not supersets, of their base classes.
 
-6.4.8 Inherited non-virtual methods **must not** be overloaded or hidden.
+8.28 Inherited non-virtual methods **must not** be overloaded or hidden.
 
-6.4.9 A virtual function in a base class **should only** be implemented in
+8.29 A virtual function in a base class **should only** be implemented in
 the base class if its behavior is always valid default behavior for *any* 
 derived class.
 
-6.4.10 If a method in a base class is not expected to be overridden in any 
+8.30 If a method in a base class is not expected to be overridden in any 
 derived class, then the method **should not** be declared virtual.
 
-6.4.11 If each derived class has to provide specific behavior for a base class 
+8.31 If each derived class has to provide specific behavior for a base class 
 virtual function, then it **should** be declared *pure virtual*.
 
-6.4.12 Virtual functions **must not** be called in a class constructor or 
+8.32 Virtual functions **must not** be called in a class constructor or 
 destructor. Doing so is undefined behavior. Even if it seems to work 
 correctly, it is fragile and potentially non-portable.
 
-6.4.13 A constructor for a derived class **must** call the appropriate 
-constructor for each of its base classes to insure that each object 
-is properly allocated and initialized.
-
-6.4.14 Copy operations for a derived class **must** call the appropriate copy 
-operations for each of its base classes to insure that each object is properly 
-allocated and initialized.
-
 
 --------------------------------------------------------------------
-6.5 Inline Functions
+Inline functions
 --------------------------------------------------------------------
 
 Function inlining is a compile time operation and the full definition of an 
@@ -446,14 +509,22 @@ force a compiler to inline a function. Such options should be applied with
 care to prevent excessive inlining that may cause executable code bloat and/or 
 may make debugging difficult.
 
-**When in doubt, don't use the "inline" keyword and let the compiler decide 
-whether to inline a function.**
+.. note:: **When in doubt, don't use the "inline" keyword and let the compiler 
+          decide whether to inline a function.**
 
-6.5.1 Simple, short frequently called functions, such as accessors, that will
+
+Inline short, simple functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.33 Simple, short frequently called functions, such as accessors, that will
 almost certainly be inlined by most compilers **should** be implemented inline 
 in header files.
 
-6.5.2 Class constructors **should not** be inlined. 
+
+Only inline a class constructor when it makes sense
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.34 Class constructors **should not** be inlined in most cases.
 
       A class constructor implicitly calls the constructors for its base 
       classes and initializes some or all of its data members, potentially 
@@ -465,40 +536,34 @@ in header files.
       members, is not a subclass, and does not explicitly declare a destructor,
       can have its constructor safely inlined in most cases. 
 
-6.5.3 Virtual functions **must not** be inlined due to polymorphism. 
+
+Do not inline virtual methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.35 Virtual functions **must not** be inlined due to polymorphism. 
 
       For example, do not declare a virtual class member function as::
 
-         virtual void foo( ) { }
+         inline virtual void foo( ) { }
 
       In most circumstances, a virtual method cannot be inlined because a
       compiler must do runtime dispatch on a virtual method when it doesn't 
       know the complete type at compile time.
 
-      **Exception:** It is safe to define an empty destructor inline in an
-      abstract base class with no data members.
+.. note:: **Exception:** It is safe to define an empty destructor inline in an
+          abstract base class with no data members.
+
+.. important:: Should we add something about C++11 'final' keyword???
 
 
 --------------------------------------------------------------------
-6.6 Function and Operator Overloading
+Function and operator overloading
 --------------------------------------------------------------------
 
-6.6.1 Function overloading **must not** be used to define functions that 
-do conceptually different things. 
+There's a fine line between clever and...
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      Someone reading declarations of overloaded functions should be able to 
-      assume (and rightfully so!) that functions with the same name do 
-      something very similar.
-
-6.6.2 If an overloaded virtual method in a base class is overridden in a 
-derived class, all overloaded methods with the same name in the base class 
-**must** be overridden in the derived class. 
-
-      This prevents unexpected behavior when calling such member functions. 
-      Remember that when a virtual function is overridden, the overloads of 
-      that function in the base class **are not visible** to the derived class.
-
-6.6.3 Operator overloading **must not** be used to be clever to the point of 
+8.36 Operator overloading **must not** be used to be clever to the point of 
 obfuscation and cause others to think too hard about an operation. 
 Specifically, an overloaded operator must preserve "natural" semantics 
 by appealing to common conventions and **must** have meaning similar 
@@ -513,7 +578,30 @@ to non-overloaded operators of the same name.
       understand, and it may be more efficient since it may allow the compiler
       to take advantage of longer expressions than it could otherwise.
 
-6.6.4 Both boolean operators "==" and "!=" **should** be implemented if one 
+
+Overload consistently
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.37 Function overloading **must not** be used to define functions that 
+do conceptually different things. 
+
+      Someone reading declarations of overloaded functions should be able to 
+      assume (and rightfully so!) that functions with the same name do 
+      something very similar.
+
+8.38 If an overloaded virtual method in a base class is overridden in a 
+derived class, all overloaded methods with the same name in the base class 
+**must** be overridden in the derived class. 
+
+      This prevents unexpected behavior when calling such member functions. 
+      Remember that when a virtual function is overridden, the overloads of 
+      that function in the base class **are not visible** to the derived class.
+
+
+Common operators
+^^^^^^^^^^^^^^^^^
+
+8.39 Both boolean operators "==" and "!=" **should** be implemented if one 
 of them is. 
 
       For consistency and correctness, the "!=" operator **should** be 
@@ -524,7 +612,7 @@ of them is.
             return !(this == rhs);
          }
 
-6.6.5 Standard operators, such as "&&", "||", and "," (i.e., comma), 
+8.40 Standard operators, such as "&&", "||", and "," (i.e., comma), 
 **must not** be overloaded.
 
       Built-in versions of these operators are typically treated specially 
@@ -536,10 +624,13 @@ of them is.
 
 
 --------------------------------------
-6.7 Miscellaneous Function Guidelines
+Function arguments
 --------------------------------------
 
-6.7.1 Function arguments **must** be ordered the same way for all routines 
+Consistent argument order makes interfaces easier to use
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.41 Function arguments **must** be ordered the same way for all routines 
 in a Toolkit component.
 
       Common conventions are either to put all input arguments first, then
@@ -551,16 +642,22 @@ in a Toolkit component.
       **must** be followed. Do not just stick new parameters at the end of
       the argument list.
 
-6.7.2 Each function argument that is not a built-in type (i.e., int, double, 
+
+Pointer and reference arguments and const
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.42 Each function argument that is not a built-in type (i.e., int, double, 
 char, etc.) **should** be passed either by reference or as a pointer to avoid 
 unnecessary copies.
 
-      **Exception:** When pass-by-value behavior is desired.
+8.43 Each function reference or pointer argument that is not changed by
+the function **must** be declared "const".
 
-6.7.3 Each function reference or pointer argument that is not changed by t
-he function **must** be declared "const".
 
-6.7.4 Each argument in a function declaration **must** be given a name that 
+Always name function arguments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.44 Each argument in a function declaration **must** be given a name that 
 exactly matches the function implementation.
 
       For example, use::
@@ -571,13 +668,19 @@ exactly matches the function implementation.
 
          void computeSomething(int, int);
 
-6.7.5 Each function **should** have exactly one return point to make 
+
+--------------------------------------
+Function return points
+--------------------------------------
+
+8.45 Each function **should** have exactly one return point to make 
 control logic clear.
 
       Functions with multiple return points tend to be a source of errors when
-      modifying code. Such routines can always be refactored to have a single
-      return point by using local scope boolean variables and/or different
-      control logic.
+      trying to understand or modify code, especially if there are multiple 
+      return points within a scope. Such code can always be refactored to 
+      have a single return point by using local scope boolean variables and/or 
+      different control logic.
 
       A function **may** have two return points if the first return statement
       is associated with error condition check, for example. In this case,
@@ -595,35 +698,21 @@ control logic clear.
             return 0;
          }
 
-6.7.6 "Sanity checks" should be performed on values of function arguments 
-(e.g., range checking, null pointer checking, etc.) upon entry to a function.
-
-      This is an excellent way to provide run-time debugging capabilities in
-      code. We have macros for this to make syntax consistent. When triggered, 
-      they can emit a failed boolean expression and descriptive message that 
-      help to understand the violation. They are active or not based on the 
-      compilation mode, either debug (active) or optimized (inactive). For 
-      example::
-
-         void doSomething(int in_val, Foo* in_foo)
-         {
-            ATK_ASSERT_MSG( in_val >= 0, "in_val must be positive or zero" );
-            ATK_ASSERT( in_foo != ATK_NULL_PTR );
-
-            // ...function implementation...
-         }
-
-.. note :: We should add specific guidelines for error handling, etc.
+..note :: **Exception.** If multiple return points actually fit well into the
+          logical structure of some code, they **may** be used. For example, 
+          a routine may contain extended if/else conditional logic with 
+          several "if-else" clauses. If needed, the code may be more clear if
+          each clause contains a return point.
 
 
--------------
-6.8 Types
--------------
+--------------------
+Proper type usage
+--------------------
 
-6.8.1 The "bool" type **should** be used instead of "int" for boolean 
+8.46 The "bool" type **should** be used instead of "int" for boolean 
 true/false values.
 
-6.8.2 The "string" type **should** be used instead of "char\*".
+8.47 The "string" type **should** be used instead of "char\*".
 
       The string type supports and optimizes many character string manipulation
       operations which can be error-prone and less efficient if implemented
@@ -631,23 +720,7 @@ true/false values.
       "string" and "char\*" types are easily interchangeable, which allows C++
       string data to be used when interacting with C routines.
 
-6.8.3 Class type variables **should** be defined using direct initialization 
-instead of copy initialization to avoid unwanted and spurious type conversions 
-and constructor calls that may be generated by compilers.
-
-      For example, use::
-
-         std::string name("Bill");
-
-      instead of::
-
-         std::string name = "Bill";
-
-      or::
-
-         std::string name = std::string("Bill");
-
-6.8.4 An enumeration type **should** be used instead of macro definitions 
+8.48 An enumeration type **should** be used instead of macro definitions 
 or "int" data for sets of related constant values. 
 
       Since C++ enums are distinct types with a compile-time specified set of 
@@ -660,36 +733,30 @@ or "int" data for sets of related constant values.
       since it provides stronger type safety and better scoping than regular
       enum types.
 
+
 ---------------
-6.9 Templates
+Templates
 ---------------
 
-6.9.1 A class or function **should** only be made a template when its 
+8.49 A class or function **should** only be made a template when its 
 implementation is independent of the template type parameter.
 
        Note that class member templates (e.g., member functions that are
        templates of a class that is not a template) are often useful to
        reduce code redundancy.
 
-6.9.2 Generic templates that have external linkage **must** be defined in the 
+8.50 Generic templates that have external linkage **must** be defined in the 
 header file where they are declared since template instantiation is a compile 
 time operation. Implementations of class templates and member templates that
 are non-trivial **should** be placed in the class header file after the class 
 definition.
 
-6.9.3 Complete specializations of member templates or function templates 
-**must not** appear in a header file.
-
-       Such methods **are not templates** (they are actually regular functions)
-       and thus may produce link errors if their definitions are seen more 
-       than once.
-
 
 --------------------------------------------------------------------
-6.10 Const 
+Use const to enforce correct usage
 --------------------------------------------------------------------
 
-6.10.1 The "const" qualifier **should** be used for variables and methods 
+8.51 The "const" qualifier **should** be used for variables and methods 
 when appropriate to clearly indicate usage and to take advantage of 
 compiler-based error-checking. For example, any class member function 
 that does not change the state of the object on which it is called 
@@ -701,12 +768,12 @@ that does not change the state of the object on which it is called
       of a variable or object will not change in the scope in which the 
       declaration appears.
 
-6.10.2 Any class member function that does not change a data member of the 
+8.52 Any class member function that does not change a data member of the 
 associated class **must** be declared "const".
 
       This enables the compiler to detect unintended usage.
 
-6.10.3 Any class member function that returns a class data member that 
+8.53 Any class member function that returns a class data member that 
 should not be changed by the caller **must** be declared "const" and 
 **must** return the data member as a "const" reference or pointer.
 
@@ -716,16 +783,19 @@ should not be changed by the caller **must** be declared "const" and
 
 
 --------------------------------------------------------------------
-6.11 Casts and Type Conversions
+Casts and type conversions
 --------------------------------------------------------------------
 
-6.11.1 C-style casts **must not** be used.
+Avoid C-style casts, const_cast, and reinterpret_cast
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.54 C-style casts **must not** be used.
 
       All type conversions **must** be done explicitly using the named C++ 
       casting operators; i.e., "static_cast", "const_cast", "dynamic_cast", 
       "reinterpret_cast".
 
-6.11.2 The "const_cast" operator **should** be avoided. 
+8.55 The "const_cast" operator **should** be avoided. 
 
        Casting away "const-ness" is usually a poor programming decision and can 
        introduce errors.
@@ -733,14 +803,17 @@ should not be changed by the caller **must** be declared "const" and
        **Exception:** It may be necessary in some circumstances to cast away 
        const-ness, such as when calling const-incorrect APIs.
 
-6.11.3 The "reinterpret_cast" **must not** be used unless absolutely necessary.
+8.56 The "reinterpret_cast" **must not** be used unless absolutely necessary.
 
        This operator was designed to perform a low-level reinterpretation of 
        the bit pattern of an operand. This is needed only in special 
        circumstances and circumvents type safety.
 
-6.11.4  A class constructor that takes a single *non-default* argument, or a 
-single argument with a *default* value, **must** be declared"explicit".
+Use the explicit qualifier to avoid unwanted conversions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.57  A class constructor that takes a single *non-default* argument, or a 
+single argument with a *default* value, **must** be declared "explicit".
 
        This prevents compilers from performing unexpected (and, in many
        cases, unwanted!) implicit type conversions. For example::
@@ -766,15 +839,23 @@ single argument with a *default* value, **must** be declared"explicit".
 
 
 -----------------------------
-6.12 Memory management
+Memory management
 -----------------------------
 
-6.12.1 Memory **should** be deallocated in the same scope in which it is 
+Allocate and deallocate memory in the same scope
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.58 Memory **should** be deallocated in the same scope in which it is 
 allocated.
 
-6.12.2 Memory **should** be deallocated as soon as it is no longer needed.
+8.59 All memory allocated in a class constructor **should** be deallocated 
+in the class destructor. 
 
-6.12.3 Pointers **should** be set to null explicitly when memory is deallocated.
+      Note that the intent of constructors is to acquire resources and the 
+      intent of destructors is to free those resources.
+
+8.60 Pointers **should** be set to null explicitly when memory is deallocated.
+This makes it easy to check pointers for "null-ness" when needed.
 
       For uniformity across the CS Toolkit and to facilitate C++11 and
       non-C++11 usage, this should be done using the common macro
@@ -785,14 +866,18 @@ allocated.
          delete [ ] data;
          data = ATK_NULLPTR;
 
-6.12.4 Data managed exclusively within C++ code **must** be allocated and 
+
+Use new/delete consistently
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8.61 Data managed exclusively within C++ code **must** be allocated and 
 deallocated using the "new" and "delete" operators.
 
       The operator "new" is type-safe, simpler to use, and less error-prone
       than the "malloc" family of C functions.  C++ new/delete operators
       **must not** be combined with C malloc/free functions.
 
-6.12.5 Every C++ array deallocation statement **must** include "[ ]" 
+8.62 Every C++ array deallocation statement **must** include "[ ]" 
 (i.e., "delete[ ]") to avoid memory leaks.
 
       The rule of thumb is: when "[ ]" appears in the allocation, then "[ ]"
