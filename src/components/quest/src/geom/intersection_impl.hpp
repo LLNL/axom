@@ -1076,7 +1076,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
     U = (float)(CxBy - CyBx);
 
     double AxCy = (double)Ax*(double)Cy;
-    double AyCx = (double)Cy*(double)Cx;
+    double AyCx = (double)Ay*(double)Cx;
     V = (float)(AxCy - AyCx);
 
     double BxAy = (double)Bx*(double)Ay;

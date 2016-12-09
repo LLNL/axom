@@ -738,17 +738,20 @@ TEST(quest_intersection, triangle_ray_intersection)
 
   // Edge intersections (should these be reported as misses or hits?)
   testRay = RayType(SegmentType(r0, ptX));
-  EXPECT_FALSE(intersect(tri, testRay));
+  EXPECT_TRUE(intersect(tri, testRay));
   testRay = RayType(SegmentType(r0, ptY));
-  EXPECT_FALSE(intersect(tri, testRay));
+  EXPECT_TRUE(intersect(tri, testRay));
   testRay = RayType(SegmentType(r0, ptZ));
-  EXPECT_FALSE(intersect(tri, testRay));
+  EXPECT_TRUE(intersect(tri, testRay));
   testRay = RayType(SegmentType(r0, PointType::make_point(0., 0.7, 0.3)));
-  EXPECT_FALSE(intersect(tri, testRay));
+  EXPECT_TRUE(intersect(tri, testRay));
   testRay = RayType(SegmentType(r0, PointType::make_point(0.7, 0.3, 0.)));
-  EXPECT_FALSE(intersect(tri, testRay));
+  EXPECT_TRUE(intersect(tri, testRay));
   testRay = RayType(SegmentType(r0, PointType::make_point(0.2, 0., 0.8)));
-  EXPECT_FALSE(intersect(tri, testRay));
+  // Due to rounding error, this boundary query reports a "miss."  
+  // I think I'll have to change to using doubles in order to fix this.
+  EXPECT_TRUE(intersect(tri, testRay)) << 
+    "#*#*#*#*#*#*#*# Fails due to rounding error.  I think it's because type single is used.";
 
   // Hits
   testRay = RayType(SegmentType(r0, PointType::make_point(0.2, 0., 0.2)));
@@ -766,7 +769,8 @@ TEST(quest_intersection, triangle_ray_intersection)
   // Coplanar intersection (reported as miss by function)
   testRay = RayType(SegmentType(PointType::make_point(-0.1, 1.1, 0.), 
                                 PointType::make_point(0.5, 0., 0.5)));
-  EXPECT_FALSE(intersect(tri, testRay));
+  EXPECT_FALSE(intersect(tri, testRay)) << 
+    "#*#*#*#*#*#*#*# Fails due to rounding error.  I think it's because type single is used.";
 
   // Coplanar, interior ray origin (reported as miss by function)
   testRay = RayType(SegmentType(ptM,
@@ -776,7 +780,8 @@ TEST(quest_intersection, triangle_ray_intersection)
   // Not coplanar, interior ray origin (reported as miss by function)
   testRay = RayType(SegmentType(ptM,
                                 PointType::make_point(0., 0., 0.5)));
-  EXPECT_FALSE(intersect(tri, testRay));
+  EXPECT_FALSE(intersect(tri, testRay)) << 
+    "#*#*#*#*#*#*#*# Fails due to rounding error.  I think it's because type single is used.";
 }
 
 //------------------------------------------------------------------------------
