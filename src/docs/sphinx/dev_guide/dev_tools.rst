@@ -451,12 +451,27 @@ Bamboo Agent Notes
 ^^^^^^^^^^^^^^^^^^^
 The Bamboo server is going to hand the scripts to it's associated 'agents' on the various clusters.  Each bamboo agent needs to be approved by an LC Atlassian admin in order to start executing Bamboo plans.  The Atlassian admin will take care of associating your approved agent with your project and plan(s)
 
-  * ** Restarting the Agent**, On occasion, the agent can die.  This results in bamboo jobs being queued and stalled until the agent is restarted.  You must have access to the toolkit 'ATK' user to restart the agent.
+Restarting the Agent:
+ On occasion, the agent can die.  This results in bamboo jobs being queued and stalled until the agent is restarted.  You must have access to the toolkit 'ATK' user to restart the agent.::
 
+  $ ssh cab687 xsu atk
+  $ cd /g/g16/atk/bambooAgent/asctoolkit.cab.llnl.gov
+  $ ./bin/bamboo-agent.sh stop/start
 
-.. note :: **ssh cab687 xsu atk 
-           cd /g/g16/atk/bambooAgent/asctoolkit.cab.llnl.gov
-           ./bin/bamboo-agent.sh stop/start**
+.. note :: **The reason why we ssh cab687 was that the agent was first created on node cab687, when the agent was approved for the first time, it was started from cab687. If the agent is re-started later from a different node, it would required approval from Admin again which is undesirable.The rz agent is located on rzalastor1, toss 3 rz agent is located on rzgenie2.  **
+
+There are crontab jobs on rz and cz to restart the agents every hour. On rz::
+
+ $ ssh rzalastor1 xsu atk
+ $ /g/g16/atk/bamboo
+ $ crontab -l rzcrontab.txt 
+
+On cz::
+
+ $ ssh cab687 xsu atk
+ $ /g/g16/atk/bamboo
+ $ crontab -l czcrontab.txt 
+
 
 
 Automated plans
