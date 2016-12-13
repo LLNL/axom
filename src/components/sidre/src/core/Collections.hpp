@@ -436,7 +436,8 @@ public:
   ///
   const std::string& getItemName(IndexType idx) const
   {
-    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)]->getName() : InvalidName );
+    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)]->getName() :
+             InvalidName );
   }
 
   ///

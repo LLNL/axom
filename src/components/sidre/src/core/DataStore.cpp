@@ -71,7 +71,7 @@ void DataStoreConduitWarningHandler( const std::string& message,
 /*
  *************************************************************************
  *
- * Callback function used to map Conduit info messages to SLIC info 
+ * Callback function used to map Conduit info messages to SLIC info
  * messages.
  *
  *************************************************************************

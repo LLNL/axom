@@ -1112,7 +1112,7 @@ public:
   /*!
    *@{
    * @name    Group I/O methods
-   *   These methods save and load Group trees to and from files. 
+   *   These methods save and load Group trees to and from files.
    *   This includes the views and buffers used in by groups in the tree.
    *   We provide several "protocol" options:
    *
@@ -1126,7 +1126,7 @@ public:
    *    conduit_json
    *    json
    *
-  */
+   */
 
   /*!
    * \brief Save the Group to a file.
@@ -1281,7 +1281,7 @@ private:
    * Note: This is for the "sidre_hdf5" protocol.
    */
   void exportTo(conduit::Node& result) const;
-  
+
   /*!
    * \brief Private method to copy DataGroup to Conduit Node.
    *
@@ -1296,7 +1296,7 @@ private:
    *
    * Note: This is for the "sidre_{zzz}" protocols.
    */
-   void importFrom(conduit::Node& node);
+  void importFrom(conduit::Node& node);
 
   /*!
    * \brief Private method to copy DataGroup from Conduit Node.
@@ -1315,7 +1315,7 @@ private:
    *
    * Note: This is for the "conduit_{zzz}" protocols.
    */
-   void importConduitTree(conduit::Node& node);
+  void importConduitTree(conduit::Node& node);
 
 
 //@}

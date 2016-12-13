@@ -489,7 +489,7 @@ void * DataView::getVoidPtr() const
     break;
   case STRING:
   case SCALAR:
-      rv = const_cast<void *>(m_node.data_ptr());
+    rv = const_cast<void *>(m_node.data_ptr());
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
@@ -594,7 +594,7 @@ int DataView::getShape(int ndims, SidreLength * shape) const
   // Fill the rest of the array with zeros (when ndims > shapeSize)
   if(ndims > shapeSize)
   {
-    for(int i = shapeSize; i < ndims ; ++i)
+    for(int i = shapeSize ; i < ndims ; ++i)
     {
       shape[i] = 0;
     }
@@ -616,21 +616,21 @@ SidreLength DataView::getOffset() const
 
   if( isDescribed() )
   {
-      offset = m_schema.dtype().offset();
+    offset = m_schema.dtype().offset();
 
-      const int bytes_per_elem = getBytesPerElement();
-      if(bytes_per_elem != 0)
-      {
-         SLIC_ERROR_IF(offset % bytes_per_elem != 0,
-                       "Unsupported operation.  Sidre assumes that offsets "
-                       "are given as integral number of elements into the array. "
-                       "In this case, the offset was " << offset << " bytes and each "
-                       "element is " << bytes_per_elem << " bytes. "
-                       "If you have a need for non-integral offsets, please contact "
-                       "the Sidre team");
+    const int bytes_per_elem = getBytesPerElement();
+    if(bytes_per_elem != 0)
+    {
+      SLIC_ERROR_IF(offset % bytes_per_elem != 0,
+                    "Unsupported operation.  Sidre assumes that offsets are"
+                    << " given as integral number of elements into the array."
+                    << " In this case, the offset was " << offset
+                    << " bytes and each element is " << bytes_per_elem
+                    << " bytes. If you have a need for non-integral offsets,"
+                    << " please contact the Sidre team");
 
-         offset /= bytes_per_elem;
-      }
+      offset /= bytes_per_elem;
+    }
   }
 
   return static_cast<SidreLength>(offset);
@@ -649,21 +649,21 @@ SidreLength DataView::getStride() const
 
   if( isDescribed() )
   {
-      stride = m_schema.dtype().stride();
+    stride = m_schema.dtype().stride();
 
-      const int bytes_per_elem = getBytesPerElement();
-      if(bytes_per_elem != 0)
-      {
-          SLIC_ERROR_IF(stride % bytes_per_elem != 0,
-                        "Unsupported operation.  Sidre assumes that strides "
-                        "are given as integral number of elements into the array. "
-                        "In this case, the stride was " << stride << " bytes and each "
-                        "element is " << bytes_per_elem << " bytes. "
-                        "If you have a need for non-integral strides, please contact "
-                        "the Sidre team");
+    const int bytes_per_elem = getBytesPerElement();
+    if(bytes_per_elem != 0)
+    {
+      SLIC_ERROR_IF(stride % bytes_per_elem != 0,
+                    "Unsupported operation.  Sidre assumes that strides are"
+                    << " given as integral number of elements into the array."
+                    << " In this case, the stride was " << stride << " bytes"
+                    << " and each element is " << bytes_per_elem << " bytes."
+                    << " If you have a need for non-integral strides,"
+                    << " please contact the Sidre team");
 
-         stride /= bytes_per_elem;
-      }
+      stride /= bytes_per_elem;
+    }
   }
 
   return static_cast<SidreLength>(stride);
@@ -982,10 +982,11 @@ bool DataView::isApplyValid() const
   case BUFFER:
     rv = 0 < getTotalBytes() &&
          getTotalBytes() <= m_data_buffer->getTotalBytes();;
-    SLIC_CHECK_MSG( 0 < getTotalBytes(), 
+    SLIC_CHECK_MSG( 0 < getTotalBytes(),
                     "Apply is not valid on data with zero length." );
-    SLIC_CHECK_MSG( getTotalBytes() <= m_data_buffer->getTotalBytes(),
-                    "Apply is not valid, view's datatype length exceeds bytes in buffer.");
+    SLIC_CHECK_MSG(
+      getTotalBytes() <= m_data_buffer->getTotalBytes(),
+      "Apply is not valid, view's datatype length exceeds bytes in buffer.");
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
@@ -1064,7 +1065,7 @@ DataView::State DataView::getStateId(const std::string &name)
   {
     res = EMPTY;
   }
-  
+
   return res;
 }
 
@@ -1209,10 +1210,10 @@ void DataView::importDescription(conduit::Node& data_holder)
     describe( schema.dtype() );
     if (data_holder.has_path("shape"))
     {
-	  Node & n = data_holder["shape"];
-	  SidreLength * shape = n.as_long_ptr();
-	  int ndims = n.dtype().number_of_elements();
-	  describeShape(ndims, shape);
+      Node & n = data_holder["shape"];
+      SidreLength * shape = n.as_long_ptr();
+      int ndims = n.dtype().number_of_elements();
+      describeShape(ndims, shape);
     }
   }
 }

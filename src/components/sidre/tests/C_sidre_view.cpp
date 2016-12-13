@@ -123,8 +123,10 @@ TEST(C_sidre_view,int_array_strided_views)
   EXPECT_TRUE(dv_o != NULL);
   EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 2u);
 
-  SIDRE_dataview_apply_nelems_offset_stride(dv_e, num_view_elts, offset_even, stride);
-  SIDRE_dataview_apply_nelems_offset_stride(dv_o, num_view_elts, offset_odd, stride);
+  SIDRE_dataview_apply_nelems_offset_stride(dv_e, num_view_elts, offset_even,
+                                            stride);
+  SIDRE_dataview_apply_nelems_offset_stride(dv_o, num_view_elts, offset_odd,
+                                            stride);
 
   // Test that the void_ptr matches the buffer's pointer
   EXPECT_EQ(data_ptr, SIDRE_dataview_get_void_ptr(dv_e));
@@ -145,8 +147,8 @@ TEST(C_sidre_view,int_array_strided_views)
 
   // Note: Must manually take care of offsets (and strides) since templated
   //       function DataView::getData() is not exposed to C API for arrays
-  int * dv_e_ptr = (int*)SIDRE_dataview_get_void_ptr(dv_e) + offset_even;
-  int * dv_o_ptr = (int*)SIDRE_dataview_get_void_ptr(dv_o) + offset_odd;
+  int * dv_e_ptr = (int *)SIDRE_dataview_get_void_ptr(dv_e) + offset_even;
+  int * dv_o_ptr = (int *)SIDRE_dataview_get_void_ptr(dv_o) + offset_odd;
 
   for(int i=0 ; i< (int)num_elts ; i+=2)
   {
@@ -163,8 +165,12 @@ TEST(C_sidre_view,int_array_strided_views)
   EXPECT_TRUE(dv_o1 != NULL);
   EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 4u);
 
-  SIDRE_dataview_apply_type_nelems_offset_stride(dv_e1, SIDRE_INT_ID, num_view_elts, offset_even, stride);
-  SIDRE_dataview_apply_type_nelems_offset_stride(dv_o1, SIDRE_INT_ID, num_view_elts, offset_odd, stride);
+  SIDRE_dataview_apply_type_nelems_offset_stride(dv_e1, SIDRE_INT_ID,
+                                                 num_view_elts, offset_even,
+                                                 stride);
+  SIDRE_dataview_apply_type_nelems_offset_stride(dv_o1, SIDRE_INT_ID,
+                                                 num_view_elts, offset_odd,
+                                                 stride);
 
   // Test that the void_ptr matches the buffer's pointer
   EXPECT_EQ(data_ptr, SIDRE_dataview_get_void_ptr(dv_e1));
@@ -185,8 +191,8 @@ TEST(C_sidre_view,int_array_strided_views)
   SIDRE_dataview_print(dv_o1);
 
   // Note: Must manually take care of offsets (and strides).
-  int * dv_e1_ptr = (int*)SIDRE_dataview_get_void_ptr(dv_e1) + offset_even;
-  int * dv_o1_ptr = (int*)SIDRE_dataview_get_void_ptr(dv_o1) + offset_odd;
+  int * dv_e1_ptr = (int *)SIDRE_dataview_get_void_ptr(dv_e1) + offset_even;
+  int * dv_o1_ptr = (int *)SIDRE_dataview_get_void_ptr(dv_o1) + offset_odd;
   for(int i=0 ; i< (int)num_elts ; i+=2)
   {
     EXPECT_EQ(dv_e1_ptr[i], i);
@@ -254,7 +260,7 @@ TEST(C_sidre_view,int_array_depth_view)
     //       This is the only array access function exposed by the Sidre C API
     unsigned int offset = SIDRE_dataview_get_offset(views[id]);
     EXPECT_EQ(view_offsets[id], offset);
-    int * dv_ptr = (int*)SIDRE_dataview_get_void_ptr(views[id]) + offset;
+    int * dv_ptr = (int *)SIDRE_dataview_get_void_ptr(views[id]) + offset;
     for (size_t i = 0 ; i < depth_nelems ; ++i)
     {
       EXPECT_EQ(dv_ptr[i], id);
@@ -320,12 +326,12 @@ TEST(sidre_view,int_array_view_attach_buffer)
   SIDRE_dataview_print(field1);
 
   // check values in field views...
-  int * f0_ptr = (int*)SIDRE_dataview_get_void_ptr(field0) + offset0;
+  int * f0_ptr = (int *)SIDRE_dataview_get_void_ptr(field0) + offset0;
   for (size_t i = 0 ; i < field_nelems ; ++i)
   {
     EXPECT_EQ(f0_ptr[i], 0);
   }
-  int * f1_ptr = (int*)SIDRE_dataview_get_void_ptr(field1) + offset1;
+  int * f1_ptr = (int *)SIDRE_dataview_get_void_ptr(field1) + offset1;
   for (size_t i = 0 ; i < field_nelems ; ++i)
   {
     EXPECT_EQ(f1_ptr[i], 1);
@@ -523,8 +529,8 @@ TEST(C_sidre_view,int_array_realloc)
     SIDRE_datagroup_create_view_and_allocate_nelems(root, "a2",
                                                     SIDRE_INT_ID, 5);
 
-  float * a1_ptr = (float*)SIDRE_dataview_get_void_ptr(a1);
-  int * a2_ptr = (int*)SIDRE_dataview_get_void_ptr(a2);
+  float * a1_ptr = (float *)SIDRE_dataview_get_void_ptr(a1);
+  int * a2_ptr = (int *)SIDRE_dataview_get_void_ptr(a2);
   for(int i=0 ; i<5 ; i++)
   {
     a1_ptr[i] =  5.0;
@@ -541,8 +547,8 @@ TEST(C_sidre_view,int_array_realloc)
   SIDRE_dataview_reallocate(a1, 10);
   SIDRE_dataview_reallocate(a2, 15);
 
-  a1_ptr = (float*)SIDRE_dataview_get_void_ptr(a1);
-  a2_ptr = (int*)SIDRE_dataview_get_void_ptr(a2);
+  a1_ptr = (float *)SIDRE_dataview_get_void_ptr(a1);
+  a2_ptr = (int *)SIDRE_dataview_get_void_ptr(a2);
 
   for(int i=0 ; i<5 ; i++)
   {
