@@ -57,6 +57,7 @@ TEST(sidre_databuffer, buffer_create)
   EXPECT_EQ(0, buf1->getIndex());
   EXPECT_EQ(0, buf1->getNumViews());
   EXPECT_EQ(0, buf1->getTotalBytes());
+  EXPECT_EQ(0, buf1->getBytesPerElement());
   EXPECT_FALSE(buf1->isAllocated());
   EXPECT_FALSE(buf1->isDescribed());
 
@@ -69,6 +70,7 @@ void verifyDescribedBuffer(DataBuffer * buf, bool isDescribed,
   EXPECT_FALSE(buf->isAllocated());
   EXPECT_EQ(isDescribed, buf->isDescribed());
   EXPECT_EQ(tid, buf->getTypeID());
+  EXPECT_EQ(eltsize, buf->getBytesPerElement());
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
   EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), buf->getVoidPtr());
@@ -79,6 +81,7 @@ void verifyAllocatedBuffer(DataBuffer * buf, DataTypeId tid, int eltsize, int el
   EXPECT_TRUE(buf->isAllocated());
   EXPECT_TRUE(buf->isDescribed());
   EXPECT_EQ(tid, buf->getTypeID());
+  EXPECT_EQ(eltsize, buf->getBytesPerElement());
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
   EXPECT_NE(static_cast<void *>(ATK_NULLPTR), buf->getVoidPtr());
@@ -174,9 +177,10 @@ TEST(sidre_databuffer,buffer_allocate)
   DataTypeId tid = getTypeID(SIDRE_NO_TYPE_ID);
   int eltsize = 0;
   int eltcount = 0;
+  const int undescribedSize = 0;
 
   DataBuffer * buf1 = ds->createBuffer();
-  verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
+  verifyDescribedBuffer(buf1, isDescribed, tid, undescribedSize, eltcount);
 
   // Call allocate and reallocate on a non-described buffer: should be no-op
   {
@@ -249,7 +253,7 @@ TEST(sidre_databuffer,buffer_allocate)
   DataBuffer * buf4a = ds->createBuffer();
   {
     SCOPED_TRACE("describe and allocate (in one step) a zero-element buffer");
-    verifyDescribedBuffer(buf4a, isDescribed, tid, eltsize, eltcount);
+    verifyDescribedBuffer(buf4a, isDescribed, tid, undescribedSize, eltcount);
     tid = getTypeID(SIDRE_FLOAT_ID);
     buf4a->allocate(tid, eltcount);
     verifyAllocatedBuffer(buf4a, tid, eltsize, eltcount);

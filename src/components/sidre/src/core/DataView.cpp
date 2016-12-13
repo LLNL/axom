@@ -68,6 +68,7 @@ std::string DataView::getPathName() const
   return getPath() + getOwningGroup()->getPathDelimiter() + getName();
 }
 
+
 /*
  *************************************************************************
  *
@@ -359,9 +360,11 @@ DataView * DataView::apply(SidreLength num_elems,
     dtype = conduit::DataType::default_dtype(m_data_buffer->getTypeID());
   }
 
+  const size_t bytes_per_elem = dtype.element_bytes();
+
   dtype.set_number_of_elements(num_elems);
-  dtype.set_offset(offset * dtype.element_bytes() );
-  dtype.set_stride(stride * dtype.element_bytes() );
+  dtype.set_offset(offset * bytes_per_elem );
+  dtype.set_stride(stride * bytes_per_elem );
 
   describe(dtype);
 
@@ -390,7 +393,7 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
 
   DataType dtype = conduit::DataType::default_dtype(type);
 
-  size_t bytes_per_elem = dtype.element_bytes();
+  const size_t bytes_per_elem = dtype.element_bytes();
 
   dtype.set_number_of_elements(num_elems);
   dtype.set_offset(offset * bytes_per_elem);
@@ -467,7 +470,7 @@ void * DataView::getVoidPtr() const
   case EXTERNAL:
     if (isApplied())
     {
-      rv = const_cast<void *>(m_node.element_ptr(0));
+      rv = const_cast<void *>(m_node.data_ptr());
     }
     else
     {
@@ -477,7 +480,7 @@ void * DataView::getVoidPtr() const
   case BUFFER:
     if (isApplied())
     {
-      rv = const_cast<void *>(m_node.element_ptr(0));
+      rv = const_cast<void *>(m_node.data_ptr());
     }
     else
     {
@@ -486,7 +489,7 @@ void * DataView::getVoidPtr() const
     break;
   case STRING:
   case SCALAR:
-    rv = const_cast<void *>(m_node.element_ptr(0));
+      rv = const_cast<void *>(m_node.data_ptr());
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
@@ -598,6 +601,72 @@ int DataView::getShape(int ndims, SidreLength * shape) const
   }
 
   return m_shape.size();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return offset from description in terms of number of elements (0 if not described)
+ *
+ *************************************************************************
+ */
+SidreLength DataView::getOffset() const
+{
+  int offset = 0;
+
+  if( isDescribed() )
+  {
+      offset = m_schema.dtype().offset();
+
+      const int bytes_per_elem = getBytesPerElement();
+      if(bytes_per_elem != 0)
+      {
+         SLIC_ERROR_IF(offset % bytes_per_elem != 0,
+                       "Unsupported operation.  Sidre assumes that offsets "
+                       "are given as integral number of elements into the array. "
+                       "In this case, the offset was " << offset << " bytes and each "
+                       "element is " << bytes_per_elem << " bytes. "
+                       "If you have a need for non-integral offsets, please contact "
+                       "the Sidre team");
+
+         offset /= bytes_per_elem;
+      }
+  }
+
+  return static_cast<SidreLength>(offset);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return stride from description in terms of number of elements (1 if not described)
+ *
+ *************************************************************************
+ */
+SidreLength DataView::getStride() const
+{
+  int stride = 1;
+
+  if( isDescribed() )
+  {
+      stride = m_schema.dtype().stride();
+
+      const int bytes_per_elem = getBytesPerElement();
+      if(bytes_per_elem != 0)
+      {
+          SLIC_ERROR_IF(stride % bytes_per_elem != 0,
+                        "Unsupported operation.  Sidre assumes that strides "
+                        "are given as integral number of elements into the array. "
+                        "In this case, the stride was " << stride << " bytes and each "
+                        "element is " << bytes_per_elem << " bytes. "
+                        "If you have a need for non-integral strides, please contact "
+                        "the Sidre team");
+
+         stride /= bytes_per_elem;
+      }
+  }
+
+  return static_cast<SidreLength>(stride);
 }
 
 /*

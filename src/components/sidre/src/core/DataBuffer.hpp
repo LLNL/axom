@@ -150,6 +150,14 @@ public:
     return m_node.dtype().strided_bytes();
   }
 
+  /*!
+   * \brief Return the number of bytes per element owned by this Buffer object.
+   */
+  SidreLength getBytesPerElement() const
+  {
+    return m_node.dtype().element_bytes();
+  }
+
 
   /*!
    * \brief Return true if Buffer has been (re)allocated with length >= 0, else false.

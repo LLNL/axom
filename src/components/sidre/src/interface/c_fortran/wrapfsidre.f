@@ -324,6 +324,7 @@ module sidre_mod
         procedure :: get_type_id => databuffer_get_type_id
         procedure :: get_num_elements => databuffer_get_num_elements
         procedure :: get_total_bytes => databuffer_get_total_bytes
+        procedure :: get_bytes_per_element => databuffer_get_bytes_per_element
         procedure :: print => databuffer_print
         procedure :: get_instance => databuffer_get_instance
         procedure :: set_instance => databuffer_set_instance
@@ -402,7 +403,10 @@ module sidre_mod
         procedure :: get_owning_group => dataview_get_owning_group
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
+        procedure :: get_bytes_per_element => dataview_get_bytes_per_element
         procedure :: get_num_elements => dataview_get_num_elements
+        procedure :: get_offset => dataview_get_offset
+        procedure :: get_stride => dataview_get_stride
         procedure :: get_num_dimensions => dataview_get_num_dimensions
         procedure :: get_shape => dataview_get_shape
         procedure :: print => dataview_print
@@ -1690,6 +1694,15 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function c_databuffer_get_total_bytes
         
+        pure function c_databuffer_get_bytes_per_element(self) &
+                result(rv) &
+                bind(C, name="SIDRE_databuffer_get_bytes_per_element")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_SIZE_T) :: rv
+        end function c_databuffer_get_bytes_per_element
+        
         subroutine c_databuffer_print(self) &
                 bind(C, name="SIDRE_databuffer_print")
             use iso_c_binding
@@ -2103,6 +2116,15 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function c_dataview_get_total_bytes
         
+        pure function c_dataview_get_bytes_per_element(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_get_bytes_per_element")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_SIZE_T) :: rv
+        end function c_dataview_get_bytes_per_element
+        
         pure function c_dataview_get_num_elements(self) &
                 result(rv) &
                 bind(C, name="SIDRE_dataview_get_num_elements")
@@ -2111,6 +2133,24 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function c_dataview_get_num_elements
+        
+        pure function c_dataview_get_offset(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_get_offset")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_SIZE_T) :: rv
+        end function c_dataview_get_offset
+        
+        pure function c_dataview_get_stride(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_get_stride")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_SIZE_T) :: rv
+        end function c_dataview_get_stride
         
         pure function c_dataview_get_num_dimensions(self) &
                 result(rv) &
@@ -4504,6 +4544,16 @@ contains
         ! splicer end class.DataBuffer.method.get_total_bytes
     end function databuffer_get_total_bytes
     
+    function databuffer_get_bytes_per_element(obj) result(rv)
+        use iso_c_binding, only : C_SIZE_T
+        implicit none
+        class(databuffer) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin class.DataBuffer.method.get_bytes_per_element
+        rv = c_databuffer_get_bytes_per_element(obj%voidptr)
+        ! splicer end class.DataBuffer.method.get_bytes_per_element
+    end function databuffer_get_bytes_per_element
+    
     subroutine databuffer_print(obj)
         implicit none
         class(databuffer) :: obj
@@ -5099,6 +5149,16 @@ contains
         ! splicer end class.DataView.method.get_total_bytes
     end function dataview_get_total_bytes
     
+    function dataview_get_bytes_per_element(obj) result(rv)
+        use iso_c_binding, only : C_SIZE_T
+        implicit none
+        class(dataview) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin class.DataView.method.get_bytes_per_element
+        rv = c_dataview_get_bytes_per_element(obj%voidptr)
+        ! splicer end class.DataView.method.get_bytes_per_element
+    end function dataview_get_bytes_per_element
+    
     function dataview_get_num_elements(obj) result(rv)
         use iso_c_binding, only : C_SIZE_T
         implicit none
@@ -5108,6 +5168,26 @@ contains
         rv = c_dataview_get_num_elements(obj%voidptr)
         ! splicer end class.DataView.method.get_num_elements
     end function dataview_get_num_elements
+    
+    function dataview_get_offset(obj) result(rv)
+        use iso_c_binding, only : C_SIZE_T
+        implicit none
+        class(dataview) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin class.DataView.method.get_offset
+        rv = c_dataview_get_offset(obj%voidptr)
+        ! splicer end class.DataView.method.get_offset
+    end function dataview_get_offset
+    
+    function dataview_get_stride(obj) result(rv)
+        use iso_c_binding, only : C_SIZE_T
+        implicit none
+        class(dataview) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin class.DataView.method.get_stride
+        rv = c_dataview_get_stride(obj%voidptr)
+        ! splicer end class.DataView.method.get_stride
+    end function dataview_get_stride
     
     function dataview_get_num_dimensions(obj) result(rv)
         use iso_c_binding, only : C_INT
@@ -5174,10 +5254,18 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         integer(C_INT), pointer, intent(OUT) :: value
+        integer(C_INT), pointer :: tmp(:)
         type(C_PTR) cptr
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           call c_f_pointer(cptr, value)
         else
           nullify(value)
@@ -5190,12 +5278,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         integer(C_INT), pointer, intent(OUT) :: value(:)
+        integer(C_INT), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(1)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(1, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5209,12 +5305,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         integer(C_INT), pointer, intent(OUT) :: value(:,:)
+        integer(C_INT), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(2)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(2, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5228,12 +5332,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         integer(C_INT), pointer, intent(OUT) :: value(:,:,:)
+        integer(C_INT), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(3)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(3, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5247,12 +5359,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         integer(C_INT), pointer, intent(OUT) :: value(:,:,:,:)
+        integer(C_INT), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(4)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(4, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5266,10 +5386,18 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         integer(C_LONG), pointer, intent(OUT) :: value
+        integer(C_LONG), pointer :: tmp(:)
         type(C_PTR) cptr
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           call c_f_pointer(cptr, value)
         else
           nullify(value)
@@ -5282,12 +5410,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         integer(C_LONG), pointer, intent(OUT) :: value(:)
+        integer(C_LONG), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(1)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(1, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5301,12 +5437,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         integer(C_LONG), pointer, intent(OUT) :: value(:,:)
+        integer(C_LONG), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(2)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(2, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5320,12 +5464,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         integer(C_LONG), pointer, intent(OUT) :: value(:,:,:)
+        integer(C_LONG), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(3)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(3, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5339,12 +5491,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         integer(C_LONG), pointer, intent(OUT) :: value(:,:,:,:)
+        integer(C_LONG), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(4)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(4, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5358,10 +5518,18 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         real(C_FLOAT), pointer, intent(OUT) :: value
+        real(C_FLOAT), pointer :: tmp(:)
         type(C_PTR) cptr
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           call c_f_pointer(cptr, value)
         else
           nullify(value)
@@ -5374,12 +5542,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         real(C_FLOAT), pointer, intent(OUT) :: value(:)
+        real(C_FLOAT), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(1)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(1, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5393,12 +5569,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         real(C_FLOAT), pointer, intent(OUT) :: value(:,:)
+        real(C_FLOAT), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(2)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(2, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5412,12 +5596,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         real(C_FLOAT), pointer, intent(OUT) :: value(:,:,:)
+        real(C_FLOAT), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(3)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(3, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5431,12 +5623,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         real(C_FLOAT), pointer, intent(OUT) :: value(:,:,:,:)
+        real(C_FLOAT), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(4)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(4, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5450,10 +5650,18 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         real(C_DOUBLE), pointer, intent(OUT) :: value
+        real(C_DOUBLE), pointer :: tmp(:)
         type(C_PTR) cptr
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           call c_f_pointer(cptr, value)
         else
           nullify(value)
@@ -5466,12 +5674,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         real(C_DOUBLE), pointer, intent(OUT) :: value(:)
+        real(C_DOUBLE), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(1)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(1, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5485,12 +5701,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         real(C_DOUBLE), pointer, intent(OUT) :: value(:,:)
+        real(C_DOUBLE), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(2)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(2, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5504,12 +5728,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         real(C_DOUBLE), pointer, intent(OUT) :: value(:,:,:)
+        real(C_DOUBLE), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(3)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(3, extents)
           call c_f_pointer(cptr, value, extents)
         else
@@ -5523,12 +5755,20 @@ contains
         implicit none
         class(dataview), intent(IN) :: view
         real(C_DOUBLE), pointer, intent(OUT) :: value(:,:,:,:)
+        real(C_DOUBLE), pointer :: tmp(:)
         type(C_PTR) cptr
         integer rank
         integer(SIDRE_LENGTH) extents(4)
+        integer(SIDRE_LENGTH) :: offset
     
         cptr = view%get_void_ptr()
         if (c_associated(cptr)) then
+          offset = view%get_offset()
+          if (offset > 0) then
+            call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+            cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+          endif
+    
           rank = view%get_shape(4, extents)
           call c_f_pointer(cptr, value, extents)
         else

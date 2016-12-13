@@ -301,6 +301,7 @@ classes:
       - decl: TypeID getTypeID() const
       - decl: size_t getNumElements() const
       - decl: size_t getTotalBytes() const
+      - decl: size_t getBytesPerElement() const
 #      - decl: Node& getNode()
 #      - decl: const Node& getNode() const
 #      - decl: DataView* getView(IndexType idx)
@@ -432,7 +433,10 @@ classes:
 #    - decl: DataGroup const* getOwningGroup() const
     - decl: TypeID getTypeID() const
     - decl: size_t getTotalBytes() const
+    - decl: size_t getBytesPerElement() const
     - decl: size_t getNumElements() const
+    - decl: size_t getOffset() const
+    - decl: size_t getStride() const
     - decl: int getNumDimensions() const
     - decl: int getShape(int ndims, SidreLength * shape+dimension+intent(OUT) ) const
 #    - decl: void info(Node& n) const
