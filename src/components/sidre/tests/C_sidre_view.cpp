@@ -249,8 +249,9 @@ TEST(C_sidre_view,int_array_depth_view)
   {
     EXPECT_EQ(data_ptr, SIDRE_dataview_get_void_ptr(views[id]));
 
-    // Note: The view offset works in C, but striding must be done manually
-    // as it needs the conduit int_array class.
+    // Note: offsets and striding must be handled manually when
+    //       accessing the data with the get_void_ptr() function.
+    //       This is the only array access function exposed by the Sidre C API
     unsigned int offset = SIDRE_dataview_get_offset(views[id]);
     EXPECT_EQ(view_offsets[id], offset);
     int * dv_ptr = (int*)SIDRE_dataview_get_void_ptr(views[id]) + offset;
