@@ -65,10 +65,10 @@ using asctoolkit::spio::IOManager;
 
 
 typedef asctoolkit::sidre::IndexType IndexType;
-typedef asctoolkit::slam::policies::RuntimeOffsetHolder<IndexType> OffsetPolicy;
-typedef asctoolkit::slam::policies::RuntimeStrideHolder<IndexType> StridePolicy;
-typedef asctoolkit::slam::policies::RuntimeSizeHolder<IndexType>   SizePolicy;
-typedef asctoolkit::slam::OrderedSet<SizePolicy, OffsetPolicy, StridePolicy> DataViewSet;
+typedef asctoolkit::slam::policies::RuntimeSizeHolder<IndexType>   SzPol;
+typedef asctoolkit::slam::policies::ZeroOffset<IndexType> OffPol;
+typedef asctoolkit::slam::policies::RuntimeStrideHolder<IndexType> StrPol;
+typedef asctoolkit::slam::OrderedSet<SzPol, OffPol, StrPol> DataViewSet;
 
 void setupLogging();
 void teardownLogging();
@@ -246,9 +246,11 @@ CommandLineArguments parseArguments(int argc, char** argv, int myRank)
  */
 void allocateExternalData(DataGroup* grp, std::vector<void*>& extPtrs)
 {
+    using namespace asctoolkit;
+
     // for each view
-    for(asctoolkit::sidre::IndexType idx =  grp->getFirstValidViewIndex();
-        asctoolkit::sidre::indexIsValid(idx);
+    for(sidre::IndexType idx =  grp->getFirstValidViewIndex();
+        sidre::indexIsValid(idx);
         idx = grp->getNextValidViewIndex(idx) )
     {
         DataView* view = grp->getView(idx);
@@ -268,8 +270,8 @@ void allocateExternalData(DataGroup* grp, std::vector<void*>& extPtrs)
     }
 
     // for each group
-    for(asctoolkit::sidre::IndexType idx =  grp->getFirstValidGroupIndex();
-        asctoolkit::sidre::indexIsValid(idx);
+    for(sidre::IndexType idx =  grp->getFirstValidGroupIndex();
+        sidre::indexIsValid(idx);
         idx = grp->getNextValidGroupIndex(idx) )
     {
         allocateExternalData(grp->getGroup(idx), extPtrs);
@@ -290,25 +292,23 @@ void modifyFinalValuesImpl(DataView* view, int origSize)
 {
     SLIC_DEBUG("Looking at view " << view->getPathName());
 
-    // Note: offset is set to zero since getData() already accounts for the offset
     sidre_type* arr = view->getData();
-    const int elem_bytes = view->getSchema().dtype().element_bytes();
-    const int offset = 0; 
-    const int stride = view->getSchema().dtype().stride() / elem_bytes;
 
     // Uses a Slam set to help manage the indirection to the view data
+    // Note: offset is zero since getData() already accounts for the offset
     DataViewSet idxSet = DataViewSet::SetBuilder()
                         .size(view->getNumElements())
-                        .offset(offset)
-                        .stride(stride);
+                        .stride(view->getStride());
 
+  #ifdef ATK_DEBUG
     fmt::MemoryWriter out_fwd;
     for(int i=0; i < idxSet.size(); ++i)
     {
-        out_fwd.write("\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}", i, idxSet[i], arr[ idxSet[i] ] );
+        out_fwd.write("\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}",
+                      i, idxSet[i], arr[ idxSet[i] ] );
     }
     SLIC_DEBUG( out_fwd.str() );
-
+  #endif
 
     // Shift the data over by two
     const int local_offset = 2;
@@ -321,13 +321,16 @@ void modifyFinalValuesImpl(DataView* view, int origSize)
     arr[ idxSet[0] ] = static_cast<sidre_type>(origSize);
     arr[ idxSet[1] ] = std::numeric_limits<sidre_type>::quiet_NaN();
 
-
+  #ifdef ATK_DEBUG
     fmt::MemoryWriter out_rev;
     for(int i=0; i < idxSet.size(); ++i)
     {
-        out_rev.write("\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}", i, idxSet[i], arr[ idxSet[i] ] );
+        out_rev.write("\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}",
+                      i, idxSet[i], arr[ idxSet[i] ] );
     }
     SLIC_DEBUG( out_rev.str() );
+  #endif
+
 }
 
 
@@ -335,39 +338,39 @@ void modifyFinalValues(DataView* view, int origSize)
 {
     SLIC_DEBUG("Truncating view " << view->getPathName());
 
-    using namespace asctoolkit::sidre;
+    using namespace asctoolkit;
 
     switch(view->getTypeID())
     {
-      case DataTypeId::INT8_ID:
-          modifyFinalValuesImpl<detail::sidre_int8>(view, origSize);
+      case sidre::INT8_ID:
+          modifyFinalValuesImpl<sidre::detail::sidre_int8>(view, origSize);
           break;
-      case DataTypeId::INT16_ID:
-          modifyFinalValuesImpl<detail::sidre_int16>(view, origSize);
+      case sidre::INT16_ID:
+          modifyFinalValuesImpl<sidre::detail::sidre_int16>(view, origSize);
           break;
-      case DataTypeId::INT32_ID:
-          modifyFinalValuesImpl<detail::sidre_int32>(view, origSize);
+      case sidre::INT32_ID:
+          modifyFinalValuesImpl<sidre::detail::sidre_int32>(view, origSize);
           break;
-      case DataTypeId::INT64_ID:
-          modifyFinalValuesImpl<detail::sidre_int64>(view, origSize);
+      case sidre::INT64_ID:
+          modifyFinalValuesImpl<sidre::detail::sidre_int64>(view, origSize);
           break;
-      case DataTypeId::UINT8_ID:
-          modifyFinalValuesImpl<detail::sidre_uint8>(view, origSize);
+      case sidre::UINT8_ID:
+          modifyFinalValuesImpl<sidre::detail::sidre_uint8>(view, origSize);
           break;
-      case DataTypeId::UINT16_ID:
-          modifyFinalValuesImpl<detail::sidre_uint16>(view, origSize);
+      case sidre::UINT16_ID:
+          modifyFinalValuesImpl<sidre::detail::sidre_uint16>(view, origSize);
           break;
-      case DataTypeId::UINT32_ID:
-          modifyFinalValuesImpl<detail::sidre_uint32>(view, origSize);
+      case sidre::UINT32_ID:
+          modifyFinalValuesImpl<sidre::detail::sidre_uint32>(view, origSize);
           break;
-      case DataTypeId::UINT64_ID:
-          modifyFinalValuesImpl<detail::sidre_uint64>(view, origSize);
+      case sidre::UINT64_ID:
+          modifyFinalValuesImpl<sidre::detail::sidre_uint64>(view, origSize);
           break;
-      case DataTypeId::FLOAT32_ID:
-          modifyFinalValuesImpl<detail::sidre_float32>(view, origSize);
+      case sidre::FLOAT32_ID:
+          modifyFinalValuesImpl<sidre::detail::sidre_float32>(view, origSize);
           break;
-      case DataTypeId::FLOAT64_ID:
-          modifyFinalValuesImpl<detail::sidre_float64>(view, origSize);
+      case sidre::FLOAT64_ID:
+          modifyFinalValuesImpl<sidre::detail::sidre_float64>(view, origSize);
           break;
       default:
           break;
@@ -383,9 +386,11 @@ void modifyFinalValues(DataView* view, int origSize)
  */
 void truncateBulkData(DataGroup* grp, int maxSize)
 {
+    using namespace asctoolkit;
+
     // Add two to maxSize
-    for(asctoolkit::sidre::IndexType idx =  grp->getFirstValidViewIndex();
-        asctoolkit::sidre::indexIsValid(idx);
+    for(sidre::IndexType idx =  grp->getFirstValidViewIndex();
+        sidre::indexIsValid(idx);
         idx = grp->getNextValidViewIndex(idx) )
     {
         DataView* view = grp->getView(idx);
@@ -398,15 +403,15 @@ void truncateBulkData(DataGroup* grp, int maxSize)
 
             if(view->hasBuffer() && numOrigElts > newSize)
             {
-                const int numEltBytes = view->getSchema().dtype().element_bytes();
-                const int viewStride = view->getSchema().dtype().stride() / numEltBytes;
-                const int viewOffset = view->getSchema().dtype().offset() / numEltBytes;
+                const int viewStride = view->getStride();
+                const int viewOffset = view->getOffset();
                 view->apply(newSize,viewOffset, viewStride);
             }
             // external
             else if(view->isExternal() && numOrigElts > newSize)
             {
-                view->setExternalDataPtr(view->getTypeID(),newSize, view->getVoidPtr());
+                void* dataPtr = view->getVoidPtr();
+                view->setExternalDataPtr(view->getTypeID(),newSize, dataPtr);
             }
 
             modifyFinalValues(view, numOrigElts);
@@ -414,8 +419,8 @@ void truncateBulkData(DataGroup* grp, int maxSize)
     }
 
     // for each group
-    for(asctoolkit::sidre::IndexType idx =  grp->getFirstValidGroupIndex();
-        asctoolkit::sidre::indexIsValid(idx);
+    for(sidre::IndexType idx =  grp->getFirstValidGroupIndex();
+        sidre::indexIsValid(idx);
         idx = grp->getNextValidGroupIndex(idx) )
     {
         truncateBulkData(grp->getGroup(idx), maxSize);
@@ -477,14 +482,13 @@ int main(int argc, char * argv[])
   CommandLineArguments args = parseArguments(argc, argv, my_rank);
 
   // Load the original datastore
-  DataStore ds;
-
   SLIC_INFO("Loading datastore from " << args.m_inputName);
+  DataStore ds;
   IOManager manager(MPI_COMM_WORLD);
   manager.read(ds.getRoot(), args.m_inputName);
   int num_files = manager.getNumFilesFromRoot(args.m_inputName);
 
-  // restore any external data pointers
+  // Restore any external data pointers
   SLIC_INFO("Loading external data from datastore");
   std::vector<void*> externalDataPointers;
   allocateExternalData(ds.getRoot(), externalDataPointers);
@@ -502,12 +506,14 @@ int main(int argc, char * argv[])
 
       // Add a string view to the datastore to indicate that we modified the data
       fmt::MemoryWriter fout;
-      fout << "This datastore was created by the convert_sidre_protocol utility "
-           << "with option '--strip " << numElts <<  "'. "
-           << "To simplify debugging, the bulk data in this datastore has been truncated to have "
-           << "at most " << numElts << " actual values. The first value is the original array size, "
-           << "which is followed by a zero/Nan, "
-           << "which is followed by (at most) the first " << numElts << " values.";
+      fout << "This datastore was created by the convert_sidre_protocol "
+           << "utility with option '--strip " << numElts
+           << "'. To simplify debugging, the bulk data in this datastore "
+           << "has been truncated to have at most " << numElts
+           << " actual values. The first two values are size of the original "
+           << " array followed by a zero/Nan. These are followed by (at most) "
+           << "the first " << numElts << " values of the array.";
+
       ds.getRoot()->createViewString("Note", fout.str());
   }
 
