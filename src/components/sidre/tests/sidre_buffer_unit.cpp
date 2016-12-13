@@ -27,24 +27,29 @@ using asctoolkit::sidre::getTypeID;
 
 //------------------------------------------------------------------------------
 
-int countMismatch(unsigned int elts, int * standard, int * undertest, bool printTest = false);
+int countMismatch(unsigned int elts, int * standard, int * undertest,
+                  bool printTest = false);
 
-int countMismatch(unsigned int elts, int * standard, int * undertest, bool printTest)
+int countMismatch(unsigned int elts, int * standard, int * undertest,
+                  bool printTest)
 {
   int retval = 0;
 
-  for (unsigned int i = 0; i < elts; ++i)
+  for (unsigned int i = 0 ; i < elts ; ++i)
   {
-    if (standard[i] != undertest[i]) ++retval;
-    if (printTest) std::cout << "  " << undertest[i];
+    if (standard[i] != undertest[i])
+      ++retval;
+    if (printTest)
+      std::cout << "  " << undertest[i];
   }
-  if (printTest) std::cout << std::endl;
+  if (printTest)
+    std::cout << std::endl;
 
   return retval;
 }
- 
-// Create buffer, verify its index is what is expected, verify it has zero elements 
-// and zero total bytes, verify it has zero views (hasView(idx) returns false, 
+
+// Create buffer, verify its index is what is expected, verify it has zero elements
+// and zero total bytes, verify it has zero views (hasView(idx) returns false,
 // getView(idx) returns null ptr).
 TEST(sidre_databuffer, buffer_create)
 {
@@ -64,8 +69,8 @@ TEST(sidre_databuffer, buffer_create)
   delete ds;
 }
 
-void verifyDescribedBuffer(DataBuffer * buf, bool isDescribed, 
-			   DataTypeId tid, int eltsize, int eltcount)
+void verifyDescribedBuffer(DataBuffer * buf, bool isDescribed,
+                           DataTypeId tid, int eltsize, int eltcount)
 {
   EXPECT_FALSE(buf->isAllocated());
   EXPECT_EQ(isDescribed, buf->isDescribed());
@@ -76,7 +81,8 @@ void verifyDescribedBuffer(DataBuffer * buf, bool isDescribed,
   EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), buf->getVoidPtr());
 }
 
-void verifyAllocatedBuffer(DataBuffer * buf, DataTypeId tid, int eltsize, int eltcount)
+void verifyAllocatedBuffer(DataBuffer * buf, DataTypeId tid, int eltsize,
+                           int eltcount)
 {
   EXPECT_TRUE(buf->isAllocated());
   EXPECT_TRUE(buf->isDescribed());
@@ -229,7 +235,7 @@ TEST(sidre_databuffer,buffer_allocate)
   {
     SCOPED_TRACE("alloc-describe buffer created with description");
     verifyDescribedBuffer(buf3, isDescribed, tid, eltsize, eltcount);
-    
+
     tid = getTypeID(SIDRE_DOUBLE_ID);
     eltsize = sizeof(double);
     eltcount = 7;
@@ -258,7 +264,7 @@ TEST(sidre_databuffer,buffer_allocate)
     buf4a->allocate(tid, eltcount);
     verifyAllocatedBuffer(buf4a, tid, eltsize, eltcount);
 
-    void *ptr = buf4a->getVoidPtr();
+    void * ptr = buf4a->getVoidPtr();
     std::cout << "Pointer from zero-allocated buffer is: " << ptr << std::endl;
   }
 
@@ -361,8 +367,8 @@ TEST(sidre_databuffer,buffer_delete_view_detach)
   // Create a buffer bA, fill with dummy data, attach two views vA and vB
   DataBuffer * bA = ds->createBuffer(tid, Acount)->allocate();
   bA->copyBytesIntoBuffer(vAtest, Acount * eltsize);
-  DataView *vA = ds->getRoot()->createView("vA", bA)->apply(tid, Acount);
-  DataView *vB = ds->getRoot()->createView("vB", bA)->apply(tid, Bcount, 1, 1);
+  DataView * vA = ds->getRoot()->createView("vA", bA)->apply(tid, Acount);
+  DataView * vB = ds->getRoot()->createView("vB", bA)->apply(tid, Bcount, 1, 1);
 
   // Verify vA and vB are attached to bA, and we can see the data
   EXPECT_EQ(2, bA->getNumViews());
@@ -381,10 +387,10 @@ TEST(sidre_databuffer,buffer_delete_view_detach)
   EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), vB->getBuffer());
 
   // Make a new buffer bB and attach to vB; verify we can see the data in bB
-  DataBuffer *bB = ds->createBuffer(tid, Bcount)->allocate();
+  DataBuffer * bB = ds->createBuffer(tid, Bcount)->allocate();
   bB->copyBytesIntoBuffer(vB1test, Bcount * eltsize);
   vB->attachBuffer(tid, Bcount, bB);
-  
+
   // Detach bA from vA using attach(NULL); verify that vA nas no buffer and bA is destroyed
   IndexType aidx = bA->getIndex();
   vA->attachBuffer(ATK_NULLPTR);
@@ -397,5 +403,3 @@ TEST(sidre_databuffer,buffer_delete_view_detach)
 
   delete ds;
 }
-
-
