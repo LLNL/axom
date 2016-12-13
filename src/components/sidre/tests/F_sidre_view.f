@@ -190,7 +190,7 @@ contains
     integer i
     integer int_size, elem_count
 
-    int_size = sizeof(i)
+    int_size = c_sizeof(i)
     elem_count = 10
 
     call set_case_name("int_buffer_from_view")
@@ -558,8 +558,8 @@ contains
     integer int_size, double_size
     integer(C_INT), pointer :: int_data
 
-    int_size = sizeof(i)
-    double_size = sizeof(elem)
+    int_size = c_sizeof(i)
+    double_size = c_sizeof(elem)
 
     call set_case_name("int_array_offset_stride")
 

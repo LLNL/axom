@@ -49,7 +49,7 @@ contains
     integer i
     integer int_size, elem_count
 
-    int_size = sizeof(i)
+    int_size = c_sizeof(i)
     elem_count = 10
     
     call set_case_name("alloc_buffer_for_int_array")
@@ -87,7 +87,7 @@ contains
     integer i
     integer int_size, elem_count
 
-    int_size = sizeof(i)
+    int_size = c_sizeof(i)
     elem_count = 10
 
     call set_case_name("init_buffer_for_int_array")
@@ -126,7 +126,7 @@ contains
     integer(C_LONG) elem
     integer long_size, orig_elem_count, mod_elem_count
 
-    long_size = sizeof(elem)
+    long_size = c_sizeof(elem)
     orig_elem_count = 5
     mod_elem_count = 10
 
