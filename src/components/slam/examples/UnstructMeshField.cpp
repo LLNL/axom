@@ -135,11 +135,11 @@ namespace slamUnstructuredHex {
 
 
     /// Maps (fields) defined on the mesh -- nodal and zonal positions and scalar fields
-    PositionsVec    nodePosition;
-    PositionsVec    zonePosition;
-    ZoneField       zoneField;
-    NodeField       nodeFieldExact;
-    NodeField       nodeFieldAvg;
+    PositionsVec nodePosition;
+    PositionsVec zonePosition;
+    ZoneField zoneField;
+    NodeField nodeFieldExact;
+    NodeField nodeFieldAvg;
   };
 
   /** A simple class to read a VTK hex mesh */
@@ -153,8 +153,8 @@ namespace slamUnstructuredHex {
       {
         using namespace asctoolkit::slam::util;
         std::string ancesFile = findFileInAncestorDirs( fileName);
-        SLIC_ERROR_IF( !asctoolkit::utilities::filesystem::pathExists( ancesFile)
-                     , fmt::format("Tried opening file '{}', but it does not exist.", ancesFile) );
+        SLIC_ERROR_IF( !asctoolkit::utilities::filesystem::pathExists( ancesFile),
+            fmt::format("Tried opening file '{}', but it does not exist.", ancesFile) );
 
         SLIC_INFO("Opening file " << ancesFile);
         vtkMesh.open( ancesFile.c_str() );
@@ -209,11 +209,10 @@ namespace slamUnstructuredHex {
       IndexType numNodeZoneIndices = listSize - numZones;
 
       // This is only because we're assuming Hex's.  General meshes can be different.
-      SLIC_ASSERT_MSG( numZones * (HexMesh::NODES_PER_ZONE) == numNodeZoneIndices
-           ,  "Error while reading mesh!\n"
-           << fmt::format(" numZones = {0}; numZones*{1} = {2}; numNodeZoneIndices = {3}"
-                          , numZones, static_cast<int>(HexMesh::NODES_PER_ZONE)
-                          , numZones * (HexMesh::NODES_PER_ZONE), numNodeZoneIndices ));
+      SLIC_ASSERT_MSG( numZones * (HexMesh::NODES_PER_ZONE) == numNodeZoneIndices, fmt::format(
+            "Error while reading mesh!\n numZones = {0}; numZones*{1} = {2}; numNodeZoneIndices = {3}",
+            numZones, static_cast<int>(HexMesh::NODES_PER_ZONE),
+            numZones * (HexMesh::NODES_PER_ZONE), numNodeZoneIndices ));
       SLIC_INFO("-- Number of zones: " << numZones );
 
       // Create the set of Zones
@@ -451,12 +450,13 @@ int main(int argc, char** argv)
   const std::string DEFAULT_DATA_DIR = "../src/components/slam/data";
   std::string dataDir;
   if(argc > 0)
-      dataDir = std::string(argv[1]);
+    dataDir = std::string(argv[1]);
   else
   {
-      dataDir = DEFAULT_DATA_DIR;
-      SLIC_INFO("Using default data directory " << DEFAULT_DATA_DIR
-                << "\n First parameter can be a custom directory.");
+    dataDir = DEFAULT_DATA_DIR;
+    SLIC_INFO("Using default data directory "
+        << DEFAULT_DATA_DIR
+        << "\n First parameter can be a custom directory.");
   }
 
   for(int res = 0; res < NUM_RESOLUTIONS; ++res)
@@ -486,10 +486,10 @@ int main(int argc, char** argv)
     ATK_DEBUG_VAR(errVal);
 
     // Some error checking based on precomputed values
-    SLIC_ASSERT_MSG(asctoolkit::utilities::isNearlyEqual(errVal, expectedResults[res])
-        , "Error differed from expected value -- "
-        << fmt::format("Expected {}, but got {} (difference: {}"
-              , expectedResults[res], errVal, errVal - expectedResults[res]));
+    SLIC_ASSERT_MSG(asctoolkit::utilities::isNearlyEqual(errVal, expectedResults[res]),
+        "Error differed from expected value -- "
+        << fmt::format("Expected {}, but got {} (difference: {}",
+        expectedResults[res], errVal, errVal - expectedResults[res]));
 //}
     SLIC_INFO("-- done.\n");
   }

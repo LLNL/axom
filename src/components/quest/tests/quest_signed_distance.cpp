@@ -204,7 +204,7 @@ TEST( quest_signed_distance, sphere_test )
   const double l1norm_expected = 6.08188;
   const double l2norm_expected = 0.123521;
   const double linf_expected   = 0.00532092;
-  const double TOL             = 1.e-4;
+  const double TOL             = 1.e-3;
 
   SLIC_INFO( "Constructing sphere mesh..." );
   TriangleMesh* surface_mesh = new TriangleMesh( 3 );

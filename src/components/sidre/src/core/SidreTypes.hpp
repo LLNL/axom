@@ -26,11 +26,22 @@ namespace asctoolkit
 {
 namespace sidre
 {
+// Some typedefs to make Conduit usage easier and less visible in the Sidre API.
+
+/*!
+ * \brief The Node class is the primary object in Conduit.
+ */
+typedef conduit::Node Node;
 
 /*!
  * \brief DataType is a general Conduit descriptor.
  */
 typedef conduit::DataType DataType;
+
+/*!
+ * \brief A Conduit Schema describes the data in a Node
+ */
+typedef conduit::Schema Schema;
 
 
 /*!

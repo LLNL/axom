@@ -161,6 +161,11 @@ classes:
          attrs:
             len: aa_exclass2_get_name_length({F_instance_ptr})
 
+# test variations of const for result and method
+    - decl: const string& getName2
+    - decl:       string& getName3 const
+    - decl:       string& getName4
+
     - doxygen:
         brief: helper function for Fortran
       result:

@@ -43,20 +43,26 @@
 ###############################################################################
 from spack import *
 
+import os
+import platform
+from os.path import join as pjoin
+
 class Conduit(Package):
     homepage = "http://software.llnl.gov/conduit/"
-    url      = "https://github.com/LLNL/conduit/"
+    url      = "https://github.com/LLNL/conduit/archive/v0.2.0.tar.gz"
 
-    # if we aren't going to use a tag, use a specific commit
-    # to avoid turmoil 
-    version('github-2016-05-18', git='https://github.com/LLNL/conduit.git',
-            commit='80e703221dea7263d27ce96a50b55a049b39d815')
+    version('0.2.0', 'd595573dedf55514c11d7391092fd760')
 
+    #version('github-2016-10-14', git='https://github.com/LLNL/conduit.git',
+    #        commit='072f04b001c428b6a6b47961214d3eb041585820')
 
     variant('shared', default=True, description="Build shared libraries.")
 
-    depends_on("cmake~ncurses~openssl@3.3.1")
+    depends_on("cmake@3.3.1")
     depends_on("hdf5~shared~zlib~fortran")
+    
+    if "darwin" in platform.system().lower():
+        depends_on("mpich")
 
 
     def install(self, spec, prefix):
@@ -68,27 +74,30 @@ class Conduit(Package):
             cmake_args.append("-DHDF5_DIR=%s" % hdf5_dir);
  
             # see if we should enable fortran support
+            f_compiler   = None
             if "SPACK_FC" in env.keys():
-                f_compiler   = env["SPACK_FC"]
-                cmake_args.append("-DENABLE_FORTRAN=ON")
-
-            # see if we should enable mpi support
-            mpicc  = which("mpicc")
-            mpif90 = which("mpif90")
+                if os.path.isfile(env["SPACK_FC"]):
+                    f_compiler = env["SPACK_FC"]
+                    cmake_args.append("-DENABLE_FORTRAN=ON")
 
             if "+shared" in spec:
                 cmake_args.append("-DBUILD_SHARED_LIBS=ON")
             else:
                 cmake_args.append("-DBUILD_SHARED_LIBS=OFF")
 
-            if not mpicc is None:
+            if "mpich" in spec:
+                mpiexec  = pjoin(spec['mpich'].prefix.bin,"mpiexec")
+                mpicc    = pjoin(spec['mpich'].prefix.bin,"mpicc")
                 cmake_args.append("-DENABLE_MPI=ON")
-                cmake_args.append("-DMPI_CC_COMPILER:PATH=%s"  % mpicc.command)
-                cmake_args.append("-DMPI_CXX_COMPILER:PATH=%s" % mpicc.command)
-            if not mpif90 is None:
-                cmake_args.append("-DMPI_Fortran_COMPILER:PATH=%s" % mpif90.command)
+                cmake_args.append("-DMPI_C_COMPILER:PATH=%s"   % mpicc)
+                cmake_args.append("-DMPI_CXX_COMPILER:PATH=%s" % mpicc)
+
+                cmake_args.append("-DMPIEXEC:PATH=%s" % mpiexec)
                 
-            print cmake_args
+                if not f_compiler is None:
+                    mpif90   = pjoin(spec['mpich'].prefix.bin,"mpif90")
+                    cmake_args.append("-DMPI_Fortran_COMPILER:PATH=%s" % mpif90)
+                
             cmake(*cmake_args)
             make(parallel=False)
             make("install",parallel=False)

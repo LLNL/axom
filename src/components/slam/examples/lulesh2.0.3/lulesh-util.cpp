@@ -49,19 +49,20 @@ namespace slamLulesh {
     if (myRank == 0)
     {
 
-      SLIC_INFO( "Usage: " << execname << " [opts]\n"
-              << " where [opts] is one or more of:\n"
-              << " -q              : quiet mode - suppress all stdout\n"
-              << " -i <iterations> : number of cycles to run\n"
-              << " -s <size>       : length of cube mesh along side\n"
-              << " -r <numregions> : Number of distinct regions (def: 11)\n"
-              << " -b <balance>    : Load balance between regions of a domain (def: 1)\n"
-              << " -c <cost>       : Extra cost of more expensive regions (def: 1)\n"
-              << " -f <numfiles>   : Number of files to split viz dump into (def: (np+10)/9)\n"
-              << " -p              : Print out progress\n"
-              << " -v              : Output viz file (requires compiling with -DVIZ_MESH\n"
-              << " -h              : This message\n"
-              << "\n\n");
+      SLIC_INFO( "Usage: "
+          << execname << " [opts]\n"
+          << " where [opts] is one or more of:\n"
+          << " -q              : quiet mode - suppress all stdout\n"
+          << " -i <iterations> : number of cycles to run\n"
+          << " -s <size>       : length of cube mesh along side\n"
+          << " -r <numregions> : Number of distinct regions (def: 11)\n"
+          << " -b <balance>    : Load balance between regions of a domain (def: 1)\n"
+          << " -c <cost>       : Extra cost of more expensive regions (def: 1)\n"
+          << " -f <numfiles>   : Number of files to split viz dump into (def: (np+10)/9)\n"
+          << " -p              : Print out progress\n"
+          << " -v              : Output viz file (requires compiling with -DVIZ_MESH\n"
+          << " -h              : This message\n"
+          << "\n\n");
     }
   }
 
@@ -228,11 +229,11 @@ namespace slamLulesh {
     Index_t ElemId = 0;
 
     SLIC_INFO( "Run completed:"
-            << "\n\tProblem size        =  " << nx
-            << "\n\tMPI tasks           =  " << numRanks
-            << "\n\tIteration count     =  " << locDom.cycle()
-            << "\n\tFinal Origin Energy =  " << locDom.e(ElemId)
-            << "\n");
+        << "\n\tProblem size        =  " << nx
+        << "\n\tMPI tasks           =  " << numRanks
+        << "\n\tIteration count     =  " << locDom.cycle()
+        << "\n\tFinal Origin Energy =  " << locDom.e(ElemId)
+        << "\n");
 
     Real_t MaxAbsDiff = Real_t(0.0);
     Real_t TotalAbsDiff = Real_t(0.0);
@@ -257,16 +258,17 @@ namespace slamLulesh {
 
     // Quick symmetry check
     SLIC_INFO( "Testing plane 0 of energy array on rank 0:"
-            << "\n\tMaxAbsDiff   = " << MaxAbsDiff
-            << "\n\tTotalAbsDiff = " << TotalAbsDiff
-            << "\n\tMaxRelDiff   = " << MaxRelDiff
-            << "\n");
+        << "\n\tMaxAbsDiff   = " << MaxAbsDiff
+        << "\n\tTotalAbsDiff = " << TotalAbsDiff
+        << "\n\tMaxRelDiff   = " << MaxRelDiff
+        << "\n");
 
     // Timing information
-    SLIC_INFO( "Elapsed time         = " << elapsed_time << "(s)"
-            << "\n\tGrind time (us/z/c)  = " << grindTime1 << " (per dom)  (" << grindTime2 << " overall)"
-            << "\n\tFOM                  = " << 1000.0 / grindTime2 <<" (z/s)"        // zones per second
-            << "\n");
+    SLIC_INFO( "Elapsed time         = "
+        << elapsed_time << "(s)"
+        << "\n\tGrind time (us/z/c)  = " << grindTime1 << " (per dom)  (" << grindTime2 << " overall)"
+        << "\n\tFOM                  = " << 1000.0 / grindTime2 << " (z/s)"           // zones per second
+        << "\n");
 
     /// Compare to given values for cycles and origin energy from lulesh 2.0 paper:
     std::map<Int_t, std::pair<Index_t, Real_t> > resultCheckMap;
@@ -291,11 +293,11 @@ namespace slamLulesh {
           << " actual number of cycles was " << locDom.cycle() << "." );
 
       SLIC_ASSERT_MSG(
-              asctoolkit::utilities::isNearlyEqualRelative( resultCheckMap[gEdge].second, locDom.e(ElemId))
-          , "Specs state that final energy at origin must be "
-          << resultCheckMap[gEdge].second
-          << " actual energy at origin was " << locDom.e(ElemId)
-          << ". Difference was " << std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) )
+        asctoolkit::utilities::isNearlyEqualRelative( resultCheckMap[gEdge].second, locDom.e(ElemId)),
+        "Specs state that final energy at origin must be "
+        << resultCheckMap[gEdge].second
+        << " actual energy at origin was " << locDom.e(ElemId)
+        << ". Difference was " << std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) )
       );
 
       double diff = std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) );
@@ -307,14 +309,15 @@ namespace slamLulesh {
       ATK_DEBUG_VAR(maxFabs);
       ATK_DEBUG_VAR(relMaxFabs);
       ATK_DEBUG_VAR(relMaxFabsWithAbsolute);
-      SLIC_DEBUG("**  comparing " << resultCheckMap[gEdge].second << " with " << locDom.e(ElemId)
-                << "\n\tfabs difference: " << diff
-                << "\n\tmaxFabs * rel (1e-6): " <<  relMaxFabs
-                << "\n\t<above> with abs 1e-8: " << relMaxFabsWithAbsolute
-                << "\n\tdiff (again): " << diff
-                << "\n\tdiff of last two: " << relMaxFabsWithAbsolute - diff
-                << "\n\tNearly equal: " << ( diff <= relMaxFabsWithAbsolute ? "TRUE" : "FALSE" )
-                );
+      SLIC_DEBUG("**  comparing "
+          << resultCheckMap[gEdge].second << " with " << locDom.e(ElemId)
+          << "\n\tfabs difference: " << diff
+          << "\n\tmaxFabs * rel (1e-6): " <<  relMaxFabs
+          << "\n\t<above> with abs 1e-8: " << relMaxFabsWithAbsolute
+          << "\n\tdiff (again): " << diff
+          << "\n\tdiff of last two: " << relMaxFabsWithAbsolute - diff
+          << "\n\tNearly equal: " << ( diff <= relMaxFabsWithAbsolute ? "TRUE" : "FALSE" )
+      );
     }
 
     return;

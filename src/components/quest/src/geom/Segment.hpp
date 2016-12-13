@@ -8,14 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/*!
- *******************************************************************************
- * \file Segment.hpp
- *
- * \date Dec 22, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
 
 #ifndef SEGMENT_HPP_
 #define SEGMENT_HPP_

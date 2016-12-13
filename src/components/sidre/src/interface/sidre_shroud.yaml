@@ -87,14 +87,14 @@ classes:
     -  decl: void print() const
 #    -  decl: void print(std::ostream& os) const
 
-    -  decl: void save(const std::string& file_path, const std::string& protocol, const DataGroup* group = ATK_NULLPTR ) const
-#   -  decl: void save(const hid_t& h5_file_id, const DataGroup* group = ATK_NULLPTR ) const
+    -  decl: void save(const std::string& file_path, const std::string& protocol) const
+#   -  decl: void save(const hid_t& h5_id) const
 #      function_suffix: _hdf
-    -  decl: void load(const std::string& file_path, const std::string& protocol, DataGroup * group = ATK_NULLPTR)
-#   -  decl: void load(const hid_t& h5_file_id, DataGroup * group = ATK_NULLPTR)
+    -  decl: void load(const std::string& file_path, const std::string& protocol)
+#   -  decl: void load(const hid_t& h5_id)
 #      function_suffix: _hdf
-    -  decl: void loadExternalData(const std::string& file_path, const std::string& protocol, DataGroup * group = ATK_NULLPTR)
-#   -  decl: void loadExternalData(const hid_t& h5_file_id, DataGroup * group = ATK_NULLPTR)
+    -  decl: void loadExternalData(const std::string& file_path, const std::string& protocol)
+#   -  decl: void loadExternalData(const hid_t& h5_id)
 #      function_suffix: _hdf
 
 #    - decl: void createNativeLayout(Node &) const
@@ -254,6 +254,15 @@ classes:
 #   -  decl: void load(const std::string& obase,  const std::string& protocol)
 
     - decl: bool isEquivalentTo(const DataGroup * other) const
+    
+    -  decl: void save(const std::string& file_path, const std::string& protocol) const
+#   -  decl: void save(const hid_t& h5_id) const
+#      function_suffix: _hdf
+    -  decl: void load(const std::string& file_path, const std::string& protocol)
+#   -  decl: void load(const hid_t& h5_id)
+#      function_suffix: _hdf
+    -  decl: void loadExternalData(const std::string& file_path, const std::string& protocol)
+    
 
     python:
       type: [ init, richcompare ]
@@ -292,6 +301,7 @@ classes:
       - decl: TypeID getTypeID() const
       - decl: size_t getNumElements() const
       - decl: size_t getTotalBytes() const
+      - decl: size_t getBytesPerElement() const
 #      - decl: Node& getNode()
 #      - decl: const Node& getNode() const
 #      - decl: DataView* getView(IndexType idx)
@@ -362,10 +372,13 @@ classes:
 #    - decl: DataView* apply(const DataType& dtype)
     - decl: bool hasBuffer() const
     - decl: bool isExternal() const
+    - decl: bool isAllocated()
     - decl: bool isApplied() const
     - decl: bool isDescribed() const
     - decl: bool isEmpty() const
     - decl: bool isOpaque() const
+    - decl: bool isScalar() const
+    - decl: bool isString() const
     - decl: const std::string& getName+len(MAXNAMESIZE)() const
     - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const
@@ -395,9 +408,16 @@ classes:
          -  int
          -  long
 
+    -  decl: DataView * setString(const std::string& value)
+       return_this: True
+
     -  decl: DataView * setExternalDataPtr(TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
        return_this: True
        function_suffix: _shape
+
+    -  decl: const char * getString+len(MAXNAMESIZE)()
+       options:
+         F_string_result_as_arg: name
 
 #           template<typename DataType>
     - decl: DataType getData()
@@ -413,9 +433,12 @@ classes:
 #    - decl: DataGroup const* getOwningGroup() const
     - decl: TypeID getTypeID() const
     - decl: size_t getTotalBytes() const
+    - decl: size_t getBytesPerElement() const
     - decl: size_t getNumElements() const
+    - decl: size_t getOffset() const
+    - decl: size_t getStride() const
     - decl: int getNumDimensions() const
-    - decl: int getShape(int ndims, SidreLength * shape+dimension) const
+    - decl: int getShape(int ndims, SidreLength * shape+dimension+intent(OUT) ) const
 #    - decl: void info(Node& n) const
     - decl: void print() const
 #    - decl: void createNativeLayout(Node &) const

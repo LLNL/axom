@@ -21,8 +21,7 @@
 // Standard C++ headers
 #include <fstream>
 
-#include "conduit.hpp"
-#include "relay.hpp"
+#include "conduit_utils.hpp" // for setting conduit's message logging handlers
 
 // Associated header file
 #include "DataStore.hpp"
@@ -43,8 +42,7 @@ namespace sidre
 /*
  *************************************************************************
  *
- * Function to map SLIC method for logging error message to Conduit
- * error handler.
+ * Callback function used to map Conduit errors to SLIC errors.
  *
  *************************************************************************
  */
@@ -53,6 +51,36 @@ void DataStoreConduitErrorHandler( const std::string& message,
                                    int line )
 {
   slic::logErrorMessage( message, fileName, line );
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Callback function used to map Conduit warnings to SLIC warnings.
+ *
+ *************************************************************************
+ */
+void DataStoreConduitWarningHandler( const std::string& message,
+                                     const std::string& fileName,
+                                     int line )
+{
+  slic::logWarningMessage( message, fileName, line );
+}
+
+/*
+ *************************************************************************
+ *
+ * Callback function used to map Conduit info messages to SLIC info
+ * messages.
+ *
+ *************************************************************************
+ */
+void DataStoreConduitInfoHandler( const std::string& message,
+                                  const std::string& fileName,
+                                  int line )
+{
+  slic::logMessage( slic::message::Info, message, fileName, line );
 }
 
 /*
@@ -88,6 +116,8 @@ DataStore::DataStore()
   // Provide SLIC error handler function to Conduit to log
   // internal Conduit errors.
   conduit::utils::set_error_handler( DataStoreConduitErrorHandler );
+  conduit::utils::set_warning_handler( DataStoreConduitWarningHandler );
+  conduit::utils::set_info_handler( DataStoreConduitInfoHandler );
 
   m_RootGroup = new DataGroup("", this);
   m_RootGroup->m_parent = m_RootGroup;
@@ -339,76 +369,29 @@ void DataStore::print(std::ostream& os) const
   n.to_json_stream(os);
 }
 
-/*************************************************************************/
-// see ATK-735 - Add ability to control saving buffers/externals with save
-
+/*
+ *************************************************************************
+ *
+ * Save Group (including Views and child Groups) to a file
+ *
+ *************************************************************************
+ */
 void DataStore::save(const std::string& file_path,
-                     const std::string& protocol,
-                     const DataGroup * group) const
+                     const std::string& protocol) const
 {
-
-  SLIC_ERROR_IF(group != ATK_NULLPTR && group->getDataStore() != this,
-                "Cannot call save method on Group not owned by this DataStore.");
-
-  Node data_holder;
-  data_holder.set_dtype(DataType::object());
-  exportTo( group, data_holder);
-
-  Node external_holder;
-  external_holder.set_dtype(DataType::object());
-  createExternalLayout(external_holder);
-
-  Node two_part;
-  two_part["sidre"] = data_holder;
-  two_part["external"] = external_holder;
-
-  if (protocol == "conduit")
-  {
-    conduit::relay::io::save(two_part, file_path);
-  }
-  else if (protocol == "conduit_hdf5")
-  {
-    conduit::relay::io::hdf5_write( two_part, file_path );
-  }
-  else if (protocol == "text")
-  {
-    std::ofstream output_file( file_path.c_str() );
-    SLIC_ERROR_IF(!output_file.is_open(),
-                  "Unable to create file " << file_path);
-    if (output_file)
-    {
-      output_file << two_part.to_json();
-    }
-  }
-  else
-  {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
-  }
+  getRoot()->save(file_path,protocol);
 }
 
-/*************************************************************************/
-
-void DataStore::save(const hid_t& h5_file_id,
-                     const DataGroup * group) const
+/*
+ *************************************************************************
+ *
+ * Save Group (including Views and child Groups) to a hdf5 handle
+ *
+ *************************************************************************
+ */
+void DataStore::save(const hid_t& h5_id) const
 {
-  SLIC_ERROR_IF(
-    group != ATK_NULLPTR && group->getDataStore() != this,
-    "Must call save function on Group that resides in this DataStore.");
-
-  Node data_holder;
-  data_holder.set_dtype(DataType::object());
-  exportTo( group, data_holder);
-
-  Node external_holder;
-  external_holder.set_dtype(DataType::object());
-  createExternalLayout(external_holder);
-
-  Node two_part;
-  two_part.set_dtype(DataType::object());
-  two_part["sidre"] = data_holder;
-  two_part["external"] = external_holder;
-
-  conduit::relay::io::hdf5_write(two_part, h5_file_id);
+  getRoot()->save(h5_id);
 }
 
 /*************************************************************************/
@@ -421,51 +404,21 @@ void DataStore::save(const hid_t& h5_file_id,
  *************************************************************************
  */
 void DataStore::load(const std::string& file_path,
-                     const std::string& protocol,
-                     DataGroup * group)
+                     const std::string& protocol)
 {
-  SLIC_ERROR_IF(
-    group != ATK_NULLPTR && group->getDataStore() != this,
-    "Must call load function on Group that resides in this DataStore.");
-
-  Node node;
-
-  if (protocol == "conduit")
-  {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
-    conduit::relay::io::load(file_path, node);
-  }
-  else if (protocol == "conduit_hdf5")
-  {
-    conduit::relay::io::hdf5_read( file_path + ":sidre", node);
-  }
-  else
-  {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
-  }
-
-  importFrom( group, node );
-
+  getRoot()->load(file_path,protocol);
 }
 
 /*
  *************************************************************************
  *
- * Load Group (including Views and child Groups) from an hdf5 file
+ * Load Group (including Views and child Groups) from an hdf5 id
  *
  *************************************************************************
  */
-void DataStore::load(const hid_t& h5_file_id,
-                     DataGroup * group)
+void DataStore::load(const hid_t& h5_id)
 {
-  SLIC_ERROR_IF(
-    group != ATK_NULLPTR && group->getDataStore() != this,
-    "Must call load function on Group that resides in this DataStore.");
-
-  Node node;
-  conduit::relay::io::hdf5_read(h5_file_id, "sidre", node);
-  // for debugging call: n.print();
-  importFrom( group, node );
+  getRoot()->load(h5_id);
 }
 
 /*
@@ -476,159 +429,21 @@ void DataStore::load(const hid_t& h5_file_id,
  *************************************************************************
  */
 void DataStore::loadExternalData(const std::string& file_path,
-                                 const std::string& protocol,
-                                 DataGroup * group)
+                                 const std::string& protocol)
 {
-  SLIC_ERROR_IF(
-    group != ATK_NULLPTR && group->getDataStore() != this,
-    "Must call load function on Group that resides in this DataStore.");
-
-  Node external_holder;
-  external_holder.set_dtype(DataType::object());
-  createExternalLayout(external_holder);
-
-  if (protocol == "conduit")
-  {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
-    conduit::relay::io::load(file_path, external_holder);
-  }
-  else if (protocol == "conduit_hdf5")
-  {
-    conduit::relay::io::hdf5_read( file_path + ":external", external_holder);
-  }
-  else
-  {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
-  }
+  getRoot()->loadExternalData(file_path,protocol);
 }
 
 /*
  *************************************************************************
  *
- * Load External Data from an hdf5 file
+ * Load External Data from an hdf5 handle
  *
  *************************************************************************
  */
-void DataStore::loadExternalData(const hid_t& h5_file_id,
-                                 DataGroup * group)
+void DataStore::loadExternalData(const hid_t& h5_id)
 {
-  SLIC_ERROR_IF(
-    group != ATK_NULLPTR && group->getDataStore() != this,
-    "Must call load function on Group that resides in this DataStore.");
-
-  Node external_holder;
-  external_holder.set_dtype(DataType::object());
-  createExternalLayout(external_holder);
-
-  conduit::relay::io::hdf5_read(h5_file_id, "external", external_holder);
-  // for debugging call: n.print();
-}
-
-
-/*
- *************************************************************************
- *
- * Serialize tree identified by a Group into a conduit node.  Include
- * any Buffers attached to Views in that tree.
- *
- * If Group is not specified, the DataStore root group will be used.
- *
- *************************************************************************
- */
-void DataStore::exportTo(const DataGroup * group,
-                         conduit::Node& data_holder) const
-{
-  if (group == ATK_NULLPTR)
-  {
-    group = getRoot();
-  }
-
-  // TODO - This implementation will change in the future.  We want to write
-  // out some separate set of conduit nodes:
-  // #1 A set of nodes representing the Group and Views (hierarchy), with
-  // the data descriptions ( schemas ).
-  // #2 A set of nodes for our data ( Buffers, external data, etc ).
-  // On a load, we want to be able to create our DataStore tree first,
-  // then call allocate ourself, then have conduit load the data directly
-  // into our allocated memory areas.  Conduit can do this, as long as the
-  // conduit node set is compatible with what's in the file.
-  std::set<IndexType> buffer_indices;
-
-  // Tell Group to add itself and all sub-Groups and Views to node.
-  // Any Buffers referenced by those Views will be tracked in the
-  // buffer_indices
-  group->exportTo(data_holder, buffer_indices);
-
-  if (!buffer_indices.empty())
-  {
-    // Now, add all the referenced buffers to the node.
-    Node & bnode = data_holder["buffers"];
-    for (std::set<IndexType>::iterator s_it = buffer_indices.begin() ;
-         s_it != buffer_indices.end() ; ++s_it)
-    {
-      // Use a dictionary layout here instead of conduit list.
-      // Conduit IO HDF5 doesn't support conduit list objects.
-      std::ostringstream oss;
-      oss << "buffer_id_" << *s_it;
-      Node& buffer_holder = bnode.fetch( oss.str() );
-      getBuffer( *s_it )->exportTo(buffer_holder);
-    }
-  }
-}
-
-/*
- *************************************************************************
- *
- * Imports tree from a conduit node into DataStore.  Includes
- * any Buffers attached to Views in that tree.
- *
- * If Group is not specified, the DataStore root Group will be used.
- *
- *************************************************************************
- */
-
-void DataStore::importFrom(DataGroup * group,
-                           conduit::Node& data_holder)
-{
-  // TODO - May want to put in a little meta-data into these files like a 'version'
-  // or tag identifying the data.  We don't want someone giving us a file that
-  // doesn't have our full multiView->buffer connectivity in there.
-
-  if (group == ATK_NULLPTR)
-  {
-    group = getRoot();
-  }
-
-  group->destroyGroups();
-  group->destroyViews();
-
-  // First - Import Buffers into the DataStore.
-  std::map<IndexType, IndexType> buffer_indices_map;
-
-  // Added CON-132 ticket asking if has_path can just return false if node is empty or not an object type.
-  if (data_holder.dtype().is_object() && data_holder.has_path("buffers"))
-  {
-    conduit::NodeIterator buffs_itr = data_holder["buffers"].children();
-    while (buffs_itr.has_next())
-    {
-      Node& buffer_data_holder = buffs_itr.next();
-      IndexType old_buffer_id = buffer_data_holder["id"].as_int32();
-
-      DataBuffer * buffer = createBuffer();
-
-      // track change of old Buffer id to new Buffer id
-      buffer_indices_map[ old_buffer_id ] = buffer->getIndex();
-
-      // populate the new Buffer's state
-      buffer->importFrom(buffer_data_holder);
-    }
-  }
-
-  // Next - import tree of Groups, sub-Groups, Views into the DataStore.
-  // Use the mapping of old to new Buffer ids to connect the Views to the
-  // right Buffers.
-  group->importFrom(data_holder, buffer_indices_map);
-
+  getRoot()->loadExternalData(h5_id);
 }
 
 } /* end namespace sidre */

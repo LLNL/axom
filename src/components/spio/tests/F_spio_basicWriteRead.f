@@ -46,7 +46,7 @@ program spio_basis_write_read
   num_files = 1
   writer = iomanager_new(MPI_COMM_WORLD)
 
-  call writer%write(root1, num_files, "F_out_spio_basic_write_read", "conduit_hdf5")
+  call writer%write(root1, num_files, "F_out_spio_basic_write_read", "sidre_hdf5")
 
   ds2 = datastore_new()
 

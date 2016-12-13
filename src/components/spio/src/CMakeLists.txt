@@ -52,4 +52,5 @@ blt_add_library( NAME
                      hdf5
                      conduit
                      sidre
+                     fmt
                 )
