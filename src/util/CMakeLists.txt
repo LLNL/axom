@@ -16,8 +16,12 @@ set(datastore_converter_sources
 set(datastore_converter_depends 
     spio sidre conduit conduit_relay hdf5 
     lumberjack slic fmt 
-    slam boost
+    slam 
     )
+
+if(ENABLE_BOOST)
+  list(APPEND datastore_converter_depends boost)
+endif()
 
 
 if(ENABLE_SLAM AND ENABLE_SPIO AND ENABLE_LUMBERJACK)
