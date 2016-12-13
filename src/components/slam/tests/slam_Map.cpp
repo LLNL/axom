@@ -88,26 +88,26 @@ TEST(gtest_slam_map,construct_double_map)
 
 TEST(gtest_slam_map,out_of_bounds)
 {
-    int defaultElt = 2;
+  int defaultElt = 2;
 
-    SetType s(MAX_SET_SIZE);
-    IntMap m(&s, defaultElt);
+  SetType s(MAX_SET_SIZE);
+  IntMap m(&s, defaultElt);
 
-    SLIC_INFO("Testing Map element access -- in bounds");
-    for(PositionType idx = 0; idx < m.size(); ++idx)
-        EXPECT_EQ(defaultElt, m[idx]);
+  SLIC_INFO("Testing Map element access -- in bounds");
+  for(PositionType idx = 0; idx < m.size(); ++idx)
+    EXPECT_EQ(defaultElt, m[idx]);
 
-    // Test out of bounds
-    SLIC_INFO("Testing Map element access -- out of bounds access; Expecting the test to fail");
+  // Test out of bounds
+  SLIC_INFO("Testing Map element access -- out of bounds access; Expecting the test to fail");
   #ifdef ATK_DEBUG
 
-    // add this line to avoid a warning in the output about thread safety
-    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-    ASSERT_DEATH( m[-1],"") << " Accessed element -1 of Map -- out of bounds";
-    ASSERT_DEATH( m[m.size()],"") << " Accessed element " << m.size() << " of Map -- out of bounds";
+  // add this line to avoid a warning in the output about thread safety
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  ASSERT_DEATH( m[-1],      "") << " Accessed element -1 of Map -- out of bounds";
+  ASSERT_DEATH( m[m.size()],"") << " Accessed element " << m.size() << " of Map -- out of bounds";
 
   #else
-    SLIC_INFO("Did not check for assertion failure since assertions are compiled out in release mode.");
+  SLIC_INFO("Did not check for assertion failure since assertions are compiled out in release mode.");
   #endif
 }
 

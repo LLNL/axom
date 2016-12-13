@@ -2879,12 +2879,13 @@ int main(int argc, char *argv[])
 
   if ((myRank == 0) && (opts.quiet == 0))
   {
-    SLIC_INFO( "Running problem size "<< opts.nx <<"^3 per domain until completion"
-             <<"\n\tNum processors: " << numRanks
+    SLIC_INFO( "Running problem size "
+        << opts.nx << "^3 per domain until completion"
+        << "\n\tNum processors: " << numRanks
 #if _OPENMP
-             <<"\n\tNum threads: " << omp_get_max_threads()
+        << "\n\tNum threads: " << omp_get_max_threads()
 #endif
-             <<"\n\tTotal number of elements: " << (numRanks * opts.nx * opts.nx * opts.nx));
+        << "\n\tTotal number of elements: " << (numRanks * opts.nx * opts.nx * opts.nx));
 
     SLIC_INFO( "To run other sizes, use -s <integer>."
         << "\n\tTo run a fixed number of iterations, use -i <integer>."
@@ -2893,7 +2894,7 @@ int main(int argc, char *argv[])
         << "\n\tTo print out progress, use -p"
         << "\n\tTo write an output file for VisIt, use -v"
         << "\n\tSee help (-h) for more options"
-        <<"\n");
+        << "\n");
   }
 
   // Set up the mesh and decompose. Assumes regular cubes for now

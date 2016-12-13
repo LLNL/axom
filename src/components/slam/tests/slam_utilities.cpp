@@ -29,7 +29,7 @@
 #include "slic/slic.hpp"
 
 #ifdef WINDOWS
-    // Warning: not yet tested on windows
+// Warning: not yet tested on windows
     #include <direct.h>
     #define ChangeCurrentDir _chdir
 #else
@@ -63,7 +63,7 @@ TEST(gtest_slam_utilities,findingAncestorPaths)
   std::string ps1 = findFileInAncestorDirs(path1);
 
   std::ifstream fileStreamP1( ps1.c_str() );
-  // 
+  //
   EXPECT_TRUE( fileStreamP1.is_open());
   fileStreamP1.close();
   SLIC_INFO("Valid path for file: " << path1 << " was: " << ps1);
@@ -100,7 +100,7 @@ TEST(gtest_slam_utilities,findingAncestorPaths)
   std::ifstream fileStreamP4( ps4.c_str() );
   EXPECT_FALSE( fileStreamP4.is_open());
   fileStreamP4.close();
-  SLIC_INFO("No valid path for file '" << path4 << "'. Function returned "<< ps4 );
+  SLIC_INFO("No valid path for file '" << path4 << "'. Function returned " << ps4 );
 
 }
 
