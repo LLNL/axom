@@ -11,7 +11,33 @@
 #ifndef ATK_COMMON_CONFIG_HPP
 #define ATK_COMMON_CONFIG_HPP
 
+
 #cmakedefine USE_CXX11
+
+// Compiler defines for libraries (built-in and third party)
+#cmakedefine ATK_USE_BOOST
+#cmakedefine ATK_USE_CONDUIT
+#cmakedefine ATK_USE_CXX11
+#cmakedefine ATK_USE_FMT
+#cmakedefine ATK_USE_HDF5
+#cmakedefine ATK_USE_MPI
+#cmakedefine ATK_USE_OPENMP
+#cmakedefine ATK_USE_SPARSEHASH
+
+
+// Compiler defines for toolkit components
+#cmakedefine ATK_USE_COMMON
+#cmakedefine ATK_USE_MINT
+#cmakedefine ATK_USE_LUMBERJACK
+#cmakedefine ATK_USE_QUEST
+#cmakedefine ATK_USE_SIDRE
+#cmakedefine ATK_USE_SLAM
+#cmakedefine ATK_USE_SLIC
+#cmakedefine ATK_USE_SPIO
+
+
+
+
 
 #endif  // ATK_COMMON_CONFIG_CPP
 
