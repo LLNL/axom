@@ -179,6 +179,12 @@ public:
   void loadExternalData(sidre::DataGroup * group,
                         const std::string& root_file);
 
+
+  /*!
+   * \brief gets the number of files in the dataset from the specified root file
+   */ 
+  int getNumFilesFromRoot(const std::string& root_file);
+
 private:
 
   DISABLE_COPY_AND_ASSIGNMENT( IOManager );
@@ -193,7 +199,6 @@ private:
                               const std::string& root_name,
                               int rankgroup_id);
 
-  int getNumFilesFromRoot(const std::string& root_file);
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc

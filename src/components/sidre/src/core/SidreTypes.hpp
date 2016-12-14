@@ -33,7 +33,7 @@ namespace sidre
  */
 typedef conduit::Node Node;
 
- /*!
+/*!
  * \brief DataType is a general Conduit descriptor.
  */
 typedef conduit::DataType DataType;

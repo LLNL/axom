@@ -55,6 +55,8 @@ size_t SIDRE_databuffer_get_num_elements(const SIDRE_databuffer * self);
 
 size_t SIDRE_databuffer_get_total_bytes(const SIDRE_databuffer * self);
 
+size_t SIDRE_databuffer_get_bytes_per_element(const SIDRE_databuffer * self);
+
 void SIDRE_databuffer_print(const SIDRE_databuffer * self);
 
 #ifdef __cplusplus
