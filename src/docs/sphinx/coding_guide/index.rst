@@ -62,7 +62,7 @@ and help reduce user and developer errors.
    sec7_documentation
    sec8_design_implement
    sec9_format
-   sec10_error_handling
+   sec10_dev_macros
    sec11_portability
    references
 

@@ -10,12 +10,22 @@
 .. ##
 
 =======================================================
-10 Error Handling
+10 Code Development Macros
 =======================================================
 
-The guidelines in this section describe practices we want to follow in the
-CS Toolkit for error checking and generating useful messages that help users
-and developers use our code correctly.
+This section provides guidelines for consistent use of macros defined in the 
+"common" Toolkit component and in our build system that we use in day-to-day 
+code development.
+
+.. important:: Fill in this section with guidelines for using the macros
+
+
+------------------------------------
+Error handling
+------------------------------------
+
+Runtime checks for incorrect or questionable usage and generation of 
+informative messages that help users and developers use our code correctly.
 
 "Sanity checks" should be performed on values of function arguments
 (e.g., range checking, null pointer checking, etc.) upon entry to a function.
@@ -35,4 +45,26 @@ and developers use our code correctly.
             // ...function implementation...
          }
 
-.. important:: Fill in this section on guidelines for error handling, etc.
+
+------------------------------------
+Unused variables
+------------------------------------
+
+ATK_NOT_USED, etc.
+
+
+------------------------------------
+Disabling compiler generated methods
+------------------------------------
+
+DISABLE_COPY_AND_ASSIGNMENT
+
+
+------------------------------------
+Comditionally compiled code
+------------------------------------
+
+
+
+
+
