@@ -61,7 +61,7 @@ DISABLE_COPY_AND_ASSIGNMENT
 
 
 ------------------------------------
-Comditionally compiled code
+Conditionally compiled code
 ------------------------------------
 
 
