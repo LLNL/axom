@@ -1,18 +1,23 @@
-.. Toolkit documentation master file, created by
-   sphinx-quickstart on Fri Oct 23 13:13:18 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. ##
+.. ## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. ##
+.. ## Produced at the Lawrence Livermore National Laboratory.
+.. ##
+.. ## All rights reserved.
+.. ##
+.. ## This file cannot be distributed without permission and
+.. ## further review from Lawrence Livermore National Laboratory.
+.. ##
 
-ASC Toolkit
-===========
+The CS Toolkit
+================
 
-The principle goal of the Toolkit is to provide a collection of
-computer-science focused software components that can be shared by
-LLNL simulation code projects.  In particular, the Toolkit will
-support:
+The principle goal of the Toolkit is to provide a collection of robust
+and flexible software components that can be shared by LLNL simulation 
+code projects. In particular, the Toolkit team aims to support:
 
-  *  Next-generation ASC multi-physics simulation codes that target advanced computing platforms
-  *  Current production ASC and other LLNL code efforts and as they continue to evolve
+  *  The CS infrastructure foundation of the new ECP ATDM multi-physics application at LLNL
+  *  Current ASC and other production applications and as they continue to evolve
   *  LLNL research codes, proxy apps, etc.
 
 Useful links
@@ -23,20 +28,19 @@ Useful links
   * `Bamboo <https://lc.llnl.gov/bamboo/browse/ASC>`_
   * `ASCTOOLKIT-USERS mailing list <https://listserv.llnl.gov/Scripts/wa.exe?A0=ASCTOOLKIT-USERS>`_
   * `ASCTOOLKIT-DEV mailing list <https://listserv.llnl.gov/Scripts/wa.exe?A0=ASCTOOLKIT-DEV>`_
-  * `Coding Guidelines  <../../coding_guidelines_docs/html/index.html>`_
+  * `Coding Guidelines  <../../coding_guide/html/index.html>`_
 
-Components
+Component User Guides
 
-  *  Common 
   *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_
   *  Lumberjack (Scalable Message Filtering)
   *  Quest (Querying on Surfaces Tool)
   *  `Shroud (C++ API to C/Fortran)  <../../shroud_docs/html/index.html>`_
-  *  `Sidre: Simulation Data Repository (Datastore) <../../sidre_docs/html/index.html>`_
+  *  `Sidre: Simulation Data Repository <../../sidre_docs/html/index.html>`_
   *  Slam (Set-theoretic Lightweight API for Meshes)
   *  Slic (Simple Logging Interface Code)
 
-Doxygen
+Component Source Code Documentation
 
   *  `Common <../../../doxygen/common_doxygen/html/index.html>`_
   *  `Lumberjack <../../../doxygen/lumberjack_doxygen/html/index.html>`_
