@@ -65,7 +65,7 @@ using namespace asctoolkit;
 static const int NDIMS = 3;
 typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
-struct {
+static struct {
  std::string fileName;
  bool runN2Algorithm;
  double sphere_radius;
