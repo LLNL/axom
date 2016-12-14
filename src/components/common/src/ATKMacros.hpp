@@ -8,6 +8,8 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+#include "common/config.hpp"           // defines ATK_USE_CXX11
+
 /*!
  *******************************************************************************
  * \file ATKMacros.hpp
@@ -111,7 +113,7 @@
  * \endcode
  *******************************************************************************
  */
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
   className( const className & ) = delete;                                     \
   className& operator=(const className&) = delete

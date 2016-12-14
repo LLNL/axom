@@ -3,15 +3,14 @@
 #
 
 if( (CMAKE_CXX_STANDARD EQUAL 11) OR (CMAKE_CXX_STANDARD EQUAL 14) )
-    set(USE_CXX11 TRUE)
     set(ATK_USE_CXX11 TRUE)
 endif()
 
 
-## Add a configuration define for each library dependency 
+## Add a configuration define for each library dependency (optional and built-in)  
 ## that we might need to know about in the code
 
-set(DEPS_OPTIONS BOOST MPI OPENMP)              # vars of the form ENABLE_DEP
+set(DEPS_OPTIONS BOOST MPI OPENMP)             # vars of the form ENABLE_DEP
 foreach(dep in ${DEPS_OPTIONS})
     if( ENABLE_${dep} )
         set(ATK_USE_${dep} TRUE)
@@ -26,7 +25,7 @@ foreach(dep in ${DEPS_BUILTIN})
 endforeach()
 
 
-## Add a configuration define for each enabled component
+## Add a configuration define for each enabled toolkit component
 set(COMPS COMMON LUMBERJACK SLIC SLAM SIDRE MINT QUEST SPIO)
 foreach(comp in ${COMPS})
     if( ENABLE_${comp} )

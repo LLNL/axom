@@ -28,6 +28,7 @@
 #include "hdf5.h"
 
 // Other CS Toolkit headers
+#include "common/config.hpp"    // defines ATK_USE_CXX11
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -264,7 +265,7 @@ private:
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   DataStore( const DataStore& ) = delete;
   DataStore( DataStore&& ) = delete;
 

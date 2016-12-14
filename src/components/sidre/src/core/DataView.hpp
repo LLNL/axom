@@ -26,7 +26,7 @@
 #include <set>
 
 // Other CS Toolkit headers
-#include "common/config.hpp"
+#include "common/config.hpp"    // defines ATK_USE_CXX11
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -1133,7 +1133,7 @@ private:
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   DataView() = delete;
   DataView( DataView&& ) = delete;
 

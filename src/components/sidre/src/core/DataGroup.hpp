@@ -21,7 +21,7 @@
 #ifndef DATAGROUP_HPP_
 #define DATAGROUP_HPP_
 
-#include "common/config.hpp"
+#include "common/config.hpp"    // defines ATK_USE_CXX11
 
 // Standard C++ headers
 #include <memory>
@@ -47,7 +47,7 @@
 
 #if defined(USE_UNORDERED_MAP)
 //STL or Boost unordered_map, depending on
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
 #include <unordered_map>
 #else
 #include "boost/unordered_map.hpp"
@@ -1175,7 +1175,7 @@ private:
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   DataGroup( const DataGroup& source ) = delete;
   DataGroup( DataGroup&& source ) = delete;
 
@@ -1379,7 +1379,7 @@ private:
   // typedef std::map<std::string, IndexType> MapType;
   ///
 #if defined(USE_UNORDERED_MAP)
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   typedef std::unordered_map<std::string, IndexType> MapType;
 #else
   typedef boost::unordered_map<std::string, IndexType> MapType;

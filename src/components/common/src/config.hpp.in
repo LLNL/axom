@@ -11,9 +11,6 @@
 #ifndef ATK_COMMON_CONFIG_HPP
 #define ATK_COMMON_CONFIG_HPP
 
-
-#cmakedefine USE_CXX11
-
 // Compiler defines for libraries (built-in and third party)
 #cmakedefine ATK_USE_BOOST
 #cmakedefine ATK_USE_CONDUIT
