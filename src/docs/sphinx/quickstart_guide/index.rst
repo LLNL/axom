@@ -15,13 +15,13 @@ CS Toolkit Quick Start Guide
 This guide provides information to help CS Toolkit users and developers get 
 up and running quickly.
 
-It describes how to do the following:
+It describes how to:
 
   * Obtain, build and install third-party libraries that the Toolkit depends on
   * Configure, build and install the CS Toolkit component libraries
   * Compile and link an application with the Toolkit
 
-The following additional information about the CS Toolkit, can be found here
+The following additional information about the CS Toolkit, can be found on the
 `CS Toolkit Web Page <https://lc.llnl.gov/toolkit/docs/sphinx/web_docs/html/index.html>`_:
 
   * Build system
