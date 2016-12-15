@@ -77,9 +77,9 @@ several good source of information available on the web:
   * The e-book `Pro Git, by Scott Chacon <https://git-scm.com/book/en/v2>`_ is an excellent overview guide to using Git effectively.
 
 To make Git easier to work with, you can define aliases in your shell
-environment to do things like set your prompt to show which branch you are on.
-If you are a csh/tcsh user, for example, you can add the following to the
-file (e.g., .cshrc) that defines your profile::
+environment to do things like modify your prompt to show which git branch you
+are on. If you are a csh/tcsh user, for example, you can add the following to
+the file (e.g., .cshrc) that defines your profile::
 
    alias __git_current_branch 'git rev-parse --abbrev-ref HEAD >& /dev/null && echo "{`git rev-parse --abbrev-ref HEAD`}"'
    alias precmd 'set prompt="%n@%m>`__git_current_branch` "'
@@ -235,10 +235,10 @@ branch). The second section is the version in the develop branch. To resolve
 the conflict, choose the correct version of contents you want and delete the
 other lines. 
 
-Alternatively, you can use a tool to help resolve your conflicts. There is 
-the 'git mergetool' command and the "meld" tool, which is very powerful and 
-intuitive). Diff tools like "tkdiff" are also helpful for resolving merge 
-conflicts.
+Alternatively, you can use a tool to help resolve your conflicts. The 
+'git mergetool' command helps you run a merge tool. One such tool is the 
+"meld" tool, which is very powerful and intuitive. Diff tools like "tkdiff" 
+are also helpful for resolving merge conflicts.
 
 .. important:: **Git will not let you commit a file with merge conflicts.**
 
@@ -389,7 +389,7 @@ helpful information. The main issues we use regularly are:
   * **Description.** The description field should be used to include important
     details about the issue that will help the developer who will work on it.
 
-Other fields that appear may be used also if you think they will help
+You may also use the other fields that appear if you think they will help
 describe the issue. However, the team seldom uses fields apart from the list
 above.
 
@@ -448,7 +448,7 @@ code health monitoring tasks.
 
 Bamboo Agent Notes
 ^^^^^^^^^^^^^^^^^^^
-The Bamboo server is going to hand the scripts to it's associated 'agents' on the various clusters.  
+The Bamboo server hands our scripts to it's associated 'agents' on the various clusters.
 Each bamboo agent needs to be approved by an LC Atlassian admin in order to start executing Bamboo plans.  
 The Atlassian admin will take care of associating your approved agent with your project and plan(s).
 
@@ -460,23 +460,29 @@ Restarting the Agent:
   $ cd /g/g16/atk/bambooAgent/asctoolkit.cab.llnl.gov
   $ ./bin/bamboo-agent.sh stop/start
 
-.. note :: **The reason why we ssh cab687 was that the agent was first created on node cab687, 
-           when the agent was approved for the first time, it was started from cab687. 
-           If the agent is re-started later from a different node, it would required approval 
-           from Admin again which is undesirable.
-           The rz agent is located on rzalastor1, toss 3 rz agent is located on rzgenie2.**
+.. note :: **The reason why we ssh to cab687 is that the agent was first 
+           created on and approved to run on that specific node. Admin 
+           approval is needed to re-start the agent on a different node,
+           so please only re-start on cab687. Similarly, our RZ agent is
+           approved to run on rzalastor1, and our TOSS 3 RX agent is approved
+           to run on rzgenie2.**
 
-There are crontab jobs on rz and cz to restart the agents every hour. On rz::
+There are cron jobs on CZ and RZ that attempt to restart our agents every hour. 
 
- $ ssh rzalastor1 xsu atk
- $ /g/g16/atk/bamboo
- $ crontab -l rzcrontab.txt 
 
-On cz::
+You can view the cron jobs on the CZ using::
 
  $ ssh cab687 xsu atk
  $ /g/g16/atk/bamboo
  $ crontab -l czcrontab.txt 
+
+
+
+And you can view the jobs on the RZ using::
+
+ $ ssh rzalastor1 xsu atk
+ $ /g/g16/atk/bamboo
+ $ crontab -l rzcrontab.txt 
 
 
 

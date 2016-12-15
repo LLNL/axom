@@ -44,8 +44,9 @@ We maintain two email lists: 'asctoolkit-dev@llnl.gov'
 `LLNL E-Mail List Manager Site <https://lists.llnl.gov>`_ to subscribe to
 these lists.
 
-We also have a chat room on Cisco Jabber called 'CS Toolkit Dev'. It's open
-to anyone. You just have to log on to Jabber and join.
+We also have a chat room on LLNL's Cisco Jabber instance called 
+'CS Toolkit Dev'. It's open to anyone. You just have to log on to Jabber and 
+join.
 
 
 .. _gitflow-label:
@@ -235,12 +236,12 @@ to manage dependencies on the CS Toolkit.
 Code Reviews and Acceptance
 ======================================================
 
-Before any code may be merged into the develop or master branches, it
+Before any code is merged into the develop or master branches, it
 must be tested, reviewed, and accepted. Submitting a pull request on
 the Toolkit Bitbucket project to merge a branch into develop or master 
 initiates the test and review processes. All builds and tests must pass 
 for a pull request to be approved. Also, it is expected that unit tests 
-be constructed to exercise any new functionality that is introduced. This 
+are constructed to exercise any new functionality that is introduced. This 
 will be assessed by reviewers of each pull request. See :ref:`testing-label` 
 for more information about testing.
 
@@ -285,20 +286,20 @@ other tools. In particular :
 Pull Request Summary
 ---------------------
 
-  #. When code is ready to be considered for acceptance, submit a pull request
-     on the CS Toolkit Bitbucket project. Identify appropriate reviewers 
-     when the pull request is created.
+  #. When code is ready to be considered for acceptance, create a pull request
+     on the CS Toolkit Bitbucket project. Identify the appropriate reviewers 
+     and add them to the pull request.
 
   #. Code must build successfully and all relevant tests must pass, including
      new tests required for new functionality.
 
   #. All issues (build failures, test failures, reviewer requests) must be 
-     addressed before a pull request will be approved for acceptance.
+     addressed before a pull request is accepted.
 
-  #. Pull requests must be approved by one member of development team other
-     than the pull request originator.
+  #. Pull requests must be approved by at least one member of development 
+     team other than the pull request originator.
 
-  #. When pull request is approved it may be merged. If the merged branch is
+  #. When a pull request is approved it may be merged. If the merged branch is
      no longer needed, it should be deleted. This can be done when merging
      with Bitbucket. 
 
