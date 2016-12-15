@@ -34,7 +34,7 @@ Basic requirements:
 
   * C++ 98/11
   * CMake 3.1.2
-  * Fortran (Optional)
+  * Fortran (optional)
 
 
 Compilers we support:
@@ -49,8 +49,10 @@ Package Dependencies:
 
 .. danger::
   Instead of this exhaustive list (which will go stale fast), the more important things to list are the 
-  the TPLs we directly use and the  **ZZZ_DIR**, **ZZZ_EXECUTABLE**, etc  
-  cmake args we use to pull those TPLS in our build system. For example, folks really don't need to know that Bison is used, we have no logic for it in our build system. It actually it may only be needed due to some spack dependency chain that could change over time. If people do want to know this info, we could point them 
+  TPLs we directly use and the cmake arguments (e.g. **ZZZ_DIR**, **ZZZ_EXECUTABLE**)  
+  that we use to pull those TPLS in our build system. For example, folks really don't need to know that Bison is used, 
+  we have no logic for it in our build system. It actually may only be needed due to some spack dependency chain 
+  that could change over time. If people do want to know this info, we could point them 
   a few spack commands that could show whatever the current deps are (I don't know what those commands are off hand)
 
 
@@ -128,12 +130,12 @@ Building and Installing Third-party Libraries
 We use the `Spack Package Manager <https://github.com/scalability-llnl/spack>`_ 
 to manage and build TPL dependencies for the Toolkit. To make the TPL process
 easier (you don't really need to learn much about Spack) and automatic, we 
-drive it with a python script called ``uberenv.py``, which located in the 
-directory ``scripts/uberenv``. Running this script does several things:
+drive it with a python script called ``uberenv.py``, which is located in the 
+``scripts/uberenv`` directory. Running this script does several things:
 
   * Clones the Spack repo from GitHub and checks out a specific version that we have tested.
   * Configures Spack compiler sets, adds custom package build rules and set any options specific to the Toolkit. 
-  * Invokes Spack to build a complete set of TPLs for a configuration an generates a *host-config* file,
+  * Invokes Spack to build a complete set of TPLs for a configuration and generates a *host-config* file,
     that captures all details of the configuration and the built dependencies.
 
 The figure illustrates what the script does.
@@ -195,7 +197,7 @@ TPLs for the Toolkit development team on LLNL's LC platforms. These scripts are 
 the directory ``scripts/uberenv/llnl_install_scripts``. 
 
 The 'mirror' argument provides a location for Spack to store the downloaded source code for TPL dependencies. When
-building more than one installation of the TPLs, using a mirror will allow Spack to skip downloads for source code that was already already obtained during a prior build. 
+building more than one installation of the TPLs, using a mirror will allow Spack to skip downloads for source code that was already obtained during a prior build. 
 
 When the 'create-mirror' argument is used, ``uberenv.py`` establishes a Spack mirror and downloads the source for all TPL dependencies into this mirror. It does not build any TPLs. This option is used to obtain a copy of source code for all necessary TPLs so it can be transfered to another system for builds.
 
@@ -252,6 +254,12 @@ in the install directory, go into the build directory and run ``make``; e.g.,::
    $ make
    $ make install
 
+.. caution :: When building on LC systems, please don't compile on login nodes.
+
+.. tip :: Most make targets can be run in parallel by supplying the '-j' flag 
+           along with the number of threads to use.  
+           E.g. ``$ make -j8`` runs make using 8 threads. 
+
 The python helper script accepts other arguments that allow you to specify
 explicitly the build and install paths and build type. Following CMake 
 conventions, we support three build types: 'Release', 'RelWithDebInfo', and 
@@ -259,6 +267,13 @@ conventions, we support three build types: 'Release', 'RelWithDebInfo', and
 i.e.,::
 
    $ ./scripts/config-build.py 
+
+You can also pass extra CMake configuration variables through the script; e.g.,::
+  
+   $ ./scripts/config-build.py -hc {host-config file name} \
+                               -DBLT_CXX_STD=c++98 -DENABLE_FORTRAN=OFF
+
+This will set the C++ compiler mode to C++98 and disable fortran for the generated configuration. 
 
 
 Run CMake directly
@@ -278,7 +293,7 @@ build with the gcc compiler, you could pass a host-config file to CMake::
    $ make install
 
 Alternatively, you could forego the host-config file entirely and pass all the 
-argeuments you need to CMake; for example:: 
+arguments you need directly to CMake; for example:: 
 
    $ mkdir build-gcc-release
    $ cd build-gcc-release
@@ -303,7 +318,8 @@ CMake options
 +-----------------------------------+-------------------------------+--------+
 |OPTION                             |   Description                 | Default|
 +===================================+===============================+========+
-|ENABLE_ALL_COMPONENTS              |Enables all components         |  ON    |
+|ENABLE_ALL_COMPONENTS              |Enable all components          |  ON    |
+|                                   |by default                     |        |
 +-----------------------------------+-------------------------------+--------+
 |ENABLE_ALL_WARNINGS                |Enable extra compiler warnings |  ON    | 
 |                                   |in all build targets           |        |
@@ -315,8 +331,6 @@ CMake options
 |ENABLE_CFORTRAN_API                |Enable C to Fortran interface  |  ON    |
 +-----------------------------------+-------------------------------+--------+
 |ENABLE_CODECOV                     |Enable code coverage via gcov  |  ON    |
-+-----------------------------------+-------------------------------+--------+
-|ENABLE_CXX11                       |Enable C++11 language support  |  ON    | 
 +-----------------------------------+-------------------------------+--------+
 |ENABLE_FORTRAN                     |Enable Fortran compiler        |  ON    |
 |                                   |support                        |        |
@@ -334,10 +348,18 @@ CMake options
 |                                   |errors.                        |        |
 +-----------------------------------+-------------------------------+--------+
 
+If 'ENABLE_ALL_COMPONENTS' is OFF, you must explicitly enable the desired
+components (other than 'common', which is always enabled).
+
+.. note :: To configure the version of the C++ standard, you can supply one of the 
+           following values for **BLT_CXX_STD**:  'c++98', 'c++11' or 'c++14'.  
+           The default is 'c++11'.
+
+
 .. danger:: 
-    We are going to pull out boost, but if we kept it in - we should simply support
-    via BOOST_DIR, not ENABLE_BOOST + BOOST_ROOT
-    
+    We are only using headers from the boost library. 
+    We should modify how these are set to use the BOOST_DIR variable 
+    rather than through the combination of ENABLE_BOOST + BOOST_ROOT
 
 
 CMake Options used to include Third-party Libraries:
@@ -368,7 +390,7 @@ CMake Options used to enable Software Development Tools (should these go in BLT 
 
 
 .. danger::
-    TODO: LCOV_PATH, GENHTML_PATH, GCOV_PATH  -- these aren't named consistently (_EXECUTABLE suffix?) 
+    TODO: LCOV_PATH, GENHTML_PATH, GCOV_PATH  -- aren't named consistently (_EXECUTABLE suffix?) 
 
 
 

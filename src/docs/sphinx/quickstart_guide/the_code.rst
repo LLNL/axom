@@ -14,7 +14,7 @@ The Code
 ======================================================
 
 Our Git repository contains the Toolkit source code, documentation, test 
-suites, and all files and scripts used for configuring and building the code.
+suites and all files and scripts used for configuring and building the code.
 The repo lives in our 
 `CZ Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 
@@ -34,7 +34,8 @@ SSH keys
 ^^^^^^^^^
 
 If you have not used Bitbucket before, you will need to
-`create an SSH key <https://confluence.atlassian.com/bitbucketserver/creating-ssh-keys-776639788.html>`_ and `add the key to your Bitbucket profile <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_.
+`create an SSH key <https://confluence.atlassian.com/bitbucketserver/creating-ssh-keys-776639788.html>`_ 
+and `add the key to your Bitbucket profile <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_.
 
 Cloning the repo
 ^^^^^^^^^^^^^^^^^^
@@ -72,8 +73,8 @@ The top-level CS Toolkit directory contains three directories:
 
 Within the **src** directory, you will find the following directories:
 
-  * **blt** - BLT build system is cloned here where the repo is cloned
-  * **cmake** - Toolkit-specific CMake customizations
+  * **blt** - BLT build system submodule is cloned here
+  * **cmake** - Toolkit-specific CMake customizations to BLT build system
   * **components** - files for individual Toolkit components
   * **docs** - general Toolkit documentation files
   * **thirdparty** - tests to make sure TPLs are built properly
