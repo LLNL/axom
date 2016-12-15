@@ -29,13 +29,13 @@ Good names are clear and meaningful
 be clear to other code developers and users, not just the author of the name.
 
       A substantial benefit of good name selection is that it can greatly
-      reduce the amount of developer debate to define a concepts. A good name
+      reduce the amount of developer debate to define a concept. A good name
       also tends to reduce the amount of documentation required for others to
       understand it. For example, when the name of a function clearly indicates
       what it does and the meaning and purpose of each argument is clear from
-      its name, then code comments may be unnecessary. Documentation is
+      its name, then code comments may be unnecessary. Documentation 
       can be a substantial part of software and requires maintenance. 
-      Minimizing the amount of documentation required reduces this burden.
+      Minimizing the amount of required documentation reduces this burden.
 
 ------------------------------------
 Avoid cryptic names
@@ -208,11 +208,12 @@ is preferred.
 2.17 Names of related functions, such as methods for a class, **should** 
 follow the same style.
 
-.. note:: **Exception:** While consistency is important, name style may be 
-          mixed when it makes sense to do so. For example, most methods for 
-          a class may follow camelCase style. But, that same class may also 
-          contain methods that follow pot_hole style if those methods perform 
-          operations that are similar to C++ standard library functions.
+.. note:: 
+        **Exception:**  While consistency is important, name style may be 
+        mixed when it makes sense to do so. For example, most methods for 
+        a class may follow camelCase style. But, that same class may also 
+        contain methods that follow pot_hole style if those methods perform 
+        operations that are similar to C++ standard library functions.
 
       For example, the following method names are acceptable for a class with
       camelCase style names::
@@ -231,7 +232,7 @@ function does.
 
       For example::
 
-        calculate Density(), getDensity()
+        calculateDensity(), getDensity()
 
       are good function names because they distinguish the fact that the
       first performs a calculation and the second returns a value. If a
@@ -328,7 +329,7 @@ Macro and enumeration name format
 ------------------------------------
 
 2.27 Preprocessor macro constants **must** be named using all uppercase 
-letters and underscores should be used between words.
+letters and underscores **should** be used between words.
 
       For example, these are acceptable macro names::
 
