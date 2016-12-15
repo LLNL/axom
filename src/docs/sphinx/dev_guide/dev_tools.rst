@@ -18,7 +18,7 @@ Software Development Tools and Usage
 We use a variety of tools for software development. Our tool philosophy has
 three main tenets:
 
-  * Employ robust, commonly-used tools - don't re-invent something that already exists
+  * Employ robust, commonly-used tools. Don't re-invent something that already exists
   * Apply tools in ways that are easy for non-experts
   * Strive for automation and reproducibility
 
@@ -36,9 +36,9 @@ in the sections that follow.
 Build, Link, Triumph (BLT)
 --------------------------
 
-Our build system, called *BLT*, is maintained in its own repo in our 
+Our build system, called *BLT*, is maintained in `its own repo <https://lc.llnl.gov/bitbucket/projects/ATK/repos/blt/browse>`_ in our 
 Bitbucket project. BLT provides a "common sense" setup based on CMake for 
-configuring and builg the Toolkit code. It also enables software development 
+configuring and building the Toolkit code. It also enables software development 
 tool integration via *make targets*. BLT has built-in support for the following
 tools, all of which we use for Toolkit development:
 
@@ -49,7 +49,7 @@ tools, all of which we use for Toolkit development:
 
 See **BLT documentation (add link)** for more information.  
 
-We use `Spack <https:://github.com/LLNL/spack>`_ to manage and build the 
+We use `Spack <https://github.com/LLNL/spack>`_ to manage and build the 
 third-party libraries on which the Toolkit depends.
 
 The Toolkit **Quick Start Guide (add link)** describes how to build the
@@ -128,7 +128,7 @@ More about the Git hooks later.
 Performing topic branch development
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It is worth re-emphasizing a fundamental fundamental principle of the Gitflow 
+It is worth re-emphasizing a fundamental principle of the Gitflow 
 development model that we described in :ref:`gitflow-label`.
 
 .. important:: **We never work directly on the develop or master branches. 
@@ -260,7 +260,7 @@ request.
 When your pull request is approved (see :ref:`review-label` for more 
 information), you merge your changes to the develop branch by clicking the 
 "merge" button in Bitbucket. If there are no merge conflicts, the merge will 
-proceed and you are done. If there are conflict, Bitbucket will tell you
+proceed and you are done. If there are conflicts, Bitbucket will tell you
 before you try to merge.
 
 If there are conflicts, Bitbucket will not allow the merge to proceed. 
@@ -283,8 +283,8 @@ Lastly, complete the merge in Bitbucket by clicking the merge button.
 
 .. important:: **To keep things tidy, please delete your topic branch in 
                Bitbucket after it is merged if you no longer need it for 
-               further development. Bitbucket also provides to click on to 
-               do this after the merge is complete.**
+               further development. Bitbucket also provides a button to click  
+               on to do this after the merge is complete.**
 
 Checking out an existing branch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -302,9 +302,10 @@ The 'fetch' command retrieves new work committed by others on branches you may
 have checked out, but *without merging* those changes into your local
 copies of those branches. The 'branch' command lists all available remote 
 branches. The 'checkout' command checks out
-the specified branch into your local working space. **Note that you do not
-give the '-b' option when checking out an existing branch.** The option is
-only used when creating a new branch.
+the specified branch into your local working space. 
+
+.. note:: **You do not give the '-b' option when checking out an existing branch. 
+          This option is only used when creating a new branch.**
 
 Here is a concrete example::
   
@@ -358,7 +359,7 @@ Creating a new issue
 
 To create a new issue, click the 'Create' button at the top of the CS Toolkit
 JIRA project page and enter information in the issue fields. Filling in the
-fileds properly greatly helps other team members search through project issues
+fields properly greatly helps other team members search through project issues
 to find what they are looking for. Note that issue fields marked with a red 
 asterisk are required. The others are not required, but may be used to include 
 helpful information. The main issues we use regularly are:
@@ -417,8 +418,6 @@ When closing an issue, adding information to the 'Comment' field may be
 helpful. For example, when an issue is closed as 'Won't Fix', it is helpful to
 enter a brief explanation as to why this is so.
 
-.. note :: BLT is supported as a standalone product and used by other 
-           software projects.
 
 Issue assignee
 ^^^^^^^^^^^^^^^
@@ -449,16 +448,23 @@ code health monitoring tasks.
 
 Bamboo Agent Notes
 ^^^^^^^^^^^^^^^^^^^
-The Bamboo server is going to hand the scripts to it's associated 'agents' on the various clusters.  Each bamboo agent needs to be approved by an LC Atlassian admin in order to start executing Bamboo plans.  The Atlassian admin will take care of associating your approved agent with your project and plan(s)
+The Bamboo server is going to hand the scripts to it's associated 'agents' on the various clusters.  
+Each bamboo agent needs to be approved by an LC Atlassian admin in order to start executing Bamboo plans.  
+The Atlassian admin will take care of associating your approved agent with your project and plan(s).
 
 Restarting the Agent:
- On occasion, the agent can die.  This results in bamboo jobs being queued and stalled until the agent is restarted.  You must have access to the toolkit 'ATK' user to restart the agent.::
+ On occasion, the agent can die.  This results in bamboo jobs being queued and stalled until the agent is restarted.  
+ You must have access to the toolkit 'ATK' user to restart the agent. ::
 
   $ ssh cab687 xsu atk
   $ cd /g/g16/atk/bambooAgent/asctoolkit.cab.llnl.gov
   $ ./bin/bamboo-agent.sh stop/start
 
-.. note :: **The reason why we ssh cab687 was that the agent was first created on node cab687, when the agent was approved for the first time, it was started from cab687. If the agent is re-started later from a different node, it would required approval from Admin again which is undesirable.The rz agent is located on rzalastor1, toss 3 rz agent is located on rzgenie2.  **
+.. note :: **The reason why we ssh cab687 was that the agent was first created on node cab687, 
+           when the agent was approved for the first time, it was started from cab687. 
+           If the agent is re-started later from a different node, it would required approval 
+           from Admin again which is undesirable.
+           The rz agent is located on rzalastor1, toss 3 rz agent is located on rzgenie2.**
 
 There are crontab jobs on rz and cz to restart the agents every hour. On rz::
 

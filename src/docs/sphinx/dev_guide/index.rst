@@ -28,8 +28,9 @@ should be agreed to by team members after assessing their merits using
 their collective professional judgment. When changes are made, this guide
 should be updated accordingly.
 
-This guide is generated using Sphinx and is written in the *reStructuredText* 
-markup language. The document source lives in the CS Toolkit source code 
+This guide is generated using Sphinx and is written in the 
+`reStructuredText <http://docutils.sourceforge.net/rst.html>`_ markup language. 
+The document source lives in the CS Toolkit source code 
 repository. You can build it from source by using the proper make system 
 target::
 

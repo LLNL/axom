@@ -23,9 +23,9 @@ performed that are not covered in earlier sections.
 Web Documentation
 ------------------
 
-Buils and install web documentation...
+Build and install web documentation...
 
-Shared LC web content location...asctoolkit/src/docs/sphinx/web
+Shared LC web content location asctoolkit/src/docs/sphinx/web
 
 
 ------------------------------------

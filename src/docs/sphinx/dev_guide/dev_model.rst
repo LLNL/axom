@@ -17,10 +17,10 @@ The CS Toolkit team uses an agile, sprint-based development process where
 we target a set of development tasks for each release. We also employ a 
 variety of tools to manage our workflow and software development. This guide
 contains descriptions of our processes and information about how we use tools 
-and getting started with them.
+and about getting started with them.
 
 The CS Toolkit Git repository lives in a
-`Bitbucket project <https://https://lc.llnl.gov/bitbucket/projects/ATK>`_
+`Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_
 on the Livermore Computing CZ Atlassian Space. The repository is the central
 interaction hub for CS Toolkit code development.
 
@@ -55,7 +55,7 @@ Gitflow Branching Model
 ======================================================
 
 The CS Toolkit team follows the 'Gitflow' branch development model, which is
-summarized here. See the `Atlassian Gitflow Description <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_ for more details.
+summarized in this section. See the `Atlassian Gitflow Description <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_ for more details.
 
 Gitflow is a branching model centered around software releases. It is a simple 
 workflow that makes clear which branches correspond to which phases of 
@@ -168,7 +168,7 @@ The CS Toolkit team follows the *semantic* versioning scheme for assigning
 release numbers. Semantic versioning is a methodology for assigning version 
 numbers to software releases in a way that conveys specific meaning about 
 the code and modifications from version to version. 
-See `Semantic Versioning <semen.org>`_ for a more detailed description.
+See `Semantic Versioning <http://semver.org>`_ for a more detailed description.
 
 ----------------------------
 Version Numbers and Meaning
@@ -207,7 +207,7 @@ conventions followed when using semantic versioning are:
 
   * Once a version of the software is released, the contents of the release 
     *must not* change. If the software is modified, it *must* be released
-    as as a new version.
+    as a new version.
   * A major version number of zero (i.e., `0.mm.pp`) is considered initial 
     development where anything may change. The API is not considered stable.
   * Version `1.0.0` defines the first stable public API. Version number 
@@ -250,7 +250,7 @@ request. It is recommended to have several team members review pull
 requests, especially when changes affect APIs. Pull request reviewers can be 
 selected on Bitbucket when the pull request is created. Changes reviewed by 
 the team are accepted, rejected, or commented on for improvement; e.g., 
-issues to be addressed, suggested changes, etc. Pull requests can be undated
+issues to be addressed, suggested changes, etc. Pull requests can be updated
 with additional changes as needed. When a pull request is approved, it can 
 be merged. If the merged branch is no longer needed for development, it 
 should be deleted.
