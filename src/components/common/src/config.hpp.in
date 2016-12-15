@@ -17,8 +17,6 @@
 #cmakedefine ATK_USE_CXX11
 #cmakedefine ATK_USE_FMT
 #cmakedefine ATK_USE_HDF5
-#cmakedefine ATK_USE_MPI
-#cmakedefine ATK_USE_OPENMP
 #cmakedefine ATK_USE_SPARSEHASH
 
 

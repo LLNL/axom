@@ -7,10 +7,12 @@ if( (CMAKE_CXX_STANDARD EQUAL 11) OR (CMAKE_CXX_STANDARD EQUAL 14) )
 endif()
 
 
-## Add a configuration define for each library dependency (optional and built-in)  
-## that we might need to know about in the code
+## Add a definition to the generated config file for each library dependency   
+## (optional and built-in) that we might need to know about in the code
+## Note: BLT adds USE_MPI and USE_OPENMP as compile define flags for targets
+##       that are configured with MPI and OPENMP, respectively.
 
-set(DEPS_OPTIONS BOOST MPI OPENMP)             # vars of the form ENABLE_DEP
+set(DEPS_OPTIONS BOOST )                       # vars of the form ENABLE_DEP
 foreach(dep in ${DEPS_OPTIONS})
     if( ENABLE_${dep} )
         set(ATK_USE_${dep} TRUE)
