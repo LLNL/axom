@@ -53,15 +53,15 @@ and help reduce user and developer errors.
 .. toctree::
    :maxdepth: 3
 
-   sec1_changing_code
-   sec2_names
-   sec3_dirorg
-   sec4_headerorg
-   sec5_sourceorg
-   sec6_scope
-   sec7_documentation
-   sec8_design_implement
-   sec9_format
+   sec01_changing_code
+   sec02_names
+   sec03_dirorg
+   sec04_headerorg
+   sec05_sourceorg
+   sec06_scope
+   sec07_documentation
+   sec08_design_implement
+   sec09_format
    sec10_dev_macros
    sec11_portability
    references
