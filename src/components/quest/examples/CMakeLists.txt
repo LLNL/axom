@@ -43,11 +43,16 @@ blt_add_executable(
 
 if (ENABLE_MPI)
 
+  set(quest_interface_extra_depends)
+  if (ENABLE_LUMBERJACK)
+    list(APPEND quest_interface_extra_depends lumberjack)
+  endif()
+
   blt_add_executable( 
     NAME        quest_interface 
     SOURCES     quest_interface.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${quest_example_depends}
+    DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
     )
     
   if (ENABLE_FORTRAN)                    

@@ -12,21 +12,29 @@
 
 // Quest includes
 #include "common/CommonTypes.hpp"
-#include "quest/STLReader.hpp"
-#include "quest/SignedDistance.hpp"
-
-#include "quest/BoundingBox.hpp"
-#include "quest/InOutOctree.hpp"
+#include "common/ATKMacros.hpp"
 
 #include "slic/slic.hpp"
 
-
 #ifdef USE_MPI
-  #include "quest/PSTLReader.hpp"
-  #include "slic/LumberjackStream.hpp"
+  #ifdef ATK_USE_LUMBERJACK
+    #include "slic/LumberjackStream.hpp"
+  #else
+    #include "slic/SynchronizedStream.hpp"
+  #endif
 #else
   #include "slic/GenericOutputStream.hpp"
 #endif
+
+#include "quest/BoundingBox.hpp"
+#include "quest/InOutOctree.hpp"
+#include "quest/SignedDistance.hpp"
+
+#include "quest/STLReader.hpp"
+#ifdef USE_MPI
+  #include "quest/PSTLReader.hpp"
+#endif
+
 
 namespace quest
 {
@@ -297,13 +305,19 @@ namespace quest
             slic::flushStreams();
             if( ! slic::activateLogger(questLoggerName) )
             {
+              slic::LogStream* ls;
+
               #ifdef USE_MPI
-                const int RLIMIT = 8;
                 std::string fmt = "[<RANK>][Quest <LEVEL>]: <MESSAGE>\n";
-                slic::LogStream* ls = new slic::LumberjackStream( &std::cout, comm, RLIMIT, fmt );
+                #ifdef ATK_USE_LUMBERJACK
+                  const int RLIMIT = 8;
+                  ls = new slic::LumberjackStream( &std::cout, comm, RLIMIT, fmt);
+                #else
+                  ls = new slic::SynchronizedStream( &std::cout, comm, fmt );
+                #endif
               #else
-                std::string fmt = "[Quest <LEVEL>]: <MESSAGE>";
-                slic::LogStream* ls = new slic::GenericOutputStream(&std::cout, fmt);
+                std::string fmt = "[Quest <LEVEL>]: <MESSAGE>\n";
+                ls = new slic::GenericOutputStream(&std::cout, fmt);
               #endif
                 slic::createLogger(questLoggerName, slic::inherit::errors_and_warnings);
                 slic::activateLogger(questLoggerName);
