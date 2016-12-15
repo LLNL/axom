@@ -1428,22 +1428,13 @@ void DataGroup::load(const hid_t& h5_id,
  *
  *************************************************************************
  */
-void DataGroup::loadExternalData(const std::string& path,
-                                 const std::string& protocol)
+void DataGroup::loadExternalData(const std::string& path)
 {
-
-  if (protocol == "sidre_hdf5")
-  {
-    Node n;
-    createExternalLayout(n);
-    // CYRUS'-NOTE, not sure ":" will work with multiple trees per
-    // output file
-    conduit::relay::io::hdf5_read( path + ":sidre/external", n);
-  }
-  else
-  {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
-  }
+  Node n;
+  createExternalLayout(n);
+  // CYRUS'-NOTE, not sure ":" will work with multiple trees per
+  // output file
+  conduit::relay::io::hdf5_read( path + ":sidre/external", n);
 }
 
 /*

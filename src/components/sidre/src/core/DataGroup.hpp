@@ -1126,6 +1126,13 @@ public:
    *    conduit_json
    *    json
    *
+   *   There are two overloaded versions for each of save, load, and
+   *   loadExternalData.  The first of each takes a file path and is intended
+   *   for use in a serial context and can be called directly using any
+   *   of the supported protocols.  The second takes an hdf5 handle that
+   *   has previously been created by the calling code.  These mainly exist
+   *   to handle parallel I/O calls from the SPIO component.  They can only
+   *   take the sidre_hdf5 or conduit_hdf5 protocols.
    */
 
   /*!
@@ -1134,12 +1141,17 @@ public:
    *  Saves the tree starting at this group and the buffers used by the views
    *  in this tree.
    *
+   *  \param path      file path
+   *  \param protocol  I/O protocol
    */
   void save( const std::string& path,
              const std::string& protocol = "sidre_hdf5") const;
 
   /*!
    * \brief Save the Group to an hdf5 handle.
+   *
+   * \param h5_id      hdf5 handle
+   * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
    */
   void save( const hid_t& h5_id,
              const std::string &protocol = "sidre_hdf5") const;
@@ -1147,12 +1159,17 @@ public:
 
   /*!
    * \brief Load the Group from a file.
+   *
+   * \param path      file path
+   * \param protocol  I/O protocol
    */
   void load(const std::string& path,
             const std::string& protocol = "sidre_hdf5");
 
   /*!
    * \brief Load the Group from an hdf5 handle.
+   * \param h5_id      hdf5 handle
+   * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
    */
   void load( const hid_t& h5_id,
              const std::string &protocol = "sidre_hdf5");
@@ -1160,12 +1177,21 @@ public:
 
   /*!
    * \brief Load data into the Group's external views from a file.
+   *
+   * No protocol argument is needed, as this only is used with the sidre_hdf5
+   * protocol.
+   *
+   * \param path      file path
    */
-  void loadExternalData(const std::string& path,
-                        const std::string& protocol);
+  void loadExternalData(const std::string& path);
 
   /*!
    * \brief Load data into the Group's external views from a hdf5 handle.
+   *
+   * No protocol argument is needed, as this only is used with the sidre_hdf5
+   * protocol.
+   *
+   * \param h5_id      hdf5 handle
    */
   void loadExternalData(const hid_t& h5_id);
 

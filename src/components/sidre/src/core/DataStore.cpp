@@ -292,54 +292,6 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
           : InvalidIndex);
 }
 
-/*
- *************************************************************************
- *
- * Copy Buffer descriptions and Group tree, starting at root, to given
- * Conduit node.
- *
- *************************************************************************
- */
-void DataStore::copyToConduitNode(Node& n) const
-{
-  m_RootGroup->copyToConduitNode(n["DataStore/root"]);
-
-  IndexType bidx = getFirstValidBufferIndex();
-  while ( indexIsValid(bidx) )
-  {
-    Node& b = n["DataStore/buffers"].append();
-    m_data_buffers[bidx]->copyToConduitNode(b);
-
-    bidx = getNextValidBufferIndex(bidx);
-  }
-}
-
-
-/*
- *************************************************************************
- *
- * Copy DataStore native layout, starting at root, to given Conduit node.
- *
- *************************************************************************
- */
-void DataStore::createNativeLayout(Node& n) const
-{
-  m_RootGroup->createNativeLayout(n);
-}
-
-
-/*
- *************************************************************************
- *
- * Copy DataStore native external layout, starting at root, to given Conduit node.
- *
- *************************************************************************
- */
-void DataStore::createExternalLayout(Node& n) const
-{
-  m_RootGroup->createExternalLayout(n);
-}
-
 
 /*
  *************************************************************************
@@ -365,85 +317,8 @@ void DataStore::print() const
 void DataStore::print(std::ostream& os) const
 {
   Node n;
-  copyToConduitNode(n);
+  m_RootGroup->copyToConduitNode(n);
   n.to_json_stream(os);
-}
-
-/*
- *************************************************************************
- *
- * Save Group (including Views and child Groups) to a file
- *
- *************************************************************************
- */
-void DataStore::save(const std::string& file_path,
-                     const std::string& protocol) const
-{
-  getRoot()->save(file_path,protocol);
-}
-
-/*
- *************************************************************************
- *
- * Save Group (including Views and child Groups) to a hdf5 handle
- *
- *************************************************************************
- */
-void DataStore::save(const hid_t& h5_id) const
-{
-  getRoot()->save(h5_id);
-}
-
-/*************************************************************************/
-
-/*
- *************************************************************************
- *
- * Load Group (including Views and child Groups) from a file
- *
- *************************************************************************
- */
-void DataStore::load(const std::string& file_path,
-                     const std::string& protocol)
-{
-  getRoot()->load(file_path,protocol);
-}
-
-/*
- *************************************************************************
- *
- * Load Group (including Views and child Groups) from an hdf5 id
- *
- *************************************************************************
- */
-void DataStore::load(const hid_t& h5_id)
-{
-  getRoot()->load(h5_id);
-}
-
-/*
- *************************************************************************
- *
- * Load External Data from a file
- *
- *************************************************************************
- */
-void DataStore::loadExternalData(const std::string& file_path,
-                                 const std::string& protocol)
-{
-  getRoot()->loadExternalData(file_path,protocol);
-}
-
-/*
- *************************************************************************
- *
- * Load External Data from an hdf5 handle
- *
- *************************************************************************
- */
-void DataStore::loadExternalData(const hid_t& h5_id)
-{
-  getRoot()->loadExternalData(h5_id);
 }
 
 } /* end namespace sidre */

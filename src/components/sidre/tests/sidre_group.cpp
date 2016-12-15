@@ -861,7 +861,7 @@ TEST(sidre_group,save_restore_empty_datastore)
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
-    ds1->save(file_path, protocols[i]);
+    ds1->getRoot()->save(file_path, protocols[i]);
   }
 
   delete ds1;
@@ -874,7 +874,7 @@ TEST(sidre_group,save_restore_empty_datastore)
     DataStore * ds2 = new DataStore();
     DataGroup * root2 = ds2->getRoot();
 
-    ds2->load(file_path, protocols[i]);
+    root2->load(file_path, protocols[i]);
 
     EXPECT_TRUE(ds2->getNumBuffers() == 0 );
     EXPECT_TRUE(root2->getNumGroups() == 0 );
@@ -904,11 +904,12 @@ TEST(sidre_group,save_load_via_hdf5_ids)
   }
 
   // save using the sidre_hdf5 protocol
-  ds_save.save("out_save_load_via_hdf5_ids.sidre_hdf5", "sidre_hdf5");
+  root->save("out_save_load_via_hdf5_ids.sidre_hdf5", "sidre_hdf5");
 
   // load via path based
   DataStore ds_load_generic;
-  ds_load_generic.load("out_save_load_via_hdf5_ids.sidre_hdf5", "sidre_hdf5");
+  ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5",
+                                  "sidre_hdf5");
 
   // load via hdf5 id
   DataStore ds_load_hdf5;
@@ -919,7 +920,7 @@ TEST(sidre_group,save_load_via_hdf5_ids)
   EXPECT_TRUE(h5_id >= 0);
 
   // this implies protocol == "sidre_hdf5"
-  ds_load_hdf5.load(h5_id);
+  ds_load_hdf5.getRoot()->load(h5_id);
 
   // ? Does isEquivalentTo check values?
   // check path based with source
@@ -947,7 +948,7 @@ TEST(sidre_group,save_restore_api)
   // These should be produce identical files.
 
   // No group provided, defaults to root group
-  ds1->save("sidre_save_fulltree_conduit", "json");
+  root1->save("sidre_save_fulltree_conduit", "json");
 
   for (int i = 0 ; i < nprotocols ; ++i)
   {
@@ -957,18 +958,21 @@ TEST(sidre_group,save_restore_api)
 
 #if 0
   DataStore * ds2 = new DataStore();
-  ds2->load("sidre_save_fulltree_conduit", "conduit");
+  DataGroup * root2 = ds2->getRoot();
+  root2->load("sidre_save_fulltree_conduit", "conduit");
   EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(root1) );
   delete ds2;
 
   DataStore * ds3 = new DataStore();
-  ds3->load("sidre_save_subtree_conduit", "conduit", ds3->getRoot() );
+  DataGroup * root3 = ds3->getRoot();
+  root3->load("sidre_save_subtree_conduit", "conduit", ds3->getRoot() );
   EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(root1) );
   delete ds3;
 #endif
 
   DataStore * ds4 = new DataStore();
-  ds4->load("sidre_save_subtree_sidre_hdf5", "sidre_hdf5");
+  DataGroup * root4 = ds4->getRoot();
+  root4->load("sidre_save_subtree_sidre_hdf5", "sidre_hdf5");
   EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(root1) );
   delete ds4;
 
@@ -1006,7 +1010,7 @@ TEST(sidre_group,save_restore_scalars_and_strings)
     //      if ( protocols[i] == "conduit_hdf5")
     //	  continue;   // XXX - Does not work
     const std::string file_path = file_path_base + protocols[i];
-    ds1->save(file_path, protocols[i]);
+    root1->save(file_path, protocols[i]);
   }
 
 
@@ -1018,7 +1022,7 @@ TEST(sidre_group,save_restore_scalars_and_strings)
     DataStore * ds2 = new DataStore();
     DataGroup * root2 = ds2->getRoot();
 
-    ds2->load(file_path, protocols[i]);
+    root2->load(file_path, protocols[i]);
 
     EXPECT_TRUE( root1->isEquivalentTo( root2 ));
 
@@ -1074,7 +1078,7 @@ TEST(sidre_group,save_restore_external_data)
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
-    ds1->save(file_path, protocols[i]);
+    root1->save(file_path, protocols[i]);
   }
 
   delete ds1;
@@ -1090,7 +1094,7 @@ TEST(sidre_group,save_restore_external_data)
     DataStore * ds2 = new DataStore();
     DataGroup * root2 = ds2->getRoot();
 
-    ds2->load(file_path, protocols[i]);
+    root2->load(file_path, protocols[i]);
 
     // load has set the type and size of the view.
     // Now set the external address before calling loadExternal.
@@ -1131,7 +1135,7 @@ TEST(sidre_group,save_restore_external_data)
     view4->setExternalDataPtr(int2d2);
 
     // Read external data into views
-    ds2->loadExternalData(file_path, protocols[i]);
+    root2->loadExternalData(file_path);
 
     // Make sure addresses have not changed
     EXPECT_TRUE(view1->getVoidPtr() == static_cast<void *>(foo2));
@@ -1286,7 +1290,7 @@ TEST(sidre_group,save_restore_buffer)
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
-    ds1->save(file_path, protocols[i]);
+    root1->save(file_path, protocols[i]);
   }
 
   // Now load back in.
@@ -1298,7 +1302,7 @@ TEST(sidre_group,save_restore_buffer)
     DataStore * ds2 = new DataStore();
     DataGroup * root2 = ds2->getRoot();
 
-    ds2->load(file_path, protocols[i]);
+    root2->load(file_path, protocols[i]);
 
     bool isequivalent = root1->isEquivalentTo(root2);
     EXPECT_TRUE( isequivalent );
@@ -1333,7 +1337,7 @@ TEST(sidre_group,save_restore_other)
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
-    ds1->save(file_path, protocols[i]);
+    root1->save(file_path, protocols[i]);
   }
 
   delete ds1;
@@ -1349,7 +1353,7 @@ TEST(sidre_group,save_restore_other)
     DataStore * ds2 = new DataStore();
     DataGroup * root2 = ds2->getRoot();
 
-    ds2->load(file_path, protocols[i]);
+    root2->load(file_path, protocols[i]);
 
     DataView * view1 = root2->getView("empty_view");
     EXPECT_TRUE(view1->isEmpty());
@@ -1413,7 +1417,7 @@ TEST(sidre_group,save_restore_complex)
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
-    ds1->save(file_path, protocols[i]);
+    ds1->getRoot()->save(file_path, protocols[i]);
   }
 
   // Only restore conduit_hdf5 protocol
@@ -1423,7 +1427,7 @@ TEST(sidre_group,save_restore_complex)
 
     DataStore * ds2 = new DataStore();
 
-    ds2->load(file_path, protocols[i]);
+    ds2->getRoot()->load(file_path, protocols[i]);
 
     EXPECT_TRUE( ds1->getRoot()->isEquivalentTo(ds2->getRoot()) );
 
@@ -1558,11 +1562,11 @@ TEST(sidre_group,save_load_all_protocols)
     SLIC_INFO("Testing protocol: " << protocols[i]);
     const std::string file_path = file_path_base + protocols[i];
     // save using current protocol
-    ds.save(file_path, protocols[i]);
+    ds.getRoot()->save(file_path, protocols[i]);
 
     DataStore ds_load;
-    ds_load.load(file_path, protocols[i]);
-
+    ds_load.getRoot()->load(file_path, protocols[i]);
+    
     SLIC_INFO("Tree from protocol: " <<  protocols[i]);
     // show the result
     ds_load.print();

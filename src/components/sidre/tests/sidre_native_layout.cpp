@@ -128,7 +128,7 @@ TEST(sidre_native_layout,empty_layout)
 
   SLIC_INFO("Printing datastore native layout:");
   asctoolkit::sidre::Node node;
-  ds->createNativeLayout(node);
+  ds->getRoot()->createNativeLayout(node);
   node.to_json_stream(std::cout);
 
   SLIC_INFO("****** done ******");
@@ -185,7 +185,7 @@ TEST(sidre_native_layout,generate_native_layout)
 
   SLIC_INFO("Printing datastore native layout:");
   asctoolkit::sidre::Node node;
-  ds->createNativeLayout(node);
+  ds->getRoot()->createNativeLayout(node);
   node.to_json_stream(std::cout);
   //node.save("nativeLayoutTest.conduit");
 
@@ -246,7 +246,7 @@ TEST(sidre_native_layout,native_layout_with_scalars)
 
   SLIC_INFO("Printing datastore::layout():");
   asctoolkit::sidre::Node node;
-  ds->createNativeLayout(node);
+  ds->getRoot()->createNativeLayout(node);
   node.to_json_stream(std::cout);
   //node.save("nativeLayoutTest.conduit");
 

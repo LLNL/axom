@@ -73,9 +73,6 @@ module sidre_mod
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_num_buffers => datastore_get_num_buffers
         procedure :: print => datastore_print
-        procedure :: save => datastore_save
-        procedure :: load => datastore_load
-        procedure :: load_external_data => datastore_load_external_data
         procedure :: get_instance => datastore_get_instance
         procedure :: set_instance => datastore_set_instance
         procedure :: associated => datastore_associated
@@ -636,66 +633,6 @@ module sidre_mod
             implicit none
             type(C_PTR), value, intent(IN) :: self
         end subroutine c_datastore_print
-        
-        subroutine c_datastore_save(self, file_path, protocol) &
-                bind(C, name="SIDRE_datastore_save")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine c_datastore_save
-        
-        subroutine c_datastore_save_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
-                bind(C, name="SIDRE_datastore_save_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            integer(C_INT), value, intent(IN) :: Lfile_path
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine c_datastore_save_bufferify
-        
-        subroutine c_datastore_load(self, file_path, protocol) &
-                bind(C, name="SIDRE_datastore_load")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine c_datastore_load
-        
-        subroutine c_datastore_load_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
-                bind(C, name="SIDRE_datastore_load_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            integer(C_INT), value, intent(IN) :: Lfile_path
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine c_datastore_load_bufferify
-        
-        subroutine c_datastore_load_external_data(self, file_path, protocol) &
-                bind(C, name="SIDRE_datastore_load_external_data")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine c_datastore_load_external_data
-        
-        subroutine c_datastore_load_external_data_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
-                bind(C, name="SIDRE_datastore_load_external_data_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: file_path(*)
-            integer(C_INT), value, intent(IN) :: Lfile_path
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine c_datastore_load_external_data_bufferify
         
         ! splicer begin class.DataStore.additional_interfaces
         ! splicer end class.DataStore.additional_interfaces
@@ -1584,24 +1521,21 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lprotocol
         end subroutine c_datagroup_load_bufferify
         
-        subroutine c_datagroup_load_external_data(self, file_path, protocol) &
+        subroutine c_datagroup_load_external_data(self, file_path) &
                 bind(C, name="SIDRE_datagroup_load_external_data")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
         end subroutine c_datagroup_load_external_data
         
-        subroutine c_datagroup_load_external_data_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+        subroutine c_datagroup_load_external_data_bufferify(self, file_path, Lfile_path) &
                 bind(C, name="SIDRE_datagroup_load_external_data_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             integer(C_INT), value, intent(IN) :: Lfile_path
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            integer(C_INT), value, intent(IN) :: Lprotocol
         end subroutine c_datagroup_load_external_data_bufferify
         
         ! splicer begin class.DataGroup.additional_interfaces
@@ -2318,54 +2252,6 @@ contains
         call c_datastore_print(obj%voidptr)
         ! splicer end class.DataStore.method.print
     end subroutine datastore_print
-    
-    subroutine datastore_save(obj, file_path, protocol)
-        use iso_c_binding, only : C_INT
-        implicit none
-        class(datastore) :: obj
-        character(*), intent(IN) :: file_path
-        character(*), intent(IN) :: protocol
-        ! splicer begin class.DataStore.method.save
-        call c_datastore_save_bufferify(  &
-            obj%voidptr,  &
-            file_path,  &
-            len_trim(file_path, kind=C_INT),  &
-            protocol,  &
-            len_trim(protocol, kind=C_INT))
-        ! splicer end class.DataStore.method.save
-    end subroutine datastore_save
-    
-    subroutine datastore_load(obj, file_path, protocol)
-        use iso_c_binding, only : C_INT
-        implicit none
-        class(datastore) :: obj
-        character(*), intent(IN) :: file_path
-        character(*), intent(IN) :: protocol
-        ! splicer begin class.DataStore.method.load
-        call c_datastore_load_bufferify(  &
-            obj%voidptr,  &
-            file_path,  &
-            len_trim(file_path, kind=C_INT),  &
-            protocol,  &
-            len_trim(protocol, kind=C_INT))
-        ! splicer end class.DataStore.method.load
-    end subroutine datastore_load
-    
-    subroutine datastore_load_external_data(obj, file_path, protocol)
-        use iso_c_binding, only : C_INT
-        implicit none
-        class(datastore) :: obj
-        character(*), intent(IN) :: file_path
-        character(*), intent(IN) :: protocol
-        ! splicer begin class.DataStore.method.load_external_data
-        call c_datastore_load_external_data_bufferify(  &
-            obj%voidptr,  &
-            file_path,  &
-            len_trim(file_path, kind=C_INT),  &
-            protocol,  &
-            len_trim(protocol, kind=C_INT))
-        ! splicer end class.DataStore.method.load_external_data
-    end subroutine datastore_load_external_data
     
     function datastore_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
@@ -3175,19 +3061,16 @@ contains
         ! splicer end class.DataGroup.method.load
     end subroutine datagroup_load
     
-    subroutine datagroup_load_external_data(obj, file_path, protocol)
+    subroutine datagroup_load_external_data(obj, file_path)
         use iso_c_binding, only : C_INT
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: file_path
-        character(*), intent(IN) :: protocol
         ! splicer begin class.DataGroup.method.load_external_data
         call c_datagroup_load_external_data_bufferify(  &
             obj%voidptr,  &
             file_path,  &
-            len_trim(file_path, kind=C_INT),  &
-            protocol,  &
-            len_trim(protocol, kind=C_INT))
+            len_trim(file_path, kind=C_INT))
         ! splicer end class.DataGroup.method.load_external_data
     end subroutine datagroup_load_external_data
     
