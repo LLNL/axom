@@ -509,7 +509,13 @@ To specify an alternative home directory, edit the wrapper.conf and restart your
 How to Configure Bamboo Test Plan on a new system:
  System could be a new architecture such as BGQ, or a new OS like TOSS3. I would describe the process that I used to set up BGQ test plan on bamboo.::
 
-.. note ::  First we need a bamboo agent on the new system. BGQ already has an agent in place on Vulcan. After the agent is up and running, we need to make sure the Third Party Library is built. TPL needs to happen before we can build the Asctoolkit code (for example, cmake needs to be ready). To set up a new system, modify the compilers.yaml script under scripts/uberenv. A successful TPL build would generate host configureation files for each compiler defined in compilers.yaml.The next step is to create a python script similar to llnl_cz_uberenv_install_chaos_5_x86_64_ib_all_compilers.py. The script is located in scripts/uberenv/llnl_install_scripts.
+  .. note :: First we need a bamboo agent on the new system. BGQ already has an agent in place on Vulcan. 
+             After the agent is up and running, we need to make sure the Third Party Library is built. 
+             TPL needs to happen before we can build the Asctoolkit code (for example, cmake needs to be ready). 
+             To set up a new system, modify the compilers.yaml script under scripts/uberenv. 
+             A successful TPL build would generate host configureation files for each compiler defined in compilers.yaml.
+             The next step is to create a python script similar to llnl_cz_uberenv_install_chaos_5_x86_64_ib_all_compilers.py. 
+             The script is located in scripts/uberenv/llnl_install_scripts.
 
 Automated plans
 ^^^^^^^^^^^^^^^^
@@ -536,16 +542,16 @@ To add a repository to a plan:
   * Select the Repositories tab
   * Click the Add Repository button
   * The basic options are self explanitory:
-   * Repository Host is "Bitbucket / Stash" (the cz server can also pull from Github)
-   * Server is CZ Bitbucket (only option available)
-   * Repository "ASC Simulation CS Toolkit / ASCToolkit"
-   * Select the branch
+    * Repository Host is "Bitbucket / Stash" (the cz server can also pull from Github)
+    * Server is CZ Bitbucket (only option available)
+    * Repository "ASC Simulation CS Toolkit / ASCToolkit"
+    * Select the branch
   * Advanced Options:
-   * Default is to use shallow clones
-   * Have to explicitly select 'Use Submodules', if you want them
-   * Enable a quiet period to aggregate multiple commits before building
-   * Can enable a quiet period or add a regular expression to exclude particular changesets
-   * etc...
+    * Default is to use shallow clones
+    * Have to explicitly select 'Use Submodules', if you want them
+    * Enable a quiet period to aggregate multiple commits before building
+    * Can enable a quiet period or add a regular expression to exclude particular changesets
+    * etc...
   * You would then add a "Source Code Checkout" step to the plan's tasks to pull the latest code
 
 Create Plan Branches (Using feature branches):
