@@ -36,7 +36,7 @@ Nothing beyond C++11
 reviewed by the team and verified that the features are supported by all 
 compilers we need to support.
 
-      Changing this guideline requires full con census of all team members.
+      Changing this guideline requires full consensus of all team members.
 
 
 Use C++11, but don't depend on it
@@ -48,7 +48,7 @@ be provided that conforms to the 2003 C++ standard.
       Applications that use the CS Toolkit will rely on non-C++11 compilers 
       for our current generation of computing platforms, and possibly beyond, 
       so we must be able to compile and run our code with those compilers.
-      Applications that use the CS Toolkit will expect the code able to compile
+      Applications that use the CS Toolkit will expect the code to compile
       and run with full functionality on all platforms they use. 
 
 11.3 All C++11 usage **must** be guarded using the macro constant "USE_CXX11" 
