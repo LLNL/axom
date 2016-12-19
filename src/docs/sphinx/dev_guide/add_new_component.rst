@@ -34,10 +34,10 @@ adding a new component.
 
          ## add components examples
 
-         add_component(COMPONENT_NAME common DEFAULT_STATE ON)
-         add_component(COMPONENT_NAME slic DEFAULT_STATE ON)
-         add_component(COMPONENT_NAME meshapi DEFAULT_STATE ON)
-         add_component(COMPONENT_NAME sidre DEFAULT_STATE ON)
+         add_component(COMPONENT_NAME common DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+         add_component(COMPONENT_NAME slic DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+         add_component(COMPONENT_NAME meshapi DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+         add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 
 3. Inside the **src/components/<component_name>** add a new **CMakeLists.txt** .
    Each component directory may also have **docs**, **examples**, **src** and **tests** directories.
@@ -47,54 +47,94 @@ adding a new component.
 .. image:: ./slic_directory.png
 
 4. Optionally each component can have its own **uncrustify.cfg** file detailing formatting choices for the code.
+   In this example, the new component Foo depends on Conduit.
 
-    **Details of Master 'CMakeLists.txt:** ::
+    **Details of Foo's 'CMakeLists.txt:** ::
 
 
              ################################
              # Datastore
              ################################
-               project(sidre)
+             project(foo)
+
 
              ################################
-             # Add the sidre sources
+             # Check necessary dependencies
              ################################
-                add_subdirectory(src)
+             if(NOT CONDUIT_FOUND)
+                message(FATAL_ERROR "Foo requires Conduit. Set CONDUIT_DIR to location of built Conduit.")
+             endif()
+
+
+             ################################
+             # Add the Foo sources
+             ################################
+             add_subdirectory(src)
+
 
              ################################
              # Add examples
-             ################################                if (ENABLE_EXAMPLES)
-                   add_subdirectory(examples)
-                endif()
+             ################################
+             if (ENABLE_EXAMPLES)
+                add_subdirectory(examples)
+             endif()
+
 
              ################################
              # Add tests
              ################################
-                if (ENABLE_TESTS)
-                   add_subdirectory(tests)
-                endif()
+             if (ENABLE_TESTS)
+                add_subdirectory(tests)
+             endif()
 
+             add_code_check_targets(uncrustify.cfg)
 
-                add_code_check_targets(uncrustify.cfg)
 
              ################################
              # Add docs
              ################################
-                if (ENABLE_DOCS)
-                   add_subdirectory(docs)
-                endif()
+             if (ENABLE_DOCS)
+                add_subdirectory(docs)
+             endif()
 
 
              ################################
              # Create CMake importable
              # exports for all of our targets
              ################################
-                install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake) 
+             install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake) 
 
 5. Create another **CMakeLists.txt** file in the *src* directory of the component.
-    This contains a list of the headers and sources.
+    This contains a list of the headers, sources, and how to build them. blt_add_library
+    handles building and installing the library.
 
-6. Now create the **copy_headers_target** and the **make_library**  *targets* for the component.
+    **Details of Foo's 'CMakeLists.txt:** ::
 
-7. Finally create the **install** target for the component.
+             set(foo_headers
+                 Foo.hpp
+                 )
+             
+             #
+             # Specify all sources
+             #
+             set(foo_sources
+                 Foo.cpp
+                 )
+             
+             
+             #
+             # make the library
+             #
+             blt_add_library( NAME
+                                  foo
+                              SOURCES
+                                  "${foo_sources}"
+                              HEADERS
+                     "${foo_headers}"
+                              HEADERS_OUTPUT_SUBDIR
+                                  foo
+                              DEPENDS_ON
+                                  common conduit
+                              )
+
 
