@@ -22,3 +22,22 @@ numPushesToFlush          Returns the number of individual pushes to completely 
 push                      Pushes all currently held Messages once up structure.
 isOutputNode              Returns whether this node should output messages.
 ========================= ===================
+
+Concrete Instances
+##################
+
+BinaryTreeCommunicator
+********************
+
+.. note:: This is the recommended Communicator.
+
+This Communicator uses a standard Binary Tree design to scalably pass Messages between nodes.
+Rank 0 is the root of the Binary Tree and the only node allowed to output messages.
+
+RootCommunicator
+********************
+
+.. note:: This is not a recommended Communicator for production. It is provided for its simplistic design for debugging purposes.
+
+This Communicator resembles a fan with all nodes directly connecting to the root node which
+is rank 0.  The root node is the only node allowed to output messages.
