@@ -103,17 +103,17 @@ the opening parenthesis.
 for developers with different text editor settings.
 
 
-Vertically alignment helps to show scope
+Vertical alignment helps to show scope
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 9.8 When function arguments (in either a declaration or implementation)
-appear on multiple lines, the arguments **should** be aligned vertically 
+appear on multiple lines, the arguments **should** be vertically aligned
 for readability.
 
 9.9 All statements within a function body **should** be indented within 
 the surrounding curly braces.
 
-9.10 All source lines in the same scope **should** be aligned vertically.
+9.10 All source lines in the same scope **should** be vertically aligned.
 Continuation of previous lines **may** be indented if it make the code easier
 to read.
 
@@ -129,7 +129,7 @@ the statement continues on the next line.
 (i.e., , -, etc.), it **should** be broken after the operator, not before. 
 
 
-Use parentheses For clarity
+Use parentheses for clarity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 9.13 Parentheses **should** be used in non-trivial mathematical and logical 

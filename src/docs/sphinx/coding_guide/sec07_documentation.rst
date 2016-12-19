@@ -526,7 +526,7 @@ Brief and detailed comments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 7.36 Regardless of which documentation form is used, a brief description 
-**must** be included using the Doxygen command "\\brief".
+**must** be included using the Doxygen command "\\brief" (or "@brief").
 
 7.37 Any detailed description of an item, if included, **must** appear after 
 the brief comment and be separated from the brief comment with a line
@@ -571,7 +571,7 @@ described here.
      a documented item. The brief description ends at the next blank line.
    * **\\file** The "file" command is used to document a file. Doxygen requires
      that to document any global item (function, typedef, enum, etc.), the file
-     in which it is defined must be documents. 
+     in which it is defined must be documented. 
    * **\\if** and **\\endif** The "if" command, followed by a label, defines 
      the start of a conditional documentation section. The section ends with a
      matching "endif" command. Conditionals are typically used to 

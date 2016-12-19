@@ -165,11 +165,11 @@ them unimplemented.
 
       This is another application of the "Rule of Three".
 
-      **Exception:** If a class inherits from a base class that declares
-      these methods private, the subclass need not declare the methods
-      private. Including comments in the derived class header indicating that
-      the the parent class enforces the non-copyable properties of the class
-      is helpful.
+.. note::  **Exception:** If a class inherits from a base class that declares
+           these methods private, the subclass need not declare the methods
+           private. Including comments in the derived class header indicating 
+           that the the parent class enforces the non-copyable properties of 
+           the class is helpful.
 
 
 Rely on compiler-generated methods when appropriate
@@ -345,10 +345,10 @@ every object is in a well-defined state upon construction.
       has POD members. Do not assume that a compiler-generated default 
       constructor will leave any member variable in a well-defined state.
 
-      **Exception:** A class that has no data members, including one that 
-      is derived from a base class with a default constructor that provides 
-      full member initialization, does not require a user-defined default 
-      constructor since the compiler-generated version will suffice.
+.. note::  **Exception:** A class that has no data members, including one that
+           is derived from a base class with a default constructor that provides 
+           full member initialization, does not require a user-defined default 
+           constructor since the compiler-generated version will suffice.
 
 
 Know when to use initialization vs. assignment
@@ -500,7 +500,7 @@ Whether or not a function implemented in a header file is explicitly declared
 inline using the "inline" keyword, the compiler decides if the function will 
 be inlined. A compiler will not inline a function that it considers too 
 long or too complex (e.g., if it contains complicated conditional logic). 
-When a compiler inlines a function, it replace the function call with the 
+When a compiler inlines a function, it replaces the function call with the 
 body of the function. Most modern compilers do a good job of deciding when 
 inlining is a good choice.
 
@@ -532,9 +532,9 @@ Only inline a class constructor when it makes sense
       and initialization needed for its members and bases will appear at every 
       object declaration.
 
-      **Exception:** A class/struct that has only POD ("plain old data") 
-      members, is not a subclass, and does not explicitly declare a destructor,
-      can have its constructor safely inlined in most cases. 
+.. note ::  **Exception:** A class/struct that has only POD ("plain old data")
+            members, is not a subclass, and does not explicitly declare a 
+            destructor, can have its constructor safely inlined in most cases.
 
 
 Do not inline virtual methods
@@ -698,7 +698,7 @@ control logic clear.
             return 0;
          }
 
-..note :: **Exception.** If multiple return points actually fit well into the
+.. note :: **Exception.** If multiple return points actually fit well into the
           logical structure of some code, they **may** be used. For example, 
           a routine may contain extended if/else conditional logic with 
           several "if-else" clauses. If needed, the code may be more clear if
@@ -800,8 +800,8 @@ Avoid C-style casts, const_cast, and reinterpret_cast
        Casting away "const-ness" is usually a poor programming decision and can 
        introduce errors.
 
-       **Exception:** It may be necessary in some circumstances to cast away 
-       const-ness, such as when calling const-incorrect APIs.
+.. note :: **Exception:** It may be necessary in some circumstances to cast 
+           away const-ness, such as when calling const-incorrect APIs.
 
 8.56 The "reinterpret_cast" **must not** be used unless absolutely necessary.
 

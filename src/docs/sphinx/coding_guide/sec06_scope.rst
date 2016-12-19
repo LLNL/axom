@@ -196,7 +196,7 @@ and as close to first use as possible.
 
       Beyond readability, this rule has benefits for thread safety, etc.
 
-..note :: **Exception:** When a local variable is an object, its constructor 
+.. note :: **Exception:** When a local variable is an object, its constructor 
           and destructor may be invoked every time a scope (such as a loop) 
           is entered and exited, respectively. 
 

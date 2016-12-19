@@ -24,9 +24,9 @@ Each source file should have an associated header file
 ---------------------------------------------------------
 
 5.1 Each source file **should** have an associated header file with a matching
-name, such as "Foo.hpp" for the source file Foo.cpp".
+name, such as "Foo.hpp" for the source file "Foo.cpp".
 
-..note:: **Exceptions:** Test files may not require headers.
+.. note:: **Exceptions:** Test files may not require headers.
 
 
 ---------------------------------------------------------

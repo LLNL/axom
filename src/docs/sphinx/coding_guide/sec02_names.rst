@@ -16,7 +16,7 @@
 ===========================
 
 Good names are essential to sound software design. This section contains 
-guidelines for naming files, types. functions, class members, variables, etc. 
+guidelines for naming files, types, functions, class members, variables, etc. 
 The main goal is to use clear and unambiguous names. Also, we want naming 
 conventions for different entities so that, when applied, the role of each 
 is obvious from the form of its name.
@@ -89,7 +89,8 @@ respectively.
 **must** have extensions \*.h and \*.c, respectively. 
 
 2.8 Fortran source files (e.g., tests and examples, and generated API code) 
-**must** have extension \*.f.
+**must** have the extension \*.f or \*.F . \*.F must be used if the 
+preprocessor is needed to compile the source file.
 
 
 ---------------------------------------------------------
@@ -100,7 +101,7 @@ Associated source and header file names should match
 the file extension, to make their association clear.
 
       For example, the header and source files for a class "Foo" **should** 
-      be named "Foo.hpp" and Foo.cpp", respectively.
+      be named "Foo.hpp" and "Foo.cpp", respectively.
 
       Also, files that are closely related in other ways, such as a header file
       containing prototypes for a set of methods that are not class members and 
