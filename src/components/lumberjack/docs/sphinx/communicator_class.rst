@@ -39,5 +39,5 @@ RootCommunicator
 
 .. note:: This is not a recommended Communicator for production. It is provided for its simplistic design for debugging purposes.
 
-This Communicator resembles a fan with all nodes directly connecting to the root node which
+This Communicator has all nodes directly connecting to the root node which
 is rank 0.  The root node is the only node allowed to output messages.
