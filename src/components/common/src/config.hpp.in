@@ -11,16 +11,39 @@
 #ifndef ATK_COMMON_CONFIG_HPP
 #define ATK_COMMON_CONFIG_HPP
 
-// Compiler defines for libraries (built-in and third party)
+/* 
+ * Note: Use only C-style comments in this file 
+ *       since it might be included from a C file
+ */
+
+
+/* 
+ * Compiler defines for libraries (built-in and third party) 
+ */
 #cmakedefine ATK_USE_BOOST
 #cmakedefine ATK_USE_CONDUIT
 #cmakedefine ATK_USE_CXX11
 #cmakedefine ATK_USE_FMT
 #cmakedefine ATK_USE_HDF5
+#cmakedefine ATK_USE_MPI
+#cmakedefine ATK_USE_MPIF_HEADER
 #cmakedefine ATK_USE_SPARSEHASH
 
 
-// Compiler defines for toolkit components
+/* OpenMP is a special case since it varies by target and the compiler 
+ * provides its own definition. For consistency, the project exposes  
+ * and uses this through its own ATK define.
+ */ 
+#ifdef _OPENMP
+#define ATK_USE_OPENMP
+#else                    
+#undef ATK_USE_OPENMP   
+#endif
+
+
+/* 
+ * Compiler defines for the toolkit components 
+ */
 #cmakedefine ATK_USE_COMMON
 #cmakedefine ATK_USE_MINT
 #cmakedefine ATK_USE_LUMBERJACK
@@ -34,5 +57,5 @@
 
 
 
-#endif  // ATK_COMMON_CONFIG_CPP
+#endif  /* ATK_COMMON_CONFIG_CPP */
 

@@ -12,7 +12,7 @@ endif()
 ## Note: BLT adds USE_MPI and USE_OPENMP as compile define flags for targets
 ##       that are configured with MPI and OPENMP, respectively.
 
-set(DEPS_OPTIONS BOOST )                       # vars of the form ENABLE_DEP
+set(DEPS_OPTIONS BOOST MPI)                    # vars of the form ENABLE_DEP
 foreach(dep in ${DEPS_OPTIONS})
     if( ENABLE_${dep} )
         set(ATK_USE_${dep} TRUE)
@@ -25,6 +25,15 @@ foreach(dep in ${DEPS_BUILTIN})
         set(ATK_USE_${dep} TRUE)
     endif()
 endforeach()
+
+# Handle MPI Fortran headers
+if(ENABLE_MPI AND ENABLE_FORTRAN)
+  if(MPI_Fortran_USE_MPIF)
+    set(ATK_USE_MPIF_HEADER TRUE)
+  endif()
+endif()
+
+
 
 
 ## Add a configuration define for each enabled toolkit component

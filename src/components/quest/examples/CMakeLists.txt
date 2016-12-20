@@ -60,15 +60,11 @@ if (ENABLE_MPI)
         NAME        quest_interface_fortran
         SOURCES     quest_interface_fortran.F
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${quest_example_depends}
+        DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
         )
         
     set_target_properties(quest_interface_fortran 
                           PROPERTIES LINKER_LANGUAGE Fortran)
-                          
-    if(MPI_Fortran_USE_MPIF)
-        blt_add_target_definitions(TO quest_interface_fortran TARGET_DEFINITIONS "USE_MPIF_HEADER")
-    endif()                              
                           
   endif()
                       

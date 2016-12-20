@@ -25,6 +25,8 @@
 
 
 // ATK Toolkit includes
+#include "common/config.hpp"
+
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"
@@ -363,7 +365,7 @@ void expected_phi(mint::UniformMesh* umesh)
 
    // STEP 2: loop over uniform mesh nodes and compute distance field
    SLIC_INFO( "Calculating analytic distance field...");
-#ifdef _OPENMP
+#ifdef ATK_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
    for ( int i=0; i < nnodes; ++i ) {
@@ -396,7 +398,7 @@ void n2( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
    // STEP 2: loop over uniform mesh nodes and compute distance field
    SLIC_INFO("Calculating distance field...");
 
-#ifdef _OPENMP
+#ifdef ATK_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
    for ( int i=0; i < nnodes; ++i ) {
