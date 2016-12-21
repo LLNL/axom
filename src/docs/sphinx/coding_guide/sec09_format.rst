@@ -57,11 +57,11 @@ unless the tested quantity is a boolean or pointer type.
 
       For example, a conditional based on an integer value should use::
 
-         if (num_lines != 0) {
+         if (num_lines != 0) { ... }
 
       not::
 
-         if (num_lines) {
+         if (num_lines) { ... }
 
 
 --------------------------------------------------------------------

@@ -861,6 +861,8 @@ This makes it easy to check pointers for "null-ness" when needed.
       non-C++11 usage, this should be done using the common macro
       "ATK\_NULLPTR"; For example::
 
+         // #include "common/CommonTypes.hpp"
+         
          double* data = new double[10];
          // ...
          delete [ ] data;

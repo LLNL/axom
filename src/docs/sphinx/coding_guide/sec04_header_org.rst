@@ -43,8 +43,8 @@ Include in a header file only what's needed to compile it
 
 4.3 A header file **must** be self-contained and self-sufficient.
 
-      Specifically, each header file
-
+    Specifically, each header file
+    
       * **Must** have proper header file include guards 
         (see :ref:`headerlayout-label`) to prevent multiple inclusion. The 
         macro symbol name for each guard must be chosen to guarantee uniqueness 
@@ -78,18 +78,21 @@ Use forward declarations when you can
 inclusions when possible. This may speed up compilation, especially when 
 recompiling after header file changes.
 
-.. note:: **Exceptions to this guideline:**
-          * Header files that define external APIs for the Toolkit project 
-            **must** include all header files for all types that appear in 
-            the API. This makes use of the API much easier.
-          * When using a function, such as an inline method or template, that 
-            is implemented in a header file, the header file containing the
-            implementation **must** be included.
-          * Similarly, when using C++ standard library types in a header file, 
-            it **may** be preferable to include the actual headers (rather 
-            than forward reference headers (e.g., 'iosfwd') in the header file 
-            to make it easier to use. This avoids having explicit inclusion 
-            of standard headers wherever the header file is used.
+.. note :: **Exceptions to this guideline:**
+
+    * Header files that define external APIs for the Toolkit  
+      project **must** include all header files for all types that 
+      appear in the API. This makes use of the API much easier.
+    
+    * When using a function, such as an inline method or template, that 
+      is implemented in a header file, the header file containing the
+      implementation **must** be included.
+    
+    * Similarly, when using C++ standard library types in a header file, 
+      it **may** be preferable to include the actual headers (rather 
+      than forward reference headers (e.g., 'iosfwd') in the header file 
+      to make it easier to use. This avoids having explicit inclusion 
+      of standard headers wherever the header file is used.
 
 4.6 A forward type declaration **must** be used in a header file when an 
 include statement would result in a circular dependency among header files. 

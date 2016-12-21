@@ -410,7 +410,7 @@ Return values
 ^^^^^^^^^^^^^
 
 7.29 If the function has a non-void return type, the return value **should** 
-be documented in the prologue using the Doxygen command "\return" 
+be documented in the prologue using the Doxygen command "\\return" 
 (or "@return") preceding a description of the return value. 
 
       Functions with "void" return type and C++ class constructors and 
@@ -567,12 +567,15 @@ Note that to be processed properly, Doxygen commands **must** be preceded with
 either "\\" or "\@" character. For brevity, we use "\\" for all commands 
 described here.
 
-   * **\\brief** The "brief" command is used to begin a brief description of 
+   \\brief 
+     The "brief" command is used to begin a brief description of 
      a documented item. The brief description ends at the next blank line.
-   * **\\file** The "file" command is used to document a file. Doxygen requires
+   \\file 
+     The "file" command is used to document a file. Doxygen requires
      that to document any global item (function, typedef, enum, etc.), the file
      in which it is defined must be documented. 
-   * **\\if** and **\\endif** The "if" command, followed by a label, defines 
+   \\if, \\endif
+     The "if" command, followed by a label, defines 
      the start of a conditional documentation section. The section ends with a
      matching "endif" command. Conditionals are typically used to 
      enable/disable documentation sections. For example, this may be useful if
@@ -583,32 +586,40 @@ described here.
      Conditional blocks can be nested; nested sections are only enabled if 
      all enclosing sections are. The "\\elseif" command is also available to 
      provide more sophisticated control of conditional documentation.
-   * **\\name** The "name" command, followed by a name containing no blank 
+   \\name
+     The "name" command, followed by a name containing no blank 
      spaces, is used to define a name that can be referred to elsewhere 
      in the documentation (via a link).
-   * **\\param** The "param" command documents a function parameter/argument.
+   \\param 
+     The "param" command documents a function parameter/argument.
      It is followed by the parameter name and description. The "\\param" 
      command can be given an optional attribute to indicate usage of the 
      function argument; possible values are "[in]", "[out]", and "[in,out]".
-   * **\\return** The "return" command is used to describe the return value 
+   \\return 
+     The "return" command is used to describe the return value 
      of a function.
-   * **\\sa** The "sa" command (i.e., "see also") is used to refer (and 
+   \\sa 
+     The "sa" command (i.e., "see also") is used to refer (and 
      provide a link to) another documented item. It is followed by the target 
      of the reference (e.g., class/struct name, function name, documentation 
      page, etc.).
-   * **\@{** and **\@}**  These two-character sequences begin and end a 
+   \@{,\@}  
+     These two-character sequences begin and end a 
      grouping of documented items. Optionally, the group can be given a name 
      using the "name" command. Groups are useful for providing additional 
      organization in the documentation, and also when several items can be 
      documented with a single description (e.g., a set of simple, related 
      functions). 
-   * **\\verbatim, \\endverbatim** The "verbatim/endverbatim" commands are 
+   \\verbatim, \\endverbatim
+     The "verbatim/endverbatim" commands are 
      used to start/stop a block of text that is to appear exactly as it is 
      typed, without additional formatting, in the generated documentation.
-   * **-** and **-#** The "-" and "-#" symbols begin an item in a bulleted 
+   -, -#
+     The "-" and "-#" symbols begin an item in a bulleted 
      list or numbered list, respectively. In either case, the item ends at 
      the next blank line or next item.
-   * **\\b** and **\\e** These symbols are used to make the next word bold or 
+   \\b, \\e 
+     These symbols are used to make the next word bold or 
      emphasized/italicized, respectively, in the generated documentation.
    
 

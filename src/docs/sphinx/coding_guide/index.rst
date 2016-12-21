@@ -55,9 +55,9 @@ and help reduce user and developer errors.
 
    sec01_changing_code
    sec02_names
-   sec03_dirorg
-   sec04_headerorg
-   sec05_sourceorg
+   sec03_dir_org
+   sec04_header_org
+   sec05_source_org
    sec06_scope
    sec07_documentation
    sec08_design_implement
