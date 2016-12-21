@@ -50,7 +50,7 @@ Important notes:
     found by going to the CS Toolkit repo on our Bitbucket project and
     clicking on the 'Clone' action button that appears when you hover your
     mouse cursor over the ellipses on the top left of the web page.
-  * The '--recursive' argument above is needed to pull in our build system,
+  * The ``--recursive`` argument above is needed to pull in our build system,
     called *BLT*. BLT is standalone product that is used by other code projects;
     thus, it lives in its own reposiotory. It is a Git sub-module of the 
     Toolkit.
@@ -66,18 +66,25 @@ code, please continue on to the next section.
 
 The top-level CS Toolkit directory contains three directories:
 
-  * **scripts** - scripts we maintain to simplify development and usage tasks
-  * **host-configs** - detailed configuration information for platforms and 
+  scripts
+    Scripts that we maintain to simplify development and usage tasks
+  host-configs
+    Detailed configuration information for platforms and 
     compilers we support (more about these later)
-  * **src** - the bulk of the repo contents
-
-Within the **src** directory, you will find the following directories:
-
-  * **blt** - BLT build system submodule is cloned here
-  * **cmake** - Toolkit-specific CMake customizations to BLT build system
-  * **components** - files for individual Toolkit components
-  * **docs** - general Toolkit documentation files
-  * **thirdparty** - tests to make sure TPLs are built properly
+  src
+    The bulk of the repo contents.
+    Within the **src** directory, you will find the following directories:
+    
+    blt
+      BLT build system submodule is cloned here
+    cmake
+      Toolkit-specific CMake customizations to BLT build system
+    components
+      Files for individual Toolkit components
+    docs
+      General Toolkit documentation files
+    thirdparty
+      Tests to make sure TPLs are built properly
 
 In the **components** directory, you will find a directory for each of the
 Toolkit components. Although there are dependencies among them, each is 
