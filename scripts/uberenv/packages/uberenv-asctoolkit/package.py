@@ -29,7 +29,7 @@ class UberenvAsctoolkit(Package):
     depends_on("conduit~shared+cmake",when="+cmake")
     depends_on("conduit~shared~cmake",when="~cmake")
     
-    depends_on("hdf5~shared~zlib~fortran")
+    depends_on("hdf5~cxx~shared~zlib~fortran")
     # boost, header only
     depends_on("boost-headers")
     depends_on("sparsehash-headers")
