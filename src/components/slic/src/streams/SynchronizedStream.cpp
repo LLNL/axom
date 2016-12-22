@@ -47,7 +47,7 @@ struct SynchronizedStream::MessageCache
     }
 
     for ( unsigned i=0; i < N; ++i ) {
-      (*stream) << messages[ i ] << "\n";
+      (*stream) << messages[ i ] ;
     } // END for all messages
 
     messages.clear();
@@ -67,7 +67,7 @@ SynchronizedStream::SynchronizedStream(std::ostream* stream, MPI_Comm comm):
 //------------------------------------------------------------------------------
 SynchronizedStream::SynchronizedStream( std::ostream* stream,
                                         MPI_Comm comm,
-                                        std::string& format ) :
+                                        const std::string& format ) :
                                             m_comm( comm ),
                                             m_cache( new MessageCache ),
                                             m_stream( stream )

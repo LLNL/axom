@@ -3,6 +3,7 @@
 #
 
 set(gtest_common_tests
+   common_config.cpp
    common_TaskTimer.cpp
    common_fileUtilities.cpp
    common_types.cpp
@@ -22,5 +23,19 @@ foreach(test ${gtest_common_tests})
                   COMMAND ${test_name} )
 endforeach()
 
+# Add flag to ignore unknown openmp pragmas in common_config
+set_target_properties(common_config 
+                      PROPERTIES COMPILE_FLAGS ${ATK_DISABLE_OMP_PRAGMA_WARNINGS})
 
 
+if(ENABLE_OPENMP)
+    # Add a config test that uses OpenMP
+    blt_add_executable( NAME common_config_openmp
+                        SOURCES common_config.cpp
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON common gtest 
+                        USE_OPENMP True)
+                       
+    blt_add_test( NAME common_config_openmp
+                  COMMAND common_config_openmp )
+endif()

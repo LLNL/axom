@@ -56,7 +56,7 @@ using namespace asctoolkit;
 
 typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
-struct {
+static struct {
   std::string fileName;
   int maxLevels;
   int maxObjects;

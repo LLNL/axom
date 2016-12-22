@@ -22,7 +22,12 @@
 
 // SLIC includes
 #include "slic/slic.hpp"
-#include "slic/SynchronizedStream.hpp"
+
+#ifdef ATK_USE_LUMBERJACK
+  #include "slic/LumberjackStream.hpp"
+#else
+  #include "slic/SynchronizedStream.hpp"
+#endif
 
 // C/C++ includes
 #include <cstdlib>   // for std::rand(), RAND_MAX
@@ -203,11 +208,25 @@ int main( int argc, char**argv )
   slic::initialize();
   slic::setLoggingMsgLevel( slic::message::Info );
 
-  std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>";
-  slic::SynchronizedStream* sstream =
-          new slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD);
-  sstream->setFormatString( fmt );
-  slic::addStreamToAllMsgLevels( sstream );
+  slic::LogStream* logStream;
+
+  std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
+  #ifdef ATK_USE_LUMBERJACK
+    const int RLIMIT = 8;
+    logStream = new slic::LumberjackStream(&std::cout,MPI_COMM_WORLD, RLIMIT, fmt);
+  #else
+    logStream = new slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, fmt);
+  #endif
+
+  slic::addStreamToAllMsgLevels( logStream );
+
+  if(argc != 2)
+  {
+      SLIC_WARNING("Usage: [mpirun -np N] ./quest_interface <stl_file>");
+      slic::finalize();
+      MPI_Finalize();
+      exit(1);
+  }
 
   // Generate the query points
   std::string fileName = std::string(argv[1]);

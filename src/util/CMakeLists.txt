@@ -15,16 +15,21 @@ set(datastore_converter_sources
 )
 set(datastore_converter_depends 
     spio sidre conduit conduit_relay hdf5 
-    lumberjack slic fmt 
+    slic fmt 
     slam 
     )
+
+if(ENABLE_LUMBERJACK)
+  list(APPEND datastore_converter_depends lumberjack)
+endif()
+
 
 if(ENABLE_BOOST)
   list(APPEND datastore_converter_depends boost)
 endif()
 
 
-if(ENABLE_SLAM AND ENABLE_SPIO AND ENABLE_LUMBERJACK)
+if(ENABLE_SLAM AND ENABLE_SPIO )
     blt_add_executable(
         NAME convert_sidre_protocol
         SOURCES ${datastore_converter_sources}
