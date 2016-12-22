@@ -20,5 +20,6 @@ messages and limit output to only the root node.
 .. toctree::
    :maxdepth: 2
 
+   quick_start
    classes
 

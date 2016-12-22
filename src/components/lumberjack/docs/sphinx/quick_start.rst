@@ -1,30 +1,34 @@
-/*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
- *
- * All rights reserved.
- *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
- */
+.. _quick_start_label:
 
-/*!
- *******************************************************************************
- * \file basicExample.cpp
- * \author Chris White (white238@llnl.gov)
- *******************************************************************************
- */
+Quick Start
+===========
 
-#include "lumberjack/Lumberjack.hpp"
-#include "lumberjack/BinaryTreeCommunicator.hpp"
-#include "lumberjack/Message.hpp"
+This quick start guide goes over the bare minimum you need to do to get up
+and running with Lumberjack.  You can find this example in the repository under
+Lumberjack's examples directory.
 
-#include <mpi.h>
-#include <iostream>
+This example uses the Binary Tree Communicator and queues one unique message and
+three similar messages per rank.  They are combined and then pushed fully through
+the tree.
 
-//------------------------------------------------------------------------------
-int main(int argc, char** argv)
-{
+The following files need to be included for Lumberjack:
+
+.. code-block:: c
+
+    # Lumberjack specific headers
+    #include "lumberjack/Lumberjack.hpp"
+    #include "lumberjack/BinaryTreeCommunicator.hpp"
+    #include "lumberjack/Message.hpp"
+
+    # MPI and C++
+    #include <mpi.h>
+    #include <iostream>
+
+
+Basic MPI setup and information:
+
+.. code-block:: c
+
     // Initialize MPI and get rank and comm size
     MPI_Init(&argc, &argv);
 
@@ -32,6 +36,11 @@ int main(int argc, char** argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &commRank);
     int commSize = -1;
     MPI_Comm_size(MPI_COMM_WORLD, &commSize);
+
+
+Initialize Lumberjack:
+
+.. code-block:: c
 
     // Determine how many ranks we want to individually track per message
     int ranksLimit = commSize/2;
@@ -44,6 +53,11 @@ int main(int argc, char** argv)
     asctoolkit::lumberjack::Lumberjack lj;
     lj.initialize(&communicator, ranksLimit);
 
+
+This queues the individual messages into Lumberjack:
+
+.. code-block:: c
+
     // Queue messages into lumberjack
     if (commRank == 0){
         lj.queueMessage("This message will not combined");
@@ -53,8 +67,40 @@ int main(int argc, char** argv)
         lj.queueMessage("This message will be combined");
         lj.queueMessage("This message will be combined");
     }
+
+
+This is how you fully push all Messages through the Communicator:
+
+.. code-block:: c
+
     // Push messages fully through lumberjack's communicator
     lj.pushMessagesFully();
+
+
+Optionally, you could spread the pushing over the course of your work by doing the
+following:
+
+.. code-block:: c
+
+    int cycleCount = 0;
+    int cycleLimit = 10;
+    for (int i = 0; i < someLoopLength; ++i){
+        //
+        // Do some work
+        //
+        lj.queueMessage("This message will combine")
+        ++cycleCount;
+        if (cycleCount > cycleLimit) {
+            // Incrementally push messages through system
+            lj.pushMessagesOnce();
+            cycleCount = 0;
+        }
+    }
+
+
+Once you are ready to retrieve your messages, do so by the following:
+
+.. code-block:: c
 
     // Determine if this is an output node
     if (lj.isOutputNode()){
@@ -69,6 +115,11 @@ int main(int argc, char** argv)
         lj.clearMessages();
     }
 
+Finalize Lumberjack, the Lumberjack Communicator and MPI in the following order to guarantee nothing
+goes wrong:
+
+.. code-block:: c
+
     // Finalize lumberjack
     lj.finalize();
     // Finalize the lumberjack communicator
@@ -76,5 +127,3 @@ int main(int argc, char** argv)
     // Finalize MPI
     MPI_Finalize();
 
-    return 0;
-}

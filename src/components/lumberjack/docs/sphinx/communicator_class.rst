@@ -27,17 +27,22 @@ Concrete Instances
 ##################
 
 BinaryTreeCommunicator
-********************
+**********************
 
 .. note:: This is the recommended Communicator.
 
 This Communicator uses a standard Binary Tree design to scalably pass Messages between nodes.
-Rank 0 is the root of the Binary Tree and the only node allowed to output messages.
+Rank 0 is the root of the Binary Tree and the only node allowed to output messages. Each single
+push, the child nodes send their currently held messages to their parents without waiting to
+receive messages themselves.  This communicator takes lg(number of nodes) to completely flush
+messages to the root node.
 
 RootCommunicator
-********************
+****************
 
 .. note:: This is not a recommended Communicator for production. It is provided for its simplistic design for debugging purposes.
 
 This Communicator has all nodes directly connecting to the root node which
 is rank 0.  The root node is the only node allowed to output messages.
+Each single push, the child nodes send their currently held messages
+to the root.  After each push the tree is completely flushed.
