@@ -26,6 +26,8 @@ isOutputNode              Returns whether this node should output messages.
 Concrete Instances
 ##################
 
+.. _binarytreecommunicator_class_label:
+
 BinaryTreeCommunicator
 **********************
 
@@ -36,6 +38,8 @@ Rank 0 is the root of the Binary Tree and the only node allowed to output messag
 push, the child nodes send their currently held messages to their parents without waiting to
 receive messages themselves.  This communicator takes lg(number of nodes) to completely flush
 messages to the root node.
+
+.. _rootcommunicator_class_label:
 
 RootCommunicator
 ****************

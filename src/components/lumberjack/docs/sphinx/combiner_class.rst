@@ -23,6 +23,8 @@ combine                   Combines the second message into the first.
 Concrete Instances
 ##################
 
+.. _textequalitycombiner_class_label:
+
 TextEqualityCombiner
 ********************
 
