@@ -102,9 +102,13 @@ namespace policies {
         return true;
 
       bool bValid = hasIndirection();
-      SLIC_CHECK_MSG(verboseOutput && !bValid,
+
+      if(verboseOutput && !bValid)
+      {
+        SLIC_DEBUG(
           "Array-based indirection set with non-zero size (size="
           << size << ") requires valid data buffer, but buffer pointer was null.");
+      }
 
       // Since array-based indirection sets don't encode a buffer size, that is all we can check
 

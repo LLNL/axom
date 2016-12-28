@@ -10,9 +10,9 @@
 
 
 /*
- * \file testNullSet.cpp
+ * \file slam_set_nullset.cpp
  *
- * Unit tests for the NullSet class
+ * Unit tests for the NullSet class in Slam.
  */
 
 #include "gtest/gtest.h"
@@ -22,18 +22,25 @@
 #include "slam/Set.hpp"
 #include "slam/NullSet.hpp"
 
-TEST(gtest_slam_set,construct_nullset)
+TEST(gtest_slam_set_nullset,construct)
 {
-  axom::slam::Set* s = new axom::slam::NullSet();
+  asctoolkit::slam::NullSet ns;
 
-  EXPECT_TRUE(s->empty());
+  // Test function: isValid()
+  EXPECT_TRUE(  ns.isValid() );
 
-  delete s;
+  // Test functions: empty() and size()
+  EXPECT_TRUE(  ns.empty() );
+  EXPECT_EQ(  0,  ns.size() );
 
-  EXPECT_TRUE( true );
+  // Test that the parent of a nullset is itself
+  EXPECT_EQ(  ns, *ns.parentSet() );
+
+  // A Slam NullSet is not a subset of another set
+  EXPECT_FALSE( ns.isSubset() );
 }
 
-TEST(gtest_slam_set,subscript_fails_nullset)
+TEST(gtest_slam_set_nullset,subscript_fails)
 {
   SLIC_INFO("Testing subscript access on NullSet -- code is expected to assert and die.");
 

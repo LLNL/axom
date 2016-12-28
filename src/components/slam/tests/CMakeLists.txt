@@ -4,11 +4,11 @@
 
 set(gtest_slam_tests
     # test sets
-    slam_Set.cpp
-    slam_NullSet.cpp
-    slam_RangeSet.cpp
-    slam_WindowedRangeSet.cpp
-    slam_IndirectionSet.cpp
+    slam_set_Set.cpp
+    slam_set_NullSet.cpp
+    slam_set_PositionSet.cpp
+    slam_set_RangeSet.cpp
+    slam_set_IndirectionSet.cpp
 
     # test relations
     slam_DynamicVariableRelation.cpp

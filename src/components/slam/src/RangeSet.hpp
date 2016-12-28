@@ -58,24 +58,27 @@ namespace slam {
  *          Examples include: signed and unsigned integral types
  *          This version of a range set still allows you to have different policies on striding, indirection and subsetting
  */
-  template< typename StridingPolicy
-  , typename IndirectionPolicy
-  , typename SubsettingPolicy
+  template<
+    typename StridingPolicy,
+    typename IndirectionPolicy,
+    typename SubsettingPolicy
   >
-  class GenericRangeSet : public OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
-                          , policies::RuntimeOffsetHolder<Set::PositionType>
-                          , StridingPolicy
-                          , IndirectionPolicy
-                          , SubsettingPolicy
+  class GenericRangeSet : public OrderedSet<
+                            policies::RuntimeSizeHolder<Set::PositionType>,
+                            policies::RuntimeOffsetHolder<Set::PositionType>,
+                            StridingPolicy,
+                            IndirectionPolicy,
+                            SubsettingPolicy
     >
   {
 
   private:
-    typedef OrderedSet<   policies::RuntimeSizeHolder<Set::PositionType>
-        , policies::RuntimeOffsetHolder<Set::PositionType>
-        , StridingPolicy
-        , IndirectionPolicy
-        , SubsettingPolicy                                     > OrderedSetType;
+    typedef OrderedSet<
+          policies::RuntimeSizeHolder<Set::PositionType>,
+          policies::RuntimeOffsetHolder<Set::PositionType>,
+          StridingPolicy,
+          IndirectionPolicy,
+          SubsettingPolicy                                     > OrderedSetType;
 
     static const typename OrderedSetType::PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
     static const typename OrderedSetType::PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
@@ -103,8 +106,9 @@ namespace slam {
    * \details The ElementType here needs to be computable as offsets (of PositionType) from the lowerIndex
    *          Examples include: signed and unsigned integral types
    */
-  class RangeSet : public OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
-                   , policies::RuntimeOffsetHolder<Set::PositionType>
+  class RangeSet : public OrderedSet<
+                     policies::RuntimeSizeHolder<Set::PositionType>,
+                     policies::RuntimeOffsetHolder<Set::PositionType>
     >
   {
 

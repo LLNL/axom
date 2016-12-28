@@ -88,10 +88,13 @@ namespace policies {
         return true;
 
       // Next, since child has at least one element, the parent cannot be empty
-      bool bValid = ( m_parentSet->size() > 0);
-      AXOM_DEBUG_VAR(bValid);
-      SLIC_CHECK_MSG(verboseOutput && !bValid,
-          "VirtualParentSubset -- if we are a subset and input set is non-empty, then parent set must be non-empty");
+      if(verboseOutput)
+      {
+        bool bValid = ( m_parentSet->size() > 0);
+        AXOM_DEBUG_VAR(bValid);
+        SLIC_CHECK_MSG(bValid,
+            "VirtualParentSubset -- if we are a subset and input set is non-empty, then parent set must be non-empty");
+      }
 
       // At this point, parent and child are both non-null -- ensure that all elts of child are in parent
       std::set<typename Set::ElementType> pSet;
@@ -145,10 +148,13 @@ namespace policies {
         return true;
 
       // Next, since child has at least one element, the parent cannot be empty
-      bool bValid = (m_parentSet->size() > 0);
-      AXOM_DEBUG_VAR(bValid);
-      SLIC_CHECK_MSG(verboseOutput && !bValid,
-          "VirtualParentSubset -- if input set is non-empty, then parent set must be non-empty");
+      if(verboseOutput)
+      {
+        bool bValid = (m_parentSet->size() > 0);
+        AXOM_DEBUG_VAR(bValid);
+        SLIC_CHECK_MSG(bValid,
+            "VirtualParentSubset -- if input set is non-empty, then parent set must be non-empty");
+      }
 
       // At this point, parent and child are both non-null
       std::set<typename Set::ElementType> pSet;
