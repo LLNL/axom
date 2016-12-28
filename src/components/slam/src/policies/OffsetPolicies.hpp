@@ -9,17 +9,18 @@
  */
 
 /**
- * \file
+ * \file OffsetPolicies.hpp
  *
  * \brief Offset policies for SLAM
  *
- * Offset policies are meant to represent the offset to the first element of SLAM ordered set
- *   A valid offset policy must support the following interface:
- *      [required]
- *      * DEFAULT_VALUE is a public static const IntType
- *      * offset() : IntType  -- returns the offset
- *      [optional]
- *      * operator(): IntType -- alternate accessor for the offset value
+ * Offset policies are meant to represent the offset to the first element of SLAM ordered set.
+ * A valid offset policy must support the following interface:
+ *   * [required]
+ *     * DEFAULT_VALUE is a public static constant of type IntType
+ *     * offset() : IntType  -- returns the offset
+ *     * isValid() : bool -- indicates whether the Offset policy of the set is valid
+ *   * [optional]
+ *     * operator(): IntType -- alternate accessor for the offset value
  */
 
 #ifndef SLAM_POLICIES_OFFSET_H_
@@ -51,10 +52,10 @@ namespace policies {
     RuntimeOffsetHolder(IntType off = DEFAULT_VALUE) : m_off(off) {}
 
     inline IntType          offset() const { return m_off; }
-    inline IntType&         offset()            { return m_off; }
+    inline IntType&         offset() { return m_off; }
 
     inline IntType operator ()() const { return offset(); }
-    inline IntType& operator()()       { return offset(); }
+    inline IntType& operator()() { return offset(); }
 
     inline bool             isValid(bool) const { return true; }
   private:
@@ -72,13 +73,15 @@ namespace policies {
 
     CompileTimeOffsetHolder(IntType val = DEFAULT_VALUE) {
       AXOM_DEBUG_VAR(val);
-      SLIC_ASSERT_MSG( val == INT_VAL
-          , "SLAM::CompileTimeOffsetHolder -- tried to initialize a compile time offset with value ("
+      SLIC_ASSERT_MSG( val == INT_VAL,
+          "SLAM::CompileTimeOffsetHolder -- tried to initialize a compile time offset with value ("
           << val << " ) that differs from the template parameter of " << INT_VAL << ".");
     }
 
-    inline IntType          offset()      const { return INT_VAL; }
-    inline IntType operator ()()  const { return offset(); }
+    inline IntType          offset() const { return INT_VAL; }
+
+    inline IntType operator ()() const { return offset(); }
+
     inline bool             isValid(bool) const { return true; }
   };
 
@@ -93,13 +96,15 @@ namespace policies {
     ZeroOffset(IntType val = DEFAULT_VALUE)
     {
       AXOM_DEBUG_VAR(val);
-      SLIC_ASSERT_MSG( val == DEFAULT_VALUE
-          , "SLAM::ZeroOffset policy -- tried to initialize a NoOffset policy with ("
+      SLIC_ASSERT_MSG( val == DEFAULT_VALUE,
+          "SLAM::ZeroOffset policy -- tried to initialize a NoOffset policy with ("
           << val << ", but should always be 0");
     }
 
-    inline IntType          offset()     const { return DEFAULT_VALUE; }
+    inline IntType          offset() const { return DEFAULT_VALUE; }
+
     inline IntType operator ()() const { return offset(); }
+
     inline bool             isValid(bool) const { return true; }
   };
 

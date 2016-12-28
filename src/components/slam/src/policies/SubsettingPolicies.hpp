@@ -9,17 +9,19 @@
  */
 
 /**
- * \file
+ * \file SubsettingPolicies.hpp
  *
  * \brief Subsetting policies for SLAM
  *
  * Subsetting policies encompass the type and availability of a set's parent
- *   A valid subset policy must support the following interface:
- *      [required]
- *      * indirection() : IntType  -- returns the value of the element after indirection
- *      * hasIndirection(): bool -- returns whether there is an indirection buffer
- *      [optional]
- *      * operator(): IntType -- alternate accessor for indirection
+ * A valid subset policy must support the following interface:
+ *   * [required]
+ *     * isSubset(): bool -- returns whether the set is a subset of another set
+ *     * parentSet() : ParentSetType -- returns a pointer to the parent set.
+ *                                      ATK_NULLPTR when isSubset() is false
+ *     * isValid() : bool -- indicates whether the Subsetting policy of the set is valid
+ *   * [optional]
+ *     * operator(): IntType -- alternate accessor for indirection
  */
 
 #ifndef SLAM_POLICIES_SUBSET_H_
@@ -46,7 +48,7 @@ namespace policies {
     typedef const Set ParentSetType;
 
     NoSubset() {}
-    NoSubset(ParentSetType*) {}     // This empty .ctor is here to satisfy SubsettingPolicy API
+    NoSubset(ParentSetType*) {}     // This empty .ctor is here to satisfy the SubsettingPolicy API
 
     /**
      * \brief Checks whether the set containing this policy class is a subset
@@ -71,7 +73,7 @@ namespace policies {
      */
     bool        isSubset() const { return *m_parentSet != s_nullSet; }
     const Set*  parentSet() const { return m_parentSet; }
-    Set*&       parentSet()       { return m_parentSet; }
+    Set*&       parentSet() { return m_parentSet; }
 
     template<typename OrderedSetIt>
     bool        isValid(OrderedSetIt beg, OrderedSetIt end, bool AXOM_DEBUG_PARAM(verboseOutput = false)) const
@@ -88,8 +90,8 @@ namespace policies {
       // Next, since child has at least one element, the parent cannot be empty
       bool bValid = ( m_parentSet->size() > 0);
       AXOM_DEBUG_VAR(bValid);
-      SLIC_CHECK_MSG(verboseOutput && !bValid
-          , "VirtualParentSubset -- if we are a subset and input set is non-empty, then parent set must be non-empty");
+      SLIC_CHECK_MSG(verboseOutput && !bValid,
+          "VirtualParentSubset -- if we are a subset and input set is non-empty, then parent set must be non-empty");
 
       // At this point, parent and child are both non-null -- ensure that all elts of child are in parent
       std::set<typename Set::ElementType> pSet;
@@ -101,8 +103,8 @@ namespace policies {
         {
           // For now, we only warn about the first failure '
           // Note: in the future, we might want to show all problems.
-          SLIC_CHECK_MSG(verboseOutput
-              , "VirtualParentSubset :: parent set does not contain element " << *beg << " so child cannot be a subset of parent");
+          SLIC_CHECK_MSG(verboseOutput,
+              "VirtualParentSubset :: parent set does not contain element " << *beg << " so child cannot be a subset of parent");
           return false;
         }
       }
@@ -125,7 +127,7 @@ namespace policies {
      */
     bool                  isSubset() const { return m_parentSet != AXOM_NULLPTR; }
     const ParentSetType*  parentSet() const { return m_parentSet; }
-    ParentSetType*&       parentSet()       { return m_parentSet; }
+    ParentSetType*&       parentSet() { return m_parentSet; }
 
 
     template<typename OrderedSetIt>
@@ -145,8 +147,8 @@ namespace policies {
       // Next, since child has at least one element, the parent cannot be empty
       bool bValid = (m_parentSet->size() > 0);
       AXOM_DEBUG_VAR(bValid);
-      SLIC_CHECK_MSG(verboseOutput && !bValid
-          , "VirtualParentSubset -- if input set is non-empty, then parent set must be non-empty");
+      SLIC_CHECK_MSG(verboseOutput && !bValid,
+          "VirtualParentSubset -- if input set is non-empty, then parent set must be non-empty");
 
       // At this point, parent and child are both non-null
       std::set<typename Set::ElementType> pSet;
@@ -158,8 +160,8 @@ namespace policies {
         {
           // For now, we only warn about the first failure '
           // Note: in the future, we might want to show all problems.
-          SLIC_CHECK_MSG(verboseOutput
-              , "ConcreteParentSubset :: parent set does not contain element " << *beg << " so child cannot be a subset of parent");
+          SLIC_CHECK_MSG(verboseOutput,
+              "ConcreteParentSubset :: parent set does not contain element " << *beg << " so child cannot be a subset of parent");
           return false;
         }
       }
@@ -169,7 +171,6 @@ namespace policies {
   private:
     ParentSetType* m_parentSet;
   };
-
 
   /// \}
 

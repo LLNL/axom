@@ -58,9 +58,12 @@ namespace slam {
 
 
 /**
- * \class
+ * \class OrderedSet
+ *
  * \brief Models a set whose elements can be defined as strided offsets of the position, possibly with a level of indirection.
- * \details Specifically, the element at position pos can be defined as:  static_cast<ElementType>( indirection[ pos * stride + offset ] )
+ *
+ * In an OrderedSet, the element at position pos can be defined as:
+ *     static_cast<ElementType>( indirection[ pos * stride + offset ] )
  */
   template<
     typename SizePolicy          = policies::RuntimeSizeHolder<Set::PositionType>,
@@ -111,32 +114,32 @@ namespace slam {
 #endif // AXOM_USE_BOOST
 
   public:
-    OrderedSet(PositionType size    = SizePolicyType::DEFAULT_VALUE
-        , PositionType offset  = OffsetPolicyType::DEFAULT_VALUE
-        , PositionType stride  = StridePolicyType::DEFAULT_VALUE
+    OrderedSet(PositionType size    = SizePolicyType::DEFAULT_VALUE,
+        PositionType offset  = OffsetPolicyType::DEFAULT_VALUE,
+        PositionType stride  = StridePolicyType::DEFAULT_VALUE
         // Note: constructor does not yet take an indirection type pointer...
-        //, const Set* parentSet = &s_nullSet
+        // const Set* parentSet = &s_nullSet
     )
-        : SizePolicyType(size)
-          , OffsetPolicyType(offset)
-          , StridePolicyType(stride)
+        : SizePolicyType(size),
+          OffsetPolicyType(offset),
+          StridePolicyType(stride)
           //, SubsettingPolicyType(parentSet)
     {}
 
     OrderedSet(const SetBuilder & builder)
-        : SizePolicyType(builder.m_size)
-          , OffsetPolicyType(builder.m_offset)
-          , StridePolicyType(builder.m_stride)
-          , IndirectionPolicyType(builder.m_data)
-          , SubsettingPolicyType(builder.m_parent)
+        : SizePolicyType(builder.m_size),
+          OffsetPolicyType(builder.m_offset),
+          StridePolicyType(builder.m_stride),
+          IndirectionPolicyType(builder.m_data),
+          SubsettingPolicyType(builder.m_parent)
     {}
 
     OrderedSet(const OrderedSet& oset)
-        : SizePolicyType(oset)
-          , OffsetPolicyType(oset)
-          , StridePolicyType(oset)
-          , IndirectionPolicyType(oset)
-          , SubsettingPolicyType(oset)
+        : SizePolicyType(oset),
+          OffsetPolicyType(oset),
+          StridePolicyType(oset),
+          IndirectionPolicyType(oset),
+          SubsettingPolicyType(oset)
     {}
 
 
@@ -144,9 +147,10 @@ namespace slam {
   public:
 
     /**
-     * \class
+     * \class SetBuilder
      * \brief Helper class for constructing an ordered set.
-     *  Uses named parameter idiom to enable function chaining and to better code self-documentation
+     *
+     *  Uses named parameter idiom to enable function chaining and for better code self-documentation
      * */
     struct SetBuilder
     {
@@ -158,8 +162,10 @@ namespace slam {
       SetBuilder& size(PositionType sz)          { m_size    = SizePolicyType(sz); return *this; }
       SetBuilder& offset(PositionType off)       { m_offset  = OffsetPolicyType(off); return *this; }
       SetBuilder& stride(PositionType str)       { m_stride  = StridePolicyType(str); return *this; }
-      SetBuilder& data(DataType* bufPtr)          { m_data   = IndirectionPolicyType(bufPtr); return *this; }
-      SetBuilder& parent(ParentSetType* parSet)   { m_parent = SubsettingPolicyType(parSet); return *this; }
+      SetBuilder& data(DataType* bufPtr)         { m_data   = IndirectionPolicyType(bufPtr); return *this; }
+      SetBuilder& parent(ParentSetType* parSet)  { m_parent = SubsettingPolicyType(parSet); return *this; }
+
+      /** Alternate means of setting the offset and size from a contiguous range of values */
       SetBuilder& range(PositionType lower, PositionType upper)
       {
         // Set by range rather than size and offset.
@@ -180,16 +186,17 @@ namespace slam {
 
 #ifdef AXOM_USE_BOOST
     /**
-     * \class
+     * \class OrdereSetIterator
      * \brief An iterator type for an ordered set
+     *
      * Uses the set's policies for efficient iteration
      */
     template<typename OrderedSet>
-    class OrderedSetIterator : public boost::iterator_facade< OrderedSetIterator<OrderedSet>
-                               , typename OrderedSet::ElementType
-                               , std::random_access_iterator_tag
-                               , typename OrderedSet::ElementType
-                               , typename OrderedSet::PositionType
+    class OrderedSetIterator : public boost::iterator_facade< OrderedSetIterator<OrderedSet>,
+                               typename OrderedSet::ElementType,
+                               std::random_access_iterator_tag,
+                               typename OrderedSet::ElementType,
+                               typename OrderedSet::PositionType
       >
     {
     public:
@@ -302,11 +309,12 @@ namespace slam {
     /// NOTE: All data for OrderedSet is associated with parent policy classes
   };
 
-  template< typename SizePolicy
-  , typename OffsetPolicy
-  , typename StridePolicy
-  , typename IndirectionPolicy
-  , typename SubsettingPolicy
+  template<
+    typename SizePolicy,
+    typename OffsetPolicy,
+    typename StridePolicy,
+    typename IndirectionPolicy,
+    typename SubsettingPolicy
   >
   bool OrderedSet<SizePolicy,OffsetPolicy, StridePolicy, IndirectionPolicy, SubsettingPolicy>::isValid(bool verboseOutput) const
   {
