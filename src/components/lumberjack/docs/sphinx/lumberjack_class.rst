@@ -31,9 +31,9 @@ Combiners
 ============== ===================
 Name           Description
 ============== ===================
-addCombiner    Total count of how many ranks generated the message
-removeCombiner File name that generated the message
-clearCombiners Line number that generated the message
+addCombiner    Adds a combiner to Lumberjack
+removeCombiner Removes a specific combiner from Lumberjack
+clearCombiners Removes all currently registered Combiners from Lumberjack
 ============== ===================
 
 Messages

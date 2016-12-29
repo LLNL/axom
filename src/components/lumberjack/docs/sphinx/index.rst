@@ -2,8 +2,9 @@
 Lumberjack User Documentation
 =============================
 
-Lumberjack is a C++ library that provides scalable logging while reducing
-the amount of messages written out the the screen or file system.
+Lumberjack, named because it cuts down logs, is a C++ library that
+provides scalable logging while reducing the amount of messages
+written out the screen or file system.
 
 
 Introduction
@@ -13,6 +14,27 @@ Lumberjack was created to provide scalable logging with a simple programming
 model while allowing developers to customize its behavior. It
 uses MPI and a scalable binary tree reduction scheme to combine duplicate
 messages and limit output to only the root node.
+
+
+Requirements
+------------
+
+* MPI - MPI is fundamental to Lumberjack and without MPI is not useful.
+* (Optional) C++11 - Can be optionally compiled with C++11 but not required.
+
+
+Code Guarding
+-------------
+
+You tell if the ASC Toolkit was built with Lumberjack by the following
+include and compiler define:
+
+.. code-block:: c
+
+    #include "common/config.hpp"
+    #ifdef ATK_USE_LUMBERJACK
+        // Lumberjack work
+    #endif
 
 
 Classes
@@ -48,6 +70,7 @@ Handles Message combination and tests whether Message classes should be combined
 .. toctree::
    :maxdepth: 1
 
+   core_concepts
    quick_start
    lumberjack_class
    message_class

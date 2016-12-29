@@ -34,10 +34,10 @@ BinaryTreeCommunicator
 .. note:: This is the recommended Communicator.
 
 This Communicator uses a standard Binary Tree design to scalably pass Messages between nodes.
-Rank 0 is the root of the Binary Tree and the only node allowed to output messages. Each single
+Rank 0 is the root of the Binary Tree and the only node allowed to output messages. For each single
 push, the child nodes send their currently held messages to their parents without waiting to
-receive messages themselves.  This communicator takes lg(number of nodes) to completely flush
-messages to the root node.
+receive messages themselves.  For a full push, this communicator takes the log of nodes to completely flush
+all currently held messages to the root node.
 
 .. _rootcommunicator_class_label:
 
