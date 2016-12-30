@@ -78,7 +78,7 @@ Use forward declarations when you can
 inclusions when possible. This may speed up compilation, especially when 
 recompiling after header file changes.
 
-.. note :: **Exceptions to this guideline:**
+.. note:: **Exceptions to this guideline:**
 
     * Header files that define external APIs for the Toolkit  
       project **must** include all header files for all types that 
@@ -88,11 +88,11 @@ recompiling after header file changes.
       is implemented in a header file, the header file containing the
       implementation **must** be included.
     
-    * Similarly, when using C++ standard library types in a header file, 
-      it **may** be preferable to include the actual headers (rather 
-      than forward reference headers (e.g., 'iosfwd') in the header file 
-      to make it easier to use. This avoids having explicit inclusion 
-      of standard headers wherever the header file is used.
+    * When using C++ standard library types in a header file, it **may** be 
+      preferable to include the actual headers rather than forward reference 
+      headers, such as 'iosfwd', to make the header file easier to use. This 
+      prevents users from having to explicitly include standard headers 
+      wherever your header file is used.
 
 4.6 A forward type declaration **must** be used in a header file when an 
 include statement would result in a circular dependency among header files. 
@@ -100,6 +100,8 @@ include statement would result in a circular dependency among header files.
 .. note:: Forward references, or C++ standard 'fwd' headers, are preferred
           over header file inclusions when they are sufficient.
 
+
+.. _headerincludeorder-label:
 
 ---------------------------------------------------------
 Organize header file contents for easy understanding
@@ -111,37 +113,41 @@ for all files.
       This improves code readability, helps to avoid misunderstood
       dependencies, and insures successful compilation regardless of
       dependencies in other files. A common, recommended header file 
-      inclusion ordering scheme is:
+      inclusion ordering scheme is (only some of these may be needed):
 
-      #. Related header (e.g., class header in class implementation file)
-      #. C library headers (if needed)
-      #. C++ library headers
-      #. Headers from other libraries
-      #. Project headers
+      #. Headers in the same Toolkit component
+      #. Other headers within the project
+      #. TPL headers; e.g., MPI, OpenMP, HDF5, etc.
+      #. C++ and C standard library headers
+      #. System headers
 
       Also, code is easier to understand when include files are ordered
       alphabetically within each of these sections and a blank line is
-      inserted between sections. Also, adding comments that describe the
-      header file categories are sometimes useful.  For example,
+      inserted between sections. Adding comments that describe the
+      header file categories can be helpful as well.  For example,
 
 .. code-block:: cpp
 
-         // Related header
-         #include "MyClass.hpp"
+         // Headers from this component
+         #include "OtherClassInThisComponent.hpp"
 
-         // C standard library (including non-std unistd.h)
+         // "other" component headers
+         #include "other/SomeOtherClass.hpp"
+
+         // C standard library 
          #include <stdio.h>
-         #include <unistd.h>
 
          // C++ standard library
          #include <unordered_map>
          #include <vector>
 
-         // "base" library headers
-         #include "base/Port.hpp"
+         // Non-std system header
+         #include <unistd.h>
 
-         // Headers from this project
-         #include "MyOtherClass.hpp"
+.. note:: Ideally, header file inclusion ordering should not matter. 
+          Inevitably, this will not always be the case. Following the
+          ordering prescription above helps to avoid problems when others'
+          header files are not constructed following best practices.
 
 
 4.8 Routines **should** be ordered and grouped in a header file so that
@@ -164,8 +170,9 @@ file declaration. Also, names in function declarations and definitions
 
           void doSomething(int, int, int);
 
-       When this is done, the only way to tell what the arguments are is
-       to look at the implementation or hope that it's documented well.
+       Without argument names, the only way to tell what the arguments mean is
+       to look at the implementation or hope that the method is documented 
+       well.
 
 
 .. _headerlayout-label:
@@ -181,13 +188,13 @@ are contained in the guidelines after the summary.
 
 .. code-block:: cpp
 
-   // (1) Doxygen file prologue
+   // (1) CS Toolkit copyright and release statement
 
-   // (2a) Header file include guard, e.g.,
+   // (2) Doxygen file prologue
+
+   // (3a) Header file include guard, e.g.,
    #ifndef MYCLASS_HPP
    #define MYCLASS_HPP
-
-   // (3) CS Toolkit copyright and release statement
 
    // (4) Header file inclusions (when NEEDED in lieu of forward declarations)
    #include "..."
@@ -220,26 +227,31 @@ are contained in the guidelines after the summary.
    // (6b) Project namespace closing brace
    } // asctoolkit namespace closing brace
 
-   // (2b) Header file include guard closing endif */
+   // (3b) Header file include guard closing endif */
    #endif // closing endif for header file include guard
 
 
-4.10 **(Item 1)** Each header file **must** begin with a Doxygen file prologue.
+4.10 **(Item 1)** Each header file **must** contain a comment section that 
+includes the CS Toolkit copyright and release statement.
 
       See :ref:`docsec-label` for details.
 
-4.11 **(Items 2a,2b)** The contents of each header file **must** be guarded 
+4.11 **(Item 2)** Each header file **must** begin with a Doxygen file prologue.
+
+      See :ref:`docsec-label` for details.
+
+4.12 **(Items 3a,3b)** The contents of each header file **must** be guarded 
 using a preprocessor directive that defines a unique "guard name" for the file.
 
       The guard must appear immediately after the file prologue and use the
       '#ifndef' directive (item 2a); this requires a closing '#endif' 
-      statement at the end of the file (item 2b). The preprocessor constant 
-      must use the file name followed by "_HPP"; e.g., "MYCLASS_HPP" as above.
+      statement at the end of the file (item 2b). 
 
-4.12 **(Item 3)** Each header file **must** contain a comment section that 
-includes the CS Toolkit copyright and release statement.
+      The preprocessor constant must use the file name followed by "_HPP" for
+      C++ header files; e.g., "MYCLASS_HPP" as above.
 
-      See :ref:`docsec-label` for details.
+      The preprocessor constant must use the file name followed by "_H" for
+      C header files.
 
 4.13 **(Item 4)** All necessary header file inclusion statements **must** 
 appear immediately after copyright and release statement and before any 
@@ -263,5 +275,5 @@ appropriate  namespace before any other statements (item 8).
 
 4.17 **(Item 9)** All class and other type definitions **must** appear 
 after header file inclusions and forward declarations. A proper class 
-prologue **must** appear before the class definition; see Section 4 
+prologue **must** appear before the class definition. See :ref:`docsec-label`
 for details.

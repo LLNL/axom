@@ -126,7 +126,7 @@ after the comma or semi-colon, not before. This helps make it clear that
 the statement continues on the next line.
 
 9.12 When a source line is broken at an arithmetic operator 
-(i.e., , -, etc.), it **should** be broken after the operator, not before. 
+(i.e., +, -, etc.), it **should** be broken after the operator, not before. 
 
 
 Use parentheses for clarity

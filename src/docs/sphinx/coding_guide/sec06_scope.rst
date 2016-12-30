@@ -26,21 +26,50 @@ Use namespaces to avoid name collisions
               // . . .
          }
 
-.. note:: We will change the top-level namespace at some point to shorten it.
+.. note::We will change the top-level namespace at some point to shorten it.
 
 6.2 Each Toolkit component **must** define its own unique namespace within
 the "asctoolkit" namespace. All contents of each component **must** reside
 within that namespace.
 
-6.3 When appropriate, code **should** be included in a nested namespace
-with a component or other project namespace.
+
+---------------------------------------------------------
+Use namespaces to hide non-API code in header files
+---------------------------------------------------------
+
+6.3 Code that must be appear in header files (e.g., templates) that is not 
+intended to be part of a public interface, such as helper classes/structs 
+and methods, **should** be placed in an internal namespace. 
+
+      Common names for such namespaces include 'internal' and 'detailed'. 
+      Any reasonable choice is acceptable; however, the choice **must**
+      be the same within each Toolkit component.
+
+      Note that declaring helper classes/structs private within a class 
+      definition is another good option. See :ref:`scopenestedclass-label`
+      for details.
+
+
+---------------------------------------------------------
+Use 'unnamed' namespace for hiding code in source files
+---------------------------------------------------------
+
+6.4 Classes/structs and methods that are meant to be used only internally to a 
+single source file **should** be placed in the 'unnamed' namespace to make
+them invisible outside the file.
+
+      This guarantees link-time name conflicts will not occur. For example::
+
+         namespace {
+            void myInternalFunction();
+         }
 
 
 ---------------------------------------------------------
 Apply the 'using directive' carefully
 ---------------------------------------------------------
 
-6.4 The 'using directive' **must not** be used in any header file.
+6.5 The 'using directive' **must not** be used in any header file.
 
       Applying this directive in a header file leverages a bad decision to
       circumvent the namespace across every file that directly or indirectly
@@ -51,11 +80,11 @@ Apply the 'using directive' carefully
           identifier and scope operator) if it resides in a different 
           namespace than the contents of the file.
 
-6.5 The 'using directive' **may** be used in a source file to avoid using a 
+6.6 The 'using directive' **may** be used in a source file to avoid using a 
 fully-qualified type name at each declaration. Using directives **must** appear
 after all "#include" directives in a source file.
 
-6.6 When only parts of a namespace are used in an implementation file, only 
+6.7 When only parts of a namespace are used in an implementation file, only 
 those parts **should** be included with a using directive instead of the 
 entire namespace contents.
 
@@ -67,21 +96,6 @@ entire namespace contents.
       rather than::
 
          using namespace std;
-
-
----------------------------------------------------------
-Use 'unnamed' namespaces for encapsulation
----------------------------------------------------------
-
-6.7 Non-member functions that are meant to be used only internally to a 
-single source file **should** be placed in the unnamed namespace to make
-them invisible outside the file.
-
-      This guarantees link-time name conflicts will not occur. For example::
-
-         namespace {
-            void myInternalFunction();
-         }
 
 
 ---------------------------------------------------------
@@ -97,7 +111,7 @@ Use access qualifiers to control class interfaces
       That is, order members using these access qualifiers in terms of 
       "decreasing scope of visibility".
 
-.. note :: Declaring methods before data members is preferred because methods 
+.. note:: Declaring methods before data members is preferred because methods 
            are more commonly considered part of a class interface. Also,
            separating methods and data into their own access qualified 
            sections usually helps make a class definition clearer.
@@ -132,6 +146,8 @@ every case, their usage **should** be carefully reviewed by the team.
       functions **should** be "public" and static data members **should** be 
       "private".
 
+
+.. _scopenestedclass-label:
 
 ---------------------------------------------------------
 Hide nested classes when possible
@@ -196,7 +212,7 @@ and as close to first use as possible.
 
       Beyond readability, this rule has benefits for thread safety, etc.
 
-.. note :: **Exception:** When a local variable is an object, its constructor 
+.. note:: **Exception:** When a local variable is an object, its constructor 
           and destructor may be invoked every time a scope (such as a loop) 
           is entered and exited, respectively. 
 

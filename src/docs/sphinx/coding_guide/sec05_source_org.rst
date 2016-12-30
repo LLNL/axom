@@ -29,6 +29,23 @@ name, such as "Foo.hpp" for the source file "Foo.cpp".
 .. note:: **Exceptions:** Test files may not require headers.
 
 
+---------------------------------------------------------------
+Header file include order should follow rules for header files 
+---------------------------------------------------------------
+
+5.2 The first header file inclusion in a source file **must** be the header
+file associated with the source file (when there is one). After that the
+rules for including headers in other headers apply. For example,
+
+.. code-block:: cpp
+
+         #include "MyAssociatedHeaderFile.hpp"
+
+         // Other header file inclusions...
+
+See :ref:`headerincludeorder-label` for header file inclusion rules.
+
+
 ---------------------------------------------------------
 Avoid extraneous header file inclusions
 ---------------------------------------------------------
@@ -64,9 +81,9 @@ are contained in the guidelines after the summary.
 
 .. code-block:: cpp
 
-   // (1) Doxygen file prologue
+   // (1) CS Toolkit copyright and release statement
 
-   // (2) CS Toolkit copyright and release statement
+   // (2) Doxygen file prologue
 
    // (3) Header file inclusions (only those that are NECESSARY)
    #include "..."
@@ -91,12 +108,12 @@ are contained in the guidelines after the summary.
    } // asctoolkit namespace closing brace
 
 
-5.4 **(Item 1)** Each source file **must** begin with a Doxygen file prologue.
+5.4 **(Item 1)** Each source file **must** contain a comment section that 
+includes the CS Toolkit copyright and release statement.
 
       See :ref:`docsec-label` for details.
 
-5.5 **(Item 2)** Each source file **must** contain a comment section that 
-includes the CS Toolkit copyright and release statement.
+5.5 **(Item 2)** Each source file **must** begin with a Doxygen file prologue.
 
       See :ref:`docsec-label` for details.
 
@@ -104,8 +121,8 @@ includes the CS Toolkit copyright and release statement.
 immediately after the copyright and release statement and before any 
 implementation statements in the file.
 
-.. note :: If a header is included in a header file, it **should not** be 
-           included in the associated source file.
+.. note:: If a header is included in a header file, it **should not** be 
+          included in the associated source file.
 
 5.7 **(Items 4a, 4b, 5a, 5b)** All contents in a source file **must** follow 
 the same namespace inclusion pattern as its corresponding header file 

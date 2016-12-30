@@ -18,11 +18,12 @@
 
 C++ is a huge language with many advanced and powerful features. To avoid
 over-indulgence and obfuscation, we would like to avoid C++ feature bloat.
-By constraining, or even banning, the use of certain language features and
-libraries we hope to keep code simple, portable, and avoid errors and
-problems that may occur when language features are not completely
-understood or used consistently. This section lists such restrictions and
-explains why use of certain features is constrained or restricted.
+By constraining or even banning the use of certain language features and
+libraries, we hope to keep our code simple and portable. We also hope to 
+avoid errors and problems that may occur when language features are not 
+completely understood or not used consistently. This section lists such 
+restrictions and explains why use of certain features is constrained or 
+restricted.
 
 
 --------------------------------------------------------------------
@@ -51,8 +52,8 @@ be provided that conforms to the 2003 C++ standard.
       Applications that use the CS Toolkit will expect the code to compile
       and run with full functionality on all platforms they use. 
 
-11.3 All C++11 usage **must** be guarded using the macro constant "USE_CXX11" 
-so that it can be compiled out of the code when necessary.
+11.3 All C++11 usage **must** be guarded using the macro constant 
+"ATK_USE_CXX11" so that it can be compiled out of the code when necessary.
 
    For example, suppose you have a class that you want to support *move*
    semantics when available (i.e., when using a C++11-compliant compiler)
@@ -95,9 +96,9 @@ No non-standard language constructs
 **must not** be used if they hinder portability.
 
 
-.. note :: Any deviation from these C++ usage requirements must be 
-           agreed on by all members of the team and vetted with our
-           main application users.
+.. note:: Any deviation from these C++ usage requirements must be 
+          agreed on by all members of the team and vetted with our
+          main application users.
 
 
 --------------------------------------------------------------------

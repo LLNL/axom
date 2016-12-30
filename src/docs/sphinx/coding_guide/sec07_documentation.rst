@@ -93,7 +93,7 @@ important information, etc.
 
 
 --------------------------------------------------------------------
-General Doxygen Usage
+General Doxygen usage
 --------------------------------------------------------------------
 
 The Doxygen code documentation system uses C or C++ style comment sections 
@@ -189,8 +189,8 @@ insures that Doxygen will properly associate the comment with the item.
 Doxygen inline comments
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-7.14 Inline Doxygen comments **may** for class/struct data members, enum 
-values, function arguments, etc. 
+7.14 Inline Doxygen comments **may** be used for class/struct data members, 
+enum values, function arguments, etc. 
 
       When inline comments are used, they **must** appear after the item 
       **on the same line** and **must** use the following syntax::
@@ -207,7 +207,7 @@ values, function arguments, etc.
 
 
 --------------------------------------------------------------------
-Copyright and Release Statement
+Copyright and release statement
 --------------------------------------------------------------------
 
 7.16 Each file **must** contain a comment section that includes the project
@@ -217,7 +217,7 @@ brevity, the complete release statement is summarized here to show the
 essential information. The full version can be found in any of the project 
 files.
 
-.. note :: Change this when we release the code.
+.. note:: Change this when we release the code.
 
 .. code-block:: cpp
 
@@ -231,9 +231,13 @@ files.
     * further review from Lawrence Livermore National Laboratory.
     */
 
+See :ref:`headerlayout-label` and :ref:`sourcelayout-label` for guidelines
+on placement of copyright and release statement in header and source files,
+respectively.
+
 
 --------------------------------------------------------------------
-File Documentation
+File documentation
 --------------------------------------------------------------------
 
 7.17 Each header file that declares a global type, method, etc. **must** 
@@ -266,6 +270,9 @@ have a Doxygen file prologue similar to the following:
           documentation to be generated for any global item (global function,
           typedef, enum, etc.) defined in the file.
 
+See :ref:`headerlayout-label` and :ref:`sourcelayout-label` for guidelines
+on placement of file prologue in header and source files, respectively.
+
 
 Brief and detailed comments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -280,7 +287,7 @@ the brief statement by a line containing no documentation text.
 
 
 --------------------------------------------------------------------
-Type Documentation
+Type documentation
 --------------------------------------------------------------------
 
 7.20 Each type and macro definition appearing in a header file **must** have 
@@ -333,7 +340,7 @@ using the "\\warning" Doxygen command as shown above.
 
 
 --------------------------------------------------------------------
-Function Documentation
+Function documentation
 --------------------------------------------------------------------
 
 7.25 Each unbound function **should** be be documented with a function 
@@ -502,7 +509,7 @@ rather than the header file where the function is declared.
 
 
 --------------------------------------------------------------------
-Data Member Documentation
+Data member documentation
 --------------------------------------------------------------------
 
 7.35 Each struct field or class data member **should** have a descriptive 
@@ -557,7 +564,7 @@ with a single descriptive comment.
 
 
 --------------------------------------------------------------------
-Summary of Common Doxygen commands
+Summary of common Doxygen commands
 --------------------------------------------------------------------
 
 This Section provides an overview of commonly used Doxygen commands.
@@ -573,19 +580,7 @@ described here.
    \\file 
      The "file" command is used to document a file. Doxygen requires
      that to document any global item (function, typedef, enum, etc.), the file
-     in which it is defined must be documented. 
-   \\if, \\endif
-     The "if" command, followed by a label, defines 
-     the start of a conditional documentation section. The section ends with a
-     matching "endif" command. Conditionals are typically used to 
-     enable/disable documentation sections. For example, this may be useful if
-     a project wants to provide documentation of all private class members 
-     for developer documentation, but wants to hide private members in 
-     documentation for users. Conditional sections are disabled by default 
-     and must be explicitly enabled in the Doxygen configuration file. 
-     Conditional blocks can be nested; nested sections are only enabled if 
-     all enclosing sections are. The "\\elseif" command is also available to 
-     provide more sophisticated control of conditional documentation.
+     in which it is defined **must be** documented. 
    \\name
      The "name" command, followed by a name containing no blank 
      spaces, is used to define a name that can be referred to elsewhere 

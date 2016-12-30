@@ -34,6 +34,8 @@ beyond what is presented in these guidelines.
 
 #. Josuttis, N., *The C++ Standard Library: A Tutorial and Reference, Second Edition*, Addison-Wesley, 2012.
 
+#. *LLVM Coding Standards*, llvm.org/docs/CodingStandards.html
+
 #. Meyers, S., *More Effective C++: 35 New Ways to Improve Your Programs and Designs*, Addison-Wesley, 1996.
 
 #. Meyers, S., *Effective STL: 50 Specific Ways to Improve Your Use of the Standard Template Library*, Addison-Wesley, 2001.

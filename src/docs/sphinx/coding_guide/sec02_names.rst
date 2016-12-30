@@ -75,7 +75,15 @@ the same style conventions.
 
       All directory names **should** use all lower case letters and consist 
       of a single word in most cases. A directory name with more than one 
-      word **should** use a 'hyphen' to separate words.
+      word **should** use an 'underscore' to separate words. 
+
+      For example, use::
+
+         cool_stuff
+
+      not ::
+
+         cool-stuff
 
 
 --------------------------------------------------------
@@ -89,7 +97,7 @@ respectively.
 **must** have extensions \*.h and \*.c, respectively. 
 
 2.8 Fortran source files (e.g., tests and examples, and generated API code) 
-**must** have the extension \*.f or \*.F . \*.F must be used if the 
+**must** have the extension \*.f or \*.F . \*.F **must** be used if the 
 preprocessor is needed to compile the source file.
 
 
@@ -111,7 +119,7 @@ the file extension, to make their association clear.
  
 
 -------------------------------------------------
-A file's contents should clear from its name
+File contents should be clear from file name
 -------------------------------------------------
 
 2.10 The name of each file **must** clearly indicate its contents.

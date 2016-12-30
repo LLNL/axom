@@ -126,13 +126,20 @@ defined, then the others **must** be defined.
       etc.). These special member functions will be called, if accessible. 
       If they are not user-defined, they are implicitly-defined by the compiler.
 
-      Compiler-generated special member functions are often incorrect 
+      Compiler-generated special member functions can be incorrect 
       if a class manages a resource whose handle is an object of 
-      non-class type. Consider a class data member which is a raw pointer to 
+      non-class type. Consider a class data member which is a bare pointer to 
       an object. The compiler-generated class destructor will not free the 
       object. Also, the compiler-generated copy constructor and copy-assignment
       operator will perform a "shallow copy"; i.e., they will copy the value 
       of the pointer without duplicating the underlying resource.
+
+      Neglecting to free a pointer or perform a deep copy when those operations
+      are expected can result in serious logic errors. Following the Rule of 
+      Three guards against such errors. On the rare occasion these actions are 
+      intentional, a programmer-written destructor, copy constructor, and 
+      copy-assignment operator are ideal places to document intent of
+      design decisions.
 
 
 Restrict copying of non-copyable resources
@@ -181,10 +188,27 @@ destructor, and copy assignment **may** be left undeclared. In this case,
 it is often helpful to add comments to the class header file indicating that 
 the compiler-generated versions of these methods will be used.
 
-8.10 If a class is default-constructable and has POD or bare pointer data 
-members, its default constructor **must** be defined explicitly and the 
-data members **must** be initialized explicitly. A compiler-generated version 
-of a default constructor will not initialize such members, in general.
+8.10 If a class is default-constructable and has POD ("plain old data") or 
+pointer data members, a default constructor **should** be provided explicitly 
+and its data members **must** be initialized explicitly if a default 
+constructor is provided. A compiler-generated default constructor will not 
+initialize such members, in general, and so will leave a constructed object 
+in an undefined state.
+
+      For example, the following class should provide a default constructor
+      and initialize its data members in it::
+
+	   class MyClass
+	   {
+	      MyClass();
+
+	      // ...
+
+	   private:
+              double* m_dvals;
+              int[]   m_ivals;
+              
+	   };
 
 
 Functors should always be copyable 
@@ -198,6 +222,21 @@ copy-assignment operator.
       small and simple, the compiler-generated versions of these methods 
       **may** be used without documenting the use of default value semantics 
       in the functor definition.
+
+      For example::
+
+	   class MyClass
+	   {
+	      // ...
+
+	   private:
+	      // The following methods are not implemented
+	      MyClass();
+	      MyClass(const MyClass&);
+	      void operator=(const MyClass&);
+
+	      // ...
+	   };
 
 
 .. _automethods-label:
@@ -532,9 +571,9 @@ Only inline a class constructor when it makes sense
       and initialization needed for its members and bases will appear at every 
       object declaration.
 
-.. note ::  **Exception:** A class/struct that has only POD ("plain old data")
-            members, is not a subclass, and does not explicitly declare a 
-            destructor, can have its constructor safely inlined in most cases.
+.. note::  **Exception:** A class/struct that has only POD members, is not 
+           a subclass, and does not explicitly declare a destructor, can 
+           have its constructor safely inlined in most cases.
 
 
 Do not inline virtual methods
@@ -630,17 +669,18 @@ Function arguments
 Consistent argument order makes interfaces easier to use
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-8.41 Function arguments **must** be ordered the same way for all routines 
+8.41 Function arguments **must** be ordered similarly for all routines 
 in a Toolkit component.
 
       Common conventions are either to put all input arguments first, then
-      outputs, or the other way around. Input and output and outputs
-      **must not** be mixed in a function signature. Parameters that are both
-      input and output can make the best choice unclear. Conventions consistent
-      with related functions **must** always be followed. When adding new
-      parameters to an existing method, the established ordering convention
-      **must** be followed. Do not just stick new parameters at the end of
-      the argument list.
+      outputs, or vice versa. Input and output arguments **must not** be mixed 
+      in a function signature. Parameters that are both input and output can 
+      make the best choice unclear. Conventions consistent with related 
+      functions **must** always be followed. When adding a new parameter to an 
+      existing method, the established ordering convention **must** be followed.
+
+.. note:: When adding an argument to an existing method, do not just stick it
+          at the end of the argument list.
 
 
 Pointer and reference arguments and const
@@ -698,7 +738,7 @@ control logic clear.
             return 0;
          }
 
-.. note :: **Exception.** If multiple return points actually fit well into the
+.. note:: **Exception.** If multiple return points actually fit well into the
           logical structure of some code, they **may** be used. For example, 
           a routine may contain extended if/else conditional logic with 
           several "if-else" clauses. If needed, the code may be more clear if
