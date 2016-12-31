@@ -16,13 +16,15 @@
 
 module quest_fortran_usage
 
-#ifndef USE_MPIF_HEADER
+#include "common/config.hpp"
+
+#ifndef ATK_USE_MPIF_HEADER
   use mpi
 #endif
   use quest_mod
   implicit none
 
-#ifdef USE_MPIF_HEADER
+#ifdef ATK_USE_MPIF_HEADER
   include 'mpif.h'
 #endif
 

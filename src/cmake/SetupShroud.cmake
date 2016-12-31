@@ -95,7 +95,7 @@ macro(add_shroud)
     )
 
     # Create target to process this Shroud file
-    set(_shroud_target shroud_${_basename})
+    set(_shroud_target generate_${_basename})
     add_custom_target(${_shroud_target}
         DEPENDS ${_timestamp}
     )
@@ -123,5 +123,9 @@ macro(add_shroud)
 endmacro(add_shroud)
 
 
-
-add_custom_target(generate)
+if(ENABLE_SHROUD)
+    message(STATUS "Shroud is enabled.")
+    add_custom_target(generate)
+else()
+    message(STATUS "Shroud is disabled.")
+endif()

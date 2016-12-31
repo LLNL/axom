@@ -19,7 +19,7 @@
 #define UNITTESTLOGGER_HPP_
 
 // Other CS Toolkit headers
-#include "common/config.hpp"
+#include "common/config.hpp"    // defines ATK_USE_CXX11
 
 // slic component headers
 #include "slic.hpp"
@@ -108,7 +108,7 @@ private:
   //
   // Unimplemented copy ctors and copy-assignment operators.
   //
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   UnitTestLogger( const UnitTestLogger& source ) = delete;
   UnitTestLogger( UnitTestLogger&& source ) = delete;
 

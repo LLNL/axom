@@ -195,10 +195,18 @@ subroutine dataview_get_data_{typename}{nd}{suffix}(view, value)
     implicit none
     class(dataview), intent(IN) :: view
     {f_type}, pointer, intent(OUT) :: value{shape}
+    {f_type}, pointer :: tmp(:)
     type(C_PTR) cptr
+    integer(SIDRE_LENGTH) :: offset
 
     cptr = view%get_void_ptr()
     if (c_associated(cptr)) then
+      offset = view%get_offset()
+      if (offset > 0) then
+        call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+        cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+      endif
+      
       call c_f_pointer(cptr, value)
     else
       nullify(value)
@@ -213,12 +221,20 @@ subroutine dataview_get_data_{typename}{nd}{suffix}(view, value)
     implicit none
     class(dataview), intent(IN) :: view
     {f_type}, pointer, intent(OUT) :: value{shape}
+    {f_type}, pointer :: tmp(:)
     type(C_PTR) cptr
     integer rank
     integer(SIDRE_LENGTH) extents({rank})
+    integer(SIDRE_LENGTH) :: offset
 
     cptr = view%get_void_ptr()
     if (c_associated(cptr)) then
+      offset = view%get_offset()
+      if (offset > 0) then
+        call c_f_pointer(cptr, tmp, [offset+1])   ! +1 to convert 0-based offset to 1-based index
+        cptr = c_loc(tmp(offset+1))               ! Emulates pointer arithmetic
+      endif
+
       rank = view%get_shape({rank}, extents)
       call c_f_pointer(cptr, value, extents)
     else

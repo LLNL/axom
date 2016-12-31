@@ -477,6 +477,16 @@ size_t SIDRE_dataview_get_total_bytes(const SIDRE_dataview * self)
 // splicer end class.DataView.method.get_total_bytes
 }
 
+size_t SIDRE_dataview_get_bytes_per_element(const SIDRE_dataview * self)
+{
+  const DataView * selfobj =
+    static_cast<const DataView *>(static_cast<const void *>(self));
+// splicer begin class.DataView.method.get_bytes_per_element
+  size_t rv = selfobj->getBytesPerElement();
+  return rv;
+// splicer end class.DataView.method.get_bytes_per_element
+}
+
 size_t SIDRE_dataview_get_num_elements(const SIDRE_dataview * self)
 {
   const DataView * selfobj =
@@ -485,6 +495,26 @@ size_t SIDRE_dataview_get_num_elements(const SIDRE_dataview * self)
   size_t rv = selfobj->getNumElements();
   return rv;
 // splicer end class.DataView.method.get_num_elements
+}
+
+size_t SIDRE_dataview_get_offset(const SIDRE_dataview * self)
+{
+  const DataView * selfobj =
+    static_cast<const DataView *>(static_cast<const void *>(self));
+// splicer begin class.DataView.method.get_offset
+  size_t rv = selfobj->getOffset();
+  return rv;
+// splicer end class.DataView.method.get_offset
+}
+
+size_t SIDRE_dataview_get_stride(const SIDRE_dataview * self)
+{
+  const DataView * selfobj =
+    static_cast<const DataView *>(static_cast<const void *>(self));
+// splicer begin class.DataView.method.get_stride
+  size_t rv = selfobj->getStride();
+  return rv;
+// splicer end class.DataView.method.get_stride
 }
 
 int SIDRE_dataview_get_num_dimensions(const SIDRE_dataview * self)

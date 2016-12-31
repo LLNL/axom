@@ -118,6 +118,16 @@ size_t SIDRE_databuffer_get_total_bytes(const SIDRE_databuffer * self)
 // splicer end class.DataBuffer.method.get_total_bytes
 }
 
+size_t SIDRE_databuffer_get_bytes_per_element(const SIDRE_databuffer * self)
+{
+  const DataBuffer * selfobj =
+    static_cast<const DataBuffer *>(static_cast<const void *>(self));
+// splicer begin class.DataBuffer.method.get_bytes_per_element
+  size_t rv = selfobj->getBytesPerElement();
+  return rv;
+// splicer end class.DataBuffer.method.get_bytes_per_element
+}
+
 void SIDRE_databuffer_print(const SIDRE_databuffer * self)
 {
   const DataBuffer * selfobj =

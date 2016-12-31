@@ -12,7 +12,7 @@
 
 #include "common/config.hpp"
 
-#ifndef USE_CXX11
+#ifndef ATK_USE_CXX11
 #include <sstream>
 #endif
 
@@ -23,7 +23,7 @@ namespace string {
 std::string intToString(int intValue)
 {
     std::string stringValue = "";
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
     stringValue += std::to_string(intValue);
 #else
     std::ostringstream ss;
@@ -36,7 +36,7 @@ std::string intToString(int intValue)
 int stringToInt(const std::string& stringValue)
 {
     int intValue = 0;
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
     intValue = stoi(stringValue);
 #else
     std::istringstream(stringValue) >> intValue;

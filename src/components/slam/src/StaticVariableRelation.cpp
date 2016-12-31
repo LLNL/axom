@@ -18,9 +18,6 @@
 namespace asctoolkit {
 namespace slam {
 
-
-
-
   StaticVariableRelation::StaticVariableRelation (Set* fromSet, Set* toSet)
       : m_fromSet(fromSet), m_toSet(toSet)
   {}
@@ -136,13 +133,17 @@ namespace slam {
               << std::endl;
       }
 
-      sstr << "\n** fromSetBeginsVec vec w/ size " << m_fromSetBeginsVec.size() << ": ";
-      std:: copy( m_fromSetBeginsVec.begin(), m_fromSetBeginsVec.end(), std::ostream_iterator<SetPosition>(sstr, " "));
+      const int fromSz = m_fromSetBeginsVec.size();
+      sstr << "\n** fromSetBeginsVec vec w/ size " << fromSz << ": ";
+      for(SetPosition i = 0; i< fromSz; ++i)
+        sstr << m_fromSetBeginsVec[i];
 
-      sstr << "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() << ": ";
-      std:: copy( m_toSetIndicesVec.begin(),  m_toSetIndicesVec.end(),  std::ostream_iterator<SetPosition>(sstr, " "));
+      const int toSz = m_toSetIndicesVec.size();
+      sstr << "\n** toSetIndices vec w/ size " << toSz << ": ";
+      for(SetPosition i = 0; i< toSz; ++i)
+        sstr << m_toSetIndicesVec[i];
 
-      std::cout << sstr.str() << std::endl;
+      SLIC_DEBUG(sstr.str());
 
     }
 

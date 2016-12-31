@@ -14,6 +14,9 @@
 
 #include "mpi.h"
 
+#include "slic/slic.hpp"
+#include "slic/UnitTestLogger.hpp"
+
 #include "common/FileUtilities.hpp"
 #include "sidre/DataGroup.hpp"
 #include "sidre/DataStore.hpp"
@@ -33,6 +36,8 @@ using namespace asctoolkit::utilities;
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
+  asctoolkit::slic::UnitTestLogger logger;
+
   SLIC_ASSERT(argc == 3);
 
   size_t num_files = 0;
@@ -67,7 +72,7 @@ int main(int argc, char * argv[])
   MPI_Barrier(MPI_COMM_WORLD);
 
   IOManager writer(MPI_COMM_WORLD);
-  writer.write(root, num_files, file_base, "conduit_hdf5");
+  writer.write(root, num_files, file_base, "sidre_hdf5");
 
   MPI_Barrier(MPI_COMM_WORLD);
   if (my_rank == 0) {
