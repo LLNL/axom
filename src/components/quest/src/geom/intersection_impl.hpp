@@ -1112,6 +1112,24 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
 
 /** @} */
 
+template < typename T >
+bool intersect_tri_segment(const Triangle<T, 3>& tri, const Segment<T,3>& S)
+{
+  typedef Vector<T,3> Vector3;
+  Ray<T,3> r1(S.source(), Vector3(S.source(), S.target()));
+  Ray<T,3> r2(S.target(), Vector3(S.target(), S.source()));
+
+  //Ray-triangle intersection does not check endpoints, so we explicitly check here
+  if (tri.checkInTriangle(r1.origin())) return true;
+  if (tri.checkInTriangle(r2.origin())) return true;
+
+  //if the two rays formed by the endpoints of the segment intersect the triangle, 
+  //than the triangle must intersect the triangle
+  if ((intersect_tri_ray(tri, r1)) && (intersect_tri_ray(tri, r2))) return true;
+  return false;
+}
+
+
 } /* end namespace detail */
 } /* end namespace quest */
 

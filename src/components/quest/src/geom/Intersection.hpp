@@ -149,6 +149,20 @@ bool intersect(const Triangle<T, 3>& tri, const Ray<T,3>& ray)
   return detail::intersect_tri_ray(tri, ray);
 }
 
+/*!
+ *******************************************************************************
+ * \brief Determines if a 3D triangle intersects a 3D segment.
+ * \param [in] tri A 3D triangle
+ * \param [in] seg A 3D line segment
+ * \return true iff tri intersects with seg, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T >
+bool intersect(const Triangle<T, 3>& tri, const Segment<T,3>& seg)
+{
+  return detail::intersect_tri_segment(tri, seg);
+}
+
 } /* end namespace quest */
 
 #endif /* INTERSECTION_HPP_ */

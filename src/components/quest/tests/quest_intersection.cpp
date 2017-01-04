@@ -694,6 +694,95 @@ TEST( quest_intersection, ray_aabb_intersection_tinyDirectionVector3D )
   //asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
 
+template<int DIM>
+void testTriSegBothEnds(const quest::Triangle<double, DIM> & tri,
+                        const quest::Point<double, DIM> & p1,
+                        const quest::Point<double, DIM> & p2,
+                        const std::string & whattest,
+                        const bool testtrue)
+{
+  SCOPED_TRACE(whattest);
+
+  quest::Segment< double, DIM > seg1(p1, p2);
+  quest::Segment< double, DIM > seg2(p2, p1);
+  if (testtrue) {
+    EXPECT_TRUE(intersect(tri, seg1));
+    EXPECT_TRUE(intersect(tri, seg2));
+  } else {
+    EXPECT_FALSE(intersect(tri, seg1));
+    EXPECT_FALSE(intersect(tri, seg2));
+  }
+}
+
+TEST(quest_intersection, triangle_segment_intersection)
+{
+  static int const DIM = 3;
+  typedef quest::Point< double,DIM >   PointType;
+  typedef quest::Triangle< double, DIM > TriangleType;
+  typedef quest::Ray< double, DIM > RayType;
+  typedef quest::Segment< double, DIM >  SegmentType;
+
+  double xArr[3] = { 1., 0., 0.};
+  double yArr[3] = { 0., 1., 0.};
+  double zArr[3] = { 0., 0., 1.};
+  double mArr[3] = { 1./3., 1./3., 1./3.};
+
+  PointType ptX(xArr);
+  PointType ptY(yArr);
+  PointType ptZ(zArr);
+  PointType ptM(mArr);
+  PointType r0 = PointType::make_point(5., 5., 5.);
+  PointType testp = PointType::make_point(6., 5., 5.)
+
+  TriangleType tri( ptX, ptY, ptZ );
+  SegmentType testSeg(r0, ptX);
+
+  // Clear miss
+  testTriSegBothEnds(tri, r0, testp, "clear miss", false);
+
+  // Succession of misses
+  // Copied from ray test, and testing both orders for segment (AB and BA)
+  testTriSegBothEnds(tri, r0, testp, "miss 1", false);
+  testp = PointType::make_point(0., .5, .6);
+  testTriSegBothEnds(tri, r0, testp, "miss 2", false);
+  testp = PointType::make_point(0., .85, .16);
+  testTriSegBothEnds(tri, r0, testp, "miss 3", false);
+  testp = PointType::make_point(.4, 1.2, 0);
+  testTriSegBothEnds(tri, r0, testp, "miss 4", false);
+  testp = PointType::make_point(1., 0.000001, 0);
+  testTriSegBothEnds(tri, r0, testp, "miss 5", false);
+  testp = PointType::make_point(0.4, 0, 0.7);
+  testTriSegBothEnds(tri, r0, testp, "miss 6", false);
+  testp = PointType::make_point(0.3, 0.4, 0.5);
+  testTriSegBothEnds(tri, r0, testp, "miss 7", false);
+  testp = PointType::make_point(0.4, 0.4, 0.4);
+  testTriSegBothEnds(tri, r0, testp, "miss 8", false);
+
+  // Some hits
+  testp = PointType::make_point(0.78, -0.2, -0.2);
+  testTriSegBothEnds(tri, r0, testp, "hit 1", true);
+  testp = PointType::make_point(0.4, 0.3, 0.2);
+  testTriSegBothEnds(tri, r0, testp, "hit 2", true);
+  testp = PointType::make_point(0.2, 0.2, 0.2);
+  testTriSegBothEnds(tri, r0, testp, "hit 3", true);
+
+  // End points, triangle boundaries
+  PointType testp2 = PointType::make_point(1., 1., 1.);
+  testp = PointType::make_point(1., .1, .1);
+  testTriSegBothEnds(tri, testp, testp2, "shy of corner", false);
+  testp = PointType::make_point(1., -.1, -.1);
+  testTriSegBothEnds(tri, testp, testp2, "beyond corner", true);
+  testTriSegBothEnds(tri, testp, ptX, "beyond corner 2", true);
+
+  testp2 = PointType::make_point(0, 1, 1);
+  testp = PointType::make_point(0, .4, .7);
+  testTriSegBothEnds(tri, testp, testp2, "shy of edge", false);
+  testp = PointType::make_point(0, .6, .3);
+  testTriSegBothEnds(tri, testp, testp2, "beyond edge", true);
+  testp = PointType::make_point(0, .7, .3);
+  testTriSegBothEnds(tri, testp, ptX, "beyond edge 2", true);
+}
+
 TEST(quest_intersection, triangle_ray_intersection)
 {
   static int const DIM = 3;
@@ -720,9 +809,7 @@ TEST(quest_intersection, triangle_ray_intersection)
   testRay = RayType(SegmentType(r0, PointType::make_point(6., 5., 5.)));
   EXPECT_FALSE(intersect(tri, testRay));
 
-  // Misses
-  testRay = RayType(SegmentType(r0, PointType::make_point(6., 5., 5.)));
-  EXPECT_FALSE(intersect(tri, testRay));
+  // More misses
   testRay = RayType(SegmentType(r0, PointType::make_point(0., 1., .6)));
   EXPECT_FALSE(intersect(tri, testRay));
   testRay = RayType(SegmentType(r0, PointType::make_point(0., .5, .6)));
