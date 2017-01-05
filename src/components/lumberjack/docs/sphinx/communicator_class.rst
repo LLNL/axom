@@ -44,7 +44,7 @@ all currently held messages to the root node.
 RootCommunicator
 ****************
 
-.. note:: This is not a recommended Communicator for production. It is provided for its simplistic design for debugging purposes.
+.. note:: This Communicator is useful for debugging purposes, but will not scale as well as the recommended BinaryTreeCommunicator.
 
 This Communicator has all nodes directly connecting to the root node which
 is rank 0.  The root node is the only node allowed to output messages.

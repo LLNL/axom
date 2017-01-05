@@ -4,7 +4,7 @@ Combiner Class
 ==============
 
 The Combiner class is an abstract base class that defines the interface for
-all Combiner classes.  Concrete instance need to inherit from this class and
+all Combiner classes.  Concrete instances need to inherit from this class and
 implement these functions to be used when Message classes are combined by the
 Lumberjack class.
 

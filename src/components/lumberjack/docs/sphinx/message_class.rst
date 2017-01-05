@@ -4,7 +4,7 @@ Message Class
 =============
 
 The Message class holds the information about a single message or multiple messages
-if it has been recognized as a duplicate and combined via a Combiner class.
+that were combined via a Combiner instance.
 
 Information
 ###########
