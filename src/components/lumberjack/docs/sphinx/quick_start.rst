@@ -8,8 +8,8 @@ and running with Lumberjack.  You can find this example in the repository under
 Lumberjack's examples directory.
 
 This example uses the Binary Tree Communicator and queues one unique message and
-three similar messages per rank.  They are combined and then pushed fully through
-the tree.
+three similar messages per rank.  They are combined and then :ref:`pushed <push_label>`
+fully through the tree.
 
 The following files need to be included for Lumberjack:
 
@@ -69,7 +69,8 @@ This queues the individual messages into Lumberjack:
     }
 
 
-This is how you fully push all Messages through the Communicator:
+This is how you fully :ref:`push <push_label>` all Messages through the Communicator,
+which also :ref:`combines <combine_label>` Messages before and after pushing :
 
 .. code-block:: c
 
@@ -77,8 +78,8 @@ This is how you fully push all Messages through the Communicator:
     lj.pushMessagesFully();
 
 
-Optionally, you could spread the pushing over the course of your work by doing the
-following:
+Optionally, you could spread the :ref:`pushing <push_label>` over the
+course of your work by doing the following:
 
 .. code-block:: c
 

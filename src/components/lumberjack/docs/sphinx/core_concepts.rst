@@ -6,6 +6,8 @@ Core Concepts
 The following are core concepts required to understand how Lumberjack works.
 
 
+.. _combine_label:
+
 Combining
 ---------
 
@@ -31,6 +33,8 @@ that happens is the second Message's ranks gets added to the first.  This is bec
 the text strings were equal.  This may not be the case for all Combiners that you write
 yourself.
 
+
+.. _push_label:
 
 Pushing
 -------
