@@ -4,7 +4,7 @@ Communicator Class
 ==================
 
 The Communicator class is an abstract base class that defines the interface for
-all Communicator classes.  Concrete instance need to inherit from this class and
+all Communicator classes.  Concrete instances need to inherit from this class and
 implement these functions to be used when the Lumberjack class does any communication
 work.
 

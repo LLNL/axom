@@ -60,7 +60,7 @@ This queues the individual messages into Lumberjack:
 
     // Queue messages into lumberjack
     if (commRank == 0){
-        lj.queueMessage("This message will not combined");
+        lj.queueMessage("This message will not be combined");
     }
     else {
         lj.queueMessage("This message will be combined");

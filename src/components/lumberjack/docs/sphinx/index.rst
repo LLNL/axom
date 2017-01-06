@@ -11,9 +11,9 @@ Introduction
 ------------
 
 Lumberjack was created to provide scalable logging with a simple programming
-model while allowing developers to customize its behavior. It
-uses MPI and a scalable binary tree reduction scheme to combine duplicate
-messages and limit output to only the root node.
+model while allowing developers to customize its behavior. It is named Lumberjack
+because it cuts down logs. It uses MPI and a scalable binary tree reduction
+scheme to combine duplicate messages and limit output to only the root node.
 
 
 Requirements
