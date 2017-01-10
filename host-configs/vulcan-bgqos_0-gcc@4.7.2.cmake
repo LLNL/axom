@@ -1,69 +1,57 @@
-###############################################################################
+##################################
+# uberenv host-config
 #
-# CMake Cache Seed file for bgqos_0 machines using gcc/g++ 4.7.2
-#
-###############################################################################
+# This is a generated file, edit at own risk.
+##################################
+# bgqos_0-gcc@4.7.2
+##################################
 
-#######
-# uberenv host-config for asctoolkit
-#######
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/toolkit/thirdparty_libs/builds/mirrorbgq/cmake/cmake_3.3.1/cmake-3.3.1/bin/cmake 
-###############################################################################
+# cmake executable path: /usr/global/tools/CMake/bgqos_0/cmake-3.1.2/bin/cmake
 
-# Select the c and c++ compiler though the standard CMake Variables.
-###############################################################################
-set(CMAKE_C_COMPILER "/usr/local/tools/compilers/ibm/mpicc-4.7.2" CACHE PATH "")
-set(CMAKE_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2" CACHE PATH "")
-set(CMAKE_Fortran_COMPILER "/usr/local/tools/compilers/ibm/mpif90-4.7.2" CACHE PATH "")
+#######
+# using gcc@4.7.2 compiler spec
+#######
 
+# c compiler used by spack
+set("CMAKE_C_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bggcc" CACHE PATH "")
 
-# python from uberenv
-set(PYTHON_EXECUTABLE "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/mirrorbgq/python/python-2.7.1/Python-2.7.11/python" CACHE PATH "")
+# cpp compiler used by spack
+set("CMAKE_CXX_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bgg++" CACHE PATH "")
 
-###############################################################################
-# Additional Compiler Flags
-###############################################################################
+# fortran compiler used by spack
+set("ENABLE_FORTRAN" "ON" CACHE PATH "")
 
-# additional flags for all configurations 
-#set(EXTRA_CXX_FLAGS "-DEXTRA_FLAGS_CXX_DEFINE" CACHE PATH "")
-
-# additional flags for debug builds
-# set(EXTRA_CXX_DEBUG_FLAGS "-DEXTRA_CXX_DEBUG_FLAGS_DEFINE" CACHE PATH "")
-
-# additional flags for debug builds
-# set(EXTRA_CXX_RELEASE_FLAGS "-DEXTRA_CXX_RELEASE_FLAGS_DEFINE" CACHE PATH "")
+set("CMAKE_Fortran_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bggfortran" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/mirrorbgq/hdf5/hdf5-1.8.16" CACHE PATH "")
+set("HDF5_DIR" "/usr/workspace/wsa/atk/bgq/tpl/asctoolkit/uberenv_libs/spack/opt/spack/bgqos_0/gcc-4.7.2/hdf5-1.8.16-cm6geju4apv6jsqeuglxg7odqyv5wqqt" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/mirrorbgq/conduit/conduit/build-debug/CMakeFiles/Export" CACHE PATH "")
+set("CONDUIT_DIR" "/usr/workspace/wsa/atk/bgq/tpl/asctoolkit/uberenv_libs/spack/opt/spack/bgqos_0/gcc-4.7.2/conduit-0.2.1-rbwzgejzcjjd2ytt5uujulocx55dgmty" CACHE PATH "")
+
+# sparsehash headers from uberenv
+set("SPARSEHASH_DIR" "/usr/workspace/wsa/atk/bgq/tpl/asctoolkit/uberenv_libs/spack/opt/spack/bgqos_0/gcc-4.7.2/sparsehash-headers-2.0.2-24icetuqyud64fxt3dfx3vxlucy5apk6" CACHE PATH "")
+
+# boost headers from uberenv
+set("ENABLE_BOOST" "ON" CACHE PATH "")
+
+set("BOOST_ROOT" "/usr/workspace/wsa/atk/bgq/tpl/asctoolkit/uberenv_libs/spack/opt/spack/bgqos_0/gcc-4.7.2/boost-headers-1.58.0-bgbbwvnccff6bzg32vt2dk5343c346jn" CACHE PATH "")
+
+# python not build by uberenv
+
+# lua not build by uberenv
+
+# doxygen not built by uberenv
+
+# sphinx not built by uberenv
+
+# uncrustify not built by uberenv
+
+# lcov and genhtml from uberenv
+# lcov and genhtml not built by uberenv
 
 ##################################
 # end uberenv host-config
 ##################################
 
-##############################################################################
-# !---------------------------------------------------------------------------
-##############################################################################
-# Options added manually to 
-# lc bgq gcc@4.7.2  host configs
-##############################################################################
-
-##############################################################################
-# MPI - manually added for now
-##############################################################################
-set(ENABLE_MPI ON CACHE PATH "")
-set(MPI_C_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2" CACHE PATH "")
-set(MPI_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2" CACHE PATH "")
-set(MPI_Fortran_COMPILER "/usr/local/tools/compilers/ibm/mpif90-4.7.2" CACHE PATH "")
-
-##############################################################################
-# GCOV - manually added for now
-##############################################################################
-#set(GCOV_PATH "/usr/apps/gnu/4.9.3/bin/gcov" CACHE PATH "")
-
-##############################################################################
-# !---------------------------------------------------------------------------
-##############################################################################
