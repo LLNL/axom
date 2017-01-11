@@ -10,7 +10,7 @@
 
 
 /*
- * \file slam_set_nullset.cpp
+ * \file slam_set_NullSet.cpp
  *
  * Unit tests for the NullSet class in Slam.
  */
@@ -24,7 +24,7 @@
 
 TEST(gtest_slam_set_nullset,construct)
 {
-  asctoolkit::slam::NullSet ns;
+  axom::slam::NullSet ns;
 
   // Test function: isValid()
   EXPECT_TRUE(  ns.isValid() );
@@ -80,3 +80,4 @@ int main(int argc, char * argv[])
 
   return result;
 }
+

@@ -22,7 +22,7 @@ static int const NUM_ELEMS = 5;
 
 TEST(gtest_slam_set_virtualbase,construct)
 {
-  asctoolkit::slam::Set* s = new asctoolkit::slam::RangeSet(NUM_ELEMS);
+  axom::slam::Set* s = new axom::slam::RangeSet(NUM_ELEMS);
 
   // Tests function: isValid()
   EXPECT_TRUE( s->isValid() );
@@ -34,7 +34,7 @@ TEST(gtest_slam_set_virtualbase,construct)
   EXPECT_EQ(NUM_ELEMS, s->size());
 
   // Tests function: at()
-  typedef asctoolkit::slam::Set::IndexType IndexType;
+  typedef axom::slam::Set::IndexType IndexType;
   for(IndexType idx = 0; idx < s->size(); ++idx)
   {
     EXPECT_EQ(idx, s->at(idx));
@@ -46,9 +46,9 @@ TEST(gtest_slam_set_virtualbase,construct)
 
 TEST(gtest_slam_set_virtualbase,equality)
 {
-  asctoolkit::slam::Set* s1 = new asctoolkit::slam::RangeSet(NUM_ELEMS);
-  asctoolkit::slam::Set* s2 = new asctoolkit::slam::RangeSet(NUM_ELEMS);
-  asctoolkit::slam::Set* s3 = new asctoolkit::slam::RangeSet(2 * NUM_ELEMS);
+  axom::slam::Set* s1 = new axom::slam::RangeSet(NUM_ELEMS);
+  axom::slam::Set* s2 = new axom::slam::RangeSet(NUM_ELEMS);
+  axom::slam::Set* s3 = new axom::slam::RangeSet(2 * NUM_ELEMS);
 
   // Tests function: isValid()
   EXPECT_TRUE(  s1->isValid() );

@@ -43,15 +43,6 @@
 #include "fmt/fmt.hpp"
 
 
-#ifndef USE_CONSTANT_RELATION
-  #define USE_CONSTANT_RELATION
-#endif
-
-#ifndef SLAM_USE_DOUBLE_ARRAY_ACCESS
-  #define SLAM_USE_DOUBLE_ARRAY_ACCESS
-#endif
-
-
 namespace slamUnstructuredHex {
 
   typedef axom::slam::MeshIndexType IndexType;
@@ -101,12 +92,8 @@ namespace slamUnstructuredHex {
     typedef axom::slam::StaticVariableRelation                                                    NodeToZoneRelation;
     typedef NodeToZoneRelation::RelationVecConstIterator                                                NodeZoneIterator;
 
-#ifdef USE_CONSTANT_RELATION
     typedef axom::slam::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE>  ZNStride;
     typedef axom::slam::StaticConstantRelation<ZNStride>                                          ZoneToNodeRelation;
-#else
-    typedef axom::slam::StaticVariableRelation                                                    ZoneToNodeRelation;
-#endif
     typedef ZoneToNodeRelation::RelationVecConstIterator                                                ZoneNodeIterator;
 
     typedef NodeSet::IndexType                                                                          IndexType;
@@ -206,13 +193,14 @@ namespace slamUnstructuredHex {
       vtkMesh >> junk;
       vtkMesh >> numZones;
       vtkMesh >> listSize;
-      IndexType numNodeZoneIndices = listSize - numZones;
+      IndexType numNodeZoneIndices = numZones * (HexMesh::NODES_PER_ZONE);
 
-      // This is only because we're assuming Hex's.  General meshes can be different.
-      SLIC_ASSERT_MSG( numZones * (HexMesh::NODES_PER_ZONE) == numNodeZoneIndices, fmt::format(
-            "Error while reading mesh!\n numZones = {0}; numZones*{1} = {2}; numNodeZoneIndices = {3}",
+      // Note: The VTK format has an extra value per zone for the number of indices
+      // This is constant since we're assuming a Hex mesh.  General meshes can be different.
+      SLIC_ASSERT_MSG( (listSize - numZones) == numNodeZoneIndices, fmt::format(
+            "Error while reading mesh!\n numZones = {0}; numZones*{1} = {2}; indices in file = {3}",
             numZones, static_cast<int>(HexMesh::NODES_PER_ZONE),
-            numZones * (HexMesh::NODES_PER_ZONE), numNodeZoneIndices ));
+            numNodeZoneIndices, listSize - numZones));
       SLIC_INFO("-- Number of zones: " << numZones );
 
       // Create the set of Zones
@@ -221,21 +209,11 @@ namespace slamUnstructuredHex {
       // Create the topological incidence relation from zones to nodes
       mesh->relationZoneNode = HexMesh::ZoneToNodeRelation(&mesh->zones, &mesh->nodes);
 
-      // Read in and encode this as a static variable relation
-      // TODO: Replace with a static constant relation when that class is developed
+      // Read in and encode this as a static constant relation
       typedef HexMesh::ZoneToNodeRelation::RelationVec  RelationVec;
       typedef RelationVec::iterator                     RelationVecIterator;
 
-    #ifdef USE_CONSTANT_RELATION
       IndexType const STRIDE = HexMesh::NODES_PER_ZONE;
-    #else
-      // Setup the 'begins' vector  -- exploits the fact that the relation is constant
-      RelationVec beginsVec( mesh->zones.size() + 1 );
-      for(HexMesh::IndexType idx = 0; idx <= mesh->zones.size(); ++idx)
-      {
-        beginsVec[idx] = idx * HexMesh::NODES_PER_ZONE;
-      }
-    #endif
 
       // Setup the 'offsets' vector into the index space of the nodes set
       RelationVec offsetsVec ( numNodeZoneIndices );
@@ -246,9 +224,11 @@ namespace slamUnstructuredHex {
       {
         vtkMesh >> nodeCount;
 
-        SLIC_ASSERT_MSG( nodeCount == HexMesh::NODES_PER_ZONE
-            , "Unsupported mesh type with zone = "  << *zIt << ", nodeCount = " << nodeCount
-                                                    << " (expected " << HexMesh::NODES_PER_ZONE << ")");
+        SLIC_ASSERT_MSG(
+          nodeCount == HexMesh::NODES_PER_ZONE,
+          "Unsupported mesh type with zone = "
+          << *zIt << ", nodeCount = " << nodeCount
+          << " (expected " << HexMesh::NODES_PER_ZONE << ")");
 
         for( IndexType n = 0; n < (HexMesh::NODES_PER_ZONE); ++n )
         {
@@ -258,11 +238,7 @@ namespace slamUnstructuredHex {
 
 
       // Set the relation here by copying over the data buffers
-    #ifdef USE_CONSTANT_RELATION
-      mesh->relationZoneNode. bindRelationData( offsetsVec, STRIDE);
-    #else
-      mesh->relationZoneNode. bindRelationData( beginsVec,  offsetsVec);
-    #endif
+      mesh->relationZoneNode.bindRelationData( offsetsVec, STRIDE);
 
       // Check that the relation is valid
       SLIC_ASSERT_MSG(  mesh->relationZoneNode.isValid(), "Error creating (static) relation from zones to nodes!");
@@ -297,15 +273,6 @@ namespace slamUnstructuredHex {
     for(HexMesh::ZoneSet::iterator zIt = mesh->zones.begin(); zIt < mesh->zones.end(); ++zIt)
     {
       IndexType const& zoneIdx = *zIt;
-#ifndef SLAM_USE_DOUBLE_ARRAY_ACCESS
-      typedef HexMesh::ZoneToNodeRelation::RelationVecConstIteratorPair RelVecItPair;
-      for(RelVecItPair znItPair  = mesh->relationZoneNode.range(zoneIdx); znItPair.first < znItPair.second; ++znItPair.first )
-      {
-        IndexType const& nodeIdx = *(znItPair.first);
-        tmpZonesOfNode.insert( nodeIdx, zoneIdx );
-        ++numZonesOfNode;
-      }
-#else
       HexMesh::ZoneToNodeRelation::RelationSet zNodeSet = mesh->relationZoneNode[zoneIdx];
       const IndexType numZN = mesh->relationZoneNode.size(*zIt);
       for(IndexType idx = 0; idx < numZN; ++idx)
@@ -314,7 +281,6 @@ namespace slamUnstructuredHex {
         tmpZonesOfNode.insert( nodeIdx, zoneIdx );
         ++numZonesOfNode;
       }
-#endif
     }
     SLIC_ASSERT_MSG( tmpZonesOfNode.isValid(), "Error creating (dynamic) relation from nodes to zones!\n");
 
@@ -446,8 +412,6 @@ int main(int argc, char** argv)
   DataType expectedResults[] = {0.10736689892, 0.037977237476, 0.013251067479, 0.0046357167735};
   AXOM_DEBUG_VAR(expectedResults);
 
-  // Parse command line for data directory, with fallback
-  const std::string DEFAULT_DATA_DIR = "../src/components/slam/data";
   std::string dataDir;
 
   if(argc > 1)
@@ -456,6 +420,8 @@ int main(int argc, char** argv)
   }
   else
   {
+    // Parse command line for data directory, with fallback
+    const std::string DEFAULT_DATA_DIR = "../src/components/slam/data";
     dataDir = DEFAULT_DATA_DIR;
     SLIC_INFO("Using default data directory "
         << DEFAULT_DATA_DIR
@@ -471,6 +437,8 @@ int main(int argc, char** argv)
     HexMesh hexMesh;
     readHexMesh( meshName, &hexMesh );
 
+    SLIC_ASSERT(hexMesh.relationNodeZone.isValid());
+    SLIC_ASSERT(hexMesh.relationZoneNode.isValid());
     //--------------------------------------------------------------
 
     // Now build the node to zone relation
@@ -493,7 +461,7 @@ int main(int argc, char** argv)
         "Error differed from expected value -- "
         << fmt::format("Expected {}, but got {} (difference: {}",
         expectedResults[res], errVal, errVal - expectedResults[res]));
-//}
+
     SLIC_INFO("-- done.\n");
   }
 

@@ -20,16 +20,14 @@
 #ifndef SLAM_STATIC_CONSTANT_RELATION_HPP_
 #define SLAM_STATIC_CONSTANT_RELATION_HPP_
 
-#ifndef SLAM_STATIC_CONSTANT_RELATION_ITERATOR_USE_PROXY
-//  #define SLAM_STATIC_CONSTANT_RELATION_ITERATOR_USE_PROXY
-#endif
-
 
 #include <vector>
 
 //#include <iostream>
 
+#include "axom/config.hpp"   // for AXOM_USE_BOOST
 #include "axom/Macros.hpp"
+
 #include "slic/slic.hpp"
 
 #include "slam/OrderedSet.hpp"
@@ -55,66 +53,56 @@
 namespace axom {
 namespace slam    {
 
-  template< typename StridePolicy = policies::RuntimeStrideHolder<Set::PositionType>
-  , typename FromSetType = Set
-  , typename ToSetType = Set
+  template<
+    typename StridePolicy = policies::RuntimeStrideHolder<Set::PositionType>,
+    typename FromSetType = Set,
+    typename ToSetType = Set
   >
-  class StaticConstantRelation : public Relation
-                                 , StridePolicy
+  class StaticConstantRelation : public Relation, StridePolicy
   {
-#ifdef SLAM_STATIC_CONSTANT_RELATION_ITERATOR_USE_PROXY
-  private:
-    /**
-     * A small helper class to allow double subscripting on the relation
-     */
-    class SubscriptProxy {
-    public:
-      SubscriptProxy(RelationVecConstIterator it, SetPosition stride) : m_iter(it), m_stride(stride) {}
-      SetPosition const& operator[](SetPosition index) const
-      {
-        SLIC_ASSERT_MSG( index < m_stride, "Inner array access out of bounds."
-            << "\n\tPresented value: " << index
-            << "\n\tMax allowed value: " << static_cast<int>(m_stride - 1));
-        return m_iter[index];
-      }
-    private:
-      RelationVecConstIterator m_iter;
-      SetPosition m_stride;
-    };
-#endif
-
   public:
 
-    typedef StridePolicy                                                                                              StridePolicyType;
+    typedef StridePolicy                                                  StridePolicyType;
 
     //-----
 
-    typedef Relation::SetPosition                                                                                     SetPosition;
+    typedef Relation::SetPosition                                         SetPosition;
 
-    typedef std::vector<SetPosition>                                                                                  RelationVec;
-    typedef RelationVec::iterator                                                                                     RelationVecIterator;
-    typedef std::pair<RelationVecIterator,RelationVecIterator>                                                        RelationVecIteratorPair;
+    typedef std::vector<SetPosition>                                      RelationVec;
 
-    typedef RelationVec::const_iterator                                                                               RelationVecConstIterator;
-    typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>                                              RelationVecConstIteratorPair;
+#ifdef AXOM_USE_BOOST
+    typedef RelationVec::iterator                                         RelationVecIterator;
+    typedef std::pair<RelationVecIterator,RelationVecIterator>            RelationVecIteratorPair;
 
-    typedef typename policies::StrideToSize<StridePolicyType, SetPosition, StridePolicyType::DEFAULT_VALUE>::SizeType CorrespondingSizeType;
-    typedef OrderedSet< CorrespondingSizeType      // The cardinality of each relational operator is determined by the StridePolicy of the relation
-        , policies::RuntimeOffsetHolder<Set::PositionType>
-        , policies::StrideOne<Set::PositionType>
-        , policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
+    typedef RelationVec::const_iterator                                   RelationVecConstIterator;
+    typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>  RelationVecConstIteratorPair;
+#endif // AXOM_USE_BOOST
+
+    typedef typename policies::StrideToSize<
+          StridePolicyType,
+          SetPosition,
+          StridePolicyType::DEFAULT_VALUE>::SizeType CorrespondingSizeType;
+
+    // The cardinality of each relational operator is determined by the StridePolicy of the relation
+    typedef OrderedSet< CorrespondingSizeType,
+        policies::RuntimeOffsetHolder<Set::PositionType>,
+        policies::StrideOne<Set::PositionType>,
+        policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
 
     struct RelationBuilder;
 
   public:
-    StaticConstantRelation ( FromSetType* fromSet = EmptySetTraits<FromSetType>::emptySet()
-        , ToSetType* toSet = EmptySetTraits<ToSetType>::emptySet() )
-        : StridePolicy(CorrespondingSizeType::DEFAULT_VALUE), m_fromSet(fromSet), m_toSet(toSet) {}
+    StaticConstantRelation (
+      FromSetType* fromSet = EmptySetTraits<FromSetType>::emptySet(),
+      ToSetType* toSet = EmptySetTraits<ToSetType>::emptySet() )
+        : StridePolicy(CorrespondingSizeType::DEFAULT_VALUE),
+          m_fromSet(fromSet),
+          m_toSet(toSet) {}
 
     StaticConstantRelation( const RelationBuilder & builder)
-        : StridePolicy(builder.m_stride)
-          , m_fromSet(builder.m_fromSet)
-          , m_toSet(builder.m_toSet)
+        : StridePolicy(builder.m_stride),
+          m_fromSet(builder.m_fromSet),
+          m_toSet(builder.m_toSet)
     {}
 
     ~StaticConstantRelation(){}
@@ -126,8 +114,8 @@ namespace slam    {
       friend class StaticConstantRelation;
 
       RelationBuilder()
-          : m_fromSet( EmptySetTraits<FromSetType>::emptySet() )
-            , m_toSet( EmptySetTraits<ToSetType>::emptySet() )
+          : m_fromSet( EmptySetTraits<FromSetType>::emptySet() ),
+            m_toSet( EmptySetTraits<ToSetType>::emptySet() )
       {}
 
       RelationBuilder&  fromSet(FromSetType* pFromSet)  { m_fromSet = pFromSet; return *this; }
@@ -159,6 +147,7 @@ namespace slam    {
       std::copy(toOffsets.begin(), toOffsets.end(), std::back_inserter(m_toSetIndicesVec));
     }
 
+#ifdef AXOM_USE_BOOST
     RelationVecConstIterator begin(SetPosition fromSetIndex)       const
     {
       verifyPosition(fromSetIndex);
@@ -175,13 +164,8 @@ namespace slam    {
     {
       return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
     }
+#endif // AXOM_USE_BOOST
 
-#ifdef SLAM_STATIC_CONSTANT_RELATION_ITERATOR_USE_PROXY
-    const SubscriptProxy operator[](SetPosition fromSetElt) const
-    {
-      return SubscriptProxy( begin(fromSetElt), size(fromSetElt) );
-    }
-#else
     /**
      * This function returns the OrderedSet of all elements in the toSet related to 'fromSetElt' in the fromSet.
      */
@@ -194,7 +178,6 @@ namespace slam    {
              .data( &m_toSetIndicesVec)
       ;
     }
-#endif
 
     /**
      * Returns the number of elements in toSet related to item at position fromSetIndex of fromSet
@@ -205,7 +188,7 @@ namespace slam    {
     }
 
     /**
-     * Checks the validity of the relation
+     * \brief Checks the validity of the relation
      */
     bool isValid(bool verboseOutput = false) const;
 
@@ -342,10 +325,18 @@ namespace slam    {
       if(m_toSet)
         sstr << "\n** toSet has size " << m_toSet->size() << ": ";
 
-      int toSize = m_toSetIndicesVec.size();
-      sstr << "\n** toSetIndices vec w/ size " <<  toSize << ": ";
-      for(int i = 0; i< toSize; ++i)
-        sstr << m_toSetIndicesVec[i];
+      sstr  << "\n** relation data "
+            << "(total size: " << m_toSetIndicesVec.size() << "):\n";
+      for(int i = 0; i < m_fromSet->size(); ++i)
+      {
+        sstr << "\t[ ";
+        RelationSet fSet = (*this)[i];
+        for(int j = 0; j < fSet.size(); ++j)
+        {
+          sstr << fSet[j] << " ";
+        }
+        sstr << "]\n";
+      }
 
       SLIC_DEBUG( sstr.str() );
 

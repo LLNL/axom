@@ -24,7 +24,7 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
-#include "common/config.hpp"
+#include "axom/config.hpp"  // for AXOM_USE_BOOST
 
 #include "slic/slic.hpp"
 
@@ -32,7 +32,7 @@
 #include "slam/RangeSet.hpp"
 
 namespace {
-  typedef asctoolkit::slam::RangeSet  SetType;
+  typedef axom::slam::RangeSet  SetType;
   typedef SetType::PositionType       SetPosition;
   typedef SetType::ElementType        SetElement;
 
@@ -188,7 +188,7 @@ TEST(gtest_slam_range_set,iterate)
     SLIC_INFO(sstr.str());
   }
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   SLIC_INFO("Testing iterator access");
   {
     std::stringstream sstr;
@@ -212,13 +212,13 @@ TEST(gtest_slam_range_set,out_of_range)
   SetType s(lowerIndex, upperIndex);
 
   SLIC_INFO("Using random access on invalid address -- Note: We are testing for the expected failures.");
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( s.at(upperIndex),   "");
-  ASSERT_DEATH( s.at(MAX_SET_SIZE), "");
+  EXPECT_DEATH_IF_SUPPORTED( s.at(upperIndex),   "");
+  EXPECT_DEATH_IF_SUPPORTED( s.at(MAX_SET_SIZE), "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -228,9 +228,9 @@ TEST(gtest_slam_range_set,out_of_range)
 
 TEST(gtest_slam_generic_range_set,virtual_parent_set)
 {
-  namespace policies = asctoolkit::slam::policies;
+  namespace policies = axom::slam::policies;
 
-  typedef asctoolkit::slam::GenericRangeSet<
+  typedef axom::slam::GenericRangeSet<
         policies::StrideOne<SetPosition>,
         policies::NoIndirection<SetPosition,SetElement>,
         policies::VirtualParentSubset>        GenericRangeSet;
@@ -274,11 +274,11 @@ TEST(gtest_slam_generic_range_set,virtual_parent_set)
 
 TEST(gtest_slam_generic_range_set,concrete_parent_set)
 {
-  namespace policies = asctoolkit::slam::policies;
+  namespace policies = axom::slam::policies;
 
   typedef SetType ParentType;
 
-  typedef asctoolkit::slam::GenericRangeSet<
+  typedef axom::slam::GenericRangeSet<
         policies::StrideOne<SetPosition>,
         policies::NoIndirection<SetPosition,SetElement>,
         policies::ConcreteParentSubset<ParentType> >        GenericRangeSet;
@@ -326,7 +326,7 @@ TEST(gtest_slam_generic_range_set,concrete_parent_set)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
@@ -338,7 +338,7 @@ int main(int argc, char * argv[])
 
   // finalized when exiting main scope
 
-  //asctoolkit::slic::debug::checksAreErrors = true;
+  //axom::slic::debug::checksAreErrors = true;
 
   result = RUN_ALL_TESTS();
 

@@ -136,13 +136,32 @@ namespace slam {
       const int fromSz = m_fromSetBeginsVec.size();
       sstr << "\n** fromSetBeginsVec vec w/ size " << fromSz << ": ";
       for(SetPosition i = 0; i< fromSz; ++i)
-        sstr << m_fromSetBeginsVec[i];
+        sstr << m_fromSetBeginsVec[i] << " ";
 
       const int toSz = m_toSetIndicesVec.size();
       sstr << "\n** toSetIndices vec w/ size " << toSz << ": ";
       for(SetPosition i = 0; i< toSz; ++i)
-        sstr << m_toSetIndicesVec[i];
+        sstr << m_toSetIndicesVec[i] << " ";
 
+      sstr  << "\n** relation data "
+            << "(total size: " << m_toSetIndicesVec.size() << "):\n";
+
+      bool hasData = m_fromSet != AXOM_NULLPTR
+          && !m_fromSetBeginsVec.empty()
+          && !m_toSetIndicesVec.empty();
+      if(hasData)
+      {
+        for(int i = 0; i < m_fromSet->size(); ++i)
+        {
+          sstr << "\t[ ";
+          RelationSet fSet = (*this)[i];
+          for(int j = 0; j < fSet.size(); ++j)
+          {
+            sstr << fSet[j] << " ";
+          }
+          sstr << "]\n";
+        }
+      }
       SLIC_DEBUG(sstr.str());
 
     }

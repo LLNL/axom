@@ -18,7 +18,7 @@
  *   * [required]
  *     * isSubset(): bool -- returns whether the set is a subset of another set
  *     * parentSet() : ParentSetType -- returns a pointer to the parent set.
- *                                      ATK_NULLPTR when isSubset() is false
+ *                                      AXOM_NULLPTR when isSubset() is false
  *     * isValid() : bool -- indicates whether the Subsetting policy of the set is valid
  *   * [optional]
  *     * operator(): IntType -- alternate accessor for indirection

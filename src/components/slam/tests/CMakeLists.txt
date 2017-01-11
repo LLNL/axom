@@ -11,9 +11,9 @@ set(gtest_slam_tests
     slam_set_IndirectionSet.cpp
 
     # test relations
-    slam_DynamicVariableRelation.cpp
-    slam_StaticVariableRelation.cpp
-    slam_StaticConstantRelation.cpp
+    slam_relation_DynamicVariable.cpp
+    slam_relation_StaticVariable.cpp
+    slam_relation_StaticConstant.cpp
 
     # test maps
     slam_Map.cpp

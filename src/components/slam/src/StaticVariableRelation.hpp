@@ -29,6 +29,8 @@
 
 //#include <iostream>
 
+#include "axom/config.hpp"   // for AXOM_USE_BOOST
+
 #include "slic/slic.hpp"
 #include "slam/OrderedSet.hpp"
 #include "slam/NullSet.hpp"
@@ -40,37 +42,18 @@ namespace slam    {
 
   class StaticVariableRelation : public Relation
   {
-
-#ifdef SLAM_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
-  private:
-    /**
-     * A small helper class to allow double subscripting on the relation
-     */
-    class SubscriptProxy {
-    public:
-      SubscriptProxy(RelationVecConstIterator it, SetPosition size) : m_iter(it), m_size(size) {}
-      SetPosition const& operator[](SetPosition index) const
-      {
-        SLIC_ASSERT_MSG( index < m_size, "Inner array access out of bounds."
-            << "\n\tPresented value: " << index
-            << "\n\tMax allowed value: " << static_cast<int>(m_size - 1));
-        return m_iter[index];
-      }
-    private:
-      RelationVecConstIterator m_iter;
-      SetPosition m_size;
-    };
-#endif
-
   public:
     typedef Relation::SetPosition                                         SetPosition;
 
     typedef std::vector<SetPosition>                                      RelationVec;
+
+#ifdef AXOM_USE_BOOST
     typedef RelationVec::iterator                                         RelationVecIterator;
     typedef std::pair<RelationVecIterator,RelationVecIterator>            RelationVecIteratorPair;
 
     typedef RelationVec::const_iterator                                   RelationVecConstIterator;
     typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>  RelationVecConstIteratorPair;
+#endif // AXOM_USE_BOOST
 
     typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>      // TODO: change this to a compile time size if/when parent is compile time
         , policies::RuntimeOffsetHolder<Set::PositionType>
@@ -85,6 +68,7 @@ namespace slam    {
      */
     void                      bindRelationData(RelationVec const& beginsVec, RelationVec const& toOffsets);
 
+ #ifdef AXOM_USE_BOOST
     RelationVecConstIterator  begin(SetPosition fromSetIndex)       const
     {
       verifyPosition(fromSetIndex);
@@ -101,13 +85,8 @@ namespace slam    {
     {
       return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
     }
+  #endif // AXOM_USE_BOOST
 
-#ifdef SLAM_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
-    const SubscriptProxy operator[](SetPosition fromSetElt) const
-    {
-      return SubscriptProxy( begin(fromSetElt), size(fromSetElt) );
-    }
-#else
     /**
      * This function returns the OrderedSet of all elements in the toSet related to 'fromSetElt' in the fromSet.
      */
@@ -120,7 +99,6 @@ namespace slam    {
              .data( &m_toSetIndicesVec)
       ;
     }
-#endif
 
     SetPosition size(SetPosition fromSetIndex)                  const
     {

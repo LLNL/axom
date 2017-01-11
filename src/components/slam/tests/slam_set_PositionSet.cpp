@@ -21,7 +21,7 @@
 
 #include "gtest/gtest.h"
 
-#include "common/config.hpp"    // for ATK_USE_BOOST
+#include "axom/config.hpp"    // for AXOM_USE_BOOST
 
 #include "slic/slic.hpp"        // for SLIC_INFO
 
@@ -29,7 +29,7 @@
 #include "slam/Utilities.hpp"
 
 
-typedef asctoolkit::slam::PositionSet SetType;
+typedef axom::slam::PositionSet SetType;
 typedef SetType::PositionType         SetPosition;
 typedef SetType::ElementType          SetElement;
 
@@ -105,7 +105,7 @@ TEST(gtest_slam_set_positionset,construct_set_builder)
   // The two sets should be equal
   EXPECT_EQ(  s,            s2);
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   // Using inappropriate SetBuilder features generates an assert failure
   SLIC_INFO("Cannot construct a PositionSets with an invalid SetBuilder");
 
@@ -168,7 +168,7 @@ TEST(gtest_slam_set_positionset,iterate)
     SLIC_INFO("Element of slam set using at():\n" << sstr.str());
   }
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   SLIC_INFO("Using iterators begin/end");
   {
     std::stringstream sstr;
@@ -190,12 +190,12 @@ TEST(gtest_slam_set_positionset,out_of_bounds_at)
   SLIC_INFO("Testing out of bounds access using at() -- code is expected to assert and die.");
   SetType s(MAX_SET_SIZE);
 
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH(s.at(MAX_SET_SIZE),"");
+  EXPECT_DEATH_IF_SUPPORTED(s.at(MAX_SET_SIZE),"");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -209,10 +209,10 @@ TEST(gtest_slam_set_positionset,out_of_bounds_bracket)
 
   SetType s(MAX_SET_SIZE);
 
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( s[MAX_SET_SIZE], "");
+  EXPECT_DEATH_IF_SUPPORTED( s[MAX_SET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -245,7 +245,7 @@ TEST(gtest_slam_set_positionset,awkward_resize)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
@@ -253,9 +253,8 @@ int main(int argc, char * argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  // create & initialize test logger. finalized when exiting main scope
+  UnitTestLogger logger;
 
   result = RUN_ALL_TESTS();
 

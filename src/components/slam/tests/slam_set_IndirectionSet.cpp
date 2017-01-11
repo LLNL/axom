@@ -20,8 +20,8 @@
 #include <iterator>                 // for std::ostream_iterator
 #include "gtest/gtest.h"
 
-#include "common/config.hpp"        // for ATK_USE_BOOST
-#include "common/CommonTypes.hpp"   // for ATK_NULLPTR
+#include "axom/config.hpp"        // for AXOM_USE_BOOST
+#include "axom/Types.hpp"   // for AXOM_NULLPTR
 
 #include "slic/slic.hpp"
 
@@ -31,7 +31,7 @@
 
 
 namespace {
-  typedef asctoolkit::slam::ArrayIndirectionSet SetType;
+  typedef axom::slam::ArrayIndirectionSet SetType;
   typedef SetType::PositionType                 SetPosition;
   typedef SetType::ElementType                  SetElement;
 
@@ -147,7 +147,7 @@ TEST(gtest_slam_set_indirectionset,iterate)
     SLIC_INFO("Data using operator[]:\t" << sstr.str());
   }
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   SLIC_INFO("Using iterator interface");
   {
     std::stringstream sstr;
@@ -218,7 +218,7 @@ TEST(gtest_slam_set_indirectionset,equality)
 
 
   // Check against a PositionSet with the same elements
-  asctoolkit::slam::PositionSet posSet(MAX_SET_SIZE);
+  axom::slam::PositionSet posSet(MAX_SET_SIZE);
   EXPECT_TRUE(posSet.isValid() );
   EXPECT_EQ(posSet, s1);
 
@@ -239,10 +239,10 @@ TEST(gtest_slam_set_indirectionset,out_of_bounds)
       .data(allocIncrementingArray(MAX_SET_SIZE) ) );
   EXPECT_TRUE(s.isValid());
 
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( s[MAX_SET_SIZE], "");
+  EXPECT_DEATH_IF_SUPPORTED( s[MAX_SET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -255,7 +255,7 @@ TEST(gtest_slam_set_indirectionset,vector_indirection)
 {
   SLIC_INFO("Testing basic set operations on a VectorIndirectionSet");
 
-  typedef asctoolkit::slam::VectorIndirectionSet  VectorIndirectionSet;
+  typedef axom::slam::VectorIndirectionSet  VectorIndirectionSet;
   typedef VectorIndirectionSet::SetBuilder        Builder;
 
   // Set up data -- an array of incrementing integers
@@ -297,7 +297,7 @@ TEST(gtest_slam_set_indirectionset,vector_indirection)
 
   // Test equality with a position set
   {
-    asctoolkit::slam::PositionSet posSet(MAX_SET_SIZE);
+    axom::slam::PositionSet posSet(MAX_SET_SIZE);
     EXPECT_TRUE(posSet.isValid() );
     EXPECT_EQ(vecSet, posSet);
     EXPECT_EQ(posSet, vecSet);
@@ -308,7 +308,7 @@ TEST(gtest_slam_set_indirectionset,vector_indirection)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
