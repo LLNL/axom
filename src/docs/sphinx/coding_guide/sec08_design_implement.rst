@@ -82,6 +82,8 @@ be used directly in source code. When such values are needed, they **should**
 be declared as named constants to enhance code readability and consistency.
 
 
+.. _compilergenmethods-label:
+
 ------------------------------------------------------
 Avoid issues with compiler-generated class methods
 ------------------------------------------------------
@@ -157,10 +159,8 @@ them unimplemented.
 	      // ...
 
 	   private:
-	      // The following methods are not implemented
-	      MyClass();
-	      MyClass(const MyClass&);
-	      void operator=(const MyClass&);
+              DISABLE_DEFAULT_CTOR(MyClass);
+              DISABLE_COPY_AND_ASSIGNMENT(MyClass);
 
 	      // ...
 	   };
@@ -171,6 +171,9 @@ them unimplemented.
       error will result. 
 
       This is another application of the "Rule of Three".
+
+      Please see :ref:`codemacros-label` for more information about the 
+      macros used in this example to disable compiler-generated methods.
 
 .. note::  **Exception:** If a class inherits from a base class that declares
            these methods private, the subclass need not declare the methods
@@ -225,18 +228,20 @@ copy-assignment operator.
 
       For example::
 
-	   class MyClass
+	   class MyFunctor
 	   {
-	      // ...
+	      // Compiler-generated copy ctor and copy assignment sufficient 
 
 	   private:
-	      // The following methods are not implemented
-	      MyClass();
-	      MyClass(const MyClass&);
-	      void operator=(const MyClass&);
+	      DIABLE_DEFAULT_CTOR(MyFunctor); // prevent default construction
 
 	      // ...
 	   };
+
+Note that in this example, the default constructor is disabled to prevent
+default construction. This can help prevent programming errors when 
+object state must be fully initialialized on construction. For more 
+information about common CS Toolkit macros, see :ref:`codemacros-label`.
 
 
 .. _automethods-label:

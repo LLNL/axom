@@ -58,7 +58,7 @@ clearly, macros in the `ATKMacros.hpp` header file in the "common" component
 Here, the `ATK_DEBUG_PARAM` macro indicates that the variable 'y' is only
 used when the code is compiled in debug mode. It also removes the variable
 name in the argument list in non-debug compilation to prevent unwanted
-compiler warnings.
+compiler warinings.
 
 Please see the `ATKMacros.hpp` header file for other available macros and 
 usage examples.
@@ -121,7 +121,7 @@ the code.
 
 When certain conditions are encountered, the macros can emit failed boolean 
 expressions and descriptive messages that help to understand potentially
-problematic usage. Here's an example of common *SLIC* macro usage in the CS 
+problematic usage. Here's an eaxample of common *SLIC* macro usage in the CS 
 Toolkit::
 
    Bar* myCoolFunction(int in_val, Foo* in_foo)
@@ -178,7 +178,7 @@ debug mode.
 Please see the `slic.hpp` header file to see which macros are available and 
 how to use them. 
 
-.. important:: It is important to apply these macros judiciously so that they
+.. important:: It is important to apply these macros judiciusly so that they
                benefit users and other developers. We want to help folks use 
                our software correctly and not "spam" them with too much 
                information.

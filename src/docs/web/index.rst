@@ -28,26 +28,29 @@ Useful links
   * `Bamboo <https://lc.llnl.gov/bamboo/browse/ASC>`_
   * `ASCTOOLKIT-USERS mailing list <https://listserv.llnl.gov/Scripts/wa.exe?A0=ASCTOOLKIT-USERS>`_
   * `ASCTOOLKIT-DEV mailing list <https://listserv.llnl.gov/Scripts/wa.exe?A0=ASCTOOLKIT-DEV>`_
-  * `Coding Guidelines  <../../coding_guide/html/index.html>`_
+  * `Coding Guidelines  <../../coding_guide_docs/html/index.html>`_
 
 Component User Guides
 
   *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_
-  *  Lumberjack (Scalable Message Filtering)
-  *  Quest (Querying on Surfaces Tool)
-  *  `Shroud (C++ API to C/Fortran)  <../../shroud_docs/html/index.html>`_
+  *  Lumberjack (Scalable Message Logging and Filtering)
+  *  Shroud (C++ API to C/Fortran)
   *  `Sidre: Simulation Data Repository <../../sidre_docs/html/index.html>`_
   *  Slam (Set-theoretic Lightweight API for Meshes)
   *  Slic (Simple Logging Interface Code)
+  *  `Spio (Sidre Parallel Interface Code) <../../spio_docs/html/index.html>`_
+  *  Quest (Querying on Surfaces Tool)
 
-Component Source Code Documentation
+Source Code Documentation
 
+  *  `CS Toolkit <../../../doxygen/asc_toolkit_doxygen/html/index.html>`_
   *  `Common <../../../doxygen/common_doxygen/html/index.html>`_
   *  `Lumberjack <../../../doxygen/lumberjack_doxygen/html/index.html>`_
-  *  `Quest <../../../doxygen/quest_doxygen/html/index.html>`_
   *  `Sidre <../../../doxygen/sidre_doxygen/html/index.html>`_
   *  `Slam <../../../doxygen/slam_doxygen/html/index.html>`_
   *  `Slic <../../../doxygen/slic_doxygen/html/index.html>`_
+  *  `Spio <../../../doxygen/spio_doxygen/html/index.html>`_
+  *  `Quest <../../../doxygen/quest_doxygen/html/index.html>`_
 
 
 
