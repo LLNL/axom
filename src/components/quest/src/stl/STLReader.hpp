@@ -101,6 +101,7 @@ protected:
 private:
 
     DISABLE_COPY_AND_ASSIGNMENT(STLReader);
+    DISABLE_MOVE_AND_ASSIGNMENT(STLReader);
 };
 
 } /* namespace quest */

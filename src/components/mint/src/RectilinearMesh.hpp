@@ -179,6 +179,7 @@ private:
   MeshCoordinates* m_coordinates;
 
   DISABLE_COPY_AND_ASSIGNMENT(RectilinearMesh);
+  DISABLE_MOVE_AND_ASSIGNMENT(RectilinearMesh);
 };
 
 } /* namespace mint */
