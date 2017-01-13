@@ -11,7 +11,7 @@ COMP_OPT=""
 BUILD_OPT=$2
 
 BUILD=true
-TEST=true
+TEST=false
 DOC=false
 INSTALL_FILES=true
 INSTALL_DOCS=false
