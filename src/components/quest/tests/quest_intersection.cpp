@@ -732,7 +732,7 @@ TEST(quest_intersection, triangle_segment_intersection)
   PointType ptZ(zArr);
   PointType ptM(mArr);
   PointType r0 = PointType::make_point(5., 5., 5.);
-  PointType testp = PointType::make_point(6., 5., 5.)
+  PointType testp = PointType::make_point(6., 5., 5.);
 
   TriangleType tri( ptX, ptY, ptZ );
   SegmentType testSeg(r0, ptX);
@@ -796,9 +796,16 @@ TEST(quest_intersection, triangle_ray_intersection)
   double zArr[3] = { 0., 0., 1.};
   double mArr[3] = { 1./3., 1./3., 1./3.};
 
+  double nxArr[3] = { -1., 2., 2.};
+  double nyArr[3] = { 2., -1., 2.};
+  double nzArr[3] = { 2., 2., -1.};
+
   PointType ptX(xArr);
   PointType ptY(yArr);
   PointType ptZ(zArr);
+  PointType ptnX(nxArr);
+  PointType ptnY(nyArr);
+  PointType ptnZ(nzArr);
   PointType ptM(mArr);
   PointType r0 = PointType::make_point(5., 5., 5.);
 
@@ -835,10 +842,13 @@ TEST(quest_intersection, triangle_ray_intersection)
   testRay = RayType(SegmentType(r0, PointType::make_point(0.7, 0.3, 0.)));
   EXPECT_TRUE(intersect(tri, testRay));
   testRay = RayType(SegmentType(r0, PointType::make_point(0.2, 0., 0.8)));
+  TriangleType nyTri(ptX, ptZ, ptnY);
+  bool scratch = intersect(nyTri, testRay);
   // Due to rounding error, this boundary query reports a "miss."  
   // I think I'll have to change to using doubles in order to fix this.
   EXPECT_TRUE(intersect(tri, testRay)) << 
-    "#*#*#*#*#*#*#*# Fails due to rounding error.  I think it's because type single is used.";
+    "#*#*#*#*#*#*#*# Fails due to rounding error.  I think it's because type single is used.  " <<
+    "Does the ray hit the flipped tri?  " << scratch;
 
   // Hits
   testRay = RayType(SegmentType(r0, PointType::make_point(0.2, 0., 0.2)));

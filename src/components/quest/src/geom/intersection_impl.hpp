@@ -990,11 +990,40 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
 
 /** @{ @name Triangle-ray intersection */
 
+/*!
+ *******************************************************************************
+ * \brief Tests if 3D triangle tri intersects with 3D ray R.
+ * \return status true iff tri intersects with R, otherwise, false.
+ *
+ * This algorithm is modeled after Woop, Benthin, and Wald (2013).  It 
+ * transforms the ray onto the unit z vector and applies the same transform
+ * to the triangle's vertices.  This transform simplifies the calculation of
+ * barycentric coordinates of the positive z-axis's intersection with the
+ * triangle.  If any of these coordinates are less than zero, the ray misses.
+ *
+ * If any are equal to zero, more care is needed to check if the ray hits
+ * the edge or misses.  Additionally, the code falls back to double precision
+ * for cases that call for it.
+ *
+ * Sven Woop, Carsten Benthin, Ingo Wald, "Watertight Ray/Triangle 
+ * Intersection," Journal of Computer Graphics Techniques (JCGT), vol. 2, 
+ * no. 1, 65–82, 2013  http://jcgt.org/published/0002/01/05/
+ *******************************************************************************
+ */
 template < typename T >
 bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
 {
-  //ray origins inside of the triangle are considered a miss
-  //coplanar rays, evidenced by det == 0, are also conisdered as a miss
+  // Ray origins inside of the triangle are considered a miss.
+  // This is a good thing, as pointed out by Matt Larsen in January 2017,
+  // because of a common technique in ray chasing through a mesh:
+  //  1. Cast the ray until it intersects a triangle (record the hit)
+  //  2. Starting from the hit point, re-cast the ray to find the next hit
+  // Origin-is-miss avoids finding the already-hit triangle as the next 
+  // hit.
+  // 
+  // Coplanar rays, evidenced by det == 0, are also conisdered as a miss.
+  // I (Arlie Capps, Jan. 2017) don't understand the motivation at this
+  // point, but I'll accept this for now.
 
   //find out dimension where ray direction is maximal
   int kx,ky,kz;
