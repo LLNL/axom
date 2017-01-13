@@ -1,6 +1,7 @@
 #!/bin/bash
 # 10-20-2016 chang28, 
 # 10-20-2016 chang28,  bgq_build_test_uno_compiler.sh "Debug" "" "gcc@4.7.2"
+# 01-13-2017, chang28, turn off testing
 
 echo bgq version 1.0.0
 #BT="Debug"
