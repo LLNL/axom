@@ -25,7 +25,7 @@
 #include <vector>
 
 // Other toolkit component headers
-#include "common/config.hpp"
+#include "common/config.hpp"    // defines ATK_USE_CXX11
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -36,9 +36,6 @@ namespace asctoolkit
 {
 namespace sidre
 {
-// using directives to make Conduit usage easier and less visible
-using conduit::Node;
-using conduit::Schema;
 
 class DataStore;
 class DataView;
@@ -150,7 +147,15 @@ public:
    */
   SidreLength getTotalBytes() const
   {
-    return m_node.dtype().total_bytes();
+    return m_node.dtype().strided_bytes();
+  }
+
+  /*!
+   * \brief Return the number of bytes per element owned by this Buffer object.
+   */
+  SidreLength getBytesPerElement() const
+  {
+    return m_node.dtype().element_bytes();
   }
 
 
@@ -284,7 +289,7 @@ private:
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   DataBuffer() = delete;
   DataBuffer( DataBuffer&& ) = delete;
 

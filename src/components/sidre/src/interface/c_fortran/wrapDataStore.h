@@ -42,72 +42,17 @@ void SIDRE_datastore_delete(SIDRE_datastore * self);
 
 SIDRE_datagroup * SIDRE_datastore_get_root(SIDRE_datastore * self);
 
-SIDRE_databuffer * SIDRE_datastore_get_buffer(SIDRE_datastore * self,
-                                              SIDRE_IndexType idx);
+SIDRE_databuffer * SIDRE_datastore_get_buffer(SIDRE_datastore * self, SIDRE_IndexType idx);
 
 SIDRE_databuffer * SIDRE_datastore_create_buffer_empty(SIDRE_datastore * self);
 
-SIDRE_databuffer * SIDRE_datastore_create_buffer_from_type(
-  SIDRE_datastore * self, int type, SIDRE_SidreLength num_elems);
+SIDRE_databuffer * SIDRE_datastore_create_buffer_from_type(SIDRE_datastore * self, int type, SIDRE_SidreLength num_elems);
 
 void SIDRE_datastore_destroy_buffer(SIDRE_datastore * self, SIDRE_IndexType id);
 
-size_t SIDRE_datastore_get_num_buffers(SIDRE_datastore * self);
+size_t SIDRE_datastore_get_num_buffers(const SIDRE_datastore * self);
 
-void SIDRE_datastore_print(SIDRE_datastore * self);
-
-void SIDRE_datastore_save_0(SIDRE_datastore * self, const char * file_path,
-                            const char * protocol);
-
-void SIDRE_datastore_save_0_bufferify(SIDRE_datastore * self,
-                                      const char * file_path, int Lfile_path,
-                                      const char * protocol, int Lprotocol);
-
-void SIDRE_datastore_save_1(SIDRE_datastore * self, const char * file_path,
-                            const char * protocol,
-                            const SIDRE_datagroup * group);
-
-void SIDRE_datastore_save_1_bufferify(SIDRE_datastore * self,
-                                      const char * file_path, int Lfile_path,
-                                      const char * protocol, int Lprotocol,
-                                      const SIDRE_datagroup * group);
-
-void SIDRE_datastore_load_0(SIDRE_datastore * self, const char * file_path,
-                            const char * protocol);
-
-void SIDRE_datastore_load_0_bufferify(SIDRE_datastore * self,
-                                      const char * file_path, int Lfile_path,
-                                      const char * protocol, int Lprotocol);
-
-void SIDRE_datastore_load_1(SIDRE_datastore * self, const char * file_path,
-                            const char * protocol, SIDRE_datagroup * group);
-
-void SIDRE_datastore_load_1_bufferify(SIDRE_datastore * self,
-                                      const char * file_path, int Lfile_path,
-                                      const char * protocol, int Lprotocol,
-                                      SIDRE_datagroup * group);
-
-void SIDRE_datastore_load_external_data_0(SIDRE_datastore * self,
-                                          const char * file_path,
-                                          const char * protocol);
-
-void SIDRE_datastore_load_external_data_0_bufferify(SIDRE_datastore * self,
-                                                    const char * file_path,
-                                                    int Lfile_path,
-                                                    const char * protocol,
-                                                    int Lprotocol);
-
-void SIDRE_datastore_load_external_data_1(SIDRE_datastore * self,
-                                          const char * file_path,
-                                          const char * protocol,
-                                          SIDRE_datagroup * group);
-
-void SIDRE_datastore_load_external_data_1_bufferify(SIDRE_datastore * self,
-                                                    const char * file_path,
-                                                    int Lfile_path,
-                                                    const char * protocol,
-                                                    int Lprotocol,
-                                                    SIDRE_datagroup * group);
+void SIDRE_datastore_print(const SIDRE_datastore * self);
 
 #ifdef __cplusplus
 }

@@ -58,7 +58,7 @@ class SynchronizedStream : public LogStream
 public:
   SynchronizedStream( std::ostream* stream, MPI_Comm comm );
   SynchronizedStream( std::ostream* stream, MPI_Comm comm,
-                      std::string& format);
+                      const std::string& format);
 
   virtual ~SynchronizedStream();
 

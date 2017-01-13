@@ -20,13 +20,16 @@ class UberenvAsctoolkit(Package):
     depends_on("lua@5.1.5")
 
     # custom spack packages
-    depends_on("cmake~ncurses~openssl@3.3.1")
+    depends_on("cmake@3.3.1")
     depends_on("conduit~shared")
     depends_on("py-sphinx")
     depends_on("py-breathe")
     depends_on("py-pyyaml")
     depends_on("py-parsley")
     depends_on("py-cogapp")
+
+    if "darwin" in platform.system().lower():
+        depends_on("mpich")
 
     if not "darwin" in platform.system().lower():
         depends_on("lcov")
@@ -43,16 +46,24 @@ class UberenvAsctoolkit(Package):
         return url
 
     def install(self, spec, prefix):
-        #mkdirp(prefix)
         dest_dir     = env["SPACK_DEBUG_LOG_DIR"]
+        
         c_compiler   = env["SPACK_CC"]
         cpp_compiler = env["SPACK_CXX"]
-        f_compiler = None
+        f_compiler   = None
+        
+        # see if we should enable fortran support
         if "SPACK_FC" in env.keys():
-            f_compiler   = env["SPACK_FC"]
-        sys_type     = spec.architecture
-        if "SYS_TYPE" in env.keys():
+            # even if this is set, it may not exist
+            # do one more sanity check
+            if os.path.isfile(env["SPACK_FC"]):
+                f_compiler  = env["SPACK_FC"]
+
+        sys_type = spec.architecture
+        # if on llnl systems, we can use the SYS_TYPE
+        if env.has_key("SYS_TYPE"):
             sys_type = env["SYS_TYPE"]
+
         # conduit
         conduit_dir      = spec['conduit'].prefix
         cmake_exe        = pjoin(spec['cmake'].prefix.bin,"cmake")
@@ -126,6 +137,20 @@ class UberenvAsctoolkit(Package):
             cfg.write('set(GENHTML_PATH "%s/usr/bin/genhtml" CACHE PATH "")\n\n' % spec['lcov'].prefix)
         else:
             cfg.write("# lcov and genhtml not built by uberenv\n\n")
+
+        #MPI SUPPORT (when mpich is enabled)
+        if "mpich" in spec:
+            mpiexec  = pjoin(spec['mpich'].prefix.bin,"mpiexec")
+            mpicc    = pjoin(spec['mpich'].prefix.bin,"mpicc")
+            mpif90   = pjoin(spec['mpich'].prefix.bin,"mpif90")
+            cfg.write("# MPI Support\n")
+            cfg.write('set(ENABLE_MPI ON CACHE PATH "")\n\n')
+            cfg.write('set(MPI_C_COMPILER  "%s" CACHE PATH "")\n\n' % mpicc)
+            # we use `mpicc` as `MPI_CXX_COMPILER` b/c we don't want to introduce 
+            # linking deps to the MPI C++ libs (we aren't using C++ features of MPI)
+            cfg.write('set(MPI_CXX_COMPILER "%s" CACHE PATH "")\n\n' % mpicc)
+            cfg.write('set(MPI_Fortran_COMPILER "%s" CACHE PATH "")\n\n' % mpif90)
+            cfg.write('set(MPIEXEC "%s" CACHE PATH "")\n\n' % mpiexec)
 
 
         # Note (KW 3/2016) -- per ATK-659, we are temporarily disabling CXX11 for default configurations on intel builds 

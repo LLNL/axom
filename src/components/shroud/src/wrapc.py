@@ -267,9 +267,10 @@ class Wrapc(util.WrapperMixin):
             CPP_subprogram = 'subroutine'
 
         result_typedef = self.typedef[result_type]
-        is_const = result['attrs'].get('const', False)
+        result_is_const = result['attrs'].get('const', False)
         is_ctor  = node['attrs'].get('constructor', False)
         is_dtor  = node['attrs'].get('destructor', False)
+        is_const = node['attrs'].get('const', False)
 
         if result_typedef.c_header:
             # include any dependent header in generated header
@@ -282,7 +283,7 @@ class Wrapc(util.WrapperMixin):
             # i.e. This method returns a wrapped type
             self.header_forward[result_typedef.c_type] = True
 
-        if is_const:
+        if result_is_const:
             fmt.C_const = 'const '
         fmt.CPP_this = fmt_func.C_this + 'obj'
         fmt.rv_decl = self._c_decl('cpp_type', CPP_result, name=fmt.rv)  # return value
@@ -430,6 +431,11 @@ class Wrapc(util.WrapperMixin):
             if 'C_object' in options:
                 fmt.C_object = options.C_object
             elif not is_ctor:
+                if is_const:
+                    fmt.C_const = 'const '
+                else:
+                    fmt.C_const = ''
+                # LHS is class' cpp_to_c
                 template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
                 fmt.C_object = wformat(template, fmt)
 

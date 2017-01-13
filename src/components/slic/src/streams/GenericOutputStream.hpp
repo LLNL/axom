@@ -66,7 +66,7 @@ public:
    * \see LogStream::setFormatString for the format string.
    *****************************************************************************
    */
-  GenericOutputStream( std::ostream* os, std::string& format );
+  GenericOutputStream( std::ostream* os, const std::string& format );
 
   /*!
    *****************************************************************************

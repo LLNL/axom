@@ -25,9 +25,10 @@
 #include <vector>
 #include <stack>
 
-#include "relay.hpp"
+#include "hdf5.h"
 
 // Other CS Toolkit headers
+#include "common/config.hpp"    // defines ATK_USE_CXX11
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -38,9 +39,6 @@ namespace asctoolkit
 {
 namespace sidre
 {
-
-// using directives to make Conduit usage easier and less visible
-using conduit::Node;
 
 class DataBuffer;
 class DataGroup;
@@ -186,32 +184,6 @@ public:
 //@}
 
   /*!
-   * \brief Copy DataStore Group hierarchy (starting at root) and Buffer
-   *        descriptions to given Conduit node.
-   */
-  void copyToConduitNode(Node& n) const;
-
-
-  /*!
-   * \brief Copy DataStore native layout (starting at root) to given Conduit node.
-   *
-   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
-   * externally to the Sidre View data so that it can be filled in from the data
-   * in the file (independent of file format) and can be accessed as a Conduit tree.
-   */
-  void createNativeLayout(Node& n) const;
-
-  /*!
-   * \brief Copy DataStore native layout (starting at root) to given Conduit node.
-   *
-   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
-   * externally to the Sidre View data so that it can be filled in from the data
-   * in the file (independent of file format) and can be accessed as a Conduit tree.
-   */
-  void createExternalLayout(Node& n) const;
-
-
-  /*!
    * \brief Print JSON description of DataStore Group hierarchy (starting at
    *        root) and Buffer descriptions to std::cout.
    */
@@ -223,76 +195,11 @@ public:
    */
   void print(std::ostream& os) const;
 
-
-  /// Developer notes:
-  /// We should reduce these functions when SPIO is fully available ( in both serial and parallel ).
-  /// We only need one or two simple save functions.  Try to keep this class simple and move the I/O
-  /// interfaces to SPIO.
-
-  /*!
-   * \brief Save the DataStore to a new file.
-   * Supported protocols are "conduit" (binary), "conduit_hdf5", and "text" (for debugging).
-   * If a Group is not provided, the root Group will be saved.
-   */
-  void save( const std::string& file_path,
-             const std::string& protocol,
-             const DataGroup * group = ATK_NULLPTR ) const;
-
-  /*!
-   * \brief Save the DataStore to an existing hdf5 file.
-   * If a Group is not provided, the root Group will be saved.
-   */
-  void save( const hid_t& h5_file_id,
-             const DataGroup * group = ATK_NULLPTR ) const;
-
-  /*!
-   * \brief Load the DataStore from a file
-   * If a Group is not provided, it will be loaded into the root Group.
-   */
-  void load(const std::string& file_path,
-            const std::string& protocol,
-            DataGroup * group = ATK_NULLPTR);
-
-  /*!
-   * \brief Load the DataStore from an hdf5 file.
-   * If a Group is not provided, it will be loaded into the root Group.
-   */
-  void load(const hid_t& h5_file_id,
-            DataGroup * group = ATK_NULLPTR);
-
-  /*!
-   * \brief Load the DataStore external data from a file
-   * If a Group is not provided, it will be loaded into the root Group.
-   */
-  void loadExternalData(const std::string& file_path,
-                        const std::string& protocol,
-                        DataGroup * group = ATK_NULLPTR);
-
-  /*!
-   * \brief Load the DataStore external data from an hdf5 file.
-   * If a Group is not provided, it will be loaded into the root Group.
-   */
-  void loadExternalData(const hid_t& h5_file_id,
-                        DataGroup * group = ATK_NULLPTR);
-
-  /*!
-   * \brief Add the DataStore hierarchy and references to it's data to a conduit tree.
-   * This includes the Group/View hierarchy and Buffers.
-   */
-  void exportTo( const DataGroup * group,
-                 conduit::Node& data_holder ) const;
-
-  /*!
-   * \brief Restore a DataStore hierarchy and data contents (Buffers, etc) from a conduit tree.
-   */
-  void importFrom(DataGroup * group,
-                  conduit::Node& data_holder);
-
 private:
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   DataStore( const DataStore& ) = delete;
   DataStore( DataStore&& ) = delete;
 

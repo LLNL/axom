@@ -6,6 +6,7 @@
 
 #include "quest/Point.hpp"
 #include "quest/Triangle.hpp"
+#include "quest/Orientation.hpp"
 
 #include "mint/Mesh.hpp"
 #include "mint/UnstructuredMesh.hpp"

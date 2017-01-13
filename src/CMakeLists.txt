@@ -39,6 +39,14 @@ add_subdirectory(thirdparty)
 ################################
 add_subdirectory(components)
 
+
+################################
+# Adds directory for utility code 
+# that uses or supports the toolkit
+################################
+add_subdirectory(util)
+
+
 ################################
 # Add docs
 ################################
@@ -59,3 +67,4 @@ install(DIRECTORY ${PROJECT_BINARY_DIR}/lib/fortran DESTINATION lib OPTIONAL)
 # Create header of configuration options
 ################################s
 include(cmake/CMakeConfigureFile.cmake)
+

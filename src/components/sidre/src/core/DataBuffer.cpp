@@ -145,7 +145,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 
   DataType dtype( m_node.dtype() );
   dtype.set_number_of_elements( num_elems );
-  SidreLength new_size = dtype.total_bytes();
+  SidreLength new_size = dtype.strided_bytes();
   void * new_data_ptr = allocateBytes(new_size);
 
   if ( new_data_ptr != ATK_NULLPTR )
@@ -228,7 +228,7 @@ DataBuffer * DataBuffer::copyBytesIntoBuffer(const void * src,
 void DataBuffer::copyToConduitNode(Node &n) const
 {
   n["index"].set(m_index);
-  n["node"].set(m_node.to_json());
+  n["value"].set(m_node.to_json());
 }
 
 /*
@@ -452,7 +452,7 @@ void DataBuffer::importFrom( conduit::Node& buffer_holder)
     allocate();
     conduit::Node& buffer_data_holder = buffer_holder["data"];
     copyBytesIntoBuffer(buffer_data_holder.element_ptr(0),
-                        buffer_data_holder.total_bytes() );
+                        buffer_data_holder.total_strided_bytes() );
   }
 }
 

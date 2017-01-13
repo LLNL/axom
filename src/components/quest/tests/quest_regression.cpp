@@ -395,8 +395,8 @@ void runContainmentQueries(CommandLineArguments& clargs)
         containment[ inode ] = quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
     }
     timer.stop();
-    SLIC_INFO(fmt::format("Querying {}^3 containment field took {} seconds (@ {} queries per second)"
-                    , clargs.queryResolution, timer.elapsed(), nnodes / timer.elapsed()));
+    SLIC_INFO(fmt::format("Querying {}^3 containment field took {} seconds (@ {} queries per second)",
+                    clargs.queryResolution, timer.elapsed(), nnodes / timer.elapsed()));
 
 
     quest::finalize();
@@ -686,7 +686,7 @@ void saveBaseline(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& clarg
 
 
     std::string outfile = fmt::format("{}_{}_{}", meshNameNoExt, resStr, "baseline");
-    std::string protocol = "conduit_hdf5";
+    std::string protocol = "sidre_hdf5";
     asctoolkit::spio::IOManager writer(MPI_COMM_WORLD);
     writer.write(grp,1, outfile, protocol);
     SLIC_INFO(fmt::format("** Saved baseline file '{}' using '{}' protocol.", outfile , protocol));
@@ -699,62 +699,70 @@ void saveBaseline(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& clarg
  */
 int main( int argc, char**argv )
 {
+  bool allTestsPassed = true;
+
   // initialize the problem
   MPI_Init( &argc, &argv );
-  asctoolkit::slic::UnitTestLogger logger;
-  asctoolkit::sidre::DataStore ds;
 
-  // parse the command arguments
-  CommandLineArguments args = parseArguments(argc, argv);
-
-  // load the baseline file for comparisons and additional test parameters
-  if(args.hasBaseline() )
   {
+    // Note: this code is in a different context since UnitTestLogger's destructor
+    //       might have MPI calls and would otherwise be invoked after MPI_Finalize()
+    asctoolkit::slic::UnitTestLogger logger;
+    asctoolkit::sidre::DataStore ds;
+
+    // parse the command arguments
+    CommandLineArguments args = parseArguments(argc, argv);
+
+    // load the baseline file for comparisons and additional test parameters
+    if(args.hasBaseline() )
+    {
       loadBaselineData(ds.getRoot(), args);
-  }
+    }
 
-  // run the containment queries
-  if(args.testContainment)
-  {
+    // run the containment queries
+    if(args.testContainment)
+    {
       SLIC_INFO("About to run containment queries");
       runContainmentQueries(args);
-  }
+    }
 
-  // run the distance queries
-  if(args.testDistance)
-  {
+    // run the distance queries
+    if(args.testDistance)
+    {
       SLIC_INFO("About to run distance queries");
       runDistanceQueries(args);
-  }
+    }
 
-  // Compare signs of current results on SignedDistance and InOutOctree
-  bool methodsAgree = true;
-  if(args.testContainment && args.testDistance)
-  {
+    // Compare signs of current results on SignedDistance and InOutOctree
+    bool methodsAgree = true;
+    if(args.testContainment && args.testDistance)
+    {
       methodsAgree = compareDistanceAndContainment(args);
 
       SLIC_INFO("** Methods " << (methodsAgree? "agree" : "do not agree"));
-  }
 
-  // compare current results to baselines or generate new baselines
-  bool baselinePassed = true;
-  if(args.hasBaseline())
-  {
+      allTestsPassed = allTestsPassed && methodsAgree;
+    }
+
+    // compare current results to baselines or generate new baselines
+    bool baselinePassed = true;
+    if(args.hasBaseline())
+    {
       SLIC_INFO("Comparing results to baselines");
       baselinePassed = compareToBaselineResults(ds.getRoot(), args);
 
       SLIC_INFO("** Baseline tests " << (baselinePassed ? "passed" : "failed"));
-
-  }
-  else
-  {
+      allTestsPassed = allTestsPassed && baselinePassed;
+    }
+    else
+    {
       SLIC_INFO("Saving results as new baseline.");
       saveBaseline(ds.getRoot(), args);
+    }
   }
-
 
   // finalize
   MPI_Finalize();
-  return (methodsAgree && baselinePassed) ? 0 : 1;
+  return (allTestsPassed) ? 0 : 1;
 }
 

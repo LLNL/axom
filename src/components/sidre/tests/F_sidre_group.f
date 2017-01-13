@@ -19,7 +19,7 @@ module sidre_group
 
   ! Test protocols
   integer, parameter :: nprotocols = 3
-  character(12) :: protocols(nprotocols) = [ "conduit     ", "conduit_hdf5", "text        " ]
+  character(12) :: protocols(nprotocols) = [ "sidre_json  ", "sidre_hdf5  ", "json        " ]
 
 contains
 
@@ -104,7 +104,7 @@ contains
     call assert_true( child == child1 )
 
     ! check error condition
-    errgrp = parent%get_group("non-existant group")
+    errgrp = parent%get_group("non-existent group")
     call assert_false( c_associated(errgrp%get_instance()) )
 
     call ds%delete()
@@ -130,7 +130,7 @@ contains
     call assert_true( view == view2 )
 
     ! check error condition
-    view2 = parent%get_view("non-existant view")
+    view2 = parent%get_view("non-existent view")
     call assert_false( view2%associated() )
 
     call ds%delete()
@@ -590,32 +590,33 @@ contains
   end subroutine create_view_of_buffer_with_datatype
 
   !------------------------------------------------------------------------------
-  subroutine save_restore_empty
+  subroutine save_restore_empty_datastore
     character(24) :: file_path_base = "F_sidre_empty_datastore_"
     character(80) file_path
     integer i
     type(datastore) ds1, ds2
-    type(datagroup) root2
+    type(datagroup) root1, root2
 
     call set_case_name("save_restore_empty")
 
     ds1 = datastore_new()
+    root1 = ds1%get_root()
 
     do i = 1, nprotocols
        file_path = file_path_base //  protocols(i)
-       call ds1%save(file_path, protocols(i))
+       call root1%save(file_path, protocols(i))
     enddo
 
     call ds1%delete()
 
-    ! Only restore conduit_hdf5
+    ! Only restore sidre_hdf5 protocol
     do i = 2,2
        file_path = file_path_base //  protocols(i)
 
        ds2 = datastore_new()
        root2 = ds2%get_root()
 
-       call ds2%load(file_path, protocols(i))
+       call root2%load(file_path, protocols(i))
 
        call assert_true(ds2%get_num_buffers() == 0 )
        call assert_true(root2%get_num_groups() == 0 )
@@ -623,7 +624,7 @@ contains
 
        call ds2%delete()
     enddo
-  end subroutine save_restore_empty
+  end subroutine save_restore_empty_datastore
 
   !------------------------------------------------------------------------------
 
@@ -634,6 +635,11 @@ contains
     type(datastore) ds1, ds2
     type(datagroup) root1, root2
     type(dataview) view
+
+    integer(C_INT) :: i0
+    real(C_FLOAT) :: f0
+    real(C_DOUBLE) :: d0
+    character(80) :: s0
 
     call set_case_name("save_restore_scalars_and_strings")
 
@@ -647,19 +653,35 @@ contains
 
     do i = 1, nprotocols
        file_path = file_path_base // protocols(i)
-       call ds1%save(file_path, protocols(i))
+       call root1%save(file_path, protocols(i))
     enddo
 
-    ! only restore conduit_hdf
+    ! Only restore sidre_hdf5 protocol
     do i = 2,2
        file_path = file_path_base //  protocols(i)
 
        ds2 = datastore_new()
        root2 = ds2%get_root()
 
-       call ds2%load(file_path, protocols(i))
+       call root2%load(file_path, protocols(i))
 
        call assert_true( root1%is_equivalent_to( root2 ))
+
+       view = root2%get_view("i0")
+       i0 = view%get_data_int()
+       call assert_equals(i0, 1)
+
+       view = root2%get_view("f0")
+       f0 = view%get_data_float()
+       call assert_equals(f0, 1.0)
+
+       view = root2%get_view("d0")
+       d0 = view%get_data_double()
+       call assert_equals(d0, 10.0d0)
+
+       view = root2%get_view("s0")
+       call view%get_string(s0)
+       call assert_equals(s0, "I am a string")
 
        call ds2%delete()
     enddo
@@ -676,9 +698,13 @@ contains
     integer foo1(nfoo), foo2(nfoo)
     integer, pointer :: foo3(:) => null()
     integer(C_INT), target :: foo4(nfoo)
+    integer int2d1(nfoo,2), int2d2(nfoo,2)
+    integer, pointer :: int2d3(:,:)
+    integer rank
+    integer(SIDRE_LENGTH) extents(7)
     type(datastore) ds1, ds2
     type(datagroup) root1, root2
-    type(dataview) view1, view2, view3
+    type(dataview) view1, view2, view3, view4
 
     call set_case_name("save_restore_external_data")
 
@@ -686,7 +712,10 @@ contains
        foo1(i) = i - 1   ! -1 to match C++
        foo2(i) = 0
        foo4(i) = i
+       int2d1(i, 1) = i - 1
+       int2d1(i, 2) = (i - 1) + nfoo
     enddo
+    int2d2(:,:) = 0
 
     ds1 = datastore_new()
     root1 = ds1%get_root()
@@ -695,54 +724,147 @@ contains
     view2 = root1%create_array_view("empty_array", foo3)
     view3 = root1%create_view("external_undescribed")
     call view3%set_external_data_ptr(C_LOC(foo4))
+    view4 = root1%create_array_view("int2d", int2d1)
 
     do i = 1, nprotocols
        file_path = file_path_base //  protocols(i)
-       call ds1%save(file_path, protocols(i))
+       call root1%save(file_path, protocols(i))
     enddo
 
     call ds1%delete()
     
-    ! now load back in.
-    ! only restore conduit protocol_hdf5
+    ! Now load back in; Only restore sidre_hdf5 protocol
     do i = 2, 2
        file_path = file_path_base //  protocols(i)
 
        ds2 = datastore_new()
        root2 = ds2%get_root()
 
-       call ds2%load(file_path, protocols(i))
+       call root2%load(file_path, protocols(i))
 
        ! load has set the type and size of the view.
        ! now set the external address before calling load_external.
        view1 = root2%get_view("external_array")
-       call assert_true(view1%is_external())
-       call assert_true(view1%is_described())
-       call assert_true(view1%get_num_elements() == nfoo)
+       call assert_true(view1%is_external(), "external_array is_external")
+       call assert_true(view1%is_described(), "external_array is_described")
+       call assert_equals(view1%get_type_id(), SIDRE_INT_ID, "external_array get_type_id")
+       call assert_true(view1%get_num_elements() == nfoo, "external_array get_num_elements")
        call view1%set_array_data_ptr(foo2)
 
        view2 = root2%get_view("empty_array");
-       call assert_true(view2%is_empty())
-       ! This should actually be false (undescribed) since foo3 is unassociated - ATK-744
-       call assert_true(view2%is_described())
+       call assert_true(view2%is_empty(), "empty_array is_empty")
+       call assert_true(view2%is_described(), "empty_array is_described")
+       call assert_equals(view2%get_type_id(), SIDRE_INT_ID, "empty_array get_type_id")
+       call assert_true(view2%get_num_elements() == 0, "empty_array get_num_elements")
 !       call view2%set_array_data_ptr(foo3)
        call root2%set_array_data_ptr("empty_array", foo3)
 
        view3 = root2%get_view("external_undescribed");
-       call assert_true(view3%is_empty(), "external_undescribed is empty")
-       call assert_false(view3%is_described(), "external_undescribed is not described")
+       call assert_true(view3%is_empty(), "external_undescribed is_empty")
+       call assert_false(view3%is_described(), "external_undescribed is_described")
+
+       view4 = root2%get_view("int2d")
+       call assert_true(view4%is_external(), "int2d is_external")
+       call assert_true(view4%is_described(), "int2d is_described")
+       call assert_equals(view4%get_type_id(), SIDRE_INT_ID, "int2d get_type_id")
+       call assert_true(view4%get_num_elements() == nfoo*2, "int2d get_num_elements")
+       call assert_equals(view4%get_num_dimensions(), 2, "int2d get_num_dimensions")
+       rank = view4%get_shape(7, extents)
+       call assert_equals(rank, 2, "int2d rank")
+       call assert_true(extents(1) == nfoo .and. extents(2) == 2, "int2d extents")
+       call view4%set_array_data_ptr(int2d2)
 
        ! read external data into views
-       call ds2%load_external_data(file_path, protocols(i))
+       call root2%load_external_data(file_path)
 
-       do j = 1, nfoo
-          call assert_true( foo1(j) == foo2(j) )
-       enddo
+       call assert_true( all(foo1 == foo2), "compare foo1 foo2" )
+
+       ! make sure shape translates into fortran
+       call view4%get_data(int2d3)
+       call assert_equals(size(int2d3,1), nfoo, "int2d fortran size(1)")
+       call assert_equals(size(int2d3,2), 2, "int2d fortran size(2)")
+       call assert_true( all(int2d1 == int2d3), "compare ind2d1==ind2d3" )
 
        call ds2%delete()
     enddo
    
    end subroutine save_restore_external_data
+
+  !------------------------------------------------------------------------------
+
+  subroutine save_restore_other
+    character(24) :: file_path_base = "F_sidre_empty_other_"
+    character(80) file_path
+    integer i
+    integer, parameter :: ndata = 10
+    integer(SIDRE_LENGTH) :: shape1(2), shape2(7)
+    integer rank
+    type(datastore) ds1, ds2
+    type(datagroup) root1, root2
+    type(dataview) view1, view2, view3, view4
+
+    call set_case_name("save_restore_other")
+
+    ds1 = datastore_new()
+    root1 = ds1%get_root()
+
+    shape1 = [ndata, 2]
+    view1 = root1%create_view("empty_view")
+    view2 = root1%create_view("empty_described", SIDRE_INT_ID, ndata)
+    view3 = root1%create_view("empty_shape", SIDRE_INT_ID, 2, shape1)
+
+    view4 = root1%create_view_and_allocate("buffer_shape", &
+         SIDRE_INT_ID, 2, shape1)
+
+    do i = 1, nprotocols
+       file_path = file_path_base //  protocols(i)
+       call root1%save(file_path, protocols(i))
+    enddo
+
+    call ds1%delete()
+
+    ! Now load back in; Only restore sidre_hdf5 protocol
+    do i = 2,2
+       file_path = file_path_base //  protocols(i)
+
+       ds2 = datastore_new()
+       root2 = ds2%get_root()
+
+       call root2%load(file_path, protocols(i))
+
+       view1 = root2%get_view("empty_view")
+       call assert_true(view1%is_empty(), "empty_view is_empty")
+       call assert_false(view1%is_described(), "empty_view is_described")
+
+       view2 = root2%get_view("empty_described")
+       call assert_true(view2%is_empty(), "empty_described is_empty")
+       call assert_true(view2%is_described(), "empty_described is_described")
+       call assert_equals(view2%get_type_id(), SIDRE_INT_ID, "empty_described get_type_id")
+       call assert_true(view2%get_num_elements() == ndata, "empty_described get_num_elements")
+
+       view3 = root2%get_view("empty_shape")
+       call assert_true(view3%is_empty(), "empty_shape is_empty")
+       call assert_true(view3%is_described(), "empty_shape is_described")
+       call assert_equals(view3%get_type_id(), SIDRE_INT_ID, "empty_shape get_type_id")
+       call assert_true(view3%get_num_elements() == ndata*2, "empty_shape get_num_elements")
+       shape2(:) = 0
+       rank = view3%get_shape(7, shape2)
+       call assert_equals(rank, 2, "empty_shape rank")
+       call assert_true(shape2(1) == ndata .and. shape2(2) == 2, "empty_shape get_shape")
+
+       view4 = root2%get_view("buffer_shape")
+       call assert_true(view4%has_buffer(), "buffer_shape has_buffer")
+       call assert_true(view4%is_described(), "buffer_shape is_described")
+       call assert_equals(view4%get_type_id(), SIDRE_INT_ID, "buffer_shape get_type_id")
+       call assert_true(view4%get_num_elements() == ndata*2, "buffer_shape get_num_elements")
+       shape2(:) = 0
+       rank = view4%get_shape(7, shape2)
+       call assert_equals(rank, 2, "buffer_shape rank")
+       call assert_true(shape2(1) == ndata .and. shape2(2) == 2, "buffer_shape get_shape")
+
+       call ds2%delete()
+    enddo
+  end subroutine save_restore_other
 
   !------------------------------------------------------------------------------
   subroutine save_restore_simple
@@ -876,9 +998,10 @@ program fortran_test
   call create_destroy_view_and_data
   call create_destroy_alloc_view_and_data
   call create_view_of_buffer_with_datatype
-  call save_restore_empty
+  call save_restore_empty_datastore
   call save_restore_scalars_and_strings
   call save_restore_external_data
+  call save_restore_other
 ! TODO - redo these, the C++ tests were heavily rewritten
 !  call save_restore_simple
 !  call save_restore_complex

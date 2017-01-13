@@ -26,7 +26,7 @@
 #include <set>
 
 // Other CS Toolkit headers
-#include "common/config.hpp"
+#include "common/config.hpp"    // defines ATK_USE_CXX11
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -37,10 +37,6 @@ namespace asctoolkit
 {
 namespace sidre
 {
-
-// using directives to make Conduit usage easier and less visible
-using conduit::Node;
-using conduit::Schema;
 
 class DataBuffer;
 class DataGroup;
@@ -66,7 +62,7 @@ class DataStore;
  *      owns it.
  *    - A DataView object can describe and provide access to data in one of
  *      four ways:
- *        # A view can decribe (a subset of) data owned by an existing
+ *        # A view can describe (a subset of) data owned by an existing
  *          DataBuffer. In this case, the data can be (re)allocated or
  *          deallocated by the view if and only if it is the only view
  *          attached to the buffer.
@@ -267,7 +263,7 @@ public:
    */
   SidreLength getTotalBytes() const
   {
-    return m_schema.total_bytes();
+    return m_schema.total_strided_bytes();
   }
 
   /*!
@@ -280,6 +276,47 @@ public:
   {
     return m_schema.dtype().number_of_elements();
   }
+
+  /*!
+   * \brief Return number of bytes per element in the described view.
+   *
+   * IMPORTANT: This is the number of bytes per element described by the view
+   *            which may not yet be allocated.
+   */
+  SidreLength getBytesPerElement() const
+  {
+    return m_schema.dtype().element_bytes();
+  }
+
+  /*!
+   * \brief Return the offset in number of elements for the data described by this DataView object.
+   *
+   * \warning The code currently assumes that offsets into a view are given in terms of whole elements.
+   *       And it is an assertion error if this is not the case.
+   *       If you have a different use case, please talk to the Sidre team
+   *
+   * \note DataView::getData() and DataView::getArray() already account for the offset,
+   *        and return a pointer to the first element in the array:
+   *        DataView::getVoidPtr() does not account for the offset.
+   *
+   * IMPORTANT: This function is based on the view description, it does not imply that the data is allocated
+   *
+   * \return The offset, in terms of the number of elements, from the described array to the first element.
+   */
+  SidreLength getOffset() const;
+
+  /*!
+   * \brief Return the stride in number of elements for the data described by this DataView object.
+   *
+   * \warning The code currently assumes that strides into a view are given in terms of whole elements.
+   *       And it is an assertion error if this is not the case.
+   *       If you have a different use case, please talk to the Sidre team
+   *
+   * IMPORTANT: This function is based on the view description, it does not imply that the data is allocated
+   *
+   * \return The stride, in terms of the number of elements, between elements in the described array.
+   */
+  SidreLength getStride() const;
 
   /*!
    * \brief Return number of dimensions in data view.
@@ -609,6 +646,52 @@ public:
     return this;
   }
 
+
+
+  /*!
+   * \brief Set the view to hold the given scalar.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * setScalar(Node &value)
+  {
+    // If this view already contains a scalar, issue a warning if the user is
+    // changing the underlying type ( ie: integer -> float ).
+  #if defined(ATK_DEBUG)
+    if (m_state == SCALAR)
+    {
+      SLIC_CHECK_MSG(value.dtype().id() == m_node.dtype().id(),
+                     "You are setting a scalar value in view "
+                     << m_name
+                     << " which has changed the underlying data type."
+                     << "Old type = " << m_node.dtype().name()
+                     << ", new type ="
+                     <<  DataType::id_to_name( value.dtype().id() ) << ".");
+    }
+  #endif
+
+    // Note: most of these calls that set the view class members are
+    //       unnecessary if the view already holds a scalar.  May be
+    //       a future optimization opportunity to split the
+    if (m_state == EMPTY || m_state == SCALAR)
+    {
+      m_node.set(value);
+      m_schema.set(m_node.schema());
+      m_state = SCALAR;
+      m_is_applied = true;
+      describeShape();
+    }
+    else
+    {
+      SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
+                     "Unable to set scalar value on view "
+                     << m_name << " with state: "
+                     << getStateStringName(m_state)  );
+    }
+    return this;
+  }
+
+
 //
 // RDH -- Add an overload of the following that takes a const char *.
 //
@@ -702,6 +785,9 @@ public:
    *    int* a = view->getArray();      // Get array as int pointer
    *    int_array a = view->getArray(); // Get array as Conduit array struct.
    * \endverbatim
+   *
+   * \note The returned pointer accounts for the View's offset, so getArray()[0]
+   *       always points to the first element in the array.
    */
   Node::Value getArray()
   {
@@ -737,15 +823,9 @@ public:
    */
   Node::Value getScalar()
   {
-    if (m_state == SCALAR)
-    {
-      return getData();
-    }
-    else
-    {
-      // TODO - This will throw and exception in the user's code  ATK-704
-      return Node().value();
-    }
+    SLIC_CHECK_MSG( (m_state == SCALAR),
+                    "DataView::getScalar() called on non-scalar view.");
+    return getData();
   }
 
   /*!
@@ -754,6 +834,9 @@ public:
    *
    *  If view does not contain allocated data, an empty Node::Value will be
    *  returned.
+   *
+   *  \note The return value already accounts for the View's offset (when present),
+   *        so, if the View is an array, getData()[0] already points to the first element
    */
   Node::Value getData()
   {
@@ -763,18 +846,17 @@ public:
                       "No view data present, memory has not been allocated.");
       SLIC_CHECK_MSG( isApplied(),
                       "View data description not present.");
-      return Node().value();
     }
+    // this will return a default value
     return m_node.value();
   }
 
   /*!
-   * \brief Lightweight templated wrapper around getData() that can be used when you are calling getData(), but not
-   * assigning the return.
+   * \brief Lightweight templated wrapper around getData() that can be used when you are calling getData(),
+   *        but not assigning the return type.
    *
+   * \sa getData()
    */
-  // TODO - Will a app code ever use this?  We are just using it for internal tests, so maybe we can move this function
-  // to a 'test helper' source file and remove it from the core API.
   template<typename DataType>
   DataType getData()
   {
@@ -783,10 +865,21 @@ public:
   }
 
   /*!
-   * \brief Returns a void pointer to data in the view (if described, it will take into account any
-   * offset, stride, schema, etc. applied).
+   * \brief Returns a void pointer to the view's data
+   *
+   * \note This function returns the base pointer that was used to set up the view.
+   *       It does not account for any offsets or strides in the View's description.
+   *
+   * To access the first data element, you will need to cast to the appropriate type
+   * and add the offset.  E.g. if the underlying data is an array of integers
+   * you can access the first element as follows:
+   * \verbatim
+   *    void* vptr = view->getVoidPtr();
+   *    int*  iptr = static_cast<int*>(vptr) + view->getOffset();
+   * \endverbatim
+   *
+   * \sa getData(), getArray()
    */
-  // TODO - Would like this to be a const function, but it calls a conduit function which is not const.
   void * getVoidPtr() const;
 
 //@}
@@ -820,15 +913,6 @@ public:
    * in the file (independent of file format) and can be accessed as a Conduit tree.
    */
   void createNativeLayout(Node& n) const;
-
-  /*!
-   * \brief Copy data view native layout to given Conduit node.
-   *
-   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
-   * externally to the Sidre View data so that it can be filled in from the data
-   * in the file (independent of file format) and can be accessed as a Conduit tree.
-   */
-  void createExternalLayout(Node& parent) const;
 
 private:
 
@@ -933,6 +1017,15 @@ private:
   void importFrom(conduit::Node& data_holder,
                   const std::map<IndexType, IndexType>& buffer_id_map);
 
+  /*!
+   * \brief Add view's description to a conduit tree.
+   */
+  void exportDescription(conduit::Node& data_holder) const;
+
+  /*!
+   * \brief Restore a view's description from a conduit tree.
+   */
+  void importDescription(conduit::Node& data_holder);
 
   /*!
    *  \brief Private method to remove any applied description;
@@ -1005,6 +1098,11 @@ private:
    */
   static char const * getStateStringName(State state);
 
+  /*!
+   *  \brief Private method returns state enum value give a state name.
+   */
+  State getStateId(const std::string &name);
+
   /// Name of this DataView object.
   std::string m_name;
 
@@ -1035,7 +1133,7 @@ private:
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   DataView() = delete;
   DataView( DataView&& ) = delete;
 

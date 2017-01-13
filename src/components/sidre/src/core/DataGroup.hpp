@@ -21,7 +21,7 @@
 #ifndef DATAGROUP_HPP_
 #define DATAGROUP_HPP_
 
-#include "common/config.hpp"
+#include "common/config.hpp"    // defines ATK_USE_CXX11
 
 // Standard C++ headers
 #include <memory>
@@ -29,6 +29,10 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <cstring>
+
+// third party lib headers
+#include "hdf5.h"
 
 #ifndef USE_UNORDERED_MAP
 #define USE_UNORDERED_MAP
@@ -43,7 +47,7 @@
 
 #if defined(USE_UNORDERED_MAP)
 //STL or Boost unordered_map, depending on
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
 #include <unordered_map>
 #else
 #include "boost/unordered_map.hpp"
@@ -68,10 +72,6 @@ namespace asctoolkit
 {
 namespace sidre
 {
-
-// using directives to make Conduit usage easier and less visible
-using conduit::Node;
-using conduit::Schema;
 
 class DataBuffer;
 class DataGroup;
@@ -1108,12 +1108,100 @@ public:
    */
   bool isEquivalentTo(const DataGroup * other) const;
 
+
+  /*!
+   *@{
+   * @name    Group I/O methods
+   *   These methods save and load Group trees to and from files.
+   *   This includes the views and buffers used in by groups in the tree.
+   *   We provide several "protocol" options:
+   *
+   *   protocols:
+   *    sidre_hdf5 (default)
+   *    sidre_conduit_json
+   *    sidre_json
+   *
+   *    conduit_hdf5
+   *    conduit_bin
+   *    conduit_json
+   *    json
+   *
+   *   There are two overloaded versions for each of save, load, and
+   *   loadExternalData.  The first of each takes a file path and is intended
+   *   for use in a serial context and can be called directly using any
+   *   of the supported protocols.  The second takes an hdf5 handle that
+   *   has previously been created by the calling code.  These mainly exist
+   *   to handle parallel I/O calls from the SPIO component.  They can only
+   *   take the sidre_hdf5 or conduit_hdf5 protocols.
+   */
+
+  /*!
+   * \brief Save the Group to a file.
+   *
+   *  Saves the tree starting at this group and the buffers used by the views
+   *  in this tree.
+   *
+   *  \param path      file path
+   *  \param protocol  I/O protocol
+   */
+  void save( const std::string& path,
+             const std::string& protocol = "sidre_hdf5") const;
+
+  /*!
+   * \brief Save the Group to an hdf5 handle.
+   *
+   * \param h5_id      hdf5 handle
+   * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
+   */
+  void save( const hid_t& h5_id,
+             const std::string &protocol = "sidre_hdf5") const;
+
+
+  /*!
+   * \brief Load the Group from a file.
+   *
+   * \param path      file path
+   * \param protocol  I/O protocol
+   */
+  void load(const std::string& path,
+            const std::string& protocol = "sidre_hdf5");
+
+  /*!
+   * \brief Load the Group from an hdf5 handle.
+   * \param h5_id      hdf5 handle
+   * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
+   */
+  void load( const hid_t& h5_id,
+             const std::string &protocol = "sidre_hdf5");
+
+
+  /*!
+   * \brief Load data into the Group's external views from a file.
+   *
+   * No protocol argument is needed, as this only is used with the sidre_hdf5
+   * protocol.
+   *
+   * \param path      file path
+   */
+  void loadExternalData(const std::string& path);
+
+  /*!
+   * \brief Load data into the Group's external views from a hdf5 handle.
+   *
+   * No protocol argument is needed, as this only is used with the sidre_hdf5
+   * protocol.
+   *
+   * \param h5_id      hdf5 handle
+   */
+  void loadExternalData(const hid_t& h5_id);
+
+
 private:
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   DataGroup( const DataGroup& source ) = delete;
   DataGroup( DataGroup&& source ) = delete;
 
@@ -1212,8 +1300,16 @@ private:
 //@{
 //!  @name Private DataGroup methods for interacting with Conduit Nodes.
 
+
   /*!
-   * \brief Private methods to copy DataGroup to Conduit Node.
+   * \brief Private method to copy DataGroup to Conduit Node.
+   *
+   * Note: This is for the "sidre_hdf5" protocol.
+   */
+  void exportTo(conduit::Node& result) const;
+
+  /*!
+   * \brief Private method to copy DataGroup to Conduit Node.
    *
    * \param buffer_indices Used to track what Buffers are referenced
    * by the Views in this Group and Groups in the sub-tree below it.
@@ -1222,7 +1318,14 @@ private:
                 std::set<IndexType>& buffer_indices) const;
 
   /*!
-   * \brief Private methods to copy DataGroup from Conduit Node.
+   * \brief Private method to build a Group hierarchy from Conduit Node.
+   *
+   * Note: This is for the "sidre_{zzz}" protocols.
+   */
+  void importFrom(conduit::Node& node);
+
+  /*!
+   * \brief Private method to copy DataGroup from Conduit Node.
    *
    * Map of Buffer indices tracks old Buffer ids in the file to the
    * new Buffer ids in the datastore.  Buffer ids are not guaranteed
@@ -1231,6 +1334,15 @@ private:
    */
   void importFrom(conduit::Node& node,
                   const std::map<IndexType, IndexType>& buffer_id_map);
+
+
+  /*!
+   * \brief Private method to build a Group hierarchy from Conduit Node.
+   *
+   * Note: This is for the "conduit_{zzz}" protocols.
+   */
+  void importConduitTree(conduit::Node& node);
+
 
 //@}
 
@@ -1277,7 +1389,7 @@ private:
   static const char s_path_delimiter;
 
   ///
-  /// Typedefs for View and shild Group containers. They are here to
+  /// Typedefs for View and child Group containers. They are here to
   /// avoid propagating specific type names in the DataGroup class
   /// implementation when we experiment with different containers.
   ///
@@ -1293,7 +1405,7 @@ private:
   // typedef std::map<std::string, IndexType> MapType;
   ///
 #if defined(USE_UNORDERED_MAP)
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   typedef std::unordered_map<std::string, IndexType> MapType;
 #else
   typedef boost::unordered_map<std::string, IndexType> MapType;

@@ -35,17 +35,17 @@ int AA_exclass1_increment_count(AA_exclass1 * self, int incr);
 
 const char * AA_exclass1_get_name(const AA_exclass1 * self);
 
-void AA_exclass1_get_name_bufferify(AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass1_get_name_bufferify(const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv);
 
-int AA_exclass1_get_name_length(AA_exclass1 * self);
+int AA_exclass1_get_name_length(const AA_exclass1 * self);
 
 const char * AA_exclass1_get_name_error_check(const AA_exclass1 * self);
 
-void AA_exclass1_get_name_error_check_bufferify(AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass1_get_name_error_check_bufferify(const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv);
 
 const char * AA_exclass1_get_name_arg(const AA_exclass1 * self);
 
-void AA_exclass1_get_name_arg_bufferify(AA_exclass1 * self, char * name, int Lname);
+void AA_exclass1_get_name_arg_bufferify(const AA_exclass1 * self, char * name, int Lname);
 
 AA_exclass2 * AA_exclass1_get_root(AA_exclass1 * self);
 
