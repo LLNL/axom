@@ -9,8 +9,9 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
+****************
 The CS Toolkit
-================
+****************
 
 The CS Toolkit effort is a project in WCI/WSC that is funded by ECP/ATDM.
 Its principle goal is to provide a collection of robust and flexible software 
@@ -35,31 +36,77 @@ The main drivers of the Toolkit are to:
   *  Support current ASC and other production applications and as they continue to evolve
   *  Provide capabilities for LLNL research codes, proxy apps, etc. that simplify technology transfer from research efforts into production applications
 
-This web page is the central hub for learning about the CS Toolkit, interacting
-with the project team, etc.
+**This web page is the main place to find information about the CS Toolkit,
+communicating with the project team, etc.**
 
-Here are some links to Atlassian tools for interacting with the project:
+
+=====================
+Quickstart Guide
+=====================
+
+To get started using the CS Toolkit, please see the 
+`Quickstart Guide <../../quickstart_guide_docs/html/index.html>`_. This
+guide contains information about accessing the code, configuring and building
+it, linking with an application, etc.
+
+
+======================================= 
+Communicating with the Toolkit Team
+=======================================
+
+--------------
+Mailing Lists
+--------------
+
+The project maintains two email lists: 
+
+  * 'asctoolkit-users@llnl.gov' is how Toolkit users can contact developers for questions, report issues, etc. 
+  * 'asctoolkit-dev@llnl.gov' is for project-specific communication among team members. 
+
+You can add or remove yourself from either of these lists via the 
+`LLNL E-Mail List Manager <https://listserv.llnl.gov>`_
+
+
+-------------- 
+Chat Room
+-------------- 
+
+We also have a chat room on LLNL's Cisco Jabber instance called 
+'CS Toolkit Dev'. It is open to anyone. You just have to log on to Jabber and
+join the room.
+
+
+-----------------
+Atlassian Tools
+-----------------
+
+The main interaction hub for the Toolkit software is the Atlassian tool suite 
+on the Livermore Computing Collaboration Zone (CZ). These tools can be 
+accessed through the `MyLC Portal <https://lc.llnl.gov>`_.
+
+Direct links to the Toolkit Atlassian projects/spaces are:
 
   * `Bitbucket project/git repository <https://lc.llnl.gov/bitbucket/projects/ATK>`_
   * `Jira issue tracker <https://lc.llnl.gov/jira/projects/ATK>`_
   * `Bamboo continuous integration <https://lc.llnl.gov/bamboo/browse/ASC>`_
   * `Confluence (primarily for developers) <https://lc.llnl.gov/confluence/display/ASCT>`_
 
-Interaction with the Toolkit projects/spaces in these Atlassian tools requires
+Access to Toolkit projects/spaces in these Atlassian tools requires
 membership in the `toolkit` group on LC systems. Please contact the team for
 group access.
 
-The project maintains two email lists. `asctoolkit-users@llnl.gov` is used for
-interaction between Toolkit developers and users. `asctoolkit-dev@llnl.gov` is
-is used for project-specific communication among team members. You can add or
-remove yourself from either of these lists via the `Listserv utility <https://listserv.llnl.gov>`_
 
-To get started using the CS Toolkit, please see the `Quickstart Guide <../../quickstart_guide_docs/html/index.html>`_.
+
+================================
+Toolkit Component Documentation
+================================
 
 The following lists contain links to user guides and source code documentation
 for Toolkit components:
 
+----------------------
 Component User Guides
+----------------------
 
   *  Slic (Simple Logging Interface Code for integrated applications)
   *  Lumberjack (Scalable parallel message logging and filtering)
@@ -70,7 +117,9 @@ Component User Guides
   *  Mint (Mesh data model)
   *  Primal (Computational geometry primitives)
 
+--------------------------
 Source Code Documentation
+--------------------------
 
   *  `CS Toolkit <../../../doxygen/asc_toolkit_doxygen/html/index.html>`_
   *  `Common <../../../doxygen/common_doxygen/html/index.html>`_
@@ -85,16 +134,28 @@ Source Code Documentation
 
 Look for documentation to appear for new components as they are developed.
 
-Other useful tools that we maintain which are not Toolkit components:
+
+======================================================
+Other Tools Application Developers May Find Useful
+======================================================
+
+Toolkit developers support other tools that can be used by application
+projects independent of the CS Toolkit. These include:
 
   *  BLT (CMake-based buld system that simplies use of CMake and development tool integration)
   *  Shroud (Generation of native C and Fortran APIs from C++ code)
   *  `Conduit (Library for describing and managing in-memory data structures) <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_
 
 
-Additional resources for CS Toolkit developers:
+================================================
+Resources for Toolkit Developers/Contributors:
+================================================
 
   * `CS Toolkit Developer Guide  <../../dev_guide_docs/html/index.html>`_
   * `CS Toolkit Coding Guidelines  <../../coding_guide_docs/html/index.html>`_
   * `CS Toolkit Testing Coverage <https://lc.llnl.gov/toolkit/coverage/index.html>`_
+
+
+.. toctree::
+   :maxdepth: 3
 
