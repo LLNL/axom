@@ -332,6 +332,7 @@ private:
   ///@}
 
   DISABLE_COPY_AND_ASSIGNMENT(Logger);
+  DISABLE_MOVE_AND_ASSIGNMENT(Logger);
 
 };
 

@@ -513,6 +513,7 @@ private:
   int m_maxNumLevels;                /*!< maximum level of the tree       */
 
   DISABLE_COPY_AND_ASSIGNMENT(BVHTree);
+  DISABLE_MOVE_AND_ASSIGNMENT(BVHTree);
 };
 
 } /* namespace quest */
