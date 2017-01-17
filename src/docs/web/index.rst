@@ -14,7 +14,7 @@ The CS Toolkit
 ****************
 
 The CS Toolkit effort is a project in WCI/WSC that is funded by ECP/ATDM.
-Its principle goal is to provide a collection of robust and flexible software 
+Its principal goal is to provide a collection of robust and flexible software 
 components that serve as building blocks for LLNL simulation tools. The 
 emphasis is on sharing core infrastructure software amongst applications 
 rather than having different codes develop and maintain similar capabilities.
@@ -91,10 +91,14 @@ Direct links to the Toolkit Atlassian projects/spaces are:
   * `Bamboo continuous integration <https://lc.llnl.gov/bamboo/browse/ASC>`_
   * `Confluence (primarily for developers) <https://lc.llnl.gov/confluence/display/ASCT>`_
 
+
+--------------------
+LC Groups
+--------------------
+
 Access to Toolkit projects/spaces in these Atlassian tools requires
 membership in the `toolkit` group on LC systems. Please contact the team for
-group access.
-
+group access by sending an email request to 'asctoolkit-dev@llnl.gov'.
 
 
 ================================
