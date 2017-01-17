@@ -217,19 +217,19 @@ is preferred.
 2.17 Names of related functions, such as methods for a class, **should** 
 follow the same style.
 
-.. note:: 
-        **Exception:**  While consistency is important, name style may be 
-        mixed when it makes sense to do so. For example, most methods for 
-        a class may follow camelCase style. But, that same class may also 
-        contain methods that follow pot_hole style if those methods perform 
-        operations that are similar to C++ standard library functions.
+.. note:: **Exception:**  While consistency is important, name style may be 
+          mixed when it makes sense to do so. While camelCase style is 
+          preferred for class member functions, a class may also contain 
+          methods that follow pot_hole style if those methods perform 
+          operations that are similar to C++ standard library functions, 
+          for example.
 
-      For example, the following method names are acceptable for a class with
-      camelCase style names::
+          For example, the following method names are acceptable for a class 
+          with camelCase style names::
 
-        push_back(), push_front()
+          push_back(), push_front()
 
-      if those methods are similar in behavior to C++ standard methods.
+          if those methods are similar in behavior to C++ standard methods.
 
 
 -------------------------------------------------------
