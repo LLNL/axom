@@ -47,7 +47,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapDataGroup.cpp
         interface/c_fortran/wrapDataBuffer.cpp
         interface/c_fortran/wrapDataView.cpp
-        interface/c_fortran/wrapfsidre.f
+        interface/c_fortran/wrapfsidre.F
         interface/c_fortran/shroudrt.cpp
     )
 endif()
