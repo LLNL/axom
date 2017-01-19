@@ -10,13 +10,13 @@
 #ifndef MORTON_INDEX_HXX_
 #define MORTON_INDEX_HXX_
 
-#include "common/config.hpp"
+#include "common/config.hpp"    // defines ATK_USE_CXX11
 #include "common/CommonTypes.hpp"
 
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
     #include <type_traits>
 #else
     #include <boost/static_assert.hpp>
@@ -62,7 +62,7 @@ namespace quest
     struct MortonBase
     {
         // static assert to ensure that this class is only instantiated on integral types
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
         static_assert( std::is_integral<CoordType>::value, "Coordtype must be integral for Morton indexing" );
         static_assert( std::is_integral<MortonIndexType>::value, "MortonIndexType must be integral for Morton indexing" );
 #else

@@ -295,6 +295,7 @@ namespace quest
 
     private:
         DISABLE_COPY_AND_ASSIGNMENT(DenseOctreeLevel);
+        DISABLE_MOVE_AND_ASSIGNMENT(DenseOctreeLevel);
 
     private:
       BroodData* m_data;

@@ -18,7 +18,6 @@
 #include "common/config.hpp"
 #include "common/CommonTypes.hpp"
 
-#include "fmt/fmt.hpp"
 #include "slic/slic.hpp"
 
 #include "quest/MortonIndex.hpp"

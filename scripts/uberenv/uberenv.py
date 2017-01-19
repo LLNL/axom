@@ -103,8 +103,8 @@ def parse_args():
                       dest="create_mirror",
                       default=False,
                       help="Create spack mirror")
-    # this option allows a user to explicitly to select any compilers.yaml 
-    # file
+    # this option allows a user to explicitly to select a
+    # spack compilers.yaml 
     parser.add_option("--compilers-yaml",
                       dest="compilers_yaml",
                       default=pjoin(uberenv_script_dir(),"compilers.yaml"),
@@ -116,23 +116,22 @@ def parse_args():
                       dest="project_json",
                       default=pjoin(uberenv_script_dir(),"project.json"),
                       help="uberenv project settings json file")
-    #########################
-    # disabled options
-    #########################
-    # # force rebuild of these packages
-    # parser.add_option("--force",
-    #                   dest="force",
-    #                   default=False,
-    #                   action='store_true',
-    #                   help="force rebuild of uberenv packages")
-    # spack compiler settings file
-    # we disable spack's reading of a user-level compiler settings
 
+    # flag to use insecure curl + git
+    parser.add_option("-k",
+                      action="store_true",
+                      dest="ignore_ssl_errors",
+                      default=False,
+                      help="Ignore SSL Errors")
+
+    ###############
     # parse args
+    ###############
     opts, extras = parser.parse_args()
     # we want a dict b/c the values could 
     # be passed without using optparse
     opts = vars(opts)
+    opts["compilers_yaml"] = os.path.abspath(opts["compilers_yaml"] )
     return opts, extras
 
 
@@ -144,48 +143,11 @@ def load_json_file(json_file):
     # reads json file
     return json.load(open(json_file))
 
-#################################################################
-#
-# these functions to inspect spakc state are very fragile to 
-# spack interface changes -- if we truly  need them, we should 
-# try to  use spack's internal db class
-#################################################################
-
-# def spack_package_is_installed(pkg,spec):
-#     # TODO: We need a better way to check this
-#     # the term colors are undermining me
-#     # ( I was trying to check for z installed pacakges, with z > 0
-#     rcode, output = sexe("spack/bin/spack find " + pkg + spec,
-#                          ret_output=True,echo=True)
-#     lines = output.split("\n")
-#     return len(lines) > 1
-#
-# def spack_package_deps(pkg,spec):
-#     # TODO: In the future, we will can use uninstall by hash
-#     # and we won't need this
-#     rcode, output = sexe("spack/bin/spack find --deps %s %s" % (pkg,spec),
-#                          ret_output=True,
-#                          echo=True)
-#     lines = [ l.strip() for l in output.split("\n") if l.strip() != ""]
-#     lines = [ l[1:] for l in lines if l.startswith("^")]
-#     # remove term colors that spack uses
-#     lines = [ l.replace("\x1b[0;36m","") for l in lines]
-#     lines = [ l.replace("\x1b[0;94m","") for l in lines]
-#     lines = [ l.replace("\x1b[0m","") for l in lines]
-#     pkgs = set(lines)
-#     res = [ pkg + spec for pkg in pkgs]
-#     return res
-
-def spack_uninstall_and_clean(pkg):
-    print "[forcing uninstall of %s]" % pkg
-    sexe("spack/bin/spack uninstall -f %s" % pkg,echo=True)
-    sexe("spack/bin/spack clean %s" % pkg,echo=True)
-
 def uberenv_compilers_yaml_file(opts):
     # path to compilers.yaml, which we will for compiler setup for spack
     compilers_yaml = opts["compilers_yaml"]
     if not os.path.isfile(compilers_yaml):
-        print "[failed to find uberenv 'compilers.yaml' file]"
+        print "[failed to find uberenv 'compilers.yaml' file: %s]" % compilers_yaml
         sys.exit(-1)
     return compilers_yaml
 
@@ -193,9 +155,11 @@ def uberenv_compilers_yaml_file(opts):
 def patch_spack(spack_dir,compilers_yaml,pkgs):
     # force uberenv config
     spack_lib_config = pjoin(spack_dir,"lib","spack","spack","config.py")
-    src = open(spack_lib_config).read()
-    src += "#UBERENV: force only site config"
-    src += "config_scopes = config_scopes[0]\n\n"
+    print "[disabling user config scope in: %s]" % spack_lib_config
+    cfg_script = open(spack_lib_config).read()
+    src = "ConfigScope('user', os.path.expanduser('~/.spack'))"
+    cfg_script = cfg_script.replace(src, "#DISABLED BY UBERENV: " + src)
+    open(spack_lib_config,"w").write(cfg_script)
     # copy in the compiler spec
     print "[copying uberenv compiler specs]"
     spack_etc = pjoin(spack_dir,"etc")
@@ -204,7 +168,7 @@ def patch_spack(spack_dir,compilers_yaml,pkgs):
     spack_etc = pjoin(spack_etc,"spack")
     if not os.path.isdir(spack_etc):
         os.mkdir(spack_etc)
-    sexe("cp %s spack/etc/spack" % compilers_yaml)
+    sexe("cp %s spack/etc/spack/compilers.yaml" % compilers_yaml, echo=True)
     dest_spack_pkgs = pjoin(spack_dir,"var","spack","repos","builtin","packages")
     # hot-copy our packages into spack
     sexe("cp -Rf %s %s" % (pkgs,dest_spack_pkgs))
@@ -218,8 +182,13 @@ def create_spack_mirror(mirror_path,pkg_name):
         print "[--create-mirror requires a mirror directory]"
         sys.exit(-1)
     mirror_path = os.path.abspath(mirror_path)
-    sexe("spack/bin/spack mirror create -d {} --dependencies {}".format(
-            mirror_path, pkg_name),echo=True)
+    
+    mirror_cmd = "spack/bin/spack "
+    if opts["ignore_ssl_errors"]:
+        mirror_cmd += "-k "
+    mirror_cmd += "mirror create -d {} --dependencies {}".format(mirror_path,
+                                                                 pkg_name)
+    return sexe(mirror_cmd, echo=True)
 
 def find_spack_mirror(spack_dir, mirror_name):
     """
@@ -279,14 +248,17 @@ def main():
     if "darwin" in platform.system().lower():
         dep_tgt = platform.mac_ver()[0]
         dep_tgt = dep_tgt[:dep_tgt.rfind(".")]
-        print "[setting MACOSX_DEPLOYMENT_TARGET to %s]" % dep_tgt
         env["MACOSX_DEPLOYMENT_TARGET"] = dep_tgt
+        env["SDKROOT"] = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" + str(dep_tgt) + ".sdk"
+        print "[setting MACOSX_DEPLOYMENT_TARGET to %s]" % dep_tgt
+        print "[setting SDKROOT to %s]" % env[ "SDKROOT" ]
     # setup default spec
     if opts["spec"] is None:
         if "darwin" in platform.system().lower():
             opts["spec"] = "%clang"
         else:
             opts["spec"] = "%gcc"
+    print "[spack spec: %s]" % opts["spec"]
     # get the current working path, and the glob used to identify the 
     # package files we want to hot-copy to spack
     uberenv_path = os.path.split(os.path.abspath(__file__))[0]
@@ -307,38 +279,20 @@ def main():
         print "[info: cloning spack develop branch from github]"
         os.chdir(dest_dir)
         # clone spack into the dest path
-        sexe("git clone -b develop https://github.com/llnl/spack.git")
+        clone_cmd ="git "
+        if opts["ignore_ssl_errors"]:
+            clone_cmd +="-c http.sslVerify=false "
+        clone_cmd += "clone -b develop https://github.com/llnl/spack.git"
+        sexe(clone_cmd, echo=True)
         if "spack_develop_commit" in project_opts:
             sha1 = project_opts["spack_develop_commit"]
             print "[info: using spack develop %s]" % sha1
             os.chdir(pjoin(dest_dir,"spack"))
             sexe("git reset --hard %s" % sha1)
 
-    ###########################################################
-    # disable git clean, since we aren't doing any git updates
-    ###########################################################
-    # else:
-    #     print "[info: cleaning spack instance]"
-    #     # if we already have a checkout, clean it
-    #     os.chdir(pjoin(dest_dir,"spack"))
-    #     sexe("git clean -f")
     os.chdir(dest_dir)
     # twist spack's arms 
-    patch_spack(dest_spack,compilers_yaml,pkgs)
-
-    ########################################################
-    # disable force and uninstall, newer versions of
-    # spack added interactive prompt that could undermine us
-    ########################################################
-    # if force is enabled 
-    # uninstall all related packages for this spec
-    # if opts["force"]:
-    #         deps = spack_package_deps(uberenv_pkg_name,opts["spec"])
-    #         for dep in deps:
-    #             spack_uninstall_and_clean(dep)
-    #         # if our main package is already installed, uninstall it
-    #         if spack_package_is_installed(uberenv_pkg_name,opts["spec"]):
-    #             spack_uninstall_and_clean(uberenv_pkg_name + opts["spec"])
+    patch_spack(dest_spack, compilers_yaml, pkgs)
 
     ##########################################################
     # we now have an instance of spack configured how we 
@@ -351,7 +305,7 @@ def main():
     # 
     ##########################################################
     if opts["create_mirror"]:
-        create_spack_mirror(opts["mirror"],uberenv_pkg_name)
+        return create_spack_mirror(opts["mirror"],uberenv_pkg_name)
     else:
         if not opts["mirror"] is None:
             use_spack_mirror(dest_spack,
@@ -359,10 +313,13 @@ def main():
                              opts["mirror"])
         # use the uberenv package to trigger the right builds 
         # and build an host-config.cmake file
-        sexe("spack/bin/spack install " + uberenv_pkg_name + opts["spec"],
-             echo=True)
+        install_cmd = "spack/bin/spack "
+        if opts["ignore_ssl_errors"]:
+            install_cmd += "-k "
+        install_cmd += "install " + uberenv_pkg_name + opts["spec"]
+        return sexe(install_cmd, echo=True)
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
 
 

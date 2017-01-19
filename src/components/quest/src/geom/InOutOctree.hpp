@@ -7,7 +7,7 @@
 #ifndef INOUT_OCTREE__HXX_
 #define INOUT_OCTREE__HXX_
 
-#include "common/config.hpp"
+#include "common/config.hpp"       // defines ATK_USE_CXX11
 #include "common/ATKMacros.hpp"
 #include "common/Timer.hpp"
 #include "common/Utilities.hpp"
@@ -1015,6 +1015,7 @@ private:
 
 private:
     DISABLE_COPY_AND_ASSIGNMENT(InOutOctree);
+    DISABLE_MOVE_AND_ASSIGNMENT(InOutOctree);
 
     /** \brief Checks internal consistency of the octree representation */
     void checkValid() const;
@@ -2520,7 +2521,7 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
     colorMap[ InOutBlockData::Gray ] = 0;
     colorMap[ InOutBlockData::Black ] = 1;
 
-#if defined(USE_CXX11)
+#if defined(ATK_USE_CXX11)
   typedef std::unordered_map<GridPt, int, PointHash<int> > GridIntMap;
 #else
   typedef boost::unordered_map<GridPt, int, PointHash<int> > GridIntMap;

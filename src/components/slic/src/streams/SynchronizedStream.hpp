@@ -58,7 +58,7 @@ class SynchronizedStream : public LogStream
 public:
   SynchronizedStream( std::ostream* stream, MPI_Comm comm );
   SynchronizedStream( std::ostream* stream, MPI_Comm comm,
-                      std::string& format);
+                      const std::string& format);
 
   virtual ~SynchronizedStream();
 
@@ -120,6 +120,7 @@ private:
 
 
   DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);
+  DISABLE_MOVE_AND_ASSIGNMENT(SynchronizedStream);
 };
 
 } /* namespace slic */

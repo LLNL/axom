@@ -14,7 +14,7 @@
 
 #include <limits>
 
-#include "common/config.hpp"
+#include "common/config.hpp"    // defines ATK_USE_CXX11
 
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
@@ -64,7 +64,7 @@ struct ValueRange
 
     /** \brief Returns the lowest representable value of type T */
     static T lowest() {
-        #ifdef USE_CXX11
+        #ifdef ATK_USE_CXX11
             return std::numeric_limits<T>::lowest();
         #else
             return std::numeric_limits<T>::min();
@@ -72,7 +72,7 @@ struct ValueRange
     }
 };
 
-#ifndef USE_CXX11
+#ifndef ATK_USE_CXX11
 
 /**
  * \brief Template specialization of ValueRange for float types
@@ -95,7 +95,8 @@ template<> struct ValueRange<double>
     static T highest() { return std::numeric_limits<T>::max(); }
     static T lowest()  { return -std::numeric_limits<T>::max(); }
 };
-#endif
+#endif  // ATK_USE_CXX11
+
 
 
 /*!

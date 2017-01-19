@@ -307,14 +307,11 @@ void SIDRE_datagroup_load_bufferify(SIDRE_datagroup * self,
                                     const char * protocol, int Lprotocol);
 
 void SIDRE_datagroup_load_external_data(SIDRE_datagroup * self,
-                                        const char * file_path,
-                                        const char * protocol);
+                                        const char * file_path);
 
 void SIDRE_datagroup_load_external_data_bufferify(SIDRE_datagroup * self,
                                                   const char * file_path,
-                                                  int Lfile_path,
-                                                  const char * protocol,
-                                                  int Lprotocol);
+                                                  int Lfile_path);
 
 #ifdef __cplusplus
 }

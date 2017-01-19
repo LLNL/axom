@@ -56,30 +56,6 @@ size_t SIDRE_datastore_get_num_buffers(const SIDRE_datastore * self);
 
 void SIDRE_datastore_print(const SIDRE_datastore * self);
 
-void SIDRE_datastore_save(const SIDRE_datastore * self, const char * file_path,
-                          const char * protocol);
-
-void SIDRE_datastore_save_bufferify(const SIDRE_datastore * self,
-                                    const char * file_path, int Lfile_path,
-                                    const char * protocol, int Lprotocol);
-
-void SIDRE_datastore_load(SIDRE_datastore * self, const char * file_path,
-                          const char * protocol);
-
-void SIDRE_datastore_load_bufferify(SIDRE_datastore * self,
-                                    const char * file_path, int Lfile_path,
-                                    const char * protocol, int Lprotocol);
-
-void SIDRE_datastore_load_external_data(SIDRE_datastore * self,
-                                        const char * file_path,
-                                        const char * protocol);
-
-void SIDRE_datastore_load_external_data_bufferify(SIDRE_datastore * self,
-                                                  const char * file_path,
-                                                  int Lfile_path,
-                                                  const char * protocol,
-                                                  int Lprotocol);
-
 #ifdef __cplusplus
 }
 #endif

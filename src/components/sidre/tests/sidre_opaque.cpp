@@ -112,21 +112,16 @@ TEST(sidre_opaque,basic_inout)
 
   DataView * ext_view = problem_gp->createView("ext", ext);
 
-  bool test_external = ext_view->isExternal();
-  EXPECT_EQ(test_external, true);
-
-  bool test_applied = ext_view->isApplied();
-  EXPECT_EQ(test_applied, false);
-
-  bool test_opaque = ext_view->isOpaque();
-  EXPECT_EQ(test_opaque, true);
+  EXPECT_TRUE(ext_view->isExternal());
+  EXPECT_FALSE(ext_view->isApplied());
+  EXPECT_TRUE(ext_view->isOpaque());
+  EXPECT_EQ(ext, ext_view->getVoidPtr());
 
   Extent * test_extent =
     static_cast<Extent *>(ext_view->getVoidPtr());
   EXPECT_EQ(ext, test_extent);
 
   int test_ihi = test_extent->m_ihi;
-
   EXPECT_EQ(test_ihi, ihi_val);
 
   // Similar test with different view methods
@@ -136,12 +131,13 @@ TEST(sidre_opaque,basic_inout)
   DataView * ext2_view =
     problem_gp->createView("ext2")->setExternalDataPtr(ext2);
 
-  bool test_opaque2 = ext2_view->isOpaque();
-  EXPECT_EQ(test_opaque2, true);
+  EXPECT_TRUE(ext2_view->isOpaque());
+  EXPECT_EQ(ext2, ext2_view->getVoidPtr());
 
   Extent * test_extent2 = static_cast<Extent *>(ext2_view->getVoidPtr());
-  int test_ihi2 = test_extent2->m_ihi;
+  EXPECT_EQ(test_extent2, ext2_view->getVoidPtr());
 
+  int test_ihi2 = test_extent2->m_ihi;
   EXPECT_EQ(test_ihi2, 2 * ihi_val);
 
   // clean up...
@@ -160,6 +156,7 @@ TEST(sidre_opaque,meshvar)
 {
   using namespace sidreopaquetest;
 
+  const int NUM_DOMAINS = 2;
   const int ilo_val[] = {0, 10};
   const int ihi_val[] = {9, 21};
   const std::string dom_name[] = { std::string("domain0"),
@@ -177,19 +174,22 @@ TEST(sidre_opaque,meshvar)
   DataGroup * meshvar_gp = problem_gp->createGroup("mesh_var");
   MeshVar * zone_mv = new MeshVar(_Zone_, _Int_, zone_var_depth);
   DataView * zone_mv_view = meshvar_gp->createView("zone_mv", zone_mv);
+  EXPECT_EQ(zone_mv, zone_mv_view->getVoidPtr());
+
   MeshVar * node_mv = new MeshVar(_Node_, _Double_, node_var_depth);
   DataView * node_mv_view = meshvar_gp->createView("node_mv", node_mv);
+  EXPECT_EQ(node_mv, node_mv_view->getVoidPtr());
 
   //
   // Create domain groups, add extents
   // Create data views for mesh var data on domains and allocate
   //
-  for (int idom = 0 ; idom < 2 ; ++idom)
+  for (int idom = 0 ; idom < NUM_DOMAINS ; ++idom)
   {
-
     DataGroup * dom_gp = problem_gp->createGroup(dom_name[idom]);
     Extent * dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
     dom_gp->createView("ext", dom_ext);
+    EXPECT_EQ(dom_ext, dom_gp->getView("ext")->getVoidPtr());
 
     MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getVoidPtr() );
     DataView * dom_zone_view = dom_gp->createView("zone_data");

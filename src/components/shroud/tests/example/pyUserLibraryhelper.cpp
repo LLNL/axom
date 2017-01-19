@@ -16,7 +16,7 @@ PyObject *PP_ExClass1_to_Object(ExClass1 *addr)
     PyObject *voidobj;
     PyObject *args;
     PyObject *rv;
-    
+
     voidobj = PyCapsule_New(addr, PY_ExClass1_capsule_name, NULL);
     args = PyTuple_New(1);
     PyTuple_SET_ITEM(args, 0, voidobj);
@@ -45,7 +45,7 @@ PyObject *PP_ExClass2_to_Object(ExClass2 *addr)
     PyObject *voidobj;
     PyObject *args;
     PyObject *rv;
-    
+
     voidobj = PyCapsule_New(addr, PY_ExClass2_capsule_name, NULL);
     args = PyTuple_New(1);
     PyTuple_SET_ITEM(args, 0, voidobj);

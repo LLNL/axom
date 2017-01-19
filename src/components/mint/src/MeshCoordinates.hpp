@@ -208,6 +208,7 @@ private:
   void initialize(int npoints);
 
   DISABLE_COPY_AND_ASSIGNMENT(MeshCoordinates);
+  DISABLE_MOVE_AND_ASSIGNMENT(MeshCoordinates);
 };
 
 } /* namespace mint */

@@ -28,6 +28,7 @@
 #include "hdf5.h"
 
 // Other CS Toolkit headers
+#include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -183,32 +184,6 @@ public:
 //@}
 
   /*!
-   * \brief Copy DataStore Group hierarchy (starting at root) and Buffer
-   *        descriptions to given Conduit node.
-   */
-  void copyToConduitNode(Node& n) const;
-
-
-  /*!
-   * \brief Copy DataStore native layout (starting at root) to given Conduit node.
-   *
-   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
-   * externally to the Sidre View data so that it can be filled in from the data
-   * in the file (independent of file format) and can be accessed as a Conduit tree.
-   */
-  void createNativeLayout(Node& n) const;
-
-  /*!
-   * \brief Copy DataStore native layout (starting at root) to given Conduit node.
-   *
-   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
-   * externally to the Sidre View data so that it can be filled in from the data
-   * in the file (independent of file format) and can be accessed as a Conduit tree.
-   */
-  void createExternalLayout(Node& n) const;
-
-
-  /*!
    * \brief Print JSON description of DataStore Group hierarchy (starting at
    *        root) and Buffer descriptions to std::cout.
    */
@@ -220,60 +195,9 @@ public:
    */
   void print(std::ostream& os) const;
 
-
-  /// Developer notes:
-  /// We should reduce these functions when SPIO is fully available ( in both serial and parallel ).
-  /// We only need one or two simple save functions.  Try to keep this class simple and move the I/O
-  /// interfaces to SPIO.
-
-  /*!
-   * \brief Save the DataStore to a new file.
-   * \see DataGroup::save() for supported protocols
-   */
-  void save( const std::string& file_path,
-             const std::string& protocol ) const;
-
-  /*!
-   * \brief Save the DataStore to an existing hdf5 handle.
-   */
-  void save( const hid_t& h5_id) const;
-
-  /*!
-   * \brief Load the DataStore from a file.
-   */
-  void load( const std::string& file_path,
-             const std::string& protocol);
-
-  /*!
-   * \brief Load the DataStore from an hdf5 handle.
-   */
-  void load( const hid_t& h5_id);
-
-  /*!
-   * \brief Load the DataStore external data from a file.
-   */
-  void loadExternalData( const std::string& file_path,
-                         const std::string& protocol);
-
-  /*!
-   * \brief Load the DataStore external data from an hdf5 handle.
-   */
-  void loadExternalData( const hid_t& h5_id);
-
 private:
-  /*!
-   *  Unimplemented ctors and copy-assignment operators.
-   */
-#ifdef USE_CXX11
-  DataStore( const DataStore& ) = delete;
-  DataStore( DataStore&& ) = delete;
-
-  DataStore& operator=( const DataStore& ) = delete;
-  DataStore& operator=( DataStore&& ) = delete;
-#else
-  DataStore( const DataStore& );
-  DataStore& operator=( const DataStore& );
-#endif
+  DISABLE_COPY_AND_ASSIGNMENT(DataStore);
+  DISABLE_MOVE_AND_ASSIGNMENT(DataStore);
 
   /// Root Group, created when DataStore object is created.
   DataGroup * m_RootGroup;

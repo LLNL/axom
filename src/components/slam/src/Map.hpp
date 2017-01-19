@@ -144,8 +144,10 @@ namespace slam    {
   private:
     inline void verifyPosition(SetPosition ATK_DEBUG_PARAM(setIndex))       const
     {
-        SLIC_ASSERT_MSG( setIndex >= 0 && setIndex < m_set->size()
-                       , "Attempted to access element " << setIndex << " but map's set has size " <<   m_set->size() );
+      SLIC_ASSERT_MSG( setIndex >= 0 && setIndex < m_set->size(),
+          "Attempted to access element "  << setIndex
+                                          << " but map's set has size "
+                                          <<   m_set->size() );
     }
 
   private:
