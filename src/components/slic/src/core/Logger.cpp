@@ -23,6 +23,7 @@
 #include "LogStream.hpp"
 
 #include "common/CommonTypes.hpp"
+#include "common/Utilities.hpp"   // for utilities::processAbort()
 
 // C/C++ includes
 #include <iostream> // for std::cout, std::cerr
@@ -35,7 +36,7 @@ Logger* Logger::s_Logger = ATK_NULLPTR;
 std::map< std::string, Logger* > Logger::s_loggers;
 
 //------------------------------------------------------------------------------
-Logger::Logger()
+Logger::Logger() : m_abortOnError( true ), m_abortOnWarning( false )
 {
   // by default, all message streams are disabled
   for ( int i=0; i < message::Num_Levels; ++i ) {
@@ -49,7 +50,9 @@ Logger::Logger()
 
 //------------------------------------------------------------------------------
 Logger::Logger(const std::string& name) :
-        m_name( name )
+        m_name( name ),
+        m_abortOnError( true ),
+        m_abortOnWarning( false )
 {
   // by default, all message streams are disabled
   for ( int i=0; i < message::Num_Levels; ++i ) {
@@ -196,6 +199,15 @@ void Logger::logMessage( message::Level level,
                               filter_duplicates );
 
   } // END for all streams
+
+  if ( ( m_abortOnError && (level==message::Error) )     ||
+          ( m_abortOnError && (level==message::Fatal) )  ||
+       ( m_abortOnWarning && (level==message::Warning) )    ) {
+
+     this->flushStreams();
+     asctoolkit::utilities::processAbort();
+
+  } // END if
 
 }
 
