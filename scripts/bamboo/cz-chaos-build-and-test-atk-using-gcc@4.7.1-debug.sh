@@ -13,8 +13,7 @@ BT="Debug"
 BP="atk_build"
 IP="atk_install"
 COMP_OPT=""
-# gcc 4.7.1 does not fully support Fortran 2003 C interoperability
-BUILD_OPT="-DBLT_CXX_STD=c++98 -DENABLE_FORTRAN=OFF"
+BUILD_OPT="-DBLT_CXX_STD=c++98"
 OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
 
 echo "Configuring..."
