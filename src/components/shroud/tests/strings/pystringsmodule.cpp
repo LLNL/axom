@@ -24,7 +24,7 @@ PY_pass_char(
     char status;
     const char *SH_kwcpp = "status";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:passChar", SH_kw_list,
         &status))
     {
@@ -67,7 +67,7 @@ PY_pass_char_ptr(
     const char * src;
     const char *SH_kwcpp = "src";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:passCharPtr", SH_kw_list,
         &src))
     {
@@ -195,7 +195,7 @@ PY_accept_string_const_reference(
     const char * arg1;
     const char *SH_kwcpp = "arg1";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:acceptStringConstReference", SH_kw_list,
         &arg1))
     {
@@ -221,7 +221,7 @@ PY_accept_string_reference(
     char * arg1;
     const char *SH_kwcpp = "arg1";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:acceptStringReference", SH_kw_list,
         &arg1))
     {

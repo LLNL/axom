@@ -7,18 +7,20 @@
 !! \file wrapfExClass1.f
 !! \brief Shroud generated wrapper for ExClass1 class
 !<
+! splicer begin file_top
+! splicer end file_top
 module exclass1_mod
     use exclass2_mod, only : exclass2
     use iso_c_binding, only : C_BOOL, C_INT, C_LONG, C_PTR
     ! splicer begin class.ExClass1.module_use
     ! splicer end class.ExClass1.module_use
     implicit none
-    
-    
+
+
     ! splicer begin class.ExClass1.module_top
     top of module splicer  1
     ! splicer end class.ExClass1.module_top
-    
+
     type exclass1
         type(C_PTR), private :: voidptr
         ! splicer begin class.ExClass1.component_part
@@ -49,18 +51,18 @@ module exclass1_mod
           type bound procedure part 1
         ! splicer end class.ExClass1.type_bound_procedure_part
     end type exclass1
-    
-    
+
+
     interface operator (.eq.)
         module procedure exclass1_eq
     end interface
-    
+
     interface operator (.ne.)
         module procedure exclass1_ne
     end interface
-    
+
     interface
-        
+
         function c_exclass1_new(name) &
                 result(rv) &
                 bind(C, name="AA_exclass1_new")
@@ -69,7 +71,7 @@ module exclass1_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
         end function c_exclass1_new
-        
+
         function c_exclass1_new_bufferify(name, Lname) &
                 result(rv) &
                 bind(C, name="AA_exclass1_new_bufferify")
@@ -79,14 +81,14 @@ module exclass1_mod
             integer(C_INT), value, intent(IN) :: Lname
             type(C_PTR) :: rv
         end function c_exclass1_new_bufferify
-        
+
         subroutine c_exclass1_delete(self) &
                 bind(C, name="AA_exclass1_delete")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
         end subroutine c_exclass1_delete
-        
+
         function c_exclass1_increment_count(self, incr) &
                 result(rv) &
                 bind(C, name="AA_exclass1_increment_count")
@@ -96,7 +98,7 @@ module exclass1_mod
             integer(C_INT), value, intent(IN) :: incr
             integer(C_INT) :: rv
         end function c_exclass1_increment_count
-        
+
         pure function c_exclass1_get_name(self) &
                 result(rv) &
                 bind(C, name="AA_exclass1_get_name")
@@ -105,7 +107,7 @@ module exclass1_mod
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) rv
         end function c_exclass1_get_name
-        
+
         subroutine c_exclass1_get_name_bufferify(self, SH_F_rv, LSH_F_rv) &
                 bind(C, name="AA_exclass1_get_name_bufferify")
             use iso_c_binding
@@ -114,7 +116,7 @@ module exclass1_mod
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
             integer(C_INT), value, intent(IN) :: LSH_F_rv
         end subroutine c_exclass1_get_name_bufferify
-        
+
         pure function c_exclass1_get_name_length(self) &
                 result(rv) &
                 bind(C, name="AA_exclass1_get_name_length")
@@ -123,7 +125,7 @@ module exclass1_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function c_exclass1_get_name_length
-        
+
         pure function c_exclass1_get_name_error_check(self) &
                 result(rv) &
                 bind(C, name="AA_exclass1_get_name_error_check")
@@ -132,7 +134,7 @@ module exclass1_mod
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) rv
         end function c_exclass1_get_name_error_check
-        
+
         subroutine c_exclass1_get_name_error_check_bufferify(self, SH_F_rv, LSH_F_rv) &
                 bind(C, name="AA_exclass1_get_name_error_check_bufferify")
             use iso_c_binding
@@ -141,7 +143,7 @@ module exclass1_mod
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
             integer(C_INT), value, intent(IN) :: LSH_F_rv
         end subroutine c_exclass1_get_name_error_check_bufferify
-        
+
         pure function c_exclass1_get_name_arg(self) &
                 result(rv) &
                 bind(C, name="AA_exclass1_get_name_arg")
@@ -150,7 +152,7 @@ module exclass1_mod
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) rv
         end function c_exclass1_get_name_arg
-        
+
         subroutine c_exclass1_get_name_arg_bufferify(self, name, Lname) &
                 bind(C, name="AA_exclass1_get_name_arg_bufferify")
             use iso_c_binding
@@ -159,7 +161,7 @@ module exclass1_mod
             character(kind=C_CHAR), intent(OUT) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
         end subroutine c_exclass1_get_name_arg_bufferify
-        
+
         function c_exclass1_get_root(self) &
                 result(rv) &
                 bind(C, name="AA_exclass1_get_root")
@@ -168,7 +170,7 @@ module exclass1_mod
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function c_exclass1_get_root
-        
+
         function c_exclass1_get_value_from_int(self, value) &
                 result(rv) &
                 bind(C, name="AA_exclass1_get_value_from_int")
@@ -178,7 +180,7 @@ module exclass1_mod
             integer(C_INT), value, intent(IN) :: value
             integer(C_INT) :: rv
         end function c_exclass1_get_value_from_int
-        
+
         function c_exclass1_get_value_1(self, value) &
                 result(rv) &
                 bind(C, name="AA_exclass1_get_value_1")
@@ -188,7 +190,7 @@ module exclass1_mod
             integer(C_LONG), value, intent(IN) :: value
             integer(C_LONG) :: rv
         end function c_exclass1_get_value_1
-        
+
         function c_exclass1_get_addr(self) &
                 result(rv) &
                 bind(C, name="AA_exclass1_get_addr")
@@ -197,7 +199,7 @@ module exclass1_mod
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function c_exclass1_get_addr
-        
+
         function c_exclass1_has_addr(self, in) &
                 result(rv) &
                 bind(C, name="AA_exclass1_has_addr")
@@ -207,20 +209,20 @@ module exclass1_mod
             logical(C_BOOL), value, intent(IN) :: in
             logical(C_BOOL) :: rv
         end function c_exclass1_has_addr
-        
+
         subroutine c_exclass1_splicer_special(self) &
                 bind(C, name="AA_exclass1_splicer_special")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
         end subroutine c_exclass1_splicer_special
-        
+
         ! splicer begin class.ExClass1.additional_interfaces
         ! splicer end class.ExClass1.additional_interfaces
     end interface
 
 contains
-    
+
     ! ExClass1 * new(const string * name+intent(in))+constructor
     ! string_to_buffer_and_len
     ! function_index=0
@@ -243,7 +245,7 @@ contains
             len_trim(name, kind=C_INT))
         ! splicer end class.ExClass1.method.new
     end function exclass1_new
-    
+
     ! void delete()+destructor
     ! function_index=1
     !>
@@ -258,7 +260,7 @@ contains
         obj%voidptr = C_NULL_PTR
         ! splicer end class.ExClass1.method.delete
     end subroutine exclass1_delete
-    
+
     ! int incrementCount(int incr+intent(in)+value)
     ! function_index=2
     function exclass1_increment_count(obj, incr) result(rv)
@@ -273,7 +275,7 @@ contains
             incr)
         ! splicer end class.ExClass1.method.increment_count
     end function exclass1_increment_count
-    
+
     ! const string & getName() const
     ! string_to_buffer_and_len
     ! function_index=3
@@ -289,7 +291,7 @@ contains
             len(rv, kind=C_INT))
         ! splicer end class.ExClass1.method.get_name
     end function exclass1_get_name
-    
+
     ! int GetNameLength() const
     ! function_index=4
     !>
@@ -305,7 +307,7 @@ contains
         rv = c_exclass1_get_name_length(obj%voidptr)
         ! splicer end class.ExClass1.method.get_name_length
     end function exclass1_get_name_length
-    
+
     ! const string & getNameErrorCheck() const
     ! string_to_buffer_and_len
     ! function_index=5
@@ -324,7 +326,7 @@ contains
             len(rv, kind=C_INT))
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
-    
+
     ! void getNameArg(string & name+intent(out)+len(Lname)) const
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=17
@@ -340,7 +342,7 @@ contains
             len(name, kind=C_INT))
         ! splicer end class.ExClass1.method.get_name_arg
     end subroutine exclass1_get_name_arg
-    
+
     ! ExClass2 * getRoot()
     ! function_index=7
     function exclass1_get_root(obj) result(rv)
@@ -352,7 +354,7 @@ contains
         rv%voidptr = c_exclass1_get_root(obj%voidptr)
         ! splicer end class.ExClass1.method.get_root
     end function exclass1_get_root
-    
+
     ! int getValue(int value+intent(in)+value)
     ! function_index=8
     function exclass1_get_value_from_int(obj, value) result(rv)
@@ -367,7 +369,7 @@ contains
             value)
         ! splicer end class.ExClass1.method.get_value_from_int
     end function exclass1_get_value_from_int
-    
+
     ! long getValue(long value+intent(in)+value)
     ! function_index=9
     function exclass1_get_value_1(obj, value) result(rv)
@@ -382,7 +384,7 @@ contains
             value)
         ! splicer end class.ExClass1.method.get_value_1
     end function exclass1_get_value_1
-    
+
     ! void * getAddr()
     ! function_index=10
     function exclass1_get_addr(obj) result(rv)
@@ -393,7 +395,7 @@ contains
         rv = c_exclass1_get_addr(obj%voidptr)
         ! splicer end class.ExClass1.method.get_addr
     end function exclass1_get_addr
-    
+
     ! bool hasAddr(bool in+intent(in)+value)
     ! function_index=11
     function exclass1_has_addr(obj, in) result(rv)
@@ -410,7 +412,7 @@ contains
             tmp_in)
         ! splicer end class.ExClass1.method.has_addr
     end function exclass1_has_addr
-    
+
     ! void SplicerSpecial()
     ! function_index=12
     subroutine exclass1_splicer_special(obj)
@@ -420,7 +422,7 @@ contains
         blah blah blah
         ! splicer end class.ExClass1.method.splicer_special
     end subroutine exclass1_splicer_special
-    
+
     function exclass1_yadda(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
         implicit none
@@ -428,7 +430,7 @@ contains
         type(C_PTR) :: voidptr
         voidptr = obj%voidptr
     end function exclass1_yadda
-    
+
     function exclass1_associated(obj) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
@@ -436,10 +438,10 @@ contains
         logical rv
         rv = c_associated(obj%voidptr)
     end function exclass1_associated
-    
+
     ! splicer begin class.ExClass1.additional_functions
     ! splicer end class.ExClass1.additional_functions
-    
+
     function exclass1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
@@ -451,7 +453,7 @@ contains
             rv = .false.
         endif
     end function exclass1_eq
-    
+
     function exclass1_ne(a,b) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
