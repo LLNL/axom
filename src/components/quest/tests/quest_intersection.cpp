@@ -109,7 +109,7 @@ TEST( quest_intersection, ray_segment_intersection )
   VectorType direction;
   direction[0] = 0.0;
   direction[1] = 0.5;
-  RayType R( origin,direction.unitVector() );
+  RayType R( origin,direction );
 
   // STEP 2: compute intersection
   PointType ip;
@@ -120,7 +120,7 @@ TEST( quest_intersection, ray_segment_intersection )
 
   // STEP 3: construct non-intersecting ray
   origin[1] = 0.5; // shift R up
-  RayType R2( origin, direction.unitVector() );
+  RayType R2( origin, direction );
   bool intersects2 = quest::intersect( R2, S, ip );
   EXPECT_FALSE( intersects2 );
 }
@@ -324,14 +324,12 @@ TEST( quest_intersection, triangle_aabb_intersection_fromData2 )
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
 
-TEST( quest_intersection, triangle_triangle_intersection )
+TEST( quest_intersection, 2D_triangle_triangle_intersection )
 {
 
   typedef quest::Triangle< double,2 > Triangle2;
-  typedef quest::Triangle< double,3 > Triangle3;
   typedef quest::Point< double,2 >   Point2;
-  typedef quest::Point< double,3 >   Point3;
-  typedef quest::Vector< double,3 >   Vector3;
+
   // Triangle 569
   Triangle2 triA(Point2::make_point(0.0,5.0), Point2::make_point(5.0,5.0), Point2::make_point(0.0,0.0));
   Triangle2 triB(Point2::make_point(0.0,5.0), Point2::make_point(5.0,5.0), Point2::make_point(0.0,0.0));
@@ -426,9 +424,14 @@ TEST( quest_intersection, triangle_triangle_intersection )
 
   triE = Triangle2(Point2::make_point(-6, 5), Point2::make_point(-40, -0.7), Point2::make_point(-23, 1.3));
   permuteCornersTest(triD, triE, "2D point comes close to side 6", false);
+}
 
-  // Perhaps jitter points
+TEST( quest_intersection, 3D_triangle_triangle_intersection )
+{
 
+  typedef quest::Triangle< double,3 > Triangle3;
+  typedef quest::Point< double,3 >   Point3;
+  typedef quest::Vector< double,3 >   Vector3;
   Triangle3 tri3d_1(Point3::make_point(-1.0,-1.0,-1.0), Point3::make_point(-2.0,-5.0, -5.0), Point3::make_point(-4.0,-8.0, -8.0));
   Triangle3 tri3d_2(Point3::make_point(-1.0,-1.0,-1.0), Point3::make_point(-2.0,-5.0, -5.0), Point3::make_point(-4.0,-8.0, -8.0));
   permuteCornersTest(tri3d_1, tri3d_2, "3D identical triangles", true);
@@ -629,7 +632,7 @@ TEST( quest_intersection, ray_aabb_intersection_general3D )
   direction[0] = 1.0;
   direction[1] = 1.0;
   direction[2] = 1.0;
-  RayType R( origin,direction.unitVector() );
+  RayType R( origin,direction );
 
 
   BoundingBoxType box0(PointType::make_point(5.0,5.0,5.0), PointType::make_point(10.0,10.0,10.0));
@@ -668,7 +671,7 @@ TEST( quest_intersection, ray_aabb_intersection_tinyDirectionVector3D )
   direction[0] = 0.0;
   direction[1] = 0.0;
   direction[2] = 0.0;
-  RayType R( origin,direction.unitVector() );
+  RayType R( origin,direction );
 
 
   BoundingBoxType box0(PointType::make_point(5.0,5.0,5.0), PointType::make_point(10.0,10.0,10.0));
@@ -716,7 +719,6 @@ TEST(quest_intersection, triangle_segment_intersection)
   static int const DIM = 3;
   typedef quest::Point< double,DIM >   PointType;
   typedef quest::Triangle< double, DIM > TriangleType;
-  typedef quest::Ray< double, DIM > RayType;
   typedef quest::Segment< double, DIM >  SegmentType;
 
   double xArr[3] = { 1., 0., 0.};
@@ -805,8 +807,12 @@ TEST(quest_intersection, triangle_ray_intersection)
   PointType ptnZ(nzArr);
   PointType ptM(mArr);
   PointType r0 = PointType::make_point(5., 5., 5.);
+  PointType o = PointType::make_point(0, 0, 0);
+  PointType ox = PointType::make_point(1, 0, 0);
+  PointType oy = PointType::make_point(0, 1, 0);
 
   TriangleType tri( ptX, ptY, ptZ );
+  TriangleType tri2( o, ox, oy );
   RayType testRay(SegmentType(ptX, ptY));
 
   // Clear miss
@@ -827,7 +833,7 @@ TEST(quest_intersection, triangle_ray_intersection)
   testRay = RayType(SegmentType(r0, PointType::make_point(0.4, 0, 0.7)));
   EXPECT_FALSE(intersect(tri, testRay));
 
-  // Edge intersections (should these be reported as misses or hits?)
+  // Edge intersections should be reported as hits
   testRay = RayType(SegmentType(r0, ptX));
   EXPECT_TRUE(intersect(tri, testRay));
   testRay = RayType(SegmentType(r0, ptY));
@@ -838,14 +844,8 @@ TEST(quest_intersection, triangle_ray_intersection)
   EXPECT_TRUE(intersect(tri, testRay));
   testRay = RayType(SegmentType(r0, PointType::make_point(0.7, 0.3, 0.)));
   EXPECT_TRUE(intersect(tri, testRay));
-  testRay = RayType(SegmentType(r0, PointType::make_point(0.2, 0., 0.8)));
-  TriangleType nyTri(ptX, ptZ, ptnY);
-  bool scratch = intersect(nyTri, testRay);
-  // Due to rounding error, this boundary query reports a "miss."  
-  // I think I'll have to change to using doubles in order to fix this.
-  EXPECT_TRUE(intersect(tri, testRay)) << 
-    "#*#*#*#*#*#*#*# Fails due to rounding error.  I think it's because type single is used.  " <<
-    "Does the ray hit the flipped tri?  " << scratch;
+  testRay = RayType(SegmentType(o, PointType::make_point(0.2, 0., 0.8)));
+  EXPECT_TRUE(intersect(tri, testRay));
 
   // Hits
   testRay = RayType(SegmentType(r0, PointType::make_point(0.2, 0., 0.2)));
@@ -861,10 +861,9 @@ TEST(quest_intersection, triangle_ray_intersection)
   EXPECT_FALSE(intersect(tri, testRay));
 
   // Coplanar intersection (reported as miss by function)
-  testRay = RayType(SegmentType(PointType::make_point(-0.1, 1.1, 0.), 
-                                PointType::make_point(0.5, 0., 0.5)));
-  EXPECT_FALSE(intersect(tri, testRay)) << 
-    "#*#*#*#*#*#*#*# Fails due to rounding error.  I think it's because type single is used.";
+  testRay = RayType(SegmentType(PointType::make_point(1, 0.5, 0), 
+                                PointType::make_point(-1, 0.5, 0)));
+  EXPECT_FALSE(intersect(tri2, testRay));
 
   // Coplanar, interior ray origin (reported as miss by function)
   testRay = RayType(SegmentType(ptM,
@@ -872,10 +871,9 @@ TEST(quest_intersection, triangle_ray_intersection)
   EXPECT_FALSE(intersect(tri, testRay));
 
   // Not coplanar, interior ray origin (reported as miss by function)
-  testRay = RayType(SegmentType(ptM,
+  testRay = RayType(SegmentType(PointType::make_point(0.2, 0.18, 0),
                                 PointType::make_point(0., 0., 0.5)));
-  EXPECT_FALSE(intersect(tri, testRay)) << 
-    "#*#*#*#*#*#*#*# Fails due to rounding error.  I think it's because type single is used.";
+  EXPECT_FALSE(intersect(tri2, testRay));
 }
 
 //------------------------------------------------------------------------------

@@ -35,7 +35,7 @@ bool isLt(double x, double y, double EPS=1.0e-12);
 bool isLeq(double x, double y, double EPS=1.0e-12);
 bool isGeq(double x, double y, double EPS=1.0e-12);
 bool signMatch(double x, double y, double z, double EPS=1.0e-12);
-double checkCCW(const Point2& A, const Point2& B, const Point2& C);
+double twoDcross(const Point2& A, const Point2& B, const Point2& C);
 
 bool checkEdge(const Point2 p1,
                const Point2 q1,
@@ -424,8 +424,8 @@ bool intersect_tri2D_tri2D( const quest::Triangle<T, 2>& t1,
 inline bool TriangleIntersection2D(const Triangle2& t1,
                                    const Triangle2& t2)
 {
-  if (isLt(checkCCW(t1[0],t1[1],t1[2]),0.0)) {
-    if ((isLt(checkCCW(t2[0], t2[1], t2[2]),0.0))) {
+  if (isLt(twoDcross(t1[0],t1[1],t1[2]),0.0)) {
+    if ((isLt(twoDcross(t2[0], t2[1], t2[2]),0.0))) {
       return intersectPermuted2DTriangles(t1[0], t1[2], t1[1],
                                           t2[0], t2[2], t2[1]);
     }
@@ -433,7 +433,7 @@ inline bool TriangleIntersection2D(const Triangle2& t1,
                                              t2[0], t2[1], t2[2]);
   }
   else {
-    if (isLt(checkCCW(t2[0], t2[1], t2[2]),0.0)) {
+    if (isLt(twoDcross(t2[0], t2[1], t2[2]),0.0)) {
       return intersectPermuted2DTriangles(t1[0], t1[1], t1[2],
                                           t2[0], t2[2], t2[1]);
     }
@@ -464,15 +464,15 @@ inline bool intersectPermuted2DTriangles(const Point2& p1,
   //
   // See paper at https://hal.inria.fr/inria-00072100/document for more details
 
-  if (isGeq(checkCCW(p2,q2,p1), 0.0 )) {
-    if (isGeq(checkCCW(q2,r2,p1), 0.0 )) {
-      if (isGeq(checkCCW(r2,p2,p1), 0.0)) {
+  if (isGeq(twoDcross(p2,q2,p1), 0.0 )) {
+    if (isGeq(twoDcross(q2,r2,p1), 0.0 )) {
+      if (isGeq(twoDcross(r2,p2,p1), 0.0)) {
         return true;
       }
       else return checkEdge(p1,q1,r1,p2,r2); //T1 clockwise
     }
     else {
-      if (isGeq(checkCCW(r2,p2,p1), 0.0)){
+      if (isGeq(twoDcross(r2,p2,p1), 0.0)){
         //5 region decomposistion with p1 in the +-- region
         return checkEdge(p1,q1,r1,r2,q2);
       }
@@ -480,8 +480,8 @@ inline bool intersectPermuted2DTriangles(const Point2& p1,
     }
   }
   else {
-    if (isGeq(checkCCW(q2,r2,p1), 0.0)) {
-      if (isGeq(checkCCW(r2,p2,p1), 0.0)) {
+    if (isGeq(twoDcross(q2,r2,p1), 0.0)) {
+      if (isGeq(twoDcross(r2,p2,p1), 0.0)) {
         //four region decomposistion.  ++- region
         return checkEdge(p1,q1,r1,q2,p2);
       }
@@ -503,16 +503,16 @@ inline bool checkEdge(const Point2 p1,
                       const Point2 p2,
                       const Point2 r2)
 {
-  if (isGeq(checkCCW(r2,p2,q1),0.0)) {
-    if (isGeq(checkCCW(p1,p2,q1), 0.0)) {
-      if (isGeq(checkCCW(p1,q1,r2), 0.0))
+  if (isGeq(twoDcross(r2,p2,q1),0.0)) {
+    if (isGeq(twoDcross(p1,p2,q1), 0.0)) {
+      if (isGeq(twoDcross(p1,q1,r2), 0.0))
         return true;
       else
         return false;
     }
     else {
-      if (isGeq(checkCCW(q1,r1,p2), 0.0)) {
-        if (isGeq(checkCCW(r1,p1,p2), 0.0))
+      if (isGeq(twoDcross(q1,r1,p2), 0.0)) {
+        if (isGeq(twoDcross(r1,p1,p2), 0.0))
           return true;
         else
           return false;
@@ -522,9 +522,9 @@ inline bool checkEdge(const Point2 p1,
     }
   }
   else {
-    if (isGeq(checkCCW(r2,p2,r1), 0.0)) {
-      if (isGeq(checkCCW(p1,p2,r1), 0.0)) {
-        if (isGeq(checkCCW(q1,r1,r2), 0.0))
+    if (isGeq(twoDcross(r2,p2,r1), 0.0)) {
+      if (isGeq(twoDcross(p1,p2,r1), 0.0)) {
+        if (isGeq(twoDcross(q1,r1,r2), 0.0))
           return true;
         else
           return false;
@@ -550,17 +550,17 @@ inline bool checkVertex(const Point2 p1,
                         const Point2 q2,
                         const Point2 r2)
 {
-  if (isGeq(checkCCW(r2,p2,q1),0.0)) {
-    if (isGeq(checkCCW(q2,r2,q1),0.0)) {
-      if (isGeq(checkCCW(p1,p2,q1),0.0)) {
-        if (isLeq(checkCCW(p1,q2,q1),0.0))
+  if (isGeq(twoDcross(r2,p2,q1),0.0)) {
+    if (isGeq(twoDcross(q2,r2,q1),0.0)) {
+      if (isGeq(twoDcross(p1,p2,q1),0.0)) {
+        if (isLeq(twoDcross(p1,q2,q1),0.0))
           return true;
         else
           return false;
       }
       else {
-        if (isGeq(checkCCW(p1,p2,r1),0.0)) {
-          if (isGeq(checkCCW(r2,p2,r1),0.0))
+        if (isGeq(twoDcross(p1,p2,r1),0.0)) {
+          if (isGeq(twoDcross(r2,p2,r1),0.0))
             return true;
           else
             return false;
@@ -570,9 +570,9 @@ inline bool checkVertex(const Point2 p1,
       }
     }
     else {
-      if (isLeq(checkCCW(p1,q2,q1),0.0)) {
-        if (isGeq(checkCCW(q2,r2,r1),0.0)) {
-          if (isGeq(checkCCW(q1,r1,q2),0.0))
+      if (isLeq(twoDcross(p1,q2,q1),0.0)) {
+        if (isGeq(twoDcross(q2,r2,r1),0.0)) {
+          if (isGeq(twoDcross(q1,r1,q2),0.0))
             return true;
           else
             return false;
@@ -585,16 +585,16 @@ inline bool checkVertex(const Point2 p1,
     }
   }
   else {
-    if (isGeq(checkCCW(r2,p2,r1),0.0)) {
-      if (isGeq(checkCCW(q1,r1,r2),0.0)) {
-        if (isGeq(checkCCW(r1,p1,p2),0.0))
+    if (isGeq(twoDcross(r2,p2,r1),0.0)) {
+      if (isGeq(twoDcross(q1,r1,r2),0.0)) {
+        if (isGeq(twoDcross(r1,p1,p2),0.0))
           return true;
         else
           return false;
       }
       else {
-        if (isGeq(checkCCW(q1,r1,q2),0.0)) {
-          if (isGeq(checkCCW(q2,r2,r1),0.0))
+        if (isGeq(twoDcross(q1,r1,q2),0.0)) {
+          if (isGeq(twoDcross(q2,r2,r1),0.0))
             return true;
           else
             return false;
@@ -610,7 +610,7 @@ inline bool checkVertex(const Point2 p1,
 
 /*!
  *****************************************************************************
- * \brief Check 2D triangle orientation.
+ * \brief Compute cross product of two 2D vectors as if they were 3D.
  * \return Cross product of A C and B C.
  *
  * This function treats three Point2 values as corners of a 3D triangle with
@@ -619,7 +619,7 @@ inline bool checkVertex(const Point2 p1,
  * positive value indicates CCW orientation.
  *****************************************************************************
  */
-inline double checkCCW(const Point2& A, const Point2& B, const Point2& C)
+inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
 {
   return  (((A[0]-C[0])*(B[1]-C[1])-(A[1]-C[1])*(B[0]-C[0])));
 }
@@ -1058,9 +1058,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
 
   //if necessary swap  ky and kx to preserve triangle winding
   if(R.direction()[kz] < 0.0f){
-    int temp = kx;
-    kx = ky;
-    ky = temp;
+    std::swap(kx, ky);
   }
 
   //calculate shear constants
