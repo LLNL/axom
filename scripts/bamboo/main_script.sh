@@ -4,7 +4,7 @@
 # 09-19-2016 chang28, the decider has decided to have a configuration file call a main_script file, this is the main_script file, all environment variables are set up in the configuration file. 
 #01-20-2017, chang28, use CTEST_OUTPUT_ON_FAILURE=1 for bamboo testing
 
-echo main_script version 0.9.3
+echo main_script version 0.9.9
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
 echo "Options: $OPTIONS"
@@ -29,7 +29,7 @@ if [ "$BUILD" = true ]; then
 fi
 
 if [ "$TEST" = true ]; then
-    echo "Running tests..."
+    echo "Running tests env CTEST_OUTPUT_ON_FAILURE=1 ..."
     echo "-----------------------------------------------------------------------"
     env CTEST_OUTPUT_ON_FAILURE=1 make test ARGS="-T Test -j$JOBS"
     if [ $? -ne 0 ]; then
