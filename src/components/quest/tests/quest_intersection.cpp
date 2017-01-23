@@ -426,12 +426,82 @@ TEST( quest_intersection, 2D_triangle_triangle_intersection )
   permuteCornersTest(triD, triE, "2D point comes close to side 6", false);
 }
 
+bool makeTwoRandomIntersecting3DTriangles(quest::Triangle< double, 3 > & l, quest::Triangle< double, 3 > & r)
+{
+  typedef quest::Triangle< double,3 > Triangle3;
+  typedef quest::Point< double,3 >   Point3;
+  typedef quest::Vector< double, 3 > Vector3;
+
+  //Step 1: Construct a random triangle
+  Point3 A= quest::utilities::randomSpacePt<3>(0.,1.);
+  Point3 B= quest::utilities::randomSpacePt<3>(0.,1.);
+  Point3 C= quest::utilities::randomSpacePt<3>(0.,1.);
+  l = Triangle3(A,B,C);
+
+  //Step 2: Construct two random points on the triangle.  Rarely, a point is not made correctly, so
+  //throw it in a while loop to make sure that both points are on the triangle
+  Point3 P= Point3::make_point(-1.0,-1.0,-1.0);
+  Point3 Q= Point3::make_point(-1.0,-1.0,-1.0);
+
+  double a1= quest::utilities::randomDouble();
+  double a2= quest::utilities::randomDouble();
+  double a3= quest::utilities::randomDouble();
+
+  double n1= (a1/(a1+a2+a3));
+  double n2= (a2/(a1+a2+a3));
+  double n3= (a3/(a1+a2+a3));
+
+
+  double P_x= n1*A[0]+n2*B[0]+n3*C[0];
+  double P_y= n1*A[1]+n2*B[1]+n3*C[1];
+  double P_z= n1*A[2]+n2*B[2]+n3*C[2];
+  P= Point3::make_point(P_x,P_y,P_z);
+
+  a1= quest::utilities::randomDouble();
+  a2= quest::utilities::randomDouble();
+  a3= quest::utilities::randomDouble();
+
+  n1= (a1/(a1+a2+a3));
+  n2= (a2/(a1+a2+a3));
+  n3= (a3/(a1+a2+a3));
+
+  double Q_x= n1*A[0]+n2*B[0]+n3*C[0];
+  double Q_y= n1*A[1]+n2*B[1]+n3*C[1];
+  double Q_z= n1*A[2]+n2*B[2]+n3*C[2];
+
+  Q= Point3::make_point(Q_x,Q_y,Q_z);
+
+
+  /*PQ is so random segment on the triangle.  We create a vertex called vertex1 and use
+    it to create the triangle formed by P', Q' and vertex1. */
+
+  //Step 3: choose some vertex away from the triangle
+  Point3 vertex1 = quest::utilities::randomSpacePt<3>(0.,1.);
+
+  //Step 4:
+  //we scale the segments formed by both vertex 1 and P and by vertex 1 and Q so that we now
+  //have a triangle whose base is not necessarily on the plane formed by ABC
+  Vector3 vertex2Direction = Vector3(Q, vertex1);
+  Vector3 vertex3Direction = Vector3(P, vertex1);
+
+  //construct the other two vertices of the triangle
+  Point3 vertex2 = Point3::make_point(vertex1[0]-2*vertex2Direction[0], vertex1[1]-2*vertex2Direction[1],
+                                      vertex1[2]-2*vertex2Direction[2]);
+  Point3 vertex3 = Point3::make_point(vertex1[0]-2*vertex3Direction[0], vertex1[1]-2*vertex3Direction[1],
+                                      vertex1[2]-2*vertex3Direction[2]);
+
+  Triangle3 before = Triangle3(vertex1, Q, P);
+  r = Triangle3(vertex1, vertex2, vertex3);
+
+  return !l.degenerate() && !r.degenerate();
+}
+
 TEST( quest_intersection, 3D_triangle_triangle_intersection )
 {
 
   typedef quest::Triangle< double,3 > Triangle3;
   typedef quest::Point< double,3 >   Point3;
-  typedef quest::Vector< double,3 >   Vector3;
+
   Triangle3 tri3d_1(Point3::make_point(-1.0,-1.0,-1.0), Point3::make_point(-2.0,-5.0, -5.0), Point3::make_point(-4.0,-8.0, -8.0));
   Triangle3 tri3d_2(Point3::make_point(-1.0,-1.0,-1.0), Point3::make_point(-2.0,-5.0, -5.0), Point3::make_point(-4.0,-8.0, -8.0));
   permuteCornersTest(tri3d_1, tri3d_2, "3D identical triangles", true);
@@ -475,101 +545,21 @@ TEST( quest_intersection, 3D_triangle_triangle_intersection )
   srand (1);  //we want same random number sequence everytime to make sure our tests don't differ on a case to case basis
 
   //Randomly generate a bunch of intersecting triangles (whose intersections form segments) and test them
+  // How many tests are we actually performing here?
+  int rantests = 0;
+  int skiptests = 0;
   for (int i=0; i<5000; i++) {
-    //Step 1: Construct a random triangle
-    Point3 A= quest::utilities::randomSpacePt<3>(0.,1.);
-    Point3 B= quest::utilities::randomSpacePt<3>(0.,1.);
-    Point3 C= quest::utilities::randomSpacePt<3>(0.,1.);
-    Triangle3 randomTriangle= Triangle3(A,B,C);
+    Triangle3 randomTriangle, intersectingTriangle;
 
-    //Step 2: Construct two random points on the triangle.  Rarely, a point is not made correctly, so
-    //throw it in a while loop to make sure that both points are on the triangle
-    Point3 P= Point3::make_point(-1.0,-1.0,-1.0);
-    Point3 Q= Point3::make_point(-1.0,-1.0,-1.0);
-
-    double a1= quest::utilities::randomDouble();
-    double a2= quest::utilities::randomDouble();
-    double a3= quest::utilities::randomDouble();
-
-    double n1= (a1/(a1+a2+a3));
-    double n2= (a2/(a1+a2+a3));
-    double n3= (a3/(a1+a2+a3));
-
-
-    double P_x= n1*A[0]+n2*B[0]+n3*C[0];
-    double P_y= n1*A[1]+n2*B[1]+n3*C[1];
-    double P_z= n1*A[2]+n2*B[2]+n3*C[2];
-    P= Point3::make_point(P_x,P_y,P_z);
-
-    a1= quest::utilities::randomDouble();
-    a2= quest::utilities::randomDouble();
-    a3= quest::utilities::randomDouble();
-
-    n1= (a1/(a1+a2+a3));
-    n2= (a2/(a1+a2+a3));
-    n3= (a3/(a1+a2+a3));
-
-    double Q_x= n1*A[0]+n2*B[0]+n3*C[0];
-    double Q_y= n1*A[1]+n2*B[1]+n3*C[1];
-    double Q_z= n1*A[2]+n2*B[2]+n3*C[2];
-
-    Q= Point3::make_point(Q_x,Q_y,Q_z);
-
-
-    /*PQ is so random segment on the triangle.  We create a vertex called vertex1 and use
-      it to create the triangle formed by P', Q' and vertex1. */
-
-    //Step 3: choose some vertex away from the triangle
-    Point3 vertex1 = quest::utilities::randomSpacePt<3>(0.,1.);
-
-    //Step 4:
-    //we scale the segments formed by both vertex 1 and P and by vertex 1 and Q so that we now
-    //have a triangle whose base is not necessarily on the plane formed by ABC
-    Vector3 vertex2Direction = Vector3(Q, vertex1);
-    Vector3 vertex3Direction = Vector3(P, vertex1);
-
-    //construct the other two vertices of the triangle
-    Point3 vertex2 = Point3::make_point(vertex1[0]-2*vertex2Direction[0], vertex1[1]-2*vertex2Direction[1],
-					vertex1[2]-2*vertex2Direction[2]);
-    Point3 vertex3 = Point3::make_point(vertex1[0]-2*vertex3Direction[0], vertex1[1]-2*vertex3Direction[1],
-					vertex1[2]-2*vertex3Direction[2]);
-
-    Triangle3 before = Triangle3(vertex1, Q, P);
-    Triangle3 intersectingTriangle= Triangle3(vertex1, vertex2, vertex3);
-    //Step 5: run our intersection test as long as the generated triangles are not degenerate
-    bool test= true;
-    //this code should eventually all be consolidated into the do while loop, especially because I am
-    //because of the lines below.
-    if (!(randomTriangle.degenerate() || intersectingTriangle.degenerate())) {
-      // SLIC_INFO("\n\n\n Triangles are not degenerate... testing "<< randomTriangle<<intersectingTriangle);
-      test=quest::intersect(randomTriangle, intersectingTriangle);
+    if (makeTwoRandomIntersecting3DTriangles(randomTriangle, intersectingTriangle)) {
+      permuteCornersTest(randomTriangle, intersectingTriangle, "random", true);
+      rantests += 1;
+    } else {
+      skiptests += 1;
     }
-
-    // char coords[3]={'x','y','z'};
-    // if (!test) {
-
-    //   std::ofstream failure; //still don't know where this is writing too...
-    //   failure.open("failure.txt",std::fstream::app);
-
-    //   for (int j=0; j<3; j++) {
-    // 	failure<<coords[j]<<"1 = ["<<randomTriangle.A()[j] << ","<< randomTriangle.B()[j]<< ","<<
-    // 	  randomTriangle.C()[j] <<"]\n";
-    //   }
-    //   for (int j=0; j<3; j++) {
-    // 	failure<<coords[j]<<"2 = ["<<intersectingTriangle.A()[j] << ","<< intersectingTriangle.B()[j]
-    // 	       << ","<< intersectingTriangle.C()[j] <<"]\n";
-    //   }
-    //   failure.close();
-    // }
-
-
-    //SLIC_INFO("Testing randomly generated traingle: " << randomTriangle << " against triangle " << 
-    //intersectingTriangle );
-    EXPECT_TRUE( test);
-    if (!test)  SLIC_INFO("Testing randomly generated traingle failed: " <<
-			  randomTriangle << " against triangle " << intersectingTriangle );
-    
   }
+  std::cout << "Ran " << rantests << " and skipped " << skiptests << 
+    " tests due to triangle degeneracy." << std::endl;
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }

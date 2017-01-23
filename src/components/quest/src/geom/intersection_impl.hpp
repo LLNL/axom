@@ -103,8 +103,8 @@ bool intersect_tri3D_tri3D( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
 {
   typedef quest::Vector<T, 3> Vector3;
 
-  SLIC_CHECK_MSG(t1.degenerate(), "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
-  SLIC_CHECK_MSG(t2.degenerate(), "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
+  SLIC_CHECK_MSG(!t1.degenerate(), "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
+  SLIC_CHECK_MSG(!t2.degenerate(), "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
 
   // Step 1: Check if all the vertices of triangle 1 lay on the same side of
   // the plane created by triangle 2:
