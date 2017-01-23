@@ -42,7 +42,7 @@ PY_function2(
     int arg2;
     const char *SH_kwcpp = "arg1\0arg2";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "di:Function2", SH_kw_list,
         &arg1, &arg2))
     {
@@ -68,7 +68,7 @@ PY_function3(
     PyObject * SH_Py_arg;
     const char *SH_kwcpp = "arg";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:Function3", SH_kw_list,
         &PyBool_Type, &SH_Py_arg))
     {
@@ -96,7 +96,7 @@ PY_function4a(
     const char * arg2;
     const char *SH_kwcpp = "arg1\0arg2";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:Function4a", SH_kw_list,
         &arg1, &arg2))
     {
@@ -125,7 +125,7 @@ PY_function4b(
     const char * arg2;
     const char *SH_kwcpp = "arg1\0arg2";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:Function4b", SH_kw_list,
         &arg1, &arg2))
     {
@@ -157,7 +157,7 @@ PY_function5_arg1_arg2(
     const char *SH_kwcpp = "arg1\0arg2";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
     double rv;
-    
+
     if (args != NULL) SH_nargs += PyTuple_Size(args);
     if (kwds != NULL) SH_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|dO!:Function5", SH_kw_list,
@@ -191,7 +191,7 @@ PY_function6_from_name(
     const char * name;
     const char *SH_kwcpp = "name";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:Function6", SH_kw_list,
         &name))
     {
@@ -213,7 +213,7 @@ PY_function6_from_index(
     int indx;
     const char *SH_kwcpp = "indx";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:Function6", SH_kw_list,
         &indx))
     {
@@ -238,7 +238,7 @@ PY_function9(
     double arg;
     const char *SH_kwcpp = "arg";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "d:Function9", SH_kw_list,
         &arg))
     {
@@ -272,7 +272,7 @@ PY_function10_1(
     double arg2;
     const char *SH_kwcpp = "name\0arg2";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "sd:Function10", SH_kw_list,
         &name, &arg2))
     {
@@ -298,7 +298,7 @@ PY_overload1_num_offset_stride(
     const char *SH_kwcpp = "num\0offset\0stride";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+4,(char *) SH_kwcpp+11, NULL };
     int rv;
-    
+
     if (args != NULL) SH_nargs += PyTuple_Size(args);
     if (kwds != NULL) SH_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|ii:overload1", SH_kw_list,
@@ -336,7 +336,7 @@ PY_overload1_5(
     const char *SH_kwcpp = "type\0num\0offset\0stride";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5,(char *) SH_kwcpp+9,(char *) SH_kwcpp+16, NULL };
     int rv;
-    
+
     if (args != NULL) SH_nargs += PyTuple_Size(args);
     if (kwds != NULL) SH_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "di|ii:overload1", SH_kw_list,
@@ -373,7 +373,7 @@ PY_typefunc(
     TypeID arg;
     const char *SH_kwcpp = "arg";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:typefunc", SH_kw_list,
         &arg))
     {
@@ -398,7 +398,7 @@ PY_enumfunc(
     EnumTypeID arg;
     const char *SH_kwcpp = "arg";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:enumfunc", SH_kw_list,
         &arg))
     {
@@ -424,7 +424,7 @@ PY_useclass(
     PY_Class1 * SH_Py_arg1;
     const char *SH_kwcpp = "arg1";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:useclass", SH_kw_list,
         &PY_Class1_Type, &SH_Py_arg1))
     {

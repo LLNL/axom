@@ -334,6 +334,7 @@ namespace quest
 
     private:
         DISABLE_COPY_AND_ASSIGNMENT(SparseOctreeLevel);
+        DISABLE_MOVE_AND_ASSIGNMENT(SparseOctreeLevel);
 
     private:
       MapType m_map;

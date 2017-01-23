@@ -378,7 +378,7 @@ static const struct luaL_Reg l_Tutorial_Reg [] = {
 extern "C" {
 #endif
 int luaopen_tutorial(lua_State *L) {
-    
+
     /* Create the metatable and put it on the stack. */
     luaL_newmetatable(L, "Class1.metatable");
     /* Duplicate the metatable on the stack (We now have 2). */
@@ -392,18 +392,18 @@ int luaopen_tutorial(lua_State *L) {
     lua_setfield(L, -2, "__index");
      
     /* Set the methods to the metatable that should be accessed via object:func */
-    #if LUA_VERSION_NUM < 502
+#if LUA_VERSION_NUM < 502
     luaL_register(L, NULL, l_Class1_Reg);
-    #else
+#else
     luaL_setfuncs(L, l_Class1_Reg, 0);
-    #endif
-    
-    
-    #if LUA_VERSION_NUM < 502
+#endif
+
+
+#if LUA_VERSION_NUM < 502
     luaL_register(L, "tutorial", l_Tutorial_Reg);
-    #else
+#else
     luaL_newlib(L, l_Tutorial_Reg);
-    #endif
+#endif
     return 1;
 }
 #ifdef __cplusplus

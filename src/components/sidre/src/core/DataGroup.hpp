@@ -22,6 +22,7 @@
 #define DATAGROUP_HPP_
 
 #include "common/config.hpp"    // defines ATK_USE_CXX11
+#include "common/ATKMacros.hpp"
 
 // Standard C++ headers
 #include <memory>
@@ -1197,20 +1198,9 @@ public:
 
 
 private:
-
-  /*!
-   *  Unimplemented ctors and copy-assignment operators.
-   */
-#ifdef ATK_USE_CXX11
-  DataGroup( const DataGroup& source ) = delete;
-  DataGroup( DataGroup&& source ) = delete;
-
-  DataGroup& operator=( const DataGroup& rhs ) = delete;
-  DataGroup& operator=( const DataGroup&& rhs ) = delete;
-#else
-  DataGroup( const DataGroup& source );
-  DataGroup& operator=( const DataGroup& rhs );
-#endif
+  DISABLE_DEFAULT_CTOR(DataGroup); 
+  DISABLE_COPY_AND_ASSIGNMENT(DataGroup); 
+  DISABLE_MOVE_AND_ASSIGNMENT(DataGroup); 
 
 //@{
 //!  @name Private Group ctors and dtors
