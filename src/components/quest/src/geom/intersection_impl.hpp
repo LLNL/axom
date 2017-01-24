@@ -89,7 +89,9 @@ bool TriangleIntersection2D(const Triangle2& t1,
  * This algorithm is modeled after Devillers and Guigue (2002).  It computes 
  * the line of intersection L of the triangles' planes and finds the segments 
  * S1, S2 where t1 and t2 intersect L.  If those segments intersect, the 
- * triangles must intersect.
+ * triangles must intersect.  Note that edge and vertex intersections are
+ * reported as hits: an edge or vertex intersecting any part of another 
+ * triangle causes a return value of true.  This is consistent with the paper.
  *
  * Coplanar triangles are handled with a decision tree, testing the
  * relative position of triangle vertices.
@@ -399,7 +401,11 @@ inline bool intersectCoplanar3DTriangles(const Point3& p1,
  *******************************************************************************
  * \brief Tests if 2D Triangles t1 and t2 intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
- *******************************************************************************
+ *
+ * Note that edge and vertex intersections are reported as hits: an edge or 
+ * vertex intersecting any part of another triangle causes a return value of 
+ * true.  This is consistent with the paper.
+ ********************************************************************************
  */
 template < typename T>
 bool intersect_tri2D_tri2D( const quest::Triangle<T, 2>& t1, 

@@ -36,6 +36,9 @@ namespace quest {
  *******************************************************************************
  * \brief Tests if 3D Triangles t1 and t2 (interiors or boundaries) intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
+ *
+ * This function will return true if an intersection consists of the interior,
+ * an edge or a vertex of t1 intersecting any part of t2.
  *******************************************************************************
  */
 template < typename T>
@@ -48,6 +51,9 @@ bool intersect( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
  *******************************************************************************
  * \brief Tests if 2D Triangles t1 and t2 (interiors or boundaries) intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
+ *
+ * This function will return true if an intersection consists of the interior,
+ * an edge or a vertex of t1 intersecting any part of t2.
  *******************************************************************************
  */
 template < typename T>
