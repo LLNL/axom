@@ -438,10 +438,9 @@ bool makeTwoRandomIntersecting3DTriangles(quest::Triangle< double, 3 > & l, ques
   Point3 C= quest::utilities::randomSpacePt<3>(0.,1.);
   l = Triangle3(A,B,C);
 
-  //Step 2: Construct two random points on the triangle.  Rarely, a point is not made correctly, so
-  //throw it in a while loop to make sure that both points are on the triangle
-  Point3 P= Point3::make_point(-1.0,-1.0,-1.0);
-  Point3 Q= Point3::make_point(-1.0,-1.0,-1.0);
+  //Step 2: Construct two random points on the triangle.
+  Point3 P;
+  Point3 Q;
 
   double a1= quest::utilities::randomDouble();
   double a2= quest::utilities::randomDouble();

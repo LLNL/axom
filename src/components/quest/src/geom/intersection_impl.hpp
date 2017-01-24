@@ -109,9 +109,10 @@ bool intersect_tri3D_tri3D( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
   // Step 1: Check if all the vertices of triangle 1 lay on the same side of
   // the plane created by triangle 2:
 
-  Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
-                                            Vector3(t2[2], t2[1]));
-  double dp1 = (Vector3(t2[2], t1[0])).dot(t2Normal);
+  // Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
+  //                                           Vector3(t2[2], t2[1]));
+  Vector3 t2Normal = t2.normal();
+  double dp1 = (Vector3(t2[2],t1[0])).dot(t2Normal);
   double dq1 = (Vector3(t2[2],t1[1])).dot(t2Normal);
   double dr1 = (Vector3(t2[2],t1[2])).dot(t2Normal);
   if (signMatch(dp1, dq1, dr1)) {
@@ -121,8 +122,9 @@ bool intersect_tri3D_tri3D( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
   // Step 2: Check if all the vertices of triangle 2 lay on the same side of
   // the plane created by triangle 1:
 
-  Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]),
-                                            Vector3(t1[0], t1[2]));
+  // Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]),
+  //                                           Vector3(t1[0], t1[2]));
+  Vector3 t1Normal = t1.normal();
   double dp2 = (Vector3(t1[2],t2[0])).dot(t1Normal);
   double dq2 = (Vector3(t1[2],t2[1])).dot(t1Normal);
   double dr2 = (Vector3(t1[2],t2[2])).dot(t1Normal);
@@ -403,12 +405,9 @@ template < typename T>
 bool intersect_tri2D_tri2D( const quest::Triangle<T, 2>& t1, 
                             const quest::Triangle<T, 2>& t2)
 {
-  if (t1.degenerate() || t2.degenerate()) {
-    if (t1.degenerate())
-      SLIC_INFO("\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
-    if (t2.degenerate())
-      SLIC_INFO("\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
-  }
+  SLIC_CHECK_MSG(!t1.degenerate(), "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
+  SLIC_CHECK_MSG(!t2.degenerate(), "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
+
   return TriangleIntersection2D(t1, t2);
 }
 
