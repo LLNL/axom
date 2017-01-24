@@ -106,7 +106,7 @@ bool intersect_tri3D_tri3D( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
   SLIC_CHECK_MSG(!t1.degenerate(), "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
   SLIC_CHECK_MSG(!t2.degenerate(), "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
 
-  // Step 1: Check if all the vertices of triangle 1 lay on the same side of
+  // Step 1: Check if all the vertices of triangle 1 lie on the same side of
   // the plane created by triangle 2:
 
   Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
@@ -118,7 +118,7 @@ bool intersect_tri3D_tri3D( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
     return false;
   }
 
-  // Step 2: Check if all the vertices of triangle 2 lay on the same side of
+  // Step 2: Check if all the vertices of triangle 2 lie on the same side of
   // the plane created by triangle 1:
 
   Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]),
@@ -473,7 +473,7 @@ inline bool intersectPermuted2DTriangles(const Point2& p1,
     }
     else {
       if (isGeq(twoDcross(r2,p2,p1), 0.0)){
-        //5 region decomposistion with p1 in the +-- region
+        //5 region decomposition with p1 in the +-- region
         return checkEdge(p1,q1,r1,r2,q2);
       }
       else return checkVertex(p1,q1,r1,p2,q2,r2);
@@ -482,7 +482,7 @@ inline bool intersectPermuted2DTriangles(const Point2& p1,
   else {
     if (isGeq(twoDcross(q2,r2,p1), 0.0)) {
       if (isGeq(twoDcross(r2,p2,p1), 0.0)) {
-        //four region decomposistion.  ++- region
+        //four region decomposition.  ++- region
         return checkEdge(p1,q1,r1,q2,p2);
       }
       else return checkVertex(p1,q1,r1,q2,r2,p2);
@@ -1021,7 +1021,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
   // Origin-is-miss avoids finding the already-hit triangle as the next 
   // hit.
   // 
-  // Coplanar rays, evidenced by det == 0, are also conisdered as a miss.
+  // Coplanar rays, evidenced by det == 0, are also considered as a miss.
   // I (Arlie Capps, Jan. 2017) don't understand the motivation at this
   // point, but I'll accept this for now.
 
@@ -1151,7 +1151,7 @@ bool intersect_tri_segment(const Triangle<T, 3>& tri, const Segment<T,3>& S)
   if (tri.checkInTriangle(r2.origin())) return true;
 
   //if the two rays formed by the endpoints of the segment intersect the triangle, 
-  //than the triangle must intersect the triangle
+  //then the triangle must intersect the triangle
   if ((intersect_tri_ray(tri, r1)) && (intersect_tri_ray(tri, r2))) return true;
   return false;
 }
