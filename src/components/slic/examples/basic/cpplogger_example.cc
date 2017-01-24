@@ -75,7 +75,6 @@ int main( int argc, char** argv )
   //----------------------------------------------------------------------------
   // STEP 2: add streams to logger
   //----------------------------------------------------------------------------
-  slic::addStreamToMsgLevel(hspLogStream,slic::message::Fatal);
   slic::addStreamToMsgLevel(hspLogStream,slic::message::Error);
   slic::addStreamToMsgLevel(hspLogStream,slic::message::Warning);
 

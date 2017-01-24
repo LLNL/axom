@@ -72,7 +72,7 @@ Logger::~Logger()
     delete it->second;
   } // END for all logStreams
 
-  for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
+  for ( int level=message::Error; level < message::Num_Levels; ++level ) {
 
     m_logStreams[ level ].clear();
 
@@ -120,7 +120,7 @@ void Logger::addStreamToAllMsgLevels( LogStream* ls )
 
   }
 
-  for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
+  for ( int level=message::Error; level < message::Num_Levels; ++level ) {
 
     this->addStreamToMsgLevel( ls, static_cast<message::Level>( level ) );
 
@@ -201,7 +201,6 @@ void Logger::logMessage( message::Level level,
   } // END for all streams
 
   if ( ( m_abortOnError && (level==message::Error) )     ||
-          ( m_abortOnError && (level==message::Fatal) )  ||
        ( m_abortOnWarning && (level==message::Warning) )    ) {
 
      this->flushStreams();
@@ -214,7 +213,7 @@ void Logger::logMessage( message::Level level,
 //------------------------------------------------------------------------------
 void Logger::flushStreams()
 {
-  for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
+  for ( int level=message::Error; level < message::Num_Levels; ++level ) {
 
     unsigned nstreams = m_logStreams[ level ].size();
     for ( unsigned istream=0; istream < nstreams; ++istream ) {
@@ -229,7 +228,7 @@ void Logger::flushStreams()
 //------------------------------------------------------------------------------
 void Logger::pushStreams()
 {
-  for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
+  for ( int level=message::Error; level < message::Num_Levels; ++level ) {
 
     unsigned nstreams = m_logStreams[ level ].size();
     for ( unsigned istream=0; istream < nstreams; ++istream ) {
@@ -274,7 +273,7 @@ bool Logger::createLogger( const std::string& name, char imask )
     return false;
   }
 
-  for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
+  for ( int level=message::Error; level < message::Num_Levels; ++level ) {
 
     message::Level current_level = static_cast< message::Level >( level );
 

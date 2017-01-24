@@ -227,7 +227,7 @@ void logErrorMessage( const std::string& message,
   std::ostringstream oss;
   oss << message << slic::stacktrace();
 
-  slic::logMessage( message::Fatal, oss.str(), fileName, line );
+  slic::logMessage( message::Error, oss.str(), fileName, line );
 }
 
 //------------------------------------------------------------------------------

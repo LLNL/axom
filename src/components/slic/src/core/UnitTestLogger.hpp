@@ -87,8 +87,6 @@ public:
      GenericOutputStream* diStream
              = new GenericOutputStream(&std::cout, diFormatStr);
 
-
-     addStreamToMsgLevel(wefStream, message::Fatal) ;
      addStreamToMsgLevel(wefStream, message::Error);
      addStreamToMsgLevel(wefStream, message::Warning);
      addStreamToMsgLevel(diStream,  message::Info);
