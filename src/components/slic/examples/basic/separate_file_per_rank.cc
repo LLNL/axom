@@ -56,6 +56,7 @@ int main( int argc, char** argv )
   ofs.open( oss.str().c_str() );
 
   slic::setLoggingMsgLevel( slic::message::Debug );
+  slic::disableAbortOnError();
   slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&ofs) );
 
 

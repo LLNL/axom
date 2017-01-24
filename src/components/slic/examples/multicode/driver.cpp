@@ -53,6 +53,7 @@ void driver_init()
 {
   slic::initialize();
   slic::setLoggingMsgLevel( slic::message::Debug );
+  slic::disableAbortOnError();
 
   std::string hsp_format =
       std::string( "[<LEVEL>]: <MESSAGE>\n" ) +

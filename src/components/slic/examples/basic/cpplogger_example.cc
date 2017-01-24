@@ -45,6 +45,7 @@ int main( int argc, char** argv )
   //----------------------------------------------------------------------------
   slic::initialize();
   slic::setLoggingMsgLevel(slic::message::Debug);
+  slic::disableAbortOnError();
 
   //----------------------------------------------------------------------------
   // STEP 1: Create log streams
