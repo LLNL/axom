@@ -42,6 +42,7 @@ int main(int argc, char * argv[])
   DataGroup * root = ds->getRoot();
 
   std::string root_file;
+  std::string protocol;
   if (argc == 2) {
     root_file = argv[1];
   } else {

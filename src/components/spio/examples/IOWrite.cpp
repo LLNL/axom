@@ -83,7 +83,7 @@ int main(int argc, char * argv[])
     child->createViewString("word0", "hello");
     child->createViewString("word1", "world");
 
-    std::string root_name = file_base + ".root";
+    std::string root_name = file_base + ".hdf5.root";
     writer.writeGroupToRootFile(extra, root_name);
   }
   MPI_Barrier(MPI_COMM_WORLD);
