@@ -179,6 +179,7 @@ private:
   double m_h[3];
 
   DISABLE_COPY_AND_ASSIGNMENT(UniformMesh);
+  DISABLE_MOVE_AND_ASSIGNMENT(UniformMesh);
 };
 
 } /* namespace mint */

@@ -40,7 +40,7 @@ LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ran
 
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
-                                    std::string& format ) :
+                                    const std::string& format ) :
     m_isLJOwnedBySLIC( false ),
     m_stream( stream )
 {
@@ -59,7 +59,7 @@ LumberjackStream::LumberjackStream(std::ostream* stream, asctoolkit::lumberjack:
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream( std::ostream* stream,
                                     asctoolkit::lumberjack::Lumberjack* lj,
-                                    std::string& format ) :
+                                    const std::string& format ) :
     m_lj( lj ),
     m_isLJOwnedBySLIC( false ),
     m_stream( stream )

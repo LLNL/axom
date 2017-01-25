@@ -25,6 +25,8 @@
 
 
 // ATK Toolkit includes
+#include "common/config.hpp"
+
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"
@@ -65,7 +67,7 @@ using namespace asctoolkit;
 static const int NDIMS = 3;
 typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
-struct {
+static struct {
  std::string fileName;
  bool runN2Algorithm;
  double sphere_radius;
@@ -286,7 +288,6 @@ void init()
           new slic::GenericOutputStream(&std::cout);
   slic::GenericOutputStream* compactStream =
           new slic::GenericOutputStream(&std::cout, slicFormatStr);
-  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Fatal) ;
   slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Error);
   slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Warning);
   slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Info);
@@ -363,7 +364,7 @@ void expected_phi(mint::UniformMesh* umesh)
 
    // STEP 2: loop over uniform mesh nodes and compute distance field
    SLIC_INFO( "Calculating analytic distance field...");
-#ifdef _OPENMP
+#ifdef ATK_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
    for ( int i=0; i < nnodes; ++i ) {
@@ -396,7 +397,7 @@ void n2( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
    // STEP 2: loop over uniform mesh nodes and compute distance field
    SLIC_INFO("Calculating distance field...");
 
-#ifdef _OPENMP
+#ifdef ATK_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
    for ( int i=0; i < nnodes; ++i ) {

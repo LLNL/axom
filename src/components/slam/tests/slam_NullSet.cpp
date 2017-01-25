@@ -17,6 +17,8 @@
 
 #include "gtest/gtest.h"
 
+#include "slic/slic.hpp"
+
 #include "slam/Set.hpp"
 #include "slam/NullSet.hpp"
 
@@ -33,7 +35,7 @@ TEST(gtest_slam_set,construct_nullset)
 
 TEST(gtest_slam_set,subscript_fails_nullset)
 {
-  std::cout << "\n****** Testing subscript access on NullSet -- code is expected to assert and die." << std::endl;
+  SLIC_INFO("Testing subscript access on NullSet -- code is expected to assert and die.");
 
   typedef asctoolkit::slam::Set::PositionType SetPosition;
   asctoolkit::slam::NullSet n;
@@ -47,6 +49,27 @@ TEST(gtest_slam_set,subscript_fails_nullset)
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ASSERT_DEATH(n[0],"") << "subscript operator on null set asserts";
 #else
-  std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+  SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
+}
+
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;  // create & initialize test logger,
+
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

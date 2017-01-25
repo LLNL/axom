@@ -43,7 +43,7 @@ endif()
 if (ENABLE_BOOST)
   if (DEFINED BOOST_ROOT)
     find_package(Boost
-                 1.55
+                 1.58
                  REQUIRED)
     blt_register_library(NAME boost
                          INCLUDES ${Boost_INCLUDE_DIR})

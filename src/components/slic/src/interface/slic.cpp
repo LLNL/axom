@@ -20,8 +20,6 @@
 
 #include "slic/slic.hpp"
 
-#include "common/Utilities.hpp"   // for utilities::processAbort()
-
 #include <cstdlib>    // for free
 #include <sstream>    // for std::ostringstream
 #include <execinfo.h> // for backtrace()
@@ -90,6 +88,66 @@ void setLoggingMsgLevel( message::Level level )
     return;
   }
   Logger::getActiveLogger()->setLoggingMsgLevel( level );
+}
+
+//------------------------------------------------------------------------------
+void setAbortOnError( bool status )
+{
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return;
+  }
+
+  Logger::getActiveLogger()->setAbortOnError( status );
+}
+
+//------------------------------------------------------------------------------
+void enableAbortOnError() { setAbortOnError( true ); }
+
+//------------------------------------------------------------------------------
+void disableAbortOnError() { setAbortOnError( false ); }
+
+//------------------------------------------------------------------------------
+bool isAbortOnErrorsEnabled()
+{
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return false;
+  }
+
+  return ( Logger::getActiveLogger()->isAbortOnErrorsEnabled() );
+}
+
+//------------------------------------------------------------------------------
+void setAbortOnWarning( bool status )
+{
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+     return;
+  }
+
+  Logger::getActiveLogger()->setAbortOnWarning( status );
+}
+
+//------------------------------------------------------------------------------
+void enableAbortOnWarning() { setAbortOnWarning(true); }
+
+//------------------------------------------------------------------------------
+void disableAbortOnWarning() { setAbortOnWarning(false); }
+
+//------------------------------------------------------------------------------
+bool isAbortOnWarningsEnabled()
+{
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return false;
+  }
+
+  return ( Logger::getActiveLogger()->isAbortOnWarningsEnabled() );
 }
 
 //------------------------------------------------------------------------------
@@ -169,9 +227,7 @@ void logErrorMessage( const std::string& message,
   std::ostringstream oss;
   oss << message << slic::stacktrace();
 
-  slic::logMessage( message::Fatal, oss.str(), fileName, line );
-  slic::flushStreams();
-  asctoolkit::utilities::processAbort();
+  slic::logMessage( message::Error, oss.str(), fileName, line );
 }
 
 //------------------------------------------------------------------------------

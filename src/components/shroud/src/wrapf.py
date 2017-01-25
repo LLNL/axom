@@ -181,9 +181,11 @@ class Wrapf(util.WrapperMixin):
 #            module_name = node['options'].setdefault('module_name', name.lower())
             self.wrap_class(node)
             if options.F_module_per_class:
+                self._pop_splicer('class')
                 self._end_output_file()
                 self.write_module(self.tree, node)
                 self._begin_output_file()
+                self._push_splicer('class')
         self._pop_splicer('class')
 
         if self.tree['functions']:
@@ -888,6 +890,7 @@ class Wrapf(util.WrapperMixin):
 
         if options.doxygen:
             self.write_doxygen_file(output, fname, library, cls)
+        self._create_splicer('file_top', output)
 
         output.append('module %s' % module_name)
         output.append(1)

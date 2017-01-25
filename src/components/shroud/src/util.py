@@ -239,9 +239,16 @@ class WrapperMixin(object):
                 self.indent += int(line)
             else:
                 for subline in line.split("\n"):
-                    fp.write('    ' * self.indent)
-                    fp.write(subline)
-                    fp.write('\n')
+                    if len(subline) == 0:
+                        fp.write('\n')
+                    elif subline[0] == '#':
+                        # preprocessing directives work better in column 1
+                        fp.write(subline)
+                        fp.write('\n')
+                    else:
+                        fp.write('    ' * self.indent)
+                        fp.write(subline)
+                        fp.write('\n')
 
     def write_doxygen_file(self, output, fname, library, cls):
         """ Write a doxygen comment block for a file.

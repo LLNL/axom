@@ -66,7 +66,7 @@ public:
    * \see LogStream::setFormatString for the format string.
    *****************************************************************************
    */
-  GenericOutputStream( std::ostream* os, std::string& format );
+  GenericOutputStream( std::ostream* os, const std::string& format );
 
   /*!
    *****************************************************************************
@@ -95,6 +95,7 @@ private:
   GenericOutputStream(): m_stream( static_cast< std::ostream* >( ATK_NULLPTR ) ){};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);
+  DISABLE_MOVE_AND_ASSIGNMENT(GenericOutputStream);
 
 };
 

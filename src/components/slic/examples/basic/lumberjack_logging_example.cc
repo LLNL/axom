@@ -64,6 +64,7 @@ int main( int argc, char** argv )
 
   // Set SLIC logging level and Lumberjack Logging stream
   slic::setLoggingMsgLevel( slic::message::Debug );
+  slic::disableAbortOnError();
   slic::LumberjackStream* ljStream = 
         new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, RANKSLIMIT, format );
   slic::addStreamToAllMsgLevels( ljStream );

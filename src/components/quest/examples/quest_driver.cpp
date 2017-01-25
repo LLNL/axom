@@ -56,7 +56,7 @@ using namespace asctoolkit;
 
 typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
-struct {
+static struct {
   std::string fileName;
   int maxLevels;
   int maxObjects;
@@ -472,7 +472,6 @@ int main( int argc, char** argv )
           new slic::GenericOutputStream(&std::cout);
   slic::GenericOutputStream* compactStream =
           new slic::GenericOutputStream(&std::cout, slicFormatStr);
-  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Fatal) ;
   slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Error);
   slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Warning);
   slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Info);

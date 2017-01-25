@@ -392,6 +392,80 @@ void setLoggingMsgLevel( message::Level level );
 
 /*!
  *******************************************************************************
+ * \brief Toggles the abort behavior for errors on the current active logger.
+ * \param [in] status user-supplied flag.
+ *******************************************************************************
+ */
+void setAbortOnError( bool status );
+
+/*!
+ *******************************************************************************
+ * \brief Enables aborts on error messages for the current active logger.
+ * \note This is equivalent to calling slic::setAbortOnError( true )
+ * \post slic::isAbortOnErrorsEnabled() == true.
+ * \pre slic::isInitialized() == true
+ *******************************************************************************
+ */
+void enableAbortOnError();
+
+/*!
+ *******************************************************************************
+ * \brief Disables aborts on error messages for the current active logger.
+ * \note this is equivalent to calling slic::setAbortOnError( false )
+ * \post slic::isAbortOnErrorsEnabled() == false.
+ * \pre slic::isInitialized() == true
+ *******************************************************************************
+ */
+void disableAbortOnError();
+
+/*!
+ *******************************************************************************
+ * \brief Checks whether aborts on errors are enabled for the current logger.
+ * \return status true if aborts on errors are enabled, otherwise, false.
+ * \pre slic::isInitialized() == true.
+ *******************************************************************************
+ */
+bool isAbortOnErrorsEnabled();
+
+/*!
+ *******************************************************************************
+ * \brief Toggles the abort behavior for warnings on the current active logger.
+ * \param [in] status user-supplied flag.
+ *******************************************************************************
+ */
+void setAbortOnWarning( bool status );
+
+/*!
+ *******************************************************************************
+ * \brief Enables aborts on warnings messages for the current active logger.
+ * \note This is equivalent to calling slic::setAbortOnWarning( true )
+ * \post slic::isAbortOnWarningsEnabled() == true.
+ * \pre slic::isInitialized() == true.
+ *******************************************************************************
+ */
+void enableAbortOnWarning();
+
+/*!
+ *******************************************************************************
+ * \brief Disables aborts on warnings messages for the curernt active logger.
+ * \note This is equivalent to calling slic::setAbortOnWarnings( false )
+ * \post slic::isAbortOnWarnigsEnabled() == true.
+ * \pre slic::isInitialized() == true.
+ *******************************************************************************
+ */
+void disableAbortOnWarning();
+
+/*!
+ *******************************************************************************
+ * \brief Checks whether aborts on warnings are enabled for the current logger.
+ * \return status true if aborts on warnings are enabled, otherwise, false.
+ * \pre slic::isInitialized() == true.
+ *******************************************************************************
+ */
+bool isAbortOnWarningsEnabled();
+
+/*!
+ *******************************************************************************
  * \brief Adds the given stream to the the given level.
  * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.

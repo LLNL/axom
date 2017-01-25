@@ -239,12 +239,13 @@ namespace slam    {
       verifyPosition(fromSetIndex);
       return stride();
     }
-    inline void         verifyPosition(SetPosition ATK_DEBUG_PARAM(fromSetIndex))    const
+    inline void verifyPosition(SetPosition ATK_DEBUG_PARAM(fromSetIndex))    const
     {
-        SLIC_ASSERT_MSG( fromSetIndex >= 0 && fromSetIndex < m_fromSet->size()
-                       , "Failed verify position with position " << fromSetIndex
-                       << ". Valid positions are integers between 0 and " << (m_fromSet->size()-1)
-                         );
+      SLIC_ASSERT_MSG( fromSetIndex >= 0 && fromSetIndex < m_fromSet->size(),
+          "Failed verify position with position " << fromSetIndex
+                                                  << ". Valid positions are integers between 0 and "
+                                                  << (m_fromSet->size() - 1)
+      );
     }
     inline SetPosition  toSetBeginIndex(SetPosition fromSetIndex)   const { return stride() * (fromSetIndex); }
     inline SetPosition  toSetEndIndex(SetPosition fromSetIndex)     const { return stride() * (fromSetIndex + 1); }
@@ -341,10 +342,12 @@ namespace slam    {
       if(m_toSet)
         sstr << "\n** toSet has size " << m_toSet->size() << ": ";
 
-      sstr << "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() << ": ";
-      std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<SetPosition>(sstr, " "));
+      int toSize = m_toSetIndicesVec.size();
+      sstr << "\n** toSetIndices vec w/ size " <<  toSize << ": ";
+      for(int i = 0; i< toSize; ++i)
+        sstr << m_toSetIndicesVec[i];
 
-      std::cout << sstr.str() << std::endl;
+      SLIC_DEBUG( sstr.str() );
 
     }
 

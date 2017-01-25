@@ -13,14 +13,14 @@
 #define TIMER_HPP_
 
 #include "common/config.hpp"
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   #include "common/ChronoTimer.hpp"
 #else
   #include "common/TimeofdayTimer.hpp"
 #endif
 
 namespace {
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   typedef asctoolkit::utilities::detail::ChronoTimer HighPrecisionTimer;
 #else
   typedef asctoolkit::utilities::detail::TimeofdayTimer HighPrecisionTimer;

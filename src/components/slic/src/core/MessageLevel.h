@@ -42,7 +42,6 @@ namespace message {
  *******************************************************************************
  */
 enum Level {
-  Fatal,     //!< FATAL log a non-recoverable event.
   Error,     //!< ERROR log an error that *may* be recoverable.
   Warning,   //!< WARNING log a warning.
   Info,      //!< INFO log information that is useful for users & developers.
@@ -55,7 +54,6 @@ enum Level {
  * \brief Array of strings corresponding to the Level enum.
  */
 static const std::string MessageLevelName[ Num_Levels ] = {
-    "FATAL",
     "ERROR",
     "WARNING",
     "INFO",
@@ -94,30 +92,28 @@ namespace inherit {
  *******************************************************************************
  */
 enum flags {
-  nothing =  0,   //!< nothing, no bit is set.
-  fatal   =  1<<0,//!< fatal,   zeroth bit is set.
-  error   =  1<<1,//!< error,   1st bit is set.
-  warning =  1<<2,//!< warning, 2nd bit is set.
-  info    =  1<<3,//!< info,    3rd bit is set.
-  debug   =  1<<4 //!< debug,   4th bit is set.
+  nothing =  0,    //!< nothing, no bit is set.
+  error   =  1<<0, //!< error,   zeroth bit is set.
+  warning =  1<<1, //!< warning, 1st bit is set.
+  info    =  1<<2, //!< info,    2nd bit is set.
+  debug   =  1<<3  //!< debug,   3rd bit is set.
 };
 
 /*!
  * \brief Convenience bit mask that turns on all four bits.
  */
-static const char everything = fatal | error | warning | info | debug;
+static const char everything = error | warning | info | debug;
 
 /*!
  * \brief Convenience bit mask that turns on fatal,error and warning bits.
  */
-static const char errors_and_warnings =  fatal | error | warning;
+static const char errors_and_warnings = error | warning;
 
 /*!
  * \brief Array of bit masks corresponding to each level.
  * \note Used to loop through the bit mask associated with each level.
  */
 static const flags masks[ message::Num_Levels ] = {
-    fatal,
     error,
     warning,
     info,

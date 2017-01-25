@@ -45,7 +45,7 @@
 #include <cmath>
 #include <string>
 #include <iomanip>
-
+#include <sstream>
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
@@ -333,12 +333,13 @@ namespace slamShocktube {
 
     // Initialize zonal quantities
     RangeSet lowerTube(0, midTube);
-    for (RangeSet::iterator elemIt = lowerTube.begin(); elemIt < lowerTube.end(); ++elemIt)
+    for (IndexType i = 0; i < lowerTube.size(); ++i)
     {
-      mass[*elemIt]     = massInitial;
-      momentum[*elemIt] = momentumInitial;
-      pressure[*elemIt] = pressureInitial;
-      energy[*elemIt]   = energyInitial;
+      IndexType ind = lowerTube[i];
+      mass[ind]     = massInitial;
+      momentum[ind] = momentumInitial;
+      pressure[ind] = pressureInitial;
+      energy[ind]   = energyInitial;
     }
 
     // adjust parameters for low pressure portion of tube
@@ -347,12 +348,13 @@ namespace slamShocktube {
     energyInitial     = pressureInitial / (gammaa - 1.0);
 
     RangeSet upperTube(midTube, mesh.elems.size());
-    for (RangeSet::iterator elemIt = upperTube.begin(); elemIt < upperTube.end(); ++elemIt)
+    for (IndexType i = 0; i < upperTube.size(); ++i)
     {
-      mass[*elemIt]     = massInitial;
-      momentum[*elemIt] = momentumInitial;
-      pressure[*elemIt] = pressureInitial;
-      energy[*elemIt]   = energyInitial;
+      IndexType ind = upperTube[i];
+      mass[ind]     = massInitial;
+      momentum[ind] = momentumInitial;
+      pressure[ind] = pressureInitial;
+      energy[ind]   = energyInitial;
     }
 
     // Create needed time info
@@ -518,34 +520,44 @@ namespace slamShocktube {
     // I would like to create a subset with a stride to only print every n_th element
     // Alternatively -- it can use an indirection map to grab the values, and write out to an sstream
 
-    std::stringstream dumpStream;
+    std::stringstream elemStream, mStream, pStream, eStream, prStream;
 
-    dumpStream << "\n\t\tElem idx: ";
-    std:: copy( mesh.elems.begin(),               mesh.elems.begin() + maxDump,       std::ostream_iterator<ShockTubeMesh::IndexType>(dumpStream, "\t"));
-    dumpStream << "...\t";
-    std:: copy( mesh.elems.end() - rmaxDump,      mesh.elems.end(),                   std::ostream_iterator<ShockTubeMesh::IndexType>(dumpStream, "\t"));
+    mStream << std::setprecision(3);
+    pStream << std::setprecision(3);
+    eStream << std::setprecision(3);
+    prStream << std::setprecision(3);
 
-    dumpStream << "\n\t\tMass : " << std::setprecision(3);
-    std:: copy( mass.data().begin(),              mass.data().begin() + maxDump,      std::ostream_iterator<double>(dumpStream, "\t"));
-    dumpStream << "...\t";
-    std:: copy( mass.data().end() - rmaxDump,     mass.data().end(),                  std::ostream_iterator<double>(dumpStream, "\t"));
+    for(int i = 0; i<maxDump; ++i)
+    {
+      ShockTubeMesh::IndexType ind = mesh.elems[i];
+      elemStream << ind << "\t";
+      mStream << mass[ind] << "\t";
+      pStream << momentum[ind] << "\t";
+      eStream << energy[ind] << "\t";
+      prStream << pressure[ind] << "\t";
+    }
+    elemStream << "...\t";
+    mStream << "...\t";
+    pStream << "...\t";
+    eStream << "...\t";
+    prStream << "...\t";
 
-    dumpStream << "\n\t\tMomentum: ";
-    std:: copy( momentum.data().begin(),          momentum.data().begin() + maxDump,  std::ostream_iterator<double>(dumpStream, "\t"));
-    dumpStream << "...\t";
-    std:: copy( momentum.data().end() - rmaxDump, momentum.data().end(),              std::ostream_iterator<double>(dumpStream, "\t"));
+    for(int i = mesh.elems.size() - rmaxDump; i<mesh.elems.size(); ++i)
+    {
+      ShockTubeMesh::IndexType ind = mesh.elems[i];
+      elemStream << ind << "\t";
+      mStream << mass[ind] << "\t";
+      pStream << momentum[ind] << "\t";
+      eStream << energy[ind] << "\t";
+      prStream << pressure[ind] << "\t";
+    }
 
-    dumpStream << "\n\t\tEnergy : ";
-    std:: copy( energy.data().begin(),            energy.data().begin() + maxDump,    std::ostream_iterator<double>(dumpStream, "\t"));
-    dumpStream << "...\t";
-    std:: copy( energy.data().end() - rmaxDump,   energy.data().end(),                std::ostream_iterator<double>(dumpStream, "\t"));
-
-    dumpStream << "\n\t\tPressure: ";
-    std:: copy( pressure.data().begin(),          pressure.data().begin() + maxDump,  std::ostream_iterator<double>(dumpStream, "\t"));
-    dumpStream << "...\t";
-    std:: copy( pressure.data().end() - rmaxDump, pressure.data().end(),              std::ostream_iterator<double>(dumpStream, "\t"));
-
-    SLIC_INFO( dumpStream.str() );
+    SLIC_INFO( "Data dump: \n"
+        << "Elem idx: " << elemStream.str() << "\n"
+        << "mass:     " << mStream.str() << "\n"
+        << "momemtum: " << pStream.str() << "\n"
+        << "energy:   " << eStream.str() << "\n"
+        << "pressure: " << prStream.str() << "\n" );
 
   }
 
