@@ -2,6 +2,7 @@
 # chang28 01-25-2017, 
 
 echo "running bgq_test.sh version 0.9"
+pwd
 echo "cd ../../atk_build/tests"
 cd ../../atk_build/tests
 echo "srun -N1 -n1 -ppsmall ./slic_asserts "
