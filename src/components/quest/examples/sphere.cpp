@@ -288,7 +288,6 @@ void init()
           new slic::GenericOutputStream(&std::cout);
   slic::GenericOutputStream* compactStream =
           new slic::GenericOutputStream(&std::cout, slicFormatStr);
-  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Fatal) ;
   slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Error);
   slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Warning);
   slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Info);
