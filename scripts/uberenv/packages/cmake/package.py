@@ -51,6 +51,7 @@ class Cmake(Package):
     depends_on('python@2.7.11:', when='+doc')
     depends_on('py-sphinx', when='+doc')
 
+
     def url_for_version(self, version):
         """Handle CMake's version-based custom URLs."""
         return 'https://cmake.org/files/v%s/cmake-%s.tar.gz' % (version.up_to(2), version)
