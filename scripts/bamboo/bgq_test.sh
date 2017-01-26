@@ -92,7 +92,7 @@ echo "srun -N1 -n1 -ppsmall ./slam_IndirectionSet"
 srun -N1 -n1 -ppsmall ./slam_IndirectionSet
 echo "srun -N1 -n1 -ppsmall ./slam_Map"
 srun -N1 -n1 -ppsmall ./slam_Map
-echo "srun -N1 -n1 -ppsmall ./slam_utilities \"../../src/components/slam/tests\""
+echo "srun -N1 -n1 -ppsmall ./slam_utilities "
 srun -N1 -n1 -ppsmall ./slam_utilities "../../src/components/slam/tests"
 echo "srun -N1 -n1 -ppsmall ./slam_RangeSet"
 srun -N1 -n1 -ppsmall ./slam_RangeSet
