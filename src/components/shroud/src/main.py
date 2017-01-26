@@ -23,6 +23,7 @@ import os
 import sys
 import yaml
 
+import metadata
 import util
 import parse_decl
 import splicer
@@ -1386,7 +1387,7 @@ class Namify(object):
 def main():
 
     appname = 'shroud'
-    appver = '0.1'
+    appver = metadata.__version__
 
     parser = argparse.ArgumentParser(
         prog=appname,
