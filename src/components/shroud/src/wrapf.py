@@ -298,11 +298,17 @@ class Wrapf(util.WrapperMixin):
         self._pop_splicer(fmt_class.cpp_class)
 
         # overload operators
-        self.overload_compare(fmt_class, '.eq.', fmt_class.class_lower + '_eq',
-                              wformat('c_associated(a%{F_derived_member}, b%{F_derived_member})', fmt_class))
+        self.overload_compare(
+            fmt_class, '.eq.', fmt_class.class_lower + '_eq',
+            wformat('c_associated(a%{F_derived_member}, b%{F_derived_member})',
+                    fmt_class))
 #        self.overload_compare(fmt_class, '==', fmt_class.class_lower + '_eq', None)
-        self.overload_compare(fmt_class, '.ne.', fmt_class.class_lower + '_ne',
-                              wformat('.not. c_associated(a%{F_derived_member}, b%{F_derived_member})', fmt_class))
+        self.overload_compare(
+            fmt_class, '.ne.', fmt_class.class_lower + '_ne',
+            wformat(
+                '.not. c_associated'
+                '(a%{F_derived_member}, b%{F_derived_member})',
+                fmt_class))
 #        self.overload_compare(fmt_class, '/=', fmt_class.class_lower + '_ne', None)
 
     def write_object_get_set(self, node, fmt_class):
@@ -327,11 +333,14 @@ class Wrapf(util.WrapperMixin):
                     fmt.F_name_method, fmt.F_name_impl))
 
             impl.append('')
-            append_format(impl, 'function {F_name_impl}({F_this}) result ({F_derived_member})', fmt)
+            append_format(
+                impl, 'function {F_name_impl}({F_this}) '
+                'result ({F_derived_member})', fmt)
             impl.append(1)
             impl.append('use iso_c_binding, only: C_PTR')
             impl.append('implicit none')
-            append_format(impl, 'class({F_derived_name}), intent(IN) :: {F_this}', fmt)
+            append_format(
+                impl, 'class({F_derived_name}), intent(IN) :: {F_this}', fmt)
             append_format(impl, 'type(C_PTR) :: {F_derived_member}', fmt)
             append_format(impl, '{F_derived_member} = {F_instance_ptr}', fmt)
             impl.append(-1)
@@ -347,12 +356,17 @@ class Wrapf(util.WrapperMixin):
                     fmt.F_name_method, fmt.F_name_impl))
 
             impl.append('')
-            append_format(impl, 'subroutine {F_name_impl}({F_this}, {F_derived_member})', fmt)
+            append_format(
+                impl, 'subroutine {F_name_impl}'
+                '({F_this}, {F_derived_member})', fmt)
             impl.append(1)
             impl.append('use iso_c_binding, only: C_PTR')
             impl.append('implicit none')
-            append_format(impl, 'class({F_derived_name}), intent(INOUT) :: {F_this}', fmt)
-            append_format(impl, 'type(C_PTR), intent(IN) :: {F_derived_member}', fmt)
+            append_format(
+                impl, 'class({F_derived_name}), intent(INOUT) :: {F_this}',
+                fmt)
+            append_format(
+                impl, 'type(C_PTR), intent(IN) :: {F_derived_member}', fmt)
             append_format(impl, '{F_instance_ptr} = {F_derived_member}', fmt)
             impl.append(-1)
             append_format(impl, 'end subroutine {F_name_impl}', fmt)
@@ -367,11 +381,13 @@ class Wrapf(util.WrapperMixin):
                     fmt.F_name_method, fmt.F_name_impl))
 
             impl.append('')
-            append_format(impl, 'function {F_name_impl}({F_this}) result (rv)', fmt)
+            append_format(
+                impl, 'function {F_name_impl}({F_this}) result (rv)', fmt)
             impl.append(1)
             impl.append('use iso_c_binding, only: c_associated')
             impl.append('implicit none')
-            append_format(impl, 'class({F_derived_name}), intent(IN) :: {F_this}', fmt)
+            append_format(
+                impl, 'class({F_derived_name}), intent(IN) :: {F_this}', fmt)
             impl.append('logical rv')
             append_format(impl, 'rv = c_associated({F_instance_ptr})', fmt)
             impl.append(-1)
@@ -397,7 +413,8 @@ class Wrapf(util.WrapperMixin):
         operator.append(1)
         operator.append('use iso_c_binding, only: c_associated')
         operator.append('implicit none')
-        append_format(operator, 'type({F_derived_name}), intent(IN) ::a,b', fmt)
+        append_format(operator,
+                      'type({F_derived_name}), intent(IN) ::a,b', fmt)
         operator.append('logical :: rv')
         append_format(operator, 'if ({predicate}) then', fmt)
         operator.append(1)
@@ -528,7 +545,8 @@ class Wrapf(util.WrapperMixin):
             # Add 'this' argument
             if not is_ctor:
                 arg_c_names.append(fmt.C_this)
-                arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + fmt.C_this)
+                arg_c_decl.append(
+                    'type(C_PTR), value, intent(IN) :: ' + fmt.C_this)
 
         args_all_in = True   # assume all arguments are intent(in)
         for arg in node['args']:
@@ -558,16 +576,20 @@ class Wrapf(util.WrapperMixin):
             len_trim = attrs.get('len_trim', None)
             if len_trim:
                 arg_c_names.append(len_trim)
-                arg_c_decl.append('integer(C_INT), value, intent(IN) :: %s' % len_trim)
+                arg_c_decl.append(
+                    'integer(C_INT), value, intent(IN) :: %s' % len_trim)
             len_arg = attrs.get('len', None)
             if len_arg:
                 arg_c_names.append(len_arg)
-                arg_c_decl.append('integer(C_INT), value, intent(IN) :: %s' % len_arg)
+                arg_c_decl.append(
+                    'integer(C_INT), value, intent(IN) :: %s' % len_arg)
 
-        if subprogram == 'function' and (is_pure or (func_is_const and args_all_in)):
+        if (subprogram == 'function' and
+                (is_pure or (func_is_const and args_all_in))):
             fmt.F_C_pure_clause = 'pure '
 
-        fmt.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
+        fmt.F_C_arguments = options.get(
+            'F_C_arguments', ', '.join(arg_c_names))
 
         if fmt.F_C_subprogram == 'function':
             if result_typedef.base == 'string':
@@ -582,8 +604,9 @@ class Wrapf(util.WrapperMixin):
         c_interface = self.c_interface
         c_interface.append('')
         c_interface.append(wformat(
-                '{F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}) &',
-                fmt))
+            '{F_C_pure_clause}{F_C_subprogram} {F_C_name}'
+            '({F_C_arguments}) &',
+            fmt))
         c_interface.append(2)  # extra indent for continued line
         if fmt.F_C_result_clause:
             c_interface.append(wformat(
@@ -645,8 +668,10 @@ class Wrapf(util.WrapperMixin):
         is_dtor = node['attrs'].get('destructor', False)
         is_const = result['attrs'].get('const', False)
 
-        # this catches stuff like a bool to logical conversion which requires the wrapper
-        if result_typedef.f_statements.get('result', {}).get('need_wrapper', False):
+        # this catches stuff like a bool to logical conversion which
+        # requires the wrapper
+        if result_typedef.f_statements.get('result', {}) \
+                                      .get('need_wrapper', False):
             need_wrapper = True
 
         fmt.F_instance_ptr = wformat('{F_this}%{F_derived_member}', fmt)
@@ -677,9 +702,11 @@ class Wrapf(util.WrapperMixin):
         # f_var - argument to Fortran function (wrapper function)
         # c_var - argument to C function (wrapped function)
         #
-        # May be one more argument to C function than Fortran function (the result)
+        # May be one more argument to C function than Fortran function
+        # (the result)
         #
-        result_arg = None  # indicate which argument contains function result, usually none
+        # indicate which argument contains function result, usually none
+        result_arg = None
         fmt.result_arg = 'UUU_result_arg'
         pre_call = []
         f_args = node['args']
@@ -759,7 +786,8 @@ class Wrapf(util.WrapperMixin):
                 self.set_f_module(modules, 'iso_c_binding', 'C_INT')
 
         fmt.F_arg_c_call = ', '.join(arg_c_call)
-        fmt.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call)  # use tabs to insert continuations
+        # use tabs to insert continuations
+        fmt.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call)
         fmt.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
 
         # declare function return value after arguments
@@ -772,11 +800,13 @@ class Wrapf(util.WrapperMixin):
                 # special case returning a string
                 rvlen = result['attrs'].get('len', None)
                 if rvlen is None:
-                    rvlen = wformat('strlen_ptr({F_C_name}({F_arg_c_call_tab}))', fmt)
+                    rvlen = wformat(
+                        'strlen_ptr({F_C_name}({F_arg_c_call_tab}))', fmt)
                 else:
                     rvlen = str(rvlen)  # convert integers
                 fmt.rvlen = wformat(rvlen, fmt)
-                line1 = wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}', fmt)
+                line1 = wformat(
+                    'character(kind=C_CHAR, len={rvlen}) :: {F_result}', fmt)
                 self.append_method_arguments(arg_f_decl, line1)
                 self.set_f_module(modules, 'iso_c_binding', 'C_CHAR')
             else:
@@ -789,13 +819,15 @@ class Wrapf(util.WrapperMixin):
             if '_overloaded' in node:
                 need_wrapper = True
             if not fmt.get('CPP_return_templated', False):
-                # if return type is templated in C++, then do not set up generic
-                # since only the return type may be different (ex. getValue<T>())
+                # if return type is templated in C++,
+                # then do not set up generic since only the
+                # return type may be different (ex. getValue<T>())
                 if cls:
                     gname = fmt.F_name_method
                 else:
                     gname = fmt.F_name_impl
-                self.f_type_generic.setdefault(fmt.F_name_generic, []).append(gname)
+                self.f_type_generic.setdefault(
+                    fmt.F_name_generic, []).append(gname)
             self.type_bound_part.append('procedure :: %s => %s' % (
                     fmt.F_name_method, fmt.F_name_impl))
 
@@ -812,14 +844,18 @@ class Wrapf(util.WrapperMixin):
         else:
             F_code = []
             if is_ctor:
-                line1 = wformat('{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})', fmt)
+                line1 = wformat(
+                    '{F_result}%{F_derived_member} = '
+                    '{F_C_name}({F_arg_c_call_tab})', fmt)
                 self.append_method_arguments(F_code, line1)
             elif c_subprogram == 'function':
                 f_return_code = result_typedef.f_return_code
                 if f_return_code is None:
-                    f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})'
+                    f_return_code = (
+                        '{F_result} = {F_C_name}({F_arg_c_call_tab})')
                 else:
-                    self.f_helper.update(result_typedef.f_helper.get('f_return_code', {}))
+                    self.f_helper.update(
+                        result_typedef.f_helper.get('f_return_code', {}))
                     need_wrapper = True
                 line1 = wformat(f_return_code, fmt)
                 self.append_method_arguments(F_code, line1)
@@ -832,7 +868,8 @@ class Wrapf(util.WrapperMixin):
 #                # adjust return value or cleanup
 #                append_format(F_code, result_typedef.f_post_call, fmt)
             if is_dtor:
-                F_code.append(wformat('{F_this}%{F_derived_member} = C_NULL_PTR', fmt))
+                F_code.append(wformat(
+                    '{F_this}%{F_derived_member} = C_NULL_PTR', fmt))
                 self.set_f_module(modules, 'iso_c_binding', 'C_NULL_PTR')
 
         arg_f_use = self.sort_module_info(modules, fmt.F_module_name)
@@ -847,7 +884,9 @@ class Wrapf(util.WrapperMixin):
                 impl.append('! function_index=%d' % node['_function_index'])
                 if options.doxygen and 'doxygen' in node:
                     self.write_doxygen(impl, node['doxygen'])
-            impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt))
+            impl.append(wformat(
+                '{F_subprogram} {F_name_impl}'
+                '({F_arguments}){F_result_clause}', fmt))
             impl.append(1)
             impl.extend(arg_f_use)
             impl.append('implicit none')
@@ -939,7 +978,8 @@ class Wrapf(util.WrapperMixin):
         output.extend(self.c_interface)
         output.extend(self.generic_interface)
 
-        # Insert any helper functions needed (They are duplicated in each module)
+        # Insert any helper functions needed
+        # (They are duplicated in each module)
         helper_source = []
         if self.f_helper:
             find_all_helpers(self.f_helper)
@@ -977,7 +1017,8 @@ class Wrapf(util.WrapperMixin):
         output.append('')
         output.append('end module %s' % module_name)
 
-        self.config.ffiles.append(os.path.join(self.config.c_fortran_dir, fname))
+        self.config.ffiles.append(
+            os.path.join(self.config.c_fortran_dir, fname))
         self.write_output_file(fname, self.config.c_fortran_dir, output)
 
     def write_c_helper(self):

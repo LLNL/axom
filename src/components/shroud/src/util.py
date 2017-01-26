@@ -136,12 +136,14 @@ class WrapperMixin(object):
         TODO:
           Option to ignore splicer stack to generate original code
         """
-        # The prefix is needed when two different sets of output are being create
-        # and they are not in sync.
+        # The prefix is needed when two different sets of output
+        # are being create and they are not in sync.
         # Creating methods and derived types together.
-        out.append('%s splicer begin %s%s' % (self.comment, self.splicer_path, name))
+        out.append('%s splicer begin %s%s' % (
+            self.comment, self.splicer_path, name))
         out.extend(self.splicer_stack[-1].get(name, default))
-        out.append('%s splicer end %s%s' % (self.comment, self.splicer_path, name))
+        out.append('%s splicer end %s%s' % (
+            self.comment, self.splicer_path, name))
 
 #####
 
@@ -295,7 +297,8 @@ class WrapperMixin(object):
 
 class Typedef(object):
     """ Collect fields for an argument.
-    This used to be a dict but a class has better access semantics: i.attr vs d['attr']
+    This used to be a dict but a class has better access semantics:
+       i.attr vs d['attr']
     It also initializes default values to avoid  d.get('attr', default)
     """
     # valid fields

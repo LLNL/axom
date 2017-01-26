@@ -94,10 +94,13 @@ class Wrapl(util.WrapperMixin):
         self.lua_type_structs.append('')
         self.lua_type_structs.append('typedef struct {')
         self.lua_type_structs.append(1)
-        append_format(self.lua_type_structs, '{namespace_scope}{cpp_class} * {LUA_userdata_member};', fmt_class)
+        append_format(self.lua_type_structs,
+                      '{namespace_scope}{cpp_class} * {LUA_userdata_member};',
+                      fmt_class)
         self._create_splicer('C_object', self.lua_type_structs)
         self.lua_type_structs.append(-1)
-        self.lua_type_structs.append(wformat('}} {LUA_userdata_type};', fmt_class))
+        self.lua_type_structs.append(wformat(
+            '}} {LUA_userdata_type};', fmt_class))
 
         self.luaL_Reg_class = []
 
@@ -194,7 +197,9 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             fmt.LUA_name = '__gc'
 
         if cls:
-            fmt.LUA_this_call = wformat('{LUA_userdata_var}->{LUA_userdata_member}->', fmt)  # call method syntax
+            # call method syntax
+            fmt.LUA_this_call = wformat(
+                '{LUA_userdata_var}->{LUA_userdata_member}->', fmt)
         else:
             fmt.LUA_this_call = ''  # call function syntax
 
@@ -213,11 +218,13 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                 arg_typedef = self.typedef[arg['type']]
                 attrs = arg['attrs']
                 if 'default' in attrs:
-                    all_calls.append(lua_function(function, CPP_subprogram, in_args[:], out_args))
+                    all_calls.append(lua_function(
+                        function, CPP_subprogram, in_args[:], out_args))
                     found_default = True
                 in_args.append(arg)
             # no defaults, use all arguments
-            all_calls.append(lua_function(function, CPP_subprogram, in_args[:], out_args))
+            all_calls.append(lua_function(
+                function, CPP_subprogram, in_args[:], out_args))
             maxargs = max(maxargs, len(in_args))
 
         # Gather calls by number of arguments
@@ -236,7 +243,8 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         else:
             lines.append('int SH_nresult = 0;')
             fmt.LUA_used_param_state = True
-            append_format(lines, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
+            append_format(lines,
+                          'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
 
             # Find type of each argument
             itype_vars = []
@@ -244,7 +252,9 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                 itype_vars.append('SH_itype{}'.format(iarg))
                 fmt.itype_var = itype_vars[-1]
                 fmt.iarg = iarg
-                append_format(lines, 'int {itype_var} = lua_type({LUA_state_var}, {iarg});', fmt)
+                append_format(lines,
+                              'int {itype_var} = '
+                              'lua_type({LUA_state_var}, {iarg});', fmt)
 
             lines.append('switch (SH_nargs) {')
             for nargs, calls in enumerate(by_count):
@@ -265,7 +275,8 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 
                     # Select cases to help with formating of output
                     if nargs == 0:
-                        # put within a compound statement to scope local variables
+                        # put within a compound statement to
+                        # scope local variables
                         lines.extend([
                                 '{',
                                 1])
@@ -310,14 +321,17 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                     # Trap errors when the argument types do not match
                     lines.append('else {')
                     lines.append(1)
-                    lines.append(wformat('luaL_error({LUA_state_var}, "error with arguments");', fmt))
+                    lines.append(wformat(
+                        'luaL_error({LUA_state_var}, "error with arguments");',
+                        fmt))
                     lines.append(-1)
                     lines.append('}')
                 lines.append('break;')
                 lines.append(-1)
             lines.append('default:')
             lines.append(1)
-            lines.append(wformat('luaL_error({LUA_state_var}, "error with arguments");', fmt))
+            lines.append(wformat(
+                'luaL_error({LUA_state_var}, "error with arguments");', fmt))
             lines.append('break;')
             lines.append(-1)
             lines.append('}')
@@ -326,7 +340,9 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         body = self.body_lines
         body.append('')
         if fmt.LUA_used_param_state:
-            append_format(body, 'static int {LUA_name_impl}(lua_State *{LUA_state_var})', fmt)
+            append_format(body,
+                          'static int {LUA_name_impl}'
+                          '(lua_State *{LUA_state_var})', fmt)
         else:
             append_format(body, 'static int {LUA_name_impl}(lua_State *)', fmt)
         body.extend([
@@ -342,12 +358,16 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         # Save pointer to function
         if cls:
             if is_ctor:
-                self.luaL_Reg_module.append(wformat('{{"{LUA_ctor_name}{function_suffix}", {LUA_name_impl}}},', fmt))
+                self.luaL_Reg_module.append(wformat(
+                    '{{"{LUA_ctor_name}{function_suffix}", '
+                    '{LUA_name_impl}}},', fmt))
             else:
-                self.luaL_Reg_class.append(wformat('{{"{LUA_name}", {LUA_name_impl}}},', fmt))
+                self.luaL_Reg_class.append(wformat(
+                    '{{"{LUA_name}", {LUA_name_impl}}},', fmt))
 
         else:
-            self.luaL_Reg_module.append(wformat('{{"{LUA_name}", {LUA_name_impl}}},', fmt))
+            self.luaL_Reg_module.append(wformat(
+                '{{"{LUA_name}", {LUA_name_impl}}},', fmt))
 
     def do_function(self, cls, luafcn, fmt):
         """
@@ -397,7 +417,9 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             is_const = False
         else:
             is_const = None
-        fmt.rv_decl = self.std_c_decl('cpp_type', result, name=fmt.rv, const=is_const)  # return value
+        # return value
+        fmt.rv_decl = self.std_c_decl(
+            'cpp_type', result, name=fmt.rv, const=is_const)
 
         LUA_decl = []  # declare variables and pop values
         LUA_code = []  # call C++ function
@@ -412,15 +434,17 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             if not is_ctor:
                 fmt.LUA_used_param_state = True
                 fmt.c_var = wformat(cls_typedef.LUA_pop, fmt)
-                LUA_code.append(
-                    wformat('{LUA_userdata_type} * {LUA_userdata_var} = {c_var};', fmt))
+                LUA_code.append(wformat(
+                    '{LUA_userdata_type} * {LUA_userdata_var} = {c_var};',
+                    fmt))
 
         # parse arguments
         # call function based on number of default arguments provided
         # XXX default_calls = []   # each possible default call
         # XXX found_default = False
         # XXX if '_has_default_arg' in node:
-        # XXX     append_format(LUA_decl, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
+        # XXX     append_format(LUA_decl, 'int SH_nargs =
+        # XXX          lua_gettop({LUA_state_var});', fmt)
 
         # Only process nargs.
         # Each variation of default-arguments produces a new call.
@@ -442,7 +466,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             fmt_arg.cpp_type = arg_typedef.cpp_type
             LUA_statements = arg_typedef.LUA_statements
             if attrs['intent'] in ['inout', 'in']:
-#                lua_pop = wformat(arg_typedef.LUA_pop, fmt_arg)
+                # XXX lua_pop = wformat(arg_typedef.LUA_pop, fmt_arg)
                 # lua_pop is a C++ expression
                 fmt_arg.c_var = wformat(arg_typedef.LUA_pop, fmt_arg)
                 lua_pop = wformat(arg_typedef.c_to_cpp, fmt_arg)
@@ -451,7 +475,8 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             if attrs['intent'] in ['inout', 'out']:
                 # output variable must be a pointer
                 # XXX - fix up for strings
-                # XXX  format, vargs = self.intent_out(arg_typedef, fmt_arg, post_call)
+                # XXX  format, vargs = self.intent_out(
+                # XXX      arg_typedef, fmt_arg, post_call)
                 # XXX  build_format.append(format)
                 # XXX  build_vargs.append('*' + vargs)
 
@@ -478,7 +503,8 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                 decl_suffix = ' = {};'.format(lua_pop)
             else:
                 decl_suffix = ';'
-            LUA_decl.append(self.std_c_decl(lang, arg, const=arg_const, ptr=ptr) + decl_suffix)
+            LUA_decl.append(self.std_c_decl(
+                lang, arg, const=arg_const, ptr=ptr) + decl_suffix)
 
             cpp_call_list.append(fmt_arg.cpp_var)
 
@@ -490,8 +516,14 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         if is_ctor:
             fmt.LUA_used_param_state = True
             LUA_code.extend([
-                    wformat('{LUA_userdata_type} * {LUA_userdata_var} = ({LUA_userdata_type} *) lua_newuserdata({LUA_state_var}, sizeof(*{LUA_userdata_var}));', fmt),
-                    wformat('{LUA_userdata_var}->{LUA_userdata_member} = new {cpp_class}({cpp_call_list});', fmt),
+                    wformat(
+                        '{LUA_userdata_type} * {LUA_userdata_var} = '
+                        '({LUA_userdata_type} *) lua_newuserdata'
+                        '({LUA_state_var}, sizeof(*{LUA_userdata_var}));',
+                        fmt),
+                    wformat(
+                        '{LUA_userdata_var}->{LUA_userdata_member} = '
+                        'new {cpp_class}({cpp_call_list});', fmt),
                     '/* Add the metatable to the stack. */',
                     wformat('luaL_getmetatable(L, "{LUA_metadata}");', fmt),
                     '/* Set the metatable on the userdata. */',
@@ -500,21 +532,29 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         elif is_dtor:
             fmt.LUA_used_param_state = True
             LUA_code.extend([
-                    wformat('delete {LUA_userdata_var}->{LUA_userdata_member};', fmt),
-                    wformat('{LUA_userdata_var}->{LUA_userdata_member} = NULL;', fmt),
+                    wformat(
+                        'delete {LUA_userdata_var}->{LUA_userdata_member};',
+                        fmt),
+                    wformat(
+                        '{LUA_userdata_var}->{LUA_userdata_member} = NULL;',
+                        fmt),
                     ])
         elif CPP_subprogram == 'subroutine':
-            line = wformat('{LUA_this_call}{function_name}({cpp_call_list});', fmt)
+            line = wformat(
+                '{LUA_this_call}{function_name}({cpp_call_list});', fmt)
             LUA_code.append(line)
         else:
-            line = wformat('{rv_asgn}{LUA_this_call}{function_name}({cpp_call_list});', fmt)
+            line = wformat(
+                '{rv_asgn}{LUA_this_call}{function_name}({cpp_call_list});',
+                fmt)
             LUA_code.append(line)
 
 #        if 'LUA_error_pattern' in node:
 #            lfmt = util.Options(fmt)
 #            lfmt.c_var = fmt.rv
 #            lfmt.cpp_var = fmt.rv
-#            append_format(LUA_code, self.patterns[node['PY_error_pattern']], lfmt)
+#            append_format(LUA_code,
+#                 self.patterns[node['PY_error_pattern']], lfmt)
 
         # Compute return value
         if CPP_subprogram == 'function' and not is_ctor:
@@ -551,7 +591,8 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         output.append('#include "lua.h"')
         output.extend(self.lua_type_structs)
         output.append('')
-        output.append(wformat('int luaopen_{LUA_module_name}(lua_State *{LUA_state_var});', fmt))
+        output.append(wformat(
+            'int luaopen_{LUA_module_name}(lua_State *{LUA_state_var});', fmt))
         output.append('')
         util.extern_C(output, 'end')
         output.append('#endif  /* %s */' % guard)
@@ -602,16 +643,21 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         output.append('')
         util.extern_C(output, 'begin')
         output.extend([
-                wformat('int luaopen_{LUA_module_name}(lua_State *{LUA_state_var}) {{', fmt),
+                wformat(
+                    'int luaopen_{LUA_module_name}'
+                    '(lua_State *{LUA_state_var}) {{', fmt),
                 1,
                 ])
         output.extend(self.class_lines)
         output.extend([
                 '',
                 '#if LUA_VERSION_NUM < 502',
-                wformat('luaL_register({LUA_state_var}, "{LUA_module_name}", {LUA_module_reg});', fmt),
+                wformat(
+                    'luaL_register({LUA_state_var}, "{LUA_module_name}", '
+                    '{LUA_module_reg});', fmt),
                 '#else',
-                wformat('luaL_newlib({LUA_state_var}, {LUA_module_reg});', fmt),
+                wformat(
+                    'luaL_newlib({LUA_state_var}, {LUA_module_reg});', fmt),
                 '#endif',
                 'return 1;',
                 -1,

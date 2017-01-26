@@ -6,11 +6,15 @@ generate language bindings
 
 #
 # Annotate the YAML tree with additional internal fields
-#  _decl            - generated declaration.  Includes computed attributes
-#  _function_index  - sequence number function, used in lieu of a pointer
+#  _decl            - generated declaration.
+#                     Includes computed attributes
+#  _function_index  - sequence number function,
+#                     used in lieu of a pointer
 #  _generated       - who generated this function
-#  _PTR_F_C_index   - Used by fortran wrapper to find index of C function to call
-#  _PTR_C_CPP_index - Used by C wrapper to find index of C++ function to call
+#  _PTR_F_C_index   - Used by fortran wrapper to find index of
+#                     C function to call
+#  _PTR_C_CPP_index - Used by C wrapper to find index of C++ function
+#                     to call
 #  _subprogram      - subroutine or function
 #
 #
@@ -32,7 +36,8 @@ import wrapf
 import wrapp
 import wrapl
 
-# char functions cannot be wrapped directly in intel 15.  Instead the result is passed down
+# char functions cannot be wrapped directly in intel 15.
+# Instead the result is passed down
 # as an argument from the Fortran wrapper to the C wrapper.
 # Similar to how char * funtions are handled.
 intel_15_fix = True
@@ -142,13 +147,16 @@ class Schema(object):
             C_header_filename_class_template='wrap{cpp_class}.h',
             C_impl_filename_class_template='wrap{cpp_class}.cpp',
 
-            C_name_template='{C_prefix}{class_name}{underscore_name}{function_suffix}',
+            C_name_template=(
+                '{C_prefix}{class_name}{underscore_name}{function_suffix}'),
 
             # Fortran's names for C functions
             F_C_prefix='c_',
-            F_C_name_template='{F_C_prefix}{class_name}{underscore_name}{function_suffix}',
+            F_C_name_template=(
+                '{F_C_prefix}{class_name}{underscore_name}{function_suffix}'),
 
-            F_name_impl_template='{class_name}{underscore_name}{function_suffix}',
+            F_name_impl_template=(
+                '{class_name}{underscore_name}{function_suffix}'),
 
             F_name_method_template='{underscore_name}{function_suffix}',
             F_name_generic_template='{underscore_name}',
@@ -179,11 +187,13 @@ class Schema(object):
         fmt_library.function_suffix = ''   # assume no suffix
         fmt_library.overloaded = False
         fmt_library.class_name = ''
-        fmt_library.C_prefix = def_options.get('C_prefix', fmt_library.library_upper[:3] + '_')
+        fmt_library.C_prefix = def_options.get(
+            'C_prefix', fmt_library.library_upper[:3] + '_')
         fmt_library.F_C_prefix = def_options['F_C_prefix']
         fmt_library.rv = 'rv'  # return value
         if node['namespace']:
-            fmt_library.namespace_scope = '::'.join(node['namespace'].split()) + '::'
+            fmt_library.namespace_scope = (
+                '::'.join(node['namespace'].split()) + '::')
         else:
             fmt_library.namespace_scope = ''
         util.eval_template(node, 'C_header_filename', '_library')
@@ -191,7 +201,8 @@ class Schema(object):
         self.fmt_stack.append(fmt_library)
 
         # default some options based on other options
-        # All class/methods and functions may go into this file or just functions.
+        # All class/methods and functions may go into this file or
+        # just functions.
         util.eval_template(node, 'F_module_name', '_library')
         util.eval_template(node, 'F_impl_filename', '_library')
 
@@ -358,7 +369,8 @@ class Schema(object):
                         ),
                     result=dict(
                         post_call=[
-                            'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            ('asctoolkit::shroud::FccCopy('
+                             '{c_var}, {c_var_len}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp',
                         ),
@@ -366,10 +378,11 @@ class Schema(object):
 
                 c_fortran='character(kind=C_CHAR)',
                 f_type='character(*)',
-                ## f_args='trim({var}) // C_NULL_CHAR',
+                # # f_args='trim({var}) // C_NULL_CHAR',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
-                # f_return_code='{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+                # f_return_code='{F_result} =
+                #    fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format='s',
                 PY_ctor='PyString_FromString({c_var})',
                 LUA_type='LUA_TSTRING',
@@ -389,16 +402,17 @@ class Schema(object):
 
                 c_fortran='character(kind=C_CHAR)',
                 f_type='character',
-                ## f_args='trim({var}) // C_NULL_CHAR',
+                # # f_args='trim({var}) // C_NULL_CHAR',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
-                # f_return_code='{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+                # f_return_code='{F_result} =
+                #    fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format='s',
                 PY_ctor='PyString_FromString({c_var})',
                 LUA_type='LUA_TSTRING',
                 LUA_pop='lua_tostring({LUA_state_var}, {LUA_index})',
                 LUA_push='lua_pushstring({LUA_state_var}, {c_var})',
-                ## base='string',
+                # # base='string',
                 ),
 
             # C++ std::string
@@ -417,18 +431,21 @@ class Schema(object):
                             '{C_const}std::string {cpp_var}({c_var});'
                             ],
                         pre_call_trim=[
-                            '{C_const}std::string {cpp_var}({c_var}, {c_var_trim});'
+                            ('{C_const}std::string '
+                             '{cpp_var}({c_var}, {c_var_trim});')
                             ],
                     ),
                     intent_out=dict(
                         post_call=[
-                            'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            ('asctoolkit::shroud::FccCopy('
+                             '{c_var}, {c_var_len}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp'
                         ),
                     result=dict(
                         post_call=[
-                            'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            ('asctoolkit::shroud::FccCopy('
+                             '{c_var}, {c_var_len}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp'
                         ),
@@ -436,10 +453,11 @@ class Schema(object):
 
                 c_fortran='character(kind=C_CHAR)',
                 f_type='character(*)',
-                ## f_args='trim({var}) // C_NULL_CHAR',
+                # # f_args='trim({var}) // C_NULL_CHAR',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
-                # f_return_code='{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+                # f_return_code='{F_result} =
+                #    fstr({F_C_name}({F_arg_c_call_tab}))',
 
                 py_statements=dict(
                     intent_in=dict(
@@ -462,7 +480,8 @@ class Schema(object):
                 cpp_type='MPI_Comm',
                 c_header='mpi.h',
                 c_type='MPI_Fint',
-                c_fortran='integer(C_INT)',  # usually, MPI_Fint will be equivalent to int
+                # usually, MPI_Fint will be equivalent to int
+                c_fortran='integer(C_INT)',
                 f_type='integer',
                 cpp_to_c='MPI_Comm_c2f({cpp_var})',
                 c_to_cpp='MPI_Comm_f2c({c_var})',
@@ -474,7 +493,8 @@ class Schema(object):
             def_types['char_scalar'].c_statements = dict(
                 result=dict(
                     post_call=[
-                        '// {c_var_len} is always 1, test to silence warning about unused variable',
+                        ('// {c_var_len} is always 1,'
+                         ' test to silence warning about unused variable'),
                         'if ({c_var_len} == 1) *{c_var} = {cpp_val};',
                         ],
                     ),
@@ -490,7 +510,8 @@ class Schema(object):
         # pure fortran string
         tmp = def_types['string'].clone_as('string_result_fstr')
         tmp.update(dict(
-                f_return_code='{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+                f_return_code=('{F_result} = '
+                               'fstr({F_C_name}({F_arg_c_call_tab}))'),
                 f_helper=dict(f_return_code=dict(fstr=True)),
                 ))
         def_types[tmp.name] = tmp
@@ -507,10 +528,10 @@ class Schema(object):
                     copy_type = value['typedef']
                     orig = def_types.get(copy_type, None)
                     if not orig:
-                        raise RuntimeError("No type for typedef %s" % copy_type)
+                        raise RuntimeError(
+                            "No type for typedef {}".format(copy_type))
                     def_types[key] = util.Typedef(key)
                     def_types[key].update(def_types[copy_type]._to_dict())
-
 
                 if key in def_types:
                     def_types[key].update(value)
@@ -586,7 +607,8 @@ class Schema(object):
             # parse decl and add to dictionary
             values = parse_decl.check_decl(node['decl'])
             util.update(node, values)  # recursive update
-        if 'function_suffix' in node and node['function_suffix'] is None:
+        if ('function_suffix' in node and
+                node['function_suffix'] is None):
             # YAML turns blanks strings into None
             node['function_suffix'] = ''
         if 'default_arg_suffix' in node:
@@ -595,7 +617,8 @@ class Schema(object):
                 raise RuntimeError('default_arg_suffix must be a list')
             for i, value in enumerate(node['default_arg_suffix']):
                 if value is None:
-                    node['default_arg_suffix'][i] = ''  # YAML turns blanks strings to None
+                    # YAML turns blanks strings to None
+                    node['default_arg_suffix'][i] = ''
         if 'result' not in node:
             raise RuntimeError("Missing result")
         result = node['result']
@@ -806,7 +829,9 @@ class GenFunctions(object):
                         typedef = self.typedef[argtype]
                         typedef = self.typedef[typedef.f_type]
                         if not typedef.f_cast:
-                            raise RuntimeError("unable to cast type %s in fortran_generic" % arg['type'])
+                            raise RuntimeError(
+                                "unable to cast type {} in fortran_generic"
+                                .format(arg['type']))
                         arg['type'] = type
 
         # Do not process templated node, instead process
@@ -840,10 +865,7 @@ class GenFunctions(object):
             self.append_function_index(new)
             new['_generated'] = 'has_default_arg'
             del new['args'][i:]  # remove trailing arguments
-#            try:
             del new['_has_default_arg']
-#            except:
-#                pass
             options = new['options']
             options.wrap_c = True
             options.wrap_fortran = True
@@ -853,7 +875,8 @@ class GenFunctions(object):
             try:
                 fmt.function_suffix = default_arg_suffix[ndefault]
             except IndexError:
-#               fmt.function_suffix = fmt.function_suffix + '_nargs%d' % (i + 1)
+                # XXX fmt.function_suffix =
+                # XXX  fmt.function_suffix + '_nargs%d' % (i + 1)
                 pass
             default_funcs.append(new['_function_index'])
             ordered_functions.append(new)
@@ -869,22 +892,23 @@ class GenFunctions(object):
             pass
 
     def string_to_buffer_and_len(self, node, ordered_functions):
-        """ Check if function has any string arguments and will be wrapped by Fortran.
-        If so then create a new C function that will convert string arguments into
-        a buffer and length.
+        """ Check if function has any string arguments and will be
+        wrapped by Fortran. If so then create a new C function that
+        will convert string arguments into a buffer and length.
         """
         options = node['options']
 
-        # If a C++ function returns a std::string instance, the default wrapper
-        # will not compile since the wrapper will be declared as char.
-        # It will also want to return the c_str of a stack variable.
-        # Warn and turn off the wrapper.
+        # If a C++ function returns a std::string instance,
+        # the default wrapper will not compile since the wrapper
+        # will be declared as char. It will also want to return the
+        # c_str of a stack variable. Warn and turn off the wrapper.
         result = node['result']
         result_type = result['type']
         try:
             result_typedef = self.typedef[result_type]
         except KeyError:
-            # wrapped classes have not been added yet.  Only care about string here.
+            # wrapped classes have not been added yet.
+            # Only care about string here.
             result_typedef = None
         attrs = result['attrs']
         result_is_ptr = (attrs.get('ptr', False) or
@@ -915,7 +939,8 @@ class GenFunctions(object):
                 if is_ptr:
                     has_string_arg = True
                     # Force len attribute when intent is OUT
-                    # so the wrapper will know how much space can be written to.
+                    # so the wrapper will know how much space
+                    # can be written to.
                     intent = attrs['intent']
                     if intent in ['out', 'inout']:
                         attrs['len'] = 'N' + arg['name']
@@ -941,11 +966,13 @@ class GenFunctions(object):
         if not (has_string_result or has_string_arg):
             return
 
-#        options = node['options']
-#        options.wrap_fortran = False
-        # Preserve wrap_c.  This keep a version which accepts char * arguments.
+        # XXX       options = node['options']
+        # XXX       options.wrap_fortran = False
+        # Preserve wrap_c.
+        # This keep a version which accepts char * arguments.
 
-        # Create a new C function and change arguments to add len_trim attribute
+        # Create a new C function and change arguments
+        # to add len_trim attribute
         C_new = util.copy_function_node(node)
         ordered_functions.append(C_new)
         self.append_function_index(C_new)
@@ -1077,7 +1104,9 @@ class GenFunctions(object):
         result = node['result']
         rv_type = result['type']
         if rv_type not in self.typedef:
-            raise RuntimeError("Unknown type {} for function decl: {}".format(rv_type, node['decl']))
+            raise RuntimeError(
+                "Unknown type {} for function decl: {}"
+                .format(rv_type, node['decl']))
         result_typedef = self.typedef[rv_type]
         # XXX - make sure it exists
         used_types[result['type']] = result_typedef
@@ -1089,6 +1118,7 @@ class GenFunctions(object):
                 raise RuntimeError("%s not defined" % argtype)
 
     _skip_annotations = ['const', 'ptr', 'reference']
+
     def gen_annotations_decl(self, attrs, decl):
         """Append annotations from attrs onto decl in sorted order.
         Skip some that are already handled.
@@ -1183,10 +1213,12 @@ class VerifyAttrs(object):
             self.typedef[name] = util.Typedef(
                 name,
                 cpp_type=name,
-                cpp_to_c='static_cast<{C_const}%s *>(static_cast<{C_const}void *>({cpp_var}))' % cname,
+                cpp_to_c=('static_cast<{C_const}%s *>('
+                          'static_cast<{C_const}void *>({cpp_var}))' % cname),
                 c_type=cname,
                 # opaque pointer -> void pointer -> class instance pointer
-                c_to_cpp='static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({c_var}))' % name,
+                c_to_cpp=('static_cast<{C_const}%s{ptr}>('
+                          'static_cast<{C_const}void *>({c_var}))' % name),
                 c_fortran='type(C_PTR)',
                 f_type='type(%s)' % unname,
                 f_derived_type=unname,
@@ -1196,7 +1228,8 @@ class VerifyAttrs(object):
 
                 # return from C function
                 # f_c_return_decl='type(CPTR)' % unname,
-                f_return_code='{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})',
+                f_return_code=('{F_result}%{F_derived_member} = '
+                               '{F_C_name}({F_arg_c_call_tab})'),
 
                 py_statements=dict(
                     intent_in=dict(
@@ -1206,7 +1239,8 @@ class VerifyAttrs(object):
                         ),
                     intent_out=dict(
                         ctor=[
-                            '{PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});',
+                            ('{PyObject} * {py_var} = '
+                             'PyObject_New({PyObject}, &{PyTypeObject});'),
                             '{py_var}->{BBB} = {cpp_var};',
                             ]
                         ),
@@ -1214,7 +1248,8 @@ class VerifyAttrs(object):
                 # PY_ctor='PyObject_New({PyObject}, &{PyTypeObject})',
 
                 LUA_type='LUA_TUSERDATA',
-                LUA_pop='({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, "{LUA_metadata}")',
+                LUA_pop=('({LUA_userdata_type} *)luaL_checkudata'
+                         '({LUA_state_var}, 1, "{LUA_metadata}")'),
                 # LUA_push=None,  # XXX create a userdata object with metatable
                 # LUA_statements={},
 
