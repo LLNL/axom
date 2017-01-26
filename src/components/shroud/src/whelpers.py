@@ -113,7 +113,7 @@ pure function strlen_arr(s)
   enddo
   strlen_arr = i-1
 end function strlen_arr"""
-),
+    ),
 
     strlen_ptr=dict(
         private=['strlen_ptr'],

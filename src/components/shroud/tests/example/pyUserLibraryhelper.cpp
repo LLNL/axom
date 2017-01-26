@@ -31,7 +31,7 @@ int PP_ExClass1_from_Object(PyObject *obj, void **addr)
     // splicer begin class.ExClass1.helper.from_object
     if (obj->ob_type != &PP_ExClass1_Type) {
         // raise exception
-        return 0;	
+        return 0;
     }
     PP_ExClass1 * self = (PP_ExClass1 *) obj;
     *addr = self->BBB;
@@ -60,7 +60,7 @@ int PP_ExClass2_from_Object(PyObject *obj, void **addr)
     // splicer begin class.ExClass2.helper.from_object
     if (obj->ob_type != &PP_ExClass2_Type) {
         // raise exception
-        return 0;	
+        return 0;
     }
     PP_ExClass2 * self = (PP_ExClass2 *) obj;
     *addr = self->BBB;

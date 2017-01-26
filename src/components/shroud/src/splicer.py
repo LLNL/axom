@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import os
 
+
 def get_splicers(fname, out):
     """
     fname - input file name
@@ -18,13 +19,13 @@ def get_splicers(fname, out):
     str_push = 'splicer push'
     str_pop = 'splicer pop'
 
-    state_look  = 1
+    state_look = 1
     state_collect = 2
     state = state_look
 
     top = out
-    stack = [ top ]
-    
+    stack = [top]
+
     begin_tag = ''
 
     with open(fname, 'r') as fp:
@@ -57,31 +58,31 @@ def get_splicers(fname, out):
                         raise RuntimeError("Tag already exists - '%s'" % begin_tag)
                     top[begin_subtag] = save
                     top = out
-                    stack = [ top ]
+                    stack = [top]
                     state = state_look
                 else:
                     save.append(line.rstrip())
-                    
+
+
 def get_splicer_based_on_suffix(name, out):
         fileName, fileExtension = os.path.splitext(name)
-        if fileExtension in [ '.f', '.f90']:
+        if fileExtension in ['.f', '.f90']:
             d = out.setdefault('f', {})
             get_splicers(name, d)
-        elif fileExtension in [ '.c', '.cpp', '.hpp', '.cxx', '.hxx', '.cc', '.C' ]:
+        elif fileExtension in ['.c', '.cpp', '.hpp', '.cxx', '.hxx', '.cc', '.C']:
             d = out.setdefault('c', {})
             get_splicers(name, d)
-        elif fileExtension in [ '.py' ]:
+        elif fileExtension in ['.py']:
             d = out.setdefault('py', {})
             get_splicers(config, name, d)
-        elif fileExtension in [ '.lua' ]:
+        elif fileExtension in ['.lua']:
             d = out.setdefault('lua', {})
             get_splicers(config, name, d)
 
 
-#def print_tree(out):
-#    import json
-#    print(json.dumps(out, indent=4, sort_keys=True))
-                
+# def print_tree(out):
+#     import json
+#     print(json.dumps(out, indent=4, sort_keys=True))
 
 if __name__ == '__main__':
     import glob
@@ -92,10 +93,7 @@ if __name__ == '__main__':
         get_splicer_based_on_suffix(name, out)
     print(json.dumps(out, indent=4, sort_keys=True))
 
-
-    for name in [ 'fsplicer.f', 'csplicer.c', 'pysplicer.c' ]:
+    for name in ['fsplicer.f', 'csplicer.c', 'pysplicer.c']:
         out = {}
         get_splicers(os.path.join('..', 'tests', name), out)
         print(json.dumps(out, indent=4, sort_keys=True))
-
-

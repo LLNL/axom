@@ -13,14 +13,14 @@ import parse_decl
 fmt = string.Formatter()
 
 default_template = dict(
-#    C_name='{C_prefix}{class_lower}_{underscore_name}{function_suffix}',
+    # C_name='{C_prefix}{class_lower}_{underscore_name}{function_suffix}',
 
-#    C_header_filename = 'wrap{cpp_class}.h',
-#    C_impl_filename = 'wrap{cpp_class}.cpp',
+    # C_header_filename = 'wrap{cpp_class}.h',
+    # C_impl_filename = 'wrap{cpp_class}.cpp',
 
-#    F_name_impl = '{class_lower}_{underscore_name}{function_suffix}',
-#    F_name_method = '{underscore_name}{function_suffix}',
-#    F_name_generic = '{underscore_name}',
+    # F_name_impl = '{class_lower}_{underscore_name}{function_suffix}',
+    # F_name_method = '{underscore_name}{function_suffix}',
+    # F_name_generic = '{underscore_name}',
 )
 
 
@@ -31,11 +31,12 @@ def wformat(template, dct):
     except AttributeError as e:
         print(e)
         raise SystemExit('Error with template: ' + template)
-        
+
 
 def append_format(lst, template, dct):
     # shorthand, wrap fmt.vformat
     lst.append(wformat(template, dct))
+
 
 def eval_template(node, name, tname='', fmt=None):
     """fmt[name] = node[name] or option[name + tname + '_template']
@@ -51,7 +52,7 @@ def eval_template(node, name, tname='', fmt=None):
 
 # http://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-camel-case
 def un_camel(text):
-    """ Converts a CamelCase name into an under_score name. 
+    """ Converts a CamelCase name into an under_score name.
 
         >>> un_camel('CamelCase')
         'camel_case'
@@ -63,7 +64,7 @@ def un_camel(text):
     while pos < len(text):
         if text[pos].isupper():
             if pos-1 > 0 and text[pos-1].islower() or pos-1 > 0 and \
-            pos+1 < len(text) and text[pos+1].islower():
+               pos+1 < len(text) and text[pos+1].islower():
                 result.append("_%s" % text[pos].lower())
             else:
                 result.append(text[pos].lower())
@@ -71,6 +72,7 @@ def un_camel(text):
             result.append(text[pos])
         pos += 1
     return "".join(result)
+
 
 # http://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth
 def update(d, u):
@@ -81,6 +83,7 @@ def update(d, u):
         else:
             d[k] = u[k]
     return d
+
 
 def extern_C(output, position):
     """Create extern "C" guards for C++
@@ -98,6 +101,7 @@ def extern_C(output, position):
                 '#endif'
                 ])
 
+
 class WrapperMixin(object):
     """Methods common to all wrapping classes.
     """
@@ -106,8 +110,8 @@ class WrapperMixin(object):
 
     def _init_splicer(self, splicers):
         self.splicers = splicers
-        self.splicer_stack = [ splicers ]
-        self.splicer_names = [ ]
+        self.splicer_stack = [splicers]
+        self.splicer_names = []
         self.splicer_path = ''
 
     def _push_splicer(self, name):
@@ -185,7 +189,7 @@ class WrapperMixin(object):
         This makes it easy to reproduce the arguments.
         """
         typ = self.std_c_type(lang, arg, const, ptr)
-        return typ + ' ' + ( name or arg['name'] )
+        return typ + ' ' + (name or arg['name'])
 
 #####
 
@@ -258,12 +262,12 @@ class WrapperMixin(object):
         output.append(self.doxygen_cont + ' \\file %s' % fname)
         if cls:
             output.append(self.doxygen_cont +
-                          ' \\brief Shroud generated wrapper for %s class'
-                          % node['name'])
+                          ' \\brief Shroud generated wrapper for {} class'
+                          .format(node['name']))
         else:
             output.append(self.doxygen_cont +
-                          ' \\brief Shroud generated wrapper for %s library'
-                          % node['library'])
+                          ' \\brief Shroud generated wrapper for {} library'
+                          .format(node['library']))
         output.append(self.doxygen_end)
 
     def write_doxygen(self, output, docs):
@@ -301,7 +305,7 @@ class Typedef(object):
         typedef=None,         # Initialize from existing type
 
         cpp_type=None,        # Name of type in C++
-        cpp_to_c='{cpp_var}', # Expression to convert from C++ to C
+        cpp_to_c='{cpp_var}',  # Expression to convert from C++ to C
         cpp_header=None,      # Name of C++ header file required for implementation
                               # For example, if cpp_to_c was a function
         cpp_local_var=False,
@@ -322,28 +326,28 @@ class Typedef(object):
         f_args=None,          # Argument in Fortran wrapper to call C.
         f_module=None,        # Fortran modules needed for type  (dictionary)
         f_return_code=None,
-        f_kind = None,        # Fortran kind of type
-        f_cast = '{f_var}',   # Expression to convert to type
+        f_kind=None,          # Fortran kind of type
+        f_cast='{f_var}',     # Expression to convert to type
                               # e.g. intrinsics such as int and real
         f_statements={},
         f_helper={},          # helper functions to insert into module as PRIVATE
 
-        result_as_arg = None, # override fields when result should be treated as an argument
+        result_as_arg=None,   # override fields when result should be treated as an argument
 
         # Python
         PY_format='O',        # 'format unit' for PyArg_Parse
-        PY_PyTypeObject=None, # variable name of PyTypeObject instance
+        PY_PyTypeObject=None,  # variable name of PyTypeObject instance
         PY_PyObject=None,     # typedef name of PyObject instance
         PY_ctor=None,         # expression to create object.
                               # ex. PyBool_FromLong({rv})
-        PY_to_object=None,    # PyBuild - object = converter(address)
-        PY_from_object=None,  # PyArg_Parse - status = converter(object, address);
+        PY_to_object=None,    # PyBuild - object=converter(address)
+        PY_from_object=None,  # PyArg_Parse - status=converter(object, address);
         py_statements={},
 
         # Lua
-        LUA_type = 'LUA_TNONE',
-        LUA_pop = 'POP',
-        LUA_push = 'PUSH',
+        LUA_type='LUA_TNONE',
+        LUA_pop='POP',
+        LUA_push='PUSH',
         LUA_statements={},
         )
 
@@ -351,7 +355,7 @@ class Typedef(object):
         self.name = name
 #        for key, defvalue in self.defaults.items():
 #            setattr(self, key, defvalue)
-        self.__dict__.update(self.defaults) # set all default values
+        self.__dict__.update(self.defaults)  # set all default values
         self.update(kw)
 
     def update(self, d):
@@ -471,7 +475,7 @@ class Options(object):
         if d is None:
             d = self._to_dict()
         else:
-            d.update( self._to_dict())
+            d.update(self._to_dict())
         if self.__parent:
             self.__parent._to_full_dict(d)
         return d
@@ -484,14 +488,15 @@ def copy_function_node(node):
     new = node.copy()
 
     # Deep copy dictionaries
-    for field in [ 'args', 'attrs', 'result' ]:
+    for field in ['args', 'attrs', 'result']:
         new[field] = copy.deepcopy(node[field])
 
     # Add new Options in chain
-    for field in [ 'fmt', 'options' ]:
+    for field in ['fmt', 'options']:
         new[field] = Options(node[field])
 
     return new
+
 
 class XXXClassNode(object):
     """Represent a class.  Usually a C++ class.
@@ -554,7 +559,6 @@ class XXXFunctionNode(object):
         print('FunctionNode:', self.decl)
         print(self.result)
         print(self.args)
-        
 
 
 class ExpandedEncoder(json.JSONEncoder):
@@ -564,7 +568,7 @@ class ExpandedEncoder(json.JSONEncoder):
     def default(self, obj):
         if hasattr(obj, '_to_dict'):
             return obj._to_dict()
-         # Let the base class default method raise the TypeError
+        # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
 
 
@@ -572,7 +576,6 @@ if __name__ == '__main__':
     print(un_camel('incrementCount'))
     print(un_camel('local_function1'))
     print(un_camel('getHTTPResponseCode'))
-
 
     a = dict(name='aa', type='int', attrs=dict(ptr=True))
     b = dict(attrs=dict(len='somefunction'))
@@ -583,10 +586,9 @@ if __name__ == '__main__':
     update(b, a)
     print("CCCC", b)
 
-
     # Argument
     print("Test Typedef")
-    a = Typedef('top', base='new_base') #, bird='abcd')
+    a = Typedef('top', base='new_base')  # , bird='abcd')
     print(json.dumps(a, cls=ExpandedEncoder, sort_keys=True))
 
     # Option
@@ -598,7 +600,7 @@ if __name__ == '__main__':
 
     print(lev0.a)
     print(lev0.c2)
-    #print(lev0.z)
+    # print(lev0.z)
     print(lev1.a)
     print(lev1.z)
     print(lev1.c2)
@@ -618,7 +620,6 @@ if __name__ == '__main__':
     print("IN  c2", 'c2' in lev1)
     print("IN  z2", 'z2' in lev1)
     print("IN nosuch", 'nosuch' in lev1)
-
 
     print("FORMAT:", wformat("{a} {z} {c2} {z2}", lev1))
 

@@ -6,19 +6,20 @@ from __future__ import print_function
 import util
 from util import wformat, append_format
 
+
 def add_templates(options):
     options.update(dict(
-        LUA_module_name_template = '{library_lower}',
-        LUA_module_filename_template = 'lua{library}module.cpp',
-        LUA_header_filename_template = 'lua{library}module.hpp',
-        LUA_userdata_type_template = '{LUA_prefix}{cpp_class}_Type',
-        LUA_userdata_member_template = 'self',
-        LUA_module_reg_template = '{LUA_prefix}{library}_Reg',
-        LUA_class_reg_template = '{LUA_prefix}{cpp_class}_Reg',
-        LUA_metadata_template  = '{cpp_class}.metatable',
-        LUA_ctor_name_template = '{cpp_class}',
-        LUA_name_template = '{function_name}',
-        LUA_name_impl_template = '{LUA_prefix}{class_name}{underscore_name}',
+        LUA_module_name_template='{library_lower}',
+        LUA_module_filename_template='lua{library}module.cpp',
+        LUA_header_filename_template='lua{library}module.hpp',
+        LUA_userdata_type_template='{LUA_prefix}{cpp_class}_Type',
+        LUA_userdata_member_template='self',
+        LUA_module_reg_template='{LUA_prefix}{library}_Reg',
+        LUA_class_reg_template='{LUA_prefix}{cpp_class}_Reg',
+        LUA_metadata_template='{cpp_class}.metatable',
+        LUA_ctor_name_template='{cpp_class}',
+        LUA_name_template='{function_name}',
+        LUA_name_impl_template='{LUA_prefix}{class_name}{underscore_name}',
         ))
 
 
@@ -44,7 +45,7 @@ class Wrapl(util.WrapperMixin):
         fmt_library = self.tree['fmt']
 
         # Format variables
-        fmt_library.LUA_prefix        = options.get('LUA_prefix', 'l_')
+        fmt_library.LUA_prefix = options.get('LUA_prefix', 'l_')
         fmt_library.LUA_state_var = 'L'
         fmt_library.LUA_used_param_state = False
         util.eval_template(top, 'LUA_module_name')
@@ -119,7 +120,7 @@ lua_pushvalue({LUA_state_var}, -1);
  * metatable.__index = metatable
  */
 lua_setfield({LUA_state_var}, -2, "__index");
- 
+
 /* Set the methods to the metatable that should be accessed via object:func */
 #if LUA_VERSION_NUM < 502
 luaL_register({LUA_state_var}, NULL, {LUA_class_reg});
@@ -145,7 +146,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             if name in overloaded_methods:
                 overloaded_methods[name].append(function)
             else:
-                first = [ function ]
+                first = [function]
                 overloads.append(first)
                 overloaded_methods[name] = first
 
@@ -176,19 +177,19 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 
         CPP_subprogram = node['_subprogram']
 
-#        result = node['result']
-#        result_type = result['type']
-#        result_is_ptr = result['attrs'].get('ptr', False)
-#        result_is_ref = result['attrs'].get('reference', False)
+        # XXX       result = node['result']
+        # XXX       result_type = result['type']
+        # XXX       result_is_ptr = result['attrs'].get('ptr', False)
+        # XXX       result_is_ref = result['attrs'].get('reference', False)
 
         if node.get('return_this', False):
-#            result_type = 'void'
-#            result_is_ptr = False
+            # XXX           result_type = 'void'
+            # XXX           result_is_ptr = False
             CPP_subprogram = 'subroutine'
 
-#        result_typedef = self.typedef[result_type]
-        is_ctor  = node['attrs'].get('constructor', False)
-        is_dtor  = node['attrs'].get('destructor', False)
+        # XXX       result_typedef = self.typedef[result_type]
+        is_ctor = node['attrs'].get('constructor', False)
+        is_dtor = node['attrs'].get('destructor', False)
         if is_dtor:
             fmt.LUA_name = '__gc'
 
@@ -219,11 +220,10 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             all_calls.append(lua_function(function, CPP_subprogram, in_args[:], out_args))
             maxargs = max(maxargs, len(in_args))
 
-
         # Gather calls by number of arguments
-        by_count = [ [] for i in range(maxargs+1) ]
+        by_count = [[] for i in range(maxargs+1)]
         for a_call in all_calls:
-            by_count[ a_call.nargs ].append(a_call)
+            by_count[a_call.nargs].append(a_call)
 
         self.splicer_lines = []
         lines = self.splicer_lines
@@ -240,7 +240,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 
             # Find type of each argument
             itype_vars = []
-            for iarg in range(1,maxargs+1):
+            for iarg in range(1, maxargs+1):
                 itype_vars.append('SH_itype{}'.format(iarg))
                 fmt.itype_var = itype_vars[-1]
                 fmt.iarg = iarg
@@ -345,10 +345,9 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                 self.luaL_Reg_module.append(wformat('{{"{LUA_ctor_name}{function_suffix}", {LUA_name_impl}}},', fmt))
             else:
                 self.luaL_Reg_class.append(wformat('{{"{LUA_name}", {LUA_name_impl}}},', fmt))
-                
+
         else:
             self.luaL_Reg_module.append(wformat('{{"{LUA_name}", {LUA_name_impl}}},', fmt))
-
 
     def do_function(self, cls, luafcn, fmt):
         """
@@ -384,13 +383,13 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             CPP_subprogram = 'subroutine'
 
         result_typedef = self.typedef[result_type]
-        is_ctor  = node['attrs'].get('constructor', False)
-        is_dtor  = node['attrs'].get('destructor', False)
-#        is_const = result['attrs'].get('const', False)
-##-        if is_ctor:   # or is_dtor:
-##-            # XXX - have explicit delete
-##-            # need code in __init__ and __del__
-##-            return
+        is_ctor = node['attrs'].get('constructor', False)
+        is_dtor = node['attrs'].get('destructor', False)
+        #        is_const = result['attrs'].get('const', False)
+        # XXX        if is_ctor:   # or is_dtor:
+        # XXX            # XXX - have explicit delete
+        # XXX            # need code in __init__ and __del__
+        # XXX            return
 
         # XXX if a class, then knock off const since the PyObject
         # is not const, otherwise, use const from result.
@@ -404,7 +403,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         LUA_code = []  # call C++ function
         LUA_push = []  # push results
 
-#        post_parse = []
+        # post_parse = []
         cpp_call_list = []
 
         # find class object
@@ -418,10 +417,10 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 
         # parse arguments
         # call function based on number of default arguments provided
-#        default_calls = []   # each possible default call
-#        found_default = False
-#        if '_has_default_arg' in node:
-#            append_format(LUA_decl, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
+        # XXX default_calls = []   # each possible default call
+        # XXX found_default = False
+        # XXX if '_has_default_arg' in node:
+        # XXX     append_format(LUA_decl, 'int SH_nargs = lua_gettop({LUA_state_var});', fmt)
 
         # Only process nargs.
         # Each variation of default-arguments produces a new call.
@@ -442,24 +441,24 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             arg_typedef = self.typedef[arg['type']]
             fmt_arg.cpp_type = arg_typedef.cpp_type
             LUA_statements = arg_typedef.LUA_statements
-            if attrs['intent'] in [ 'inout', 'in']:
+            if attrs['intent'] in ['inout', 'in']:
 #                lua_pop = wformat(arg_typedef.LUA_pop, fmt_arg)
                 # lua_pop is a C++ expression
                 fmt_arg.c_var = wformat(arg_typedef.LUA_pop, fmt_arg)
                 lua_pop = wformat(arg_typedef.c_to_cpp, fmt_arg)
-                fmt_arg.LUA_index += 1 
+                fmt_arg.LUA_index += 1
 
-            if attrs['intent'] in [ 'inout', 'out']:
+            if attrs['intent'] in ['inout', 'out']:
                 # output variable must be a pointer
                 # XXX - fix up for strings
-#                format, vargs = self.intent_out(arg_typedef, fmt_arg, post_call)
-#                build_format.append(format)
-#                build_vargs.append('*' + vargs)
+                # XXX  format, vargs = self.intent_out(arg_typedef, fmt_arg, post_call)
+                # XXX  build_format.append(format)
+                # XXX  build_vargs.append('*' + vargs)
 
-                #append_format(LUA_push, arg_typedef.LUA_push, fmt_arg)
+                # append_format(LUA_push, arg_typedef.LUA_push, fmt_arg)
                 fmt.LUA_used_param_state = True
                 tmp = wformat(arg_typedef.LUA_push, fmt_arg)
-                LUA_push.append( tmp + ';' )
+                LUA_push.append(tmp + ';')
 
             # argument for C++ function
             lang = 'cpp_type'
@@ -480,7 +479,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             else:
                 decl_suffix = ';'
             LUA_decl.append(self.std_c_decl(lang, arg, const=arg_const, ptr=ptr) + decl_suffix)
-            
+
             cpp_call_list.append(fmt_arg.cpp_var)
 
         # call with arguments
@@ -523,7 +522,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             fmt.c_var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
             fmt.LUA_used_param_state = True
             tmp = wformat(result_typedef.LUA_push, fmt)
-            LUA_push.append( tmp + ';' )
+            LUA_push.append(tmp + ';')
 
         lines = self.splicer_lines
         lines.extend(LUA_decl)
@@ -626,12 +625,12 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 
 
 class lua_function(object):
-    """Gather information used to write a wrapper for 
+    """Gather information used to write a wrapper for
     and overloaded/default-argument function
     """
     def __init__(self, function, subprogram, inargs, outargs):
         self.function = function
-        self.subprogram = subprogram # 'function' or 'subroutine'
+        self.subprogram = subprogram  # 'function' or 'subroutine'
         self.nargs = len(inargs)
         self.nresults = len(outargs)
         self.inargs = inargs

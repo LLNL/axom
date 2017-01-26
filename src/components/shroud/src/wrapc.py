@@ -12,6 +12,7 @@ from util import append_format
 
 wformat = util.wformat
 
+
 class Wrapc(util.WrapperMixin):
     """Generate C bindings for C++ classes
 
@@ -77,7 +78,7 @@ class Wrapc(util.WrapperMixin):
 #        if lang not in [ 'c_type', 'cpp_type' ]:
 #            raise RuntimeError
         typ = self._c_type(lang, arg)
-        return typ + ' ' + ( name or arg['name'] )
+        return typ + ' ' + (name or arg['name'])
 
     def wrap_library(self):
         fmt_library = self.tree['fmt']
@@ -107,7 +108,7 @@ class Wrapc(util.WrapperMixin):
         else:
             self.wrap_functions(library)
         c_header = fmt.C_header_filename
-        c_impl   = fmt.C_impl_filename
+        c_impl = fmt.C_impl_filename
         self.write_header(library, cls, c_header)
         self.write_impl(library, cls, c_header, c_impl)
 
@@ -138,7 +139,7 @@ class Wrapc(util.WrapperMixin):
                 ])
         # headers required by typedefs
         if self.header_typedef_include:
-#            output.append('// header_typedef_include')
+            # output.append('// header_typedef_include')
             output.append('')
             headers = self.header_typedef_include.keys()
             self.write_headers(headers, output)
@@ -155,10 +156,10 @@ class Wrapc(util.WrapperMixin):
         names.sort()
         for name in names:
             output.append('struct s_{C_type_name};\ntypedef struct s_{C_type_name} {C_type_name};'.
-                     format(C_type_name=name))
+                          format(C_type_name=name))
         output.append('')
         self._create_splicer('C_definition', output)
-        output.extend(self.header_proto_c);
+        output.extend(self.header_proto_c)
         output.extend([
                 '',
                 '#ifdef __cplusplus',
@@ -215,7 +216,7 @@ class Wrapc(util.WrapperMixin):
                 output.append('#include %s' % header)
             else:
                 output.append('#include "%s"' % header)
-        
+
     def wrap_class(self, node):
         self.log.write("class {1[name]}\n".format(self, node))
         name = node['name']
@@ -282,8 +283,8 @@ class Wrapc(util.WrapperMixin):
 
         result_typedef = self.typedef[result_type]
         result_is_const = result['attrs'].get('const', False)
-        is_ctor  = node['attrs'].get('constructor', False)
-        is_dtor  = node['attrs'].get('destructor', False)
+        is_ctor = node['attrs'].get('constructor', False)
+        is_dtor = node['attrs'].get('destructor', False)
         is_const = node['attrs'].get('const', False)
 
         if result_typedef.c_header:
@@ -308,7 +309,7 @@ class Wrapc(util.WrapperMixin):
             # object pointer
             fmt.CPP_this_call = fmt.CPP_this + '->'  # call method syntax
             arg_dict = dict(name=fmt_func.C_this,
-                            type=cls['name'], 
+                            type=cls['name'],
                             attrs=dict(ptr=True,
                                        const=is_const))
             C_this_type = self._c_type('c_type', arg_dict)
@@ -319,8 +320,8 @@ class Wrapc(util.WrapperMixin):
             fmt.CPP_this_call = ''  # call function syntax
 
         result_arg = None  # indicate which argument contains function result, usually none
-        pre_call   = []    # list of temporary variable declarations
-        post_call  = []
+        pre_call = []      # list of temporary variable declarations
+        post_call = []
 
 #
 #    c_var     - argument to C function  (wrapper function)
@@ -347,14 +348,14 @@ class Wrapc(util.WrapperMixin):
             if c_attrs.get('_is_result', False):
                 arg_call = False
                 result_arg = arg
-                slist = [ 'result' ]
+                slist = ['result']
             else:
                 arg_call = arg
                 fmt_arg.cpp_var = fmt_arg.c_var      # name in c++ call.
-                slist = [ ]
-                if c_attrs['intent'] in [ 'inout', 'in']:
+                slist = []
+                if c_attrs['intent'] in ['inout', 'in']:
                     slist.append('intent_in')
-                if c_attrs['intent'] in [ 'inout', 'out']:
+                if c_attrs['intent'] in ['inout', 'out']:
                     slist.append('intent_out')
 
             proto_list.append(self._c_decl('c_type', arg))
@@ -377,31 +378,31 @@ class Wrapc(util.WrapperMixin):
             have_cpp_local_var = arg_typedef.cpp_local_var
             for intent in slist:
                 have_cpp_local_var = have_cpp_local_var or \
-                    c_statements.get(intent,{}).get('cpp_local_var', False)
+                    c_statements.get(intent, {}).get('cpp_local_var', False)
             if have_cpp_local_var:
                 fmt_arg.cpp_var = 'SH_' + fmt_arg.c_var
 
             for intent in slist:
-#                pre_call.append('// intent=%s' % intent)
+                # pre_call.append('// intent=%s' % intent)
                 if len_trim:
-                    cmd_list = c_statements.get(intent,{}).get('pre_call_trim',[])
+                    cmd_list = c_statements.get(intent, {}).get('pre_call_trim', [])
                 else:
-                    cmd_list = c_statements.get(intent,{}).get('pre_call',[])
+                    cmd_list = c_statements.get(intent, {}).get('pre_call', [])
                 if cmd_list:
                     for cmd in cmd_list:
                         append_format(pre_call, cmd, fmt_arg)
 
-                cmd_list = c_statements.get(intent,{}).get('post_call',[])
+                cmd_list = c_statements.get(intent, {}).get('post_call', [])
                 if cmd_list:
                     # pick up c_str() from cpp_to_c
                     if intent == 'result':
                         fmt_arg.cpp_var = fmt_arg.rv
                     fmt_arg.cpp_val = wformat(arg_typedef.cpp_to_c, fmt_arg)
-#                    append_format(post_call, '// c_var={c_var}  cpp_var={cpp_var}  cpp_val={cpp_val}', fmt_arg)
+                    # append_format(post_call, '// c_var={c_var}  cpp_var={cpp_var}  cpp_val={cpp_val}', fmt_arg)
                     for cmd in cmd_list:
                         append_format(post_call, cmd, fmt_arg)
 
-                cpp_header = c_statements.get(intent,{}).get('cpp_header',None)
+                cpp_header = c_statements.get(intent, {}).get('cpp_header', None)
                 if cpp_header:
                     # include any dependent header in generated source
                     self.header_impl_include[cpp_header] = True
@@ -410,7 +411,7 @@ class Wrapc(util.WrapperMixin):
                 # cpp_local_var should only be set if c_statements are not used
                 if arg_typedef.c_statements:
                     raise RuntimeError("c_statements and cpp_local_var are both defined for {}".format(arg_typedef.name))
-                append_format(pre_call, '{C_const}{cpp_type}{ptr} {cpp_var} = ' + 
+                append_format(pre_call, '{C_const}{cpp_type}{ptr} {cpp_var} = ' +
                               arg_typedef.c_to_cpp + ';', fmt_arg)
 
             if arg_call:
@@ -456,7 +457,7 @@ class Wrapc(util.WrapperMixin):
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.function_name, None)
         if 'C_code' in options:
-            C_code = [   wformat(options.C_code, fmt) ]
+            C_code = [wformat(options.C_code, fmt)]
         elif splicer_code:
             C_code = splicer_code
         else:
@@ -511,7 +512,6 @@ class Wrapc(util.WrapperMixin):
             if return_line:
                 C_code.append(return_line)
 
-
         self.header_proto_c.append('')
         self.header_proto_c.append(wformat('{C_return_type} {C_name}({C_prototype});',
                                            fmt))
@@ -526,14 +526,16 @@ class Wrapc(util.WrapperMixin):
         impl.append(wformat('{C_return_type} {C_name}({C_prototype})', fmt))
         impl.append('{')
         if cls:
-            impl.append(fmt.C_object )
-        self._create_splicer(fmt_func.underscore_name + 
+            impl.append(fmt.C_object)
+        self._create_splicer(fmt_func.underscore_name +
                              fmt_func.function_suffix, impl, C_code)
         impl.append('}')
 
     def write_helper_files(self):
-        output = [ whelpers.FccHeaders ]
-        self.write_output_file('shroudrt.hpp', self.config.c_fortran_dir, output)
+        output = [whelpers.FccHeaders]
+        self.write_output_file('shroudrt.hpp',
+                               self.config.c_fortran_dir, output)
 
-        output = [ whelpers.FccCSource ]
-        self.write_output_file('shroudrt.cpp', self.config.c_fortran_dir, output)
+        output = [whelpers.FccCSource]
+        self.write_output_file('shroudrt.cpp',
+                               self.config.c_fortran_dir, output)

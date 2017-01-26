@@ -15,9 +15,11 @@ and duplicate argument names are check later.
 
 import parsley
 
+
 def add_to_dict(d, key, value):
     d[key] = value
     return d
+
 
 x = parsley.makeGrammar("""
 name = < (letter | '_') (letter | digit | '_' | ':')* >
@@ -79,7 +81,7 @@ if __name__ == '__main__':
     for test in [
         "const",
         "",
-        ]:
+    ]:
         r = x(test).qualifier()
         print('qualifier: "{0}"'.format(test))
         json.dump(r, sys.stdout, sort_keys=True, indent=4)
@@ -89,7 +91,7 @@ if __name__ == '__main__':
         "*",
         "&",
         "",
-        ]:
+    ]:
         r = x(test).pointer()
         print('pointer: "{0}"'.format(test))
         print(r)
@@ -110,7 +112,7 @@ if __name__ == '__main__':
         "+dimension",
         "+dimension(*)",
         "+dimension(len)",
-        ]:
+    ]:
         r = x(test).attr()
         print('attr: "{0}"'.format(test))
         json.dump(r, sys.stdout, sort_keys=True, indent=4)
@@ -120,7 +122,7 @@ if __name__ == '__main__':
         "int arg",
         "const int arg",
         "badtype arg",
-        ]:
+    ]:
         r = x(test).declarator()
         print('declarator: "{0}"'.format(test))
         json.dump(r, sys.stdout, sort_keys=True, indent=4)
@@ -134,7 +136,7 @@ if __name__ == '__main__':
         'int arg +in +value',
         'const string& getName',
         'std::string getName',
-        ]:
+    ]:
         r = x(test).parameter_list()
         print('parameter_list: "{0}"'.format(test))
         json.dump(r, sys.stdout, sort_keys=True, indent=4)
@@ -145,7 +147,7 @@ if __name__ == '__main__':
         "(int arg1)",
         "(int arg1, double arg2)",
         "(int arg1, double arg2 = 0.0)",
-        ] :
+    ]:
         r = x(test).argument_list()
         print('argument_list: "{0}"'.format(test))
         json.dump(r, sys.stdout, sort_keys=True, indent=4)
@@ -161,10 +163,8 @@ if __name__ == '__main__':
         "const std::string& getName() const",
         "const void foo(int arg1+in, double arg2+out)",
         "void new() + constructor",
-        ]:
+    ]:
         r = x(test).decl()
         print('decl: "{0}"'.format(test))
         json.dump(r, sys.stdout, sort_keys=True, indent=4)
         print('\n')
-
-

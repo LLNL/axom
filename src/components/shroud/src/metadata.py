@@ -1,3 +1,5 @@
+# https://packaging.python.org/single_source_version/
+
 # __variables__ with double-quoted values will be available in setup.py:
 __version__ = "0.1.0"
 version_info = (0,1,0,"beta",0)
