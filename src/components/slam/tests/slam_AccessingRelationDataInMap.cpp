@@ -10,98 +10,167 @@
 
 
 /**
- * \file testStaticVariableRelation.cxx
+ * \file slam_AccessingRelationDataInMap.cpp
  *
- *  Created on: Apr 29, 2015
- *      Author: weiss27
+ * \brief This file tests Sets, Relations and Maps working together.
+ *
+ * \note There are no maps.
  */
 
 
 #include <iostream>
 #include <iterator>
+#include <sstream>
 
 #include "gtest/gtest.h"
 
+#include "slic/slic.hpp"
 
+#include "slam/ModularInt.hpp"
 #include "slam/RangeSet.hpp"
 #include "slam/Relation.hpp"
-#include "slam/StaticVariableRelation.hpp"
+
+#include "slam/SizePolicies.hpp"
+
+#include "slam/IndirectionPolicies.hpp"
+#include "slam/StaticRelation.hpp"
+
 #include "slam/Map.hpp"
 
 
-using axom::slam::RangeSet;
-using axom::slam::StaticVariableRelation;
+namespace {
 
-typedef RangeSet::ElementType   ElementType;
-typedef RangeSet::PositionType  SetPosition;
+namespace slam = axom::slam;
+namespace policies = axom::slam::policies;
 
-const SetPosition FROMSET_SIZE = 10;
-const SetPosition TOSET_SIZE = 8;
+  using slam::RangeSet;
+  using slam::Relation;
 
-template<typename StrType, typename VecType>
-void printVector(StrType const& msg, VecType const& vec)
-{
-  std::cout << "\n** " << msg << "\n\t";
-  std::cout << "Array of size " << vec.size() << ": ";
-  std::copy(vec.begin(), vec.end(), std::ostream_iterator<SetPosition>(std::cout, " "));
-}
+  typedef RangeSet::ElementType     ElementType;
+  typedef RangeSet::PositionType    PositionType;
+  typedef PositionType              SetPosition;
+  typedef std::vector<SetPosition>  IndexVec;
 
-template<typename VecType>
-void generateIncrementingRelations(VecType* begins, VecType* offsets)
-{
-  VecType& beginsVec = *begins;
-  VecType& offsetsVec = *offsets;
+  const PositionType FROMSET_SIZE = 10;
+  const PositionType TOSET_SIZE = 8;
 
-  SetPosition curIdx = SetPosition();
+  typedef policies::STLVectorIndirection<PositionType, PositionType>        STLIndirection;
+  typedef policies::ArrayIndirection<PositionType, PositionType>            ArrayIndirection;
 
-  for(SetPosition i = 0; i < FROMSET_SIZE; ++i)
+  typedef policies::VariableCardinalityPolicy<PositionType, STLIndirection> VariableCardinalityPolicy;
+
+  typedef slam::StaticRelation<VariableCardinalityPolicy, STLIndirection,
+      slam::RangeSet, slam::RangeSet>              StaticVariableRelationType;
+
+
+  // Use a slam::ModularInt type for more interesting test data
+  typedef policies::CompileTimeSizeHolder<PositionType, TOSET_SIZE >  CTSize;
+  typedef slam::ModularInt< CTSize >                                  FixedModularInt;
+
+
+  PositionType elementCardinality(PositionType fromPos)
   {
-    beginsVec[i] = curIdx;
-    for(SetPosition j = 0; j <= i; ++j)
-    {
-      offsetsVec.push_back( j % TOSET_SIZE );
-      ++curIdx;
-    }
+    return fromPos;
   }
-  beginsVec[FROMSET_SIZE] = curIdx;
+
+  PositionType relationData(PositionType fromPos, PositionType toPos)
+  {
+    return FixedModularInt(fromPos + toPos);
+  }
+
+
+  template<typename StrType, typename VecType>
+  void printVector(StrType const& msg, VecType const& vec)
+  {
+    std::stringstream sstr;
+
+    sstr << "\n** " << msg << "\n\t";
+    sstr << "Array of size " << vec.size() << ": ";
+    std::copy(vec.begin(), vec.end(), std::ostream_iterator<PositionType>(sstr, " "));
+
+    SLIC_INFO( sstr.str() );
+  }
+
+
+  template<typename VecType>
+  void generateIncrementingRelations(VecType* begins, VecType* offsets)
+  {
+    VecType& beginsVec = *begins;
+    VecType& offsetsVec = *offsets;
+
+    PositionType curIdx = PositionType();
+
+    for(PositionType i = 0; i < FROMSET_SIZE; ++i)
+    {
+      beginsVec.push_back( curIdx );
+      for(PositionType j = 0; j < elementCardinality(i); ++j)
+      {
+        offsetsVec.push_back( relationData(i,j) );
+        ++curIdx;
+      }
+    }
+    beginsVec.push_back ( curIdx );
+  }
+
 }
 
 TEST(gtest_slam_set_relation_map,access_pattern)
 {
-  std::cout << "\n****** Testing accessing relation data." << std::endl;
+  SLIC_INFO("Testing accessing relation data.");
 
-  RangeSet fromSet(FROMSET_SIZE);
-  RangeSet toSet(TOSET_SIZE);
+  IndexVec offsets, rdata;
+  generateIncrementingRelations(&offsets, &rdata);
 
-  StaticVariableRelation incrementingRel(&fromSet, &toSet);
-
-  typedef StaticVariableRelation::RelationVec IndexVec;
-  IndexVec begins(FROMSET_SIZE + 1);
-  IndexVec offsets;
-  generateIncrementingRelations(&begins, &offsets);
-  incrementingRel.bindRelationData(begins, offsets);
+  RangeSet fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
+  StaticVariableRelationType incrementingRel(&fromSet, &toSet);
+  incrementingRel.setOffsets(fromSet.size(), &offsets);
+  incrementingRel.setRelationData(rdata.size(), &rdata);
 
 
   // Note: Nothing requires the relations elements to be unique -- the relation can still be valid with duplicates
-  EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
+  EXPECT_TRUE(incrementingRel.isValid(true));
 
-  std::cout << "\n\tLooking at relation's stored values...";
+  SLIC_INFO("-- Looking at relation's stored values...");
   for(SetPosition fromPos = SetPosition(); fromPos < fromSet.size(); ++fromPos)
   {
-    std::cout << "\n\tInspecting element " << fromSet[fromPos]
-              << " in position " << fromPos << " of first set.";
+    SLIC_INFO("--Inspecting element "
+        << fromSet[fromPos]
+        << " in position " << fromPos << " of first set.");
 
     for(SetPosition idx = 0; idx< incrementingRel.size( fromPos ); ++idx)
     {
       SetPosition posInToSet_actual = incrementingRel[fromPos][idx];
-      SetPosition posInToSet_expected = idx % toSet.size();
-      EXPECT_EQ( posInToSet_expected, posInToSet_actual) << "incrementing relation's value was incorrect";
+      SetPosition posInToSet_expected = relationData(fromPos,idx);
+      EXPECT_EQ( posInToSet_expected, posInToSet_actual);
 
-      std::cout << "\n\t\t pos: " << idx
-                << " ToSet position: " << incrementingRel[fromPos][idx]
-                << " ToSet element " << toSet[ incrementingRel[fromPos][idx] ]
+      SLIC_INFO("-- \t pos: "
+          << idx
+          << " ToSet position: " << incrementingRel[fromPos][idx]
+          << " ToSet element " << toSet[ incrementingRel[fromPos][idx] ] );
       ;
     }
   }
-  std::cout << "\n****** done." << std::endl;
+  SLIC_INFO("done.");
+}
+
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using axom::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  // create & initialize test logger. finalized when exiting main scope
+  UnitTestLogger logger;
+
+  // axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
+
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

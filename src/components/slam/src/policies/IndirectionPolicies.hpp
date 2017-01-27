@@ -92,10 +92,11 @@ namespace policies {
 
     bool                              hasIndirection() const { return m_arrBuf != AXOM_NULLPTR; }
 
-    inline bool                       isValid( PositionType size,
-        PositionType,
-        PositionType,
-        bool AXOM_DEBUG_PARAM(verboseOutput = false)) const
+    inline bool                       isValid(
+      PositionType size,
+      PositionType AXOM_NOT_USED(offset),
+      PositionType AXOM_NOT_USED(stride),
+      bool verboseOutput = false) const
     {
       // set of zero size is always valid
       if(size == 0)
@@ -147,35 +148,49 @@ namespace policies {
 
     bool                              hasIndirection() const { return m_vecBuf != AXOM_NULLPTR; }
 
-    inline bool                       isValid(PositionType size,
-        PositionType offset,
-        PositionType stride,
-        bool AXOM_DEBUG_PARAM(verboseOutput = false)) const
+    inline bool                       isValid(
+      PositionType size,
+      PositionType offset,
+      PositionType stride,
+      bool verboseOutput = false) const
     {
       // If set has zero size, we are always valid (even if indirection buffer is null)
       if(size == 0)
         return true;
 
+      bool bValid = true;
+
       // Otherwise, check whether the set has elements, but the array ptr is null
-      bool bValid = hasIndirection();
-      SLIC_CHECK_MSG(!verboseOutput || bValid,
-          "Vector-based indirection set with non-zero size (size="
-          << size << ") requires valid data buffer, but buffer pointer was null.");
+      if( !hasIndirection() )
+      {
+        if(verboseOutput)
+        {
+          SLIC_DEBUG("Vector-based indirection set with non-zero size (size="
+              << size << ") requires valid data buffer, but buffer pointer was null.");
+        }
 
-      if(!bValid)
-        return false;
+        bValid = false;
+      }
+      else
+      {
+        // Finally, check that the underlying vector has sufficient storage for all set elements
+        // Note that it is valid for the data buffer to have more space than the set's positions
+        PositionType firstElt = offset;
+        PositionType lastElt = (size - 1) * stride + offset;
+        PositionType vecSize = m_vecBuf->size();
 
-      // Finally, check that the underlying vector has sufficient storage for all set elements
-      // Note that it is valid for the data buffer to have more space than the set's positions
-      PositionType firstElt = offset;
-      PositionType lastElt = (size - 1) * stride + offset;
-      PositionType vecSize = m_vecBuf->size();
-
-      bValid = (firstElt < vecSize) && (lastElt < vecSize);
-      SLIC_CHECK_MSG(!verboseOutput || bValid,
-          "Data buffer in vector-based IndirectionSet must be large enough to hold all elements of the set. "
-          << "Underlying buffer size is " << vecSize << ", and set's range is from "
-          << "positions " << firstElt << " to " << lastElt << ".");
+        bool isRangeValid = (firstElt < vecSize) && (lastElt < vecSize);
+        if(!isRangeValid)
+        {
+          if(verboseOutput)
+          {
+            SLIC_DEBUG("Data buffer in vector-based IndirectionSet must be large enough "
+                << " to hold all elements of the set. Underlying buffer size is " << vecSize
+                << ", and set's range is from " << "positions " << firstElt << " to " << lastElt << ".");
+          }
+          bValid = false;
+        }
+      }
 
       return bValid;
     }

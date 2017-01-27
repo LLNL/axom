@@ -20,10 +20,6 @@
 #ifndef SLAM_STATIC_VARIABLE_RELATION_HPP_
 #define SLAM_STATIC_VARIABLE_RELATION_HPP_
 
-#ifndef SLAM_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
-//  #define SLAM_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
-#endif
-
 
 #include <vector>
 
@@ -55,10 +51,10 @@ namespace slam    {
     typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>  RelationVecConstIteratorPair;
 #endif // AXOM_USE_BOOST
 
-    typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>      // TODO: change this to a compile time size if/when parent is compile time
-        , policies::RuntimeOffsetHolder<Set::PositionType>
-        , policies::StrideOne<Set::PositionType>
-        , policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
+    typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>,      // TODO: change this to a compile time size if/when parent is compile time
+        policies::RuntimeOffsetHolder<Set::PositionType>,
+        policies::StrideOne<Set::PositionType>,
+        policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
 
   public:
     StaticVariableRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet);

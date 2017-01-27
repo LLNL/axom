@@ -10,9 +10,9 @@
 
 
 /**
- * \file testStaticVariableRelation.cxx
+ * \file slam_relation_StaticVariable.cpp
  *
- * \brief Unit tests for Slam's StaticConstantRelation class
+ * \brief Unit tests for Slam's StaticRelation class configured with variable per-element cardinality
  */
 
 
@@ -26,21 +26,53 @@
 
 #include "slic/slic.hpp"
 
+#include "slam/ModularInt.hpp"
 #include "slam/RangeSet.hpp"
 #include "slam/Relation.hpp"
-#include "slam/StaticVariableRelation.hpp"
 
+#include "slam/IndirectionPolicies.hpp"
+#include "slam/StaticRelation.hpp"
 
 namespace {
-  using axom::slam::RangeSet;
-  using axom::slam::StaticVariableRelation;
-  typedef StaticVariableRelation::RelationVec IndexVec;
 
-  typedef RangeSet::ElementType               ElementType;
-  typedef RangeSet::PositionType              PositionType;
+namespace slam = axom::slam;
+namespace policies = axom::slam::policies;
 
-  const PositionType FROMSET_SIZE = 5;
+  using slam::RangeSet;
+  using slam::Relation;
+
+  typedef RangeSet::ElementType     ElementType;
+  typedef RangeSet::PositionType    PositionType;
+
+  typedef PositionType              SetPosition;
+  typedef std::vector<SetPosition>  IndexVec;
+
+
+  const PositionType FROMSET_SIZE = 7;
   const PositionType TOSET_SIZE = 8;
+
+  typedef policies::STLVectorIndirection<PositionType, PositionType>        STLIndirection;
+  typedef policies::ArrayIndirection<PositionType, PositionType>            ArrayIndirection;
+
+  typedef policies::VariableCardinalityPolicy<PositionType, STLIndirection> VariableCardinalityPolicy;
+
+  typedef slam::StaticRelation<VariableCardinalityPolicy, STLIndirection,
+      slam::RangeSet, slam::RangeSet>              StaticVariableRelationType;
+
+  // Use a slam::ModularInt type for more interesting test data
+  typedef policies::CompileTimeSizeHolder<int, TOSET_SIZE > CTSize;
+  typedef slam::ModularInt< CTSize >                        FixedModularInt;
+
+
+  PositionType elementCardinality(PositionType fromPos)
+  {
+    return fromPos;
+  }
+
+  PositionType relationData(PositionType fromPos, PositionType toPos)
+  {
+    return FixedModularInt(fromPos + toPos);
+  }
 
 
   template<typename StrType, typename VecType>
@@ -66,26 +98,146 @@ namespace {
 
     for(PositionType i = 0; i < FROMSET_SIZE; ++i)
     {
-      beginsVec[i] = curIdx;
-      for(PositionType j = 0; j <= i; ++j)
+      beginsVec.push_back( curIdx );
+      for(PositionType j = 0; j < elementCardinality(i); ++j)
       {
-        offsetsVec.push_back( j % TOSET_SIZE );
+        offsetsVec.push_back( relationData(i,j) );
         ++curIdx;
       }
     }
-    beginsVec[FROMSET_SIZE] = curIdx;
+    beginsVec.push_back ( curIdx );
   }
 
 
-}
 
+  /**
+   * \brief Traverses the relation's entities using the double subscript access API
+   *
+   * \note Assumes that the relation data has been set using the generateIncrementingRelations() function
+   */
+  template<typename RelationType>
+  void traverseRelation_doubleSubscript(RelationType& rel)
+  {
+    SLIC_INFO("Traversing relation data using double subscript: " );
+    for(PositionType fromPos = 0; fromPos < rel.fromSet()->size(); ++fromPos)
+    {
+      const PositionType fromSize = rel.size(fromPos);
+      EXPECT_EQ( elementCardinality(fromPos), fromSize );
+
+      for(int toPos = 0; toPos < fromSize; ++toPos)
+      {
+        PositionType actualVal = rel[fromPos][toPos];
+
+        EXPECT_EQ(relationData(fromPos,toPos), actualVal);
+      }
+    }
+  }
+
+  /**
+   * \brief Traverses relation using separated subscript operators
+   *
+   * The first subscript operator gets the set of entities in the ToSet that are mapped to the
+   * given element of the relation's FromSet
+   *
+   * \note Assumes that the relation data has been set using the generateIncrementingRelations() function
+   */
+  template<typename RelationType>
+  void traverseRelation_delayedSubscript(RelationType& rel)
+  {
+    SLIC_INFO("Traversing relation data using delayed second subscript: " );
+    for(PositionType fromPos = 0; fromPos < rel.fromSet()->size(); ++fromPos)
+    {
+      const PositionType fromSize = rel.size(fromPos);
+      EXPECT_EQ( elementCardinality(fromPos), fromSize );
+
+      typename RelationType::RelationSet set = rel[fromPos];
+      for(int toPos = 0; toPos < set.size(); ++toPos)
+      {
+        PositionType actualVal = rel[fromPos][toPos];
+        EXPECT_EQ(relationData(fromPos,toPos), actualVal);
+      }
+    }
+  }
+
+  /**
+   * \brief Traverses relation using the iterator API (begin()/end() )
+   *
+   * \note The iterator API depends on boost
+   * \note Assumes that the relation data has been set using the generateIncrementingRelations() function
+   */
+  template<typename RelationType>
+  void iterateRelation_begin_end(RelationType& rel)
+  {
+#ifdef AXOM_USE_BOOST
+    typedef typename RelationType::FromSetType      FromSet;
+    typedef typename FromSet::iterator              FromSetIter;
+
+    typedef typename RelationType::RelationIterator RelIter;
+
+    SLIC_INFO("Traversing relation data using iterator begin()/end() functions");
+    for(FromSetIter sIt = rel.fromSet()->begin(), sItEnd = rel.fromSet()->end(); sIt != sItEnd; ++sIt)
+    {
+      PositionType actualSize = rel.size( *sIt);
+
+      PositionType fromSetEltNum = std::distance(rel.fromSet()->begin(), sIt);
+      EXPECT_EQ( elementCardinality(fromSetEltNum), actualSize );
+
+      RelIter toSetBegin = rel.begin(*sIt);
+      RelIter toSetEnd   = rel.end(*sIt);
+      for(RelIter relIt = toSetBegin; relIt != toSetEnd; ++relIt)
+      {
+        PositionType toSetEltNum = std::distance(toSetBegin, relIt);
+        ASSERT_EQ( relationData(fromSetEltNum,toSetEltNum), *relIt);
+      }
+    }
+#else
+    SLIC_INFO("Skipping iterator tests when boost unavailable");
+#endif
+  }
+
+  /**
+   * \brief Traverses relation using the iterator range API
+   *
+   * \note The iterator API depends on boost
+   * \note Assumes that the relation data has been set using the generateIncrementingRelations() function
+   */
+  template<typename RelationType>
+  void iterateRelation_range(RelationType& rel)
+  {
+#ifdef AXOM_USE_BOOST
+    typedef typename RelationType::FromSetType          FromSet;
+    typedef typename FromSet::iterator                  FromSetIter;
+    typedef typename FromSet::iterator_pair             FromSetIterPair;
+
+    typedef typename RelationType::RelationIterator     RelIter;
+    typedef typename RelationType::RelationIteratorPair RelIterPair;
+
+    SLIC_INFO("Traversing relation data using iterator range() functions");
+    FromSetIterPair itPair = rel.fromSet()->range();
+    for(FromSetIter sIt = itPair.first; sIt != itPair.second; ++sIt)
+    {
+      PositionType fromSetEltNum = std::distance(itPair.first, sIt);
+
+      RelIterPair toSetItPair = rel.range(*sIt);
+      for(RelIter relIt = toSetItPair.first; relIt != toSetItPair.second; ++relIt)
+      {
+        PositionType toSetEltNum = std::distance(toSetItPair.first, relIt);
+        ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
+      }
+    }
+#else
+    SLIC_INFO("Skipping iterator tests when boost unavailable");
+#endif
+  }
+
+} // end anonymous namespace
 TEST(gtest_slam_static_variable_relation,construct_empty)
 {
-  SLIC_INFO("Testing empty relation.  isValid() should be true.");
+  SLIC_INFO("Testing empty relation.  isValid() should be false.");
 
-  StaticVariableRelation emptyRel;
+  StaticVariableRelationType emptyRel;
 
-  EXPECT_TRUE(emptyRel.isValid(true));
+  EXPECT_FALSE(emptyRel.isValid(true));
 }
 
 TEST(gtest_slam_static_variable_relation,construct_uninitialized)
@@ -95,7 +247,7 @@ TEST(gtest_slam_static_variable_relation,construct_uninitialized)
   RangeSet fromSet(FROMSET_SIZE);
   RangeSet toSet(TOSET_SIZE);
 
-  StaticVariableRelation emptyRel(&fromSet, &toSet);
+  StaticVariableRelationType emptyRel(&fromSet, &toSet);
 
   EXPECT_FALSE(emptyRel.isValid(true));
 }
@@ -108,132 +260,65 @@ TEST(gtest_slam_static_variable_relation,construct_relation)
   RangeSet fromSet(FROMSET_SIZE);
   RangeSet toSet(TOSET_SIZE);
 
-  StaticVariableRelation incrementingRel(&fromSet, &toSet);
-
-  IndexVec begins(FROMSET_SIZE + 1);
   IndexVec offsets;
+  IndexVec relationData;
 
   SLIC_INFO("Uninitialized relation data");
-  printVector("begins vector",  begins);
-  printVector("offsets vector", offsets);
-
-  generateIncrementingRelations(&begins, &offsets);
+  printVector("begins vector",  offsets);
+  printVector("offsets vector", relationData);
+  generateIncrementingRelations(&offsets, &relationData);
 
   SLIC_INFO("Initialized relation data");
-  printVector("begins vector",  begins);
-  printVector("offsets vector", offsets);
+  printVector("begins vector",  offsets);
+  printVector("offsets vector", relationData);
 
-
-  incrementingRel.bindRelationData(begins, offsets);
-
+  StaticVariableRelationType incrementingRel(&fromSet, &toSet);
+  incrementingRel.setOffsets(fromSet.size(), &offsets);
+  incrementingRel.setRelationData(relationData.size(), &relationData);
 
   EXPECT_TRUE(incrementingRel.isValid(true));
+
+  // Test traversal of the relation data
+  SCOPED_TRACE("Vector_simple_construct");
+  traverseRelation_doubleSubscript(incrementingRel);
+  traverseRelation_delayedSubscript(incrementingRel);
+  iterateRelation_begin_end(incrementingRel);
+  iterateRelation_range(incrementingRel);
+
 }
 
 
-TEST(gtest_slam_static_variable_relation,iterate_relation)
+TEST(gtest_slam_static_variable_relation,construct_builder)
 {
-  SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
+  SLIC_INFO("Testing construction using builder interface.");
 
-  // Initialize the relation
   RangeSet fromSet(FROMSET_SIZE);
   RangeSet toSet(TOSET_SIZE);
 
-  StaticVariableRelation incrementingRel(&fromSet, &toSet);
-
-  IndexVec begins(FROMSET_SIZE + 1);
   IndexVec offsets;
-  generateIncrementingRelations(&begins, &offsets);
-  incrementingRel.bindRelationData(begins, offsets);
+  IndexVec relationData;
+  generateIncrementingRelations(&offsets, &relationData);
 
-  EXPECT_TRUE(incrementingRel.isValid());
+  typedef StaticVariableRelationType::RelationBuilder RelationBuilder;
+  StaticVariableRelationType relation =  RelationBuilder()
+      .fromSet( &fromSet)
+      .toSet( &toSet)
+      .begins( RelationBuilder::BeginsSetBuilder()
+          .size(offsets.size())
+          .data(&offsets) )
+      .indices( RelationBuilder::IndicesSetBuilder()
+          .size(relationData.size())
+          .data(&relationData))
+  ;
+  EXPECT_TRUE(relation.isValid(true));
 
+  // Test traversal of the relation data
+  SCOPED_TRACE("Vector_builder");
+  traverseRelation_doubleSubscript(relation);
+  traverseRelation_delayedSubscript(relation);
+  iterateRelation_begin_end(relation);
+  iterateRelation_range(relation);
 
-  // Test several data access patterns
-
-  SLIC_INFO(".. access via double subscript.");
-  {
-    for(PositionType fromPos = 0; fromPos < fromSet.size(); ++fromPos)
-    {
-      const PositionType fromSize = incrementingRel.size(fromPos);
-      EXPECT_EQ(fromPos + 1, fromSize);
-
-      for(PositionType toPos = 0; toPos < fromSize; ++toPos)
-      {
-        PositionType actualVal = incrementingRel[fromPos][toPos]; // double subscript
-
-        PositionType expectedVal =  toPos % TOSET_SIZE;
-        EXPECT_EQ( expectedVal, actualVal);
-      }
-    }
-  }
-
-  SLIC_INFO(".. access via delayed double subscript.");
-  {
-    typedef StaticVariableRelation::RelationSet RelSet;
-    for(PositionType fromPos = 0; fromPos < fromSet.size(); ++fromPos)
-    {
-      RelSet rSet = incrementingRel[fromPos];   // first subscript
-
-      const PositionType rSize = rSet.size();
-      EXPECT_EQ(fromPos + 1, rSize);
-
-      for(PositionType toPos = 0; toPos < rSize; ++toPos)
-      {
-        PositionType actualVal = rSet[toPos];   // second subscript
-
-        PositionType expectedVal =  toPos % TOSET_SIZE;
-        EXPECT_EQ( expectedVal, actualVal);
-      }
-    }
-  }
-
-  SLIC_INFO(".. access via iterators.");
-#ifdef AXOM_USE_BOOST
-  {
-    typedef RangeSet::iterator                                SetIter;
-    typedef StaticVariableRelation::RelationVecConstIterator  RelSetConstIter;
-
-    SLIC_INFO("\t using iterator begin()/end() functions");
-    for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
-    {
-      PositionType fromSetEltNum = std::distance(fromSet.begin(), sIt);
-
-      // Test cardinality of inner relation
-      PositionType actualSize = incrementingRel.size( *sIt);
-      PositionType expectedSize = fromSetEltNum + 1;
-      EXPECT_EQ( expectedSize, actualSize );
-
-      RelSetConstIter toSetBegin = incrementingRel.begin(*sIt);
-      RelSetConstIter toSetEnd = incrementingRel.end(*sIt);
-      for(RelSetConstIter innerIt = toSetBegin; innerIt != toSetEnd; ++innerIt)
-      {
-        PositionType toSetEltNum = std::distance(toSetBegin, innerIt);
-
-        PositionType expectedVal =  (toSetEltNum ) % TOSET_SIZE;
-        PositionType actualVal = *innerIt;
-        ASSERT_EQ( expectedVal, actualVal);
-      }
-    }
-
-    SLIC_INFO("\t  using iterator range() function");
-    typedef StaticVariableRelation::RelationVecConstIteratorPair RelSetConstIterPair;
-    for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
-    {
-      // PositionType fromSetEltNum = std::distance(fromSet.begin(), sIt);
-
-      RelSetConstIterPair toSetItPair = incrementingRel.range(*sIt);
-      for(RelSetConstIter it = toSetItPair.first; it < toSetItPair.second; ++it)
-      {
-        PositionType toSetEltNum = std::distance(toSetItPair.first, it);
-        PositionType expectedVal =  toSetEltNum % TOSET_SIZE;
-        ASSERT_EQ( expectedVal, *it) << "incrementing relation's value was incorrect";
-      }
-    }
-  }
-#else
-  SLIC_WARNING("Must compile with boost enabled to test iterators")
-#endif
 }
 
 
@@ -241,7 +326,7 @@ TEST(gtest_slam_static_variable_relation,iterate_relation)
 
 TEST(gtest_slam_static_variable_relation,empty_relation_out_of_bounds)
 {
-  StaticVariableRelation emptyRel;
+  StaticVariableRelationType emptyRel;
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
@@ -259,16 +344,14 @@ TEST(gtest_slam_static_variable_relation,initialized_rel_out_of_bounds)
 {
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
-  RangeSet fromSet(FROMSET_SIZE);
-  RangeSet toSet(TOSET_SIZE);
-  StaticVariableRelation incrementingRel(&fromSet, &toSet);
 
-  typedef StaticVariableRelation::RelationVec IndexVec;
-  IndexVec begins(FROMSET_SIZE + 1);
-  IndexVec offsets;
+  IndexVec offsets, relationData;
+  generateIncrementingRelations(&offsets, &relationData);
 
-  generateIncrementingRelations(&begins, &offsets);
-  incrementingRel.bindRelationData(begins, offsets);
+  RangeSet fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
+  StaticVariableRelationType incrementingRel(&fromSet, &toSet);
+  incrementingRel.setOffsets(fromSet.size(), &offsets);
+  incrementingRel.setRelationData(relationData.size(), &relationData);
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
