@@ -7,9 +7,10 @@ One Extension module per class
 
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
-import util
-from util import wformat, append_format
+from . import util
+from .util import wformat, append_format
 
 
 def add_templates(options):

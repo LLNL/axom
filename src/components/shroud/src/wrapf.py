@@ -34,12 +34,13 @@ end module {F_module_name}
 ----------
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import os
 
-import whelpers
-import util
-from util import wformat, append_format
+from . import whelpers
+from . import util
+from .util import wformat, append_format
 
 
 class Wrapf(util.WrapperMixin):

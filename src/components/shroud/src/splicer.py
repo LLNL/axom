@@ -2,6 +2,7 @@
 Read a file and extract the splicer blocks.
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import os
 

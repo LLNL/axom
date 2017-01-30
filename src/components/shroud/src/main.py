@@ -19,6 +19,7 @@ generate language bindings
 #
 #
 from __future__ import print_function
+from __future__ import absolute_import
 
 import argparse
 import copy
@@ -27,14 +28,13 @@ import os
 import sys
 import yaml
 
-import metadata
-import util
-import parse_decl
-import splicer
-import wrapc
-import wrapf
-import wrapp
-import wrapl
+from . import util
+from . import parse_decl
+from . import splicer
+from . import wrapc
+from . import wrapf
+from . import wrapp
+from . import wrapl
 
 # char functions cannot be wrapped directly in intel 15.
 # Instead the result is passed down
@@ -1436,15 +1436,15 @@ class Namify(object):
 
 
 def main():
+    from . import __version__
 
     appname = 'shroud'
-    appver = metadata.__version__
 
     parser = argparse.ArgumentParser(
         prog=appname,
         description="""Create Fortran or Python wrapper for a C++ library.
 """)
-    parser.add_argument('--version', action='version', version=appver)
+    parser.add_argument('--version', action='version', version=__version__)
     parser.add_argument('--outdir', default='',
                         help='Directory for output files')
     parser.add_argument('--outdir-c-fortran', default='',

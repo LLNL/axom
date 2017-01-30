@@ -10,4 +10,4 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export PYTHONPATH=$DIR/../@BLT_Python_SITE_PACKAGES@
-@PYTHON_EXECUTABLE@ $DIR//../@BLT_Python_SITE_PACKAGES@/shroud/main.py "$@"
+@PYTHON_EXECUTABLE@ -m shroud.main "$@"

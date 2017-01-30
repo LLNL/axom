@@ -11,7 +11,8 @@ attrs = { key : value }
 This module just parses syntax.  Semantics, like valid type names
 and duplicate argument names are check later.
 """
-
+from __future__ import print_function
+from __future__ import absolute_import
 
 import parsley
 

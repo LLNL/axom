@@ -1,5 +1,6 @@
 #!/bin/env python
 from __future__ import print_function
+from __future__ import absolute_import
 
 
 import collections
@@ -8,7 +9,7 @@ import string
 import json
 import os
 
-import parse_decl
+from . import parse_decl
 
 fmt = string.Formatter()
 
@@ -597,7 +598,7 @@ if __name__ == '__main__':
     # Option
     print("Test Option")
     lev0 = Options(None, a=1, b=2, c=3)
-    lev1 = Options(lev0, x=100, y=01, z=102)
+    lev1 = Options(lev0, x=100, y=1, z=102)
     lev0.c2 = 32
     lev1.z2 = 103
 

@@ -4,11 +4,13 @@ Generate C bindings for C++ classes
 
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import os
-import whelpers
-import util
-from util import append_format
+
+from . import whelpers
+from . import util
+from .util import append_format
 
 wformat = util.wformat
 
