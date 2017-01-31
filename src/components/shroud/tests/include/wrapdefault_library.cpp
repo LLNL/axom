@@ -11,8 +11,8 @@ namespace two {
 void DEF_function1()
 {
 // splicer begin function.function1
-function1();
-return;
+    function1();
+    return;
 // splicer end function.function1
 }
 

@@ -17,8 +17,8 @@ extern "C" {
 void STR_pass_char(char status)
 {
 // splicer begin function.pass_char
-passChar(status);
-return;
+    passChar(status);
+    return;
 // splicer end function.pass_char
 }
 
@@ -31,8 +31,8 @@ return;
 char STR_return_char()
 {
 // splicer begin function.return_char
-char rv = returnChar();
-return rv;
+    char rv = returnChar();
+    return rv;
 // splicer end function.return_char
 }
 
@@ -45,10 +45,10 @@ return rv;
 void STR_return_char_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.return_char_bufferify
-char rv = returnChar();
-// LSH_F_rv is always 1, test to silence warning about unused variable
-if (LSH_F_rv == 1) *SH_F_rv = rv;
-return;
+    char rv = returnChar();
+    // LSH_F_rv is always 1, test to silence warning about unused variable
+    if (LSH_F_rv == 1) *SH_F_rv = rv;
+    return;
 // splicer end function.return_char_bufferify
 }
 
@@ -63,16 +63,16 @@ return;
 void STR_pass_char_ptr(char * dest, int Ndest, const char * src)
 {
 // splicer begin function.pass_char_ptr
-char * SH_dest = new char [Ndest + 1];
-int Lsrc = strlen(src);
-char * SH_src = new char [Lsrc + 1];
-std::strncpy(SH_src, src, Lsrc);
-SH_src[Lsrc] = '\0';
-passCharPtr(SH_dest, SH_src);
-asctoolkit::shroud::FccCopy(dest, Ndest, SH_dest);
-delete [] SH_dest;
-delete [] SH_src;
-return;
+    char * SH_dest = new char [Ndest + 1];
+    int Lsrc = strlen(src);
+    char * SH_src = new char [Lsrc + 1];
+    std::strncpy(SH_src, src, Lsrc);
+    SH_src[Lsrc] = '\0';
+    passCharPtr(SH_dest, SH_src);
+    asctoolkit::shroud::FccCopy(dest, Ndest, SH_dest);
+    delete [] SH_dest;
+    delete [] SH_src;
+    return;
 // splicer end function.pass_char_ptr
 }
 
@@ -87,15 +87,15 @@ return;
 void STR_pass_char_ptr_bufferify(char * dest, int Ndest, const char * src, int Lsrc)
 {
 // splicer begin function.pass_char_ptr_bufferify
-char * SH_dest = new char [Ndest + 1];
-char * SH_src = new char [Lsrc + 1];
-std::strncpy(SH_src, src, Lsrc);
-SH_src[Lsrc] = '\0';
-passCharPtr(SH_dest, SH_src);
-asctoolkit::shroud::FccCopy(dest, Ndest, SH_dest);
-delete [] SH_dest;
-delete [] SH_src;
-return;
+    char * SH_dest = new char [Ndest + 1];
+    char * SH_src = new char [Lsrc + 1];
+    std::strncpy(SH_src, src, Lsrc);
+    SH_src[Lsrc] = '\0';
+    passCharPtr(SH_dest, SH_src);
+    asctoolkit::shroud::FccCopy(dest, Ndest, SH_dest);
+    delete [] SH_dest;
+    delete [] SH_src;
+    return;
 // splicer end function.pass_char_ptr_bufferify
 }
 
@@ -108,8 +108,8 @@ return;
 const char * STR_get_char1()
 {
 // splicer begin function.get_char1
-const char * rv = getChar1();
-return rv;
+    const char * rv = getChar1();
+    return rv;
 // splicer end function.get_char1
 }
 
@@ -122,9 +122,9 @@ return rv;
 void STR_get_char1_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.get_char1_bufferify
-const char * rv = getChar1();
-asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv);
-return;
+    const char * rv = getChar1();
+    asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv);
+    return;
 // splicer end function.get_char1_bufferify
 }
 
@@ -137,8 +137,8 @@ return;
 const char * STR_get_char2()
 {
 // splicer begin function.get_char2
-const char * rv = getChar2();
-return rv;
+    const char * rv = getChar2();
+    return rv;
 // splicer end function.get_char2
 }
 
@@ -151,9 +151,9 @@ return rv;
 void STR_get_char2_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.get_char2_bufferify
-const char * rv = getChar2();
-asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv);
-return;
+    const char * rv = getChar2();
+    asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv);
+    return;
 // splicer end function.get_char2_bufferify
 }
 
@@ -166,8 +166,8 @@ return;
 const char * STR_get_char3()
 {
 // splicer begin function.get_char3
-const char * rv = getChar3();
-return rv;
+    const char * rv = getChar3();
+    return rv;
 // splicer end function.get_char3
 }
 
@@ -180,9 +180,9 @@ return rv;
 void STR_get_char3_bufferify(char * output, int Loutput)
 {
 // splicer begin function.get_char3_bufferify
-const char * rv = getChar3();
-asctoolkit::shroud::FccCopy(output, Loutput, rv);
-return;
+    const char * rv = getChar3();
+    asctoolkit::shroud::FccCopy(output, Loutput, rv);
+    return;
 // splicer end function.get_char3_bufferify
 }
 
@@ -195,8 +195,8 @@ return;
 const char * STR_get_string1()
 {
 // splicer begin function.get_string1
-const std::string & rv = getString1();
-return rv.c_str();
+    const std::string & rv = getString1();
+    return rv.c_str();
 // splicer end function.get_string1
 }
 
@@ -209,9 +209,9 @@ return rv.c_str();
 void STR_get_string1_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.get_string1_bufferify
-const std::string & rv = getString1();
-asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
-return;
+    const std::string & rv = getString1();
+    asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    return;
 // splicer end function.get_string1_bufferify
 }
 
@@ -224,13 +224,13 @@ return;
 const char * STR_get_string2()
 {
 // splicer begin function.get_string2
-const std::string & rv = getString2();
-// check for error
-if (rv.empty()) {
-    return NULL;
-}
+    const std::string & rv = getString2();
+    // check for error
+    if (rv.empty()) {
+        return NULL;
+    }
 
-return rv.c_str();
+    return rv.c_str();
 // splicer end function.get_string2
 }
 
@@ -243,15 +243,15 @@ return rv.c_str();
 void STR_get_string2_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.get_string2_bufferify
-const std::string & rv = getString2();
-// check for error
-if (rv.empty()) {
-    std::memset(SH_F_rv, ' ', LSH_F_rv);
-    return;
-}
+    const std::string & rv = getString2();
+    // check for error
+    if (rv.empty()) {
+        std::memset(SH_F_rv, ' ', LSH_F_rv);
+        return;
+    }
 
-asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
-return;
+    asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    return;
 // splicer end function.get_string2_bufferify
 }
 
@@ -264,13 +264,13 @@ return;
 const char * STR_get_string3()
 {
 // splicer begin function.get_string3
-const std::string & rv = getString3();
-// check for error
-if (rv.empty()) {
-    return NULL;
-}
+    const std::string & rv = getString3();
+    // check for error
+    if (rv.empty()) {
+        return NULL;
+    }
 
-return rv.c_str();
+    return rv.c_str();
 // splicer end function.get_string3
 }
 
@@ -283,15 +283,15 @@ return rv.c_str();
 void STR_get_string3_bufferify(char * output, int Loutput)
 {
 // splicer begin function.get_string3_bufferify
-const std::string & rv = getString3();
-// check for error
-if (rv.empty()) {
-    std::memset(output, ' ', Loutput);
-    return;
-}
+    const std::string & rv = getString3();
+    // check for error
+    if (rv.empty()) {
+        std::memset(output, ' ', Loutput);
+        return;
+    }
 
-asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
-return;
+    asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
+    return;
 // splicer end function.get_string3_bufferify
 }
 
@@ -307,9 +307,9 @@ return;
 void STR_accept_string_const_reference(const char * arg1)
 {
 // splicer begin function.accept_string_const_reference
-const std::string SH_arg1(arg1);
-acceptStringConstReference(SH_arg1);
-return;
+    const std::string SH_arg1(arg1);
+    acceptStringConstReference(SH_arg1);
+    return;
 // splicer end function.accept_string_const_reference
 }
 
@@ -325,9 +325,9 @@ return;
 void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1)
 {
 // splicer begin function.accept_string_const_reference_bufferify
-const std::string SH_arg1(arg1, Larg1);
-acceptStringConstReference(SH_arg1);
-return;
+    const std::string SH_arg1(arg1, Larg1);
+    acceptStringConstReference(SH_arg1);
+    return;
 // splicer end function.accept_string_const_reference_bufferify
 }
 
@@ -343,10 +343,10 @@ return;
 void STR_accept_string_reference(char * arg1, int Narg1)
 {
 // splicer begin function.accept_string_reference
-std::string SH_arg1(arg1);
-acceptStringReference(SH_arg1);
-asctoolkit::shroud::FccCopy(arg1, Narg1, SH_arg1.c_str());
-return;
+    std::string SH_arg1(arg1);
+    acceptStringReference(SH_arg1);
+    asctoolkit::shroud::FccCopy(arg1, Narg1, SH_arg1.c_str());
+    return;
 // splicer end function.accept_string_reference
 }
 
@@ -362,10 +362,10 @@ return;
 void STR_accept_string_reference_bufferify(char * arg1, int Larg1, int Narg1)
 {
 // splicer begin function.accept_string_reference_bufferify
-std::string SH_arg1(arg1, Larg1);
-acceptStringReference(SH_arg1);
-asctoolkit::shroud::FccCopy(arg1, Narg1, SH_arg1.c_str());
-return;
+    std::string SH_arg1(arg1, Larg1);
+    acceptStringReference(SH_arg1);
+    asctoolkit::shroud::FccCopy(arg1, Narg1, SH_arg1.c_str());
+    return;
 // splicer end function.accept_string_reference_bufferify
 }
 

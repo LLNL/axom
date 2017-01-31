@@ -10,8 +10,8 @@ extern "C" {
 void YYY_TES_function1()
 {
 // splicer begin function.function1
-function1();
-return;
+    function1();
+    return;
 // splicer end function.function1
 }
 
@@ -20,8 +20,8 @@ return;
 void c_name_special()
 {
 // splicer begin function.function2
-function2();
-return;
+    function2();
+    return;
 // splicer end function.function2
 }
 
@@ -30,8 +30,8 @@ return;
 void YYY_TES_function3a_0(int i)
 {
 // splicer begin function.function3a_0
-function3a(i);
-return;
+    function3a(i);
+    return;
 // splicer end function.function3a_0
 }
 
@@ -40,8 +40,8 @@ return;
 void YYY_TES_function3a_1(long i)
 {
 // splicer begin function.function3a_1
-function3a(i);
-return;
+    function3a(i);
+    return;
 // splicer end function.function3a_1
 }
 

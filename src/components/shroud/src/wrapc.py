@@ -491,7 +491,7 @@ class Wrapc(util.WrapperMixin):
             C_code = splicer_code
         else:
             # generate the C body
-            C_code = []
+            C_code = [1]
             C_code.extend(pre_call)
             return_line = ''
             if is_ctor:
@@ -548,9 +548,9 @@ class Wrapc(util.WrapperMixin):
 
             # copy-out values, clean up
             C_code.extend(post_call)
-
             if return_line:
                 C_code.append(return_line)
+            C_code.append(-1)
 
         self.header_proto_c.append('')
         self.header_proto_c.append(
@@ -566,7 +566,7 @@ class Wrapc(util.WrapperMixin):
             self.write_doxygen(impl, node['doxygen'])
         impl.append(wformat('{C_return_type} {C_name}({C_prototype})', fmt))
         impl.append('{')
-        if cls:
+        if cls and fmt.C_object:
             impl.append(fmt.C_object)
         self._create_splicer(fmt_func.underscore_name +
                              fmt_func.function_suffix, impl, C_code)

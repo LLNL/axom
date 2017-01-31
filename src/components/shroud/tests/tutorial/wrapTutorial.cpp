@@ -14,8 +14,8 @@ namespace tutorial {
 void TUT_function1()
 {
 // splicer begin function.function1
-Function1();
-return;
+    Function1();
+    return;
 // splicer end function.function1
 }
 
@@ -24,8 +24,8 @@ return;
 double TUT_function2(double arg1, int arg2)
 {
 // splicer begin function.function2
-double rv = Function2(arg1, arg2);
-return rv;
+    double rv = Function2(arg1, arg2);
+    return rv;
 // splicer end function.function2
 }
 
@@ -34,8 +34,8 @@ return rv;
 void TUT_sum(int len, int * values, int * result)
 {
 // splicer begin function.sum
-Sum(len, values, result);
-return;
+    Sum(len, values, result);
+    return;
 // splicer end function.sum
 }
 
@@ -44,8 +44,8 @@ return;
 bool TUT_function3(bool arg)
 {
 // splicer begin function.function3
-bool rv = Function3(arg);
-return rv;
+    bool rv = Function3(arg);
+    return rv;
 // splicer end function.function3
 }
 
@@ -54,11 +54,11 @@ return rv;
 void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.function4a_bufferify
-const std::string SH_arg1(arg1, Larg1);
-const std::string SH_arg2(arg2, Larg2);
-const std::string rv = Function4a(SH_arg1, SH_arg2);
-asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
-return;
+    const std::string SH_arg1(arg1, Larg1);
+    const std::string SH_arg2(arg2, Larg2);
+    const std::string rv = Function4a(SH_arg1, SH_arg2);
+    asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    return;
 // splicer end function.function4a_bufferify
 }
 
@@ -67,10 +67,10 @@ return;
 const char * TUT_function4b(const char * arg1, const char * arg2)
 {
 // splicer begin function.function4b
-const std::string SH_arg1(arg1);
-const std::string SH_arg2(arg2);
-const std::string & rv = Function4b(SH_arg1, SH_arg2);
-return rv.c_str();
+    const std::string SH_arg1(arg1);
+    const std::string SH_arg2(arg2);
+    const std::string & rv = Function4b(SH_arg1, SH_arg2);
+    return rv.c_str();
 // splicer end function.function4b
 }
 
@@ -79,11 +79,11 @@ return rv.c_str();
 void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput)
 {
 // splicer begin function.function4b_bufferify
-const std::string SH_arg1(arg1, Larg1);
-const std::string SH_arg2(arg2, Larg2);
-const std::string & rv = Function4b(SH_arg1, SH_arg2);
-asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
-return;
+    const std::string SH_arg1(arg1, Larg1);
+    const std::string SH_arg2(arg2, Larg2);
+    const std::string & rv = Function4b(SH_arg1, SH_arg2);
+    asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
+    return;
 // splicer end function.function4b_bufferify
 }
 
@@ -92,8 +92,8 @@ return;
 double TUT_function5()
 {
 // splicer begin function.function5
-double rv = Function5();
-return rv;
+    double rv = Function5();
+    return rv;
 // splicer end function.function5
 }
 
@@ -102,8 +102,8 @@ return rv;
 double TUT_function5_arg1(double arg1)
 {
 // splicer begin function.function5_arg1
-double rv = Function5(arg1);
-return rv;
+    double rv = Function5(arg1);
+    return rv;
 // splicer end function.function5_arg1
 }
 
@@ -112,8 +112,8 @@ return rv;
 double TUT_function5_arg1_arg2(double arg1, bool arg2)
 {
 // splicer begin function.function5_arg1_arg2
-double rv = Function5(arg1, arg2);
-return rv;
+    double rv = Function5(arg1, arg2);
+    return rv;
 // splicer end function.function5_arg1_arg2
 }
 
@@ -122,9 +122,9 @@ return rv;
 void TUT_function6_from_name(const char * name)
 {
 // splicer begin function.function6_from_name
-const std::string SH_name(name);
-Function6(SH_name);
-return;
+    const std::string SH_name(name);
+    Function6(SH_name);
+    return;
 // splicer end function.function6_from_name
 }
 
@@ -133,9 +133,9 @@ return;
 void TUT_function6_from_name_bufferify(const char * name, int Lname)
 {
 // splicer begin function.function6_from_name_bufferify
-const std::string SH_name(name, Lname);
-Function6(SH_name);
-return;
+    const std::string SH_name(name, Lname);
+    Function6(SH_name);
+    return;
 // splicer end function.function6_from_name_bufferify
 }
 
@@ -144,8 +144,8 @@ return;
 void TUT_function6_from_index(int indx)
 {
 // splicer begin function.function6_from_index
-Function6(indx);
-return;
+    Function6(indx);
+    return;
 // splicer end function.function6_from_index
 }
 
@@ -154,8 +154,8 @@ return;
 void TUT_function7_int(int arg)
 {
 // splicer begin function.function7_int
-Function7<int>(arg);
-return;
+    Function7<int>(arg);
+    return;
 // splicer end function.function7_int
 }
 
@@ -164,8 +164,8 @@ return;
 void TUT_function7_double(double arg)
 {
 // splicer begin function.function7_double
-Function7<double>(arg);
-return;
+    Function7<double>(arg);
+    return;
 // splicer end function.function7_double
 }
 
@@ -174,8 +174,8 @@ return;
 int TUT_function8_int()
 {
 // splicer begin function.function8_int
-int rv = Function8<int>();
-return rv;
+    int rv = Function8<int>();
+    return rv;
 // splicer end function.function8_int
 }
 
@@ -184,8 +184,8 @@ return rv;
 double TUT_function8_double()
 {
 // splicer begin function.function8_double
-double rv = Function8<double>();
-return rv;
+    double rv = Function8<double>();
+    return rv;
 // splicer end function.function8_double
 }
 
@@ -194,8 +194,8 @@ return rv;
 void TUT_function9(double arg)
 {
 // splicer begin function.function9
-Function9(arg);
-return;
+    Function9(arg);
+    return;
 // splicer end function.function9
 }
 
@@ -204,8 +204,8 @@ return;
 void TUT_function10_0()
 {
 // splicer begin function.function10_0
-Function10();
-return;
+    Function10();
+    return;
 // splicer end function.function10_0
 }
 
@@ -214,9 +214,9 @@ return;
 void TUT_function10_1(const char * name, double arg2)
 {
 // splicer begin function.function10_1
-const std::string SH_name(name);
-Function10(SH_name, arg2);
-return;
+    const std::string SH_name(name);
+    Function10(SH_name, arg2);
+    return;
 // splicer end function.function10_1
 }
 
@@ -225,9 +225,9 @@ return;
 void TUT_function10_1_bufferify(const char * name, int Lname, double arg2)
 {
 // splicer begin function.function10_1_bufferify
-const std::string SH_name(name, Lname);
-Function10(SH_name, arg2);
-return;
+    const std::string SH_name(name, Lname);
+    Function10(SH_name, arg2);
+    return;
 // splicer end function.function10_1_bufferify
 }
 
@@ -236,8 +236,8 @@ return;
 int TUT_overload1_num(int num)
 {
 // splicer begin function.overload1_num
-int rv = overload1(num);
-return rv;
+    int rv = overload1(num);
+    return rv;
 // splicer end function.overload1_num
 }
 
@@ -246,8 +246,8 @@ return rv;
 int TUT_overload1_num_offset(int num, int offset)
 {
 // splicer begin function.overload1_num_offset
-int rv = overload1(num, offset);
-return rv;
+    int rv = overload1(num, offset);
+    return rv;
 // splicer end function.overload1_num_offset
 }
 
@@ -256,8 +256,8 @@ return rv;
 int TUT_overload1_num_offset_stride(int num, int offset, int stride)
 {
 // splicer begin function.overload1_num_offset_stride
-int rv = overload1(num, offset, stride);
-return rv;
+    int rv = overload1(num, offset, stride);
+    return rv;
 // splicer end function.overload1_num_offset_stride
 }
 
@@ -266,8 +266,8 @@ return rv;
 int TUT_overload1_3(double type, int num)
 {
 // splicer begin function.overload1_3
-int rv = overload1(type, num);
-return rv;
+    int rv = overload1(type, num);
+    return rv;
 // splicer end function.overload1_3
 }
 
@@ -276,8 +276,8 @@ return rv;
 int TUT_overload1_4(double type, int num, int offset)
 {
 // splicer begin function.overload1_4
-int rv = overload1(type, num, offset);
-return rv;
+    int rv = overload1(type, num, offset);
+    return rv;
 // splicer end function.overload1_4
 }
 
@@ -286,8 +286,8 @@ return rv;
 int TUT_overload1_5(double type, int num, int offset, int stride)
 {
 // splicer begin function.overload1_5
-int rv = overload1(type, num, offset, stride);
-return rv;
+    int rv = overload1(type, num, offset, stride);
+    return rv;
 // splicer end function.overload1_5
 }
 
@@ -296,8 +296,8 @@ return rv;
 int TUT_typefunc(int arg)
 {
 // splicer begin function.typefunc
-TypeID rv = typefunc(arg);
-return rv;
+    TypeID rv = typefunc(arg);
+    return rv;
 // splicer end function.typefunc
 }
 
@@ -306,8 +306,8 @@ return rv;
 int TUT_enumfunc(int arg)
 {
 // splicer begin function.enumfunc
-EnumTypeID rv = enumfunc(static_cast<EnumTypeID>(arg));
-return static_cast<int>(rv);
+    EnumTypeID rv = enumfunc(static_cast<EnumTypeID>(arg));
+    return static_cast<int>(rv);
 // splicer end function.enumfunc
 }
 
@@ -316,8 +316,8 @@ return static_cast<int>(rv);
 void TUT_useclass(const TUT_class1 * arg1)
 {
 // splicer begin function.useclass
-useclass(static_cast<const Class1 *>(static_cast<const void *>(arg1)));
-return;
+    useclass(static_cast<const Class1 *>(static_cast<const void *>(arg1)));
+    return;
 // splicer end function.useclass
 }
 
@@ -326,8 +326,8 @@ return;
 const char * TUT_last_function_called()
 {
 // splicer begin function.last_function_called
-const std::string & rv = LastFunctionCalled();
-return rv.c_str();
+    const std::string & rv = LastFunctionCalled();
+    return rv.c_str();
 // splicer end function.last_function_called
 }
 
@@ -336,9 +336,9 @@ return rv.c_str();
 void TUT_last_function_called_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.last_function_called_bufferify
-const std::string & rv = LastFunctionCalled();
-asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
-return;
+    const std::string & rv = LastFunctionCalled();
+    asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    return;
 // splicer end function.last_function_called_bufferify
 }
 
