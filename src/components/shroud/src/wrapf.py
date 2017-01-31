@@ -964,8 +964,7 @@ class Wrapf(util.WrapperMixin):
 
         # Interfaces for operator overloads
         if self.operator_map:
-            ops = self.operator_map.keys()
-            ops.sort()
+            ops = sorted(self.operator_map)
             for op in ops:
                 output.append('')
                 output.append('interface operator (%s)' % op)
@@ -985,8 +984,7 @@ class Wrapf(util.WrapperMixin):
         if self.f_helper:
             find_all_helpers(self.f_helper)
 
-            helpers = self.f_helper.keys()
-            helpers.sort()
+            helpers = sorted(self.f_helper)
             private_names = []
             interface_lines = []
             for helper in helpers:

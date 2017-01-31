@@ -158,8 +158,7 @@ class Wrapc(util.WrapperMixin):
                 '',
                 '// declaration of wrapped types',
                 ])
-        names = self.header_forward.keys()
-        names.sort()
+        names = sorted(self.header_forward.keys())
         for name in names:
             output.append(
                 'struct s_{C_type_name};\n'
@@ -220,8 +219,7 @@ class Wrapc(util.WrapperMixin):
         self.write_output_file(fname, self.config.c_fortran_dir, output)
 
     def write_headers(self, headers, output):
-        headers.sort()
-        for header in headers:
+        for header in sorted(headers):
             if header[0] == '<':
                 output.append('#include %s' % header)
             else:

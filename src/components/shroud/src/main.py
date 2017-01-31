@@ -1123,8 +1123,7 @@ class GenFunctions(object):
         """Append annotations from attrs onto decl in sorted order.
         Skip some that are already handled.
         """
-        keys = attrs.keys()
-        keys.sort()
+        keys = sorted(attrs)
         for key in keys:
             if key[0] == '_':  # internal attribute
                 continue
