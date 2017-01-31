@@ -18,13 +18,19 @@ set(example_sources
 
 set(slam_tests_depends_on common slic slam)
 
+# Slam works without boost, but we need to add the header dependency when boost is available
+set(slam_tests_extra_depends)
+if(ENABLE_BOOST)
+  list(APPEND slam_tests_extra_depends boost)
+endif()
+
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
     blt_add_executable(
         NAME        "slam_${example_name}"
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${slam_tests_depends_on}
+        DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
         )
         
     blt_add_test(
@@ -56,14 +62,14 @@ add_subdirectory(tinyHydro)
 # An example that use the Slam iterators and therefore depends on boost
 #
 if(ENABLE_BOOST)
-    list(APPEND slam_tests_depends_on boost)
+    list(APPEND slam_tests_extra_depends fmt)
 
     # Unstructured hexahedral mesh
     blt_add_executable(
         NAME        slam_unstructMesh
         SOURCES     UnstructMeshField.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${slam_tests_depends_on} fmt
+        DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
         )
         
     blt_add_test(

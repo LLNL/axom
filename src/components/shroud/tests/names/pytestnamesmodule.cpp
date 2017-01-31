@@ -52,7 +52,7 @@ PY_function3a_0(
     int i;
     const char *SH_kwcpp = "i";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:function3a", SH_kw_list,
         &i))
     {
@@ -73,7 +73,7 @@ PY_function3a_1(
     long i;
     const char *SH_kwcpp = "i";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:function3a", SH_kw_list,
         &i))
     {

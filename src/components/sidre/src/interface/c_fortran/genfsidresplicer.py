@@ -85,7 +85,11 @@ function datagroup_create_array_view_{typename}{nd}(group, name, value) result(r
     type(C_PTR) addr
 
     lname = len_trim(name)
+#ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
     addr = c_loc(value)
+#else
+    call SHROUD_C_LOC(value{lower_bound}, addr)
+#endif
     if (c_associated(addr)) then
       {extents_asgn}
       rv%voidptr = c_datagroup_create_view_external_bufferify( &
@@ -136,7 +140,11 @@ subroutine datagroup_set_array_data_ptr_{typename}{nd}(group, name, value)
 !    {extents_asgn}
     view = c_datagroup_get_view_from_name_bufferify(group%voidptr, name, lname)
     if (c_associated(view)) then
+#ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
+#else
+        call SHROUD_C_LOC(value{lower_bound}, addr)
+#endif
         call c_dataview_set_external_data_ptr_only(view, addr)
 !        call c_dataview_apply_type_shape(rv%voidptr, type, {rank}, extents)
     endif
@@ -175,7 +183,11 @@ subroutine dataview_set_array_data_ptr_{typename}{nd}(view, value)
 
 !    lname = len_trim(name)
 !    {extents_asgn}
+#ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
     addr = c_loc(value)
+#else
+    call SHROUD_C_LOC(value{lower_bound}, addr)
+#endif
     call c_dataview_set_external_data_ptr_only(view%voidptr, addr)
 !    call c_dataview_apply_type_shape(rv%voidptr, type, {rank}, extents)
 end subroutine dataview_set_array_data_ptr_{typename}{nd}""".format(

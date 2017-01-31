@@ -42,6 +42,7 @@ int main( int argc, char** argv )
 
   // STEP 0: initialize logging environment
   slic::initialize();
+  slic::disableAbortOnError();
 
   std::string format =  std::string( "***********************************\n" )+
                         std::string( "* <TIMESTAMP>\n\n" ) +

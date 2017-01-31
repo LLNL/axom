@@ -35,7 +35,7 @@ bool isLt(double x, double y, double EPS=1.0e-12);
 bool isLeq(double x, double y, double EPS=1.0e-12);
 bool isGeq(double x, double y, double EPS=1.0e-12);
 bool signMatch(double x, double y, double z, double EPS=1.0e-12);
-double checkCCW(const Point2& A, const Point2& B, const Point2& C);
+double twoDcross(const Point2& A, const Point2& B, const Point2& C);
 
 bool checkEdge(const Point2 p1,
                const Point2 q1,
@@ -89,7 +89,9 @@ bool TriangleIntersection2D(const Triangle2& t1,
  * This algorithm is modeled after Devillers and Guigue (2002).  It computes 
  * the line of intersection L of the triangles' planes and finds the segments 
  * S1, S2 where t1 and t2 intersect L.  If those segments intersect, the 
- * triangles must intersect.
+ * triangles must intersect.  Note that edge and vertex intersections are
+ * reported as hits: an edge or vertex intersecting any part of another 
+ * triangle causes a return value of true.  This is consistent with the paper.
  *
  * Coplanar triangles are handled with a decision tree, testing the
  * relative position of triangle vertices.
@@ -103,26 +105,28 @@ bool intersect_tri3D_tri3D( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
 {
   typedef quest::Vector<T, 3> Vector3;
 
-  SLIC_CHECK_MSG(t1.degenerate(), "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
-  SLIC_CHECK_MSG(t2.degenerate(), "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
+  SLIC_CHECK_MSG(!t1.degenerate(), "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
+  SLIC_CHECK_MSG(!t2.degenerate(), "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
 
-  // Step 1: Check if all the vertices of triangle 1 lay on the same side of
+  // Step 1: Check if all the vertices of triangle 1 lie on the same side of
   // the plane created by triangle 2:
 
-  Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
-                                            Vector3(t2[2], t2[1]));
-  double dp1 = (Vector3(t2[2], t1[0])).dot(t2Normal);
+  // Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
+  //                                           Vector3(t2[2], t2[1]));
+  Vector3 t2Normal = t2.normal();
+  double dp1 = (Vector3(t2[2],t1[0])).dot(t2Normal);
   double dq1 = (Vector3(t2[2],t1[1])).dot(t2Normal);
   double dr1 = (Vector3(t2[2],t1[2])).dot(t2Normal);
   if (signMatch(dp1, dq1, dr1)) {
     return false;
   }
 
-  // Step 2: Check if all the vertices of triangle 2 lay on the same side of
+  // Step 2: Check if all the vertices of triangle 2 lie on the same side of
   // the plane created by triangle 1:
 
-  Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]),
-                                            Vector3(t1[0], t1[2]));
+  // Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]),
+  //                                           Vector3(t1[0], t1[2]));
+  Vector3 t1Normal = t1.normal();
   double dp2 = (Vector3(t1[2],t2[0])).dot(t1Normal);
   double dq2 = (Vector3(t1[2],t2[1])).dot(t1Normal);
   double dr2 = (Vector3(t1[2],t2[2])).dot(t1Normal);
@@ -397,18 +401,19 @@ inline bool intersectCoplanar3DTriangles(const Point3& p1,
  *******************************************************************************
  * \brief Tests if 2D Triangles t1 and t2 intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
- *******************************************************************************
+ *
+ * Note that edge and vertex intersections are reported as hits: an edge or 
+ * vertex intersecting any part of another triangle causes a return value of 
+ * true.  This is consistent with the paper.
+ ********************************************************************************
  */
 template < typename T>
 bool intersect_tri2D_tri2D( const quest::Triangle<T, 2>& t1, 
                             const quest::Triangle<T, 2>& t2)
 {
-  if (t1.degenerate() || t2.degenerate()) {
-    if (t1.degenerate())
-      SLIC_INFO("\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
-    if (t2.degenerate())
-      SLIC_INFO("\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
-  }
+  SLIC_CHECK_MSG(!t1.degenerate(), "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
+  SLIC_CHECK_MSG(!t2.degenerate(), "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
+
   return TriangleIntersection2D(t1, t2);
 }
 
@@ -424,8 +429,8 @@ bool intersect_tri2D_tri2D( const quest::Triangle<T, 2>& t1,
 inline bool TriangleIntersection2D(const Triangle2& t1,
                                    const Triangle2& t2)
 {
-  if (isLt(checkCCW(t1[0],t1[1],t1[2]),0.0)) {
-    if ((isLt(checkCCW(t2[0], t2[1], t2[2]),0.0))) {
+  if (isLt(twoDcross(t1[0],t1[1],t1[2]),0.0)) {
+    if ((isLt(twoDcross(t2[0], t2[1], t2[2]),0.0))) {
       return intersectPermuted2DTriangles(t1[0], t1[2], t1[1],
                                           t2[0], t2[2], t2[1]);
     }
@@ -433,7 +438,7 @@ inline bool TriangleIntersection2D(const Triangle2& t1,
                                              t2[0], t2[1], t2[2]);
   }
   else {
-    if (isLt(checkCCW(t2[0], t2[1], t2[2]),0.0)) {
+    if (isLt(twoDcross(t2[0], t2[1], t2[2]),0.0)) {
       return intersectPermuted2DTriangles(t1[0], t1[1], t1[2],
                                           t2[0], t2[2], t2[1]);
     }
@@ -464,25 +469,25 @@ inline bool intersectPermuted2DTriangles(const Point2& p1,
   //
   // See paper at https://hal.inria.fr/inria-00072100/document for more details
 
-  if (isGeq(checkCCW(p2,q2,p1), 0.0 )) {
-    if (isGeq(checkCCW(q2,r2,p1), 0.0 )) {
-      if (isGeq(checkCCW(r2,p2,p1), 0.0)) {
+  if (isGeq(twoDcross(p2,q2,p1), 0.0 )) {
+    if (isGeq(twoDcross(q2,r2,p1), 0.0 )) {
+      if (isGeq(twoDcross(r2,p2,p1), 0.0)) {
         return true;
       }
       else return checkEdge(p1,q1,r1,p2,r2); //T1 clockwise
     }
     else {
-      if (isGeq(checkCCW(r2,p2,p1), 0.0)){
-        //5 region decomposistion with p1 in the +-- region
+      if (isGeq(twoDcross(r2,p2,p1), 0.0)){
+        //5 region decomposition with p1 in the +-- region
         return checkEdge(p1,q1,r1,r2,q2);
       }
       else return checkVertex(p1,q1,r1,p2,q2,r2);
     }
   }
   else {
-    if (isGeq(checkCCW(q2,r2,p1), 0.0)) {
-      if (isGeq(checkCCW(r2,p2,p1), 0.0)) {
-        //four region decomposistion.  ++- region
+    if (isGeq(twoDcross(q2,r2,p1), 0.0)) {
+      if (isGeq(twoDcross(r2,p2,p1), 0.0)) {
+        //four region decomposition.  ++- region
         return checkEdge(p1,q1,r1,q2,p2);
       }
       else return checkVertex(p1,q1,r1,q2,r2,p2);
@@ -503,16 +508,16 @@ inline bool checkEdge(const Point2 p1,
                       const Point2 p2,
                       const Point2 r2)
 {
-  if (isGeq(checkCCW(r2,p2,q1),0.0)) {
-    if (isGeq(checkCCW(p1,p2,q1), 0.0)) {
-      if (isGeq(checkCCW(p1,q1,r2), 0.0))
+  if (isGeq(twoDcross(r2,p2,q1),0.0)) {
+    if (isGeq(twoDcross(p1,p2,q1), 0.0)) {
+      if (isGeq(twoDcross(p1,q1,r2), 0.0))
         return true;
       else
         return false;
     }
     else {
-      if (isGeq(checkCCW(q1,r1,p2), 0.0)) {
-        if (isGeq(checkCCW(r1,p1,p2), 0.0))
+      if (isGeq(twoDcross(q1,r1,p2), 0.0)) {
+        if (isGeq(twoDcross(r1,p1,p2), 0.0))
           return true;
         else
           return false;
@@ -522,9 +527,9 @@ inline bool checkEdge(const Point2 p1,
     }
   }
   else {
-    if (isGeq(checkCCW(r2,p2,r1), 0.0)) {
-      if (isGeq(checkCCW(p1,p2,r1), 0.0)) {
-        if (isGeq(checkCCW(q1,r1,r2), 0.0))
+    if (isGeq(twoDcross(r2,p2,r1), 0.0)) {
+      if (isGeq(twoDcross(p1,p2,r1), 0.0)) {
+        if (isGeq(twoDcross(q1,r1,r2), 0.0))
           return true;
         else
           return false;
@@ -550,17 +555,17 @@ inline bool checkVertex(const Point2 p1,
                         const Point2 q2,
                         const Point2 r2)
 {
-  if (isGeq(checkCCW(r2,p2,q1),0.0)) {
-    if (isGeq(checkCCW(q2,r2,q1),0.0)) {
-      if (isGeq(checkCCW(p1,p2,q1),0.0)) {
-        if (isLeq(checkCCW(p1,q2,q1),0.0))
+  if (isGeq(twoDcross(r2,p2,q1),0.0)) {
+    if (isGeq(twoDcross(q2,r2,q1),0.0)) {
+      if (isGeq(twoDcross(p1,p2,q1),0.0)) {
+        if (isLeq(twoDcross(p1,q2,q1),0.0))
           return true;
         else
           return false;
       }
       else {
-        if (isGeq(checkCCW(p1,p2,r1),0.0)) {
-          if (isGeq(checkCCW(r2,p2,r1),0.0))
+        if (isGeq(twoDcross(p1,p2,r1),0.0)) {
+          if (isGeq(twoDcross(r2,p2,r1),0.0))
             return true;
           else
             return false;
@@ -570,9 +575,9 @@ inline bool checkVertex(const Point2 p1,
       }
     }
     else {
-      if (isLeq(checkCCW(p1,q2,q1),0.0)) {
-        if (isGeq(checkCCW(q2,r2,r1),0.0)) {
-          if (isGeq(checkCCW(q1,r1,q2),0.0))
+      if (isLeq(twoDcross(p1,q2,q1),0.0)) {
+        if (isGeq(twoDcross(q2,r2,r1),0.0)) {
+          if (isGeq(twoDcross(q1,r1,q2),0.0))
             return true;
           else
             return false;
@@ -585,16 +590,16 @@ inline bool checkVertex(const Point2 p1,
     }
   }
   else {
-    if (isGeq(checkCCW(r2,p2,r1),0.0)) {
-      if (isGeq(checkCCW(q1,r1,r2),0.0)) {
-        if (isGeq(checkCCW(r1,p1,p2),0.0))
+    if (isGeq(twoDcross(r2,p2,r1),0.0)) {
+      if (isGeq(twoDcross(q1,r1,r2),0.0)) {
+        if (isGeq(twoDcross(r1,p1,p2),0.0))
           return true;
         else
           return false;
       }
       else {
-        if (isGeq(checkCCW(q1,r1,q2),0.0)) {
-          if (isGeq(checkCCW(q2,r2,r1),0.0))
+        if (isGeq(twoDcross(q1,r1,q2),0.0)) {
+          if (isGeq(twoDcross(q2,r2,r1),0.0))
             return true;
           else
             return false;
@@ -610,7 +615,7 @@ inline bool checkVertex(const Point2 p1,
 
 /*!
  *****************************************************************************
- * \brief Check 2D triangle orientation.
+ * \brief Compute cross product of two 2D vectors as if they were 3D.
  * \return Cross product of A C and B C.
  *
  * This function treats three Point2 values as corners of a 3D triangle with
@@ -619,7 +624,7 @@ inline bool checkVertex(const Point2 p1,
  * positive value indicates CCW orientation.
  *****************************************************************************
  */
-inline double checkCCW(const Point2& A, const Point2& B, const Point2& C)
+inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
 {
   return  (((A[0]-C[0])*(B[1]-C[1])-(A[1]-C[1])*(B[0]-C[0])));
 }
@@ -987,6 +992,175 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
 }
 
 /** @} */
+
+/** @{ @name Triangle-ray intersection */
+
+/*!
+ *******************************************************************************
+ * \brief Tests if 3D triangle tri intersects with 3D ray R.
+ * \return status true iff tri intersects with R, otherwise, false.
+ *
+ * This algorithm is modeled after Woop, Benthin, and Wald (2013).  It 
+ * transforms the ray onto the unit z vector and applies the same transform
+ * to the triangle's vertices.  This transform simplifies the calculation of
+ * barycentric coordinates of the positive z-axis's intersection with the
+ * triangle.  If any of these coordinates are less than zero, the ray misses.
+ *
+ * If any are equal to zero, more care is needed to check if the ray hits
+ * the edge or misses.  Additionally, the code falls back to double precision
+ * for cases that call for it.
+ *
+ * Sven Woop, Carsten Benthin, Ingo Wald, "Watertight Ray/Triangle 
+ * Intersection," Journal of Computer Graphics Techniques (JCGT), vol. 2, 
+ * no. 1, 65–82, 2013  http://jcgt.org/published/0002/01/05/
+ *******************************************************************************
+ */
+template < typename T >
+bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
+{
+  // Ray origins inside of the triangle are considered a miss.
+  // This is a good thing, as pointed out by Matt Larsen in January 2017,
+  // because of a common technique in ray chasing through a mesh:
+  //  1. Cast the ray until it intersects a triangle (record the hit)
+  //  2. Starting from the hit point, re-cast the ray to find the next hit
+  // Origin-is-miss avoids finding the already-hit triangle as the next 
+  // hit.
+  // 
+  // Coplanar rays, evidenced by det == 0, are also considered as a miss.
+  // I (Arlie Capps, Jan. 2017) don't understand the motivation at this
+  // point, but I'll accept this for now.
+
+  //find out dimension where ray direction is maximal
+  int kx,ky,kz;
+  float rX,rY,rZ;
+    
+  //assign initial directions
+  rX = R.direction()[0];
+  rY = R.direction()[1];
+  rZ = R.direction()[2];
+    
+  //make all dimensions positive
+  if(rX < 0.0f) rX *= -1.0f;
+  if(rY < 0.0f) rY *= -1.0f;
+  if(rZ < 0.0f) rZ *= -1.0f;
+    
+  //z-direction largest
+  if((rZ>=rX) && (rZ >= rY)){
+    kz=2;
+  }
+  //y direction largest
+  else if((rY >= rX) && (rY >= rZ)){
+    kz=1;
+  }
+  //x direction largest
+  else{
+    kz=0;
+  }
+   
+  //assign other dimensions of the ray
+  kx = (kz+1) % 3;
+  ky = (kz+2) % 3;
+
+  //if necessary swap  ky and kx to preserve triangle winding
+  if(R.direction()[kz] < 0.0f){
+    std::swap(kx, ky);
+  }
+
+  //calculate shear constants
+  float Sx = R.direction()[kx]/R.direction()[kz];
+  float Sy = R.direction()[ky]/R.direction()[kz];
+  float Sz = 1.0f/R.direction()[kz];
+
+  //A,B,C are the triangle vertices 
+  float A[3],B[3],C[3];
+
+  //calculate vertices relative to the ray origin
+  A[kx] = tri[0].array()[kx] - R.origin()[kx];
+  A[ky] = tri[0].array()[ky] - R.origin()[ky];
+  A[kz] = tri[0].array()[kz] - R.origin()[kz];
+
+  B[kx] = tri[1].array()[kx] - R.origin()[kx];
+  B[ky] = tri[1].array()[ky] - R.origin()[ky];
+  B[kz] = tri[1].array()[kz] - R.origin()[kz];
+
+  C[kx] = tri[2].array()[kx] - R.origin()[kx];
+  C[ky] = tri[2].array()[ky] - R.origin()[ky];
+  C[kz] = tri[2].array()[kz] - R.origin()[kz];
+  
+
+  //shear and scale the vertices
+  const float Ax = A[kx] - Sx*A[kz];
+  const float Ay = A[ky] - Sy*A[kz];
+  const float Bx = B[kx] - Sx*B[kz];
+  const float By = B[ky] - Sy*B[kz];
+  const float Cx = C[kx] - Sx*C[kz];
+  const float Cy = C[ky] - Sy*C[kz];
+ 
+  //scaled barycentric coordinates
+  float U = Cx*By - Cy*Bx;
+  float V = Ax*Cy - Ay*Cx;
+  float W = Bx*Ay - By*Ax;
+
+  //fallback to test against edges using double precision
+  if(U == 0.0f || V == 0.0f || W == 0.0f){
+    double CxBy = (double)Cx*(double)By;
+    double CyBx = (double)Cy*(double)Bx;
+    U = (float)(CxBy - CyBx);
+
+    double AxCy = (double)Ax*(double)Cy;
+    double AyCx = (double)Ay*(double)Cx;
+    V = (float)(AxCy - AyCx);
+
+    double BxAy = (double)Bx*(double)Ay;
+    double ByAx = (double)By*(double)Ax;
+    W = (float)(BxAy - ByAx);
+  }
+
+  //edge testing
+  if((U<0.0f || V<0.0f || W<0.0f) && (U>0.0f || V>0.0f || W>0.0f)){
+    return false;
+  }
+
+  //calculate determinant
+  float det = U + V + W;
+    
+  if(det == 0.0f){
+    return false;
+  }
+
+  //calculate scaled z-coordinates of the vertices and use them to calculate hit distance
+  const float Az = Sz*A[kz];
+  const float Bz = Sz*B[kz];
+  const float Cz = Sz*C[kz];
+  const float Q = U*Az + V*Bz +W*Cz;    
+
+  //make sure hit is in correct direction
+  bool dir = ((Q<0.0f) && !(det<0.0f)) || ((det < 0.0f) && !(Q<0.0f));
+  if(dir){
+    return false;
+  }
+  return true;
+}
+
+/** @} */
+
+template < typename T >
+bool intersect_tri_segment(const Triangle<T, 3>& tri, const Segment<T,3>& S)
+{
+  typedef Vector<T,3> Vector3;
+  Ray<T,3> r1(S.source(), Vector3(S.source(), S.target()));
+  Ray<T,3> r2(S.target(), Vector3(S.target(), S.source()));
+
+  //Ray-triangle intersection does not check endpoints, so we explicitly check here
+  if (tri.checkInTriangle(r1.origin())) return true;
+  if (tri.checkInTriangle(r2.origin())) return true;
+
+  //if the two rays formed by the endpoints of the segment intersect the triangle, 
+  //then the triangle must intersect the triangle
+  if ((intersect_tri_ray(tri, r1)) && (intersect_tri_ray(tri, r2))) return true;
+  return false;
+}
+
 
 } /* end namespace detail */
 } /* end namespace quest */

@@ -120,6 +120,7 @@ private:
 
 
   DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);
+  DISABLE_MOVE_AND_ASSIGNMENT(SynchronizedStream);
 };
 
 } /* namespace slic */

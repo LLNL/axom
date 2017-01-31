@@ -52,5 +52,16 @@ functions:
 - decl: bool activateLogger( const std::string& name )
 - decl: std::string getActiveLoggerName()
 - decl: void setLoggingMsgLevel( Level level )
+
+- decl: void setAbortOnError( bool status )
+- decl: void enableAbortOnError()
+- decl: void disableAbortOnError()
+- decl: bool isAbortOnErrorsEnabled()
+
+- decl: void setAbortOnWarning( bool status )
+- decl: void enableAbortOnWarning()
+- decl: void disableAbortOnWarning()
+- decl: bool isAbortOnWarningsEnabled()
+
 - decl: void logMessage( Level level, const std::string& message, const std::string& fileName, int line, bool filter )
   

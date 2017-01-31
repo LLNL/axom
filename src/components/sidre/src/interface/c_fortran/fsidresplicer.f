@@ -1,5 +1,9 @@
 ! Fortran code that will be inserted into code via shroud splicer blocks
 
+! splicer begin file_top
+#include "common/config.hpp"
+! splicer end file_top
+
 ! splicer begin module_use
 ! map conduit type names to sidre type names
 use conduit, only : &
