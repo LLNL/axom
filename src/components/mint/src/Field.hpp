@@ -130,6 +130,7 @@ protected:
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(Field);
+  DISABLE_MOVE_AND_ASSIGNMENT(Field);
 };
 
 } /* namespace mint */

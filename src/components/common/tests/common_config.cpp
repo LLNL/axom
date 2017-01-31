@@ -17,6 +17,9 @@
   #include <omp.h>
 #endif
 
+#ifdef ATK_USE_BOOST
+  #include "boost/version.hpp"
+#endif
 
 #include <string>
 #include <sstream>          // stringstream
@@ -167,4 +170,15 @@ TEST(gtest_common_config,config_openmp)
     std::cout << "Sum of first " << N << " numbers is: " << sum << std::endl;
 
 }
+
+#ifdef ATK_USE_BOOST
+TEST(gtest_common_config,boost_version)
+{
+    std::cout << "Using boost version "
+          << BOOST_VERSION / 100000     << "."  // major version
+          << BOOST_VERSION / 100 % 1000 << "."  // minor version
+          << BOOST_VERSION % 100                // patch level
+          << std::endl;
+}
+#endif // ATK_USE_BOOST
 

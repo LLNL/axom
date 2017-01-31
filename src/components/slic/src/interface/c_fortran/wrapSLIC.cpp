@@ -96,6 +96,70 @@ return;
 // splicer end function.set_logging_msg_level
 }
 
+void SLIC_set_abort_on_error(bool status)
+{
+// splicer begin function.set_abort_on_error
+setAbortOnError(status);
+return;
+// splicer end function.set_abort_on_error
+}
+
+void SLIC_enable_abort_on_error()
+{
+// splicer begin function.enable_abort_on_error
+enableAbortOnError();
+return;
+// splicer end function.enable_abort_on_error
+}
+
+void SLIC_disable_abort_on_error()
+{
+// splicer begin function.disable_abort_on_error
+disableAbortOnError();
+return;
+// splicer end function.disable_abort_on_error
+}
+
+bool SLIC_is_abort_on_errors_enabled()
+{
+// splicer begin function.is_abort_on_errors_enabled
+bool rv = isAbortOnErrorsEnabled();
+return rv;
+// splicer end function.is_abort_on_errors_enabled
+}
+
+void SLIC_set_abort_on_warning(bool status)
+{
+// splicer begin function.set_abort_on_warning
+setAbortOnWarning(status);
+return;
+// splicer end function.set_abort_on_warning
+}
+
+void SLIC_enable_abort_on_warning()
+{
+// splicer begin function.enable_abort_on_warning
+enableAbortOnWarning();
+return;
+// splicer end function.enable_abort_on_warning
+}
+
+void SLIC_disable_abort_on_warning()
+{
+// splicer begin function.disable_abort_on_warning
+disableAbortOnWarning();
+return;
+// splicer end function.disable_abort_on_warning
+}
+
+bool SLIC_is_abort_on_warnings_enabled()
+{
+// splicer begin function.is_abort_on_warnings_enabled
+bool rv = isAbortOnWarningsEnabled();
+return rv;
+// splicer end function.is_abort_on_warnings_enabled
+}
+
 void SLIC_log_message(int level, const char * message, const char * fileName, int line, bool filter)
 {
 // splicer begin function.log_message

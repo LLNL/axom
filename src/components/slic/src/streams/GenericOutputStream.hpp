@@ -95,6 +95,7 @@ private:
   GenericOutputStream(): m_stream( static_cast< std::ostream* >( ATK_NULLPTR ) ){};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);
+  DISABLE_MOVE_AND_ASSIGNMENT(GenericOutputStream);
 
 };
 

@@ -956,6 +956,7 @@ protected:
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(OctreeBase);
+  DISABLE_MOVE_AND_ASSIGNMENT(OctreeBase);
 
 protected:
   OctreeLevels            m_levels;

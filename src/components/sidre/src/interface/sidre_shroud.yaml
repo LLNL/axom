@@ -17,6 +17,7 @@ options:
   C_prefix: SIDRE_
   namespace: asctoolkit sidre
   F_module_per_class: False
+  F_impl_filename_library_template: wrapf{library_lower}.F
 
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
