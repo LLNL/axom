@@ -509,15 +509,16 @@ namespace tinyHydro {
 
     for(int i = 0; i < bSize; ++i)
     {
+      NodeSubset& nodes = bcNodes[i];
       if (bcVelocity[i].x != 0xdeadbeef)
       {
-        for(NodeSubset::iterator nIt = bcNodes[i].begin(), nItEnd = bcNodes[i].end(); nIt < nItEnd; ++nIt)
-          u[*nIt].x = bcVelocity[i].x;
+        for(int j = 0; j < nodes.size(); ++j)
+          u[ nodes[j] ].x = bcVelocity[i].x;
       }
       if (bcVelocity[i].y != 0xdeadbeef)
       {
-        for(NodeSubset::iterator nIt = bcNodes[i].begin(), nItEnd = bcNodes[i].end(); nIt < nItEnd; ++nIt)
-          u[*nIt].y = bcVelocity[i].y;
+        for(int j = 0; j < nodes.size(); ++j)
+          u[ nodes[j] ].y = bcVelocity[i].y;
       }
     }
   }

@@ -19,10 +19,10 @@
 #define COMMONTYPES_HPP_
 
 
-#include "common/config.hpp"           // Defines USE_CXX11
+#include "common/config.hpp"           // defines ATK_USE_CXX11
 #include "common/cstdint_wrapper.hpp"  // for fixed bitwidth integer types
 
-#ifndef USE_CXX11
+#ifndef ATK_USE_CXX11
   #include <cstddef>            // brings in NULL
 #endif
 
@@ -30,7 +30,7 @@ namespace asctoolkit {
 
 namespace common {
 
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
 #define ATK_NULLPTR nullptr
 #else
 #define ATK_NULLPTR NULL

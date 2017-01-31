@@ -93,6 +93,8 @@ TEST(sidre_external, create_external_view)
     EXPECT_EQ(view->getTypeID(), INT_ID);
     EXPECT_EQ(view->getNumElements(), len);
 
+    EXPECT_EQ(idata, view->getVoidPtr());
+
     view->print();
 
     int * idata_chk = view->getData();
@@ -145,7 +147,7 @@ TEST(sidre_external, create_external_view_null)
     EXPECT_EQ(view->getTotalBytes(), 0u);
 
     void * ptr = view->getVoidPtr();
-    EXPECT_EQ(ptr, static_cast<void *>(ATK_NULLPTR));
+    EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), ptr);
 
     // getData will not work since the address is NULL
     //  int * idata_chk = view->getData();
@@ -175,6 +177,7 @@ TEST(sidre_external, transition_external_view_to_empty)
   DataView * view = root->createView("data0", INT_ID, len)
                     ->setExternalDataPtr(idata);
   EXPECT_TRUE(view->isExternal());
+  EXPECT_EQ(idata, view->getVoidPtr());
 
   // Transition from EXTERNAL to EMPTY
   view->setExternalDataPtr(NULL);
@@ -191,7 +194,7 @@ TEST(sidre_external, transition_external_view_to_empty)
   EXPECT_EQ(view->getNumElements(), len);
 
   void * ptr = view->getVoidPtr();
-  EXPECT_EQ(ptr, static_cast<void *>(ATK_NULLPTR));
+  EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), ptr);
 
   view->print();
 

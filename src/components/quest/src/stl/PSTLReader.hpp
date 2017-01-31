@@ -52,6 +52,7 @@ private:
   int m_my_rank;   /*!< MPI rank ID      */
 
   DISABLE_COPY_AND_ASSIGNMENT( PSTLReader );
+  DISABLE_MOVE_AND_ASSIGNMENT( PSTLReader );
 };
 
 } /* namespace quest */

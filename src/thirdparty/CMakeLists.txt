@@ -26,6 +26,8 @@ blt_register_library(
     INCLUDES ${HEADER_INCLUDES_DIRECTORY}
     )
 
+set(FMT_FOUND TRUE CACHE INTERNAL "")
+mark_as_advanced(FMT_FOUND)
 
 ################################
 # Add tests

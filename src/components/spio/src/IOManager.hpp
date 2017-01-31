@@ -65,7 +65,20 @@ public:
   ~IOManager();
 
   /*!
-   * \brief write
+   * \brief write a DataGroup to output files
+   *
+   * The DataGroup, including all of its child groups and views, is written
+   * to files according to the given protocol.
+   *
+   * valid protocols:
+   *
+   *    sidre_hdf5
+   *    sidre_conduit_json
+   *    sidre_json
+   *    conduit_hdf5
+   *    conduit_bin
+   *    conduit_json
+   *    json
    *
    * \param group         DataGroup to write to output
    * \param num_files     number of output data files
@@ -130,7 +143,7 @@ public:
    * This is not an MPI collective call.  It writes one view from one rank to
    * one root file.
    *
-   * \param group         DataView to add to root file
+   * \param view          DataView to add to root file
    * \param file_name     name of existing root file
    * \param group_path    path to a location within the root file
    */
@@ -161,10 +174,16 @@ public:
    * \brief load external data into a group
    *
    * \param group         DataGroup to fill with external data from input
-   * \param root_fil      root file containing input data
+   * \param root_file     root file containing input data
    */
   void loadExternalData(sidre::DataGroup * group,
                         const std::string& root_file);
+
+
+  /*!
+   * \brief gets the number of files in the dataset from the specified root file
+   */ 
+  int getNumFilesFromRoot(const std::string& root_file);
 
 private:
 
@@ -180,7 +199,6 @@ private:
                               const std::string& root_name,
                               int rankgroup_id);
 
-  int getNumFilesFromRoot(const std::string& root_file);
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc

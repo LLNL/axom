@@ -19,9 +19,15 @@
 
 #include <iostream>
 #include <iterator>
+#include <sstream>      // for ATK_USE_BOOST
 
 #include "gtest/gtest.h"
 
+#include "common/config.hpp"
+
+#include "slic/slic.hpp"
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
 
 #include "slam/RangeSet.hpp"
 #include "slam/Relation.hpp"
@@ -39,16 +45,16 @@ const PositionType TOSET_SIZE = 8;
 
 TEST(gtest_slam_static_variable_relation,empty_relation)
 {
-  std::cout << "\n****** Testing empty relation.  isValid() should be true." << std::endl;
+  SLIC_INFO("Testing empty relation.  isValid() should be true.");
 
   StaticVariableRelation emptyRel;
 
   EXPECT_TRUE(emptyRel.isValid(true)) << "Empty relation was not valid";
 
-
-
-  std::cout << "\n****** done." << std::endl;
+  SLIC_INFO("done.");
 }
+
+
 
 TEST(gtest_slam_static_variable_relation,empty_relation_out_of_bounds)
 {
@@ -60,7 +66,7 @@ TEST(gtest_slam_static_variable_relation,empty_relation_out_of_bounds)
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ASSERT_DEATH( emptyRel[FROMSET_SIZE], "");
 #else
-  std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+  SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
 
 }
@@ -69,7 +75,7 @@ TEST(gtest_slam_static_variable_relation,empty_relation_out_of_bounds)
 
 TEST(gtest_slam_static_variable_relation,test_uninitialized_relation)
 {
-  std::cout << "\n****** Testing uninitialized relation.  isValid() should be false." << std::endl;
+  SLIC_INFO("Testing uninitialized relation.  isValid() should be false.");
 
   RangeSet fromSet(FROMSET_SIZE);
   RangeSet toSet(TOSET_SIZE);
@@ -78,16 +84,22 @@ TEST(gtest_slam_static_variable_relation,test_uninitialized_relation)
 
   EXPECT_FALSE(emptyRel.isValid(true)) << "Empty relation was not initialized";
 
-  std::cout << "\n****** done." << std::endl;
+  SLIC_INFO("done.");
 }
+
 
 template<typename StrType, typename VecType>
 void printVector(StrType const& msg, VecType const& vec)
 {
-  std::cout << "\n** " << msg << "\n\t";
-  std::cout << "Array of size " << vec.size() << ": ";
-  std::copy(vec.begin(), vec.end(), std::ostream_iterator<PositionType>(std::cout, " "));
+  std::stringstream sstr;
+
+  sstr << "\n** " << msg << "\n\t";
+  sstr << "Array of size " << vec.size() << ": ";
+  std::copy(vec.begin(), vec.end(), std::ostream_iterator<PositionType>(sstr, " "));
+
+  SLIC_INFO( sstr.str() );
 }
+
 
 template<typename VecType>
 void generateIncrementingRelations(VecType* begins, VecType* offsets)
@@ -109,9 +121,10 @@ void generateIncrementingRelations(VecType* begins, VecType* offsets)
   beginsVec[FROMSET_SIZE] = curIdx;
 }
 
+
 TEST(gtest_slam_static_variable_relation,simple_relation)
 {
-  std::cout << "\n****** Testing simple incrementing relation.  isValid() should be true." << std::endl;
+  SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
   RangeSet fromSet(FROMSET_SIZE);
   RangeSet toSet(TOSET_SIZE);
@@ -136,19 +149,21 @@ TEST(gtest_slam_static_variable_relation,simple_relation)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
+#ifdef ATK_USE_BOOST
   typedef RangeSet::iterator                                SetIter;
   typedef StaticVariableRelation::RelationVecConstIterator  RelSetConstIter;
 
-  std::cout << "\n\tLooking at relation's stored values...";
+  SLIC_INFO("Looking at relation's stored values...");
   for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
   {
-    std::cout << "\n\tInspecting element " << *sIt << " of first set.";
+    std::stringstream sstr;
+    sstr << "\tInspecting element " << *sIt << " of first set.";
 
     PositionType actualSize = incrementingRel.size( *sIt);
     PositionType expectedSize = std::distance(fromSet.begin(), sIt) + 1;
 
-    std::cout << "\n\t\tExpected: " << expectedSize;
-    std::cout << "\n\t\tActual: " <<  actualSize << "\n";
+    sstr << "\n\t\tExpected: " << expectedSize;
+    sstr << "\n\t\tActual: " <<  actualSize << "\n";
 
     EXPECT_EQ( expectedSize, actualSize ) << "relation for this element was incorrect size.";
 
@@ -158,20 +173,23 @@ TEST(gtest_slam_static_variable_relation,simple_relation)
     {
       PositionType eltNum = std::distance(toSetBegin, innerIt);
 
-      std::cout << "\n\t\t " << eltNum << ": " << *innerIt;
+      sstr << "\t\t " << eltNum << ": " << *innerIt << "\n";
 
       PositionType expectedVal =  (eltNum ) % TOSET_SIZE;
       PositionType actualVal = *innerIt;
       ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
     }
-  }
 
-  std::cout << "\n****** done." << std::endl;
+    SLIC_INFO(sstr.str());
+  }
+#endif
+
+  SLIC_INFO("done.");
 }
 
 TEST(gtest_slam_static_variable_relation,initialized_rel_out_of_bounds)
 {
-  std::cout << "\n****** Testing simple incrementing relation.  isValid() should be true." << std::endl;
+  SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
   RangeSet fromSet(FROMSET_SIZE);
   RangeSet toSet(TOSET_SIZE);
@@ -189,14 +207,14 @@ TEST(gtest_slam_static_variable_relation,initialized_rel_out_of_bounds)
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ASSERT_DEATH( incrementingRel[FROMSET_SIZE], "");
 #else
-  std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+  SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
 
 }
 
 TEST(gtest_slam_static_variable_relation,test_iterator_range)
 {
-  std::cout << "\n****** Testing range function on incrementing relation." << std::endl;
+  SLIC_INFO("Testing range function on incrementing relation.");
 
   RangeSet fromSet(FROMSET_SIZE);
   RangeSet toSet(TOSET_SIZE);
@@ -211,35 +229,42 @@ TEST(gtest_slam_static_variable_relation,test_iterator_range)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
+
+#ifdef ATK_USE_BOOST
   typedef RangeSet::iterator                                    SetIter;
   typedef StaticVariableRelation::RelationVecConstIterator      RelSetConstIter;
   typedef StaticVariableRelation::RelationVecConstIteratorPair  RelSetConstIterPair;
 
-  std::cout << "\n\tLooking at relation's stored values...";
+  SLIC_INFO("\tLooking at relation's stored values...");
   for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
   {
-    std::cout << "\n\tInspecting element " << *sIt << " of first set.";
+    std::stringstream sstr;
+
+    sstr << "\n\tInspecting element " << *sIt << " of first set.";
 
     RelSetConstIterPair toSetItPair = incrementingRel.range(*sIt);
     for(RelSetConstIter it = toSetItPair.first; it < toSetItPair.second; ++it)
     {
       PositionType eltNum = std::distance(toSetItPair.first, it);
 
-      std::cout << "\n\t\t " << eltNum << ": " << *it;
+      sstr << "\t\t " << eltNum << ": " << *it << "\n";
 
       PositionType expectedVal =  (eltNum ) % TOSET_SIZE;
       PositionType actualVal = *it;
       ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
     }
-  }
 
-  std::cout << "\n****** done." << std::endl;
+    SLIC_INFO(sstr.str());
+  }
+#endif
+
+  SLIC_INFO("done.");
 }
 
 
 TEST(gtest_slam_static_variable_relation,double_subscript_test)
 {
-  std::cout << "\n****** Testing access via double subscript." << std::endl;
+  SLIC_INFO("Testing access via double subscript.");
 
   RangeSet fromSet(FROMSET_SIZE);
   RangeSet toSet(TOSET_SIZE);
@@ -254,12 +279,13 @@ TEST(gtest_slam_static_variable_relation,double_subscript_test)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
+#ifdef ATK_USE_BOOST
   typedef RangeSet::iterator SetIter;
 
-  std::cout << "\n\tLooking at relation's stored values...";
+  SLIC_INFO("\tLooking at relation's stored values...");
   for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
   {
-    std::cout << "\n\tInspecting element " << *sIt << " of first set.";
+    SLIC_INFO("\tInspecting element " << *sIt << " of first set.");
 
     for(PositionType idx = 0; idx< incrementingRel.size(*sIt  ); ++idx)
     {
@@ -268,14 +294,14 @@ TEST(gtest_slam_static_variable_relation,double_subscript_test)
       EXPECT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
     }
   }
-
-  std::cout << "\n****** done." << std::endl;
+#endif
+  SLIC_INFO("done.");
 }
 
 
 TEST(gtest_slam_static_variable_relation,delayed_double_subscript_test)
 {
-  std::cout << "\n****** Testing access via delayed double subscript." << std::endl;
+  SLIC_INFO("Testing access via delayed double subscript.");
 
   RangeSet fromSet(FROMSET_SIZE);
   RangeSet toSet(TOSET_SIZE);
@@ -292,10 +318,10 @@ TEST(gtest_slam_static_variable_relation,delayed_double_subscript_test)
 
   typedef StaticVariableRelation::RelationSet RelSet;
 
-  std::cout << "\n\tLooking at relation's stored values...";
+  SLIC_INFO("\tLooking at relation's stored values...");
   for(PositionType fromPos = 0; fromPos < fromSet.size(); ++fromPos)
   {
-    std::cout << "\n\tInspecting element " << fromSet[fromPos] << " of first set (in position " << fromPos << ").";
+    SLIC_INFO("\tInspecting element " << fromSet[fromPos] << " of first set (in position " << fromPos << ").");
 
     RelSet rSet = incrementingRel[fromPos];
     for(PositionType toPos = 0; toPos < rSet.size(); ++toPos)
@@ -306,5 +332,20 @@ TEST(gtest_slam_static_variable_relation,delayed_double_subscript_test)
     }
   }
 
-  std::cout << "\n****** done." << std::endl;
+  SLIC_INFO("done." );
+}
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;  // create & initialize test logger,
+                          // finalized when exiting main scope
+
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

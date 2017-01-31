@@ -148,7 +148,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
     int group_id = m_baton->wait();
     std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
 
-    std::string obase = file_name + ".group";
+    std::string obase = file_name + "." + protocol;
     datagroup->save(obase, protocol);
   }
   (void)m_baton->pass();

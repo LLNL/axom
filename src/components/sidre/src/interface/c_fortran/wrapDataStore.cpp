@@ -11,7 +11,6 @@
 //
 // wrapDataStore.cpp
 #include "wrapDataStore.h"
-#include <string>
 #include "sidre/DataStore.hpp"
 #include "sidre/SidreTypes.hpp"
 
@@ -103,86 +102,6 @@ void SIDRE_datastore_print(const SIDRE_datastore * self)
   selfobj->print();
   return;
 // splicer end class.DataStore.method.print
-}
-
-void SIDRE_datastore_save(const SIDRE_datastore * self, const char * file_path,
-                          const char * protocol)
-{
-  const DataStore * selfobj =
-    static_cast<const DataStore *>(static_cast<const void *>(self));
-// splicer begin class.DataStore.method.save
-  const std::string SH_file_path(file_path);
-  const std::string SH_protocol(protocol);
-  selfobj->save(SH_file_path, SH_protocol);
-  return;
-// splicer end class.DataStore.method.save
-}
-
-void SIDRE_datastore_save_bufferify(const SIDRE_datastore * self,
-                                    const char * file_path, int Lfile_path,
-                                    const char * protocol, int Lprotocol)
-{
-  const DataStore * selfobj =
-    static_cast<const DataStore *>(static_cast<const void *>(self));
-// splicer begin class.DataStore.method.save_bufferify
-  const std::string SH_file_path(file_path, Lfile_path);
-  const std::string SH_protocol(protocol, Lprotocol);
-  selfobj->save(SH_file_path, SH_protocol);
-  return;
-// splicer end class.DataStore.method.save_bufferify
-}
-
-void SIDRE_datastore_load(SIDRE_datastore * self, const char * file_path,
-                          const char * protocol)
-{
-  DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
-// splicer begin class.DataStore.method.load
-  const std::string SH_file_path(file_path);
-  const std::string SH_protocol(protocol);
-  selfobj->load(SH_file_path, SH_protocol);
-  return;
-// splicer end class.DataStore.method.load
-}
-
-void SIDRE_datastore_load_bufferify(SIDRE_datastore * self,
-                                    const char * file_path, int Lfile_path,
-                                    const char * protocol, int Lprotocol)
-{
-  DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
-// splicer begin class.DataStore.method.load_bufferify
-  const std::string SH_file_path(file_path, Lfile_path);
-  const std::string SH_protocol(protocol, Lprotocol);
-  selfobj->load(SH_file_path, SH_protocol);
-  return;
-// splicer end class.DataStore.method.load_bufferify
-}
-
-void SIDRE_datastore_load_external_data(SIDRE_datastore * self,
-                                        const char * file_path,
-                                        const char * protocol)
-{
-  DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
-// splicer begin class.DataStore.method.load_external_data
-  const std::string SH_file_path(file_path);
-  const std::string SH_protocol(protocol);
-  selfobj->loadExternalData(SH_file_path, SH_protocol);
-  return;
-// splicer end class.DataStore.method.load_external_data
-}
-
-void SIDRE_datastore_load_external_data_bufferify(SIDRE_datastore * self,
-                                                  const char * file_path,
-                                                  int Lfile_path,
-                                                  const char * protocol,
-                                                  int Lprotocol)
-{
-  DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
-// splicer begin class.DataStore.method.load_external_data_bufferify
-  const std::string SH_file_path(file_path, Lfile_path);
-  const std::string SH_protocol(protocol, Lprotocol);
-  selfobj->loadExternalData(SH_file_path, SH_protocol);
-  return;
-// splicer end class.DataStore.method.load_external_data_bufferify
 }
 
 // splicer begin class.DataStore.additional_functions

@@ -14,6 +14,8 @@ echo "srun -N1 -n1 -ppsmall ./common_fileUtilities"
 srun -N1 -n1 -ppsmall ./common_fileUtilities
 echo "srun -N1 -n1 -ppsmall ./common_types"
 srun -N1 -n1 -ppsmall ./common_types
+echo "srun -N1 -n1 -ppsmall ./common_config"
+srun -N1 -n1 -ppsmall ./common_config
 echo "srun -N1 -n1 -ppsmall ./compiler_flag_strict_aliasing"
 srun -N1 -n1 -ppsmall ./compiler_flag_strict_aliasing
 echo "srun -N1 -n1 -ppsmall ./compiler_flag_unused_var"
@@ -110,3 +112,11 @@ echo "srun -N1 -n1 -ppsmall ./slic_asserts "
 srun -N1 -n1 -ppsmall ./slic_asserts
 echo "srun -N1 -n1 -ppsmall ./slic_fmt "
 srun -N1 -n1 -ppsmall ./slic_fmt
+echo "cd ../examples"
+cd ../examples
+echo "srun -N1 -n1 -ppsmall ./slic_driver "
+srun -N1 -n1 -ppsmall ./slic_driver
+echo "srun -N1 -n1 -ppsmall ./slic_cpplogger_example "
+srun -N1 -n1 -ppsmall ./slic_cpplogger_example
+echo "srun -N1 -n1 -ppsmall ./slic_logging_example "
+srun -N1 -n1 -ppsmall ./slic_logging_example

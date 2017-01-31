@@ -130,6 +130,7 @@ private:
    std::map< std::string, Field* > m_container;
 
    DISABLE_COPY_AND_ASSIGNMENT(FieldData);
+   DISABLE_MOVE_AND_ASSIGNMENT(FieldData);
 };
 
 } /* namespace mint */

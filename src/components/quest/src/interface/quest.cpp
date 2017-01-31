@@ -12,21 +12,29 @@
 
 // Quest includes
 #include "common/CommonTypes.hpp"
-#include "quest/STLReader.hpp"
-#include "quest/SignedDistance.hpp"
-
-#include "quest/BoundingBox.hpp"
-#include "quest/InOutOctree.hpp"
+#include "common/ATKMacros.hpp"
 
 #include "slic/slic.hpp"
 
-
-#ifdef USE_MPI
-  #include "quest/PSTLReader.hpp"
-  #include "slic/LumberjackStream.hpp"
+#ifdef ATK_USE_MPI
+  #ifdef ATK_USE_LUMBERJACK
+    #include "slic/LumberjackStream.hpp"
+  #else
+    #include "slic/SynchronizedStream.hpp"
+  #endif
 #else
   #include "slic/GenericOutputStream.hpp"
 #endif
+
+#include "quest/BoundingBox.hpp"
+#include "quest/InOutOctree.hpp"
+#include "quest/SignedDistance.hpp"
+
+#include "quest/STLReader.hpp"
+#ifdef ATK_USE_MPI
+  #include "quest/PSTLReader.hpp"
+#endif
+
 
 namespace quest
 {
@@ -278,7 +286,7 @@ namespace quest
         /**
          * \brief Sets up the formatted Slic logger for quest
          */
-#ifdef USE_MPI
+#ifdef ATK_USE_MPI
         void setupQuestLogger( MPI_Comm comm)
 #else
         void setupQuestLogger()
@@ -297,13 +305,19 @@ namespace quest
             slic::flushStreams();
             if( ! slic::activateLogger(questLoggerName) )
             {
-              #ifdef USE_MPI
-                const int RLIMIT = 8;
+              slic::LogStream* ls;
+
+              #ifdef ATK_USE_MPI
                 std::string fmt = "[<RANK>][Quest <LEVEL>]: <MESSAGE>\n";
-                slic::LogStream* ls = new slic::LumberjackStream( &std::cout, comm, RLIMIT, fmt );
+                #ifdef ATK_USE_LUMBERJACK
+                  const int RLIMIT = 8;
+                  ls = new slic::LumberjackStream( &std::cout, comm, RLIMIT, fmt);
+                #else
+                  ls = new slic::SynchronizedStream( &std::cout, comm, fmt );
+                #endif
               #else
-                std::string fmt = "[Quest <LEVEL>]: <MESSAGE>";
-                slic::LogStream* ls = new slic::GenericOutputStream(&std::cout, fmt);
+                std::string fmt = "[Quest <LEVEL>]: <MESSAGE>\n";
+                ls = new slic::GenericOutputStream(&std::cout, fmt);
               #endif
                 slic::createLogger(questLoggerName, slic::inherit::errors_and_warnings);
                 slic::activateLogger(questLoggerName);
@@ -352,7 +366,7 @@ namespace quest
 
 
 //------------------------------------------------------------------------------
-#ifdef USE_MPI
+#ifdef ATK_USE_MPI
 void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements, int maxLevels )
 {
@@ -439,7 +453,7 @@ void distance( const double* xyz, double* dist, int npoints )
   SLIC_ASSERT( xyz != ATK_NULLPTR );
   SLIC_ASSERT( dist != ATK_NULLPTR );
 
-#ifdef _OPENMP
+#ifdef ATK_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
   for ( int i=0; i < npoints; ++i ) {
@@ -497,7 +511,7 @@ void inside( const double* xyz, int* in, int npoints )
   SLIC_ASSERT( xyz != ATK_NULLPTR );
   SLIC_ASSERT( in != ATK_NULLPTR );
 
-#ifdef _OPENMP
+#ifdef ATK_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
   for ( int i=0; i < npoints; ++i ) {

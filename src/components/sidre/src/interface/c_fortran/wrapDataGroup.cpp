@@ -1021,29 +1021,24 @@ void SIDRE_datagroup_load_bufferify(SIDRE_datagroup * self,
 }
 
 void SIDRE_datagroup_load_external_data(SIDRE_datagroup * self,
-                                        const char * file_path,
-                                        const char * protocol)
+                                        const char * file_path)
 {
   DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.load_external_data
   const std::string SH_file_path(file_path);
-  const std::string SH_protocol(protocol);
-  selfobj->loadExternalData(SH_file_path, SH_protocol);
+  selfobj->loadExternalData(SH_file_path);
   return;
 // splicer end class.DataGroup.method.load_external_data
 }
 
 void SIDRE_datagroup_load_external_data_bufferify(SIDRE_datagroup * self,
                                                   const char * file_path,
-                                                  int Lfile_path,
-                                                  const char * protocol,
-                                                  int Lprotocol)
+                                                  int Lfile_path)
 {
   DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.load_external_data_bufferify
   const std::string SH_file_path(file_path, Lfile_path);
-  const std::string SH_protocol(protocol, Lprotocol);
-  selfobj->loadExternalData(SH_file_path, SH_protocol);
+  selfobj->loadExternalData(SH_file_path);
   return;
 // splicer end class.DataGroup.method.load_external_data_bufferify
 }

@@ -2,9 +2,9 @@
 #ifndef COMMON_CSTDINT_WRAPPER_HPP_
 #define COMMON_CSTDINT_WRAPPER_HPP_
 
-#include "common/config.hpp"    // define USE_CXX11
+#include "common/config.hpp"    // defines ATK_USE_CXX11
 
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   #include <cstdint>            // for fixed width types in c++11
 #endif
 
@@ -28,7 +28,7 @@ namespace common {
 namespace detail {
 
 
-#ifdef USE_CXX11
+#ifdef ATK_USE_CXX11
   typedef std::int8_t int8_t;
   typedef std::uint8_t uint8_t;
 
@@ -139,7 +139,7 @@ namespace detail {
   #undef __ATK_COMMON_STDINT_LONGLONG
   #undef __ATK_COMMON_STDINT_LONGLONG_SUFFIX
 
-#endif
+#endif  // ATK_USE_CXX11
 }     // end namespace detail
 }     // end namespace common
 }     // end namespace asctoolkit

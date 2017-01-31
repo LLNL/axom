@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 
     // Queue messages into lumberjack
     if (commRank == 0){
-        lj.queueMessage("This message will not combined");
+        lj.queueMessage("This message will not be combined");
     }
     else {
         lj.queueMessage("This message will be combined");
@@ -56,13 +56,16 @@ int main(int argc, char** argv)
     // Push messages fully through lumberjack's communicator
     lj.pushMessagesFully();
 
-    // Get messages back out of lumberjack since they have been pushed.
+    // Determine if this is an output node
     if (lj.isOutputNode()){
+        // Get Messages from Lumberjack
         std::vector<asctoolkit::lumberjack::Message*> messages = lj.getMessages();
         for(int i=0; i<(int)(messages.size()); ++i){
+            // Output a single Message at a time to screen
             std::cout << "(" << messages[i]->stringOfRanks() << ") " << messages[i]->ranksCount() <<
                          " '" << messages[i]->text() << "'" << std::endl;
         }
+        // Clear already outputted Messages from Lumberjack
         lj.clearMessages();
     }
 
