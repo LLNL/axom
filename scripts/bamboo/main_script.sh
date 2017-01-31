@@ -2,9 +2,10 @@
 # 09-12-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug"
 # 09-16-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug" ""
 # 09-19-2016 chang28, the decider has decided to have a configuration file call a main_script file, this is the main_script file, all environment variables are set up in the configuration file. 
+# 01-20-2017, chang28, use CTEST_OUTPUT_ON_FAILURE=1 for bamboo testing
 # 01-30-2017 chang28, add -DENABLE_DOCS=false if $DOC= false
 
-echo main_script version 0.9.5
+echo main_script version 1.0.1
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
 if [ "$DOC" = false ]; then
@@ -32,9 +33,9 @@ if [ "$BUILD" = true ]; then
 fi
 
 if [ "$TEST" = true ]; then
-    echo "Running tests..."
+    echo "Running tests env CTEST_OUTPUT_ON_FAILURE=1 ..."
     echo "-----------------------------------------------------------------------"
-    make test ARGS="-T Test -j$JOBS"
+    env CTEST_OUTPUT_ON_FAILURE=1 make test ARGS="-T Test -j$JOBS"
     if [ $? -ne 0 ]; then
         echo "Error: 'make test' failed"
         exit 1
