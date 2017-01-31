@@ -93,7 +93,7 @@ int main(int argc, char** argv)
   DataView * view2 = root2->getView("fields2/b/external_undescribed");
   view2->setExternalDataPtr(restored_vals2);
 
-  reader.loadExternalData(root2, "out_spio_external_write_read.root.hdf5"); 
+  reader.loadExternalData(root2, "out_spio_external_write_read.hdf5.root"); 
 
 
   /*

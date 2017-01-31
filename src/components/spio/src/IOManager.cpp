@@ -95,7 +95,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
     m_baton = new IOBaton(m_mpi_comm, num_files);
   }
 
-  std::string root_name = file_string + ".root";
+  std::string root_name = file_string + ".hdf5.root";
 
   if (m_my_rank == 0) {
      createRootFile(file_string, num_files, protocol);
@@ -103,11 +103,11 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
   MPI_Barrier(m_mpi_comm);
 
   if (protocol == "sidre_hdf5") {
-    std::string file_pattern = getHDF5FilePattern(root_name + ".hdf5");
+    std::string file_pattern = getHDF5FilePattern(root_name);
 
     int group_id = m_baton->wait();
 
-    std::string hdf5_name = getHDF5FileName(file_pattern, root_name + ".hdf5", group_id);
+    std::string hdf5_name = getHDF5FileName(file_pattern, root_name, group_id);
 
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup()) {
