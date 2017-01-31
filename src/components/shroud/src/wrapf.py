@@ -1028,11 +1028,13 @@ class Wrapf(util.WrapperMixin):
 
 def find_all_helpers(helpers, check=None):
     """Find all helper functions recursively.
+    A helper function is required by some argument/result conversions.
     """
 
     if check is None:
         # do all top level helpers
-        keys = helpers.keys()  # Copy initial keys since helpers may change
+        # Copy initial keys since helpers may change
+        keys = list(helpers.keys())
         for check in keys:
             for name in whelpers.FHelpers[check].get('f_helper', []):
                 find_all_helpers(helpers, name)

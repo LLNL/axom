@@ -64,6 +64,12 @@ void FC_GLOBAL(shroud_c_loc,SHROUD_C_LOC)(void * addr, void * * out)
 #
 # Fortran helper functions which may be added to a module.
 #
+# f_helpers = dictionary of helpers needed by this helper
+# private   = names for PRIVATE statement 
+# interface = code for INTERFACE
+# source    = code for CONTAINS
+#
+#
 FHelpers = dict(
     fstr=dict(
         f_helper=dict(strlen_ptr=True, strlen_arr=True),
