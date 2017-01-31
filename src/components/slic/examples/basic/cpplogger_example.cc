@@ -45,6 +45,7 @@ int main( int argc, char** argv )
   //----------------------------------------------------------------------------
   slic::initialize();
   slic::setLoggingMsgLevel(slic::message::Debug);
+  slic::disableAbortOnError();
 
   //----------------------------------------------------------------------------
   // STEP 1: Create log streams
@@ -74,7 +75,6 @@ int main( int argc, char** argv )
   //----------------------------------------------------------------------------
   // STEP 2: add streams to logger
   //----------------------------------------------------------------------------
-  slic::addStreamToMsgLevel(hspLogStream,slic::message::Fatal);
   slic::addStreamToMsgLevel(hspLogStream,slic::message::Error);
   slic::addStreamToMsgLevel(hspLogStream,slic::message::Warning);
 

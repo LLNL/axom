@@ -16,6 +16,10 @@
  *       since it might be included from a C file
  */
 
+/*
+ * Compiler tests
+ */
+#cmakedefine USE_C_LOC_WITH_ASSUMED_SHAPE
 
 /* 
  * Compiler defines for libraries (built-in and third party) 

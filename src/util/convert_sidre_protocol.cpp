@@ -471,7 +471,6 @@ void setupLogging()
     diStream = new slic::GenericOutputStream( &std::cout, diFormatStr );
 #endif
 
-    slic::addStreamToMsgLevel(wefStream, slic::message::Fatal) ;
     slic::addStreamToMsgLevel(wefStream, slic::message::Error);
     slic::addStreamToMsgLevel(wefStream, slic::message::Warning);
     slic::addStreamToMsgLevel(diStream,  slic::message::Info);

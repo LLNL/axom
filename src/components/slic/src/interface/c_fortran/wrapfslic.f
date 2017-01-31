@@ -94,6 +94,60 @@ module slic_mod
             integer(C_INT), value, intent(IN) :: level
         end subroutine slic_set_logging_msg_level
 
+        subroutine c_set_abort_on_error(status) &
+                bind(C, name="SLIC_set_abort_on_error")
+            use iso_c_binding
+            implicit none
+            logical(C_BOOL), value, intent(IN) :: status
+        end subroutine c_set_abort_on_error
+
+        subroutine slic_enable_abort_on_error() &
+                bind(C, name="SLIC_enable_abort_on_error")
+            use iso_c_binding
+            implicit none
+        end subroutine slic_enable_abort_on_error
+
+        subroutine slic_disable_abort_on_error() &
+                bind(C, name="SLIC_disable_abort_on_error")
+            use iso_c_binding
+            implicit none
+        end subroutine slic_disable_abort_on_error
+
+        function c_is_abort_on_errors_enabled() &
+                result(rv) &
+                bind(C, name="SLIC_is_abort_on_errors_enabled")
+            use iso_c_binding
+            implicit none
+            logical(C_BOOL) :: rv
+        end function c_is_abort_on_errors_enabled
+
+        subroutine c_set_abort_on_warning(status) &
+                bind(C, name="SLIC_set_abort_on_warning")
+            use iso_c_binding
+            implicit none
+            logical(C_BOOL), value, intent(IN) :: status
+        end subroutine c_set_abort_on_warning
+
+        subroutine slic_enable_abort_on_warning() &
+                bind(C, name="SLIC_enable_abort_on_warning")
+            use iso_c_binding
+            implicit none
+        end subroutine slic_enable_abort_on_warning
+
+        subroutine slic_disable_abort_on_warning() &
+                bind(C, name="SLIC_disable_abort_on_warning")
+            use iso_c_binding
+            implicit none
+        end subroutine slic_disable_abort_on_warning
+
+        function c_is_abort_on_warnings_enabled() &
+                result(rv) &
+                bind(C, name="SLIC_is_abort_on_warnings_enabled")
+            use iso_c_binding
+            implicit none
+            logical(C_BOOL) :: rv
+        end function c_is_abort_on_warnings_enabled
+
         subroutine c_log_message(level, message, fileName, line, filter) &
                 bind(C, name="SLIC_log_message")
             use iso_c_binding
@@ -168,6 +222,46 @@ contains
             len(name, kind=C_INT))
         ! splicer end get_active_logger_name
     end subroutine slic_get_active_logger_name
+
+    subroutine slic_set_abort_on_error(status)
+        use iso_c_binding, only : C_BOOL
+        implicit none
+        logical, value, intent(IN) :: status
+        logical(C_BOOL) tmp_status
+        tmp_status = status  ! coerce to C_BOOL
+        ! splicer begin set_abort_on_error
+        call c_set_abort_on_error(tmp_status)
+        ! splicer end set_abort_on_error
+    end subroutine slic_set_abort_on_error
+
+    function slic_is_abort_on_errors_enabled() result(rv)
+        use iso_c_binding, only : C_BOOL
+        implicit none
+        logical :: rv
+        ! splicer begin is_abort_on_errors_enabled
+        rv = c_is_abort_on_errors_enabled()
+        ! splicer end is_abort_on_errors_enabled
+    end function slic_is_abort_on_errors_enabled
+
+    subroutine slic_set_abort_on_warning(status)
+        use iso_c_binding, only : C_BOOL
+        implicit none
+        logical, value, intent(IN) :: status
+        logical(C_BOOL) tmp_status
+        tmp_status = status  ! coerce to C_BOOL
+        ! splicer begin set_abort_on_warning
+        call c_set_abort_on_warning(tmp_status)
+        ! splicer end set_abort_on_warning
+    end subroutine slic_set_abort_on_warning
+
+    function slic_is_abort_on_warnings_enabled() result(rv)
+        use iso_c_binding, only : C_BOOL
+        implicit none
+        logical :: rv
+        ! splicer begin is_abort_on_warnings_enabled
+        rv = c_is_abort_on_warnings_enabled()
+        ! splicer end is_abort_on_warnings_enabled
+    end function slic_is_abort_on_warnings_enabled
 
     subroutine slic_log_message(level, message, fileName, line, filter)
         use iso_c_binding, only : C_BOOL, C_INT
