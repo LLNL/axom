@@ -9,7 +9,7 @@ Fields
 
 Fields only apply to the type, class or function to which it belongs.
 They are not inherited.
-For example, *C_name* is a field which is used to name
+For example, *C_name* is a field which is used to explicitly name
 a single C wrapper function.  While *C_name_template* is an option which
 controls the default value of *C_name*.
 
@@ -81,8 +81,8 @@ defines values which may be used.
 
 Library name - Updated after reading YAML file.
    * library - The value of **field** *library*.
-   * lower_library - Lowercase version of *library*.
-   * upper_library - Uppercase version of *library*.
+   * library_lower - Lowercase version of *library*.
+   * library_upper - Uppercase version of *library*.
 
 Class name - Updated before processing each class.
    * cpp_class - The name of the C++ class from the YAML input file.
@@ -265,13 +265,12 @@ set in the global **options** and it will apply to all functions::
 The generated Fortran wrapper::
 
     subroutine function4b(arg1, arg2, output)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
         character(*), intent(OUT) :: output
-        type(C_PTR) :: rv
-        rv = tut_function4b_bufferify(  &
+        rv = c_function4b_bufferify(  &
             arg1,  &
             len_trim(arg1),  &
             arg2,  &
@@ -285,8 +284,9 @@ The generated C wrapper::
     void TUT_function4b_bufferify(const char * arg1, int Larg1,
                                   const char * arg2, int Larg2,
                                   char * output, int Loutput) {
-        const std::string rv = Function4b(std::string(arg1, Larg1),
-                                          std::string(arg2, Larg2));
+        const std::string SH_arg1(arg1, Larg1);
+        const std::string SH_arg2(arg2, Larg2);
+        const std::string & rv = Function4b(SH_arg1, SH_arg2);
         asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
         return;
     }

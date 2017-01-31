@@ -37,6 +37,9 @@ path PATH
 Code
 ----
 
+This section show the templates which are used to create code.
+The names in curly parens are user settable values. 
+
 The C wrapper code::
 
     struct s_{C_type_name};
@@ -261,10 +264,10 @@ C_impl_filename_class_template
 
 
 F_module_name_library_template
-    ``{lower_library}_mod``
+    ``{library_lower}_mod``
 
 F_impl_filename_library_template
-    ``wrapf{lower_library}.f``
+    ``wrapf{library_lower}.f``
 
 F_module_name_class_template
     ``{class_lower}_mod``
@@ -404,6 +407,7 @@ cpp_local_var
     When *c_to_cpp* is not sufficient to assign a value, *c_statements* can be used to 
     add multiple statements into the wrapper.  *c_statements* and *cpp_local_var* cannot
     be used together.
+
 ..  {C_const}{cpp_type}{ptr} = c_to_cpp ;
 
 c_type
