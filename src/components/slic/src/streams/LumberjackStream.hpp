@@ -67,10 +67,10 @@ class LumberjackStream : public LogStream
 public:
   LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit );
   LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
-                    std::string& format );
+                    const std::string& format );
   LumberjackStream( std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj );
   LumberjackStream( std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj,
-                    std::string& format );
+                    const std::string& format );
 
   virtual ~LumberjackStream();
 
