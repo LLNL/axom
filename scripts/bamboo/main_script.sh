@@ -2,10 +2,14 @@
 # 09-12-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug"
 # 09-16-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug" ""
 # 09-19-2016 chang28, the decider has decided to have a configuration file call a main_script file, this is the main_script file, all environment variables are set up in the configuration file. 
+# 01-30-2017 chang28, add -DENABLE_DOCS=false if $DOC= false
 
-echo main_script version 0.9.3
+echo main_script version 0.9.5
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
+if [ "$DOC" = false ]; then
+   OPTIONS=$OPTIONS+" -DENABLE_DOCS=false";
+fi
 echo "Options: $OPTIONS"
 ./scripts/config-build.py $OPTIONS
 if [ $? -ne 0 ]; then
