@@ -4,7 +4,7 @@
 # chang28, 01-31-2017, change the script to generate bgq_autogen_test.sh on the fly
 
 echo "running bgq_test.sh version 1.00"
-echo "cd ../../atk_build
+echo "cd ../../atk_build"
 cd ../../atk_build
 grep -v ^# project_test_commands.txt | awk '{$1 = ""; printf "echo "; print; printf "srun -N1 -n1 -ppsmall " ;print}' > bgq_autogen_test.sh
 chmod a+x bgq_autogen_test.sh
