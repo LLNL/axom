@@ -8,6 +8,7 @@ from __future__ import absolute_import
 import unittest
 
 from . import test_parse_decl
+from . import test_shroud
 from . import test_util
 
 
@@ -15,6 +16,7 @@ test_cases = (
     test_parse_decl.CheckDeclCase,
     test_util.UtilCase,
     test_util.OptionCase,
+    test_shroud.MainCase,
 )
 
 

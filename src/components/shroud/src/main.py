@@ -1473,6 +1473,13 @@ def main():
                         help='Input file to process')
 
     args = parser.parse_args()
+    main_with_args(args)
+
+
+def main_with_args(args):
+    """Main after args have been parsed.
+    Useful for testing.
+    """
 
     # check command line options
     if len(args.filename) == 0:
