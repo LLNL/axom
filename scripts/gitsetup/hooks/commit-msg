@@ -19,9 +19,11 @@ LINE_MAX=78
 commit_msg="$GIT_DIR/COMMIT_MSG"
 sed -n -e '/^#/d' -e '/^diff --git/q' -e 'p;d' "$1" > "$commit_msg"
 
+basedir=`git rev-parse --show-toplevel`
+
 die_advice='
 To continue editing, run the command
-  git commit -e -F '"$commit_msg"'
+  git commit -e -F '"$basedir/$commit_msg"'
 (assuming your working directory is at the top).'
 
 ##-----------------------------------------------------------------------
