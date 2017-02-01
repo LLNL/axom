@@ -253,7 +253,7 @@ CommandLineArguments parseArguments(int argc, char** argv)
 void loadBaselineData(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& args)
 {
     asctoolkit::spio::IOManager reader(MPI_COMM_WORLD);
-    reader.read(grp, args.baselineRoot);
+    reader.read(grp, args.baselineRoot, "sidre_hdf5");
 
     /// Check that the required fields are present
 

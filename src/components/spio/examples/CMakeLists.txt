@@ -5,6 +5,7 @@
 set(example_sources
     IORead.cpp
     IOWrite.cpp
+    IOProtocolWrite.cpp
 )
 
 set(SPIO_EXAMPLE_DEPENDS spio sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
