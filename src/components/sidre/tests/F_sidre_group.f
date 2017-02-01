@@ -118,7 +118,7 @@ contains
     type(datagroup) root,parent
     type(dataview) view, view2
 
-    call set_case_name("has_view")
+    call set_case_name("get_view")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -597,7 +597,7 @@ contains
     type(datastore) ds1, ds2
     type(datagroup) root1, root2
 
-    call set_case_name("save_restore_empty")
+    call set_case_name("save_restore_empty_datastore")
 
     ds1 = datastore_new()
     root1 = ds1%get_root()

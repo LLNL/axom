@@ -25,37 +25,37 @@ set(ENABLE_FORTRAN ON CACHE PATH "")
 set(CMAKE_Fortran_COMPILER  "/home/taylor16/apps/gcc-4.9.4/bin/gfortran" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "/home/taylor16/ZZZ-blddir/local" CACHE PATH "")
+set(HDF5_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "/home/taylor16/ZZZ-blddir/local" CACHE PATH "")
+set(CONDUIT_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
 
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "/home/taylor16/ZZZ-blddir/local/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "/home/taylor16/tpl/v2/bin/doxygen" CACHE PATH "")
 
 # python from uberenv
-set(PYTHON_EXECUTABLE "/home/taylor16/ZZZ-blddir/local/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "/home/taylor16/tpl/v2/bin/python" CACHE PATH "")
 
 # lua from uberenv
-set(LUA_DIR "/home/taylor16/ZZZ-blddir/local" CACHE PATH "")
+set(LUA_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
 
 # sphinx from uberenv
-set(SPHINX_EXECUTABLE "/home/taylor16/ZZZ-blddir/local/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "/home/taylor16/tpl/v2/bin/sphinx-build" CACHE PATH "")
 
 # uncrustify from uberenv
-set(UNCRUSTIFY_EXECUTABLE "/home/taylor16/ZZZ-blddir/local/bin/uncrustify" CACHE PATH "")
+set(UNCRUSTIFY_EXECUTABLE "/home/taylor16/tpl/v2/bin/uncrustify" CACHE PATH "")
 
 # sparsehash headers from uberenv
-set(SPARSEHASH_DIR "/home/taylor16/ZZZ-blddir/local" CACHE PATH "")
+set(SPARSEHASH_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
 
 # boost headers from uberenv
 set(ENABLE_BOOST ON CACHE PATH "")
-set(BOOST_ROOT "/home/taylor16/ZZZ-blddir/local" CACHE PATH "")
+set(BOOST_ROOT "/home/taylor16/tpl/v2" CACHE PATH "")
 
 # lcov and genhtml from uberenv
-set(LCOV_PATH "/home/taylor16/ZZZ-blddir/local/bin/lcov" CACHE PATH "")
+set(LCOV_PATH "/home/taylor16/tpl/v2/usr/bin/lcov" CACHE PATH "")
 
-set(GENHTML_PATH "/home/taylor16/ZZZ-blddir/local/bin/genhtml" CACHE PATH "")
+set(GENHTML_PATH "/home/taylor16/tpl/v2/usr/bin/genhtml" CACHE PATH "")
 
 ##################################
 # end uberenv host-config
