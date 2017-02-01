@@ -40,18 +40,24 @@ endif()
 ################################
 # Find boost headers
 ################################
-if (ENABLE_BOOST)
-  if (DEFINED BOOST_ROOT)
+if (BOOST_DIR)
+
+    # set the vars that the standard cmake boost logic needs
+    set(ENABLE_BOOT ON)
+    set(BOOST_ROOT ${BOOST_DIR})
+
+    # find boost
     find_package(Boost
                  1.58
                  REQUIRED)
+    
     blt_register_library(NAME boost
                          INCLUDES ${Boost_INCLUDE_DIR})
+    
     MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
     MESSAGE(STATUS "Boost version: " ${Boost_VERSION})
-  else()
-    MESSAGE(FATAL_ERROR "ENABLE_BOOST is true, but BOOST_ROOT was not set.  Check your host-config file.")
-  endif()
+    # this is what we used to signal boost is on in our build system
+    set(BOOST_FOUND ON)
 endif()
 
 ################################
@@ -60,7 +66,7 @@ endif()
 
 if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
     ################################
-    # Setup includes for Python & Numpy
+    # Setup includes for Python
     ################################
     include(cmake/thirdparty/FindPython.cmake)
     message(STATUS "Using Python Include: ${PYTHON_INCLUDE_DIRS}")

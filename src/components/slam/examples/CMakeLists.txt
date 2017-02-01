@@ -20,7 +20,7 @@ set(slam_tests_depends_on common slic slam)
 
 # Slam works without boost, but we need to add the header dependency when boost is available
 set(slam_tests_extra_depends)
-if(ENABLE_BOOST)
+if(BOOST_FOUND)
   list(APPEND slam_tests_extra_depends boost)
 endif()
 
@@ -61,7 +61,7 @@ add_subdirectory(tinyHydro)
 #
 # An example that use the Slam iterators and therefore depends on boost
 #
-if(ENABLE_BOOST)
+if(BOOST_FOUND)
     list(APPEND slam_tests_extra_depends fmt)
 
     # Unstructured hexahedral mesh

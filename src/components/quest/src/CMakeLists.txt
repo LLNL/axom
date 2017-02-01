@@ -65,7 +65,7 @@ set( quest_depends_on
      slam
      )
 
-if (ENABLE_BOOST)
+if (BOOST_FOUND)
     list(APPEND quest_depends_on boost)
 endif()
 
