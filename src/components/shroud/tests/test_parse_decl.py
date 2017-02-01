@@ -5,8 +5,6 @@ from __future__ import print_function
 
 from shroud import parse_decl
 
-import json          # use for printing
-import sys
 import unittest
 
 class CheckDeclCase(unittest.TestCase):

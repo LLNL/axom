@@ -577,53 +577,10 @@ class ExpandedEncoder(json.JSONEncoder):
 
 
 if __name__ == '__main__':
-    print(un_camel('incrementCount'))
-    print(un_camel('local_function1'))
-    print(un_camel('getHTTPResponseCode'))
-
-    a = dict(name='aa', type='int', attrs=dict(ptr=True))
-    b = dict(attrs=dict(len='somefunction'))
-
-    print("AAAA", a)
-    print("BBBB", b)
-#    b.update(a)
-    update(b, a)
-    print("CCCC", b)
-
     # Argument
     print("Test Typedef")
     a = Typedef('top', base='new_base')  # , bird='abcd')
     print(json.dumps(a, cls=ExpandedEncoder, sort_keys=True))
-
-    # Option
-    print("Test Option")
-    lev0 = Options(None, a=1, b=2, c=3)
-    lev1 = Options(lev0, x=100, y=1, z=102)
-    lev0.c2 = 32
-    lev1.z2 = 103
-
-    print(lev0.a)
-    print(lev0.c2)
-    # print(lev0.z)
-    print(lev1.a)
-    print(lev1.z)
-    print(lev1.c2)
-    print(lev1.z2)
-    try:
-        print(lev1.nosuch)
-    except AttributeError:
-        print("Passed nosuch attribute")
-
-    lev1.setdefault('yyy', 'yyyvalue')
-
-    print("GET",  lev1.get('a', 'notfound'))
-    print("GET",  lev1.get('nosuch', 'notfound'))
-
-    print("IN  a", 'a' in lev1)
-    print("IN  z", 'z' in lev1)
-    print("IN  c2", 'c2' in lev1)
-    print("IN  z2", 'z2' in lev1)
-    print("IN nosuch", 'nosuch' in lev1)
 
     print("FORMAT:", wformat("{a} {z} {c2} {z2}", lev1))
 
