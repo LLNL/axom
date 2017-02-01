@@ -53,11 +53,10 @@ class TestCommunicator: public asctoolkit::lumberjack::Communicator {
             return 1;
         }
 
-        void push(const char* packedMessagesToBeSent,
-                  std::vector<const char*>& receivedPackedMessages)
+        void push(const char* /* packedMessagesToBeSent */,
+                  std::vector<const char*>& /* receivedPackedMessages */)
         {
-            packedMessagesToBeSent = packedMessagesToBeSent;
-            receivedPackedMessages = receivedPackedMessages;
+
         }
 
         bool isOutputNode()
