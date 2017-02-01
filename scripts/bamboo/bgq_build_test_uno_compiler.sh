@@ -29,7 +29,7 @@ COMPILER=$3
 #else
 #    HOST_CONFIGURATION="host-configs/surface-chaos_5_x86_64_ib-${COMPILER}.cmake"
 #fi
-    HOST_CONFIGURATION="host-configs/vulcan-bgqos_0-${COMPILER}.cmake"
+    HOST_CONFIGURATION="host-configs/vulcanlac-bgqos_0-${COMPILER}.cmake"
 
 OPTIONS="-ecc -hc $HOST_CONFIGURATION -bt $BUILD_TYPE -bp $BUILD_PATH -ip $INSTALL_PATH $COMP_OPT $BUILD_OPT"
 echo Running $COMPILER
