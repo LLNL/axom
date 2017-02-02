@@ -18,11 +18,17 @@
 from __future__ import print_function
 
 import argparse
+import errno
 import filecmp
 import logging
 import os
 import subprocess
 import sys
+
+#from io import StringIO
+from io import BytesIO as StringIO
+
+import shroud.main
 
 #subprocess.call("ls -l", shell=True)
 
@@ -42,23 +48,38 @@ class Tester:
         self.ref_dir = ''    # reference directory
         self.result_dir = ''
 
+    def open_log(self, logname):
+        logging.basicConfig(filename=os.path.join(
+            self.test_output_dir, logname),
+                            filemode='w',
+                            level=logging.DEBUG,
+                        )
+
+    def close_log(self):
+        logging.shutdown()
+
     def set_environment(self, input, output, executable=None):
+        """Set environment for all tests.
+        """
         self.test_input_dir = input
         self.test_output_dir = output
 
-        if not os.path.isdir(output):
-            raise SystemExit('Missing binary directory: ' + output)
+        status = True
         if not os.path.isdir(input):
-            raise SystemExit('Missing source directory: ' + input)
+            status = False
+            print('Missing source directory:', input)
         if executable:
             if not os.path.isdir(executable):
-                raise SystemExit('Missing executable directory: ' +
-                                 executable)
+                status = False
+                print('Missing executable directory:', executable)
             self.code_path = os.path.join(executable, 'shroud')
-            logging.info('Code to test: ' + self.code_path)
-                
+        makedirs(output)
+        return status
 
     def set_test(self, name, replace_ref=False):
+        """Setup for a single test.     
+        """
+        self.testname = name
         logging.info('--------------------------------------------------')
         logging.info('Testing ' + name)
 
@@ -82,13 +103,66 @@ class Tester:
 
         return True
 
-    def do_module(self, name):
-        pass
+    def push_stdout(self):
+        # redirect stdout and stderr
+        self.stdout = StringIO()
+        self.saved_stdout = sys.stdout
+        sys.stdout = self.stdout
+
+        self.stderr = StringIO()
+        self.saved_stderr = sys.stderr
+        sys.stderr = self.stderr
+
+    def pop_stdout(self):
+        self.stdout_lines = self.stdout.getvalue()
+        self.stdout.close()
+        sys.stdout = self.saved_stdout
+
+        self.stderr_lines = self.stderr.getvalue()
+        self.stderr.close()
+        sys.stderr = self.saved_stderr
+
+    def do_module(self):
+        """Run Shroud via a method."""
+        args = argparse.Namespace(
+            outdir=self.result_dir,
+            outdir_c_fortran='',
+            outdir_python='',
+            outdir_lua='',
+            logdir=self.result_dir,
+            cfiles='',
+            ffiles='',
+            path=[self.test_input_dir],
+            filename=[self.testyaml]
+        )
+        logging.info('Arguments: ' + str(args))
+
+        status = True
+        self.push_stdout()
+        try:
+            shroud.main.main_with_args(args)
+        except:
+            logging.error('Shroud failed')
+            status = False
+        self.pop_stdout()
+
+        # write output to a file
+        output_file = os.path.join(self.result_dir, 'output')
+        fp = open(output_file, 'w')
+        fp.write(self.stdout_lines)
+        fp.close()
+
+        if status:
+            status = self.do_compare()
+
+        return status
 
     def do_test(self):
         """ Run test, return True/False for pass/fail.
         Files must compare, with no extra or missing files.
         """
+        logging.info('Code to test: ' + self.code_path)
+
         cmd = [
             self.code_path,
             '--path', self.test_input_dir,
@@ -145,21 +219,24 @@ class Tester:
                 logging.warn('Only in result: ' + file)
 
         if status:
-            logging.info('Test {} pass'.format(name))
+            logging.info('Test {} pass'.format(self.testname))
         else:
-            logging.info('Test {} fail'.format(name))
+            logging.info('Test {} fail'.format(self.testname))
         return status
 
 
 def makedirs(path):
     """ Make sure directory exists.
     """
-    try: 
-        os.makedirs(path)
-    except OSError:
-        if not os.path.isdir(path):
-            raise
-    # os.makedirs(path,exist_ok=True) python3  3.2
+    try:
+        # Python >=3.2
+        os.makedirs(path, exist_ok=True)
+    except TypeError:
+        try:
+            os.makedirs(path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST or not os.path.isdir(path):
+                raise
 
 
 def clear_files(path):
@@ -191,16 +268,13 @@ if __name__ == '__main__':
 
     tester = Tester()
 
-    tester.set_environment(os.environ['TEST_INPUT_DIR'], 
-                           os.environ['TEST_OUTPUT_DIR'],
-                           os.environ['EXECUTABLE_DIR'])
-
-    logname = 'test.log'
-    logging.basicConfig(filename=os.path.join(
-        tester.test_output_dir, logname),
-                        filemode='w',
-                        level=logging.DEBUG,
-    )
+    status = tester.set_environment(
+        os.environ['TEST_INPUT_DIR'], 
+        os.environ['TEST_OUTPUT_DIR'],
+        os.environ['EXECUTABLE_DIR'])
+    if not status:
+        raise SystemExit('Error in environment')
+    tester.open_log('test.log')
 
     if args.testname:
         test_names = args.testname
@@ -237,5 +311,5 @@ if __name__ == '__main__':
     print(msg)
     logging.info(msg)
 
-    logging.shutdown()
+    tester.close_log()
     sys.exit(exit_status)

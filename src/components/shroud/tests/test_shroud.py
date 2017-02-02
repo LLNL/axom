@@ -1,50 +1,60 @@
 from __future__ import print_function
+#from __future__ import unicode_literals
 
 from shroud import main
 
-import argparse
-import io
+import os
 import sys
+import sysconfig
 import unittest
+
+import do_test
+
+def distutils_dir_name(dname):
+    """Returns the name of a distutils build directory"""
+    f = "{dirname}.{platform}-{version[0]}.{version[1]}"
+    return f.format(dirname=dname,
+                    platform=sysconfig.get_platform(),
+                    version=sys.version_info)
 
 
 class MainCase(unittest.TestCase):
     def setUp(self):
-        # Default command line arguments
-        self.args = argparse.Namespace(
-            outdir='',
-            outdir_c_fortran='',
-            outdir_python='',
-            outidr_lua='',
-            logdir='',
-            cfiles='',
-            ffiles='',
-            path=[],
-            filename=[]
-        )
 
-        # redirect stdout and stderr
-        self.stdout = io.StringIO()
-        self.saved_stdout = sys.stdout
-        sys.stdout = self.stdout
+        # python -m unittest tests
 
-        self.stderr = io.StringIO()
-        self.saved_stderr = sys.stderr
-        sys.stdout = self.stderr
+#        self.cwd = os.getcwd()
+        self.cwd = os.path.join(os.getcwd(), 'tests')
 
-    def tearDown(self):
-        self.stdout.close()
-        sys.stdout = self.saved_stdout
+        self.testdir = os.path.abspath(
+            os.path.join(
+                self.cwd, '..', 'build', distutils_dir_name('temp')))
+        self.tester = do_test.Tester()
+        self.assertTrue(
+            self.tester.set_environment(self.cwd, self.testdir))
 
-        self.stderr.close()
-        sys.stderr = self.saved_stderr
+    def run_shroud(self, input):
+        tester = self.tester
+        tester.open_log(input + '.log')
+        tester.set_test(input)
+        status = tester.do_module()
+        tester.close_log()
+        self.assertTrue(status)
 
-    def test_no_args(self):
-        """Run with no arguments.
-        """
-        args = self.args
-        with self.assertRaises(SystemExit):
-            main.main_with_args(args)
+    def test_example(self):
+        self.run_shroud('example')
+
+    def test_include(self):
+        self.run_shroud('include')
+
+    def test_names(self):
+        self.run_shroud('names')
+
+    def test_strings(self):
+        self.run_shroud('strings')
+
+    def test_tutorial(self):
+        self.run_shroud('tutorial')
 
 
 if __name__ == '__main__':
