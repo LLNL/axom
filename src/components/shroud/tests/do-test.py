@@ -31,121 +31,124 @@ import sys
 #    print line.rstrip()
 
 
-test_source_dir = ''
-test_binary_dir = ''
+class Tester:
+    def __init__(self):
+        self.test_input_dir = ''
+        self.test_output_dir = ''
 
-executable_dir = ''
-code_path = ''
+        self.code_path = ''
 
-def do_test(name, replace_ref):
-    """ Run test, return True/False for pass/fail.
-    Files must compare, with no extra or missing files.
-    """
-    status = True  # assume it passes
-    logging.info('--------------------------------------------------')
-    logging.info('Testing ' + name)
+        self.testyaml = ''   # input file
+        self.ref_dir = ''    # reference directory
+        self.result_dir = ''
 
-    testyaml = os.path.join(test_source_dir, name + '.yaml')
-    logging.info('Input file: ' + testyaml)
-    if not os.path.isfile(testyaml):
-        logging.error('Input file does not exist')
-        return False
+    def set_environment(self, input, output, executable=None):
+        self.test_input_dir = input
+        self.test_output_dir = output
 
-    ref_dir = os.path.join(test_source_dir, name)
-    logging.info('Reference directory: ' + ref_dir)
+        if not os.path.isdir(output):
+            raise SystemExit('Missing binary directory: ' + output)
+        if not os.path.isdir(input):
+            raise SystemExit('Missing source directory: ' + input)
+        if executable:
+            if not os.path.isdir(executable):
+                raise SystemExit('Missing executable directory: ' +
+                                 executable)
+            self.code_path = os.path.join(executable, 'shroud')
+            logging.info('Code to test: ' + self.code_path)
+                
 
-    if replace_ref:
-        # replacing reference, just create directly in ref directory
-        result_dir = ref_dir
-    else:
-        result_dir = os.path.join(test_binary_dir, 'tests', name)
-        logging.info('Result directory: ' + result_dir)
-        makedirs(result_dir)
-        clear_files(result_dir)
+    def set_test(self, name, replace_ref=False):
+        logging.info('--------------------------------------------------')
+        logging.info('Testing ' + name)
 
-    cmd = [
-        code_path,
-        '--path', test_source_dir,
-        '--logdir', result_dir,
-        '--outdir', result_dir,
-        testyaml,
-        ]
-    logging.debug(' '.join(cmd))
+        self.testyaml = os.path.join(self.test_input_dir, name + '.yaml')
+        logging.info('Input file: ' + self.testyaml)
+        if not os.path.isfile(self.testyaml):
+            logging.error('Input file does not exist')
+            return False
 
-    try:
-        output = subprocess.check_output(
-            cmd,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
-    except subprocess.CalledProcessError as exc:
-        logging.error('Exit status: %d' % exc.returncode)
-        logging.error(exc.output)
-        return False
+        self.ref_dir = os.path.join(self.test_input_dir, name)
+        logging.info('Reference directory: ' + self.ref_dir)
 
-    output_file = os.path.join(result_dir, 'output')
-    fp = open(output_file, 'w')
-    fp.write(output)
-    fp.close()
+        if replace_ref:
+            # replacing reference, just create directly in ref directory
+            self.result_dir = self.ref_dir
+        else:
+            self.result_dir = os.path.join(self.test_output_dir, name)
+            logging.info('Result directory: ' + self.result_dir)
+            makedirs(self.result_dir)
+            clear_files(self.result_dir)
 
-    """
-    pipes = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    std_out, std_err = pipes.communicate()
-
-    if pipes.returncode != 0:
-        // an error happened!
-        err_msg = "%s. Code: %s" % (std_err.strip(), pipes.returncode)
-        raise Exception(err_msg)
-
-    elif len(std_err):
-        // return code is 0 (no error), but we may want to
-        // do something with the info on std_err
-        // i.e. logger.warning(std_err)
-
-    // do whatever you want with std_out
-    // i.e. json.loads(std_out)
-"""
-
-    # collect output file names
-#    outfiles = []
-#    for line in output.splitlines():
-#        if line.startswith('Wrote '):
-#            outfiles.append( line[6:] )
-#    print("XXXX", outfiles)
-
-    if replace_ref:
         return True
 
-    cmp = filecmp.dircmp(ref_dir, result_dir)
-    if not os.path.exists(ref_dir):
-        logging.info('Reference directory does not exist: ' + ref_dir)
-        return False
+    def do_module(self, name):
+        pass
 
-    match, mismatch, errors = filecmp.cmpfiles(ref_dir, result_dir, cmp.common)
-    for file in cmp.common:
-        logging.info('Compare: ' + file)
-    if mismatch:
-        status = False
-        for file in mismatch:
-            logging.warn('Does not compare: '+ file)
-    if errors:
-        status = False
-        for file in errors:
-            logging.warn('Unable to compare: ' + file)
+    def do_test(self):
+        """ Run test, return True/False for pass/fail.
+        Files must compare, with no extra or missing files.
+        """
+        cmd = [
+            self.code_path,
+            '--path', self.test_input_dir,
+            '--logdir', self.result_dir,
+            '--outdir', self.result_dir,
+            self.testyaml,
+            ]
+        logging.debug(' '.join(cmd))
 
-    if cmp.left_only:
-        status = False
-        for file in cmp.left_only:
-            logging.warn('Only in reference: ' + file)
-    if cmp.right_only:
-        status = False
-        for file in cmp.right_only:
-            logging.warn('Only in result: ' + file)
+        try:
+            output = subprocess.check_output(
+                cmd,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True)
+        except subprocess.CalledProcessError as exc:
+            logging.error('Exit status: %d' % exc.returncode)
+            logging.error(exc.output)
+            return False
 
-    if status:
-        logging.info('Test {} pass'.format(name))
-    else:
-        logging.info('Test {} fail'.format(name))
-    return status
+        output_file = os.path.join(self.result_dir, 'output')
+        fp = open(output_file, 'w')
+        fp.write(output)
+        fp.close()
+
+        return True
+
+    def do_compare(self):
+        status = True  # assume it passes
+
+        cmp = filecmp.dircmp(self.ref_dir, self.result_dir)
+        if not os.path.exists(self.ref_dir):
+            logging.info('Reference directory does not exist: ' + self.ref_dir)
+            return False
+
+        match, mismatch, errors = filecmp.cmpfiles(self.ref_dir, self.result_dir, cmp.common)
+        for file in cmp.common:
+            logging.info('Compare: ' + file)
+        if mismatch:
+            status = False
+            for file in mismatch:
+                logging.warn('Does not compare: '+ file)
+        if errors:
+            status = False
+            for file in errors:
+                logging.warn('Unable to compare: ' + file)
+
+        if cmp.left_only:
+            status = False
+            for file in cmp.left_only:
+                logging.warn('Only in reference: ' + file)
+        if cmp.right_only:
+            status = False
+            for file in cmp.right_only:
+                logging.warn('Only in result: ' + file)
+
+        if status:
+            logging.info('Test {} pass'.format(name))
+        else:
+            logging.info('Test {} fail'.format(name))
+        return status
 
 
 def makedirs(path):
@@ -186,23 +189,18 @@ if __name__ == '__main__':
 
     # XXX - get directories from environment or command line options
 
-    test_binary_dir = os.environ['TEST_BINARY_DIR']
-    test_source_dir = os.environ['TEST_SOURCE_DIR']
-    executable_dir = os.environ['EXECUTABLE_DIR']
-    # XXX check existence of directories
+    tester = Tester()
 
-    if not os.path.isdir(test_binary_dir):
-        raise SystemExit('Missing binary directory: ' + test_binary_dir)
-    if not os.path.isdir(test_source_dir):
-        raise SystemExit('Missing source directory: ' + test_source_dir)
-    if not os.path.isdir(executable_dir):
-        raise SystemExit('Missing executable directory: ' + executable_dir)
+    tester.set_environment(os.environ['TEST_INPUT_DIR'], 
+                           os.environ['TEST_OUTPUT_DIR'],
+                           os.environ['EXECUTABLE_DIR'])
 
     logname = 'test.log'
-    logging.basicConfig(filename=os.path.join(test_binary_dir, logname),
+    logging.basicConfig(filename=os.path.join(
+        tester.test_output_dir, logname),
                         filemode='w',
                         level=logging.DEBUG,
-                        )
+    )
 
     if args.testname:
         test_names = args.testname
@@ -211,17 +209,17 @@ if __name__ == '__main__':
 
     logging.info('Tests to run: {}'.format( ' '.join(test_names)))
 
-
-    code_path = os.path.join(executable_dir, 'shroud')
-    logging.info('Code to test: ' + code_path)
-
-    result_dir = os.path.join(test_binary_dir, 'tests')
-    makedirs(result_dir)
-
     pass_names = []
     fail_names = []
     for name in test_names:
-        status = do_test(name, replace_ref)
+        status = tester.set_test(name, replace_ref)
+
+        if status:
+            status = tester.do_test()
+
+            if status and not replace_ref:
+                status = tester.do_compare()
+
         if status:
             pass_names.append(name)
             print('{} pass'.format(name))
