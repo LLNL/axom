@@ -7,5 +7,6 @@ docs :
 
 test :
 	python egg-setup.py test
+#	python -m unittest tests	  
 
 .PHONY : develop docs test
