@@ -21,11 +21,16 @@ test_cases = (
 
 
 def load_tests(loader, tests, pattern):
+    # used from 'python -m unittest tests'
     suite = unittest.TestSuite()
     for test_class in test_cases:
         tests = loader.loadTestsFromTestCase(test_class)
         suite.addTests(tests)
     return suite
 
-if __name__ == '__main__':
-    unittest.TextTestRunner(verbosity=2).run(load_tests())
+
+def load_tests2():
+    # used from 'setup.py test'
+    loader = unittest.TestLoader()
+    return load_tests(loader, None, None)
+

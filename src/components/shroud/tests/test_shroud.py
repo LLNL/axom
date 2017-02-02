@@ -22,9 +22,13 @@ class MainCase(unittest.TestCase):
     def setUp(self):
 
         # python -m unittest tests
-
-#        self.cwd = os.getcwd()
-        self.cwd = os.path.join(os.getcwd(), 'tests')
+        #   __file__ is relative
+        # python setup.py test
+        #   __file__ is absolute
+        self.cwd = os.path.abspath(
+            os.path.join(
+                os.getcwd(),
+                os.path.dirname(__file__)))
 
         self.testdir = os.path.abspath(
             os.path.join(
