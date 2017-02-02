@@ -7,7 +7,7 @@ set(example_sources
     IOWrite.cpp
 )
 
-set(SPIO_EXAMPLE_DEPENDS spio sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
+set(SPIO_EXAMPLE_DEPENDS spio sidre conduit conduit_relay hdf5 slic sparsehash ${EXTRA_LIBS})
 
 #
 # Build the example sources

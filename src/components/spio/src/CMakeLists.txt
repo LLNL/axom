@@ -53,4 +53,5 @@ blt_add_library( NAME
                      conduit
                      sidre
                      fmt
+                     sparsehash
                 )

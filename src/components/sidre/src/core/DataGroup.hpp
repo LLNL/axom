@@ -35,12 +35,12 @@
 // third party lib headers
 #include "hdf5.h"
 
-#ifndef USE_UNORDERED_MAP
-#define USE_UNORDERED_MAP
-#endif
-//#ifndef USE_DENSE_HASH_MAP
-//#define USE_DENSE_HASH_MAP
+//#ifndef USE_UNORDERED_MAP
+//#define USE_UNORDERED_MAP
 //#endif
+#ifndef USE_DENSE_HASH_MAP
+#define USE_DENSE_HASH_MAP
+#endif
 
 #ifndef USE_NEW_MAP_COLLECTION
 #define USE_NEW_MAP_COLLECTION

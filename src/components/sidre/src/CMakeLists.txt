@@ -70,6 +70,7 @@ blt_add_library( NAME
                      conduit_relay
                      hdf5
                      slic
+                     sparsehash
                  )
   
              

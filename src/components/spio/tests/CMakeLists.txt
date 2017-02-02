@@ -5,7 +5,7 @@
 blt_add_executable(NAME spio_basicWriteRead
                    SOURCES spio_basicWriteRead.cpp
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                   DEPENDS_ON spio conduit hdf5
+                   DEPENDS_ON spio conduit hdf5 sparsehash
                    )
 blt_add_test(NAME spio_basicWriteRead
              COMMAND spio_basicWriteRead
@@ -15,7 +15,7 @@ if (ENABLE_MPI)
    blt_add_executable(NAME spio_parallelWriteRead
                       SOURCES spio_parallelWriteRead.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                      DEPENDS_ON spio conduit hdf5
+                      DEPENDS_ON spio conduit hdf5 sparsehash
                       )
    blt_add_test(NAME spio_parallelWriteRead
                 COMMAND spio_parallelWriteRead
@@ -24,7 +24,7 @@ if (ENABLE_MPI)
    blt_add_executable(NAME spio_irregularWriteRead
                       SOURCES spio_irregularWriteRead.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                      DEPENDS_ON spio conduit hdf5
+                      DEPENDS_ON spio conduit hdf5 sparsehash
                       )
    blt_add_test(NAME spio_irregularWriteRead
                 COMMAND spio_irregularWriteRead
@@ -33,7 +33,7 @@ if (ENABLE_MPI)
    blt_add_executable(NAME spio_externalWriteRead
                       SOURCES spio_externalWriteRead.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                      DEPENDS_ON spio conduit hdf5
+                      DEPENDS_ON spio conduit hdf5 sparsehash
                       )
    blt_add_test(NAME spio_externalWriteRead
                 COMMAND spio_externalWriteRead
@@ -45,7 +45,7 @@ if(ENABLE_FORTRAN)
    blt_add_executable(NAME F_spio_basicWriteRead
                       SOURCES F_spio_basicWriteRead.f
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                      DEPENDS_ON spio conduit hdf5
+                      DEPENDS_ON spio conduit hdf5 sparsehash
                       )
    blt_add_test(NAME F_spio_basicWriteRead
                 COMMAND F_spio_basicWriteRead
@@ -55,7 +55,7 @@ if(ENABLE_FORTRAN)
       blt_add_executable(NAME F_spio_parallelWriteRead
                          SOURCES F_spio_parallelWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                         DEPENDS_ON spio conduit hdf5
+                         DEPENDS_ON spio conduit hdf5 sparsehash
                          )
       blt_add_test(NAME F_spio_parallelWriteRead
                    COMMAND F_spio_parallelWriteRead
@@ -64,7 +64,7 @@ if(ENABLE_FORTRAN)
       blt_add_executable(NAME F_spio_irregularWriteRead
                          SOURCES F_spio_irregularWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                         DEPENDS_ON spio conduit hdf5
+                         DEPENDS_ON spio conduit hdf5 sparsehash
                          )
       blt_add_test(NAME F_spio_irregularWriteRead
                    COMMAND F_spio_irregularWriteRead
@@ -73,7 +73,7 @@ if(ENABLE_FORTRAN)
       blt_add_executable(NAME F_spio_externalWriteRead
                          SOURCES F_spio_externalWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                         DEPENDS_ON spio conduit hdf5
+                         DEPENDS_ON spio conduit hdf5 sparsehash
                          )
       blt_add_test(NAME F_spio_externalWriteRead
                    COMMAND F_spio_externalWriteRead

@@ -34,7 +34,7 @@ if(ENABLE_SLAM AND ENABLE_SPIO )
         NAME convert_sidre_protocol
         SOURCES ${datastore_converter_sources}
         OUTPUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${datastore_converter_depends}
+        DEPENDS_ON ${datastore_converter_depends} sparsehash
         )
 endif()
 
