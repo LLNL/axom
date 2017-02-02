@@ -10,11 +10,10 @@ if (CONDUIT_DIR)
   blt_register_library( NAME conduit
                         INCLUDES ${CONDUIT_INCLUDE_DIRS} 
                         LIBRARIES  conduit)
-  blt_register_library( NAME conduit_io
+  blt_register_library( NAME conduit_relay
                         INCLUDES ${CONDUIT_INCLUDE_DIRS}
-                        LIBRARIES  conduit_io)
+                        LIBRARIES  conduit_relay)
 endif()
-
 
 ################################
 # HDF5
@@ -41,23 +40,9 @@ endif()
 # Find boost headers
 ################################
 if (BOOST_DIR)
-
-    # set the vars that the standard cmake boost logic needs
-    set(ENABLE_BOOT ON)
-    set(BOOST_ROOT ${BOOST_DIR})
-
-    # find boost
-    find_package(Boost
-                 1.58
-                 REQUIRED)
-    
+    include(cmake/thirdparty/SetupBoost.cmake)
     blt_register_library(NAME boost
                          INCLUDES ${Boost_INCLUDE_DIR})
-    
-    MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
-    MESSAGE(STATUS "Boost version: " ${Boost_VERSION})
-    # this is what we used to signal boost is on in our build system
-    set(BOOST_FOUND ON)
 endif()
 
 ################################
