@@ -34,7 +34,7 @@ import sys
 test_source_dir = ''
 test_binary_dir = ''
 
-executable_output_path = ''
+executable_dir = ''
 code_path = ''
 
 def do_test(name, replace_ref):
@@ -63,8 +63,6 @@ def do_test(name, replace_ref):
         makedirs(result_dir)
         clear_files(result_dir)
 
-    output_file = os.path.join(result_dir, 'output')
-
     cmd = [
         code_path,
         '--path', test_source_dir,
@@ -83,6 +81,8 @@ def do_test(name, replace_ref):
         logging.error('Exit status: %d' % exc.returncode)
         logging.error(exc.output)
         return False
+
+    output_file = os.path.join(result_dir, 'output')
     fp = open(output_file, 'w')
     fp.write(output)
     fp.close()
@@ -188,15 +188,15 @@ if __name__ == '__main__':
 
     test_binary_dir = os.environ['TEST_BINARY_DIR']
     test_source_dir = os.environ['TEST_SOURCE_DIR']
-    executable_output_path = os.environ['EXECUTABLE_OUTPUT_DIR']
+    executable_dir = os.environ['EXECUTABLE_DIR']
     # XXX check existence of directories
 
     if not os.path.isdir(test_binary_dir):
         raise SystemExit('Missing binary directory: ' + test_binary_dir)
     if not os.path.isdir(test_source_dir):
         raise SystemExit('Missing source directory: ' + test_source_dir)
-    if not os.path.isdir(executable_output_path):
-        raise SystemExit('Missing executable directory: ' + executable_output_path)
+    if not os.path.isdir(executable_dir):
+        raise SystemExit('Missing executable directory: ' + executable_dir)
 
     logname = 'test.log'
     logging.basicConfig(filename=os.path.join(test_binary_dir, logname),
@@ -212,7 +212,7 @@ if __name__ == '__main__':
     logging.info('Tests to run: {}'.format( ' '.join(test_names)))
 
 
-    code_path = os.path.join(executable_output_path, 'shroud')
+    code_path = os.path.join(executable_dir, 'shroud')
     logging.info('Code to test: ' + code_path)
 
     result_dir = os.path.join(test_binary_dir, 'tests')
