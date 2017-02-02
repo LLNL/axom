@@ -5,32 +5,34 @@ Command Line Options
 --------------------
 
 help
-       Show this help message and exit
+       Show this help message and exit.
 
 version
-       Show program's version number and exit
+       Show program's version number and exit.
 
 outdir OUTDIR
-       Directory for output files
+       Directory for output files.
+       Defaults to current directory.
 
 outdir-c-fortran OUTDIR_C_FORTRAN
-       Directory for C/Fortran wrapper output files, overrides --outdir
+       Directory for C/Fortran wrapper output files, overrides *--outdir*.
 
 outdir-python OUTDIR_PYTHON
-       Directory for Python wrapper output files, overrides --outdir
+       Directory for Python wrapper output files, overrides *--outdir*.
 
 logdir LOGDIR
-       Directory for log files
+       Directory for log files.
+       Defaults to current directory.
 
 cfiles CFILES
-       Output file with list of C and C++ files created
+       Output file with list of C and C++ files created.
 
 ffiles FFILES
-       Output file with list of Fortran created
+       Output file with list of Fortran created.
 
 path PATH
        Colon delimited paths to search for splicer files, may
-       be supplied multiple times to create path
+       be supplied multiple times to append to path.
 
 
 

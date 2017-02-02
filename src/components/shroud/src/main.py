@@ -1445,35 +1445,39 @@ def main():
 """)
     parser.add_argument('--version', action='version', version=__version__)
     parser.add_argument('--outdir', default='',
-                        help='Directory for output files')
+                        help='Directory for output files.'
+                        'Defaults to current directory.')
     parser.add_argument('--outdir-c-fortran', default='',
                         dest='outdir_c_fortran',
                         help='Directory for C/Fortran wrapper output files, '
-                        'overrides --outdir')
+                        'overrides --outdir.')
     parser.add_argument('--outdir-python', default='',
                         dest='outdir_python',
                         help='Directory for Python wrapper output files, '
-                        'overrides --outdir')
+                        'overrides --outdir.')
     parser.add_argument('--outdir-lua', default='',
                         dest='outdir_lua',
                         help='Directory for Lua wrapper output files, '
-                        'overrides --outdir')
+                        'overrides --outdir.')
     parser.add_argument('--logdir', default='',
-                        help='Directory for log files')
+                        help='Directory for log files.'
+                        'Defaults to current directory.')
     parser.add_argument('--cfiles', default='',
                         help='Output file with list of C and C++ files '
-                        'created')
+                        'created.')
     parser.add_argument('--ffiles', default='',
                         help='Output file with list of Fortran created')
     parser.add_argument('--path', default=[], action='append',
                         help='Colon delimited paths to search for '
-                        'splicer files'
-                        ', may be supplied multiple times to create path')
+                        'splicer files, may be supplied multiple '
+                        'times to append to path.')
     parser.add_argument('filename', nargs='*',
-                        help='Input file to process')
+                        help='Input file to process.')
 
     args = parser.parse_args()
     main_with_args(args)
+#    sys.stderr.write("Some useful message")  # example error message
+    sys.exit(0)  # set status for errors
 
 
 def main_with_args(args):
@@ -1532,6 +1536,7 @@ def main_with_args(args):
     for filename in args.filename:
         root, ext = os.path.splitext(filename)
         if ext == '.yaml':
+#            print("Read %s" % os.path.basename(filename))
             log.write("Read yaml %s\n" % os.path.basename(filename))
             fp = open(filename, 'r')
             d = yaml.load(fp.read())
@@ -1607,9 +1612,6 @@ def main_with_args(args):
 # It doesn't fix the error, but it does report a better error message
 # http://www.thecodingforums.com/threads/help-with-a-piping-error.749747/
     sys.stdout.flush()
-
-#    sys.stderr.write("Some useful message")  # example error message
-    sys.exit(0)  # set status for errors
 
 
 if __name__ == '__main__':
