@@ -1,5 +1,8 @@
 # shroud/tests/defaults.mk
 
+compiler = gcc
+
+ifeq ($(compiler),gcc)
 CC = gcc
 CFLAGS = -g -Wall
 CXX = g++
@@ -9,6 +12,7 @@ FFLAGS = -g -Wall -ffree-form
 LIBS = -lstdc++
 SHARED = -fPIC
 LD_SHARED = -shared
+endif
 
 PYTHON = /home/taylor16/tpl/v2
 PYTHON_BIN = $(PYTHON)/bin/python2
