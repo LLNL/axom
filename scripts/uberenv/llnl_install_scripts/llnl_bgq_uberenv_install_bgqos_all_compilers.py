@@ -25,14 +25,11 @@ def main():
     # write info about this build
     write_build_info(pjoin(prefix,"info.json"))
     # spack specs for the cz chaos systems
-    specs = ["%gcc",
-             "%clang"]
+    specs = ["%gcc~cmake~devtools~python~lua",
+             "%clang~cmake~devtools~python~lua"]
     # use uberenv to install for all specs
     for spec in specs:
-        #uberenv_install_tpls(prefix,spec,mirror_dir)
-        spec += "~cmake~devtools~python~lua"
-        cmd = "python ../uberenv.py --prefix %s --spec %s " % (prefix,spec)
-        return sexe(cmd,echo=True)
+        uberenv_install_tpls(prefix,spec,mirror_dir)
     # patch manual edits into host config files
     #patch_host_configs(prefix)
     # build the toolkit against the new tpls
