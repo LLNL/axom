@@ -1,9 +1,19 @@
 
 top := $(CURDIR)
-tempdir := build/temp.linux-x86_64-2.7
+
+PYTHON := $(shell which python)
+# 2.7
+PYTHON_VER := $(shell $(PYTHON) -c "import sys;sys.stdout.write('{version[0]}.{version[1]}'.format(version=sys.version_info))")
+# linux-x86_64
+PLATFORM := $(shell $(PYTHON) -c "import sys, sysconfig;sys.stdout.write(sysconfig.get_platform())")
+
+LUA = $(shell which lua)
+
+# build/temp-linux-x86_64-3.6
+tempdir := build/temp.$(PLATFORM)-$(PYTHON_VER)
 testsdir := $(top)/tests
 
-include tests/defaults.mk
+include $(top)/tests/defaults.mk
 
 develop :
 	python setup.py develop
@@ -42,18 +52,17 @@ py-tutorial : testdirs
 	$(MAKE) \
 	    -C $(tempdir)/run-tutorial/python \
 	    -f $(top)/tests/run-tutorial/python/Makefile \
-	    top=$(top) all
+	    PYTHON=$(PYTHON) top=$(top) all
 
 test-python : py-tutorial
 	export PYTHONPATH=$(top)/$(tempdir)/run-tutorial/python; \
 	$(PYTHON_BIN) $(top)/tests/run-tutorial/python/test.py	
 
-
 lua-tutorial : testdirs
 	$(MAKE) \
 	    -C $(tempdir)/run-tutorial/lua \
 	    -f $(top)/tests/run-tutorial/lua/Makefile \
-	    top=$(top) all
+	    LUA=$(LUA) top=$(top) all
 
 test-lua : lua-tutorial
 #	export LUA_PATH=$(top)/$(tempdir)/run-tutorial/lua;
@@ -62,8 +71,17 @@ test-lua : lua-tutorial
 
 test-all : test-fortran test-python test-lua
 
+print-debug:
+	@echo LUA=$(LUA)
+	@echo PYTHON=$(PYTHON)
+	@echo PYTHON_PREFIX=$(PYTHON_PREFIX)
+	@echo PYTHON_VER=$(PYTHON_VER)
+	@echo PLATFORM=$(PLATFORM)
+	@echo tempdir=$(tempdir)
+
 .PHONY : develop docs test testdirs
 .PHONY : fortran test-fortran tutorial strings
 .PHONY : test-python py-tutorial
 .PHONY : test-lua lua-tutorial
 .PHONY : test-all
+.PHONY : print-debug

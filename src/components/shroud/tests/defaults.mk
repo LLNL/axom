@@ -14,15 +14,17 @@ SHARED = -fPIC
 LD_SHARED = -shared
 endif
 
-PYTHON = /home/taylor16/tpl/v2
-PYTHON_BIN = $(PYTHON)/bin/python2
-PYTHON_INC = -I$(PYTHON)/include/python2.7
-PYTHON_LIBS = -L$(PYTHON)/lib/python2.7/config -lpython2.7 -ldl -lutil
+# 2.7
+PYTHON_VER := $(shell $(PYTHON) -c "import sys;sys.stdout.write('{v[0]}.{v[1]}'.format(v=sys.version_info))")
+PYTHON_PREFIX := $(shell $(PYTHON) -c "import sys;sys.stdout.write(sys.exec_prefix)")
+PYTHON_BIN := $(PYTHON)
+PYTHON_INC := -I$(PYTHON_PREFIX)/include/python$(PYTHON_VER)
+PYTHON_LIB := -L$(PYTHON_PREFIX)/lib/python$(PYTHON_VER)/config -lpython$(PYTHON_VER) -ldl -lutil
 
-LUA = /home/taylor16/tpl/v2
-LUA_BIN = $(LUA)/bin/lua
-LUA_INC = -I$(LUA)/include
-LUA_LIBS = -L$(LUA)/lib -llua -ldl
+LUA_PREFIX = $(abspath $(dir $(LUA))/..)
+LUA_BIN = $(LUA)
+LUA_INC = -I$(LUA_PREFIX)/include
+LUA_LIB = -L$(LUA_PREFIX)/lib -llua -ldl
 
 %.o : %.c
 	$(CC) $(CFLAGS) $(INCLUDE) -c -o $*.o $^
