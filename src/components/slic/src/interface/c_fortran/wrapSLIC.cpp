@@ -83,7 +83,7 @@ void SLIC_get_active_logger_name_bufferify(char * name, int Lname)
 {
 // splicer begin function.get_active_logger_name_bufferify
     std::string rv = getActiveLoggerName();
-    asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+    shroud::FccCopy(name, Lname, rv.c_str());
     return;
 // splicer end function.get_active_logger_name_bufferify
 }

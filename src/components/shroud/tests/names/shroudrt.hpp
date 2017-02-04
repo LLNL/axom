@@ -7,8 +7,6 @@
 // Standard C++ headers
 #include <cstring>
 
-namespace asctoolkit
-{
 namespace shroud
 {
 
@@ -22,7 +20,6 @@ static inline void FccCopy(char *a, int la, const char *s)
 }
 
 } /* end namespace shroud */
-} /* end namespace asctoolkit */
 
 #endif /* SHROUDRT_HPP_ */
 

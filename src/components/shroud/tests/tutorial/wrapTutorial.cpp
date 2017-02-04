@@ -57,7 +57,7 @@ void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, i
     const std::string SH_arg1(arg1, Larg1);
     const std::string SH_arg2(arg2, Larg2);
     const std::string rv = Function4a(SH_arg1, SH_arg2);
-    asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
     return;
 // splicer end function.function4a_bufferify
 }
@@ -82,7 +82,7 @@ void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, i
     const std::string SH_arg1(arg1, Larg1);
     const std::string SH_arg2(arg2, Larg2);
     const std::string & rv = Function4b(SH_arg1, SH_arg2);
-    asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
+    shroud::FccCopy(output, Loutput, rv.c_str());
     return;
 // splicer end function.function4b_bufferify
 }
@@ -337,7 +337,7 @@ void TUT_last_function_called_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.last_function_called_bufferify
     const std::string & rv = LastFunctionCalled();
-    asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
     return;
 // splicer end function.last_function_called_bufferify
 }
