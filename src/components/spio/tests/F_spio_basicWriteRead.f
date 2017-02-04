@@ -53,7 +53,7 @@ program spio_basis_write_read
   reader = iomanager_new(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
-  call reader%read(root2, "F_out_spio_basic_write_read.root")
+  call reader%read(root2, "F_out_spio_basic_write_read.hdf5.root")
 
   return_val = 0
   if (.not. root2%is_equivalent_to(root1)) then
