@@ -1,7 +1,9 @@
 // shroudrt.cpp
 // This is generated code, do not edit
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 // equivalent to C_LOC
 // called from Fortran
@@ -26,4 +28,6 @@ void shroud_c_loc_(void * addr, void ** out)
 }
 
 
+#ifdef __cplusplus
 }  // extern "C"
+#endif

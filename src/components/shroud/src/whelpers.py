@@ -36,7 +36,9 @@ static inline void FccCopy(char *a, int la, const char *s)
 #
 
 FccCSource = """
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 // equivalent to C_LOC
 // called from Fortran
@@ -61,7 +63,9 @@ void shroud_c_loc_(void * addr, void ** out)
 }
 
 
-}  // extern \"C\""""
+#ifdef __cplusplus
+}  // extern \"C\"
+#endif"""
 
 #
 # Fortran helper functions which may be added to a module.
