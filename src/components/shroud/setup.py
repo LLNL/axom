@@ -18,7 +18,7 @@ with codecs.open(os.path.join(here, 'src', '__init__.py'),
 
 
 # Get the long description from the README file
-with codecs.open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
+with codecs.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(

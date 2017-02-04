@@ -6,13 +6,13 @@ testsdir := $(top)/tests
 include tests/defaults.mk
 
 develop :
-	python egg-setup.py develop
+	python setup.py develop
 
 docs :
-	python egg-setup.py build_sphinx
+	python setup.py build_sphinx
 
 test :
-	python egg-setup.py test
+	python setup.py test
 #	python -m unittest tests
 
 # Pattern rule to make directories.
