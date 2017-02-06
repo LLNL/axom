@@ -9,7 +9,6 @@ date
 . /usr/local/tools/dotkit/init.sh
 use python-2.7.3
 use cmake-3.1
-git checkout task/cyrush/2016_12_update_conduit
 python ./llnl_bgq_uberenv_install_bgqos_all_compilers.py
 date
 
