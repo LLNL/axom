@@ -35,6 +35,7 @@ set( quest_headers
     geom/SquaredDistance.hpp
     geom/Triangle.hpp
     geom/Vector.hpp
+    geom/VirtualGrid.hpp
     geom/closest_point.hpp
     
     ## STL library headers

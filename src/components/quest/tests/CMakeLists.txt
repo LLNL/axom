@@ -24,6 +24,7 @@ set(quest_tests
     quest_squared_distance.cpp
     quest_triangle.cpp
     quest_vector.cpp
+    quest_virtual_grid.cpp
    )
 
 set(quest_tests_depends
