@@ -3,7 +3,7 @@
 # chang28 02-03-2017, script to set up BG/Q TPL build, for now it only works on Cyrus' branch
 # usage: 
 #  cd {to directory with this script}
-#   ./llnl_bgq_toss3_all_compilers.sh
+#   ./llnl_cz_bgq_all_compilers.sh
 
 date
 . /usr/local/tools/dotkit/init.sh
