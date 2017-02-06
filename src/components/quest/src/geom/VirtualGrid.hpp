@@ -141,7 +141,7 @@ int VirtualGrid<T,NDIMS>::getIndex(const PointType & pt)
   SLIC_ASSERT(j>=0 && j<m_resolution[1]);
 
   if (NDIMS==3) {
-    size_t k = (pt[2] - m_origin[2])/m_step[2];
+    int k = (pt[2] - m_origin[2])/m_step[2];
 
     SLIC_ASSERT(k>=0 && k<m_resolution[2]);
 
