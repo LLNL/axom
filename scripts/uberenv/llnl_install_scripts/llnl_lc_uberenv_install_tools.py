@@ -173,7 +173,6 @@ def build_and_test_host_config(test_root,host_config):
 
     # simple sanity check for make install
     print "[checking install dir %s]" % install_dir 
-    sexe("ls %s/bin" %     install_dir, echo=True)
     sexe("ls %s/docs" %    install_dir, echo=True)
     sexe("ls %s/include" % install_dir, echo=True)
     sexe("ls %s/lib" %     install_dir, echo=True)
