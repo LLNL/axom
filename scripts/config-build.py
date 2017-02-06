@@ -24,7 +24,11 @@ def extract_cmake_location(file_path):
 
 
 
-parser = argparse.ArgumentParser(description="Configure cmake build.")
+parser = argparse.ArgumentParser(description="Configure cmake build.",
+                                 epilog="Note: Additional or unrecognized parameters will be passed directly to cmake."
+                                        " For example, append '-DENABLE_OPENMP=ON' to enable OpenMP."
+                                        " See the toolkit QuickStart guide for a list of available CMake options."
+                                        )
 
 parser.add_argument("-bp",
                     "--buildpath",
@@ -57,7 +61,7 @@ parser.add_argument("-x",
 parser.add_argument("-ecc",
                     "--exportcompilercommands",
                     action='store_true',
-	                help="generate a compilation database.  Can be used by the clang tools such as clang-modernize.  Will create a file called 'compile_commands.json' in build directory.")
+	                help="generate a compilation database.  Can be used by the clang tools such as clang-modernize.  Will create a 'compile_commands.json' file in build directory.")
 
 parser.add_argument("-hc",
                     "--hostconfig",
@@ -67,7 +71,7 @@ parser.add_argument("-hc",
 
 args, unknown_args = parser.parse_known_args()
 if unknown_args:
-    print "[config-build]: Passing the following unknown arguments directly to cmake... %s" % unknown_args
+    print "[config-build]: Passing the following arguments directly to cmake... %s" % unknown_args
 
 ########################
 # Find CMake Cache File

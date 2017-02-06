@@ -359,6 +359,7 @@ protected:
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT( StructuredMesh );
+  DISABLE_MOVE_AND_ASSIGNMENT( StructuredMesh );
 };
 
 } /* namespace mint */

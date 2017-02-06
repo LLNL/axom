@@ -10,7 +10,7 @@ PyObject *PP_Names_to_Object(Names *addr)
     PyObject *voidobj;
     PyObject *args;
     PyObject *rv;
-    
+
     voidobj = PyCapsule_New(addr, PY_Names_capsule_name, NULL);
     args = PyTuple_New(1);
     PyTuple_SET_ITEM(args, 0, voidobj);

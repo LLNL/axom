@@ -22,16 +22,15 @@ class UberenvAsctoolkit(Package):
     # (given the pain of building cmake on BGQ, this is really on for BGQ)
     variant('cmake',   default=True, description="Build cmake.")
     variant('devtools',default=True, description="Build development tools (such as sphinx, uncrustify, etc)")
+
     variant("python",  default=True, description="Build python")
     variant("lua",     default=True, description="Build lua")
-
+    variant("boost",   default=True, description="Build boost headers")
 
     depends_on("conduit~shared+cmake",when="+cmake")
     depends_on("conduit~shared~cmake",when="~cmake")
     
     depends_on("hdf5~cxx~shared~zlib~fortran")
-    # boost, header only
-    depends_on("boost-headers")
     depends_on("sparsehash-headers")
 
     # optional tpl builds
@@ -43,6 +42,9 @@ class UberenvAsctoolkit(Package):
 
     depends_on("python",   when="+python")
     depends_on("lua@5.1.5",when="+lua")
+
+    # boost, header only
+    depends_on("boost-headers", when="+boost")
 
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-breathe",when="+devtools")
@@ -82,7 +84,7 @@ class UberenvAsctoolkit(Package):
         if env.has_key("SYS_TYPE"):
             sys_type = env["SYS_TYPE"]
 
-        # conduit
+        # cmake
         if "+cmake" in spec:
             cmake_exe = pjoin(spec['cmake'].prefix.bin,"cmake")
         else:
@@ -133,10 +135,12 @@ class UberenvAsctoolkit(Package):
 
         cfg.write("# sparsehash headers from uberenv\n")
         cfg.write(cmake_cache_entry("SPARSEHASH_DIR",spec['sparsehash-headers'].prefix))
-
-        cfg.write("# boost headers from uberenv\n")
-        cfg.write(cmake_cache_entry("ENABLE_BOOST","ON"))
-        cfg.write(cmake_cache_entry("BOOST_ROOT",spec['boost-headers'].prefix))
+    
+        if "boost-headers" in spec:
+            cfg.write("# boost headers from uberenv\n")
+            cfg.write(cmake_cache_entry("BOOST_DIR",spec['boost-headers'].prefix))
+        else:
+            cfg.write("# boost headers not installed by uberenv\n")
 
         # optional tpls
 
@@ -162,7 +166,7 @@ class UberenvAsctoolkit(Package):
         else:
             cfg.write("# doxygen not built by uberenv\n\n")
 
-        if "sphinx" in spec:
+        if "py-sphinx" in spec:
             cfg.write("# sphinx from uberenv\n")
             sphinx_build_exe = pjoin(spec['python'].prefix.bin,"sphinx-build")
             cfg.write(cmake_cache_entry("SPHINX_EXECUTABLE", sphinx_build_exe))

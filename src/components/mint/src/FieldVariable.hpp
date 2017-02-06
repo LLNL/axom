@@ -93,6 +93,7 @@ private:
    FieldVariable() { m_data=ATK_NULLPTR; };
 
    DISABLE_COPY_AND_ASSIGNMENT(FieldVariable);
+   DISABLE_MOVE_AND_ASSIGNMENT(FieldVariable);
 };
 
 } /* namespace mint */

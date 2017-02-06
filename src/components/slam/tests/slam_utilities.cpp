@@ -10,10 +10,9 @@
 
 
 /**
- * \file testStaticVariableRelation.cxx
+ * \file slam_utilities
  *
- *  Created on: Apr 29, 2015
- *      Author: weiss27
+ * \brief Unit tests for utility functions in Slam
  */
 
 

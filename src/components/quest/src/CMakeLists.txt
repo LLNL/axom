@@ -65,14 +65,17 @@ set( quest_depends_on
      slam
      )
 
-if (ENABLE_BOOST)
+if (BOOST_FOUND)
     list(APPEND quest_depends_on boost)
 endif()
 
 if (ENABLE_MPI)
   list(APPEND quest_headers stl/PSTLReader.hpp)  
   list(APPEND quest_sources stl/PSTLReader.cpp)
-  list(APPEND quest_depends_on lumberjack)
+  
+  if(ENABLE_LUMBERJACK)
+      list(APPEND quest_depends_on lumberjack)
+  endif()
 endif()
 
 if(ENABLE_SHROUD)

@@ -26,7 +26,7 @@
 #include <set>
 
 // Other CS Toolkit headers
-#include "common/config.hpp"
+#include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -916,6 +916,10 @@ public:
 
 private:
 
+  DISABLE_DEFAULT_CTOR(DataView);  
+  DISABLE_MOVE_AND_ASSIGNMENT(DataView);  
+
+
 //@{
 //!  @name Private DataView ctor and dtor
 //!        (callable only by DataGroup and DataView methods).
@@ -1129,20 +1133,6 @@ private:
 
   /// Has data description been applied to the view's data?
   bool m_is_applied;
-
-  /*!
-   *  Unimplemented ctors and copy-assignment operators.
-   */
-#ifdef USE_CXX11
-  DataView() = delete;
-  DataView( DataView&& ) = delete;
-
-  DataView& operator=( const DataView& ) = delete;
-  DataView& operator=( DataView&& ) = delete;
-#else
-  DataView();
-  DataView& operator=( const DataView& );
-#endif
 
 };
 

@@ -191,6 +191,7 @@ private:
                    std::size_t pos=std::string::npos );
 
   DISABLE_COPY_AND_ASSIGNMENT(LogStream);
+  DISABLE_MOVE_AND_ASSIGNMENT(LogStream);
 };
 
 } /* namespace slic */

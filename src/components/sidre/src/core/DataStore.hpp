@@ -28,6 +28,7 @@
 #include "hdf5.h"
 
 // Other CS Toolkit headers
+#include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -195,19 +196,8 @@ public:
   void print(std::ostream& os) const;
 
 private:
-  /*!
-   *  Unimplemented ctors and copy-assignment operators.
-   */
-#ifdef USE_CXX11
-  DataStore( const DataStore& ) = delete;
-  DataStore( DataStore&& ) = delete;
-
-  DataStore& operator=( const DataStore& ) = delete;
-  DataStore& operator=( DataStore&& ) = delete;
-#else
-  DataStore( const DataStore& );
-  DataStore& operator=( const DataStore& );
-#endif
+  DISABLE_COPY_AND_ASSIGNMENT(DataStore);
+  DISABLE_MOVE_AND_ASSIGNMENT(DataStore);
 
   /// Root Group, created when DataStore object is created.
   DataGroup * m_RootGroup;

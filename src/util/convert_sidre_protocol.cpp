@@ -38,7 +38,13 @@
 
 #include "fmt/fmt.hpp"
 #include "slic/slic.hpp"
-#include "slic/LumberjackStream.hpp"
+#include "slic/LogStream.hpp"
+
+#ifdef ATK_USE_LUMBERJACK
+  #include "slic/LumberjackStream.hpp"
+#else
+  #include "slic/GenericOutputStream.hpp"
+#endif
 
 #include "sidre/SidreTypes.hpp"
 #include "sidre/DataStore.hpp"
@@ -436,25 +442,35 @@ void setupLogging()
 
     slic::setLoggingMsgLevel(slic::message::Info);
 
+#ifdef ATK_USE_LUMBERJACK
+    std::string rankStr = "[<RANK>]";
+#else
+    std::string rankStr = "";
+#endif
+
     // Formatting for warning, errors and fatal message
        fmt::MemoryWriter wefFmt;
        wefFmt << "\n***********************************\n"
-            <<"[<RANK>][<LEVEL> in line <LINE> of file <FILE>]\n"
+            << rankStr << "[<LEVEL> in line <LINE> of file <FILE>]\n"
             <<"MESSAGE=<MESSAGE>\n"
             << "***********************************\n";
     std::string wefFormatStr = wefFmt.str();
 
     // Simple formatting for debug and info messages
-    std::string diFormatStr = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
+    std::string diFormatStr = rankStr + "[<LEVEL>]: <MESSAGE>\n";
 
+    slic::LogStream* wefStream;
+    slic::LogStream* diStream;
+
+#ifdef ATK_USE_LUMBERJACK
     const int ranksLimit = 16;
+    wefStream = new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, ranksLimit, wefFormatStr );
+    diStream =  new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, ranksLimit, diFormatStr );
+#else
+    wefStream = new slic::GenericOutputStream( &std::cout, wefFormatStr );
+    diStream = new slic::GenericOutputStream( &std::cout, diFormatStr );
+#endif
 
-    slic::LumberjackStream* wefStream =
-          new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, ranksLimit, wefFormatStr );
-    slic::LumberjackStream* diStream =
-          new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, ranksLimit, diFormatStr );
-
-    slic::addStreamToMsgLevel(wefStream, slic::message::Fatal) ;
     slic::addStreamToMsgLevel(wefStream, slic::message::Error);
     slic::addStreamToMsgLevel(wefStream, slic::message::Warning);
     slic::addStreamToMsgLevel(diStream,  slic::message::Info);
