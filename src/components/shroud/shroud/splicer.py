@@ -73,7 +73,7 @@ def get_splicer_based_on_suffix(name, out):
             d = out.setdefault('f', {})
             get_splicers(name, d)
         elif fileExtension in [
-                '.c', '.cpp', '.hpp', '.cxx', '.hxx', '.cc', '.C']:
+                '.c', '.h', '.cpp', '.hpp', '.cxx', '.hxx', '.cc', '.C']:
             d = out.setdefault('c', {})
             get_splicers(name, d)
         elif fileExtension in ['.py']:
