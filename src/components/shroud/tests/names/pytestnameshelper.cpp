@@ -25,7 +25,7 @@ int PP_Names_from_Object(PyObject *obj, void **addr)
     // splicer begin class.Names.helper.from_object
     if (obj->ob_type != &PY_Names_Type) {
         // raise exception
-        return 0;	
+        return 0;
     }
     PY_Names * self = (PY_Names *) obj;
     *addr = self->BBB;

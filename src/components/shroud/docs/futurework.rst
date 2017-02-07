@@ -1,6 +1,12 @@
 Future Work
 ===========
 
+  * complex
+  * structures
+
+Possible Future Work
+--------------------
+
 Use a tool to parse C++ and extract info.
 
   * https://github.com/CastXML/CastXML

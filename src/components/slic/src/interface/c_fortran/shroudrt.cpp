@@ -10,10 +10,9 @@
 // further review from Lawrence Livermore National Laboratory.
 //
 
-// Other CS Toolkit headers
-#include "common/FC.h"
-
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 // equivalent to C_LOC
 // called from Fortran
@@ -28,9 +27,16 @@ extern "C" {
 //
 // The result must be an argument because some compilers (Intel)
 // cannot return type(C_PTR)
-void FC_GLOBAL(shroud_c_loc,SHROUD_C_LOC)(void * addr, void * * out)
+void shroud_c_loc(void * addr, void ** out)
+{
+  *out = addr;
+}
+void shroud_c_loc_(void * addr, void ** out)
 {
   *out = addr;
 }
 
+
+#ifdef __cplusplus
 }  // extern "C"
+#endif
