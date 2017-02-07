@@ -137,6 +137,7 @@ def build_and_test_host_config(test_root,host_config):
     install_dir = pjoin(test_root,"install-%s" % host_config_root)
     # configure
     res = sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
+               output_file = pjoin(build_dir,"output.log.configure.txt"),
                echo=True)
     
     if res != 0:
