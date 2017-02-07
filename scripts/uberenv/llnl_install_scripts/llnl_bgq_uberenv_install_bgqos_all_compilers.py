@@ -10,7 +10,7 @@
   uses uberenv to install tpls for the set of compilers we want
   for llnl bgq ? platforms.
 
-  chang28 02-02-2017, modify the script
+  chang28 02-02-2017, turn off patch_host_configs, and build_and_test_host_configs
 """
 
 from llnl_lc_uberenv_install_tools import *
