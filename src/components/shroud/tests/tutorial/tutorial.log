@@ -1,5 +1,5 @@
 Read yaml tutorial.yaml
-Skipping Function4a, unable to create C wrapper for function returning std::string instance (must return a pointer or reference). 
+Skipping Function4a, unable to create C wrapper for function returning std::string instance (must return a pointer or reference).
 Read splicer ftutorialsplicer.f
 class Class1
 C method Class1 * new()+constructor

@@ -50,7 +50,6 @@ class UberenvAsctoolkit(Package):
     depends_on("py-breathe",when="+devtools")
     depends_on("py-pyyaml", when="+devtools")
     depends_on("py-parsley",when="+devtools")
-    depends_on("py-cogapp", when="+devtools")
 
     if "darwin" in platform.system().lower():
         depends_on("mpich")

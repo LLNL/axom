@@ -4,11 +4,26 @@ Advanced Usage
 Customizing Behavior
 --------------------
 
+Fields
+^^^^^^
+
+Fields only apply to the type, class or function to which it belongs.
+They are not inherited.
+For example, *C_name* is a field which is used to explicitly name
+a single C wrapper function.  While *C_name_template* is an option which
+controls the default value of *C_name*.
+
+Annotations
+^^^^^^^^^^^
+
+Annotations or attributes apply to specific arguments or results.
+They describe semantic behavior for an argument.
+
 Options
 ^^^^^^^
 
 Options are used to customize the behavior of Shroud.
-The are defined in the YAML files as a dictionary.
+They are defined in the YAML files as a dictionary.
 Options can be defined at the global, class, or function level.
 Each level creates a new scope which can access all upper level options.
 This allows the user to modifiy behavior for all functions or just a single one::
@@ -31,22 +46,22 @@ This allows the user to modifiy behavior for all functions or just a single one:
     #     option_b = true     # ihherited
           option_c = true
 
+What files are created
+----------------------
 
-Fields
-^^^^^^
+Shroud will create multiple output file which must be compiled with C++ or Fortran compilers.
 
-Fields only apply to the type, class or function to which it belongs.
-They are not inherited.
-For example, *C_name* is a field which is used to name
-a single C wrapper function.  While *C_name_template* is an option which
-controls the default value of *C_name*.
+One C++ file will be created for the library and one file for each C++ class.
 
-Annotations
-^^^^^^^^^^^
+By default, Fortran will create one file per class similar to the way C is handled.
 
-Annotations or attributes apply to specific arguments or results.
-They describe semantic behavior for an argument.
+If one class makes use of another class, it is necessary to put all of the class
+into a single file using the *F_module_per_class* option.
 
+Each Fortran file will only contain one module to make it easier to create makefile
+dependencies using pattern rules::
+
+    %.o %.mod : %.f
 
 
 How Names are Computed
@@ -65,9 +80,9 @@ The replacement fields are defined by the format dictionary.  Shroud
 defines values which may be used.
 
 Library name - Updated after reading YAML file.
-   * library - The value of **option** *library*.
-   * lower_library - Lowercase version of *library*.
-   * upper_library - Uppercase version of *library*.
+   * library - The value of **field** *library*.
+   * library_lower - Lowercase version of *library*.
+   * library_upper - Uppercase version of *library*.
 
 Class name - Updated before processing each class.
    * cpp_class - The name of the C++ class from the YAML input file.
@@ -84,9 +99,10 @@ Class name - Updated before processing each class.
 
 Function name - Updated before processing each function or method.
    * function_name - Name of function in the YAML file.
-   * underscore_name - *method_name* converted from CamelCase to snake_case.
+   * underscore_name - *function_name* converted from CamelCase to snake_case.
    * function_suffix - Suffix append to name.  Used to differentiate overloaded functions.
-     Set from function field *function_suffix*.
+     Defaults to a sequence number (e.g. `_0`, `_1`, ...) but can be set
+     by using the function field *function_suffix*.
      Mulitple suffixes may be applied.
 
 
@@ -107,6 +123,66 @@ Function name - Updated before processing each function or method.
 +------------------------+---------------------------------+------------------+
 | Fortran generic name   | *F_name_generic_template*       | *F_name_generic* |
 +------------------------+---------------------------------+------------------+
+
+Header Files
+^^^^^^^^^^^^
+
+The header files for the library are included by the generated C++ source files.
+
+The library source file will include the global *cpp_header* field.
+Each class source file will include the class *cpp_header* field unless it is blank.
+In that case the global *cpp_header* field will be used.
+
+To include a file in the implementation list it in the global or class options::
+
+    cpp_header: global_header.hpp
+
+    classes:
+    -  name: Class1
+       cpp_header: class_header.hpp
+
+    types:
+       CustomType:
+          typedef: int
+          c_header:  type_header.h
+          cpp_header : type_header.hpp
+
+
+The *c_header* field will be added to the header file of contains functions
+which reference the type.
+This is used for files which are not part of the library but which contain code
+which helps map C++ constants to C constants
+
+.. FILL IN MORE
+
+Namespace
+---------
+
+Each library or class can be associated with a namespace::
+
+    namespace one {
+    namespace two {
+       void function();
+
+       namespace three {
+         class Class1 {
+         };
+       }
+
+       class Class2 {
+       };
+    }
+    }
+
+The YAML file would look like::
+
+    namespace: one two
+
+    classes:
+    -  Class1
+       cpp_header: one two three
+    -  Class2
+
 
 Local Variable
 ^^^^^^^^^^^^^^
@@ -189,13 +265,12 @@ set in the global **options** and it will apply to all functions::
 The generated Fortran wrapper::
 
     subroutine function4b(arg1, arg2, output)
-        use iso_c_binding
+        use iso_c_binding, only : C_INT
         implicit none
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
         character(*), intent(OUT) :: output
-        type(C_PTR) :: rv
-        rv = tut_function4b_bufferify(  &
+        rv = c_function4b_bufferify(  &
             arg1,  &
             len_trim(arg1),  &
             arg2,  &
@@ -209,8 +284,9 @@ The generated C wrapper::
     void TUT_function4b_bufferify(const char * arg1, int Larg1,
                                   const char * arg2, int Larg2,
                                   char * output, int Loutput) {
-        const std::string rv = Function4b(std::string(arg1, Larg1),
-                                          std::string(arg2, Larg2));
+        const std::string SH_arg1(arg1, Larg1);
+        const std::string SH_arg2(arg2, Larg2);
+        const std::string & rv = Function4b(SH_arg1, SH_arg2);
         asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
         return;
     }
