@@ -25,6 +25,27 @@ compilers:
             cxx: /usr/local/tools/ic-16.0.109/bin/icpc
             f77: /usr/local/tools/ic-16.0.109/bin/ifort
             fc: /usr/local/tools/ic-16.0.109/bin/ifort
+    toss_3_x86_64_ib:
+        gcc@4.9.3:
+            cc:  /usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/bin/mpicc
+            cxx: /usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/bin/mpic++
+            f77: /usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/bin/mpif90
+            fc:  /usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/bin/mpif90
+        clang@3.9.0:
+            cc:  /usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/bin/mpicc
+            cxx: /usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/bin/mpic++ 
+            f77: /usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/bin/mpif90
+            fc:  /usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/bin/mpif90
+        intel@16.0.4:
+            cc:  /usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.4/bin/mpicc
+            cxx: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.4/bin/mpic++
+            f77: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.4/bin/mpif90
+            fc:  /usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.4/bin/mpif90
+        intel@17.0.0:
+            cc: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-17.0.0/bin/mpicc
+            cxx: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-17.0.0/bin/mpic++
+            f77: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-17.0.0/bin/mpif90
+            fc: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-17.0.0/bin/mpif90
     bgqos_0:
           gcc@4.7.2:
              cc:  /usr/local/tools/toolchain-4.7.2/scripts/bggcc
