@@ -30,7 +30,7 @@ class UberenvAsctoolkit(Package):
     depends_on("conduit~shared+cmake",when="+cmake")
     depends_on("conduit~shared~cmake",when="~cmake")
     
-    depends_on("hdf5~cxx~shared~zlib~fortran")
+    depends_on("hdf5~cxx~shared~fortran")
     depends_on("sparsehash-headers")
 
     # optional tpl builds
