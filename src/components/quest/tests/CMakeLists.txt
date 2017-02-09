@@ -33,7 +33,7 @@ set(quest_tests_depends
     gtest
    )
 
-if (ENABLE_BOOST)
+if (BOOST_FOUND)
     list(APPEND quest_tests_depends boost)
 endif()
 

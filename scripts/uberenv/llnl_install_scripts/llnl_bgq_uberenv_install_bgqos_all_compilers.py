@@ -10,6 +10,7 @@
   uses uberenv to install tpls for the set of compilers we want
   for llnl bgq ? platforms.
 
+  chang28 02-02-2017, turn off patch_host_configs, and build_and_test_host_configs
 """
 
 from llnl_lc_uberenv_install_tools import *
@@ -24,14 +25,15 @@ def main():
     # write info about this build
     write_build_info(pjoin(prefix,"info.json"))
     # spack specs for the cz chaos systems
-    specs = ["%gcc@4.7.2"]
+    specs = ["%gcc~cmake~devtools~python~lua",
+             "%clang~cmake~devtools~python~lua"]
     # use uberenv to install for all specs
     for spec in specs:
         uberenv_install_tpls(prefix,spec,mirror_dir)
     # patch manual edits into host config files
-    patch_host_configs(prefix)
+    #patch_host_configs(prefix)
     # build the toolkit against the new tpls
-    build_and_test_host_configs(prefix)
+    #build_and_test_host_configs(prefix)
     # set proper perms for installed tpls
     set_toolkit_group_and_perms(prefix)
     # set proper perms for the mirror files
