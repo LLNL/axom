@@ -39,6 +39,7 @@ class Zlib(Package):
     
 
     def install(self, spec, prefix):
+        env['CFLAGS'] = '-fPIC'
         cfg_args = ["--static","--prefix=%s" % prefix]
         configure(*cfg_args)
         make()
