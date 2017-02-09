@@ -92,7 +92,13 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
     cmd = "python ../uberenv.py --prefix %s --spec %s " % (prefix,spec)
     if not mirror is None:
         cmd += "--mirror %s" % mirror
-    return sexe(cmd,echo=True)
+        
+    spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec)
+    print "[starting tpl install of spec %s]" % spec
+    print "[log file: %s]" % spack_tpl_build_log
+    return sexe(cmd,
+                echo=True,
+                output_file = spack_tpl_build_log)
 
 def patch_host_configs(prefix):
     """
