@@ -39,7 +39,7 @@ class Zlib(Package):
     
 
     def install(self, spec, prefix):
-        configure("--static --prefix=%s" % prefix)
-
+        cfg_args = ["--static","--prefix=%s" % prefix]
+        configure(*cfg_args)
         make()
         make("install")
