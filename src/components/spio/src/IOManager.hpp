@@ -101,6 +101,9 @@ public:
    * This is not an MPI collective call.  It writes one group from one rank to
    * one root file.
    *
+   * This currently only works if the root file was created for protocol
+   * sidre_hdf5.
+   *
    * \param group         DataGroup to add to root file
    * \param file_name     name of existing root file
    */
@@ -120,6 +123,9 @@ public:
    *
    * This is not an MPI collective call.  It writes one group from one rank to
    * one root file.
+   *
+   * This currently only works if the root file was created for protocol
+   * sidre_hdf5.
    *
    * \param group         DataGroup to add to root file
    * \param file_name     name of existing root file
@@ -142,6 +148,9 @@ public:
    *
    * This is not an MPI collective call.  It writes one view from one rank to
    * one root file.
+   *
+   * This currently only works if the root file was created for protocol
+   * sidre_hdf5.
    *
    * \param view          DataView to add to root file
    * \param file_name     name of existing root file
@@ -173,12 +182,14 @@ public:
   /*!
    * \brief load external data into a group
    *
+   * This currently only works if the root file was created for protocol
+   * sidre_hdf5.
+   *
    * \param group         DataGroup to fill with external data from input
    * \param root_file     root file containing input data
    */
   void loadExternalData(sidre::DataGroup * group,
                         const std::string& root_file);
-
 
   /*!
    * \brief gets the number of files in the dataset from the specified root file
@@ -189,15 +200,23 @@ private:
 
   DISABLE_COPY_AND_ASSIGNMENT( IOManager );
 
-  void createRootFile(const std::string& root_name,
-                      const std::string& file_base,
-                      int num_files);
+  void createRootFile(const std::string& file_base,
+                      int num_files,
+                      const std::string& protocol);
+
+  std::string getRankGroupFileName(const std::string& root_name,
+                                   int rankgroup_id,
+                                   const std::string& protocol);
 
   std::string getHDF5FilePattern(const std::string& root_name);
 
   std::string getHDF5FileName(const std::string& file_pattern,
                               const std::string& root_name,
                               int rankgroup_id);
+
+  std::string getProtocol(const std::string& root_name);
+
+  void readSidreHDF5(sidre::DataGroup * group, const std::string& root_file);
 
 
   int m_comm_size;  // num procs in the MPI communicator

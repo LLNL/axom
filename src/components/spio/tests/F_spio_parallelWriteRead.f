@@ -87,7 +87,7 @@ program spio_parallel_write_read
      view = child%create_view_string("word0", "hello")
      view = child%create_view_string("word1", "world")
 
-     call writer%write_group_to_root_file(extra, "F_out_spio_parallel_write_read.root")
+     call writer%write_group_to_root_file(extra, "F_out_spio_parallel_write_read.hdf5.root")
 
      call dsextra%delete()
   endif
@@ -100,7 +100,7 @@ program spio_parallel_write_read
   reader = iomanager_new(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
-  call reader%read(root2, "F_out_spio_parallel_write_read.root")
+  call reader%read(root2, "F_out_spio_parallel_write_read.hdf5.root")
 
   ! verify that the contents of ds2 match those written from ds.
   return_val = 0

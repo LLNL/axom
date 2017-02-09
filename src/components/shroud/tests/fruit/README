@@ -1,0 +1,87 @@
+Installation guide:
+-------------------
+	1. Untar the gz file
+	
+	2. Put Ruby in your path.
+	
+	3. Install rake gem
+	    gem install rake
+
+	4. Install fruit_processor gem
+	    cd fruit/fruit_processor_gem
+	    rake install
+
+	5. You may need to change your compiler from Intel FORTRAN to other
+	   modify this line in rake_base.rb :
+	     $compiler = 'ifort'
+       $option = "-check all -warn all"
+
+     By default, ifort is used if available.
+     If ifort is abesnt, gfotran or FTN95 is used.
+
+	6. Build and run all the test
+	  cd fruit
+	  rake
+
+    (By default a sample sample_single_dir is omitted,
+     because some old compilers does not accept *.f95 extension. Try
+       rake sample_single_dir
+     to run it.)
+
+Samples:
+--------
+  in_3_minutes
+    A sample of manually written driver.
+    see https://sourceforge.net/apps/mediawiki/fortranxunit/index.php?title=FruitExample
+    * fruit.f90 must be copied to in_3_minutes beforehand.
+
+  sample
+    Multi-directry test.
+    Tester codes are in fruit-x.x.x/sample/test directry.
+    Before running the test,
+    tested code (fruit-x.x.x/sample/src/calculator.f90) and
+    fruit code (fruit-x.x.x/src/fruit.f90)
+    must be compiled into lib*.a archives.
+    * libfruit.a needed. To prepare it, run "rake compile" in fruit-x.x.x directry for libfruit.a.
+
+  sample_single_dir
+    Dependency between Fortran codes is estimated by
+    "rake_estimate.rb" loaded from sample_single_dir/rakefile.
+    see fruit-x.x.x/sample_single_dir/README.
+    Tester code : sample_single_dir/mystack_test.f95
+    Tested code : sample_single_dir/mystack.f95, Z_constants.f95
+
+  sample_selective
+    Testers to call is specifiled in a line in sample_selective/rakefile:
+      fp.process_only = FileList["mydict_test.f90"]
+    This sample also shows that test can be built even when main program (dummy_main.f90) exists.
+    Dependency between Fortran codes is estimated by "rake_estimate.rb".
+    Tester code: fruit-x.x.x/sample_selective/*_test.f90
+    Tested code: fruit-x.x.x/sample_selective/constant.f90, mydict.f90
+
+  sample_build_dir
+    This sample shows build directry may differ from source directry.
+    It also shows that test can be built even when main program (main.f90) exists.
+    Tester code : fruit-x.x.x/sample_build_dir/atoz_test.f90
+    Tested code : fruit-x.x.x/sample_build_dir/atoz.f90
+    Build test in fruit-x.x.x/sample_build_dir/build_unittest
+
+  sample_multi_dir
+    Tester codes and tested codes are in different directries.
+    Sample of building only selected testers are build in "build_selective" directry and
+    that of all testers are built in "build" directry.
+    Tester codes: fruit-x.x.x/sample_multi_dir/test/*.f90
+    Tested codes: fruit-x.x.x/sample_multi_dir/src/*.f90
+    Build is done in fruit-x.x.x/sample_multi_dir/build/
+    Selective build: fruit-x.x.x/sample_multi_dir/build_selective/
+
+  sample_openmp
+    Tester code uses multiple threads using OpenMP.
+
+  self_test
+    Test of fruit.f90 itself.
+
+  self_test_openmp
+    Test of fruit.f90 itself. Tester code uses multiple threads using OpenMP.
+
+

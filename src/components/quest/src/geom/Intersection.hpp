@@ -36,6 +36,9 @@ namespace quest {
  *******************************************************************************
  * \brief Tests if 3D Triangles t1 and t2 (interiors or boundaries) intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
+ *
+ * This function will return true if an intersection consists of the interior,
+ * an edge or a vertex of t1 intersecting any part of t2.
  *******************************************************************************
  */
 template < typename T>
@@ -48,6 +51,9 @@ bool intersect( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
  *******************************************************************************
  * \brief Tests if 2D Triangles t1 and t2 (interiors or boundaries) intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
+ *
+ * This function will return true if an intersection consists of the interior,
+ * an edge or a vertex of t1 intersecting any part of t2.
  *******************************************************************************
  */
 template < typename T>
@@ -133,6 +139,34 @@ template < typename T>
 bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
 {
   return detail::intersect_tri_bbox(tri, bb);
+}
+
+/*!
+ *******************************************************************************
+ * \brief Determines if a 3D triangle intersects a 3D ray.
+ * \param [in] tri A 3D triangle
+ * \param [in] ray A 3D ray
+ * \return true iff tri intersects with ray, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T >
+bool intersect(const Triangle<T, 3>& tri, const Ray<T,3>& ray)
+{
+  return detail::intersect_tri_ray(tri, ray);
+}
+
+/*!
+ *******************************************************************************
+ * \brief Determines if a 3D triangle intersects a 3D segment.
+ * \param [in] tri A 3D triangle
+ * \param [in] seg A 3D line segment
+ * \return true iff tri intersects with seg, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T >
+bool intersect(const Triangle<T, 3>& tri, const Segment<T,3>& seg)
+{
+  return detail::intersect_tri_segment(tri, seg);
 }
 
 } /* end namespace quest */

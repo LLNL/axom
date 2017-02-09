@@ -16,7 +16,7 @@ set(quest_example_depends
         quest 
         )
 
-if (ENABLE_BOOST)
+if (BOOST_FOUND)
     list(APPEND quest_example_depends boost)
 endif()
 

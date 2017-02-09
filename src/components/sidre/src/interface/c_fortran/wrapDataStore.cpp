@@ -22,7 +22,6 @@ namespace sidre
 
 SIDRE_datastore * SIDRE_datastore_new()
 {
-
 // splicer begin class.DataStore.method.new
   DataStore * rv = new DataStore();
   return static_cast<SIDRE_datastore *>(static_cast<void *>(rv));

@@ -10,20 +10,19 @@ if (CONDUIT_DIR)
   blt_register_library( NAME conduit
                         INCLUDES ${CONDUIT_INCLUDE_DIRS} 
                         LIBRARIES  conduit)
-  blt_register_library( NAME conduit_io
+  blt_register_library( NAME conduit_relay
                         INCLUDES ${CONDUIT_INCLUDE_DIRS}
-                        LIBRARIES  conduit_io)
+                        LIBRARIES  conduit_relay)
 endif()
-
 
 ################################
 # HDF5
 ################################
 if (HDF5_DIR)
-  include(cmake/thirdparty/FindHDF5.cmake)
+  include(cmake/thirdparty/SetupHDF5.cmake)
   blt_register_library(NAME hdf5
                        INCLUDES ${HDF5_INCLUDE_DIRS}
-                       LIBRARIES ${HDF5_LIBRARY} )
+                       LIBRARIES ${HDF5_LIBRARIES} )
 endif()
 
 
@@ -40,18 +39,10 @@ endif()
 ################################
 # Find boost headers
 ################################
-if (ENABLE_BOOST)
-  if (DEFINED BOOST_ROOT)
-    find_package(Boost
-                 1.58
-                 REQUIRED)
+if (BOOST_DIR)
+    include(cmake/thirdparty/SetupBoost.cmake)
     blt_register_library(NAME boost
                          INCLUDES ${Boost_INCLUDE_DIR})
-    MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
-    MESSAGE(STATUS "Boost version: " ${Boost_VERSION})
-  else()
-    MESSAGE(FATAL_ERROR "ENABLE_BOOST is true, but BOOST_ROOT was not set.  Check your host-config file.")
-  endif()
 endif()
 
 ################################
@@ -60,7 +51,7 @@ endif()
 
 if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
     ################################
-    # Setup includes for Python & Numpy
+    # Setup includes for Python
     ################################
     include(cmake/thirdparty/FindPython.cmake)
     message(STATUS "Using Python Include: ${PYTHON_INCLUDE_DIRS}")

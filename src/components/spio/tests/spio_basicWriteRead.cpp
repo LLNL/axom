@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(ds2->getRoot(), "out_spio_basic_write_read.root");
+  reader.read(ds2->getRoot(), "out_spio_basic_write_read.hdf5.root");
   
   int return_val = 0;
   if (!ds2->getRoot()->isEquivalentTo(root1)) {

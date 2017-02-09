@@ -5,37 +5,42 @@ Command Line Options
 --------------------
 
 help
-       Show this help message and exit
+       Show this help message and exit.
 
 version
-       Show program's version number and exit
+       Show program's version number and exit.
 
 outdir OUTDIR
-       Directory for output files
+       Directory for output files.
+       Defaults to current directory.
 
 outdir-c-fortran OUTDIR_C_FORTRAN
-       Directory for C/Fortran wrapper output files, overrides --outdir
+       Directory for C/Fortran wrapper output files, overrides *--outdir*.
 
 outdir-python OUTDIR_PYTHON
-       Directory for Python wrapper output files, overrides --outdir
+       Directory for Python wrapper output files, overrides *--outdir*.
 
 logdir LOGDIR
-       Directory for log files
+       Directory for log files.
+       Defaults to current directory.
 
 cfiles CFILES
-       Output file with list of C and C++ files created
+       Output file with list of C and C++ files created.
 
 ffiles FFILES
-       Output file with list of Fortran created
+       Output file with list of Fortran created.
 
 path PATH
        Colon delimited paths to search for splicer files, may
-       be supplied multiple times to create path
+       be supplied multiple times to append to path.
 
 
 
 Code
 ----
+
+This section show the templates which are used to create code.
+The names in curly parens are user settable values. 
 
 The C wrapper code::
 
@@ -107,17 +112,63 @@ be controlled directly by the input file::
     end module {F_module_name}
 
 
+Global Fields
+-------------
+
+copyright
+   A list of lines to add to the top of each generate file.
+   Do not include any language specific comment characters since
+   Shroud will add the appropriate comment delimiters for each language.
+
+cpp_header
+  C++ header file name which will be included in the implementation file.
+
+library
+  The name of the library.
+  Used to name output files and modules.
+  The first three letters are used as the default for **C_prefix** option.
+  Defaults to *default_library*.
+  Each YAML file is intended to wrap a single library.
+
+patterns
+   Code blocks to insert into generated code.
+
+C_header_filename
+   Output file name for header for  wrapper routines.
+   Defaults to option *C_header_filename_library_template*.
+
+C_impl_filename
+   Output file name for implementation of wrapper routines.
+   Defaults to option *C_impl_filename_library_template*.
+
+F_module_name
+   Name of Fortran module for this class.
+   Defaults to option *F_module_name_library_template*.
+
+F_impl_filename
+   Name of Fortran file for functions.
+   Defaults to option *F_impl_name_library_template*.
+
+namespace
+  Blank delimited list of namespaces for **cpp_header**.
+  The namespaces will be nested.
+
+splicers
+   A dictionary mapping file suffix to a list of splicer files
+   to read.
+
+types
+   A dictionary of user define types.
+   Each type is a dictionary for members describing how to
+   map a type between languages.
+
 Options
 -------
 
 debug
   Print additional comments in generated files that may 
   be useful for debugging.
-
-library
-  The name of the library.
-  Used to name output files and modules.
-  The first three letters are used as the default for **C_prefix**.
+  Defaults to *false*.
 
 C_prefix
   Prefix added to name of generated C routines.
@@ -128,9 +179,6 @@ C_proto_type
 
 C_return_type
    XXX   override return type of function
-
-cpp_header
-  C++ header file name.
 
 F_C_prefix
   Prefix added to name of generated Fortran interface for C routines.
@@ -159,9 +207,6 @@ F_force_wrapper
   numeric types does not need a wrapper since it can be called
   directly by defining the correct interface.
   The default is *false*.
-
-namespace
-  Blank delimited list of namespaces for **cpp_header**.
 
 wrap_c
   If *true*, create C wrappers.
@@ -221,10 +266,10 @@ C_impl_filename_class_template
 
 
 F_module_name_library_template
-    ``{lower_library}_mod``
+    ``{library_lower}_mod``
 
 F_impl_filename_library_template
-    ``wrapf{lower_library}.f``
+    ``wrapf{library_lower}.f``
 
 F_module_name_class_template
     ``{class_lower}_mod``
@@ -307,39 +352,6 @@ F_derived_member
     Defaults to *voidptr*.
 
 
-Top Level Fields
-----------------
-
-copyright
-   A list of lines to add to the top of each generate file.
-
-splicers
-   A dictionary mapping file suffix to a list of splicer files
-   to read.
-
-types
-   A dictionary of user define types.
-   Each type is a dictionary for members describing how to
-   map a type between languages.
-
-patterns
-   Code blocks to insert into generated code.
-
-C_header_filename
-   Output file name for header for  wrapper routines.
-   Defaults to option *C_header_filename_library_template*.
-
-C_impl_filename
-   Output file name for implementation of wrapper routines.
-   Defaults to option *C_impl_filename_library_template*.
-
-F_module_name
-   Name of Fortran module for this class.
-   Defaults to option *F_module_name_library_template*.
-
-F_impl_filename
-   Name of Fortran file for functions.
-   Defaults to option *F_impl_name_library_template*.
 
 Types Dictionary
 ----------------
@@ -397,6 +409,7 @@ cpp_local_var
     When *c_to_cpp* is not sufficient to assign a value, *c_statements* can be used to 
     add multiple statements into the wrapper.  *c_statements* and *cpp_local_var* cannot
     be used together.
+
 ..  {C_const}{cpp_type}{ptr} = c_to_cpp ;
 
 c_type
@@ -646,23 +659,33 @@ Predefined types
 Class Fields
 ------------
 
+cpp_header
+  C++ header file name which will be included in the implementation file.
+  If unset then the global *cpp_header* will be used.
+
 C_header_filename
    Output file name for header for  wrapper routines.
-   Defaults to option *C_header_filename_class_template*.
+   Defaults to evaluation of option *C_header_filename_class_template*.
 
 C_impl_filename
    Output file name for implementation of wrapper routines.
-   Defaults to option *C_impl_filename_class_template*.
+   Defaults to evaluation of option *C_impl_filename_class_template*.
 
 F_module_name
    Name of Fortran module for this class.
-   Defaults to option *F_module_name_class_template*.
+   Defaults to evaluation of option *F_module_name_class_template*.
    Only used if option *F_module_per_class* is True.
 
 F_impl_filename
    Name of Fortran file for this class.
-   Defaults to option *F_impl_name_class_template*.
+   Defaults to evaluation of option *F_impl_name_class_template*.
    Only used if option *F_module_per_class* is True.
+
+namespace
+  Blank delimited list of namespaces for **cpp_header**.
+  The namespaces will be nested.
+  If not defined then the global *namespace* will be used.
+  If it starts with a ``-`` then no namespace will be used.
 
 
 Function Fields
@@ -695,7 +718,7 @@ return_this
 
 C_name
     Name of the C wrapper function.
-    Defaults to option *C_name_template*.
+    Defaults to evaluation of option *C_name_template*.
 
 F_C_name
     Name of the Fortran ``BIND(C)`` interface for a C function.
@@ -705,17 +728,17 @@ F_C_name
 
 F_name_impl
     Name of the Fortran implementation function.
-    Defaults to option *F_name_impl_template* .
+    Defaults to evaluation of option *F_name_impl_template* .
 
 ..    class1_method1
 
 F_name_method
     The name of the *F_name_impl* subprogram when used as a
     type procedure.
-    Defaults to option *F_name_method_template*.
+    Defaults to evaluation of option *F_name_method_template*.
 
 F_name_generic
-    Defaults to option *F_name_generic_template*.
+    Defaults to evaluation of option *F_name_generic_template*.
 
 F_name_instance_get
     Name of method to get ``type(C_PTR)`` instance pointer from wrapped class.
@@ -729,7 +752,7 @@ F_name_instance_set
 
 LUA_name
     Name of function as known by LUA.
-    Defaults to option *LUA_name_template*.
+    Defaults to evaluation of option *LUA_name_template*.
 
 
 Annotations

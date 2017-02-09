@@ -60,6 +60,7 @@ void init()
 
   slic::createLogger( "physicsB", slic::inherit::errors_and_warnings );
   slic::activateLogger( "physicsB" );
+  slic::disableAbortOnError();
   slic::setLoggingMsgLevel( slic::message::Debug );
   slic::addStreamToAllMsgLevels( ls );
 

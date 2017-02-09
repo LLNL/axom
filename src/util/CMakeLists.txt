@@ -24,7 +24,7 @@ if(ENABLE_LUMBERJACK)
 endif()
 
 
-if(ENABLE_BOOST)
+if(BOOST_FOUND)
   list(APPEND datastore_converter_depends boost)
 endif()
 
