@@ -32,6 +32,7 @@
 #cmakedefine ATK_USE_MPI
 #cmakedefine ATK_USE_MPIF_HEADER
 #cmakedefine ATK_USE_SPARSEHASH
+#cmakedefine ATK_USE_UNORDERED_MAP
 
 
 /* OpenMP is a special case since it varies by target and the compiler 

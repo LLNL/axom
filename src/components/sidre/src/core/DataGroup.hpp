@@ -35,27 +35,16 @@
 // third party lib headers
 #include "hdf5.h"
 
-//#ifndef USE_UNORDERED_MAP
-//#define USE_UNORDERED_MAP
-//#endif
-#ifndef USE_DENSE_HASH_MAP
-#define USE_DENSE_HASH_MAP
-#endif
-
 #ifndef USE_NEW_MAP_COLLECTION
 #define USE_NEW_MAP_COLLECTION
 #endif
 
-#if defined(USE_UNORDERED_MAP)
+#if defined(ATK_USE_UNORDERED_MAP)
 //STL or Boost unordered_map, depending on
-#ifdef ATK_USE_CXX11
 #include <unordered_map>
-#else
-#include "boost/unordered_map.hpp"
-#endif
 #endif
 
-#if defined(USE_DENSE_HASH_MAP)
+#if defined(ATK_USE_SPARSEHASH)
 #include <sparsehash/dense_hash_map>
 #endif
 
@@ -1390,21 +1379,19 @@ private:
   // To try a different container, set the "MapType" typedef to
   // what you want.  Note: only one typedef should be active!!!
   //
-  // Current options are std::map and boost/std::unordered_map
+  // Current options are std::unordered_map and google::dense_hash_map
+  // from Sparsehash library
   ///
   // typedef std::map<std::string, IndexType> MapType;
   ///
-#if defined(USE_UNORDERED_MAP)
-#ifdef ATK_USE_CXX11
+#if defined(ATK_USE_UNORDERED_MAP)
   typedef std::unordered_map<std::string, IndexType> MapType;
 #else
-  typedef boost::unordered_map<std::string, IndexType> MapType;
-#endif
-#else
-#if defined(USE_DENSE_HASH_MAP)
+#if defined(ATK_USE_SPARSEHASH)
   typedef google::dense_hash_map<std::string, IndexType> MapType;
 #endif
 #endif
+
   //
   ///////////////////////////////////////////////////////////////////
 

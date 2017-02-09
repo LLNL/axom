@@ -267,7 +267,7 @@ public:
 private:
   std::vector<TYPE *>  m_items;
   MAP_TYPE m_name2idx_map;
-#if defined(USE_DENSE_HASH_MAP)
+#if defined(ATK_USE_SPARSEHASH)
   std::string m_empty_key;
 #endif
 };
@@ -277,7 +277,7 @@ bool MapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
                                                const std::string& name)
 {
 
-#if defined(USE_DENSE_HASH_MAP)
+#if defined(ATK_USE_SPARSEHASH)
   if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
   {
     m_empty_key = "DENSE_MAP_EMPTY_KEY";
@@ -465,7 +465,7 @@ public:
     {
       m_free_ids.pop();
     }
-#if defined(USE_DENSE_HASH_MAP)
+#if defined(ATK_USE_SPARSEHASH)
     if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
     {
        m_empty_key = "DENSE_MAP_EMPTY_KEY";
@@ -481,7 +481,7 @@ private:
   std::vector<TYPE *>  m_items;
   std::stack< IndexType > m_free_ids;
   MAP_TYPE m_name2idx_map;
-#if defined(USE_DENSE_HASH_MAP)
+#if defined(ATK_USE_SPARSEHASH)
   std::string m_empty_key;
 #endif
 };
@@ -519,8 +519,7 @@ bool NewMapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
     use_recycled_index = true;
   }
 
-#if defined(USE_DENSE_HASH_MAP)
-//  if (m_name2idx_map.empty() && !use_recycled_index)
+#if defined(ATK_USE_SPARSEHASH)
   if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
   {
     m_empty_key = "DENSE_MAP_EMPTY_KEY";

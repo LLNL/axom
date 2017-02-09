@@ -34,6 +34,19 @@ if(ENABLE_MPI AND ENABLE_FORTRAN)
 endif()
 
 
+# ENABLE_SPARSEHASH=OFF can turn off Sparsehash for C++ 11, but 
+# Sparshash must be used anyway if compiler does not support C++ 11.
+if(NOT ENABLE_SPARSEHASH)
+  set(ATK_USE_SPARSEHASH FALSE)
+endif()
+
+if(NOT ATK_USE_SPARSEHASH)
+  if(ATK_USE_CXX11)
+    set(ATK_USE_UNORDERED_MAP TRUE)
+  else()
+    set(ATK_USE_SPARSEHASH TRUE)
+  endif()
+endif()
 
 
 ## Add a configuration define for each enabled toolkit component
@@ -43,7 +56,6 @@ foreach(comp in ${COMPS})
         set(ATK_USE_${comp} TRUE)
     endif()
 endforeach()
-
 
 
 
