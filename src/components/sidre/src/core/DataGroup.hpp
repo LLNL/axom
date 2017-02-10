@@ -35,12 +35,7 @@
 // third party lib headers
 #include "hdf5.h"
 
-#ifndef USE_NEW_MAP_COLLECTION
-#define USE_NEW_MAP_COLLECTION
-#endif
-
 #if defined(ATK_USE_UNORDERED_MAP)
-//STL or Boost unordered_map, depending on
 #include <unordered_map>
 #endif
 
@@ -1399,28 +1394,15 @@ private:
   // Collection options (API between DataGroup and assoc. container)
   ///////////////////////////////////////////////////////////////////
   //
-#if defined(USE_NEW_MAP_COLLECTION)
   ///////////////////////////////////////////////////////////////////
   // Improved implementation (index-item association constant as long
   // as item is in collection, but holes in index sequence)
   ///////////////////////////////////////////////////////////////////
   //
-  typedef NewMapCollection<DataView, MapType> DataViewCollection;
-  //
-  typedef NewMapCollection<DataGroup, MapType> DataGroupCollection;
-  ///////////////////////////////////////////////////////////////////
-#else
-  ///////////////////////////////////////////////////////////////////
-  // Original implementation (no holes in index sequence)
-  ///////////////////////////////////////////////////////////////////
-  //
   typedef MapCollection<DataView, MapType> DataViewCollection;
   //
   typedef MapCollection<DataGroup, MapType> DataGroupCollection;
-  //
   ///////////////////////////////////////////////////////////////////
-  //
-#endif
 
   /// Collection of Views
   DataViewCollection m_view_coll;

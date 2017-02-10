@@ -143,8 +143,10 @@ namespace sidre
 
 ////////////////////////////////////////////////////////////////////////
 //
-// MapCollection implementation follows original implementation
-// in DataGroup.
+// MapCollection keeps an index constant for each item
+// as long as it remains in the collection; i.e., don't shift indices
+// around.  It has the additional benefit that users can hold on to
+// item indices without them being changed without notice.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -165,211 +167,6 @@ namespace sidre
  */
 template <typename TYPE, typename MAP_TYPE>
 class MapCollection
-{
-public:
-
-  //
-  // Default compiler-generated ctor, dtor, copy ctor, and copy assignment
-  // operator suffice for this class.
-  //
-
-  ///
-  size_t getNumItems() const
-  {
-    return m_items.size();
-  }
-
-  ///
-  IndexType getFirstValidIndex() const
-  {
-    return getNextValidIndex(-1);
-  }
-
-  ///
-  IndexType getNextValidIndex(IndexType idx) const
-  {
-    return hasItem(idx+1) ? idx+1 : InvalidIndex;
-  }
-
-  ///
-  bool hasItem(const std::string& name) const
-  {
-    typename MAP_TYPE::const_iterator mit = m_name2idx_map.find(name);
-    return ( mit != m_name2idx_map.end() ? true : false );
-  }
-
-  ///
-  bool hasItem(IndexType idx) const
-  {
-    return (idx >= 0 &&
-            static_cast<unsigned>(idx) < getNumItems() &&
-            m_items[idx]);
-  }
-
-  ///
-  TYPE * getItem(const std::string& name)
-  {
-    typename MAP_TYPE::iterator mit = m_name2idx_map.find(name);
-    return ( mit != m_name2idx_map.end() ?
-             m_items[ mit->second ] : ATK_NULLPTR );
-  }
-
-  ///
-  TYPE const * getItem(const std::string& name) const
-  {
-    typename MAP_TYPE::const_iterator mit = m_name2idx_map.find(name);
-    return ( mit != m_name2idx_map.end() ?
-             m_items[ mit->second ] : ATK_NULLPTR );
-  }
-
-  ///
-  TYPE * getItem(IndexType idx)
-  {
-    return ( hasItem(idx) ? m_items[idx] : ATK_NULLPTR );
-  }
-
-  ///
-  TYPE const * getItem(IndexType idx) const
-  {
-    return ( hasItem(idx) ? m_items[idx] : ATK_NULLPTR );
-  }
-
-  ///
-  const std::string& getItemName(IndexType idx) const
-  {
-    return ( hasItem(idx) ? m_items[idx]->getName() : InvalidName );
-  }
-
-  ///
-  IndexType getItemIndex(const std::string& name) const
-  {
-    typename MAP_TYPE::const_iterator mit = m_name2idx_map.find(name);
-    return ( mit != m_name2idx_map.end() ?
-             mit->second : InvalidIndex );
-  }
-
-  ///
-  bool insertItem(TYPE * item, const std::string& name);
-
-  ///
-  TYPE * removeItem(const std::string& name);
-
-  ///
-  TYPE * removeItem(IndexType idx);
-
-  ///
-  void removeAllItems()
-  {
-    m_items.clear();
-    m_name2idx_map.clear();
-  }
-
-private:
-  std::vector<TYPE *>  m_items;
-  MAP_TYPE m_name2idx_map;
-#if defined(ATK_USE_SPARSEHASH)
-  std::string m_empty_key;
-#endif
-};
-
-template <typename TYPE, typename MAP_TYPE>
-bool MapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
-                                               const std::string& name)
-{
-
-#if defined(ATK_USE_SPARSEHASH)
-  if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
-  {
-    m_empty_key = "DENSE_MAP_EMPTY_KEY";
-    m_name2idx_map.set_empty_key(m_empty_key);
-    m_name2idx_map.set_deleted_key("DENSE_MAP_DELETED_KEY");
-  }
-#endif
-
-  if ( m_name2idx_map.insert( std::make_pair(name, m_items.size()) ).second )
-  {
-    // name was inserted into map
-    m_items.push_back( item );
-    return true;
-  }
-  else
-  {
-    // name was NOT inserted into map
-    return false;
-  }
-}
-
-template <typename TYPE, typename MAP_TYPE>
-TYPE * MapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
-{
-  TYPE * ret_val = ATK_NULLPTR;
-
-  typename MAP_TYPE::iterator mit = m_name2idx_map.find(name);
-  if ( mit != m_name2idx_map.end() )
-  {
-    IndexType idx = mit->second;
-
-    ret_val = m_items[idx];
-
-    m_name2idx_map.erase(mit);
-    m_items.erase(m_items.begin() + idx);
-
-    // Decrement approriate item indices
-    for (mit = m_name2idx_map.begin() ; mit != m_name2idx_map.end() ; ++mit)
-    {
-      if (mit->second > idx)
-      {
-        mit->second--;
-      }
-    }
-  }
-
-  return ret_val;
-}
-
-template <typename TYPE, typename MAP_TYPE>
-TYPE * MapCollection<TYPE, MAP_TYPE>::removeItem(IndexType idx)
-{
-  if ( hasItem(idx) )
-  {
-    TYPE * item = removeItem( m_items[idx]->getName() );
-    return item;
-  }
-  else
-  {
-    return ATK_NULLPTR;
-  }
-}
-
-
-
-////////////////////////////////////////////////////////////////////////
-//
-// NewMapCollection is an attempt to improve performance over
-// MapCollection above by keeping an index constant for each item
-// as long as it iremains in the collection; i.e., don't shift indices
-// around.  It has the additional benefit that users can hold on to
-// item indices without them being changed without notice.
-//
-////////////////////////////////////////////////////////////////////////
-
-/*!
- *************************************************************************
- *
- * \class NewMapCollection
- *
- * \brief NewMapCollection is a container class template for holding
- *        a collection of items of template parameter type TYPE, using
- *        a map container of type MAP_TYPE.
- *
- * \warning Only std::map and std::unordered_map have been tried so far.
- *          These classes have identical APIs for the functionality we
- *          are using.
- *
- *************************************************************************
- */
-template <typename TYPE, typename MAP_TYPE>
-class NewMapCollection
 {
 public:
 
@@ -487,13 +284,13 @@ private:
 };
 
 template <typename TYPE, typename MAP_TYPE>
-IndexType NewMapCollection<TYPE, MAP_TYPE>::getFirstValidIndex() const
+IndexType MapCollection<TYPE, MAP_TYPE>::getFirstValidIndex() const
 {
   return getNextValidIndex(-1);
 }
 
 template <typename TYPE, typename MAP_TYPE>
-IndexType NewMapCollection<TYPE,
+IndexType MapCollection<TYPE,
                            MAP_TYPE>::getNextValidIndex(IndexType idx) const
 {
   idx++;
@@ -507,7 +304,7 @@ IndexType NewMapCollection<TYPE,
 
 
 template <typename TYPE, typename MAP_TYPE>
-bool NewMapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
+bool MapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
                                                   const std::string& name)
 {
   bool use_recycled_index = false;
@@ -553,7 +350,7 @@ bool NewMapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
 }
 
 template <typename TYPE, typename MAP_TYPE>
-TYPE * NewMapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
+TYPE * MapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
 {
   TYPE * ret_val = ATK_NULLPTR;
 
@@ -573,7 +370,7 @@ TYPE * NewMapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
 }
 
 template <typename TYPE, typename MAP_TYPE>
-TYPE * NewMapCollection<TYPE, MAP_TYPE>::removeItem(IndexType idx)
+TYPE * MapCollection<TYPE, MAP_TYPE>::removeItem(IndexType idx)
 {
   if ( hasItem(idx) )
   {
