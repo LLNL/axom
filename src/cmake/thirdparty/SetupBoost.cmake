@@ -11,7 +11,7 @@ set(BOOST_ROOT ${BOOST_DIR})
 
 # find boost
 find_package(Boost
-             1.58
+             1.57
              REQUIRED)
 
 MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
