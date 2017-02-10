@@ -26,7 +26,7 @@ int PP_Class1_from_Object(PyObject *obj, void **addr)
     // splicer begin class.Class1.helper.from_object
     if (obj->ob_type != &PY_Class1_Type) {
         // raise exception
-        return 0;	
+        return 0;
     }
     PY_Class1 * self = (PY_Class1 *) obj;
     *addr = self->BBB;
