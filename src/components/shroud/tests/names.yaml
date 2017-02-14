@@ -1,8 +1,9 @@
 # test template options
 
+library: testnames
+
 options:
   debug: True
-  library: testnames
 
   # always create wrappers to demonstrate name generation
   F_force_wrapper: True

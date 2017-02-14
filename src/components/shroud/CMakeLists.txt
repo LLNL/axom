@@ -23,9 +23,10 @@ if(PYTHON_FOUND)
 
 ####
     PYTHON_ADD_DISTUTILS_SETUP(shroud_python
-        src/__init__.py  src/parse_decl.py  src/util.py   src/wrapf.py
-        src/main.py      src/splicer.py     src/wrapc.py  src/wrapp.py
-        src/wrapl.py     src/whelpers.py
+        shroud/__init__.py  shroud/parse_decl.py  shroud/util.py
+        shroud/wrapf.py     shroud/main.py        shroud/splicer.py
+        shroud/wrapc.py     shroud/wrapp.py       shroud/wrapl.py
+        shroud/whelpers.py
     )
 else()
     message(FATAL_ERROR "Unable to run shroud: Python not found")

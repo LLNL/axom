@@ -326,8 +326,6 @@ CMake options
 +-----------------------------------+-------------------------------+--------+
 |ENABLE_BENCHMARKS                  |Enable google benchmark        |  OFF   |
 +-----------------------------------+-------------------------------+--------+
-|ENABLE_BOOST                       |Enable Boost                   |  OFF   |
-+-----------------------------------+-------------------------------+--------+
 |ENABLE_CFORTRAN_API                |Enable C to Fortran interface  |  ON    |
 +-----------------------------------+-------------------------------+--------+
 |ENABLE_CODECOV                     |Enable code coverage via gcov  |  ON    |
@@ -356,12 +354,6 @@ components (other than 'common', which is always enabled).
            The default is 'c++11'.
 
 
-.. danger:: 
-    We are only using headers from the boost library. 
-    We should modify how these are set to use the BOOST_DIR variable 
-    rather than through the combination of ENABLE_BOOST + BOOST_ROOT
-
-
 CMake Options used to include Third-party Libraries:
 
 +-----------------------------------+---------------------------------------------------+
@@ -375,6 +367,9 @@ CMake Options used to include Third-party Libraries:
 +-----------------------------------+---------------------------------------------------+
 |SPARSEHASH_DIR                     | Path to Sparsehash install                        |
 +-----------------------------------+---------------------------------------------------+
+|BOOST_DIR                          | Path to Boost headers install                     |
++-----------------------------------+---------------------------------------------------+
+
 
 CMake Options used to enable Software Development Tools (should these go in BLT docs and link here?):
 

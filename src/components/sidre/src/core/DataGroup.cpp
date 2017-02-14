@@ -1295,7 +1295,7 @@ void DataGroup::save(const std::string& path,
   }
   else
   {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+    SLIC_ERROR("Invalid protocol " << protocol << " for file save.");
   }
 }
 
@@ -1854,6 +1854,11 @@ void DataGroup::importConduitTree(conduit::Node &node)
         // create group
         DataGroup * grp = createGroup(cld_name);
         grp->importConduitTree(cld_node);
+      }
+      else if(cld_dtype.is_empty())
+      {
+        //create empty view
+        createView(cld_name);
       }
       else if(cld_dtype.is_string())
       {

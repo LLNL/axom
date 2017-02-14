@@ -7,27 +7,36 @@ wrapper for a simple C++ library.
 Functions
 ---------
 
-The simplest item to wrap is a function in the file tutorial.hpp::
+The simplest item to wrap is a function in the file ``tutorial.hpp``::
 
    void Function1(void);
 
-This is wrapped using a YAML file as::
+This is wrapped using a YAML input file ``tut.yaml``::
 
-  options:
-      library: Tutorial
-      cpp_header: tutorial.hpp
-      namespace: tutorial
+  library: Tutorial
+  cpp_header: tutorial.hpp
+  namespace: tutorial
 
   functions:
   - decl: void Function1()
 
 .. XXX support (void)?
 
-The **options** mapping allows the user to give information to guide
-the wrapping.  **library** is used to name output files and name the
+.. The **options** mapping allows the user to give information to guide the wrapping.
+
+**library** is used to name output files and name the
 Fortran module.  **cpp_header** is the name of a C++ header file which
 contains the declarations for functions to be wrapped.  **functions**
 is a sequence of mappings which describe the functions to wrap.
+
+Process the file with *Shroud*::
+
+    % shroud tut.yaml
+    Wrote wrapTutorial.h
+    Wrote wrapTutorial.cpp
+    Wrote shroudrt.hpp
+    Wrote shroudrt.cpp
+    Wrote wrapftutorial.f
 
 The generated C function in file ``wrapTutorial.cpp`` is::
 
@@ -36,31 +45,39 @@ The generated C function in file ``wrapTutorial.cpp`` is::
 
     extern "C" {
     namespace tutorial {
-        void TUT_function1()
-        {
-            Function1();
-            return;
-        }
+
+    void TUT_function1()
+    {
+        Function1();
+        return;
+    }
+
     }  // namespace tutorial
     }  // extern "C"
 
-To help control the scope of C names, all externals default to adding
-a three letter prefix.  It defaults to the first three letters of the
+To help control the scope of C names, all externals add a prefix.
+It defaults to the first three letters of the
 **library** but may be changed by setting the option **C_prefix**.
 
-The Fortran wrapper creates an interface which allows the C wrapper to be
-called directly by Fortran::
+The Fortran module in ``wrapftutorial.f`` contains an interface
+which allows the C wrapper to be called directly by Fortran::
 
-    interface
-        subroutine function1() &
-                bind(C, name="TUT_function1")
-            use iso_c_binding
-            implicit none
-        end subroutine function1
-    end interface
+    module tutorial_mod
+        implicit none
+
+        interface
+            subroutine function1() &
+                    bind(C, name="TUT_function1")
+                use iso_c_binding
+                implicit none
+            end subroutine function1
+        end interface
+    contains
+    end module tutorial_mod
 
 In other cases a Fortran wrapper will also be created which will 
-do some type conversion before or after calling the C wrapper.
+do some type conversion on arguments or results 
+before or after calling the C wrapper.
 
 The C++ code to call the function::
 
@@ -121,8 +138,8 @@ Pointer arguments
 When a C++ routine accepts a pointer argument it may mean
 several things
 
- * output scalar
- * input or output array
+ * output a scalar
+ * input or output an array
  * pass-by-reference for a struct or class.
 
 In this example, ``len`` and ``values`` are an input array and
@@ -222,7 +239,7 @@ Character variables have significant differences between C and
 Fortran.  The Fortran interoperabilty with C feature treats a
 ``character`` variable of default kind as an array of
 ``character(kind=C_CHAR,len=1)``.  The wrapper then deals with the C
-convention of ``NULL`` termination with Fortran's blank filled.
+convention of ``NULL`` termination to Fortran's blank filled.
 
 C++ routine::
 
@@ -242,8 +259,10 @@ YAML input::
 
 This is the C++ prototype with the addition of **+len(30)**.
 This attribute defines the declared length of the returned string.
+Since *Function4a* is returning a ``std::string`` the contents of the
+string must be copied out into a Fortran variable so that the ``std::string`` may be deallocated by C++. Otherwise, it would leak memory. 
 
-Attributes may be added by assign new fields in **attrs**::
+Attributes may also be added by assign new fields in **attrs**::
 
     - decl: const std::string Function4a(
         const std::string& arg1,
@@ -680,7 +699,7 @@ For example::
       ENUM2
   };
 
-  int enumfunc(EnumTypeID arg);
+  EnumTypeID enumfunc(EnumTypeID arg);
 
   } /* end namespace tutorial */
 
@@ -693,11 +712,11 @@ describe how to convert between C and C++::
       EnumTypeID:
         typedef  : int
         cpp_type : EnumTypeID
-        c_to_cpp : static_cast<EnumTypeID>({var})
-        cpp_to_c : static_cast<int>({var})
+        c_to_cpp : static_cast<EnumTypeID>({c_var})
+        cpp_to_c : static_cast<int>({cpp_var})
 
-The C argument is explicitly convert to a C++ type, then the
-return type is explicitly convert to a C type in the generated wrapper::
+The C argument is explicitly converted to a C++ type, then the
+return type is explicitly converted to a C type in the generated wrapper::
 
   int TUT_enumfunc(int arg)
   {
@@ -709,7 +728,7 @@ Without the explicit conversion you're likely to get an error such as::
 
   error: invalid conversion from ‘int’ to ‘tutorial::EnumTypeID’
 
-.. note:: Currently only the types are supported. There is no support
+.. note:: Currently only the ``typedef`` is supported. There is no support
           for adding the enumeration values for C and Fortran.
 
           Fortran's ``ENUM, BIND(C)`` provides a way of matching 
