@@ -130,11 +130,19 @@
 #include <vector>
 
 // other CS Toolkit headers
+#include "common/config.hpp"
 #include "common/CommonTypes.hpp"
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
 
+#if defined(ATK_USE_UNORDERED_MAP)
+#include <unordered_map>
+#endif
+
+#if defined(ATK_USE_SPARSEHASH)
+#include <sparsehash/dense_hash_map>
+#endif
 
 namespace asctoolkit
 {
@@ -165,7 +173,7 @@ namespace sidre
  *
  *************************************************************************
  */
-template <typename TYPE, typename MAP_TYPE>
+template <typename TYPE>
 class MapCollection
 {
 public:
@@ -190,7 +198,7 @@ public:
   ///
   bool hasItem(const std::string& name) const
   {
-    typename MAP_TYPE::const_iterator mit = m_name2idx_map.find(name);
+    typename MapType::const_iterator mit = m_name2idx_map.find(name);
     return ( mit != m_name2idx_map.end() ? true : false );
   }
 
@@ -205,7 +213,7 @@ public:
   ///
   TYPE * getItem(const std::string& name)
   {
-    typename MAP_TYPE::iterator mit = m_name2idx_map.find(name);
+    typename MapType::iterator mit = m_name2idx_map.find(name);
     return ( mit != m_name2idx_map.end() ?
              m_items[ mit->second ] : ATK_NULLPTR );
   }
@@ -213,7 +221,7 @@ public:
   ///
   TYPE const * getItem(const std::string& name) const
   {
-    typename MAP_TYPE::const_iterator mit = m_name2idx_map.find(name);
+    typename MapType::const_iterator mit = m_name2idx_map.find(name);
     return ( mit != m_name2idx_map.end() ?
              m_items[ mit->second ] : ATK_NULLPTR );
   }
@@ -240,7 +248,7 @@ public:
   ///
   IndexType getItemIndex(const std::string& name) const
   {
-    typename MAP_TYPE::const_iterator mit = m_name2idx_map.find(name);
+    typename MapType::const_iterator mit = m_name2idx_map.find(name);
     return ( mit != m_name2idx_map.end() ?
              mit->second : InvalidIndex );
   }
@@ -277,21 +285,29 @@ public:
 private:
   std::vector<TYPE *>  m_items;
   std::stack< IndexType > m_free_ids;
-  MAP_TYPE m_name2idx_map;
+
+#if defined(ATK_USE_UNORDERED_MAP)
+  typedef std::unordered_map<std::string, IndexType> MapType;
+#else
+#if defined(ATK_USE_SPARSEHASH)
+  typedef google::dense_hash_map<std::string, IndexType> MapType;
+#endif
+#endif
+
+  MapType m_name2idx_map;
 #if defined(ATK_USE_SPARSEHASH)
   std::string m_empty_key;
 #endif
 };
 
-template <typename TYPE, typename MAP_TYPE>
-IndexType MapCollection<TYPE, MAP_TYPE>::getFirstValidIndex() const
+template <typename TYPE>
+IndexType MapCollection<TYPE>::getFirstValidIndex() const
 {
   return getNextValidIndex(-1);
 }
 
-template <typename TYPE, typename MAP_TYPE>
-IndexType MapCollection<TYPE,
-                           MAP_TYPE>::getNextValidIndex(IndexType idx) const
+template <typename TYPE>
+IndexType MapCollection<TYPE>::getNextValidIndex(IndexType idx) const
 {
   idx++;
   while ( static_cast<unsigned>(idx) < m_items.size() &&
@@ -303,9 +319,9 @@ IndexType MapCollection<TYPE,
 }
 
 
-template <typename TYPE, typename MAP_TYPE>
-bool MapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
-                                                  const std::string& name)
+template <typename TYPE>
+bool MapCollection<TYPE>::insertItem(TYPE * item,
+                                     const std::string& name)
 {
   bool use_recycled_index = false;
   IndexType idx = m_items.size();
@@ -317,7 +333,7 @@ bool MapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
   }
 
 #if defined(ATK_USE_SPARSEHASH)
-  if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
+if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
   {
     m_empty_key = "DENSE_MAP_EMPTY_KEY";
     m_name2idx_map.set_empty_key(m_empty_key);
@@ -349,12 +365,12 @@ bool MapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
   }
 }
 
-template <typename TYPE, typename MAP_TYPE>
-TYPE * MapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
+template <typename TYPE>
+TYPE * MapCollection<TYPE>::removeItem(const std::string& name)
 {
   TYPE * ret_val = ATK_NULLPTR;
 
-  typename MAP_TYPE::iterator mit = m_name2idx_map.find(name);
+  typename MapType::iterator mit = m_name2idx_map.find(name);
   if ( mit != m_name2idx_map.end() )
   {
     IndexType idx = mit->second;
@@ -369,8 +385,8 @@ TYPE * MapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
   return ret_val;
 }
 
-template <typename TYPE, typename MAP_TYPE>
-TYPE * MapCollection<TYPE, MAP_TYPE>::removeItem(IndexType idx)
+template <typename TYPE>
+TYPE * MapCollection<TYPE>::removeItem(IndexType idx)
 {
   if ( hasItem(idx) )
   {

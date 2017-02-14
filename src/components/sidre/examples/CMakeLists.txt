@@ -28,7 +28,7 @@ foreach(example_source ${example_sources})
         NAME ${exe_name}
         SOURCES ${example_source}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON sidre conduit conduit_relay hdf5 slic sparsehash ${EXTRA_LIBS})
+        DEPENDS_ON sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
     blt_add_test(
         NAME ${exe_name}
         COMMAND ${exe_name})
@@ -41,7 +41,7 @@ if(ENABLE_FORTRAN)
             NAME ${exe_name}
             SOURCES ${example_source}
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORy}
-            DEPENDS_ON sidre conduit conduit_relay hdf5 slic sparsehash ${EXTRA_LIBS})
+            DEPENDS_ON sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
         blt_add_test(
             NAME ${exe_name}
             COMMAND ${exe_name})

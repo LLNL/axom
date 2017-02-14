@@ -59,7 +59,7 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         NAME quest_regression
         SOURCES quest_regression.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends} conduit sidre spio hdf5 sparsehash
+        DEPENDS_ON ${quest_tests_depends} conduit sidre spio hdf5
     )
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
     
