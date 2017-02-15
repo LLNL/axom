@@ -95,7 +95,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
     m_baton = new IOBaton(m_mpi_comm, num_files);
   }
 
-  std::string root_name = file_string + ".hdf5.root";
+  std::string root_name = file_string + ".root";
 
   if (m_my_rank == 0) {
      createRootFile(file_string, num_files, protocol);
@@ -332,7 +332,7 @@ void IOManager::createRootFile(const std::string& file_base,
     n["protocol/name"] = protocol;
     n["protocol/version"] = "0.0";
   
-    conduit::relay::io::save(n, file_base + ".hdf5.root", "hdf5");
+    conduit::relay::io::save(n, file_base + ".root", "hdf5");
   } else {
     conduit::Node n;
 
@@ -406,8 +406,17 @@ std::string IOManager::getProtocol(
   std::string dot = ".";
   conduit::utils::rsplit_string(root_name, dot, extension, base);
 
-  std::string new_base = base;
-  conduit::utils::rsplit_string(new_base, dot, extension, base);
+  // sidre_hdf5 protocol is ".root" others are "*.protocol.root"
+  if( extension.find(dot) == std::string::npos )
+  {
+    extension = "hdf5";
+  }
+  else
+  {
+    std::string new_base = base;
+    conduit::utils::rsplit_string(new_base, dot, extension, base);
+  }
+
 
   std::string protocol;
   int buf_size = 0;
@@ -477,8 +486,8 @@ std::string IOManager::getRankGroupFileName(
 
   std::string file_name = "file";
   if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5") {
-    std::string file_pattern = getHDF5FilePattern(root_name + ".hdf5");
-    file_name = getHDF5FileName(file_pattern, root_name + ".hdf5", rankgroup_id);
+    std::string file_pattern = getHDF5FilePattern(root_name );
+    file_name = getHDF5FileName(file_pattern, root_name , rankgroup_id);
   } else {
     conduit::Node n;
     std::string relay_protocol = protocol;

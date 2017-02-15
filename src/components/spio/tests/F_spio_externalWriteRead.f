@@ -80,7 +80,7 @@ program spio_external_write_read
   ! read from the files that were written above.
   reader = iomanager_new(MPI_COMM_WORLD)
 
-  call reader%read(root2, "F_out_spio_external_write_read.hdf5.root")
+  call reader%read(root2, "F_out_spio_external_write_read.root")
 
   restored_vals1(:) = -1
   restored_vals2(:) = -1
@@ -90,7 +90,7 @@ program spio_external_write_read
   view2 = root2%get_view("fields2/b/external_undescribed")
   call view2%set_external_data_ptr(c_loc(restored_vals2))
 
-  call reader%load_external_data(root2, "F_out_spio_external_write_read.hdf5.root") 
+  call reader%load_external_data(root2, "F_out_spio_external_write_read.root") 
 
 
   ! verify that the contents of ds2 match those written from ds1.
