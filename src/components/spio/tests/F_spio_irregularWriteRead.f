@@ -89,7 +89,7 @@ program spio_irregularWriteRead
   reader = iomanager_new(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
-  call reader%read(root2, "F_out_spio_irregular_write_read.hdf5.root")
+  call reader%read(root2, "F_out_spio_irregular_write_read.root")
 
   ! verify that the contents of ds2 match those written from ds.
   return_val = 0
