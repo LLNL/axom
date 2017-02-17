@@ -1196,9 +1196,9 @@ public:
 
 
 private:
-  DISABLE_DEFAULT_CTOR(DataGroup); 
-  DISABLE_COPY_AND_ASSIGNMENT(DataGroup); 
-  DISABLE_MOVE_AND_ASSIGNMENT(DataGroup); 
+  DISABLE_DEFAULT_CTOR(DataGroup);
+  DISABLE_COPY_AND_ASSIGNMENT(DataGroup);
+  DISABLE_MOVE_AND_ASSIGNMENT(DataGroup);
 
 //@{
 //!  @name Private Group ctors and dtors
