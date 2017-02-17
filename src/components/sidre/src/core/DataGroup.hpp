@@ -1090,8 +1090,10 @@ public:
    * in the file (independent of file format) and can be accessed as a Conduit tree.
    *
    * Only the Views which have external data are added to the node.
+   *
+   * \return True if the group or any of its children have an external view, false otherwise
    */
-  void createExternalLayout(Node& n) const;
+  bool createExternalLayout(Node& n) const;
 
 
   /*!
