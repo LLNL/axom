@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 
   writer.write(root, num_files, "out_spio_parallel_write_read", "sidre_hdf5");
 
-  std::string root_name = "out_spio_parallel_write_read.hdf5.root";
+  std::string root_name = "out_spio_parallel_write_read.root";
 
   /*
    * Extra stuff to exercise writeGroupToRootFile

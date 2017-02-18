@@ -79,7 +79,7 @@ int main(int argc, char** argv)
    */
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(root2, "out_spio_external_write_read.hdf5.root");
+  reader.read(root2, "out_spio_external_write_read.root");
 
   int restored_vals1[nvals], restored_vals2[nvals];
   for (int i = 0; i < nvals; ++i) {
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
   DataView * view2 = root2->getView("fields2/b/external_undescribed");
   view2->setExternalDataPtr(restored_vals2);
 
-  reader.loadExternalData(root2, "out_spio_external_write_read.hdf5.root"); 
+  reader.loadExternalData(root2, "out_spio_external_write_read.root");
 
 
   /*

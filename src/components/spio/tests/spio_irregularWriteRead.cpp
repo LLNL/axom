@@ -93,7 +93,7 @@ int main(int argc, char** argv)
    */
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(ds2->getRoot(), "out_spio_irregular_write_read.hdf5.root");
+  reader.read(ds2->getRoot(), "out_spio_irregular_write_read.root");
 
 
   /*
