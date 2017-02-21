@@ -341,7 +341,7 @@ bool MapCollection<TYPE>::insertItem(TYPE * item,
   }
 
 #if defined(ATK_USE_SPARSEHASH)
-if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
+  if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
   {
     m_empty_key = "DENSE_MAP_EMPTY_KEY";
     m_name2idx_map.set_empty_key(m_empty_key);
