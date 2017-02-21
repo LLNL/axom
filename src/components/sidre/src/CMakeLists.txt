@@ -52,6 +52,17 @@ if (ENABLE_FORTRAN)
     )
 endif()
 
+set(sidre_depends
+    common
+    conduit
+    conduit_relay
+    hdf5
+    slic)
+
+if(SPARSEHASH_FOUND)
+   set(sidre_depends ${sidre_depends} sparsehash)
+endif()
+ 
 #
 # make the library
 #
@@ -65,12 +76,7 @@ blt_add_library( NAME
                  HEADERS_OUTPUT_SUBDIR
                      sidre
                  DEPENDS_ON
-                     common
-                     conduit
-                     conduit_relay
-                     hdf5
-                     slic
-                     sparsehash
+                     ${sidre_depends}
                  )
   
              

@@ -136,8 +136,12 @@
 // SiDRe project headers
 #include "SidreTypes.hpp"
 
-#if defined(ATK_USE_UNORDERED_MAP)
+#if defined(ATK_USE_STD_UNORDERED_MAP)
 #include <unordered_map>
+#endif
+
+#if defined(ATK_USE_STD_MAP)
+#include <map>
 #endif
 
 #if defined(ATK_USE_SPARSEHASH)
@@ -286,11 +290,15 @@ private:
   std::vector<TYPE *>  m_items;
   std::stack< IndexType > m_free_ids;
 
-#if defined(ATK_USE_UNORDERED_MAP)
+#if defined(ATK_USE_STD_UNORDERED_MAP)
   typedef std::unordered_map<std::string, IndexType> MapType;
 #else
 #if defined(ATK_USE_SPARSEHASH)
   typedef google::dense_hash_map<std::string, IndexType> MapType;
+#else
+#if defined(ATK_USE_STD_MAP)
+  typedef std::map<std::string, IndexType> MapType;
+#endif
 #endif
 #endif
 
