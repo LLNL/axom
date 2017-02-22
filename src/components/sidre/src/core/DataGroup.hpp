@@ -41,7 +41,6 @@
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
-//#include "Collections.hpp"
 #include "DataView.hpp"
 
 
