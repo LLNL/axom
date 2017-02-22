@@ -916,8 +916,8 @@ public:
 
 private:
 
-  DISABLE_DEFAULT_CTOR(DataView);  
-  DISABLE_MOVE_AND_ASSIGNMENT(DataView);  
+  DISABLE_DEFAULT_CTOR(DataView);
+  DISABLE_MOVE_AND_ASSIGNMENT(DataView);
 
 
 //@{
