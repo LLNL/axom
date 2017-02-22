@@ -2,11 +2,11 @@
 # Specify all headers
 #
 set(sidre_headers
-    core/Collections.hpp
     core/DataBuffer.hpp
     core/DataGroup.hpp
     core/DataStore.hpp
     core/DataView.hpp
+    core/MapCollection.hpp
     core/SidreTypes.hpp
     core/SidreDataTypeIds.h
     core/sidre.hpp

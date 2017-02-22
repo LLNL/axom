@@ -27,7 +27,7 @@
 // Other toolkit component headers
 
 // SiDRe project headers
-#include "Collections.hpp"
+#include "MapCollection.hpp"
 #include "DataBuffer.hpp"
 #include "DataStore.hpp"
 #include "SidreUtilities.hpp"
