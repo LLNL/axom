@@ -984,8 +984,10 @@ public:
    * in the file (independent of file format) and can be accessed as a Conduit tree.
    *
    * Only the Views which have external data are added to the node.
+   *
+   * \return True if the group or any of its children have an external view, false otherwise
    */
-  void createExternalLayout(Node& n) const;
+  bool createExternalLayout(Node& n) const;
 
 
   /*!
@@ -1088,9 +1090,9 @@ public:
 
 
 private:
-  DISABLE_DEFAULT_CTOR(DataGroup); 
-  DISABLE_COPY_AND_ASSIGNMENT(DataGroup); 
-  DISABLE_MOVE_AND_ASSIGNMENT(DataGroup); 
+  DISABLE_DEFAULT_CTOR(DataGroup);
+  DISABLE_COPY_AND_ASSIGNMENT(DataGroup);
+  DISABLE_MOVE_AND_ASSIGNMENT(DataGroup);
 
 //@{
 //!  @name Private Group ctors and dtors

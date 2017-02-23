@@ -1058,11 +1058,16 @@ void DataGroup::createNativeLayout(Node& n) const
  * Copy Group native layout to given Conduit node.
  *
  *************************************************************************
- * see ATK-786 - Improvements to createNativeLayout and createExternalLayout
+ * see ATK-736 - Improvements to createNativeLayout and createExternalLayout
  */
-void DataGroup::createExternalLayout(Node& n) const
+bool DataGroup::createExternalLayout(Node& n) const
 {
+  // Adds a conduit node for this group if it has external views,
+  // or if any of its children groups has an external view
+
   n.set(DataType::object());
+
+  bool hasExternalViews = false;
 
   // Dump the group's views
   IndexType vidx = getFirstValidViewIndex();
@@ -1071,12 +1076,16 @@ void DataGroup::createExternalLayout(Node& n) const
     const DataView * view = getView(vidx);
 
     // Check that the view's name is not also a child group name
-    SLIC_CHECK_MSG( !hasChildGroup(view->getName())
-                    , view->getName() << " is the name of a groups and a view");
+    SLIC_CHECK_MSG( !hasChildGroup(view->getName()),
+                    view->getName() << " is the name of a groups and a view");
 
-    if(view->isExternal() && view->isDescribed())
+    if(view->isExternal())
     {
-      view->createNativeLayout(  n[view->getName()]  );
+      if(view->isDescribed())
+      {
+        view->createNativeLayout(  n[view->getName()]  );
+      }
+      hasExternalViews = true;
     }
 
     vidx = getNextValidViewIndex(vidx);
@@ -1087,9 +1096,21 @@ void DataGroup::createExternalLayout(Node& n) const
   while ( indexIsValid(gidx) )
   {
     const DataGroup * group =  getGroup(gidx);
-    group->createExternalLayout(n[group->getName()]);
+
+    if( group->createExternalLayout(n[group->getName()]) )
+    {
+      hasExternalViews = true;
+    }
+    else
+    {
+      // Remove nodes that do not have any external views
+      n.remove( group->getName() );
+    }
+
     gidx = getNextValidGroupIndex(gidx);
   }
+
+  return hasExternalViews;
 }
 
 /*
