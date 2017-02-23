@@ -280,7 +280,7 @@ IndexType MapCollection<TYPE, MAP_TYPE>::getFirstValidIndex() const
 
 template <typename TYPE, typename MAP_TYPE>
 IndexType MapCollection<TYPE,
-                           MAP_TYPE>::getNextValidIndex(IndexType idx) const
+                        MAP_TYPE>::getNextValidIndex(IndexType idx) const
 {
   idx++;
   while ( static_cast<unsigned>(idx) < m_items.size() &&
@@ -294,7 +294,7 @@ IndexType MapCollection<TYPE,
 
 template <typename TYPE, typename MAP_TYPE>
 bool MapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
-                                                  const std::string& name)
+                                               const std::string& name)
 {
   bool use_recycled_index = false;
   IndexType idx = m_items.size();
