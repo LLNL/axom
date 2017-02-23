@@ -25,11 +25,10 @@ def main():
     write_build_info(pjoin(prefix,"info.json"))
     # spack specs for the cz chaos systems
     specs = ["%clang@3.9.0"]
-    #specs = ["%clang@3.5.0",
-      #       "%gcc@4.7.1",
-      #       "%gcc@4.9.3",
-      #       "%intel@15.0.187",
-      #       "%intel@16.0.109"]
+    #specs = ["%clang@3.9.0",
+    specs = ["%gcc@4.9.3",
+             "%intel@16.0.4",
+             "%intel@17.0.0"]
     # use uberenv to install for all specs
     for spec in specs:
         uberenv_install_tpls(prefix,spec,mirror_dir)
@@ -38,9 +37,9 @@ def main():
     # build the toolkit against the new tpls
     build_and_test_host_configs(prefix)
     # set proper perms for installed tpls
-    #set_toolkit_group_and_perms(prefix)
+    set_toolkit_group_and_perms(prefix)
     # set proper perms for the mirror files
-    #set_toolkit_group_and_perms(mirror_dir)
+    set_toolkit_group_and_perms(mirror_dir)
 
 
 if __name__ == "__main__":
