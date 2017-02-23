@@ -8,8 +8,8 @@
 # first Check for SPARSEHASH_DIR
 
 #find includes
-find_path( SPARSEHASH_INCLUDE_DIRS type_traits.h
-          PATHS  ${SPARSEHASH_DIR}/include/sparsehash/
+find_path( SPARSEHASH_INCLUDE_DIRS sparsehash/type_traits.h
+          PATHS  ${SPARSEHASH_DIR}/include
           NO_DEFAULT_PATH
           NO_CMAKE_ENVIRONMENT_PATH
           NO_CMAKE_PATH
