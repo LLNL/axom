@@ -121,16 +121,16 @@ namespace policies {
   template<typename TheParentSetType>
   struct ConcreteParentSubset
   {
-    typedef TheParentSetType ParentSetType;
+    typedef const TheParentSetType ParentSetType;
 
     ConcreteParentSubset(ParentSetType* parSet = AXOM_NULLPTR) : m_parentSet(parSet) {}
 
     /**
      * \brief Checks whether the set containing this policy class is a subset
      */
-    bool                  isSubset() const { return m_parentSet != AXOM_NULLPTR; }
-    const ParentSetType*  parentSet() const { return m_parentSet; }
-    ParentSetType*&       parentSet() { return m_parentSet; }
+    bool                  isSubset()  const { return m_parentSet != AXOM_NULLPTR; }
+    ParentSetType* const& parentSet() const { return m_parentSet; }
+    ParentSetType* &      parentSet()       { return m_parentSet; }
 
 
     template<typename OrderedSetIt>

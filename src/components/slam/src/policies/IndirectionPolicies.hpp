@@ -133,9 +133,10 @@ namespace policies {
 
     STLVectorIndirection(IndirectionBufferType* buf = AXOM_NULLPTR) : m_vecBuf(buf) {}
 
-    IndirectionBufferType*&   data() { return m_vecBuf; }
+    IndirectionBufferType* &        data()       { return m_vecBuf; }
+    IndirectionBufferType* const &  data() const { return m_vecBuf; }
 
-    inline IndirectionResult  indirection(PositionType pos) const
+    inline IndirectionResult        indirection(PositionType pos) const
     {
       SLIC_ASSERT_MSG( hasIndirection(),
           "SLAM::Set:STLVectorIndirection -- Tried to dereference a null vector in a vector based indirection set.");

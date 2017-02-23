@@ -43,11 +43,12 @@ namespace slam {
     typedef typename MapType::OrderedMap    BufferType;
 
     typedef std::map<KeyType, MapType>      DataVecMap;
+    typedef std::map<KeyType, BufferType>   DataBufferMap;
     typedef std::map<KeyType, DataType>     DataAttrMap;
 
   public:
-    MapType&  addField(KeyType key, Set const* theSet) { return m_dataVecs[key] = MapType(theSet); }
-    DataType& addScalar(KeyType key, DataType val)     { return m_dataScalars[key] = val; }
+
+    MapType&  addField(KeyType key, Set const* theSet) { return m_maps[key] = MapType(theSet); }
 
     MapType&  addNamelessField(Set const* theSet)
     {
@@ -55,45 +56,79 @@ namespace slam {
       std::stringstream key;
 
       key << "__field_" << cnt++;
-      return m_dataVecs[key.str()] = MapType(theSet);
+      return m_maps[key.str()] = MapType(theSet);
     }
-
 
     MapType& getField(KeyType key)
     {
       verifyFieldsKey(key);
-      return m_dataVecs[key];
+      return m_maps[key];
     }
-    MapType const& getField(KeyType key) const
+
+    const MapType& getField(KeyType key) const
     {
       verifyFieldsKey(key);
-      return m_dataVecs[key];
+      return m_maps[key];
     }
+
+
+
+    BufferType& addBuffer(KeyType key, int size = 0)     { return m_buff[key] = BufferType(size); }
+
+    BufferType& getBuffer(KeyType key)
+    {
+      verifyBufferKey(key);
+      return m_buff[key];
+    }
+    const BufferType & getBuffer(KeyType key) const
+    {
+      verifyBufferKey(key);
+      return m_buff[key];
+    }
+
+
+
+    DataType& addScalar(KeyType key, DataType val)     { return m_scal[key] = val; }
 
     DataType& getScalar(KeyType key)
     {
-      verifyScalarsKey(key);
-      return m_dataScalars[key];
+      verifyScalarKey(key);
+      return m_scal[key];
     }
-    DataType const& getScalar(KeyType key) const
+
+    const DataType& getScalar(KeyType key) const
     {
-      verifyScalarsKey(key);
-      return m_dataScalars[key];
+      verifyScalarKey(key);
+      return m_scal[key];
     }
 
   private:
-    inline void verifyFieldsKey(KeyType AXOM_DEBUG_PARAM(key)){
-      SLIC_ASSERT_MSG( m_dataVecs.find(key) != m_dataVecs.end()
-          , "Didn't find " << axom::slam::util::TypeToString<DataType>::to_string() << " field named " << key );
+
+    std::string dataTypeString() const {
+      return axom::slam::util::TypeToString<DataType>::to_string();
     }
-    inline void verifyScalarsKey(KeyType AXOM_DEBUG_PARAM(key)){
-      SLIC_ASSERT_MSG( m_dataScalars.find(key) != m_dataScalars.end()
-          , "Didn't find " << axom::slam::util::TypeToString<DataType>::to_string() << " scalar named " << key );
+
+    inline void verifyFieldsKey(KeyType AXOM_DEBUG_PARAM(key)) const {
+      SLIC_ASSERT_MSG( m_maps.find(key) != m_maps.end()
+          , "Didn't find " << dataTypeString() << " field named " << key );
     }
+
+    inline void verifyBufferKey(KeyType AXOM_DEBUG_PARAM(key)) const {
+      SLIC_ASSERT_MSG( m_buff.find(key) != m_buff.end(),
+          "Didn't find " << dataTypeString() << " buffer named " << key );
+    }
+    inline void verifyScalarKey(KeyType AXOM_DEBUG_PARAM(key)) const {
+      SLIC_ASSERT_MSG( m_scal.find(key) != m_scal.end(),
+          "Didn't find " << dataTypeString() << " scalar named " << key );
+    }
+
   private:
-    DataVecMap m_dataVecs;
-    DataAttrMap m_dataScalars;
+
+    DataVecMap m_maps;
+    DataBufferMap m_buff;
+    DataAttrMap m_scal;
   };
+
 } // end namespace slam
 } // end namespace axom
 

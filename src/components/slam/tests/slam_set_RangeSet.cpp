@@ -309,7 +309,7 @@ TEST(gtest_slam_generic_range_set,concrete_parent_set)
 
 
   // Since the parent is a concrete OrderedSet, it should have an operator[]
-  ParentType& childParSet = *(childSet.parentSet());
+  const ParentType& childParSet = *(childSet.parentSet());
   for(SetPosition pos = 0; pos > childParSet.size(); ++pos)
   {
     EXPECT_EQ(childParSet.at(pos),  childParSet[pos]);
