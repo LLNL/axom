@@ -12,7 +12,7 @@
 /**
  * \file
  *
- * \brief Simple user of the mesh api class.
+ * \brief Simple example that uses Slam for generating and processing a simple 3D mesh.
  *
  * \details Loads a hex mesh from a VTK file, generates the Node to Zone relation and does simple mesh processing.
  *
@@ -31,14 +31,19 @@
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
+#include "slam/IndirectionPolicies.hpp"
 #include "slam/Set.hpp"
 #include "slam/RangeSet.hpp"
 #include "slam/StaticVariableRelation.hpp"
 #include "slam/StaticConstantRelation.hpp"
+
+#include "slam/StaticRelation.hpp"
+
 #include "slam/DynamicVariableRelation.hpp"
 
 #include "slam/Map.hpp"
 #include "slam/Utilities.hpp"
+#include "slam/FieldRegistry.hpp"
 
 #include "fmt/fmt.hpp"
 
@@ -64,13 +69,15 @@ namespace slamUnstructuredHex {
 
     DataType m_x, m_y, m_z;
   };
-  Point operator    +(const Point& pt1, const Point& pt2)  { Point pt(pt1); pt += pt2;      return pt; }
 
-  Point operator    *(const Point& pt1, const DataType& sc){ Point pt(pt1); pt *= sc;       return pt; }
-  Point operator    *(const DataType& sc,const Point& pt1) { Point pt(pt1); pt *= sc;       return pt; }
+  /// Some operations on Points
+  Point operator  +(const Point& pt1, const Point& pt2)  { Point pt(pt1); pt += pt2;      return pt; }
+
+  Point operator  *(const Point& pt1, const DataType& sc){ Point pt(pt1); pt *= sc;       return pt; }
+  Point operator  *(const DataType& sc,const Point& pt1) { Point pt(pt1); pt *= sc;       return pt; }
 
   template<typename T>
-  Point operator    /(const Point& pt1, const T& sc){ Point pt(pt1); pt *= (1. / sc);  return pt; }
+  Point operator  /(const Point& pt1, const T& sc){ Point pt(pt1); pt *= (1. / sc);  return pt; }
 
 
   /**
@@ -84,25 +91,35 @@ namespace slamUnstructuredHex {
   public:
     enum { NODES_PER_ZONE = 8 };
 
-    // types for sets
-    typedef axom::slam::PositionSet                                                               NodeSet;
-    typedef axom::slam::PositionSet                                                               ZoneSet;
+    /// types for sets
+    typedef axom::slam::PositionSet                                                       NodeSet;
+    typedef axom::slam::PositionSet                                                       ZoneSet;
+    typedef ZoneSet::PositionType                                                               PositionType;
+    typedef ZoneSet::IndexType                                                                  IndexType;
 
-    // types for relations
-    typedef axom::slam::StaticVariableRelation                                                    NodeToZoneRelation;
-    typedef NodeToZoneRelation::RelationVecConstIterator                                                NodeZoneIterator;
+    /// types for relations
+    typedef axom::slam::policies::STLVectorIndirection<PositionType, PositionType>        STLIndirection;
+    typedef axom::slam::policies::VariableCardinalityPolicy<PositionType, STLIndirection> VariableCardinalityPolicy;
+    typedef axom::slam::StaticRelation<
+          VariableCardinalityPolicy,
+          STLIndirection,
+          NodeSet,
+          ZoneSet>                                                                            NodeToZoneRelation;
+    typedef typename NodeToZoneRelation::RelationConstIterator                                NodeZoneIterator;
 
-    typedef axom::slam::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE>  ZNStride;
-    typedef axom::slam::StaticConstantRelation<ZNStride>                                          ZoneToNodeRelation;
-    typedef ZoneToNodeRelation::RelationVecConstIterator                                                ZoneNodeIterator;
+    typedef axom::slam::policies::CompileTimeStrideHolder<PositionType, NODES_PER_ZONE> ZNStride;
+    typedef axom::slam::policies::ConstantCardinalityPolicy<PositionType, ZNStride>     ConstantCardinalityPolicy;
+    typedef axom::slam::StaticRelation<
+          ConstantCardinalityPolicy,
+          STLIndirection,
+          ZoneSet,
+          NodeSet>                                                                             ZoneToNodeRelation;
+    typedef ZoneToNodeRelation::RelationConstIterator ZoneNodeIterator;
 
-    typedef NodeSet::IndexType                                                                          IndexType;
-    typedef NodeSet::PositionType                                                                       PositionType;
-
-    // types for maps
-    typedef axom::slam::Map< Point >                                                              PositionsVec;
-    typedef axom::slam::Map< DataType >                                                           NodeField;
-    typedef axom::slam::Map< DataType >                                                           ZoneField;
+    /// types for maps
+    typedef axom::slam::Map< Point >            PositionsVec;
+    typedef axom::slam::Map< DataType >         NodeField;
+    typedef axom::slam::Map< DataType >         ZoneField;
 
   public:
     /** \brief Simple accessor for the number of nodes in the mesh  */
@@ -128,6 +145,23 @@ namespace slamUnstructuredHex {
     NodeField nodeFieldExact;
     NodeField nodeFieldAvg;
   };
+
+  /// The repository is a proxy for a data allocator/manager
+  struct Repository
+  {
+    // Define the explicit instances of our local (key/value) datastore for int and double
+    typedef axom::slam::FieldRegistry<int>    IntsRegistry;
+    typedef axom::slam::FieldRegistry<double> RealsRegistry;
+    typedef axom::slam::Map<int>              IntField;
+    typedef axom::slam::Map<double>           RealField;
+
+    static IntsRegistry intsRegistry;
+    static RealsRegistry realsRegistry;
+  };
+
+  Repository::IntsRegistry Repository::intsRegistry;
+  Repository::RealsRegistry Repository::realsRegistry;
+
 
   /** A simple class to read a VTK hex mesh */
   class SimpleVTKHexMeshReader
@@ -165,13 +199,10 @@ namespace slamUnstructuredHex {
 
       // Read in the POINT data, (that we'll call the nodes)
       IndexType numNodes;
-      vtkMesh >> numNodes;
-      vtkMesh >> junk;
+      vtkMesh >> numNodes >> junk;
 
-      SLIC_INFO("-- Number of nodes: " << numNodes);
-
-      // Create the set of Nodes
       mesh->nodes = HexMesh::NodeSet(numNodes);
+      SLIC_INFO("-- Number of nodes: " << numNodes);
 
       // Create the nodal position field, and read positions from file
       mesh->nodePosition = HexMesh::PositionsVec( &mesh->nodes );
@@ -190,9 +221,7 @@ namespace slamUnstructuredHex {
       IndexType numZones;
       IndexType listSize;
 
-      vtkMesh >> junk;
-      vtkMesh >> numZones;
-      vtkMesh >> listSize;
+      vtkMesh >> junk >> numZones >> listSize;
       IndexType numNodeZoneIndices = numZones * (HexMesh::NODES_PER_ZONE);
 
       // Note: The VTK format has an extra value per zone for the number of indices
@@ -206,17 +235,13 @@ namespace slamUnstructuredHex {
       // Create the set of Zones
       mesh->zones = HexMesh::ZoneSet(numZones);
 
-      // Create the topological incidence relation from zones to nodes
-      mesh->relationZoneNode = HexMesh::ZoneToNodeRelation(&mesh->zones, &mesh->nodes);
 
-      // Read in and encode this as a static constant relation
-      typedef HexMesh::ZoneToNodeRelation::RelationVec  RelationVec;
-      typedef RelationVec::iterator                     RelationVecIterator;
-
-      IndexType const STRIDE = HexMesh::NODES_PER_ZONE;
+      // Read in the zone boundary information
+      typedef Repository::IntsRegistry::BufferType  RelationVec;
+      typedef RelationVec::iterator                 RelationVecIterator;
 
       // Setup the 'offsets' vector into the index space of the nodes set
-      RelationVec offsetsVec ( numNodeZoneIndices );
+      RelationVec& offsetsVec = Repository::intsRegistry.addBuffer("znRelData", numNodeZoneIndices );
       RelationVecIterator oIt = offsetsVec.begin();
       IndexType nodeCount;
       typedef HexMesh::ZoneSet::iterator SetIterator;
@@ -224,11 +249,10 @@ namespace slamUnstructuredHex {
       {
         vtkMesh >> nodeCount;
 
-        SLIC_ASSERT_MSG(
-          nodeCount == HexMesh::NODES_PER_ZONE,
-          "Unsupported mesh type with zone = "
-          << *zIt << ", nodeCount = " << nodeCount
-          << " (expected " << HexMesh::NODES_PER_ZONE << ")");
+        SLIC_ASSERT_MSG( nodeCount == HexMesh::NODES_PER_ZONE,
+            "Unsupported mesh type with zone = "
+            << *zIt << ", nodeCount = " << nodeCount
+            << " (expected " << HexMesh::NODES_PER_ZONE << ")");
 
         for( IndexType n = 0; n < (HexMesh::NODES_PER_ZONE); ++n )
         {
@@ -236,9 +260,9 @@ namespace slamUnstructuredHex {
         }
       }
 
-
-      // Set the relation here by copying over the data buffers
-      mesh->relationZoneNode.bindRelationData( offsetsVec, STRIDE);
+      // Create the topological incidence relation from zones to nodes
+      mesh->relationZoneNode = HexMesh::ZoneToNodeRelation(&mesh->zones, &mesh->nodes);
+      mesh->relationZoneNode.setRelationData(offsetsVec.size(), &offsetsVec);
 
       // Check that the relation is valid
       SLIC_ASSERT_MSG(  mesh->relationZoneNode.isValid(), "Error creating (static) relation from zones to nodes!");
@@ -287,12 +311,10 @@ namespace slamUnstructuredHex {
     // -------------------------------------------------
 
     // --- Step 2: Convert this to a static variable relation from Nodes to Zones
-    mesh->relationNodeZone = HexMesh::NodeToZoneRelation( &mesh->nodes, &mesh->zones);
-
     // Now, linearize the dynamic relation into a static relation here
-    typedef HexMesh::NodeToZoneRelation::RelationVec RelationVec;
-    RelationVec beginsVec( mesh->nodes.size() + 1 );
-    RelationVec offsetsVec( numZonesOfNode );
+    typedef Repository::IntsRegistry::BufferType RelationVec;
+    RelationVec& beginsVec = Repository::intsRegistry.addBuffer("nzBegins", mesh->nodes.size() + 1 );
+    RelationVec& offsetsVec = Repository::intsRegistry.addBuffer("nzOffsets", numZonesOfNode );
     HexMesh::NodeSet::IndexType count = 0;
     for(HexMesh::NodeSet::iterator nIt = mesh->nodes.begin(), nEnd = mesh->nodes.end(); nIt < nEnd; ++nIt)
     {
@@ -306,7 +328,9 @@ namespace slamUnstructuredHex {
     beginsVec[mesh->nodes.size()] = count;
 
     // Send the data buffers over to the relation now and check the validity
-    mesh->relationNodeZone.bindRelationData(beginsVec, offsetsVec);
+    mesh->relationNodeZone = HexMesh::NodeToZoneRelation( &mesh->nodes, &mesh->zones);
+    mesh->relationNodeZone.setOffsets(mesh->nodes.size(), &beginsVec);
+    mesh->relationNodeZone.setRelationData(offsetsVec.size(), &offsetsVec);
 
     SLIC_ASSERT_MSG(  mesh->relationNodeZone.isValid(), "Error creating (static) relation from nodes to zones!\n");
     SLIC_ASSERT_MSG(  count == numZonesOfNode,          "Error creating zones of Node list!\n");
@@ -436,14 +460,13 @@ int main(int argc, char** argv)
 
     HexMesh hexMesh;
     readHexMesh( meshName, &hexMesh );
-
-    SLIC_ASSERT(hexMesh.relationNodeZone.isValid());
     SLIC_ASSERT(hexMesh.relationZoneNode.isValid());
     //--------------------------------------------------------------
 
     // Now build the node to zone relation
     SLIC_INFO("Generating node->zone relation");
     generateNodeZoneRelation( &hexMesh );
+    SLIC_ASSERT(hexMesh.relationNodeZone.isValid());
 
     //--------------------------------------------------------------
     // Now that we have the mesh in memory, we can start to do things with it.
