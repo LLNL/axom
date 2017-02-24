@@ -65,7 +65,7 @@ private:
   int m_resolution[NDIMS];
 
   void addObj(const T& obj, int index);
-  bool isValidIndex(int index);
+  bool isValidIndex(int index) const;
 
   struct Bin {
     std::vector<T> ObjectArray;
@@ -89,19 +89,15 @@ VirtualGrid< T, NDIMS >::VirtualGrid()
 
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
     
+  size_t newsize = 1;
   for (int i=0; i<NDIMS; ++i) {
     m_origin[i] = 0;
     m_spacing[i] = 1.0;
     m_resolution[i] = 100;
+    newsize *= 100;
   }
 
-  //assumes either 2 or 3 dimensional
-  if (NDIMS == 2) {
-    m_bins.resize(m_resolution[0] * m_resolution[1]);
-  } else {
-    m_bins.resize(m_resolution[0] * m_resolution[1] * m_resolution[2]);
-  }
-
+  m_bins.resize(newsize);
 }
 
 template< typename T, int NDIMS >
@@ -113,20 +109,17 @@ VirtualGrid< T, NDIMS >::VirtualGrid(const PointType& origin,
   SLIC_ASSERT(res != ATK_NULLPTR);
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
+  size_t newsize = 1;
   for (int i=0; i<NDIMS;++i) {
     m_origin[i] = origin[i];
 
     SLIC_ASSERT(step[i] !=0 );
     m_spacing[i] = step[i];
     m_resolution[i] = res[i];
+    newsize *= res[i];
   }
 
-  //assumes either 2 or 3 dimensional
-  if (NDIMS == 2) {
-    m_bins.resize(m_resolution[0] * m_resolution[1]);
-  } else {
-    m_bins.resize(m_resolution[0] * m_resolution[1] * m_resolution[2]);
-  }
+  m_bins.resize(newsize);
 }
 
 template< typename T, int NDIMS >
@@ -139,20 +132,17 @@ VirtualGrid< T, NDIMS >::VirtualGrid(const double * origin,
   SLIC_ASSERT(res != ATK_NULLPTR);
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
+  size_t newsize = 1;
   for (int i=0; i<NDIMS;++i) {
     m_origin[i] = origin[i];
     
     SLIC_ASSERT(step[i] !=0 );
     m_spacing[i] = step[i];
     m_resolution[i] = res[i];
+    newsize *= res[i];
   }
 
-  //assumes either 2 or 3 dimensional
-  if (NDIMS == 2) {
-    m_bins.resize(m_resolution[0] * m_resolution[1]);
-  } else {
-    m_bins.resize(m_resolution[0] * m_resolution[1] * m_resolution[2]);
-  }
+  m_bins.resize(newsize);
 }
 
 template< typename T, int NDIMS >
@@ -185,7 +175,7 @@ int VirtualGrid<T, NDIMS>::getBinIndex(const PointType & pt)
 }
 
 template< typename T, int NDIMS >
-bool VirtualGrid<T, NDIMS>::isValidIndex(int index)
+bool VirtualGrid<T, NDIMS>::isValidIndex(int index) const
 {
   return index >=0 && index < static_cast<int>(m_bins.size());
 }
@@ -199,39 +189,45 @@ int VirtualGrid<T, NDIMS>::getNumBins()
 template< typename T, int NDIMS >
 bool VirtualGrid<T, NDIMS>::binEmpty(int index)
 {
-  SLIC_ASSERT(isValidIndex(index));
+  if (!isValidIndex(index)) {
+    return true;
+  }
 
   return m_bins[index].ObjectArray.empty();
 }
 
 template< typename T, int NDIMS >
-//rchange these to pointers with a length?
 std::vector<T>& VirtualGrid<T, NDIMS>::getBinContents(int index)
 {
   SLIC_ASSERT(isValidIndex(index));
-  return  m_bins[index].ObjectArray;
+
+  return m_bins[index].ObjectArray;
 }
 
 template< typename T, int NDIMS >
-//see comment on above function
 const std::vector<T>& VirtualGrid<T, NDIMS>::getBinContents(int index) const
 {
   SLIC_ASSERT(isValidIndex(index));
-  return  m_bins[index].ObjectArray;
+
+  return m_bins[index].ObjectArray;
 }
 
 template< typename T, int NDIMS >
 void VirtualGrid<T, NDIMS>::clear(int index)
 {
-  SLIC_ASSERT(isValidIndex(index));
-  m_bins[index].ObjectArray.resize(0);
+  if (isValidIndex(index)) {
+    m_bins[index].ObjectArray.clear();
+  }
 }
 
 template< typename T, int NDIMS >
 void VirtualGrid<T, NDIMS>::addObj(const T& obj, int index)
 {
-  SLIC_ASSERT(isValidIndex(index));
-  m_bins[index].ObjectArray.push_back(obj);
+  SLIC_CHECK(!isValidIndex(index));
+
+  if (isValidIndex(index)) {
+    m_bins[index].ObjectArray.push_back(obj);
+  }
 }
 
 
