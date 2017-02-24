@@ -305,8 +305,6 @@ void VirtualGrid<T, NDIMS>::addObj(const T& obj, int index)
 
 
 //------------------------------------------------------------------------------
-//WIP For NDIMS == 3, NDIMS == 2 is same but needs to be added
-// by removing the k case and z_length
 template< typename T, int NDIMS>
 void VirtualGrid<T, NDIMS>::insert(const BoxType& BB,
                                   const T& obj)
@@ -315,38 +313,24 @@ void VirtualGrid<T, NDIMS>::insert(const BoxType& BB,
   PointType min, max;
    
   min = BB.getMin();
-  max = BB.getMax();   
-    
+  max = BB.getMax();
+
   PointType tempx = PointType::make_point(max[0], min[1], min[2]);
   PointType tempy = PointType::make_point(min[0], max[1], min[2]);
   PointType tempz = PointType::make_point(max[0], min[1], max[2]);
    
   int start = getBinIndex(min);
-  //  SLIC_INFO("Minimum is "<< start);
-  //  SLIC_INFO("Getting xlength with tempx"<<tempx);
 
   int xlength = (getBinIndex(tempx)- start);
-  //    SLIC_INFO("Getting end index "<<getBinIndex(tempx));
-  //SLIC_INFO("Getting x and y res");
-
   int x_res = m_resolution[0];
   int y_res = m_resolution[1];
-   
-  //    SLIC_INFO("Getting x and y res"<<x_res<<"and "<<y_res);
   int ylength = (getBinIndex(tempy) / x_res) - ( start / x_res);
   int zlength = (getBinIndex(tempz) / (x_res * y_res)) - (start / (x_res*y_res));
 
 
-  //   SLIC_INFO("Lengths"<<xlength<<"and "<<ylength<<"and "<<zlength);
-
-
-  //int end = getBinIndex(max);
-    
   for (int k=0; k<= zlength; ++k) {
     for (int j=0; j<=ylength; ++j) {
       for (int i=0; i<=xlength; ++i) {
-	// SLIC_INFO("Adding object at index " <<
-        //           start + i + (j * x_res) + (k * x_res * y_res)) ;
         addObj(obj, start + i + (j * x_res) + (k * x_res * y_res));
       }
     }
