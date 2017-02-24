@@ -29,7 +29,6 @@ if [[ $HOSTNAME == rz* ]]; then
 else
     HOST_CONFIGURATION="host-configs/vulcanlac-bgqos_0-${COMPILER}.cmake"
 fi
-#    HOST_CONFIGURATION="host-configs/vulcanlac-bgqos_0-${COMPILER}.cmake"
 
 OPTIONS="-ecc -hc $HOST_CONFIGURATION -bt $BUILD_TYPE -bp $BUILD_PATH -ip $INSTALL_PATH $COMP_OPT $BUILD_OPT"
 echo Running $COMPILER
