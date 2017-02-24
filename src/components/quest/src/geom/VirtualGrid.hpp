@@ -114,9 +114,6 @@ VirtualGrid< T, NDIMS >::VirtualGrid(const PointType& origin,
     m_origin[i] = origin[i];
 
     SLIC_ASSERT(step[i] !=0 );
-    // Quick fix to reduce the chance of rounding errors that were causing
-    // off by one indexing during divisions.
-    // A more robust fix will be needed in the future.
     m_spacing[i] = step[i];
     m_resolution[i] = res[i];
   }
@@ -143,9 +140,6 @@ VirtualGrid< T, NDIMS >::VirtualGrid(const double * origin,
     m_origin[i] = origin[i];
     
     SLIC_ASSERT(step[i] !=0 );
-    // Quick fix to reduce the chance of rounding errors that were causing 
-    // off by one indexing during divisions.
-    // A more robust fix will be needed in the future.
     m_spacing[i] = step[i];
     m_resolution[i] = res[i];
   }
@@ -163,10 +157,7 @@ int VirtualGrid<T, NDIMS>::getBinIndex(const PointType & pt)
 {
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
-  //The below causes off by one due to rounding errors.  
-  // I have done a quick fix above (in the non-default ctor).
   int i = (pt[0] - m_origin[0])/m_spacing[0];
-
 
   SLIC_ASSERT(i>=0 && i<m_resolution[0]);
    
