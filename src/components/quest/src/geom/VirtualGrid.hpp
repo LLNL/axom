@@ -42,6 +42,7 @@ public:
 
   VirtualGrid(const PointType& origin, const double * spacing, const int * res);
   VirtualGrid(const double * origin, const double * spacing, const int * res);
+  ~VirtualGrid();
     
   int getBinIndex(const PointType & pt);
   int getNumBins();
@@ -50,6 +51,8 @@ public:
   const std::vector<T>& getBinContents(int index) const;
   void clear(int index);
   void insert(const BoxType& BB, const T& obj);
+
+  const static int INVALID_BIN_INDEX = -1;
 
 protected:
 
@@ -153,27 +156,32 @@ VirtualGrid< T, NDIMS >::VirtualGrid(const double * origin,
 }
 
 template< typename T, int NDIMS >
+VirtualGrid< T, NDIMS >::~VirtualGrid()
+{
+}
+
+template< typename T, int NDIMS >
 int VirtualGrid<T, NDIMS>::getBinIndex(const PointType & pt)
 {
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
-  int i = (pt[0] - m_origin[0])/m_spacing[0];
+  int retval = 0;
+  for (int i = 0; i < NDIMS; ++i) {
+    int tmp = (pt[i] - m_origin[i]) / m_spacing[i];
 
-  SLIC_ASSERT(i>=0 && i<m_resolution[0]);
-   
-  int j = (pt[1] - m_origin[1])/m_spacing[1];
+    if (tmp < 0 || tmp >= m_resolution[i]) {
+      return INVALID_BIN_INDEX;
+    }
 
-  SLIC_ASSERT(j>=0 && j<m_resolution[1]);
+    int factor = 1;
+    for (int j = 0; j < i; ++j) {
+      factor *= m_resolution[j];
+    }
 
-  if (NDIMS==3) {
-    int k = (pt[2] - m_origin[2])/m_spacing[2];
-
-    SLIC_ASSERT(k>=0 && k<m_resolution[2]);
-
-    return i + j * m_resolution[0] + k * m_resolution[0] * m_resolution[1];
-  } else {
-    return i + j * m_resolution[0];
+    retval += tmp * factor;
   }
+
+  return retval;
 }
 
 template< typename T, int NDIMS >
@@ -193,11 +201,7 @@ bool VirtualGrid<T, NDIMS>::binEmpty(int index)
 {
   SLIC_ASSERT(isValidIndex(index));
 
-  if (m_bins[index].ObjectArray.size() > 0) {
-    return false;
-  } else {
-    return true;
-  }
+  return m_bins[index].ObjectArray.empty();
 }
 
 template< typename T, int NDIMS >
