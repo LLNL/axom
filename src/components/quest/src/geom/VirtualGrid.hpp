@@ -29,29 +29,92 @@
 
 namespace quest {
 
-//NDIMS IS EITHER 2 or 3
+/**
+ *******************************************************************************
+ * \class VirtualGrid
+ *
+ * \brief A spatial index defined by origin, spacing, and resolution.
+ *
+ * The VirtualGrid class is parameterized on the type of object it will contain
+ * and the dimensionality of the grid.  Currently the VirtualGrid will index
+ * 2D and 3D space.
+ *
+ * The VirtualGrid divides space into a number of bins, extending in a block
+ * from an origin point and arranged in row-major order.  Each bin extends over
+ * an axis-aligned rectangle or parallelepiped.  The size of a bin is specified
+ * by the spacing constructor argument, and the number of bins is specified by
+ * the res constructor argument.
+ *
+ * Generally, a user will instantiate a VirtualGrid and insert a number of
+ * objects (each with its own bounding box).  The insert operation puts the
+ * object into some of the bins.  The user may retrieve the bin index of any
+ * point, then retrieve any objects associated with the bin at that index.
+ *******************************************************************************
+ */
 template< typename T, int NDIMS >
 class VirtualGrid
 {
 public:
-
+  /** \brief The type used for specifying spatial extent of the contents */
   typedef BoundingBox< double, NDIMS > BoxType;
+
+  /** \brief The type used to query the index */
   typedef Point< double, NDIMS > PointType;
 
 public:
 
+  /**
+   *****************************************************************************
+   * \brief Constructor.  User specifies origin, size of bins, number of bins.
+   * Each pointer argument is assumed to point to an array of at least length
+   * NDIMS.
+   *****************************************************************************
+   */
   VirtualGrid(const PointType& origin, const double * spacing, const int * res);
   VirtualGrid(const double * origin, const double * spacing, const int * res);
   ~VirtualGrid();
-    
+
+  /**
+   *****************************************************************************
+   * \brief The index of the bin containing the specified point, or a special
+   * value (INVALID_BIN_INDEX) to indicate that the point is outside the grid.
+   * \param [in] pt The point to query.
+   *****************************************************************************
+   */
   int getBinIndex(const PointType & pt);
+
+  /** \brief The number of bins in this VirtualGrid. */
   int getNumBins();
+
+  /** \brief Whether the bin specified by index is empty.  True if index is invalid. */
   bool binEmpty(int index);
+
+  /** \brief The contents of the bin indicated by index.  Error if index is invalid. */
   std::vector<T>& getBinContents(int index);
   const std::vector<T>& getBinContents(int index) const;
+
+  /** \brief Clears the bin indicated by index.  No-op if index is invalid. */
   void clear(int index);
+
+  /**
+   *****************************************************************************
+   * \brief Inserts obj into each bin overlapped by BB.  No error if BB falls
+   * partly or wholly outside the VirtualGrid.
+   * \param [in] BB The region in which to record obj
+   * \param [in] obj The object to insert into any bins overlapped by BB
+   *****************************************************************************
+   */
   void insert(const BoxType& BB, const T& obj);
 
+  /**
+   *****************************************************************************
+   * \brief A special value indicating a point outside the VirtualGrid.
+   * Returned by getBinIndex() if that function is passed an exterior point.
+   * An error is thrown if getBinContents is passed INVALID_BIN_INDEX.
+   * clear(INVALID_BIN_INDEX) is a no-op; binEmpty(INVALID_BIN_INDEX) returns
+   * true.
+   *****************************************************************************
+   */
   const static int INVALID_BIN_INDEX = -1;
 
 protected:
@@ -80,9 +143,15 @@ private:
 
 }//end namespace quest
 
+
+
+//------------------------------------------------------------------------------
+// VirtualGrid implementation
+//------------------------------------------------------------------------------
 namespace quest
 {
 
+//------------------------------------------------------------------------------
 template< typename T, int NDIMS >
 VirtualGrid< T, NDIMS >::VirtualGrid()
 {
@@ -150,6 +219,7 @@ VirtualGrid< T, NDIMS >::~VirtualGrid()
 {
 }
 
+//------------------------------------------------------------------------------
 template< typename T, int NDIMS >
 int VirtualGrid<T, NDIMS>::getBinIndex(const PointType & pt)
 {
@@ -196,6 +266,7 @@ bool VirtualGrid<T, NDIMS>::binEmpty(int index)
   return m_bins[index].ObjectArray.empty();
 }
 
+//------------------------------------------------------------------------------
 template< typename T, int NDIMS >
 std::vector<T>& VirtualGrid<T, NDIMS>::getBinContents(int index)
 {
@@ -212,6 +283,7 @@ const std::vector<T>& VirtualGrid<T, NDIMS>::getBinContents(int index) const
   return m_bins[index].ObjectArray;
 }
 
+//------------------------------------------------------------------------------
 template< typename T, int NDIMS >
 void VirtualGrid<T, NDIMS>::clear(int index)
 {
@@ -220,6 +292,7 @@ void VirtualGrid<T, NDIMS>::clear(int index)
   }
 }
 
+//------------------------------------------------------------------------------
 template< typename T, int NDIMS >
 void VirtualGrid<T, NDIMS>::addObj(const T& obj, int index)
 {
@@ -231,6 +304,7 @@ void VirtualGrid<T, NDIMS>::addObj(const T& obj, int index)
 }
 
 
+//------------------------------------------------------------------------------
 //WIP For NDIMS == 3, NDIMS == 2 is same but needs to be added
 // by removing the k case and z_length
 template< typename T, int NDIMS>
