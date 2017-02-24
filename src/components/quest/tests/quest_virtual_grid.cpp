@@ -66,13 +66,19 @@ TEST( quest_virtual_grid, indexing)
     int res[DIM] = {resolution, resolution, resolution};
     quest::VirtualGrid<QPoint,DIM> valid(origin, step, res);
 
+    // valid has 100 bins in each dimension, and each bin has a
+    // width of 1.0.  The bins are laid out in row-major order.
+    // So, each increment in the x-dimension increases the bin index by 1,
+    // an increment in the y-dimension increases the bin by 100, and an
+    // increment in the z-dimension increases the bin by 100*100 = 10000.
     
     QPoint pt1 = QPoint::make_point(1.5,0,0);
-    EXPECT_TRUE(valid.getBinIndex(pt1) == 1);
+    int expectedBin = 1;  // The 0th z-slab, the 0th y-row, the 1st x-bin
+    EXPECT_TRUE(valid.getBinIndex(pt1) == expectedBin);
     
     QPoint pt2 = QPoint::make_point(0,1.5,0);
-    EXPECT_TRUE(valid.getBinIndex(pt2) == 100);
-
+    expectedBin = 100;  // The 0th z-slab, the 1st y-row, the 0th x-bin
+    EXPECT_TRUE(valid.getBinIndex(pt2) == expectedBin);
 }
 
 TEST(quest_virtual_grid, add_stuff){
@@ -94,8 +100,6 @@ TEST(quest_virtual_grid, add_stuff){
     valid.insert(bbox1,pt1);
     int index = valid.getBinIndex(pt1);
     EXPECT_TRUE(valid.getBinContents(index).size() == 1);
-
-
 }
 
 TEST(quest_virtual_grid, delete_stuff){
