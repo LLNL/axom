@@ -4,6 +4,7 @@
 # usage: 
 #  cd {to directory with this script}
 #   ./llnl_cz_bgq_all_compilers.sh
+# chang28 02-23-2017, Cyrus's branch has been merged to develop, no need to checkout his branch
 
 date
 . /usr/local/tools/dotkit/init.sh
