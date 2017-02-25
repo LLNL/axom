@@ -18,8 +18,8 @@
 #include "fmt/fmt.hpp"
 #include "slic/slic.hpp"
 
-#include "quest/Point.hpp"
-#include "quest/Triangle.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
 
 
 //------------------------------------------------------------------------------

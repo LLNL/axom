@@ -13,7 +13,7 @@
 
 #include "slic/slic.hpp"
 
-#include "quest/intersection_impl.hpp"
+#include "primal/intersection_impl.hpp"
 
 // #include "quest_test_utilities.hpp"
 

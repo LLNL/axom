@@ -12,8 +12,8 @@
 /*!
  *******************************************************************************
  * \file Intersection.hpp
- * 
- * This file provides several functions to test whether geometric primitives 
+ *
+ * This file provides several functions to test whether geometric primitives
  * intersect.
  *******************************************************************************
  */
@@ -22,13 +22,13 @@
 #ifndef INTERSECTION_HPP_
 #define INTERSECTION_HPP_
 
-#include "quest/BoundingBox.hpp"
-#include "quest/Point.hpp"
-#include "quest/Ray.hpp"
-#include "quest/Segment.hpp"
-#include "quest/Triangle.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Ray.hpp"
+#include "primal/Segment.hpp"
+#include "primal/Triangle.hpp"
 
-#include "quest/intersection_impl.hpp"
+#include "primal/intersection_impl.hpp"
 
 namespace quest {
 
@@ -121,7 +121,7 @@ bool intersect( const Segment<T,DIM> & S,
  *******************************************************************************
  */
 template < typename T, int DIM>
-bool intersect( const BoundingBox<T, DIM>& bb1, 
+bool intersect( const BoundingBox<T, DIM>& bb1,
                 const BoundingBox<T, DIM>& bb2)
 {
   return bb1.intersects(bb2);

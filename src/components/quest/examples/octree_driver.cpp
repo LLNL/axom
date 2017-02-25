@@ -23,13 +23,14 @@
 #include "common/FileUtilities.hpp"
 #include "common/Timer.hpp"
 
-#include "quest/BoundingBox.hpp"
-#include "quest/Orientation.hpp"
-#include "quest/Point.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
+
+#include "primal/orientation.hpp"
+#include "primal/squared_distance.hpp"
+
 #include "quest/STLReader.hpp"
-#include "quest/SquaredDistance.hpp"
-#include "quest/Triangle.hpp"
-#include "quest/Point.hpp"
 #include "quest/SpatialOctree.hpp"
 #include "quest/InOutOctree.hpp"
 

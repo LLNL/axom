@@ -11,9 +11,9 @@
 #ifndef RAY_HPP_
 #define RAY_HPP_
 
-#include "quest/Point.hpp"
-#include "quest/Segment.hpp"
-#include "quest/Vector.hpp"
+#include "primal/Point.hpp"
+#include "primal/Segment.hpp"
+#include "primal/Vector.hpp"
 
 #include "slic/slic.hpp"
 

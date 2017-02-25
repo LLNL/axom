@@ -19,9 +19,9 @@
 #include "gtest/gtest.h"
 
 // QueST includes
-#include "quest/BoundingBox.hpp"
-#include "quest/BVHTree.hpp"
-#include "quest/Point.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/BVHTree.hpp"
+#include "primal/Point.hpp"
 
 //------------------------------------------------------------------------------
 TEST( quest_bucket_tree, insert_object )

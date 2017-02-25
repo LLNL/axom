@@ -13,8 +13,8 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Point.hpp"
-#include "quest/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/BoundingBox.hpp"
 
 //------------------------------------------------------------------------------
 TEST( quest_boundingBox, bb_default_constructor)

@@ -20,11 +20,11 @@
 
 #include "slic/slic.hpp"
 
-#include "quest/MortonIndex.hpp"
-#include "quest/NumericArray.hpp"
-#include "quest/Point.hpp"
-#include "quest/Brood.hpp"
+#include "primal/NumericArray.hpp"
+#include "primal/Point.hpp"
 
+#include "quest/Brood.hpp"
+#include "quest/MortonIndex.hpp"
 
 #include <boost/iterator/iterator_facade.hpp>
 

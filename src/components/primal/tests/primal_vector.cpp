@@ -12,7 +12,7 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Vector.hpp"
+#include "primal/Vector.hpp"
 
 //------------------------------------------------------------------------------
 TEST( quest_vector, vector_constructors)

@@ -21,12 +21,12 @@
 #ifndef SQUAREDDISTANCE_HPP_
 #define SQUAREDDISTANCE_HPP_
 
-#include "quest/BoundingBox.hpp"
-#include "quest/Point.hpp"
-#include "quest/Segment.hpp"
-#include "quest/Triangle.hpp"
-#include "quest/Vector.hpp"
-#include "quest/closest_point.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Segment.hpp"
+#include "primal/Triangle.hpp"
+#include "primal/Vector.hpp"
+#include "primal/closest_point.hpp"
 
 #include "slic/slic.hpp"
 

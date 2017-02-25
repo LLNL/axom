@@ -6,8 +6,9 @@
 #include "common/config.hpp"
 
 #include "quest/MortonIndex.hpp"
-#include "quest/NumericArray.hpp"
-#include "quest/Point.hpp"
+
+#include "primal/NumericArray.hpp"
+#include "primal/Point.hpp"
 
 
 namespace quest

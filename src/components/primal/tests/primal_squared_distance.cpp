@@ -24,10 +24,10 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Point.hpp"
-#include "quest/SquaredDistance.hpp"
-#include "quest/Triangle.hpp"
-#include "quest/Segment.hpp"
+#include "primal/Point.hpp"
+#include "primal/squared_distance.hpp"
+#include "primal/Triangle.hpp"
+#include "primal/Segment.hpp"
 
 
 //------------------------------------------------------------------------------

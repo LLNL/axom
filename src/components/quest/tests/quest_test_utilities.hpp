@@ -4,9 +4,9 @@
 
 #include "slic/slic.hpp"
 
-#include "quest/Point.hpp"
-#include "quest/Triangle.hpp"
-#include "quest/Orientation.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
+#include "primal/orientation.hpp"
 
 #include "mint/Mesh.hpp"
 #include "mint/UnstructuredMesh.hpp"

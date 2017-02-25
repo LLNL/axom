@@ -12,12 +12,15 @@
 #include "common/Timer.hpp"
 #include "common/Utilities.hpp"
 
-#include "quest/BoundingBox.hpp"
-#include "quest/Intersection.hpp"
-#include "quest/Orientation.hpp"
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
-#include "quest/SquaredDistance.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
+#include "primal/Vector.hpp"
+
+#include "primal/intersection.hpp"
+#include "primal/orientation.hpp"
+#include "primal/squared_distance.hpp"
+
 
 #include "slic/slic.hpp"
 
@@ -27,7 +30,6 @@
 #include "slam/StaticVariableRelation.hpp"
 
 #include "quest/SpatialOctree.hpp"
-#include "quest/Triangle.hpp"
 
 #include "mint/Mesh.hpp"
 #include "mint/UnstructuredMesh.hpp"

@@ -6,24 +6,24 @@
 #ifndef OCTREE_BASE__HXX_
 #define OCTREE_BASE__HXX_
 
-#include <ostream>   // for ostream in print
-
-#include "quest/BoundingBox.hpp"
-#include "quest/MortonIndex.hpp"
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
-#include "quest/OctreeLevel.hpp"
-#include "quest/DenseOctreeLevel.hpp"
-#include "quest/SparseOctreeLevel.hpp"
-
 #include "common/config.hpp"
 
 #include "slic/slic.hpp"
+
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Vector.hpp"
+
+#include "quest/MortonIndex.hpp"
+#include "quest/OctreeLevel.hpp"
+#include "quest/DenseOctreeLevel.hpp"
+#include "quest/SparseOctreeLevel.hpp"
 
 #include "slam/SizePolicies.hpp"
 #include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
 
+#include <ostream>   // for ostream in print
 
 namespace quest
 {
@@ -446,7 +446,7 @@ private:
    * \brief Simple utility to check if a pointer of type BasePtrType
    *
    *        can be cast to a pointer of type DerivedPtrType
-   */ 
+   */
   template<typename DerivedPtrType, typename BasePtrType>
   bool checkCast(BasePtrType base) const
   {

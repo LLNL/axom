@@ -28,12 +28,14 @@
 #include "common/FileUtilities.hpp"
 #include "common/Timer.hpp"
 
-#include "quest/BoundingBox.hpp"
-#include "quest/BVHTree.hpp"
-#include "quest/Point.hpp"
+#include "primal/BVHTree.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
+
 #include "quest/STLReader.hpp"
-#include "quest/Triangle.hpp"
 #include "quest/SignedDistance.hpp"
+
 
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"

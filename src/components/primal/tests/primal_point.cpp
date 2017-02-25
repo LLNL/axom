@@ -12,7 +12,7 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Point.hpp"
+#include "primal/Point.hpp"
 
 //------------------------------------------------------------------------------
 TEST( quest_point, point_default_constructor)

@@ -12,7 +12,7 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/NumericArray.hpp"
+#include "primal/NumericArray.hpp"
 
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;

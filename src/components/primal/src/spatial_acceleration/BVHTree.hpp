@@ -16,9 +16,9 @@
 #include "common/ATKMacros.hpp"   // for DISABLE_COPY_AND_ASSIGNMENT macro
 #include "common/CommonTypes.hpp" // for ATK_NULLPTR
 
-#include "quest/BoundingBox.hpp"
-#include "quest/Point.hpp"
-#include "quest/SquaredDistance.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/squared_distance.hpp"
 
 #include "slic/slic.hpp"          // for logging
 

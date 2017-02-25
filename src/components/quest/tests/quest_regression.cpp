@@ -58,9 +58,10 @@
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
-#include "quest/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Vector.hpp"
+#include "primal/BoundingBox.hpp"
+
 #include "quest/quest.hpp"
 
 #include "sidre/sidre.hpp"

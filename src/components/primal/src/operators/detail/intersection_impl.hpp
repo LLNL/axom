@@ -10,12 +10,12 @@
 #ifndef INTERSECTION_IMPL_HPP_
 #define INTERSECTION_IMPL_HPP_
 
-#include "quest/BoundingBox.hpp"
-#include "quest/Determinants.hpp"
-#include "quest/Point.hpp"
-#include "quest/Ray.hpp"
-#include "quest/Segment.hpp"
-#include "quest/Triangle.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Determinants.hpp"
+#include "primal/Point.hpp"
+#include "primal/Ray.hpp"
+#include "primal/Segment.hpp"
+#include "primal/Triangle.hpp"
 
 #include "common/Utilities.hpp"
 

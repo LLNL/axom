@@ -17,8 +17,9 @@ using asctoolkit::slic::UnitTestLogger;
 #include "mint/UniformMesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
 
-#include "quest/BoundingBox.hpp"
-#include "quest/HyperSphere.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/HyperSphere.hpp"
+
 #include "quest/SignedDistance.hpp"
 
 // Google Test includes

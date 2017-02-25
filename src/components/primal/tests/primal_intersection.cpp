@@ -19,28 +19,49 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/BoundingBox.hpp"
-#include "quest/Intersection.hpp"
-#include "quest/Point.hpp"
-#include "quest/Ray.hpp"
-#include "quest/Segment.hpp"
-#include "quest/Triangle.hpp"
-#include "quest/Vector.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Intersection.hpp"
+#include "primal/Point.hpp"
+#include "primal/Ray.hpp"
+#include "primal/Segment.hpp"
+#include "primal/Triangle.hpp"
+#include "primal/Vector.hpp"
 
-#include "quest_test_utilities.hpp"
+namespace {
 
+double randomDouble(double beg = 0., double end = 1.)
+{
+    double range = end-beg;
+
+    if(range == 0)
+        range = 1.;
+
+    return beg + (rand() / ( RAND_MAX / range ) ) ;
+}
+
+template< int NDIMS >
+quest::Point< double,NDIMS > randomPt( double beg, double end )
+{
+  quest::Point<double,NDIMS> pt;
+  for ( int i=0; i< NDIMS; ++i )
+      pt[i] = randomDouble(beg,end);
+
+  return pt;
+}
+
+}
 
 template<int DIM>
-quest::Triangle<double, DIM> roll(const quest::Triangle<double, DIM> & t, 
+quest::Triangle<double, DIM> roll(const quest::Triangle<double, DIM> & t,
 				  const int i)
 {
   return quest::Triangle<double, DIM> (t[i % 3], t[(i+1) % 3], t[(i+2) % 3]);
 }
 
 template<int DIM>
-void permuteCornersTest(const quest::Triangle<double, DIM> & a, 
+void permuteCornersTest(const quest::Triangle<double, DIM> & a,
 			const quest::Triangle<double, DIM> & b,
-			const std::string & whattest, 
+			const std::string & whattest,
 			const bool testtrue)
 {
   SCOPED_TRACE(whattest);
@@ -433,18 +454,18 @@ bool makeTwoRandomIntersecting3DTriangles(quest::Triangle< double, 3 > & l, ques
   typedef quest::Vector< double, 3 > Vector3;
 
   //Step 1: Construct a random triangle
-  Point3 A= quest::utilities::randomSpacePt<3>(0.,1.);
-  Point3 B= quest::utilities::randomSpacePt<3>(0.,1.);
-  Point3 C= quest::utilities::randomSpacePt<3>(0.,1.);
+  Point3 A= randomPt< 3 >(0.,1.);
+  Point3 B= randomPt< 3 >(0.,1.);
+  Point3 C= randomPt< 3 >(0.,1.);
   l = Triangle3(A,B,C);
 
   //Step 2: Construct two random points on the triangle.
   Point3 P;
   Point3 Q;
 
-  double a1= quest::utilities::randomDouble();
-  double a2= quest::utilities::randomDouble();
-  double a3= quest::utilities::randomDouble();
+  double a1= randomDouble();
+  double a2= randomDouble();
+  double a3= randomDouble();
 
   double n1= (a1/(a1+a2+a3));
   double n2= (a2/(a1+a2+a3));
@@ -456,9 +477,9 @@ bool makeTwoRandomIntersecting3DTriangles(quest::Triangle< double, 3 > & l, ques
   double P_z= n1*A[2]+n2*B[2]+n3*C[2];
   P= Point3::make_point(P_x,P_y,P_z);
 
-  a1= quest::utilities::randomDouble();
-  a2= quest::utilities::randomDouble();
-  a3= quest::utilities::randomDouble();
+  a1= randomDouble();
+  a2= randomDouble();
+  a3= randomDouble();
 
   n1= (a1/(a1+a2+a3));
   n2= (a2/(a1+a2+a3));
@@ -475,7 +496,7 @@ bool makeTwoRandomIntersecting3DTriangles(quest::Triangle< double, 3 > & l, ques
     it to create the triangle formed by P', Q' and vertex1. */
 
   //Step 3: choose some vertex away from the triangle
-  Point3 vertex1 = quest::utilities::randomSpacePt<3>(0.,1.);
+  Point3 vertex1 = randomPt<3>(0.,1.);
 
   //Step 4:
   //we scale the segments formed by both vertex 1 and P and by vertex 1 and Q so that we now
@@ -557,7 +578,7 @@ TEST( quest_intersection, 3D_triangle_triangle_intersection )
       skiptests += 1;
     }
   }
-  std::cout << "Ran " << rantests << " and skipped " << skiptests << 
+  std::cout << "Ran " << rantests << " and skipped " << skiptests <<
     " tests due to triangle degeneracy." << std::endl;
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
@@ -845,12 +866,12 @@ TEST(quest_intersection, triangle_ray_intersection)
   EXPECT_TRUE(intersect(tri, testRay));
 
   // Coplanar miss
-  testRay = RayType(SegmentType(PointType::make_point(-0.1, 1.1, 0.), 
+  testRay = RayType(SegmentType(PointType::make_point(-0.1, 1.1, 0.),
                                 PointType::make_point(-0.1, 0., 1.1)));
   EXPECT_FALSE(intersect(tri, testRay));
 
   // Coplanar intersection (reported as miss by function)
-  testRay = RayType(SegmentType(PointType::make_point(1, 0.5, 0), 
+  testRay = RayType(SegmentType(PointType::make_point(1, 0.5, 0),
                                 PointType::make_point(-1, 0.5, 0)));
   EXPECT_FALSE(intersect(tri2, testRay));
 

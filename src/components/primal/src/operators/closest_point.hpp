@@ -21,8 +21,8 @@
 #ifndef CLOSEST_POINT_HPP_
 #define CLOSEST_POINT_HPP_
 
-#include "quest/Point.hpp"
-#include "quest/Triangle.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
 
 namespace quest
 {

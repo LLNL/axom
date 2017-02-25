@@ -22,8 +22,6 @@
  *******************************************************************************
  */
 
-
-
 // ATK Toolkit includes
 #include "common/config.hpp"
 
@@ -32,15 +30,17 @@
 #include "common/FileUtilities.hpp"
 #include "common/Timer.hpp"
 
-#include "quest/BoundingBox.hpp"
-#include "quest/BVHTree.hpp"
-#include "quest/HyperSphere.hpp"
-#include "quest/Orientation.hpp"
-#include "quest/Point.hpp"
+#include "primal/BVHTree.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/HyperSphere.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
+#include "primal/Vector.hpp"
+
+#include "primal/orientation.hpp"
+#include "primal/squared_distance.hpp"
+
 #include "quest/STLReader.hpp"
-#include "quest/SquaredDistance.hpp"
-#include "quest/Triangle.hpp"
-#include "quest/Vector.hpp"
 #include "quest/SignedDistance.hpp"
 
 #include "mint/Field.hpp"
@@ -54,7 +54,6 @@
 #include "slic/slic.hpp"
 
 #include "slam/Utilities.hpp"
-
 
 // C/C++ includes
 #include <algorithm>

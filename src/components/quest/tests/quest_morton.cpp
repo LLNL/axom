@@ -12,7 +12,7 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Point.hpp"
+#include "primal/Point.hpp"
 #include "quest/MortonIndex.hpp"
 
 #include "slic/UnitTestLogger.hpp"

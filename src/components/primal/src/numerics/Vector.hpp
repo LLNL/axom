@@ -13,9 +13,9 @@
 #define VECTOR_HXX_
 
 
-#include "quest/NumericArray.hpp"
-#include "quest/Point.hpp"
-#include "quest/Determinants.hpp" // For math::determinant()
+#include "primal/NumericArray.hpp"
+#include "primal/Point.hpp"
+#include "primal/Determinants.hpp" // For math::determinant()
 
 // C/C++ includes
 #include <cmath>

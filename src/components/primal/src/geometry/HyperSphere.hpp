@@ -14,7 +14,7 @@
 
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
-#include "quest/Orientation.hpp"
+#include "primal/Orientation.hpp"
 #include "slic/slic.hpp"
 
 #include "common/Utilities.hpp"

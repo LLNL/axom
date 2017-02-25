@@ -15,20 +15,19 @@
 // ATK includes
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
+#include "common/Utilities.hpp"
 
-#include "quest/BVHTree.hpp"
-#include "quest/BoundingBox.hpp"
-#include "quest/Orientation.hpp"
-#include "quest/Point.hpp"
-#include "quest/Triangle.hpp"
-#include "quest/Vector.hpp"
+#include "primal/BVHTree.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Orientation.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
+#include "primal/Vector.hpp"
 
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
 #include "mint/Mesh.hpp"
-
-#include "common/Utilities.hpp"
 
 // C/C++ includes
 #include <cmath> // for std::sqrt()

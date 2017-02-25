@@ -12,7 +12,7 @@
 #ifndef SEGMENT_HPP_
 #define SEGMENT_HPP_
 
-#include "quest/Point.hpp"
+#include "primal/Point.hpp"
 
 namespace quest {
 

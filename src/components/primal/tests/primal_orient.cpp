@@ -24,10 +24,10 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Orientation.hpp"
-#include "quest/Point.hpp"
-#include "quest/Segment.hpp"
-#include "quest/Triangle.hpp"
+#include "primal/Orientation.hpp"
+#include "primal/Point.hpp"
+#include "primal/Segment.hpp"
+#include "primal/Triangle.hpp"
 
 
 TEST( quest_orientation, orient3D )

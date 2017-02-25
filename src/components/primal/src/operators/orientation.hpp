@@ -23,10 +23,10 @@
 #define ORIENTATION_HPP_
 
 
-#include "quest/Determinants.hpp"
-#include "quest/Point.hpp"
-#include "quest/Segment.hpp"
-#include "quest/Triangle.hpp"
+#include "primal/Determinants.hpp"
+#include "primal/Point.hpp"
+#include "primal/Segment.hpp"
+#include "primal/Triangle.hpp"
 
 #include "slic/slic.hpp"
 

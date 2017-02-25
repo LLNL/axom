@@ -14,7 +14,7 @@
 
 #include "slic/slic.hpp"
 
-#include "quest/NumericArray.hpp"
+#include "primal/NumericArray.hpp"
 
 // C/C++ includes
 #include <cstring> // For memcpy()

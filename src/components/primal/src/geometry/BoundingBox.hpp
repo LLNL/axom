@@ -16,8 +16,8 @@
 
 #include "common/config.hpp"    // defines ATK_USE_CXX11
 
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
+#include "primal/Point.hpp"
+#include "primal/Vector.hpp"
 
 
 namespace quest

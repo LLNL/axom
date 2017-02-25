@@ -12,9 +12,9 @@
 #ifndef TRIANGLE_HPP_
 #define TRIANGLE_HPP_
 
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
-#include "quest/Determinants.hpp"
+#include "primal/Point.hpp"
+#include "primal/Vector.hpp"
+#include "primal/Determinants.hpp"
 #include "common/Utilities.hpp"
 
 #include "slic/slic.hpp"
