@@ -14,7 +14,8 @@
 
 #include "primal/Point.hpp"
 
-namespace quest {
+namespace axom {
+namespace primal {
 
 /*!
  *******************************************************************************
@@ -25,7 +26,7 @@ namespace quest {
  *  point and point B is the target.
  *******************************************************************************
  */
-template < typename T, int NDIMS >
+template < typename T,int NDIMS >
 class Segment
 {
 public:
@@ -79,12 +80,15 @@ private:
   PointType m_target;
 };
 
-} /* namespace quest */
+} /* namespace primal */
+
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 //  Segment Implementation
 //------------------------------------------------------------------------------
-namespace quest {
+namespace axom {
+namespace primal {
 
 template < typename T, int NDIMS >
 Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B) :
@@ -99,6 +103,8 @@ template < typename T, int NDIMS >
 Segment< T,NDIMS >::~Segment() { }
 
 
-}
+} /* namespacce primal */
+
+} /* namespace axom */
 
 #endif /* SEGMENT_HPP_ */

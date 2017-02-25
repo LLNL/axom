@@ -12,36 +12,36 @@
 #ifndef TRIANGLE_HPP_
 #define TRIANGLE_HPP_
 
+#include "common/Utilities.hpp"
+
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
 #include "primal/Determinants.hpp"
-#include "common/Utilities.hpp"
 
 #include "slic/slic.hpp"
 
-#include <cmath> // for acos()
+#include <cmath>   // for acos()
 #include <ostream> // for std::ostream
 
-namespace quest
-{
+namespace axom {
+namespace primal {
 
 // Forward declare the templated classes and operator functions
-template<typename T, int DIM> class Triangle;
+template<typename T, int NDIMS>
+class Triangle;
 
 /**
  * \brief Overloaded output operator for triangles
  */
-template<typename T, int DIM>
-std::ostream& operator<<(std::ostream & os, const Triangle<T,DIM> & tri);
+template < typename T,int NDIMS >
+std::ostream& operator<<(std::ostream & os, const Triangle<T,NDIMS> & tri);
 
-
-
-template < typename T, int DIM >
+template < typename T,int NDIMS >
 class Triangle
 {
 public:
-    typedef Point<T,DIM>  PointType;
-    typedef Vector<T,DIM> VectorType;
+    typedef Point< T,NDIMS >  PointType;
+    typedef Vector< T,NDIMS > VectorType;
 
     enum {
         NUM_TRI_VERTS = 3
@@ -49,14 +49,14 @@ public:
 
 public:
 
-  /**
+  /*!
    *****************************************************************************
    * \brief Default constructor. Creates a degenerate triangle.
    *****************************************************************************
    */
   Triangle() { }
 
-  /**
+  /*!
    *****************************************************************************
    * \brief Custom Constructor. Creates a triangle from the 3 points A,B,C.
    * \param [in] A point instance corresponding to vertex A of the triangle.
@@ -69,14 +69,14 @@ public:
             const PointType& C );
 
 
-  /**
+  /*!
    *****************************************************************************
    * \brief Destructor
    *****************************************************************************
    */
    ~Triangle() { }
 
-  /**
+  /*!
    *****************************************************************************
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
@@ -89,7 +89,7 @@ public:
       return m_points[ idx ];
   }
 
-  /**
+  /*!
    *****************************************************************************
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
@@ -102,32 +102,32 @@ public:
       return m_points[ idx ];
   }
 
-  /**
+  /*!
    *****************************************************************************
    * \brief Returns the normal of the triangle (not normalized)
-   * \pre This function is only valid when DIM = 3
-   * \return n triangle normal when DIM=3, zero vector otherwise
+   * \pre This function is only valid when NDIMS = 3
+   * \return n triangle normal when NDIMS=3, zero vector otherwise
    *****************************************************************************
    */
   VectorType normal() const
   {
-      SLIC_CHECK_MSG(DIM==3, "Triangle::normal() is only valid in 3D.");
+      SLIC_CHECK_MSG(NDIMS==3, "Triangle::normal() is only valid in 3D.");
 
-      return (DIM==3)
+      return (NDIMS==3)
               ? VectorType::cross_product( VectorType(m_points[0],m_points[1]),
                                            VectorType(m_points[0],m_points[2]))
               : VectorType();
   }
 
-  /**
+  /*!
    *****************************************************************************
    * \brief Returns the area of the triangle
-   * \pre Only defined when dimension DIM is 2 or 3
+   * \pre Only defined when dimension NDIMS is 2 or 3
    *****************************************************************************
    */
   double area() const
   {
-      SLIC_CHECK_MSG( DIM == 2 || DIM == 3,
+      SLIC_CHECK_MSG( NDIMS == 2 || NDIMS == 3,
             "Triangle::area() is only valid in 2D or 3D");
 
       VectorType v(m_points[0], m_points[1]);
@@ -141,10 +141,14 @@ public:
   }
 
 private:
-  /**
-   * \brief Return the volume of the parallelepiped defined by this triangle and a point
-   *
-   * If the volume is (close to) zero, all four points are (nearly) coplanar.
+  /*!
+   *****************************************************************************
+   * \brief Return the volume of the parallelepiped defined by this triangle
+   *  instance and the given point.
+   * \param [in] p user-supplied point.
+   * \note If the volume is approx. zero, all four points are (nearly) coplanar.
+   * \return vol the volume or 0.0 iff NDIMS < 3
+   *****************************************************************************
    */
   double ppedVolume(const PointType& p) const
   {
@@ -155,25 +159,30 @@ private:
     const PointType& B = m_points[1];
     const PointType& C = m_points[2];
 
-    if (DIM < 3) {
-      return 0.;
+    if (NDIMS < 3) {
+
+       return 0.;
+
     } else {
-      return math::determinant<double>(A[0], A[1], A[2], 1.,
-                                       B[0], B[1], B[2], 1.,
-                                       C[0], C[1], C[2], 1.,
-                                       p[0], p[1], p[2], 1.);
+
+      return primal::determinant< double > ( A[0], A[1], A[2], 1.,
+                                             B[0], B[1], B[2], 1.,
+                                             C[0], C[1], C[2], 1.,
+                                             p[0], p[1], p[2], 1.  );
     }
+
   }
 
 public:
-  /**
+
+  /*!
+   *****************************************************************************
    * \brief Returns the barycentric coordinates of a point within a triangle
    * \return The barycentric coordinates of the triangle inside a Point<T,3>
-   *
    * \pre The point lies in this triangle's plane.
    * \post The barycentric coordinates sum to 1.
-   *
    * Adapted from Real Time Collision Detection by Christer Ericson.
+   *****************************************************************************
    */
   Point<T,3> barycentricCoords(const PointType& p) const
   {
@@ -187,19 +196,20 @@ public:
     const T y= std::abs(u[1]);
     const T z= std::abs(u[2]);
 
-    T ood = 1.0 / u[2];      // compute in xy plane by default 
+    T ood = 1.0 / u[2];      // compute in xy plane by default
     int c0 = 0;
     int c1 = 1;
 
-    if (x>=y && x>= z)       // compute in yz plane
-    {
+    if (x>=y && x>= z)  {
+
+      // compute in yz plane
       c0 = 1;
       c1 = 2;
       ood=1.0/u[0];
 
-    }
-    else if (y>=x && y>=z)  // compute in xz plane
-    {
+    } else if (y>=x && y>=z)   {
+
+      // compute in xz plane
       c0 = 0;
       c1 = 2;
       ood=-1.0/u[1];
@@ -212,20 +222,20 @@ public:
     const PointType& C = m_points[2];
 
     // Compute ood * area of each sub-triangle
-    bary[0] = ood * math::determinant(p[c0] - B[c0], p[c1] - B[c1], 
-                                      B[c0] - C[c0], B[c1] - C[c1]);
-    bary[1] = ood * math::determinant(p[c0] - C[c0], p[c1] - C[c1],
-                                      C[c0] - A[c0], C[c1] - A[c1]);
+    bary[0] = ood * primal::determinant( p[c0] - B[c0], p[c1] - B[c1],
+                                         B[c0] - C[c0], B[c1] - C[c1]);
+    bary[1] = ood * primal::determinant( p[c0] - C[c0], p[c1] - C[c1],
+                                         C[c0] - A[c0], C[c1] - A[c1]);
     bary[2] = 1. - bary[0] - bary[1];
 
     return bary;
   }
 
-  /**
+  /*!
    *****************************************************************************
    * \brief Returns whether the triangle is degenerate
    * \return true iff the triangle is degenerate (0 area)
-   * \see quest::Point
+   * \see primal::Point
    *****************************************************************************
    */
   bool degenerate(double eps = 1.0e-12) const
@@ -233,11 +243,11 @@ public:
     return asctoolkit::utilities::isNearlyEqual(area(),  0.0, eps);
   }
 
-  /**
+  /*!
    *****************************************************************************
    * \brief Returns whether Point P is in the triangle for some 3d Triangle
    * \return true iff P is in the triangle
-   * \see quest::Point
+   * \see primal::Point
    *****************************************************************************
    */
   bool checkInTriangle(const PointType& p, double eps = 1.0e-8) const{
@@ -247,11 +257,10 @@ public:
 
     Point<T,3> bC= barycentricCoords(p);
     return ((bC[0]>=(0.0-eps)) && (bC[1] >= (0.0-eps)) && (bC[2]>=(0.0-eps)) &&
-	    (bC[0]<=(1.0+eps)) && (bC[1] <= (1.0+eps)) && (bC[2]<=(1.0+eps)));
+            (bC[0]<=(1.0+eps)) && (bC[1] <= (1.0+eps)) && (bC[2]<=(1.0+eps)));
   }
 
-
-  /**
+  /*!
    *****************************************************************************
    * \brief Computes the request angle corresponding to the given vertex ID.
    * \param [in] idx the index of the corresponding vertex
@@ -261,7 +270,7 @@ public:
    */
   double angle( int idx ) const;
 
-  /**
+  /*!
    *****************************************************************************
    * \brief Simple formatted print of a triangle instance
    * \param os The output stream to write to
@@ -278,21 +287,23 @@ public:
       return os;
   }
 
-
 private:
+  PointType m_points[ 3 ];
 
-  PointType m_points[3];
 };
 
-} /* namespace quest */
+} /* namespace primal */
+
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 //  Triangle implementation
 //------------------------------------------------------------------------------
-namespace quest {
+namespace axom {
+namespace primal {
 
-template <typename T, int DIM>
-Triangle< T,DIM >::Triangle( const PointType& A,
+template <typename T, int NDIMS>
+Triangle< T,NDIMS >::Triangle( const PointType& A,
                              const PointType& B,
                              const PointType& C  )
 {
@@ -302,8 +313,8 @@ Triangle< T,DIM >::Triangle( const PointType& A,
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int DIM>
-inline double Triangle< T,DIM >::angle( int idx ) const
+template <typename T, int NDIMS>
+inline double Triangle< T,NDIMS >::angle( int idx ) const
 {
   SLIC_ASSERT( idx >= 0 && idx < NUM_TRI_VERTS );
 
@@ -323,14 +334,15 @@ inline double Triangle< T,DIM >::angle( int idx ) const
 //------------------------------------------------------------------------------
 /// Free functions implementing Triangle's operators
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-std::ostream& operator<<(std::ostream & os, const Triangle<T,DIM> & tri)
+template<typename T, int NDIMS>
+std::ostream& operator<<(std::ostream & os, const Triangle<T,NDIMS> & tri)
 {
     tri.print(os);
     return os;
 }
 
+} /* namespace primal */
 
-} /* namespace quest */
+} /* namespace axom */
 
 #endif /* TRIANGLE_HPP_ */

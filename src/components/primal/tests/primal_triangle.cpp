@@ -28,8 +28,8 @@ TEST( quest_triangle, triangle_area_2D)
     static const int DIM = 2;
     static const double EPS = 1e-12;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
-    typedef quest::Triangle<CoordType, DIM> QTri;
+    typedef primal::Point<CoordType, DIM> QPoint;
+    typedef primal::Triangle<CoordType, DIM> QTri;
 
     QPoint pt[3] = {
                    QPoint::make_point(0,0),
@@ -55,8 +55,8 @@ TEST( quest_triangle, triangle_area_3D)
     static const int DIM = 3;
     static const double EPS = 1e-12;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
-    typedef quest::Triangle<CoordType, DIM> QTri;
+    typedef primal::Point<CoordType, DIM> QPoint;
+    typedef primal::Triangle<CoordType, DIM> QTri;
 
     QPoint pt[4] = {
                    QPoint::make_point(0,0,0),
@@ -85,8 +85,8 @@ TEST( quest_triangle, triangle_barycentric)
   static const int DIM = 3;
   static const double EPS = 1e-12;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::Triangle<CoordType, DIM> QTri;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Triangle<CoordType, DIM> QTri;
 
   QPoint pt[3] = {
                  QPoint::make_point(1,0,0),
@@ -149,8 +149,8 @@ TEST( quest_triangle, triangle_2D_point_containment)
   static const int DIM = 2;
   static const double EPS = 1e-12;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::Triangle<CoordType, DIM> QTri;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Triangle<CoordType, DIM> QTri;
 
   // Test triangle
   QPoint pt[3] = {
@@ -200,8 +200,8 @@ TEST( quest_triangle, triangle_3D_point_containment)
   static const int DIM = 3;
   static const double EPS = 1e-12;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::Triangle<CoordType, DIM> QTri;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Triangle<CoordType, DIM> QTri;
 
   // Test triangle
   QPoint pt[3] = {

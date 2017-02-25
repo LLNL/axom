@@ -1,8 +1,8 @@
 /*!
  *******************************************************************************
  * \file Intersection.hpp
- * 
- * This file provides several functions to test whether geometric primitives 
+ *
+ * This file provides several functions to test whether geometric primitives
  * intersect.
  *******************************************************************************
  */
@@ -19,16 +19,17 @@
 
 #include "common/Utilities.hpp"
 
-namespace quest {
+namespace axom {
+namespace primal {
 namespace detail {
 
 // ================================== FORWARD DECLARATIONS =================
 
-typedef quest::Vector<double, 3> Vector3;
-typedef quest::Point<double, 3> Point3;
-typedef quest::Triangle<double, 3> Triangle3;
-typedef quest::Triangle<double, 2> Triangle2;
-typedef quest::Point<double, 2> Point2;
+typedef primal::Vector<double, 3> Vector3;
+typedef primal::Point<double, 3> Point3;
+typedef primal::Triangle<double, 3> Triangle3;
+typedef primal::Triangle<double, 2> Triangle2;
+typedef primal::Point<double, 2> Point2;
 
 bool isGt(double x, double y, double EPS=1.0e-12);
 bool isLt(double x, double y, double EPS=1.0e-12);
@@ -86,24 +87,24 @@ bool TriangleIntersection2D(const Triangle2& t1,
  * \brief Tests if 3D Triangles t1 and t2 intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
- * This algorithm is modeled after Devillers and Guigue (2002).  It computes 
- * the line of intersection L of the triangles' planes and finds the segments 
- * S1, S2 where t1 and t2 intersect L.  If those segments intersect, the 
+ * This algorithm is modeled after Devillers and Guigue (2002).  It computes
+ * the line of intersection L of the triangles' planes and finds the segments
+ * S1, S2 where t1 and t2 intersect L.  If those segments intersect, the
  * triangles must intersect.  Note that edge and vertex intersections are
- * reported as hits: an edge or vertex intersecting any part of another 
+ * reported as hits: an edge or vertex intersecting any part of another
  * triangle causes a return value of true.  This is consistent with the paper.
  *
  * Coplanar triangles are handled with a decision tree, testing the
  * relative position of triangle vertices.
 
- * Olivier Devillers and Phillipe Guigue, Faster Triangle-Triangle Intersection 
+ * Olivier Devillers and Phillipe Guigue, Faster Triangle-Triangle Intersection
  * Tests, RR-4488, INRIA (2002).  https://hal.inria.fr/inria-00072100/
  *******************************************************************************
  */
 template < typename T>
 bool intersect_tri3D_tri3D( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
 {
-  typedef quest::Vector<T, 3> Vector3;
+  typedef primal::Vector<T, 3> Vector3;
 
   SLIC_CHECK_MSG(!t1.degenerate(), "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
   SLIC_CHECK_MSG(!t2.degenerate(), "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
@@ -226,7 +227,7 @@ bool intersect_tri3D_tri3D( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
 
 /*!
  *****************************************************************************
- * Triangle 1 vertices have been permuted to CCW: permute t2 to CCW 
+ * Triangle 1 vertices have been permuted to CCW: permute t2 to CCW
  * and call worker function to test for intersection.
  *
  * q1 and r1 both lie in the negative half-space defined by t2; p1 lies in
@@ -240,7 +241,7 @@ inline bool intersectOnePermutedTriangle(
   const Point3 &p2, const Point3 &q2, const Point3 &r2,
   double dp2, double dq2, double dr2,  Vector3 &normal)
 {
-  /* Step 4: repeat Step 3, except doing it for triangle 2 
+  /* Step 4: repeat Step 3, except doing it for triangle 2
      instead of triangle 1 */
   if (isGt(dp2, 0.0))
   {
@@ -288,18 +289,18 @@ inline bool intersectOnePermutedTriangle(
  * \brief Tests for general 3D triangle-triangle intersection.
  * \return status true iff triangles 1 and 2 intersect.
  *
- * Previous tests have ruled out cases where planes of triangles 1 and 2 
- * are parallel or identical, as well as cases where plane 1 does not 
- * intersect triangle 2 (and vice versa).  The vertices have been permuted 
- * so p1 is across plane 2 from q1 and r1, and p2 is across plane 1 
+ * Previous tests have ruled out cases where planes of triangles 1 and 2
+ * are parallel or identical, as well as cases where plane 1 does not
+ * intersect triangle 2 (and vice versa).  The vertices have been permuted
+ * so p1 is across plane 2 from q1 and r1, and p2 is across plane 1
  * from q2 and r2.
  *
- * The core of the Devillers and Guigue's method examines the line l0 
+ * The core of the Devillers and Guigue's method examines the line l0
  * defined by the intersection of
  * planes 1 and 2.  Assume triangles 1 and 2 both intersect this line, which
  * they must if they intersect each other.  Then, the intersection of triangle
  * 1 with l0 is a segment s1, and the intersection of triangle 2 with l0 is
- * a segment s2.  If s1 and s2 overlap, triangles 1 and 2 intersect.  
+ * a segment s2.  If s1 and s2 overlap, triangles 1 and 2 intersect.
  *
  * This function implements Equation 1 from Devillers and Guigue (2002), p.8
  * using a hint from p.10 that greatly simplifies the computation.
@@ -329,7 +330,7 @@ inline bool intersectTwoPermutedTriangles(const Point3 p1,
 
 /*!
  *****************************************************************************
- * Project (nearly) coplanar triangles 1 and 2 on an axis; call 2D worker 
+ * Project (nearly) coplanar triangles 1 and 2 on an axis; call 2D worker
  * function to test for intersection.
  *****************************************************************************
  */
@@ -402,14 +403,14 @@ inline bool intersectCoplanar3DTriangles(const Point3& p1,
  * \brief Tests if 2D Triangles t1 and t2 intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
- * Note that edge and vertex intersections are reported as hits: an edge or 
- * vertex intersecting any part of another triangle causes a return value of 
+ * Note that edge and vertex intersections are reported as hits: an edge or
+ * vertex intersecting any part of another triangle causes a return value of
  * true.  This is consistent with the paper.
  ********************************************************************************
  */
 template < typename T>
-bool intersect_tri2D_tri2D( const quest::Triangle<T, 2>& t1, 
-                            const quest::Triangle<T, 2>& t2)
+bool intersect_tri2D_tri2D( const primal::Triangle<T, 2>& t1,
+                            const primal::Triangle<T, 2>& t2)
 {
   SLIC_CHECK_MSG(!t1.degenerate(), "\n\n WARNING \n\n Triangle " << t1 <<" is degenerate");
   SLIC_CHECK_MSG(!t2.degenerate(), "\n\n WARNING \n\n Triangle " << t2 <<" is degenerate");
@@ -451,7 +452,7 @@ inline bool TriangleIntersection2D(const Triangle2& t1,
 
 /*!
  *****************************************************************************
- * This function finds where p1 lies in relation to the vertices of t2 
+ * This function finds where p1 lies in relation to the vertices of t2
  * and calls either checkEdge() or checkVertex().
  * \return status true iff triangle p1 q1 r1 intersects triangle p2 q2 r2.
  *****************************************************************************
@@ -679,7 +680,7 @@ inline bool signMatch(double x, double y, double z, double EPS)
   return ((isGt(x*y, 0.0, EPS)) &&  (isGt(x*z, 0.0, EPS)));
 }
 
-/** @} */  
+/** @} */
 
 /*!
  *******************************************************************************
@@ -689,9 +690,9 @@ inline bool signMatch(double x, double y, double z, double EPS)
  *******************************************************************************
  */
 template < typename T >
-bool intersect_ray_seg( const quest::Ray<T,2>& R, 
-                        const quest::Segment<T,2>& S, 
-                        quest::Point<T,2>& ip )
+bool intersect_ray_seg( const primal::Ray<T,2>& R,
+                        const primal::Segment<T,2>& S,
+                        primal::Point<T,2>& ip )
 {
   // STEP 0: Construct a ray from the segment, i.e., represent the
   // segment in parametric form S(t1)=A+td, t \in [0,1]
@@ -700,7 +701,7 @@ bool intersect_ray_seg( const quest::Ray<T,2>& R,
   // Step 1: Equating R(t0)=S(t1) yields a system of two equations and
   // two unknowns, namely, t0 and t1. We can solve this system directly
   // using Cramer's Rule.
-  const double denom = quest::math::determinant(
+  const double denom = primal::determinant(
     R.direction()[0], (-1.0)*R2.direction()[0],
     R.direction()[1], (-1.0)*R2.direction()[1]     );
 
@@ -719,11 +720,11 @@ bool intersect_ray_seg( const quest::Ray<T,2>& R,
   const double alpha = S.source()[0] - R.origin()[0];
   const double beta  = S.source()[1] - R.origin()[1];
 
-  const double t0 = quest::math::determinant(alpha, (-1.0)*R2.direction()[0],
-                                             beta,  (-1.0)*R2.direction()[1] )/denom;
+  const double t0 = primal::determinant( alpha, (-1.0)*R2.direction()[0],
+                                         beta,  (-1.0)*R2.direction()[1] )/denom;
 
-  const double t1 = quest::math::determinant( R.direction()[0], alpha,
-                                              R.direction()[1], beta   )/denom;
+  const double t1 = primal::determinant( R.direction()[0], alpha,
+                                         R.direction()[1], beta   )/denom;
 
   // STEP 4: Define lower/upper threshold
   const double tlow  = 0.0-1.0e-9;
@@ -753,9 +754,9 @@ bool intersect_ray_seg( const quest::Ray<T,2>& R,
  *******************************************************************************
  */
 template < typename T, int DIM>
-bool intersect_ray_bbox(const quest::Ray<T,DIM> & R,
-                        const quest::BoundingBox<T,DIM> & bb,
-                        quest::Point<T,DIM> & ip)
+bool intersect_ray_bbox(const primal::Ray<T,DIM> & R,
+                        const primal::BoundingBox<T,DIM> & bb,
+                        primal::Point<T,DIM> & ip)
 {
   T tmin = std::numeric_limits<T>::min();
   SLIC_ASSERT(tmin>=0.0);
@@ -814,14 +815,14 @@ bool intersect_ray_bbox(const quest::Ray<T,DIM> & R,
  *******************************************************************************
  */
 template < typename T, int DIM>
-bool intersect_seg_bbox( const quest::Segment<T,DIM> & S,
-                         const quest::BoundingBox<T,DIM> & bb,
-                         quest::Point<T,DIM> & ip)
+bool intersect_seg_bbox( const primal::Segment<T,DIM> & S,
+                         const primal::BoundingBox<T,DIM> & bb,
+                         primal::Point<T,DIM> & ip)
 {
   T tmin = std::numeric_limits<T>::min();
-  quest::Vector<T,DIM> direction(S.source(), S.target());
+  primal::Vector<T,DIM> direction(S.source(), S.target());
   T tmax = direction.norm();
-  quest::Ray<T,DIM> R(S.source(), direction);
+  primal::Ray<T,DIM> R(S.source(), direction);
 
   // These operations constrain the parameter specifying ray-slab intersection
   // points to exclude points not within the segment.
@@ -869,7 +870,7 @@ bool intersect_seg_bbox( const quest::Segment<T,DIM> & S,
   return true;
 }
 
-typedef quest::Vector<double, 3> Vector3;
+typedef primal::Vector<double, 3> Vector3;
 bool intervalsDisjoint(double d0, double d1, double d2, double r);
 bool crossEdgesDisjoint(double d0, double d1, double r);
 
@@ -885,8 +886,8 @@ bool crossEdgesDisjoint(double d0, double d1, double r);
  *******************************************************************************
  */
 template < typename T>
-bool intersect_tri_bbox( const quest::Triangle<T, 3>& tri, 
-                         const quest::BoundingBox<T, 3>& bb)
+bool intersect_tri_bbox( const primal::Triangle<T, 3>& tri,
+                         const primal::BoundingBox<T, 3>& bb)
 {
   // Note: Algorithm is derived from the one presented in chapter 5.2.9 of
   //   Real Time Collision Detection book by Christer Ericson
@@ -1000,7 +1001,7 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
  * \brief Tests if 3D triangle tri intersects with 3D ray R.
  * \return status true iff tri intersects with R, otherwise, false.
  *
- * This algorithm is modeled after Woop, Benthin, and Wald (2013).  It 
+ * This algorithm is modeled after Woop, Benthin, and Wald (2013).  It
  * transforms the ray onto the unit z vector and applies the same transform
  * to the triangle's vertices.  This transform simplifies the calculation of
  * barycentric coordinates of the positive z-axis's intersection with the
@@ -1010,8 +1011,8 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
  * the edge or misses.  Additionally, the code falls back to double precision
  * for cases that call for it.
  *
- * Sven Woop, Carsten Benthin, Ingo Wald, "Watertight Ray/Triangle 
- * Intersection," Journal of Computer Graphics Techniques (JCGT), vol. 2, 
+ * Sven Woop, Carsten Benthin, Ingo Wald, "Watertight Ray/Triangle
+ * Intersection," Journal of Computer Graphics Techniques (JCGT), vol. 2,
  * no. 1, 65–82, 2013  http://jcgt.org/published/0002/01/05/
  *******************************************************************************
  */
@@ -1023,9 +1024,9 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
   // because of a common technique in ray chasing through a mesh:
   //  1. Cast the ray until it intersects a triangle (record the hit)
   //  2. Starting from the hit point, re-cast the ray to find the next hit
-  // Origin-is-miss avoids finding the already-hit triangle as the next 
+  // Origin-is-miss avoids finding the already-hit triangle as the next
   // hit.
-  // 
+  //
   // Coplanar rays, evidenced by det == 0, are also considered as a miss.
   // I (Arlie Capps, Jan. 2017) don't understand the motivation at this
   // point, but I'll accept this for now.
@@ -1033,17 +1034,17 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
   //find out dimension where ray direction is maximal
   int kx,ky,kz;
   float rX,rY,rZ;
-    
+
   //assign initial directions
   rX = R.direction()[0];
   rY = R.direction()[1];
   rZ = R.direction()[2];
-    
+
   //make all dimensions positive
   if(rX < 0.0f) rX *= -1.0f;
   if(rY < 0.0f) rY *= -1.0f;
   if(rZ < 0.0f) rZ *= -1.0f;
-    
+
   //z-direction largest
   if((rZ>=rX) && (rZ >= rY)){
     kz=2;
@@ -1056,7 +1057,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
   else{
     kz=0;
   }
-   
+
   //assign other dimensions of the ray
   kx = (kz+1) % 3;
   ky = (kz+2) % 3;
@@ -1071,7 +1072,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
   float Sy = R.direction()[ky]/R.direction()[kz];
   float Sz = 1.0f/R.direction()[kz];
 
-  //A,B,C are the triangle vertices 
+  //A,B,C are the triangle vertices
   float A[3],B[3],C[3];
 
   //calculate vertices relative to the ray origin
@@ -1086,7 +1087,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
   C[kx] = tri[2].array()[kx] - R.origin()[kx];
   C[ky] = tri[2].array()[ky] - R.origin()[ky];
   C[kz] = tri[2].array()[kz] - R.origin()[kz];
-  
+
 
   //shear and scale the vertices
   const float Ax = A[kx] - Sx*A[kz];
@@ -1095,7 +1096,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
   const float By = B[ky] - Sy*B[kz];
   const float Cx = C[kx] - Sx*C[kz];
   const float Cy = C[ky] - Sy*C[kz];
- 
+
   //scaled barycentric coordinates
   float U = Cx*By - Cy*Bx;
   float V = Ax*Cy - Ay*Cx;
@@ -1123,7 +1124,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
 
   //calculate determinant
   float det = U + V + W;
-    
+
   if(det == 0.0f){
     return false;
   }
@@ -1132,7 +1133,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri, const Ray<T,3>& R)
   const float Az = Sz*A[kz];
   const float Bz = Sz*B[kz];
   const float Cz = Sz*C[kz];
-  const float Q = U*Az + V*Bz +W*Cz;    
+  const float Q = U*Az + V*Bz +W*Cz;
 
   //make sure hit is in correct direction
   bool dir = ((Q<0.0f) && !(det<0.0f)) || ((det < 0.0f) && !(Q<0.0f));
@@ -1155,7 +1156,7 @@ bool intersect_tri_segment(const Triangle<T, 3>& tri, const Segment<T,3>& S)
   if (tri.checkInTriangle(r1.origin())) return true;
   if (tri.checkInTriangle(r2.origin())) return true;
 
-  //if the two rays formed by the endpoints of the segment intersect the triangle, 
+  //if the two rays formed by the endpoints of the segment intersect the triangle,
   //then the triangle must intersect the triangle
   if ((intersect_tri_ray(tri, r1)) && (intersect_tri_ray(tri, r2))) return true;
   return false;
@@ -1163,6 +1164,7 @@ bool intersect_tri_segment(const Triangle<T, 3>& tri, const Segment<T,3>& S)
 
 
 } /* end namespace detail */
-} /* end namespace quest */
+} /* end namespace primal */
+} /* end namespace axom */
 
 #endif /* INTERSECTION_IMPL_HPP_ */

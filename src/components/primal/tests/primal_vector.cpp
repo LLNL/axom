@@ -19,8 +19,8 @@ TEST( quest_vector, vector_constructors)
 {
   static const int DIM = 5;
   typedef double CoordType;
-  typedef quest::NumericArray<CoordType, DIM> QArray;
-  typedef quest::Vector<CoordType, DIM> QVec;
+  typedef primal::NumericArray<CoordType, DIM> QArray;
+  typedef primal::Vector<CoordType, DIM> QVec;
 
   QVec vec1;
   EXPECT_EQ(vec1.dimension(), DIM );
@@ -74,8 +74,8 @@ TEST( quest_vector, vector_from_points_constructor)
 {
   static const int DIM = 5;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::Vector<CoordType, DIM> QVec;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVec;
 
   const double aVal = 12;
   const double bVal = 5;
@@ -108,8 +108,8 @@ TEST( quest_vector, vector_normalize)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::Vector<CoordType, DIM> QVec;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVec;
 
   EXPECT_DOUBLE_EQ(QVec().unitVector().norm(), 1.0 );
 
@@ -132,8 +132,8 @@ TEST( quest_vector, vector_norm)
 {
   static const int DIM = 2;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::Vector<CoordType, DIM> QVec;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVec;
 
 
   QPoint p1 = QPoint::make_point(3,0);
@@ -147,8 +147,8 @@ TEST( quest_vector, vector_arithmetic)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::Vector<CoordType, DIM> QVec;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVec;
 
 
   QPoint p1 = QPoint::make_point(3,0, 1.2);
@@ -194,8 +194,8 @@ TEST( quest_vector, vector_inner_product)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::Vector<CoordType, DIM> QVec;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVec;
 
 
   QPoint p1 = QPoint::make_point(3,0, 1.2);
@@ -219,8 +219,8 @@ TEST( quest_vector, vector_outer_product)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::Vector<CoordType, DIM> QVec;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::Vector<CoordType, DIM> QVec;
 
 
   QPoint p1 = QPoint::make_point(3,0);

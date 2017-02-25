@@ -9,66 +9,95 @@
  */
 
 
-#ifndef NUMERIC_ARRAY_HXX_
-#define NUMERIC_ARRAY_HXX_
+#ifndef NUMERIC_ARRAY_HPP_
+#define NUMERIC_ARRAY_HPP_
 
 #include "common/ATKMacros.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
-#include <cstring>      // For memcpy()
-#include <algorithm>    // For std:: copy and fill
-#include <ostream>      // For print() and operator <<
-
+#include <cstring>    // For memcpy()
+#include <algorithm>  // For std:: copy and fill
+#include <ostream>    // For print() and operator <<
 
 namespace {
-    /*!
-     *****************************************************************************
-     * \brief Utility function that clamps an input val to a given range.
-     * \param [in] val  The value to clamp
-     * \param [in] lower The lower range
-     * \param [in] upper The upper range
-     * \return The clamped value.
-     * \post lower <= returned value <= upper.
-     *****************************************************************************
-     */
-    template<typename T>
-    T clampVal(T val, T lower, T upper)
-    {
-        SLIC_ASSERT( lower <= upper);
-        return std::min( std::max( val, lower), upper);
-    }
+
+  /*!
+   *****************************************************************************
+   * \brief Utility function that clamps an input val to a given range.
+   * \param [in] val  The value to clamp
+   * \param [in] lower The lower range
+   * \param [in] upper The upper range
+   * \return The clamped value.
+   * \post lower <= returned value <= upper.
+   *****************************************************************************
+   */
+  template< typename T >
+  T clampVal( T val, T lower, T upper )
+  {
+    SLIC_ASSERT( lower <= upper);
+    return std::min( std::max( val, lower), upper);
+  }
+
 }
 
-
-namespace quest
-{
+namespace axom {
+namespace primal {
 
 // Forward declare the templated classes and operator functions
-template<typename T, int DIM> class NumericArray;
+template< typename T, int NDIMS >
+class NumericArray;
+
+/// \name Forward Declared Overloaded Operators
+///@{
 
 /*!
-* \brief Forward declaration of NumericArray's equality operator
-* Two numeric arrays are considered equal when they are component-wise equal
-*/
-template<typename T, int DIM> bool operator==(const NumericArray<T, DIM> & lhs, const NumericArray<T, DIM> & rhs);
-
-/*!
-* \brief Forward declaration of NumericArray's inequality operator
-*/
-template<typename T, int DIM> bool operator!=(const NumericArray<T, DIM> & lhs, const NumericArray<T, DIM> & rhs);
-
-
-
-/*!
- * \brief Forward declaration for NumericArray's addition
+ *******************************************************************************
+ * \brief Checks if two numeric arrays are component-wise equal.
+ * \param [in] lhs numeric array instance on the left-hand side.
+ * \param [in] rhs numeric array instance on the right-hand side.
+ * \return status true if lhs==rhs, otherwise, false.
+ *******************************************************************************
  */
-template<typename T, int DIM> NumericArray<T,DIM> operator+(const NumericArray<T, DIM> & lhs, const NumericArray<T, DIM> & rhs);
+template < typename T,int NDIMS >
+bool operator==( const NumericArray< T,NDIMS >& lhs,
+                 const NumericArray< T,NDIMS >& rhs );
 
 /*!
- * \brief Forward declaration for NumericArray's subtraction
+ *******************************************************************************
+ * \brief Checks if two numeric arrays are *not* component-wise equal.
+ * \param [in] lhs numeric array instance on the left-hand side.
+ * \param [in] rhs numeric array instance on the right-hand side.
+ * \return status true if lhs!=rhs, otherwise, false.
+ *******************************************************************************
  */
-template<typename T, int DIM> NumericArray<T,DIM> operator-(const NumericArray<T, DIM> & lhs, const NumericArray<T, DIM> & rhs);
+template < typename T,int NDIMS >
+bool operator!=( const NumericArray< T,NDIMS >& lhs,
+                 const NumericArray< T,NDIMS >& rhs);
+
+/*!
+ *******************************************************************************
+ * \brief Performs component-wise addition of two numeric arrays.
+ * \param [in] lhs numeric array instance on the left-hand side.
+ * \param [in] rhs numeric array instance on the right-hand side.
+ * \return C resulting numeric array from the component-wise addition.
+ *******************************************************************************
+ */
+template < typename T,int NDIMS >
+NumericArray< T,NDIMS > operator+ ( const NumericArray< T,NDIMS >& lhs,
+                                    const NumericArray< T,NDIMS >& rhs  );
+
+/*!
+ *******************************************************************************
+ * \brief Performs component-wise subtraction of two numeric arrays.
+ * \param [in] lhs numeric array instance on the left-hand side.
+ * \param [in] rhs numeric array instance on the right-hand side.
+ * \result C resulting numeric array from component-wise subtraction.
+ *******************************************************************************
+ */
+template < typename T,int NDIMS >
+NumericArray< T,NDIMS > operator-( const NumericArray< T,NDIMS >& lhs,
+                                   const NumericArray< T,NDIMS >& rhs  );
 
 /*!
  * \brief Forward declaration for NumericArray's (unary) negation
@@ -76,62 +105,104 @@ template<typename T, int DIM> NumericArray<T,DIM> operator-(const NumericArray<T
 template<typename T, int DIM> NumericArray<T,DIM> operator-(const NumericArray<T, DIM> & lhs, const NumericArray<T, DIM> & rhs);
 
 /*!
- * \brief Forward declaration for scalar multiplication of NumericArray's; Scalar on rhs.
+ *******************************************************************************
+ * \brief Scalar multiplication a numeric array; Scalar on rhs.
+ * \param [in] arr numeric array instance.
+ * \param [in] scalar user-supplied scalar.
+ * \return C resutling numeric array, \f$ \ni: C_i = scalar*arr_i, \forall i\f$
+ *******************************************************************************
  */
-template<typename T, int DIM> NumericArray<T,DIM> operator*(const NumericArray<T, DIM> & arr, double scalar);
+template < typename T,int NDIMS >
+NumericArray< T,NDIMS > operator*( const NumericArray<T, NDIMS> & arr,
+                                   double scalar );
 
 /*!
- * \brief Forward declaration for scalar multiplication of NumericArray; Scalar on lhs.
+ *******************************************************************************
+ * \brief Scalar multiplication a numeric array; Scalar on lhs.
+ * \param [in] scalar user-supplied scalar.
+ * \param [in] arr numeric array instance.
+ * \return C resulting numeric array, \f$ \ni: C_i = scalar*arr_i, \forall i\f$
+ *******************************************************************************
  */
-template<typename T, int DIM> NumericArray<T,DIM> operator*(double scalar, const NumericArray<T, DIM> & arr);
+template < typename T,int NDIMS >
+NumericArray< T,NDIMS > operator*( double scalar,
+                                   const NumericArray<T, NDIMS> & arr );
 
 /*!
- * \brief Forward declaration for component-wise multiplication of NumericArrays
+ *******************************************************************************
+ * \brief Component-wise multiplication of NumericArrays
+ * \param [in] lhs numeric array instance on the left-hand side.
+ * \param [in] rhs numeric array instance on the right-hand side.
+ * \return C resulting numeric array, \f$ \ni: C_i = lhs_i * rhs_i, \forall i\f$
+ *******************************************************************************
  */
-template<typename T, int DIM> NumericArray<T,DIM> operator*(const NumericArray<T, DIM> & lhs, const NumericArray<T, DIM> & rhs);
+template < typename T,int NDIMS >
+NumericArray< T,NDIMS > operator*( const NumericArray<T, NDIMS> & lhs,
+                                   const NumericArray<T, NDIMS> & rhs  );
 
 /*!
- * \brief Forward declaration for component-wise division of NumericArrays
+ *******************************************************************************
+ * \brief Component-wise division of NumericArrays
+ * \param [in] lhs numeric array instance on the left-hand side.
+ * \param [in] rhs numeric array instance on the right-hand side.
+ * \return C resulting numeric array, \f$ \ni: C_i = lhs_i / rhs_i, \forall i\f$
+ * \pre \f$ rhs_i != 0.0, \forall i \f$
+ *******************************************************************************
  */
-template<typename T, int DIM> NumericArray<T,DIM> operator/(const NumericArray<T, DIM> & lhs, const NumericArray<T, DIM> & rhs);
-
+template < typename T,int NDIMS >
+NumericArray< T,NDIMS > operator/( const NumericArray<T, NDIMS> & lhs,
+                                   const NumericArray<T, NDIMS> & rhs  );
 
 /*!
- * \brief Forward declaration for scalar division of NumericArray; Scalar on rhs.
+ *******************************************************************************
+ * \brief Scalar division of NumericArray; Scalar on rhs
+ * \param [in] arr numeric array instance
+ * \param [in] scalar user-supplied scalar
+ * \return C resulting numeric array, \f$ \ni: C_i = arr_i/scalar, \forall i\f$
+ * \pre scalar != 0.0
+ *******************************************************************************
  */
-template<typename T, int DIM> NumericArray<T,DIM> operator/(const NumericArray<T, DIM> & arr, double scalar);
-
+template < typename T,int NDIMS >
+NumericArray< T,NDIMS > operator/( const NumericArray<T, NDIMS>& arr,
+                                   double scalar );
 
 /*!
+ *******************************************************************************
  * \brief Overloaded output operator for numeric arrays
+ * \param [in] os C++ output stream
+ * \param [in] arr numeric array instance.
+ *******************************************************************************
  */
-template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const NumericArray<T,DIM> & arr);
+template < typename T,int NDIMS >
+std::ostream& operator<<( std::ostream & os,
+                          const NumericArray<T,NDIMS> & arr );
 
+///@}
 
 
 /**
  * \brief Type trait to avoid outputting chars when a value is expected
  *  This avoids unintentionally outputting system beeps
  */
-template <typename T>
+template < typename T >
 struct NonChar
 {
-    typedef T type;     /** The non-char type to return */
+  typedef T type;     /** The non-char type to return */
 };
-template<>
+
+template < >
 struct NonChar<char>
 {
-    /** A non-char signed type to which we can cast a char for output */
-    typedef int type;
+  /** A non-char signed type to which we can cast a char for output */
+  typedef int type;
 };
-template<>
-struct NonChar<unsigned char>
+
+template < >
+struct NonChar < unsigned char >
 {
-    /** A non-char unsigned type to which we can cast a char for output */
-    typedef unsigned int type;
+  /** A non-char unsigned type to which we can cast a char for output */
+  typedef unsigned int type;
 };
-
-
 
 
 /*!
@@ -141,40 +212,38 @@ struct NonChar<unsigned char>
  * \brief A simple statically sized array of data with component-wise operators
  *******************************************************************************
  */
-template < typename T, int DIM >
+template < typename T,int NDIMS >
 class NumericArray
 {
 public:
-    enum { NDIMS = DIM
-         , NBYTES = DIM * sizeof(T)
-         };
+    enum {
+      NBYTES = NDIMS*sizeof(T)
+    };
 
 public:
 
     // -- TODO: Add static_assert that T has numeric type --
 
-
   /*!
    *****************************************************************************
    * \brief Fill the first sz coordinates with val and zeros the rest
-   * \param [in] val The value to set the coordinates to.  Defaults to zero ( T())
+   * \param [in] val The value to set the coordinates to. Defaults to zero.
    * \param [in] sz The number of components to set to val.
-   * The rest will be set to zero.  Defaults is DIM.
-   * If sz is greater than DIM, we set all coordinates to val
+   * The rest will be set to zero.  Defaults is NDIMS.
+   * If sz is greater than NDIMS, we set all coordinates to val
    *****************************************************************************
    */
-  explicit NumericArray(T val = T(), int sz = DIM);
+  explicit NumericArray( T val = T(), int sz = NDIMS);
 
   /*!
    *****************************************************************************
    * \brief Creates a numeric array from the first sz values of the input array.
    * \param [in] vals An array containing at least sz values
-   * \param [in] sz The number of coordinates to take from the array.  Defaults
-   * to DIM.
-   * It sz is greater than DIM, we only take the first DIM values.
+   * \param [in] sz number of coordinates. Defaults to NDIMS.
+   * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    *****************************************************************************
    */
-  NumericArray(T* vals, int sz = DIM);
+  NumericArray( T* vals, int sz = NDIMS);
 
   /*!
    *****************************************************************************
@@ -189,7 +258,7 @@ public:
    * \brief Destructor.
    *****************************************************************************
    */
-   ~NumericArray() {}
+   ~NumericArray() { }
 
   /*!
    *****************************************************************************
@@ -198,7 +267,7 @@ public:
    * \post d >= 1.
    *****************************************************************************
    */
-  int dimension() const { return DIM; };
+  int dimension() const { return NDIMS; };
 
   /*!
    *****************************************************************************
@@ -208,20 +277,17 @@ public:
    */
   NumericArray& operator=(const NumericArray& rhs);
 
-  //@{
   /*!
    *****************************************************************************
    * \brief Access operator for individual components.
    * \param [in] i the component index to access
-   * \return p[i] the value at the given component index.
-   * \pre \f$  0 \le i < DIM \f$
+   * \return \f$ p_i \f$ the value at the given component index.
+   * \pre \f$  0 \le i < NDIMS \f$
    *****************************************************************************
    */
   const T& operator[](int i) const;
   T& operator[](int i);
-  //@}
 
-  //@{
   /*!
    *****************************************************************************
    * \brief Returns a pointer to the underlying data.
@@ -229,14 +295,14 @@ public:
    */
   const T* data() const;
   T* data();
-  //@}
 
   /*!
+   *
    *****************************************************************************
    * \brief Copy the coordinate data to the provided array
-   * \param arr The array to which we are copying.
+   * \param [in] arr The array to which we are copying.
    * \pre The user needs to make sure that the provided array has been allocated
-   * and has sufficient space for DIM coordinates.
+   * and has sufficient space for NDIMS coordinates.
    *****************************************************************************
    */
   void to_array(T* arr) const;
@@ -250,8 +316,6 @@ public:
    */
   std::ostream& print(std::ostream& os) const;
 
-
-
   /*!
    *****************************************************************************
    * \brief Component-wise addition assignment operator.
@@ -260,7 +324,7 @@ public:
    * \return A reference to the NumericArray instance after addition.
    *****************************************************************************
    */
-  NumericArray< T,DIM >& operator+=( const NumericArray<T,DIM>& arr );
+  NumericArray< T,NDIMS >& operator+=( const NumericArray< T,NDIMS >& arr );
 
   /*!
    *****************************************************************************
@@ -270,7 +334,7 @@ public:
    * \return A reference to the NumericArray instance after subtraction.
    *****************************************************************************
    */
-  NumericArray< T,DIM >& operator-=( const NumericArray<T,DIM>& arr );
+  NumericArray< T,NDIMS >& operator-=( const NumericArray< T,NDIMS >& arr );
 
  /*!
   *****************************************************************************
@@ -280,7 +344,7 @@ public:
   * \return A reference to the NumericArray instance after scalar multiplication.
   *****************************************************************************
   */
- NumericArray< T,DIM>& operator*=(double scalar);
+ NumericArray< T,NDIMS >& operator*=(double scalar);
 
  /*!
   *****************************************************************************
@@ -291,7 +355,7 @@ public:
   * \return A reference to the NumericArray instance after scalar division.
   *****************************************************************************
   */
- NumericArray< T,DIM>& operator/=(double scalar);
+ NumericArray< T,NDIMS >& operator/=(double scalar);
 
  /*!
   *****************************************************************************
@@ -301,7 +365,7 @@ public:
   * \return A reference to the NumericArray instance after cwise multiplication.
   *****************************************************************************
   */
- NumericArray< T,DIM >& operator*=( const NumericArray<T,DIM>& arr );
+ NumericArray< T,NDIMS >& operator*=( const NumericArray< T,NDIMS >& arr );
 
  /*!
   *****************************************************************************
@@ -312,7 +376,7 @@ public:
   * \return A reference to the NumericArray instance after cwise division.
   *****************************************************************************
   */
- NumericArray< T,DIM >& operator/=( const NumericArray<T,DIM>& arr );
+ NumericArray< T,NDIMS >& operator/=( const NumericArray< T,NDIMS >& arr );
 
  /*!
   *****************************************************************************
@@ -322,7 +386,7 @@ public:
   * \return A reference to the NumericArray instance after clamping upper
   *****************************************************************************
   */
- NumericArray< T,DIM >& clampUpper( const T& upperVal);
+ NumericArray< T,NDIMS >& clampUpper( const T& upperVal);
 
  /*!
   *****************************************************************************
@@ -332,7 +396,7 @@ public:
   * \return A reference to the NumericArray instance after clamping lower
   *****************************************************************************
   */
- NumericArray< T,DIM >& clampLower( const T& lowerVal);
+ NumericArray< T,NDIMS >& clampLower( const T& lowerVal);
 
  /*!
   *****************************************************************************
@@ -344,7 +408,7 @@ public:
   * \return A reference to the NumericArray instance after clamping
   *****************************************************************************
   */
- NumericArray< T,DIM >& clamp( const T& lowerVal, const T& upperVal);
+ NumericArray< T,NDIMS >& clamp( const T& lowerVal, const T& upperVal);
 
 
  /*!
@@ -366,7 +430,7 @@ public:
  /*!
   *****************************************************************************
   * \brief Find the index of the max component.
-  * \return The index of the largest component ( \f$ 0 \le ret < DIM \f$)
+  * \return The index of the largest component ( \f$ 0 \le ret < NDIMS \f$)
   *****************************************************************************
   */
  int argMax() const;
@@ -374,7 +438,7 @@ public:
  /*!
   *****************************************************************************
   * \brief Find the index of the min component.
-  * \return The index of the smallest component ( \f$ 0 \le ret < DIM \f$)
+  * \return The index of the smallest component ( \f$ 0 \le ret < NDIMS \f$)
   *****************************************************************************
   */
  int argMin() const;
@@ -382,59 +446,64 @@ public:
 private:
   void verifyIndex(int ATK_DEBUG_PARAM(idx)) const
   {
-      SLIC_ASSERT(idx >= 0 && idx < DIM);
+      SLIC_ASSERT(idx >= 0 && idx < NDIMS);
   }
 
 protected:
-  T m_components[ DIM ];    /*! The encapsulated array */
+  T m_components[ NDIMS ];    /*! The encapsulated array */
 };
 
-} /* namespace quest */
+} /* namespace primal */
+
+} /* namespace axom */
+
 
 //------------------------------------------------------------------------------
-//  Point implementation
+//  NumericArray implementation
 //------------------------------------------------------------------------------
-namespace quest {
+
+namespace axom {
+namespace primal {
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-NumericArray< T, DIM >::NumericArray(T val, int sz)
+template < typename T, int NDIMS >
+NumericArray< T,NDIMS >::NumericArray(T val, int sz)
 {
   // NOTE (KW): This should be a static assert in the class
-  SLIC_ASSERT( DIM >= 1 );
+  SLIC_ASSERT( NDIMS >= 1 );
 
-  // Fill first nvals coordinates with val ( 0 <= nvals <= DIM )
-  const int nvals = ::clampVal(sz, 0, DIM);
+  // Fill first nvals coordinates with val ( 0 <= nvals <= NDIMS )
+  const int nvals = ::clampVal(sz, 0, NDIMS);
   std::fill( m_components, m_components+nvals, val );
 
   // Fill any remaining coordinates with zero
-  if(nvals < DIM)
-  {
-      std::fill( m_components+nvals, m_components+DIM, T() );
+  if ( nvals < NDIMS ) {
+    std::fill( m_components+nvals, m_components+NDIMS, T() );
   }
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-NumericArray< T, DIM >::NumericArray(T* vals, int sz)
+template < typename T,int NDIMS >
+NumericArray< T, NDIMS >::NumericArray(T* vals, int sz)
 {
-  SLIC_ASSERT( DIM >= 1 );
+  SLIC_ASSERT( NDIMS >= 1 );
 
-  const int nvals = ::clampVal(sz, 0, DIM);
+  const int nvals = ::clampVal(sz, 0, NDIMS);
 
-  // Copy first nvals coordinates from vals array ( 0 <= nvals <= DIM )
+  // Copy first nvals coordinates from vals array ( 0 <= nvals <= NDIMS )
   std::copy( vals, vals+nvals, m_components);
 
   // Fill any remaining coordinates with zero
-  if(nvals < DIM)
-  {
-      std::fill( m_components+nvals, m_components+DIM, T());
+  if ( nvals < NDIMS) {
+    std::fill( m_components+nvals, m_components+NDIMS, T());
   }
+
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline NumericArray<T,DIM>& NumericArray< T,DIM >::operator=(const NumericArray<T,DIM>& rhs )
+template < typename T,int NDIMS >
+inline NumericArray< T,NDIMS >&
+NumericArray< T,NDIMS >::operator=( const NumericArray<T,NDIMS>& rhs )
 {
 
   if( this == &rhs ) {
@@ -447,211 +516,228 @@ inline NumericArray<T,DIM>& NumericArray< T,DIM >::operator=(const NumericArray<
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline T& NumericArray< T, DIM >::operator[](int i)
+template < typename T,int NDIMS >
+inline T& NumericArray< T,NDIMS >::operator[](int i)
 {
     verifyIndex(i);
     return m_components[ i ];
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline const T& NumericArray< T, DIM >::operator[](int i) const
+template < typename T,int NDIMS >
+inline const T& NumericArray< T,NDIMS >::operator[](int i) const
 {
   verifyIndex(i);
   return m_components[ i ];
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline const T* NumericArray< T, DIM >::data() const
+template < typename T,int NDIMS >
+inline const T* NumericArray< T,NDIMS >::data() const
 {
   return m_components;
 }
+
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline T* NumericArray< T, DIM >::data()
+template < typename T,int NDIMS >
+inline T* NumericArray< T,NDIMS >::data()
 {
-    return m_components;
+  return m_components;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-void NumericArray< T, DIM >::to_array(T* arr) const
+template < typename T,int NDIMS >
+void NumericArray< T,NDIMS >::to_array(T* arr) const
 {
-    SLIC_ASSERT( arr != ATK_NULLPTR);
-    memcpy( arr, m_components, NBYTES );
+  SLIC_ASSERT( arr != ATK_NULLPTR);
+  memcpy( arr, m_components, NBYTES );
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-std::ostream& NumericArray< T, DIM >::print(std::ostream& os) const
+template < typename T,int NDIMS >
+std::ostream& NumericArray< T, NDIMS >::print(std::ostream& os) const
 {
-    os <<"[";
-    for(int dim=0; dim < DIM -1; ++ dim)
-        os << static_cast<typename NonChar<T>::type>(m_components[dim]) << ",";
-    os << static_cast<typename NonChar<T>::type>(m_components[DIM-1]) << "]";
+  os <<"[ ";
+  for (int dim=0; dim < NDIMS -1; ++dim) {
+     os << static_cast< typename NonChar<T>::type >( m_components[dim] )
+        << " ";
+  }
 
-    return os;
+  os << static_cast<typename NonChar<T>::type>(m_components[NDIMS-1]) << "]";
+
+  return os;
 }
-
 
 //------------------------------------------------------------------------------
 // Member function arithmetic operators (component-wise)
 //------------------------------------------------------------------------------
 
-template < typename T, int DIM >
-inline NumericArray< T,DIM >& NumericArray< T,DIM >::operator*=( double scalar )
+template < typename T,int NDIMS >
+inline NumericArray< T,NDIMS >&
+NumericArray< T,NDIMS >::operator*=( double scalar )
 {
-    for ( int i=0; i < DIM; ++i )
-        this->m_components[ i ] *= scalar;
+    for ( int i=0; i < NDIMS; ++i ) {
+       m_components[ i ] *= scalar;
+    }
 
     return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline NumericArray< T,DIM >& NumericArray< T,DIM >::operator/=( double scalar )
+template < typename T,int NDIMS >
+inline NumericArray< T,NDIMS >&
+NumericArray< T,NDIMS >::operator/=( double scalar )
 {
     SLIC_ASSERT(scalar != 0.);
-
     return operator*=( 1./scalar );
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline NumericArray< T, DIM >& NumericArray< T,DIM >::operator*=(const NumericArray<T,DIM>& v)
+template < typename T, int NDIMS >
+inline NumericArray< T,NDIMS >&
+NumericArray< T,NDIMS >::operator*=(const NumericArray<T,NDIMS>& v)
 {
-  for ( int i=0; i < DIM; ++i ) {
-      this->m_components[ i ] *=  v[ i ];
+  for ( int i=0; i < NDIMS; ++i ) {
+     m_components[ i ] *=  v[ i ];
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline NumericArray< T, DIM >& NumericArray< T,DIM >::operator/=(const NumericArray<T,DIM>& v)
+template < typename T,int NDIMS >
+inline NumericArray<  T,NDIMS >&
+NumericArray< T,NDIMS >::operator/=( const NumericArray< T,NDIMS >& v )
 {
-  for ( int i=0; i < DIM; ++i ) {
-      SLIC_ASSERT( v[i] != 0.);
-      this->m_components[ i ] /=  v[ i ];
-  }
-
-  return *this;
-}
-
-
-//------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline NumericArray< T, DIM >& NumericArray< T,DIM >::operator+=(const NumericArray<T,DIM>& v)
-{
-  for ( int i=0; i < DIM; ++i ) {
-      this->m_components[ i ] +=  v[ i ];
+  for ( int i=0; i < NDIMS; ++i ) {
+     SLIC_ASSERT( v[ i ] != 0.);
+     m_components[ i ] /=  v[ i ];
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline NumericArray< T, DIM >& NumericArray< T,DIM >::operator-=(const NumericArray<T,DIM>& v)
+template < typename T,int NDIMS >
+inline NumericArray< T,NDIMS >&
+NumericArray< T,NDIMS >::operator+=(const NumericArray< T,NDIMS >& v)
 {
-  for ( int i=0; i < DIM; ++i ) {
-      this->m_components[ i ] -= v[ i ];
+  for ( int i=0; i < NDIMS; ++i ) {
+     m_components[ i ] +=  v[ i ];
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline NumericArray< T, DIM >& NumericArray< T,DIM >::clamp( const T& lowerVal, const T& upperVal)
+template < typename T, int NDIMS >
+inline NumericArray< T, NDIMS >&
+NumericArray< T,NDIMS >::operator-=(const NumericArray<T,NDIMS>& v)
+{
+  for ( int i=0; i < NDIMS; ++i ) {
+     m_components[ i ] -= v[ i ];
+  }
+
+  return *this;
+}
+
+//------------------------------------------------------------------------------
+template < typename T,int NDIMS >
+inline NumericArray< T, NDIMS >&
+NumericArray< T,NDIMS >::clamp( const T& lowerVal, const T& upperVal )
 {
     SLIC_ASSERT( lowerVal <= upperVal);
 
-    for ( int i=0; i < DIM; ++i ) {
-        this->m_components[ i ] = std::min( std::max( this->m_components[ i ], lowerVal), upperVal);
+    for ( int i=0; i < NDIMS; ++i ) {
+       m_components[ i ] = std::min( std::max( m_components[ i ],lowerVal),
+                                               upperVal);
     }
 
     return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline NumericArray< T, DIM >& NumericArray< T,DIM >::clampLower( const T& lowerVal)
+template < typename T,int NDIMS >
+inline NumericArray< T,NDIMS >&
+NumericArray< T,NDIMS >::clampLower( const T& lowerVal)
 {
-    for ( int i=0; i < DIM; ++i ) {
-        this->m_components[ i ] = std::max( this->m_components[ i ], lowerVal);
+    for ( int i=0; i < NDIMS; ++i ) {
+       m_components[ i ] = std::max( m_components[ i ], lowerVal);
     }
 
     return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline NumericArray< T, DIM >& NumericArray< T,DIM >::clampUpper( const T& upperVal)
+template < typename T,int NDIMS >
+inline NumericArray< T,NDIMS >&
+NumericArray< T,NDIMS >::clampUpper( const T& upperVal)
 {
-    for ( int i=0; i < DIM; ++i ) {
-        this->m_components[ i ] = std::min( this->m_components[ i ], upperVal);
+    for ( int i=0; i < NDIMS; ++i ) {
+       m_components[ i ] = std::min( m_components[ i ], upperVal);
     }
 
     return *this;
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline T NumericArray< T,DIM >::max() const
+template < typename T,int NDIMS >
+inline T NumericArray< T,NDIMS >::max() const
 {
   T result = this->m_components[0];
-  for ( int i=1; i < DIM; ++i )
-  {
-    T tmp = this->m_components[i];
-    if( (tmp) > result)
-        result = tmp;
+  for ( int i=1; i < NDIMS; ++i ) {
+
+    T tmp = m_components[i];
+
+    if ( tmp > result) {
+      result = tmp;
+    }
+
   }
 
   return result;
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline T NumericArray< T,DIM >::min() const
+template < typename T,int NDIMS >
+inline T NumericArray< T,NDIMS >::min() const
 {
   T result = this->m_components[0];
-  for ( int i=1; i < DIM; ++i )
-  {
-    T tmp = this->m_components[i];
-    if( (tmp) < result)
-        result = tmp;
+  for ( int i=1; i < NDIMS; ++i ) {
+     T tmp = this->m_components[i];
+
+     if ( tmp < result) {
+       result = tmp;
+     }
+
   }
 
   return result;
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline int NumericArray< T,DIM >::argMax() const
+template < typename T,int NDIMS >
+inline int NumericArray< T,NDIMS >::argMax() const
 {
   int idx = 0;
-  for ( int i=1; i < DIM; ++i )
-  {
-    if( this->m_components[i] > this->m_components[idx])
-        idx = i;
+  for ( int i=1; i < NDIMS; ++i ) {
+    if ( m_components[i] > m_components[idx]) {
+      idx = i;
+    }
   }
 
   return idx;
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline int NumericArray< T,DIM >::argMin() const
+template < typename T,int NDIMS >
+inline int NumericArray< T,NDIMS >::argMin() const
 {
   int idx = 0;
-  for ( int i=1; i < DIM; ++i )
-  {
-    if( this->m_components[i] < this->m_components[idx])
-        idx = i;
+  for ( int i=1; i < NDIMS; ++i ) {
+     if ( m_components[i] < m_components[idx] ) {
+       idx = i;
+     }
   }
 
   return idx;
@@ -661,118 +747,117 @@ inline int NumericArray< T,DIM >::argMin() const
 /// Free functions implementing comparison and arithmetic operators
 //------------------------------------------------------------------------------
 
-template<typename T, int DIM>
-bool operator==(const NumericArray<T, DIM>& lhs, const NumericArray<T, DIM>& rhs)
+template < typename T,int NDIMS >
+bool operator==( const NumericArray< T,NDIMS >& lhs,
+                 const NumericArray< T,NDIMS >& rhs)
 {
-    for(int dim=0;dim<DIM;++dim)
-    {
-        if( lhs[dim] != rhs[dim])
-            return false;
-    }
-    return true;
+  for ( int dim=0; dim < NDIMS; ++dim ) {
+     if ( lhs[dim] != rhs[dim] ) {
+       return false;
+     }
+  }
+
+  return true;
 }
 
 //------------------------------------------------------------------------------
-
-template<typename T, int DIM>
-bool operator!=(const NumericArray<T, DIM>& lhs, const NumericArray<T, DIM>& rhs)
+template < typename T,int NDIMS >
+bool operator!=( const NumericArray< T,NDIMS >& lhs,
+                 const NumericArray< T,NDIMS >& rhs)
 {
-    return !(lhs == rhs);
+  return !(lhs == rhs);
 }
-
-
-template<typename T, int DIM>
-std::ostream& operator<<(std::ostream & os, const NumericArray<T,DIM> & arr)
-{
-    arr.print(os);
-    return os;
-}
-
-
-///  Free functions involving vectors
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline NumericArray<T,DIM> operator*(const NumericArray<T,DIM>& arr, double scalar)
+template < typename T,int NDIMS >
+std::ostream& operator<<(std::ostream & os, const NumericArray<T,NDIMS> & arr)
 {
-  NumericArray< T, DIM > result(arr);
+  arr.print(os);
+  return os;
+}
+
+//------------------------------------------------------------------------------
+template < typename T,int NDIMS >
+inline NumericArray< T,NDIMS > operator*( const NumericArray<T,NDIMS>& arr,
+                                        double scalar)
+{
+  NumericArray< T,NDIMS > result(arr);
   result *=scalar;
-
   return result;
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline NumericArray<T,DIM> operator*(double scalar, const NumericArray<T,DIM>& arr)
+template < typename T,int NDIMS >
+inline NumericArray< T,NDIMS > operator*( double scalar,
+                                        const NumericArray<T,NDIMS>& arr)
 {
-  NumericArray< T, DIM > result(arr);
+  NumericArray< T, NDIMS > result(arr);
   result *=scalar;
-
-  return result;
-}
-
-
-//------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline NumericArray<T,DIM> operator+(const NumericArray<T,DIM>& lhs, const NumericArray<T,DIM>& rhs)
-{
-  NumericArray< T, DIM > result(lhs);
-  result +=rhs;
-
   return result;
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline NumericArray<T,DIM> operator*(const NumericArray<T,DIM>& lhs, const NumericArray<T,DIM>& rhs)
+template < typename T,int NDIMS >
+inline NumericArray<T,NDIMS> operator+( const NumericArray<T,NDIMS>& lhs,
+                                        const NumericArray<T,NDIMS>& rhs)
 {
-  NumericArray< T, DIM > result(lhs);
-  result *=rhs;
-
+  NumericArray< T, NDIMS > result(lhs);
+  result += rhs;
   return result;
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline NumericArray<T,DIM> operator/(const NumericArray<T,DIM>& lhs, const NumericArray<T,DIM>& rhs)
+template < typename T,int NDIMS >
+inline NumericArray< T,NDIMS > operator*( const NumericArray<T,NDIMS>& lhs,
+                                          const NumericArray<T,NDIMS>& rhs)
 {
-  NumericArray< T, DIM > result(lhs);
-  result /=rhs;
-
+  NumericArray< T,NDIMS > result(lhs);
+  result *= rhs;
   return result;
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline NumericArray<T,DIM> operator/(const NumericArray<T,DIM>& arr, double scalar)
+template < typename T,int NDIMS >
+inline NumericArray< T,NDIMS > operator/( const NumericArray<T,NDIMS>& lhs,
+                                          const NumericArray<T,NDIMS>& rhs)
 {
-  NumericArray< T, DIM > result(arr);
+  NumericArray< T,NDIMS > result(lhs);
+  result /= rhs;
+  return result;
+}
+
+//------------------------------------------------------------------------------
+template < typename T,int NDIMS >
+inline NumericArray<T,NDIMS> operator/( const NumericArray<T,NDIMS>& arr,
+                                        double scalar)
+{
+  NumericArray< T, NDIMS > result(arr);
   result /=scalar;
-
   return result;
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline NumericArray<T,DIM> operator-(const NumericArray<T,DIM>& lhs, const NumericArray<T,DIM>& rhs)
+template < typename T,int NDIMS >
+inline NumericArray<T,NDIMS> operator-( const NumericArray<T,NDIMS>& lhs,
+                                        const NumericArray<T,NDIMS>& rhs)
 {
-  NumericArray< T, DIM > result(lhs);
-  result -=rhs;
-
+  NumericArray< T,NDIMS > result(lhs);
+  result -= rhs;
   return result;
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-inline NumericArray<T,DIM> operator-(const NumericArray<T,DIM>& arr)
+template < typename T,int NDIMS >
+inline NumericArray<T,NDIMS> operator-(const NumericArray<T,NDIMS>& arr)
 {
-  NumericArray< T, DIM > result;
+  NumericArray< T, NDIMS > result;
   result -= arr;
-
   return result;
 }
 
 
-} /* namespace quest*/
+} /* namespace primal*/
+
+} /* namespace axom */
 
 #endif /* NUMERIC_ARRAY_HXX_ */

@@ -33,55 +33,55 @@
 TEST( quest_orientation, orient3D )
 {
    // STEP 0: Setup triangle ABC in 3D
-   quest::Point< double,3 > A =
-           quest::Point< double,3 >::make_point( 0.0, 0.0, 0.0 );
-   quest::Point< double,3 > B =
-           quest::Point< double,3 >::make_point( 1.5, 1.5, 0.0 );
-   quest::Point< double,3 > C =
-           quest::Point< double,3 >::make_point( 2.5, 0.0, 0.0 );
-   quest::Triangle< double,3 > tri(A,B,C);
+   primal::Point< double,3 > A =
+           primal::Point< double,3 >::make_point( 0.0, 0.0, 0.0 );
+   primal::Point< double,3 > B =
+           primal::Point< double,3 >::make_point( 1.5, 1.5, 0.0 );
+   primal::Point< double,3 > C =
+           primal::Point< double,3 >::make_point( 2.5, 0.0, 0.0 );
+   primal::Triangle< double,3 > tri(A,B,C);
 
    // STEP 1: Setup test points, q0, q1, q2 => boundary, positive, negative
-   quest::Point< double,3 > q0=
-           quest::Point< double,3 >::make_point(1.5,0.5,0.0);
-   quest::Point< double,3 > q1=
-           quest::Point< double,3 >::make_point(1.5,0.5,0.5);
-   quest::Point< double,3 > q2 =
-           quest::Point< double,3 >::make_point(1.5,0.5,-0.5);
+   primal::Point< double,3 > q0=
+           primal::Point< double,3 >::make_point(1.5,0.5,0.0);
+   primal::Point< double,3 > q1=
+           primal::Point< double,3 >::make_point(1.5,0.5,0.5);
+   primal::Point< double,3 > q2 =
+           primal::Point< double,3 >::make_point(1.5,0.5,-0.5);
 
    // STEP 2: test orientation
-   int orient = quest::orientation( q0, tri );
-   EXPECT_EQ( quest::ON_BOUNDARY,orient);
+   int orient = primal::orientation( q0, tri );
+   EXPECT_EQ( primal::ON_BOUNDARY,orient);
 
-   orient = quest::orientation( q1, tri );
-   EXPECT_EQ( quest::ON_NEGATIVE_SIDE, orient );
+   orient = primal::orientation( q1, tri );
+   EXPECT_EQ( primal::ON_NEGATIVE_SIDE, orient );
 
-   orient = quest::orientation( q2, tri );
-   EXPECT_EQ( quest::ON_POSITIVE_SIDE, orient );
+   orient = primal::orientation( q2, tri );
+   EXPECT_EQ( primal::ON_POSITIVE_SIDE, orient );
 }
 
 //------------------------------------------------------------------------------
 TEST( quest_orientation, orient2D )
 {
    // STEP 0: create test segment
-   quest::Point< double, 2 > A(0.0);
-   quest::Point< double, 2 > B(1.0);
-   quest::Segment< double, 2 > S( A, B );
+   primal::Point< double, 2 > A(0.0);
+   primal::Point< double, 2 > B(1.0);
+   primal::Segment< double, 2 > S( A, B );
 
    // STEP 1: setup test points, q0, q1, q2 => boundary, positive, negative
-   quest::Point< double, 2 > q0( 0.5 );
-   quest::Point< double, 2 > q1 = quest::Point< double,2 >::make_point(-0.5,0.5);
-   quest::Point< double, 2 > q2 = quest::Point< double,2 >::make_point(2.0,0.5);
+   primal::Point< double, 2 > q0( 0.5 );
+   primal::Point< double, 2 > q1 = primal::Point< double,2 >::make_point(-0.5,0.5);
+   primal::Point< double, 2 > q2 = primal::Point< double,2 >::make_point(2.0,0.5);
 
    // STEP 2: test orientation
-   int orient = quest::orientation( q0,S );
-   EXPECT_EQ( quest::ON_BOUNDARY, orient );
+   int orient = primal::orientation( q0,S );
+   EXPECT_EQ( primal::ON_BOUNDARY, orient );
 
-   orient = quest::orientation( q1,S );
-   EXPECT_EQ( quest::ON_NEGATIVE_SIDE, orient );
+   orient = primal::orientation( q1,S );
+   EXPECT_EQ( primal::ON_NEGATIVE_SIDE, orient );
 
-   orient = quest::orientation( q2,S );
-   EXPECT_EQ( quest::ON_POSITIVE_SIDE, orient );
+   orient = primal::orientation( q2,S );
+   EXPECT_EQ( primal::ON_POSITIVE_SIDE, orient );
 }
 
 //------------------------------------------------------------------------------

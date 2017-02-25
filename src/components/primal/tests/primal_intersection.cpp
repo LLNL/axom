@@ -40,9 +40,9 @@ double randomDouble(double beg = 0., double end = 1.)
 }
 
 template< int NDIMS >
-quest::Point< double,NDIMS > randomPt( double beg, double end )
+primal::Point< double,NDIMS > randomPt( double beg, double end )
 {
-  quest::Point<double,NDIMS> pt;
+  primal::Point<double,NDIMS> pt;
   for ( int i=0; i< NDIMS; ++i )
       pt[i] = randomDouble(beg,end);
 
@@ -52,15 +52,15 @@ quest::Point< double,NDIMS > randomPt( double beg, double end )
 }
 
 template<int DIM>
-quest::Triangle<double, DIM> roll(const quest::Triangle<double, DIM> & t,
+primal::Triangle<double, DIM> roll(const primal::Triangle<double, DIM> & t,
 				  const int i)
 {
-  return quest::Triangle<double, DIM> (t[i % 3], t[(i+1) % 3], t[(i+2) % 3]);
+  return primal::Triangle<double, DIM> (t[i % 3], t[(i+1) % 3], t[(i+2) % 3]);
 }
 
 template<int DIM>
-void permuteCornersTest(const quest::Triangle<double, DIM> & a,
-			const quest::Triangle<double, DIM> & b,
+void permuteCornersTest(const primal::Triangle<double, DIM> & a,
+			const primal::Triangle<double, DIM> & b,
 			const std::string & whattest,
 			const bool testtrue)
 {
@@ -69,22 +69,22 @@ void permuteCornersTest(const quest::Triangle<double, DIM> & a,
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 3; ++j) {
       if (testtrue) {
-	EXPECT_TRUE(quest::intersect(roll(a, i), roll(b, j)));
+	EXPECT_TRUE(primal::intersect(roll(a, i), roll(b, j)));
       } else {
-	EXPECT_FALSE(quest::intersect(roll(a, i), roll(b, j)));
+	EXPECT_FALSE(primal::intersect(roll(a, i), roll(b, j)));
       }
     }
   }
 
-  const quest::Triangle<double, DIM> ap(a[0], a[2], a[1]);
-  const quest::Triangle<double, DIM> bp(b[0], b[2], b[1]);
+  const primal::Triangle<double, DIM> ap(a[0], a[2], a[1]);
+  const primal::Triangle<double, DIM> bp(b[0], b[2], b[1]);
 
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 3; ++j) {
       if (testtrue) {
-	EXPECT_TRUE(quest::intersect(roll(ap, i), roll(bp, j)));
+	EXPECT_TRUE(primal::intersect(roll(ap, i), roll(bp, j)));
       } else {
-	EXPECT_FALSE(quest::intersect(roll(ap, i), roll(bp, j)));
+	EXPECT_FALSE(primal::intersect(roll(ap, i), roll(bp, j)));
       }
     }
   }
@@ -94,9 +94,9 @@ void permuteCornersTest(const quest::Triangle<double, DIM> & a,
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 3; ++j) {
       if (testtrue) {
-	EXPECT_TRUE(quest::intersect(roll(b, i), roll(a, j)));
+	EXPECT_TRUE(primal::intersect(roll(b, i), roll(a, j)));
       } else {
-	EXPECT_FALSE(quest::intersect(roll(b, i), roll(a, j)));
+	EXPECT_FALSE(primal::intersect(roll(b, i), roll(a, j)));
       }
     }
   }
@@ -104,9 +104,9 @@ void permuteCornersTest(const quest::Triangle<double, DIM> & a,
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 3; ++j) {
       if (testtrue) {
-	EXPECT_TRUE(quest::intersect(roll(bp, i), roll(ap, j)));
+	EXPECT_TRUE(primal::intersect(roll(bp, i), roll(ap, j)));
       } else {
-	EXPECT_FALSE(quest::intersect(roll(bp, i), roll(ap, j)));
+	EXPECT_FALSE(primal::intersect(roll(bp, i), roll(ap, j)));
       }
     }
   }
@@ -115,10 +115,10 @@ void permuteCornersTest(const quest::Triangle<double, DIM> & a,
 
 TEST( quest_intersection, ray_segment_intersection )
 {
-  typedef quest::Point< double,2 >   PointType;
-  typedef quest::Segment< double,2 > SegmentType;
-  typedef quest::Vector< double,2 >  VectorType;
-  typedef quest::Ray< double,2 >     RayType;
+  typedef primal::Point< double,2 >   PointType;
+  typedef primal::Segment< double,2 > SegmentType;
+  typedef primal::Vector< double,2 >  VectorType;
+  typedef primal::Ray< double,2 >     RayType;
 
   // STEP 0: construct segment
   PointType A(0.0);
@@ -134,7 +134,7 @@ TEST( quest_intersection, ray_segment_intersection )
 
   // STEP 2: compute intersection
   PointType ip;
-  bool intersects = quest::intersect( R, S, ip );
+  bool intersects = primal::intersect( R, S, ip );
   EXPECT_TRUE( intersects );
   EXPECT_DOUBLE_EQ(0.5,ip[0]);
   EXPECT_DOUBLE_EQ(0.0,ip[1]);
@@ -142,7 +142,7 @@ TEST( quest_intersection, ray_segment_intersection )
   // STEP 3: construct non-intersecting ray
   origin[1] = 0.5; // shift R up
   RayType R2( origin, direction );
-  bool intersects2 = quest::intersect( R2, S, ip );
+  bool intersects2 = primal::intersect( R2, S, ip );
   EXPECT_FALSE( intersects2 );
 }
 
@@ -150,9 +150,9 @@ TEST( quest_intersection, ray_segment_intersection )
 TEST( quest_intersection, triangle_aabb_intersection )
 {
   static int const DIM = 3;
-  typedef quest::Point< double,DIM >   PointType;
-  typedef quest::Triangle< double,DIM > TriangleType;
-  typedef quest::BoundingBox< double,DIM > BoundingBoxType;
+  typedef primal::Point< double,DIM >   PointType;
+  typedef primal::Triangle< double,DIM > TriangleType;
+  typedef primal::BoundingBox< double,DIM > BoundingBoxType;
 
   double xArr[3] = { 1., 0., 0.};
   double yArr[3] = { 0., 1., 0.};
@@ -165,47 +165,47 @@ TEST( quest_intersection, triangle_aabb_intersection )
   TriangleType unitTri( ptX, ptY, ptZ );
   BoundingBoxType unitBB( PointType::zero(), PointType::ones());
 
-  EXPECT_TRUE( quest::intersect(unitTri, unitBB));
+  EXPECT_TRUE( primal::intersect(unitTri, unitBB));
 
   // Let's first move the bounding box around
   BoundingBoxType v0_BB( ptX );
   v0_BB.expand(.1);
   SLIC_INFO("Testing v0 bounding box: " << v0_BB << " against unit triangle");
   EXPECT_TRUE( v0_BB.contains(ptX));
-  EXPECT_TRUE( quest::intersect(unitTri, v0_BB) );
+  EXPECT_TRUE( primal::intersect(unitTri, v0_BB) );
 
   BoundingBoxType v1_BB( ptY );
   v1_BB.expand(.1);
   SLIC_INFO("Testing v1 bounding box: " << v1_BB << " against unit triangle");
   EXPECT_TRUE( v1_BB.contains(ptY));
-  EXPECT_TRUE( quest::intersect(unitTri, v1_BB) );
+  EXPECT_TRUE( primal::intersect(unitTri, v1_BB) );
 
   BoundingBoxType v2_BB( ptZ );
   v2_BB.expand(.1);
   SLIC_INFO("Testing v2 bounding box: " << v2_BB << " against unit triangle");
   EXPECT_TRUE( v2_BB.contains(ptZ));
-  EXPECT_TRUE( quest::intersect(unitTri, v2_BB) );
+  EXPECT_TRUE( primal::intersect(unitTri, v2_BB) );
 
 
   BoundingBoxType mid_BB( PointType::zero());
   mid_BB.addPoint( PointType(0.9));
   SLIC_INFO("Testing bounding box: " << mid_BB << " against unit triangle.  Note -- BB should intersect interior of triangle");
-  EXPECT_TRUE( quest::intersect(unitTri, mid_BB) );
+  EXPECT_TRUE( primal::intersect(unitTri, mid_BB) );
 
   BoundingBoxType high_BB( PointType::ones());
   high_BB.addPoint( PointType(0.5));
   SLIC_INFO("Testing bounding box: " << high_BB << " against unit triangle.  Note -- BB should not intersect interior of triangle");
-  EXPECT_FALSE( quest::intersect(unitTri, high_BB) );
+  EXPECT_FALSE( primal::intersect(unitTri, high_BB) );
 
   BoundingBoxType out_BB( PointType::ones());
   out_BB.addPoint( PointType(2));
   SLIC_INFO("Testing bounding box: " << out_BB << " against unit triangle.  Note -- BB should not intersect triangle");
-  EXPECT_FALSE( quest::intersect(unitTri, out_BB) );
+  EXPECT_FALSE( primal::intersect(unitTri, out_BB) );
 
 
   BoundingBoxType negBB(PointType(-5), PointType(-10));
   SLIC_INFO("Testing bounding box: " << negBB << " against unit triangle.  Note -- BB should not intersect triangle");
-  EXPECT_FALSE( quest::intersect(unitTri, negBB) );
+  EXPECT_FALSE( primal::intersect(unitTri, negBB) );
 
 
   // Test new triangle whose edge crosses the BB
@@ -217,39 +217,39 @@ TEST( quest_intersection, triangle_aabb_intersection )
   BoundingBoxType bbOrigin(PointType::zero() );
   bbOrigin.expand(1.);
   SLIC_INFO("Testing bounding box: " << bbOrigin << " against triangle " << xyTri << ".  Note -- BB should not intersect triangle");
-  EXPECT_TRUE( quest::intersect(xyTri, bbOrigin) );
+  EXPECT_TRUE( primal::intersect(xyTri, bbOrigin) );
 
 
   BoundingBoxType bbOrigin2(PointType::zero() );
   bbOrigin.addPoint( PointType(-1.));
   bbOrigin.addPoint( PointType::make_point(-1.,1.,1.));
   SLIC_INFO("Testing bounding box: " << bbOrigin2<< " against triangle " << xyTri << ".  Note -- BB should not intersect triangle");
-  EXPECT_TRUE( quest::intersect(xyTri, bbOrigin2) );
+  EXPECT_TRUE( primal::intersect(xyTri, bbOrigin2) );
 
   BoundingBoxType bbAbove(PointType::ones() );
   bbAbove.addPoint( PointType(2.));
   SLIC_INFO("Testing bounding box: " << bbAbove << " against triangle " << xyTri << ".  Note -- BB should not intersect triangle");
-  EXPECT_FALSE( quest::intersect(xyTri, bbAbove) );
+  EXPECT_FALSE( primal::intersect(xyTri, bbAbove) );
 
   BoundingBoxType bbBelow;
   bbBelow.addPoint( PointType(-1.));
   bbBelow.addPoint( PointType(-2.));
   SLIC_INFO("Testing bounding box: " << bbBelow << " against triangle " << xyTri << ".  Note -- BB should not intersect triangle");
-  EXPECT_FALSE( quest::intersect(xyTri, bbBelow) );
+  EXPECT_FALSE( primal::intersect(xyTri, bbBelow) );
 
   BoundingBoxType bbPoint_OnTri;
   bbPoint_OnTri.addPoint( PointType::make_point(0.,1.,0.));
   SLIC_INFO("Testing point bounding box: " << bbPoint_OnTri << " against triangle " << xyTri << ".  Note -- BB is a point on triangle");
-  EXPECT_TRUE( quest::intersect(xyTri, bbPoint_OnTri) );
+  EXPECT_TRUE( primal::intersect(xyTri, bbPoint_OnTri) );
 
   BoundingBoxType bbPoint_OutsideTri;
   bbPoint_OutsideTri.addPoint( PointType::make_point(1.,1.,1.));
   SLIC_INFO("Testing point bounding box: " << bbPoint_OutsideTri << " against triangle " << xyTri << ".  Note -- BB is a point outside triangle");
-  EXPECT_FALSE( quest::intersect(xyTri, bbPoint_OutsideTri) );
+  EXPECT_FALSE( primal::intersect(xyTri, bbPoint_OutsideTri) );
 
   BoundingBoxType bbInvalid;
   SLIC_INFO("Testing point bounding box: " << bbInvalid << " against triangle " << xyTri << ".  Note -- BB is invalid (empty)");
-  EXPECT_FALSE( quest::intersect(xyTri, bbInvalid) );
+  EXPECT_FALSE( primal::intersect(xyTri, bbInvalid) );
 }
 
 
@@ -257,9 +257,9 @@ TEST( quest_intersection, triangle_aabb_intersection )
 TEST( quest_intersection, triangle_aabb_intersection_fromData )
 {
   static int const DIM = 3;
-  typedef quest::Point< double,DIM >   PointType;
-  typedef quest::Triangle< double,DIM > TriangleType;
-  typedef quest::BoundingBox< double,DIM > BoundingBoxType;
+  typedef primal::Point< double,DIM >   PointType;
+  typedef primal::Triangle< double,DIM > TriangleType;
+  typedef primal::BoundingBox< double,DIM > BoundingBoxType;
 
 
   PointType v0 = PointType::make_point(-31.015,63.7756,55.0043);
@@ -276,27 +276,27 @@ TEST( quest_intersection, triangle_aabb_intersection_fromData )
   BoundingBoxType box5(PointType::make_point(-39.2793,60.1549,60.6506), PointType::make_point(-26.1692,73.9362,64.2863));
 
   SLIC_INFO("Testing point bounding box: " << box0 << " against triangle " << tri );
-  EXPECT_FALSE( quest::intersect(tri, box0 ));
+  EXPECT_FALSE( primal::intersect(tri, box0 ));
 
   SLIC_INFO("Testing point bounding box: " << box1 << " against triangle " << tri );
-  EXPECT_TRUE( quest::intersect(tri, box1 ));
+  EXPECT_TRUE( primal::intersect(tri, box1 ));
 
   //
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
 
   SLIC_INFO("Testing point bounding box: " << box2 << " against triangle " << tri );
-  EXPECT_TRUE( quest::intersect(tri, box2 ));
+  EXPECT_TRUE( primal::intersect(tri, box2 ));
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 
   SLIC_INFO("Testing point bounding box: " << box3 << " against triangle " << tri );
-  EXPECT_TRUE( quest::intersect(tri, box3 ));
+  EXPECT_TRUE( primal::intersect(tri, box3 ));
 
   SLIC_INFO("Testing point bounding box: " << box4 << " against triangle " << tri );
-  EXPECT_FALSE( quest::intersect(tri, box4 ));
+  EXPECT_FALSE( primal::intersect(tri, box4 ));
 
   SLIC_INFO("Testing point bounding box: " << box5 << " against triangle " << tri );
-  EXPECT_TRUE( quest::intersect(tri, box5 ));
+  EXPECT_TRUE( primal::intersect(tri, box5 ));
 
 
 }
@@ -304,9 +304,9 @@ TEST( quest_intersection, triangle_aabb_intersection_fromData )
 TEST( quest_intersection, triangle_aabb_intersection_fromData2 )
 {
   static int const DIM = 3;
-  typedef quest::Point< double,DIM >   PointType;
-  typedef quest::Triangle< double,DIM > TriangleType;
-  typedef quest::BoundingBox< double,DIM > BoundingBoxType;
+  typedef primal::Point< double,DIM >   PointType;
+  typedef primal::Triangle< double,DIM > TriangleType;
+  typedef primal::BoundingBox< double,DIM > BoundingBoxType;
 
   // Triangle 569
   TriangleType tri(PointType::make_point(0,5,0), PointType::make_point(-0.665356,4.93844,-0.411212), PointType::make_point(-0.665356,4.93844,0.411212));
@@ -328,19 +328,19 @@ TEST( quest_intersection, triangle_aabb_intersection_fromData2 )
 
 
   SLIC_INFO("Testing point bounding box: " << box0 << " against triangle " << tri );
-  EXPECT_TRUE( quest::intersect(tri, box0));
+  EXPECT_TRUE( primal::intersect(tri, box0));
 
   SLIC_INFO("Testing point bounding box: " << box1 << " against triangle " << tri );
-  EXPECT_TRUE( quest::intersect(tri, box1));
+  EXPECT_TRUE( primal::intersect(tri, box1));
 
   SLIC_INFO("Testing point bounding box: " << box2 << " against triangle " << tri );
-  EXPECT_TRUE( quest::intersect(tri, box2));
+  EXPECT_TRUE( primal::intersect(tri, box2));
 
   SLIC_INFO("Testing point bounding box: " << box3 << " against triangle " << tri );
-  EXPECT_TRUE( quest::intersect(tri, box3));
+  EXPECT_TRUE( primal::intersect(tri, box3));
 
   SLIC_INFO("Testing point bounding box: " << box4 << " against triangle " << tri );
-  EXPECT_TRUE( quest::intersect(tri, box4));
+  EXPECT_TRUE( primal::intersect(tri, box4));
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
@@ -348,8 +348,8 @@ TEST( quest_intersection, triangle_aabb_intersection_fromData2 )
 TEST( quest_intersection, 2D_triangle_triangle_intersection )
 {
 
-  typedef quest::Triangle< double,2 > Triangle2;
-  typedef quest::Point< double,2 >   Point2;
+  typedef primal::Triangle< double,2 > Triangle2;
+  typedef primal::Point< double,2 >   Point2;
 
   // Triangle 569
   Triangle2 triA(Point2::make_point(0.0,5.0), Point2::make_point(5.0,5.0), Point2::make_point(0.0,0.0));
@@ -447,11 +447,11 @@ TEST( quest_intersection, 2D_triangle_triangle_intersection )
   permuteCornersTest(triD, triE, "2D point comes close to side 6", false);
 }
 
-bool makeTwoRandomIntersecting3DTriangles(quest::Triangle< double, 3 > & l, quest::Triangle< double, 3 > & r)
+bool makeTwoRandomIntersecting3DTriangles(primal::Triangle< double, 3 > & l, primal::Triangle< double, 3 > & r)
 {
-  typedef quest::Triangle< double,3 > Triangle3;
-  typedef quest::Point< double,3 >   Point3;
-  typedef quest::Vector< double, 3 > Vector3;
+  typedef primal::Triangle< double,3 > Triangle3;
+  typedef primal::Point< double,3 >   Point3;
+  typedef primal::Vector< double, 3 > Vector3;
 
   //Step 1: Construct a random triangle
   Point3 A= randomPt< 3 >(0.,1.);
@@ -519,8 +519,8 @@ bool makeTwoRandomIntersecting3DTriangles(quest::Triangle< double, 3 > & l, ques
 TEST( quest_intersection, 3D_triangle_triangle_intersection )
 {
 
-  typedef quest::Triangle< double,3 > Triangle3;
-  typedef quest::Point< double,3 >   Point3;
+  typedef primal::Triangle< double,3 > Triangle3;
+  typedef primal::Point< double,3 >   Point3;
 
   Triangle3 tri3d_1(Point3::make_point(-1.0,-1.0,-1.0), Point3::make_point(-2.0,-5.0, -5.0), Point3::make_point(-4.0,-8.0, -8.0));
   Triangle3 tri3d_2(Point3::make_point(-1.0,-1.0,-1.0), Point3::make_point(-2.0,-5.0, -5.0), Point3::make_point(-4.0,-8.0, -8.0));
@@ -588,9 +588,9 @@ TEST( quest_intersection, 3D_triangle_triangle_intersection )
 TEST( quest_intersection, triangle_aabb_intersection_boundaryFace )
 {
   static int const DIM = 3;
-  typedef quest::Point< double,DIM >   PointType;
-  typedef quest::Triangle< double,DIM > TriangleType;
-  typedef quest::BoundingBox< double,DIM > BoundingBoxType;
+  typedef primal::Point< double,DIM >   PointType;
+  typedef primal::Triangle< double,DIM > TriangleType;
+  typedef primal::BoundingBox< double,DIM > BoundingBoxType;
 
   TriangleType tri(PointType::make_point(0,5,0), PointType::make_point(0,5,5), PointType::make_point(0,5,5));
 
@@ -601,10 +601,10 @@ TEST( quest_intersection, triangle_aabb_intersection_boundaryFace )
 
 
   SLIC_INFO("Testing point bounding box: " << box0 << " against triangle " << tri );
-  EXPECT_TRUE( quest::intersect(tri, box0));
+  EXPECT_TRUE( primal::intersect(tri, box0));
 
   SLIC_INFO("Testing point bounding box: " << box1 << " against triangle " << tri );
-  EXPECT_TRUE( quest::intersect(tri, box1));
+  EXPECT_TRUE( primal::intersect(tri, box1));
 
   // ---
 
@@ -618,10 +618,10 @@ TEST( quest_intersection, triangle_aabb_intersection_boundaryFace )
 
   SLIC_INFO("Testing point bounding box: " << box2
 	    << " against triangle " << tri2
-	    << "\n\t -- intersects? " << (quest::intersect(tri2, box2) ? "yes":"no")
-	    //<< "\n\t -- distance: " << (quest::distance(tri2, box2) ? "yes":"no")
+	    << "\n\t -- intersects? " << (primal::intersect(tri2, box2) ? "yes":"no")
+	    //<< "\n\t -- distance: " << (primal::distance(tri2, box2) ? "yes":"no")
     );
-  //EXPECT_TRUE( quest::intersect(tri, box1));
+  //EXPECT_TRUE( primal::intersect(tri, box1));
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
@@ -630,10 +630,10 @@ TEST( quest_intersection, triangle_aabb_intersection_boundaryFace )
 TEST( quest_intersection, ray_aabb_intersection_general3D )
 {
   static int const DIM = 3;
-  typedef quest::Point< double, DIM >   PointType;
-  typedef quest::Ray< double,DIM > RayType;
-  typedef quest::BoundingBox< double, DIM > BoundingBoxType;
-  typedef quest::Vector< double, DIM >  VectorType;
+  typedef primal::Point< double, DIM >   PointType;
+  typedef primal::Ray< double,DIM > RayType;
+  typedef primal::BoundingBox< double, DIM > BoundingBoxType;
+  typedef primal::Vector< double, DIM >  VectorType;
 
 
   // STEP 1: construct ray
@@ -651,12 +651,12 @@ TEST( quest_intersection, ray_aabb_intersection_general3D )
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
   PointType ip;
 
-  bool intersects = quest::intersect(R, box0, ip);
+  bool intersects = primal::intersect(R, box0, ip);
   SLIC_INFO("Testing point bounding box: " << box0 << " against ray " << R);
   SLIC_INFO("Point at: "<<ip);
   EXPECT_TRUE( intersects);
 
-  intersects = quest::intersect(R, box1, ip);
+  intersects = primal::intersect(R, box1, ip);
   SLIC_INFO("Testing point bounding box: " << box1 << " against ray " << R);
   SLIC_INFO("Point at: "<<ip);
   EXPECT_FALSE( intersects);
@@ -669,10 +669,10 @@ TEST( quest_intersection, ray_aabb_intersection_general3D )
 TEST( quest_intersection, ray_aabb_intersection_tinyDirectionVector3D )
 {
   static int const DIM = 3;
-  typedef quest::Point< double, DIM >   PointType;
-  typedef quest::Ray< double,DIM > RayType;
-  typedef quest::BoundingBox< double, DIM > BoundingBoxType;
-  typedef quest::Vector< double, DIM >  VectorType;
+  typedef primal::Point< double, DIM >   PointType;
+  typedef primal::Ray< double,DIM > RayType;
+  typedef primal::BoundingBox< double, DIM > BoundingBoxType;
+  typedef primal::Vector< double, DIM >  VectorType;
 
 
   // STEP 1: construct ray
@@ -690,12 +690,12 @@ TEST( quest_intersection, ray_aabb_intersection_tinyDirectionVector3D )
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
   PointType ip;
 
-  bool intersects = quest::intersect(R, box0, ip);
+  bool intersects = primal::intersect(R, box0, ip);
   SLIC_INFO("Testing point bounding box: " << box0 << " against ray " << R);
   SLIC_INFO("Point at: "<<ip);
   EXPECT_FALSE(intersects);
 
-  intersects = quest::intersect(R, box1, ip);
+  intersects = primal::intersect(R, box1, ip);
   SLIC_INFO("Testing point bounding box: " << box1 << " against ray " << R);
   SLIC_INFO("Point at: "<<ip);
   EXPECT_FALSE(intersects);
@@ -705,16 +705,16 @@ TEST( quest_intersection, ray_aabb_intersection_tinyDirectionVector3D )
 }
 
 template<int DIM>
-void testTriSegBothEnds(const quest::Triangle<double, DIM> & tri,
-                        const quest::Point<double, DIM> & p1,
-                        const quest::Point<double, DIM> & p2,
+void testTriSegBothEnds(const primal::Triangle<double, DIM> & tri,
+                        const primal::Point<double, DIM> & p1,
+                        const primal::Point<double, DIM> & p2,
                         const std::string & whattest,
                         const bool testtrue)
 {
   SCOPED_TRACE(whattest);
 
-  quest::Segment< double, DIM > seg1(p1, p2);
-  quest::Segment< double, DIM > seg2(p2, p1);
+  primal::Segment< double, DIM > seg1(p1, p2);
+  primal::Segment< double, DIM > seg2(p2, p1);
   if (testtrue) {
     EXPECT_TRUE(intersect(tri, seg1));
     EXPECT_TRUE(intersect(tri, seg2));
@@ -727,9 +727,9 @@ void testTriSegBothEnds(const quest::Triangle<double, DIM> & tri,
 TEST(quest_intersection, triangle_segment_intersection)
 {
   static int const DIM = 3;
-  typedef quest::Point< double,DIM >   PointType;
-  typedef quest::Triangle< double, DIM > TriangleType;
-  typedef quest::Segment< double, DIM >  SegmentType;
+  typedef primal::Point< double,DIM >   PointType;
+  typedef primal::Triangle< double, DIM > TriangleType;
+  typedef primal::Segment< double, DIM >  SegmentType;
 
   double xArr[3] = { 1., 0., 0.};
   double yArr[3] = { 0., 1., 0.};
@@ -795,10 +795,10 @@ TEST(quest_intersection, triangle_segment_intersection)
 TEST(quest_intersection, triangle_ray_intersection)
 {
   static int const DIM = 3;
-  typedef quest::Point< double,DIM >   PointType;
-  typedef quest::Triangle< double, DIM > TriangleType;
-  typedef quest::Ray< double, DIM > RayType;
-  typedef quest::Segment< double, DIM >  SegmentType;
+  typedef primal::Point< double,DIM >   PointType;
+  typedef primal::Triangle< double, DIM > TriangleType;
+  typedef primal::Ray< double, DIM > RayType;
+  typedef primal::Segment< double, DIM >  SegmentType;
 
   double xArr[3] = { 1., 0., 0.};
   double yArr[3] = { 0., 1., 0.};

@@ -19,7 +19,7 @@ TEST( quest_point, point_default_constructor)
 {
   static const int DIM = 2;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef primal::Point<CoordType, DIM> QPoint;
 
   QPoint pt;
 
@@ -34,7 +34,7 @@ TEST( quest_point, point_singleVal_constructor)
 {
   static const int DIM = 5;
   typedef int CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef primal::Point<CoordType, DIM> QPoint;
   const int singleVal = 10;
 
   //
@@ -87,7 +87,7 @@ TEST( quest_point, point_array_constructor)
 {
   static const int DIM = 5;
   typedef int CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef primal::Point<CoordType, DIM> QPoint;
 
   // Set elt i of input array to i
   CoordType arr[DIM];
@@ -144,8 +144,8 @@ TEST( quest_point, point_numericArray_constructor)
 {
   static const int DIM = 5;
   typedef int CoordType;
-  typedef quest::NumericArray<CoordType, DIM> QArray;
-  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef primal::NumericArray<CoordType, DIM> QArray;
+  typedef primal::Point<CoordType, DIM> QPoint;
 
   // Set elt i of input array to i
   CoordType arr[DIM];
@@ -168,7 +168,7 @@ TEST( quest_point, point_copy_and_assignment)
 {
   static const int DIM = 5;
   typedef int CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef primal::Point<CoordType, DIM> QPoint;
 
   // Set elt i of input array to i
   CoordType arr[DIM];
@@ -202,7 +202,7 @@ TEST( quest_point, point_equality)
 {
   static const int DIM = 5;
   typedef int CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef primal::Point<CoordType, DIM> QPoint;
 
   // Set elt i of input array to i
   CoordType arr[DIM];
@@ -237,7 +237,7 @@ TEST( quest_point, point_to_array)
 {
   static const int DIM = 5;
   typedef int CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef primal::Point<CoordType, DIM> QPoint;
 
   // Set elt i of input array to i
   CoordType arr[DIM];
@@ -259,7 +259,7 @@ TEST( quest_point, point_make_point)
 {
   static const int DIM = 3;
   typedef int CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef primal::Point<CoordType, DIM> QPoint;
 
   const int x = 10;
   const int y = 20;
@@ -284,7 +284,7 @@ TEST( quest_point, point_midpoint)
 {
   static const int DIM = 3;
   typedef int CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef primal::Point<CoordType, DIM> QPoint;
 
   QPoint p10(10);
   QPoint p30(30);
@@ -298,7 +298,7 @@ TEST( quest_point, point_linear_interpolation)
 {
   static const int DIM = 3;
   typedef int CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef primal::Point<CoordType, DIM> QPoint;
 
   QPoint p0(0);
   QPoint p1(100);

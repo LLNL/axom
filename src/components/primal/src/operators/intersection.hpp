@@ -30,7 +30,8 @@
 
 #include "primal/intersection_impl.hpp"
 
-namespace quest {
+namespace axom {
+namespace primal {
 
 /*!
  *******************************************************************************
@@ -169,6 +170,7 @@ bool intersect(const Triangle<T, 3>& tri, const Segment<T,3>& seg)
   return detail::intersect_tri_segment(tri, seg);
 }
 
-} /* end namespace quest */
+} /* namespace primal */
+} /* namepsace axom */
 
 #endif /* INTERSECTION_HPP_ */

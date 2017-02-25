@@ -31,7 +31,8 @@
 #include "slic/slic.hpp"
 
 
-namespace quest {
+namespace axom {
+namespace primal {
 
 
 /*!
@@ -42,11 +43,11 @@ namespace quest {
  * \return d the distance from point A to point B.
  *******************************************************************************
  */
-template < typename T, int ndims >
-inline
-double squared_distance( const Point< T,ndims >& A, const Point< T,ndims >& B )
+template < typename T, int NDIMS >
+inline double squared_distance( const Point< T,NDIMS >& A,
+                                const Point< T,NDIMS >& B )
 {
-  Vector< T,ndims > v( A, B );
+  Vector< T,NDIMS > v( A, B );
   return( v.squared_norm() );
 }
 
@@ -59,10 +60,9 @@ double squared_distance( const Point< T,ndims >& A, const Point< T,ndims >& B )
  * \return d the signed distance from P to the closest point on B.
  *******************************************************************************
  */
-template < typename T, int ndims >
-inline
-double squared_distance( const Point< T,ndims >& P,
-                         const BoundingBox< T,ndims >& B )
+template < typename T, int NDIMS >
+inline double squared_distance( const Point< T,NDIMS >& P,
+                                const BoundingBox< T,NDIMS >& B )
 {
    if ( B.contains( P ) ) {
       /* short-circuit */
@@ -70,8 +70,8 @@ double squared_distance( const Point< T,ndims >& P,
    }
 
    // compute closest point to the box
-   Point< T,ndims > cp;
-   for ( int i=0; i < ndims; ++i ) {
+   Point< T,NDIMS > cp;
+   for ( int i=0; i < NDIMS; ++i ) {
 
        cp[ i ] = P[ i ];
        if ( cp[i] < B.getMin()[i] ) {
@@ -84,7 +84,7 @@ double squared_distance( const Point< T,ndims >& P,
    }
 
    // return squared signed distance to the closest point
-   return quest::squared_distance( P, cp );
+   return squared_distance( P, cp );
 }
 
 /*!
@@ -96,15 +96,14 @@ double squared_distance( const Point< T,ndims >& P,
  * \return d the minimum distance from P on the
  *******************************************************************************
  */
-template < typename T, int ndims >
-inline
-double squared_distance( const Point< T,ndims >& P,
-                         const Segment< T,ndims >& S )
+template < typename T, int NDIMS >
+inline double squared_distance( const Point< T,NDIMS >& P,
+                                const Segment< T,NDIMS >& S )
 {
-   Vector< T,ndims > ab( S.source(), S.target() );
-   Vector< T,ndims > ac( S.source(), P );
+   Vector< T,NDIMS > ab( S.source(), S.target() );
+   Vector< T,NDIMS > ac( S.source(), P );
 
-   const T e = Vector< T,ndims >::dot_product( ac, ab );
+   const T e = Vector< T,NDIMS >::dot_product( ac, ab );
 
    // outside segment, on the side of a
    // Testing if closest point is A
@@ -119,7 +118,7 @@ double squared_distance( const Point< T,ndims >& P,
    const T f = ab.squared_norm();
    if ( e >= f ) {
 
-      Vector< T,ndims > bc( S.target(), P );
+      Vector< T,NDIMS > bc( S.target(), P );
       return bc.squared_norm();
 
    }
@@ -139,17 +138,18 @@ double squared_distance( const Point< T,ndims >& P,
  * \return d the distance from Q to the closest point on the triangle T.
  *******************************************************************************
  */
-template < typename T, int ndims >
+template < typename T, int NDIMS >
 inline
-double squared_distance( const Point< T,ndims >& P,
-                         const Triangle< T,ndims >& tri )
+double squared_distance( const Point< T,NDIMS >& P,
+                         const Triangle< T,NDIMS >& tri )
 {
-  Point< T,ndims > cpt = closest_point( P, tri );
+  Point< T,NDIMS > cpt = closest_point( P, tri );
   return squared_distance( P, cpt );
 }
 
 
-}
+} /* namespace primal */
+} /* namepsace axom */
 
 
 #endif /* SQUAREDDISTANCE_HPP_ */

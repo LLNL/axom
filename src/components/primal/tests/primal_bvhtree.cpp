@@ -27,9 +27,9 @@
 TEST( quest_bucket_tree, insert_object )
 {
   // some typedef short-cuts
-  typedef quest::BVHTree< int,3 > TreeType;
-  typedef quest::BoundingBox< double,3 > BoxType;
-  typedef quest::Point< double,3 > PointType;
+  typedef primal::BVHTree< int,3 > TreeType;
+  typedef primal::BoundingBox< double,3 > BoxType;
+  typedef primal::Point< double,3 > PointType;
 
   BoxType bb( PointType::zero(), PointType::ones() );
 

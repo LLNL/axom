@@ -12,9 +12,8 @@
 #ifndef DETERMINANTS_H_
 #define DETERMINANTS_H_
 
-namespace quest {
-
-namespace math {
+namespace axom {
+namespace primal {
 
 /*!
  *******************************************************************************
@@ -107,7 +106,7 @@ inline real determinant(
    return det;
 }
 
-}
+} /* namespace primal */
+} /* namespace axom */
 
-}
 #endif

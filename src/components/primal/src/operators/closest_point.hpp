@@ -24,8 +24,8 @@
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
 
-namespace quest
-{
+namespace axom {
+namespace primal {
 
 /*!
  *******************************************************************************
@@ -195,7 +195,8 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
 #undef C
 }
 
-}
+} /* namespace primal */
+} /* namepsace axom */
 
 
 

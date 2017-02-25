@@ -28,45 +28,45 @@ TEST( quest_intersection_impl, fuzzy_comparisons )
 
   // Testing 'greater than' function
   // Note: Excludes the eps window
-  EXPECT_TRUE( quest::detail::isGt(1.15, 1.0, eps) );
+  EXPECT_TRUE( primal::detail::isGt(1.15, 1.0, eps) );
   // --
-  EXPECT_FALSE( quest::detail::isGt(1.05, 1.0, eps) );
-  EXPECT_FALSE( quest::detail::isGt(1.0, 1.0, eps) );
-  EXPECT_FALSE( quest::detail::isGt(0.95, 1.0, eps) );
-  EXPECT_FALSE( quest::detail::isGt(0.85, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isGt(1.05, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isGt(1.0, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isGt(0.95, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isGt(0.85, 1.0, eps) );
 
 
   // Testing 'less than or equal' function
   // Note: Includes eps window
   // Note: isLeq() has opposite value of isGt()
-  EXPECT_FALSE( quest::detail::isLeq(1.15, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isLeq(1.15, 1.0, eps) );
   // --
-  EXPECT_TRUE( quest::detail::isLeq(1.05, 1.0, eps) );
-  EXPECT_TRUE( quest::detail::isLeq(1.0, 1.0, eps) );
-  EXPECT_TRUE( quest::detail::isLeq(0.95, 1.0, eps) );
-  EXPECT_TRUE( quest::detail::isLeq(0.85, 1.0, eps) );
+  EXPECT_TRUE( primal::detail::isLeq(1.05, 1.0, eps) );
+  EXPECT_TRUE( primal::detail::isLeq(1.0, 1.0, eps) );
+  EXPECT_TRUE( primal::detail::isLeq(0.95, 1.0, eps) );
+  EXPECT_TRUE( primal::detail::isLeq(0.85, 1.0, eps) );
 
 
 
   // Testing 'less than' function
   // Note: Excludes eps window
-  EXPECT_FALSE( quest::detail::isLt(1.15, 1.0, eps) );
-  EXPECT_FALSE( quest::detail::isLt(1.05, 1.0, eps) );
-  EXPECT_FALSE( quest::detail::isLt(1.0, 1.0, eps) );
-  EXPECT_FALSE( quest::detail::isLt(0.95, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isLt(1.15, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isLt(1.05, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isLt(1.0, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isLt(0.95, 1.0, eps) );
   // --
-  EXPECT_TRUE( quest::detail::isLt(0.85, 1.0, eps) );
+  EXPECT_TRUE( primal::detail::isLt(0.85, 1.0, eps) );
 
 
   // Testing 'greater than or equal' function
   // Note: Includes eps window
   // Note: isGeq() has opposite value of isLt()
-  EXPECT_TRUE( quest::detail::isGeq(1.15, 1.0, eps) );
-  EXPECT_TRUE( quest::detail::isGeq(1.05, 1.0, eps) );
-  EXPECT_TRUE( quest::detail::isGeq(1.0, 1.0, eps) );
-  EXPECT_TRUE( quest::detail::isGeq(0.95, 1.0, eps) );
+  EXPECT_TRUE( primal::detail::isGeq(1.15, 1.0, eps) );
+  EXPECT_TRUE( primal::detail::isGeq(1.05, 1.0, eps) );
+  EXPECT_TRUE( primal::detail::isGeq(1.0, 1.0, eps) );
+  EXPECT_TRUE( primal::detail::isGeq(0.95, 1.0, eps) );
   // --
-  EXPECT_FALSE( quest::detail::isGeq(0.85, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isGeq(0.85, 1.0, eps) );
 
 }
 

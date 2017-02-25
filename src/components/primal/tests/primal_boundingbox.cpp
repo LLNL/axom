@@ -21,8 +21,8 @@ TEST( quest_boundingBox, bb_default_constructor)
 {
   static const int DIM = 2;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::BoundingBox<CoordType, DIM> QBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::BoundingBox<CoordType, DIM> QBBox;
 
   QBBox bbox;
   EXPECT_FALSE( bbox.isValid() ) << "Default constructed bounding box is invalid";
@@ -36,8 +36,8 @@ TEST( quest_boundingBox, bb_ctor_from_singlePt)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::BoundingBox<CoordType, DIM> QBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::BoundingBox<CoordType, DIM> QBBox;
 
   QPoint pt1;
   QPoint pt2 (2);
@@ -64,8 +64,8 @@ TEST( quest_boundingBox, bb_ctor_from_twoPoints)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::BoundingBox<CoordType, DIM> QBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::BoundingBox<CoordType, DIM> QBBox;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -117,8 +117,8 @@ TEST( quest_boundingBox, bb_addPoint)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::BoundingBox<CoordType, DIM> QBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::BoundingBox<CoordType, DIM> QBBox;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -150,8 +150,8 @@ TEST( quest_boundingBox, bb_test_clear)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::BoundingBox<CoordType, DIM> QBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::BoundingBox<CoordType, DIM> QBBox;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -179,8 +179,8 @@ TEST( quest_boundingBox, bb_copy_and_assignment)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
-  typedef quest::BoundingBox<CoordType, DIM> QBBox;
+  typedef primal::Point<CoordType, DIM> QPoint;
+  typedef primal::BoundingBox<CoordType, DIM> QBBox;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -221,8 +221,8 @@ TEST( quest_boundingBox, bb_test_equality)
 {
     static const int DIM = 3;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
-    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+    typedef primal::Point<CoordType, DIM> QPoint;
+    typedef primal::BoundingBox<CoordType, DIM> QBBox;
 
     QPoint pt1(1);
     QPoint pt2(3);
@@ -257,8 +257,8 @@ TEST( quest_boundingBox, bb_add_box)
 {
     static const int DIM = 3;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
-    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+    typedef primal::Point<CoordType, DIM> QPoint;
+    typedef primal::BoundingBox<CoordType, DIM> QBBox;
 
     //
     std::cout <<"Testing addBox() for two simple bounding boxes"<<std::endl;
@@ -315,11 +315,11 @@ TEST( quest_boundingBox, bb_add_box)
 TEST( quest_boundingBox, bb_different_coord_types)
 {
     static const int DIM = 3;
-    typedef quest::Point<double, DIM> PointD;
-    typedef quest::BoundingBox<double, DIM> BBoxD;
+    typedef primal::Point<double, DIM> PointD;
+    typedef primal::BoundingBox<double, DIM> BBoxD;
 
-    typedef quest::Point<int, DIM> PointI;
-    typedef quest::BoundingBox<int, DIM> BBoxI;
+    typedef primal::Point<int, DIM> PointI;
+    typedef primal::BoundingBox<int, DIM> BBoxI;
 
     // checking that an integer point is in the double bounding box
     BBoxD dBox( PointD(1.), PointD(3.));
@@ -353,8 +353,8 @@ TEST( quest_boundingBox, bb_expand)
 {
     static const int DIM = 3;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
-    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+    typedef primal::Point<CoordType, DIM> QPoint;
+    typedef primal::BoundingBox<CoordType, DIM> QBBox;
 
     //
     std::cout <<"Testing bounding box inflate"<<std::endl;
@@ -392,8 +392,8 @@ TEST( quest_boundingBox, bb_scale)
 {
     static const int DIM = 3;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
-    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+    typedef primal::Point<CoordType, DIM> QPoint;
+    typedef primal::BoundingBox<CoordType, DIM> QBBox;
 
     //
     std::cout <<"Testing bounding box scale"<<std::endl;
@@ -435,10 +435,10 @@ TEST( quest_boundingBox, bb_shift)
 {
     static const int DIM = 3;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
-    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+    typedef primal::Point<CoordType, DIM> QPoint;
+    typedef primal::BoundingBox<CoordType, DIM> QBBox;
 
-    typedef quest::Vector<CoordType, DIM> QVec;
+    typedef primal::Vector<CoordType, DIM> QVec;
 
     //
     std::cout <<"Testing bounding box shift"<<std::endl;
@@ -501,19 +501,19 @@ TEST( quest_boundingBox, highest_lowest_values)
     // Note: The bounds are intentionally in the reverse order -- this is how we ensure
     //       that adding a point to an empty bounding box always updates the bounds properly
 
-    typedef quest::BoundingBox<double , DIM> BBoxD;
+    typedef primal::BoundingBox<double , DIM> BBoxD;
     EXPECT_TRUE(BBoxD().getMin()[0] > 0 );
     EXPECT_TRUE(BBoxD().getMax()[0] < 0 );
 
-    typedef quest::BoundingBox<float, DIM> BBoxF;
+    typedef primal::BoundingBox<float, DIM> BBoxF;
     EXPECT_TRUE(BBoxF().getMin()[0] > 0 );
     EXPECT_TRUE(BBoxF().getMax()[0] < 0 );
 
-    typedef quest::BoundingBox<int, DIM> BBoxI;
+    typedef primal::BoundingBox<int, DIM> BBoxI;
     EXPECT_TRUE(BBoxI().getMin()[0] > 0 );
     EXPECT_TRUE(BBoxI().getMax()[0] < 0 );
 
-    typedef quest::BoundingBox<unsigned int, DIM> BBoxU;
+    typedef primal::BoundingBox<unsigned int, DIM> BBoxU;
     EXPECT_TRUE(BBoxU().getMin()[0] > 0 );
     EXPECT_TRUE(BBoxU().getMax()[0] == 0 );
 }
@@ -521,8 +521,8 @@ TEST( quest_boundingBox, highest_lowest_values)
 //------------------------------------------------------------------------------
 TEST( quest_boundingBox, bb_longest_dimension )
 {
-  typedef quest::Point<double,2> PointType;
-  typedef quest::BoundingBox<double,2> BoxType;
+  typedef primal::Point<double,2> PointType;
+  typedef primal::BoundingBox<double,2> BoxType;
 
   BoxType bbox( PointType::zero(), PointType::make_point(5.0,10.0) );
   int longest_dimension = bbox.getLongestDimension();
@@ -533,8 +533,8 @@ TEST( quest_boundingBox, bb_longest_dimension )
 //------------------------------------------------------------------------------
 TEST( quest_boundingBox, bb_bisect )
 {
-  typedef quest::Point<double,2> PointType;
-  typedef quest::BoundingBox<double,2> BoxType;
+  typedef primal::Point<double,2> PointType;
+  typedef primal::BoundingBox<double,2> BoxType;
 
   BoxType bbox( PointType::zero(), PointType::ones() );
 
@@ -560,8 +560,8 @@ TEST( quest_boundingBox, bb_bisect )
 //------------------------------------------------------------------------------
 TEST( quest_boundingBox, bb_centroid )
 {
-  typedef quest::Point< double,2 > PointType;
-  typedef quest::BoundingBox< double,2 > BoxType;
+  typedef primal::Point< double,2 > PointType;
+  typedef primal::BoundingBox< double,2 > BoxType;
 
   BoxType bbox( PointType::zero(), PointType::ones() );
   PointType centroid = bbox.centroid();

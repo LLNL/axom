@@ -21,29 +21,41 @@
 #include <ostream> // For print() and operator <<
 
 
-namespace quest
-{
+namespace axom {
+namespace primal {
 
 // Forward declare the templated classes and operator functions
-template<typename T, int DIM> class Point;
+template < typename T,int NDIMS >
+class Point;
+
+/// \name Forward Declared Overloaded Operators
+///@{
 
 /*!
+ *******************************************************************************
  * \brief Equality comparison operator for points
+ *******************************************************************************
  */
-template<typename T, int DIM>
-bool operator==(const Point<T, DIM> & lhs, const Point<T, DIM>& rhs);
+template < typename T,int NDIMS >
+bool operator==(const Point<T, NDIMS> & lhs, const Point<T, NDIMS>& rhs);
 
 /*!
+ *******************************************************************************
  * \brief Inequality comparison operator for points
+ *******************************************************************************
  */
-template<typename T, int DIM>
-bool operator!=(const Point<T, DIM> & lhs, const Point<T, DIM>& rhs);
+template < typename T,int NDIMS >
+bool operator!=(const Point<T, NDIMS> & lhs, const Point<T, NDIMS>& rhs);
 
 /*!
+ *******************************************************************************
  * \brief Overloaded output operator for points
+ *******************************************************************************
  */
-template<typename T, int DIM>
-std::ostream& operator<<(std::ostream & os, const Point<T,DIM> & pt);
+template < typename T,int NDIMS >
+std::ostream& operator<<(std::ostream & os, const Point<T,NDIMS> & pt);
+
+///@}
 
 /*!
  *******************************************************************************
@@ -53,15 +65,15 @@ std::ostream& operator<<(std::ostream & os, const Point<T,DIM> & pt);
  *  provides access methods to set and query the point coordinates.
  *******************************************************************************
  */
-template < typename T, int DIM >
+template < typename T, int NDIMS >
 class Point
 {
 public:
-    enum { NDIMS = DIM
-         , NBYTES = DIM * sizeof(T)
-         };
+    enum {
+      NBYTES = NDIMS * sizeof(T)
+    };
 
-    typedef Point<T,DIM> PointType;
+    typedef Point<T,NDIMS> PointType;
     typedef T CoordType;
 
 public:
@@ -71,12 +83,11 @@ public:
    * \brief Fill the first sz coordinates with val and zeros the rest
    * \param [in] val The value to set the coordinates to.  Defaults to zero
    * \param [in] sz The number of coordinates to set to val.
-   * The rest will be set to zero.  Defaults is DIM.
-   * If sz is greater than DIM, we set all coordinates to val
+   * The rest will be set to zero.  Defaults is NDIMS.
+   * If sz is greater than NDIMS, we set all coordinates to val
    *****************************************************************************
    */
-  explicit Point(T val = T(), int sz = DIM) : m_components(val,sz) {}
-
+  explicit Point(T val = T(), int sz = NDIMS) : m_components(val,sz) { }
 
   /*!
    *****************************************************************************
@@ -84,18 +95,17 @@ public:
    * \param [in] arr The numeric array to copy from
    *****************************************************************************
    */
-  Point(const NumericArray<T,DIM>& arr) : m_components(arr) {}
+  Point(const NumericArray<T,NDIMS>& arr) : m_components(arr) { }
 
   /*!
    *****************************************************************************
    * \brief Creates a point from the first sz values of the input array.
    * \param [in] vals An array containing at least sz values
-   * \param [in] sz The number of coordinates to take from the array.  Defaults
-   * to DIM.
-   * It sz is greater than DIM, we only take the first DIM values.
+   * \param [in] sz number of coordinates to copy from bals. Defaults to NDIMS.
+   * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    *****************************************************************************
    */
-  Point(T* vals, int sz = DIM) : m_components(vals,sz) {}
+  Point(T* vals, int sz = NDIMS) : m_components(vals,sz) { }
 
   /*!
    *****************************************************************************
@@ -103,14 +113,14 @@ public:
    * \param [in] other The point to copy
    *****************************************************************************
    */
-  Point( const Point& other) : m_components( other.m_components) {}
+  Point( const Point& other) : m_components( other.m_components) { }
 
   /*!
    *****************************************************************************
    * \brief Destructor.
    *****************************************************************************
    */
-   ~Point() {}
+   ~Point() { }
 
   /*!
    *****************************************************************************
@@ -119,7 +129,7 @@ public:
    * \post d >= 1.
    *****************************************************************************
    */
-  static int dimension() { return DIM; };
+  static int dimension() { return NDIMS; };
 
   /*!
    *****************************************************************************
@@ -127,7 +137,8 @@ public:
    * \param [in] rhs a point instance on the right hand side.
    *****************************************************************************
    */
-  Point& operator=(const Point& rhs) { m_components = rhs.m_components; return *this;}
+  Point& operator=(const Point& rhs)
+   { m_components=rhs.m_components; return *this;}
 
   /*!
    *****************************************************************************
@@ -140,44 +151,44 @@ public:
   const T& operator[](int i) const { return m_components[i]; }
   T& operator[](int i)             { return m_components[i]; }
 
-
   /*!
    *****************************************************************************
    * \brief Returns a pointer to the underlying data.
    *****************************************************************************
    */
-  const T* data() const             { return m_components.data(); }
-  T* data()                         { return m_components.data(); }
+  const T* data() const { return m_components.data(); }
+  T* data()             { return m_components.data(); }
 
   /*!
    *****************************************************************************
    * \brief Returns a reference to the underlying NumericArray.
    *****************************************************************************
    */
-  const NumericArray<T,DIM>& array() const  { return m_components; }
-  NumericArray<T,DIM>& array()              { return m_components; }
-
+  const NumericArray<T,NDIMS>& array() const  { return m_components; }
+  NumericArray<T,NDIMS>& array()              { return m_components; }
 
   /*!
    *****************************************************************************
    * \brief Output the point's coordinates to the array
    * \param arr The array that we are outputting to.
    * \pre The user needs to make sure that the array has been allocated
-   * and has sufficient space for DIM coordinates.
+   * and has sufficient space for NDIMS coordinates.
    *****************************************************************************
    */
-  void to_array(T* arr) const       { m_components.to_array(arr); }
-
-
+  void to_array(T* arr) const { m_components.to_array(arr); }
 
   /*!
+   *****************************************************************************
    * \brief Equality comparison operator for points
+   *****************************************************************************
    */
   friend bool operator==(const Point& lhs, const Point& rhs)
   { return lhs.m_components == rhs.m_components; }
 
   /*!
+   *****************************************************************************
    * \brief Inequality operator for points
+   *****************************************************************************
    */
   friend bool operator!=(const Point& lhs, const Point& rhs)
   { return !(lhs == rhs); }
@@ -222,6 +233,7 @@ public:
    *****************************************************************************
    */
   static Point lerp( const Point& A, const Point& B, double alpha);
+
   /*!
    *****************************************************************************
    * \brief Helper function to return a point whose coordinates are all 0
@@ -240,7 +252,7 @@ public:
   static Point ones() { return Point(static_cast<T>(1)); }
 
 private:
-  NumericArray<T,DIM> m_components;
+  NumericArray<T,NDIMS> m_components;
 
 };
 
@@ -252,32 +264,35 @@ typedef Point<double,3> Point3D;
 
 /// @}
 
-} /* namespace quest */
+} /* namespace primal */
+
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 //  Point implementation
 //------------------------------------------------------------------------------
-namespace quest {
+namespace axom {
+namespace primal {
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline Point< T, DIM > Point< T,DIM >::make_point( const T& x,
+template < typename T, int NDIMS >
+inline Point< T, NDIMS > Point< T,NDIMS >::make_point( const T& x,
                                                    const T& y,
                                                    const T& z )
 {
   T tmp_array[3] = { x, y, z};
-  return Point(tmp_array, DIM);
+  return Point(tmp_array, NDIMS);
 }
 
 //------------------------------------------------------------------------------
-template< typename T, int DIM >
-inline Point< T,DIM > Point< T,DIM >::midpoint(
-        const Point<T,DIM>& A,
-        const Point<T,DIM>& B )
+template< typename T, int NDIMS >
+inline Point< T,NDIMS > Point< T,NDIMS >::midpoint(
+        const Point<T,NDIMS>& A,
+        const Point<T,NDIMS>& B )
 {
-  Point< T,DIM > mid_point;
+  Point< T,NDIMS > mid_point;
 
-  for ( int i=0; i < DIM; ++i ) {
+  for ( int i=0; i < NDIMS; ++i ) {
 
      mid_point[ i ] = 0.5*( A[i]+B[i] );
   }
@@ -286,10 +301,10 @@ inline Point< T,DIM > Point< T,DIM >::midpoint(
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline Point< T,DIM > Point< T,DIM >::lerp(
-        const Point<T,DIM>& A,
-        const Point<T,DIM>& B,
+template < typename T, int NDIMS >
+inline Point< T,NDIMS > Point< T,NDIMS >::lerp(
+        const Point<T,NDIMS>& A,
+        const Point<T,NDIMS>& B,
         double alpha)
 {
   return PointType((1.-alpha)*A.array() + alpha*B.array());
@@ -297,13 +312,13 @@ inline Point< T,DIM > Point< T,DIM >::lerp(
 
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-std::ostream& Point< T, DIM >::print(std::ostream& os) const
+template < typename T, int NDIMS >
+std::ostream& Point< T, NDIMS >::print(std::ostream& os) const
 {
     os <<"(";
-    for(int dim=0; dim < DIM -1; ++ dim)
+    for(int dim=0; dim < NDIMS -1; ++ dim)
         os << static_cast<typename NonChar<T>::type>(m_components[dim]) << ",";
-    os << static_cast<typename NonChar<T>::type>(m_components[DIM-1]) << ")";
+    os << static_cast<typename NonChar<T>::type>(m_components[NDIMS-1]) << ")";
 
     return os;
 }
@@ -312,15 +327,14 @@ std::ostream& Point< T, DIM >::print(std::ostream& os) const
 /// Free functions implementing Point's operators
 //------------------------------------------------------------------------------
 
-template<typename T, int DIM>
-std::ostream& operator<<(std::ostream & os, const Point<T,DIM> & pt)
+template<typename T, int NDIMS>
+std::ostream& operator<<(std::ostream & os, const Point<T,NDIMS> & pt)
 {
     pt.print(os);
     return os;
 }
 
-
-
-} /* namespace quest*/
+} /* namespace primal*/
+} /* namespace axom */
 
 #endif /* POINT_HXX_ */

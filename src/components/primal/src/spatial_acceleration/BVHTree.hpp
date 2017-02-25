@@ -28,8 +28,8 @@
 #include <sstream> // std::ostringstream
 #include <vector>  // for std::vector
 
-namespace quest
-{
+namespace axom {
+namespace primal {
 
 /*!
  *******************************************************************************
@@ -516,13 +516,14 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(BVHTree);
 };
 
-} /* namespace quest */
+} /* namespace primal */
+} /* namepsace axom */
 
 //------------------------------------------------------------------------------
 //           BVHTree Public API Implementation
 //------------------------------------------------------------------------------
-namespace quest
-{
+namespace axom {
+namespace primal {
 
 template < typename T, int NDIMS >
 BVHTree< T,NDIMS >::BVHTree( int maxNumLevels ):
@@ -1221,5 +1222,7 @@ void BVHTree< T,NDIMS >::writeVtkFile(
 
 }
 
-} /* namespace quest */
+} /* namespace primal */
+} /* namespace axom */
+
 #endif /* BVHTREE_HPP_ */

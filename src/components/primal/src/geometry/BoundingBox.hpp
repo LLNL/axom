@@ -20,112 +20,116 @@
 #include "primal/Vector.hpp"
 
 
-namespace quest
-{
-
+namespace axom {
+namespace primal {
 
 // Forward declare the templated classes and operator functions
-template<typename T, int DIM> class BoundingBox;
+template < typename T,int NDIMS >
+class BoundingBox;
+
+/// \name Forward Declared Overloaded Operators
+///@{
 
 /*!
+ *******************************************************************************
  * \brief Equality comparison operator for bounding boxes.
  * Two bounding boxes are equal when they have the same bounds
+ *******************************************************************************
  */
-template<typename T, int DIM>
-bool operator==(const BoundingBox<T, DIM> & lhs,const BoundingBox<T, DIM>& rhs);
+template < typename T,int NDIMS >
+bool operator==( const BoundingBox<T, NDIMS> & lhs,
+                 const BoundingBox<T, NDIMS>& rhs   );
 
 /*!
+ *******************************************************************************
  * \brief Inequality comparison operator for bounding boxes.
  * Two bounding boxes are unequal when they have different bounds
+ *******************************************************************************
  */
-template<typename T, int DIM>
-bool operator!=(const BoundingBox<T, DIM> & lhs,const BoundingBox<T, DIM>& rhs);
+template < typename T,int NDIMS >
+bool operator!=( const BoundingBox<T, NDIMS> & lhs,
+                 const BoundingBox<T, NDIMS>& rhs   );
 
 /*!
+ *******************************************************************************
  * \brief Overloaded output operator for bounding boxes
+ *******************************************************************************
  */
-template<typename T, int DIM>
-std::ostream& operator<<(std::ostream & os, const BoundingBox<T,DIM> & pt);
+template < typename T,int NDIMS >
+std::ostream& operator<<( std::ostream & os,
+                          const BoundingBox< T,NDIMS >& pt );
 
+///@}
 
-/**
- * \brief Type trait to find the highest and lowest values for a given numeric type
- *
- * \note numeric_limits::max() always provides the highest possible value for all numeric type.
- * \note For integral types, numeric_limits ::min() provides the lowest value,
- *       but for float and double, it provides the smallest positive number.
- *       This was fixed in cxx11 with the function numeric_limits::lowest()
+/*!
+ *******************************************************************************
+ * \brief Type trait to find highest and lowest values for a given type.
+ *******************************************************************************
  */
-template<typename T>
+template < typename T >
 struct ValueRange
 {
-    /** \brief Returns the highest representable value of type T */
-    static T highest() { return std::numeric_limits<T>::max(); }
+  /*! \brief Returns the highest representable value of type T */
+  static T highest() { return std::numeric_limits<T>::max(); }
 
-    /** \brief Returns the lowest representable value of type T */
-    static T lowest() {
-        #ifdef ATK_USE_CXX11
-            return std::numeric_limits<T>::lowest();
-        #else
-            return std::numeric_limits<T>::min();
-        #endif
-    }
+  /*! \brief Returns the lowest representable value of type T */
+  static T lowest()
+  {
+    #ifdef ATK_USE_CXX11
+      return std::numeric_limits<T>::lowest();
+    #else
+      return std::numeric_limits<T>::min();
+    #endif
+  }
 };
 
 #ifndef ATK_USE_CXX11
-
-/**
+/*!
+ *******************************************************************************
  * \brief Template specialization of ValueRange for float types
  * \note Only necessary for pre-CXX11
+ *******************************************************************************
  */
-template<> struct ValueRange<float>
+template< >
+struct ValueRange< float >
 {
-    typedef float T;
-    static T highest() { return std::numeric_limits<T>::max(); }
-    static T lowest()  { return -std::numeric_limits<T>::max(); }
+  typedef float T;
+  static T highest() { return std::numeric_limits<T>::max(); }
+  static T lowest()  { return -std::numeric_limits<T>::max(); }
 };
 
-/**
+/*!
+ *******************************************************************************
  * \brief Template specialization of ValueRange for double types
  * \note Only necessary for pre-CXX11
+ *******************************************************************************
  */
-template<> struct ValueRange<double>
+template< >
+struct ValueRange< double >
 {
-    typedef double T;
-    static T highest() { return std::numeric_limits<T>::max(); }
-    static T lowest()  { return -std::numeric_limits<T>::max(); }
+  typedef double T;
+  static T highest() { return std::numeric_limits<T>::max(); }
+  static T lowest()  { return -std::numeric_limits<T>::max(); }
 };
 #endif  // ATK_USE_CXX11
-
 
 
 /*!
  *******************************************************************************
  * \class
  *
- * \brief The bounding box represents and axis-aligned bounding box.
- * It is defined by two points: its lowermost point and its uppermost point.
- * A bounding box is considered to be closed on all sides
- * -- it contains its min and max points.
- * \note Do we need to consider half-open bounding boxes
- * -- where the upper boundaries are not contained?
- * \note Does user code have to set a tolerance, or should the bounding box support this?
- * This would make it easier for user code to set this at the beginning and not have to worry
- * about maintaining a fuzzy tolerance while adding the points.
+ * \brief BoundingBox represents and axis-aligned bounding box defined by
+ * its min and max coordinates.
  *******************************************************************************
  */
-template<typename CoordType, int DIM>
+template< typename T,int NDIMS >
 class BoundingBox
 {
 public:
-    /*! \brief The underlying Point type of the bounding box */
-    typedef Point<CoordType, DIM> PointType;
+  typedef Point< T,NDIMS > PointType;
+  typedef Vector< T,NDIMS > VectorType;
+  typedef BoundingBox< T,NDIMS > BoxType;
 
-    /*! \brief The underlying Vector type of the bounding box */
-    typedef Vector<CoordType, DIM> VectorType;
-
-    /*! \brief The corresponding BoxType */
-    typedef BoundingBox<CoordType,DIM> BoxType;
 public:
 
   /*!
@@ -136,32 +140,26 @@ public:
    * the bounds to a valid range.
    *****************************************************************************
    */
-  BoundingBox()
-    : m_min( PointType( ValueRange< CoordType>::highest() ) )
-    , m_max( PointType( ValueRange< CoordType>::lowest() ) ) {}
-
+  BoundingBox() : m_min( PointType( ValueRange< T >::highest() ) ),
+                  m_max( PointType( ValueRange< T >::lowest() ) ) { }
 
   /*!
    *****************************************************************************
    * \brief Constructor. Creates a bounding box containing a single point
    *****************************************************************************
    */
-  BoundingBox(const PointType& pt)
-      : m_min( pt), m_max( pt)
-  {
-  }
+  BoundingBox( const PointType& pt )
+      : m_min( pt), m_max( pt) { }
 
   /*!
    *****************************************************************************
    * \brief Constructor. Creates a bounding box with a given min and max point
-   * The code ensures that the bounds are valid.
+   *  The code ensures that the bounds are valid.
    *****************************************************************************
    */
-  BoundingBox(const PointType& lowerPt, const PointType& upperPt)
+  BoundingBox( const PointType& lowerPt, const PointType& upperPt )
       : m_min( lowerPt), m_max( upperPt)
-  {
-      checkAndFixBounds();
-  }
+    { this->checkAndFixBounds(); }
 
   /*!
    *****************************************************************************
@@ -176,8 +174,7 @@ public:
    * \brief Destructor.
    *****************************************************************************
    */
-  ~BoundingBox() {}
-
+  ~BoundingBox() { }
 
   /*!
    *****************************************************************************
@@ -203,7 +200,6 @@ public:
    */
   const PointType& getMax() const { return m_max; };
 
-
   /*!
    *****************************************************************************
    * \brief Returns the centroid (midpoint) of the bounding box.
@@ -227,7 +223,7 @@ public:
    *****************************************************************************
    */
   template<typename OtherType>
-  void addPoint(const Point<OtherType,DIM>& pt);
+  void addPoint(const Point<OtherType,NDIMS>& pt);
 
   /*!
    *****************************************************************************
@@ -237,7 +233,7 @@ public:
    *****************************************************************************
    */
   template<typename OtherType>
-  void addBox(const BoundingBox<OtherType,DIM>& bbox);
+  void addBox(const BoundingBox<OtherType,NDIMS>& bbox);
 
   /*!
    *****************************************************************************
@@ -246,13 +242,13 @@ public:
    * \post d >= 1.
    *****************************************************************************
    */
-  int dimension() const { return DIM; };
+  int dimension() const { return NDIMS; };
 
   /*!
    *****************************************************************************
    * \brief Finds the longest dimension of the bounding box
    * \return idx the index of the longest dimension.
-   * \post idx >= 0 < DIM
+   * \post idx >= 0 < NDIMS
    * \note In the case of ties, where the bounding box has more than one side
    *  with the same length, the code picks the first dimension as the longest
    *  dimension.
@@ -264,15 +260,13 @@ public:
    *****************************************************************************
    * \brief Expands the lower and upper bounds by the given amount.
    * \param [in] expansionAmount an absolute amount to expand
-   * Moves min point expansionAmount away from center and
-   * max point expansionAmount away from center (component-wise).
-   * This function checks to ensure that the bounding box is valid after expansion.
+   * \note Moves min & max point expansionAmount away from the center.
+   * \note This function checks to ensure the bounding box is valid afterwards.
    * \note If expansionAmount is negative, the bounding box will contract
    * \return A reference to the bounding box after it has been expanded
    *****************************************************************************
    */
-  BoundingBox& expand(CoordType expansionAmount);
-
+  BoundingBox& expand(T expansionAmount);
 
   /*!
    *****************************************************************************
@@ -317,8 +311,8 @@ public:
    * and half open boundaries in the future.
    *****************************************************************************
    */
-  template<typename OtherType>
-  bool contains( const Point<OtherType, DIM>& otherPt) const;
+  template < typename OtherType >
+  bool contains( const Point<OtherType, NDIMS>& otherPt) const;
 
   /*!
    *****************************************************************************
@@ -326,24 +320,24 @@ public:
    * \param [in] otherBB the bounding box that we are checking
    * \return status true if bb is inside the box, else false.
    * \note We are allowing the other bounding box to have a different coordinate
-   *  type. This should work as long as the two CoordTypes are comparable with
+   *  type. This should work as long as the two Ts are comparable with
    *  operator<().
    *****************************************************************************
    */
-  template<typename OtherType>
-  bool contains( const BoundingBox<OtherType, DIM>& otherBB) const;
+  template < typename OtherType >
+  bool contains( const BoundingBox<OtherType, NDIMS>& otherBB) const;
 
   /*!
    *****************************************************************************
    * \param [in] otherBB the bounding box that we are checking.
    * \return status true if bb intersects, else false.
    * \note We are allowing the other bounding box to have a different coordinate
-   *  type. This should work as long as the two CoordTypes are comparable with
+   *  type. This should work as long as the two Ts are comparable with
    *  operator<().
    *****************************************************************************
    */
   template < typename OtherType >
-  bool intersects( const BoundingBox< OtherType, DIM >& otherBB ) const;
+  bool intersects( const BoundingBox< OtherType, NDIMS >& otherBB ) const;
 
   /*!
    *****************************************************************************
@@ -363,7 +357,7 @@ public:
    * \param [in,out] right the right sub-box.
    * \param [in,out] left  the left sub-box.
    * \param [in] dimension the dimension to split along (optional)
-   * \pre dimension >= -1 && dimension < DIM
+   * \pre dimension >= -1 && dimension < NDIMS
    * \note if dimension==-1, the bounding box is split along its longest edge.
    *****************************************************************************
    */
@@ -400,8 +394,8 @@ public:
    * \endverbatim
    *****************************************************************************
    */
-  static void getPoints( const BoundingBox< CoordType,2 >& bb,
-                         std::vector< Point< CoordType,2 > >& pnts );
+  static void getPoints( const BoundingBox< T,2 >& bb,
+                         std::vector< Point< T,2 > >& pnts );
 
   /*!
    *****************************************************************************
@@ -426,8 +420,8 @@ public:
    * \endverbatim
    *****************************************************************************
    */
-  static void getPoints( const BoundingBox< CoordType,3 >& bb,
-                         std::vector< Point< CoordType,3 > >& pnts );
+  static void getPoints( const BoundingBox< T,3 >& bb,
+                         std::vector< Point< T,3 > >& pnts );
 
   /// @}
 
@@ -463,20 +457,22 @@ private:
   PointType m_max;
 };
 
-} /* namespace quest */
+} /* namespace primal */
 
+} /* namespace axom */
 
 
 //------------------------------------------------------------------------------
 //  BoundingBox implementation
 //------------------------------------------------------------------------------
-namespace quest {
+namespace axom {
+namespace primal {
 
 
 //------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-BoundingBox<CoordType, DIM>&
-BoundingBox<CoordType, DIM>::operator=(const BoundingBox& rhs )
+template < typename T,int NDIMS >
+BoundingBox< T,NDIMS >&
+BoundingBox< T,NDIMS >::operator=(const BoundingBox& rhs )
 {
 
   if ( this != &rhs ) {
@@ -488,36 +484,39 @@ BoundingBox<CoordType, DIM>::operator=(const BoundingBox& rhs )
 }
 
 //------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-template<typename OtherCoordType>
-bool BoundingBox<CoordType, DIM>::contains(
-        const Point<OtherCoordType,DIM>& otherPt) const
+template < typename T,int NDIMS >
+template < typename OtherT >
+bool BoundingBox< T,NDIMS >::contains( const Point<OtherT,NDIMS>& otherPt) const
 {
-    for(int dim = 0; dim < DIM; ++dim)
-    {
-        if( otherPt[dim] < m_min[dim] || otherPt[dim] >  m_max[dim])
-            return false;
-    }
-    return true;
+  for ( int dim=0; dim < NDIMS; ++dim) {
+
+     if ( otherPt[ dim ] < m_min[ dim ] ||
+          otherPt[ dim ] > m_max[ dim ] ) {
+       return false;
+     }
+
+  }
+
+  return true;
 }
 
 //------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-template<typename OtherCoordType>
-bool BoundingBox<CoordType, DIM>::contains(
-        const BoundingBox<OtherCoordType,DIM>& otherBB) const
+template < typename T,int NDIMS >
+template < typename OtherT >
+bool BoundingBox<T, NDIMS>::contains(
+                 const BoundingBox<OtherT,NDIMS>& otherBB) const
 {
-    return this->contains(otherBB.getMin()) && this->contains(otherBB.getMax());
+  return this->contains( otherBB.getMin()) && this->contains(otherBB.getMax());
 }
 
 //------------------------------------------------------------------------------
-template < typename CoordType, int DIM >
+template < typename T,int NDIMS >
 template < typename OtherType  >
-bool BoundingBox< CoordType,DIM >::intersects(
-        const BoundingBox< OtherType, DIM >& otherBB ) const
+bool BoundingBox< T,NDIMS >::intersects(
+        const BoundingBox< OtherType, NDIMS >& otherBB ) const
 {
   // AABBs cannot intersect if they are separated along any dimension
-  for ( int i=0; i < DIM; ++i ) {
+  for ( int i=0; i < NDIMS; ++i ) {
 
      if ( (m_max[ i ] < otherBB.m_min[ i ]) ||
           (m_min[ i ] > otherBB.m_max[ i ]) ) {
@@ -532,58 +531,61 @@ bool BoundingBox< CoordType,DIM >::intersects(
 }
 
 //------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-bool BoundingBox<CoordType, DIM>::isValid() const
+template < typename T,int NDIMS >
+bool BoundingBox< T,NDIMS >::isValid() const
 {
-  for(int dim = 0; dim < DIM; ++dim)
-  {
-      if( m_min[dim] >  m_max[dim])
-          return false;
+  for ( int dim=0; dim < NDIMS; ++dim) {
+     if ( m_min[ dim ] > m_max[ dim ] ) {
+       return false;
+     }
   }
   return true;
 
 }
 
 //------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-template<typename OtherCoordType>
-void BoundingBox<CoordType, DIM>::addPoint(
-        const Point<OtherCoordType,DIM>& pt)
+template < typename T,int NDIMS >
+template < typename OtherT >
+void BoundingBox<T, NDIMS>::addPoint(
+        const Point<OtherT,NDIMS>& pt)
 {
-    for (int dim=0; dim < DIM; ++dim ) {
+  for ( int dim=0; dim < NDIMS; ++dim ) {
 
-        CoordType coord = static_cast<CoordType>(pt[dim]);
+     T coord = static_cast<T>( pt[ dim ] );
 
-        if ( coord < m_min[dim] ) {
-            m_min[dim] = coord;
-        }
-        if ( coord > m_max[dim] ) {
-            m_max[dim] = coord;
-        }
-    }
+     if ( coord < m_min[dim] ) {
+       m_min[dim] = coord;
+     }
+
+     if ( coord > m_max[dim] ) {
+       m_max[dim] = coord;
+     }
+
+  }
+
 }
 
 //------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-template<typename OtherCoordType>
-void BoundingBox<CoordType, DIM>::addBox(
-        const BoundingBox<OtherCoordType,DIM>& bbox)
+template < typename T,int NDIMS >
+template < typename OtherT >
+void BoundingBox<T, NDIMS>::addBox(
+        const BoundingBox<OtherT,NDIMS>& bbox)
 {
-    addPoint(bbox.getMin());
-    addPoint(bbox.getMax());
+  this->addPoint(bbox.getMin());
+  this->addPoint(bbox.getMax());
 }
 
 //------------------------------------------------------------------------------
-template< typename CoordType, int DIM >
-int BoundingBox<CoordType,DIM>::getLongestDimension() const
+template < typename T, int NDIMS >
+int BoundingBox<T,NDIMS>::getLongestDimension() const
 {
   SLIC_ASSERT( this->isValid() );
 
   int maxDim = 0;
-  CoordType max = std::numeric_limits< CoordType >::min();
-  for ( int i=0; i < DIM; ++i ) {
+  T max = std::numeric_limits< T >::min();
+  for ( int i=0; i < NDIMS; ++i ) {
 
-     CoordType dx = m_max[ i ] - m_min[ i ];
+     T dx = m_max[ i ] - m_min[ i ];
      if ( dx > max ) {
         max    = dx;
         maxDim = i;
@@ -595,170 +597,167 @@ int BoundingBox<CoordType,DIM>::getLongestDimension() const
 }
 
 //------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-BoundingBox<CoordType, DIM>& BoundingBox<CoordType, DIM>::expand(CoordType expansionAmount)
+template < typename T,int NDIMS >
+BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::expand(T expansionAmount)
 {
-    for (int dim=0; dim < DIM; ++dim ) {
-        m_min[dim] -= expansionAmount;
-        m_max[dim] += expansionAmount;
-    }
+  for ( int dim=0; dim < NDIMS; ++dim ) {
+     m_min[dim] -= expansionAmount;
+     m_max[dim] += expansionAmount;
+  }
 
-    checkAndFixBounds();
-
-    return *this;
-}
-
-
-//------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-BoundingBox<CoordType, DIM>& BoundingBox<CoordType, DIM>::scale(double scaleFactor)
-{
-    const PointType midpoint = centroid();
-    const VectorType r = scaleFactor * 0.5 * range();
-
-    m_min = PointType( midpoint.array() - r.array());
-    m_max = PointType( midpoint.array() + r.array());
-
-    checkAndFixBounds();
-
-    return *this;
-}
-
-
-//------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-BoundingBox<CoordType, DIM>& BoundingBox<CoordType, DIM>::shift(const VectorType& displacement)
-{
-    m_min.array() += displacement.array();
-    m_max.array() += displacement.array();
-
-    return *this;
+  this->checkAndFixBounds();
+  return *this;
 }
 
 //------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-void BoundingBox<CoordType, DIM>::checkAndFixBounds ()
+template < typename T,int NDIMS >
+BoundingBox< T,NDIMS >& BoundingBox<T, NDIMS>::scale(double scaleFactor)
 {
-    for (int dim=0; dim < DIM; ++dim ) {
-        if ( m_min[dim] > m_max[dim] ) {
-            std::swap( m_min[dim], m_max[dim] );
-        }
-    }
+  const PointType midpoint = centroid();
+  const VectorType r = scaleFactor * 0.5 * range();
+
+  m_min = PointType( midpoint.array() - r.array());
+  m_max = PointType( midpoint.array() + r.array());
+
+  this->checkAndFixBounds();
+
+  return *this;
 }
 
 //------------------------------------------------------------------------------
-template<typename CoordType, int DIM>
-void BoundingBox<CoordType, DIM>::clear()
+template < typename T,int NDIMS >
+BoundingBox< T,NDIMS >& BoundingBox<T, NDIMS>::shift(const VectorType& disp)
 {
-    m_min = PointType( ValueRange< CoordType>::highest() );
-    m_max = PointType( ValueRange< CoordType>::lowest() );
+  m_min.array() += disp.array();
+  m_max.array() += disp.array();
+
+  return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-std::ostream& BoundingBox< T, DIM >::print(std::ostream& os) const
+template < typename T,int NDIMS >
+void BoundingBox< T,NDIMS >::checkAndFixBounds ()
 {
-    os <<"{ min:"<<m_min <<"; max:"<< m_max <<"; range:"<< range() << " }";
-    return os;
+  for (int dim=0; dim < NDIMS; ++dim ) {
+     if ( m_min[dim] > m_max[dim] ) {
+       std::swap( m_min[dim], m_max[dim] );
+     }
+  }
+
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int DIM >
-void BoundingBox< T,DIM >::bisect( BoxType& right, BoxType& left, int dim )
+template < typename T,int NDIMS >
+void BoundingBox< T,NDIMS >::clear()
 {
-   SLIC_ASSERT( this->isValid() );
+  m_min = PointType( ValueRange< T >::highest() );
+  m_max = PointType( ValueRange< T >::lowest() );
+}
 
-   if ( dim < 0 ) {
+//------------------------------------------------------------------------------
+template < typename T,int NDIMS >
+std::ostream& BoundingBox< T,NDIMS >::print(std::ostream& os) const
+{
+  os <<"{ min:"<<m_min <<"; max:"<< m_max <<"; range:"<< range() << " }";
+  return os;
+}
 
-      dim = this->getLongestDimension();
+//------------------------------------------------------------------------------
+template < typename T,int NDIMS >
+void BoundingBox< T,NDIMS >::bisect( BoxType& right, BoxType& left, int dim )
+{
+  SLIC_ASSERT( this->isValid() );
 
-   }
-   SLIC_ASSERT( dim >=0 && dim < DIM );
+  if ( dim < 0 ) {
+    dim = this->getLongestDimension();
+  }
+  SLIC_ASSERT( dim >=0 && dim < NDIMS );
 
-   // calculate mid along the given dimension
-   T mid = 0.5*( m_max[dim] + m_min[dim] );
+  // calculate mid along the given dimension
+  T mid = 0.5*( m_max[dim] + m_min[dim] );
 
-   // update right
-   right.setMin( this->getMin() );
-   PointType new_right_max = this->getMax();
-   new_right_max[ dim ]    = mid;
-   right.setMax( new_right_max );
-   SLIC_ASSERT( right.isValid() );
+  // update right
+  right.setMin( this->getMin() );
+  PointType new_right_max = this->getMax();
+  new_right_max[ dim ]    = mid;
+  right.setMax( new_right_max );
+  SLIC_ASSERT( right.isValid() );
 
-   // update left
-   left.setMax( this->getMax() );
-   PointType new_left_min = this->getMin();
-   new_left_min[ dim ] = mid;
-   left.setMin( new_left_min );
-   SLIC_ASSERT( left.isValid() );
+  // update left
+  left.setMax( this->getMax() );
+  PointType new_left_min = this->getMin();
+  new_left_min[ dim ] = mid;
+  left.setMin( new_left_min );
+  SLIC_ASSERT( left.isValid() );
 }
 
 //------------------------------------------------------------------------------
 //    Implementation of static methods
 //------------------------------------------------------------------------------
-template < typename CoordType, int DIM >
-inline void BoundingBox< CoordType,DIM >::getPoints(
-        const BoundingBox< CoordType,2 >& bb,
-        std::vector< Point< CoordType,2 > >& pnts )
+template < typename T,int NDIMS >
+inline void BoundingBox< T,NDIMS >::getPoints(
+        const BoundingBox< T,2 >& bb,
+        std::vector< Point< T,2 > >& pnts )
 {
   pnts.resize( 4 );
-  const Point< CoordType,2 >& min = bb.getMin();
-  const Point< CoordType,2 >& max = bb.getMax();
+  const Point< T,2 >& min = bb.getMin();
+  const Point< T,2 >& max = bb.getMax();
 
-  pnts[ 0 ] = Point< CoordType,2 >::make_point( min[0], min[1] );
-  pnts[ 1 ] = Point< CoordType,2 >::make_point( max[0], min[1] );
-  pnts[ 2 ] = Point< CoordType,2 >::make_point( max[0], max[1] );
-  pnts[ 3 ] = Point< CoordType,2 >::make_point( min[0], max[1] );
+  pnts[ 0 ] = Point< T,2 >::make_point( min[0], min[1] );
+  pnts[ 1 ] = Point< T,2 >::make_point( max[0], min[1] );
+  pnts[ 2 ] = Point< T,2 >::make_point( max[0], max[1] );
+  pnts[ 3 ] = Point< T,2 >::make_point( min[0], max[1] );
 }
 
 //------------------------------------------------------------------------------
-template < typename CoordType, int DIM >
-inline void BoundingBox< CoordType,DIM >::getPoints(
-        const BoundingBox< CoordType,3 >& bb,
-        std::vector< Point< CoordType,3 > >& pnts )
+template < typename T,int NDIMS >
+inline void BoundingBox< T,NDIMS >::getPoints(
+        const BoundingBox< T,3 >& bb,
+        std::vector< Point< T,3 > >& pnts )
 {
   pnts.resize( 8 );
-  const Point< CoordType,3 >& min = bb.getMin();
-  const Point< CoordType,3 >& max = bb.getMax();
+  const Point< T,3 >& min = bb.getMin();
+  const Point< T,3 >& max = bb.getMax();
 
-  pnts[ 0 ] = Point< CoordType,3 >::make_point( min[0], min[1], min[2] );
-  pnts[ 1 ] = Point< CoordType,3 >::make_point( max[0], min[1], min[2] );
-  pnts[ 2 ] = Point< CoordType,3 >::make_point( max[0], max[1], min[2] );
-  pnts[ 3 ] = Point< CoordType,3 >::make_point( min[0], max[1], min[2] );
+  pnts[ 0 ] = Point< T,3 >::make_point( min[0], min[1], min[2] );
+  pnts[ 1 ] = Point< T,3 >::make_point( max[0], min[1], min[2] );
+  pnts[ 2 ] = Point< T,3 >::make_point( max[0], max[1], min[2] );
+  pnts[ 3 ] = Point< T,3 >::make_point( min[0], max[1], min[2] );
 
-  pnts[ 4 ] = Point< CoordType,3 >::make_point( min[0], min[1], max[2] );
-  pnts[ 5 ] = Point< CoordType,3 >::make_point( max[0], min[1], max[2] );
-  pnts[ 6 ] = Point< CoordType,3 >::make_point( max[0], max[1], max[2] );
-  pnts[ 7 ] = Point< CoordType,3 >::make_point( min[0], max[1], max[2] );
+  pnts[ 4 ] = Point< T,3 >::make_point( min[0], min[1], max[2] );
+  pnts[ 5 ] = Point< T,3 >::make_point( max[0], min[1], max[2] );
+  pnts[ 6 ] = Point< T,3 >::make_point( max[0], max[1], max[2] );
+  pnts[ 7 ] = Point< T,3 >::make_point( min[0], max[1], max[2] );
 }
 
 //------------------------------------------------------------------------------
 /// Free functions implementing comparison and arithmetic operators
 //------------------------------------------------------------------------------
 
-template<typename T, int DIM>
-bool operator==(const BoundingBox<T, DIM>& lhs, const BoundingBox<T, DIM>& rhs)
+template < typename T,int NDIMS >
+bool operator==( const BoundingBox< T,NDIMS >& lhs,
+                 const BoundingBox< T,NDIMS >& rhs)
 {
-    return lhs.getMin() == rhs.getMin() && lhs.getMax() == rhs.getMax();
+  return lhs.getMin() == rhs.getMin() && lhs.getMax() == rhs.getMax();
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-bool operator!=(const BoundingBox<T, DIM>& lhs, const BoundingBox<T, DIM>& rhs)
+template < typename T,int NDIMS >
+bool operator!=( const BoundingBox<T, NDIMS>& lhs,
+                 const BoundingBox<T, NDIMS>& rhs)
 {
-    return !(lhs == rhs);
+  return !(lhs == rhs);
 }
 
 //------------------------------------------------------------------------------
-template<typename T, int DIM>
-std::ostream& operator<<(std::ostream & os, const BoundingBox<T,DIM> & bb)
+template < typename T,int NDIMS >
+std::ostream& operator<<(std::ostream & os, const BoundingBox<T,NDIMS> & bb)
 {
-    bb.print(os);
-    return os;
+  bb.print(os);
+  return os;
 }
 
-
-} // end namespace quest
-
+} /* namespace primal */
+} /* namespace axom */
 
 #endif /* BOUNDINGBOX_HPP_ */

@@ -22,7 +22,7 @@ TEST( quest_numeric_array, constructors)
 {
   static const int DIM = 5;
   typedef double CoordType;
-  typedef quest::NumericArray<CoordType, DIM> QArray;
+  typedef primal::NumericArray<CoordType, DIM> QArray;
 
   QArray arr1;
   EXPECT_EQ(arr1.dimension(), DIM );
@@ -67,7 +67,7 @@ TEST( quest_numeric_array, num_array_to_array)
 {
   static const int DIM = 5;
   typedef double CoordType;
-  typedef quest::NumericArray<CoordType, DIM> QArray;
+  typedef primal::NumericArray<CoordType, DIM> QArray;
 
   // Compare array initialized from arbitrary array
   CoordType valsArr[DIM] = {12.,23., 34., 45., 56.432};
@@ -94,7 +94,7 @@ TEST( quest_numeric_array, component_wise_arithmetic)
 {
   static const int DIM = 3;
   typedef double CoordType;
-  typedef quest::NumericArray<CoordType, DIM> QArray;
+  typedef primal::NumericArray<CoordType, DIM> QArray;
 
   CoordType ca1[]    = { 3, 0, 1.2};
   CoordType ca2[]    = { 0, 4, 1.2};
@@ -146,7 +146,7 @@ TEST( quest_numeric_array, component_min_max)
 {
   static const int DIM = 3;
   typedef int CoordType;
-  typedef quest::NumericArray<CoordType, DIM> QArray;
+  typedef primal::NumericArray<CoordType, DIM> QArray;
 
   CoordType incSeq[]    = { 1,2,3};
   CoordType decSeq[]    = { 3,2,1};
@@ -183,7 +183,7 @@ TEST( quest_numeric_array, clamping)
 {
   static const int DIM = 3;
   typedef int CoordType;
-  typedef quest::NumericArray<CoordType, DIM> QArray;
+  typedef primal::NumericArray<CoordType, DIM> QArray;
 
   CoordType seq[]           = { 15, 4, 2};
   CoordType seqClampUp7[]   = { 7, 4, 2};

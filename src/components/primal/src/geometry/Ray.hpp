@@ -19,8 +19,8 @@
 
 #include <ostream>
 
-
-namespace quest {
+namespace axom {
+namespace primal {
 
 // Forward declare the templated classes and operator functions
 template<typename T, int DIM>
@@ -132,13 +132,16 @@ private:
     VectorType m_direction;
 };
 
-} /* namespace quest */
+} /* namespace primal */
+
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 // Ray Implementation
 //------------------------------------------------------------------------------
 
-namespace quest {
+namespace axom {
+namespace primal {
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
@@ -188,6 +191,8 @@ std::ostream& operator<<(std::ostream & os, const Ray<T,NDIMS> & ray)
 }
 
 
-} /* end namespace quest */
+} /* namespace primal */
+
+} /* namespace axom */
 
 #endif /* RAY_HPP_ */
