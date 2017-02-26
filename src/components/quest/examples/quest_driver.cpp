@@ -8,34 +8,20 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file
- *
- * \date Dec 8, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 // ATK Toolkit includes
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"
 #include "common/Timer.hpp"
 
-#include "primal/BVHTree.hpp"
 #include "primal/BoundingBox.hpp"
+#include "primal/BVHTree.hpp"
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
+#include "primal/Vector.hpp"
 
 #include "quest/STLReader.hpp"
 #include "quest/SignedDistance.hpp"
-
 
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
@@ -55,6 +41,14 @@
 #include <fstream>
 
 using namespace asctoolkit;
+
+using axom::primal::Point;
+using axom::primal::Triangle;
+using axom::primal::BoundingBox;
+using axom::primal::BVHTree;
+using axom::primal::Vector;
+
+using quest::SignedDistance;
 
 typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
@@ -131,7 +125,7 @@ void parse_args( int argc, char** argv )
 }
 
 //------------------------------------------------------------------------------
-void write_point( const quest::Point< double, 3 >& pt,
+void write_point( const Point< double, 3 >& pt,
                   const std::string& fileName )
 {
   std::ofstream ofs;
@@ -290,9 +284,9 @@ void write_triangles( mint::Mesh* mesh, const int* cells, int ncells,
   SLIC_ASSERT( subset->getMeshType() == mesh->getMeshType() );
 
   int cellIds[3];
-  quest::Point< double, 3 > n1;
-  quest::Point< double, 3 > n2;
-  quest::Point< double, 3 > n3;
+  Point< double, 3 > n1;
+  Point< double, 3 > n2;
+  Point< double, 3 > n3;
 
   int icount = 0;
   int new_cell[3];
@@ -322,14 +316,14 @@ void write_triangles( mint::Mesh* mesh, const int* cells, int ncells,
 }
 
 //------------------------------------------------------------------------------
-quest::BoundingBox< double,3 > compute_bounds( mint::Mesh* mesh)
+BoundingBox< double,3 > compute_bounds( mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
    using namespace quest;
 
-   quest::BoundingBox< double,3 > meshBB;
-   quest::Point< double,3 > pt;
+   BoundingBox< double,3 > meshBB;
+   Point< double,3 > pt;
 
    for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i )
    {
@@ -354,15 +348,16 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
   utilities::Timer timer1;
   timer1.start();
 
-  quest::SignedDistance< 3 > signedDistance(
-      surface_mesh, Arguments.maxObjects, Arguments.maxLevels);
+  SignedDistance< 3 > signedDistance( surface_mesh,
+                                      Arguments.maxObjects,
+                                      Arguments.maxLevels );
 
   timer1.stop();
   SLIC_INFO("Constructed BVH in " << timer1.elapsed() << "s" );
 
 #ifdef ATK_DEBUG
   // write the bucket tree to a file
-  const quest::BVHTree< int, 3>* btree = signedDistance.getBVHTree();
+  const BVHTree< int, 3>* btree = signedDistance.getBVHTree();
   SLIC_ASSERT( btree != ATK_NULLPTR );
 
   btree->writeVtkFile( "bucket-tree.vtk" );
@@ -406,7 +401,7 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
 
   for ( int inode=0; inode < nnodes; ++inode ) {
 
-      quest::Point< double,3 > pt;
+      Point< double,3 > pt;
       umesh->getMeshNode( inode, pt.data() );
 
       std::vector< int > buckets;
@@ -415,7 +410,7 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
       triangles.clear();
       buckets.clear();
 
-      quest::Point< double,3 > closest_pt;
+      Point< double,3 > closest_pt;
       phi[ inode ] = signedDistance.computeDistance( pt,
                                                      buckets,
                                                      triangles,
@@ -504,15 +499,15 @@ int main( int argc, char** argv )
   write_vtk( surface_mesh, "surface_mesh.vtk" );
 
   // STEP 6: compute bounds
-  quest::BoundingBox< double,3 > meshBB = compute_bounds( surface_mesh);
+  BoundingBox< double,3 > meshBB = compute_bounds( surface_mesh);
   SLIC_INFO("Mesh bounding box: " << meshBB );
 
 
-  quest::BoundingBox< double,3 > queryBounds = meshBB;
+  BoundingBox< double,3 > queryBounds = meshBB;
   queryBounds.expand( 10 );
 
   double h[3];
-  const quest::Vector< double,3 >& bbDiff = queryBounds.range();
+  const Vector< double,3 >& bbDiff = queryBounds.range();
   h[0] = bbDiff[0] / Arguments.nx;
   h[1] = bbDiff[1] / Arguments.ny;
   h[2] = bbDiff[2] / Arguments.nz;

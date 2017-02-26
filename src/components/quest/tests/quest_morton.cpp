@@ -30,6 +30,8 @@ using asctoolkit::slic::UnitTestLogger;
   #include <ctime>      // for time() used by srand()
 #endif
 
+using axom::primal::Point;
+
 namespace {
 
     static const int MAX_ITER = 10000;
@@ -47,9 +49,9 @@ namespace {
     }
 
     template<typename CoordType, int DIM>
-    quest::Point<CoordType, DIM> randomPoint(CoordType beg, CoordType end)
+    Point<CoordType, DIM> randomPoint(CoordType beg, CoordType end)
     {
-        quest::Point<CoordType,DIM> pt;
+        Point<CoordType,DIM> pt;
         for(int i=0; i< DIM; ++i)
             pt[i] = randomInt(beg,end);
 

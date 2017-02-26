@@ -19,6 +19,7 @@ using asctoolkit::slic::UnitTestLogger;
 
 #include "primal/BoundingBox.hpp"
 #include "primal/HyperSphere.hpp"
+#include "primal/Point.hpp"
 
 #include "quest/SignedDistance.hpp"
 
@@ -30,6 +31,10 @@ using asctoolkit::slic::UnitTestLogger;
 
 typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 typedef mint::UniformMesh UniformMesh;
+
+using axom::primal::BoundingBox;
+using axom::primal::HyperSphere;
+using axom::primal::Point;
 
 // pi / 180
 #define DEG_TO_RAD 0.01745329251
@@ -150,12 +155,12 @@ void getMesh( TriangleMesh* mesh )
  * \return bb bounding box of the mesh
  *******************************************************************************
  */
-quest::BoundingBox< double,3 > getBounds( const mint::Mesh* mesh )
+BoundingBox< double,3 > getBounds( const mint::Mesh* mesh )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
 
-  quest::BoundingBox< double,3 > bb;
-  quest::Point< double,3 > pt;
+  BoundingBox< double,3 > bb;
+  Point< double,3 > pt;
 
   const int nnodes = mesh->getMeshNumberOfNodes();
   for ( int inode=0; inode < nnodes; ++inode ) {
@@ -180,7 +185,7 @@ void getUniformMesh( const TriangleMesh* mesh, UniformMesh*& umesh )
 
   const int N = 16; // number of points along each dimension
 
-  quest::BoundingBox< double,3 > bb = getBounds( mesh );
+  BoundingBox< double,3 > bb = getBounds( mesh );
   bb.expand( 2.0 );
 
   double h[3];
@@ -221,14 +226,14 @@ TEST( quest_signed_distance, sphere_test )
   quest::SignedDistance< 3 > signed_distance( surface_mesh, 25, 25 );
 
   SLIC_INFO( "Compute signed distance..." );
-  quest::HyperSphere< double,3 > analytic_sphere( sphere_radius );
+  HyperSphere< double,3 > analytic_sphere( sphere_radius );
   double l1norm = 0.0;
   double l2norm = 0.0;
   double linf   = std::numeric_limits< double >::min( );
 
   for ( int inode=0; inode < nnodes; ++inode ) {
 
-     quest::Point< double,3 > pt;
+     Point< double,3 > pt;
      umesh->getNode( inode, pt.data() );
 
      double computed = signed_distance.computeDistance( pt );

@@ -40,11 +40,11 @@ template < int NDIMS >
 class SignedDistance
 {
 public:
-  typedef Point< double,NDIMS > PointType;
-  typedef Vector< double,NDIMS > VectorType;
-  typedef Triangle< double,NDIMS > TriangleType;
-  typedef BoundingBox< double,NDIMS > BoxType;
-  typedef BVHTree< int,NDIMS > BVHTreeType;
+  typedef axom::primal::Point< double,NDIMS > PointType;
+  typedef axom::primal::Vector< double,NDIMS > VectorType;
+  typedef axom::primal::Triangle< double,NDIMS > TriangleType;
+  typedef axom::primal::BoundingBox< double,NDIMS > BoxType;
+  typedef axom::primal::BVHTree< int,NDIMS > BVHTreeType;
 
 private:
 
@@ -400,8 +400,8 @@ double SignedDistance< NDIMS >::computeSign(
     // CASE 2: closest point is on an edge, sum normals of adjacent facets
     for ( int i=0; i < nelems; ++i ) {
 
-      double dist = quest::squared_distance( cpt->closest_point,
-                                             cpt->closest_pts[i]  );
+      double dist = axom::primal::squared_distance( cpt->closest_point,
+                                                    cpt->closest_pts[i]  );
 
       if ( utilities::isNearlyEqual( dist, 0.0 ) ) {
         N += cpt->surface_elements[ i ].normal();
@@ -417,8 +417,8 @@ double SignedDistance< NDIMS >::computeSign(
     // CASE 3: closest point is on a node, use angle weighted pseudo-normal
     for ( int i=0; i < nelems; ++i ) {
 
-      double dist = quest::squared_distance( cpt->closest_point,
-                                             cpt->closest_pts[i] );
+      double dist = axom::primal::squared_distance( cpt->closest_point,
+                                                    cpt->closest_pts[i] );
 
       if ( utilities::isNearlyEqual( dist, 0.0 ) ) {
         double alpha = cpt->surface_elements[ i ].angle( cpt->cpt_locs[ i ] );
@@ -478,9 +478,10 @@ double SignedDistance< NDIMS >::getMinSqDistance( const PointType& pt,
      m_surfaceMesh->getMeshNode( cellIds[2], surface_element[2].data() );
      cpt->surface_elements[ i ] = surface_element;
 
-     closest_pts[ i ] = quest::closest_point( pt,surface_element,&cpt_locs[i] );
+     closest_pts[ i ] =
+          axom::primal::closest_point( pt,surface_element,&cpt_locs[i] );
 
-     double sqDist = quest::squared_distance( pt,closest_pts[i] );
+     double sqDist = axom::primal::squared_distance( pt,closest_pts[i] );
      if ( sqDist < minSqDist ) {
 
         minSqDist             = sqDist;
@@ -507,7 +508,7 @@ double SignedDistance< NDIMS >::getMaxSqDistance( const BoxType& b,
 
   double dist = std::numeric_limits< double >::min();
   for ( int i=0; i < npoints; ++i ) {
-    dist = std::max( dist, quest::squared_distance(pt,pnts[i]) );
+    dist = std::max( dist, axom::primal::squared_distance(pt,pnts[i]) );
   } // END for all points
 
   return dist;
@@ -554,7 +555,7 @@ void SignedDistance< NDIMS >::getCandidateSurfaceElements(
         BoxType bbox       = m_bvhTree->getObjectBox( objectId );
 
 //        dist[ icount ]           = this->getMaxSqDistance( bbox, pt );
-        dist[ icount ]           = quest::squared_distance( pt, bbox );
+        dist[ icount ]           = axom::primal::squared_distance( pt, bbox );
         objectIds[ icount ]      = objectId;
         surface_elements[icount] = cellIdx;
         indx[ icount ]           = icount;
@@ -590,7 +591,7 @@ void SignedDistance< NDIMS >::getCandidateSurfaceElements(
 
 //------------------------------------------------------------------------------
 template < int NDIMS >
-inline BoundingBox<double,NDIMS>
+inline axom::primal::BoundingBox< double,NDIMS >
 SignedDistance< NDIMS >::getCellBoundingBox( int icell )
 {
   // Sanity checks

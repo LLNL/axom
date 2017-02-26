@@ -11,6 +11,9 @@
 
 #include "quest/OctreeBase.hpp"
 
+using axom::primal::BoundingBox;
+using axom::primal::Point;
+using axom::primal::Vector;
 
 namespace quest
 {
@@ -26,9 +29,9 @@ class SpatialOctree : public OctreeBase<DIM, BlockDataType>
 {
 public:
 
-    typedef quest::BoundingBox<double,DIM> GeometricBoundingBox;
-    typedef quest::Point<double,DIM> SpacePt;
-    typedef quest::Vector<double,DIM> SpaceVector;
+    typedef BoundingBox<double,DIM> GeometricBoundingBox;
+    typedef Point<double,DIM> SpacePt;
+    typedef Vector<double,DIM> SpaceVector;
 
     typedef OctreeBase<DIM, BlockDataType> BaseOctree;
 

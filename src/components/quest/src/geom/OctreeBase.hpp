@@ -25,6 +25,10 @@
 
 #include <ostream>   // for ostream in print
 
+using axom::primal::NumericArray;
+using axom::primal::Point;
+using axom::primal::Vector;
+
 namespace quest
 {
 
@@ -125,8 +129,8 @@ class OctreeBase
 {
 public:
   typedef int CoordType;
-  typedef quest::Point<CoordType,DIM> GridPt;
-  typedef quest::Vector<CoordType,DIM> GridVec;
+  typedef Point<CoordType,DIM> GridPt;
+  typedef Vector<CoordType,DIM> GridVec;
 
   typedef asctoolkit::slam::policies::CompileTimeSizeHolder<CoordType, std::numeric_limits<CoordType>::digits> MAX_LEVEL_SIZE;
   typedef asctoolkit::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;

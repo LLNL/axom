@@ -25,6 +25,8 @@
 
 #include <limits>           // for numeric_limits
 
+using axom::primal::Point;
+
 namespace {
     /**
      * \brief A helper type trait class for the Mortonizer class

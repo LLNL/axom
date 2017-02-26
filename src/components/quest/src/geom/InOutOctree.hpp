@@ -512,7 +512,7 @@ private:
         /** \brief A constant for the number of boundary vertices in a triangle */
         static const int NUM_TRI_VERTS = 3;
 
-        typedef Triangle<double, DIM> SpaceTriangle;
+        typedef axom::primal::Triangle<double, DIM> SpaceTriangle;
 
 
         typedef asctoolkit::slam::PositionSet MeshVertexSet;
@@ -2038,7 +2038,7 @@ void InOutOctree<DIM>::printOctreeStats() const
         typedef std::map<int,int> LogHistogram;
         LogHistogram triCountHist;        // Create histogram of edge lengths (log scale)
 
-        typedef quest::BoundingBox<double,1> MinMaxRange;
+        typedef axom::primal::BoundingBox<double,1> MinMaxRange;
         typedef MinMaxRange::PointType LengthType;
 
         typedef std::map<int,MinMaxRange> LogRangeMap;

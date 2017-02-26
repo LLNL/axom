@@ -79,10 +79,10 @@ const int DIM = 3;
 const int MAX_RESULTS = 10;         // Max number of disagreeing entries to show when comparing results
 const int DEFAULT_RESOLUTION = 32;  // Default resolution of query grid
 
-typedef quest::BoundingBox<double,DIM> SpaceBoundingBox;
-typedef quest::Point<double, DIM> SpacePt;
-typedef quest::Vector<double, DIM> SpaceVec;
-typedef quest::Point<int, DIM> GridPt;
+typedef axom::primal::BoundingBox<double,DIM> SpaceBoundingBox;
+typedef axom::primal::Point<double, DIM> SpacePt;
+typedef axom::primal::Vector<double, DIM> SpaceVec;
+typedef axom::primal::Point<int, DIM> GridPt;
 
 /** Simple structure to hold the command line arguments */
 struct CommandLineArguments
@@ -390,7 +390,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
     asctoolkit::utilities::Timer timer(true);
     for ( int inode=0; inode < nnodes; ++inode )
     {
-        quest::Point< double,3 > pt;
+        axom::primal::Point< double,3 > pt;
         umesh->getMeshNode( inode, pt.data() );
 
         containment[ inode ] = quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
@@ -447,7 +447,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
     asctoolkit::utilities::Timer timer(true);
     for ( int inode=0; inode < nnodes; ++inode )
     {
-        quest::Point< double,3 > pt;
+        axom::primal::Point< double,3 > pt;
         umesh->getMeshNode( inode, pt.data() );
 
         distance[ inode ] = quest::distance(pt[0],pt[1],pt[2]);
@@ -505,7 +505,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
             {
                 if(diffCount < MAX_RESULTS)
                 {
-                    quest::Point< double,3 > pt;
+                    axom::primal::Point< double,3 > pt;
                     umesh->getMeshNode( inode, pt.data() );
 
                     out.write("\n  Disagreement on sample {} @ {}.  Signed distance: {} -- InOutOctree: {} "
@@ -561,7 +561,7 @@ bool compareToBaselineResults(asctoolkit::sidre::DataGroup* grp, CommandLineArgu
             {
                 if(diffCount < MAX_RESULTS)
                 {
-                    quest::Point< double,3 > pt;
+                    axom::primal::Point< double,3 > pt;
                     umesh->getMeshNode( inode, pt.data() );
 
                     out.write("\n  Disagreement on sample {} @ {}.  Expected {}, got {}"
@@ -600,7 +600,7 @@ bool compareToBaselineResults(asctoolkit::sidre::DataGroup* grp, CommandLineArgu
             {
                 if(diffCount < MAX_RESULTS)
                 {
-                    quest::Point< double,3 > pt;
+                    axom::primal::Point< double,3 > pt;
                     umesh->getMeshNode( inode, pt.data() );
 
                     out.write("\n  Disagreement on sample {} @ {}.  Expected {} ({}), got {} ({})"

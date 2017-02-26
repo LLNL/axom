@@ -63,8 +63,8 @@ typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
 typedef quest::InOutOctree<3> Octree3D;
 
-typedef quest::Point<int,3> TriVertIndices;
-typedef quest::Triangle<double, 3> SpaceTriangle;
+typedef axom::primal::Point<int,3> TriVertIndices;
+typedef axom::primal::Triangle<double, 3> SpaceTriangle;
 
 typedef Octree3D::GeometricBoundingBox GeometricBoundingBox;
 typedef Octree3D::SpacePt SpacePt;
@@ -239,9 +239,9 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
 void testIntersectionOnRegularGrid()
 {
     static int const DIM = 3;
-    typedef quest::Point< double,DIM >   PointType;
-    typedef quest::Triangle< double,DIM > TriangleType;
-    typedef quest::BoundingBox< double,DIM > BoundingBoxType;
+    typedef axom::primal::Point< double,DIM >   PointType;
+    typedef axom::primal::Triangle< double,DIM > TriangleType;
+    typedef axom::primal::BoundingBox< double,DIM > BoundingBoxType;
 
     double xArr[3] = { 1., 0., 0.};
     double yArr[3] = { 0., 1., 0.};
@@ -279,10 +279,10 @@ void testIntersectionOnRegularGrid()
         {
             for(int k=0; k< 1<<lev; ++k)
             {
-                SpaceOctree::BlockIndex block( quest::Point<int,3>::make_point(i,j,k), lev );
+                SpaceOctree::BlockIndex block( axom::primal::Point<int,3>::make_point(i,j,k), lev );
                 SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(block);
 
-                if( quest::intersect( unitTri, blockBB))
+                if( axom::primal::intersect( unitTri, blockBB))
                 {
                     // Add to debug mesh
                     int vStart = debugMesh->getMeshNumberOfNodes();
@@ -342,7 +342,7 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
     asctoolkit::utilities::Timer timer(true);
     for ( int inode=0; inode < nnodes; ++inode )
     {
-        quest::Point< double,3 > pt;
+        axom::primal::Point< double,3 > pt;
         umesh->getMeshNode( inode, pt.data() );
 
         containment[ inode ] = inOutOctree.within(pt) ? 1 : 0;
@@ -401,7 +401,7 @@ void print_surface_stats( mint::Mesh* mesh)
 
    SpacePt pt;
 
-   typedef quest::BoundingBox<double,1> MinMaxRange;
+   typedef axom::primal::BoundingBox<double,1> MinMaxRange;
    typedef MinMaxRange::PointType LengthType;
 
    MinMaxRange meshEdgeLenRange;
@@ -419,7 +419,7 @@ void print_surface_stats( mint::Mesh* mesh)
    LogRangeMap edgeLenRangeMap;     // Tracks range of edge lengths at each scale
    LogRangeMap areaRangeMap;        // Tracks range of triangle areas at each scale
 
-   typedef quest::Point<int,3> TriVertIndices;
+   typedef axom::primal::Point<int,3> TriVertIndices;
    int expBase2;
 
    // Traverse mesh triangles and bin the edge lengths and areas

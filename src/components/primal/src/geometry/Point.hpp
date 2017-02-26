@@ -70,7 +70,8 @@ class Point
 {
 public:
     enum {
-      NBYTES = NDIMS * sizeof(T)
+      DIMENSION = NDIMS,
+      NBYTES    = NDIMS * sizeof(T)
     };
 
     typedef Point<T,NDIMS> PointType;

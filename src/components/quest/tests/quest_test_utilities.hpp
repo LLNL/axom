@@ -13,6 +13,8 @@
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
 
+using axom::primal::Point;
+using axom::primal::Triangle;
 
 /**
  * \file
@@ -47,9 +49,9 @@ double randomDouble(double beg = 0., double end = 1.)
   * \brief Simple utility to generate a Point whose entries are random values in the range [beg, end]
   */
 template<int DIM>
-quest::Point<double,DIM> randomSpacePt(double beg, double end)
+Point<double,DIM> randomSpacePt(double beg, double end)
 {
-    quest::Point<double,DIM> pt;
+    Point<double,DIM> pt;
     for(int i=0; i< DIM; ++i)
         pt[i] = randomDouble(beg,end);
 
@@ -61,7 +63,8 @@ quest::Point<double,DIM> randomSpacePt(double beg, double end)
  * \brief Simple utility to find the centroid of two points
  */
 template<int DIM>
-quest::Point<double,DIM> getCentroid(const quest::Point<double,DIM>& pt0, const quest::Point<double,DIM>& pt1)
+Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
+                               const  Point<double,DIM>& pt1)
 {
     return (pt0.array() + pt1.array()) /2.;
 }
@@ -70,7 +73,9 @@ quest::Point<double,DIM> getCentroid(const quest::Point<double,DIM>& pt0, const 
  * \brief Simple utility to find the centroid of three points
  */
 template<int DIM>
-quest::Point<double,DIM> getCentroid(const quest::Point<double,DIM>& pt0, const quest::Point<double,DIM>& pt1, const quest::Point<double,DIM>& pt2)
+Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
+                               const Point<double,DIM>& pt1,
+                               const Point<double,DIM>& pt2  )
 {
     return (pt0.array() + pt1.array() + pt2.array()) /3.;
 }
@@ -83,8 +88,8 @@ quest::Point<double,DIM> getCentroid(const quest::Point<double,DIM>& pt0, const 
 mint::Mesh*  make_octahedron_mesh()
 {
     typedef int VertexIndex;
-    typedef quest::Point<double, 3> SpacePt;
-    typedef quest::Triangle<double, 3> SpaceTriangle;
+    typedef Point<double, 3> SpacePt;
+    typedef Triangle<double, 3> SpaceTriangle;
 
     enum { POS_X, NEG_X, POS_Y, NEG_Y, POS_Z, NEG_Z };
 
@@ -140,7 +145,7 @@ mint::Mesh*  make_octahedron_mesh()
                          , verts[ tvRelation[ baseIndex + 1]]
                          , verts[ tvRelation[ baseIndex + 2]] );
 
-        SLIC_ASSERT( quest::ON_NEGATIVE_SIDE == quest::orientation( SpacePt(), tri) );
+        SLIC_ASSERT( axom::primal::ON_NEGATIVE_SIDE == axom::primal::orientation( SpacePt(), tri) );
     }
 
     // Now create an unstructured triangle mesh from the two arrays

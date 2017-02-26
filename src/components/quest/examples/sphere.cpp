@@ -63,6 +63,14 @@
 
 using namespace asctoolkit;
 
+using axom::primal::Point;
+using axom::primal::Triangle;
+using axom::primal::BoundingBox;
+using axom::primal::BVHTree;
+using axom::primal::Vector;
+using axom::primal::HyperSphere;
+
+
 static const int NDIMS = 3;
 typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
@@ -71,7 +79,7 @@ static struct {
  bool runN2Algorithm;
  double sphere_radius;
  double inflate_factor;
- quest::Point< double,3 > sphere_center;
+ Point< double,3 > sphere_center;
  int nx;
  int ny;
  int nz;
@@ -83,11 +91,11 @@ static struct {
 void init();
 void parse_args( int argc, char** argv );
 void read_stl_mesh( TriangleMesh* stl_mesh );
-quest::BoundingBox< double,NDIMS > compute_bounds( mint::Mesh* mesh );
+BoundingBox< double,NDIMS > compute_bounds( mint::Mesh* mesh );
 void get_uniform_mesh( TriangleMesh* surface_mesh,
                        mint::UniformMesh*& umesh);
 void write_vtk( mint::Mesh* mesh, const std::string& fileName );
-quest::BoundingBox< double,NDIMS > getCellBoundingBox(
+BoundingBox< double,NDIMS > getCellBoundingBox(
         int cellIdx, mint::Mesh* surface_mesh );
 void computeUsingBucketTree( mint::Mesh* surface_mesh,
                              mint::UniformMesh* umesh );
@@ -172,7 +180,7 @@ void get_uniform_mesh( TriangleMesh* surface_mesh,
 {
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
 
-  quest::BoundingBox< double,NDIMS > meshBounds = compute_bounds(surface_mesh);
+  BoundingBox< double,NDIMS > meshBounds = compute_bounds(surface_mesh);
   meshBounds.expand(Arguments.inflate_factor);
 
   double h[3];
@@ -350,7 +358,7 @@ void expected_phi(mint::UniformMesh* umesh)
    SLIC_INFO("sphere radius: " << Arguments.sphere_radius );
    SLIC_INFO("sphere center: " << Arguments.sphere_center );
 
-   quest::HyperSphere< double, 3 > sphere( Arguments.sphere_radius );
+   HyperSphere< double, 3 > sphere( Arguments.sphere_radius );
 
    // STEP 1: Add node field to stored exact distance field.
    const int nnodes = umesh->getNumberOfNodes();
@@ -402,9 +410,9 @@ void n2( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
    for ( int i=0; i < nnodes; ++i ) {
 
       // get target node
-      quest::Point< double,NDIMS > pnt;
+      Point< double,NDIMS > pnt;
       umesh->getNode( i, pnt.data() );
-      quest::Point< double,NDIMS > Q = pnt;
+      Point< double,NDIMS > Q = pnt;
 
       double unsignedMinDistSQ = std::numeric_limits< double >::max();
       int sign = 0;
@@ -416,15 +424,17 @@ void n2( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
           int closest_cell[ 3 ];
           surface_mesh->getMeshCell( j, closest_cell );
 
-          quest::Point< double,NDIMS > a,b,c;
+          Point< double,NDIMS > a,b,c;
           surface_mesh->getMeshNode( closest_cell[0], a.data() );
           surface_mesh->getMeshNode( closest_cell[1], b.data() );
           surface_mesh->getMeshNode( closest_cell[2], c.data() );
-          quest::Triangle< double,3 > T( a,b,c);
-          const double sqDist = quest::squared_distance( Q, T );
+          Triangle< double,3 > T( a,b,c);
+          const double sqDist = axom::primal::squared_distance( Q, T );
           if ( sqDist < unsignedMinDistSQ)  {
 
-              bool negSide = quest::orientation(Q,T) == quest::ON_NEGATIVE_SIDE;
+              bool negSide =
+                 axom::primal::orientation(Q,T)==axom::primal::ON_NEGATIVE_SIDE;
+
               sign = negSide? -1: 1;
               unsignedMinDistSQ = sqDist;
 
@@ -458,7 +468,7 @@ void computeUsingBucketTree( mint::Mesh* surface_mesh,
 
   for ( int inode=0; inode < nnodes; ++inode ) {
 
-      quest::Point< double,NDIMS > pt;
+      Point< double,NDIMS > pt;
       umesh->getMeshNode( inode, pt.data() );
 
       phi[ inode ] = signedDistance.computeDistance( pt );
@@ -467,7 +477,7 @@ void computeUsingBucketTree( mint::Mesh* surface_mesh,
 
 #ifdef ATK_DEBUG
   // write the bucket tree to a file
-  const quest::BVHTree< int,NDIMS >* btree = signedDistance.getBVHTree();
+  const BVHTree< int,NDIMS >* btree = signedDistance.getBVHTree();
   SLIC_ASSERT( btree != ATK_NULLPTR );
 
   btree->writeVtkFile( "bucket-tree.vtk" );
@@ -492,7 +502,7 @@ void computeUsingBucketTree( mint::Mesh* surface_mesh,
 }
 
 //------------------------------------------------------------------------------
-quest::BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
+BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
                                                    mint::Mesh* surface_mesh )
 {
    // Sanity checks
@@ -517,12 +527,12 @@ quest::BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
 
 
 //------------------------------------------------------------------------------
-quest::BoundingBox< double,NDIMS > compute_bounds( mint::Mesh* mesh)
+BoundingBox< double,NDIMS > compute_bounds( mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
-   quest::BoundingBox< double,NDIMS > meshBB;
-   quest::Point< double,NDIMS > pt;
+   BoundingBox< double,NDIMS > meshBB;
+   Point< double,NDIMS > pt;
 
    for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i ) {
        mesh->getMeshNode( i, pt.data() );
