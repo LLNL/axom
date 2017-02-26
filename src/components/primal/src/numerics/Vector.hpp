@@ -56,10 +56,14 @@ Vector< T,NDIMS > operator-( const Vector< T,NDIMS >& A,
                              const Vector< T,NDIMS >& B  );
 
 /*!
- * \brief Forward declaration for vector (unary) negation
+ *******************************************************************************
+ * \brief Unary negation of a vector instance.
+ * \param [in] vec1 vector instance to negate.
+ * \return C resulting vector from unary negation.
+ *******************************************************************************
  */
-template<typename T, int DIM> Vector<T,DIM>
-operator-(const Vector<T, DIM> & vec1, const Vector<T, DIM> & vec2);
+template < typename T,int NDIMS >
+Vector< T,NDIMS > operator-( const Vector<T, NDIMS> & vec1 );
 
 /*!
  *******************************************************************************

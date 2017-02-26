@@ -100,9 +100,14 @@ NumericArray< T,NDIMS > operator-( const NumericArray< T,NDIMS >& lhs,
                                    const NumericArray< T,NDIMS >& rhs  );
 
 /*!
- * \brief Forward declaration for NumericArray's (unary) negation
+ *******************************************************************************
+ * \brief Unary negation of a numeric array instance.
+ * \param [in] arr numeric array instance on the left-hand side.
+ * \result C resulting numeric array from unary negation.
+ *******************************************************************************
  */
-template<typename T, int DIM> NumericArray<T,DIM> operator-(const NumericArray<T, DIM> & lhs, const NumericArray<T, DIM> & rhs);
+template < typename T,int NDIMS >
+NumericArray< T,NDIMS > operator-( const NumericArray< T,NDIMS >& arr );
 
 /*!
  *******************************************************************************
