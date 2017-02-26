@@ -38,10 +38,11 @@ endif()
 ################################
 # add docs
 ################################
-#if (ENABLE_DOCS)
-#  add_subdirectory(docs)
-#endif()
-#
+if (ENABLE_DOCS)
+  add_subdirectory(docs)
+endif()
+
+
 ################################
 # Create CMake importable
 # exports for all of our targets
