@@ -12,18 +12,17 @@
 
 #include "gtest/gtest.h"
 
-
-#include <cmath>
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
 
 #include "fmt/fmt.hpp"
 #include "slic/slic.hpp"
 
-#include "primal/Point.hpp"
-#include "primal/Triangle.hpp"
+#include <cmath>
 
+using namespace axom;
 
-//------------------------------------------------------------------------------
-TEST( quest_triangle, triangle_area_2D)
+TEST( primal_triangle, triangle_area_2D)
 {
     static const int DIM = 2;
     static const double EPS = 1e-12;
@@ -50,7 +49,8 @@ TEST( quest_triangle, triangle_area_2D)
     EXPECT_NEAR(tri.area(), 0.5, EPS );
 }
 
-TEST( quest_triangle, triangle_area_3D)
+//------------------------------------------------------------------------------
+TEST( primal_triangle, triangle_area_3D)
 {
     static const int DIM = 3;
     static const double EPS = 1e-12;
@@ -78,9 +78,8 @@ TEST( quest_triangle, triangle_area_3D)
     EXPECT_NEAR(tri.area(), std::sqrt(3)/2., EPS );
 }
 
-
 //------------------------------------------------------------------------------
-TEST( quest_triangle, triangle_barycentric)
+TEST( primal_triangle, triangle_barycentric)
 {
   static const int DIM = 3;
   static const double EPS = 1e-12;
@@ -143,8 +142,8 @@ TEST( quest_triangle, triangle_barycentric)
 
 }
 
-//----------------------------------------------------------------------
-TEST( quest_triangle, triangle_2D_point_containment)
+//-----------------------------------------------------------------------------
+TEST( primal_triangle, triangle_2D_point_containment)
 {
   static const int DIM = 2;
   static const double EPS = 1e-12;
@@ -194,8 +193,8 @@ TEST( quest_triangle, triangle_2D_point_containment)
   }
 }
 
-//----------------------------------------------------------------------
-TEST( quest_triangle, triangle_3D_point_containment)
+//------------------------------------------------------------------------------
+TEST( primal_triangle, triangle_3D_point_containment)
 {
   static const int DIM = 3;
   static const double EPS = 1e-12;

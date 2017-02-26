@@ -14,8 +14,10 @@
 
 #include "primal/Vector.hpp"
 
+using namespace axom;
+
 //------------------------------------------------------------------------------
-TEST( quest_vector, vector_constructors)
+TEST( primal_vector, vector_constructors)
 {
   static const int DIM = 5;
   typedef double CoordType;
@@ -70,7 +72,7 @@ TEST( quest_vector, vector_constructors)
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_vector, vector_from_points_constructor)
+TEST( primal_vector, vector_from_points_constructor)
 {
   static const int DIM = 5;
   typedef double CoordType;
@@ -104,7 +106,7 @@ TEST( quest_vector, vector_from_points_constructor)
 
 
 //------------------------------------------------------------------------------
-TEST( quest_vector, vector_normalize)
+TEST( primal_vector, vector_normalize)
 {
   static const int DIM = 3;
   typedef double CoordType;
@@ -128,7 +130,7 @@ TEST( quest_vector, vector_normalize)
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_vector, vector_norm)
+TEST( primal_vector, vector_norm)
 {
   static const int DIM = 2;
   typedef double CoordType;
@@ -143,7 +145,7 @@ TEST( quest_vector, vector_norm)
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_vector, vector_arithmetic)
+TEST( primal_vector, vector_arithmetic)
 {
   static const int DIM = 3;
   typedef double CoordType;
@@ -190,7 +192,7 @@ TEST( quest_vector, vector_arithmetic)
 
 
 //------------------------------------------------------------------------------
-TEST( quest_vector, vector_inner_product)
+TEST( primal_vector, vector_inner_product)
 {
   static const int DIM = 3;
   typedef double CoordType;
@@ -215,7 +217,7 @@ TEST( quest_vector, vector_inner_product)
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_vector, vector_outer_product)
+TEST( primal_vector, vector_outer_product)
 {
   static const int DIM = 3;
   typedef double CoordType;

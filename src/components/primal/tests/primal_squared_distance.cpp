@@ -9,19 +9,6 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file
- *
- * \date Dec 9, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #include "gtest/gtest.h"
 
 #include "primal/Point.hpp"
@@ -29,9 +16,10 @@
 #include "primal/Triangle.hpp"
 #include "primal/Segment.hpp"
 
+using namespace axom;
 
 //------------------------------------------------------------------------------
-TEST( quest_squared_distance, point_to_point )
+TEST( primal_squared_distance, point_to_point )
 {
   primal::Point< double,2 > A = primal::Point< double,2 >::make_point( 0.0, 0.0 );
   primal::Point< double,2 > B = primal::Point< double,2 >::make_point( 1.5, 1.5 );
@@ -44,7 +32,7 @@ TEST( quest_squared_distance, point_to_point )
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_squared_distance, point_to_triangle )
+TEST( primal_squared_distance, point_to_triangle )
 {
 
   // STEP 0: Setup triangle ABC in 3D
@@ -108,7 +96,7 @@ TEST( quest_squared_distance, point_to_triangle )
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_squared_distance, point_to_segment )
+TEST( primal_squared_distance, point_to_segment )
 {
    primal::Point< double,2 > A(0.0);
    primal::Point< double,2 > B(1.0,1);

@@ -17,8 +17,10 @@
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
+using namespace axom;
+
 //------------------------------------------------------------------------------
-TEST( quest_numeric_array, constructors)
+TEST( primal_numeric_array, constructors)
 {
   static const int DIM = 5;
   typedef double CoordType;
@@ -63,7 +65,7 @@ TEST( quest_numeric_array, constructors)
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_numeric_array, num_array_to_array)
+TEST( primal_numeric_array, num_array_to_array)
 {
   static const int DIM = 5;
   typedef double CoordType;
@@ -90,7 +92,7 @@ TEST( quest_numeric_array, num_array_to_array)
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_numeric_array, component_wise_arithmetic)
+TEST( primal_numeric_array, component_wise_arithmetic)
 {
   static const int DIM = 3;
   typedef double CoordType;
@@ -142,7 +144,7 @@ TEST( quest_numeric_array, component_wise_arithmetic)
 
 
 //------------------------------------------------------------------------------
-TEST( quest_numeric_array, component_min_max)
+TEST( primal_numeric_array, component_min_max)
 {
   static const int DIM = 3;
   typedef int CoordType;
@@ -179,7 +181,7 @@ TEST( quest_numeric_array, component_min_max)
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_numeric_array, clamping)
+TEST( primal_numeric_array, clamping)
 {
   static const int DIM = 3;
   typedef int CoordType;

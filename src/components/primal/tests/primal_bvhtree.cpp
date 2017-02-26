@@ -10,7 +10,7 @@
 
 /*!
  *******************************************************************************
- * \file quest_bucket_tree.cpp
+ * \file primal_bucket_tree.cpp
  *
  * \date Jan 23, 2016
  * \author George Zagaris (zagaris2@llnl.gov)
@@ -23,8 +23,10 @@
 #include "primal/BVHTree.hpp"
 #include "primal/Point.hpp"
 
+using namespace axom;
+
 //------------------------------------------------------------------------------
-TEST( quest_bucket_tree, insert_object )
+TEST( primal_bucket_tree, insert_object )
 {
   // some typedef short-cuts
   typedef primal::BVHTree< int,3 > TreeType;

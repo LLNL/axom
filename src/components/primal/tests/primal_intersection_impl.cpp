@@ -15,10 +15,9 @@
 
 #include "primal/intersection_impl.hpp"
 
-// #include "quest_test_utilities.hpp"
+using namespace axom;
 
-
-TEST( quest_intersection_impl, fuzzy_comparisons )
+TEST( primal_intersection_impl, fuzzy_comparisons )
 {
   const double eps = 0.1;
 

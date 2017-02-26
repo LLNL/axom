@@ -27,6 +27,8 @@
 #include "primal/Triangle.hpp"
 #include "primal/Vector.hpp"
 
+using namespace axom;
+
 namespace {
 
 double randomDouble(double beg = 0., double end = 1.)
@@ -113,7 +115,7 @@ void permuteCornersTest(const primal::Triangle<double, DIM> & a,
 
 }
 
-TEST( quest_intersection, ray_segment_intersection )
+TEST( primal_intersection, ray_segment_intersection )
 {
   typedef primal::Point< double,2 >   PointType;
   typedef primal::Segment< double,2 > SegmentType;
@@ -147,7 +149,7 @@ TEST( quest_intersection, ray_segment_intersection )
 }
 
 
-TEST( quest_intersection, triangle_aabb_intersection )
+TEST( primal_intersection, triangle_aabb_intersection )
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
@@ -254,7 +256,7 @@ TEST( quest_intersection, triangle_aabb_intersection )
 
 
 
-TEST( quest_intersection, triangle_aabb_intersection_fromData )
+TEST( primal_intersection, triangle_aabb_intersection_fromData )
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
@@ -301,7 +303,7 @@ TEST( quest_intersection, triangle_aabb_intersection_fromData )
 
 }
 
-TEST( quest_intersection, triangle_aabb_intersection_fromData2 )
+TEST( primal_intersection, triangle_aabb_intersection_fromData2 )
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
@@ -345,7 +347,7 @@ TEST( quest_intersection, triangle_aabb_intersection_fromData2 )
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
 
-TEST( quest_intersection, 2D_triangle_triangle_intersection )
+TEST( primal_intersection, 2D_triangle_triangle_intersection )
 {
 
   typedef primal::Triangle< double,2 > Triangle2;
@@ -516,7 +518,7 @@ bool makeTwoRandomIntersecting3DTriangles(primal::Triangle< double, 3 > & l, pri
   return !l.degenerate() && !r.degenerate();
 }
 
-TEST( quest_intersection, 3D_triangle_triangle_intersection )
+TEST( primal_intersection, 3D_triangle_triangle_intersection )
 {
 
   typedef primal::Triangle< double,3 > Triangle3;
@@ -585,7 +587,7 @@ TEST( quest_intersection, 3D_triangle_triangle_intersection )
 }
 
 
-TEST( quest_intersection, triangle_aabb_intersection_boundaryFace )
+TEST( primal_intersection, triangle_aabb_intersection_boundaryFace )
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
@@ -627,7 +629,7 @@ TEST( quest_intersection, triangle_aabb_intersection_boundaryFace )
 }
 
 
-TEST( quest_intersection, ray_aabb_intersection_general3D )
+TEST( primal_intersection, ray_aabb_intersection_general3D )
 {
   static int const DIM = 3;
   typedef primal::Point< double, DIM >   PointType;
@@ -666,7 +668,7 @@ TEST( quest_intersection, ray_aabb_intersection_general3D )
 }
 
 
-TEST( quest_intersection, ray_aabb_intersection_tinyDirectionVector3D )
+TEST( primal_intersection, ray_aabb_intersection_tinyDirectionVector3D )
 {
   static int const DIM = 3;
   typedef primal::Point< double, DIM >   PointType;
@@ -724,7 +726,7 @@ void testTriSegBothEnds(const primal::Triangle<double, DIM> & tri,
   }
 }
 
-TEST(quest_intersection, triangle_segment_intersection)
+TEST(primal_intersection, triangle_segment_intersection)
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
@@ -792,7 +794,7 @@ TEST(quest_intersection, triangle_segment_intersection)
   testTriSegBothEnds(tri, testp, ptX, "beyond edge 2", true);
 }
 
-TEST(quest_intersection, triangle_ray_intersection)
+TEST(primal_intersection, triangle_ray_intersection)
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;

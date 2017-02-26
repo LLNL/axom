@@ -14,8 +14,10 @@
 
 #include "primal/Point.hpp"
 
+using namespace axom;
+
 //------------------------------------------------------------------------------
-TEST( quest_point, point_default_constructor)
+TEST( primal_point, point_default_constructor)
 {
   static const int DIM = 2;
   typedef double CoordType;
@@ -28,9 +30,8 @@ TEST( quest_point, point_default_constructor)
 
 }
 
-
 //------------------------------------------------------------------------------
-TEST( quest_point, point_singleVal_constructor)
+TEST( primal_point, point_singleVal_constructor)
 {
   static const int DIM = 5;
   typedef int CoordType;
@@ -38,41 +39,34 @@ TEST( quest_point, point_singleVal_constructor)
   const int singleVal = 10;
 
   //
-  std::cout<<"\nQuest: testing constructor that sets all values to the same singleVal. "
-           << "Default second parameter of constructor is DIM."
-           << std::endl;
+  SLIC_INFO("\nprimal: testing constructor that sets all values to a singleVal."
+              << "Default second parameter of constructor is DIM." );
   QPoint pt1( singleVal );
-
   for(int dim=0; dim<DIM; ++dim)
       EXPECT_EQ(pt1[dim], singleVal );
 
   //
-  std::cout<<"\nQuest: testing constructor that sets all values to the same singleVal. "
-           << "Using explicit second parameter set to DIM."
-           << std::endl;
+  SLIC_INFO("\nprimal: testing constructor that sets all values to a singleVal."
+             << "Using explicit second parameter set to DIM." );
   QPoint pt2( singleVal, DIM );
-
   for(int dim=0; dim<DIM; ++dim)
       EXPECT_EQ(pt2[dim], singleVal );
 
   //
-  std::cout<<"\nQuest: testing constructor that sets all values to the same singleVal. "
-           << "Using explicit second parameter set higher than DIM."
-           << std::endl;
+  SLIC_INFO("\nprimal: testing constructor that sets all values to a singleVal."
+            << "Using explicit second parameter set higher than DIM." );
   QPoint pt3( singleVal, DIM *2 );
-
   for(int dim=0; dim<DIM; ++dim)
       EXPECT_EQ(pt3[dim], singleVal );
 
 
   //
-  std::cout<<"\nQuest: testing constructor that sets *some* values to the same singleVal. "
-           << "Using explicit second parameter set less than DIM. "
-           << "Other values should be set to zero. "
-           << std::endl;
+  SLIC_INFO("\nprimal: testing constructor that sets *some* values a singleVal."
+             << "Using explicit second parameter set less than DIM."
+             << "Other values should be set to zero." );
+
   int numVals = DIM / 2;
   QPoint pt4( singleVal, numVals);
-
   for(int dim=0; dim<numVals; ++dim)
       EXPECT_EQ(pt4[dim], singleVal );
 
@@ -81,9 +75,8 @@ TEST( quest_point, point_singleVal_constructor)
 
 }
 
-
 //------------------------------------------------------------------------------
-TEST( quest_point, point_array_constructor)
+TEST( primal_point, point_array_constructor)
 {
   static const int DIM = 5;
   typedef int CoordType;
@@ -95,27 +88,24 @@ TEST( quest_point, point_array_constructor)
       arr[dim] = dim;
 
   //
-  std::cout<<"\nQuest: testing constructor that copies entire array. "
-           << "Default second parameter of constructor is DIM."
-           << std::endl;
+  SLIC_INFO("\nprimal: testing constructor that copies entire array. "
+             << "Default second parameter of constructor is DIM." );
   QPoint pt1( arr );
 
   for(int dim=0; dim<DIM; ++dim)
       EXPECT_EQ(pt1[dim], arr[dim]);
 
   //
-  std::cout<<"\nQuest: testing constructor that copies entire array. "
-           << "Using explicit second parameter set to DIM."
-           << std::endl;
+  SLIC_INFO("\nprimal: testing constructor that copies entire array. "
+            << "Using explicit second parameter set to DIM." );
   QPoint pt2( arr, DIM );
 
   for(int dim=0; dim<DIM; ++dim)
       EXPECT_EQ(pt2[dim], arr[dim]);
 
   //
-  std::cout<<"\nQuest: testing constructor that copies entire array. "
-           << "Using explicit second parameter set higher than DIM."
-           << std::endl;
+  SLIC_INFO("\nprimal: testing constructor that copies entire array. "
+           << "Using explicit second parameter set higher than DIM." );
   QPoint pt3( arr, DIM *2 );
 
   for(int dim=0; dim<DIM; ++dim)
@@ -123,10 +113,10 @@ TEST( quest_point, point_array_constructor)
 
 
   //
-  std::cout<<"\nQuest: testing constructor that sets *some* values to the same singleVal. "
-           << "Using explicit second parameter set less than DIM. "
-           << "Other values should be set to zero. "
-           << std::endl;
+  SLIC_INFO("\nprimal: testing constructor that sets *some* values to a singleVal. "
+            << "Using explicit second parameter set less than DIM. "
+            << "Other values should be set to zero. " );
+
   int numVals = DIM / 2;
   QPoint pt4( arr, numVals);
 
@@ -138,9 +128,8 @@ TEST( quest_point, point_array_constructor)
 
 }
 
-
 //------------------------------------------------------------------------------
-TEST( quest_point, point_numericArray_constructor)
+TEST( primal_point, point_numericArray_constructor)
 {
   static const int DIM = 5;
   typedef int CoordType;
@@ -153,9 +142,8 @@ TEST( quest_point, point_numericArray_constructor)
       arr[dim] = dim;
 
   //
-  std::cout<<"\nQuest: testing constructor that copies entire array. "
-           << "Default second parameter of constructor is DIM."
-           << std::endl;
+  SLIC_INFO("\nprimal: testing constructor that copies entire array. "
+           << "Default second parameter of constructor is DIM." );
   QArray arr1( arr );
   QPoint pt(arr);
 
@@ -163,8 +151,8 @@ TEST( quest_point, point_numericArray_constructor)
       EXPECT_EQ(pt[dim], arr[dim]);
 }
 
-
-TEST( quest_point, point_copy_and_assignment)
+//------------------------------------------------------------------------------
+TEST( primal_point, point_copy_and_assignment)
 {
   static const int DIM = 5;
   typedef int CoordType;
@@ -177,7 +165,7 @@ TEST( quest_point, point_copy_and_assignment)
   QPoint ptOrig( arr );
 
   //
-  std::cout<<"\nQuest: testing copy constructor" << std::endl;
+  SLIC_INFO( "\nprimal: testing copy constructor" );
   QPoint ptCopy1( ptOrig );
   QPoint ptCopy2 = ptOrig;
 
@@ -189,7 +177,7 @@ TEST( quest_point, point_copy_and_assignment)
 
 
   //
-  std::cout<<"\nQuest: testing assignment operator" << std::endl;
+  SLIC_INFO("\nprimal: testing assignment operator");
   QPoint ptAssign(5);
   ptAssign = ptOrig;
   for(int dim=0; dim<DIM; ++dim)
@@ -198,7 +186,8 @@ TEST( quest_point, point_copy_and_assignment)
   }
 }
 
-TEST( quest_point, point_equality)
+//------------------------------------------------------------------------------
+TEST( primal_point, point_equality)
 {
   static const int DIM = 5;
   typedef int CoordType;
@@ -211,7 +200,7 @@ TEST( quest_point, point_equality)
   QPoint ptOrig( arr );
 
   //
-  std::cout<<"\nQuest: testing equality of same point" << std::endl;
+  SLIC_INFO("\nprimal: testing equality of same point" );
   QPoint ptCopy1( ptOrig );
 
   EXPECT_TRUE(ptOrig == ptCopy1);
@@ -219,21 +208,20 @@ TEST( quest_point, point_equality)
 
 
   //
-  std::cout<<"\nQuest: testing inequality of different points" << std::endl;
+  SLIC_INFO("\nprimal: testing inequality of different points" );
   QPoint ptDifferent( 7 );
   EXPECT_FALSE(ptOrig == ptDifferent);
   EXPECT_TRUE(ptOrig != ptDifferent);
 
   //
-  std::cout<<"\n Testing that zero() and ones() point are equal to their constructor counterparts"
-          << std::endl;
+  SLIC_INFO("\nprimal: Testing that zero() and ones()" );
   EXPECT_EQ(QPoint::zero(), QPoint());
   EXPECT_EQ(QPoint::zero(), QPoint(0));
   EXPECT_EQ(QPoint::ones(), QPoint(1));
 }
 
-
-TEST( quest_point, point_to_array)
+//------------------------------------------------------------------------------
+TEST( primal_point, point_to_array)
 {
   static const int DIM = 5;
   typedef int CoordType;
@@ -254,8 +242,8 @@ TEST( quest_point, point_to_array)
 
 }
 
-
-TEST( quest_point, point_make_point)
+//------------------------------------------------------------------------------
+TEST( primal_point, point_make_point)
 {
   static const int DIM = 3;
   typedef int CoordType;
@@ -265,14 +253,14 @@ TEST( quest_point, point_make_point)
   const int y = 20;
   const int z = 30;
 
-  std::cout<<"\nQuest: Testing make_point with two coordinates.  Third should be set to 0" << std::endl;
+  SLIC_INFO("\nprimal: Testing make_point with two coordinates.");
   QPoint pt2 = QPoint::make_point(x,y);
   EXPECT_EQ(pt2[0], x );
   EXPECT_EQ(pt2[1], y );
   EXPECT_EQ(pt2[2], 0 );
 
   //
-  std::cout<<"\nQuest: Testing make_point with three coordinates." << std::endl;
+  SLIC_INFO("\nprimal: Testing make_point with three coordinates.");
   QPoint pt3 = QPoint::make_point(x,y,z);
   EXPECT_EQ(pt3[0], x );
   EXPECT_EQ(pt3[1], y );
@@ -280,7 +268,8 @@ TEST( quest_point, point_make_point)
 
 }
 
-TEST( quest_point, point_midpoint)
+//------------------------------------------------------------------------------
+TEST( primal_point, point_midpoint)
 {
   static const int DIM = 3;
   typedef int CoordType;
@@ -294,7 +283,8 @@ TEST( quest_point, point_midpoint)
 
 }
 
-TEST( quest_point, point_linear_interpolation)
+//------------------------------------------------------------------------------
+TEST( primal_point, point_linear_interpolation)
 {
   static const int DIM = 3;
   typedef int CoordType;
@@ -308,11 +298,9 @@ TEST( quest_point, point_linear_interpolation)
   EXPECT_TRUE(QPoint::lerp(p0,p1, 0.5) == QPoint::midpoint(p0,p1));
   EXPECT_TRUE(QPoint::lerp(p0,p1, .25) == QPoint(25));
   EXPECT_TRUE(QPoint::lerp(p0,p1, .75) == QPoint(75));
-
-
 }
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 

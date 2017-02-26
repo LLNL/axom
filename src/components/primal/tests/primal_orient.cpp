@@ -29,8 +29,9 @@
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
 
+using namespace axom;
 
-TEST( quest_orientation, orient3D )
+TEST( primal_orientation, orient3D )
 {
    // STEP 0: Setup triangle ABC in 3D
    primal::Point< double,3 > A =
@@ -61,7 +62,7 @@ TEST( quest_orientation, orient3D )
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_orientation, orient2D )
+TEST( primal_orientation, orient2D )
 {
    // STEP 0: create test segment
    primal::Point< double, 2 > A(0.0);
