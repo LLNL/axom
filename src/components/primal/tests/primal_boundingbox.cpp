@@ -580,7 +580,7 @@ TEST( primal_boundingBox, bb_centroid )
 
 //------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

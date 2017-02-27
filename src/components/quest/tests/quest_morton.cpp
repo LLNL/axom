@@ -16,7 +16,7 @@
 #include "quest/MortonIndex.hpp"
 
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 #include <cstdlib>
 #include <limits>
@@ -93,7 +93,7 @@ TEST( quest_point, test_mortonizer)
 
   SLIC_INFO("Testing Morton conversion on some simple points");
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
   typedef std::size_t MortonIndexType;
 
 
@@ -128,7 +128,7 @@ TEST( quest_point, test_mortonizer)
   EXPECT_EQ( mIdx3, mIdx3Alt );
   EXPECT_EQ( morton3.demortonize(mIdx3Alt), pt3 );
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
   // The following will not compile -- static_assert CoordType must be integral
   //Mortonizer<double,2> mortonD;
@@ -249,7 +249,7 @@ TEST( quest_point, test_point_hasher)
 
     SLIC_INFO("** Here we test the point hasher which can be used e.g. in an unordered_map");
 
-    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+    axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
     typedef int CoordType;
     PointHash<CoordType> ptHash;
@@ -284,7 +284,7 @@ TEST( quest_point, test_point_hasher)
     exp = 0x953111;                 // in hex (read bits bottom up, left to right)
     EXPECT_EQ( ptHash(p4), exp);
 
-    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
+    axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
 }
 
@@ -297,7 +297,7 @@ int main(int argc, char * argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info );
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
   // finalized when exiting main scope
 

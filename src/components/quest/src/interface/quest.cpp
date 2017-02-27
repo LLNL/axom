@@ -293,7 +293,7 @@ namespace quest
         void setupQuestLogger()
 #endif
         {
-            namespace slic = asctoolkit::slic;
+            namespace slic = axom::slic;
 
             // Setup the formatted quest logger
             if( ! slic::isInitialized() )
@@ -332,7 +332,7 @@ namespace quest
          */
         void teardownQuestLogger()
         {
-            namespace slic = asctoolkit::slic;
+            namespace slic = axom::slic;
 
             if(m_originalLoggerName != "")
             {

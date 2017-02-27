@@ -67,7 +67,7 @@ TEST( primal_intersection_impl, fuzzy_comparisons )
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

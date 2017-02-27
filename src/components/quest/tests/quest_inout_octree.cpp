@@ -166,7 +166,7 @@ TEST( quest_inout_octree, octahedron_mesh)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
@@ -176,7 +176,7 @@ int main(int argc, char * argv[])
 
   UnitTestLogger logger;  // create & initialize test logger,
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
 
   // finalized when exiting main scope

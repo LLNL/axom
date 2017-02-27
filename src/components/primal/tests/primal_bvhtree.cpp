@@ -69,7 +69,7 @@ TEST( primal_bucket_tree, insert_object )
 
 //------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

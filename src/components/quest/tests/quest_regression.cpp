@@ -708,7 +708,7 @@ int main( int argc, char**argv )
   {
     // Note: this code is in a different context since UnitTestLogger's destructor
     //       might have MPI calls and would otherwise be invoked after MPI_Finalize()
-    asctoolkit::slic::UnitTestLogger logger;
+    axom::slic::UnitTestLogger logger;
     asctoolkit::sidre::DataStore ds;
 
     // parse the command arguments

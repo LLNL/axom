@@ -355,7 +355,7 @@ TEST( quest_octree, count_octree_blocks)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

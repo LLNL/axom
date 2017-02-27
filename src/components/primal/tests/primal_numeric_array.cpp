@@ -13,7 +13,7 @@
 #include "primal/NumericArray.hpp"
 
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 using namespace axom;
 
