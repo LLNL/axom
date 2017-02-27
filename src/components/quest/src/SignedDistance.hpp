@@ -76,7 +76,7 @@ public:
    * \pre surfaceMesh != ATK_NULLPTR
    *****************************************************************************
    */
-  SignedDistance( mint::Mesh* surfaceMesh, int maxObjects, int maxLevels=5 );
+  SignedDistance( axom::mint::Mesh* surfaceMesh, int maxObjects, int maxLevels=5 );
 
   /*!
    *****************************************************************************
@@ -236,7 +236,7 @@ private:
   SignedDistance(): m_surfaceMesh(ATK_NULLPTR), m_bvhTree(ATK_NULLPTR) { };
 
 private:
-  mint::Mesh* m_surfaceMesh;     /*!< User-supplied surface mesh. */
+  axom::mint::Mesh* m_surfaceMesh;     /*!< User-supplied surface mesh. */
   BoxType m_boxDomain;           /*!< bounding box containing surface mesh */
   BVHTreeType* m_bvhTree;        /*!< Spatial acceleration data-structure. */
 
@@ -270,7 +270,7 @@ private:
 //------------------------------------------------------------------------------
 template < int NDIMS >
 SignedDistance< NDIMS >::SignedDistance(
-        mint::Mesh* surfaceMesh, int maxObjects, int maxLevels )
+        axom::mint::Mesh* surfaceMesh, int maxObjects, int maxLevels )
 {
   // Sanity checks
   SLIC_ASSERT( surfaceMesh != ATK_NULLPTR );
@@ -603,7 +603,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( int icell )
   SLIC_ASSERT( cellType == MINT_TRIANGLE ||
                cellType == MINT_QUAD ||
                cellType == MINT_SEGMENT );
-  const int nnodes = mint::cell::num_nodes[ cellType ];
+  const int nnodes = axom::mint::cell::num_nodes[ cellType ];
 
   // Get the cell node IDs that make up the cell
   int* cellIds = new int[ nnodes ];

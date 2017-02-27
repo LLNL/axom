@@ -56,7 +56,7 @@ typedef Octree3D::BlockIndex BlockIndex;
 
 
 
-void queryOctahedronMesh(mint::Mesh*& mesh, const GeometricBoundingBox& bbox)
+void queryOctahedronMesh(axom::mint::Mesh*& mesh, const GeometricBoundingBox& bbox)
 {
     const double bbMin = bbox.getMin()[0];
     const double bbMax = bbox.getMax()[0];
@@ -136,7 +136,7 @@ TEST( quest_inout_octree, octahedron_mesh)
     SLIC_INFO("*** This test creates a simple mesh of an octahedron and tests point containment.\n");
 
     // Generate the InOutOctree
-    mint::Mesh* mesh = quest::utilities::make_octahedron_mesh();
+    axom::mint::Mesh* mesh = quest::utilities::make_octahedron_mesh();
     // quest::utilities::write_vtk(mesh, "octahedron.vtk");
 
     ///

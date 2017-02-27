@@ -109,7 +109,7 @@ struct CommandLineArguments
    SpaceBoundingBox meshBoundingBox;
    GridPt queryResolution;
 
-   mint::UniformMesh* queryMesh;
+   axom::mint::UniformMesh* queryMesh;
 
    bool testDistance;
    bool testContainment;
@@ -335,7 +335,7 @@ void loadBaselineData(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& a
  * \brief Generates a mint Uniform mesh with the given bounding box and resolution
  * \note Allocates a UniformMesh instance, which must be deleted by the user
  */
-mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res)
+axom::mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res)
 {
     // Set up the query mesh
     SpaceVec h( bb.getMin(), bb.getMax());
@@ -348,7 +348,7 @@ mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res
     ext[2] = 0; ext[3] = res[1];
     ext[4] = 0; ext[5] = res[2];
 
-    return new mint::UniformMesh(DIM, bb.getMin().data(), h.data(), ext);
+    return new axom::mint::UniformMesh(DIM, bb.getMin().data(), h.data(), ext);
 }
 
 /**
@@ -378,12 +378,12 @@ void runContainmentQueries(CommandLineArguments& clargs)
 
     // Add a scalar field for the containment queries
     SLIC_ASSERT(clargs.queryMesh != ATK_NULLPTR);
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
-    mint::FieldData* PD = umesh->getNodeFieldData();
+    axom::mint::FieldData* PD = umesh->getNodeFieldData();
     SLIC_ASSERT( PD != ATK_NULLPTR );
 
-    PD->addField( new mint::FieldVariable< int >("octree_containment",nnodes) );
+    PD->addField( new axom::mint::FieldVariable< int >("octree_containment",nnodes) );
     int* containment = PD->getField( "octree_containment" )->getIntPtr();
     SLIC_ASSERT( containment != ATK_NULLPTR );
 
@@ -431,16 +431,16 @@ void runDistanceQueries(CommandLineArguments& clargs)
 
     // Add a scalar field for the containment queries
     SLIC_ASSERT(clargs.queryMesh != ATK_NULLPTR);
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
-    mint::FieldData* PD = umesh->getNodeFieldData();
+    axom::mint::FieldData* PD = umesh->getNodeFieldData();
     SLIC_ASSERT( PD != ATK_NULLPTR );
 
-    PD->addField( new mint::FieldVariable< int >("bvh_containment",nnodes) );
+    PD->addField( new axom::mint::FieldVariable< int >("bvh_containment",nnodes) );
     int* containment = PD->getField( "bvh_containment" )->getIntPtr();
     SLIC_ASSERT( containment != ATK_NULLPTR );
 
-    PD->addField( new mint::FieldVariable< double >("bvh_distance",nnodes) );
+    PD->addField( new axom::mint::FieldVariable< double >("bvh_distance",nnodes) );
     double* distance = PD->getField( "bvh_distance" )->getDoublePtr();
     SLIC_ASSERT( distance != ATK_NULLPTR );
 
@@ -472,7 +472,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
 
     bool passed = true;
 
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
 
     if(!clargs.testContainment)
@@ -542,7 +542,7 @@ bool compareToBaselineResults(asctoolkit::sidre::DataGroup* grp, CommandLineArgu
 
     bool passed = true;
 
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
 
     if(clargs.testContainment)
@@ -655,7 +655,7 @@ void saveBaseline(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& clarg
     view = grp->createView("query_resolution", asctoolkit::sidre::INT_ID, 3)->allocate();
     clargs.queryResolution.to_array( view->getArray());
 
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
     if(clargs.testContainment)
     {

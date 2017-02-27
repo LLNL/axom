@@ -85,7 +85,7 @@ Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
  * Vertices of the octahedron are at +-i, +-j and +-k.
  * \note The caller must delete the mesh
  */
-mint::Mesh*  make_octahedron_mesh()
+axom::mint::Mesh*  make_octahedron_mesh()
 {
     typedef int VertexIndex;
     typedef Point<double, 3> SpacePt;
@@ -149,7 +149,7 @@ mint::Mesh*  make_octahedron_mesh()
     }
 
     // Now create an unstructured triangle mesh from the two arrays
-    typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+    typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
     TriangleMesh* triMesh = new TriangleMesh(3);
 
     // insert verts
@@ -170,7 +170,7 @@ mint::Mesh*  make_octahedron_mesh()
 /**
  * \brief Utility function to write a VTK file from a mint Mesh instance
  */
-void write_vtk( mint::Mesh* mesh, const std::string& fileName )
+void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -230,19 +230,19 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   ofs << "CELL_TYPES " << ncells << std::endl;
   for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
     int ctype    = mesh->getMeshCellType( cellIdx );
-    int vtk_type = mint::cell::vtk_types[ ctype ];
+    int vtk_type = axom::mint::cell::vtk_types[ ctype ];
     ofs << vtk_type << std::endl;
   } // END for all cells
 
   // STEP 4: Write Cell Data
   ofs << "CELL_DATA " << ncells << std::endl;
-  mint::FieldData* CD = mesh->getCellFieldData();
+  axom::mint::FieldData* CD = mesh->getCellFieldData();
   for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
 
-      mint::Field* field = CD->getField( f );
+      axom::mint::Field* field = CD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           SLIC_ASSERT( dataPtr != ATK_NULLPTR );
@@ -272,13 +272,13 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   // STEP 5: Write Point Data
   const int nnodes = mesh->getMeshNumberOfNodes();
   ofs << "POINT_DATA " << nnodes << std::endl;
-  mint::FieldData* PD = mesh->getNodeFieldData();
+  axom::mint::FieldData* PD = mesh->getNodeFieldData();
   for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
 
-      mint::Field* field = PD->getField( f );
+      axom::mint::Field* field = PD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           ofs << "double\n";
