@@ -32,9 +32,11 @@ if (ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-#
-#add_code_check_targets(uncrustify.cfg)
-#
+################################
+# add uncrustify
+################################
+add_code_check_targets(uncrustify.cfg)
+
 ################################
 # Add docs
 ################################
