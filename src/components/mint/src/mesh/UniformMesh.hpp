@@ -17,7 +17,7 @@
 namespace axom {
 namespace mint {
 
-class UniformMesh : public StructuredMesh
+class UniformMesh:public StructuredMesh
 {
 public:
 
@@ -179,22 +179,22 @@ namespace mint {
 
 inline void UniformMesh::getOrigin( double origin[3] ) const
 {
-   SLIC_ASSERT( origin != ATK_NULLPTR );
-   memcpy( origin, m_origin, 3*sizeof(double) );
+  SLIC_ASSERT( origin != ATK_NULLPTR );
+  memcpy( origin, m_origin, 3*sizeof(double) );
 }
 
 //------------------------------------------------------------------------------
 inline void UniformMesh::getSpacing( double h[3] ) const
 {
-   SLIC_ASSERT( h != ATK_NULLPTR );
-   memcpy( h, m_h, 3*sizeof(double) );
+  SLIC_ASSERT( h != ATK_NULLPTR );
+  memcpy( h, m_h, 3*sizeof(double) );
 }
 
 //------------------------------------------------------------------------------
 inline void UniformMesh::getNode(int nodeIdx, double* coordinates) const
 {
-  SLIC_ASSERT( coordinates != ATK_NULLPTR );
-  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
+  SLIC_ASSERT(  coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
 
   int ijk[3];
   m_extent->getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
@@ -208,8 +208,8 @@ inline void UniformMesh::getNode(int nodeIdx, double* coordinates) const
 //------------------------------------------------------------------------------
 inline void UniformMesh::getNode( int i, int j, double* coordinates ) const
 {
-  SLIC_ASSERT( coordinates != ATK_NULLPTR );
-  SLIC_ASSERT( this->getDimension()==2 );
+  SLIC_ASSERT(  coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  this->getDimension()==2 );
 
   int ijk[2] = { i, j };
   for ( int i=0; i < 2; ++i ) {
@@ -222,12 +222,12 @@ inline void UniformMesh::getNode( int i, int j, double* coordinates ) const
 inline
 void UniformMesh::getNode(int i, int j, int k, double* coordinates) const
 {
-  SLIC_ASSERT( coordinates !=  ATK_NULLPTR );
-  SLIC_ASSERT( this->getDimension()==3 );
+  SLIC_ASSERT(  coordinates !=  ATK_NULLPTR );
+  SLIC_ASSERT(  this->getDimension()==3 );
 
   int ijk[3] = { i, j, k };
   for ( int i=0; i < 3; ++i ) {
-     coordinates[ i ] = m_origin[ i ] + m_h[ i ]*ijk[ i ];
+    coordinates[ i ] = m_origin[ i ] + m_h[ i ]*ijk[ i ];
   }
 
 }
@@ -235,8 +235,8 @@ void UniformMesh::getNode(int i, int j, int k, double* coordinates) const
 //------------------------------------------------------------------------------
 inline double UniformMesh::getNodeCoordinate( int nodeIdx, int idim ) const
 {
-  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
-  SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
+  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
+  SLIC_ASSERT(  idim >= 0 && idim < this->getDimension() );
 
   int ijk[3];
   m_extent->getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
@@ -246,8 +246,8 @@ inline double UniformMesh::getNodeCoordinate( int nodeIdx, int idim ) const
 //------------------------------------------------------------------------------
 inline double UniformMesh::getNodeCoordinate( int i, int j, int idim ) const
 {
-  SLIC_ASSERT( this->getDimension()==2 );
-  SLIC_ASSERT( idim >= 0 && idim < 2 );
+  SLIC_ASSERT(  this->getDimension()==2 );
+  SLIC_ASSERT(  idim >= 0 && idim < 2 );
 
   int ijk[2] = { i, j };
   return ( (m_origin[ idim ] + m_h[ idim ]*ijk[ idim ]) );
@@ -257,8 +257,8 @@ inline double UniformMesh::getNodeCoordinate( int i, int j, int idim ) const
 inline
 double UniformMesh::getNodeCoordinate( int i, int j, int k, int idim ) const
 {
-  SLIC_ASSERT( this->getDimension()==3 );
-  SLIC_ASSERT( idim >= 0 && idim < 3 );
+  SLIC_ASSERT(  this->getDimension()==3 );
+  SLIC_ASSERT(  idim >= 0 && idim < 3 );
 
   int ijk[3] = { i, j, k };
   return ( (m_origin[ idim ] + m_h[ idim ]*ijk[ idim ]) );

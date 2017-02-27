@@ -8,7 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
 #include "mint/Mesh.hpp"
 
 // ATK includes
@@ -21,45 +20,41 @@
 namespace axom {
 namespace mint {
 
-Mesh::Mesh() :
-    m_ndims(2),
-    m_block_idx(0),
-    m_part_idx(0),
-    m_type(MINT_UNDEFINED_MESH),
-    m_node_data( new FieldData() ),
-    m_cell_data( new FieldData() ),
-    m_face_data( new FieldData() )
-{
-
-}
+Mesh::Mesh():
+  m_ndims(2),
+  m_block_idx(0),
+  m_part_idx(0),
+  m_type(MINT_UNDEFINED_MESH),
+  m_node_data( new FieldData() ),
+  m_cell_data( new FieldData() ),
+  m_face_data( new FieldData() )
+{}
 
 //------------------------------------------------------------------------------
-Mesh::Mesh(int ndims, int type, int blockId, int partId ) :
-    m_ndims( ndims ),
-    m_block_idx( blockId ),
-    m_part_idx( partId ),
-    m_type( type ),
-    m_node_data( new FieldData() ),
-    m_cell_data( new FieldData() ),
-    m_face_data( new FieldData() )
-{
-
-}
+Mesh::Mesh(int ndims, int type, int blockId, int partId ):
+  m_ndims( ndims ),
+  m_block_idx( blockId ),
+  m_part_idx( partId ),
+  m_type( type ),
+  m_node_data( new FieldData() ),
+  m_cell_data( new FieldData() ),
+  m_face_data( new FieldData() )
+{}
 
 //------------------------------------------------------------------------------
 Mesh::~Mesh()
 {
-   m_node_data->clear();
-   delete m_node_data;
-   m_node_data = ATK_NULLPTR;
+  m_node_data->clear();
+  delete m_node_data;
+  m_node_data = ATK_NULLPTR;
 
-   m_cell_data->clear();
-   delete m_cell_data;
-   m_cell_data = ATK_NULLPTR;
+  m_cell_data->clear();
+  delete m_cell_data;
+  m_cell_data = ATK_NULLPTR;
 
-   m_face_data->clear();
-   delete m_face_data;
-   m_face_data = ATK_NULLPTR;
+  m_face_data->clear();
+  delete m_face_data;
+  m_face_data = ATK_NULLPTR;
 }
 
 } /* namespace mint */

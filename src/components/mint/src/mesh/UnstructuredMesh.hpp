@@ -32,7 +32,7 @@ namespace axom {
 namespace mint {
 
 template < int CellType >
-class UnstructuredMesh : public Mesh
+class UnstructuredMesh:public Mesh
 {
 public:
 
@@ -74,7 +74,7 @@ public:
    *****************************************************************************
    */
   virtual int getMeshNumberOfNodes() const
-    { return this->getNumberOfNodes(); };
+  { return this->getNumberOfNodes(); };
 
   /*!
    *****************************************************************************
@@ -85,7 +85,7 @@ public:
    *****************************************************************************
    */
   virtual int getMeshNumberOfCells() const
-    { return this->getNumberOfCells(); };
+  { return this->getNumberOfCells(); };
 
   /*!
    *****************************************************************************
@@ -97,7 +97,7 @@ public:
    *****************************************************************************
    */
   virtual int getMeshNumberOfCellNodes( int cellIdx ) const
-    { return this->getNumberOfCellNodes( cellIdx ); };
+  { return this->getNumberOfCellNodes( cellIdx ); };
 
   /*!
    *****************************************************************************
@@ -126,7 +126,7 @@ public:
    *****************************************************************************
    */
   virtual int getMeshCellType( int cellIdx ) const
-    { return m_cell_connectivity->getCellType( cellIdx ); }
+  { return m_cell_connectivity->getCellType( cellIdx ); }
 
   /*!
    *****************************************************************************
@@ -163,7 +163,6 @@ public:
     return this->getMeshCoordinateArray( dim )[ nodeIdx ];
   }
 
-
   /// @}
 
   /*!
@@ -175,7 +174,7 @@ public:
    *****************************************************************************
    */
   int getNumberOfNodes() const
-    { return m_node_coordinates->getNumberOfPoints(); };
+  { return m_node_coordinates->getNumberOfPoints(); };
 
   /*!
    *****************************************************************************
@@ -186,7 +185,7 @@ public:
    *****************************************************************************
    */
   int getNumberOfCells() const
-    { return m_cell_connectivity->getNumberOfCells(); };
+  { return m_cell_connectivity->getNumberOfCells(); };
 
   /*!
    *****************************************************************************
@@ -197,7 +196,7 @@ public:
    *****************************************************************************
    */
   int getNumberOfCellNodes( int cellIdx ) const
-    { return m_cell_connectivity->getNumberOfNodes( cellIdx ); };
+  { return m_cell_connectivity->getNumberOfNodes( cellIdx ); };
 
   /*!
    *****************************************************************************
@@ -275,7 +274,6 @@ private:
    */
   UnstructuredMesh();
 
-
   MeshCoordinates*                      m_node_coordinates;
   CellConnectivity< int, CellType >*    m_cell_connectivity;
 
@@ -293,34 +291,28 @@ namespace axom {
 namespace mint {
 
 template < int CellType >
-UnstructuredMesh< CellType >::UnstructuredMesh() :
-    Mesh(-1,-1,-1,-1),
-    m_node_coordinates( ATK_NULLPTR ),
-    m_cell_connectivity( ATK_NULLPTR )
-{
-
-}
+UnstructuredMesh< CellType >::UnstructuredMesh():
+  Mesh(-1,-1,-1,-1),
+  m_node_coordinates( ATK_NULLPTR ),
+  m_cell_connectivity( ATK_NULLPTR )
+{}
 
 //------------------------------------------------------------------------------
 template < int CellType >
-UnstructuredMesh< CellType >::UnstructuredMesh(int ndims ) :
-    Mesh(ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
-    m_node_coordinates( new MeshCoordinates( ndims ) ),
-    m_cell_connectivity( new CellConnectivity< int, CellType >() )
-{
-
-}
+UnstructuredMesh< CellType >::UnstructuredMesh(int ndims ):
+  Mesh(ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
+  m_node_coordinates( new MeshCoordinates( ndims ) ),
+  m_cell_connectivity( new CellConnectivity< int, CellType >() )
+{}
 
 //------------------------------------------------------------------------------
 template < int CellType >
 UnstructuredMesh< CellType >::UnstructuredMesh(
-    int ndims, int blockId, int partId ) :
-    Mesh(ndims, mesh_properties::mesh_of_cell_type[CellType],blockId,partId ),
-    m_node_coordinates( new MeshCoordinates( ndims ) ),
-    m_cell_connectivity( new CellConnectivity< int, CellType >() )
-{
-
-}
+  int ndims, int blockId, int partId ):
+  Mesh(ndims, mesh_properties::mesh_of_cell_type[CellType],blockId,partId ),
+  m_node_coordinates( new MeshCoordinates( ndims ) ),
+  m_cell_connectivity( new CellConnectivity< int, CellType >() )
+{}
 
 //------------------------------------------------------------------------------
 template < int CellType >
@@ -330,16 +322,15 @@ UnstructuredMesh< CellType >::~UnstructuredMesh()
   delete m_cell_connectivity;
 }
 
-
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
 void UnstructuredMesh< CellType >::insertCell(
-    const int* cell, int cell_type, int num_nodes )
+  const int* cell, int cell_type, int num_nodes )
 {
-  SLIC_ASSERT( cell != ATK_NULLPTR );
-  SLIC_ASSERT( m_cell_connectivity != ATK_NULLPTR );
-  SLIC_ASSERT( cell::num_nodes[ cell_type ] == num_nodes );
+  SLIC_ASSERT(  cell != ATK_NULLPTR );
+  SLIC_ASSERT(  m_cell_connectivity != ATK_NULLPTR );
+  SLIC_ASSERT(  cell::num_nodes[ cell_type ] == num_nodes );
 
   m_cell_connectivity->insertCell( cell, cell_type, num_nodes );
 }
@@ -349,8 +340,8 @@ template < int CellType >
 inline
 void UnstructuredMesh< CellType >::insertNode( double x, double y )
 {
-  SLIC_ASSERT( m_ndims==2 );
-  SLIC_ASSERT( m_node_coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  m_ndims==2 );
+  SLIC_ASSERT(  m_node_coordinates != ATK_NULLPTR );
   m_node_coordinates->insertPoint( x, y );
 }
 
@@ -359,18 +350,19 @@ template < int CellType >
 inline
 void UnstructuredMesh< CellType >::insertNode( double x, double y, double z )
 {
-  SLIC_ASSERT( m_ndims==3 );
-  SLIC_ASSERT( m_node_coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  m_ndims==3 );
+  SLIC_ASSERT(  m_node_coordinates != ATK_NULLPTR );
   m_node_coordinates->insertPoint( x, y, z );
 }
 
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
-const double* UnstructuredMesh< CellType >::getMeshCoordinateArray(int dim) const
+const double* UnstructuredMesh< CellType >::getMeshCoordinateArray(int dim)
+const
 {
-  SLIC_ASSERT( m_node_coordinates != ATK_NULLPTR );
-  SLIC_ASSERT( dim < m_ndims );
+  SLIC_ASSERT(  m_node_coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  dim < m_ndims );
   return m_node_coordinates->getCoordinateArray( dim );
 }
 
@@ -379,8 +371,8 @@ template < int CellType >
 inline
 const int* UnstructuredMesh< CellType >::getCell( int cellIdx ) const
 {
-  SLIC_ASSERT( m_cell_connectivity != ATK_NULLPTR );
-  SLIC_ASSERT( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
+  SLIC_ASSERT(  m_cell_connectivity != ATK_NULLPTR );
+  SLIC_ASSERT(  cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
   return (*m_cell_connectivity)[ cellIdx ];
 }
 
@@ -406,11 +398,12 @@ void UnstructuredMesh< CellType >::toVtkFile( const std::string& file )
     ofs << m_node_coordinates->getCoordinate( node, 1 ) << " ";
     if ( m_ndims==3 ) {
 
-        ofs << m_node_coordinates->getCoordinate( node, 2 );
+      ofs << m_node_coordinates->getCoordinate( node, 2 );
 
-    } else {
+    }
+    else {
 
-        ofs << "0.0";
+      ofs << "0.0";
     }
 
     ofs << std::endl;
@@ -421,8 +414,8 @@ void UnstructuredMesh< CellType >::toVtkFile( const std::string& file )
   const int ncells   = m_cell_connectivity->getNumberOfCells();
 
   int numCellNodes = 0;
-  for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ){
-      numCellNodes += m_cell_connectivity->getNumberOfNodes( cellIdx ) + 1;
+  for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
+    numCellNodes += m_cell_connectivity->getNumberOfNodes( cellIdx ) + 1;
   }
   ofs << "CELLS " << ncells << " " << numCellNodes << std::endl;
 
@@ -452,31 +445,32 @@ void UnstructuredMesh< CellType >::toVtkFile( const std::string& file )
   FieldData* CD = this->getCellFieldData();
   for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
 
-      Field* field = CD->getField( f );
+    Field* field = CD->getField( f );
 
-      ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == DOUBLE_FIELD_TYPE ) {
+    ofs << "SCALARS " << field->getName() << " ";
+    if ( field->getType() == DOUBLE_FIELD_TYPE ) {
 
-          double* dataPtr = field->getDoublePtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+      double* dataPtr = field->getDoublePtr();
+      SLIC_ASSERT( dataPtr != ATK_NULLPTR );
 
-          ofs << "double\n";
-          ofs << "LOOKUP_TABLE default\n";
-          for (int i=0; i < ncells; ++i) {
-              ofs << dataPtr[ i ] << std::endl;
-          }
-
-      } else {
-
-          int* dataPtr = field->getIntPtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
-
-          ofs << "int\n";
-          ofs << "LOOKUP_TABLE default\n";
-          for (int i=0; i < ncells; ++i ) {
-             ofs << dataPtr[ i ] << std::endl;
-          }
+      ofs << "double\n";
+      ofs << "LOOKUP_TABLE default\n";
+      for (int i=0; i < ncells; ++i) {
+        ofs << dataPtr[ i ] << std::endl;
       }
+
+    }
+    else {
+
+      int* dataPtr = field->getIntPtr();
+      SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+
+      ofs << "int\n";
+      ofs << "LOOKUP_TABLE default\n";
+      for (int i=0; i < ncells; ++i ) {
+        ofs << dataPtr[ i ] << std::endl;
+      }
+    }
   }
 
   // STEP 5: Write Point Data
@@ -485,27 +479,28 @@ void UnstructuredMesh< CellType >::toVtkFile( const std::string& file )
   FieldData* PD = this->getNodeFieldData();
   for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
 
-      Field* field = PD->getField( f );
+    Field* field = PD->getField( f );
 
-      ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == DOUBLE_FIELD_TYPE ) {
+    ofs << "SCALARS " << field->getName() << " ";
+    if ( field->getType() == DOUBLE_FIELD_TYPE ) {
 
-          double* dataPtr = field->getDoublePtr();
-          ofs << "double\n";
-          ofs << "LOOKUP_TABLE default\n";
-          for (int i=0; i < nnodes; ++i) {
-              ofs << dataPtr[ i ] << std::endl;
-          }
-
-      } else {
-
-          int* dataPtr = field->getIntPtr();
-          ofs << "int\n";
-          ofs << "LOOKUP_TABLE default\n";
-          for (int i=0; i < nnodes; ++i) {
-              ofs << dataPtr[ i ] << std::endl;
-          }
+      double* dataPtr = field->getDoublePtr();
+      ofs << "double\n";
+      ofs << "LOOKUP_TABLE default\n";
+      for (int i=0; i < nnodes; ++i) {
+        ofs << dataPtr[ i ] << std::endl;
       }
+
+    }
+    else {
+
+      int* dataPtr = field->getIntPtr();
+      ofs << "int\n";
+      ofs << "LOOKUP_TABLE default\n";
+      for (int i=0; i < nnodes; ++i) {
+        ofs << dataPtr[ i ] << std::endl;
+      }
+    }
   }
 
   ofs.close();

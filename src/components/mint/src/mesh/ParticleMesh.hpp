@@ -8,7 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
 #ifndef PARTICLEMESH_HXX_
 #define PARTICLEMESH_HXX_
 
@@ -22,7 +21,7 @@
 namespace axom {
 namespace mint {
 
-class ParticleMesh : public Mesh
+class ParticleMesh:public Mesh
 {
 
 public:
@@ -64,7 +63,7 @@ public:
    *****************************************************************************
    */
   virtual int getMeshNumberOfNodes() const
-      { return this->getNumberOfParticles(); };
+  { return this->getNumberOfParticles(); };
 
   /*!
    *****************************************************************************
@@ -75,7 +74,7 @@ public:
    *****************************************************************************
    */
   virtual int getMeshNumberOfCells() const
-      { return this->getNumberOfParticles(); };
+  { return this->getNumberOfParticles(); };
 
   /*!
    *****************************************************************************
@@ -122,7 +121,7 @@ public:
    *****************************************************************************
    */
   virtual void getMeshNode( int nodeIdx, double* coordinates ) const
-    { this->getParticleCoordinates( nodeIdx, coordinates ); };
+  { this->getParticleCoordinates( nodeIdx, coordinates ); };
 
   /*!
    *****************************************************************************
@@ -134,7 +133,7 @@ public:
    *****************************************************************************
    */
   virtual double getMeshNodeCoordinate( int nodeIdx, int dim ) const
-        { return this->getParticlesCoordinatesArray(dim)[ nodeIdx ]; };
+  { return this->getParticlesCoordinatesArray(dim)[ nodeIdx ]; };
 
   /// @}
 
@@ -145,7 +144,7 @@ public:
    *****************************************************************************
    */
   int getNumberOfParticles() const
-    { return m_particle_coordinates->getNumberOfPoints(); }
+  { return m_particle_coordinates->getNumberOfPoints(); }
 
   /*!
    *****************************************************************************
@@ -235,7 +234,7 @@ inline void ParticleMesh::insertParticle( double x, double y, double z )
 
 //------------------------------------------------------------------------------
 inline void ParticleMesh::getParticleCoordinates(
-      int partIdx, double part_coords[3] ) const
+  int partIdx, double part_coords[3] ) const
 {
   SLIC_ASSERT( partIdx >= 0 && partIdx < this->getNumberOfParticles() );
 

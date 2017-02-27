@@ -121,7 +121,7 @@ public:
    *****************************************************************************
    */
   const IndexType* getCellOffSets() const
-      { return &m_cell_offsets[0]; };
+  { return &m_cell_offsets[0]; };
 
   /*!
    *****************************************************************************
@@ -154,7 +154,6 @@ public:
    *****************************************************************************
    */
   IndexType getCellLinearIndex(IndexType i, IndexType j, IndexType k=0) const;
-
 
   /*!
    *****************************************************************************
@@ -218,10 +217,10 @@ namespace mint {
 
 //------------------------------------------------------------------------------
 template < typename IndexType >
-Extent< IndexType >::Extent() :
-    m_ndims( -1 ),
-    m_jp(0),
-    m_kp(0)
+Extent< IndexType >::Extent():
+  m_ndims( -1 ),
+  m_jp(0),
+  m_kp(0)
 
 {
   this->buildCellOffsets();
@@ -229,8 +228,8 @@ Extent< IndexType >::Extent() :
 
 //------------------------------------------------------------------------------
 template < typename IndexType >
-Extent< IndexType >::Extent( int ndims, IndexType* ext ) :
-    m_ndims( ndims )
+Extent< IndexType >::Extent( int ndims, IndexType* ext ):
+  m_ndims( ndims )
 {
   SLIC_ASSERT( ndims >= 1 && ndims <= 3 );
 
@@ -248,7 +247,8 @@ Extent< IndexType >::Extent( int ndims, IndexType* ext ) :
 
     m_jp = this->size( 0 );
 
-  } else if ( ndims==3 ) {
+  }
+  else if ( ndims==3 ) {
 
     m_jp = this->size( 0 );
     m_kp = m_jp*this->size( 1 );
@@ -281,8 +281,8 @@ IndexType Extent< IndexType >::getNumNodes() const
 {
   IndexType n = 1;
   for ( int idim=0; idim < m_ndims; ++idim ) {
-     IndexType size = static_cast< IndexType >( this->size( idim ) );
-     n *= (size > 0)? size : 1;
+    IndexType size = static_cast< IndexType >( this->size( idim ) );
+    n *= (size > 0) ? size : 1;
   }
   return( n );
 }
@@ -294,8 +294,8 @@ IndexType Extent< IndexType >::getNumCells() const
 {
   IndexType n = 1;
   for ( int idim=0; idim < m_ndims; ++idim ) {
-     IndexType size = static_cast< IndexType >( this->size( idim )-1 );
-     n *= ( size > 0)? size : 1;
+    IndexType size = static_cast< IndexType >( this->size( idim )-1 );
+    n *= ( size > 0) ? size : 1;
   }
   return( n );
 }
@@ -304,21 +304,20 @@ IndexType Extent< IndexType >::getNumCells() const
 template < typename IndexType >
 inline
 IndexType Extent< IndexType >::getLinearIndex(
-        IndexType i, IndexType j, IndexType k) const
+  IndexType i, IndexType j, IndexType k) const
 {
   IndexType index = i + j*m_jp + k*m_kp;
   return( index );
 }
 
-
 //------------------------------------------------------------------------------
 template < typename IndexType >
 inline
 IndexType Extent< IndexType >::getCellLinearIndex(
-        IndexType i, IndexType j, IndexType k) const
+  IndexType i, IndexType j, IndexType k) const
 {
   IndexType cell_jp = (size(0)-1);
-  IndexType cell_kp = getDimension() == 3? cell_jp * (size(1)-1) : 0;
+  IndexType cell_kp = getDimension() == 3 ? cell_jp * (size(1)-1) : 0;
   IndexType index = i + j* cell_jp  + k*cell_kp;
   return( index );
 }
@@ -327,7 +326,7 @@ IndexType Extent< IndexType >::getCellLinearIndex(
 template < typename IndexType >
 inline
 void Extent< IndexType >::getGridIndex(
-        IndexType linearIdx, IndexType& i, IndexType& j) const
+  IndexType linearIdx, IndexType& i, IndexType& j) const
 {
   SLIC_ASSERT( m_ndims==2 );
 
@@ -339,9 +338,9 @@ void Extent< IndexType >::getGridIndex(
 template < typename IndexType >
 inline
 void Extent< IndexType >::getGridIndex(
-        IndexType linearIdx, IndexType& i, IndexType& j, IndexType& k) const
+  IndexType linearIdx, IndexType& i, IndexType& j, IndexType& k) const
 {
-  k = (m_kp > 0)? (linearIdx / m_kp) : 0;
+  k = (m_kp > 0) ? (linearIdx / m_kp) : 0;
   j = (linearIdx - k*m_kp) / m_jp;
   i = linearIdx - k*m_kp - j*m_jp;
 }

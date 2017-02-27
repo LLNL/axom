@@ -49,16 +49,16 @@ static const int vtk_types[] = {
 };
 
 static const int num_nodes[] = {
-   1,   // VERTEX
-   2,   // LINE_SEGMENT
-   3,   // LINEAR_TRIANGLE
-   4,   // LINEAR_QUAD
-   4,   // LINEAR_TET
-   8,   // LINEAR_HEX
-   6,   // LINEAR_PRISM
-   5,   // LINEAR_PYRAMID
+  1,    // VERTEX
+  2,    // LINE_SEGMENT
+  3,    // LINEAR_TRIANGLE
+  4,    // LINEAR_QUAD
+  4,    // LINEAR_TET
+  8,    // LINEAR_HEX
+  6,    // LINEAR_PRISM
+  5,    // LINEAR_PYRAMID
 
-   5    // MIXED
+  5     // MIXED
 };
 
 } /* namespace cell */

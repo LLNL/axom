@@ -8,8 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-
 #include "mint/MeshCoordinates.hpp"
 
 #include "slic/slic.hpp"
@@ -23,20 +21,20 @@ MeshCoordinates::MeshCoordinates(): m_ndims(2)
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates(int dimension) : m_ndims(dimension)
+MeshCoordinates::MeshCoordinates(int dimension): m_ndims(dimension)
 {
   this->initialize();
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates(int dimension,int npoints) : m_ndims(dimension)
+MeshCoordinates::MeshCoordinates(int dimension,int npoints): m_ndims(dimension)
 {
   this->initialize(npoints);
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates(int dimension, int ndims[3]) :
-        m_ndims(dimension)
+MeshCoordinates::MeshCoordinates(int dimension, int ndims[3]):
+  m_ndims(dimension)
 {
   m_coordinates.resize( m_ndims );
   for ( int i=0; i < m_ndims; ++i ) {
@@ -63,7 +61,7 @@ void MeshCoordinates::insertPoint( double x, double y )
   m_coordinates[ Y_COORDINATE ].push_back( y );
 
   SLIC_ASSERT( m_coordinates[ X_COORDINATE ].size() ==
-                     m_coordinates[ Y_COORDINATE ].size() );
+               m_coordinates[ Y_COORDINATE ].size() );
 }
 
 //------------------------------------------------------------------------------
@@ -75,17 +73,17 @@ void MeshCoordinates::insertPoint( double x, double y, double z )
   m_coordinates[ Y_COORDINATE ].push_back( y );
   m_coordinates[ Z_COORDINATE ].push_back( z );
 
-  SLIC_ASSERT( m_coordinates[ X_COORDINATE ].size() ==
-                     m_coordinates[ Y_COORDINATE ].size() );
-  SLIC_ASSERT( m_coordinates[ X_COORDINATE ].size() ==
-                     m_coordinates[ Z_COORDINATE ].size() );
+  SLIC_ASSERT(  m_coordinates[ X_COORDINATE ].size() ==
+                m_coordinates[ Y_COORDINATE ].size() );
+  SLIC_ASSERT(  m_coordinates[ X_COORDINATE ].size() ==
+                m_coordinates[ Z_COORDINATE ].size() );
 }
 
 //------------------------------------------------------------------------------
 void MeshCoordinates::setPoint( int pntIdx, double x, double y )
 {
-  SLIC_ASSERT( (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
-  SLIC_ASSERT( m_ndims == 2 );
+  SLIC_ASSERT(  (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
+  SLIC_ASSERT(  m_ndims == 2 );
 
   m_coordinates[ X_COORDINATE ][ pntIdx ] = x;
   m_coordinates[ Y_COORDINATE ][ pntIdx ] = y;
@@ -94,8 +92,8 @@ void MeshCoordinates::setPoint( int pntIdx, double x, double y )
 //------------------------------------------------------------------------------
 void MeshCoordinates::setPoint( int pntIdx, double x, double y, double z)
 {
-  SLIC_ASSERT( (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
-  SLIC_ASSERT( m_ndims == 3 );
+  SLIC_ASSERT(  (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
+  SLIC_ASSERT(  m_ndims == 3 );
 
   m_coordinates[ X_COORDINATE ][ pntIdx ] = x;
   m_coordinates[ Y_COORDINATE ][ pntIdx ] = y;
@@ -105,8 +103,8 @@ void MeshCoordinates::setPoint( int pntIdx, double x, double y, double z)
 //------------------------------------------------------------------------------
 double MeshCoordinates::getCoordinate( int pntIdx, int dim )
 {
-  SLIC_ASSERT( dim < m_ndims );
-  SLIC_ASSERT( (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
+  SLIC_ASSERT(  dim < m_ndims );
+  SLIC_ASSERT(  (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
   return m_coordinates[ dim ][ pntIdx ];
 }
 

@@ -18,7 +18,7 @@
 namespace axom {
 namespace mint {
 
-class CurvilinearMesh : public StructuredMesh
+class CurvilinearMesh:public StructuredMesh
 {
 public:
 
@@ -169,7 +169,6 @@ public:
    */
   void setNode( int nodeIdx, double x, double y );
 
-
   /*!
    *****************************************************************************
    * \brief Sets the coordinates of the node at the given index.
@@ -221,7 +220,6 @@ private:
 namespace axom {
 namespace mint {
 
-
 inline const double* CurvilinearMesh::getMeshCoordinateArray( int idim ) const
 {
   SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
@@ -231,14 +229,14 @@ inline const double* CurvilinearMesh::getMeshCoordinateArray( int idim ) const
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::setNode( int nodeIdx, double x, double y, double z)
 {
-  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
-  SLIC_ASSERT( this->getDimension()==3 );
+  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
+  SLIC_ASSERT(  this->getDimension()==3 );
   m_coordinates->setPoint( nodeIdx, x, y, z );
 }
 
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::setNode( int i,    int j,    int k,
-                                     double x, double y, double z )
+                                      double x, double y, double z )
 {
   int nodeIdx = m_extent->getLinearIndex( i, j, k );
   this->setNode( nodeIdx, x, y, z );
@@ -247,8 +245,8 @@ inline void CurvilinearMesh::setNode( int i,    int j,    int k,
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::setNode( int nodeIdx, double x, double y )
 {
-  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getMeshNumberOfNodes() );
-  SLIC_ASSERT( this->getDimension()==2 );
+  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getMeshNumberOfNodes() );
+  SLIC_ASSERT(  this->getDimension()==2 );
   m_coordinates->setPoint( nodeIdx, x, y );
 }
 
@@ -262,8 +260,8 @@ inline void CurvilinearMesh::setNode( int i, int j, double x, double y )
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::getNode(int nodeIdx, double* coordinates) const
 {
-  SLIC_ASSERT( coordinates != ATK_NULLPTR );
-  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
+  SLIC_ASSERT(  coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
 
   for ( int i=0; i < this->getDimension(); ++i ) {
     const double* coords = m_coordinates->getCoordinateArray( i );
@@ -275,8 +273,8 @@ inline void CurvilinearMesh::getNode(int nodeIdx, double* coordinates) const
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::getNode( int i, int j, double* coordinates ) const
 {
-  SLIC_ASSERT( coordinates != ATK_NULLPTR );
-  SLIC_ASSERT( this->getDimension()==2 );
+  SLIC_ASSERT(  coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  this->getDimension()==2 );
 
   const int nodeIdx = m_extent->getLinearIndex( i, j );
   this->getNode( nodeIdx, coordinates );
@@ -286,8 +284,8 @@ inline void CurvilinearMesh::getNode( int i, int j, double* coordinates ) const
 inline
 void CurvilinearMesh::getNode(int i, int j, int k, double* coordinates) const
 {
-  SLIC_ASSERT( coordinates !=  ATK_NULLPTR );
-  SLIC_ASSERT( this->getDimension()==3 );
+  SLIC_ASSERT(  coordinates !=  ATK_NULLPTR );
+  SLIC_ASSERT(  this->getDimension()==3 );
 
   const int nodeIdx = m_extent->getLinearIndex( i, j, k );
   this->getNode( nodeIdx, coordinates );
@@ -296,8 +294,8 @@ void CurvilinearMesh::getNode(int i, int j, int k, double* coordinates) const
 //------------------------------------------------------------------------------
 inline double CurvilinearMesh::getNodeCoordinate( int nodeIdx, int idim ) const
 {
-  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
-  SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
+  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
+  SLIC_ASSERT(  idim >= 0 && idim < this->getDimension() );
 
   const double* coord = m_coordinates->getCoordinateArray( idim );
   return( coord[nodeIdx] );
@@ -306,8 +304,8 @@ inline double CurvilinearMesh::getNodeCoordinate( int nodeIdx, int idim ) const
 //------------------------------------------------------------------------------
 inline double CurvilinearMesh::getNodeCoordinate( int i, int j, int idim ) const
 {
-  SLIC_ASSERT( this->getDimension()==2 );
-  SLIC_ASSERT( idim >= 0 && idim < 2 );
+  SLIC_ASSERT(  this->getDimension()==2 );
+  SLIC_ASSERT(  idim >= 0 && idim < 2 );
 
   const int nodeIdx = m_extent->getLinearIndex( i, j );
   return ( this->getNodeCoordinate(nodeIdx, idim) );
@@ -317,8 +315,8 @@ inline double CurvilinearMesh::getNodeCoordinate( int i, int j, int idim ) const
 inline
 double CurvilinearMesh::getNodeCoordinate( int i, int j, int k, int idim ) const
 {
-  SLIC_ASSERT( this->getDimension()==3 );
-  SLIC_ASSERT( idim >= 0 && idim < 3 );
+  SLIC_ASSERT(  this->getDimension()==3 );
+  SLIC_ASSERT(  idim >= 0 && idim < 3 );
 
   const int nodeIdx = m_extent->getLinearIndex( i, j, k );
   return ( this->getNodeCoordinate(nodeIdx, idim) );

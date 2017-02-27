@@ -8,7 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
 #ifndef MESH_HXX_
 #define MESH_HXX_
 
@@ -73,7 +72,7 @@ public:
    *****************************************************************************
    */
   inline bool hasExplicitCoordinates() const
-    { return mesh_properties::explicit_coordinates[ m_type ]; };
+  { return mesh_properties::explicit_coordinates[ m_type ]; };
 
   /*!
    *****************************************************************************
@@ -82,7 +81,7 @@ public:
    *****************************************************************************
    */
   inline bool hasExplicitConnectivity() const
-    { return mesh_properties::explicit_connectivity[ m_type ]; };
+  { return mesh_properties::explicit_connectivity[ m_type ]; };
 
   /*!
    *****************************************************************************
@@ -92,7 +91,7 @@ public:
    *****************************************************************************
    */
   inline bool hasMixedCellTypes() const
-    { return (m_type==MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH)? true : false; };
+  { return (m_type==MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH) ? true : false; };
 
   /*!
    *****************************************************************************
