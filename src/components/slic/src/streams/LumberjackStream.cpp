@@ -128,11 +128,14 @@ void LumberjackStream::write()
     return;
   }
 
-  if (m_lj->isOutputNode()) {
+  if ( m_lj->isOutputNode() ) {
+
     std::vector< asctoolkit::lumberjack::Message* > messages =
       m_lj->getMessages();
 
-    for (int i=0; i<(int)(messages.size()); ++i) {
+    const int nmessages = static_cast< int >( messages.size() );
+    for ( int i=0; i < nmessages; ++i) {
+
       (*m_stream) << this->getFormatedMessage( message::getLevelAsString(
                                                  static_cast< message::Level >(
                                                    messages[i]->level()) ),
@@ -142,6 +145,7 @@ void LumberjackStream::write()
                                                messages[i]->fileName(),
                                                messages[i]->lineNumber() );
     }
+
     m_lj->clearMessages();
   }
 }
