@@ -36,8 +36,7 @@
 // C/C++ includes
 #include <string> // For STL string
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 /*!
@@ -132,12 +131,12 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Pushes messages incrementally up the log stream. It's a NO-OP by default.
+   * \brief Pushes messages incrementally up the log stream. NO-OP by default.
    * \note The intent of this method is to be overridden by concrete
    *  implementations that need to be incrementally advanced. This is primarily
-   *  useful for applications running in a distributed MPI environment, where the push
-   *  is a collective operation intended for a incrementally advancing messages through
-   *  the log stream.
+   *  useful for applications running in a distributed MPI environment, where
+   *  the push is a collective operation intended for a incrementally advancing
+   *  messages through the log stream.
    *****************************************************************************
    */
   virtual void push() { };
@@ -196,6 +195,6 @@ private:
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* LOGSTREAM_HPP_ */

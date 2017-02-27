@@ -42,7 +42,7 @@ namespace lumberjack {
 }
 }
 
-namespace asctoolkit {
+namespace axom {
 namespace slic {
 
 /*!
@@ -109,7 +109,7 @@ public:
   /*!
    *****************************************************************************
    * \brief Pushes all messages once to their parent node according to Lumberjack's
-   *  Communication scheme. This does not guarantee all messages have reached the 
+   *  Communication scheme. This does not guarantee all messages have reached the
    *  output node. This does not write out to the given stream.
    *****************************************************************************
    */
@@ -154,6 +154,6 @@ private:
 };
 
 } /* namespace slic */
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* LUMBERJACKSTREAM_HPP_ */

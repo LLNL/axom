@@ -33,7 +33,7 @@
 #include <mpi.h> // For MPI
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slic {
 
 /*!
@@ -124,6 +124,6 @@ private:
 };
 
 } /* namespace slic */
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* SYNCHRONIZEDSTREAM_HPP_ */

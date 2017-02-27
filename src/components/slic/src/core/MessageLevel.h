@@ -23,8 +23,7 @@
 
 #include <string>
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 namespace message {
@@ -125,6 +124,6 @@ static const flags masks[ message::Num_Levels ] = {
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* MESSAGELEVEL_H_ */

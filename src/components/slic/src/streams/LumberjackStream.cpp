@@ -24,10 +24,11 @@
 
 #include "common/ATKMacros.hpp"
 #include "common/StringUtilities.hpp"
+
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 #include "lumberjack/Lumberjack.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slic {
 
 //------------------------------------------------------------------------------
@@ -84,7 +85,7 @@ void LumberjackStream::append( message::Level msgLevel,
                                bool ATK_NOT_USED(filter_duplicates) )
 {
   if ( m_lj == ATK_NULLPTR ) {
-    std::cerr << "ERROR: SLIC called NULL Lumberjack instance in LumberjackStream::append!\n";
+    std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::append!\n";
     return;
   }
 
@@ -95,7 +96,7 @@ void LumberjackStream::append( message::Level msgLevel,
 void LumberjackStream::flush()
 {
   if ( m_lj == ATK_NULLPTR ) {
-    std::cerr << "ERROR: SLIC called NULL Lumberjack instance in LumberjackStream::flush!\n";
+    std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::flush!\n";
     return;
   }
 
@@ -107,7 +108,7 @@ void LumberjackStream::flush()
 void LumberjackStream::push()
 {
   if ( m_lj == ATK_NULLPTR ) {
-    std::cerr << "ERROR: SLIC called NULL Lumberjack instance in LumberjackStream::push!\n";
+    std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::push!\n";
     return;
   }
 
@@ -118,7 +119,7 @@ void LumberjackStream::push()
 void LumberjackStream::write()
 {
   if ( m_lj == ATK_NULLPTR ) {
-    std::cerr << "ERROR: SLIC called NULL Lumberjack instance in LumberjackStream::write!\n";
+    std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::write!\n";
     return;
   }
 
@@ -157,4 +158,4 @@ void LumberjackStream::finalizeLumberjack()
 }
 
 } /* namespace slic */
-} /* namespace asctoolkit */
+} /* namespace axom */

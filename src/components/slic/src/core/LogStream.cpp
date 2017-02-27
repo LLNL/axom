@@ -24,8 +24,7 @@
 #include <ctime>
 #include <sstream>
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 
@@ -119,4 +118,4 @@ std::string LogStream::getFormatedMessage( const std::string& msgLevel,
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
