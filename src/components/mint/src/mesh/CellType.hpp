@@ -8,20 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file CellType.hxx
- *
- * \date Sep 12, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef CELLTYPE_HPP_
 #define CELLTYPE_HPP_
 
@@ -45,6 +31,7 @@ enum  {
   MINT_NUM_CELL_TYPES  //!< NUM_CELL_TYPES
 };
 
+namespace axom {
 namespace mint {
 
 namespace cell {
@@ -75,7 +62,7 @@ static const int num_nodes[] = {
 };
 
 } /* namespace cell */
-
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* CELLTYPE_HXX_ */

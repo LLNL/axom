@@ -9,19 +9,6 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file ParticleMesh.hxx
- *
- * \date Sep 27, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef PARTICLEMESH_HXX_
 #define PARTICLEMESH_HXX_
 
@@ -32,8 +19,8 @@
 
 #include <cstddef> // for ATK_NULLPTR
 
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 class ParticleMesh : public Mesh
 {
@@ -218,12 +205,13 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 inline double* ParticleMesh::getParticlesCoordinatesArray( int idim ) const
 {
@@ -259,5 +247,6 @@ inline void ParticleMesh::getParticleCoordinates(
 }
 
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* PARTICLEMESH_HXX_ */

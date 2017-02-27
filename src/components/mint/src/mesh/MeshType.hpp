@@ -8,19 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file
- *
- * \date Sep 19, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
 #ifndef MESHTYPE_HPP_
 #define MESHTYPE_HPP_
 
@@ -48,6 +35,7 @@ enum  {
 };
 
 
+namespace axom {
 namespace mint {
 
 namespace mesh_properties {
@@ -121,8 +109,7 @@ static const bool explicit_connectivity[] = {
 
 
 } /* namespace mesh_properties */
-
 } /* namespace mint */
+} /* namespace axom */
 
-
-#endif /* MESHTYPE_HXX_ */
+#endif /* MESHTYPE_HPP_ */

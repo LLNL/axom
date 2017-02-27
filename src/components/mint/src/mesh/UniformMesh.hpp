@@ -8,28 +8,14 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file UniformMesh.hxx
- *
- * \date Sep 26, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef UNIFORMMESH_HXX_
 #define UNIFORMMESH_HXX_
 
 #include "mint/StructuredMesh.hpp"
 #include "slic/slic.hpp"
 
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 class UniformMesh : public StructuredMesh
 {
@@ -183,12 +169,13 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 //          In-lined Method Implementations
 //------------------------------------------------------------------------------
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 inline void UniformMesh::getOrigin( double origin[3] ) const
 {
@@ -278,5 +265,6 @@ double UniformMesh::getNodeCoordinate( int i, int j, int k, int idim ) const
 }
 
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* UNIFORMMESH_HXX_ */

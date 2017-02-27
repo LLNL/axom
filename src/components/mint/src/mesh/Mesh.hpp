@@ -9,25 +9,13 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file
- *
- * \date Sep 19, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef MESH_HXX_
 #define MESH_HXX_
 
 #include "common/ATKMacros.hpp"
 #include "mint/MeshType.hpp"
 
+namespace axom {
 namespace mint {
 
 // Forward Declarations
@@ -251,5 +239,6 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* MESH_HXX_ */

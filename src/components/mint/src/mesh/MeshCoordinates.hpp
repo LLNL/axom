@@ -8,19 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file MeshCoordinates.cxx
- *
- * \date Sep 12, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
 #ifndef MESHCOORDINATES_HXX_
 #define MESHCOORDINATES_HXX_
 
@@ -33,8 +20,8 @@
 #define Y_COORDINATE 1
 #define Z_COORDINATE 2
 
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 /*!
  *******************************************************************************
@@ -212,5 +199,6 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* MESHCOORDINATES_HXX_ */

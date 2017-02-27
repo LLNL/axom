@@ -8,24 +8,10 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file FieldTypes.hpp
- *
- * \date Dec 14, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef FIELDTYPES_HPP_
 #define FIELDTYPES_HPP_
 
-
+namespace axom {
 namespace mint {
 
 enum FieldTypes {
@@ -53,7 +39,8 @@ struct field_of< int > {
     static const int type = INTEGER_FIELD_TYPE;
 };
 
-}
+} /* namespace mint */
+} /* namespace axom */
 
 
 #endif /* FIELDTYPES_HPP_ */

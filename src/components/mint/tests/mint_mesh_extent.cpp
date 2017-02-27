@@ -9,22 +9,10 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file
- *
- * \date Dec 15, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #include "gtest/gtest.h"
 
 #include "mint/Extent.hpp"
+using namespace axom;
 
 TEST( mint_extent, basic )
 {

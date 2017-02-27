@@ -8,21 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file CellConnectivity.hxx
- *
- * \date Sep 12, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
-
 #ifndef CELLCONNECTIVITY_HXX_
 #define CELLCONNECTIVITY_HXX_
 
@@ -37,6 +22,7 @@
 #include <cstring> // for memcpy()
 #include <vector>  // for STL vector
 
+namespace axom {
 namespace mint {
 
 
@@ -348,5 +334,6 @@ private:
 
 
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* CELLCONNECTIVITY_HXX_ */

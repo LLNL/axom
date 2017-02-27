@@ -8,20 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file FieldData.cpp
- *
- * \date Sep 19, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #include "FieldData.hpp"
 
 // ATK includes
@@ -30,6 +16,7 @@
 
 // C/C++ includes
 
+namespace axom {
 namespace mint {
 
 
@@ -112,3 +99,4 @@ bool FieldData::empty() const
 }
 
 } /* namespace mint */
+} /* namespace axom */

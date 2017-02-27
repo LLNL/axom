@@ -9,19 +9,6 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file FieldVariable.hpp
- *
- * \date Dec 11, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef FIELDVARIABLE_HPP_
 #define FIELDVARIABLE_HPP_
 
@@ -37,6 +24,7 @@
 #include <cstddef> // for NULL
 #include <string>  // for C++ string
 
+namespace axom {
 namespace mint {
 
 template< typename FieldType >
@@ -97,11 +85,13 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 
 //------------------------------------------------------------------------------
 //                  FIELD VARIABLE IMPLEMENTATION
 //------------------------------------------------------------------------------
+namespace axom {
 namespace mint {
 
 template < typename FieldType >
@@ -147,5 +137,6 @@ int* FieldVariable< FieldType >::getIntPtr()
 }
 
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* FIELDVARIABLE_HPP_ */

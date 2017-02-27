@@ -9,25 +9,11 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file ParticleMesh.hxx
- *
- * \date Sep 27, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
-
 #include "mint/ParticleMesh.hpp"
 #include "common/CommonTypes.hpp"
 
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 ParticleMesh::ParticleMesh( ) :
     Mesh( -1, MINT_UNDEFINED_MESH, -1, -1 ),
@@ -60,3 +46,4 @@ ParticleMesh::~ParticleMesh()
 }
 
 } /* namespace mint */
+} /* namespace axom */

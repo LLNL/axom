@@ -9,26 +9,13 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file MeshCoordinates.cxx
- *
- * \date Sep 12, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 
 #include "mint/MeshCoordinates.hpp"
 
 #include "slic/slic.hpp"
 
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 MeshCoordinates::MeshCoordinates(): m_ndims(2)
 {
@@ -160,3 +147,4 @@ void MeshCoordinates::initialize( int npoints )
 }
 
 } /* namespace mint */
+} /* namespace axom */

@@ -8,20 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file StructuredMesh.hxx
- *
- * \date Sep 20, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef STRUCTUREDMESH_HXX_
 #define STRUCTUREDMESH_HXX_
 
@@ -36,8 +22,8 @@
 // C/C++ includes
 #include <cstddef> // for ATK_NULLPTR
 
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 class StructuredMesh : public Mesh
 {
@@ -363,10 +349,12 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
+namespace axom {
 namespace mint {
 
 inline void StructuredMesh::getCell(int cellIdx, int* cell) const
@@ -459,7 +447,7 @@ inline void StructuredMesh::getCell(int i, int j, int k, int* cell) const
 
 }
 
-
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* STRUCTUREDMESH_HXX_ */

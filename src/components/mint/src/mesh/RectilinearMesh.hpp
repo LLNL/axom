@@ -8,20 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file RectilinearMesh.hxx
- *
- * \date Sep 26, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef RECTILINEARMESH_HXX_
 #define RECTILINEARMESH_HXX_
 
@@ -32,8 +18,8 @@
 #include "common/CommonTypes.hpp"
 
 
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 class RectilinearMesh : public StructuredMesh
 {
@@ -183,12 +169,13 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 inline void RectilinearMesh::setCoordinate( int idim, int i, double coord )
 {
@@ -281,4 +268,5 @@ inline double RectilinearMesh::getNodeCoordinate(
 }
 
 } /* namespace mint */
+} /* namespace axom */
 #endif /* RECTILINEARMESH_HXX_ */

@@ -9,28 +9,13 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file StructuredMesh.hxx
- *
- * \date Sep 20, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
-
 #include "mint/StructuredMesh.hpp"
 
 #include "mint/MeshType.hpp"
 
 
-namespace mint
-{
-
+namespace axom {
+namespace mint {
 
 StructuredMesh::StructuredMesh() :
     Mesh(-1,MINT_UNDEFINED_MESH,-1,-1),
@@ -65,6 +50,5 @@ StructuredMesh::~StructuredMesh()
   m_extent = ATK_NULLPTR;
 }
 
-
-
 } /* namespace mint */
+} /* namespace axom */

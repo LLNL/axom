@@ -8,20 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file
- *
- * \date Sep 19, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef FIELD_HPP_
 #define FIELD_HPP_
 
@@ -31,6 +17,7 @@
 // C/C++ includes
 #include <string>
 
+namespace axom {
 namespace mint {
 
 class Field
@@ -134,5 +121,6 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* FIELD_HPP_ */
