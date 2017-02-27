@@ -499,8 +499,8 @@ std::ostream& Vector< T, NDIMS >::print(std::ostream& os) const
     os  << static_cast< typename NonChar< T >::type >( m_components[dim] )
         << " ";
   }
-  os << static_cast< typename NonChar< T >::type >( m_components[NDIMS-1] ) <<
-      ">";
+  os  << static_cast< typename NonChar< T >::type >( m_components[NDIMS-1] )
+      << ">";
 
   return os;
 }

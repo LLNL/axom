@@ -8,19 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file
- *
- * \date Dec 18, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #include "gtest/gtest.h"
 
 #include "primal/Orientation.hpp"

@@ -10,10 +10,9 @@
 
 /*!
  *******************************************************************************
- * \file Intersection.hpp
+ * \file
  *
- * This file provides several functions to test whether geometric primitives
- * intersect.
+ * \brief Consists of functions to test intersection among geometric primitives.
  *******************************************************************************
  */
 

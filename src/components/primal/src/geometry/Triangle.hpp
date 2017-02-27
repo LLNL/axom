@@ -189,9 +189,9 @@ public:
 
     Point< T,3 > bary;
 
-    Vector< T,3 > u = 
-		VectorType::cross_product( VectorType(m_points[0],m_points[1]),
-                                   VectorType(m_points[0],m_points[2])   s);
+    Vector< T,3 > u =
+      VectorType::cross_product( VectorType(m_points[0],m_points[1]),
+                                 VectorType(m_points[0],m_points[2]) );
     const T x= std::abs(u[0]);
     const T y= std::abs(u[1]);
     const T z= std::abs(u[2]);

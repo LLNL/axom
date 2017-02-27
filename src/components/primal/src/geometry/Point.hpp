@@ -317,8 +317,8 @@ std::ostream& Point< T, NDIMS >::print(std::ostream& os) const
   for (int dim=0; dim < NDIMS -1; ++dim) {
     os << static_cast< typename NonChar< T >::type >(m_components[dim]) << ",";
   }
-  os << static_cast< typename NonChar< T >::type >(m_components[NDIMS-1]) <<
-      ")";
+  os  << static_cast< typename NonChar< T >::type >(m_components[NDIMS-1])
+      << ")";
 
   return os;
 }

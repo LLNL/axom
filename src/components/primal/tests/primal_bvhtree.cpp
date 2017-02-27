@@ -8,17 +8,8 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/*!
- *******************************************************************************
- * \file primal_bucket_tree.cpp
- *
- * \date Jan 23, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
 #include "gtest/gtest.h"
 
-// QueST includes
 #include "primal/BoundingBox.hpp"
 #include "primal/BVHTree.hpp"
 #include "primal/Point.hpp"

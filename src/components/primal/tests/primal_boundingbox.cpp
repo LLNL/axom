@@ -216,10 +216,10 @@ TEST( primal_boundingBox, bb_copy_and_assignment)
   EXPECT_EQ(bbox4.getMax(), bbox5.getMax());
   EXPECT_NE(bbox4.getMin(),
             bbox1.getMin()) <<
-  "Empty bb should not be equal to an initialized one.";
+    "Empty bb should not be equal to an initialized one.";
   EXPECT_NE(bbox4.getMax(),
             bbox1.getMax()) <<
-  "Empty bb should not be equal to an initialized one.";
+    "Empty bb should not be equal to an initialized one.";
 
 }
 
