@@ -32,38 +32,40 @@ namespace axom {
 namespace slic {
 
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit ) :
-    m_isLJOwnedBySLIC( false ),
-    m_stream( stream )
+LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm,
+                                    int ranksLimit ):
+  m_isLJOwnedBySLIC( false ),
+  m_stream( stream )
 {
   this->initializeLumberjack( comm, ranksLimit );
 }
 
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
-                                    const std::string& format ) :
-    m_isLJOwnedBySLIC( false ),
-    m_stream( stream )
+LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm,
+                                    int ranksLimit,
+                                    const std::string& format ):
+  m_isLJOwnedBySLIC( false ),
+  m_stream( stream )
 {
   this->initializeLumberjack( comm, ranksLimit );
   this->setFormatString( format );
 }
 
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream(std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj):
-    m_lj( lj ),
-    m_isLJOwnedBySLIC( false ),
-    m_stream( stream )
-{
-}
+LumberjackStream::LumberjackStream(std::ostream* stream,
+                                   asctoolkit::lumberjack::Lumberjack* lj):
+  m_lj( lj ),
+  m_isLJOwnedBySLIC( false ),
+  m_stream( stream )
+{}
 
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream( std::ostream* stream,
                                     asctoolkit::lumberjack::Lumberjack* lj,
-                                    const std::string& format ) :
-    m_lj( lj ),
-    m_isLJOwnedBySLIC( false ),
-    m_stream( stream )
+                                    const std::string& format ):
+  m_lj( lj ),
+  m_isLJOwnedBySLIC( false ),
+  m_stream( stream )
 {
   this->setFormatString( format );
 }
@@ -85,7 +87,8 @@ void LumberjackStream::append( message::Level msgLevel,
                                bool ATK_NOT_USED(filter_duplicates) )
 {
   if ( m_lj == ATK_NULLPTR ) {
-    std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::append!\n";
+    std::cerr <<
+      "ERROR: NULL Lumberjack instance in LumberjackStream::append!\n";
     return;
   }
 
@@ -96,7 +99,8 @@ void LumberjackStream::append( message::Level msgLevel,
 void LumberjackStream::flush()
 {
   if ( m_lj == ATK_NULLPTR ) {
-    std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::flush!\n";
+    std::cerr <<
+      "ERROR: NULL Lumberjack instance in LumberjackStream::flush!\n";
     return;
   }
 
@@ -119,18 +123,23 @@ void LumberjackStream::push()
 void LumberjackStream::write()
 {
   if ( m_lj == ATK_NULLPTR ) {
-    std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::write!\n";
+    std::cerr <<
+      "ERROR: NULL Lumberjack instance in LumberjackStream::write!\n";
     return;
   }
 
   if (m_lj->isOutputNode()) {
-    std::vector<asctoolkit::lumberjack::Message*> messages = m_lj->getMessages();
+    std::vector< asctoolkit::lumberjack::Message* > messages =
+      m_lj->getMessages();
 
-    for(int i=0; i<(int)(messages.size()); ++i){
+    for (int i=0; i<(int)(messages.size()); ++i) {
       (*m_stream) << this->getFormatedMessage( message::getLevelAsString(
-                                                 static_cast<message::Level>(messages[i]->level()) ),
-                                               messages[i]->text(), messages[i]->tag(),
-                                               messages[i]->stringOfRanks(), messages[i]->fileName(),
+                                                 static_cast< message::Level >(
+                                                   messages[i]->level()) ),
+                                               messages[i]->text(),
+                                               messages[i]->tag(),
+                                               messages[i]->stringOfRanks(),
+                                               messages[i]->fileName(),
                                                messages[i]->lineNumber() );
     }
     m_lj->clearMessages();

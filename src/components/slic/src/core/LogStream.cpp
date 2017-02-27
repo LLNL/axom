@@ -27,20 +27,15 @@
 namespace axom {
 namespace slic {
 
-
 //------------------------------------------------------------------------------
-LogStream::LogStream() :
-    m_formatString(
-     "*****\n[<LEVEL>]\n\n <MESSAGE> \n\n <FILE>\n<LINE>\n****\n")
-{
-
-}
+LogStream::LogStream():
+  m_formatString(
+    "*****\n[<LEVEL>]\n\n <MESSAGE> \n\n <FILE>\n<LINE>\n****\n")
+{}
 
 //------------------------------------------------------------------------------
 LogStream::~LogStream()
-{
-
-}
+{}
 
 //------------------------------------------------------------------------------
 void LogStream::replaceKey( std::string& msg,
@@ -100,7 +95,8 @@ std::string LogStream::getFormatedMessage( const std::string& msgLevel,
 
     this->replaceKey( msg, "<LINE>", oss.str() );
 
-  } else {
+  }
+  else {
 
     this->replaceKey( msg, "<LINE>", "" );
 
