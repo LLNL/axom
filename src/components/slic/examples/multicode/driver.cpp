@@ -30,7 +30,7 @@
 
 #define N 10
 
-using namespace asctoolkit;
+using namespace axom;
 
 std::ofstream hsp;
 
