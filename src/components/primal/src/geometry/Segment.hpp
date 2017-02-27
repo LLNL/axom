@@ -8,7 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
 #ifndef SEGMENT_HPP_
 #define SEGMENT_HPP_
 
@@ -30,7 +29,7 @@ template < typename T,int NDIMS >
 class Segment
 {
 public:
-    typedef Point< T,NDIMS > PointType;
+  typedef Point< T,NDIMS > PointType;
 
 public:
 
@@ -91,17 +90,14 @@ namespace axom {
 namespace primal {
 
 template < typename T, int NDIMS >
-Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B) :
-    m_source( A ),
-    m_target( B )
-{
-
-}
+Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B):
+  m_source( A ),
+  m_target( B )
+{}
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 Segment< T,NDIMS >::~Segment() { }
-
 
 } /* namespacce primal */
 

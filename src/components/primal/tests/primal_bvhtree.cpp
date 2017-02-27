@@ -38,18 +38,18 @@ TEST( primal_bucket_tree, insert_object )
   TreeType bucketTree( 3,2 );
 
   EXPECT_TRUE( bucketTree.empty() );
-  EXPECT_EQ( 0, bucketTree.getNumLevels() );
-  EXPECT_EQ( 2, bucketTree.getMaxNumLevels() );
-  EXPECT_EQ( 0, bucketTree.getNumberOfObjects() );
+  EXPECT_EQ(  0,  bucketTree.getNumLevels() );
+  EXPECT_EQ(  2,  bucketTree.getMaxNumLevels() );
+  EXPECT_EQ(  0,  bucketTree.getNumberOfObjects() );
 
   for ( int i=0; i < 5; ++i ) {
 
     bucketTree.insert( bb, i );
 
     EXPECT_FALSE( bucketTree.empty() );
-    EXPECT_EQ( 2, bucketTree.getMaxNumLevels() );
-    EXPECT_EQ( 1, bucketTree.getNumLevels() );
-    EXPECT_EQ( i+1, bucketTree.getBucketNumObjects( 0 ) );
+    EXPECT_EQ(  2,    bucketTree.getMaxNumLevels() );
+    EXPECT_EQ(  1,    bucketTree.getNumLevels() );
+    EXPECT_EQ(  i+1,  bucketTree.getBucketNumObjects( 0 ) );
 
     bb.expand( 0.5 );
 
@@ -65,15 +65,14 @@ TEST( primal_bucket_tree, insert_object )
   BoxType expected_bb( PointType::zero(), PointType::ones() );
   for ( int i=0; i < 5; ++i ) {
 
-     const int objIdx = objs[ i ];
+    const int objIdx = objs[ i ];
 
-     EXPECT_EQ( expected_bb, bucketTree.getObjectBox( objIdx ) );
-     EXPECT_TRUE( bucketBox.contains( bucketTree.getObjectBox( objIdx ) ) );
-     EXPECT_EQ( i, bucketTree.getObjectData( objIdx ) );
+    EXPECT_EQ( expected_bb, bucketTree.getObjectBox( objIdx ) );
+    EXPECT_TRUE( bucketBox.contains( bucketTree.getObjectBox( objIdx ) ) );
+    EXPECT_EQ( i, bucketTree.getObjectData( objIdx ) );
 
-     expected_bb.expand( 0.5 );
+    expected_bb.expand( 0.5 );
   }
-
 
 }
 

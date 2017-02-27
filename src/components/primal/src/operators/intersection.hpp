@@ -8,7 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
 /*!
  *******************************************************************************
  * \file Intersection.hpp
@@ -17,7 +16,6 @@
  * intersect.
  *******************************************************************************
  */
-
 
 #ifndef INTERSECTION_HPP_
 #define INTERSECTION_HPP_
@@ -42,8 +40,8 @@ namespace primal {
  * an edge or a vertex of t1 intersecting any part of t2.
  *******************************************************************************
  */
-template < typename T>
-bool intersect( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
+template < typename T >
+bool intersect( const Triangle< T, 3 >& t1, const Triangle< T, 3 >& t2)
 {
   return detail::intersect_tri3D_tri3D(t1, t2);
 }
@@ -57,8 +55,8 @@ bool intersect( const Triangle<T, 3>& t1, const Triangle<T, 3>& t2)
  * an edge or a vertex of t1 intersecting any part of t2.
  *******************************************************************************
  */
-template < typename T>
-bool intersect( const Triangle<T, 2>& t1, const Triangle<T, 2>& t2)
+template < typename T >
+bool intersect( const Triangle< T, 2 >& t1, const Triangle< T, 2 >& t2)
 {
   return detail::intersect_tri2D_tri2D(t1, t2);
 }
@@ -71,7 +69,7 @@ bool intersect( const Triangle<T, 2>& t1, const Triangle<T, 2>& t2)
  *******************************************************************************
  */
 template < typename T >
-bool intersect( const Ray<T,2>& R, const Segment<T,2>& S, Point<T,2>& ip )
+bool intersect( const Ray< T,2 >& R, const Segment< T,2 >& S, Point< T,2 >& ip )
 {
   return detail::intersect_ray_seg(R, S, ip);
 }
@@ -86,10 +84,10 @@ bool intersect( const Ray<T,2>& R, const Segment<T,2>& S, Point<T,2>& ip )
  * Real Time Collision Detection by Christer Ericson.
  *******************************************************************************
  */
-template < typename T, int DIM>
-bool intersect( const Ray<T,DIM> & R,
-                const BoundingBox<T,DIM> & bb,
-                Point<T,DIM> & ip)
+template < typename T, int DIM >
+bool intersect( const Ray< T,DIM > & R,
+                const BoundingBox< T,DIM > & bb,
+                Point< T,DIM > & ip)
 {
   return detail::intersect_ray_bbox(R, bb, ip);
 }
@@ -105,10 +103,10 @@ bool intersect( const Ray<T,DIM> & R,
  * WIP: More test cases for this
  *******************************************************************************
  */
-template < typename T, int DIM>
-bool intersect( const Segment<T,DIM> & S,
-                const BoundingBox<T,DIM> & bb,
-                Point<T,DIM> & ip)
+template < typename T, int DIM >
+bool intersect( const Segment< T,DIM > & S,
+                const BoundingBox< T,DIM > & bb,
+                Point< T,DIM > & ip)
 {
   return detail::intersect_seg_bbox(S, bb, ip);
 }
@@ -121,9 +119,9 @@ bool intersect( const Segment<T,DIM> & S,
  * \return true iff bb1 intersects with bb2, otherwise, false.
  *******************************************************************************
  */
-template < typename T, int DIM>
-bool intersect( const BoundingBox<T, DIM>& bb1,
-                const BoundingBox<T, DIM>& bb2)
+template < typename T, int DIM >
+bool intersect( const BoundingBox< T, DIM >& bb1,
+                const BoundingBox< T, DIM >& bb2)
 {
   return bb1.intersects(bb2);
 }
@@ -136,8 +134,8 @@ bool intersect( const BoundingBox<T, DIM>& bb1,
  * \return true iff tri intersects with bb, otherwise, false.
  *******************************************************************************
  */
-template < typename T>
-bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
+template < typename T >
+bool intersect( const Triangle< T, 3 >& tri, const BoundingBox< T, 3 >& bb)
 {
   return detail::intersect_tri_bbox(tri, bb);
 }
@@ -151,7 +149,7 @@ bool intersect( const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bb)
  *******************************************************************************
  */
 template < typename T >
-bool intersect(const Triangle<T, 3>& tri, const Ray<T,3>& ray)
+bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray)
 {
   return detail::intersect_tri_ray(tri, ray);
 }
@@ -165,7 +163,7 @@ bool intersect(const Triangle<T, 3>& tri, const Ray<T,3>& ray)
  *******************************************************************************
  */
 template < typename T >
-bool intersect(const Triangle<T, 3>& tri, const Segment<T,3>& seg)
+bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg)
 {
   return detail::intersect_tri_segment(tri, seg);
 }

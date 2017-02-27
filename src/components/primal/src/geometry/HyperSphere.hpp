@@ -8,7 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
 #ifndef HYPERSPHERE_HPP_
 #define HYPERSPHERE_HPP_
 
@@ -37,7 +36,7 @@ namespace primal {
  *  distance and inside/outside queries.
  *******************************************************************************
  */
-template< typename T, int NDIMS >
+template < typename T, int NDIMS >
 class HyperSphere
 {
 public:
@@ -65,7 +64,7 @@ public:
    * \param [in] other The hypersphere to copy
    *****************************************************************************
    */
-  HyperSphere( const HyperSphere<T,NDIMS>& other ) { *this = other; };
+  HyperSphere( const HyperSphere< T,NDIMS >& other ) { *this = other; };
 
   /*!
    *****************************************************************************
@@ -80,7 +79,7 @@ public:
    * \param [in] rhs  HyperSphere instance on right-hand-side.
    *****************************************************************************
    */
-  HyperSphere<T,NDIMS>& operator=(const HyperSphere<T,NDIMS>& rhs);
+  HyperSphere< T,NDIMS >& operator=(const HyperSphere< T,NDIMS >& rhs);
 
   /*!
    *****************************************************************************
@@ -130,8 +129,8 @@ private:
 /// \name Pre-defined HyperSpheres for convenience
 /// @{
 
-typedef HyperSphere<double,3> Sphere;
-typedef HyperSphere<double,2> Circle;
+typedef HyperSphere< double,3 > Sphere;
+typedef HyperSphere< double,2 > Circle;
 /// @}
 
 } /* namespace primal */
@@ -145,14 +144,14 @@ namespace primal {
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-HyperSphere< T,NDIMS >::HyperSphere( T radius ) : m_radius(radius)
+HyperSphere< T,NDIMS >::HyperSphere( T radius ): m_radius(radius)
 {
   std::fill( m_center, m_center+NDIMS, 0.0 );
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-HyperSphere< T,NDIMS >::HyperSphere( T* center, T radius ) : m_radius(radius)
+HyperSphere< T,NDIMS >::HyperSphere( T* center, T radius ): m_radius(radius)
 {
   SLIC_ASSERT( center != ATK_NULLPTR );
   memcpy( m_center, center, NDIMS*sizeof(T) );
@@ -165,7 +164,7 @@ HyperSphere< T,NDIMS >::~HyperSphere() { }
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 inline HyperSphere< T,NDIMS >& HyperSphere< T,NDIMS >::operator=(
-        const HyperSphere< T,NDIMS >& rhs)
+  const HyperSphere< T,NDIMS >& rhs)
 {
   if ( this == &rhs ) {
     return *this;
@@ -184,8 +183,8 @@ T HyperSphere< T,NDIMS >::getSignedDistance( T* q )
 
   T d = 0.0;
   for ( int i=0; i < NDIMS; ++i ) {
-     const T dx = q[ i ]-m_center[ i ];
-     d += (dx*dx);
+    const T dx = q[ i ]-m_center[ i ];
+    d += (dx*dx);
   }
 
   return( std::sqrt( d )-m_radius );
@@ -206,12 +205,14 @@ int HyperSphere< T,NDIMS >::getOrientation( T* q )
 
     orient = ON_BOUNDARY;
 
-  } else if ( signed_distance < 0.0f ) {
+  }
+  else if ( signed_distance < 0.0f ) {
 
     // inside
     orient = ON_NEGATIVE_SIDE;
 
-  } else {
+  }
+  else {
 
     // outside
     orient = ON_POSITIVE_SIDE;

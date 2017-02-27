@@ -8,7 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
 #ifndef VECTOR_HPP_
 #define VECTOR_HPP_
 
@@ -26,7 +25,6 @@ namespace primal {
 // Forward declare the templated classes and operator functions
 template < typename T,int NDIMS >
 class Vector;
-
 
 /// \name Forward Declared Overloaded Operators
 /// @{
@@ -63,7 +61,7 @@ Vector< T,NDIMS > operator-( const Vector< T,NDIMS >& A,
  *******************************************************************************
  */
 template < typename T,int NDIMS >
-Vector< T,NDIMS > operator-( const Vector<T, NDIMS> & vec1 );
+Vector< T,NDIMS > operator-( const Vector< T, NDIMS > & vec1 );
 
 /*!
  *******************************************************************************
@@ -74,7 +72,7 @@ Vector< T,NDIMS > operator-( const Vector<T, NDIMS> & vec1 );
  *******************************************************************************
  */
 template < typename T,int NDIMS >
-Vector< T,NDIMS > operator*(const Vector<T, NDIMS>& vec, const T scalar);
+Vector< T,NDIMS > operator*(const Vector< T, NDIMS >& vec, const T scalar);
 
 /*!
  *******************************************************************************
@@ -85,7 +83,7 @@ Vector< T,NDIMS > operator*(const Vector<T, NDIMS>& vec, const T scalar);
  *******************************************************************************
  */
 template < typename T,int NDIMS >
-Vector< T,NDIMS > operator*(const T scalar, const Vector<T, NDIMS> & vec);
+Vector< T,NDIMS > operator*(const T scalar, const Vector< T, NDIMS > & vec);
 
 /*!
  ********************************************************************************
@@ -97,7 +95,7 @@ Vector< T,NDIMS > operator*(const T scalar, const Vector<T, NDIMS> & vec);
  *******************************************************************************
  */
 template < typename T,int NDIMS >
-Vector< T,NDIMS > operator/(const Vector<T, NDIMS> & vec, const T scalar);
+Vector< T,NDIMS > operator/(const Vector< T, NDIMS > & vec, const T scalar);
 
 /*!
  *******************************************************************************
@@ -107,7 +105,7 @@ Vector< T,NDIMS > operator/(const Vector<T, NDIMS> & vec, const T scalar);
  *******************************************************************************
  */
 template < typename T,int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Vector<T,NDIMS> & vec);
+std::ostream& operator<<(std::ostream & os, const Vector< T,NDIMS > & vec);
 
 /// @}
 
@@ -140,7 +138,7 @@ public:
    * The rest will be set to zero.  Defaults is NDIMS.
    *****************************************************************************
    */
-  explicit Vector( T val = T(), int sz = NDIMS) : m_components(val, sz) { }
+  explicit Vector( T val = T(), int sz = NDIMS): m_components(val, sz) { }
 
   /*!
    *****************************************************************************
@@ -148,7 +146,7 @@ public:
    * \param [in] arr The numeric array to copy from
    *****************************************************************************
    */
-  Vector( const NumericArray< T,NDIMS >& arr) : m_components(arr) { }
+  Vector( const NumericArray< T,NDIMS >& arr): m_components(arr) { }
 
   /*!
    *****************************************************************************
@@ -159,7 +157,7 @@ public:
    * It sz is greater than NDIMS, we only take the first NDIMS values.
    *****************************************************************************
    */
-  Vector(T* vals, int sz = NDIMS) : m_components(vals, sz) {}
+  Vector(T* vals, int sz = NDIMS): m_components(vals, sz) {}
 
   /*!
    *****************************************************************************
@@ -168,7 +166,7 @@ public:
    * \note Equivalent to Vector( Point::zero(), pt)
    *****************************************************************************
    */
-  Vector(const Point<T,NDIMS> & pt) : m_components( pt.array() ) {}
+  Vector(const Point< T,NDIMS > & pt): m_components( pt.array() ) {}
 
   /*!
    *****************************************************************************
@@ -176,7 +174,7 @@ public:
    * \param [in] other The vector to copy
    *****************************************************************************
    */
-  Vector(const Vector<T,NDIMS> & other) : m_components( other.array() ) {}
+  Vector(const Vector< T,NDIMS > & other): m_components( other.array() ) {}
 
   /*!
    *****************************************************************************
@@ -187,7 +185,7 @@ public:
    * \pre A.dimension() == ndims
    *****************************************************************************
    */
-  Vector( const Point< T,NDIMS >& A, const Point< T,NDIMS >& B ) :
+  Vector( const Point< T,NDIMS >& A, const Point< T,NDIMS >& B ):
     m_components(B.array() - A.array()) {}
 
   /*!
@@ -195,7 +193,7 @@ public:
    * \brief Destructor.
    *****************************************************************************
    */
-   ~Vector() {}
+  ~Vector() {}
 
   /*!
    *****************************************************************************
@@ -222,8 +220,8 @@ public:
    * \brief Returns a reference to the underlying NumericArray.
    *****************************************************************************
    */
-  const NumericArray<T,NDIMS> & array() const  { return m_components; }
-  NumericArray<T,NDIMS>& array()               { return m_components; }
+  const NumericArray< T,NDIMS > & array() const { return m_components; }
+  NumericArray< T,NDIMS >& array()               { return m_components; }
 
   /*!
    *****************************************************************************
@@ -256,7 +254,7 @@ public:
    * \return A reference to the Vector instance after vector addition.
    *****************************************************************************
    */
-  Vector< T,NDIMS >& operator+=( const Vector<T,NDIMS>& v );
+  Vector< T,NDIMS >& operator+=( const Vector< T,NDIMS >& v );
 
   /*!
    *****************************************************************************
@@ -265,7 +263,7 @@ public:
    * \return A reference to the Vector instance after vector subtraction.
    *****************************************************************************
    */
-  Vector< T,NDIMS >& operator-=( const Vector<T,NDIMS>& v );
+  Vector< T,NDIMS >& operator-=( const Vector< T,NDIMS >& v );
 
   /*!
    *****************************************************************************
@@ -326,7 +324,7 @@ public:
    * \post this->norm() == 1.0f
    *****************************************************************************
    */
-  Vector unitVector() const ;
+  Vector unitVector() const;
 
   /*!
    *****************************************************************************
@@ -423,7 +421,7 @@ inline Vector< T,NDIMS >& Vector< T,NDIMS >::operator/=( T scalar )
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 inline Vector< T, NDIMS >&
-Vector< T,NDIMS >::operator+=(const Vector<T,NDIMS>& v)
+Vector< T,NDIMS >::operator+=(const Vector< T,NDIMS >& v)
 {
   m_components += v.array();
   return *this;
@@ -432,7 +430,7 @@ Vector< T,NDIMS >::operator+=(const Vector<T,NDIMS>& v)
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 inline Vector< T, NDIMS >&
-Vector< T,NDIMS >::operator-=(const Vector<T,NDIMS>& v)
+Vector< T,NDIMS >::operator-=(const Vector< T,NDIMS >& v)
 {
   m_components -= v.array();
   return *this;
@@ -465,10 +463,11 @@ inline Vector< T, NDIMS > Vector< T, NDIMS >::unitVector() const
 
     v /= ( std::sqrt(len_sq) );
 
-  } else {
+  }
+  else {
 
     // Create a vector whose first coordinate is 1 and all others are 0
-    v = Vector( static_cast<T>( 1. ), 1 );
+    v = Vector( static_cast< T >( 1. ), 1 );
 
   }
 
@@ -480,13 +479,13 @@ template < typename T,int NDIMS >
 inline void Vector< T, NDIMS >::negate()
 {
   for ( int i=0; i < NDIMS; ++i ) {
-     m_components[ i ] = -m_components[ i ];
+    m_components[ i ] = -m_components[ i ];
   }
 }
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-inline T Vector< T,NDIMS >::dot(const Vector<T,NDIMS>& vec) const
+inline T Vector< T,NDIMS >::dot(const Vector< T,NDIMS >& vec) const
 {
   return dot_product(*this,vec);
 }
@@ -496,11 +495,12 @@ template < typename T,int NDIMS >
 std::ostream& Vector< T, NDIMS >::print(std::ostream& os) const
 {
   os <<"<";
-  for ( int dim=0; dim < NDIMS -1; ++ dim ) {
-     os << static_cast<typename NonChar<T>::type>( m_components[dim] )
+  for ( int dim=0; dim < NDIMS -1; ++dim ) {
+    os  << static_cast< typename NonChar< T >::type >( m_components[dim] )
         << " ";
   }
-  os << static_cast<typename NonChar<T>::type>( m_components[NDIMS-1] ) << ">";
+  os << static_cast< typename NonChar< T >::type >( m_components[NDIMS-1] ) <<
+      ">";
 
   return os;
 }
@@ -514,7 +514,7 @@ inline T Vector< T,NDIMS >::dot_product( const Vector< T,NDIMS >& u,
   double dotprod = 0.0;
 
   for ( int i=0; i < NDIMS; ++i ) {
-     dotprod += u[ i ]*v[ i ];
+    dotprod += u[ i ]*v[ i ];
   } // END for all NDIMS
 
   return static_cast< T >( dotprod );
@@ -523,7 +523,7 @@ inline T Vector< T,NDIMS >::dot_product( const Vector< T,NDIMS >& u,
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 inline Vector< T,3 > Vector< T,NDIMS >::cross_product(
-        const Vector< T,2 >& u, const Vector< T,2 >& v )
+  const Vector< T,2 >& u, const Vector< T,2 >& v )
 {
   Vector< T,3 > c;
   c[ 0 ] = 0;
@@ -535,7 +535,7 @@ inline Vector< T,3 > Vector< T,NDIMS >::cross_product(
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 inline Vector< T,3 > Vector< T,NDIMS >::cross_product(
-        const Vector< T,3 >& u, const Vector< T,3 >& v )
+  const Vector< T,3 >& u, const Vector< T,3 >& v )
 {
   Vector< T,3 > c;
   c[ 0 ] = primal::determinant( u[1],u[2], v[1],v[2] );
@@ -552,7 +552,7 @@ inline Vector< T,3 > Vector< T,NDIMS >::cross_product(
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-inline Vector<T,NDIMS> operator*(const Vector<T,NDIMS>& vec, const T scalar)
+inline Vector< T,NDIMS > operator*(const Vector< T,NDIMS >& vec, const T scalar)
 {
   Vector< T, NDIMS > result(vec);
   result *=scalar;
@@ -561,7 +561,7 @@ inline Vector<T,NDIMS> operator*(const Vector<T,NDIMS>& vec, const T scalar)
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-inline Vector<T,NDIMS> operator*(const T scalar, const Vector<T,NDIMS>& vec)
+inline Vector< T,NDIMS > operator*(const T scalar, const Vector< T,NDIMS >& vec)
 {
   Vector< T, NDIMS > result(vec);
   result *=scalar;
@@ -570,8 +570,8 @@ inline Vector<T,NDIMS> operator*(const T scalar, const Vector<T,NDIMS>& vec)
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-inline Vector<T,NDIMS> operator+( const Vector<T,NDIMS>& vec1,
-                                const Vector<T,NDIMS>& vec2)
+inline Vector< T,NDIMS > operator+( const Vector< T,NDIMS >& vec1,
+                                    const Vector< T,NDIMS >& vec2)
 {
   Vector< T, NDIMS > result(vec1);
   result +=vec2;
@@ -580,7 +580,7 @@ inline Vector<T,NDIMS> operator+( const Vector<T,NDIMS>& vec1,
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-inline Vector<T,NDIMS> operator/(const Vector<T,NDIMS>& vec, const T scalar)
+inline Vector< T,NDIMS > operator/(const Vector< T,NDIMS >& vec, const T scalar)
 {
   Vector< T,NDIMS > result(vec);
   result /=scalar;
@@ -589,8 +589,8 @@ inline Vector<T,NDIMS> operator/(const Vector<T,NDIMS>& vec, const T scalar)
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-inline Vector<T,NDIMS> operator-( const Vector<T,NDIMS>& vec1,
-                                const Vector<T,NDIMS>& vec2)
+inline Vector< T,NDIMS > operator-( const Vector< T,NDIMS >& vec1,
+                                    const Vector< T,NDIMS >& vec2)
 {
   Vector< T, NDIMS > result(vec1);
   result -=vec2;
@@ -599,7 +599,7 @@ inline Vector<T,NDIMS> operator-( const Vector<T,NDIMS>& vec1,
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-inline Vector<T,NDIMS> operator-(const Vector<T,NDIMS>& vec1)
+inline Vector< T,NDIMS > operator-(const Vector< T,NDIMS >& vec1)
 {
   Vector< T, NDIMS > result(vec1);
   result.negate();
@@ -609,7 +609,7 @@ inline Vector<T,NDIMS> operator-(const Vector<T,NDIMS>& vec1)
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 std::ostream& operator<<( std::ostream & os,
-                          const Vector<T,NDIMS> & vec)
+                          const Vector< T,NDIMS > & vec)
 {
   vec.print(os);
   return os;

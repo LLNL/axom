@@ -8,7 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
 #ifndef TRIANGLE_HPP_
 #define TRIANGLE_HPP_
 
@@ -27,25 +26,25 @@ namespace axom {
 namespace primal {
 
 // Forward declare the templated classes and operator functions
-template<typename T, int NDIMS>
+template < typename T, int NDIMS >
 class Triangle;
 
 /**
  * \brief Overloaded output operator for triangles
  */
 template < typename T,int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Triangle<T,NDIMS> & tri);
+std::ostream& operator<<(std::ostream & os, const Triangle< T,NDIMS > & tri);
 
 template < typename T,int NDIMS >
 class Triangle
 {
 public:
-    typedef Point< T,NDIMS >  PointType;
-    typedef Vector< T,NDIMS > VectorType;
+  typedef Point< T,NDIMS >  PointType;
+  typedef Vector< T,NDIMS > VectorType;
 
-    enum {
-        NUM_TRI_VERTS = 3
-    };
+  enum {
+    NUM_TRI_VERTS = 3
+  };
 
 public:
 
@@ -68,13 +67,12 @@ public:
             const PointType& B,
             const PointType& C );
 
-
   /*!
    *****************************************************************************
    * \brief Destructor
    *****************************************************************************
    */
-   ~Triangle() { }
+  ~Triangle() { }
 
   /*!
    *****************************************************************************
@@ -85,8 +83,8 @@ public:
    */
   PointType& operator[](int idx)
   {
-      SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
-      return m_points[ idx ];
+    SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
+    return m_points[ idx ];
   }
 
   /*!
@@ -98,8 +96,8 @@ public:
    */
   const PointType& operator[](int idx) const
   {
-      SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
-      return m_points[ idx ];
+    SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
+    return m_points[ idx ];
   }
 
   /*!
@@ -111,12 +109,12 @@ public:
    */
   VectorType normal() const
   {
-      SLIC_CHECK_MSG(NDIMS==3, "Triangle::normal() is only valid in 3D.");
+    SLIC_CHECK_MSG(NDIMS==3, "Triangle::normal() is only valid in 3D.");
 
-      return (NDIMS==3)
-              ? VectorType::cross_product( VectorType(m_points[0],m_points[1]),
-                                           VectorType(m_points[0],m_points[2]))
-              : VectorType();
+    return (NDIMS==3)
+           ? VectorType::cross_product( VectorType(m_points[0],m_points[1]),
+                                        VectorType(m_points[0],m_points[2]))
+           : VectorType();
   }
 
   /*!
@@ -127,17 +125,17 @@ public:
    */
   double area() const
   {
-      SLIC_CHECK_MSG( NDIMS == 2 || NDIMS == 3,
-            "Triangle::area() is only valid in 2D or 3D");
+    SLIC_CHECK_MSG( NDIMS == 2 || NDIMS == 3,
+                    "Triangle::area() is only valid in 2D or 3D");
 
-      VectorType v(m_points[0], m_points[1]);
-      VectorType w(m_points[0], m_points[2]);
+    VectorType v(m_points[0], m_points[1]);
+    VectorType w(m_points[0], m_points[2]);
 
-      // While this code is correct and clear, in the 2D case it may be doing
-      // too much work by taking the square root (norm()) of a just-computed
-      // square (cross_product()).  This should be revisited if this turns out
-      // to be a bottleneck.
-      return 0.5 * VectorType::cross_product(v, w).norm();
+    // While this code is correct and clear, in the 2D case it may be doing
+    // too much work by taking the square root (norm()) of a just-computed
+    // square (cross_product()).  This should be revisited if this turns out
+    // to be a bottleneck.
+    return 0.5 * VectorType::cross_product(v, w).norm();
   }
 
 private:
@@ -161,9 +159,10 @@ private:
 
     if (NDIMS < 3) {
 
-       return 0.;
+      return 0.;
 
-    } else {
+    }
+    else {
 
       return primal::determinant< double > ( A[0], A[1], A[2], 1.,
                                              B[0], B[1], B[2], 1.,
@@ -184,14 +183,15 @@ public:
    * Adapted from Real Time Collision Detection by Christer Ericson.
    *****************************************************************************
    */
-  Point<T,3> barycentricCoords(const PointType& p) const
+  Point< T,3 > barycentricCoords(const PointType& p) const
   {
     SLIC_CHECK(asctoolkit::utilities::isNearlyEqual(ppedVolume(p), 0.));
 
-    Point<T,3> bary;
+    Point< T,3 > bary;
 
-    Vector<T,3> u= VectorType::cross_product(VectorType(m_points[0],m_points[1]),
-                                            VectorType(m_points[0],m_points[2]));
+    Vector< T,3 > u = 
+		VectorType::cross_product( VectorType(m_points[0],m_points[1]),
+                                   VectorType(m_points[0],m_points[2])   s);
     const T x= std::abs(u[0]);
     const T y= std::abs(u[1]);
     const T z= std::abs(u[2]);
@@ -200,14 +200,15 @@ public:
     int c0 = 0;
     int c1 = 1;
 
-    if (x>=y && x>= z)  {
+    if (x>=y && x>= z) {
 
       // compute in yz plane
       c0 = 1;
       c1 = 2;
       ood=1.0/u[0];
 
-    } else if (y>=x && y>=z)   {
+    }
+    else if (y>=x && y>=z) {
 
       // compute in xz plane
       c0 = 0;
@@ -250,12 +251,13 @@ public:
    * \see primal::Point
    *****************************************************************************
    */
-  bool checkInTriangle(const PointType& p, double eps = 1.0e-8) const{
+  bool checkInTriangle(const PointType& p, double eps = 1.0e-8) const
+  {
     if (!asctoolkit::utilities::isNearlyEqual(ppedVolume(p), 0., eps)) {
       return false;
     }
 
-    Point<T,3> bC= barycentricCoords(p);
+    Point< T,3 > bC= barycentricCoords(p);
     return ((bC[0]>=(0.0-eps)) && (bC[1] >= (0.0-eps)) && (bC[2]>=(0.0-eps)) &&
             (bC[0]<=(1.0+eps)) && (bC[1] <= (1.0+eps)) && (bC[2]<=(1.0+eps)));
   }
@@ -279,12 +281,12 @@ public:
    */
   std::ostream& print(std::ostream& os) const
   {
-      os <<"{"
-         << m_points[0] <<" "
-         << m_points[1] <<" "
-         << m_points[2] <<"}";
+    os  <<"{"
+        << m_points[0] <<" "
+        << m_points[1] <<" "
+        << m_points[2] <<"}";
 
-      return os;
+    return os;
   }
 
 private:
@@ -302,10 +304,10 @@ private:
 namespace axom {
 namespace primal {
 
-template <typename T, int NDIMS>
+template < typename T, int NDIMS >
 Triangle< T,NDIMS >::Triangle( const PointType& A,
-                             const PointType& B,
-                             const PointType& C  )
+                               const PointType& B,
+                               const PointType& C  )
 {
   m_points[0] = A;
   m_points[1] = B;
@@ -313,7 +315,7 @@ Triangle< T,NDIMS >::Triangle( const PointType& A,
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
+template < typename T, int NDIMS >
 inline double Triangle< T,NDIMS >::angle( int idx ) const
 {
   SLIC_ASSERT( idx >= 0 && idx < NUM_TRI_VERTS );
@@ -334,11 +336,11 @@ inline double Triangle< T,NDIMS >::angle( int idx ) const
 //------------------------------------------------------------------------------
 /// Free functions implementing Triangle's operators
 //------------------------------------------------------------------------------
-template<typename T, int NDIMS>
-std::ostream& operator<<(std::ostream & os, const Triangle<T,NDIMS> & tri)
+template < typename T, int NDIMS >
+std::ostream& operator<<(std::ostream & os, const Triangle< T,NDIMS > & tri)
 {
-    tri.print(os);
-    return os;
+  tri.print(os);
+  return os;
 }
 
 } /* namespace primal */

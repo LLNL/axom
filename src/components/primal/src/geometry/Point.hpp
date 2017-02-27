@@ -8,7 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
 #ifndef POINT_HXX_
 #define POINT_HXX_
 
@@ -19,7 +18,6 @@
 // C/C++ includes
 #include <cstring> // For memcpy()
 #include <ostream> // For print() and operator <<
-
 
 namespace axom {
 namespace primal {
@@ -37,7 +35,7 @@ class Point;
  *******************************************************************************
  */
 template < typename T,int NDIMS >
-bool operator==(const Point<T, NDIMS> & lhs, const Point<T, NDIMS>& rhs);
+bool operator==(const Point< T, NDIMS > & lhs, const Point< T, NDIMS >& rhs);
 
 /*!
  *******************************************************************************
@@ -45,7 +43,7 @@ bool operator==(const Point<T, NDIMS> & lhs, const Point<T, NDIMS>& rhs);
  *******************************************************************************
  */
 template < typename T,int NDIMS >
-bool operator!=(const Point<T, NDIMS> & lhs, const Point<T, NDIMS>& rhs);
+bool operator!=(const Point< T, NDIMS > & lhs, const Point< T, NDIMS >& rhs);
 
 /*!
  *******************************************************************************
@@ -53,7 +51,7 @@ bool operator!=(const Point<T, NDIMS> & lhs, const Point<T, NDIMS>& rhs);
  *******************************************************************************
  */
 template < typename T,int NDIMS >
-std::ostream& operator<<(std::ostream & os, const Point<T,NDIMS> & pt);
+std::ostream& operator<<(std::ostream & os, const Point< T,NDIMS > & pt);
 
 ///@}
 
@@ -69,13 +67,13 @@ template < typename T, int NDIMS >
 class Point
 {
 public:
-    enum {
-      DIMENSION = NDIMS,
-      NBYTES    = NDIMS * sizeof(T)
-    };
+  enum {
+    DIMENSION = NDIMS,
+    NBYTES    = NDIMS * sizeof(T)
+  };
 
-    typedef Point<T,NDIMS> PointType;
-    typedef T CoordType;
+  typedef Point< T,NDIMS > PointType;
+  typedef T CoordType;
 
 public:
 
@@ -88,7 +86,7 @@ public:
    * If sz is greater than NDIMS, we set all coordinates to val
    *****************************************************************************
    */
-  explicit Point(T val = T(), int sz = NDIMS) : m_components(val,sz) { }
+  explicit Point(T val = T(), int sz = NDIMS): m_components(val,sz) { }
 
   /*!
    *****************************************************************************
@@ -96,7 +94,7 @@ public:
    * \param [in] arr The numeric array to copy from
    *****************************************************************************
    */
-  Point(const NumericArray<T,NDIMS>& arr) : m_components(arr) { }
+  Point(const NumericArray< T,NDIMS >& arr): m_components(arr) { }
 
   /*!
    *****************************************************************************
@@ -106,7 +104,7 @@ public:
    * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    *****************************************************************************
    */
-  Point(T* vals, int sz = NDIMS) : m_components(vals,sz) { }
+  Point(T* vals, int sz = NDIMS): m_components(vals,sz) { }
 
   /*!
    *****************************************************************************
@@ -114,14 +112,14 @@ public:
    * \param [in] other The point to copy
    *****************************************************************************
    */
-  Point( const Point& other) : m_components( other.m_components) { }
+  Point( const Point& other): m_components( other.m_components) { }
 
   /*!
    *****************************************************************************
    * \brief Destructor.
    *****************************************************************************
    */
-   ~Point() { }
+  ~Point() { }
 
   /*!
    *****************************************************************************
@@ -139,7 +137,7 @@ public:
    *****************************************************************************
    */
   Point& operator=(const Point& rhs)
-   { m_components=rhs.m_components; return *this;}
+  { m_components=rhs.m_components; return *this; }
 
   /*!
    *****************************************************************************
@@ -165,8 +163,8 @@ public:
    * \brief Returns a reference to the underlying NumericArray.
    *****************************************************************************
    */
-  const NumericArray<T,NDIMS>& array() const  { return m_components; }
-  NumericArray<T,NDIMS>& array()              { return m_components; }
+  const NumericArray< T,NDIMS >& array() const { return m_components; }
+  NumericArray< T,NDIMS >& array()              { return m_components; }
 
   /*!
    *****************************************************************************
@@ -250,18 +248,18 @@ public:
    * a numerical type (i.e. where static_cast<T>(1) is valid.
    *****************************************************************************
    */
-  static Point ones() { return Point(static_cast<T>(1)); }
+  static Point ones() { return Point(static_cast< T >(1)); }
 
 private:
-  NumericArray<T,NDIMS> m_components;
+  NumericArray< T,NDIMS > m_components;
 
 };
 
 /// \name Pre-defined point types
 /// @{
 
-typedef Point<double,2> Point2D;
-typedef Point<double,3> Point3D;
+typedef Point< double,2 > Point2D;
+typedef Point< double,3 > Point3D;
 
 /// @}
 
@@ -278,24 +276,24 @@ namespace primal {
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 inline Point< T, NDIMS > Point< T,NDIMS >::make_point( const T& x,
-                                                   const T& y,
-                                                   const T& z )
+                                                       const T& y,
+                                                       const T& z )
 {
   T tmp_array[3] = { x, y, z};
   return Point(tmp_array, NDIMS);
 }
 
 //------------------------------------------------------------------------------
-template< typename T, int NDIMS >
+template < typename T, int NDIMS >
 inline Point< T,NDIMS > Point< T,NDIMS >::midpoint(
-        const Point<T,NDIMS>& A,
-        const Point<T,NDIMS>& B )
+  const Point< T,NDIMS >& A,
+  const Point< T,NDIMS >& B )
 {
   Point< T,NDIMS > mid_point;
 
   for ( int i=0; i < NDIMS; ++i ) {
 
-     mid_point[ i ] = 0.5*( A[i]+B[i] );
+    mid_point[ i ] = 0.5*( A[i]+B[i] );
   }
 
   return mid_point;
@@ -304,35 +302,36 @@ inline Point< T,NDIMS > Point< T,NDIMS >::midpoint(
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 inline Point< T,NDIMS > Point< T,NDIMS >::lerp(
-        const Point<T,NDIMS>& A,
-        const Point<T,NDIMS>& B,
-        double alpha)
+  const Point< T,NDIMS >& A,
+  const Point< T,NDIMS >& B,
+  double alpha)
 {
   return PointType((1.-alpha)*A.array() + alpha*B.array());
 }
-
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 std::ostream& Point< T, NDIMS >::print(std::ostream& os) const
 {
-    os <<"(";
-    for(int dim=0; dim < NDIMS -1; ++ dim)
-        os << static_cast<typename NonChar<T>::type>(m_components[dim]) << ",";
-    os << static_cast<typename NonChar<T>::type>(m_components[NDIMS-1]) << ")";
+  os <<"(";
+  for (int dim=0; dim < NDIMS -1; ++dim) {
+    os << static_cast< typename NonChar< T >::type >(m_components[dim]) << ",";
+  }
+  os << static_cast< typename NonChar< T >::type >(m_components[NDIMS-1]) <<
+      ")";
 
-    return os;
+  return os;
 }
 
 //------------------------------------------------------------------------------
 /// Free functions implementing Point's operators
 //------------------------------------------------------------------------------
 
-template<typename T, int NDIMS>
-std::ostream& operator<<(std::ostream & os, const Point<T,NDIMS> & pt)
+template < typename T, int NDIMS >
+std::ostream& operator<<(std::ostream & os, const Point< T,NDIMS > & pt)
 {
-    pt.print(os);
-    return os;
+  pt.print(os);
+  return os;
 }
 
 } /* namespace primal*/

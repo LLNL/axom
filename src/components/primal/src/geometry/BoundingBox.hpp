@@ -8,7 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
 #ifndef BOUNDINGBOX_HPP_
 #define BOUNDINGBOX_HPP_
 
@@ -18,7 +17,6 @@
 
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
-
 
 namespace axom {
 namespace primal {
@@ -37,8 +35,8 @@ class BoundingBox;
  *******************************************************************************
  */
 template < typename T,int NDIMS >
-bool operator==( const BoundingBox<T, NDIMS> & lhs,
-                 const BoundingBox<T, NDIMS>& rhs   );
+bool operator==( const BoundingBox< T, NDIMS > & lhs,
+                 const BoundingBox< T, NDIMS >& rhs   );
 
 /*!
  *******************************************************************************
@@ -47,8 +45,8 @@ bool operator==( const BoundingBox<T, NDIMS> & lhs,
  *******************************************************************************
  */
 template < typename T,int NDIMS >
-bool operator!=( const BoundingBox<T, NDIMS> & lhs,
-                 const BoundingBox<T, NDIMS>& rhs   );
+bool operator!=( const BoundingBox< T, NDIMS > & lhs,
+                 const BoundingBox< T, NDIMS >& rhs   );
 
 /*!
  *******************************************************************************
@@ -70,15 +68,15 @@ template < typename T >
 struct ValueRange
 {
   /*! \brief Returns the highest representable value of type T */
-  static T highest() { return std::numeric_limits<T>::max(); }
+  static T highest() { return std::numeric_limits< T >::max(); }
 
   /*! \brief Returns the lowest representable value of type T */
   static T lowest()
   {
     #ifdef ATK_USE_CXX11
-      return std::numeric_limits<T>::lowest();
+    return std::numeric_limits< T >::lowest();
     #else
-      return std::numeric_limits<T>::min();
+    return std::numeric_limits< T >::min();
     #endif
   }
 };
@@ -90,12 +88,12 @@ struct ValueRange
  * \note Only necessary for pre-CXX11
  *******************************************************************************
  */
-template< >
+template < >
 struct ValueRange< float >
 {
   typedef float T;
-  static T highest() { return std::numeric_limits<T>::max(); }
-  static T lowest()  { return -std::numeric_limits<T>::max(); }
+  static T highest() { return std::numeric_limits< T >::max(); }
+  static T lowest()  { return -std::numeric_limits< T >::max(); }
 };
 
 /*!
@@ -104,15 +102,14 @@ struct ValueRange< float >
  * \note Only necessary for pre-CXX11
  *******************************************************************************
  */
-template< >
+template < >
 struct ValueRange< double >
 {
   typedef double T;
-  static T highest() { return std::numeric_limits<T>::max(); }
-  static T lowest()  { return -std::numeric_limits<T>::max(); }
+  static T highest() { return std::numeric_limits< T >::max(); }
+  static T lowest()  { return -std::numeric_limits< T >::max(); }
 };
 #endif  // ATK_USE_CXX11
-
 
 /*!
  *******************************************************************************
@@ -122,7 +119,7 @@ struct ValueRange< double >
  * its min and max coordinates.
  *******************************************************************************
  */
-template< typename T,int NDIMS >
+template < typename T,int NDIMS >
 class BoundingBox
 {
 public:
@@ -140,8 +137,8 @@ public:
    * the bounds to a valid range.
    *****************************************************************************
    */
-  BoundingBox() : m_min( PointType( ValueRange< T >::highest() ) ),
-                  m_max( PointType( ValueRange< T >::lowest() ) ) { }
+  BoundingBox(): m_min( PointType( ValueRange< T >::highest() ) ),
+    m_max( PointType( ValueRange< T >::lowest() ) ) { }
 
   /*!
    *****************************************************************************
@@ -149,7 +146,7 @@ public:
    *****************************************************************************
    */
   BoundingBox( const PointType& pt )
-      : m_min( pt), m_max( pt) { }
+    : m_min( pt), m_max( pt) { }
 
   /*!
    *****************************************************************************
@@ -158,8 +155,8 @@ public:
    *****************************************************************************
    */
   BoundingBox( const PointType& lowerPt, const PointType& upperPt )
-      : m_min( lowerPt), m_max( upperPt)
-    { this->checkAndFixBounds(); }
+    : m_min( lowerPt), m_max( upperPt)
+  { this->checkAndFixBounds(); }
 
   /*!
    *****************************************************************************
@@ -222,8 +219,8 @@ public:
    * \param [in] pt to include.
    *****************************************************************************
    */
-  template<typename OtherType>
-  void addPoint(const Point<OtherType,NDIMS>& pt);
+  template < typename OtherType >
+  void addPoint(const Point< OtherType,NDIMS >& pt);
 
   /*!
    *****************************************************************************
@@ -232,8 +229,8 @@ public:
    * \param [in] bbox to include.
    *****************************************************************************
    */
-  template<typename OtherType>
-  void addBox(const BoundingBox<OtherType,NDIMS>& bbox);
+  template < typename OtherType >
+  void addBox(const BoundingBox< OtherType,NDIMS >& bbox);
 
   /*!
    *****************************************************************************
@@ -312,7 +309,7 @@ public:
    *****************************************************************************
    */
   template < typename OtherType >
-  bool contains( const Point<OtherType, NDIMS>& otherPt) const;
+  bool contains( const Point< OtherType, NDIMS >& otherPt) const;
 
   /*!
    *****************************************************************************
@@ -325,7 +322,7 @@ public:
    *****************************************************************************
    */
   template < typename OtherType >
-  bool contains( const BoundingBox<OtherType, NDIMS>& otherBB) const;
+  bool contains( const BoundingBox< OtherType, NDIMS >& otherBB) const;
 
   /*!
    *****************************************************************************
@@ -461,13 +458,11 @@ private:
 
 } /* namespace axom */
 
-
 //------------------------------------------------------------------------------
 //  BoundingBox implementation
 //------------------------------------------------------------------------------
 namespace axom {
 namespace primal {
-
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
@@ -486,14 +481,15 @@ BoundingBox< T,NDIMS >::operator=(const BoundingBox& rhs )
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherT >
-bool BoundingBox< T,NDIMS >::contains( const Point<OtherT,NDIMS>& otherPt) const
+bool BoundingBox< T,
+                  NDIMS >::contains( const Point< OtherT,NDIMS >& otherPt) const
 {
   for ( int dim=0; dim < NDIMS; ++dim) {
 
-     if ( otherPt[ dim ] < m_min[ dim ] ||
-          otherPt[ dim ] > m_max[ dim ] ) {
-       return false;
-     }
+    if ( otherPt[ dim ] < m_min[ dim ] ||
+         otherPt[ dim ] > m_max[ dim ] ) {
+      return false;
+    }
 
   }
 
@@ -503,8 +499,8 @@ bool BoundingBox< T,NDIMS >::contains( const Point<OtherT,NDIMS>& otherPt) const
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherT >
-bool BoundingBox<T, NDIMS>::contains(
-                 const BoundingBox<OtherT,NDIMS>& otherBB) const
+bool BoundingBox< T, NDIMS >::contains(
+  const BoundingBox< OtherT,NDIMS >& otherBB) const
 {
   return this->contains( otherBB.getMin()) && this->contains(otherBB.getMax());
 }
@@ -513,17 +509,17 @@ bool BoundingBox<T, NDIMS>::contains(
 template < typename T,int NDIMS >
 template < typename OtherType  >
 bool BoundingBox< T,NDIMS >::intersects(
-        const BoundingBox< OtherType, NDIMS >& otherBB ) const
+  const BoundingBox< OtherType, NDIMS >& otherBB ) const
 {
   // AABBs cannot intersect if they are separated along any dimension
   for ( int i=0; i < NDIMS; ++i ) {
 
-     if ( (m_max[ i ] < otherBB.m_min[ i ]) ||
-          (m_min[ i ] > otherBB.m_max[ i ]) ) {
+    if ( (m_max[ i ] < otherBB.m_min[ i ]) ||
+         (m_min[ i ] > otherBB.m_max[ i ]) ) {
 
-         return false;
+      return false;
 
-     } // END if
+    }  // END if
 
   } // END for all dimensions
 
@@ -535,9 +531,9 @@ template < typename T,int NDIMS >
 bool BoundingBox< T,NDIMS >::isValid() const
 {
   for ( int dim=0; dim < NDIMS; ++dim) {
-     if ( m_min[ dim ] > m_max[ dim ] ) {
-       return false;
-     }
+    if ( m_min[ dim ] > m_max[ dim ] ) {
+      return false;
+    }
   }
   return true;
 
@@ -546,20 +542,20 @@ bool BoundingBox< T,NDIMS >::isValid() const
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherT >
-void BoundingBox<T, NDIMS>::addPoint(
-        const Point<OtherT,NDIMS>& pt)
+void BoundingBox< T, NDIMS >::addPoint(
+  const Point< OtherT,NDIMS >& pt)
 {
   for ( int dim=0; dim < NDIMS; ++dim ) {
 
-     T coord = static_cast<T>( pt[ dim ] );
+    T coord = static_cast< T >( pt[ dim ] );
 
-     if ( coord < m_min[dim] ) {
-       m_min[dim] = coord;
-     }
+    if ( coord < m_min[dim] ) {
+      m_min[dim] = coord;
+    }
 
-     if ( coord > m_max[dim] ) {
-       m_max[dim] = coord;
-     }
+    if ( coord > m_max[dim] ) {
+      m_max[dim] = coord;
+    }
 
   }
 
@@ -568,8 +564,8 @@ void BoundingBox<T, NDIMS>::addPoint(
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherT >
-void BoundingBox<T, NDIMS>::addBox(
-        const BoundingBox<OtherT,NDIMS>& bbox)
+void BoundingBox< T, NDIMS >::addBox(
+  const BoundingBox< OtherT,NDIMS >& bbox)
 {
   this->addPoint(bbox.getMin());
   this->addPoint(bbox.getMax());
@@ -577,7 +573,7 @@ void BoundingBox<T, NDIMS>::addBox(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-int BoundingBox<T,NDIMS>::getLongestDimension() const
+int BoundingBox< T,NDIMS >::getLongestDimension() const
 {
   SLIC_ASSERT( this->isValid() );
 
@@ -585,11 +581,11 @@ int BoundingBox<T,NDIMS>::getLongestDimension() const
   T max = std::numeric_limits< T >::min();
   for ( int i=0; i < NDIMS; ++i ) {
 
-     T dx = m_max[ i ] - m_min[ i ];
-     if ( dx > max ) {
-        max    = dx;
-        maxDim = i;
-     }
+    T dx = m_max[ i ] - m_min[ i ];
+    if ( dx > max ) {
+      max    = dx;
+      maxDim = i;
+    }
 
   } // END for all dimensions
 
@@ -598,11 +594,11 @@ int BoundingBox<T,NDIMS>::getLongestDimension() const
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::expand(T expansionAmount)
+BoundingBox< T, NDIMS >& BoundingBox< T, NDIMS >::expand(T expansionAmount)
 {
   for ( int dim=0; dim < NDIMS; ++dim ) {
-     m_min[dim] -= expansionAmount;
-     m_max[dim] += expansionAmount;
+    m_min[dim] -= expansionAmount;
+    m_max[dim] += expansionAmount;
   }
 
   this->checkAndFixBounds();
@@ -611,7 +607,7 @@ BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::expand(T expansionAmount)
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-BoundingBox< T,NDIMS >& BoundingBox<T, NDIMS>::scale(double scaleFactor)
+BoundingBox< T,NDIMS >& BoundingBox< T, NDIMS >::scale(double scaleFactor)
 {
   const PointType midpoint = centroid();
   const VectorType r = scaleFactor * 0.5 * range();
@@ -626,7 +622,7 @@ BoundingBox< T,NDIMS >& BoundingBox<T, NDIMS>::scale(double scaleFactor)
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-BoundingBox< T,NDIMS >& BoundingBox<T, NDIMS>::shift(const VectorType& disp)
+BoundingBox< T,NDIMS >& BoundingBox< T, NDIMS >::shift(const VectorType& disp)
 {
   m_min.array() += disp.array();
   m_max.array() += disp.array();
@@ -636,12 +632,12 @@ BoundingBox< T,NDIMS >& BoundingBox<T, NDIMS>::shift(const VectorType& disp)
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-void BoundingBox< T,NDIMS >::checkAndFixBounds ()
+void BoundingBox< T,NDIMS >::checkAndFixBounds()
 {
   for (int dim=0; dim < NDIMS; ++dim ) {
-     if ( m_min[dim] > m_max[dim] ) {
-       std::swap( m_min[dim], m_max[dim] );
-     }
+    if ( m_min[dim] > m_max[dim] ) {
+      std::swap( m_min[dim], m_max[dim] );
+    }
   }
 
 }
@@ -696,8 +692,8 @@ void BoundingBox< T,NDIMS >::bisect( BoxType& right, BoxType& left, int dim )
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 inline void BoundingBox< T,NDIMS >::getPoints(
-        const BoundingBox< T,2 >& bb,
-        std::vector< Point< T,2 > >& pnts )
+  const BoundingBox< T,2 >& bb,
+  std::vector< Point< T,2 > >& pnts )
 {
   pnts.resize( 4 );
   const Point< T,2 >& min = bb.getMin();
@@ -712,8 +708,8 @@ inline void BoundingBox< T,NDIMS >::getPoints(
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 inline void BoundingBox< T,NDIMS >::getPoints(
-        const BoundingBox< T,3 >& bb,
-        std::vector< Point< T,3 > >& pnts )
+  const BoundingBox< T,3 >& bb,
+  std::vector< Point< T,3 > >& pnts )
 {
   pnts.resize( 8 );
   const Point< T,3 >& min = bb.getMin();
@@ -743,15 +739,15 @@ bool operator==( const BoundingBox< T,NDIMS >& lhs,
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-bool operator!=( const BoundingBox<T, NDIMS>& lhs,
-                 const BoundingBox<T, NDIMS>& rhs)
+bool operator!=( const BoundingBox< T, NDIMS >& lhs,
+                 const BoundingBox< T, NDIMS >& rhs)
 {
   return !(lhs == rhs);
 }
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-std::ostream& operator<<(std::ostream & os, const BoundingBox<T,NDIMS> & bb)
+std::ostream& operator<<(std::ostream & os, const BoundingBox< T,NDIMS > & bb)
 {
   bb.print(os);
   return os;

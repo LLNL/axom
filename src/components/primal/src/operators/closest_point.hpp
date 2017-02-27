@@ -82,11 +82,12 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   T d2 = Vector< T,NDIMS >::dot_product( ac, ap );
   if ( d1 <= 0.0f && d2 <= 0.0f ) {
 
-      // A is the closest point
-      if ( loc != ATK_NULLPTR)
-        *loc = 0;
+    // A is the closest point
+    if ( loc != ATK_NULLPTR) {
+      *loc = 0;
+    }
 
-      return ( A(tri) );
+    return ( A(tri) );
 
   } // END if
 
@@ -97,9 +98,10 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   T d4 = Vector< T,NDIMS >::dot_product( ac, bp );
   if ( d3 >= 0.0f && d4 <= d3 ) {
 
-      // B is the closest point
-    if ( loc != ATK_NULLPTR)
+    // B is the closest point
+    if ( loc != ATK_NULLPTR) {
       *loc = 1;
+    }
 
     return ( B(tri) );
 
@@ -115,12 +117,13 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
 
     double x = A(tri)[0] + v_ab[0];
     double y = A(tri)[1] + v_ab[1];
-    double z = (NDIMS==3)? A(tri)[2] + v_ab[2] : 0.0;
+    double z = (NDIMS==3) ? A(tri)[2] + v_ab[2] : 0.0;
 
-    if ( loc != ATK_NULLPTR )
+    if ( loc != ATK_NULLPTR ) {
       *loc = -1;
+    }
 
-    return ( Point<T,NDIMS>::make_point( x,y,z ) );
+    return ( Point< T,NDIMS >::make_point( x,y,z ) );
   } // END if
 
   //----------------------------------------------------------------------------
@@ -130,11 +133,12 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   T d6 = Vector< T,NDIMS >::dot_product(ac,cp);
   if ( d6 >= 0.0f && d5 <= d6 ) {
 
-     // C is the closest point
-     if ( loc != ATK_NULLPTR )
-       *loc = 2;
+    // C is the closest point
+    if ( loc != ATK_NULLPTR ) {
+      *loc = 2;
+    }
 
-     return ( C(tri) );
+    return ( C(tri) );
   }
 
   //----------------------------------------------------------------------------
@@ -147,10 +151,11 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
 
     double x = A(tri)[0] + w_ac[0];
     double y = A(tri)[1] + w_ac[1];
-    double z = (NDIMS==3)? A(tri)[2] + w_ac[2] : 0.0;
+    double z = (NDIMS==3) ? A(tri)[2] + w_ac[2] : 0.0;
 
-    if ( loc != ATK_NULLPTR)
+    if ( loc != ATK_NULLPTR) {
       *loc = -3;
+    }
 
     return ( Point< T,NDIMS >::make_point( x,y,z ) );
   } // END if
@@ -166,10 +171,11 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
 
     double x = B(tri)[0] + w_bc[0];
     double y = B(tri)[1] + w_bc[1];
-    double z = (NDIMS==3)? B(tri)[2] + w_bc[2] : 0.0;
+    double z = (NDIMS==3) ? B(tri)[2] + w_bc[2] : 0.0;
 
-    if ( loc != ATK_NULLPTR )
+    if ( loc != ATK_NULLPTR ) {
       *loc = -2;
+    }
 
     return ( Point< T,NDIMS >::make_point( x,y,z ) );
   } // END if
@@ -183,10 +189,11 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
 
   double x = A(tri)[0] + N[0];
   double y = A(tri)[1] + N[1];
-  double z = (NDIMS==3)? A(tri)[2] + N[2] : 0.0;
+  double z = (NDIMS==3) ? A(tri)[2] + N[2] : 0.0;
 
-  if ( loc != ATK_NULLPTR )
+  if ( loc != ATK_NULLPTR ) {
     *loc = Triangle< T,NDIMS >::NUM_TRI_VERTS;
+  }
 
   return ( Point< T,NDIMS >::make_point( x,y,z ) );
 
@@ -197,7 +204,5 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
 
 } /* namespace primal */
 } /* namepsace axom */
-
-
 
 #endif /* CLOSEST_POINT_HPP_ */
