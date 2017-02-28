@@ -84,8 +84,9 @@ TEST( primal_boundingBox, bb_ctor_from_twoPoints)
   EXPECT_FALSE(bbox1.contains(outPt));
 
   //
-  std::cout <<"\n** Testing from pairs of points that are "
-            <<"max and min of the bounding box"<<std::endl;
+  SLIC_INFO("\n** Testing from pairs of points that are "
+             << "max and min of the bounding box" );
+
   QBBox bbox2(pt2, pt1);
 
   EXPECT_TRUE(bbox2.isValid());
@@ -95,8 +96,9 @@ TEST( primal_boundingBox, bb_ctor_from_twoPoints)
   EXPECT_FALSE(bbox2.contains(outPt));
 
   //
-  std::cout <<"\n** Testing from pairs of points that are "
-            <<"not the smallest and largest of the bounding box"<<std::endl;
+  SLIC_INFO( "\n** Testing from pairs of points that are "
+            << "not the smallest and largest of the bounding box" );
+
   const int val = 10;
   QPoint pt101 = QPoint::make_point(val,0,val);
   QPoint pt010 = QPoint::make_point(0,val,0);
@@ -277,7 +279,7 @@ TEST( primal_boundingBox, bb_add_box)
   typedef primal::BoundingBox< CoordType, DIM > QBBox;
 
   //
-  std::cout <<"Testing addBox() for two simple bounding boxes"<<std::endl;
+  SLIC_INFO( "Testing addBox() for two simple bounding boxes" );
   QBBox bbox1( QPoint(1), QPoint(3) );        // first box
   EXPECT_TRUE(bbox1.isValid());
   EXPECT_TRUE(bbox1.contains(QPoint(2)));
@@ -300,7 +302,7 @@ TEST( primal_boundingBox, bb_add_box)
   EXPECT_TRUE(bbox1.contains(bbox2));
 
   //
-  std::cout <<"Testing addBox() for differently arranged boxes"<<std::endl;
+  SLIC_INFO( "Testing addBox() for differently arranged boxes" );
   QBBox bbox3( QPoint::make_point(1,3,3)
                , QPoint::make_point(3,1,1) );      // first box in 2nd test
   QBBox bbox4( QPoint::make_point(7,5,7)
@@ -317,7 +319,7 @@ TEST( primal_boundingBox, bb_add_box)
   EXPECT_TRUE(bbox3.contains(bbox4));
 
   //
-  std::cout <<"Testing addBox() to initially empty box"<<std::endl;
+  SLIC_INFO( "Testing addBox() to initially empty box" );
   QBBox bbox5;
   EXPECT_FALSE(bbox5.isValid());
   EXPECT_NE(bbox5, bbox1);
@@ -371,7 +373,7 @@ TEST( primal_boundingBox, bb_expand)
   typedef primal::BoundingBox< CoordType, DIM > QBBox;
 
   //
-  std::cout <<"Testing bounding box inflate"<<std::endl;
+  SLIC_INFO( "Testing bounding box inflate" );
 
   QBBox bbox( QPoint(1), QPoint(3) );
   EXPECT_TRUE(bbox.isValid());
@@ -407,7 +409,7 @@ TEST( primal_boundingBox, bb_scale)
   typedef primal::BoundingBox< CoordType, DIM > QBBox;
 
   //
-  std::cout <<"Testing bounding box scale"<<std::endl;
+  SLIC_INFO( "Testing bounding box scale" );
 
   QBBox bbox( QPoint(1), QPoint(3) );
   EXPECT_TRUE(bbox.isValid());
@@ -449,7 +451,7 @@ TEST( primal_boundingBox, bb_shift)
   typedef primal::Vector< CoordType, DIM > QVec;
 
   //
-  std::cout <<"Testing bounding box shift"<<std::endl;
+  SLIC_INFO( "Testing bounding box shift" );
 
   QBBox bbox( QPoint(1), QPoint(3) );
   EXPECT_TRUE(bbox.isValid());
