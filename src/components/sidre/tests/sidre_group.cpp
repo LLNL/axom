@@ -1566,7 +1566,7 @@ TEST(sidre_group,save_load_all_protocols)
 
     DataStore ds_load;
     ds_load.getRoot()->load(file_path, protocols[i]);
-    
+
     SLIC_INFO("Tree from protocol: " <<  protocols[i]);
     // show the result
     ds_load.print();

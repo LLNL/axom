@@ -22,161 +22,161 @@ namespace slic {
 void SLIC_initialize()
 {
 // splicer begin function.initialize
-initialize();
-return;
+    initialize();
+    return;
 // splicer end function.initialize
 }
 
 bool SLIC_is_initialized()
 {
 // splicer begin function.is_initialized
-bool rv = isInitialized();
-return rv;
+    bool rv = isInitialized();
+    return rv;
 // splicer end function.is_initialized
 }
 
 void SLIC_finalize()
 {
 // splicer begin function.finalize
-finalize();
-return;
+    finalize();
+    return;
 // splicer end function.finalize
 }
 
 void SLIC_create_logger(const char * name, char imask)
 {
 // splicer begin function.create_logger
-const std::string SH_name(name);
-createLogger(SH_name, imask);
-return;
+    const std::string SH_name(name);
+    createLogger(SH_name, imask);
+    return;
 // splicer end function.create_logger
 }
 
 void SLIC_create_logger_bufferify(const char * name, int Lname, char imask)
 {
 // splicer begin function.create_logger_bufferify
-const std::string SH_name(name, Lname);
-createLogger(SH_name, imask);
-return;
+    const std::string SH_name(name, Lname);
+    createLogger(SH_name, imask);
+    return;
 // splicer end function.create_logger_bufferify
 }
 
 bool SLIC_activate_logger(const char * name)
 {
 // splicer begin function.activate_logger
-const std::string SH_name(name);
-bool rv = activateLogger(SH_name);
-return rv;
+    const std::string SH_name(name);
+    bool rv = activateLogger(SH_name);
+    return rv;
 // splicer end function.activate_logger
 }
 
 bool SLIC_activate_logger_bufferify(const char * name, int Lname)
 {
 // splicer begin function.activate_logger_bufferify
-const std::string SH_name(name, Lname);
-bool rv = activateLogger(SH_name);
-return rv;
+    const std::string SH_name(name, Lname);
+    bool rv = activateLogger(SH_name);
+    return rv;
 // splicer end function.activate_logger_bufferify
 }
 
 void SLIC_get_active_logger_name_bufferify(char * name, int Lname)
 {
 // splicer begin function.get_active_logger_name_bufferify
-std::string rv = getActiveLoggerName();
-asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
-return;
+    std::string rv = getActiveLoggerName();
+    shroud::FccCopy(name, Lname, rv.c_str());
+    return;
 // splicer end function.get_active_logger_name_bufferify
 }
 
 void SLIC_set_logging_msg_level(int level)
 {
 // splicer begin function.set_logging_msg_level
-setLoggingMsgLevel(static_cast<message::Level>(level));
-return;
+    setLoggingMsgLevel(static_cast<message::Level>(level));
+    return;
 // splicer end function.set_logging_msg_level
 }
 
 void SLIC_set_abort_on_error(bool status)
 {
 // splicer begin function.set_abort_on_error
-setAbortOnError(status);
-return;
+    setAbortOnError(status);
+    return;
 // splicer end function.set_abort_on_error
 }
 
 void SLIC_enable_abort_on_error()
 {
 // splicer begin function.enable_abort_on_error
-enableAbortOnError();
-return;
+    enableAbortOnError();
+    return;
 // splicer end function.enable_abort_on_error
 }
 
 void SLIC_disable_abort_on_error()
 {
 // splicer begin function.disable_abort_on_error
-disableAbortOnError();
-return;
+    disableAbortOnError();
+    return;
 // splicer end function.disable_abort_on_error
 }
 
 bool SLIC_is_abort_on_errors_enabled()
 {
 // splicer begin function.is_abort_on_errors_enabled
-bool rv = isAbortOnErrorsEnabled();
-return rv;
+    bool rv = isAbortOnErrorsEnabled();
+    return rv;
 // splicer end function.is_abort_on_errors_enabled
 }
 
 void SLIC_set_abort_on_warning(bool status)
 {
 // splicer begin function.set_abort_on_warning
-setAbortOnWarning(status);
-return;
+    setAbortOnWarning(status);
+    return;
 // splicer end function.set_abort_on_warning
 }
 
 void SLIC_enable_abort_on_warning()
 {
 // splicer begin function.enable_abort_on_warning
-enableAbortOnWarning();
-return;
+    enableAbortOnWarning();
+    return;
 // splicer end function.enable_abort_on_warning
 }
 
 void SLIC_disable_abort_on_warning()
 {
 // splicer begin function.disable_abort_on_warning
-disableAbortOnWarning();
-return;
+    disableAbortOnWarning();
+    return;
 // splicer end function.disable_abort_on_warning
 }
 
 bool SLIC_is_abort_on_warnings_enabled()
 {
 // splicer begin function.is_abort_on_warnings_enabled
-bool rv = isAbortOnWarningsEnabled();
-return rv;
+    bool rv = isAbortOnWarningsEnabled();
+    return rv;
 // splicer end function.is_abort_on_warnings_enabled
 }
 
 void SLIC_log_message(int level, const char * message, const char * fileName, int line, bool filter)
 {
 // splicer begin function.log_message
-const std::string SH_message(message);
-const std::string SH_fileName(fileName);
-logMessage(static_cast<message::Level>(level), SH_message, SH_fileName, line, filter);
-return;
+    const std::string SH_message(message);
+    const std::string SH_fileName(fileName);
+    logMessage(static_cast<message::Level>(level), SH_message, SH_fileName, line, filter);
+    return;
 // splicer end function.log_message
 }
 
 void SLIC_log_message_bufferify(int level, const char * message, int Lmessage, const char * fileName, int LfileName, int line, bool filter)
 {
 // splicer begin function.log_message_bufferify
-const std::string SH_message(message, Lmessage);
-const std::string SH_fileName(fileName, LfileName);
-logMessage(static_cast<message::Level>(level), SH_message, SH_fileName, line, filter);
-return;
+    const std::string SH_message(message, Lmessage);
+    const std::string SH_fileName(fileName, LfileName);
+    logMessage(static_cast<message::Level>(level), SH_message, SH_fileName, line, filter);
+    return;
 // splicer end function.log_message_bufferify
 }
 

@@ -35,7 +35,9 @@ int main(int argc, char * argv[])
   MPI_Init(&argc, &argv);
   asctoolkit::slic::UnitTestLogger logger;
 
-  SLIC_ASSERT(argc == 2);
+  SLIC_ERROR_IF(argc != 2,
+      "Missing required command line argument. \n\t"
+      << "Usage: spio_IORead <sidre_root_file>");
 
   DataStore * ds = new DataStore();
   SLIC_ASSERT(ds);

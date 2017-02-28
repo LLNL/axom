@@ -60,8 +60,15 @@ if(NOT EXISTS ${CONDUIT_DIR}/lib/cmake/conduit.cmake)
 endif()
 
 include(${CONDUIT_DIR}/lib/cmake/conduit.cmake)
-set(CONDUIT_FOUND TRUE)
+
 set(CONDUIT_INCLUDE_DIRS ${CONDUIT_DIR}/include/conduit)
+
+# handle the QUIETLY and REQUIRED arguments and set CONDUIT_FOUND to TRUE
+# if all listed variables are TRUE
+find_package_handle_standard_args(CONDUIT  DEFAULT_MSG
+                                  CONDUIT_INCLUDE_DIRS
+                                  )
+
 
 
 

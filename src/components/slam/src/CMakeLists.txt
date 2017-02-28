@@ -62,7 +62,7 @@ set(slam_sources
 ####################################
 
 set(slam_depends_on common slic)
-if (ENABLE_BOOST)
+if (BOOST_FOUND)
     list(APPEND slam_depends_on boost)
 endif()
 

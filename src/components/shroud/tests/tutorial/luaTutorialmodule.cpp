@@ -390,7 +390,7 @@ int luaopen_tutorial(lua_State *L) {
      * metatable.__index = metatable
      */
     lua_setfield(L, -2, "__index");
-     
+
     /* Set the methods to the metatable that should be accessed via object:func */
 #if LUA_VERSION_NUM < 502
     luaL_register(L, NULL, l_Class1_Reg);

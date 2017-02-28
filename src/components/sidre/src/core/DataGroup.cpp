@@ -27,6 +27,7 @@
 // Other toolkit component headers
 
 // SiDRe project headers
+#include "MapCollection.hpp"
 #include "DataBuffer.hpp"
 #include "DataStore.hpp"
 #include "SidreUtilities.hpp"
@@ -126,7 +127,7 @@ DataView * DataGroup::getView( const std::string& path )
                   "Group " << getName() <<
                   " has no View with name '" << intpath << "'");
 
-  return group->m_view_coll.getItem(intpath);
+  return group->m_view_coll->getItem(intpath);
 }
 
 /*
@@ -152,7 +153,7 @@ const DataView * DataGroup::getView( const std::string& path ) const
                   "Group " << getName() <<
                   " has no View with name '" << intpath << "'");
 
-  return group->m_view_coll.getItem(intpath);
+  return group->m_view_coll->getItem(intpath);
 }
 
 
@@ -623,7 +624,7 @@ void DataGroup::destroyViews()
     vidx = getNextValidViewIndex(vidx);
   }
 
-  m_view_coll.removeAllItems();
+  m_view_coll->removeAllItems();
 }
 
 /*
@@ -669,7 +670,7 @@ void DataGroup::destroyViewsAndData()
     vidx = getNextValidViewIndex(vidx);
   }
 
-  m_view_coll.removeAllItems();
+  m_view_coll->removeAllItems();
 }
 
 
@@ -803,7 +804,7 @@ DataGroup * DataGroup::getGroup( const std::string& path )
                   "Group " << getName() <<
                   " has no descendant Group with name '" << path << "'");
 
-  return group->m_group_coll.getItem(intpath);
+  return group->m_group_coll->getItem(intpath);
 }
 
 /*
@@ -829,7 +830,7 @@ const DataGroup * DataGroup::getGroup( const std::string& path ) const
                   "Group " << getName() <<
                   " has no descendant Group with name '" << path << "'");
 
-  return group->m_group_coll.getItem(intpath);
+  return group->m_group_coll->getItem(intpath);
 }
 
 
@@ -941,7 +942,7 @@ void DataGroup::destroyGroups()
     gidx = getNextValidGroupIndex(gidx);
   }
 
-  m_group_coll.removeAllItems();
+  m_group_coll->removeAllItems();
 }
 
 /*
@@ -1057,11 +1058,16 @@ void DataGroup::createNativeLayout(Node& n) const
  * Copy Group native layout to given Conduit node.
  *
  *************************************************************************
- * see ATK-786 - Improvements to createNativeLayout and createExternalLayout
+ * see ATK-736 - Improvements to createNativeLayout and createExternalLayout
  */
-void DataGroup::createExternalLayout(Node& n) const
+bool DataGroup::createExternalLayout(Node& n) const
 {
+  // Adds a conduit node for this group if it has external views,
+  // or if any of its children groups has an external view
+
   n.set(DataType::object());
+
+  bool hasExternalViews = false;
 
   // Dump the group's views
   IndexType vidx = getFirstValidViewIndex();
@@ -1070,12 +1076,16 @@ void DataGroup::createExternalLayout(Node& n) const
     const DataView * view = getView(vidx);
 
     // Check that the view's name is not also a child group name
-    SLIC_CHECK_MSG( !hasChildGroup(view->getName())
-                    , view->getName() << " is the name of a groups and a view");
+    SLIC_CHECK_MSG( !hasChildGroup(view->getName()),
+                    view->getName() << " is the name of a groups and a view");
 
-    if(view->isExternal() && view->isDescribed())
+    if(view->isExternal())
     {
-      view->createNativeLayout(  n[view->getName()]  );
+      if(view->isDescribed())
+      {
+        view->createNativeLayout(  n[view->getName()]  );
+      }
+      hasExternalViews = true;
     }
 
     vidx = getNextValidViewIndex(vidx);
@@ -1086,9 +1096,21 @@ void DataGroup::createExternalLayout(Node& n) const
   while ( indexIsValid(gidx) )
   {
     const DataGroup * group =  getGroup(gidx);
-    group->createExternalLayout(n[group->getName()]);
+
+    if( group->createExternalLayout(n[group->getName()]) )
+    {
+      hasExternalViews = true;
+    }
+    else
+    {
+      // Remove nodes that do not have any external views
+      n.remove( group->getName() );
+    }
+
     gidx = getNextValidGroupIndex(gidx);
   }
+
+  return hasExternalViews;
 }
 
 /*
@@ -1206,9 +1228,9 @@ bool DataGroup::isEquivalentTo(const DataGroup * other) const
   // Sizes of collections of child items must be equal
   if (is_equiv)
   {
-    is_equiv = (m_view_coll.getNumItems() == other->m_view_coll.getNumItems())
-               && (m_group_coll.getNumItems() ==
-                   other->m_group_coll.getNumItems());
+    is_equiv = (m_view_coll->getNumItems() == other->m_view_coll->getNumItems())
+               && (m_group_coll->getNumItems() ==
+                   other->m_group_coll->getNumItems());
   }
 
   // Test equivalence of Views
@@ -1295,7 +1317,7 @@ void DataGroup::save(const std::string& path,
   }
   else
   {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+    SLIC_ERROR("Invalid protocol " << protocol << " for file save.");
   }
 }
 
@@ -1470,7 +1492,9 @@ DataGroup::DataGroup(const std::string& name,
                      DataGroup * parent)
   : m_name(name),
   m_parent(parent),
-  m_datastore(parent->getDataStore())
+  m_datastore(parent->getDataStore()),
+  m_view_coll(new DataViewCollection()),
+  m_group_coll(new DataGroupCollection())
 {}
 
 /*
@@ -1485,7 +1509,9 @@ DataGroup::DataGroup(const std::string& name,
                      DataStore * datastore)
   : m_name(name),
   m_parent(datastore->getRoot()),
-  m_datastore(datastore)
+  m_datastore(datastore),
+  m_view_coll(new DataViewCollection()),
+  m_group_coll(new DataGroupCollection())
 {}
 
 /*
@@ -1499,6 +1525,8 @@ DataGroup::~DataGroup()
 {
   destroyViews();
   destroyGroups();
+  delete m_view_coll;
+  delete m_group_coll;
 }
 
 /*
@@ -1518,7 +1546,7 @@ DataView * DataGroup::attachView(DataView * view)
   {
     SLIC_ASSERT(view->m_owning_group == ATK_NULLPTR);
     view->m_owning_group = this;
-    m_view_coll.insertItem(view, view->getName());
+    m_view_coll->insertItem(view, view->getName());
     return view;
   }
 }
@@ -1532,7 +1560,7 @@ DataView * DataGroup::attachView(DataView * view)
  */
 DataView * DataGroup::detachView(const std::string& name )
 {
-  DataView * view = m_view_coll.removeItem(name);
+  DataView * view = m_view_coll->removeItem(name);
   if ( view != ATK_NULLPTR )
   {
     view->m_owning_group = ATK_NULLPTR;
@@ -1550,7 +1578,7 @@ DataView * DataGroup::detachView(const std::string& name )
  */
 DataView * DataGroup::detachView(IndexType idx)
 {
-  DataView * view = m_view_coll.removeItem(idx);
+  DataView * view = m_view_coll->removeItem(idx);
   if ( view != ATK_NULLPTR )
   {
     view->m_owning_group = ATK_NULLPTR;
@@ -1596,7 +1624,7 @@ DataGroup * DataGroup::attachGroup(DataGroup * group)
   }
   else
   {
-    m_group_coll.insertItem(group, group->getName());
+    m_group_coll->insertItem(group, group->getName());
     return group;
   }
 }
@@ -1610,7 +1638,7 @@ DataGroup * DataGroup::attachGroup(DataGroup * group)
  */
 DataGroup * DataGroup::detachGroup(const std::string& name )
 {
-  DataGroup * group = m_group_coll.removeItem(name);
+  DataGroup * group = m_group_coll->removeItem(name);
   if ( group != ATK_NULLPTR )
   {
     group->m_parent = ATK_NULLPTR;
@@ -1628,7 +1656,7 @@ DataGroup * DataGroup::detachGroup(const std::string& name )
  */
 DataGroup * DataGroup::detachGroup(IndexType idx)
 {
-  DataGroup * group = m_group_coll.removeItem(idx);
+  DataGroup * group = m_group_coll->removeItem(idx);
   if ( group != ATK_NULLPTR )
   {
     group->m_parent = ATK_NULLPTR;
@@ -1855,6 +1883,11 @@ void DataGroup::importConduitTree(conduit::Node &node)
         DataGroup * grp = createGroup(cld_name);
         grp->importConduitTree(cld_node);
       }
+      else if(cld_dtype.is_empty())
+      {
+        //create empty view
+        createView(cld_name);
+      }
       else if(cld_dtype.is_string())
       {
         //create string view
@@ -2001,6 +2034,288 @@ const DataGroup * DataGroup::walkPath( std::string& path ) const
 
   return group_ptr;
 }
+
+/*
+ *************************************************************************
+ *
+ * Return number of child Groups in a Group object.
+ *
+ *************************************************************************
+ */
+size_t DataGroup::getNumGroups() const
+{
+  return m_group_coll->getNumItems();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return number of Views owned by a Group object.
+ *
+ *************************************************************************
+ */
+size_t DataGroup::getNumViews() const
+{
+  return m_view_coll->getNumItems();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if this Group owns a View with given name (not path);
+ * else false.
+ *
+ *************************************************************************
+ */
+bool DataGroup::hasChildView( const std::string& name ) const
+{
+  return m_view_coll->hasItem(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if this Group owns a View with given index; else false.
+ *
+ *************************************************************************
+ */
+bool DataGroup::hasView( IndexType idx ) const
+{
+  return m_view_coll->hasItem(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return index of View with given name owned by this Group object.
+ *
+ * If no such View exists, return sidre::InvalidIndex;
+ *
+ *************************************************************************
+ */
+IndexType DataGroup::getViewIndex(const std::string& name) const
+{
+  SLIC_CHECK_MSG(hasChildView(name),
+                 "Group " << this->getName() <<
+                 " has no View with name '" << name << "'");
+
+  return m_view_coll->getItemIndex(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return name of View with given index owned by Group object.
+ *
+ * If no such View exists, return sidre::InvalidName.
+ *
+ *************************************************************************
+ */
+const std::string& DataGroup::getViewName(IndexType idx) const
+{
+  SLIC_CHECK_MSG(hasView(idx),
+                 "Group " << this->getName() <<
+                 " has no View with index " << idx);
+
+  return m_view_coll->getItemName(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to non-const View with given index.
+ *
+ * If no such View exists, ATK_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::getView( IndexType idx )
+{
+  SLIC_CHECK_MSG( hasView(idx),
+                  "Group " << this->getName()
+                           << " has no View with index " << idx);
+
+  return m_view_coll->getItem(idx);
+}
+
+/*
+ *************************************************************************
+ * 
+ * Return pointer to const View with given index.
+ *
+ * If no such View exists, ATK_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+const DataView * DataGroup::getView( IndexType idx ) const
+{
+  SLIC_CHECK_MSG( hasView(idx),
+                  "Group " << this->getName()
+                           << " has no View with index " << idx);
+
+  return m_view_coll->getItem(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return first valid View index in Group object
+ *        (i.e., smallest index over all Views).
+ *
+ * sidre::InvalidIndex is returned if Group has no Views.
+ *
+ *************************************************************************
+ */
+IndexType DataGroup::getFirstValidViewIndex() const
+{
+  return m_view_coll->getFirstValidIndex();
+}
+
+/*!
+ *************************************************************************
+ *
+ * Return next valid View index in Group object after given index
+ *        (i.e., smallest index over all View indices larger than given one).
+ *
+ * sidre::InvalidIndex is returned if there is no valid index greater
+ * than given one.
+ *
+ *************************************************************************
+ */
+IndexType DataGroup::getNextValidViewIndex(IndexType idx) const
+{
+  return m_view_coll->getNextValidIndex(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if this Group has a child Group with given
+ * name; else false.
+ * 
+ *************************************************************************
+ */
+bool DataGroup::hasChildGroup( const std::string& name ) const
+{
+  return m_group_coll->hasItem(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if Group has an immediate child Group
+ * with given index; else false.
+ *
+ *************************************************************************
+ */
+bool DataGroup::hasGroup( IndexType idx ) const
+{
+  return m_group_coll->hasItem(idx);
+}
+
+/*
+ *************************************************************************
+ * Return the index of immediate child Group with given name.
+ *
+ * If no such child Group exists, return sidre::InvalidIndex;
+ *
+ *************************************************************************
+ */
+IndexType DataGroup::getGroupIndex(const std::string& name) const
+{
+  SLIC_CHECK_MSG(hasChildGroup(name),
+                 "Group " << this->getName() <<
+                 " has no child Group with name '" << name << "'");
+
+  return m_group_coll->getItemIndex(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return the name of immediate child Group with given index.
+ *
+ * If no such child Group exists, return sidre::InvalidName.
+ *
+ *************************************************************************
+ */
+const std::string& DataGroup::getGroupName(IndexType idx) const
+{
+  SLIC_CHECK_MSG(hasGroup(idx),
+                 "Group " << this->getName() <<
+                 " has no child Group with index " << idx);
+
+  return m_group_coll->getItemName(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to non-const immediate child Group with given index.
+ *
+ * If no such Group exists, ATK_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+DataGroup * DataGroup::getGroup( IndexType idx )
+{
+  SLIC_CHECK_MSG(hasGroup(idx),
+                 "Group " << this->getName() <<
+                 " has no child Group with index " << idx);
+
+  return m_group_coll->getItem(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to const immediate child Group with given index.
+ *
+ * If no such Group exists, ATK_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+const DataGroup * DataGroup::getGroup( IndexType idx ) const
+{
+  SLIC_CHECK_MSG(hasGroup(idx),
+                 "Group " << this->getName() <<
+                 " has no child Group with index " << idx);
+
+  return m_group_coll->getItem(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return first valid child Group index (i.e., smallest
+ *        index over all child Groups).
+ *
+ * sidre::InvalidIndex is returned if Group has no child Groups.
+ *
+ *************************************************************************
+ */
+IndexType DataGroup::getFirstValidGroupIndex() const
+{
+  return m_group_coll->getFirstValidIndex();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return next valid child Group index after given index
+ *        (i.e., smallest index over all child Group indices larger
+ *        than given one).
+ *
+ * sidre::InvalidIndex is returned if there is no valid index greater
+ * than given one.
+ *
+ *************************************************************************
+ */
+IndexType DataGroup::getNextValidGroupIndex(IndexType idx) const
+{
+  return m_group_coll->getNextValidIndex(idx);
+}
+
 
 
 

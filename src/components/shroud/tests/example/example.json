@@ -25,6 +25,7 @@
                     ]
                 ]
             ], 
+            "cpp_header": "ExClass1.hpp", 
             "fmt": {
                 "C_header_filename": "wrapExClass1.h", 
                 "C_impl_filename": "wrapExClass1.cpp", 
@@ -699,9 +700,7 @@
                 }
             ], 
             "name": "ExClass1", 
-            "options": {
-                "cpp_header": "ExClass1.hpp"
-            }, 
+            "options": {}, 
             "python": {
                 "type": [
                     "init", 
@@ -735,6 +734,7 @@
                     ]
                 ]
             ], 
+            "cpp_header": "ExClass2.hpp", 
             "fmt": {
                 "C_header_filename": "wrapExClass2.h", 
                 "C_impl_filename": "wrapExClass2.cpp", 
@@ -1862,9 +1862,7 @@
                 }
             ], 
             "name": "ExClass2", 
-            "options": {
-                "cpp_header": "ExClass2.hpp"
-            }, 
+            "options": {}, 
             "python": {
                 "type": [
                     "dealloc", 
@@ -1892,6 +1890,7 @@
         "yada yada", 
         null
     ], 
+    "cpp_header": "", 
     "fmt": {
         "BBB": "BBB", 
         "C_const": "", 
@@ -2476,6 +2475,8 @@
             }
         }
     ], 
+    "library": "UserLibrary", 
+    "namespace": "example nested", 
     "options": {
         "C_header_filename_class_template": "wrap{cpp_class}.h", 
         "C_header_filename_library_template": "wrap{library}.h", 
@@ -2518,11 +2519,8 @@
         "PY_prefix": "PP_", 
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "class_name_template": "{class_lower}_", 
-        "cpp_header": "", 
         "debug": true, 
         "doxygen": true, 
-        "library": "UserLibrary", 
-        "namespace": "example nested", 
         "wrap_c": true, 
         "wrap_fortran": true, 
         "wrap_lua": false, 
@@ -2752,7 +2750,7 @@
                     "cpp_header": "shroudrt.hpp", 
                     "cpp_local_var": true, 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
                         "delete [] {cpp_var};"
                     ], 
                     "pre_call": [
@@ -2762,7 +2760,7 @@
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -2973,13 +2971,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -3021,13 +3019,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -3069,13 +3067,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 

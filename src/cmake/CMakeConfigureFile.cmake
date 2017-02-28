@@ -1,5 +1,5 @@
 #
-# CMakeConfigueFile.cmake - Create header of configuration options
+# CMakeConfigureFile.cmake - Create header of configuration options
 #
 
 if( (CMAKE_CXX_STANDARD EQUAL 11) OR (CMAKE_CXX_STANDARD EQUAL 14) )
@@ -12,17 +12,10 @@ endif()
 ## Note: BLT adds USE_MPI and USE_OPENMP as compile define flags for targets
 ##       that are configured with MPI and OPENMP, respectively.
 
-set(DEPS_OPTIONS BOOST MPI)                    # vars of the form ENABLE_DEP
-foreach(dep in ${DEPS_OPTIONS})
-    if( ENABLE_${dep} )
-        set(ATK_USE_${dep} TRUE)
-    endif()
-endforeach()
-
-set(DEPS_BUILTIN CONDUIT HDF5 SPARSEHASH FMT)  # vars of the form DEP_FOUND
-foreach(dep in ${DEPS_BUILTIN})
-    if( ${dep}_FOUND )
-        set(ATK_USE_${dep} TRUE)
+set(TPL_DEPS CONDUIT HDF5 SPARSEHASH FMT BOOST MPI)  # vars of the form DEP_FOUND
+foreach(dep in ${TPL_DEPS})
+    if( ${dep}_FOUND OR ENABLE_${dep} )
+        set(ATK_USE_${dep} TRUE  )
     endif()
 endforeach()
 
@@ -34,6 +27,18 @@ if(ENABLE_MPI AND ENABLE_FORTRAN)
 endif()
 
 
+# If Sparsehash was found, ATK_USE_SPARSEHASH was set above in the TPL_DEPS
+# loop.  If not, we must use a standard container--std::unordered_map when
+# using C++11, std::map otherwise.  std::map is expected to perform poorly
+# with large amounts of Sidre objects, so it is recommended to make sure
+# Sparsehash is available for non-C++ 11 builds.
+if(NOT ATK_USE_SPARSEHASH)
+  if(ATK_USE_CXX11)
+    set(ATK_USE_STD_UNORDERED_MAP TRUE)
+  else()
+    set(ATK_USE_STD_MAP TRUE)
+  endif()
+endif()
 
 
 ## Add a configuration define for each enabled toolkit component
@@ -43,7 +48,6 @@ foreach(comp in ${COMPS})
         set(ATK_USE_${comp} TRUE)
     endif()
 endforeach()
-
 
 
 

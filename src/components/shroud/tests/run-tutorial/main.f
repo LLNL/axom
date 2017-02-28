@@ -111,12 +111,12 @@ contains
     obj = class1_new()
     call assert_true(c_associated(obj%get_instance()), "class1_new")
 
-    call obj%method1()
+    call obj%method1
     call assert_true(.true.)
 
     call useclass(obj)
 
-    call obj%delete()
+    call obj%delete
     call assert_true(.not. c_associated(obj%get_instance()), "class1_delete")
   end subroutine test_class1
 
