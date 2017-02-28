@@ -958,56 +958,68 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
   // face normals of AABB
   // Each test involves three cross products, two of which have the same value
   // The commented parameters highlights this symmetry.
-#define XEDGE_R( _E0, _E1, _F0, _F1, _IND )   e[ _E0 ] * std::abs( \
-    f[ _IND ][ _F0 ]) \
-  + e[ _E1 ] * std::abs(f[ _IND ][ _F1 ])
+#define XEDGE_R( _E0, _E1, _F0, _F1, _IND ) \
+  e[ _E0 ] * std::abs( f[ _IND ][ _F0 ]) +  \
+  e[ _E1 ] * std::abs(f[ _IND ][ _F1 ])
 
-#define XEDGE_S( _V0, _V1, _F0, _F1, _VIND, \
-                 _FIND) -v[ _VIND ][ _V0 ] * f[ _FIND ][ _F0 ] \
+#define XEDGE_S( _V0, _V1, _F0, _F1, _VIND, _FIND ) \
+  -v[ _VIND ][ _V0 ] * f[ _FIND ][ _F0 ] \
   +v[ _VIND ][ _V1 ] * f[ _FIND ][ _F1 ]
 
-  if ( crossEdgesDisjoint(/*XEDGE_S(1,2,2,1,0,0),*/ XEDGE_S(1,2,2,1,1,0),
-                                                    XEDGE_S(1,2,2,1,2,0),
-                                                    XEDGE_R(1,2,2,1,0))) {
+  if ( crossEdgesDisjoint(/*XEDGE_S(1,2,2,1,0,0),*/
+                            XEDGE_S(1,2,2,1,1,0),
+                            XEDGE_S(1,2,2,1,2,0),
+                            XEDGE_R(1,2,2,1,0) ) ) {
     return false;
   }
   if ( crossEdgesDisjoint(  XEDGE_S(1,2,2,1,0,1),
-                            /* XEDGE_S(1,2,2,1,1,1),*/ XEDGE_S(1,2,2,1,2,1),
-                                                    XEDGE_R(1,2,2,1,1))) {
+                            /* XEDGE_S(1,2,2,1,1,1),*/
+                            XEDGE_S(1,2,2,1,2,1),
+                            XEDGE_R(1,2,2,1,1) ) ) {
     return false;
   }
-  if ( crossEdgesDisjoint(  XEDGE_S(1,2,2,1,0,2),   XEDGE_S(1,2,2,1,1,2),
-                            /* XEDGE_S(1,2,2,1,2,2),*/ XEDGE_R(1,2,2,1,2))) {
+  if ( crossEdgesDisjoint(  XEDGE_S(1,2,2,1,0,2),
+                            XEDGE_S(1,2,2,1,1,2),
+                            /* XEDGE_S(1,2,2,1,2,2),*/
+                            XEDGE_R(1,2,2,1,2) ) ) {
     return false;
   }
 
-  if ( crossEdgesDisjoint(/*XEDGE_S(2,0,0,2,0,0),*/ XEDGE_S(2,0,0,2,1,0),
-                                                    XEDGE_S(2,0,0,2,2,0),
-                                                    XEDGE_R(0,2,2,0,0))) {
+  if ( crossEdgesDisjoint( /*XEDGE_S(2,0,0,2,0,0),*/
+                           XEDGE_S(2,0,0,2,1,0),
+                           XEDGE_S(2,0,0,2,2,0),
+                           XEDGE_R(0,2,2,0,0) ) ) {
     return false;
   }
   if ( crossEdgesDisjoint(  XEDGE_S(2,0,0,2,0,1),
-                            /* XEDGE_S(2,0,0,2,1,1),*/ XEDGE_S(2,0,0,2,2,1),
-                                                    XEDGE_R(0,2,2,0,1))) {
+                            /* XEDGE_S(2,0,0,2,1,1),*/
+                            XEDGE_S(2,0,0,2,2,1),
+                            XEDGE_R(0,2,2,0,1) ) ) {
     return false;
   }
-  if ( crossEdgesDisjoint(  XEDGE_S(2,0,0,2,0,2),   XEDGE_S(2,0,0,2,1,2),
-                            /* XEDGE_S(2,0,0,2,2,2),*/ XEDGE_R(0,2,2,0,2))) {
+  if ( crossEdgesDisjoint(  XEDGE_S(2,0,0,2,0,2),
+                            XEDGE_S(2,0,0,2,1,2),
+                            /* XEDGE_S(2,0,0,2,2,2),*/
+                            XEDGE_R(0,2,2,0,2) ) ) {
     return false;
   }
 
-  if ( crossEdgesDisjoint(/*XEDGE_S(0,1,1,0,0,0),*/ XEDGE_S(0,1,1,0,1,0),
-                                                    XEDGE_S(0,1,1,0,2,0),
-                                                    XEDGE_R(0,1,1,0,0))) {
+  if ( crossEdgesDisjoint( /*XEDGE_S(0,1,1,0,0,0),*/
+                           XEDGE_S(0,1,1,0,1,0),
+                           XEDGE_S(0,1,1,0,2,0),
+                           XEDGE_R(0,1,1,0,0) ) ) {
     return false;
   }
   if ( crossEdgesDisjoint(  XEDGE_S(0,1,1,0,0,1),
-                            /* XEDGE_S(0,1,1,0,1,1),*/ XEDGE_S(0,1,1,0,2,1),
-                                                    XEDGE_R(0,1,1,0,1))) {
+                            /* XEDGE_S(0,1,1,0,1,1),*/
+                            XEDGE_S(0,1,1,0,2,1),
+                            XEDGE_R(0,1,1,0,1) ) ) {
     return false;
   }
-  if ( crossEdgesDisjoint(  XEDGE_S(0,1,1,0,0,2),   XEDGE_S(0,1,1,0,1,2),
-                            /* XEDGE_S(0,1,1,0,2,2),*/ XEDGE_R(0,1,1,0,2))) {
+  if ( crossEdgesDisjoint(  XEDGE_S(0,1,1,0,0,2),
+                            XEDGE_S(0,1,1,0,1,2),
+                            /* XEDGE_S(0,1,1,0,2,2),*/
+                            XEDGE_R(0,1,1,0,2) ) ) {
     return false;
   }
 

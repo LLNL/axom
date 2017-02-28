@@ -339,30 +339,29 @@ TEST( primal_intersection, triangle_aabb_intersection_fromData2 )
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
 
   // Triangle 569
-  TriangleType tri(PointType::make_point(0,5,0), PointType::make_point(
-                     -0.665356,4.93844,-0.411212), PointType::make_point(
-                     -0.665356,4.93844,
-                     0.411212));
+  TriangleType tri( PointType::make_point(0,5,0),
+                    PointType::make_point(-0.665356,4.93844,-0.411212),
+                    PointType::make_point(-0.665356,4.93844, 0.411212) );
 
   // {pt: (8,15,8); level: 4}
-  BoundingBoxType box0(PointType::make_point(0,4.375,0), PointType::make_point(
-                         0.625,5,0.625));
+  BoundingBoxType box0( PointType::make_point(0,4.375,0),
+                        PointType::make_point(0.625,5,0.625) );
+
   // {pt: (6,15,7); level: 4}
-  BoundingBoxType box1(PointType::make_point(-1.25,4.375,
-                                             -0.625), PointType::make_point(
-                         -0.625,5,0));
+  BoundingBoxType box1( PointType::make_point(-1.25,4.375,-0.625),
+                        PointType::make_point(-0.625,5,0) );
+
   // {pt: (6,15,8); level: 4}
-  BoundingBoxType box2(PointType::make_point(-1.25,4.375,
-                                             0), PointType::make_point(-0.625,5,
-                                                                       0.625));
+  BoundingBoxType box2( PointType::make_point(-1.25,4.375,0),
+                        PointType::make_point(-0.625,5,0.625) );
 
   // Block index {pt: (16,31,16); level: 5}
-  BoundingBoxType box3(PointType::make_point(0,4.6875,0), PointType::make_point(
-                         0.3125,5,0.3125));
+  BoundingBoxType box3( PointType::make_point(0,4.6875,0),
+                        PointType::make_point(0.3125,5,0.3125) );
 
   // Block index {pt: (8,15,8); level: 4}
-  BoundingBoxType box4(PointType::make_point(0,4.375,0), PointType::make_point(
-                         0.625,5,0.625));
+  BoundingBoxType box4( PointType::make_point(0,4.375,0),
+                        PointType::make_point(0.625,5,0.625) );
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
 
@@ -393,15 +392,16 @@ TEST( primal_intersection, 2D_triangle_triangle_intersection )
 {
 
   typedef primal::Triangle< double,2 > Triangle2;
-  typedef primal::Point< double,2 >   Point2;
+  typedef primal::Point< double,2 >    Point2;
 
   // Triangle 569
-  Triangle2 triA(Point2::make_point(0.0,5.0), Point2::make_point(5.0,
-                                                                 5.0), Point2::make_point(
-                   0.0,0.0));
-  Triangle2 triB(Point2::make_point(0.0,5.0), Point2::make_point(5.0,
-                                                                 5.0), Point2::make_point(
-                   0.0,0.0));
+  Triangle2 triA( Point2::make_point(0.0,5.0),
+                  Point2::make_point(5.0,5.0),
+                  Point2::make_point( 0.0,0.0) );
+
+  Triangle2 triB( Point2::make_point(0.0,5.0),
+                  Point2::make_point(5.0,5.0),
+                  Point2::make_point(0.0,0.0) );
 
   // asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
 
@@ -409,179 +409,207 @@ TEST( primal_intersection, 2D_triangle_triangle_intersection )
 
   permuteCornersTest(triA, triB, "identical 2D triangles", true);
 
-  Triangle2 triC(Point2::make_point(-1.0,-1.0), Point2::make_point(-5.0,
-                                                                   -5.0), Point2::make_point(
-                   -7.0,-8.0));
+  Triangle2 triC( Point2::make_point(-1.0,-1.0),
+                  Point2::make_point(-5.0,-5.0),
+                  Point2::make_point(-7.0,-8.0) );
+
   permuteCornersTest(triA, triC, "non-intersecting 2D triangles", false);
 
-  triA = Triangle2(Point2::make_point(4.3,4.05), Point2::make_point(-1.0,
-                                                                    -0.06),
-                   Point2:: make_point( 7.3,  -1.3));
-  triB = Triangle2(Point2::make_point(1.0, 0.0), Point2::make_point(6.0,
-                                                                    0.5),
-                   Point2:: make_point( 4.2,  2.1));
+  triA = Triangle2( Point2::make_point(4.3,4.05),
+                    Point2::make_point(-1.0,-0.06),
+                    Point2:: make_point( 7.3, -1.3) );
+
+  triB = Triangle2( Point2::make_point(1.0, 0.0),
+                    Point2::make_point(6.0,0.5),
+                    Point2:: make_point( 4.2,  2.1) );
+
   permuteCornersTest(triA, triB, "2D tri B completely contained in tri A",
                      true);
 
-  triB = Triangle2(Point2::make_point(1.9,-2), Point2::make_point(6.9,
-                                                                  2.1),
-                   Point2::make_point(0.8,5.1));
+  triB = Triangle2( Point2::make_point(1.9,-2),
+                    Point2::make_point(6.9,2.1),
+                    Point2::make_point(0.8,5.1) );
+
   permuteCornersTest(triA, triB, "intersecting 2D triangles, no corner in",
                      true);
 
-  triB = Triangle2(Point2::make_point(2.9,1.6), Point2::make_point(-1.5,
-                                                                   1.5),
-                   Point2::make_point(0.8,5.1));
+  triB = Triangle2( Point2::make_point(2.9,1.6),
+                    Point2::make_point(-1.5,1.5),
+                    Point2::make_point(0.8,5.1) );
+
   permuteCornersTest(triA, triB, "intersecting 2D triangles, one corner in",
                      true);
 
-  triB = Triangle2(Point2::make_point(2.9,0), Point2::make_point(2.1,
-                                                                 0.1),
-                   Point2::make_point(0.8,5.1));
+  triB = Triangle2( Point2::make_point(2.9,0),
+                    Point2::make_point(2.1,0.1),
+                    Point2::make_point(0.8,5.1) );
+
   permuteCornersTest(triA, triB, "intersecting 2D triangles, two corners in",
                      true);
 
-  triB = Triangle2(Point2::make_point(2, -1), Point2::make_point(-1.0,
-                                                                 -0.06),
-                   Point2::make_point(7.3,-1.3));
+  triB = Triangle2( Point2::make_point(2, -1),
+                    Point2::make_point(-1.0,-0.06),
+                    Point2::make_point(7.3,-1.3) );
+
   permuteCornersTest(triA, triB,
                      "2D t1 and t2 share a complete edge (and nothing else)",
                      true);
 
-  Triangle2 triD(Point2::make_point(0, 0), Point2::make_point(1,
-                                                              0), Point2::make_point(
-                   1, 1));
-  Triangle2 triE(Point2::make_point(0, 0), Point2::make_point(0.5,
-                                                              0), Point2::make_point(
-                   -1, -1));
+  Triangle2 triD( Point2::make_point(0, 0),
+                  Point2::make_point(1,0),
+                  Point2::make_point(1, 1) );
+
+  Triangle2 triE( Point2::make_point(0, 0),
+                  Point2::make_point(0.5,0),
+                  Point2::make_point(-1, -1) );
+
   permuteCornersTest(triD, triE,
                      "2D t1 edge is a subset of t2's, and they share a corner (but nothing else)",
                      true);
 
-  triE = Triangle2(Point2::make_point(0.5, 0), Point2::make_point(1,
-                                                                  0),
-                   Point2::make_point(-1, -1));
+  triE = Triangle2( Point2::make_point(0.5, 0),
+                    Point2::make_point(1,0),
+                    Point2::make_point(-1, -1) );
+
   permuteCornersTest(triD, triE,
                      "2D t1 edge is a subset of t2's, and they share the other corner (but nothing else)",
                      true);
 
-  triE = Triangle2(Point2::make_point(0.5, 0), Point2::make_point(1.5,
-                                                                  0),
-                   Point2::make_point(-1, -1));
+  triE = Triangle2( Point2::make_point(0.5, 0),
+                    Point2::make_point(1.5,0),
+                    Point2::make_point(-1,-1) );
+
   permuteCornersTest(triD, triE,
                      "2D t1 edge overlaps t2 (no other intersection)",
                      true);
 
-  triE = Triangle2(Point2::make_point(-0.5, 0), Point2::make_point(0.5,
-                                                                   0),
-                   Point2::make_point(-1, -1));
+  triE = Triangle2( Point2::make_point(-0.5, 0),
+                    Point2::make_point(0.5,0),
+                    Point2::make_point(-1,-1) );
+
   permuteCornersTest(triD, triE,
                      "2D t1 edge overlaps t2 the other way (no other intersection)",
                      true);
 
-  triE = Triangle2(Point2::make_point(-1, 0.5), Point2::make_point(-1,
-                                                                   -1),
-                   Point2::make_point(2, -1));
+  triE = Triangle2( Point2::make_point(-1, 0.5),
+                    Point2::make_point(-1,-1),
+                    Point2::make_point(2, -1) );
+
   permuteCornersTest(triD, triE,
                      "2D t1 point lands on t2 edge (no other intersection)",
                      true);
 
-  triE = Triangle2(Point2::make_point(0, 0), Point2::make_point(-40,
-                                                                -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(0, 0),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE,
                      "2D t1 point lands on t2 point (no other intersection)",
                      true);
 
   // Several non-intersection cases (and a few intersection)
 
-  triE = Triangle2(Point2::make_point(0.2, -1e-3), Point2::make_point(1,
-                                                                      -1),
-                   Point2::make_point(1.2, -1e-3));
+  triE = Triangle2( Point2::make_point(0.2, -1e-3),
+                    Point2::make_point(1,-1),
+                    Point2::make_point(1.2, -1e-3) );
+
   permuteCornersTest(triD, triE, "2D disjunct, close parallel sides",
                      false);
 
-  triE = Triangle2(Point2::make_point(0.2, -1e-3), Point2::make_point(1,
-                                                                      -1),
-                   Point2::make_point(1, -1e-4));
+  triE = Triangle2( Point2::make_point(0.2, -1e-3),
+                    Point2::make_point(1,-1),
+                    Point2::make_point(1, -1e-4) );
+
   permuteCornersTest(triD, triE, "2D disjunct, close converging sides",
                      false);
 
-  triE = Triangle2(Point2::make_point(10, 1), Point2::make_point(2,
-                                                                 0),
-                   Point2::make_point(11, -0.3));
+  triE = Triangle2( Point2::make_point(10, 1),
+                    Point2::make_point(2,0),
+                    Point2::make_point(11, -0.3) );
+
   permuteCornersTest(triD, triE, "2D disjunct, fairly far-separated",
                      false);
 
-  triE = Triangle2(Point2::make_point(0, 0.1), Point2::make_point(-40,
-                                                                  -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(0, 0.1),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D disjunct, point comes close",
                      false);
 
-  triE = Triangle2(Point2::make_point(-0.001, 0), Point2::make_point(-40,
-                                                                     -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(-0.001, 0),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 2",
                      false);
 
-  triE = Triangle2(Point2::make_point(-0.5, 0), Point2::make_point(-40,
-                                                                   -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(-0.5, 0),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 3",
                      false);
 
-  triE = Triangle2(Point2::make_point(-1.7, 0), Point2::make_point(-40,
-                                                                   -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(-1.7, 0),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 4",
                      false);
 
-  triE = Triangle2(Point2::make_point(-5.1, 0), Point2::make_point(-40,
-                                                                   -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(-5.1, 0),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 5",
                      false);
 
-  triE = Triangle2(Point2::make_point(0.5, 0.5), Point2::make_point(-40,
-                                                                    -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(0.5, 0.5),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D point lands on side 2", true);
 
-  triE =
-    Triangle2(Point2::make_point(0.49999, 0.5), Point2::make_point(-40,
-                                                                   -0.7),
-              Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(0.49999, 0.5),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D point comes close to side",
                      false);
 
-  triE = Triangle2(Point2::make_point(0.49, 0.5), Point2::make_point(-40,
-                                                                     -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(0.49, 0.5),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D point comes close to side 2",
                      false);
 
-  triE = Triangle2(Point2::make_point(0.4, 0.5), Point2::make_point(-40,
-                                                                    -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(0.4, 0.5),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D point comes close to side 3",
                      false);
 
-  triE = Triangle2(Point2::make_point(-0.1, 0.5), Point2::make_point(-40,
-                                                                     -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(-0.1, 0.5),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D point comes close to side 4",
                      false);
 
-  triE = Triangle2(Point2::make_point(-2.6, 2.5), Point2::make_point(-40,
-                                                                     -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(-2.6, 2.5),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D point comes close to side 5",
                      false);
 
-  triE = Triangle2(Point2::make_point(-6, 5), Point2::make_point(-40,
-                                                                 -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2( Point2::make_point(-6, 5),
+                    Point2::make_point(-40,-0.7),
+                    Point2::make_point(-23, 1.3) );
+
   permuteCornersTest(triD, triE, "2D point comes close to side 6",
                      false);
 }
@@ -666,76 +694,86 @@ TEST( primal_intersection, 3D_triangle_triangle_intersection )
   typedef primal::Triangle< double,3 > Triangle3;
   typedef primal::Point< double,3 >   Point3;
 
-  Triangle3 tri3d_1(Point3::make_point(-1.0,-1.0,-1.0), Point3::make_point(-2.0,
-                                                                           -5.0,
-                                                                           -5.0), Point3::make_point(
-                      -4.0,-8.0, -8.0));
-  Triangle3 tri3d_2(Point3::make_point(-1.0,-1.0,-1.0), Point3::make_point(-2.0,
-                                                                           -5.0,
-                                                                           -5.0), Point3::make_point(
-                      -4.0,-8.0, -8.0));
+  Triangle3 tri3d_1( Point3::make_point(-1.0,-1.0,-1.0),
+                     Point3::make_point(-2.0,-5.0,-5.0),
+                     Point3::make_point(-4.0,-8.0, -8.0) );
+
+  Triangle3 tri3d_2( Point3::make_point(-1.0,-1.0,-1.0),
+                     Point3::make_point(-2.0,-5.0,-5.0),
+                     Point3::make_point(-4.0,-8.0, -8.0) );
+
   permuteCornersTest(tri3d_1, tri3d_2, "3D identical triangles", true);
 
-  Triangle3 tri3d_3(Point3::make_point(1.0,1.0,1.0), Point3::make_point(5.0,5.0,
-                                                                        5.0), Point3::make_point(
-                      8.0,7.0, 92.0));
+  Triangle3 tri3d_3( Point3::make_point(1.0,1.0,1.0),
+                     Point3::make_point(5.0,5.0,5.0),
+                     Point3::make_point(8.0,7.0, 92.0) );
+
   permuteCornersTest(tri3d_1, tri3d_3, "3D disjunct triangles", false);
 
-  Triangle3 tri3A(Point3::make_point(0, 0, 0), Point3::make_point(1, 0,
-                                                                  0), Point3::make_point(
-                    0, 1.7, 2.3));
-  Triangle3 tri3B(Point3::make_point(0, 0, 0), Point3::make_point(1, 0,
-                                                                  0), Point3::make_point(
-                    0, -2, 1.2));
+  Triangle3 tri3A( Point3::make_point(0, 0, 0),
+                   Point3::make_point(1, 0,0),
+                   Point3::make_point(0, 1.7, 2.3) );
+
+  Triangle3 tri3B( Point3::make_point(0, 0, 0),
+                   Point3::make_point(1, 0,0),
+                   Point3::make_point(0, -2, 1.2) );
+
   permuteCornersTest(tri3A, tri3B, "3D tris sharing a segment",
                      true);
-  tri3B = Triangle3(Point3::make_point(-0.2, 0, 0), Point3::make_point(0.7, 0,
-                                                                       0),
-                    Point3::make_point(0, -2, 1.2));
+
+  tri3B = Triangle3( Point3::make_point(-0.2, 0, 0),
+                     Point3::make_point(0.7, 0,0),
+                     Point3::make_point(0, -2, 1.2) );
+
   permuteCornersTest(tri3A, tri3B, "3D tris sharing part of a segment",
                      true);
 
-  tri3B = Triangle3(Point3::make_point(-1, 0, 0), Point3::make_point(0, 4.3,
-                                                                     6),
-                    Point3::make_point(0, 1.7, 2.3));
+  tri3B = Triangle3( Point3::make_point(-1, 0, 0),
+                     Point3::make_point(0, 4.3,6),
+                     Point3::make_point(0, 1.7, 2.3) );
+
   permuteCornersTest(tri3A, tri3B, "3D tris sharing a vertex",
                      true);
 
-  tri3B = Triangle3(Point3::make_point(0, -1, 0), Point3::make_point(1, 1,
-                                                                     0),
-                    Point3::make_point(0, 1.7, -2.3));
+  tri3B = Triangle3( Point3::make_point(0, -1, 0),
+                     Point3::make_point(1, 1,0),
+                     Point3::make_point(0, 1.7, -2.3) );
+
   permuteCornersTest(tri3A, tri3B, "3D tris; edges cross",
                      true);
 
-  tri3B = Triangle3(Point3::make_point(0, -1, -1), Point3::make_point(0.5, 0,
-                                                                      0),
-                    Point3::make_point(1, 1, -1));
+  tri3B = Triangle3( Point3::make_point(0, -1, -1),
+                     Point3::make_point(0.5, 0,0),
+                     Point3::make_point(1, 1, -1) );
+
   permuteCornersTest(tri3A, tri3B, "3D tris; B vertex lands on A's edge",
                      true);
 
-  tri3B =
-    Triangle3(Point3::make_point(0.5, -1, 0.1), Point3::make_point(0.5, 1,
-                                                                   0.1),
-              Point3::make_point(1, 1, -1));
+  tri3B = Triangle3( Point3::make_point(0.5, -1, 0.1),
+                     Point3::make_point(0.5, 1,0.1),
+                     Point3::make_point(1, 1, -1) );
+
   permuteCornersTest(tri3A, tri3B,
                      "3D tris intersect like two links in a chain", true);
 
-  tri3B = Triangle3(Point3::make_point(-1, -1, 1), Point3::make_point(0, 2,
-                                                                      1),
-                    Point3::make_point(5, 0, 1));
+  tri3B = Triangle3( Point3::make_point(-1, -1, 1),
+                     Point3::make_point(0, 2,1),
+                     Point3::make_point(5, 0, 1) );
+
   permuteCornersTest(tri3A, tri3B, "3D tri A pokes through B",
                      true);
 
-  tri3B = Triangle3(Point3::make_point(1, -1, 1), Point3::make_point(1, 2,
-                                                                     1),
-                    Point3::make_point(1, 0, -1));
+  tri3B = Triangle3( Point3::make_point(1, -1, 1),
+                     Point3::make_point(1, 2,1),
+                     Point3::make_point(1, 0, -1) );
+
   permuteCornersTest(tri3A, tri3B, "3D tri A vertex tangent on B",
                      true);
 
-  tri3B =
-    Triangle3(Point3::make_point(1.00001, -1, 1), Point3::make_point(1, 2,
-                                                                     1),
-              Point3::make_point(1, 0, -1));
+  tri3B = Triangle3( Point3::make_point(1.00001, -1, 1),
+                     Point3::make_point(1, 2,1),
+                     Point3::make_point(1, 0, -1) );
+
   permuteCornersTest(tri3A, tri3B, "3D tri A vertex not quite tangent on B",
                      false);
 
@@ -763,8 +801,9 @@ TEST( primal_intersection, 3D_triangle_triangle_intersection )
       skiptests += 1;
     }
   }
-  std::cout << "Ran " << rantests << " and skipped " << skiptests <<
-    " tests due to triangle degeneracy." << std::endl;
+
+  SLIC_INFO( "Ran " << rantests << " and skipped " << skiptests <<
+    " tests due to triangle degeneracy." );
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
@@ -776,15 +815,15 @@ TEST( primal_intersection, triangle_aabb_intersection_boundaryFace )
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
 
-  TriangleType tri(PointType::make_point(0,5,0), PointType::make_point(0,5,
-                                                                       5), PointType::make_point(
-                     0,5,5));
+  TriangleType tri( PointType::make_point(0,5,0),
+                    PointType::make_point(0,5,5),
+                    PointType::make_point(0,5,5) );
 
-  BoundingBoxType box0(PointType::make_point(-10,-10,
-                                             -10), PointType::make_point(0,10,
-                                                                         10));
-  BoundingBoxType box1(PointType::make_point(0,-10,-10), PointType::make_point(
-                         10,10,10));
+  BoundingBoxType box0( PointType::make_point(-10,-10,-10),
+                        PointType::make_point(0,10,10) );
+
+  BoundingBoxType box1( PointType::make_point(0,-10,-10),
+                        PointType::make_point(10,10,10) );
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
 
@@ -799,13 +838,13 @@ TEST( primal_intersection, triangle_aabb_intersection_boundaryFace )
   // ---
 
   // Airfoil triangle 206
-  TriangleType tri2(PointType::make_point(0.0340691,-1,0.0236411)
-                    , PointType::make_point(0.028589,-1,0.0221062)
-                    , PointType::make_point(0.0207793,-1,-0.0295674));
+  TriangleType tri2( PointType::make_point(0.0340691,-1,0.0236411),
+                     PointType::make_point(0.028589,-1,0.0221062),
+                     PointType::make_point(0.0207793,-1,-0.0295674) );
+
   // Block: (134,128,310) @ level 9
-  BoundingBoxType box2( PointType::make_point(0.0230077,-1,-0.0208459)
-                        , PointType::make_point(0.0268708,-0.992188,
-                                                -0.0201394));
+  BoundingBoxType box2( PointType::make_point(0.0230077,-1,-0.0208459),
+                        PointType::make_point(0.0268708,-0.992188,-0.0201394) );
 
   SLIC_INFO("Testing point bounding box: "  << box2
                                             << " against triangle " << tri2
@@ -834,14 +873,11 @@ TEST( primal_intersection, ray_aabb_intersection_general3D )
   direction[2] = 1.0;
   RayType R( origin,direction );
 
-  BoundingBoxType box0(PointType::make_point(5.0,5.0,
-                                             5.0), PointType::make_point(10.0,
-                                                                         10.0,
-                                                                         10.0));
-  BoundingBoxType box1(PointType::make_point(-5.0,-5.0,
-                                             -5.0), PointType::make_point(-1.0,
-                                                                          -1.0,
-                                                                          -1.0));
+  BoundingBoxType box0( PointType::make_point(5.0,5.0,5.0),
+                        PointType::make_point(10.0,10.0,10.0) );
+
+  BoundingBoxType box1( PointType::make_point(-5.0,-5.0,-5.0),
+                        PointType::make_point(-1.0,-1.0,-1.0) );
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
   PointType ip;
@@ -875,14 +911,11 @@ TEST( primal_intersection, ray_aabb_intersection_tinyDirectionVector3D )
   direction[2] = 0.0;
   RayType R( origin,direction );
 
-  BoundingBoxType box0(PointType::make_point(5.0,5.0,
-                                             5.0), PointType::make_point(10.0,
-                                                                         10.0,
-                                                                         10.0));
-  BoundingBoxType box1(PointType::make_point(-5.0,-5.0,
-                                             -5.0), PointType::make_point(-1.0,
-                                                                          -1.0,
-                                                                          -1.0));
+  BoundingBoxType box0( PointType::make_point(5.0,5.0,5.0),
+                        PointType::make_point(10.0,10.0,10.0) );
+
+  BoundingBoxType box1( PointType::make_point(-5.0,-5.0,-5.0),
+                        PointType::make_point(-1.0,-1.0,-1.0) );
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
   PointType ip;
