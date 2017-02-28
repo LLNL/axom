@@ -4,11 +4,11 @@
 ###############################################################################
 
 """
- file: llnl_cz_uberenv_install_chaos5_x86_64_ib_all_compilers.py
+ file: llnl_rz_uberenv_install_bgqos_0_all_compilers.py
 
  description: 
   uses uberenv to install tpls for the set of compilers we want
-  for llnl rz chaos 5 platforms.
+  for llnl rz bgq 5 platforms.
 
 """
 
