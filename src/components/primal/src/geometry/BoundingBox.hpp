@@ -64,6 +64,14 @@ std::ostream& operator<<( std::ostream & os,
  * \brief Type trait to find highest and lowest values for a given type.
  *******************************************************************************
  */
+
+// NOTE: numeric_limits::min() for floats and doubles returns the smallest
+// positive number. C++11 "fixed" this by providing an additional function,
+// numeric_limits::lowest(). Prior to C++11, one would have to negate the
+// output of numeric_limits::min(). The ValueRange type trait class encapsulates
+// this behavior and provides a unified interface to get the lowest and highest
+// values of a type regardless of whether a C++11 compiler is used.
+
 template < typename T >
 struct ValueRange
 {
@@ -117,6 +125,9 @@ struct ValueRange< double >
  *
  * \brief BoundingBox represents and axis-aligned bounding box defined by
  * its min and max coordinates.
+ *
+ * \tparam T the coordinate type, e.g., double, float, etc.
+ * \tparam NDIMS the number of dimensions
  *******************************************************************************
  */
 template < typename T,int NDIMS >
@@ -358,7 +369,7 @@ public:
    * \note if dimension==-1, the bounding box is split along its longest edge.
    *****************************************************************************
    */
-  void bisect( BoxType& right, BoxType& left, int dimension=-1);
+  void bisect( BoxType& right, BoxType& left, int dimension=-1) const;
 
   /*!
    *****************************************************************************
@@ -660,7 +671,9 @@ std::ostream& BoundingBox< T,NDIMS >::print(std::ostream& os) const
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-void BoundingBox< T,NDIMS >::bisect( BoxType& right, BoxType& left, int dim )
+void BoundingBox< T,NDIMS >::bisect( BoxType& right,
+                                     BoxType& left,
+                                     int dim ) const
 {
   SLIC_ASSERT( this->isValid() );
 
