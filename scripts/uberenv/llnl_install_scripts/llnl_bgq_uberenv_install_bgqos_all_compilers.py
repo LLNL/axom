@@ -31,9 +31,9 @@ def main():
     for spec in specs:
         uberenv_install_tpls(prefix,spec,mirror_dir)
     # patch manual edits into host config files
-    #patch_host_configs(prefix)
+    patch_host_configs(prefix)
     # build the toolkit against the new tpls
-    #build_and_test_host_configs(prefix)
+    build_and_test_host_configs(prefix)
     # set proper perms for installed tpls
     set_toolkit_group_and_perms(prefix)
     # set proper perms for the mirror files
