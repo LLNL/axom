@@ -1,23 +1,70 @@
-#######
-# uberenv host-config for asctoolkit
-#######
+##################################
+# uberenv host-config
+#
+# This is a generated file, edit at own risk.
+##################################
+# x86_64-gcc@4.9.3
+##################################
+
 # cmake from uberenv
-# cmake executable path: /home/taylor16/asctoolkit/thirdparty_libs/spack/opt/unknown_arch/gcc@4.8.3/cmake@3.2.2/bin/cmake
+# cmake executable path: /home/taylor16/local/bin/cmake
+
+#######
+# using gcc@4.9.3 compiler spec
+#######
+
+# c compiler used by spack
+set(CMAKE_C_COMPILER "/home/taylor16/apps/gcc-4.9.4/bin/gcc" CACHE PATH "")
+
+# cpp compiler used by spack
+set(CMAKE_CXX_COMPILER "/home/taylor16/apps/gcc-4.9.4/bin/g++" CACHE PATH "")
+
+# fortran compiler used by spack
+set(ENABLE_FORTRAN ON CACHE PATH "")
+
+set(CMAKE_Fortran_COMPILER  "/home/taylor16/apps/gcc-4.9.4/bin/gfortran" CACHE PATH "")
+
+# hdf5 from uberenv
+set(HDF5_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
+
+# conduit from uberenv
+set(CONDUIT_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
+
+# doxygen from uberenv
+set(DOXYGEN_EXECUTABLE "/home/taylor16/tpl/v2/bin/doxygen" CACHE PATH "")
 
 # python from uberenv
-set(PYTHON_EXECUTABLE "/home/taylor16/asctoolkit/thirdparty_libs/spack/opt/unknown_arch/gcc@4.8.3/python@2.7.8/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "/home/taylor16/tpl/v2/bin/python" CACHE PATH "")
+
+# lua from uberenv
+set(LUA_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
 
 # sphinx from uberenv
-set(SPHINX_EXECUTABLE "/home/taylor16/asctoolkit/thirdparty_libs/spack/opt/unknown_arch/gcc@4.8.3/python@2.7.8/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "/home/taylor16/tpl/v2/bin/sphinx-build" CACHE PATH "")
 
 # uncrustify from uberenv
-set(UNCRUSTIFY_EXECUTABLE "/home/taylor16/asctoolkit/thirdparty_libs/spack/opt/unknown_arch/gcc@4.8.3/uncrustify@0.61/bin/uncrustify" CACHE PATH "")
+set(UNCRUSTIFY_EXECUTABLE "/home/taylor16/tpl/v2/bin/uncrustify" CACHE PATH "")
+
+# sparsehash headers from uberenv
+set(SPARSEHASH_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
 
 # boost headers from uberenv
 set(ENABLE_BOOST ON CACHE PATH "")
-set(BOOST_ROOT "/home/taylor16/asctoolkit/thirdparty_libs/spack/opt/unknown_arch/gcc@4.8.3/boost-headers@1.58.0" CACHE PATH "")
+set(BOOST_ROOT "/home/taylor16/tpl/v2" CACHE PATH "")
 
-# sparsehash headers from uberenv
-set(SPARSEHASH_ROOT "/home/taylor16/asctoolkit/thirdparty_libs/spack/opt/unknown_arch/gcc@4.8.3/sparsehash-headers@2.0.2" CACHE PATH "")
+# lcov and genhtml from uberenv
+set(LCOV_PATH "/home/taylor16/tpl/v2/usr/bin/lcov" CACHE PATH "")
 
+set(GENHTML_PATH "/home/taylor16/tpl/v2/usr/bin/genhtml" CACHE PATH "")
 
+##################################
+# end uberenv host-config
+##################################
+
+#######
+# MPI - manually added these for now.
+#######
+#set(ENABLE_MPI ON CACHE PATH "")
+#set(MPI_C_COMPILER "/home/taylor16/local/mpich-3.2/bin/mpicc" CACHE PATH "")
+#set(MPI_CXX_COMPILER "/home/taylor16/local/mpich-3.2/bin/mpicxx" CACHE PATH "")
+#set(MPI_Fortran_COMPILER "/home/taylor16/local/mpich-3.2/bin/mpif90" CACHE PATH "")

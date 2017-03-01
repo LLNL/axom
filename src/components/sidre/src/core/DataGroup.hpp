@@ -22,6 +22,7 @@
 #define DATAGROUP_HPP_
 
 #include "common/config.hpp"    // defines ATK_USE_CXX11
+#include "common/ATKMacros.hpp"
 
 // Standard C++ headers
 #include <memory>
@@ -34,37 +35,12 @@
 // third party lib headers
 #include "hdf5.h"
 
-#ifndef USE_UNORDERED_MAP
-#define USE_UNORDERED_MAP
-#endif
-//#ifndef USE_DENSE_HASH_MAP
-//#define USE_DENSE_HASH_MAP
-//#endif
-
-#ifndef USE_NEW_MAP_COLLECTION
-#define USE_NEW_MAP_COLLECTION
-#endif
-
-#if defined(USE_UNORDERED_MAP)
-//STL or Boost unordered_map, depending on
-#ifdef ATK_USE_CXX11
-#include <unordered_map>
-#else
-#include "boost/unordered_map.hpp"
-#endif
-#endif
-
-#if defined(USE_DENSE_HASH_MAP)
-#include <sparsehash/dense_hash_map>
-#endif
-
 // Other CS Toolkit headers
 #include "slic/slic.hpp"
 #include "common/CommonTypes.hpp"
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
-#include "Collections.hpp"
 #include "DataView.hpp"
 
 
@@ -76,6 +52,7 @@ namespace sidre
 class DataBuffer;
 class DataGroup;
 class DataStore;
+template <typename TYPE> class MapCollection;
 
 /*!
  * \class DataGroup
@@ -224,18 +201,12 @@ public:
   /*!
    * \brief Return number of child Groups in a Group object.
    */
-  size_t getNumGroups() const
-  {
-    return m_group_coll.getNumItems();
-  }
+  size_t getNumGroups() const;
 
   /*!
    * \brief Return number of Views owned by a Group object.
    */
-  size_t getNumViews() const
-  {
-    return m_view_coll.getNumItems();
-  }
+  size_t getNumViews() const;
 
   /*!
    * \brief Return pointer to non-const DataStore object that owns this
@@ -271,46 +242,26 @@ public:
    * \brief Return true if this Group owns a View with given name (not path);
    * else false.
    */
-  bool hasChildView( const std::string& name ) const
-  {
-    return m_view_coll.hasItem(name);
-  }
+  bool hasChildView( const std::string& name ) const;
 
   /*!
    * \brief Return true if this Group owns a View with given index; else false.
    */
-  bool hasView( IndexType idx ) const
-  {
-    return m_view_coll.hasItem(idx);
-  }
+  bool hasView( IndexType idx ) const;
 
   /*!
    * \brief Return index of View with given name owned by this Group object.
    *
    *        If no such View exists, return sidre::InvalidIndex;
    */
-  IndexType getViewIndex(const std::string& name) const
-  {
-    SLIC_CHECK_MSG(hasChildView(name),
-                   "Group " << this->getName() <<
-                   " has no View with name '" << name << "'");
-
-    return m_view_coll.getItemIndex(name);
-  }
+  IndexType getViewIndex(const std::string& name) const;
 
   /*!
    * \brief Return name of View with given index owned by Group object.
    *
    *        If no such View exists, return sidre::InvalidName.
    */
-  const std::string& getViewName(IndexType idx) const
-  {
-    SLIC_CHECK_MSG(hasView(idx),
-                   "Group " << this->getName() <<
-                   " has no View with index " << idx);
-
-    return m_view_coll.getItemName(idx);
-  }
+  const std::string& getViewName(IndexType idx) const;
 
 //@}
 
@@ -342,28 +293,14 @@ public:
    *
    * If no such View exists, ATK_NULLPTR is returned.
    */
-  DataView * getView( IndexType idx )
-  {
-    SLIC_CHECK_MSG( hasView(idx),
-                    "Group " << this->getName()
-                             << " has no View with index " << idx);
-
-    return m_view_coll.getItem(idx);
-  }
+  DataView * getView( IndexType idx );
 
   /*!
    * \brief Return pointer to const View with given index.
    *
    * If no such View exists, ATK_NULLPTR is returned.
    */
-  const DataView * getView( IndexType idx ) const
-  {
-    SLIC_CHECK_MSG( hasView(idx),
-                    "Group " << this->getName()
-                             << " has no View with index " << idx);
-
-    return m_view_coll.getItem(idx);
-  }
+  const DataView * getView( IndexType idx ) const;
 
   /*!
    * \brief Return first valid View index in Group object
@@ -371,10 +308,7 @@ public:
    *
    * sidre::InvalidIndex is returned if Group has no Views.
    */
-  IndexType getFirstValidViewIndex() const
-  {
-    return m_view_coll.getFirstValidIndex();
-  }
+  IndexType getFirstValidViewIndex() const;
 
   /*!
    * \brief Return next valid View index in Group object after given index
@@ -383,10 +317,7 @@ public:
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
    */
-  IndexType getNextValidViewIndex(IndexType idx) const
-  {
-    return m_view_coll.getNextValidIndex(idx);
-  }
+  IndexType getNextValidViewIndex(IndexType idx) const;
 
 //@}
 
@@ -842,47 +773,27 @@ public:
    * \brief Return true if this Group has a child Group with given
    * name; else false.
    */
-  bool hasChildGroup( const std::string& name ) const
-  {
-    return m_group_coll.hasItem(name);
-  }
+  bool hasChildGroup( const std::string& name ) const;
 
   /*!
    * \brief Return true if Group has an immediate child Group
    *        with given index; else false.
    */
-  bool hasGroup( IndexType idx ) const
-  {
-    return m_group_coll.hasItem(idx);
-  }
+  bool hasGroup( IndexType idx ) const;
 
   /*!
    * \brief Return the index of immediate child Group with given name.
    *
    *        If no such child Group exists, return sidre::InvalidIndex;
    */
-  IndexType getGroupIndex(const std::string& name) const
-  {
-    SLIC_CHECK_MSG(hasChildGroup(name),
-                   "Group " << this->getName() <<
-                   " has no child Group with name '" << name << "'");
-
-    return m_group_coll.getItemIndex(name);
-  }
+  IndexType getGroupIndex(const std::string& name) const;
 
   /*!
    * \brief Return the name of immediate child Group with given index.
    *
    *        If no such child Group exists, return sidre::InvalidName.
    */
-  const std::string& getGroupName(IndexType idx) const
-  {
-    SLIC_CHECK_MSG(hasGroup(idx),
-                   "Group " << this->getName() <<
-                   " has no child Group with index " << idx);
-
-    return m_group_coll.getItemName(idx);
-  }
+  const std::string& getGroupName(IndexType idx) const;
 
 //@}
 
@@ -913,28 +824,14 @@ public:
    *
    * If no such Group exists, ATK_NULLPTR is returned.
    */
-  DataGroup * getGroup( IndexType idx )
-  {
-    SLIC_CHECK_MSG(hasGroup(idx),
-                   "Group " << this->getName() <<
-                   " has no child Group with index " << idx);
-
-    return m_group_coll.getItem(idx);
-  }
+  DataGroup * getGroup( IndexType idx );
 
   /*!
    * \brief Return pointer to const immediate child Group with given index.
    *
    * If no such Group exists, ATK_NULLPTR is returned.
    */
-  const DataGroup * getGroup( IndexType idx ) const
-  {
-    SLIC_CHECK_MSG(hasGroup(idx),
-                   "Group " << this->getName() <<
-                   " has no child Group with index " << idx);
-
-    return m_group_coll.getItem(idx);
-  }
+  const DataGroup * getGroup( IndexType idx ) const;
 
   /*!
    * \brief Return first valid child Group index (i.e., smallest
@@ -942,10 +839,7 @@ public:
    *
    * sidre::InvalidIndex is returned if Group has no child Groups.
    */
-  IndexType getFirstValidGroupIndex() const
-  {
-    return m_group_coll.getFirstValidIndex();
-  }
+  IndexType getFirstValidGroupIndex() const;
 
   /*!
    * \brief Return next valid child Group index after given index
@@ -955,10 +849,7 @@ public:
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
    */
-  IndexType getNextValidGroupIndex(IndexType idx) const
-  {
-    return m_group_coll.getNextValidIndex(idx);
-  }
+  IndexType getNextValidGroupIndex(IndexType idx) const;
 
 //@}
 
@@ -1093,8 +984,10 @@ public:
    * in the file (independent of file format) and can be accessed as a Conduit tree.
    *
    * Only the Views which have external data are added to the node.
+   *
+   * \return True if the group or any of its children have an external view, false otherwise
    */
-  void createExternalLayout(Node& n) const;
+  bool createExternalLayout(Node& n) const;
 
 
   /*!
@@ -1197,20 +1090,9 @@ public:
 
 
 private:
-
-  /*!
-   *  Unimplemented ctors and copy-assignment operators.
-   */
-#ifdef ATK_USE_CXX11
-  DataGroup( const DataGroup& source ) = delete;
-  DataGroup( DataGroup&& source ) = delete;
-
-  DataGroup& operator=( const DataGroup& rhs ) = delete;
-  DataGroup& operator=( const DataGroup&& rhs ) = delete;
-#else
-  DataGroup( const DataGroup& source );
-  DataGroup& operator=( const DataGroup& rhs );
-#endif
+  DISABLE_DEFAULT_CTOR(DataGroup);
+  DISABLE_COPY_AND_ASSIGNMENT(DataGroup);
+  DISABLE_MOVE_AND_ASSIGNMENT(DataGroup);
 
 //@{
 //!  @name Private Group ctors and dtors
@@ -1388,68 +1270,18 @@ private:
   /// Character used to denote a path string passed to get/create calls.
   static const char s_path_delimiter;
 
-  ///
-  /// Typedefs for View and child Group containers. They are here to
-  /// avoid propagating specific type names in the DataGroup class
-  /// implementation when we experiment with different containers.
-  ///
   ///////////////////////////////////////////////////////////////////
   //
-  // Associative container options
+  typedef MapCollection<DataView> DataViewCollection;
   //
-  // To try a different container, set the "MapType" typedef to
-  // what you want.  Note: only one typedef should be active!!!
-  //
-  // Current options are std::map and boost/std::unordered_map
-  ///
-  // typedef std::map<std::string, IndexType> MapType;
-  ///
-#if defined(USE_UNORDERED_MAP)
-#ifdef ATK_USE_CXX11
-  typedef std::unordered_map<std::string, IndexType> MapType;
-#else
-  typedef boost::unordered_map<std::string, IndexType> MapType;
-#endif
-#else
-#if defined(USE_DENSE_HASH_MAP)
-  typedef google::dense_hash_map<std::string, IndexType> MapType;
-#endif
-#endif
-  //
+  typedef MapCollection<DataGroup> DataGroupCollection;
   ///////////////////////////////////////////////////////////////////
-
-  ///////////////////////////////////////////////////////////////////
-  // Collection options (API between DataGroup and assoc. container)
-  ///////////////////////////////////////////////////////////////////
-  //
-#if defined(USE_NEW_MAP_COLLECTION)
-  ///////////////////////////////////////////////////////////////////
-  // Improved implementation (index-item association constant as long
-  // as item is in collection, but holes in index sequence)
-  ///////////////////////////////////////////////////////////////////
-  //
-  typedef NewMapCollection<DataView, MapType> DataViewCollection;
-  //
-  typedef NewMapCollection<DataGroup, MapType> DataGroupCollection;
-  ///////////////////////////////////////////////////////////////////
-#else
-  ///////////////////////////////////////////////////////////////////
-  // Original implementation (no holes in index sequence)
-  ///////////////////////////////////////////////////////////////////
-  //
-  typedef MapCollection<DataView, MapType> DataViewCollection;
-  //
-  typedef MapCollection<DataGroup, MapType> DataGroupCollection;
-  //
-  ///////////////////////////////////////////////////////////////////
-  //
-#endif
 
   /// Collection of Views
-  DataViewCollection m_view_coll;
+  DataViewCollection * m_view_coll;
 
   /// Collection of child Groups
-  DataGroupCollection m_group_coll;
+  DataGroupCollection * m_group_coll;
 
 };
 

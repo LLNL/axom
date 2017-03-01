@@ -11,10 +11,9 @@ namespace tutorial {
 // function_index=0
 TUT_class1 * TUT_class1_new()
 {
-
 // splicer begin class.Class1.method.new
-Class1 * rv = new Class1();
-return static_cast<TUT_class1 *>(static_cast<void *>(rv));
+    Class1 * rv = new Class1();
+    return static_cast<TUT_class1 *>(static_cast<void *>(rv));
 // splicer end class.Class1.method.new
 }
 
@@ -24,7 +23,7 @@ void TUT_class1_delete(TUT_class1 * self)
 {
 Class1 *selfobj = static_cast<Class1 *>(static_cast<void *>(self));
 // splicer begin class.Class1.method.delete
-delete selfobj;
+    delete selfobj;
 // splicer end class.Class1.method.delete
 }
 
@@ -34,8 +33,8 @@ void TUT_class1_method1(TUT_class1 * self)
 {
 Class1 *selfobj = static_cast<Class1 *>(static_cast<void *>(self));
 // splicer begin class.Class1.method.method1
-selfobj->Method1();
-return;
+    selfobj->Method1();
+    return;
 // splicer end class.Class1.method.method1
 }
 

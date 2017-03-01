@@ -88,6 +88,35 @@
  #define ATK_DEBUG_PARAM(_x)
 #endif
 
+/*!
+ *******************************************************************************
+ * \def DISABLE_DEFAULT_CTOR(className)
+ * \brief Macro to disable default constructor for the given class.
+ * \note This macro should only be used within the private section of a class,
+ *  as indicated in the example below.
+ *
+ * \code
+ *
+ *   class Foo
+ *   {
+ *   public:
+ *
+ *       // Public methods here
+ *
+ *   private:
+ *      DISABLE_DEFAULT_CTOR(Foo);
+ *   };
+ *
+ * \endcode
+ *******************************************************************************
+ */
+#ifdef ATK_USE_CXX11
+#define DISABLE_DEFAULT_CTOR(className)                      \
+  className( ) = delete;
+#else
+#define DISABLE_DEFAULT_CTOR(className)                      \
+  className( );
+#endif
 
 /*!
  *******************************************************************************
@@ -115,12 +144,45 @@
  */
 #ifdef ATK_USE_CXX11
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
-  className( const className & ) = delete;                                     \
+  className( const className& ) = delete;                                     \
   className& operator=(const className&) = delete
 #else
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
-  className( const className & );                                              \
+  className( const className& );                                              \
   className& operator=( const className& )
+#endif
+
+/*!
+ *******************************************************************************
+ * \def DISABLE_MOVE_AND_ASSIGNMENT(className)
+ * \brief Macro to disable move constructor and move assignment operations for 
+ * the given class.
+ * \note This macro should only be used within the private section of a class,
+ *  as indicated in the example below.
+ *
+ * \code
+ *
+ *   class Foo
+ *   {
+ *   public:
+ *      Foo();
+ *      ~Foo();
+ *
+ *       // Other methods here
+ *
+ *   private:
+ *      DISABLE_MOVE_AND_ASSIGNMENT(Foo);
+ *   };
+ *
+ * \endcode
+ *******************************************************************************
+ */
+#ifdef ATK_USE_CXX11
+#define DISABLE_MOVE_AND_ASSIGNMENT(className)                                \
+  className( const className&& ) = delete;                                    \
+  className& operator=(const className&&) = delete
+#else
+#define DISABLE_MOVE_AND_ASSIGNMENT(className)
 #endif
 
 

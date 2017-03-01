@@ -12,11 +12,14 @@ copyright:
   - further review from Lawrence Livermore National Laboratory.
   -
 
+library: Sidre
+# cpp_header: each class has its own header file
+namespace: asctoolkit sidre
+
 options:
-  library: Sidre
   C_prefix: SIDRE_
-  namespace: asctoolkit sidre
   F_module_per_class: False
+  F_impl_filename_library_template: wrapf{library_lower}.F
 
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
@@ -58,8 +61,7 @@ types:
 classes:
   ####################################################################
   - name: DataStore
-    options:
-      cpp_header: sidre/DataStore.hpp
+    cpp_header: sidre/DataStore.hpp
     methods:
     -  decl: DataStore * new() +constructor
     -  decl: void delete() +destructor
@@ -94,8 +96,7 @@ classes:
 
   ####################################################################
   - name: DataGroup
-    options:
-      cpp_header: sidre/DataGroup.hpp
+    cpp_header: sidre/DataGroup.hpp
 
     methods:
     -  decl: const std::string& getName+len(MAXNAMESIZE)() const
@@ -259,8 +260,7 @@ classes:
 
   ####################################################################
   - name: DataBuffer
-    options:
-      cpp_header: sidre/DataBuffer.hpp
+    cpp_header: sidre/DataBuffer.hpp
     methods:
       - decl: IndexType getIndex() const
       - decl: size_t getNumViews() const
@@ -303,8 +303,7 @@ classes:
 
   ####################################################################
   - name: DataView
-    options:
-      cpp_header: sidre/DataView.hpp
+    cpp_header: sidre/DataView.hpp
 
     methods:
     - decl: DataView* allocate()

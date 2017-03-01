@@ -11,7 +11,7 @@ PyObject *PP_Class1_to_Object(Class1 *addr)
     PyObject *voidobj;
     PyObject *args;
     PyObject *rv;
-    
+
     voidobj = PyCapsule_New(addr, PY_Class1_capsule_name, NULL);
     args = PyTuple_New(1);
     PyTuple_SET_ITEM(args, 0, voidobj);
@@ -26,7 +26,7 @@ int PP_Class1_from_Object(PyObject *obj, void **addr)
     // splicer begin class.Class1.helper.from_object
     if (obj->ob_type != &PY_Class1_Type) {
         // raise exception
-        return 0;	
+        return 0;
     }
     PY_Class1 * self = (PY_Class1 *) obj;
     *addr = self->BBB;

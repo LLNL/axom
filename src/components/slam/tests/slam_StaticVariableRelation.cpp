@@ -26,6 +26,8 @@
 #include "common/config.hpp"
 
 #include "slic/slic.hpp"
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
 
 #include "slam/RangeSet.hpp"
 #include "slam/Relation.hpp"
@@ -331,4 +333,19 @@ TEST(gtest_slam_static_variable_relation,delayed_double_subscript_test)
   }
 
   SLIC_INFO("done." );
+}
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;  // create & initialize test logger,
+                          // finalized when exiting main scope
+
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

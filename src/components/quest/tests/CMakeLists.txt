@@ -13,6 +13,7 @@ set(quest_tests
     quest_bucket_tree.cpp
     quest_inout_octree.cpp
     quest_intersection.cpp
+    quest_intersection_impl.cpp
     quest_morton.cpp
     quest_numeric_array.cpp
     quest_octree.cpp
@@ -32,7 +33,7 @@ set(quest_tests_depends
     gtest
    )
 
-if (ENABLE_BOOST)
+if (BOOST_FOUND)
     list(APPEND quest_tests_depends boost)
 endif()
 

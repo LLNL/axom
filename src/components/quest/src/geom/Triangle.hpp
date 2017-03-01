@@ -14,6 +14,7 @@
 
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
+#include "quest/Determinants.hpp"
 #include "common/Utilities.hpp"
 
 #include "slic/slic.hpp"
@@ -139,19 +140,48 @@ public:
       return 0.5 * VectorType::cross_product(v, w).norm();
   }
 
+private:
+  /**
+   * \brief Return the volume of the parallelepiped defined by this triangle and a point
+   *
+   * If the volume is (close to) zero, all four points are (nearly) coplanar.
+   */
+  double ppedVolume(const PointType& p) const
+  {
+    /* This method returns double (instead of T) and explicitly specializes
+       determinant() on type double to avoid confusion of deduced template
+       types. */
+    const PointType& A = m_points[0];
+    const PointType& B = m_points[1];
+    const PointType& C = m_points[2];
+
+    if (DIM < 3) {
+      return 0.;
+    } else {
+      return math::determinant<double>(A[0], A[1], A[2], 1.,
+                                       B[0], B[1], B[2], 1.,
+                                       C[0], C[1], C[2], 1.,
+                                       p[0], p[1], p[2], 1.);
+    }
+  }
+
+public:
   /**
    * \brief Returns the barycentric coordinates of a point within a triangle
    * \return The barycentric coordinates of the triangle inside a Point<T,3>
    *
+   * \pre The point lies in this triangle's plane.
    * \post The barycentric coordinates sum to 1.
    *
    * Adapted from Real Time Collision Detection by Christer Ericson.
    */
-  Point<T,3> computeBarycenterCoords(const PointType& p) const
+  Point<T,3> barycentricCoords(const PointType& p) const
   {
+    SLIC_CHECK(asctoolkit::utilities::isNearlyEqual(ppedVolume(p), 0.));
+
     Point<T,3> bary;
 
-    VectorType u= VectorType::cross_product(VectorType(m_points[0],m_points[1]),
+    Vector<T,3> u= VectorType::cross_product(VectorType(m_points[0],m_points[1]),
                                             VectorType(m_points[0],m_points[2]));
     const T x= std::abs(u[0]);
     const T y= std::abs(u[1]);
@@ -163,16 +193,16 @@ public:
 
     if (x>=y && x>= z)       // compute in yz plane
     {
-        c0 = 1;
-        c1 = 2;
-        ood=1.0/u[0];
+      c0 = 1;
+      c1 = 2;
+      ood=1.0/u[0];
 
     }
     else if (y>=x && y>=z)  // compute in xz plane
     {
-        c0 = 0;
-        c1 = 2;
-        ood=-1.0/u[1];
+      c0 = 0;
+      c1 = 2;
+      ood=-1.0/u[1];
 
     }
 
@@ -198,9 +228,9 @@ public:
    * \see quest::Point
    *****************************************************************************
    */
-  bool degenerate() const
+  bool degenerate(double eps = 1.0e-12) const
   {
-    return asctoolkit::utilities::isNearlyEqual(area(),  0.0, 1.0e-12);
+    return asctoolkit::utilities::isNearlyEqual(area(),  0.0, eps);
   }
 
   /**
@@ -210,11 +240,14 @@ public:
    * \see quest::Point
    *****************************************************************************
    */
-  bool checkInTriangle(const PointType& P) const{
-    Point<T,3> bC= barycenterCoords(P);
-    return ((bC[0]>=0.0) && (bC[1] >= 0.0) && (bC[2]>=0.0) &&
-	    (bC[0]<=1.0) && (bC[1]<=1.0) && (bC[2]<=1.0) &&
-	    (bC[0]+bC[1]+bC[2]<=1.0));
+  bool checkInTriangle(const PointType& p, double eps = 1.0e-8) const{
+    if (!asctoolkit::utilities::isNearlyEqual(ppedVolume(p), 0., eps)) {
+      return false;
+    }
+
+    Point<T,3> bC= barycentricCoords(p);
+    return ((bC[0]>=(0.0-eps)) && (bC[1] >= (0.0-eps)) && (bC[2]>=(0.0-eps)) &&
+	    (bC[0]<=(1.0+eps)) && (bC[1] <= (1.0+eps)) && (bC[2]<=(1.0+eps)));
   }
 
 

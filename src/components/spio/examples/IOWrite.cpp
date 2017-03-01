@@ -38,7 +38,9 @@ int main(int argc, char * argv[])
   MPI_Init(&argc, &argv);
   asctoolkit::slic::UnitTestLogger logger;
 
-  SLIC_ASSERT(argc == 3);
+  SLIC_ERROR_IF(argc != 3,
+      "Missing command line arguments. \n\t"
+      << "Usage: spio_IOWrite <num_files> <base_file_name>");
 
   size_t num_files = 0;
   std::string file_base;

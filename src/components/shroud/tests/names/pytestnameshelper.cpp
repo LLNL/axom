@@ -10,7 +10,7 @@ PyObject *PP_Names_to_Object(Names *addr)
     PyObject *voidobj;
     PyObject *args;
     PyObject *rv;
-    
+
     voidobj = PyCapsule_New(addr, PY_Names_capsule_name, NULL);
     args = PyTuple_New(1);
     PyTuple_SET_ITEM(args, 0, voidobj);
@@ -25,7 +25,7 @@ int PP_Names_from_Object(PyObject *obj, void **addr)
     // splicer begin class.Names.helper.from_object
     if (obj->ob_type != &PY_Names_Type) {
         // raise exception
-        return 0;	
+        return 0;
     }
     PY_Names * self = (PY_Names *) obj;
     *addr = self->BBB;

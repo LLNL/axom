@@ -16,6 +16,10 @@
  *       since it might be included from a C file
  */
 
+/*
+ * Compiler tests
+ */
+#cmakedefine USE_C_LOC_WITH_ASSUMED_SHAPE
 
 /* 
  * Compiler defines for libraries (built-in and third party) 
@@ -28,6 +32,8 @@
 #cmakedefine ATK_USE_MPI
 #cmakedefine ATK_USE_MPIF_HEADER
 #cmakedefine ATK_USE_SPARSEHASH
+#cmakedefine ATK_USE_STD_UNORDERED_MAP
+#cmakedefine ATK_USE_STD_MAP
 
 
 /* OpenMP is a special case since it varies by target and the compiler 

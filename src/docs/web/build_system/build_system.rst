@@ -112,8 +112,6 @@ This is declared at the top of the 'cmake' configuration, and provides a central
 +-------------------------------------+-------------------------------+--------+
 |ENABLE_TESTS                         |Builds unit tests              |  ON    |
 +-------------------------------------+-------------------------------+--------+
-|ENABLE_BOOST                         |Enable Boost                   |  OFF   |
-+-------------------------------------+-------------------------------+--------+
 |ENABLE_CODECOV                       |Enable code coverage via gcov  |  ON    |
 +-------------------------------------+-------------------------------+--------+
 |ENABLE_CXX11                         |Enables C++11 language support |  ON    | 

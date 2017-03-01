@@ -150,6 +150,7 @@ private:
 
 
   DISABLE_COPY_AND_ASSIGNMENT(LumberjackStream);
+  DISABLE_MOVE_AND_ASSIGNMENT(LumberjackStream);
 };
 
 } /* namespace slic */

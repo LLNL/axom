@@ -2,11 +2,11 @@
 # Specify all headers
 #
 set(sidre_headers
-    core/Collections.hpp
     core/DataBuffer.hpp
     core/DataGroup.hpp
     core/DataStore.hpp
     core/DataView.hpp
+    core/MapCollection.hpp
     core/SidreTypes.hpp
     core/SidreDataTypeIds.h
     core/sidre.hpp
@@ -47,11 +47,22 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapDataGroup.cpp
         interface/c_fortran/wrapDataBuffer.cpp
         interface/c_fortran/wrapDataView.cpp
-        interface/c_fortran/wrapfsidre.f
+        interface/c_fortran/wrapfsidre.F
         interface/c_fortran/shroudrt.cpp
     )
 endif()
 
+set(sidre_depends
+    common
+    conduit
+    conduit_relay
+    hdf5
+    slic)
+
+if(SPARSEHASH_FOUND)
+   set(sidre_depends ${sidre_depends} sparsehash)
+endif()
+ 
 #
 # make the library
 #
@@ -65,11 +76,7 @@ blt_add_library( NAME
                  HEADERS_OUTPUT_SUBDIR
                      sidre
                  DEPENDS_ON
-                     common
-                     conduit
-                     conduit_relay
-                     hdf5
-                     slic
+                     ${sidre_depends}
                  )
   
              

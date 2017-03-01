@@ -46,6 +46,7 @@ foreach(test ${gtest_sidre_tests})
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
                         )
+
     blt_add_test( NAME ${test_name} 
                   COMMAND ${test_name}
                   )

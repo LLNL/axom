@@ -207,7 +207,9 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
         std::cerr << "Error: Lumberjack recieved a truncated message that ended in the line number section." << std::endl;
         std::cerr << packedMessage << std::endl;
     }
-    m_lineNumber = asctoolkit::utilities::string::stringToInt(packedMessage.substr(start, end-start));
+    if (end-start > 0) {
+        m_lineNumber = asctoolkit::utilities::string::stringToInt(packedMessage.substr(start, end-start));
+    }
     start = end + 1;
 
     //Grab level
