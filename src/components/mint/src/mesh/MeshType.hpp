@@ -11,7 +11,6 @@
 #ifndef MESHTYPE_HPP_
 #define MESHTYPE_HPP_
 
-
 /*!
  * \brief Defines the basic mesh types supported by mint.
  */
@@ -34,7 +33,6 @@ enum  {
   MINT_NUM_MESH_TYPES                   //!< NUM_MESH_TYPES
 };
 
-
 namespace axom {
 namespace mint {
 
@@ -49,18 +47,18 @@ namespace mesh_properties {
  */
 static const int mesh_of_cell_type[] = {
 
-    MINT_PARTICLE_MESH,               // VERTEX,
+  MINT_PARTICLE_MESH,                 // VERTEX,
 
-    MINT_UNSTRUCTURED_SEGMENT_MESH,   // LINE_SEGMENT
-    MINT_UNSTRUCTURED_TRIANGLE_MESH,  // LINEAR_TRIANGLE,
-    MINT_UNSTRUCTURED_QUAD_MESH,      // LINEAR_QUAD,
-    MINT_UNSTRUCTURED_TET_MESH,       // LINEAR_TET,
-    MINT_UNSTRUCTURED_HEX_MESH,       // LINEAR_HEX,
+  MINT_UNSTRUCTURED_SEGMENT_MESH,     // LINE_SEGMENT
+  MINT_UNSTRUCTURED_TRIANGLE_MESH,    // LINEAR_TRIANGLE,
+  MINT_UNSTRUCTURED_QUAD_MESH,        // LINEAR_QUAD,
+  MINT_UNSTRUCTURED_TET_MESH,         // LINEAR_TET,
+  MINT_UNSTRUCTURED_HEX_MESH,         // LINEAR_HEX,
 
-    MINT_UNDEFINED_MESH,              // LINEAR_PRISM,
-    MINT_UNDEFINED_MESH,              // LINEAR_PYRAMID,
+  MINT_UNDEFINED_MESH,                // LINEAR_PRISM,
+  MINT_UNDEFINED_MESH,                // LINEAR_PYRAMID,
 
-    MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH, // MIXED
+  MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH,   // MIXED
 };
 
 /*!
@@ -71,18 +69,18 @@ static const int mesh_of_cell_type[] = {
  *******************************************************************************
  */
 static const bool explicit_coordinates[] = {
-    true,  // UNSTRUCTURED_SEGMENT_MESH
-    true,  // UNSTRUCTURED_ALL_TRIANGLE_MESH
-    true,  // UNSTRUCTURED_ALL_QUAD_MESH
-    true,  // UNSTRUCTURED_ALL_TET_MESH
-    true,  // UNSTRUCTURED_ALL_HEX_MESH
-    true,  // UNSTRUCTURED_MIXED_ELEMENT_MESH
+  true,    // UNSTRUCTURED_SEGMENT_MESH
+  true,    // UNSTRUCTURED_ALL_TRIANGLE_MESH
+  true,    // UNSTRUCTURED_ALL_QUAD_MESH
+  true,    // UNSTRUCTURED_ALL_TET_MESH
+  true,    // UNSTRUCTURED_ALL_HEX_MESH
+  true,    // UNSTRUCTURED_MIXED_ELEMENT_MESH
 
-    true,  // STRUCTURED_MESH
-    true,  // RECTILINEAR_MESH
-    false, // UNIFORM_MESH
+  true,    // STRUCTURED_MESH
+  true,    // RECTILINEAR_MESH
+  false,   // UNIFORM_MESH
 
-    true,  // PARTICLE_MESH
+  true,    // PARTICLE_MESH
 };
 
 /*!
@@ -93,20 +91,19 @@ static const bool explicit_coordinates[] = {
  *******************************************************************************
  */
 static const bool explicit_connectivity[] = {
-    true,  // UNSTRUCTURED_SEGMENT_MESH
-    true,  // UNSTRUCTURED_ALL_TRIANGLE_MESH
-    true,  // UNSTRUCTURED_ALL_QUAD_MESH
-    true,  // UNSTRUCTURED_ALL_TET_MESH
-    true,  // UNSTRUCTURED_ALL_HEX_MESH
-    true,  // UNSTRUCTURED_MIXED_ELEMENT_MESH
+  true,    // UNSTRUCTURED_SEGMENT_MESH
+  true,    // UNSTRUCTURED_ALL_TRIANGLE_MESH
+  true,    // UNSTRUCTURED_ALL_QUAD_MESH
+  true,    // UNSTRUCTURED_ALL_TET_MESH
+  true,    // UNSTRUCTURED_ALL_HEX_MESH
+  true,    // UNSTRUCTURED_MIXED_ELEMENT_MESH
 
-    false,  // STRUCTURED_MESH
-    false,  // RECTILINEAR_MESH
-    false,  // UNIFORM_MESH
+  false,    // STRUCTURED_MESH
+  false,    // RECTILINEAR_MESH
+  false,    // UNIFORM_MESH
 
-    false,  // PARTICLE_MESH
+  false,    // PARTICLE_MESH
 };
-
 
 } /* namespace mesh_properties */
 } /* namespace mint */

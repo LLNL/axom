@@ -157,7 +157,7 @@ public:
    *****************************************************************************
    */
   int getCoordinateArraySize( int idim ) const
-    { return static_cast<int>( m_coordinates[ idim ].size() ); };
+  { return static_cast< int >( m_coordinates[ idim ].size() ); };
 
   /*!
    *****************************************************************************

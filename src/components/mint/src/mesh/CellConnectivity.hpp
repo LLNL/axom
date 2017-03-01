@@ -25,7 +25,6 @@
 namespace axom {
 namespace mint {
 
-
 template < typename index_type, int cell_type >
 class CellConnectivity
 {
@@ -36,7 +35,7 @@ public:
    * \brief Default constructor.
    *****************************************************************************
    */
-  CellConnectivity() : m_stride( cell::num_nodes[ cell_type ] )
+  CellConnectivity(): m_stride( cell::num_nodes[ cell_type ] )
   {
     m_connectivity.reserve( 100*m_stride );
   };
@@ -141,8 +140,8 @@ public:
    */
   void setCell( int cellIdx, const index_type* cell )
   {
-    SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
-    SLIC_ASSERT( cell != ATK_NULLPTR );
+    SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
+    SLIC_ASSERT(  cell != ATK_NULLPTR );
 
     index_type* to         = &m_connectivity[ cellIdx*m_stride ];
     const index_type* from = cell;
@@ -171,7 +170,7 @@ public:
    * \brief Default constructor.
    *****************************************************************************
    */
-  CellConnectivity() : m_num_cells(0)
+  CellConnectivity(): m_num_cells(0)
   {
     m_offset.reserve( 101 );
     m_cell_type.reserve( 100 );
@@ -285,7 +284,6 @@ public:
     const int offset = m_offset[ new_cell_id ];
     m_offset.push_back( offset+nnodes );
 
-
     // STEP 3: update the cell connectivity
     for ( int i=0; i < nnodes; ++i ) {
       m_connectivity.push_back( cell[ i ] );
@@ -307,8 +305,8 @@ public:
    */
   void setCell( int cellIdx, const index_type* cell )
   {
-    SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
-    SLIC_ASSERT( cell != ATK_NULLPTR );
+    SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
+    SLIC_ASSERT(  cell != ATK_NULLPTR );
 
     // STEP 0: get the number of nodes for the given cell type
     const int nnodes = this->getNumberOfNodes( cellIdx );
@@ -331,7 +329,6 @@ private:
   CellConnectivity( const CellConnectivity& );
   CellConnectivity& operator=(const CellConnectivity& );
 };
-
 
 } /* namespace mint */
 } /* namespace axom */

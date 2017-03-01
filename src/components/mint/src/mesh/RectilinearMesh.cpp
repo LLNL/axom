@@ -15,16 +15,14 @@
 namespace axom {
 namespace mint {
 
-RectilinearMesh::RectilinearMesh() :
-        StructuredMesh(MINT_UNDEFINED_MESH,-1,ATK_NULLPTR),
-        m_coordinates( ATK_NULLPTR )
-{
-
-}
+RectilinearMesh::RectilinearMesh():
+  StructuredMesh(MINT_UNDEFINED_MESH,-1,ATK_NULLPTR),
+  m_coordinates( ATK_NULLPTR )
+{}
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, int ext[6] ) :
-       StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext )
+RectilinearMesh::RectilinearMesh( int dimension, int ext[6] ):
+  StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext )
 {
   int ndims[3];
   this->getDimensions( ndims );
@@ -33,8 +31,9 @@ RectilinearMesh::RectilinearMesh( int dimension, int ext[6] ) :
 
 //------------------------------------------------------------------------------
 RectilinearMesh::RectilinearMesh( int dimension, int ext[6],
-                                  int blockId, int partId ) :
- StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext, blockId, partId )
+                                  int blockId, int partId ):
+  StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext, blockId,
+                  partId )
 {
   int ndims[3];
   this->getDimensions( ndims );
