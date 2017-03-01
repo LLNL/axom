@@ -9,19 +9,6 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file UniformMesh.cxx
- *
- * \date Sep 26, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #include "mint/UniformMesh.hpp"
 #include "mint/MeshType.hpp"
 
@@ -29,8 +16,8 @@
 
 #include <algorithm> // for std::fill()
 
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 UniformMesh::UniformMesh() :
     StructuredMesh( MINT_UNDEFINED_MESH,-1,ATK_NULLPTR)
@@ -76,5 +63,5 @@ UniformMesh::~UniformMesh()
   // TODO Auto-generated destructor stub
 }
 
-
 } /* namespace mint */
+} /* namespace axom */

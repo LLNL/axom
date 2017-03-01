@@ -8,24 +8,11 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file RectilinearMesh.cxx
- *
- * \date Sep 26, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #include "mint/RectilinearMesh.hpp"
 
 #include "common/CommonTypes.hpp"
 
+namespace axom {
 namespace mint {
 
 RectilinearMesh::RectilinearMesh() :
@@ -62,3 +49,4 @@ RectilinearMesh::~RectilinearMesh()
 }
 
 } /* namespace mint */
+} /* namespace axom */

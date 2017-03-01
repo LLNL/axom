@@ -9,20 +9,6 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file
- *
- * \date Sep 19, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
-
 #include "mint/Mesh.hpp"
 
 // ATK includes
@@ -32,6 +18,7 @@
 // C/C++ includes
 #include <cstddef>
 
+namespace axom {
 namespace mint {
 
 Mesh::Mesh() :
@@ -75,4 +62,5 @@ Mesh::~Mesh()
    m_face_data = ATK_NULLPTR;
 }
 
-  } /* namespace mint */
+} /* namespace mint */
+} /* namespace axom */

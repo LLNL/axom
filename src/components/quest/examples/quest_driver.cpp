@@ -50,7 +50,7 @@ using axom::primal::Vector;
 
 using quest::SignedDistance;
 
-typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
 static struct {
   std::string fileName;
@@ -144,7 +144,7 @@ void write_point( const Point< double, 3 >& pt,
 }
 
 //------------------------------------------------------------------------------
-void write_vtk( mint::Mesh* mesh, const std::string& fileName )
+void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -204,19 +204,19 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   ofs << "CELL_TYPES " << ncells << std::endl;
   for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
     int ctype    = mesh->getMeshCellType( cellIdx );
-    int vtk_type = mint::cell::vtk_types[ ctype ];
+    int vtk_type = axom::mint::cell::vtk_types[ ctype ];
     ofs << vtk_type << std::endl;
   } // END for all cells
 
   // STEP 4: Write Cell Data
   ofs << "CELL_DATA " << ncells << std::endl;
-  mint::FieldData* CD = mesh->getCellFieldData();
+  axom::mint::FieldData* CD = mesh->getCellFieldData();
   for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
 
-      mint::Field* field = CD->getField( f );
+      axom::mint::Field* field = CD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           SLIC_ASSERT( dataPtr != ATK_NULLPTR );
@@ -244,13 +244,13 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   // STEP 5: Write Point Data
   const int nnodes = mesh->getMeshNumberOfNodes();
   ofs << "POINT_DATA " << nnodes << std::endl;
-  mint::FieldData* PD = mesh->getNodeFieldData();
+  axom::mint::FieldData* PD = mesh->getNodeFieldData();
   for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
 
-      mint::Field* field = PD->getField( f );
+      axom::mint::Field* field = PD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           ofs << "double\n";
@@ -275,7 +275,7 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
 }
 
 //------------------------------------------------------------------------------
-void write_triangles( mint::Mesh* mesh, const int* cells, int ncells,
+void write_triangles( axom::mint::Mesh* mesh, const int* cells, int ncells,
                       const std::string& fileName )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
@@ -316,7 +316,7 @@ void write_triangles( mint::Mesh* mesh, const int* cells, int ncells,
 }
 
 //------------------------------------------------------------------------------
-BoundingBox< double,3 > compute_bounds( mint::Mesh* mesh)
+BoundingBox< double,3 > compute_bounds( axom::mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -338,7 +338,7 @@ BoundingBox< double,3 > compute_bounds( mint::Mesh* mesh)
 
 
 //------------------------------------------------------------------------------
-void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
+void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
 {
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
   SLIC_ASSERT( umesh != ATK_NULLPTR );
@@ -364,8 +364,8 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
 
   // mark bucket IDs on surface mesh
   const int ncells = surface_mesh->getMeshNumberOfCells();
-  mint::FieldData* CD = surface_mesh->getCellFieldData();
-  CD->addField( new mint::FieldVariable<int>( "BucketID", ncells ) );
+  axom::mint::FieldData* CD = surface_mesh->getCellFieldData();
+  CD->addField( new axom::mint::FieldVariable<int>( "BucketID", ncells ) );
   int* bidx = CD->getField( "BucketID" )->getIntPtr();
   SLIC_ASSERT( bidx != ATK_NULLPTR );
 
@@ -381,12 +381,12 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
 #endif
 
   const int nnodes = umesh->getNumberOfNodes();
-  mint::FieldData* PD = umesh->getNodeFieldData();
+  axom::mint::FieldData* PD = umesh->getNodeFieldData();
   SLIC_ASSERT( PD != ATK_NULLPTR );
 
-  PD->addField( new mint::FieldVariable< double >("phi",nnodes) );
-  PD->addField( new mint::FieldVariable< int >("nbuckets",nnodes) );
-  PD->addField( new mint::FieldVariable< int >("ntriangles", nnodes) );
+  PD->addField( new axom::mint::FieldVariable< double >("phi",nnodes) );
+  PD->addField( new axom::mint::FieldVariable< int >("nbuckets",nnodes) );
+  PD->addField( new axom::mint::FieldVariable< int >("ntriangles", nnodes) );
 
   double* phi     = PD->getField( "phi" )->getDoublePtr();
   int*  nbuckets  = PD->getField( "nbuckets" )->getIntPtr();
@@ -485,7 +485,7 @@ int main( int argc, char** argv )
   SLIC_INFO("done");
 
   // STEP 3: get surface mesh
-  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
   reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
   SLIC_INFO("Mesh has "
           << surface_mesh->getMeshNumberOfNodes() << " nodes and "
@@ -525,8 +525,8 @@ int main( int argc, char** argv )
   node_ext[5] = Arguments.nz;
 
   // STEP 8: Construct uniform mesh
-  mint::UniformMesh* umesh =
-          new mint::UniformMesh(3, queryBounds.getMin().data(), h, node_ext);
+  axom::mint::UniformMesh* umesh =
+          new axom::mint::UniformMesh(3, queryBounds.getMin().data(), h, node_ext);
 
   // STEP 9: Compute the distance field on the uniform mesh
   SLIC_INFO( "computing distance field..." );

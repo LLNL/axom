@@ -29,8 +29,8 @@ using axom::slic::UnitTestLogger;
 // C/C++ includes
 #include <cmath>
 
-typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
-typedef mint::UniformMesh UniformMesh;
+typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UniformMesh UniformMesh;
 
 using axom::primal::BoundingBox;
 using axom::primal::HyperSphere;
@@ -155,7 +155,7 @@ void getMesh( TriangleMesh* mesh )
  * \return bb bounding box of the mesh
  *******************************************************************************
  */
-BoundingBox< double,3 > getBounds( const mint::Mesh* mesh )
+BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
 

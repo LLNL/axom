@@ -59,7 +59,7 @@
 
 using namespace asctoolkit;
 
-typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
 typedef quest::InOutOctree<3> Octree3D;
 
@@ -83,7 +83,7 @@ typedef Octree3D::BlockIndex BlockIndex;
 /**
  * \brief Computes the bounding box of the surface mesh
  */
-GeometricBoundingBox compute_bounds( mint::Mesh* mesh)
+GeometricBoundingBox compute_bounds( axom::mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -103,7 +103,7 @@ GeometricBoundingBox compute_bounds( mint::Mesh* mesh)
 
 
 //------------------------------------------------------------------------------
-void write_vtk( mint::Mesh* mesh, const std::string& fileName )
+void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 {
   SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -163,19 +163,19 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   ofs << "CELL_TYPES " << ncells << std::endl;
   for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
     int ctype    = mesh->getMeshCellType( cellIdx );
-    int vtk_type = mint::cell::vtk_types[ ctype ];
+    int vtk_type = axom::mint::cell::vtk_types[ ctype ];
     ofs << vtk_type << std::endl;
   } // END for all cells
 
   // STEP 4: Write Cell Data
   ofs << "CELL_DATA " << ncells << std::endl;
-  mint::FieldData* CD = mesh->getCellFieldData();
+  axom::mint::FieldData* CD = mesh->getCellFieldData();
   for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
 
-      mint::Field* field = CD->getField( f );
+      axom::mint::Field* field = CD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           SLIC_ASSERT( dataPtr != ATK_NULLPTR );
@@ -205,13 +205,13 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   // STEP 5: Write Point Data
   const int nnodes = mesh->getMeshNumberOfNodes();
   ofs << "POINT_DATA " << nnodes << std::endl;
-  mint::FieldData* PD = mesh->getNodeFieldData();
+  axom::mint::FieldData* PD = mesh->getNodeFieldData();
   for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
 
-      mint::Field* field = PD->getField( f );
+      axom::mint::Field* field = PD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           ofs << "double\n";
@@ -253,7 +253,7 @@ void testIntersectionOnRegularGrid()
 
     TriangleType unitTri( ptX, ptY, ptZ );
 
-    typedef mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
+    typedef axom::mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
     DebugMesh* debugMesh = new DebugMesh(3);
 
     // Add triangle to mesh
@@ -326,15 +326,15 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
     ext[0] = ext[2] = ext[4] = 0;
     ext[1] = ext[3] = ext[5] = gridRes;
 
-    mint::UniformMesh* umesh =
-            new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
+    axom::mint::UniformMesh* umesh =
+            new axom::mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
 
 
     const int nnodes = umesh->getNumberOfNodes();
-    mint::FieldData* PD = umesh->getNodeFieldData();
+    axom::mint::FieldData* PD = umesh->getNodeFieldData();
     SLIC_ASSERT( PD != ATK_NULLPTR );
 
-    PD->addField( new mint::FieldVariable< int >("containment",nnodes) );
+    PD->addField( new axom::mint::FieldVariable< int >("containment",nnodes) );
     int* containment = PD->getField( "containment" )->getIntPtr();
     SLIC_ASSERT( containment != ATK_NULLPTR );
 
@@ -364,7 +364,7 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
 /**
  * \brief Extracts the vertex indices of cell cellIndex from the mesh
  */
-TriVertIndices getTriangleVertIndices(mint::Mesh* mesh, int cellIndex)
+TriVertIndices getTriangleVertIndices(axom::mint::Mesh* mesh, int cellIndex)
 {
     SLIC_ASSERT(mesh != ATK_NULLPTR);
     SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getMeshNumberOfCells());
@@ -378,7 +378,7 @@ TriVertIndices getTriangleVertIndices(mint::Mesh* mesh, int cellIndex)
  * \brief Extracts the positions of a traingle's vertices from the mesh
  * \return The triangle vertex positions in a SpaceTriangle instance
  */
-SpaceTriangle getMeshTriangle(mint::Mesh* mesh, const TriVertIndices& vertIndices )
+SpaceTriangle getMeshTriangle(axom::mint::Mesh* mesh, const TriVertIndices& vertIndices )
 {
     SLIC_ASSERT(mesh != ATK_NULLPTR);
 
@@ -395,7 +395,7 @@ SpaceTriangle getMeshTriangle(mint::Mesh* mesh, const TriVertIndices& vertIndice
  * Specifically, computes histograms (and ranges) of the edge lengths and triangle areas
  * on a logarithmic scale and logs the results
  */
-void print_surface_stats( mint::Mesh* mesh)
+void print_surface_stats( axom::mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -572,7 +572,7 @@ int main( int argc, char** argv )
 
 
   // STEP 3: create surface mesh
-  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
   reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
   // dump mesh info
   SLIC_INFO("Mesh has "

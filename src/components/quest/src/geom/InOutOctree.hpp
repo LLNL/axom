@@ -504,7 +504,7 @@ private:
     public:
         typedef int VertexIndex;
         typedef int TriangleIndex;
-        typedef mint::Mesh SurfaceMesh;
+        typedef axom::mint::Mesh SurfaceMesh;
 
         /** \brief A vertex index to indicate that there is no associated vertex */
         static const VertexIndex NO_VERTEX = -1;
@@ -791,7 +791,7 @@ private:
               m_surfaceMesh = ATK_NULLPTR;
           }
 
-          typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+          typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
           TriangleMesh* triMesh = new TriangleMesh(3);
 
           // Add vertices to the mesh (i.e. vertex positions)
@@ -826,7 +826,7 @@ private:
 public:
 
     typedef typename MeshWrapper::SurfaceMesh SurfaceMesh;
-    typedef mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
+    typedef axom::mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
 
     typedef typename MeshWrapper::VertexIndex VertexIndex;
     typedef typename MeshWrapper::TriangleIndex TriangleIndex;

@@ -9,19 +9,6 @@
  */
 
 
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file FieldData.hpp
- *
- * \date Sep 19, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef FIELDDATA_HPP_
 #define FIELDDATA_HPP_
 
@@ -32,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace axom {
 namespace mint {
 
 // Forward Declarations
@@ -134,5 +122,6 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* FIELDDATA_HPP_ */

@@ -8,20 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file Field.cpp
- *
- * \date Sep 19, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #include "Field.hpp"
 
 #include "mint/FieldTypes.hpp"
@@ -29,6 +15,7 @@
 
 #include <cstddef>
 
+namespace axom {
 namespace mint {
 
 Field::Field() :
@@ -72,3 +59,4 @@ int* Field::getIntPtr()
 }
 
 } /* namespace mint */
+} /* namespace axom */

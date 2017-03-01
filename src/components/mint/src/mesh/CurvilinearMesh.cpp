@@ -8,20 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file CurvilinearMesh.cxx
- *
- * \date Sep 20, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #include "CurvilinearMesh.hpp"
 #include "MeshType.hpp"
 
@@ -31,6 +17,7 @@
 // C/C++ includes
 #include <cstddef> // for definition of ATK_NULLPTR
 
+namespace axom {
 namespace mint {
 
 CurvilinearMesh::CurvilinearMesh() :
@@ -65,3 +52,4 @@ CurvilinearMesh::~CurvilinearMesh()
 }
 
 } /* namespace mint */
+} /* namespace axom */

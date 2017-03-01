@@ -8,20 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file Extent.hxx
- *
- * \date Sep 20, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef EXTENT_HXX_
 #define EXTENT_HXX_
 
@@ -30,9 +16,8 @@
 // C/C++ includes
 #include <cstring> // for memcpy()
 
-namespace mint
-{
-
+namespace axom {
+namespace mint {
 
 template < typename IndexType >
 class Extent
@@ -223,10 +208,12 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 //  Extent Implementation
 //------------------------------------------------------------------------------
+namespace axom {
 namespace mint {
 
 //------------------------------------------------------------------------------
@@ -360,4 +347,6 @@ void Extent< IndexType >::getGridIndex(
 }
 
 } /* namespace mint */
+} /* namespae axom */
+
 #endif /* EXTENT_HXX_ */

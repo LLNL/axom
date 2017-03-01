@@ -8,20 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file CurvilinearMesh.hxx
- *
- * \date Sep 20, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef CURVILINEARMESH_HXX_
 #define CURVILINEARMESH_HXX_
 
@@ -29,8 +15,8 @@
 #include "mint/MeshCoordinates.hpp"
 #include "slic/slic.hpp"
 
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 class CurvilinearMesh : public StructuredMesh
 {
@@ -226,13 +212,14 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
 
-namespace mint
-{
+namespace axom {
+namespace mint {
 
 
 inline const double* CurvilinearMesh::getMeshCoordinateArray( int idim ) const
@@ -338,5 +325,6 @@ double CurvilinearMesh::getNodeCoordinate( int i, int j, int k, int idim ) const
 }
 
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* CURVILINEARMESH_HXX_ */

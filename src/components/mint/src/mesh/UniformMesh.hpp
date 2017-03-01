@@ -8,88 +8,73 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file RectilinearMesh.hxx
- *
- * \date Sep 26, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
-#ifndef RECTILINEARMESH_HXX_
-#define RECTILINEARMESH_HXX_
+#ifndef UNIFORMMESH_HXX_
+#define UNIFORMMESH_HXX_
 
 #include "mint/StructuredMesh.hpp"
-#include "mint/MeshCoordinates.hpp"
+#include "slic/slic.hpp"
 
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp"
+namespace axom {
+namespace mint {
 
-
-namespace mint
-{
-
-class RectilinearMesh : public StructuredMesh
+class UniformMesh : public StructuredMesh
 {
 public:
 
   /*!
    *****************************************************************************
-   * \brief Constructs a rectilinear mesh instance.
-   * \param [in] dimension the dimension of the mesh.
-   * \param [in] ext the mesh extent.
+   * \brief Constructs a uniform mesh defined by the origin, spacing and extent.
+   * \param [in] dimension the dimension of this mesh instance.
+   * \param [in] origin the origin coordinates of the mesh
+   * \param [in] h the spacing in each dimension.
+   * \param [in] ext the extent of this mesh instance.
    *****************************************************************************
    */
-  RectilinearMesh( int dimension, int ext[6] );
+  UniformMesh( int dimension,
+               const double origin[3],
+               const double h[3],
+               const int ext[6] );
 
   /*!
    *****************************************************************************
-   * \brief Constructs a rectilinear mesh instance.
-   * \param [in] dimension the dimension of the mesh.
-   * \param [in] ext the mesh extent.
-   * \param [in] blockId the block ID.
-   * \param [in] partitionId the partition ID.
+   * \brief Constructs a uniform mesh defined by the origin, spacing and extent.
+   * \param [in] dimension the dimension of this mesh instance.
+   * \param [in] origin the origin coordinates of the mesh
+   * \param [in] h the spacing in each dimension.
+   * \param [in] ext the extent of this mesh instance.
+   * \param [in] blockId the block ID of this mesh.
+   * \param [in] partitionId the partition ID of this mesh.
    *****************************************************************************
    */
-  RectilinearMesh( int dimension, int ext[6], int blockId, int partitionId );
+  UniformMesh( int dimension,
+               const double origin[3],
+               const double h[3],
+               const int ext[6],
+               int blockId,
+               int partitionId );
 
   /*!
    *****************************************************************************
    * \brief Destructor.
    *****************************************************************************
    */
-  virtual ~RectilinearMesh();
+  virtual ~UniformMesh();
 
   /*!
    *****************************************************************************
-   * \brief Sets the coordinate along the given dimension.
-   * \param [in] idim the dimension in query.
-   * \param [in] i the index of the coordinate to set.
-   * \param [in] coord the coordinate to set.
-   * \pre idim >= 0 && idim < this->getDimension()
-   * \pre i >= 0 && i < ndims[ i ]
+   * \brief Returns the origin of the Uniform Mesh
+   * \param [out] origin user-supplied buffer to store the mesh origin.
    *****************************************************************************
    */
-  void setCoordinate( int idim, int i, double coord );
+  void getOrigin( double origin[3] ) const;
 
   /*!
    *****************************************************************************
-   * \brief Returns pointer to the coordinates array along the given dimension.
-   * \param [in] idim the requested dimension.
-   * \return coordsPtr pointer to the coordinates array.
+   * \brief Returns the spacing of the Uniform Mesh.
+   * \param [out] h user-supplied buffer to store the spacing of the mesh.
    *****************************************************************************
    */
-  const double* getCoordinateArray( int idim ) const
-    { return m_coordinates->getCoordinateArray( idim ); };
-
-  /// \name GetNode() methods.
-  /// @{
+  void getSpacing( double h[3] ) const;
 
   /*!
    *****************************************************************************
@@ -174,33 +159,39 @@ private:
    * \note Made private to prevent users from calling it.
    *****************************************************************************
    */
-  RectilinearMesh();
+  UniformMesh();
 
-  MeshCoordinates* m_coordinates;
+  double m_origin[3];
+  double m_h[3];
 
-  DISABLE_COPY_AND_ASSIGNMENT(RectilinearMesh);
-  DISABLE_MOVE_AND_ASSIGNMENT(RectilinearMesh);
+  DISABLE_COPY_AND_ASSIGNMENT(UniformMesh);
+  DISABLE_MOVE_AND_ASSIGNMENT(UniformMesh);
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
-//      In-lined Method Implementations
+//          In-lined Method Implementations
 //------------------------------------------------------------------------------
-namespace mint
-{
+namespace axom {
+namespace mint {
 
-inline void RectilinearMesh::setCoordinate( int idim, int i, double coord )
+inline void UniformMesh::getOrigin( double origin[3] ) const
 {
-  SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
-  SLIC_ASSERT( i >= 0 && i < m_coordinates->getCoordinateArraySize( idim ) );
-
-  double* xc = m_coordinates->getCoordinateArray( idim );
-  xc[ i ]    = coord;
+   SLIC_ASSERT( origin != ATK_NULLPTR );
+   memcpy( origin, m_origin, 3*sizeof(double) );
 }
 
 //------------------------------------------------------------------------------
-inline void RectilinearMesh::getNode( int nodeIdx, double* coordinates ) const
+inline void UniformMesh::getSpacing( double h[3] ) const
+{
+   SLIC_ASSERT( h != ATK_NULLPTR );
+   memcpy( h, m_h, 3*sizeof(double) );
+}
+
+//------------------------------------------------------------------------------
+inline void UniformMesh::getNode(int nodeIdx, double* coordinates) const
 {
   SLIC_ASSERT( coordinates != ATK_NULLPTR );
   SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
@@ -209,76 +200,71 @@ inline void RectilinearMesh::getNode( int nodeIdx, double* coordinates ) const
   m_extent->getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
 
   for ( int i=0; i < this->getDimension(); ++i ) {
-    const double* xc = this->getCoordinateArray( i );
-    coordinates[ i ] = xc[ ijk[i] ];
+    coordinates[ i ] = m_origin[ i ] + m_h[ i ]*ijk[ i ];
   }
 
 }
 
 //------------------------------------------------------------------------------
-inline void RectilinearMesh::getNode( int i, int j, double* coordinates ) const
+inline void UniformMesh::getNode( int i, int j, double* coordinates ) const
 {
   SLIC_ASSERT( coordinates != ATK_NULLPTR );
   SLIC_ASSERT( this->getDimension()==2 );
 
-  const double* xc = this->getCoordinateArray( 0 );
-  const double* yc = this->getCoordinateArray( 1 );
-  coordinates[ 0 ] = xc[ i ];
-  coordinates[ 1 ] = yc[ j ];
+  int ijk[2] = { i, j };
+  for ( int i=0; i < 2; ++i ) {
+    coordinates[ i ] = m_origin[ i ] + m_h[ i ]*ijk[ i ];
+  }
+
 }
 
 //------------------------------------------------------------------------------
-inline void RectilinearMesh::getNode(
-    int i, int j, int k, double* coordinates ) const
+inline
+void UniformMesh::getNode(int i, int j, int k, double* coordinates) const
 {
-  SLIC_ASSERT( coordinates != ATK_NULLPTR );
+  SLIC_ASSERT( coordinates !=  ATK_NULLPTR );
   SLIC_ASSERT( this->getDimension()==3 );
 
-  const double* xc = this->getCoordinateArray( 0 );
-  const double* yc = this->getCoordinateArray( 1 );
-  const double* zc = this->getCoordinateArray( 2 );
-  coordinates[ 0 ] = xc[ i ];
-  coordinates[ 1 ] = yc[ j ];
-  coordinates[ 2 ] = zc[ k ];
+  int ijk[3] = { i, j, k };
+  for ( int i=0; i < 3; ++i ) {
+     coordinates[ i ] = m_origin[ i ] + m_h[ i ]*ijk[ i ];
+  }
+
 }
 
 //------------------------------------------------------------------------------
-inline double RectilinearMesh::getNodeCoordinate( int nodeIdx, int idim  ) const
+inline double UniformMesh::getNodeCoordinate( int nodeIdx, int idim ) const
 {
   SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
   SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
 
   int ijk[3];
   m_extent->getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
-
-  const double* xc = this->getCoordinateArray( idim );
-  return xc[ ijk[idim]  ];
+  return ( (m_origin[ idim ] + m_h[ idim ]*ijk[ idim ]) );
 }
 
 //------------------------------------------------------------------------------
-inline double RectilinearMesh::getNodeCoordinate( int i, int j, int idim ) const
+inline double UniformMesh::getNodeCoordinate( int i, int j, int idim ) const
 {
   SLIC_ASSERT( this->getDimension()==2 );
   SLIC_ASSERT( idim >= 0 && idim < 2 );
 
   int ijk[2] = { i, j };
-
-  const double* xc = this->getCoordinateArray( idim );
-  return xc[ ijk[idim] ];
+  return ( (m_origin[ idim ] + m_h[ idim ]*ijk[ idim ]) );
 }
 
 //------------------------------------------------------------------------------
-inline double RectilinearMesh::getNodeCoordinate(
-              int i, int j, int k, int idim ) const
+inline
+double UniformMesh::getNodeCoordinate( int i, int j, int k, int idim ) const
 {
   SLIC_ASSERT( this->getDimension()==3 );
   SLIC_ASSERT( idim >= 0 && idim < 3 );
 
   int ijk[3] = { i, j, k };
-
-  const double* xc = this->getCoordinateArray( idim );
-  return xc[ ijk[idim] ];
+  return ( (m_origin[ idim ] + m_h[ idim ]*ijk[ idim ]) );
 }
 
 } /* namespace mint */
-#endif /* RECTILINEARMESH_HXX_ */
+} /* namespace axom */
+
+#endif /* UNIFORMMESH_HXX_ */

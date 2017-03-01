@@ -8,20 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file UnstructuredMesh.hxx
- *
- * \date Sep 13, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #ifndef UNSTRUCTUREDMESH_HXX_
 #define UNSTRUCTUREDMESH_HXX_
 
@@ -42,6 +28,7 @@
 #include <cstring> // for memcpy()
 #include <fstream> // for fstream
 
+namespace axom {
 namespace mint {
 
 template < int CellType >
@@ -297,10 +284,12 @@ private:
 };
 
 } /* namespace mint */
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 //      UnstructuredMesh Implementation
 //------------------------------------------------------------------------------
+namespace axom {
 namespace mint {
 
 template < int CellType >
@@ -523,5 +512,6 @@ void UnstructuredMesh< CellType >::toVtkFile( const std::string& file )
 }
 
 } /* namespace mint */
+} /* namespace axom */
 
 #endif /* UNSTRUCTUREDMESH_HXX_ */
