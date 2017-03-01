@@ -66,7 +66,6 @@ set("BOOST_DIR" "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/2017_03_01_13
 set(ENABLE_MPI ON CACHE PATH "")
 set(MPI_C_COMPILER "/usr/apps/gnu/clang/llnl/bin/mpiclang" CACHE PATH "")
 set(MPI_CXX_COMPILER "/usr/apps/gnu/clang/llnl/bin/mpiclang++11-fastmpi" CACHE PATH "")
-set(MPI_Fortran_COMPILER  "/usr/local/tools/compilers/ibm/mpif90-4.8.4-fastmpi" CACHE PATH "")
 
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
