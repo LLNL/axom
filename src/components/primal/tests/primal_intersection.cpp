@@ -11,12 +11,13 @@
 #include "gtest/gtest.h"
 
 #include "primal/BoundingBox.hpp"
-#include "primal/Intersection.hpp"
 #include "primal/Point.hpp"
 #include "primal/Ray.hpp"
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
 #include "primal/Vector.hpp"
+
+#include "primal/intersection.hpp"
 
 using namespace axom;
 

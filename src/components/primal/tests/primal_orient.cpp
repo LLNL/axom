@@ -10,10 +10,11 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/Orientation.hpp"
 #include "primal/Point.hpp"
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
+
+#include "primal/orientation.hpp"
 
 using namespace axom;
 

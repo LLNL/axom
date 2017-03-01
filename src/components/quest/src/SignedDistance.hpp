@@ -19,7 +19,6 @@
 
 #include "primal/BVHTree.hpp"
 #include "primal/BoundingBox.hpp"
-#include "primal/Orientation.hpp"
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
 #include "primal/Vector.hpp"
