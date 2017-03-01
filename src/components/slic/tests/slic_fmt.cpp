@@ -44,9 +44,9 @@ TEST(slic_fmt, basic_use)
                 fmt::arg("name", "ASC Toolkit") ) );
 
     // Python style with additional formatting
-    SLIC_INFO(fmt::format("int:{0:d};  hex:{0:x};  oct:{0:o}; bin: {0:b}", 42));
+    SLIC_INFO(fmt::format("int:{0:d};  hex:{0:x};  oct:{0:o}; bin:{0:b}", 42));
     EXPECT_EQ( "int:42;  hex:2a;  oct:52; bin:101010",
-               fmt::format("int:{0:d};  hex:{0:x};  oct:{0:o}; bin: {0:b}", 42));
+               fmt::format("int:{0:d};  hex:{0:x};  oct:{0:o}; bin:{0:b}", 42));
 
     // sprintf style
     SLIC_INFO( fmt::sprintf("Two significant digits: %.2f", 1.234567) );
