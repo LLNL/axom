@@ -282,24 +282,23 @@ TEST( primal_intersection, triangle_aabb_intersection_fromData )
 
   TriangleType tri(v0,v1,v2);
 
-  BoundingBoxType box0(PointType::make_point(-39.2793,46.3735,
-                                             53.3791), PointType::make_point(
-                         -26.1692,60.1549,57.0148));
-  BoundingBoxType box1(PointType::make_point(-39.2793,60.1549,
-                                             53.3791), PointType::make_point(
-                         -26.1692,73.9362,57.0148));
-  BoundingBoxType box2(PointType::make_point(-39.2793,46.3735,
-                                             57.0148), PointType::make_point(
-                         -26.1692,60.1549,60.6506));
-  BoundingBoxType box3(PointType::make_point(-39.2793,60.1549,
-                                             57.0148), PointType::make_point(
-                         -26.1692,73.9362,60.6506));
-  BoundingBoxType box4(PointType::make_point(-39.2793,46.3735,
-                                             60.6506), PointType::make_point(
-                         -26.1692,60.1549,64.2863));
-  BoundingBoxType box5(PointType::make_point(-39.2793,60.1549,
-                                             60.6506), PointType::make_point(
-                         -26.1692,73.9362,64.2863));
+  BoundingBoxType box0( PointType::make_point(-39.2793,46.3735,53.3791),
+                        PointType::make_point(-26.1692,60.1549,57.0148) );
+
+  BoundingBoxType box1( PointType::make_point(-39.2793,60.1549,53.3791),
+                        PointType::make_point(-26.1692,73.9362,57.0148) );
+
+  BoundingBoxType box2( PointType::make_point(-39.2793,46.3735,57.0148),
+                        PointType::make_point(-26.1692,60.1549,60.6506) );
+
+  BoundingBoxType box3( PointType::make_point(-39.2793,60.1549,57.0148),
+                        PointType::make_point(-26.1692,73.9362,60.6506) );
+
+  BoundingBoxType box4( PointType::make_point(-39.2793,46.3735,60.6506),
+                        PointType::make_point(-26.1692,60.1549,64.2863) );
+
+  BoundingBoxType box5( PointType::make_point(-39.2793,60.1549,60.6506),
+                        PointType::make_point(-26.1692,73.9362,64.2863) );
 
   SLIC_INFO(
     "Testing point bounding box: " << box0 << " against triangle " << tri );
