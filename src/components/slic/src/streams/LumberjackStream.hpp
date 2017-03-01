@@ -36,8 +36,8 @@
 namespace asctoolkit {
 namespace lumberjack {
 
-  class Lumberjack;
-  class Communicator;
+class Lumberjack;
+class Communicator;
 
 }
 }
@@ -62,14 +62,16 @@ namespace slic {
  *  with an std::ofstream object.
  *******************************************************************************
  */
-class LumberjackStream : public LogStream
+class LumberjackStream:public LogStream
 {
 public:
   LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit );
   LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
                     const std::string& format );
-  LumberjackStream( std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj );
-  LumberjackStream( std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj,
+  LumberjackStream( std::ostream* stream,
+                    asctoolkit::lumberjack::Lumberjack* lj );
+  LumberjackStream( std::ostream* stream,
+                    asctoolkit::lumberjack::Lumberjack* lj,
                     const std::string& format );
 
   virtual ~LumberjackStream();
@@ -140,14 +142,15 @@ private:
   /*!
    *****************************************************************************
    * \brief Default constructor. Made private to prevent applications from
-   *  using it. Instead the constructor that passes the underlying Lumberjack instance
+   *  using it. Instead the constructor that passes the underlying Lumberjack
+   * instance
    *  should be used.
    *****************************************************************************
    */
-  LumberjackStream(): m_lj( static_cast<asctoolkit::lumberjack::Lumberjack*>(ATK_NULLPTR) ),
-                      m_stream( static_cast<std::ostream*>(ATK_NULLPTR) )
+  LumberjackStream(): m_lj( static_cast< asctoolkit::lumberjack::Lumberjack* >(
+                              ATK_NULLPTR) ),
+    m_stream( static_cast< std::ostream* >(ATK_NULLPTR) )
   { };
-
 
   DISABLE_COPY_AND_ASSIGNMENT(LumberjackStream);
   DISABLE_MOVE_AND_ASSIGNMENT(LumberjackStream);

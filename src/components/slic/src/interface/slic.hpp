@@ -50,11 +50,11 @@
  ******************************************************************************
  */
 #define SLIC_ERROR( msg )                                                     \
-do {                                                                          \
+  do {                                                                        \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
     axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);               \
-} while ( 0 )
+  } while ( 0 )
 
 /*!
  ******************************************************************************
@@ -73,13 +73,13 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_ERROR_IF( EXP, msg )                                             \
-do {                                                                          \
-  if ( EXP ) {                                                                \
-    std::ostringstream oss;                                                   \
-    oss << msg;                                                               \
-    axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__);                 \
-  }                                                                           \
-} while( 0 )
+  do {                                                                        \
+    if ( EXP ) {                                                              \
+      std::ostringstream oss;                                                 \
+      oss << msg;                                                             \
+      axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__);               \
+    }                                                                         \
+  } while ( 0 )
 
 /// @}
 
@@ -101,11 +101,11 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_WARNING( msg )                                                   \
-do {                                                                          \
+  do {                                                                        \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
     axom::slic::logWarningMessage(oss.str(),__FILE__, __LINE__ );             \
-} while ( 0 )
+  } while ( 0 )
 
 /*!
  ******************************************************************************
@@ -123,13 +123,13 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_WARNING_IF( EXP, msg )                                           \
-do {                                                                          \
-  if ( EXP ) {                                                                \
-    std::ostringstream oss;                                                   \
-    oss << msg;                                                               \
-    axom::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );              \
-  }                                                                           \
-} while( 0 )
+  do {                                                                        \
+    if ( EXP ) {                                                              \
+      std::ostringstream oss;                                                 \
+      oss << msg;                                                             \
+      axom::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );            \
+    }                                                                         \
+  } while ( 0 )
 
 /// @}
 
@@ -156,13 +156,13 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_ASSERT( EXP )                                                    \
-do {                                                                          \
-  if ( !(EXP) ) {                                                             \
-    std::ostringstream oss;                                                   \
-    oss << "Failed Assert: " << # EXP << std::ends;                           \
-    axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );                \
-  }                                                                           \
-} while ( 0 )
+  do {                                                                        \
+    if ( !(EXP) ) {                                                           \
+      std::ostringstream oss;                                                 \
+      oss << "Failed Assert: " << # EXP << std::ends;                         \
+      axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
+    }                                                                         \
+  } while ( 0 )
 
 /*!
  ******************************************************************************
@@ -182,13 +182,13 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_ASSERT_MSG( EXP, msg )                                           \
-do {                                                                          \
-  if ( !(EXP) ) {                                                             \
-    std::ostringstream oss;                                                   \
-    oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;       \
-    axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );                \
-  }                                                                           \
-} while ( 0 )
+  do {                                                                        \
+    if ( !(EXP) ) {                                                           \
+      std::ostringstream oss;                                                 \
+      oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;     \
+      axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
+    }                                                                         \
+  } while ( 0 )
 
 /// @}
 
@@ -213,18 +213,18 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_CHECK( EXP )                                                     \
-do {                                                                          \
-  if ( !(EXP) ) {                                                             \
-    std::ostringstream oss;                                                   \
-    oss << "Failed Check: " << # EXP << std::ends;                            \
-    if (axom::slic::debug::checksAreErrors) {                                 \
-      axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);             \
+  do {                                                                        \
+    if ( !(EXP) ) {                                                           \
+      std::ostringstream oss;                                                 \
+      oss << "Failed Check: " << # EXP << std::ends;                          \
+      if (axom::slic::debug::checksAreErrors) {                               \
+        axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);           \
+      }                                                                       \
+      else {                                                                  \
+        axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
+      }                                                                       \
     }                                                                         \
-    else {                                                                    \
-      axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);           \
-    }                                                                         \
-  }                                                                           \
-} while ( 0 )
+  } while ( 0 )
 
 /*!
  ******************************************************************************
@@ -243,18 +243,18 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_CHECK_MSG( EXP, msg )                                            \
-do {                                                                          \
-  if ( !(EXP) ) {                                                             \
-    std::ostringstream oss;                                                   \
-    oss << "Failed Check: " << # EXP << std::endl << msg <<  std::ends;       \
-    if (axom::slic::debug::checksAreErrors) {                                 \
-      axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);             \
+  do {                                                                        \
+    if ( !(EXP) ) {                                                           \
+      std::ostringstream oss;                                                 \
+      oss << "Failed Check: " << # EXP << std::endl << msg <<  std::ends;     \
+      if (axom::slic::debug::checksAreErrors) {                               \
+        axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);           \
+      }                                                                       \
+      else {                                                                  \
+        axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
+      }                                                                       \
     }                                                                         \
-    else {                                                                    \
-      axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);           \
-    }                                                                         \
-  }                                                                           \
-} while ( 0 )
+  } while ( 0 )
 
 /// @}
 
@@ -266,8 +266,6 @@ do {                                                                          \
 #define SLIC_CHECK_MSG( ignore_EXP, ignore_msg ) ( (void)0 )
 
 #endif /* END ifdef ATK_DEBUG */
-
-
 
 /*!
  ******************************************************************************
@@ -284,15 +282,14 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_INFO( msg )                                                      \
-do {                                                                          \
+  do {                                                                        \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
     axom::slic::logMessage(axom::slic::message::Info                          \
-                               , oss.str()                                    \
-                               ,__FILE__                                      \
-                               , __LINE__ );                                  \
-} while ( 0 )
-
+                           , oss.str()                                        \
+                           ,__FILE__                                          \
+                           , __LINE__ );                                      \
+  } while ( 0 )
 
 #ifdef ATK_DEBUG
 
@@ -311,14 +308,14 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_DEBUG( msg )                                                     \
-do {                                                                          \
+  do {                                                                        \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
     axom::slic::logMessage(axom::slic::message::Debug                         \
-                               , oss.str()                                    \
-                               ,__FILE__                                      \
-                               , __LINE__ );                                  \
-} while ( 0 )
+                           , oss.str()                                        \
+                           ,__FILE__                                          \
+                           , __LINE__ );                                      \
+  } while ( 0 )
 
 #else // turn off debug macros
 
@@ -326,15 +323,12 @@ do {                                                                          \
 
 #endif
 
-
-
-
 namespace axom {
 namespace slic {
 
 struct debug
 {
-   static bool checksAreErrors;
+  static bool checksAreErrors;
 };
 
 /*!
@@ -524,10 +518,10 @@ void logMessage( message::Level level,
  *******************************************************************************
  */
 void logMessage( message::Level level,
-                const std::string& message,
-                const std::string& fileName,
-                int line,
-                bool filter_duplicates=false );
+                 const std::string& message,
+                 const std::string& fileName,
+                 int line,
+                 bool filter_duplicates=false );
 
 /*!
  *******************************************************************************

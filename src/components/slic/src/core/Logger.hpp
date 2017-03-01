@@ -33,7 +33,6 @@
 namespace axom {
 namespace slic {
 
-
 // Forward declarations
 class LogStream;
 
@@ -158,7 +157,7 @@ public:
    *****************************************************************************
    */
   void addStreamToMsgLevel( LogStream* ls, message::Level level,
-                         bool pass_ownership=true );
+                            bool pass_ownership=true );
 
   /*!
    *****************************************************************************

@@ -116,7 +116,7 @@ public:
                        const std::string& fileName,
                        int line,
                        bool filter_duplicates
-                       ) = 0;
+  ) = 0;
 
   /*!
    *****************************************************************************
@@ -157,20 +157,20 @@ protected:
    * \post str != "".
    *****************************************************************************
    */
-   std::string getFormatedMessage( const std::string& msgLevel,
-                                   const std::string& message,
-                                   const std::string& tagName,
-                                   const std::string& rank,
-                                   const std::string& fileName,
-                                   int line );
+  std::string getFormatedMessage( const std::string& msgLevel,
+                                  const std::string& message,
+                                  const std::string& tagName,
+                                  const std::string& rank,
+                                  const std::string& fileName,
+                                  int line );
 
-   /*!
-    ****************************************************************************
-    * \brief Returns a time-stamp.
-    * \return str a textual representation of the current time.
-    ****************************************************************************
-    */
-   std::string getTimeStamp( );
+  /*!
+   ****************************************************************************
+   * \brief Returns a time-stamp.
+   * \return str a textual representation of the current time.
+   ****************************************************************************
+   */
+  std::string getTimeStamp( );
 
 private:
 

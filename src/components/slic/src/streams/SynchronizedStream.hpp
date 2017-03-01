@@ -32,7 +32,6 @@
 // MPI
 #include <mpi.h> // For MPI
 
-
 namespace axom {
 namespace slic {
 
@@ -53,7 +52,7 @@ namespace slic {
  *  with an std::ofstream object.
  *******************************************************************************
  */
-class SynchronizedStream : public LogStream
+class SynchronizedStream:public LogStream
 {
 public:
   SynchronizedStream( std::ostream* stream, MPI_Comm comm );
@@ -114,10 +113,9 @@ private:
    *****************************************************************************
    */
   SynchronizedStream(): m_comm(MPI_COMM_NULL),
-                        m_cache( static_cast<MessageCache*>(ATK_NULLPTR) ),
-                        m_stream( static_cast<std::ostream*>(ATK_NULLPTR) )
+    m_cache( static_cast< MessageCache* >(ATK_NULLPTR) ),
+    m_stream( static_cast< std::ostream* >(ATK_NULLPTR) )
   { };
-
 
   DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);
   DISABLE_MOVE_AND_ASSIGNMENT(SynchronizedStream);
