@@ -9,16 +9,16 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
-CS Toolkit Developer Guide
+Axom Developer Guide
 =========================================================
 
-This guide describes key aspects of the software development process for
-the CS Toolkit project. The guide is intended for all team members and 
+This guide describes key aspects of the software development processes used
+in the Axom project. The guide is intended for all team members and 
 contributors. It is especially helpful for familiarizing new individuals
-about how the team works. The overarching goal is that all CS Toolkit 
+about how the team works. The overarching goal is that all Axom
 development follows similar practices to ensure robustness, consistency,
 ease of use, and comprehensive testing. Everyone who contributes to the 
-CS Toolkit should be aware of and follow these guidelines. However, the
+Axom should be aware of and follow these guidelines. However, the
 benefits of uniformity should be balanced with allowances for individual 
 preferences, which may be superior to rigid conventions in certain situations.
 
@@ -30,7 +30,7 @@ should be updated accordingly.
 
 This guide is generated using Sphinx and is written in the 
 `reStructuredText <http://docutils.sourceforge.net/rst.html>`_ markup language. 
-The document source lives in the CS Toolkit source code 
+The document source lives in the Axom source code 
 repository. You can build it from source by using the proper make system 
 target::
 

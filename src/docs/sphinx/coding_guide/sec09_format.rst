@@ -70,7 +70,7 @@ White space and code alignment
 
 Most conventions for indentation, spacing and code alignment 
 preferred by the team are enforced by using the `uncrustify` tool. 
-It can be run from the top-level CS Toolkit directory...
+It can be run from the top-level Axom directory...
 
 .. important:: Insert section on our use of uncrustify for code formatting.
 

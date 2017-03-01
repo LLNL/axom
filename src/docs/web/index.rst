@@ -9,20 +9,25 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
-****************
-The CS Toolkit
-****************
+****************************
+Axom (a.k.a. The CS Toolkit)
+****************************
 
-The CS Toolkit effort is a project in WCI/WSC that is funded by ECP/ATDM.
+.. note:: The project recently changed its name from "The CS Toolkit" to 
+          "Axom". The names of various items described here (e.g., email 
+          lists) will be changed to reflect that.
+
+Axom is a project in WCI/WSC that is funded by ECP/ATDM.
 Its principal goal is to provide a collection of robust and flexible software 
 components that serve as building blocks for LLNL simulation tools. The 
 emphasis is on sharing core infrastructure software amongst applications 
 rather than having different codes develop and maintain similar capabilities.
 
-A key objective of the Toolkit is to facilitate integration of novel, 
+A key objective of Axom is to facilitate integration of novel, 
 forward-looking computer science capabilities into LLNL simulation codes. 
-Thus, a central function of the Toolkit is to enable and simplify data exchange between applications and tools that the Toolkit provides. To meet these 
-objectives, developers of Toolkit components emphasize the following features 
+Thus, a central function of Axom is to enable and simplify data exchange 
+between applications and tools that Axom provides. To meet these 
+objectives, developers of Axom components emphasize the following features 
 in software design and implementation:
 
   * Flexibility to meet the needs of a diverse set of applications
@@ -30,28 +35,27 @@ in software design and implementation:
   * Consistency in software engineering practices
   * Integrability so that components work well together and are easily adopted by applications
 
-The main drivers of the Toolkit are to:
+The main drivers of the Axom project are to:
 
   *  Provide the CS infrastructure foundation of the ECP ATDM multi-physics application at LLNL
   *  Support current ASC and other production applications and as they continue to evolve
   *  Provide capabilities for LLNL research codes, proxy apps, etc. that simplify technology transfer from research efforts into production applications
 
-**This web page is the main place to find information about the CS Toolkit,
-communicating with the project team, etc.**
+**This web page is the main place to find information about Axom.**
 
 
 =====================
 Quickstart Guide
 =====================
 
-To get started using the CS Toolkit, please see the 
+To get started using Axom, please see the 
 `Quickstart Guide <../../quickstart_guide_docs/html/index.html>`_. This
 guide contains information about accessing the code, configuring and building
 it, linking with an application, etc.
 
 
 ======================================= 
-Communicating with the Toolkit Team
+Communicating with the Axom Team
 =======================================
 
 --------------
@@ -60,11 +64,15 @@ Mailing Lists
 
 The project maintains two email lists: 
 
-  * 'asctoolkit-users@llnl.gov' is how Toolkit users can contact developers for questions, report issues, etc. 
-  * 'asctoolkit-dev@llnl.gov' is for project-specific communication among team members. 
+  * 'asctoolkit-users@llnl.gov' is how Axom users can contact developers for questions, report issues, etc. 
+  * 'asctoolkit-dev@llnl.gov' is for communication among team members. 
 
 You can add or remove yourself from either of these lists via the 
-`LLNL E-Mail List Manager <https://listserv.llnl.gov>`_
+`LLNL E-Mail List Manager (ListServ) <https://listserv.llnl.gov>`_
+
+
+.. note:: The project recently changed its name from "The CS Toolkit" to 
+          "Axom". The names of these email lists will change to reflect that.
 
 
 -------------- 
@@ -72,7 +80,7 @@ Chat Room
 -------------- 
 
 We also have a chat room on LLNL's Cisco Jabber instance called 
-'CS Toolkit Dev'. It is open to anyone. You just have to log on to Jabber and
+'Axom Dev'. It is open to anyone. You just have to log on to Jabber and
 join the room.
 
 
@@ -80,11 +88,11 @@ join the room.
 Atlassian Tools
 -----------------
 
-The main interaction hub for the Toolkit software is the Atlassian tool suite 
+The main interaction hub for the Axom software is the Atlassian tool suite 
 on the Livermore Computing Collaboration Zone (CZ). These tools can be 
 accessed through the `MyLC Portal <https://lc.llnl.gov>`_.
 
-Direct links to the Toolkit Atlassian projects/spaces are:
+Direct links to the Axom Atlassian projects/spaces are:
 
   * `Bitbucket project/git repository <https://lc.llnl.gov/bitbucket/projects/ATK>`_
   * `Jira issue tracker <https://lc.llnl.gov/jira/projects/ATK>`_
@@ -96,17 +104,17 @@ Direct links to the Toolkit Atlassian projects/spaces are:
 LC Groups
 --------------------
 
-Access to Toolkit projects/spaces in these Atlassian tools requires
+Access to Axom projects/spaces in these Atlassian tools requires
 membership in the `toolkit` group on LC systems. Please contact the team for
 group access by sending an email request to 'asctoolkit-dev@llnl.gov'.
 
 
 ================================
-Toolkit Component Documentation
+Axom Component Documentation
 ================================
 
 The following lists contain links to user guides and source code documentation
-for Toolkit components:
+for Axom components:
 
 ----------------------
 Component User Guides
@@ -125,7 +133,7 @@ Component User Guides
 Source Code Documentation
 --------------------------
 
-  *  `CS Toolkit <../../../doxygen/asc_toolkit_doxygen/html/index.html>`_
+  *  `Axom <../../../doxygen/asc_toolkit_doxygen/html/index.html>`_
   *  `Common <../../../doxygen/common_doxygen/html/index.html>`_
   *  `Slic <../../../doxygen/slic_doxygen/html/index.html>`_
   *  `Lumberjack <../../../doxygen/lumberjack_doxygen/html/index.html>`_
@@ -143,8 +151,8 @@ Look for documentation to appear for new components as they are developed.
 Other Tools Application Developers May Find Useful
 ======================================================
 
-Toolkit developers support other tools that can be used by application
-projects independent of the CS Toolkit. These include:
+Axom developers support other tools that can be used by software projects
+projects independent of the Axom. These include:
 
   *  BLT (CMake-based buld system that simplies use of CMake and development tool integration)
   *  Shroud (Generation of native C and Fortran APIs from C++ code)
@@ -152,12 +160,12 @@ projects independent of the CS Toolkit. These include:
 
 
 ================================================
-Resources for Toolkit Developers/Contributors:
+Resources for Axom Developers/Contributors:
 ================================================
 
-  * `CS Toolkit Developer Guide  <../../dev_guide_docs/html/index.html>`_
-  * `CS Toolkit Coding Guidelines  <../../coding_guide_docs/html/index.html>`_
-  * `CS Toolkit Testing Coverage <https://lc.llnl.gov/toolkit/coverage/index.html>`_
+  * `Axom Developer Guide  <../../dev_guide_docs/html/index.html>`_
+  * `Axom Coding Guidelines  <../../coding_guide_docs/html/index.html>`_
+  * `Axom Testing Coverage <https://lc.llnl.gov/toolkit/coverage/index.html>`_
 
 
 .. toctree::

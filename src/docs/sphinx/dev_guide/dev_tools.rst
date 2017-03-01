@@ -26,8 +26,8 @@ The main tools we use are listed below. Details about how we use
 them and helpful information about getting started are provided 
 in the sections that follow.
 
-* We use our `Confluence space <https://lc.llnl.gov/confluence/display/ASCT/ASC+Simulation+CS+Toolkit+Home>`_ for team discussion, planning, maintaining meeting notes, etc.
-* Our Git repository contains Toolkit source code, build configurations, scripts, test suites, documentation, etc. The repository lives in our `Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
+* We use our `Confluence space <https://lc.llnl.gov/confluence/display/ASCT>`_ for team discussion, planning, maintaining meeting notes, etc.
+* Our Git repository contains the Axom source code, build configurations, scripts, test suites, documentation, etc. The repository lives in our `Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 * We use our `JIRA project <https://lc.llnl.gov/jira/projects/ATK>`_ for issue tracking.
 * We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for continuous integration and automated testing.
 
@@ -38,9 +38,9 @@ Build, Link, Triumph (BLT)
 
 Our build system, called *BLT*, is maintained in `its own repo <https://lc.llnl.gov/bitbucket/projects/ATK/repos/blt/browse>`_ in our 
 Bitbucket project. BLT provides a "common sense" setup based on CMake for 
-configuring and building the Toolkit code. It also enables software development 
+configuring and building the Axom code. It also enables software development 
 tool integration via *make targets*. BLT has built-in support for the following
-tools, all of which we use for Toolkit development:
+tools, all of which we use for Axom development:
 
   Documentation
     *Doxygen* (source code docs) and *Sphinx* (user docs)
@@ -54,13 +54,10 @@ tools, all of which we use for Toolkit development:
 See **BLT documentation (add link)** for more information.  
 
 We use `Spack <https://github.com/LLNL/spack>`_ to manage and build the 
-third-party libraries on which the Toolkit depends.
+third-party libraries on which the Axom depends.
 
-The Toolkit **Quick Start Guide (add link)** describes how to build the
+The Axom **Quick Start Guide (add link)** describes how to build the
 code and third-party libraries.
-
-.. note :: BLT is supported as a standalone product and used by other 
-           software projects.
 
 
 --------------------------------------
@@ -69,7 +66,7 @@ Git/Bitbucket
 
 This section provides some information about getting started with Git and 
 Bitbucket and describes operations related to topic branch development 
-on the CS Toolkit project. Our Git repository lives in our 
+on the Axom project. Our Git repository lives in our 
 `Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 
 If you are new to the Git or want to brush up on its features, there are 
@@ -111,14 +108,14 @@ space. This is done by typing::
 
 Important notes:
 
-  * You don't need to remember the URL for the Toolkit repo above. It can be 
-    found by going to the CS Toolkit repo on our Bitbucket project and 
+  * You don't need to remember the URL for the Axom repo above. It can be 
+    found by going to the Axom repo on our Bitbucket project and 
     clicking on the 'Clone' Action button that appears when you hover your 
     mouse cursor over the ellipses on the top left of the web page.
   * The '--recursive' argument above is needed to pull the BLT build system into
-    your local copy of the repo. It is a Git sub-module of the Toolkit.
+    your local copy of the repo. It is a Git sub-module of Axom.
 
-After cloning, enter the top-level Toolkit directory and run the development
+After cloning, enter the top-level Axom directory and run the development
 setup script we provide to ensure that your Git environment is configured 
 properly and client-side hooks we use are installed; i.e.,::
 
@@ -254,7 +251,7 @@ Here are some details about each of these steps.
     When your work is complete, and you are 
     ready to merge your topic branch to the develop branch, you must initiate a 
     pull request in Bitbucket. This is done by going 
-    into the Toolkit Bitbucket project, selecting your branch, and clicking the 
+    into the Axom Bitbucket project, selecting your branch, and clicking the 
     pull request button -- make sure you select the correct destination branch. 
     The default destination branch in our project is set up to be the develop 
     branch. So, in most cases, you won't have to do anything special. 
@@ -367,7 +364,7 @@ The figure below shows issue state transitions in our JIRA workflow.
 Creating a new issue
 ^^^^^^^^^^^^^^^^^^^^^
 
-To create a new issue, click the 'Create' button at the top of the CS Toolkit
+To create a new issue, click the 'Create' button at the top of the Axom
 JIRA project page and enter information in the issue fields. Filling in the
 fields properly greatly helps other team members search through project issues
 to find what they are looking for. Note that issue fields marked with a red 
@@ -375,7 +372,7 @@ asterisk are required. The others are not required, but may be used to include
 helpful information. The main issues we use regularly are:
 
   Project
-    The CS Toolkit will show up as the default. You shouldn't need
+    Axom will show up as the default. You shouldn't need
     to change this.
   Issue Type
     We use only three issue types: *Bug*, *New Feature*, and
@@ -391,7 +388,7 @@ helpful information. The main issues we use regularly are:
     of importance or urgency. Clicking on the question mark to the right of
     the priority field provides a description of each option.
   Components
-    Each issue is labeled with the Toolkit component it 
+    Each issue is labeled with the Axom component it 
     applies to. Other "component" labels indicate build system issues, 
     documentation issues, etc. 
   Assignee
@@ -475,7 +472,7 @@ The Atlassian admin will take care of associating your approved agent with your 
 
 Restarting the Agent:
  On occasion, the agent can die.  This results in bamboo jobs being queued and stalled until the agent is restarted.  
- You must have access to the toolkit 'ATK' user to restart the agent. 
+ You must have access to the toolkit 'atk' user to restart the agent. 
  To manually restart the CZ agent: ::
 
   $ ssh cab687 xsu atk

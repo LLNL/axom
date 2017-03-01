@@ -15,10 +15,10 @@
            It needs to be updated, checked for correctness, gaps filled in, etc.
 
 ======================================================
-Adding a New CS Toolkit Component
+Adding a New Axom Component
 ======================================================
 
-This section describes how to modify the Toolkit build system when 
+This section describes how to modify the Axom build system when 
 adding a new component.
 
 1. Create the folder for the new component, inside the components directory.
