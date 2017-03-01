@@ -26,7 +26,8 @@
   #include "slic/GenericOutputStream.hpp"
 #endif
 
-#include "quest/BoundingBox.hpp"
+#include "primal/BoundingBox.hpp"
+
 #include "quest/InOutOctree.hpp"
 #include "quest/SignedDistance.hpp"
 

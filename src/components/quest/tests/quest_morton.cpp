@@ -12,7 +12,7 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Point.hpp"
+#include "primal/Point.hpp"
 #include "quest/MortonIndex.hpp"
 
 #include "slic/UnitTestLogger.hpp"
@@ -29,6 +29,8 @@ using asctoolkit::slic::UnitTestLogger;
 #ifdef MORTON_TESTER_SHOULD_SEED
   #include <ctime>      // for time() used by srand()
 #endif
+
+using axom::primal::Point;
 
 namespace {
 
@@ -47,9 +49,9 @@ namespace {
     }
 
     template<typename CoordType, int DIM>
-    quest::Point<CoordType, DIM> randomPoint(CoordType beg, CoordType end)
+    Point<CoordType, DIM> randomPoint(CoordType beg, CoordType end)
     {
-        quest::Point<CoordType,DIM> pt;
+        Point<CoordType,DIM> pt;
         for(int i=0; i< DIM; ++i)
             pt[i] = randomInt(beg,end);
 

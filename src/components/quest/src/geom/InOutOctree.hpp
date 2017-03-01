@@ -12,12 +12,15 @@
 #include "common/Timer.hpp"
 #include "common/Utilities.hpp"
 
-#include "quest/BoundingBox.hpp"
-#include "quest/Intersection.hpp"
-#include "quest/Orientation.hpp"
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
-#include "quest/SquaredDistance.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
+#include "primal/Vector.hpp"
+
+#include "primal/intersection.hpp"
+#include "primal/orientation.hpp"
+#include "primal/squared_distance.hpp"
+
 
 #include "slic/slic.hpp"
 
@@ -27,7 +30,6 @@
 #include "slam/StaticVariableRelation.hpp"
 
 #include "quest/SpatialOctree.hpp"
-#include "quest/Triangle.hpp"
 
 #include "mint/Mesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
@@ -510,7 +512,7 @@ private:
         /** \brief A constant for the number of boundary vertices in a triangle */
         static const int NUM_TRI_VERTS = 3;
 
-        typedef Triangle<double, DIM> SpaceTriangle;
+        typedef axom::primal::Triangle<double, DIM> SpaceTriangle;
 
 
         typedef asctoolkit::slam::PositionSet MeshVertexSet;
@@ -2036,7 +2038,7 @@ void InOutOctree<DIM>::printOctreeStats() const
         typedef std::map<int,int> LogHistogram;
         LogHistogram triCountHist;        // Create histogram of edge lengths (log scale)
 
-        typedef quest::BoundingBox<double,1> MinMaxRange;
+        typedef axom::primal::BoundingBox<double,1> MinMaxRange;
         typedef MinMaxRange::PointType LengthType;
 
         typedef std::map<int,MinMaxRange> LogRangeMap;

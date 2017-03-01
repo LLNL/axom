@@ -15,9 +15,10 @@
 #include "common/CommonTypes.hpp"
 #include "common/Timer.hpp"
 
+#include "primal/orientation.hpp"
+#include "primal/Triangle.hpp"
+
 #include "quest/InOutOctree.hpp"
-#include "quest/Orientation.hpp"
-#include "quest/Triangle.hpp"
 
 #include "mint/Mesh.hpp"
 
