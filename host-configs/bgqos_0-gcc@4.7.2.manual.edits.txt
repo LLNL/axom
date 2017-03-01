@@ -10,7 +10,7 @@
 ##############################################################################
 set(ENABLE_MPI ON CACHE PATH "")
 set(MPI_C_COMPILER "/usr/local/tools/compilers/ibm/mpicc-4.8.4-fastmpi" CACHE PATH "")
-set(MPI_CXX_COMPILER "/usr/apps/gnu/clang/llnl/bin/mpicxx-4.7.2-fastmpi" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2-fastmpi" CACHE PATH "")
 set(MPI_Fortran_COMPILER  "/usr/local/tools/compilers/ibm/mpif90-4.8.4-fastmpi" CACHE PATH "")
 
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
