@@ -313,7 +313,8 @@ CMake options
 ^^^^^^^^^^^^^^^
 
 .. note :: Summarize (in table) CMake options that users may want to provide
-           Check what's there now for correctness.
+           Check what's there now for correctness. Move options for developers
+           into separate table her (for convenience) or to Dev Guide?
 
 +-----------------------------------+-------------------------------+--------+
 |OPTION                             |   Description                 | Default|
