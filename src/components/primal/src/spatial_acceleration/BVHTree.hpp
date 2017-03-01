@@ -927,8 +927,8 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
   buckets_to_check.reserve( BVHTree::pow2( m_numLevels-1 ) );
 
   // STEP 2: pre-populate buffer with the two buckets in level one
-  buckets_to_check. push_back(  1 );
-  buckets_to_check. push_back(  2 );
+  buckets_to_check.push_back(  1 );
+  buckets_to_check.push_back(  2 );
 
   // STEP 3: iteratively descend down in the hierarchy, pruning away
   // buckets that are too far away from the query point, pt, until a
@@ -989,8 +989,8 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
 
       if ( keep && m_tree[ bucketIdx ].Refined ) {
 
-        buckets_to_check. push_back(  BVHTree::left_child( bucketIdx ) );
-        buckets_to_check. push_back(  BVHTree::right_child( bucketIdx ) );
+        buckets_to_check.push_back(  BVHTree::left_child( bucketIdx ) );
+        buckets_to_check.push_back(  BVHTree::right_child( bucketIdx ) );
 
       }    // END if
       else if ( keep && !m_tree[ bucketIdx ].Void ) {

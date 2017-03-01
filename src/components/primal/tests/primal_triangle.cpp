@@ -97,14 +97,14 @@ TEST( primal_triangle, triangle_barycentric)
   TestVec testData;
 
   // Test the three vertices
-  testData. push_back(  std::make_pair( pt[0], QPoint::make_point(1.,0.,0.)));
-  testData. push_back(  std::make_pair( pt[1], QPoint::make_point(0.,1.,0.)));
-  testData. push_back(  std::make_pair( pt[2], QPoint::make_point(0.,0.,1.)));
+  testData.push_back(  std::make_pair( pt[0], QPoint::make_point(1.,0.,0.)));
+  testData.push_back(  std::make_pair( pt[1], QPoint::make_point(0.,1.,0.)));
+  testData.push_back(  std::make_pair( pt[2], QPoint::make_point(0.,0.,1.)));
 
   // Test the three edge midpoints
-  testData. push_back(  std::make_pair(
-                          QPoint( 0.5 * (pt[0].array() + pt[1].array())),
-                          QPoint::make_point(0.5,0.5,0.)));
+  testData.push_back(  std::make_pair(
+                         QPoint( 0.5 * (pt[0].array() + pt[1].array())),
+                         QPoint::make_point(0.5,0.5,0.)));
   testData.push_back( std::make_pair(
                         QPoint( 0.5 * (pt[0].array() + pt[2].array())),
                         QPoint::make_point(0.5,0.,0.5)));
@@ -179,10 +179,10 @@ TEST( primal_triangle, triangle_2D_point_containment)
   // Tests that should fail:
   // Point not coplanar with tri (only applicable in 3D)
   // Points outside triangle boundaries
-  failures. push_back(QPoint::make_point(1, 1.01));
-  failures. push_back(QPoint::make_point(50, 1000));
+  failures.push_back(QPoint::make_point(1, 1.01));
+  failures.push_back(QPoint::make_point(50, 1000));
   // Points very close to vertices
-  failures. push_back(QPoint::make_point(1.00001, 1.000001));
+  failures.push_back(QPoint::make_point(1.00001, 1.000001));
 
   // Actually run the tests
   for (TestVec::const_iterator it = successes.begin(); it != successes.end();
@@ -231,14 +231,14 @@ TEST( primal_triangle, triangle_3D_point_containment)
 
   // Tests that should fail:
   // Point not coplanar with tri (only applicable in 3D)
-  failures. push_back(QPoint::make_point(0.2, 0.15, 0.00001));
-  failures. push_back(QPoint::make_point(0.6, 0.3, 0.1));
-  failures. push_back(QPoint::make_point(0.9999, 0.99, -0.0000001));
+  failures.push_back(QPoint::make_point(0.2, 0.15, 0.00001));
+  failures.push_back(QPoint::make_point(0.6, 0.3, 0.1));
+  failures.push_back(QPoint::make_point(0.9999, 0.99, -0.0000001));
   // Points outside triangle boundaries
-  failures. push_back(QPoint::make_point(1, 1.01, 0));
-  failures. push_back(QPoint::make_point(50, 1000, 0));
+  failures.push_back(QPoint::make_point(1, 1.01, 0));
+  failures.push_back(QPoint::make_point(50, 1000, 0));
   // Points very close to vertices
-  failures. push_back(QPoint::make_point(1.00001, 1.000001, 0));
+  failures.push_back(QPoint::make_point(1.00001, 1.000001, 0));
 
   // Actually run the tests
   for (TestVec::const_iterator it = successes.begin(); it != successes.end();

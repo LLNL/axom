@@ -84,7 +84,7 @@ bool operator!=( const NumericArray< T,SIZE >& lhs,
  */
 template < typename T,int SIZE >
 NumericArray< T,SIZE > operator+( const NumericArray< T,SIZE >& lhs,
-                                   const NumericArray< T,SIZE >& rhs  );
+                                  const NumericArray< T,SIZE >& rhs  );
 
 /*!
  *******************************************************************************
@@ -96,7 +96,7 @@ NumericArray< T,SIZE > operator+( const NumericArray< T,SIZE >& lhs,
  */
 template < typename T,int SIZE >
 NumericArray< T,SIZE > operator-( const NumericArray< T,SIZE >& lhs,
-                                   const NumericArray< T,SIZE >& rhs  );
+                                  const NumericArray< T,SIZE >& rhs  );
 
 /*!
  *******************************************************************************
@@ -118,7 +118,7 @@ NumericArray< T,SIZE > operator-( const NumericArray< T,SIZE >& arr );
  */
 template < typename T,int SIZE >
 NumericArray< T,SIZE > operator*( const NumericArray< T, SIZE > & arr,
-                                   double scalar );
+                                  double scalar );
 
 /*!
  *******************************************************************************
@@ -130,7 +130,7 @@ NumericArray< T,SIZE > operator*( const NumericArray< T, SIZE > & arr,
  */
 template < typename T,int SIZE >
 NumericArray< T,SIZE > operator*( double scalar,
-                                   const NumericArray< T, SIZE > & arr );
+                                  const NumericArray< T, SIZE > & arr );
 
 /*!
  *******************************************************************************
@@ -142,7 +142,7 @@ NumericArray< T,SIZE > operator*( double scalar,
  */
 template < typename T,int SIZE >
 NumericArray< T,SIZE > operator*( const NumericArray< T, SIZE > & lhs,
-                                   const NumericArray< T, SIZE > & rhs  );
+                                  const NumericArray< T, SIZE > & rhs  );
 
 /*!
  *******************************************************************************
@@ -155,7 +155,7 @@ NumericArray< T,SIZE > operator*( const NumericArray< T, SIZE > & lhs,
  */
 template < typename T,int SIZE >
 NumericArray< T,SIZE > operator/( const NumericArray< T, SIZE > & lhs,
-                                   const NumericArray< T, SIZE > & rhs  );
+                                  const NumericArray< T, SIZE > & rhs  );
 
 /*!
  *******************************************************************************
@@ -168,7 +168,7 @@ NumericArray< T,SIZE > operator/( const NumericArray< T, SIZE > & lhs,
  */
 template < typename T,int SIZE >
 NumericArray< T,SIZE > operator/( const NumericArray< T, SIZE >& arr,
-                                   double scalar );
+                                  double scalar );
 
 /*!
  *******************************************************************************
@@ -783,7 +783,7 @@ std::ostream& operator<<(std::ostream & os, const NumericArray< T,SIZE > & arr)
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
 inline NumericArray< T,SIZE > operator*( const NumericArray< T,SIZE >& arr,
-                                          double scalar)
+                                         double scalar)
 {
   NumericArray< T,SIZE > result(arr);
   result *=scalar;
@@ -793,7 +793,7 @@ inline NumericArray< T,SIZE > operator*( const NumericArray< T,SIZE >& arr,
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
 inline NumericArray< T,SIZE > operator*( double scalar,
-                                          const NumericArray< T,SIZE >& arr)
+                                         const NumericArray< T,SIZE >& arr)
 {
   NumericArray< T, SIZE > result(arr);
   result *=scalar;
@@ -803,7 +803,7 @@ inline NumericArray< T,SIZE > operator*( double scalar,
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
 inline NumericArray< T,SIZE > operator+( const NumericArray< T,SIZE >& lhs,
-                                          const NumericArray< T,SIZE >& rhs)
+                                         const NumericArray< T,SIZE >& rhs)
 {
   NumericArray< T, SIZE > result(lhs);
   result += rhs;
@@ -813,7 +813,7 @@ inline NumericArray< T,SIZE > operator+( const NumericArray< T,SIZE >& lhs,
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
 inline NumericArray< T,SIZE > operator*( const NumericArray< T,SIZE >& lhs,
-                                          const NumericArray< T,SIZE >& rhs)
+                                         const NumericArray< T,SIZE >& rhs)
 {
   NumericArray< T,SIZE > result(lhs);
   result *= rhs;
@@ -823,7 +823,7 @@ inline NumericArray< T,SIZE > operator*( const NumericArray< T,SIZE >& lhs,
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
 inline NumericArray< T,SIZE > operator/( const NumericArray< T,SIZE >& lhs,
-                                          const NumericArray< T,SIZE >& rhs)
+                                         const NumericArray< T,SIZE >& rhs)
 {
   NumericArray< T,SIZE > result(lhs);
   result /= rhs;
@@ -833,7 +833,7 @@ inline NumericArray< T,SIZE > operator/( const NumericArray< T,SIZE >& lhs,
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
 inline NumericArray< T,SIZE > operator/( const NumericArray< T,SIZE >& arr,
-                                          double scalar)
+                                         double scalar)
 {
   NumericArray< T, SIZE > result(arr);
   result /=scalar;
@@ -843,7 +843,7 @@ inline NumericArray< T,SIZE > operator/( const NumericArray< T,SIZE >& arr,
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
 inline NumericArray< T,SIZE > operator-( const NumericArray< T,SIZE >& lhs,
-                                          const NumericArray< T,SIZE >& rhs)
+                                         const NumericArray< T,SIZE >& rhs)
 {
   NumericArray< T,SIZE > result(lhs);
   result -= rhs;

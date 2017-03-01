@@ -32,7 +32,7 @@ TEST( primal_numeric_array, constructors)
 
   CoordType val = 5.;
   QArray arr2(val);
-  EXPECT_EQ (QArray::size(), DIM );
+  EXPECT_EQ(QArray::size(), DIM );
   for (int i=0; i< DIM; ++i) {
     EXPECT_EQ(arr2[i], val );
   }

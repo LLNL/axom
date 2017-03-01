@@ -85,7 +85,7 @@ TEST( primal_boundingBox, bb_ctor_from_twoPoints)
 
   //
   SLIC_INFO("\n** Testing from pairs of points that are "
-             << "max and min of the bounding box" );
+            << "max and min of the bounding box" );
 
   QBBox bbox2(pt2, pt1);
 
@@ -97,7 +97,7 @@ TEST( primal_boundingBox, bb_ctor_from_twoPoints)
 
   //
   SLIC_INFO( "\n** Testing from pairs of points that are "
-            << "not the smallest and largest of the bounding box" );
+             << "not the smallest and largest of the bounding box" );
 
   const int val = 10;
   QPoint pt101 = QPoint::make_point(val,0,val);

@@ -389,8 +389,8 @@ inline bool intersectCoplanar3DTriangles(const Point3& p1,
   else if (isGt(normal[1],normal[2]) && isGeq(normal[1],normal[0])) {
     //if y projection area greatest, project on XZ and return 2D checker
     const Triangle2 t1_2da = Triangle2(Point2::make_point(q1[0],q1[2]),
-                                       Point2:: make_point( p1[0],p1[2]),
-                                       Point2:: make_point( r1[0],r1[2]));
+                                       Point2::make_point( p1[0],p1[2]),
+                                       Point2::make_point( r1[0],r1[2]));
 
     const Triangle2 t2_2da = Triangle2(Point2::make_point(q2[0],q2[2]),
                                        Point2::make_point( p2[0],p2[2]),
@@ -961,7 +961,6 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
 #define XEDGE_R( _E0, _E1, _F0, _F1, _IND ) \
   e[ _E0 ] * std::abs( f[ _IND ][ _F0 ]) +  \
   e[ _E1 ] * std::abs(f[ _IND ][ _F1 ])
-
 
 #define XEDGE_S( _V0, _V1, _F0, _F1, _VIND, _FIND ) \
   -v[ _VIND ][ _V0 ] * f[ _FIND ][ _F0 ] \

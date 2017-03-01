@@ -226,8 +226,8 @@ TEST( primal_intersection, triangle_aabb_intersection )
   EXPECT_TRUE( primal::intersect(xyTri, bbOrigin) );
 
   BoundingBoxType bbOrigin2(PointType::zero() );
-  bbOrigin. addPoint( PointType(-1.));
-  bbOrigin. addPoint( PointType::make_point(-1.,1.,1.));
+  bbOrigin.addPoint( PointType(-1.));
+  bbOrigin.addPoint( PointType::make_point(-1.,1.,1.));
   SLIC_INFO(
     "Testing bounding box: " << bbOrigin2<< " against triangle " << xyTri <<
     ".  Note -- BB should not intersect triangle");
@@ -417,11 +417,11 @@ TEST( primal_intersection, 2D_triangle_triangle_intersection )
 
   triA = Triangle2( Point2::make_point(4.3,4.05),
                     Point2::make_point(-1.0,-0.06),
-                    Point2:: make_point( 7.3, -1.3) );
+                    Point2::make_point( 7.3, -1.3) );
 
   triB = Triangle2( Point2::make_point(1.0, 0.0),
                     Point2::make_point(6.0,0.5),
-                    Point2:: make_point( 4.2,  2.1) );
+                    Point2::make_point( 4.2,  2.1) );
 
   permuteCornersTest(triA, triB, "2D tri B completely contained in tri A",
                      true);
@@ -803,7 +803,7 @@ TEST( primal_intersection, 3D_triangle_triangle_intersection )
   }
 
   SLIC_INFO( "Ran " << rantests << " and skipped " << skiptests <<
-    " tests due to triangle degeneracy." );
+             " tests due to triangle degeneracy." );
 
   asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
 }
