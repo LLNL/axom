@@ -48,6 +48,9 @@ namespace slam {
 
   public:
 
+
+    bool hasField(const KeyType & key) const { return m_maps.find(key) != m_maps.end(); }
+
     MapType&  addField(KeyType key, Set const* theSet) { return m_maps[key] = MapType(theSet); }
 
     MapType&  addNamelessField(Set const* theSet)
@@ -72,6 +75,7 @@ namespace slam {
     }
 
 
+    bool hasBuffer(const KeyType & key) const { return m_buff.find(key) != m_buff.end(); }
 
     BufferType& addBuffer(KeyType key, int size = 0)     { return m_buff[key] = BufferType(size); }
 
@@ -87,6 +91,7 @@ namespace slam {
     }
 
 
+    bool hasScalar(const KeyType & key) const { return m_scal.find(key) != m_scal.end(); }
 
     DataType& addScalar(KeyType key, DataType val)     { return m_scal[key] = val; }
 
@@ -108,17 +113,17 @@ namespace slam {
       return axom::slam::util::TypeToString<DataType>::to_string();
     }
 
-    inline void verifyFieldsKey(KeyType AXOM_DEBUG_PARAM(key)) const {
-      SLIC_ASSERT_MSG( m_maps.find(key) != m_maps.end()
+    inline void verifyFieldsKey(const KeyType& AXOM_DEBUG_PARAM(key)) const {
+      SLIC_ASSERT_MSG( hasField(key)
           , "Didn't find " << dataTypeString() << " field named " << key );
     }
 
-    inline void verifyBufferKey(KeyType AXOM_DEBUG_PARAM(key)) const {
-      SLIC_ASSERT_MSG( m_buff.find(key) != m_buff.end(),
+    inline void verifyBufferKey(const KeyType & AXOM_DEBUG_PARAM(key)) const {
+      SLIC_ASSERT_MSG( hasBuffer(key),
           "Didn't find " << dataTypeString() << " buffer named " << key );
     }
-    inline void verifyScalarKey(KeyType AXOM_DEBUG_PARAM(key)) const {
-      SLIC_ASSERT_MSG( m_scal.find(key) != m_scal.end(),
+    inline void verifyScalarKey(const KeyType & AXOM_DEBUG_PARAM(key)) const {
+      SLIC_ASSERT_MSG( hasScalar(key),
           "Didn't find " << dataTypeString() << " scalar named " << key );
     }
 
