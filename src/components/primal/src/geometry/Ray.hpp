@@ -39,6 +39,9 @@ std::ostream& operator<<(std::ostream & os, const Ray< T,NDIMS > & ray);
  * \brief Represents a ray, \f$ R(t) \in \mathcal{R}^d \f$ , defined by an
  *  origin point, \f$ P \f$ and a normalized direction vector, \f$ \vec{d} \f$,
  *  \f$ \ni R(t)= P + t\vec{d} \forall t \ge 0 \f$
+ *
+ * \tparam T the coordinate type, e.g., double, float, etc.
+ * \tparam NDIMS the number of dimensions
  *******************************************************************************
  */
 template < typename T, int NDIMS >

@@ -61,6 +61,9 @@ std::ostream& operator<<(std::ostream & os, const Point< T,NDIMS > & pt);
  *
  * \brief The point class represents a point, \f$ p \in \mathcal{R}^d \f$ . It
  *  provides access methods to set and query the point coordinates.
+ *
+ * \tparam T the coordinate type, e.g., double, float, etc.
+ * \tparam NDIMS the number of dimensions
  *******************************************************************************
  */
 template < typename T, int NDIMS >
@@ -100,7 +103,7 @@ public:
    *****************************************************************************
    * \brief Creates a point from the first sz values of the input array.
    * \param [in] vals An array containing at least sz values
-   * \param [in] sz number of coordinates to copy from bals. Defaults to NDIMS.
+   * \param [in] sz num values to copy from the vals array. Defaults to NDIMS.
    * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    *****************************************************************************
    */
@@ -139,6 +142,9 @@ public:
   Point& operator=(const Point& rhs)
   { m_components=rhs.m_components; return *this; }
 
+  /// \name Overloaded [] operator msethods
+  ///@{
+
   /*!
    *****************************************************************************
    * \brief Access operator for individual components.
@@ -150,6 +156,11 @@ public:
   const T& operator[](int i) const { return m_components[i]; }
   T& operator[](int i)             { return m_components[i]; }
 
+  ///@}
+
+  /// \name Raw data member access methods
+  ///@{
+
   /*!
    *****************************************************************************
    * \brief Returns a pointer to the underlying data.
@@ -157,6 +168,8 @@ public:
    */
   const T* data() const { return m_components.data(); }
   T* data()             { return m_components.data(); }
+
+  ///@}
 
   /*!
    *****************************************************************************

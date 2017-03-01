@@ -117,6 +117,9 @@ std::ostream& operator<<(std::ostream & os, const Vector< T,NDIMS > & vec);
  *  methods for setting and querying the vector components as well as vector
  *  math operators, e.g., adding, subtracting, dot_product and cross_product.
  *
+ * \tparam T the coordinate type, e.g., double, float, etc.
+ * \tparam NDIMS the number of dimensions
+ *
  * \see NumericArray
  * \see Point
  *******************************************************************************
@@ -233,7 +236,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Equality comparison operator for points
+   * \brief Equality comparison operator for vectors.
    *****************************************************************************
    */
   friend bool operator==(const Vector& lhs, const Vector& rhs)

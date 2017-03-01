@@ -34,6 +34,9 @@ namespace primal {
  *  and radius \f$ R \f$ namely a circle in \f$ \mathcal{R}^2 \f$ and sphere in
  *  \f$ \mathcal{R}^3 \f$ Further, the class provides the means to perform
  *  distance and inside/outside queries.
+ *
+ * \tparam T the coordinate type, e.g., double, float, etc.
+ * \tparam NDIMS the number of dimensions
  *******************************************************************************
  */
 template < typename T, int NDIMS >

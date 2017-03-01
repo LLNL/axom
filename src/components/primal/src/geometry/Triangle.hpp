@@ -35,6 +35,15 @@ class Triangle;
 template < typename T,int NDIMS >
 std::ostream& operator<<(std::ostream & os, const Triangle< T,NDIMS > & tri);
 
+/*!
+ *******************************************************************************
+ * \class
+ *
+ * \brief Represents a triangular geometric shape defined by three points.
+ * \tparam T the coordinate type, e.g., double, float, etc.
+ * \tparam NDIMS the number of dimensions
+ *******************************************************************************
+ */
 template < typename T,int NDIMS >
 class Triangle
 {

@@ -42,6 +42,9 @@ namespace primal {
  *  acceleration structure to speed up the performance of point queries on the
  *  given objects, e.g., minimum distance, closest point, orientation, etc.
  *
+ * \tparam T the type of data inserted in a BVH bin
+ * \tparam NDIMS the number of dimensions
+ *
  * \see BoundingBox, Point
  *******************************************************************************
  */

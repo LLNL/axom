@@ -23,6 +23,9 @@ namespace primal {
  * \brief Represents a directed straight line connecting two points
  *  \f$ A,B \in \mathcal{R}^n \f$ where point A is referred to as the source
  *  point and point B is the target.
+ *
+ * \tparam T the coordinate type, e.g., double, float, etc.
+ * \tparam NDIMS the number of dimensions
  *******************************************************************************
  */
 template < typename T,int NDIMS >
@@ -99,7 +102,7 @@ Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B):
 template < typename T, int NDIMS >
 Segment< T,NDIMS >::~Segment() { }
 
-} /* namespacce primal */
+} /* namespace primal */
 
 } /* namespace axom */
 
