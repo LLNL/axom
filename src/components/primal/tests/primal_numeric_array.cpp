@@ -25,14 +25,14 @@ TEST( primal_numeric_array, constructors)
   typedef primal::NumericArray< CoordType, DIM > QArray;
 
   QArray arr1;
-  EXPECT_EQ(arr1.dimension(), DIM );
+  EXPECT_EQ( QArray::size(), DIM );
   for (int i=0; i< DIM; ++i) {
     EXPECT_EQ(arr1[i], CoordType() );
   }
 
   CoordType val = 5.;
   QArray arr2(val);
-  EXPECT_EQ(arr2.dimension(), DIM );
+  EXPECT_EQ (QArray::size(), DIM );
   for (int i=0; i< DIM; ++i) {
     EXPECT_EQ(arr2[i], val );
   }
