@@ -26,7 +26,7 @@
 #include "slic/slic.hpp"
 #include "slic/GenericOutputStream.hpp"
 
-using namespace asctoolkit;
+using namespace axom;
 #define N 10
 
 slic::message::Level getRandomEvent( const int start, const int end )

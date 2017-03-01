@@ -436,7 +436,7 @@ void truncateBulkData(DataGroup* grp, int maxSize)
 /** Sets up the logging using lumberjack */
 void setupLogging()
 {
-    using namespace asctoolkit;
+    using namespace axom;
 
     slic::initialize();
 
@@ -480,7 +480,7 @@ void setupLogging()
 /** Finalizes logging and flushes streams */
 void teardownLogging()
 {
-    asctoolkit::slic::finalize();
+    axom::slic::finalize();
 }
 
 
@@ -510,7 +510,7 @@ int main(int argc, char * argv[])
   allocateExternalData(ds.getRoot(), externalDataPointers);
   manager.loadExternalData(ds.getRoot(), args.m_inputName);
 
-  asctoolkit::slic::flushStreams();
+  axom::slic::flushStreams();
 
   // Internal processing
   if(args.shouldStripData())

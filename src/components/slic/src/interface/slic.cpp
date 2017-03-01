@@ -24,8 +24,7 @@
 #include <sstream>    // for std::ostringstream
 #include <execinfo.h> // for backtrace()
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 

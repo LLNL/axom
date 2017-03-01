@@ -310,7 +310,7 @@ TEST( primal_point, point_linear_interpolation)
 
 //------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

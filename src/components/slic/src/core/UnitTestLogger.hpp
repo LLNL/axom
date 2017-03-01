@@ -25,15 +25,13 @@
 #include "slic.hpp"
 #include "GenericOutputStream.hpp"
 
-namespace asctoolkit
-{
-namespace slic
-{
+namespace axom {
+namespace slic {
 
 /*!
  * \class UnitTestLogger
  *
- * \brief UnitTestLogger is a simple wrapper around the initialization and 
+ * \brief UnitTestLogger is a simple wrapper around the initialization and
  * finalize operations of the slic::Logger class for CS Toolkit unit tests.
  *
  * To use, create an instance of of this class before tests are run. This
@@ -53,7 +51,7 @@ namespace slic
  *     UnitTestLogger logger;
  *
  *     result = RUN_ALL_TESTS();
- *  
+ *
  *     return 0;
  *  }
  *
@@ -110,7 +108,7 @@ private:
 
 
 } /* end namespace slic */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
 
 #endif /* UNITTESTLOGGER_HPP_ */

@@ -460,19 +460,19 @@ void distance_field( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
 int main( int argc, char** argv )
 {
   // STEP 0: Initialize SLIC Environment
-  slic::initialize();
-  slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
+  axom::slic::initialize();
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug );
 
   // Create a more verbose message for this application (only level and message)
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
-  slic::GenericOutputStream* defaultStream =
-          new slic::GenericOutputStream(&std::cout);
-  slic::GenericOutputStream* compactStream =
-          new slic::GenericOutputStream(&std::cout, slicFormatStr);
-  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Error);
-  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Warning);
-  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Info);
-  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Debug);
+  axom::slic::GenericOutputStream* defaultStream =
+          new axom::slic::GenericOutputStream(&std::cout);
+  axom::slic::GenericOutputStream* compactStream =
+          new axom::slic::GenericOutputStream(&std::cout, slicFormatStr);
+  axom::slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
+  axom::slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
+  axom::slic::addStreamToMsgLevel(compactStream, axom::slic::message::Info);
+  axom::slic::addStreamToMsgLevel(compactStream, axom::slic::message::Debug);
 
   // STEP 1: get file from user or use default
   parse_args( argc, argv );
@@ -547,6 +547,6 @@ int main( int argc, char** argv )
   umesh = ATK_NULLPTR;
 
   // STEP 12: Finalize SLIC environment
-  slic::finalize();
+  axom::slic::finalize();
   return 0;
 }

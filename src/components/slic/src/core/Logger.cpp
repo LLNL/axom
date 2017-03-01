@@ -8,16 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/*!
- *******************************************************************************
- * \file Logger.cpp
- *
- * \date May 7, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *
- *******************************************************************************
- */
-
 #include "Logger.hpp"
 
 #include "LogStream.hpp"
@@ -28,8 +18,7 @@
 // C/C++ includes
 #include <iostream> // for std::cout, std::cerr
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 Logger* Logger::s_Logger = ATK_NULLPTR;
@@ -353,4 +342,4 @@ Logger* Logger::getRootLogger()
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */

@@ -16,7 +16,7 @@
 #include "slic/slic.hpp"
 
 extern "C" {
-namespace asctoolkit {
+namespace axom {
 namespace slic {
 
 void SLIC_initialize()
@@ -183,6 +183,6 @@ void SLIC_log_message_bufferify(int level, const char * message, int Lmessage, c
 // splicer begin additional_functions
 // splicer end additional_functions
 
-}  // namespace asctoolkit
+}  // namespace axom
 }  // namespace slic
 }  // extern "C"

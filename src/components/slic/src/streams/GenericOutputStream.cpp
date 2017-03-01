@@ -22,8 +22,7 @@
 
 #include "common/ATKMacros.hpp"
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 GenericOutputStream::GenericOutputStream( std::ostream* os ):
@@ -68,4 +67,4 @@ void GenericOutputStream::append( message::Level msgLevel,
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */

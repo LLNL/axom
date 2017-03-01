@@ -540,7 +540,7 @@ void refineAndPrint(Octree3D& octree, const SpacePt& queryPt, bool shouldRefine 
 //------------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
-  slic::UnitTestLogger logger;  // create & initialize logger
+  axom::slic::UnitTestLogger logger;  // create & initialize logger
 
   bool hasInputArgs = argc > 1;
 
@@ -591,7 +591,7 @@ int main( int argc, char** argv )
 
   testIntersectionOnRegularGrid();
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
 
   // STEP 6: Create octree over mesh's bounding box and query a point in space
@@ -624,7 +624,7 @@ int main( int argc, char** argv )
 
 
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 
   // Other -- find leaf block of a given query point at various levels of resolution
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Other octree operations "));

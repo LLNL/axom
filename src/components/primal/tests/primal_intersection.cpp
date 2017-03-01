@@ -309,13 +309,13 @@ TEST( primal_intersection, triangle_aabb_intersection_fromData )
   EXPECT_TRUE( primal::intersect(tri, box1 ));
 
   //
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
   SLIC_INFO(
     "Testing point bounding box: " << box2 << " against triangle " << tri );
   EXPECT_TRUE( primal::intersect(tri, box2 ));
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 
   SLIC_INFO(
     "Testing point bounding box: " << box3 << " against triangle " << tri );
@@ -363,7 +363,7 @@ TEST( primal_intersection, triangle_aabb_intersection_fromData2 )
   BoundingBoxType box4( PointType::make_point(0,4.375,0),
                         PointType::make_point(0.625,5,0.625) );
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
   SLIC_INFO(
     "Testing point bounding box: " << box0 << " against triangle " << tri );
@@ -385,7 +385,7 @@ TEST( primal_intersection, triangle_aabb_intersection_fromData2 )
     "Testing point bounding box: " << box4 << " against triangle " << tri );
   EXPECT_TRUE( primal::intersect(tri, box4));
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
 TEST( primal_intersection, 2D_triangle_triangle_intersection )
@@ -805,7 +805,7 @@ TEST( primal_intersection, 3D_triangle_triangle_intersection )
   SLIC_INFO( "Ran " << rantests << " and skipped " << skiptests <<
              " tests due to triangle degeneracy." );
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
 TEST( primal_intersection, triangle_aabb_intersection_boundaryFace )
@@ -825,7 +825,7 @@ TEST( primal_intersection, triangle_aabb_intersection_boundaryFace )
   BoundingBoxType box1( PointType::make_point(0,-10,-10),
                         PointType::make_point(10,10,10) );
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
   SLIC_INFO(
     "Testing point bounding box: " << box0 << " against triangle " << tri );
@@ -854,7 +854,7 @@ TEST( primal_intersection, triangle_aabb_intersection_boundaryFace )
   );
   //EXPECT_TRUE( primal::intersect(tri, box1));
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
 TEST( primal_intersection, ray_aabb_intersection_general3D )
@@ -879,7 +879,7 @@ TEST( primal_intersection, ray_aabb_intersection_general3D )
   BoundingBoxType box1( PointType::make_point(-5.0,-5.0,-5.0),
                         PointType::make_point(-1.0,-1.0,-1.0) );
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
   PointType ip;
 
   bool intersects = primal::intersect(R, box0, ip);
@@ -917,7 +917,7 @@ TEST( primal_intersection, ray_aabb_intersection_tinyDirectionVector3D )
   BoundingBoxType box1( PointType::make_point(-5.0,-5.0,-5.0),
                         PointType::make_point(-1.0,-1.0,-1.0) );
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
   PointType ip;
 
   bool intersects = primal::intersect(R, box0, ip);
@@ -1119,7 +1119,7 @@ TEST(primal_intersection, triangle_ray_intersection)
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
@@ -1129,7 +1129,7 @@ int main(int argc, char * argv[])
 
   UnitTestLogger logger;  // create & initialize test logger,
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 
   // finalized when exiting main scope
 

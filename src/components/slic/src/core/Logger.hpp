@@ -30,8 +30,7 @@
 
 #include "common/ATKMacros.hpp"
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 
@@ -404,6 +403,6 @@ private:
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* LOGGER_HPP_ */

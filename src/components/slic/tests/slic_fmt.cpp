@@ -8,18 +8,20 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
-//-----------------------------------------------------------------------------
-///
-/// file: slic_fmt.cpp
-/// A simple test to see if we can use the fmt library within slic macros
-///
-//-----------------------------------------------------------------------------
+/*!
+ *******************************************************************************
+ * \file
+ *
+ * \brief A simple test to see if we can use the fmt library within slic macros.
+ *******************************************************************************
+ */
 
 #include "fmt/fmt.hpp"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+
+using axom::slic::UnitTestLogger;
 
 #include "gtest/gtest.h"
 
@@ -35,17 +37,16 @@ TEST(slic_fmt, basic_use)
     EXPECT_EQ("Hello world", fmt::format("{1} {0}", "world", "Hello") );
 
     // Python style w/ 'dictionary'
-    SLIC_INFO( fmt::format("Hello, {name}! Goodbye, {name}."
-            , fmt::arg("name", "ASC Toolkit") ));
-    EXPECT_EQ("Hello, ASC Toolkit! Goodbye, ASC Toolkit."
-            , fmt::format("Hello, {name}! Goodbye, {name}.", fmt::arg("name", "ASC Toolkit") ) );
-
+    SLIC_INFO( fmt::format("Hello, {name}! Goodbye, {name}.",
+               fmt::arg("name", "ASC Toolkit") ));
+    EXPECT_EQ( "Hello, ASC Toolkit! Goodbye, ASC Toolkit.",
+                fmt::format("Hello, {name}! Goodbye, {name}.",
+                fmt::arg("name", "ASC Toolkit") ) );
 
     // Python style with additional formatting
-    SLIC_INFO(fmt::format("int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42) );
-    EXPECT_EQ("int: 42;  hex: 2a;  oct: 52; bin: 101010"
-            , fmt::format("int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42));
-
+    SLIC_INFO(fmt::format("int:{0:d};  hex:{0:x};  oct:{0:o}; bin:{0:b}", 42));
+    EXPECT_EQ( "int:42;  hex:2a;  oct:52; bin:101010",
+               fmt::format("int:{0:d};  hex:{0:x};  oct:{0:o}; bin:{0:b}", 42));
 
     // sprintf style
     SLIC_INFO( fmt::sprintf("Two significant digits: %.2f", 1.234567) );

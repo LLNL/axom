@@ -13,7 +13,7 @@
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 /**
  * \file
@@ -32,7 +32,7 @@ namespace {
         AssertCtor() { SLIC_ASSERT_MSG(false,"Testing assert in .ctor"); }
     };
 
-    /** 
+    /**
      *  A simple struct with an assert in a method (foo)
      */
     struct AssertMethod
@@ -40,16 +40,16 @@ namespace {
         void foo() { SLIC_ASSERT_MSG(false,"Testing assert in class method"); }
     };
 
-    /** 
+    /**
      *  A simple struct with an assert in the destructor
      */
     struct AssertDtor
     {
         ~AssertDtor() { SLIC_ASSERT_MSG(false,"Testing assert in .dtor"); }
     };
-   
-      
-    /** 
+
+
+    /**
      *  A simple testing fixture with a SLIC_WARNING in the constructor.
      *  Note: gtest ASSERT_DEATH has a return, so it cannot be used in a constructor.
      */
@@ -59,7 +59,7 @@ namespace {
         SetFixtureC() { SLIC_WARNING("Testing warning in fixture .ctor -- this warning message should be logged"); }
     };
 
-    /** 
+    /**
      *  A simple testing fixture with an assert in the SetUp function.
      */
     class SetFixtureS : public ::testing::Test
@@ -73,8 +73,8 @@ namespace {
           #endif
         }
     };
-    
-    /** 
+
+    /**
      *  A simple testing fixture with an assert in the TearDown function.
      */
     class SetFixtureT : public ::testing::Test
@@ -88,18 +88,18 @@ namespace {
           #endif
         }
     };
-    
-    /** 
+
+    /**
      *  A simple testing fixture with a SLIC_WARNING in the destructor.
      *  Note: gtest ASSERT_DEATH has a return, so it cannot be used in a destructor.
      *
-     */    
+     */
     class SetFixtureD : public::testing::Test
     {
     public:
         ~SetFixtureD() { SLIC_WARNING("Testing warning in fixture .dtor -- this warning message should be logged"); }
-    };    
-    
+    };
+
 }
 
 // ********  A series of tests exercising SLIC_ASSERT

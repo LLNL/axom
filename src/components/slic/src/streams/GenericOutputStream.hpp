@@ -29,8 +29,7 @@
 // C/C++ includes
 #include <iostream> // for ostream
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 /*!
@@ -101,6 +100,6 @@ private:
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* GENERICOUTPUTSTREAM_HPP_ */

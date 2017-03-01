@@ -26,7 +26,7 @@
 #include "slic/slic.hpp"
 #include "slic/GenericOutputStream.hpp"
 
-using namespace asctoolkit;
+using namespace axom;
 
 namespace physicsB {
 

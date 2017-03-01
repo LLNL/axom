@@ -53,7 +53,7 @@
 do {                                                                          \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);         \
+    axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);               \
 } while ( 0 )
 
 /*!
@@ -77,7 +77,7 @@ do {                                                                          \
   if ( EXP ) {                                                                \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__);           \
+    axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__);                 \
   }                                                                           \
 } while( 0 )
 
@@ -104,7 +104,7 @@ do {                                                                          \
 do {                                                                          \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__, __LINE__ );       \
+    axom::slic::logWarningMessage(oss.str(),__FILE__, __LINE__ );             \
 } while ( 0 )
 
 /*!
@@ -127,7 +127,7 @@ do {                                                                          \
   if ( EXP ) {                                                                \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );        \
+    axom::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );              \
   }                                                                           \
 } while( 0 )
 
@@ -160,7 +160,7 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Assert: " << # EXP << std::ends;                           \
-    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );          \
+    axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );                \
   }                                                                           \
 } while ( 0 )
 
@@ -186,7 +186,7 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;       \
-    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );          \
+    axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );                \
   }                                                                           \
 } while ( 0 )
 
@@ -217,11 +217,11 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Check: " << # EXP << std::ends;                            \
-    if (asctoolkit::slic::debug::checksAreErrors) {                           \
-      asctoolkit::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);       \
+    if (axom::slic::debug::checksAreErrors) {                                 \
+      axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);             \
     }                                                                         \
     else {                                                                    \
-      asctoolkit::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);     \
+      axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);           \
     }                                                                         \
   }                                                                           \
 } while ( 0 )
@@ -247,11 +247,11 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Check: " << # EXP << std::endl << msg <<  std::ends;       \
-    if (asctoolkit::slic::debug::checksAreErrors) {                           \
-      asctoolkit::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);       \
+    if (axom::slic::debug::checksAreErrors) {                                 \
+      axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);             \
     }                                                                         \
     else {                                                                    \
-      asctoolkit::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);     \
+      axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);           \
     }                                                                         \
   }                                                                           \
 } while ( 0 )
@@ -287,7 +287,7 @@ do {                                                                          \
 do {                                                                          \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logMessage(asctoolkit::slic::message::Info              \
+    axom::slic::logMessage(axom::slic::message::Info                          \
                                , oss.str()                                    \
                                ,__FILE__                                      \
                                , __LINE__ );                                  \
@@ -314,7 +314,7 @@ do {                                                                          \
 do {                                                                          \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logMessage(asctoolkit::slic::message::Debug             \
+    axom::slic::logMessage(axom::slic::message::Debug                         \
                                , oss.str()                                    \
                                ,__FILE__                                      \
                                , __LINE__ );                                  \
@@ -329,9 +329,7 @@ do {                                                                          \
 
 
 
-namespace asctoolkit {
-
-
+namespace axom {
 namespace slic {
 
 struct debug

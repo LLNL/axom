@@ -10,7 +10,7 @@
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 #include "mint/CellType.hpp"
 #include "mint/MeshType.hpp"

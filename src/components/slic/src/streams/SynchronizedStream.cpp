@@ -24,7 +24,7 @@
 #include "common/ATKMacros.hpp"
 #include "common/StringUtilities.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slic {
 
 struct SynchronizedStream::MessageCache
@@ -170,4 +170,4 @@ void SynchronizedStream::flush()
 }
 
 } /* namespace slic */
-} /* namespace asctoolkit */
+} /* namespace axom */

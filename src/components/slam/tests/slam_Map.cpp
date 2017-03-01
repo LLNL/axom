@@ -24,7 +24,7 @@
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 
 typedef asctoolkit::slam::RangeSet    SetType;
@@ -120,7 +120,7 @@ int main(int argc, char * argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info );
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
   // finalized when exiting main scope
 
