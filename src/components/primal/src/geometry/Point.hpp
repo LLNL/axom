@@ -142,7 +142,7 @@ public:
   Point& operator=(const Point& rhs)
   { m_components=rhs.m_components; return *this; }
 
-  /// \name Overloaded [] operator msethods
+  /// \name Overloaded [] operator methods
   ///@{
 
   /*!

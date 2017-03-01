@@ -157,7 +157,7 @@ public:
    * \param [in] vals An array containing at least sz values
    * \param [in] sz The number of coordinates to take from the array.  Defaults
    * to NDIMS.
-   * It sz is greater than NDIMS, we only take the first NDIMS values.
+   * If sz is greater than NDIMS, we only take the first NDIMS values.
    *****************************************************************************
    */
   Vector(T* vals, int sz = NDIMS): m_components(vals, sz) {}
