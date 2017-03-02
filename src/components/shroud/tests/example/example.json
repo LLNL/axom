@@ -2550,7 +2550,7 @@
             "c_type": "SIDRE_datagroup", 
             "cpp_header": "sidre/DataGroup.hpp", 
             "cpp_local_var": true, 
-            "cpp_type": "asctoolkit::sidre::DataGroup", 
+            "cpp_type": "axom::sidre::DataGroup", 
             "f_module": {
                 "sidre_mod": [
                     "datagroup"

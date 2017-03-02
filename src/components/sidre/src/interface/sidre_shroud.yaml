@@ -14,7 +14,7 @@ copyright:
 
 library: Sidre
 # cpp_header: each class has its own header file
-namespace: asctoolkit sidre
+namespace: axom sidre
 
 options:
   C_prefix: SIDRE_

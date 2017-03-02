@@ -195,7 +195,7 @@ PP_testgroup1(
   PyObject *kwds)
 {
 // splicer begin function.testgroup1
-    asctoolkit::sidre::DataGroup * grp;
+    axom::sidre::DataGroup * grp;
     PyObject * SH_Py_grp;
     const char *SH_kwcpp = "grp";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
@@ -205,7 +205,7 @@ PP_testgroup1(
     {
         return NULL;
     }
-    asctoolkit::sidre::DataGroup * SH_grp = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(grp));
+    axom::sidre::DataGroup * SH_grp = static_cast<axom::sidre::DataGroup *>(static_cast<void *>(grp));
     testgroup1(SH_grp);
     Py_RETURN_NONE;
 // splicer end function.testgroup1
@@ -222,7 +222,7 @@ PP_testgroup2(
   PyObject *kwds)
 {
 // splicer begin function.testgroup2
-    const asctoolkit::sidre::DataGroup * grp;
+    const axom::sidre::DataGroup * grp;
     PyObject * SH_Py_grp;
     const char *SH_kwcpp = "grp";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
@@ -232,7 +232,7 @@ PP_testgroup2(
     {
         return NULL;
     }
-    const asctoolkit::sidre::DataGroup * SH_grp = static_cast<const asctoolkit::sidre::DataGroup *>(static_cast<const void *>(grp));
+    const axom::sidre::DataGroup * SH_grp = static_cast<const axom::sidre::DataGroup *>(static_cast<const void *>(grp));
     testgroup2(SH_grp);
     Py_RETURN_NONE;
 // splicer end function.testgroup2

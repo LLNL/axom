@@ -62,7 +62,7 @@ types:
   # DataGroup is a type which is provided by another shroud wrapped library
   DataGroup:
     cpp_header: sidre/DataGroup.hpp
-    cpp_type: asctoolkit::sidre::DataGroup
+    cpp_type: axom::sidre::DataGroup
     f_type: type(datagroup)
     f_module:
       sidre_mod: [ datagroup ]

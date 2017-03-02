@@ -139,7 +139,7 @@ void AA_testmpi(MPI_Fint comm)
 void AA_testgroup1(SIDRE_datagroup * grp)
 {
 // splicer begin function.testgroup1
-    asctoolkit::sidre::DataGroup * SH_grp = static_cast<asctoolkit::sidre::DataGroup *>(static_cast<void *>(grp));
+    axom::sidre::DataGroup * SH_grp = static_cast<axom::sidre::DataGroup *>(static_cast<void *>(grp));
     testgroup1(SH_grp);
     return;
 // splicer end function.testgroup1
@@ -150,7 +150,7 @@ void AA_testgroup1(SIDRE_datagroup * grp)
 void AA_testgroup2(const SIDRE_datagroup * grp)
 {
 // splicer begin function.testgroup2
-    const asctoolkit::sidre::DataGroup * SH_grp = static_cast<const asctoolkit::sidre::DataGroup *>(static_cast<const void *>(grp));
+    const axom::sidre::DataGroup * SH_grp = static_cast<const axom::sidre::DataGroup *>(static_cast<const void *>(grp));
     testgroup2(SH_grp);
     return;
 // splicer end function.testgroup2
