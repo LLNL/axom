@@ -50,7 +50,7 @@ void DataStoreConduitErrorHandler( const std::string& message,
                                    const std::string& fileName,
                                    int line )
 {
-  slic::logErrorMessage( message, fileName, line );
+  axom::slic::logErrorMessage( message, fileName, line );
 }
 
 
@@ -65,7 +65,7 @@ void DataStoreConduitWarningHandler( const std::string& message,
                                      const std::string& fileName,
                                      int line )
 {
-  slic::logWarningMessage( message, fileName, line );
+  axom::slic::logWarningMessage( message, fileName, line );
 }
 
 /*
@@ -80,7 +80,7 @@ void DataStoreConduitInfoHandler( const std::string& message,
                                   const std::string& fileName,
                                   int line )
 {
-  slic::logMessage( slic::message::Info, message, fileName, line );
+  axom::slic::logMessage( axom::slic::message::Info, message, fileName, line );
 }
 
 /*
@@ -94,9 +94,9 @@ DataStore::DataStore()
   : m_RootGroup(ATK_NULLPTR), m_need_to_finalize_slic(false)
 {
 
-  if ( !slic::isInitialized() )
+  if ( !axom::slic::isInitialized() )
   {
-    slic::initialize();
+    axom::slic::initialize();
 
     std::string format =
       std::string("\n***********************************\n")+
@@ -106,8 +106,8 @@ DataStore::DataStore()
       std::string( "LINE=<LINE>\n" ) +
       std::string("***********************************\n");
 
-    slic::setLoggingMsgLevel( slic::message::Debug );
-    slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout,
+    axom::slic::setLoggingMsgLevel( axom::slic::message::Debug );
+    axom::slic::addStreamToAllMsgLevels( new axom::slic::GenericOutputStream(&std::cout,
                                                                  format) );
 
     m_need_to_finalize_slic = true;
@@ -139,7 +139,7 @@ DataStore::~DataStore()
 
   if ( m_need_to_finalize_slic )
   {
-    slic::finalize();
+    axom::slic::finalize();
   }
 }
 

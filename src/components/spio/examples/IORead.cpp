@@ -33,7 +33,7 @@ using asctoolkit::spio::IOManager;
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   SLIC_ERROR_IF(argc != 2,
       "Missing required command line argument. \n\t"

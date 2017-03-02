@@ -29,8 +29,7 @@
 // C/C++ includes
 #include <iostream> // for ostream
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 /*!
@@ -44,7 +43,7 @@ namespace slic {
  * \see LogStream Logger
  *******************************************************************************
  */
-class GenericOutputStream : public LogStream
+class GenericOutputStream:public LogStream
 {
 public:
 
@@ -92,7 +91,8 @@ private:
    * \note Made private to prevent applications from using it.
    *****************************************************************************
    */
-  GenericOutputStream(): m_stream( static_cast< std::ostream* >( ATK_NULLPTR ) ){};
+  GenericOutputStream(): m_stream( static_cast< std::ostream* >( ATK_NULLPTR ) )
+  {};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);
   DISABLE_MOVE_AND_ASSIGNMENT(GenericOutputStream);
@@ -101,6 +101,6 @@ private:
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* GENERICOUTPUTSTREAM_HPP_ */

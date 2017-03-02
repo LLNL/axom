@@ -30,10 +30,8 @@
 
 #include "common/ATKMacros.hpp"
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
-
 
 // Forward declarations
 class LogStream;
@@ -159,7 +157,7 @@ public:
    *****************************************************************************
    */
   void addStreamToMsgLevel( LogStream* ls, message::Level level,
-                         bool pass_ownership=true );
+                            bool pass_ownership=true );
 
   /*!
    *****************************************************************************
@@ -404,6 +402,6 @@ private:
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* LOGGER_HPP_ */

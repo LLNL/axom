@@ -572,7 +572,7 @@ namespace slamShocktube {
 int main(void)
 {
   using namespace slamShocktube;
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   // We should be able to parallelize pretty easily by
   // adding an MPI_Init() here, modifying the setup slightly,
