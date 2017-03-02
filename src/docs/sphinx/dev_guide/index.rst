@@ -22,22 +22,11 @@ Axom should be aware of and follow these guidelines. However, the
 benefits of uniformity should be balanced with allowances for individual 
 preferences, which may be superior to rigid conventions in certain situations.
 
-The guidelines should not be viewed as fixed for all time. They should evolve 
+Our processes should not be viewed as fixed for all time. They should evolve 
 with project needs and be improved when processes can be improved. Changes 
 should be agreed to by team members after assessing their merits using 
 their collective professional judgment. When changes are made, this guide
 should be updated accordingly.
-
-This guide is generated using Sphinx and is written in the 
-`reStructuredText <http://docutils.sourceforge.net/rst.html>`_ markup language. 
-The document source lives in the Axom source code 
-repository. You can build it from source by using the proper make system 
-target::
-
-   $ make dev_guide_docs
-
-If you need to edit the guide and need information about reStructuredText, 
-please see the `Sphinx Guide <http://www.sphinx-doc.org/en/stable/index.html>`_. 
 
 
 **Contents:**

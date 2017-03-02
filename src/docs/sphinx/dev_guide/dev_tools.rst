@@ -26,21 +26,26 @@ The main tools we use are listed below. Details about how we use
 them and helpful information about getting started are provided 
 in the sections that follow.
 
-* We use our `Confluence space <https://lc.llnl.gov/confluence/display/ASCT>`_ for team discussion, planning, maintaining meeting notes, etc.
-* Our Git repository contains the Axom source code, build configurations, scripts, test suites, documentation, etc. The repository lives in our `Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
-* We use our `JIRA project <https://lc.llnl.gov/jira/projects/ATK>`_ for issue tracking.
-* We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for continuous integration and automated testing.
+* We use the `Axom Confluence space <https://lc.llnl.gov/confluence/display/ASCT>`_ for team discussion, planning, maintaining meeting notes, etc.
+* We use the `Axom Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_ to manage our Git repository which contains the Axom source code, build configurations, scripts, test suites, documentation, etc. 
+* We use the `Axom JIRA project <https://lc.llnl.gov/jira/projects/ATK>`_ for issue tracking.
+* We use the `Axom Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for continuous integration and automated testing.
 
 
 --------------------------
-Build, Link, Triumph (BLT)
+Building the Code (BLT)
 --------------------------
 
-Our build system, called *BLT*, is maintained in `its own repo <https://lc.llnl.gov/bitbucket/projects/ATK/repos/blt/browse>`_ in our 
-Bitbucket project. BLT provides a "common sense" setup based on CMake for 
-configuring and building the Axom code. It also enables software development 
-tool integration via *make targets*. BLT has built-in support for the following
-tools, all of which we use for Axom development:
+The `Axom Quickstart Guide <../../../quickstart_guide_docs/html/index.html>`_ 
+describes how to build the Axom code and its third-party library dependencies.
+
+The Axom build system is built on top of a streamlined CMake-based build 
+system foundation, called *BLT*, that we maintain and share with other 
+software projects. It is available in the 
+`BLT GitHub Project <https://github.com/LLNL/blt>`_. BLT provides a "common 
+sense" CMake setup that helps to simplify configuration and building the Axom 
+code. It also enables software development tool integration via *make targets*. BLT has built-in support for the following tools, all of which we use for 
+Axom development:
 
   Documentation
     *Doxygen* (source code docs) and *Sphinx* (user docs)
@@ -51,18 +56,13 @@ tools, all of which we use for Axom development:
   Benchmarking
     *Google Benchmark*
 
-See **BLT documentation (add link)** for more information.  
-
 We use `Spack <https://github.com/LLNL/spack>`_ to manage and build the 
 third-party libraries on which the Axom depends.
 
-The Axom **Quick Start Guide (add link)** describes how to build the
-code and third-party libraries.
 
-
---------------------------------------
-Git/Bitbucket
---------------------------------------
+-------------------------------------------------------
+Version Control and Branch Development (Git/Bitbucket)
+-------------------------------------------------------
 
 This section provides some information about getting started with Git and 
 Bitbucket and describes operations related to topic branch development 
@@ -112,8 +112,8 @@ Important notes:
     found by going to the Axom repo on our Bitbucket project and 
     clicking on the 'Clone' Action button that appears when you hover your 
     mouse cursor over the ellipses on the top left of the web page.
-  * The '--recursive' argument above is needed to pull the BLT build system into
-    your local copy of the repo. It is a Git sub-module of Axom.
+  * The '--recursive' argument above is needed to pull the BLT build system 
+    into your local copy of the repo. It is a Git sub-module in Axom.
 
 After cloning, enter the top-level Axom directory and run the development
 setup script we provide to ensure that your Git environment is configured 
@@ -321,14 +321,23 @@ Here is a concrete example::
     Switched to a new branch 'feature/homer/pick-up-bart'
 
 
---------------------------------------
-JIRA Issue Workflow
---------------------------------------
+----------------------------------------------
+Planning Development (JIRA)
+----------------------------------------------
 
 We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for 
-issue tracking. There you can create issues, edit them, comment on them,
-check issue status, and search for issues in various ways, including setting 
-up filters to customize your searches.
+issue tracking and project planning. In JIRA, you can create issues, edit 
+them, comment on them, check issue status, group them together for sprint
+development, and search for issues in various ways, including setting up 
+filters to customize your searches.
+
+
+.. note:: Fill this in....
+
+
+------------------------
+Issue Workflow (JIRA)
+------------------------
 
 Issue states
 ^^^^^^^^^^^^^
@@ -456,13 +465,16 @@ demonstrate how to use JIRA features:
 
 
 --------------------------------------
-Bamboo Continuous Integration
+Continuous Integration (Bamboo)
 --------------------------------------
 
 We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for 
 continuous integration and automated testing. We maintain a collection of
 test plans for performing automated and manual builds, tests, and other
 code health monitoring tasks.
+
+
+.. note:: This section needs work and cleanup....
 
 Bamboo Agent Notes
 ^^^^^^^^^^^^^^^^^^^

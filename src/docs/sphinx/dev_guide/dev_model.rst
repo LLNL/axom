@@ -16,38 +16,14 @@ Axom Development Process Overview
 The Axom team uses an agile, sprint-based development process where
 we target a set of development tasks for each release. We also employ a 
 variety of tools to manage our workflow and software development. This guide
-contains descriptions of our processes and information about how we use tools 
-and about getting started with them.
+describes team processes and how we use our tools.
 
-The Axom Git repository lives in a
-`Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_
-on the Livermore Computing CZ Atlassian Space. The repository is the central
-interaction hub for Axom code development.
-
-=======================
-First Things First...
-=======================
-
-The Axom team uses various means of communication and interaction.
-
-The main interaction hub for developers is the Atlassian tool suite on the
+The main interaction hub for Axom developers is the Atlassian tool suite on the
 Livermore Computing Collaboration Zone (CZ). These tools can be accessed through
-the `MyLC Portal <https://lc.llnl.gov>`_.  Access to our Atlassian project 
-spaces requires membership in one or both of the LC groups 'toolkit' and 
-'toolkitd'. The first is for users and the second is for developers -- 
-team members are in both. If you're not in these groups, send email to 
-'asctoolkit-dev@llnl.gov' and request to be added.
-
-We maintain two email lists: 'asctoolkit-dev@llnl.gov' 
-(mainly for developer communication) and 'asctoolkit-users@llnl.gov' 
-(for developer-user interaction). Go to the 
-`LLNL E-Mail List Manager Site <https://lists.llnl.gov>`_ to subscribe to
-these lists.
-
-We also have a chat room on LLNL's Cisco Jabber instance called 
-'Axom Dev'. It's open to anyone. You just have to log on to Jabber and 
-join.
-
+the `MyLC Portal <https://lc.llnl.gov>`_. Developer-level access to Axom 
+project spaces requires membership in the LC group 'toolkitd'. If you are not 
+in this group and need to be, please send an email request to 
+'asctoolkit-dev@llnl.gov'.
 
 .. _gitflow-label:
 
