@@ -26,7 +26,7 @@
 #include "slam/Utilities.hpp"
 #include "slam/IndirectionSet.hpp"
 
-typedef asctoolkit::slam::ArrayIndirectionSet SetType;
+typedef axom::slam::ArrayIndirectionSet SetType;
 typedef SetType::PositionType                 SetPosition;
 typedef SetType::ElementType                  SetElement;
 

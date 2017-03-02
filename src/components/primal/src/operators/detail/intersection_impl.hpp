@@ -688,7 +688,7 @@ inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
  */
 inline bool isGt(double x, double y, double EPS)
 {
-  return ((x > y) && !(asctoolkit::utilities::isNearlyEqual(x, y, EPS)));
+  return ((x > y) && !(axom::utilities::isNearlyEqual(x, y, EPS)));
 }
 
 /*!
@@ -698,7 +698,7 @@ inline bool isGt(double x, double y, double EPS)
  */
 inline bool isLt(double x, double y, double EPS)
 {
-  return ((x < y) && !(asctoolkit::utilities::isNearlyEqual(x, y, EPS)));
+  return ((x < y) && !(axom::utilities::isNearlyEqual(x, y, EPS)));
 }
 
 /*!
@@ -759,7 +759,7 @@ bool intersect_ray_seg( const primal::Ray< T,2 >& R,
   // STEP 2: if denom is zero, the system is singular, which implies that the
   // ray and the segment are parallel
   const double parepsilon = 1.0e-9;
-  if ( asctoolkit::utilities::isNearlyEqual( denom, 0.0, parepsilon ) ) {
+  if ( axom::utilities::isNearlyEqual( denom, 0.0, parepsilon ) ) {
 
     // ray and segment are parallel
     return false;
@@ -814,7 +814,7 @@ bool intersect_ray_bbox(const primal::Ray< T,DIM > & R,
   T tmax = std::numeric_limits< T >::max();
 
   for (int i=0; i<DIM; i++) {
-    if (asctoolkit::utilities::isNearlyEqual(R.direction()[i],
+    if (axom::utilities::isNearlyEqual(R.direction()[i],
                                              std::numeric_limits< T >::min(),
                                              1.0e-9 )) {
       T pointDim =  R.origin()[i];
@@ -874,7 +874,7 @@ bool intersect_seg_bbox( const primal::Segment< T,DIM > & S,
   tmax = static_cast< T >(1);
 
   for (int i=0; i<DIM; i++) {
-    if (asctoolkit::utilities::isNearlyEqual(R.direction()[i],
+    if (axom::utilities::isNearlyEqual(R.direction()[i],
                                              std::numeric_limits< T >::min(),
                                              1.0e-9 )) {
       T pointDim =  R.origin()[i];

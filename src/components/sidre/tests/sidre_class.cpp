@@ -14,11 +14,11 @@
 
 #include "sidre/sidre.hpp"
 
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::DataType;
+using axom::sidre::DataBuffer;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataView;
+using axom::sidre::DataType;
 
 namespace classtest
 {
@@ -112,10 +112,10 @@ public:
   {
     gp->createView("idata", &m_idata[0])->
 //     apply(DataType::c_int(m_idata.size()));
-    apply(asctoolkit::sidre::INT_ID, m_idata.size());
+    apply(axom::sidre::INT_ID, m_idata.size());
     gp->createView("ddata", &m_ddata[0])->
 //     apply(DataType::c_double(m_ddata.size()));
-    apply(asctoolkit::sidre::DOUBLE_ID, m_ddata.size());
+    apply(axom::sidre::DOUBLE_ID, m_ddata.size());
 
     DataGroup * gp1 = gp->createGroup("myclass1");
 

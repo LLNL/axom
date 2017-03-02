@@ -27,9 +27,9 @@
 using axom::slic::UnitTestLogger;
 
 
-typedef asctoolkit::slam::RangeSet    SetType;
-typedef asctoolkit::slam::Map<int>    IntMap;
-typedef asctoolkit::slam::Map<double> RealMap;
+typedef axom::slam::RangeSet    SetType;
+typedef axom::slam::Map<int>    IntMap;
+typedef axom::slam::Map<double> RealMap;
 
 typedef SetType::PositionType         PositionType;
 typedef SetType::ElementType          ElementType;
@@ -53,8 +53,8 @@ bool constructAndTestMap()
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO("\nCreating " << asctoolkit::slam::util::TypeToString<T>::to_string() << " map on the set ");
-  asctoolkit::slam::Map<T> m(&s);
+  SLIC_INFO("\nCreating " << axom::slam::util::TypeToString<T>::to_string() << " map on the set ");
+  axom::slam::Map<T> m(&s);
   EXPECT_TRUE(m.isValid());
 
   SLIC_INFO( "\nSetting the elements.");

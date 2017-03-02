@@ -27,7 +27,7 @@
 #include "slam/RangeSet.hpp"
 
 
-typedef asctoolkit::slam::RangeSet  SetType;
+typedef axom::slam::RangeSet  SetType;
 typedef SetType::PositionType       SetPosition;
 typedef SetType::ElementType        SetElement;
 

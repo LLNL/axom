@@ -63,18 +63,18 @@
 #include <cstdlib>      // for atoi
 
 
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataView;
-using asctoolkit::spio::IOManager;
+using axom::sidre::DataStore;
+using axom::sidre::DataGroup;
+using axom::sidre::DataBuffer;
+using axom::sidre::DataView;
+using axom::spio::IOManager;
 
 
-typedef asctoolkit::sidre::IndexType IndexType;
-typedef asctoolkit::slam::policies::RuntimeSizeHolder<IndexType>   SzPol;
-typedef asctoolkit::slam::policies::ZeroOffset<IndexType> OffPol;
-typedef asctoolkit::slam::policies::RuntimeStrideHolder<IndexType> StrPol;
-typedef asctoolkit::slam::OrderedSet<SzPol, OffPol, StrPol> DataViewSet;
+typedef axom::sidre::IndexType IndexType;
+typedef axom::slam::policies::RuntimeSizeHolder<IndexType>   SzPol;
+typedef axom::slam::policies::ZeroOffset<IndexType> OffPol;
+typedef axom::slam::policies::RuntimeStrideHolder<IndexType> StrPol;
+typedef axom::slam::OrderedSet<SzPol, OffPol, StrPol> DataViewSet;
 
 void setupLogging();
 void teardownLogging();
@@ -252,7 +252,7 @@ CommandLineArguments parseArguments(int argc, char** argv, int myRank)
  */
 void allocateExternalData(DataGroup* grp, std::vector<void*>& extPtrs)
 {
-    using namespace asctoolkit;
+    using namespace axom;
 
     // for each view
     for(sidre::IndexType idx =  grp->getFirstValidViewIndex();
@@ -344,7 +344,7 @@ void modifyFinalValues(DataView* view, int origSize)
 {
     SLIC_DEBUG("Truncating view " << view->getPathName());
 
-    using namespace asctoolkit;
+    using namespace axom;
 
     switch(view->getTypeID())
     {
@@ -392,7 +392,7 @@ void modifyFinalValues(DataView* view, int origSize)
  */
 void truncateBulkData(DataGroup* grp, int maxSize)
 {
-    using namespace asctoolkit;
+    using namespace axom;
 
     // Add two to maxSize
     for(sidre::IndexType idx =  grp->getFirstValidViewIndex();

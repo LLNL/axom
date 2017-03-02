@@ -29,7 +29,7 @@
 #include "DataGroup.hpp"
 #include "DataView.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -458,4 +458,4 @@ void DataBuffer::importFrom( conduit::Node& buffer_holder)
 
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */

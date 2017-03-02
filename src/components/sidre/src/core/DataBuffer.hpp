@@ -32,7 +32,7 @@
 // Sidre project headers
 #include "SidreTypes.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -351,6 +351,6 @@ private:
 };
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
 #endif /* DATABUFFER_HPP_ */

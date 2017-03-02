@@ -28,7 +28,7 @@
 #include "common/CommonTypes.hpp"
 
 
-namespace asctoolkit
+namespace axom
 {
 namespace spio
 {
@@ -134,6 +134,6 @@ private:
 
 
 } /* end namespace spio */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
 #endif /* IOBATON_HPP_ */

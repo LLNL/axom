@@ -204,7 +204,7 @@ int HyperSphere< T,NDIMS >::getOrientation( T* q )
 
   int orient = -1;
 
-  if ( asctoolkit::utilities::isNearlyEqual( signed_distance, 0.0, TOL) ) {
+  if ( axom::utilities::isNearlyEqual( signed_distance, 0.0, TOL) ) {
 
     orient = ON_BOUNDARY;
 

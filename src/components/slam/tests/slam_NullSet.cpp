@@ -24,7 +24,7 @@
 
 TEST(gtest_slam_set,construct_nullset)
 {
-  asctoolkit::slam::Set* s = new asctoolkit::slam::NullSet();
+  axom::slam::Set* s = new axom::slam::NullSet();
 
   EXPECT_TRUE(s->empty());
 
@@ -37,8 +37,8 @@ TEST(gtest_slam_set,subscript_fails_nullset)
 {
   SLIC_INFO("Testing subscript access on NullSet -- code is expected to assert and die.");
 
-  typedef asctoolkit::slam::Set::PositionType SetPosition;
-  asctoolkit::slam::NullSet n;
+  typedef axom::slam::Set::PositionType SetPosition;
+  axom::slam::NullSet n;
 
   EXPECT_EQ(n.size(), SetPosition()) << "size of null set is defined to be zero";
 

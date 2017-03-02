@@ -13,19 +13,19 @@
 
 #include "sidre/sidre.hpp"
 
-using asctoolkit::sidre::SidreLength;
-using asctoolkit::sidre::TypeID;
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::IndexType;
-using asctoolkit::sidre::InvalidIndex;
-using asctoolkit::sidre::nameIsValid;
-using asctoolkit::sidre::indexIsValid;
-using asctoolkit::sidre::DataType;
-using asctoolkit::sidre::INT_ID;
-using asctoolkit::sidre::FLOAT64_ID;
+using axom::sidre::SidreLength;
+using axom::sidre::TypeID;
+using axom::sidre::DataBuffer;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataView;
+using axom::sidre::IndexType;
+using axom::sidre::InvalidIndex;
+using axom::sidre::nameIsValid;
+using axom::sidre::indexIsValid;
+using axom::sidre::DataType;
+using axom::sidre::INT_ID;
+using axom::sidre::FLOAT64_ID;
 
 // Test protocols
 int nprotocols = 3;
@@ -807,7 +807,7 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
 
   EXPECT_EQ(view1->getNumElements(), 10u);
   EXPECT_EQ(view1->getTotalBytes(),
-            static_cast<asctoolkit::sidre::SidreLength>(10 * sizeof(int)));
+            static_cast<axom::sidre::SidreLength>(10 * sizeof(int)));
 
   grp->destroyViewAndData(viewName1);
 

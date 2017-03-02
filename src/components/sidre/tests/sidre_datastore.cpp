@@ -13,9 +13,9 @@
 #include "sidre/sidre.hpp"
 
 
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::IndexType;
+using axom::sidre::DataStore;
+using axom::sidre::DataBuffer;
+using axom::sidre::IndexType;
 
 //------------------------------------------------------------------------------
 

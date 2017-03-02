@@ -40,7 +40,7 @@ public:
 
     typedef typename BaseOctree::BlockIndex BlockIndex;
 
-    typedef asctoolkit::slam::Map<SpaceVector> SpaceVectorLevelMap;
+    typedef axom::slam::Map<SpaceVector> SpaceVectorLevelMap;
 
 public:
     /**

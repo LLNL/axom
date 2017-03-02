@@ -57,8 +57,8 @@
 
 namespace slamShocktube {
 
-  asctoolkit::slam::MeshIndexType const UPWIND   = 0;
-  asctoolkit::slam::MeshIndexType const DOWNWIND = 1;
+  axom::slam::MeshIndexType const UPWIND   = 0;
+  axom::slam::MeshIndexType const DOWNWIND = 1;
 
   const double gammaa = M_SQRT2;
   const double gammaaInverse = M_SQRT1_2;
@@ -94,27 +94,27 @@ namespace slamShocktube {
   public:
 
     // other types
-    typedef asctoolkit::slam::Set::IndexType                                                            IndexType;
-    typedef asctoolkit::slam::Set::PositionType                                                         PositionType;
-    typedef asctoolkit::slam::Set::ElementType                                                          ElementType;
+    typedef axom::slam::Set::IndexType                                                            IndexType;
+    typedef axom::slam::Set::PositionType                                                         PositionType;
+    typedef axom::slam::Set::ElementType                                                          ElementType;
 
     // types for Element and Face sets
-    typedef asctoolkit::slam::PositionSet                                                               ElemSet;
-    typedef asctoolkit::slam::PositionSet                                                               FaceSet;
+    typedef axom::slam::PositionSet                                                               ElemSet;
+    typedef axom::slam::PositionSet                                                               FaceSet;
 
     // types for Tube and {In,Out}Flow subsets
-    typedef asctoolkit::slam::policies::StrideOne<PositionType>                                         StrideOnePolicy;
-    typedef asctoolkit::slam::policies::NoIndirection<PositionType,ElementType>                         NoIndirectionPolicy;
-    typedef asctoolkit::slam::policies::ConcreteParentSubset<ElemSet>                                   TubeSubsetPolicy;
-    typedef asctoolkit::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy>   ElemSubset;
-    typedef asctoolkit::slam::RangeSet                                                                  RangeSet;
+    typedef axom::slam::policies::StrideOne<PositionType>                                         StrideOnePolicy;
+    typedef axom::slam::policies::NoIndirection<PositionType,ElementType>                         NoIndirectionPolicy;
+    typedef axom::slam::policies::ConcreteParentSubset<ElemSet>                                   TubeSubsetPolicy;
+    typedef axom::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy>   ElemSubset;
+    typedef axom::slam::RangeSet                                                                  RangeSet;
 
     // types for relations
     enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ELEM>  EFStride;
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, ELEMS_PER_FACE>  FEStride;
-    typedef asctoolkit::slam::StaticConstantRelation<EFStride>                                          ElemToFaceRelation;
-    typedef asctoolkit::slam::StaticConstantRelation<FEStride>                                          FaceToElemRelation;
+    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ELEM>  EFStride;
+    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, ELEMS_PER_FACE>  FEStride;
+    typedef axom::slam::StaticConstantRelation<EFStride>                                          ElemToFaceRelation;
+    typedef axom::slam::StaticConstantRelation<FEStride>                                          FaceToElemRelation;
 
   public:
     ElemSet elems;              // The entire set of elements
@@ -131,8 +131,8 @@ namespace slamShocktube {
 
 // Define the explicit instances of our local (key/value) datastore for int and double
 // TODO: Might need an additional uint version for mesh data
-  typedef asctoolkit::slam::FieldRegistry<int>    IntsRegistry;
-  typedef asctoolkit::slam::FieldRegistry<double> RealsRegistry;
+  typedef axom::slam::FieldRegistry<int>    IntsRegistry;
+  typedef axom::slam::FieldRegistry<double> RealsRegistry;
   typedef IntsRegistry::MapType                   IntField;
   typedef RealsRegistry::MapType                  RealField;
 

@@ -31,7 +31,7 @@
 // C/C++ includes
 #include <cmath> // for std::sqrt()
 
-using namespace asctoolkit;
+using namespace axom;
 
 namespace quest {
 

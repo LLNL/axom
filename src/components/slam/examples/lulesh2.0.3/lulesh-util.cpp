@@ -293,7 +293,7 @@ namespace slamLulesh {
           << " actual number of cycles was " << locDom.cycle() << "." );
 
       SLIC_ASSERT_MSG(
-        asctoolkit::utilities::isNearlyEqualRelative( resultCheckMap[gEdge].second, locDom.e(ElemId)),
+        axom::utilities::isNearlyEqualRelative( resultCheckMap[gEdge].second, locDom.e(ElemId)),
         "Specs state that final energy at origin must be "
         << resultCheckMap[gEdge].second
         << " actual energy at origin was " << locDom.e(ElemId)

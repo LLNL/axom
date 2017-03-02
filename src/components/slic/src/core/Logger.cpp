@@ -192,7 +192,7 @@ void Logger::logMessage( message::Level level,
        ( m_abortOnWarning && (level==message::Warning) )    ) {
 
     this->flushStreams();
-    asctoolkit::utilities::processAbort();
+    axom::utilities::processAbort();
 
   } // END if
 

@@ -15,13 +15,13 @@
 #include "common/CommonTypes.hpp"
 #include "sidre/sidre.hpp"
 
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::SidreLength;
-using asctoolkit::sidre::DOUBLE_ID;
-using asctoolkit::sidre::INT_ID;
+using axom::sidre::DataBuffer;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataView;
+using axom::sidre::SidreLength;
+using axom::sidre::DOUBLE_ID;
+using axom::sidre::INT_ID;
 
 //------------------------------------------------------------------------------
 // Test DataGroup::createView() -- external
@@ -215,7 +215,7 @@ TEST(sidre_external, verify_external_layout)
             << " associated with external pointers (described or undescribed).");
 
   // Create some internal views
-  root->createViewAndAllocate("int/desc/bufferview", asctoolkit::sidre::INT_ID,
+  root->createViewAndAllocate("int/desc/bufferview", axom::sidre::INT_ID,
                               SZ);
   root->createViewScalar("int/scalar/scalarview", SZ);
   root->createViewString("int/string/stringview", "A string");
@@ -230,7 +230,7 @@ TEST(sidre_external, verify_external_layout)
 
   // Check that the generated external layout is empty
   {
-    asctoolkit::sidre::Node emptyNode;
+    axom::sidre::Node emptyNode;
     root->createExternalLayout(emptyNode);
 
     SLIC_INFO("External node's json before adding external data."
@@ -240,7 +240,7 @@ TEST(sidre_external, verify_external_layout)
   }
 
   // Create some external views
-  root->createView("ext/desc/external_desc", asctoolkit::sidre::INT_ID, SZ,
+  root->createView("ext/desc/external_desc", axom::sidre::INT_ID, SZ,
                    extData);
   root->createView("ext/undesc/external_opaque")->setExternalDataPtr(extData);
 
@@ -263,7 +263,7 @@ TEST(sidre_external, verify_external_layout)
   // Check that the generated external layout matches expectation
   {
     /// Copy the external layout into a conduit node and test the layout
-    asctoolkit::sidre::Node node;
+    axom::sidre::Node node;
     root->createExternalLayout(node);
 
     SLIC_INFO("External node's json: \n\t" << node.to_json());

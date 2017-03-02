@@ -33,7 +33,7 @@
 #include <mpi.h> // For MPI
 
 // Forward declarations
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 class Lumberjack;
@@ -69,9 +69,9 @@ public:
   LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
                     const std::string& format );
   LumberjackStream( std::ostream* stream,
-                    asctoolkit::lumberjack::Lumberjack* lj );
+                    axom::lumberjack::Lumberjack* lj );
   LumberjackStream( std::ostream* stream,
-                    asctoolkit::lumberjack::Lumberjack* lj,
+                    axom::lumberjack::Lumberjack* lj,
                     const std::string& format );
 
   virtual ~LumberjackStream();
@@ -133,8 +133,8 @@ private:
   /// \name Private Members
   /// @{
 
-  asctoolkit::lumberjack::Lumberjack* m_lj;
-  asctoolkit::lumberjack::Communicator* m_ljComm;
+  axom::lumberjack::Lumberjack* m_lj;
+  axom::lumberjack::Communicator* m_ljComm;
   bool m_isLJOwnedBySLIC;
   std::ostream* m_stream;
   /// @}
@@ -147,7 +147,7 @@ private:
    *  should be used.
    *****************************************************************************
    */
-  LumberjackStream(): m_lj( static_cast< asctoolkit::lumberjack::Lumberjack* >(
+  LumberjackStream(): m_lj( static_cast< axom::lumberjack::Lumberjack* >(
                               ATK_NULLPTR) ),
     m_stream( static_cast< std::ostream* >(ATK_NULLPTR) )
   { };

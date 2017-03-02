@@ -37,7 +37,7 @@
 // MPI includes
 #include "mpi.h"
 
-using namespace asctoolkit;
+using namespace axom;
 
 typedef std::vector<double> CoordsVec;
 

@@ -153,43 +153,43 @@ namespace slamLulesh {
 
   public:
 
-    typedef asctoolkit::slam::Set                                                                       Set;
-    typedef asctoolkit::slam::NullSet                                                                   NullSet;
+    typedef axom::slam::Set                                                                       Set;
+    typedef axom::slam::NullSet                                                                   NullSet;
 
-    typedef asctoolkit::slam::RangeSet                                                                  ElemSet;
-    typedef asctoolkit::slam::RangeSet                                                                  NodeSet;
-    typedef asctoolkit::slam::RangeSet                                                                  CornerSet;
-    typedef asctoolkit::slam::RangeSet                                                                  ExtendedElemSet;
+    typedef axom::slam::RangeSet                                                                  ElemSet;
+    typedef axom::slam::RangeSet                                                                  NodeSet;
+    typedef axom::slam::RangeSet                                                                  CornerSet;
+    typedef axom::slam::RangeSet                                                                  ExtendedElemSet;
 
-    typedef asctoolkit::slam::VectorIndirectionSet                                                      SymmNodeSet;
+    typedef axom::slam::VectorIndirectionSet                                                      SymmNodeSet;
 
     enum { NODES_PER_ZONE = 8, FACES_PER_ZONE = 1};
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, NODES_PER_ZONE>  ZNStride;
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ZONE>  ZFStride;
-    typedef asctoolkit::slam::StaticConstantRelation<ZNStride, ElemSet,NodeSet>                         ElemToNodeRelation;
-    typedef asctoolkit::slam::StaticConstantRelation<ZFStride, ElemSet,ExtendedElemSet>                 ElemFaceAdjacencyRelation;
+    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, NODES_PER_ZONE>  ZNStride;
+    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ZONE>  ZFStride;
+    typedef axom::slam::StaticConstantRelation<ZNStride, ElemSet,NodeSet>                         ElemToNodeRelation;
+    typedef axom::slam::StaticConstantRelation<ZFStride, ElemSet,ExtendedElemSet>                 ElemFaceAdjacencyRelation;
 
 
-    typedef asctoolkit::slam::RangeSet                                                                  RegionSet;
-    typedef asctoolkit::slam::StaticVariableRelation                                                    RegionToElemRelation;
+    typedef axom::slam::RangeSet                                                                  RegionSet;
+    typedef axom::slam::StaticVariableRelation                                                    RegionToElemRelation;
 
-    typedef asctoolkit::slam::StaticVariableRelation                                                    NodeToCornerRelation;
+    typedef axom::slam::StaticVariableRelation                                                    NodeToCornerRelation;
 
-    typedef asctoolkit::slam::Map<Index_t>                                                              ElemIndexMap;
-    typedef asctoolkit::slam::Map<Int_t>                                                                ElemIntMap;
-    //typedef asctoolkit::slam::Map<Real_t>            ElemRealMap;
+    typedef axom::slam::Map<Index_t>                                                              ElemIndexMap;
+    typedef axom::slam::Map<Int_t>                                                                ElemIntMap;
+    //typedef axom::slam::Map<Real_t>            ElemRealMap;
 
-    typedef asctoolkit::slam::Map<Index_t>                                                              NodeIndexMap;
-    //typedef asctoolkit::slam::Map<Int_t>             NodeIntMap;
-    //typedef asctoolkit::slam::Map<Real_t>            NodeRealMap;
+    typedef axom::slam::Map<Index_t>                                                              NodeIndexMap;
+    //typedef axom::slam::Map<Int_t>             NodeIntMap;
+    //typedef axom::slam::Map<Real_t>            NodeRealMap;
 
-    //typedef asctoolkit::slam::Map<Index_t>           RegionIndexMap;
-    typedef asctoolkit::slam::Map<Int_t> RegionIntMap;
-    //typedef asctoolkit::slam::Map<Real_t>            RegionRealMap;
+    //typedef axom::slam::Map<Index_t>           RegionIndexMap;
+    typedef axom::slam::Map<Int_t> RegionIntMap;
+    //typedef axom::slam::Map<Real_t>            RegionRealMap;
 
-    //typedef asctoolkit::slam::Map<Index_t>           CornerIndexMap;
-    //typedef asctoolkit::slam::Map<Int_t>             CornerIntMap;
-    typedef asctoolkit::slam::Map<Real_t> CornerRealMap;
+    //typedef axom::slam::Map<Index_t>           CornerIndexMap;
+    //typedef axom::slam::Map<Int_t>             CornerIntMap;
+    typedef axom::slam::Map<Real_t> CornerRealMap;
 
 
   public:
@@ -654,8 +654,8 @@ namespace slamLulesh {
     Index_t m_colMin, m_colMax;
     Index_t m_planeMin, m_planeMax;
 
-    asctoolkit::slam::FieldRegistry<double> m_realsRegistry;
-    asctoolkit::slam::FieldRegistry<Set::PositionType> m_intsRegistry;
+    axom::slam::FieldRegistry<double> m_realsRegistry;
+    axom::slam::FieldRegistry<Set::PositionType> m_intsRegistry;
   };
 
   typedef Real_t & (Domain::* Domain_member )(Index_t);

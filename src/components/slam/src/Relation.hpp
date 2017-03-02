@@ -24,7 +24,7 @@
 #include "slam/Set.hpp"
 #include "slam/NullSet.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam    {
 
   class NullSet;
@@ -105,6 +105,6 @@ namespace slam    {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_RELATION_HPP_

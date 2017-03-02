@@ -22,11 +22,11 @@
 #include "sidre/DataStore.hpp"
 #include "spio/IOManager.hpp"
 
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataType;
-using asctoolkit::spio::IOManager;
-using namespace asctoolkit::utilities;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataType;
+using axom::spio::IOManager;
+using namespace axom::utilities;
 
 /**************************************************************************
  * Subroutine:  main

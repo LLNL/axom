@@ -27,16 +27,16 @@
 #include "slam/Set.hpp"
 #include "slam/RangeSet.hpp"
 
-typedef asctoolkit::slam::Set::PositionType                                                   SetPosition;
-typedef asctoolkit::slam::Set::ElementType                                                    SetElement;
+typedef axom::slam::Set::PositionType                                                   SetPosition;
+typedef axom::slam::Set::ElementType                                                    SetElement;
 
-typedef asctoolkit::slam::policies::StrideOne<SetPosition>                                    StrideOnePolicy;
-typedef asctoolkit::slam::policies::NoIndirection<SetPosition,SetElement>                     NoIndirectionPolicy;
-typedef asctoolkit::slam::policies::VirtualParentSubset                                       SubsetPolicy;
+typedef axom::slam::policies::StrideOne<SetPosition>                                    StrideOnePolicy;
+typedef axom::slam::policies::NoIndirection<SetPosition,SetElement>                     NoIndirectionPolicy;
+typedef axom::slam::policies::VirtualParentSubset                                       SubsetPolicy;
 
 
 
-typedef asctoolkit::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, SubsetPolicy> SetType;
+typedef axom::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, SubsetPolicy> SetType;
 static const SetPosition MAX_SET_SIZE = 20;
 
 

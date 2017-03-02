@@ -52,7 +52,7 @@
 
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam    {
 
   template< typename StridePolicy = policies::RuntimeStrideHolder<Set::PositionType>
@@ -357,6 +357,6 @@ namespace slam    {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_STATIC_CONSTANT_RELATION_HPP_

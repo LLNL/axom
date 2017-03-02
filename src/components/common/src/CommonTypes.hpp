@@ -26,7 +26,7 @@
   #include <cstddef>            // brings in NULL
 #endif
 
-namespace asctoolkit {
+namespace axom {
 
 namespace common {
 
@@ -55,7 +55,7 @@ namespace common {
 
 
 } // end namespace common
-} // end namespace asctoolkit
+} // end namespace axom
 
 
 #endif // COMMONTYPES_HPP_

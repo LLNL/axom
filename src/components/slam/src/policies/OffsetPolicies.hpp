@@ -28,7 +28,7 @@
 #include "common/ATKMacros.hpp"
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 namespace policies {
 
@@ -107,6 +107,6 @@ namespace policies {
 
 } // end namespace policies
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_POLICIES_OFFSET_H_

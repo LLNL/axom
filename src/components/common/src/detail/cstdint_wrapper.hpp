@@ -23,7 +23,7 @@
 
 
 
-namespace asctoolkit {
+namespace axom {
 namespace common {
 namespace detail {
 
@@ -142,7 +142,7 @@ namespace detail {
 #endif  // ATK_USE_CXX11
 }     // end namespace detail
 }     // end namespace common
-}     // end namespace asctoolkit
+}     // end namespace axom
 
 
 #endif // COMMON_CSTDINT_WRAPPER_HPP_

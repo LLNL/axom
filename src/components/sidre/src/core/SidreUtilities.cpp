@@ -28,7 +28,7 @@
 // Other toolkit component headers
 #include "slic/slic.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -99,4 +99,4 @@ std::string::size_type find_exclusive( const std::string& s, char c)
 
 } //end namespace sidre
 
-} // end namespace asctoolkit
+} // end namespace axom

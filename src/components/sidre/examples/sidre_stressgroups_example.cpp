@@ -19,8 +19,8 @@
 #include <algorithm>
 #include <set>
 
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
 
 /**************************************************************************
  * Subroutine:  main

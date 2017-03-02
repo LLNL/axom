@@ -40,7 +40,7 @@
 #include <limits>
 #include <fstream>
 
-using namespace asctoolkit;
+using namespace axom;
 
 using axom::primal::Point;
 using axom::primal::Triangle;

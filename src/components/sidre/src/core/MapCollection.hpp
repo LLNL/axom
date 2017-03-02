@@ -148,7 +148,7 @@
 #include <sparsehash/dense_hash_map>
 #endif
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -408,6 +408,6 @@ TYPE * MapCollection<TYPE>::removeItem(IndexType idx)
 }
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
 #endif /* COLLECTIONS_HPP_ */

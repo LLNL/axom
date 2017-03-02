@@ -564,7 +564,7 @@ int main(int argc, char * argv[])
 
   ::benchmark::Initialize(&argc, argv);
 
-  asctoolkit::slic::UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
 
   ::benchmark::RunSpecifiedBenchmarks();
 

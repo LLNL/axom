@@ -133,8 +133,8 @@ namespace {
 
 template<int SZ>
 void positionSet_compileTimeSize(benchmark::State& state) {
-  typedef asctoolkit::slam::policies::CompileTimeSizeHolder<int, SZ>  StaticSetSize;
-  typedef asctoolkit::slam::OrderedSet<StaticSetSize>                 SetType;
+  typedef axom::slam::policies::CompileTimeSizeHolder<int, SZ>  StaticSetSize;
+  typedef axom::slam::OrderedSet<StaticSetSize>                 SetType;
   SetType set(SZ);
 
   while (state.KeepRunning())
@@ -154,7 +154,7 @@ BENCHMARK_TEMPLATE( positionSet_compileTimeSize,  S3);
 
 template<int SZ>
 void positionSet_runtimeTimeSize_template(benchmark::State& state) {
-  typedef asctoolkit::slam::OrderedSet<> SetType;
+  typedef axom::slam::OrderedSet<> SetType;
   SetType set(SZ);
 
   while (state.KeepRunning())
@@ -173,7 +173,7 @@ BENCHMARK_TEMPLATE( positionSet_runtimeTimeSize_template, S2);
 BENCHMARK_TEMPLATE( positionSet_runtimeTimeSize_template, S3);
 
 void positionSet_runtimeTimeSize_function(benchmark::State& state) {
-  typedef asctoolkit::slam::OrderedSet<> SetType;
+  typedef axom::slam::OrderedSet<> SetType;
   SetType set(state.range_x());
 
   while (state.KeepRunning())
@@ -190,7 +190,7 @@ BENCHMARK(positionSet_runtimeTimeSize_function)->Apply(CustomArgs);
 
 
 void positionSet_runtimeTimeSize_function_sizeOutside(benchmark::State& state) {
-  typedef asctoolkit::slam::OrderedSet<> SetType;
+  typedef axom::slam::OrderedSet<> SetType;
   SetType set(state.range_x());
 
   const int sz = set.size();
@@ -208,7 +208,7 @@ BENCHMARK(positionSet_runtimeTimeSize_function_sizeOutside)->Apply(CustomArgs);
 
 
 void positionSet_runtimeTimeSize_function_volatileSizeOutside(benchmark::State& state) {
-  typedef asctoolkit::slam::OrderedSet<> SetType;
+  typedef axom::slam::OrderedSet<> SetType;
   SetType set(state.range_x());
 
   volatile int sz = set.size();
@@ -226,7 +226,7 @@ BENCHMARK(positionSet_runtimeTimeSize_function_volatileSizeOutside)->Apply(Custo
 
 
 void positionSet_runtimeTimeSize_iter(benchmark::State& state) {
-  typedef asctoolkit::slam::OrderedSet<>  SetType;
+  typedef axom::slam::OrderedSet<>  SetType;
   typedef SetType::iterator               SetIter;
   SetType set(state.range_x());
 
@@ -247,7 +247,7 @@ BENCHMARK(positionSet_runtimeTimeSize_iter)->Apply(CustomArgs);
 int main(int argc, char * argv[])
 {
   std::srand (std::time(NULL));
-  asctoolkit::slic::UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
 
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();

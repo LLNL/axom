@@ -30,7 +30,7 @@
 #include "DataGroup.hpp"
 #include "DataStore.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -1220,4 +1220,4 @@ void DataView::importDescription(conduit::Node& data_holder)
 
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */

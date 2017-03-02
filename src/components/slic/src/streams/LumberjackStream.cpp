@@ -53,7 +53,7 @@ LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm,
 
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream(std::ostream* stream,
-                                   asctoolkit::lumberjack::Lumberjack* lj):
+                                   axom::lumberjack::Lumberjack* lj):
   m_lj( lj ),
   m_isLJOwnedBySLIC( false ),
   m_stream( stream )
@@ -61,7 +61,7 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
 
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream( std::ostream* stream,
-                                    asctoolkit::lumberjack::Lumberjack* lj,
+                                    axom::lumberjack::Lumberjack* lj,
                                     const std::string& format ):
   m_lj( lj ),
   m_isLJOwnedBySLIC( false ),
@@ -130,7 +130,7 @@ void LumberjackStream::write()
 
   if ( m_lj->isOutputNode() ) {
 
-    std::vector< asctoolkit::lumberjack::Message* > messages =
+    std::vector< axom::lumberjack::Message* > messages =
       m_lj->getMessages();
 
     const int nmessages = static_cast< int >( messages.size() );
@@ -153,9 +153,9 @@ void LumberjackStream::write()
 //------------------------------------------------------------------------------
 void LumberjackStream::initializeLumberjack( MPI_Comm comm, int ranksLimit )
 {
-  m_ljComm = new asctoolkit::lumberjack::BinaryTreeCommunicator;
+  m_ljComm = new axom::lumberjack::BinaryTreeCommunicator;
   m_ljComm->initialize(comm, ranksLimit);
-  m_lj = new asctoolkit::lumberjack::Lumberjack;
+  m_lj = new axom::lumberjack::Lumberjack;
   m_lj->initialize(m_ljComm, ranksLimit);
   m_isLJOwnedBySLIC = true;
 }

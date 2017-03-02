@@ -36,7 +36,7 @@
 #include "conduit_relay_hdf5.hpp"
 #include "fmt/fmt.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace spio
 {
@@ -657,4 +657,4 @@ void IOManager::writeViewToRootFileAtPath(sidre::DataView * view,
 
 
 } /* end namespace spio */
-} /* end namespace asctoolkit */
+} /* end namespace axom */

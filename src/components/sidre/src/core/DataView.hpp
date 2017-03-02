@@ -33,7 +33,7 @@
 // SiDRe project headers
 #include "sidre/SidreTypes.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -1138,6 +1138,6 @@ private:
 
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
 #endif /* DATAVIEW_HPP_ */

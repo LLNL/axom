@@ -65,7 +65,7 @@ void queryOctahedronMesh(axom::mint::Mesh*& mesh, const GeometricBoundingBox& bb
     octree.generateIndex();
 
     // Query the mesh containment
-    asctoolkit::utilities::Timer timer(true);
+    axom::utilities::Timer timer(true);
     for(int i=0; i < NUM_PT_TESTS; ++i)
     {
         SpacePt pt;
@@ -114,7 +114,7 @@ void queryOctahedronMesh(axom::mint::Mesh*& mesh, const GeometricBoundingBox& bb
         // query point is sufficiently close to the surface
         bool expectInside = absCoordSum < 1.;
         EXPECT_TRUE( octree.within(pt) == expectInside
-                || asctoolkit::utilities::isNearlyEqual(absCoordSum, 1.) )
+                || axom::utilities::isNearlyEqual(absCoordSum, 1.) )
             << "Point " << pt << " was not "
             << (expectInside? "inside" : "outside")
             << " surface of octahedron as expected."

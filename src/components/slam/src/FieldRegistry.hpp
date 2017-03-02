@@ -22,7 +22,7 @@
 #include "slam/Set.hpp"
 #include "slam/Map.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
 
@@ -39,7 +39,7 @@ namespace slam {
   public:
     typedef TheDataType                     DataType;
     typedef std::string                     KeyType;
-    typedef asctoolkit::slam::Map<DataType> MapType;
+    typedef axom::slam::Map<DataType> MapType;
     typedef typename MapType::OrderedMap    BufferType;
 
     typedef std::map<KeyType, MapType>      DataVecMap;
@@ -84,17 +84,17 @@ namespace slam {
   private:
     inline void verifyFieldsKey(KeyType ATK_DEBUG_PARAM(key)){
       SLIC_ASSERT_MSG( m_dataVecs.find(key) != m_dataVecs.end()
-          , "Didn't find " << asctoolkit::slam::util::TypeToString<DataType>::to_string() << " field named " << key );
+          , "Didn't find " << axom::slam::util::TypeToString<DataType>::to_string() << " field named " << key );
     }
     inline void verifyScalarsKey(KeyType ATK_DEBUG_PARAM(key)){
       SLIC_ASSERT_MSG( m_dataScalars.find(key) != m_dataScalars.end()
-          , "Didn't find " << asctoolkit::slam::util::TypeToString<DataType>::to_string() << " scalar named " << key );
+          , "Didn't find " << axom::slam::util::TypeToString<DataType>::to_string() << " scalar named " << key );
     }
   private:
     DataVecMap m_dataVecs;
     DataAttrMap m_dataScalars;
   };
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_FIELD_REGISTRY_H_

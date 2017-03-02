@@ -21,15 +21,15 @@
 
 namespace {
 #ifdef ATK_USE_CXX11
-  typedef asctoolkit::utilities::detail::ChronoTimer HighPrecisionTimer;
+  typedef axom::utilities::detail::ChronoTimer HighPrecisionTimer;
 #else
-  typedef asctoolkit::utilities::detail::TimeofdayTimer HighPrecisionTimer;
+  typedef axom::utilities::detail::TimeofdayTimer HighPrecisionTimer;
 #endif
 }
 
 
 
-namespace asctoolkit {
+namespace axom {
 namespace utilities {
 
 /*!
@@ -165,6 +165,6 @@ private:
 };
 
 } // namespace utilities 
-} // namespace asctoolkit 
+} // namespace axom 
 
 #endif // TIMER_HPP_ 

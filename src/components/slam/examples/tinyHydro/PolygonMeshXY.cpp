@@ -146,7 +146,7 @@ namespace tinyHydro {
   {
     VectorXY ret;
 
-    asctoolkit::utilities::Timer timer;
+    axom::utilities::Timer timer;
 
     timer.start();
 

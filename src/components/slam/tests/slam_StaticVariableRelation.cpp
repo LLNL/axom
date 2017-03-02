@@ -33,8 +33,8 @@ using axom::slic::UnitTestLogger;
 #include "slam/Relation.hpp"
 #include "slam/StaticVariableRelation.hpp"
 
-using asctoolkit::slam::RangeSet;
-using asctoolkit::slam::StaticVariableRelation;
+using axom::slam::RangeSet;
+using axom::slam::StaticVariableRelation;
 
 typedef RangeSet::ElementType   ElementType;
 typedef RangeSet::PositionType  PositionType;

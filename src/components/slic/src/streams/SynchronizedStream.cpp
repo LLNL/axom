@@ -101,7 +101,7 @@ void SynchronizedStream::append( message::Level msgLevel,
   m_cache->messages.push_back(
     this->getFormatedMessage(message::getLevelAsString( msgLevel ),
                              message, tagName,
-                             asctoolkit::utilities::string::intToString(rank),
+                             axom::utilities::string::intToString(rank),
                              fileName, line) );
 }
 

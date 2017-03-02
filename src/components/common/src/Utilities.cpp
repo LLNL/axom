@@ -26,7 +26,7 @@
 #include <mpi.h>
 #endif
 
-namespace asctoolkit {
+namespace axom {
 namespace utilities {
 
   void processAbort()
@@ -48,4 +48,4 @@ namespace utilities {
   }
 
 }   // end namespace utilities
-}   // end namespace asctoolkit
+}   // end namespace axom

@@ -16,8 +16,8 @@
 
 TEST(gtest_common_types,check_types_8)
 {
-  typedef asctoolkit::common::int8 SignedType;
-  typedef asctoolkit::common::uint8 UnsigneType;
+  typedef axom::common::int8 SignedType;
+  typedef axom::common::uint8 UnsigneType;
   static const std::size_t EXP_BYTES = 1;
 
   EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);
@@ -38,8 +38,8 @@ TEST(gtest_common_types,check_types_8)
 
 TEST(gtest_common_types,check_types_16)
 {
-  typedef asctoolkit::common::int16 SignedType;
-  typedef asctoolkit::common::uint16 UnsigneType;
+  typedef axom::common::int16 SignedType;
+  typedef axom::common::uint16 UnsigneType;
   static const std::size_t EXP_BYTES = 2;
 
   EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);
@@ -58,8 +58,8 @@ TEST(gtest_common_types,check_types_16)
 
 TEST(gtest_common_types,check_types_32)
 {
-  typedef asctoolkit::common::int32 SignedType;
-  typedef asctoolkit::common::uint32 UnsigneType;
+  typedef axom::common::int32 SignedType;
+  typedef axom::common::uint32 UnsigneType;
   static const std::size_t EXP_BYTES = 4;
 
   EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);
@@ -79,8 +79,8 @@ TEST(gtest_common_types,check_types_32)
 TEST(gtest_common_types,check_types_64)
 {
 #ifndef ATK_NO_INT64_T
-  typedef asctoolkit::common::int64 SignedType;
-  typedef asctoolkit::common::uint64 UnsigneType;
+  typedef axom::common::int64 SignedType;
+  typedef axom::common::uint64 UnsigneType;
   static const std::size_t EXP_BYTES = 8;
 
   EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);

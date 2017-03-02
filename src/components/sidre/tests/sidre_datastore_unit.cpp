@@ -13,12 +13,12 @@
 #include "sidre/sidre.hpp"
 
 
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::IndexType;
-using asctoolkit::sidre::InvalidIndex;
+using axom::sidre::DataStore;
+using axom::sidre::DataView;
+using axom::sidre::DataGroup;
+using axom::sidre::DataBuffer;
+using axom::sidre::IndexType;
+using axom::sidre::InvalidIndex;
 
 #include <map>
 
@@ -179,7 +179,7 @@ TEST(sidre_datastore,create_destroy_buffers_order)
   ds->destroyBuffer(dbuff);
 
   // After destroy, test that buffer index should be available again for reuse.
-  DataBuffer * dbuff2 = ds->createBuffer( asctoolkit::sidre::FLOAT32_ID, 16 );
+  DataBuffer * dbuff2 = ds->createBuffer( axom::sidre::FLOAT32_ID, 16 );
   IndexType d2Index = dbuff2->getIndex();
   EXPECT_EQ(bufferIndex, ds->getFirstValidBufferIndex());
   EXPECT_EQ(bufferIndex, d2Index);
@@ -364,7 +364,7 @@ TEST(sidre_datastore,iterate_buffers_simple)
 
   for (int i = 0 ; i < bufcount ; ++i)
   {
-    DataBuffer * b = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400*i);
+    DataBuffer * b = ds->createBuffer(axom::sidre::FLOAT64_ID, 400*i);
     IndexType idx = b->getIndex();
     bs[idx] = b;
   }
@@ -385,7 +385,7 @@ TEST(sidre_datastore,create_delete_buffers_iterate)
   // Initially, create some buffers of varying size
   for (int i = 0 ; i < bufcount ; ++i)
   {
-    DataBuffer * b = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID,
+    DataBuffer * b = ds->createBuffer(axom::sidre::FLOAT64_ID,
                                       400*i % 10000)->allocate();
     IndexType idx = b->getIndex();
     bs[idx] = b;
@@ -426,7 +426,7 @@ TEST(sidre_datastore,loop_create_delete_buffers_iterate)
   // Initially, create some buffers of varying size
   for (int i = 0 ; i < initbufcount ; ++i)
   {
-    DataBuffer * b = ds->createBuffer(asctoolkit::sidre::FLOAT64_ID,
+    DataBuffer * b = ds->createBuffer(axom::sidre::FLOAT64_ID,
                                       400*i % 10000)->allocate();
     IndexType idx = b->getIndex();
     bs[idx] = b;
@@ -468,7 +468,7 @@ TEST(sidre_datastore,loop_create_delete_buffers_iterate)
         for (int i = 0 ; i < addcount ; ++i)
         {
           DataBuffer * buf =
-            ds->createBuffer(asctoolkit::sidre::FLOAT64_ID, 400)->allocate();
+            ds->createBuffer(axom::sidre::FLOAT64_ID, 400)->allocate();
           int addid = buf->getIndex();
           EXPECT_TRUE(ds->hasBuffer(addid));
           EXPECT_TRUE(bs.count(addid) < 1);

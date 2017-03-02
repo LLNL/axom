@@ -34,7 +34,7 @@
 #include "slic/slic.hpp"
 #include "slic/GenericOutputStream.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -322,4 +322,4 @@ void DataStore::print(std::ostream& os) const
 }
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */

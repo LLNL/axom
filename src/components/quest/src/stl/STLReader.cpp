@@ -109,11 +109,11 @@ void STLReader::readBinarySTL()
 
   // A local union data structure for triangles in a binary STL
   union BinarySTLTri {
-    asctoolkit::common::int8 raw[BINARY_TRI_SIZE];
+    axom::common::int8 raw[BINARY_TRI_SIZE];
     struct {
       float normal[3];
       float vert[9];
-      asctoolkit::common::uint16 attr;
+      axom::common::uint16 attr;
     };
   } tri;
 

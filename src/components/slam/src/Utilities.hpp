@@ -18,7 +18,7 @@
 
 #include <string>
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
   typedef int MeshIndexType;
@@ -53,6 +53,6 @@ namespace util {
 
 } // end namespace util
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif //  SLAM_UTILITIES_H_

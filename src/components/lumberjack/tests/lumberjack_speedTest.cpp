@@ -42,7 +42,7 @@ int main(int argc, char** argv)
         return 1;
     }
     std::string communicatorName = "";
-    int cycleLimit = asctoolkit::utilities::string::stringToInt(argv[2]);
+    int cycleLimit = axom::utilities::string::stringToInt(argv[2]);
     char* fileName = argv[3];
 
     if (std::string(argv[1]) == "b") {
@@ -72,16 +72,16 @@ int main(int argc, char** argv)
     int ranksLimit = commSize/2;
 
     // Initialize which lumberjack communicator we want
-    asctoolkit::lumberjack::Communicator* communicator = ATK_NULLPTR;
+    axom::lumberjack::Communicator* communicator = ATK_NULLPTR;
     if (communicatorName == "binary") {
-        communicator = new asctoolkit::lumberjack::BinaryTreeCommunicator;
+        communicator = new axom::lumberjack::BinaryTreeCommunicator;
     } else if (communicatorName == "root") {
-        communicator = new asctoolkit::lumberjack::RootCommunicator;
+        communicator = new axom::lumberjack::RootCommunicator;
     }
     communicator->initialize(MPI_COMM_WORLD, ranksLimit);
 
     // Initialize lumberjack
-    asctoolkit::lumberjack::Lumberjack lj;
+    axom::lumberjack::Lumberjack lj;
     lj.initialize(communicator, ranksLimit);
 
     // Read lines from file
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 
     // Get messages back out of lumberjack since they have been pushed.
     if (lj.isOutputNode()) {
-        std::vector<asctoolkit::lumberjack::Message*> messages = lj.getMessages();
+        std::vector<axom::lumberjack::Message*> messages = lj.getMessages();
 
        std::ofstream outFile;
        outFile.open("speedTestOutput");

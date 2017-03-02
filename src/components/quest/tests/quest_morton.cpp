@@ -171,7 +171,7 @@ void testMortonizer()
 template<int DIM>
 void testIntegralTypes()
 {
-    namespace common = asctoolkit::common;
+    namespace common = axom::common;
 
     SLIC_INFO("Testing char in " << DIM << "d -- ");
     testMortonizer<common::int8,common::uint8,DIM>();

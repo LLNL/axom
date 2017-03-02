@@ -32,7 +32,7 @@
 #include "DataStore.hpp"
 #include "SidreUtilities.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -2320,4 +2320,4 @@ IndexType DataGroup::getNextValidGroupIndex(IndexType idx) const
 
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */

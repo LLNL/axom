@@ -22,7 +22,7 @@
 #include "SidreDataTypeIds.h"
 #include "conduit.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -168,7 +168,7 @@ inline TypeID getTypeID( const int typeID )
 }
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
 
 #endif /* SIDRETYPES_HPP_ */

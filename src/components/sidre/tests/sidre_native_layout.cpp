@@ -17,22 +17,22 @@
 #include <iostream>
 
 
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::IndexType;
-using asctoolkit::sidre::InvalidIndex;
-using asctoolkit::sidre::indexIsValid;
-using asctoolkit::sidre::InvalidName;
-using asctoolkit::sidre::nameIsValid;
+using axom::sidre::DataBuffer;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::IndexType;
+using axom::sidre::InvalidIndex;
+using axom::sidre::indexIsValid;
+using axom::sidre::InvalidName;
+using axom::sidre::nameIsValid;
 
 //------------------------------------------------------------------------------
 
 namespace
 {
 
-const asctoolkit::sidre::TypeID DOUBLE_ID = asctoolkit::sidre::DOUBLE_ID;
-const asctoolkit::sidre::TypeID INT32_ID = asctoolkit::sidre::INT32_ID;
+const axom::sidre::TypeID DOUBLE_ID = axom::sidre::DOUBLE_ID;
+const axom::sidre::TypeID INT32_ID = axom::sidre::INT32_ID;
 
 /**
  * \brief Simple utility function to initialize an array
@@ -59,13 +59,13 @@ void setData(T * data, int size, T initVal=T(0), int intDiv=1, T scaleFac=T(1))
  */
 template<typename T>
 void checkPointersAndData(const std::string& path
-                          , asctoolkit::sidre::Node& rootNode
-                          , asctoolkit::sidre::DataGroup * rootGroup)
+                          , axom::sidre::Node& rootNode
+                          , axom::sidre::DataGroup * rootGroup)
 {
-  asctoolkit::sidre::Node& node = rootNode[path];
+  axom::sidre::Node& node = rootNode[path];
   T * nD = static_cast<T *>(node.element_ptr(0));
 
-  asctoolkit::sidre::DataView * view = rootGroup->getView(path);
+  axom::sidre::DataView * view = rootGroup->getView(path);
   EXPECT_TRUE(ATK_NULLPTR != view);
 
   T * vD = view->getData<T *>();
@@ -92,14 +92,14 @@ void checkPointersAndData(const std::string& path
  */
 template<>
 void checkPointersAndData<std::string>(const std::string& path
-                                       , asctoolkit::sidre::Node& rootNode
+                                       , axom::sidre::Node& rootNode
                                        ,
-                                       asctoolkit::sidre::DataGroup * rootGroup)
+                                       axom::sidre::DataGroup * rootGroup)
 {
-  asctoolkit::sidre::Node& node = rootNode[path];
+  axom::sidre::Node& node = rootNode[path];
   std::string nD = node.as_string();
 
-  asctoolkit::sidre::DataView * view = rootGroup->getView(path);
+  axom::sidre::DataView * view = rootGroup->getView(path);
   EXPECT_TRUE(ATK_NULLPTR != view);
   EXPECT_TRUE(view->isString());
 
@@ -127,7 +127,7 @@ TEST(sidre_native_layout,empty_layout)
   ds->print();
 
   SLIC_INFO("Printing datastore native layout:");
-  asctoolkit::sidre::Node node;
+  axom::sidre::Node node;
   ds->getRoot()->createNativeLayout(node);
   node.to_json_stream(std::cout);
 
@@ -184,7 +184,7 @@ TEST(sidre_native_layout,generate_native_layout)
   ds->print();
 
   SLIC_INFO("Printing datastore native layout:");
-  asctoolkit::sidre::Node node;
+  axom::sidre::Node node;
   ds->getRoot()->createNativeLayout(node);
   node.to_json_stream(std::cout);
   //node.save("nativeLayoutTest.conduit");
@@ -245,7 +245,7 @@ TEST(sidre_native_layout,native_layout_with_scalars)
   ds->print();
 
   SLIC_INFO("Printing datastore::layout():");
-  asctoolkit::sidre::Node node;
+  axom::sidre::Node node;
   ds->getRoot()->createNativeLayout(node);
   node.to_json_stream(std::cout);
   //node.save("nativeLayoutTest.conduit");

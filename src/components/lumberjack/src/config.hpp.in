@@ -20,7 +20,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 #define LUMBERJACK_VERSION_MAJOR @Lumberjack_VERSION_MAJOR@
@@ -28,6 +28,6 @@ namespace lumberjack {
 #define LUMBERJACK_VERSION_PATCH @Lumberjack_VERSION_PATCH@
 
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif

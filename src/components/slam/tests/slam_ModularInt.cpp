@@ -24,7 +24,7 @@
 
 TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
 {
-  typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
 
 #ifdef ATK_DEBUG
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
@@ -52,7 +52,7 @@ TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
 
 TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
 {
-  using namespace asctoolkit::slam;
+  using namespace axom::slam;
 
 #ifdef ATK_DEBUG
   typedef ModularInt<policies::CompileTimeSizeHolder<int, 0> > ModularIntZero;
@@ -90,7 +90,7 @@ TEST(gtest_slam_modInt,runtime_modular_int)
 {
   SLIC_INFO("Checking modular int addition and subtraction when supplying the max value at runtime");
 
-  typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
 
   volatile int sz = 937;
 
@@ -123,7 +123,7 @@ TEST(gtest_slam_modInt,runtime_modular_int)
 
 TEST(gtest_slam_modInt,runtime_modular_int_mult)
 {
-  typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
 
   volatile int sz = 10;
 
@@ -157,7 +157,7 @@ TEST(gtest_slam_modInt,compiletime_modular_int)
 
   const int SZ = 937;
 
-  typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::CompileTimeSizeHolder<int, SZ> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::CompileTimeSizeHolder<int, SZ> > ModularIntType;
 
   int sz = SZ;
 

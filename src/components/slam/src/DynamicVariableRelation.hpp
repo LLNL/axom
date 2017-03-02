@@ -30,7 +30,7 @@
 #include "slam/Relation.hpp"
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam    {
 
   class DynamicVariableRelation : public Relation
@@ -146,6 +146,6 @@ namespace slam    {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_DYNAMIC_VARIABLE_RELATION_HPP_

@@ -285,4 +285,4 @@ std::string stacktrace( )
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */

@@ -15,7 +15,7 @@
 
 #include "OrderedSet.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
 namespace policies {
@@ -24,4 +24,4 @@ namespace policies {
 
 } // namespace policies
 } // namespace slam
-} // namespace asctoolkit
+} // namespace axom

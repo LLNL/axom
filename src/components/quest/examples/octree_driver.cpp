@@ -57,7 +57,7 @@
 #include <fstream>
 #include <iomanip>  // for setprecision()
 
-using namespace asctoolkit;
+using namespace axom;
 
 typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
@@ -339,7 +339,7 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
     SLIC_ASSERT( containment != ATK_NULLPTR );
 
 
-    asctoolkit::utilities::Timer timer(true);
+    axom::utilities::Timer timer(true);
     for ( int inode=0; inode < nnodes; ++inode )
     {
         axom::primal::Point< double,3 > pt;
@@ -433,7 +433,7 @@ void print_surface_stats( axom::mint::Mesh* mesh)
       for(int j=0; j<3; ++j)
       {
           double len = SpaceVector(tri[j],tri[(j+1)%3]).norm();
-          if(asctoolkit::utilities::isNearlyEqual(len,0.))
+          if(axom::utilities::isNearlyEqual(len,0.))
           {
               badTriangles.insert(i);
           }
@@ -449,7 +449,7 @@ void print_surface_stats( axom::mint::Mesh* mesh)
 
       // Compute triangle area stats
       double area = tri.area();
-      if( asctoolkit::utilities::isNearlyEqual(area, 0.))
+      if( axom::utilities::isNearlyEqual(area, 0.))
       {
           badTriangles.insert(i);
       }
@@ -555,11 +555,11 @@ int main( int argc, char** argv )
       const std::string defaultFileName = "plane_simp.stl";
       const std::string defaultDir = "src/components/quest/data/";
 
-      stlFile = asctoolkit::utilities::filesystem::joinPath(defaultDir, defaultFileName);
+      stlFile = axom::utilities::filesystem::joinPath(defaultDir, defaultFileName);
   }
 
-  stlFile = asctoolkit::slam::util::findFileInAncestorDirs(stlFile);
-  SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( stlFile));
+  stlFile = axom::slam::util::findFileInAncestorDirs(stlFile);
+  SLIC_ASSERT( axom::utilities::filesystem::pathExists( stlFile));
 
   // STEP 2: read mesh file
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Loading the mesh "));

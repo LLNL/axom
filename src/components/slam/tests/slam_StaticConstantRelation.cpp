@@ -30,8 +30,8 @@
 #include "slam/Relation.hpp"
 #include "slam/StaticConstantRelation.hpp"
 
-using asctoolkit::slam::RangeSet;
-using asctoolkit::slam::StaticConstantRelation;
+using axom::slam::RangeSet;
+using axom::slam::StaticConstantRelation;
 
 typedef RangeSet::ElementType   ElementType;
 typedef RangeSet::PositionType  PositionType;

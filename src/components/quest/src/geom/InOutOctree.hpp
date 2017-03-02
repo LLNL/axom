@@ -515,14 +515,14 @@ private:
         typedef axom::primal::Triangle<double, DIM> SpaceTriangle;
 
 
-        typedef asctoolkit::slam::PositionSet MeshVertexSet;
-        typedef asctoolkit::slam::PositionSet MeshElementSet;
+        typedef axom::slam::PositionSet MeshVertexSet;
+        typedef axom::slam::PositionSet MeshElementSet;
 
-        typedef asctoolkit::slam::Map<VertexIndex> VertexIndexMap;
-        typedef asctoolkit::slam::Map<SpacePt> VertexPositionMap;
+        typedef axom::slam::Map<VertexIndex> VertexIndexMap;
+        typedef axom::slam::Map<SpacePt> VertexPositionMap;
 
-        typedef asctoolkit::slam::policies::CompileTimeStrideHolder<VertexIndex, NUM_TRI_VERTS>  TVStride;
-        typedef asctoolkit::slam::StaticConstantRelation<TVStride, MeshElementSet, MeshVertexSet> TriangleVertexRelation;
+        typedef axom::slam::policies::CompileTimeStrideHolder<VertexIndex, NUM_TRI_VERTS>  TVStride;
+        typedef axom::slam::StaticConstantRelation<TVStride, MeshElementSet, MeshVertexSet> TriangleVertexRelation;
         typedef typename TriangleVertexRelation::RelationSet TriVertIndices;
 
     public:
@@ -840,17 +840,17 @@ public:
 
     // Some type defs for the Relations from Gray leaf blocks to mesh vertices and elements
     static const int MAX_VERTS_PER_BLOCK = 1;
-    typedef asctoolkit::slam::Map<BlockIndex> VertexBlockMap;
+    typedef axom::slam::Map<BlockIndex> VertexBlockMap;
 
-    typedef asctoolkit::slam::PositionSet GrayLeafSet;
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<VertexIndex, MAX_VERTS_PER_BLOCK>  BVStride;
-    typedef asctoolkit::slam::StaticConstantRelation<BVStride, GrayLeafSet, MeshVertexSet> GrayLeafVertexRelation;
-    typedef asctoolkit::slam::StaticVariableRelation                                       GrayLeafElementRelation;
+    typedef axom::slam::PositionSet GrayLeafSet;
+    typedef axom::slam::policies::CompileTimeStrideHolder<VertexIndex, MAX_VERTS_PER_BLOCK>  BVStride;
+    typedef axom::slam::StaticConstantRelation<BVStride, GrayLeafSet, MeshVertexSet> GrayLeafVertexRelation;
+    typedef axom::slam::StaticVariableRelation                                       GrayLeafElementRelation;
     typedef typename GrayLeafElementRelation::RelationSet TriangleIndexSet;
 
-    typedef asctoolkit::slam::Map<GrayLeafSet>            GrayLeafsLevelMap;
-    typedef asctoolkit::slam::Map<GrayLeafVertexRelation> GrayLeafVertexRelationLevelMap;
-    typedef asctoolkit::slam::Map<GrayLeafElementRelation> GrayLeafElementRelationLevelMap;
+    typedef axom::slam::Map<GrayLeafSet>            GrayLeafsLevelMap;
+    typedef axom::slam::Map<GrayLeafVertexRelation> GrayLeafVertexRelationLevelMap;
+    typedef axom::slam::Map<GrayLeafElementRelation> GrayLeafElementRelationLevelMap;
 
 public:
     /**
@@ -1097,7 +1097,7 @@ namespace{
 template<int DIM>
 void InOutOctree<DIM>::generateIndex ()
 {
-    typedef asctoolkit::utilities::Timer Timer;
+    typedef axom::utilities::Timer Timer;
 
     // Loop through mesh vertices
     SLIC_INFO("  Generating InOutOctree over surface mesh with "
@@ -1227,7 +1227,7 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
 template<int DIM>
 void InOutOctree<DIM>::insertMeshTriangles ()
 {
-    typedef asctoolkit::utilities::Timer Timer;
+    typedef axom::utilities::Timer Timer;
 
     typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
     typedef typename OctreeBaseType::LevelMapIterator LeavesIterator;
@@ -1466,7 +1466,7 @@ void InOutOctree<DIM>::colorOctreeLeaves()
     // * one of its siblings is gray
     // * one of its siblings has a gray descendant
 
-    typedef asctoolkit::utilities::Timer Timer;
+    typedef axom::utilities::Timer Timer;
     typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
     typedef typename OctreeBaseType::LevelMapIterator LeavesIterator;
     typedef std::vector<GridPt> GridPtVec;
@@ -1722,7 +1722,7 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & pt, const BlockIndex& lea
     SpaceVector norm;
     for(int i=0; i< numTris; ++i)
     {
-        if( asctoolkit::utilities::isNearlyEqual(minDistSq, sqDists[i]))
+        if( axom::utilities::isNearlyEqual(minDistSq, sqDists[i]))
             norm += unitNorms[i];
     }
 
@@ -1864,7 +1864,7 @@ void InOutOctree<DIM>::printOctreeStats() const
 {
     typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
     typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
-    typedef asctoolkit::slam::Map<int> LeafCountMap;
+    typedef axom::slam::Map<int> LeafCountMap;
 
     LeafCountMap levelBlocks( &this->m_levels);
     LeafCountMap levelLeaves( &this->m_levels);
@@ -2004,8 +2004,8 @@ void InOutOctree<DIM>::printOctreeStats() const
 
         }
 
-        typedef asctoolkit::slam::Map<int> TriCountMap;
-        typedef asctoolkit::slam::Map<int> CardinalityVTMap;
+        typedef axom::slam::Map<int> TriCountMap;
+        typedef axom::slam::Map<int> CardinalityVTMap;
 
         TriCountMap triCount( &m_meshWrapper.elementSet());
         for(int lev=0; lev< this->m_levels.size(); ++lev)
@@ -2381,9 +2381,9 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
     colorMap[ InOutBlockData::Black ] = 1;
 
     // Allocate Slam Maps for the field data
-    asctoolkit::slam::PositionSet leafSet(totalLeaves);
-    typedef asctoolkit::slam::Map<VertexIndex> LeafVertMap;
-    typedef asctoolkit::slam::Map<int> LeafIntMap;
+    axom::slam::PositionSet leafSet(totalLeaves);
+    typedef axom::slam::Map<VertexIndex> LeafVertMap;
+    typedef axom::slam::Map<int> LeafIntMap;
     LeafVertMap leafVertID(&leafSet);
     LeafVertMap leafVertID_unique(&leafSet);
     LeafIntMap leafTriCount(&leafSet);
@@ -2530,7 +2530,7 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
 #endif
   typedef typename GridIntMap::iterator GridIntIter;
 
-  typedef asctoolkit::slam::Map<GridIntMap> LevelGridIntMap;
+  typedef axom::slam::Map<GridIntMap> LevelGridIntMap;
   LevelGridIntMap diffBlocks( &(this->m_levels) );
 
   // Iterate through the octree leaves looking for neigbor blocks with different labelings

@@ -26,12 +26,12 @@
 #include "slam/Relation.hpp"
 #include "slam/DynamicVariableRelation.hpp"
 
-using asctoolkit::slam::RangeSet;
-using asctoolkit::slam::DynamicVariableRelation;
+using axom::slam::RangeSet;
+using axom::slam::DynamicVariableRelation;
 
 typedef RangeSet::PositionType  PositionType;
 typedef RangeSet::ElementType   ElementType;
-// typedef asctoolkit::slam::Set::SetPosition PositionType;
+// typedef axom::slam::Set::SetPosition PositionType;
 
 const PositionType FROMSET_SIZE = 5;
 const PositionType TOSET_SIZE = 8;

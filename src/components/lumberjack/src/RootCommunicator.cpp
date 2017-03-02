@@ -25,7 +25,7 @@
 
 #include "lumberjack/MPIUtility.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 void RootCommunicator::initialize(MPI_Comm comm, int ranksLimit)
@@ -91,4 +91,4 @@ bool RootCommunicator::isOutputNode()
 }
 
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom

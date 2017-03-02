@@ -28,7 +28,7 @@
 #include "Set.hpp"
 #include "NullSet.hpp"
 
-namespace asctoolkit{
+namespace axom{
 namespace slam{
 
 
@@ -94,6 +94,6 @@ namespace slam{
 #endif
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif //  SLAM_ORDERED_SET_H_

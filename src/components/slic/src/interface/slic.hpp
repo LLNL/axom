@@ -600,6 +600,6 @@ std::string stacktrace( );
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* SLIC_HPP_ */

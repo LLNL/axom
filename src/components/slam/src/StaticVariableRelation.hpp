@@ -35,7 +35,7 @@
 #include "slam/Relation.hpp"
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam    {
 
   class StaticVariableRelation : public Relation
@@ -196,6 +196,6 @@ namespace slam    {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_STATIC_VARIABLE_RELATION_HPP_

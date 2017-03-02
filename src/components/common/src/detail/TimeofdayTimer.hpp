@@ -15,7 +15,7 @@
 #include <sys/time.h>               // for gettimeofday() and timeval
                                     // Note: located in <time> on some systems
 
-namespace asctoolkit {
+namespace axom {
 namespace utilities {
 namespace detail {
 
@@ -89,6 +89,6 @@ namespace detail {
 
 } /* namespace detail */
 } /* namespace utilities */
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif // TIMEOFDAY_TIMER_HPP_
