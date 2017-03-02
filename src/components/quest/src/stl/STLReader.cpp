@@ -26,7 +26,8 @@
 //------------------------------------------------------------------------------
 //      STLReader Implementation
 //------------------------------------------------------------------------------
-namespace quest
+namespace axom {  
+namespace quest 
 {
 
 STLReader::STLReader() :
@@ -177,5 +178,6 @@ void STLReader::getMesh(
 
 }
 
-} /* namespace quest */
+} // end namespace quest 
+} // end namespace axom 
 

@@ -223,7 +223,7 @@ TEST( quest_signed_distance, sphere_test )
   const int nnodes = umesh->getNumberOfNodes();
 
   SLIC_INFO( "Generate BVHTree..." );
-  quest::SignedDistance< 3 > signed_distance( surface_mesh, 25, 25 );
+  axom::quest::SignedDistance< 3 > signed_distance( surface_mesh, 25, 25 );
 
   SLIC_INFO( "Compute signed distance..." );
   HyperSphere< double,3 > analytic_sphere( sphere_radius );

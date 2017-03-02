@@ -37,8 +37,9 @@
 #endif
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
+
     // NOTE: supporting just one region/surface for now
     // Note: Define everything in a local namespace
   namespace
@@ -530,5 +531,6 @@ void finalize()
   accelerator3D.teardownQuestLogger();
 }
 
-} /* end namespace quest */
+} // end namespace quest 
+} // end namespace axom 
 

@@ -11,8 +11,8 @@
 #include "primal/Point.hpp"
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
 
     /**
@@ -119,6 +119,7 @@ namespace quest
 
 
 
-} // end namespace quest
+} // end namespace quest 
+} // end namespace axom 
 
 #endif // QUEST_BROOD__HXX_

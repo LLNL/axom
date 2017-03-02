@@ -31,8 +31,8 @@
 using axom::primal::Point;
 using axom::primal::NumericArray;
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
     /**
      * \brief Helper enumeration for status of a BlockIndex within an OctreeLevel instance
@@ -308,5 +308,6 @@ namespace quest
 
 
 } // end namespace quest
+} // end namespace axom 
 
 #endif  // OCTREE_LEVEL__HXX_

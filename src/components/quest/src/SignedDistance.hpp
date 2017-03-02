@@ -31,8 +31,7 @@
 // C/C++ includes
 #include <cmath> // for std::sqrt()
 
-using namespace axom;
-
+namespace axom {
 namespace quest {
 
 template < int NDIMS >
@@ -244,16 +243,15 @@ private:
 
 };
 
-} /* namespace quest */
+} // end namespace quest
+} // end namespace axom
 
 //------------------------------------------------------------------------------
 //           SignedDistance Implementation
 //------------------------------------------------------------------------------
-namespace quest
-{
-
-namespace detail
-{
+namespace axom {
+namespace quest {
+namespace detail {
 
 class SortByDistance
 {
@@ -265,7 +263,7 @@ private:
   double* m_dist;
 };
 
-} /* end detail namespace */
+} // end namespace detail 
 
 //------------------------------------------------------------------------------
 template < int NDIMS >
@@ -626,5 +624,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( int icell )
   return ( bb );
 }
 
-} /* namespace quest */
+} // end namespace quest 
+} // end namespace axom 
+
 #endif /* SIGNEDDISTANCE_HPP_ */

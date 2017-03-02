@@ -61,7 +61,7 @@ using namespace axom;
 
 typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
-typedef quest::InOutOctree<3> Octree3D;
+typedef axom::quest::InOutOctree<3> Octree3D;
 
 typedef axom::primal::Point<int,3> TriVertIndices;
 typedef axom::primal::Triangle<double, 3> SpaceTriangle;
@@ -268,7 +268,7 @@ void testIntersectionOnRegularGrid()
     PointType bbMax(1.1);
     BoundingBoxType bbox( bbMin,bbMax );
 
-    typedef quest::SpatialOctree<DIM, quest::BlockData> SpaceOctree;
+    typedef axom::quest::SpatialOctree<DIM, quest::BlockData> SpaceOctree;
     SpaceOctree oct( bbox);
 
 

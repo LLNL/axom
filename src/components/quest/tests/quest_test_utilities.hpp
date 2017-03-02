@@ -24,7 +24,8 @@ using axom::primal::Triangle;
  * We may later decide to move some of these into the actual component if they are deemed useful.
  */
 
-namespace quest {
+namespace axom {  
+namespace quest  {
 namespace utilities {
 
 
@@ -307,8 +308,9 @@ void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 
 
 
-}   // end namespace utilities
-}   // end namespace quest
+} // end namespace utilities
+} // end namespace quest 
+} // end namespace axom 
 
 
 #endif // QUEST_TEST_UTILITIES_HPP_

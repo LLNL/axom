@@ -50,8 +50,8 @@ namespace {
 }
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
     /**
      * \class
@@ -530,5 +530,6 @@ namespace quest
     };
 
 } // end namespace quest
+} // end namespace axom 
 
 #endif  // MORTON_INDEX_HXX_

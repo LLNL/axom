@@ -32,7 +32,7 @@ namespace {
     const int DIM = 3;
 }
 
-typedef quest::InOutOctree<DIM> Octree3D;
+typedef axom::quest::InOutOctree<DIM> Octree3D;
 
 typedef Octree3D::GeometricBoundingBox GeometricBoundingBox;
 typedef Octree3D::SpacePt SpacePt;
@@ -104,7 +104,7 @@ void queryOctahedronMesh(axom::mint::Mesh*& mesh, const GeometricBoundingBox& bb
 //            pt = SpacePt(2* bbMax);
 //            break;
 //        default:                // random points in bounding box
-            pt = quest::utilities::randomSpacePt<DIM>(bbMin, bbMax);
+            pt = axom::quest::utilities::randomSpacePt<DIM>(bbMin, bbMax);
 //            break;
 //        }
 
@@ -136,7 +136,7 @@ TEST( quest_inout_octree, octahedron_mesh)
     SLIC_INFO("*** This test creates a simple mesh of an octahedron and tests point containment.\n");
 
     // Generate the InOutOctree
-    axom::mint::Mesh* mesh = quest::utilities::make_octahedron_mesh();
+    axom::mint::Mesh* mesh = axom::quest::utilities::make_octahedron_mesh();
     // quest::utilities::write_vtk(mesh, "octahedron.vtk");
 
     ///

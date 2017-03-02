@@ -21,8 +21,8 @@
 #endif
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
 /*!
  *******************************************************************************
@@ -133,6 +133,7 @@ void mesh_center_of_mass(double* coords);
  */
 void finalize();
 
-} /* end namespace quest */
+} // end namespace quest 
+} // end namespace axom 
 
 #endif /* QUEST_HPP_ */

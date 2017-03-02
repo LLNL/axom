@@ -495,7 +495,7 @@ BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
    SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
    SLIC_ASSERT( cellIdx >= 0 && cellIdx < surface_mesh->getMeshNumberOfCells());
 
-   using namespace quest;
+   using namespace axom::quest ;
 
    int cell[3];
    surface_mesh->getMeshCell( cellIdx, cell );

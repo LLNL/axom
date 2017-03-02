@@ -358,14 +358,14 @@ void runContainmentQueries(CommandLineArguments& clargs)
 {
     const int IGNORE = -1;
     const bool USE_DISTANCE = false;
-    quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, IGNORE, IGNORE);
+    axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, IGNORE, IGNORE);
 
     if(!clargs.hasBoundingBox())
     {
         SpacePt bbMin;
         SpacePt bbMax;
-        quest::mesh_min_bounds(bbMin.data());
-        quest::mesh_max_bounds(bbMax.data());
+        axom::quest::mesh_min_bounds(bbMin.data());
+        axom::quest::mesh_max_bounds(bbMax.data());
         clargs.meshBoundingBox = SpaceBoundingBox(bbMin, bbMax);
         clargs.meshBoundingBox.expand(1.5);
     }
@@ -393,14 +393,14 @@ void runContainmentQueries(CommandLineArguments& clargs)
         axom::primal::Point< double,3 > pt;
         umesh->getMeshNode( inode, pt.data() );
 
-        containment[ inode ] = quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
+        containment[ inode ] = axom::quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
     }
     timer.stop();
     SLIC_INFO(fmt::format("Querying {}^3 containment field took {} seconds (@ {} queries per second)",
                     clargs.queryResolution, timer.elapsed(), nnodes / timer.elapsed()));
 
 
-    quest::finalize();
+    axom::quest::finalize();
 }
 
 /**
@@ -411,14 +411,14 @@ void runDistanceQueries(CommandLineArguments& clargs)
     int maxDepth = 10;
     int maxEltsPerBucket = 25;
     const bool USE_DISTANCE = true;
-    quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, maxDepth, maxEltsPerBucket);
+    axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, maxDepth, maxEltsPerBucket);
 
     if(!clargs.hasBoundingBox())
     {
         SpacePt bbMin;
         SpacePt bbMax;
-        quest::mesh_min_bounds(bbMin.data());
-        quest::mesh_max_bounds(bbMax.data());
+        axom::quest::mesh_min_bounds(bbMin.data());
+        axom::quest::mesh_max_bounds(bbMax.data());
         clargs.meshBoundingBox = SpaceBoundingBox(bbMin, bbMax);
         clargs.meshBoundingBox.expand(1.5);
     }
@@ -450,14 +450,14 @@ void runDistanceQueries(CommandLineArguments& clargs)
         axom::primal::Point< double,3 > pt;
         umesh->getMeshNode( inode, pt.data() );
 
-        distance[ inode ] = quest::distance(pt[0],pt[1],pt[2]);
-        containment[ inode ] = quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
+        distance[ inode ] = axom::quest::distance(pt[0],pt[1],pt[2]);
+        containment[ inode ] = axom::quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
     }
     timer.stop();
     SLIC_INFO(fmt::format("Querying {}^3 distance field took {} seconds (@ {} queries per second)"
                     , clargs.queryResolution, timer.elapsed(), nnodes / timer.elapsed()));
 
-    quest::finalize();
+    axom::quest::finalize();
 }
 
 

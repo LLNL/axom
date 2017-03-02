@@ -15,8 +15,8 @@ using axom::primal::BoundingBox;
 using axom::primal::Point;
 using axom::primal::Vector;
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
 
 
@@ -196,6 +196,7 @@ protected:
 };
 
 
-} // end namespace quest
+} // end namespace quest 
+} // end namespace axom 
 
 #endif  // SPATIAL_OCTREE__HXX_

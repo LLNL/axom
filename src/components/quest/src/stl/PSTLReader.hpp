@@ -7,7 +7,8 @@
 
 #include "mpi.h"
 
-namespace quest
+namespace axom {  
+namespace quest 
 {
 
 class PSTLReader : public STLReader
@@ -55,6 +56,7 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT( PSTLReader );
 };
 
-} /* namespace quest */
+} // end namespace quest 
+} // end namespace axom 
 
 #endif /* PSTLREADER_HPP_ */

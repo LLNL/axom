@@ -17,8 +17,8 @@
   #include "boost/unordered_map.hpp"
 #endif
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
     /**
      * \brief Traits class to manage types for different point representations in a SparseOctreeLevel
@@ -341,5 +341,6 @@ namespace quest
     };
 
 } // end namespace quest
+} // end namespace axom 
 
 #endif  // SPARSE_OCTREE_LEVEL__HXX_

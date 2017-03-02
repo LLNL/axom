@@ -68,8 +68,8 @@
 #endif
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
     /**
      * \brief Compact BlockDataType for an InOutOctree
@@ -2718,6 +2718,7 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name
 }
 
 
-} // end namespace quest
+} // end namespace quest 
+} // end namespace axom 
 
 #endif  // SPATIAL_OCTREE__HXX_

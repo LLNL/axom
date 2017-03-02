@@ -320,7 +320,7 @@ BoundingBox< double,3 > compute_bounds( axom::mint::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
-   using namespace quest;
+   using namespace axom::quest ;
 
    BoundingBox< double,3 > meshBB;
    Point< double,3 > pt;

@@ -29,8 +29,8 @@ using axom::primal::NumericArray;
 using axom::primal::Point;
 using axom::primal::Vector;
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
   /**
    * \brief Minimal implementation of a BlockDataType for an OctreeBase.
@@ -968,6 +968,7 @@ protected:
 };
 
 
-} // end namespace quest
+} // end namespace quest 
+} // end namespace axom 
 
 #endif  // OCTREE_BASE_HXX_

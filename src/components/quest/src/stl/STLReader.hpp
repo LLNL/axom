@@ -18,7 +18,8 @@
 #include "common/ATKMacros.hpp"
 #include "mint/UnstructuredMesh.hpp"
 
-namespace quest
+namespace axom {  
+namespace quest 
 {
 
 class STLReader
@@ -104,6 +105,7 @@ private:
     DISABLE_MOVE_AND_ASSIGNMENT(STLReader);
 };
 
-} /* namespace quest */
+} // end namespace quest 
+} // end namespace axom 
 
 #endif /* STLREADER_HPP_ */

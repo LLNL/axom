@@ -3,7 +3,8 @@
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
-namespace quest {
+namespace axom {  
+namespace quest  {
 
 //------------------------------------------------------------------------------
 PSTLReader::PSTLReader( MPI_Comm comm ) : m_comm( comm )
@@ -47,4 +48,5 @@ void PSTLReader::read()
   MPI_Barrier( MPI_COMM_WORLD );
 }
 
-} /* namespace quest */
+} // end namespace quest 
+} // end namespace axom 

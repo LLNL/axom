@@ -9,8 +9,8 @@
 #include "quest/OctreeLevel.hpp"
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
     /**
      * \class
@@ -303,6 +303,7 @@ namespace quest
       int m_blockCount;
     };
 
-} // end namespace quest
+} // end namespace quest 
+} // end namespace axom 
 
 #endif  // DENSE_OCTREE_LEVEL__HXX_
