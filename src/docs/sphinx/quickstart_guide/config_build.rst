@@ -14,21 +14,23 @@ Configuration and Building
 ======================================================
 
 This section provides information about configuring and building
-the CS Toolkit software after you have obtained a copy of the repo.
-The main steps for using the Toolkit are:
+the Axom software after you have clones the repository.
+The main steps for using Axom are:
 
-  #. Configure, build, and install third-party libraries (TPLs) that the Toolkit depends on.
-  #. Build and install the CS Toolkit and its libraries.
-  #. Build and link your application with the Toolkit installation.
+  #. Configure, build, and install third-party libraries (TPLs) on which Axom depends.
+  #. Build and install Axom component libraries that you wish to use.
+  #. Build and link your application with the Axom installation.
 
-Depending on how your team uses the Toolkit, some of these steps, such as
-installing the Toolkit TPLs and the Toolkit itself, may need to be done 
+Depending on how your team uses Axom, some of these steps, such as
+installing the Axom TPLs and Axom itself, may need to be done 
 only once. These installations can be shared across the team.
 
 
 -----------------------------------------------------
 Requirements, Dependencies, and Supported Compilers
 -----------------------------------------------------
+
+.. danger:: This needs to be updated and organized better...
 
 Basic requirements:
 
@@ -128,15 +130,14 @@ Building and Installing Third-party Libraries
 ----------------------------------------------
 
 We use the `Spack Package Manager <https://github.com/scalability-llnl/spack>`_ 
-to manage and build TPL dependencies for the Toolkit. To make the TPL process
+to manage and build TPL dependencies for Axom. To make the TPL process
 easier (you don't really need to learn much about Spack) and automatic, we 
 drive it with a python script called ``uberenv.py``, which is located in the 
 ``scripts/uberenv`` directory. Running this script does several things:
 
   * Clones the Spack repo from GitHub and checks out a specific version that we have tested.
-  * Configures Spack compiler sets, adds custom package build rules and set any options specific to the Toolkit. 
-  * Invokes Spack to build a complete set of TPLs for a configuration and generates a *host-config* file,
-    that captures all details of the configuration and the built dependencies.
+  * Configures Spack compiler sets, adds custom package build rules and sets any options specific to Axom.
+  * Invokes Spack to build a complete set of TPLs for each configuration and generates a *host-config* file for each that captures all details of the configuration and the build dependencies.
 
 The figure illustrates what the script does.
 
@@ -179,37 +180,50 @@ Default invocation on OSX:
 
 The 'install path' specifies the directory where the TPLs will be installed. 
 The 'spec' argument refers to Spack's specification syntax. Typically, a Spack
-spec (that's fun to say, no?) indicates the specific version of a specific compiler to use for the build.
-We manage the set of compilers Spack supports in the ``scripts/uberenv/compilers.yaml`` file. 
+spec ("Spack spec" that's fun to say, huh?) indicates a specific version of 
+a particular compiler to use for the build. We manage the set of compilers 
+we support in the ``scripts/uberenv/compilers.yaml`` file. 
 
-You can edit ``scripts/uberenv/compilers.yaml`` or use the **--compilers-yaml** option to select another file to set the  compiler settings used by Spack. See the `Spack Compiler Configuration <http://spack.readthedocs.io/en/latest/getting_started.html#manual-compiler-configuration>`_
-documentation for details.
+You can edit ``scripts/uberenv/compilers.yaml`` or use the **--compilers-yaml** 
+option to select another file to set the  compilers and setting you want. 
+See the `Spack Compiler Configuration <http://spack.readthedocs.io/en/latest/getting_started.html#manual-compiler-configuration>`_ documentation for details.
 
-For OSX, the defaults in ``compilers.yaml`` are X-Code's clang and gfortran from https://gcc.gnu.org/wiki/GFortranBinaries#MacOS. 
+For OSX, the defaults in ``compilers.yaml`` are X-Code's clang and gfortran 
+from `X-code for OSX <https://gcc.gnu.org/wiki/GFortranBinaries#MacOS>`_.
 
 .. note::
-    uberenv.py forces Spack to ignore ``~/.spack/compilers.yaml`` to avoid conflicts
-    and surprises from a user's specific Spack settings on HPC platforms.
+    uberenv.py forces Spack to ignore ``~/.spack/compilers.yaml`` to avoid 
+    conflicts and surprises from a user's specific Spack settings.
 
 
-You can also see examples of how Spack spec names are passed to ``uberenv.py`` in the python scripts we use to build 
-TPLs for the Toolkit development team on LLNL's LC platforms. These scripts are located in
-the directory ``scripts/uberenv/llnl_install_scripts``. 
+You can also see examples of how Spack spec names are passed to ``uberenv.py`` 
+in the python scripts we use to build TPLs for the Axom development team on 
+LC platforms at LLNL. These scripts are located in the directory 
+``scripts/uberenv/llnl_install_scripts``. 
 
-The 'mirror' argument provides a location for Spack to store the downloaded source code for TPL dependencies. When
-building more than one installation of the TPLs, using a mirror will allow Spack to skip downloads for source code that was already obtained during a prior build. 
+The 'mirror' argument provides a location for Spack to store the downloaded 
+source code for TPL dependencies. When building more than one installation 
+of the TPLs, using a mirror will allow Spack to skip downloads for source 
+code that was already obtained during a prior build. 
 
-When the 'create-mirror' argument is used, ``uberenv.py`` establishes a Spack mirror and downloads the source for all TPL dependencies into this mirror. It does not build any TPLs. This option is used to obtain a copy of source code for all necessary TPLs so it can be transfered to another system for builds.
+When the 'create-mirror' argument is used, ``uberenv.py`` establishes a Spack 
+mirror and downloads the source for all TPL dependencies into this mirror. 
+It does not build any TPLs. This option is used to obtain a copy of source 
+code for all necessary TPLs so it can be transfered to another system for 
+building there.
+
 
 .. _toolkitbuild-label:
 
 --------------------------------------
-Building and Installing the CS Toolkit
+Building and Installing Axom
 --------------------------------------
 
-We use a CMake-based system, *BLT*, to configure and build the Toolkit
-(see **add link to BLT docs** for more information). This section 
-provides essential instructions for building the code.
+We use a CMake-based system, called `BLT https://github.com/LLNL/blt>`_, to 
+configure and build Axom. This section provides essential instructions for 
+building the code.
+
+.. note:: Add instructions for "developer" builds vs. "user" builds. 
 
 
 .. _hostconfig-label:
@@ -217,7 +231,7 @@ provides essential instructions for building the code.
 Host-config files
 ^^^^^^^^^^^^^^^^^^^
 
-We use host-config files to make building the Toolkit more automatic and
+We use host-config files to make building Axom more automatic and
 easily reproducible. A host-config file captures all build configuration 
 information used for the build such as compiler version and options, 
 paths to all TPLs, etc. When passed to CMake, a host-config file initializes
@@ -394,7 +408,7 @@ CMake Options used to enable Software Development Tools (should these go in BLT 
 Make targets
 --------------------------
 
-Our system provides a variety of make targets to build individual Toolkit 
+Our system provides a variety of make targets to build individual Axom 
 components, documentation, run tests, examples, etc. After running CMake 
 (using either the python helper script or directly), you can see a listing of
 all available targets by passing 'help' to make; i.e.,::
@@ -403,7 +417,7 @@ all available targets by passing 'help' to make; i.e.,::
 
 The name of each target should be sufficiently descriptive to indicate
 what the target does. For example, to run all tests and make sure the
-Toolkit components are built properly, execute the following command::
+Axom components are built properly, execute the following command::
 
    $ make test
 

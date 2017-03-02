@@ -9,38 +9,25 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
-CS Toolkit Quick Start Guide
+Axom Quickstart Guide
 =========================================================
 
-This guide provides information to help CS Toolkit users and developers get 
+This guide provides information to help Axom users and developers get 
 up and running quickly.
 
-It describes how to:
+It provides instructions for:
 
-  * Obtain, build and install third-party libraries that the Toolkit depends on
-  * Configure, build and install the CS Toolkit component libraries
-  * Compile and link an application with the Toolkit
+  * Obtaining, building and installing third-party libraries on which Axom depends
+  * Configuring, building and installing the Axom component libraries you want to use
+  * Compiling and linking an application with Axom
 
-The following additional information about the CS Toolkit, can be found on the
-`CS Toolkit Web Page <https://lc.llnl.gov/toolkit/docs/sphinx/web_docs/html/index.html>`_:
+Additional information about Axom can be found on the main
+`Axom Web Page <https://lc.llnl.gov/toolkit/docs/sphinx/web_docs/html/index.html>`_:
 
   * Build system
-  * User guides for individual Toolkit components
-  * Developer guides
-  * Source code documentation
-
-There are multiple ways to communicate with the team if you have questions,
-suggestions, etc. We maintain two email lists:
-
-    * 'asctoolkit-dev@llnl.gov' - developer communication
-    * 'asctoolkit-users@llnl.gov' - developer-user interaction
-
-If you want to communicate with the CS Toolkit team or other users, go to the
-`LLNL E-Mail List Manager Site <https://lists.llnl.gov>`_ to subscribe to one
-or both of these lists.
-
-We also have a chat room on the LLNL Cisco Jabber called 'CS Toolkit Dev'. It's 
-open to anyone. You just have to log on to Jabber and join the room.
+  * User guides and source code documentation for individual Axom components
+  * Developer guide, coding guidelines, etc.
+  * Communicating with the Axom development tesm (email lists, chat room, etc.)
 
 
 **Contents:**
@@ -50,6 +37,3 @@ open to anyone. You just have to log on to Jabber and join the room.
 
    the_code
    config_build
-   license
-
-
