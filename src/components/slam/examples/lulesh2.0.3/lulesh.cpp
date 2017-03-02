@@ -167,13 +167,18 @@
 #include <iostream>
 #include <unistd.h>
 
-#if _OPENMP
-# include <omp.h>
-#endif
 
 #include "lulesh.hpp"
 
-#include "slic/UnitTestLogger.hpp"
+#ifdef AXOM_USE_OPENMP
+  # include <omp.h>
+#endif
+
+#ifdef AXOM_USE_MPI
+  #include "slic/SynchronizedStream.hpp"
+#else
+  #include "slic/GenericOutputStream.hpp"
+#endif
 
 namespace slamLulesh {
 
@@ -228,7 +233,7 @@ namespace slamLulesh {
         gnewdt = domain.dthydro() * Real_t(2.0) / Real_t(3.0);
       }
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
       MPI_Allreduce(&gnewdt, &newdt, 1,
           ((sizeof(Real_t) == 4) ? MPI_FLOAT : MPI_DOUBLE),
           MPI_MIN, MPI_COMM_WORLD);
@@ -563,7 +568,7 @@ namespace slamLulesh {
       Real_t *sigxx, Real_t *sigyy, Real_t *sigzz,
       Real_t *determ, Index_t numElem, Index_t numNode)
   {
-#if _OPENMP
+#ifdef AXOM_USE_OPENMP
     Index_t numthreads = omp_get_max_threads();
 #else
     Index_t numthreads = 1;
@@ -585,14 +590,14 @@ namespace slamLulesh {
 #pragma omp parallel for firstprivate(numElem)
     for( Index_t k = 0; k<numElem; ++k )
     {
-      const Index_t* const elemToNode = domain.nodelist(k);
+      Domain::ElemNodeSet elemToNode = domain.nodelist(k);
       Real_t B[3][8]; // shape function derivatives
       Real_t x_local[8];
       Real_t y_local[8];
       Real_t z_local[8];
 
       // get nodal coordinates from global arrays and copy into local arrays.
-      CollectDomainNodesToElemNodes(domain, elemToNode, x_local, y_local, z_local);
+      CollectDomainNodesToElemNodes(domain, &elemToNode[0], x_local, y_local, z_local);
 
       // Volume calculation involves extra work for numerical consistency
       CalcElemShapeFunctionDerivatives(x_local, y_local, z_local,
@@ -633,8 +638,8 @@ namespace slamLulesh {
 #pragma omp parallel for firstprivate(numNode)
       for( Index_t gnode = 0; gnode<numNode; ++gnode )                  // foreach node
       {
-        Index_t count = domain.nodeElemCount(gnode);                    //   get the number of corners in this node
-        const Index_t *cornerList = domain.nodeElemCornerList(gnode);         //   begin() of this node's corner indices
+        Domain::NodeCornerSet cornerList = domain.nodeElemCornerList(gnode); // Get corners associated with this node
+        Index_t count = cornerList.size();                                   // Get the number of corners in this node
         Real_t fx_tmp = Real_t(0.0);
         Real_t fy_tmp = Real_t(0.0);
         Real_t fz_tmp = Real_t(0.0);
@@ -789,7 +794,7 @@ namespace slamLulesh {
       Index_t numNode)
   {
 
-#if _OPENMP
+#ifdef AXOM_USE_OPENMP
     Index_t numthreads = omp_get_max_threads();
 #else
     Index_t numthreads = 1;
@@ -857,7 +862,7 @@ namespace slamLulesh {
       Real_t hourgam[8][4];
       Real_t xd1[8], yd1[8], zd1[8];
 
-      const Index_t *elemToNode = domain.nodelist(i2);
+      Domain::ElemNodeSet elemToNode = domain.nodelist(i2);
       Index_t i3 = 8 * i2;
       Real_t volinv = Real_t(1.0) / determ[i2];
       Real_t ss1, mass1, volume13;
@@ -1040,8 +1045,8 @@ namespace slamLulesh {
 #pragma omp parallel for firstprivate(numNode)
       for( Index_t gnode = 0; gnode<numNode; ++gnode )                  // foreach node
       {
-        Index_t count = domain.nodeElemCount(gnode);                    //   get the number of corners
-        const Index_t *cornerList = domain.nodeElemCornerList(gnode);         //   grab a pointer to the first corner
+        Domain::NodeCornerSet cornerList = domain.nodeElemCornerList(gnode);  // Get corners associated with this node
+        Index_t count = cornerList.size();                                    //   get the number of corners
         Real_t fx_tmp = Real_t(0.0);
         Real_t fy_tmp = Real_t(0.0);
         Real_t fz_tmp = Real_t(0.0);
@@ -1082,8 +1087,8 @@ namespace slamLulesh {
       Real_t x1[8],  y1[8],  z1[8];
       Real_t pfx[8], pfy[8], pfz[8];
 
-      const Index_t* elemToNode = domain.nodelist(i);
-      CollectDomainNodesToElemNodes(domain, elemToNode, x1, y1, z1);
+      Domain::ElemNodeSet elemToNode = domain.nodelist(i);
+      CollectDomainNodesToElemNodes(domain, &elemToNode[0], x1, y1, z1);
 
       CalcElemVolumeDerivative(pfx, pfy, pfz, x1, y1, z1);
 
@@ -1105,7 +1110,7 @@ namespace slamLulesh {
       /* Do a check for negative volumes */
       if ( domain.v(i) <= Real_t(0.0) )
       {
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
         MPI_Abort(MPI_COMM_WORLD, VolumeError);
 #else
         exit(VolumeError);
@@ -1153,7 +1158,7 @@ namespace slamLulesh {
       {
         if (determ[k] <= Real_t(0.0))
         {
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
           MPI_Abort(MPI_COMM_WORLD, VolumeError);
 #else
           exit(VolumeError);
@@ -1176,7 +1181,7 @@ namespace slamLulesh {
   {
     Index_t numNode = domain.numNode();
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
     CommRecv(domain, MSG_COMM_SBN, 3,
         domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
         true, false);
@@ -1193,7 +1198,7 @@ namespace slamLulesh {
     /* Calcforce calls partial, force, hourq */
     CalcVolumeForceForElems(domain);
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
     Domain_member fieldData[3];
     fieldData[0] = &Domain::fx;
     fieldData[1] = &Domain::fy;
@@ -1313,7 +1318,7 @@ namespace slamLulesh {
      * acceleration boundary conditions. */
     CalcForceForNodes(domain);
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
 #ifdef SEDOV_SYNC_POS_VEL_EARLY
     CommRecv(domain, MSG_SYNC_POS_VEL, 6,
         domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
@@ -1328,7 +1333,7 @@ namespace slamLulesh {
     CalcVelocityForNodes( domain, delt, u_cut, domain.numNode());
 
     CalcPositionForNodes( domain, delt, domain.numNode() );
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
 #ifdef SEDOV_SYNC_POS_VEL_EARLY
     fieldData[0] = &Domain::x;
     fieldData[1] = &Domain::y;
@@ -1602,10 +1607,10 @@ namespace slamLulesh {
 
       Real_t volume;
       Real_t relativeVolume;
-      const Index_t* const elemToNode = domain.nodelist(k);
+      Domain::ElemNodeSet elemToNode = domain.nodelist(k);
 
       // get nodal coordinates from global arrays and copy into local arrays.
-      CollectDomainNodesToElemNodes(domain, elemToNode, x_local, y_local, z_local);
+      CollectDomainNodesToElemNodes(domain, &elemToNode[0], x_local, y_local, z_local);
 
       // volume calculations
       volume = CalcElemVolume(x_local, y_local, z_local );
@@ -1679,7 +1684,7 @@ namespace slamLulesh {
         // See if any volumes are negative, and take appropriate action.
         if (vnew[k] <= Real_t(0.0))
         {
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
           MPI_Abort(MPI_COMM_WORLD, VolumeError);
 #else
           exit(VolumeError);
@@ -1704,7 +1709,7 @@ namespace slamLulesh {
       Real_t ax,ay,az;
       Real_t dxv,dyv,dzv;
 
-      const Index_t *elemToNode = domain.nodelist(i);
+      Domain::ElemNodeSet elemToNode = domain.nodelist(i);
       Index_t n0 = elemToNode[0];
       Index_t n1 = elemToNode[1];
       Index_t n2 = elemToNode[2];
@@ -2076,7 +2081,7 @@ namespace slamLulesh {
     {
       domain.AllocateGradients(numElem, domain.numElemWithGhosts());
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
       CommRecv(domain, MSG_MONOQ, 3,
           domain.sizeX(), domain.sizeY(), domain.sizeZ(),
           true, true);
@@ -2085,7 +2090,7 @@ namespace slamLulesh {
       /* Calculate velocity gradients */
       CalcMonotonicQGradientsForElems(domain, vnew);
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
       Domain_member fieldData[3];
 
       /* Transfer velocity gradients in the first order elements */
@@ -2120,7 +2125,7 @@ namespace slamLulesh {
 
       if(idx >= 0)
       {
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
         MPI_Abort(MPI_COMM_WORLD, QStopError);
 #else
         exit(QStopError);
@@ -2533,7 +2538,7 @@ namespace slamLulesh {
           }
           if (vc <= 0.)
           {
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
             MPI_Abort(MPI_COMM_WORLD, VolumeError);
 #else
             exit(VolumeError);
@@ -2544,8 +2549,8 @@ namespace slamLulesh {
 
       for (Int_t r = 0; r<domain.numReg(); r++)
       {
-        Index_t numElemReg = domain.regElemSize(r);
-        const Index_t *regElemList = domain.regElemlist(r);
+        Domain::RegionElemSet regElemSet = domain.regElemlist(r);
+
         Int_t rep;
         //Determine load imbalance for this region
         //round down the number with lowest cost
@@ -2557,7 +2562,9 @@ namespace slamLulesh {
         //very expensive regions
         else
           rep = 10 * (1 + domain.cost());
-        EvalEOSForElems(domain, vnew, numElemReg, regElemList, rep);
+
+        const Index_t* regElemPtr = regElemSet.empty() ? AXOM_NULLPTR : &regElemSet[0];
+        EvalEOSForElems(domain, vnew, regElemSet.size(), regElemPtr, rep);
       }
 
     }
@@ -2613,7 +2620,7 @@ namespace slamLulesh {
       const Index_t *regElemlist,
       Real_t qqc, Real_t& dtcourant)
   {
-#if _OPENMP
+#ifdef AXOM_USE_OPENMP
     Index_t threads = omp_get_max_threads();
     static Index_t *courant_elem_per_thread;
     static Real_t *dtcourant_per_thread;
@@ -2637,7 +2644,7 @@ namespace slamLulesh {
       Real_t dtcourant_tmp = dtcourant;
       Index_t courant_elem  = -1;
 
-#if _OPENMP
+#ifdef AXOM_USE_OPENMP
       Index_t thread_num = omp_get_thread_num();
 #else
       Index_t thread_num = 0;
@@ -2697,7 +2704,7 @@ namespace slamLulesh {
   void CalcHydroConstraintForElems(Domain &domain, Index_t length,
       const Index_t *regElemlist, Real_t dvovmax, Real_t& dthydro)
   {
-#if _OPENMP
+#ifdef AXOM_USE_OPENMP
     Index_t threads = omp_get_max_threads();
     static Index_t *hydro_elem_per_thread;
     static Real_t *dthydro_per_thread;
@@ -2719,7 +2726,7 @@ namespace slamLulesh {
       Real_t dthydro_tmp = dthydro;
       Index_t hydro_elem = -1;
 
-#if _OPENMP
+#ifdef AXOM_USE_OPENMP
       Index_t thread_num = omp_get_thread_num();
 #else
       Index_t thread_num = 0;
@@ -2774,15 +2781,18 @@ namespace slamLulesh {
 
     for (Index_t r = 0; r < domain.numReg(); ++r)
     {
+      Domain::RegionElemSet regElemSet = domain.regElemlist(r);
+      const Index_t* regElemPtr = regElemSet.empty() ? AXOM_NULLPTR : &regElemSet[0];
+
       /* evaluate time constraint */
-      CalcCourantConstraintForElems(domain, domain.regElemSize(r),
-          domain.regElemlist(r),
+      CalcCourantConstraintForElems(domain, regElemSet.size(),
+          regElemPtr,
           domain.qqc(),
           domain.dtcourant());
 
       /* check hydro constraint */
-      CalcHydroConstraintForElems(domain, domain.regElemSize(r),
-          domain.regElemlist(r),
+      CalcHydroConstraintForElems(domain, regElemSet.size(),
+          regElemPtr,
           domain.dvovmax(),
           domain.dthydro());
     }
@@ -2809,7 +2819,7 @@ namespace slamLulesh {
      * material states */
     LagrangeElements(domain, domain.numElem());
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
 #ifdef SEDOV_SYNC_POS_VEL_LATE
     CommRecv(domain, MSG_SYNC_POS_VEL, 6,
         domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
@@ -2830,7 +2840,7 @@ namespace slamLulesh {
 
     CalcTimeConstraintsForElems(domain);
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
 #ifdef SEDOV_SYNC_POS_VEL_LATE
     CommSyncPosVel(domain);
 #endif
@@ -2846,14 +2856,13 @@ namespace slamLulesh {
 int main(int argc, char *argv[])
 {
   using namespace slamLulesh;
-  axom::slic::UnitTestLogger logger;
 
   Domain *locDom;
   Int_t numRanks;
   Int_t myRank;
   struct cmdLineOpts opts;
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
   Domain_member fieldData;
 
   MPI_Init(&argc, &argv);
@@ -2863,6 +2872,31 @@ int main(int argc, char *argv[])
   numRanks = 1;
   myRank = 0;
 #endif
+
+  { // initialize logger
+    axom::slic::initialize();
+
+    std::string fmt_id = "[<LEVEL>]: <MESSAGE>\n";
+    std::string fmt_we = "[<LEVEL> (<FILE>:<LINE>)]:>\n\t<MESSAGE>\n";
+    axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
+
+    axom::slic::LogStream *weStream, *idStream;
+
+#ifdef AXOM_USE_MPI
+    std::string rankStr = numRanks == 1? "" : "[<RANK>]";
+    weStream = new axom::slic::SynchronizedStream(&std::cerr,MPI_COMM_WORLD, rankStr+fmt_we);
+    idStream = new axom::slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, rankStr+fmt_id);
+
+#else
+    weStream = new axom::slic::GenericOutputStream(&std::cerr, fmt_we);
+    idStream = new axom::slic::GenericOutputStream(&std::cout, fmt_id);
+#endif
+
+    addStreamToMsgLevel(weStream,  axom::slic::message::Error);
+    addStreamToMsgLevel(weStream,  axom::slic::message::Warning);
+    addStreamToMsgLevel(idStream,  axom::slic::message::Info);
+    addStreamToMsgLevel(idStream,  axom::slic::message::Debug);
+  }
 
   /* Set defaults that can be overridden by command line opts */
   opts.its = 9999999;
@@ -2882,7 +2916,7 @@ int main(int argc, char *argv[])
     SLIC_INFO( "Running problem size "
         << opts.nx << "^3 per domain until completion"
         << "\n\tNum processors: " << numRanks
-#if _OPENMP
+#ifdef AXOM_USE_OPENMP
         << "\n\tNum threads: " << omp_get_max_threads()
 #endif
         << "\n\tTotal number of elements: " << (numRanks * opts.nx * opts.nx * opts.nx));
@@ -2895,6 +2929,8 @@ int main(int argc, char *argv[])
         << "\n\tTo write an output file for VisIt, use -v"
         << "\n\tSee help (-h) for more options"
         << "\n");
+
+    axom::slic::flushStreams();
   }
 
   // Set up the mesh and decompose. Assumes regular cubes for now
@@ -2906,7 +2942,7 @@ int main(int argc, char *argv[])
           side, opts.numReg, opts.balance, opts.cost);
 
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
   fieldData = &Domain::nodalMass;
 
   // Initial domain boundary communication
@@ -2923,7 +2959,7 @@ int main(int argc, char *argv[])
 #endif
 
   // BEGIN timestep to solution */
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
   double start = MPI_Wtime();
 #else
   timeval start;
@@ -2947,7 +2983,7 @@ int main(int argc, char *argv[])
 
   // Use reduced max elapsed time
   double elapsed_time;
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
   elapsed_time = MPI_Wtime() - start;
 #else
   timeval end;
@@ -2955,7 +2991,7 @@ int main(int argc, char *argv[])
   elapsed_time = (double)(end.tv_sec - start.tv_sec) + ((double)(end.tv_usec - start.tv_usec)) / 1000000;
 #endif
   double elapsed_timeG;
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
   MPI_Reduce(&elapsed_time, &elapsed_timeG, 1, MPI_DOUBLE,
       MPI_MAX, 0, MPI_COMM_WORLD);
 #else
@@ -2975,7 +3011,9 @@ int main(int argc, char *argv[])
 
   delete locDom;
 
-#ifdef USE_MPI
+  axom::slic::finalize();
+
+#ifdef AXOM_USE_MPI
   MPI_Finalize();
 #endif
 

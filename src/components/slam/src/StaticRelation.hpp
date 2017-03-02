@@ -373,6 +373,15 @@ namespace policies {
           .data(data);
     }
 
+    const IndirectionBufferType* relationData() const
+    {
+      return m_relationIndices.data();
+    }
+
+    IndirectionBufferType* relationData()
+    {
+      return m_relationIndices.data();
+    }
 
   private:
     FromSetType* m_fromSet;
@@ -459,17 +468,18 @@ namespace policies {
       if( !m_relationIndices.empty())
       {
         // Check that all begins offsets are in the right range
-        // Specifically, they much be in the index space of m_relationIndices
+        // Specifically, they must be in the index space of m_relationIndices
         for(SetPosition pos = 0; pos < m_fromSet->size(); ++pos)
         {
-          if( !m_relationIndices.isValidIndex( this->offset(pos)) )
+          SetPosition off = this->offset(pos);
+          if( !m_relationIndices.isValidIndex(off) && off != m_relationIndices.size() )
           {
             if(verboseOutput)
             {
               errSstr << "\n\t* Begin offset for index " << pos
                       << " was out of range."
                       << "\n\t-- value: " << this->offset(pos)
-                      << " needs to be within range [0," << m_relationIndices.size() << ")"
+                      << " needs to be within range [0," << m_relationIndices.size() << "]"
               ;
             }
             relationdataIsValid = false;

@@ -15,7 +15,7 @@
  * \brief 1D shock tube, split flux Euler equations
  *
  * \author J. Keasler (original)
- * \author K. Weiss (modified to use the ASC Toolkit Mesh API)
+ * \author K. Weiss (modified to use axom's Slam component)
  *
  * \details  Developing example to use and demo features of Slam on shock tube example over structured 1D mesh.
  *           Tests:

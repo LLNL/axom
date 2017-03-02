@@ -16,10 +16,11 @@
 
 #include <map>
 
-#ifdef USE_MPI
+#include "lulesh.hpp"
+
+#ifdef AXOM_USE_MPI
 #include <mpi.h>
 #endif
-#include "lulesh.hpp"
 
 #include "axom_utils/Utilities.hpp"
 
@@ -64,6 +65,7 @@ namespace slamLulesh {
           << " -h              : This message\n"
           << "\n\n");
     }
+    axom::slic::flushStreams();
   }
 
   static void ParseError(const char *message, int myRank)
@@ -71,7 +73,8 @@ namespace slamLulesh {
     if (myRank == 0)
     {
       SLIC_WARNING(message);
-#ifdef USE_MPI
+      axom::slic::flushStreams();
+#ifdef AXOM_USE_MPI
       MPI_Abort(MPI_COMM_WORLD, -1);
 #else
       exit(-1);
@@ -197,7 +200,7 @@ namespace slamLulesh {
         else if (strcmp(argv[i], "-h") == 0)
         {
           PrintCommandLineOptions(argv[0], myRank);
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
           MPI_Abort(MPI_COMM_WORLD, 0);
 #else
           exit(0);

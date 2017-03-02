@@ -17,7 +17,7 @@
  * \details Loads a hex mesh from a VTK file, generates the Node to Zone relation and does simple mesh processing.
  *
  * \author T. Brunner (original)
- * \author K. Weiss (modified to use the Slam component of the ASC Toolkit)
+ * \author K. Weiss (modified to use axom's Slam component)
  */
 
 #include <fstream>
@@ -34,9 +34,6 @@
 #include "slam/IndirectionPolicies.hpp"
 #include "slam/Set.hpp"
 #include "slam/RangeSet.hpp"
-#include "slam/StaticVariableRelation.hpp"
-#include "slam/StaticConstantRelation.hpp"
-
 #include "slam/StaticRelation.hpp"
 
 #include "slam/DynamicVariableRelation.hpp"

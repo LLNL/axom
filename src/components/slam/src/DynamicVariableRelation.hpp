@@ -128,7 +128,9 @@ namespace slam    {
   private:
     inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(fromSetIndex))        const
     {
-      SLIC_ASSERT( fromSetIndex >= 0 && fromSetIndex < static_cast<SetPosition>(m_fromSet->size() ) );
+      SLIC_ASSERT_MSG(
+          fromSetIndex >= 0 && fromSetIndex < static_cast<SetPosition>(m_fromSet->size() ),
+          "Index " << fromSetIndex << " out of range [0," << m_fromSet->size() << ")");
     }
 
     inline RelationVec &      fromSetRelationsVec(SetPosition fromSetIndex)         { return m_relationsVec[fromSetIndex]; }
