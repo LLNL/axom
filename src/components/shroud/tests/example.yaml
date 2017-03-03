@@ -40,7 +40,7 @@ types:
     typedef  : long
 # defined in SidreTypes.hpp
     c_header : sidre/SidreTypes.h
-    c_type   : ATK_SidreLength
+    c_type   : SIDRE_SidreLength
     cpp_type : SidreLength
 #    c_fortran: integer(C_LONG)
 #    f_type   : integer(C_LONG)

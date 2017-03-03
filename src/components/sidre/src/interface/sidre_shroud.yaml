@@ -472,7 +472,7 @@ patterns:
 #            return NULL;
     # Convert NULL to None
     PY_null_to_none: >
-        if ({cpp_var} == ATK_NULLPTR) {{
+        if ({cpp_var} == AXOM_NULLPTR) {{
             Py_RETURN_NONE;
         }}
 

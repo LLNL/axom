@@ -71,7 +71,7 @@ TEST(sidre_types,compare_common_types)
   testTypesForEquality<com::int32,sid::sidre_int32>();
   testTypesForEquality<com::uint32,sid::sidre_uint32>();
 
-  #ifndef ATK_NO_INT64_T
+  #ifndef AXOM_NO_INT64_T
   testTypesForEquality<com::int64,sid::sidre_int64>();
   testTypesForEquality<com::uint64,sid::sidre_uint64>();
   #endif
