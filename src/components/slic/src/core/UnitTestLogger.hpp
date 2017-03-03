@@ -32,7 +32,7 @@ namespace slic {
  * \class UnitTestLogger
  *
  * \brief UnitTestLogger is a simple wrapper around the initialization and
- * finalize operations of the slic::Logger class that is helpful for 
+ * finalize operations of the slic::Logger class that is helpful for
  * unit tests and simple applications in axom.
  *
  * To use, create an instance of of this class before tests are run. This

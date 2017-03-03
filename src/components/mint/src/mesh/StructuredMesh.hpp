@@ -188,7 +188,7 @@ public:
   /*!
    *****************************************************************************
    * \brief Returns the linear index corresponding to the given logical grid cell
-   *indices.
+   * indices.
    * \param [in] i logical cell index of the first dimension.
    * \param [in] j logical cell index of the second dimension.
    * \param [in] k logical cell index of the third dimension (optional)

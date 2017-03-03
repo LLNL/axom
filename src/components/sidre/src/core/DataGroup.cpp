@@ -2140,7 +2140,7 @@ DataView * DataGroup::getView( IndexType idx )
 
 /*
  *************************************************************************
- * 
+ *
  * Return pointer to const View with given index.
  *
  * If no such View exists, AXOM_NULLPTR is returned.
@@ -2192,7 +2192,7 @@ IndexType DataGroup::getNextValidViewIndex(IndexType idx) const
  *
  * Return true if this Group has a child Group with given
  * name; else false.
- * 
+ *
  *************************************************************************
  */
 bool DataGroup::hasChildGroup( const std::string& name ) const

@@ -108,8 +108,8 @@ DataStore::DataStore()
       std::string("***********************************\n");
 
     axom::slic::setLoggingMsgLevel( axom::slic::message::Debug );
-    axom::slic::addStreamToAllMsgLevels( new axom::slic::GenericOutputStream(&std::cout,
-                                                                 format) );
+    axom::slic::addStreamToAllMsgLevels(
+      new axom::slic::GenericOutputStream(&std::cout,format) );
 
     m_need_to_finalize_slic = true;
   }

@@ -144,7 +144,7 @@
   #include <map>
 #else
   #error Missing definition of base map in Sidre's MapCollection. \
-         Sidre requires one of: sparsehash, C++11 unordered_map, std::map
+  Sidre requires one of: sparsehash, C++11 unordered_map, std::map
 #endif
 
 
@@ -277,9 +277,9 @@ public:
 #if defined(AXOM_USE_SPARSEHASH)
     if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
     {
-       m_empty_key = "DENSE_MAP_EMPTY_KEY";
-       m_name2idx_map.set_empty_key(m_empty_key);
-       m_name2idx_map.set_deleted_key("DENSE_MAP_DELETED_KEY");
+      m_empty_key = "DENSE_MAP_EMPTY_KEY";
+      m_name2idx_map.set_empty_key(m_empty_key);
+      m_name2idx_map.set_deleted_key("DENSE_MAP_DELETED_KEY");
     }
 #endif
 

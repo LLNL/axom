@@ -815,8 +815,8 @@ bool intersect_ray_bbox(const primal::Ray< T,DIM > & R,
 
   for (int i=0; i<DIM; i++) {
     if (axom::utilities::isNearlyEqual(R.direction()[i],
-                                             std::numeric_limits< T >::min(),
-                                             1.0e-9 )) {
+                                       std::numeric_limits< T >::min(),
+                                       1.0e-9 )) {
       T pointDim =  R.origin()[i];
       if ((pointDim<bb.getMin()[i]) || (pointDim>bb.getMax()[i])) {
         return false;
@@ -875,8 +875,8 @@ bool intersect_seg_bbox( const primal::Segment< T,DIM > & S,
 
   for (int i=0; i<DIM; i++) {
     if (axom::utilities::isNearlyEqual(R.direction()[i],
-                                             std::numeric_limits< T >::min(),
-                                             1.0e-9 )) {
+                                       std::numeric_limits< T >::min(),
+                                       1.0e-9 )) {
       T pointDim =  R.origin()[i];
       if ((pointDim<bb.getMin()[i]) || (pointDim>bb.getMax()[i])) {
         return false;
