@@ -141,9 +141,17 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNINITIALIZED_WARNINGS)
 # Useful when we are using compiler generated interface code (e.g. in shroud)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_ALIASING_WARNINGS
                   DEFAULT "-Wno-strict-aliasing"
-                  XL      ""
+                  XL      " "
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_ALIASING_WARNINGS)
+                  
+# Flag for disabling warnings about unused local typedefs.
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF
+                  DEFAULT "-Wno-unused-local-typedefs"
+                  INTEL   " "
+                  XL      " "
+                  )                  
+list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF)
 
    
 # message(STATUS "Custom compiler flags:")

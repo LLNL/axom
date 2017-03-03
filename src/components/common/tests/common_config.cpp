@@ -76,11 +76,6 @@ TEST(gtest_common_config,config_libraries)
   libs.push_back("std::unordered_map");
 #endif
 
-#ifdef AXOM_USE_STD_MAP
-  libs.push_back("std::map");
-#endif
-
-
   std::stringstream sstr;
   std::copy( libs.begin(), libs.end(), std::ostream_iterator<std::string>(sstr, "; "));
   std::cout << "\t{ " << sstr.str() << "}" << std::endl;

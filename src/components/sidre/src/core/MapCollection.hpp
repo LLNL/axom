@@ -140,11 +140,8 @@
   #include <sparsehash/dense_hash_map>
 #elif defined(AXOM_USE_STD_UNORDERED_MAP)
   #include <unordered_map>
-#elif defined(AXOM_USE_STD_MAP)
+#else // AXOM_USE_STD_MAP
   #include <map>
-#else
-  #error Missing definition of base map in Sidre's MapCollection. \
-  Sidre requires one of: sparsehash, C++11 unordered_map, std::map
 #endif
 
 
@@ -294,7 +291,7 @@ private:
   typedef google::dense_hash_map<std::string, IndexType> MapType;
 #elif defined(AXOM_USE_STD_UNORDERED_MAP)
   typedef std::unordered_map<std::string, IndexType> MapType;
-#else // defined(AXOM_USE_STD_MAP)
+#else // AXOM_USE_STD_MAP
   typedef std::map<std::string, IndexType> MapType;
 #endif
 

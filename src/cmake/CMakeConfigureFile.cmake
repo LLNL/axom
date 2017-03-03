@@ -35,8 +35,6 @@ endif()
 if(NOT AXOM_USE_SPARSEHASH)
   if(AXOM_USE_CXX11)
     set(AXOM_USE_STD_UNORDERED_MAP TRUE)
-  else()
-    set(AXOM_USE_STD_MAP TRUE)
   endif()
 endif()
 
