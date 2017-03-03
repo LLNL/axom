@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataBuffer.cpp
  *
  * \brief   Implementation file for DataBuffer class.
  *

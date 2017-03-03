@@ -78,7 +78,7 @@ TEST(gtest_common_types,check_types_32)
 
 TEST(gtest_common_types,check_types_64)
 {
-#ifndef ATK_NO_INT64_T
+#ifndef AXOM_NO_INT64_T
   typedef axom::common::int64 SignedType;
   typedef axom::common::uint64 UnsigneType;
   static const std::size_t EXP_BYTES = 8;

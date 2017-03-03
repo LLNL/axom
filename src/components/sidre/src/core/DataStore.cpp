@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataStore.cpp
  *
  * \brief   Implementation file for DataStore class.
  *
@@ -26,13 +26,14 @@
 // Associated header file
 #include "DataStore.hpp"
 
+// Other axom headers
+#include "slic/slic.hpp"
+#include "slic/GenericOutputStream.hpp"
+
 // Sidre project headers
 #include "DataBuffer.hpp"
 #include "DataGroup.hpp"
 
-// Other CS Toolkit headers
-#include "slic/slic.hpp"
-#include "slic/GenericOutputStream.hpp"
 
 namespace axom
 {

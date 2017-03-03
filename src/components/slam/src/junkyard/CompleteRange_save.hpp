@@ -67,7 +67,7 @@ namespace slam{
     private:
       inline void  verifyPosition(SetPosition pos)       const
       {
-          ATK_ASSERT_MSG( pos < static_cast<SetPosition>( size() )
+          SLIC_ASSERT_MSG( pos < static_cast<SetPosition>( size() )
                           , "SLAM::RangeSet -- requested out of range element at position "
                           << pos << ", but set only has " << size() << " elements." );
       }

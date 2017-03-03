@@ -11,7 +11,7 @@
 #ifndef FIELD_HPP_
 #define FIELD_HPP_
 
-// ATK includes
+// axom includes
 #include "common/AxomMacros.hpp" // for DISABLE_COPY_AND_ASSIGNMENT
 
 // C/C++ includes

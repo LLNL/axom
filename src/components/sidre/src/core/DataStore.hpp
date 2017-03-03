@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataStore.hpp
  *
  * \brief   Header file containing definition of DataStore class.
  *
@@ -27,7 +27,7 @@
 
 #include "hdf5.h"
 
-// Other CS Toolkit headers
+// Other axom headers
 #include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"

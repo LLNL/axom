@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataGroup.cpp
  *
  * \brief   Implementation file for DataGroup class.
  *
@@ -24,9 +24,9 @@
 #include "conduit_relay.hpp"
 #include "conduit_relay_hdf5.hpp"
 
-// Other toolkit component headers
+// Other axom component headers
 
-// SiDRe project headers
+// Sidre project headers
 #include "MapCollection.hpp"
 #include "DataBuffer.hpp"
 #include "DataStore.hpp"

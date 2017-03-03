@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file MapCollection.hpp
  *
  * \brief   Header file for Collection classes.
  *
@@ -120,8 +120,8 @@
  ******************************************************************************
  */
 
-#ifndef COLLECTIONS_HPP_
-#define COLLECTIONS_HPP_
+#ifndef MAP_COLLECTIONS_HPP_
+#define MAP_COLLECTIONS_HPP_
 
 // Standard C++ headers
 #include <map>
@@ -129,24 +129,24 @@
 #include <string>
 #include <vector>
 
-// other CS Toolkit headers
+// Other axom headers
 #include "common/config.hpp"
 #include "common/CommonTypes.hpp"
 
-// SiDRe project headers
+// Sidre project headers
 #include "SidreTypes.hpp"
 
-#if defined(AXOM_USE_STD_UNORDERED_MAP)
-#include <unordered_map>
-#endif
-
-#if defined(AXOM_USE_STD_MAP)
-#include <map>
-#endif
-
 #if defined(AXOM_USE_SPARSEHASH)
-#include <sparsehash/dense_hash_map>
+  #include <sparsehash/dense_hash_map>
+#elif defined(AXOM_USE_STD_UNORDERED_MAP)
+  #include <unordered_map>
+#elif defined(AXOM_USE_STD_MAP)
+  #include <map>
+#else
+  #error Missing definition of base map in Sidre's MapCollection. \
+         Sidre requires one of: sparsehash, C++11 unordered_map, std::map
 #endif
+
 
 namespace axom
 {
@@ -290,16 +290,12 @@ private:
   std::vector<TYPE *>  m_items;
   std::stack< IndexType > m_free_ids;
 
-#if defined(AXOM_USE_STD_UNORDERED_MAP)
-  typedef std::unordered_map<std::string, IndexType> MapType;
-#else
 #if defined(AXOM_USE_SPARSEHASH)
   typedef google::dense_hash_map<std::string, IndexType> MapType;
-#else
-#if defined(AXOM_USE_STD_MAP)
+#elif defined(AXOM_USE_STD_UNORDERED_MAP)
+  typedef std::unordered_map<std::string, IndexType> MapType;
+#else // defined(AXOM_USE_STD_MAP)
   typedef std::map<std::string, IndexType> MapType;
-#endif
-#endif
 #endif
 
   MapType m_name2idx_map;
@@ -410,4 +406,4 @@ TYPE * MapCollection<TYPE>::removeItem(IndexType idx)
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* COLLECTIONS_HPP_ */
+#endif /* MAP_COLLECTIONS_HPP_ */

@@ -70,12 +70,12 @@ namespace slam {
  * \brief NullSets are always equal
  * \note Two sets of different types are (currently) considered to be unequal
  */
-  inline bool operator==(NullSet const&, NullSet const&) { ATK_WARNING("operator==(NullSet,NullSet)"); return true; }
+  inline bool operator==(NullSet const&, NullSet const&) { SLIC_WARNING("operator==(NullSet,NullSet)"); return true; }
 /**
  * \brief NullSets are always equal
  * \note Two sets of different types are (currently) considered to be unequal
  */
-  inline bool operator!=(NullSet const&, NullSet const&) { ATK_WARNING("operator!=(NullSet,NullSet)"); return false; }
+  inline bool operator!=(NullSet const&, NullSet const&) { SLIC_WARNING("operator!=(NullSet,NullSet)"); return false; }
 #endif
 
 

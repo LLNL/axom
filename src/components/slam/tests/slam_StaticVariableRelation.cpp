@@ -62,9 +62,9 @@ TEST(gtest_slam_static_variable_relation,empty_relation_out_of_bounds)
   StaticVariableRelation emptyRel;
 
 #ifdef AXOM_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( emptyRel[FROMSET_SIZE], "");
+  EXPECT_DEATH_IF_SUPPORTED( emptyRel[FROMSET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -203,9 +203,9 @@ TEST(gtest_slam_static_variable_relation,initialized_rel_out_of_bounds)
   incrementingRel.bindRelationData(begins, offsets);
 
 #ifdef AXOM_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( incrementingRel[FROMSET_SIZE], "");
+  EXPECT_DEATH_IF_SUPPORTED( incrementingRel[FROMSET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif

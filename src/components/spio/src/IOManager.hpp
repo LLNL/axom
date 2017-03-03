@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file IOManager.hpp
  *
  * \brief   Header file containing definition of IOManager class.
  *
@@ -22,13 +22,14 @@
 #define IOPARALLEL_HPP_
 
 #include "mpi.h"
-
 #include "hdf5.h"
 
-// Other CS Toolkit headers
+// Other axom headers
 #include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "sidre/DataGroup.hpp"
+
+// Spio headers
 #include "spio/IOBaton.hpp"
 
 

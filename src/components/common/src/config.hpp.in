@@ -38,7 +38,7 @@
 
 /* OpenMP is a special case since it varies by target and the compiler 
  * provides its own definition. For consistency, the project exposes  
- * and uses this through its own ATK define.
+ * and uses this through its own AXOM_USE define.
  */ 
 #ifdef _OPENMP
 #define AXOM_USE_OPENMP

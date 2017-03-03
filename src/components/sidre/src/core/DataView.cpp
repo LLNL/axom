@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataView.cpp
  *
  * \brief   Implementation file for DataView class.
  *
@@ -21,11 +21,11 @@
 // Associated header file
 #include "DataView.hpp"
 
-// Other toolkit project headers
+// Other axom headers
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
-// SiDRe project headers
+// Sidre project headers
 #include "DataBuffer.hpp"
 #include "DataGroup.hpp"
 #include "DataStore.hpp"

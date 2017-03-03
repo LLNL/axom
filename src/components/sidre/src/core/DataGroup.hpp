@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataGroup.hpp
  *
  * \brief   Header file containing definition of DataGroup class.
  *
@@ -35,11 +35,11 @@
 // third party lib headers
 #include "hdf5.h"
 
-// Other CS Toolkit headers
+// Other axom headers
 #include "slic/slic.hpp"
 #include "common/CommonTypes.hpp"
 
-// SiDRe project headers
+// Sidre project headers
 #include "SidreTypes.hpp"
 #include "DataView.hpp"
 

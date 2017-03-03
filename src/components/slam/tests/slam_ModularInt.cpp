@@ -27,16 +27,16 @@ TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
   typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
 
 #ifdef AXOM_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   SLIC_INFO("Checking that modular int with modulus zero fails.");
   SLIC_INFO("Note: Expecting a SLIC Failure: ");
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( ModularIntType(0,0),"") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntType(1,0),"") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntType(),   "") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntType(1),  "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(0,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(1,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(),   "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(1),  "") << " SIZE of Modular int not allowed to be zero";
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -57,15 +57,15 @@ TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
 #ifdef AXOM_DEBUG
   typedef ModularInt<policies::CompileTimeSizeHolder<int, 0> > ModularIntZero;
 
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   SLIC_INFO("Checking that modular int with modulus zero fails.\nNote: Expecting a SLIC Failure: ");
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( ModularIntZero(0,0),"") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntZero(1,0),"") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntZero(),   "") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntZero(1),  "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(0,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(1,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(),   "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(1),  "") << " SIZE of Modular int not allowed to be zero";
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif

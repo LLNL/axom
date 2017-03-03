@@ -12,7 +12,7 @@
 /**
  *  \file SidreTypes.hpp
  *
- *  \brief File containing types used in SiDRe toolkit component.
+ *  \brief File containing types used in the Sidre component of axom.
  *
  */
 

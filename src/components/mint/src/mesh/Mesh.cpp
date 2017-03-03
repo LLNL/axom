@@ -10,7 +10,7 @@
 
 #include "mint/Mesh.hpp"
 
-// ATK includes
+// axom includes
 #include "common/CommonTypes.hpp"
 #include "mint/FieldData.hpp"
 

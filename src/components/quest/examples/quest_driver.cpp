@@ -8,7 +8,7 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-// ATK Toolkit includes
+// axom includes
 #include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"

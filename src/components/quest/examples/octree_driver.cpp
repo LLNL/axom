@@ -11,13 +11,12 @@
 
 /*!
  *******************************************************************************
- * \file
- * \brief Basic demo for the in/out octree.
- *        WIP towards point containment acceleration structure over surface.
+ * \file octree_driver.cpp
+ * \brief Basic demo of point containment acceleration structure over surfaces.
  *******************************************************************************
  */
 
-// ATK Toolkit includes
+// axom includes
 #include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"

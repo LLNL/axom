@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file IOManager.cpp
  *
  * \brief   Implementation file for IOManager class.
  *
@@ -21,20 +21,18 @@
 // Associated header file
 #include "IOManager.hpp"
 
-#include "hdf5.h"
-
-// Other toolkit component headers
-#include "common/CommonTypes.hpp"
+// Other axom headers
 #include "common/FileUtilities.hpp"
 
 // SiDRe project headers
 #include "sidre/DataGroup.hpp"
 #include "sidre/DataStore.hpp"
 #include "sidre/SidreTypes.hpp"
+#include "fmt/fmt.hpp"
 
+// Conduit headers
 #include "conduit_relay.hpp"
 #include "conduit_relay_hdf5.hpp"
-#include "fmt/fmt.hpp"
 
 namespace axom
 {

@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file IOBaton.cpp
  *
  * \brief   Implementation file for IOBaton class.
  *

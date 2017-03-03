@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataView.hpp
  *
  * \brief   Header file containing definition of DataView class.
  *
@@ -25,12 +25,12 @@
 #include <string>
 #include <set>
 
-// Other CS Toolkit headers
+// Other axom headers
 #include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
-// SiDRe project headers
+// Sidre project headers
 #include "sidre/SidreTypes.hpp"
 
 namespace axom

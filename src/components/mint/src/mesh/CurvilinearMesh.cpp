@@ -11,7 +11,7 @@
 #include "CurvilinearMesh.hpp"
 #include "MeshType.hpp"
 
-// ATK includes
+// axom includes
 #include "slic/slic.hpp"
 
 // C/C++ includes

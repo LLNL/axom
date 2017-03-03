@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file SidreUtilities.cpp
  *
  * \brief   Implementation file for SidreUtilities.
  *
@@ -25,7 +25,7 @@
 // Associated header file
 #include "SidreUtilities.hpp"
 
-// Other toolkit component headers
+// Other axom headers
 #include "slic/slic.hpp"
 
 namespace axom

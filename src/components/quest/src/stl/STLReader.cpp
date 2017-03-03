@@ -11,7 +11,7 @@
 
 #include "STLReader.hpp"
 
-// ATK includes
+// axom includes
 #include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"

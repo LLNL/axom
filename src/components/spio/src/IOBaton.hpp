@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file IOBaton.hpp
  *
  * \brief   Header file containing definition of IOBaton class.
  *
@@ -23,7 +23,7 @@
 
 #include "mpi.h"
 
-// Other CS Toolkit headers
+// Other axom headers
 #include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 ################################
-# ASCTK ToolKit
+# axom project
 ################################
 project(axom LANGUAGES C CXX)
 
@@ -42,7 +42,7 @@ add_subdirectory(components)
 
 ################################
 # Adds directory for utility code 
-# that uses or supports the toolkit
+# that uses or supports axom
 ################################
 add_subdirectory(util)
 
@@ -75,7 +75,7 @@ if(ENABLE_TESTS)
   set(test_commands_output_file "${PROJECT_BINARY_DIR}/project_test_commands.txt")
   message(STATUS "Outputting the list of test commands to ${test_commands_output_file} ")
 
-  set(test_commands "# List of all test commands in this ASC Toolkit configuration.")
+  set(test_commands "# List of all test commands in this axom configuration.")
   list(APPEND test_commands "# Format is: test_name  test_command_with_args.")
   list(APPEND test_commands "${BLT_TEST_COMMANDS}")
   string (REPLACE ";" "\n" test_commands_str  "${test_commands}")

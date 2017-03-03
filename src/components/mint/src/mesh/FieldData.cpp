@@ -10,7 +10,7 @@
 
 #include "FieldData.hpp"
 
-// ATK includes
+// axom includes
 #include "mint/Field.hpp"
 #include "slic/slic.hpp"
 

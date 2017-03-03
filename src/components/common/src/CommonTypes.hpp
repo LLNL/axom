@@ -11,7 +11,7 @@
 /*!
  *  \file CommonTypes.hpp
  *
- *  \brief File exposing some common types used by toolkit components.
+ *  \brief File exposing some common types used by axom components.
  *
  */
 
@@ -27,7 +27,6 @@
 #endif
 
 namespace axom {
-
 namespace common {
 
 #ifdef AXOM_USE_CXX11
@@ -46,9 +45,9 @@ namespace common {
   typedef detail::int32_t int32;    /** Thirty-two bit signed integer type */
   typedef detail::uint32_t uint32;  /** Thirty-two bit unsigned integer type */
 
-  // Note: KW -- We assume that ATK_NO_INT64_T will be defined
+  // Note: KW -- We assume that AXOM_NO_INT64_T will be defined
   // on systems/compilers that do not support 64 bit integer types
-  #ifndef ATK_NO_INT64_T
+  #ifndef AXOM_NO_INT64_T
   typedef detail::int64_t int64;      /** Sixty-four bit signed integer type */
   typedef detail::uint64_t uint64;    /** Sixty-four bit unsigned integer type */
   #endif

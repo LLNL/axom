@@ -207,12 +207,12 @@ TEST( primal_numeric_array, clamping)
   EXPECT_EQ(  QArray(seq).clamp(3,7), QArray(seq).clampLower(3).clampUpper(7));
 
 #ifdef AXOM_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in
   // debug mode
   SLIC_INFO("Checking that clamping with ill-formed range throws an assert.");
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( QArray(seq).clamp( 7, 3), "" );
+  EXPECT_DEATH_IF_SUPPORTED( QArray(seq).clamp( 7, 3), "" );
 
 #endif
 

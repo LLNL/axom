@@ -94,12 +94,12 @@ TEST(gtest_slam_indirection_set,construct_indirection_set)
   }
 
   #ifdef AXOM_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   SLIC_INFO("Using checked random access -- at() with invalid address" );
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH(s.at(MAX_SET_SIZE),"") << "tried to access out of range element";
+  EXPECT_DEATH_IF_SUPPORTED(s.at(MAX_SET_SIZE),"") << "tried to access out of range element";
   #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
   #endif
@@ -124,9 +124,9 @@ TEST(gtest_slam_range_set,test_indirection_set_out_of_bounds)
   EXPECT_TRUE(s.isValid());
 
 #ifdef AXOM_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( s[MAX_SET_SIZE], "");
+  EXPECT_DEATH_IF_SUPPORTED( s[MAX_SET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif

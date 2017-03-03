@@ -13,7 +13,7 @@
 
 #include "mint/Field.hpp" // Base class
 
-// ATK includes
+// axom includes
 #include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "mint/FieldTypes.hpp"

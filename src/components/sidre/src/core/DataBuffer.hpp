@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataBuffer.hpp
  *
  * \brief   Header file containing definition of DataBuffer class.
  *
@@ -24,7 +24,7 @@
 // Standard C++ headers
 #include <vector>
 
-// Other toolkit component headers
+// Other axom headers
 #include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"

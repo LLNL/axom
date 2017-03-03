@@ -56,9 +56,9 @@ Maps are
 # Expected usage
 * Codes will use this layer and the components (described below) to define a concrete mesh implementation.
           
-* A generic outer layer that toolkit components can target.
+* A generic outer layer that axom components can target.
   This layer will define a generic API for accessing the mesh geometry.
-  All mesh implementations must satisfy this API (either natively or through an adaptor) to work with the toolkit components.  
+  All mesh implementations must satisfy this API (either natively or through an adaptor) to work with axom components.  
           
   We envision a CMI-like interface for this layer.
   [It should also be possible to have an ITAPS iMesh interface as well since the design goals will be similar at this level].

@@ -12,7 +12,7 @@
 #ifndef SIGNEDDISTANCE_HPP_
 #define SIGNEDDISTANCE_HPP_
 
-// ATK includes
+// axom includes
 #include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/Utilities.hpp"

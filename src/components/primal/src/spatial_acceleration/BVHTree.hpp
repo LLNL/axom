@@ -11,9 +11,9 @@
 #ifndef BVHTREE_HPP_
 #define BVHTREE_HPP_
 
-// ASC Toolkit includes
+// axom includes
 #include "common/AxomMacros.hpp"   // for DISABLE_COPY_AND_ASSIGNMENT macro
-#include "common/CommonTypes.hpp" // for AXOM_NULLPTR
+#include "common/CommonTypes.hpp"  // for AXOM_NULLPTR
 
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
