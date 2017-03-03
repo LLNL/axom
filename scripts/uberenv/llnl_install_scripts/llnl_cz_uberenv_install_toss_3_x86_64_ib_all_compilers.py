@@ -24,9 +24,10 @@ def main():
     # write info about this build
     write_build_info(pjoin(prefix,"info.json"))
     # spack specs for the cz chaos systems
-    #specs = ["%clang@3.9.0"]
+    specs = ["%clang@3.9.0"]
     #specs = ["%clang@3.9.0",
-    specs = ["%gcc@4.9.3",
+    specs = ["clang@3.9.0",
+             "%gcc@4.9.3",
              "%intel@16.0.4",
              "%intel@17.0.0"]
     # use uberenv to install for all specs
