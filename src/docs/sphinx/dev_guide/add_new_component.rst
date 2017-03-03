@@ -14,6 +14,9 @@
 .. note :: This stuff is pulled from older content we had lying around. 
            It needs to be updated, checked for correctness, gaps filled in, etc.
 
+Note: when adding a new component, config.hpp.in file must be updated with 
+#cmakedefine AXOM_USE_<new-component-name> 
+
 ======================================================
 Adding a New Axom Component
 ======================================================
