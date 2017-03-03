@@ -90,7 +90,7 @@ namespace policies {
     inline bool                       isValid( PositionType size,
         PositionType,
         PositionType,
-        bool ATK_DEBUG_PARAM(verboseOutput = false)) const
+        bool AXOM_DEBUG_PARAM(verboseOutput = false)) const
     {
       // set of zero size is always valid
       if(size == 0)
@@ -140,7 +140,7 @@ namespace policies {
     inline bool                       isValid(PositionType size,
         PositionType offset,
         PositionType stride,
-        bool ATK_DEBUG_PARAM(verboseOutput = false)) const
+        bool AXOM_DEBUG_PARAM(verboseOutput = false)) const
     {
       // If set has zero size, we are always valid (even if indirection buffer is null)
       if(size == 0)

@@ -98,7 +98,7 @@ TEST(gtest_slam_map,out_of_bounds)
 
   // Test out of bounds
   SLIC_INFO("Testing Map element access -- out of bounds access; Expecting the test to fail");
-  #ifdef ATK_DEBUG
+  #ifdef AXOM_DEBUG
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";

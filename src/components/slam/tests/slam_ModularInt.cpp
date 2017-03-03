@@ -26,7 +26,7 @@ TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
 {
   typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
   SLIC_INFO("Checking that modular int with modulus zero fails.");
   SLIC_INFO("Note: Expecting a SLIC Failure: ");
@@ -54,7 +54,7 @@ TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
 {
   using namespace axom::slam;
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   typedef ModularInt<policies::CompileTimeSizeHolder<int, 0> > ModularIntZero;
 
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode

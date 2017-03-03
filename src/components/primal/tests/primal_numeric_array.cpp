@@ -206,7 +206,7 @@ TEST( primal_numeric_array, clamping)
   EXPECT_EQ(  QArray(seq).clamp(3,7), QArray(seq).clampUpper(7).clampLower(3));
   EXPECT_EQ(  QArray(seq).clamp(3,7), QArray(seq).clampLower(3).clampUpper(7));
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in
   // debug mode
   SLIC_INFO("Checking that clamping with ill-formed range throws an assert.");

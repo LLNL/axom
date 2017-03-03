@@ -611,7 +611,7 @@ public:
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
-#if defined(ATK_DEBUG)
+#if defined(AXOM_DEBUG)
     if (m_state == SCALAR)
     {
       DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
@@ -657,7 +657,7 @@ public:
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
-  #if defined(ATK_DEBUG)
+  #if defined(AXOM_DEBUG)
     if (m_state == SCALAR)
     {
       SLIC_CHECK_MSG(value.dtype().id() == m_node.dtype().id(),

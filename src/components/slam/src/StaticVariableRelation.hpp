@@ -176,7 +176,7 @@ namespace slam    {
       return toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex);
     }
 
-    inline void         verifyPosition(SetPosition ATK_DEBUG_PARAM(fromSetIndex))    const
+    inline void         verifyPosition(SetPosition AXOM_DEBUG_PARAM(fromSetIndex))    const
     {
       SLIC_ASSERT( fromSetIndex >= 0 && fromSetIndex <  m_fromSet->size()  );
     }

@@ -72,7 +72,7 @@ typedef Octree3D::SpaceVector SpaceVector;
 typedef Octree3D::GridPt GridPt;
 typedef Octree3D::BlockIndex BlockIndex;
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   const int MAX_CONTAINMENT_QUERY_LEVEL = 7;
 #else
   const int MAX_CONTAINMENT_QUERY_LEVEL = 9;

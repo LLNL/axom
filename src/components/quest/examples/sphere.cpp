@@ -461,7 +461,7 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
 
   } // END for all nodes
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   // write the bucket tree to a file
   const BVHTree< int,NDIMS >* btree = signedDistance.getBVHTree();
   SLIC_ASSERT( btree != ATK_NULLPTR );

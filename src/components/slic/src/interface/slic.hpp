@@ -133,7 +133,7 @@
 
 /// @}
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
 
 //-----------------------------------------------------------------------------
 /// \name ASSERT MACROS
@@ -265,7 +265,7 @@
 #define SLIC_CHECK( ignore_EXP ) ( (void)0 )
 #define SLIC_CHECK_MSG( ignore_EXP, ignore_msg ) ( (void)0 )
 
-#endif /* END ifdef ATK_DEBUG */
+#endif /* END ifdef AXOM_DEBUG */
 
 /*!
  ******************************************************************************
@@ -291,7 +291,7 @@
                            , __LINE__ );                                      \
   } while ( 0 )
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
 
 /*!
  ******************************************************************************

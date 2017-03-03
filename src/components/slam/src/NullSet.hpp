@@ -57,7 +57,7 @@ namespace slam {
     // iterator_pair range();
 
   private:
-    void verifyPosition(PositionType ATK_DEBUG_PARAM(pos)) const
+    void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos)) const
     {
       SLIC_ASSERT_MSG(false,"Subscripting on NullSet is never valid."
           << "\n\tAttempted to access item at index " << pos << ".");

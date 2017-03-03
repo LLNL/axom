@@ -355,7 +355,7 @@ void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* um
   timer1.stop();
   SLIC_INFO("Constructed BVH in " << timer1.elapsed() << "s" );
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   // write the bucket tree to a file
   const BVHTree< int, 3>* btree = signedDistance.getBVHTree();
   SLIC_ASSERT( btree != ATK_NULLPTR );
@@ -420,7 +420,7 @@ void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* um
       nbuckets[ inode ]   = static_cast< int >( buckets.size() );
       ntriangles[ inode ] = static_cast< int >( triangles.size() );
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
       std::ostringstream oss;
       oss << "BINS_" << inode << ".vtk";
       signedDistance.getBVHTree()->writeVtkFile(

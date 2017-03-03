@@ -93,7 +93,7 @@ TEST(gtest_slam_indirection_set,construct_indirection_set)
     SLIC_INFO("Data using at():\n" << sstr.str());
   }
 
-  #ifdef ATK_DEBUG
+  #ifdef AXOM_DEBUG
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
   SLIC_INFO("Using checked random access -- at() with invalid address" );
 
@@ -123,7 +123,7 @@ TEST(gtest_slam_range_set,test_indirection_set_out_of_bounds)
 
   EXPECT_TRUE(s.isValid());
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ASSERT_DEATH( s[MAX_SET_SIZE], "");

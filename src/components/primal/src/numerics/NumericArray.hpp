@@ -448,7 +448,7 @@ public:
   int argMin() const;
 
 private:
-  void verifyIndex(int ATK_DEBUG_PARAM(idx)) const
+  void verifyIndex(int AXOM_DEBUG_PARAM(idx)) const
   {
     SLIC_ASSERT(idx >= 0 && idx < SIZE);
   }

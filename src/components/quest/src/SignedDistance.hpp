@@ -324,7 +324,7 @@ template < int NDIMS >
 inline double SignedDistance< NDIMS >::computeDistance(
                                 const PointType& pt,
                                 std::vector< int >& buckets,
-                                std::vector< int >& ATK_DEBUG_PARAM(elementIds),
+                                std::vector< int >& AXOM_DEBUG_PARAM(elementIds),
                                 std::vector< int >& my_elements,
                                 PointType& closest_pt ) const
 {
@@ -346,7 +346,7 @@ inline double SignedDistance< NDIMS >::computeDistance(
   cpt_data cpt;
   double minSqDist = this->getMinSqDistance( pt, &candidates[0], nelems, &cpt );
   closest_pt = cpt.closest_point;
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   elementIds = cpt.element_ids;
 #endif
 
@@ -362,7 +362,7 @@ template < int NDIMS >
 double SignedDistance< NDIMS >::computeSign(
                        const PointType& pt,
                        const cpt_data* cpt,
-                       std::vector< int >& ATK_DEBUG_PARAM(my_elements) ) const
+                       std::vector< int >& AXOM_DEBUG_PARAM(my_elements) ) const
 {
   // Sanity checks
   SLIC_ASSERT( cpt != ATK_NULLPTR );
@@ -388,7 +388,7 @@ double SignedDistance< NDIMS >::computeSign(
 
     // CASE 1: closest point is on the face of the surface element
     N = cpt->surface_elements[ index ].normal();
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
     my_elements.push_back( cpt->element_ids[ index ] );
 #endif
 
@@ -402,7 +402,7 @@ double SignedDistance< NDIMS >::computeSign(
 
       if ( utilities::isNearlyEqual( dist, 0.0 ) ) {
         N += cpt->surface_elements[ i ].normal();
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
         my_elements.push_back( cpt->element_ids[ i ] );
 #endif
       } // END if
@@ -420,7 +420,7 @@ double SignedDistance< NDIMS >::computeSign(
       if ( utilities::isNearlyEqual( dist, 0.0 ) ) {
         double alpha = cpt->surface_elements[ i ].angle( cpt->cpt_locs[ i ] );
         N += ( cpt->surface_elements[ i ].normal().unitVector()*alpha );
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
         my_elements.push_back( cpt->element_ids[ i ] );
 #endif
       } // END if

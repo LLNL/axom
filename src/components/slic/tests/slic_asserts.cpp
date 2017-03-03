@@ -70,7 +70,7 @@ class SetFixtureS:public ::testing::Test
 public:
   void SetUp()
   {
-          #ifdef ATK_DEBUG
+          #ifdef AXOM_DEBUG
     ASSERT_DEATH( SLIC_ASSERT_MSG(false,"Testing assert in fixture setup"), "");
           #else
     SLIC_WARNING("Testing warning in fixture setup");
@@ -86,7 +86,7 @@ class SetFixtureT:public ::testing::Test
 public:
   void TearDown()
   {
-          #ifdef ATK_DEBUG
+          #ifdef AXOM_DEBUG
     ASSERT_DEATH( SLIC_ASSERT_MSG(false,
                                   "Testing assert in fixture teardown"), "");
           #else
@@ -117,7 +117,7 @@ public:
 TEST(gtest_slic_usage,in_test)
 {
   SLIC_ASSERT_MSG(true, "Testing SLIC assert (true) in test body");
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   ASSERT_DEATH( SLIC_ASSERT_MSG(false,
                                 "Testing SLIC assert(false) in test body"),
                 "" )
@@ -133,7 +133,7 @@ TEST(gtest_slic_usage,in_test)
 
 TEST(gtest_slic_usage,in_ctor)
 {
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   ASSERT_DEATH( AssertCtor(), "" ) << " SLIC assert from class .ctor ";
 #else
   AssertCtor();
@@ -143,7 +143,7 @@ TEST(gtest_slic_usage,in_ctor)
 TEST(gtest_slic_usage,in_method)
 {
   AssertMethod am;
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   ASSERT_DEATH( am.foo(), "" ) << " SLIC assert from class method ";
 #else
   am.foo();
@@ -152,7 +152,7 @@ TEST(gtest_slic_usage,in_method)
 
 TEST(gtest_slic_usage,in_dtor)
 {
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   ASSERT_DEATH( AssertDtor(), "" ) << " SLIC assert from class .ctor ";
 #else
   AssertDtor();

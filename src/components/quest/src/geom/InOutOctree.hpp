@@ -61,7 +61,7 @@
 //    #define DEBUG_OCTREE_ACTIVE
 #endif
 
-#if defined(DEBUG_OCTREE_ACTIVE) and defined(ATK_DEBUG)
+#if defined(DEBUG_OCTREE_ACTIVE) and defined(AXOM_DEBUG)
   #define QUEST_OCTREE_DEBUG_LOG_IF( _cond, _msg)  if( _cond ) SLIC_DEBUG( _msg )
 #else
   #define QUEST_OCTREE_DEBUG_LOG_IF( _cond, _msg)  ( (void)0 )
@@ -1024,7 +1024,7 @@ private:
 
 
     /** \brief Helper function to verify that all leaves at the given level have a color */
-    void checkAllLeavesColoredAtLevel(int ATK_DEBUG_PARAM(level)) const;
+    void checkAllLeavesColoredAtLevel(int AXOM_DEBUG_PARAM(level)) const;
 
     void dumpOctreeMeshVTK( const std::string& name) const;
 
@@ -1069,7 +1069,7 @@ protected:
 
 
 namespace{
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
     /**
      * \brief Utility function to print the vertex indices of a cell
      */
@@ -1495,7 +1495,7 @@ void InOutOctree<DIM>::colorOctreeLeaves()
         while(! uncoloredBlocks.empty())
         {
             int prevCount = uncoloredBlocks.size();
-            ATK_DEBUG_VAR(prevCount);
+            AXOM_DEBUG_VAR(prevCount);
 
             GridPtVec prevVec;
             prevVec.swap(uncoloredBlocks);
@@ -2124,9 +2124,9 @@ void InOutOctree<DIM>::printOctreeStats() const
 
 
 template<int DIM>
-void InOutOctree<DIM>::checkAllLeavesColoredAtLevel(int ATK_DEBUG_PARAM(level)) const
+void InOutOctree<DIM>::checkAllLeavesColoredAtLevel(int AXOM_DEBUG_PARAM(level)) const
 {
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
     typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
     typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
 
@@ -2148,7 +2148,7 @@ void InOutOctree<DIM>::checkAllLeavesColoredAtLevel(int ATK_DEBUG_PARAM(level)) 
 template<int DIM>
 void InOutOctree<DIM>::checkValid() const
 {
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
     typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
     typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
 
@@ -2495,7 +2495,7 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
     debugMesh = ATK_NULLPTR;
   #else
     // Do something with the parameters to avoid a warning about unused parameters
-    ATK_DEBUG_VAR(name);
+    AXOM_DEBUG_VAR(name);
   #endif
 }
 
@@ -2641,7 +2641,7 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
   debugMesh = ATK_NULLPTR;
  #else
   // Do something with the parameters to avoid a warning about unused parameters
-  ATK_DEBUG_VAR(fName);
+  AXOM_DEBUG_VAR(fName);
  #endif
 }
 
@@ -2709,11 +2709,11 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name
     debugMesh = ATK_NULLPTR;
   #else
     // Do something with the parameters to avoid a warning about unused parameters
-    ATK_DEBUG_VAR(name);
-    ATK_DEBUG_VAR(idx);
-    ATK_DEBUG_VAR(block);
-    ATK_DEBUG_VAR(blockBB);
-    ATK_DEBUG_VAR(isTri);
+    AXOM_DEBUG_VAR(name);
+    AXOM_DEBUG_VAR(idx);
+    AXOM_DEBUG_VAR(block);
+    AXOM_DEBUG_VAR(blockBB);
+    AXOM_DEBUG_VAR(isTri);
   #endif
 }
 

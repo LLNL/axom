@@ -70,7 +70,7 @@ namespace slamShocktube {
   const double INIT_P_RATIO = 0.5;
   const double INIT_D_RATIO = 0.5;
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   const bool verboseOutput = false;
 #endif
 

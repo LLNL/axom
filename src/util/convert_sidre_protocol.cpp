@@ -306,7 +306,7 @@ void modifyFinalValuesImpl(DataView* view, int origSize)
                         .size(view->getNumElements())
                         .stride(view->getStride());
 
-  #ifdef ATK_DEBUG
+  #ifdef AXOM_DEBUG
     fmt::MemoryWriter out_fwd;
     for(int i=0; i < idxSet.size(); ++i)
     {
@@ -327,7 +327,7 @@ void modifyFinalValuesImpl(DataView* view, int origSize)
     arr[ idxSet[0] ] = static_cast<sidre_type>(origSize);
     arr[ idxSet[1] ] = std::numeric_limits<sidre_type>::quiet_NaN();
 
-  #ifdef ATK_DEBUG
+  #ifdef AXOM_DEBUG
     fmt::MemoryWriter out_rev;
     for(int i=0; i < idxSet.size(); ++i)
     {

@@ -99,7 +99,7 @@ TEST(gtest_slam_windowed_range_set,construct_windowed_range_set)
 #endif
 
   SLIC_INFO("Using random access on invalid address -- Note: We are testing for the expected failures.");
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
 
   // add this line to avoid a warning in the output about thread safety

@@ -46,7 +46,7 @@
 
 /*!
  *******************************************************************************
- * \def ATK_DEBUG_VAR(x)
+ * \def AXOM_DEBUG_VAR(x)
  * \brief Macro used to silence compiler warnings about variables
  *        that are defined but not used.
  * \note The intent is to use this macro for variables that are only used
@@ -54,7 +54,7 @@
  * \code
  *
  *  double myVar = ...
- *  ATK_DEBUG_VAR(myVar);       // code will emit the following warning in release builds
+ *  AXOM_DEBUG_VAR(myVar);       // code will emit the following warning in release builds
  *                              // if extra warnings are enabled and macro is not called
  *                              // warning: unused variable 'myVar' [-Wunused-variable]
  *  SLIC_ASSERT(myVar > 0)
@@ -62,18 +62,18 @@
  * \endcode
  *******************************************************************************
  */
-#define ATK_DEBUG_VAR(_x)   static_cast<void>(_x)
+#define AXOM_DEBUG_VAR(_x)   static_cast<void>(_x)
 
 
 /*!
  *******************************************************************************
- * \def ATK_DEBUG_PARAM(x)
+ * \def AXOM_DEBUG_PARAM(x)
  * \brief Macro used to silence compiler warnings about parameters
  *        that are used in debug code but not in release code.
  * \note Default values are ok
  * \code
  *
- *  void my_function(int x, int ATK_DEBUG_PARAM(y))
+ *  void my_function(int x, int AXOM_DEBUG_PARAM(y))
  *  {
  *    // my implementation
  *    SLIC_ASSERT(y > 0)
@@ -82,10 +82,10 @@
  * \endcode
  *******************************************************************************
  */
-#ifdef ATK_DEBUG
- #define ATK_DEBUG_PARAM(_x)  _x
+#ifdef AXOM_DEBUG
+ #define AXOM_DEBUG_PARAM(_x)  _x
 #else
- #define ATK_DEBUG_PARAM(_x)
+ #define AXOM_DEBUG_PARAM(_x)
 #endif
 
 /*!

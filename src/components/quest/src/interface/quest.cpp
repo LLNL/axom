@@ -228,7 +228,7 @@ namespace quest {
             return m_meshCenterOfMass;
         }
 
-      #ifdef ATK_DEBUG
+      #ifdef AXOM_DEBUG
         /**
          * \brief Utility function to determine if we are in a mode that supports distance queries
          */
@@ -377,7 +377,7 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   SLIC_ASSERT( ! accelerator3D.isInitialized() );
   SLIC_ASSERT( comm != MPI_COMM_NULL );
 
-  ATK_DEBUG_VAR(ndims);
+  AXOM_DEBUG_VAR(ndims);
   SLIC_ASSERT( ndims==2 || ndims==3 );
 
   // In the future, we will also support 2D, but we currently only support 3D
@@ -413,7 +413,7 @@ void initialize( const std::string& fileName,
 {
   SLIC_ASSERT( ! accelerator3D.isInitialized() );
 
-  ATK_DEBUG_VAR(ndims);
+  AXOM_DEBUG_VAR(ndims);
   SLIC_ASSERT( ndims==2 || ndims==3 );
 
   // In the future, we will also support 2D, but we currently only support 3D

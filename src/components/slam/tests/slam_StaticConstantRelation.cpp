@@ -57,7 +57,7 @@ TEST(gtest_slam_static_constant_relation,empty_relation_out_of_bounds)
 
   StaticConstantRelation<> emptyRel;
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
@@ -190,7 +190,7 @@ TEST(gtest_slam_static_constant_relation,initialized_rel_out_of_bounds)
   generateIncrementingRelations(ELEM_STRIDE, &offsets);
   incrementingRel.bindRelationData(offsets, ELEM_STRIDE);
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";

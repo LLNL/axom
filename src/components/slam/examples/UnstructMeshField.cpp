@@ -444,7 +444,7 @@ int main(int argc, char** argv)
 
   int fileResolutions[] = {1,2,4,8};
   DataType expectedResults[] = {0.10736689892, 0.037977237476, 0.013251067479, 0.0046357167735};
-  ATK_DEBUG_VAR(expectedResults);
+  AXOM_DEBUG_VAR(expectedResults);
 
   // Parse command line for data directory, with fallback
   const std::string DEFAULT_DATA_DIR = "../src/components/slam/data";
@@ -483,7 +483,7 @@ int main(int argc, char** argv)
     createZoneRadiusField(&hexMesh);
 
     DataType errVal = computeNodalErrors(&hexMesh);
-    ATK_DEBUG_VAR(errVal);
+    AXOM_DEBUG_VAR(errVal);
 
     // Some error checking based on precomputed values
     SLIC_ASSERT_MSG(axom::utilities::isNearlyEqual(errVal, expectedResults[res]),
