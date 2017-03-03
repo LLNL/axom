@@ -15,7 +15,7 @@ The Code
 
 Our Git repository contains the Axom source code, documentation, test 
 suites and all files and scripts used for configuring and building the code.
-The repo lives in our 
+The repository lives in our 
 `CZ Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 
 We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for 

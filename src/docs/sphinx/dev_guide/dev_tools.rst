@@ -73,7 +73,7 @@ If you are new to the Git or want to brush up on its features, there are
 several good source of information available on the web:
 
   * `Atlassian Git Tutorial <https://www.atlassian.com/git/>`_ has a lot of useful stuff.
-  * The `Git Docs <https://git-scm.com/docs/>`_ is a complete reference for Git commands and options. It also provides soem *cheat sheets* you can download.
+  * The `Git Docs <https://git-scm.com/docs/>`_ is a complete reference for Git commands and options. It also provides some *cheat sheets* you can download.
   * `Learn Git Branching <http://learngitbranching.js.org/>`_ is nice for visual, hands-on learners. 
   * The e-book `Pro Git, by Scott Chacon <https://git-scm.com/book/en/v2>`_ is an excellent overview guide to using Git effectively.
 
@@ -484,7 +484,7 @@ The Atlassian admin will take care of associating your approved agent with your 
 
 Restarting the Agent:
  On occasion, the agent can die.  This results in bamboo jobs being queued and stalled until the agent is restarted.  
- You must have access to the toolkit 'atk' user to restart the agent. 
+ You must have access to the Axom 'atk' shared user account to restart the agent. 
  To manually restart the CZ agent: ::
 
   $ ssh cab687 xsu atk
@@ -520,7 +520,7 @@ And you can view the jobs on the RZ using::
 Quick setup for adding additional agents::
 
 
-  $ pick a node, for example if we are to create a bamboo agent on rzgenie for asctoolkit
+  $ pick a node, for example if we are to create a bamboo agent on rzgenie for Axom
   $ atk@rzgenie2 ~/bamboo:/collab/usr/global/tools/bamboo/install-agent asctoolkit chang28@llnl.gov
   $ follow the instructions
 
@@ -550,7 +550,7 @@ Steps to Configure Bamboo Test Plan on a new system:
 
   1. First we need a bamboo agent on the new system.  
   2. After the agent is up and running, we need to make sure the Third Party Libraries (TPL) are built. 
-     TPL needs to happen before we can build the Asctoolkit code (for example, cmake needs to be ready). 
+     TPL needs to happen before we can build the Axom code (for example, cmake needs to be ready). 
      To set up a new system, modify the ``compilers.yaml`` script under ``scripts/uberenv``. 
      A successful TPL build would generate host configuration files for each compiler defined in ``compilers.yaml``.
   3. The next step is to create a python script similar to ``llnl_cz_uberenv_install_chaos_5_x86_64_ib_all_compilers.py``. 
@@ -573,7 +573,7 @@ Currently, we have the following test plans on CZ:
     This is done manually on the develop branch. 
 
 
-Currentl,y we have the following test plans on RZ:
+Currently, we have the following test plans on RZ:
 
   Build and Test Develop Branch (all compilers, nightly, rzalastor)
     This is done on a nightly basis on the develop branch. 
@@ -590,7 +590,7 @@ To add a repository to a plan:
      Basic options:
        * Repository Host is "Bitbucket / Stash" (the cz server can also pull from Github)
        * Server is CZ Bitbucket (only option available)
-       * Repository "ASC Simulation CS Toolkit / ASCToolkit"
+       * Repository "Axom"
        * Select the branch
      
      Advanced Options:
@@ -603,7 +603,7 @@ To add a repository to a plan:
 
 To create plans that use the branches feature:
 
-  ASC Toolkit has a nightly build plan that uses the develop branch as it's primary repository.  
+  Axom has a nightly build plan that uses the develop branch as it's primary repository.  
   If you want to run the same plan on branches of this repository they can be set up a few different ways, 
   selecting specific branches in the repository and/or create branch plans for branches matching a regular expression.  
   The branches will then inherit all of the stages and jobs of the parent plan without having to duplicate the plan, 
@@ -623,9 +623,9 @@ Use a regular expression for your branch plan:
   * This would be useful to enable the sprint plans w/out having to worry about the sprint number
   * Also on the Branches tab of the plan configuration
   * In the Automatic branch management section
-  * Select "Create plan branches for matching new branches" from the New Branches listbox.  
+  * Select "Create plan branches for matching new branches" from the New Branches list  
     * Add a regular expression in the 'Match name' text box (something like "/sprint\/([0-9]*)/" or "/feature\/")
-    * Determine if you want Bamboo to delete plan branches after a period of time or a period of inactivity.  These are both set to do not delete by default, but once you selct  the "Create plan branches for matching new branches" option they are set to automatically delete.
+    * Determine if you want Bamboo to delete plan branches after a period of time or a period of inactivity.  These are both set to do not delete by default, but once you select  the "Create plan branches for matching new branches" option they are set to automatically delete.
     * Branch merging is disabled by default (this would automatically merge branches if tests are successful)
     * IRA feature branches is selected by default, so if you enable the branches on this page, Bamboo will automatically create plan branches for branches that contain a JIRA ticket in the name.
     * Select triggers - either inherit the parent plan triggers or run the branch plan manually.

@@ -209,7 +209,7 @@ code that was already obtained during a prior build.
 When the 'create-mirror' argument is used, ``uberenv.py`` establishes a Spack 
 mirror and downloads the source for all TPL dependencies into this mirror. 
 It does not build any TPLs. This option is used to obtain a copy of source 
-code for all necessary TPLs so it can be transfered to another system for 
+code for all necessary TPLs so it can be transferred to another system for 
 building there.
 
 
@@ -261,7 +261,7 @@ Running the script, as in the example above, will create two directories to
 hold the build and install contents for the platform and compiler specified 
 in the name of the host-config file. 
 
-To build the code and intall the header files, libraries, and documentation 
+To build the code and install the header files, libraries, and documentation 
 in the install directory, go into the build directory and run ``make``; e.g.,::
 
    $ cd {build directory}

@@ -27,7 +27,7 @@ Additional information about Axom can be found on the main
   * Build system
   * User guides and source code documentation for individual Axom components
   * Developer guide, coding guidelines, etc.
-  * Communicating with the Axom development tesm (email lists, chat room, etc.)
+  * Communicating with the Axom development team (email lists, chat room, etc.)
 
 
 **Contents:**
