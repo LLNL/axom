@@ -72,7 +72,7 @@ int main(int argc, char** argv)
     int ranksLimit = commSize/2;
 
     // Initialize which lumberjack communicator we want
-    axom::lumberjack::Communicator* communicator = ATK_NULLPTR;
+    axom::lumberjack::Communicator* communicator = AXOM_NULLPTR;
     if (communicatorName == "binary") {
         communicator = new axom::lumberjack::BinaryTreeCommunicator;
     } else if (communicatorName == "root") {

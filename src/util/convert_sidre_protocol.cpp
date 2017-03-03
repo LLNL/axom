@@ -545,7 +545,7 @@ int main(int argc, char * argv[])
           ++it)
   {
       delete [] static_cast<char*>(*it);
-      *it = ATK_NULLPTR;
+      *it = AXOM_NULLPTR;
   }
 
   teardownLogging();

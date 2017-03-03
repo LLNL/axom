@@ -113,8 +113,8 @@ private:
    *****************************************************************************
    */
   SynchronizedStream(): m_comm(MPI_COMM_NULL),
-    m_cache( static_cast< MessageCache* >(ATK_NULLPTR) ),
-    m_stream( static_cast< std::ostream* >(ATK_NULLPTR) )
+    m_cache( static_cast< MessageCache* >(AXOM_NULLPTR) ),
+    m_stream( static_cast< std::ostream* >(AXOM_NULLPTR) )
   { };
 
   DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);

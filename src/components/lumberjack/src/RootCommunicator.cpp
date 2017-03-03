@@ -70,7 +70,7 @@ void RootCommunicator::push(const char* packedMessagesToBeSent,
         int ranksDoneCount = 0;
         while(ranksDoneCount < (m_mpiCommSize-1)){
             currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm);
-            if (currPackedMessages != ATK_NULLPTR) {
+            if (currPackedMessages != AXOM_NULLPTR) {
                 receivedPackedMessages.push_back(currPackedMessages);
             }
             ++ranksDoneCount;

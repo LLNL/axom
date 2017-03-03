@@ -49,12 +49,12 @@ namespace detail
  *******************************************************************************
  * \brief Gets a surface mesh instance for the sphere.
  * \param [in] mesh pointer to the mesh instance.
- * \pre mesh != ATK_NULLPTR
+ * \pre mesh != AXOM_NULLPTR
  *******************************************************************************
  */
 void getMesh( TriangleMesh* mesh )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   const int THETA_RES             = 25;
   const int PHI_RES               = 25;
@@ -157,7 +157,7 @@ void getMesh( TriangleMesh* mesh )
  */
 BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   BoundingBox< double,3 > bb;
   Point< double,3 > pt;
@@ -180,8 +180,8 @@ BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
  */
 void getUniformMesh( const TriangleMesh* mesh, UniformMesh*& umesh )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
-  SLIC_ASSERT( umesh == ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( umesh == AXOM_NULLPTR );
 
   const int N = 16; // number of points along each dimension
 
@@ -217,7 +217,7 @@ TEST( quest_signed_distance, sphere_test )
   detail::getMesh( surface_mesh );
 
   SLIC_INFO( "Generating uniform mesh..." );
-  UniformMesh* umesh = ATK_NULLPTR;
+  UniformMesh* umesh = AXOM_NULLPTR;
   detail::getUniformMesh( surface_mesh, umesh );
 
   const int nnodes = umesh->getNumberOfNodes();

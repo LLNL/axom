@@ -21,7 +21,7 @@
 namespace axom {
 namespace slic {
 
-Logger* Logger::s_Logger = ATK_NULLPTR;
+Logger* Logger::s_Logger = AXOM_NULLPTR;
 std::map< std::string, Logger* > Logger::s_loggers;
 
 //------------------------------------------------------------------------------
@@ -81,7 +81,7 @@ void Logger::setLoggingMsgLevel( message::Level level )
 void Logger::addStreamToMsgLevel( LogStream* ls, message::Level level,
                                   bool pass_ownership )
 {
-  if ( ls == ATK_NULLPTR ) {
+  if ( ls == AXOM_NULLPTR ) {
 
     std::cerr << "WARNING: supplied log stream is NULL!\n";
     return;
@@ -101,7 +101,7 @@ void Logger::addStreamToMsgLevel( LogStream* ls, message::Level level,
 //------------------------------------------------------------------------------
 void Logger::addStreamToAllMsgLevels( LogStream* ls )
 {
-  if ( ls == ATK_NULLPTR ) {
+  if ( ls == AXOM_NULLPTR ) {
 
     std::cerr << "WARNING: supplied log stream is NULL!\n";
     return;
@@ -127,7 +127,7 @@ LogStream* Logger::getStream( message::Level level , int i )
 {
   if ( i < 0 || i >= static_cast< int >(m_logStreams[ level ].size()) ) {
     std::cerr << "ERROR: stream index is out-of-bounds!\n";
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   return m_logStreams[ level ][ i ];
@@ -256,7 +256,7 @@ bool Logger::createLogger( const std::string& name, char imask )
   } // END if inherit nothing
 
   Logger* rootLogger = Logger::getRootLogger();
-  if ( rootLogger == ATK_NULLPTR ) {
+  if ( rootLogger == AXOM_NULLPTR ) {
     std::cerr << "ERROR: no root logger found!\n";
     return false;
   }
@@ -312,7 +312,7 @@ void Logger::finalize()
   }
 
   s_loggers.clear();
-  s_Logger = ATK_NULLPTR;
+  s_Logger = AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
@@ -332,7 +332,7 @@ Logger* Logger::getRootLogger()
 {
   if ( s_loggers.find( "root" ) == s_loggers.end() ) {
     // no root logger
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   return ( s_loggers[ "root" ] );

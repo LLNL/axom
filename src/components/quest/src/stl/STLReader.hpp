@@ -67,7 +67,7 @@ public:
      ***************************************************************************
      * \brief Stores the STL data in the supplied unstructured mesh object.
      * \param [in,out] mesh pointer to the unstructured mesh.
-     * \pre mesh != ATK_NULLPTR.
+     * \pre mesh != AXOM_NULLPTR.
      ***************************************************************************
      */
     void getMesh( axom::mint::UnstructuredMesh< MINT_TRIANGLE >* mesh );

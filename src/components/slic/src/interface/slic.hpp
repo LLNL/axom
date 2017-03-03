@@ -25,7 +25,7 @@
 #include "slic/LogStream.hpp"
 #include "slic/MessageLevel.h"
 
-#include "common/CommonTypes.hpp" // for ATK_NULLPTR
+#include "common/CommonTypes.hpp" // for AXOM_NULLPTR
 
 // C/C++ includes
 #include <iostream> // for std::endl, std::ends
@@ -461,7 +461,7 @@ bool isAbortOnWarningsEnabled();
  * \brief Adds the given stream to the the given level.
  * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.
- * \pre ls != ATK_NULLPTR
+ * \pre ls != AXOM_NULLPTR
  *******************************************************************************
  */
 void addStreamToMsgLevel( LogStream* ls, message::Level level);
@@ -470,7 +470,7 @@ void addStreamToMsgLevel( LogStream* ls, message::Level level);
  *******************************************************************************
  * \brief Adds the given stream to all levels.
  * \param [in] ls pointer to the log stream.
- * \pre ls != ATK_NULLPTR.
+ * \pre ls != AXOM_NULLPTR.
  *******************************************************************************
  */
 void addStreamToAllMsgLevels( LogStream* ls );

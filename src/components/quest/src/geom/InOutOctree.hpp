@@ -777,7 +777,7 @@ private:
 
             // Delete old mesh, and NULL its pointer
             delete m_surfaceMesh;
-            m_surfaceMesh = ATK_NULLPTR;
+            m_surfaceMesh = AXOM_NULLPTR;
 
             m_meshWasReindexed = true;
         }
@@ -785,10 +785,10 @@ private:
         /** \brief Add the vertex positions and triangle boundary relations to the surface mesh */
         void regenerateSurfaceMesh()
         {
-          if(m_surfaceMesh != ATK_NULLPTR)
+          if(m_surfaceMesh != AXOM_NULLPTR)
           {
               delete m_surfaceMesh;
-              m_surfaceMesh = ATK_NULLPTR;
+              m_surfaceMesh = AXOM_NULLPTR;
           }
 
           typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
@@ -2100,7 +2100,7 @@ void InOutOctree<DIM>::printOctreeStats() const
 //
 //        int* blockCount = CD->getField( "blockCount" )->getIntPtr();
 //
-//        SLIC_ASSERT( blockCount != ATK_NULLPTR );
+//        SLIC_ASSERT( blockCount != AXOM_NULLPTR );
 //
 //        for ( int i=0; i < meshTris.size(); ++i ) {
 //            blockCount[i] = triCount[i];
@@ -2112,7 +2112,7 @@ void InOutOctree<DIM>::printOctreeStats() const
 //
 //        int* vtCount = ND->getField( "vtCount" )->getIntPtr();
 //
-//        SLIC_ASSERT( vtCount != ATK_NULLPTR );
+//        SLIC_ASSERT( vtCount != AXOM_NULLPTR );
 //
 //        for ( int i=0; i < m_vertexSet.size(); ++i ) {
 //            vtCount[i] = cardVT[i];
@@ -2450,11 +2450,11 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
 
         CD->addField( new mint::FieldVariable< VertexIndex >("vertID", leafSet.size()) );
         VertexIndex* vertID = CD->getField( "vertID" )->getIntPtr();
-        SLIC_ASSERT( vertID != ATK_NULLPTR );
+        SLIC_ASSERT( vertID != AXOM_NULLPTR );
 
         CD->addField( new mint::FieldVariable< VertexIndex >("level", leafSet.size()) );
         VertexIndex* lLevel = CD->getField( "level" )->getIntPtr();
-        SLIC_ASSERT( lLevel != ATK_NULLPTR );
+        SLIC_ASSERT( lLevel != AXOM_NULLPTR );
 
         for ( int i=0; i < leafSet.size(); ++i )
         {
@@ -2465,12 +2465,12 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
         if(hasTriangles)
         {
             CD->addField( new mint::FieldVariable< VertexIndex >("uniqVertID", leafSet.size()) );
-            VertexIndex* uniqVertID = hasTriangles ? CD->getField( "uniqVertID" )->getIntPtr(): ATK_NULLPTR;
-            SLIC_ASSERT( uniqVertID != ATK_NULLPTR );
+            VertexIndex* uniqVertID = hasTriangles ? CD->getField( "uniqVertID" )->getIntPtr(): AXOM_NULLPTR;
+            SLIC_ASSERT( uniqVertID != AXOM_NULLPTR );
 
             CD->addField( new mint::FieldVariable< int >("triCount", leafSet.size()) );
-            int* triCount = hasTriangles ? CD->getField( "triCount" )->getIntPtr() : ATK_NULLPTR;
-            SLIC_ASSERT( triCount != ATK_NULLPTR );
+            int* triCount = hasTriangles ? CD->getField( "triCount" )->getIntPtr() : AXOM_NULLPTR;
+            SLIC_ASSERT( triCount != AXOM_NULLPTR );
 
             for ( int i=0; i < leafSet.size(); ++i )
             {
@@ -2482,8 +2482,8 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
         if(hasColors)
         {
             CD->addField( new mint::FieldVariable< int >("colors", leafSet.size()) );
-            int* colors = hasColors ? CD->getField( "colors" )->getIntPtr() : ATK_NULLPTR;
-            SLIC_ASSERT( !hasColors || colors != ATK_NULLPTR );
+            int* colors = hasColors ? CD->getField( "colors" )->getIntPtr() : AXOM_NULLPTR;
+            SLIC_ASSERT( !hasColors || colors != AXOM_NULLPTR );
             for ( int i=0; i < leafSet.size(); ++i )
                 colors[i] = leafColors[i];
         }
@@ -2492,7 +2492,7 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
     }
 
     delete debugMesh;
-    debugMesh = ATK_NULLPTR;
+    debugMesh = AXOM_NULLPTR;
   #else
     // Do something with the parameters to avoid a warning about unused parameters
     AXOM_DEBUG_VAR(name);
@@ -2626,8 +2626,8 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
     CD->addField( new mint::FieldVariable< int >("debugIdx", debugIdxField.size()) );
     int* colors = CD->getField( "colors" )->getIntPtr();
     int* debIdx = CD->getField( "debugIdx" )->getIntPtr();
-    SLIC_ASSERT(colors != ATK_NULLPTR );
-    SLIC_ASSERT(debIdx != ATK_NULLPTR );
+    SLIC_ASSERT(colors != AXOM_NULLPTR );
+    SLIC_ASSERT(debIdx != AXOM_NULLPTR );
     for ( std::size_t i=0; i < colorsField.size(); ++i )
     {
       debIdx[i] = debugIdxField[i];
@@ -2638,7 +2638,7 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
   }
 
   delete debugMesh;
-  debugMesh = ATK_NULLPTR;
+  debugMesh = AXOM_NULLPTR;
  #else
   // Do something with the parameters to avoid a warning about unused parameters
   AXOM_DEBUG_VAR(fName);
@@ -2706,7 +2706,7 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name
     debugMesh->toVtkFile(fNameStr.str());
 
     delete debugMesh;
-    debugMesh = ATK_NULLPTR;
+    debugMesh = AXOM_NULLPTR;
   #else
     // Do something with the parameters to avoid a warning about unused parameters
     AXOM_DEBUG_VAR(name);

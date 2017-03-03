@@ -164,7 +164,7 @@ public:
    */
   bool isAllocated() const
   {
-    return (m_node.data_ptr() != ATK_NULLPTR);
+    return (m_node.data_ptr() != AXOM_NULLPTR);
   }
 
   /*!

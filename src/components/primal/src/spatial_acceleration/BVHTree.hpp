@@ -13,7 +13,7 @@
 
 // ASC Toolkit includes
 #include "common/ATKMacros.hpp"   // for DISABLE_COPY_AND_ASSIGNMENT macro
-#include "common/CommonTypes.hpp" // for ATK_NULLPTR
+#include "common/CommonTypes.hpp" // for AXOM_NULLPTR
 
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
@@ -204,7 +204,7 @@ public:
    * \param [in] bucketIdx the index of the bucket in query.
    * \return arrayPtr pointer to the buckets object array
    * \pre bucketIdx >= 0 && bucketIdx < m_tree.size()
-   * \post arryPtr != ATK_NULLPTR
+   * \post arryPtr != AXOM_NULLPTR
    *****************************************************************************
    */
   const int* getBucketObjectArray( int bucketIdx ) const;

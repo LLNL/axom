@@ -61,9 +61,9 @@ namespace quest {
 
         /** \brief Default constructor */
         QuestAccelerator()
-            : m_surface_mesh(ATK_NULLPTR)
-            , m_region(ATK_NULLPTR)
-            , m_containmentTree(ATK_NULLPTR)
+            : m_surface_mesh(AXOM_NULLPTR)
+            , m_region(AXOM_NULLPTR)
+            , m_containmentTree(AXOM_NULLPTR)
             , m_queryMode(QUERY_MODE_NONE)
             , m_originalLoggerName("")
         {
@@ -74,7 +74,7 @@ namespace quest {
          */
         void setMesh( axom::mint::Mesh* surface_mesh)
         {
-            SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
+            SLIC_ASSERT( surface_mesh != AXOM_NULLPTR);
 
             m_surface_mesh = surface_mesh;
 
@@ -132,22 +132,22 @@ namespace quest {
          */
         void finalize()
         {
-            if ( m_region != ATK_NULLPTR ) {
+            if ( m_region != AXOM_NULLPTR ) {
                delete m_region;
-               m_region = ATK_NULLPTR;
+               m_region = AXOM_NULLPTR;
             }
 
-            if( m_containmentTree != ATK_NULLPTR )
+            if( m_containmentTree != AXOM_NULLPTR )
             {
                 delete m_containmentTree;
-                m_containmentTree = ATK_NULLPTR;
+                m_containmentTree = AXOM_NULLPTR;
             }
             m_queryMode = QUERY_MODE_NONE;
 
-            if ( m_surface_mesh != ATK_NULLPTR ) {
+            if ( m_surface_mesh != AXOM_NULLPTR ) {
 
                delete m_surface_mesh;
-               m_surface_mesh = ATK_NULLPTR;
+               m_surface_mesh = AXOM_NULLPTR;
             }
 
             m_meshBoundingBox.clear();
@@ -196,7 +196,7 @@ namespace quest {
             case QUERY_MODE_SIGNED_DISTANCE:
               {
                 const quest::SignedDistance<3>::BVHTreeType* tree = m_region->getBVHTree();
-                SLIC_ASSERT( tree != ATK_NULLPTR );
+                SLIC_ASSERT( tree != AXOM_NULLPTR );
 
                 if ( !tree->contains( pt ) ) {
                   sign = 0;
@@ -242,7 +242,7 @@ namespace quest {
                 isValid = false;
                 break;
             case QUERY_MODE_SIGNED_DISTANCE:
-                if( m_region == ATK_NULLPTR)
+                if( m_region == AXOM_NULLPTR)
                     isValid = false;
                 break;
             case QUERY_MODE_NONE:
@@ -263,11 +263,11 @@ namespace quest {
             switch(m_queryMode)
             {
             case QUERY_MODE_CONTAINMENT:
-                if( m_containmentTree == ATK_NULLPTR)
+                if( m_containmentTree == AXOM_NULLPTR)
                     isValid = false;
                 break;
             case QUERY_MODE_SIGNED_DISTANCE:
-                if( m_region == ATK_NULLPTR)
+                if( m_region == AXOM_NULLPTR)
                     isValid = false;
                 break;
             case QUERY_MODE_NONE:
@@ -391,7 +391,7 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   reader->read();
 
   axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
+  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
   delete reader;
@@ -427,7 +427,7 @@ void initialize( const std::string& fileName,
   reader->read();
 
   axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
+  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
   delete reader;
@@ -454,8 +454,8 @@ double distance( double x, double y, double z )
 //------------------------------------------------------------------------------
 void distance( const double* xyz, double* dist, int npoints )
 {
-  SLIC_ASSERT( xyz != ATK_NULLPTR );
-  SLIC_ASSERT( dist != ATK_NULLPTR );
+  SLIC_ASSERT( xyz != AXOM_NULLPTR );
+  SLIC_ASSERT( dist != AXOM_NULLPTR );
 
 #ifdef ATK_USE_OPENMP
 #pragma omp parallel for schedule(static)
@@ -481,7 +481,7 @@ int inside( double x, double y, double z )
 void mesh_min_bounds(double* coords)
 {
     typedef QuestAccelerator<3>::SpacePt SpacePt;
-    SLIC_ASSERT(coords != ATK_NULLPTR);
+    SLIC_ASSERT(coords != AXOM_NULLPTR);
 
     const SpacePt& bbMin = accelerator3D.meshBoundingBox().getMin();
     bbMin.array().to_array(coords);
@@ -491,7 +491,7 @@ void mesh_min_bounds(double* coords)
 void mesh_max_bounds(double* coords)
 {
     typedef QuestAccelerator<3>::SpacePt SpacePt;
-    SLIC_ASSERT(coords != ATK_NULLPTR);
+    SLIC_ASSERT(coords != AXOM_NULLPTR);
 
     const SpacePt& bbMax = accelerator3D.meshBoundingBox().getMax();
     bbMax.array().to_array(coords);
@@ -503,7 +503,7 @@ void mesh_max_bounds(double* coords)
 void mesh_center_of_mass(double* coords)
 {
     typedef QuestAccelerator<3>::SpacePt SpacePt;
-    SLIC_ASSERT(coords != ATK_NULLPTR);
+    SLIC_ASSERT(coords != AXOM_NULLPTR);
 
     const SpacePt& cMass = accelerator3D.meshCenterOfMass();
     cMass.array().to_array(coords);
@@ -512,8 +512,8 @@ void mesh_center_of_mass(double* coords)
 //------------------------------------------------------------------------------
 void inside( const double* xyz, int* in, int npoints )
 {
-  SLIC_ASSERT( xyz != ATK_NULLPTR );
-  SLIC_ASSERT( in != ATK_NULLPTR );
+  SLIC_ASSERT( xyz != AXOM_NULLPTR );
+  SLIC_ASSERT( in != AXOM_NULLPTR );
 
 #ifdef ATK_USE_OPENMP
 #pragma omp parallel for schedule(static)

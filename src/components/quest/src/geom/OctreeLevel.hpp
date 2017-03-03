@@ -195,16 +195,16 @@ namespace quest {
         BlockIterator(OctreeLevel* octLevel, bool begin = false)
             : m_octLevel(octLevel)
         {
-            SLIC_ASSERT(octLevel != ATK_NULLPTR);
+            SLIC_ASSERT(octLevel != AXOM_NULLPTR);
             m_iterHelper = octLevel->getIteratorHelper(begin); // factory function
         }
 
         ~BlockIterator()
         {
-            if(m_iterHelper != ATK_NULLPTR)
+            if(m_iterHelper != AXOM_NULLPTR)
             {
                 delete m_iterHelper;
-                m_iterHelper = ATK_NULLPTR;
+                m_iterHelper = AXOM_NULLPTR;
             }
         }
 

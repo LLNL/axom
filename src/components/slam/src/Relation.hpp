@@ -33,10 +33,10 @@ namespace slam    {
   struct EmptySetTraits
   {
     typedef SetType* EmptySetType;
-    static EmptySetType emptySet() { return ATK_NULLPTR; }
+    static EmptySetType emptySet() { return AXOM_NULLPTR; }
 
     template<typename ASetType>
-    static bool         isEmpty(ASetType* set) { return set == ATK_NULLPTR || set->empty(); }
+    static bool         isEmpty(ASetType* set) { return set == AXOM_NULLPTR || set->empty(); }
   };
 
   template<>

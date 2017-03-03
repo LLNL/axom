@@ -94,7 +94,7 @@ void BinaryTreeCommunicator::push(const char* packedMessagesToBeSent,
     const char* currPackedMessages;
     while(childrenDoneCount < m_childCount){
         currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm);
-        if (currPackedMessages != ATK_NULLPTR) {
+        if (currPackedMessages != AXOM_NULLPTR) {
             receivedPackedMessages.push_back(currPackedMessages);
         }
         ++childrenDoneCount;

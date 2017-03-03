@@ -238,7 +238,7 @@ TEST(sidre_view,create_view_from_path)
 
   // Verify create works when groups already exist.
   baz = root->createView("foo/bar/baz");
-  EXPECT_TRUE( baz != ATK_NULLPTR );
+  EXPECT_TRUE( baz != AXOM_NULLPTR );
 
   EXPECT_TRUE( root->hasGroup("foo") );
 

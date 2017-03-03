@@ -15,14 +15,14 @@
 #include "slic/slic.hpp"
 
 // C/C++ includes
-#include <cstddef> // for definition of ATK_NULLPTR
+#include <cstddef> // for definition of AXOM_NULLPTR
 
 namespace axom {
 namespace mint {
 
 CurvilinearMesh::CurvilinearMesh():
-  StructuredMesh( MINT_UNDEFINED_MESH, -1, ATK_NULLPTR ),
-  m_coordinates( ATK_NULLPTR )
+  StructuredMesh( MINT_UNDEFINED_MESH, -1, AXOM_NULLPTR ),
+  m_coordinates( AXOM_NULLPTR )
 {}
 
 //------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ CurvilinearMesh::CurvilinearMesh( int ndims, int ext[6],
 CurvilinearMesh::~CurvilinearMesh()
 {
   delete m_coordinates;
-  m_coordinates = ATK_NULLPTR;
+  m_coordinates = AXOM_NULLPTR;
 }
 
 } /* namespace mint */

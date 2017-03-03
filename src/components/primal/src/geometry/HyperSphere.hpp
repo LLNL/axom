@@ -107,7 +107,7 @@ public:
    * \brief Computes signed distance of a point to the HyperSphere boundary.
    * \param [in] q pointer to user-supplied point q.
    * \return dist signed distance
-   * \pre q != ATK_NULLPTR
+   * \pre q != AXOM_NULLPTR
    * \pre q must be a pointer to an array that is at least NDIMS long
    *****************************************************************************
    */
@@ -118,7 +118,7 @@ public:
    * \brief Computes orientation of a point with respect to the HyperSphere.
    * \param [in] q pointer to user-supplied point q.
    * \return orient orientation of q with respect to the sphere.
-   * \pre q != ATK_NULLPTR
+   * \pre q != AXOM_NULLPTR
    * \pre q must be a pointer to an array that is at least NDIMS long
    *****************************************************************************
    */
@@ -156,7 +156,7 @@ HyperSphere< T,NDIMS >::HyperSphere( T radius ): m_radius(radius)
 template < typename T, int NDIMS >
 HyperSphere< T,NDIMS >::HyperSphere( T* center, T radius ): m_radius(radius)
 {
-  SLIC_ASSERT( center != ATK_NULLPTR );
+  SLIC_ASSERT( center != AXOM_NULLPTR );
   memcpy( m_center, center, NDIMS*sizeof(T) );
 }
 
@@ -182,7 +182,7 @@ inline HyperSphere< T,NDIMS >& HyperSphere< T,NDIMS >::operator=(
 template < typename T, int NDIMS >
 T HyperSphere< T,NDIMS >::getSignedDistance( T* q )
 {
-  SLIC_ASSERT( q != ATK_NULLPTR );
+  SLIC_ASSERT( q != AXOM_NULLPTR );
 
   T d = 0.0;
   for ( int i=0; i < NDIMS; ++i ) {
@@ -197,7 +197,7 @@ T HyperSphere< T,NDIMS >::getSignedDistance( T* q )
 template < typename T, int NDIMS >
 int HyperSphere< T,NDIMS >::getOrientation( T* q )
 {
-  SLIC_ASSERT( q != ATK_NULLPTR );
+  SLIC_ASSERT( q != AXOM_NULLPTR );
 
   const double TOL = 1.0e-9;
   T signed_distance = this->getSignedDistance( q );

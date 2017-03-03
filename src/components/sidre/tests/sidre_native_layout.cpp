@@ -66,10 +66,10 @@ void checkPointersAndData(const std::string& path
   T * nD = static_cast<T *>(node.element_ptr(0));
 
   axom::sidre::DataView * view = rootGroup->getView(path);
-  EXPECT_TRUE(ATK_NULLPTR != view);
+  EXPECT_TRUE(AXOM_NULLPTR != view);
 
   T * vD = view->getData<T *>();
-  EXPECT_TRUE(ATK_NULLPTR != vD);
+  EXPECT_TRUE(AXOM_NULLPTR != vD);
 
   EXPECT_EQ(nD, vD)
     << "Error when comparing pointer address between "
@@ -100,7 +100,7 @@ void checkPointersAndData<std::string>(const std::string& path
   std::string nD = node.as_string();
 
   axom::sidre::DataView * view = rootGroup->getView(path);
-  EXPECT_TRUE(ATK_NULLPTR != view);
+  EXPECT_TRUE(AXOM_NULLPTR != view);
   EXPECT_TRUE(view->isString());
 
   std::string vD(view->getString());
@@ -134,10 +134,10 @@ TEST(sidre_native_layout,empty_layout)
   SLIC_INFO("****** done ******");
 
 
-  if(ds != ATK_NULLPTR)
+  if(ds != AXOM_NULLPTR)
   {
     delete ds;
-    ds = ATK_NULLPTR;
+    ds = AXOM_NULLPTR;
   }
 }
 
@@ -203,21 +203,21 @@ TEST(sidre_native_layout,generate_native_layout)
 
 
   /// Clean up memory
-  if(extRealPtr != ATK_NULLPTR)
+  if(extRealPtr != AXOM_NULLPTR)
   {
     delete[] extRealPtr;
-    extRealPtr = ATK_NULLPTR;
+    extRealPtr = AXOM_NULLPTR;
   }
-  if(extIntPtr != ATK_NULLPTR)
+  if(extIntPtr != AXOM_NULLPTR)
   {
     delete[] extIntPtr;
-    extIntPtr = ATK_NULLPTR;
+    extIntPtr = AXOM_NULLPTR;
   }
 
-  if(ds != ATK_NULLPTR)
+  if(ds != AXOM_NULLPTR)
   {
     delete ds;
-    ds = ATK_NULLPTR;
+    ds = AXOM_NULLPTR;
   }
 }
 
@@ -261,10 +261,10 @@ TEST(sidre_native_layout,native_layout_with_scalars)
   checkPointersAndData<double>("Gscalar/Vdbl", node, root);
   checkPointersAndData<std::string>("Gscalar/Vstr", node, root);
 
-  if(ds != ATK_NULLPTR)
+  if(ds != AXOM_NULLPTR)
   {
     delete ds;
-    ds = ATK_NULLPTR;
+    ds = AXOM_NULLPTR;
   }
 }
 

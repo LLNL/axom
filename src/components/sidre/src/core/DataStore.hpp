@@ -105,12 +105,12 @@ public:
   bool hasBuffer( IndexType idx ) const
   {
     return ( 0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() &&
-             m_data_buffers[static_cast<unsigned>(idx)] != ATK_NULLPTR );
+             m_data_buffers[static_cast<unsigned>(idx)] != AXOM_NULLPTR );
   }
 
   /*!
    * \brief Return (non-const) pointer to Buffer object with given index,
-   *        or ATK_NULLPTR if none exists.
+   *        or AXOM_NULLPTR if none exists.
    */
   DataBuffer * getBuffer( IndexType idx ) const;
 

@@ -234,16 +234,16 @@ class SidreGroup(unittest.TestCase):
 #
 #  // error condition check - try again with duplicate name, should be a no-op
 #  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1", 
-#                           axom::sidre::FLOAT64_ID, 50 ) == ATK_NULLPTR );
+#                           axom::sidre::FLOAT64_ID, 50 ) == AXOM_NULLPTR );
 #  group->destroyViewAndData("viewWithLength1");
 #  EXPECT_FALSE( group->hasView("viewWithLength1") );
 #
 #  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen", 
-#                           axom::sidre::FLOAT64_ID, -1 ) == ATK_NULLPTR );
+#                           axom::sidre::FLOAT64_ID, -1 ) == AXOM_NULLPTR );
 #
 #  // try api call that specifies data type in another way
 #  group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) );
-#  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) ) == ATK_NULLPTR );
+#  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) ) == AXOM_NULLPTR );
 #  // destroy this view using index
 #  group->destroyViewAndData( group->getFirstValidViewIndex() );
 

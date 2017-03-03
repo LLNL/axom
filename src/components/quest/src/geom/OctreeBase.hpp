@@ -454,7 +454,7 @@ private:
   template<typename DerivedPtrType, typename BasePtrType>
   bool checkCast(BasePtrType base) const
   {
-      return dynamic_cast<DerivedPtrType>(base) != ATK_NULLPTR;
+      return dynamic_cast<DerivedPtrType>(base) != AXOM_NULLPTR;
   }
 
 
@@ -498,7 +498,7 @@ public:
       for(int i=0; i< maxLeafLevel(); ++i)
       {
           delete m_leavesLevelMap[i];
-          m_leavesLevelMap[i] = ATK_NULLPTR;
+          m_leavesLevelMap[i] = AXOM_NULLPTR;
       }
   }
 

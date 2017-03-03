@@ -72,7 +72,7 @@ public:
    *****************************************************************************
    * \brief Returns a double pointer to the field data.
    * \return ptr pointer to the field data.
-   * \post ptr==ATK_NULLPTR iff the data is not of type double.
+   * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    *****************************************************************************
    */
   virtual double* getDoublePtr();
@@ -81,7 +81,7 @@ public:
    *****************************************************************************
    * \brief Returns an int pointer to the field data.
    * \return ptr pointer to the field data.
-   * \post ptr==ATK_NULLPTR iff the is not an integer type.
+   * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    *****************************************************************************
    */
   virtual int* getIntPtr();

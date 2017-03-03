@@ -86,7 +86,7 @@ void LumberjackStream::append( message::Level msgLevel,
                                int line,
                                bool AXOM_NOT_USED(filter_duplicates) )
 {
-  if ( m_lj == ATK_NULLPTR ) {
+  if ( m_lj == AXOM_NULLPTR ) {
     std::cerr <<
       "ERROR: NULL Lumberjack instance in LumberjackStream::append!\n";
     return;
@@ -98,7 +98,7 @@ void LumberjackStream::append( message::Level msgLevel,
 //------------------------------------------------------------------------------
 void LumberjackStream::flush()
 {
-  if ( m_lj == ATK_NULLPTR ) {
+  if ( m_lj == AXOM_NULLPTR ) {
     std::cerr <<
       "ERROR: NULL Lumberjack instance in LumberjackStream::flush!\n";
     return;
@@ -111,7 +111,7 @@ void LumberjackStream::flush()
 //------------------------------------------------------------------------------
 void LumberjackStream::push()
 {
-  if ( m_lj == ATK_NULLPTR ) {
+  if ( m_lj == AXOM_NULLPTR ) {
     std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::push!\n";
     return;
   }
@@ -122,7 +122,7 @@ void LumberjackStream::push()
 //------------------------------------------------------------------------------
 void LumberjackStream::write()
 {
-  if ( m_lj == ATK_NULLPTR ) {
+  if ( m_lj == AXOM_NULLPTR ) {
     std::cerr <<
       "ERROR: NULL Lumberjack instance in LumberjackStream::write!\n";
     return;

@@ -49,7 +49,7 @@ void GenericOutputStream::append( message::Level msgLevel,
                                   int line,
                                   bool AXOM_NOT_USED(filtered_duplicates) )
 {
-  if ( m_stream == ATK_NULLPTR ) {
+  if ( m_stream == AXOM_NULLPTR ) {
     std::cerr << "ERROR: NULL stream!\n";
     return;
   }

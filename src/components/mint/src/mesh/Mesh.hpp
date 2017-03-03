@@ -97,7 +97,7 @@ public:
    *****************************************************************************
    * \brief Returns the FieldData instance associated with node-centered fields.
    * \return fd pointer to the FieldData instance for node-centered fields.
-   * \post fd != ATK_NULLPTR
+   * \post fd != AXOM_NULLPTR
    *****************************************************************************
    */
   inline FieldData* getNodeFieldData() const { return m_node_data; };
@@ -106,7 +106,7 @@ public:
    *****************************************************************************
    * \brief Returns the FieldData instance associated with cell-centered fields.
    * \return fd pointer to the FieldData instance for cell-centered fields.
-   * \post fd != ATK_NULLPTR
+   * \post fd != AXOM_NULLPTR
    *****************************************************************************
    */
   inline FieldData* getCellFieldData() const { return m_cell_data; };
@@ -115,7 +115,7 @@ public:
    *****************************************************************************
    * \brief Returns the FieldData instance associated with face-centered fields.
    * \return fd pointer to the FieldData instance for face-centered fields.
-   * \post fd != ATK_NULLPTR
+   * \post fd != AXOM_NULLPTR
    *****************************************************************************
    */
   inline FieldData* getFaceFieldData() const { return m_face_data; };
@@ -161,7 +161,7 @@ public:
    * \param [out] cell user-supplied buffer to store cell connectivity info.
    * \note cell must have sufficient size to hold the connectivity information.
    * \pre cellIdx >= 0 && cellIdx < this->getMeshNumberOfCells()
-   * \pre cell != ATK_NULLPTR.
+   * \pre cell != AXOM_NULLPTR.
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    *****************************************************************************

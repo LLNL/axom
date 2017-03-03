@@ -39,7 +39,7 @@
 #endif
 #endif // ATK_USE_BOOST
 
-#include "common/CommonTypes.hpp" // for ATK_NULLPTR
+#include "common/CommonTypes.hpp" // for AXOM_NULLPTR
 #include "slic/slic.hpp"
 
 #include "slam/Set.hpp"

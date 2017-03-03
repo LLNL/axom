@@ -50,7 +50,7 @@ TEST( primal_bucket_tree, insert_object )
   EXPECT_EQ( 5, N );
 
   const int* objs = bucketTree.getBucketObjectArray( 0 );
-  ASSERT_TRUE( objs != ATK_NULLPTR );
+  ASSERT_TRUE( objs != AXOM_NULLPTR );
 
   const BoxType& bucketBox = bucketTree.getBucketBox( 0 );
   BoxType expected_bb( PointType::zero(), PointType::ones() );

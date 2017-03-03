@@ -72,12 +72,12 @@
  *
  *               bool hasItem(IndexType idx) const;
  *
- *          - // Return pointer to item with given name (ATK_NULLPTR if none).
+ *          - // Return pointer to item with given name (AXOM_NULLPTR if none).
  *
  *               TYPE* getItem(const std::string& name);
  *               TYPE const* getItem(const std::string& name) const ;
  *
- *          - // Return pointer to item with given index (ATK_NULLPTR if none).
+ *          - // Return pointer to item with given index (AXOM_NULLPTR if none).
  *
  *               TYPE* getItem(IndexType idx);
  *               TYPE const* getItem(IndexType idx) const;
@@ -98,12 +98,12 @@
  *               bool insertItem(TYPE* item, const std::string& name);
  *
  *          - // Remove item with given name if it exists and return a
- *            // pointer to it. If it doesn't exist, return ATK_NULLPTR.
+ *            // pointer to it. If it doesn't exist, return AXOM_NULLPTR.
  *
  *               TYPE* removeItem(const std::string& name);
  *
  *          - // Remove item with given name if it exists and return a
- *            // pointer to it. If it doesn't exist, return ATK_NULLPTR.
+ *            // pointer to it. If it doesn't exist, return AXOM_NULLPTR.
  *
  *               TYPE* removeItem(IndexType idx);
  *
@@ -219,7 +219,7 @@ public:
   {
     typename MapType::iterator mit = m_name2idx_map.find(name);
     return ( mit != m_name2idx_map.end() ?
-             m_items[ mit->second ] : ATK_NULLPTR );
+             m_items[ mit->second ] : AXOM_NULLPTR );
   }
 
   ///
@@ -227,19 +227,19 @@ public:
   {
     typename MapType::const_iterator mit = m_name2idx_map.find(name);
     return ( mit != m_name2idx_map.end() ?
-             m_items[ mit->second ] : ATK_NULLPTR );
+             m_items[ mit->second ] : AXOM_NULLPTR );
   }
 
   ///
   TYPE * getItem(IndexType idx)
   {
-    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : ATK_NULLPTR );
+    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : AXOM_NULLPTR );
   }
 
   ///
   TYPE const * getItem(IndexType idx) const
   {
-    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : ATK_NULLPTR );
+    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : AXOM_NULLPTR );
   }
 
   ///
@@ -319,7 +319,7 @@ IndexType MapCollection<TYPE>::getNextValidIndex(IndexType idx) const
 {
   idx++;
   while ( static_cast<unsigned>(idx) < m_items.size() &&
-          m_items[static_cast<unsigned>(idx)] == ATK_NULLPTR )
+          m_items[static_cast<unsigned>(idx)] == AXOM_NULLPTR )
   {
     idx++;
   }
@@ -376,7 +376,7 @@ bool MapCollection<TYPE>::insertItem(TYPE * item,
 template <typename TYPE>
 TYPE * MapCollection<TYPE>::removeItem(const std::string& name)
 {
-  TYPE * ret_val = ATK_NULLPTR;
+  TYPE * ret_val = AXOM_NULLPTR;
 
   typename MapType::iterator mit = m_name2idx_map.find(name);
   if ( mit != m_name2idx_map.end() )
@@ -386,7 +386,7 @@ TYPE * MapCollection<TYPE>::removeItem(const std::string& name)
     ret_val = m_items[idx];
 
     m_name2idx_map.erase(mit);
-    m_items[idx] = ATK_NULLPTR;
+    m_items[idx] = AXOM_NULLPTR;
     m_free_ids.push(idx);
   }
 
@@ -403,7 +403,7 @@ TYPE * MapCollection<TYPE>::removeItem(IndexType idx)
   }
   else
   {
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 }
 

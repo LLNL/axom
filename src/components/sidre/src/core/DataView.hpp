@@ -153,7 +153,7 @@ public:
    */
   bool  hasBuffer() const
   {
-    return m_data_buffer != ATK_NULLPTR;
+    return m_data_buffer != AXOM_NULLPTR;
   }
 
   /*!
@@ -799,7 +799,7 @@ public:
   /*!
    * \brief Returns a pointer to the string contained in the view.
    *
-   *  If the view is not a STRING, then ATK_NULLPTR is returned.
+   *  If the view is not a STRING, then AXOM_NULLPTR is returned.
      //
      // RDH -- Should we also provide an overload that returns a const char *?
      //        It seems excessive to create copies of strings for most usage.
@@ -814,7 +814,7 @@ public:
     }
     else
     {
-      return ATK_NULLPTR;
+      return AXOM_NULLPTR;
     }
   }
 
@@ -1050,7 +1050,7 @@ private:
    */
   void setBufferViewToEmpty()
   {
-    m_data_buffer = ATK_NULLPTR;
+    m_data_buffer = AXOM_NULLPTR;
     m_state = EMPTY;
     unapply();
   }

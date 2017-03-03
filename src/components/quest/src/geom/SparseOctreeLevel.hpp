@@ -177,7 +177,7 @@ namespace quest {
             {
                 const self* pother = dynamic_cast<const self*>(other);
 
-                return (pother != ATK_NULLPTR)
+                return (pother != AXOM_NULLPTR)
                      && (m_currentIter == pother->m_currentIter)   // iterators are the same
                      && (m_offset == pother->m_offset);            // brood indices are the same
             }

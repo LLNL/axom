@@ -162,7 +162,7 @@ void STLReader::getMesh(
         axom::mint::UnstructuredMesh< MINT_TRIANGLE >* mesh )
 {
   /* Sanity checks */
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
   SLIC_ASSERT( static_cast<int>(m_nodes.size()) == 3* m_num_nodes );
 
   // Load the vertices into the mesh

@@ -44,7 +44,7 @@ TEST(sidre_external, create_external_view)
 
   for (unsigned int i=0 ; i < 8 ; i++)
   {
-    DataView * view = ATK_NULLPTR;
+    DataView * view = AXOM_NULLPTR;
 
     switch (i)
     {
@@ -115,11 +115,11 @@ TEST(sidre_external, create_external_view_null)
 {
   DataStore * ds   = new DataStore();
   DataGroup * root = ds->getRoot();
-  int * idata = ATK_NULLPTR;
+  int * idata = AXOM_NULLPTR;
 
   for (int i=0 ; i < 2 ; i++)
   {
-    DataView * view = ATK_NULLPTR;
+    DataView * view = AXOM_NULLPTR;
 
     switch (i)
     {
@@ -147,11 +147,11 @@ TEST(sidre_external, create_external_view_null)
     EXPECT_EQ(view->getTotalBytes(), 0u);
 
     void * ptr = view->getVoidPtr();
-    EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), ptr);
+    EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), ptr);
 
     // getData will not work since the address is NULL
     //  int * idata_chk = view->getData();
-    //EXPECT_EQ(idata_chk, ATK_NULLPTR);
+    //EXPECT_EQ(idata_chk, AXOM_NULLPTR);
 
     view->print();
 
@@ -194,7 +194,7 @@ TEST(sidre_external, transition_external_view_to_empty)
   EXPECT_EQ(view->getNumElements(), len);
 
   void * ptr = view->getVoidPtr();
-  EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), ptr);
+  EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), ptr);
 
   view->print();
 

@@ -25,7 +25,7 @@ class TestCommunicator: public axom::lumberjack::Communicator {
         {
             m_mpiComm = comm;
             m_ranksLimit = ranksLimit;
-            srand(time(ATK_NULLPTR));
+            srand(time(AXOM_NULLPTR));
         }
 
         void finalize()

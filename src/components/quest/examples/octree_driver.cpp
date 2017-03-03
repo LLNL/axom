@@ -85,7 +85,7 @@ typedef Octree3D::BlockIndex BlockIndex;
  */
 GeometricBoundingBox compute_bounds( axom::mint::Mesh* mesh)
 {
-   SLIC_ASSERT( mesh != ATK_NULLPTR );
+   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
    GeometricBoundingBox meshBB;
    SpacePt pt;
@@ -105,7 +105,7 @@ GeometricBoundingBox compute_bounds( axom::mint::Mesh* mesh)
 //------------------------------------------------------------------------------
 void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   std::ofstream ofs;
   ofs.open( fileName.c_str() );
@@ -178,7 +178,7 @@ void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
       if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "double\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -189,7 +189,7 @@ void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
       } else {
 
           int* dataPtr = field->getIntPtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "int\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -332,11 +332,11 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
 
     const int nnodes = umesh->getNumberOfNodes();
     axom::mint::FieldData* PD = umesh->getNodeFieldData();
-    SLIC_ASSERT( PD != ATK_NULLPTR );
+    SLIC_ASSERT( PD != AXOM_NULLPTR );
 
     PD->addField( new axom::mint::FieldVariable< int >("containment",nnodes) );
     int* containment = PD->getField( "containment" )->getIntPtr();
-    SLIC_ASSERT( containment != ATK_NULLPTR );
+    SLIC_ASSERT( containment != AXOM_NULLPTR );
 
 
     axom::utilities::Timer timer(true);
@@ -366,7 +366,7 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
  */
 TriVertIndices getTriangleVertIndices(axom::mint::Mesh* mesh, int cellIndex)
 {
-    SLIC_ASSERT(mesh != ATK_NULLPTR);
+    SLIC_ASSERT(mesh != AXOM_NULLPTR);
     SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getMeshNumberOfCells());
 
     TriVertIndices tvInd;
@@ -380,7 +380,7 @@ TriVertIndices getTriangleVertIndices(axom::mint::Mesh* mesh, int cellIndex)
  */
 SpaceTriangle getMeshTriangle(axom::mint::Mesh* mesh, const TriVertIndices& vertIndices )
 {
-    SLIC_ASSERT(mesh != ATK_NULLPTR);
+    SLIC_ASSERT(mesh != AXOM_NULLPTR);
 
     SpaceTriangle tri;
     for(int i=0; i< 3; ++i)
@@ -397,7 +397,7 @@ SpaceTriangle getMeshTriangle(axom::mint::Mesh* mesh, const TriVertIndices& vert
  */
 void print_surface_stats( axom::mint::Mesh* mesh)
 {
-   SLIC_ASSERT( mesh != ATK_NULLPTR );
+   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
    SpacePt pt;
 
@@ -581,7 +581,7 @@ int main( int argc, char** argv )
 
   // STEP 4: Delete the reader
   delete reader;
-  reader = ATK_NULLPTR;
+  reader = AXOM_NULLPTR;
 
 
   // STEP 5: Compute the bounding box and log some stats about the surface

@@ -41,7 +41,7 @@ void initialize()
 //------------------------------------------------------------------------------
 bool isInitialized()
 {
-  return ( Logger::getActiveLogger() != ATK_NULLPTR );
+  return ( Logger::getActiveLogger() != AXOM_NULLPTR );
 }
 
 //------------------------------------------------------------------------------

@@ -52,7 +52,7 @@ namespace policies {
      * \brief Checks whether the set containing this policy class is a subset
      */
     bool                  isSubset() const { return false; }
-    const ParentSetType*  parentSet() const { return ATK_NULLPTR; }
+    const ParentSetType*  parentSet() const { return AXOM_NULLPTR; }
 
     template<typename OrderedSetIt>
     bool                  isValid(OrderedSetIt, OrderedSetIt, bool) const { return true; }
@@ -77,7 +77,7 @@ namespace policies {
     bool        isValid(OrderedSetIt beg, OrderedSetIt end, bool AXOM_DEBUG_PARAM(verboseOutput = false)) const
     {
       // We allow parent sets to be null (i.e. the subset feature is deactivated)
-      if( !isSubset() || m_parentSet == ATK_NULLPTR)
+      if( !isSubset() || m_parentSet == AXOM_NULLPTR)
         return true;
 
       // Next, check if child is empty -- null set is a subset of all sets
@@ -118,12 +118,12 @@ namespace policies {
   {
     typedef TheParentSetType ParentSetType;
 
-    ConcreteParentSubset(ParentSetType* parSet = ATK_NULLPTR) : m_parentSet(parSet) {}
+    ConcreteParentSubset(ParentSetType* parSet = AXOM_NULLPTR) : m_parentSet(parSet) {}
 
     /**
      * \brief Checks whether the set containing this policy class is a subset
      */
-    bool                  isSubset() const { return m_parentSet != ATK_NULLPTR; }
+    bool                  isSubset() const { return m_parentSet != AXOM_NULLPTR; }
     const ParentSetType*  parentSet() const { return m_parentSet; }
     ParentSetType*&       parentSet()       { return m_parentSet; }
 

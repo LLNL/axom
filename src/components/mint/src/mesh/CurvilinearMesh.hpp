@@ -57,7 +57,7 @@ public:
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
-   * \pre coordinates != ATK_NULLPTR.
+   * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
    *****************************************************************************
    */
@@ -189,7 +189,7 @@ public:
    * \param [in] idim the requested coordinate dimension.
    * \return ptr pointer to the coordinates array.
    * \pre idim >= 0 && idim < this->getDimension().
-   * \post ptr != ATK_NULLPTR.
+   * \post ptr != AXOM_NULLPTR.
    *****************************************************************************
    */
   const double* getMeshCoordinateArray( int idim ) const;
@@ -260,7 +260,7 @@ inline void CurvilinearMesh::setNode( int i, int j, double x, double y )
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::getNode(int nodeIdx, double* coordinates) const
 {
-  SLIC_ASSERT(  coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
 
   for ( int i=0; i < this->getDimension(); ++i ) {
@@ -273,7 +273,7 @@ inline void CurvilinearMesh::getNode(int nodeIdx, double* coordinates) const
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::getNode( int i, int j, double* coordinates ) const
 {
-  SLIC_ASSERT(  coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  this->getDimension()==2 );
 
   const int nodeIdx = m_extent->getLinearIndex( i, j );
@@ -284,7 +284,7 @@ inline void CurvilinearMesh::getNode( int i, int j, double* coordinates ) const
 inline
 void CurvilinearMesh::getNode(int i, int j, int k, double* coordinates) const
 {
-  SLIC_ASSERT(  coordinates !=  ATK_NULLPTR );
+  SLIC_ASSERT(  coordinates !=  AXOM_NULLPTR );
   SLIC_ASSERT(  this->getDimension()==3 );
 
   const int nodeIdx = m_extent->getLinearIndex( i, j, k );

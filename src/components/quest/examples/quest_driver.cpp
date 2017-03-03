@@ -146,7 +146,7 @@ void write_point( const Point< double, 3 >& pt,
 //------------------------------------------------------------------------------
 void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   std::ofstream ofs;
   ofs.open( fileName.c_str() );
@@ -219,7 +219,7 @@ void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
       if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "double\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -230,7 +230,7 @@ void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
       } else {
 
           int* dataPtr = field->getIntPtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "int\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -278,7 +278,7 @@ void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 void write_triangles( axom::mint::Mesh* mesh, const int* cells, int ncells,
                       const std::string& fileName )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   TriangleMesh* subset = new TriangleMesh(3);
   SLIC_ASSERT( subset->getMeshType() == mesh->getMeshType() );
@@ -318,7 +318,7 @@ void write_triangles( axom::mint::Mesh* mesh, const int* cells, int ncells,
 //------------------------------------------------------------------------------
 BoundingBox< double,3 > compute_bounds( axom::mint::Mesh* mesh)
 {
-   SLIC_ASSERT( mesh != ATK_NULLPTR );
+   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
    using namespace axom::quest ;
 
@@ -340,8 +340,8 @@ BoundingBox< double,3 > compute_bounds( axom::mint::Mesh* mesh)
 //------------------------------------------------------------------------------
 void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
 {
-  SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
-  SLIC_ASSERT( umesh != ATK_NULLPTR );
+  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
   SLIC_INFO("Max BVH levels: " << Arguments.maxLevels );
   SLIC_INFO("Max Object Threshold: " << Arguments.maxObjects );
@@ -358,7 +358,7 @@ void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* um
 #ifdef AXOM_DEBUG
   // write the bucket tree to a file
   const BVHTree< int, 3>* btree = signedDistance.getBVHTree();
-  SLIC_ASSERT( btree != ATK_NULLPTR );
+  SLIC_ASSERT( btree != AXOM_NULLPTR );
 
   btree->writeVtkFile( "bucket-tree.vtk" );
 
@@ -367,7 +367,7 @@ void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* um
   axom::mint::FieldData* CD = surface_mesh->getCellFieldData();
   CD->addField( new axom::mint::FieldVariable<int>( "BucketID", ncells ) );
   int* bidx = CD->getField( "BucketID" )->getIntPtr();
-  SLIC_ASSERT( bidx != ATK_NULLPTR );
+  SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
   for ( int i=0; i < numObjects; ++i ) {
@@ -382,7 +382,7 @@ void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* um
 
   const int nnodes = umesh->getNumberOfNodes();
   axom::mint::FieldData* PD = umesh->getNodeFieldData();
-  SLIC_ASSERT( PD != ATK_NULLPTR );
+  SLIC_ASSERT( PD != AXOM_NULLPTR );
 
   PD->addField( new axom::mint::FieldVariable< double >("phi",nnodes) );
   PD->addField( new axom::mint::FieldVariable< int >("nbuckets",nnodes) );
@@ -392,9 +392,9 @@ void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* um
   int*  nbuckets  = PD->getField( "nbuckets" )->getIntPtr();
   int* ntriangles = PD->getField( "ntriangles" )->getIntPtr();
 
-  SLIC_ASSERT( phi != ATK_NULLPTR );
-  SLIC_ASSERT( nbuckets != ATK_NULLPTR );
-  SLIC_ASSERT( ntriangles != ATK_NULLPTR );
+  SLIC_ASSERT( phi != AXOM_NULLPTR );
+  SLIC_ASSERT( nbuckets != AXOM_NULLPTR );
+  SLIC_ASSERT( ntriangles != AXOM_NULLPTR );
 
   utilities::Timer timer2;
   timer2.start();
@@ -493,7 +493,7 @@ int main( int argc, char** argv )
 
   // STEP 4: Delete the reader
   delete reader;
-  reader = ATK_NULLPTR;
+  reader = AXOM_NULLPTR;
 
   // STEP 5: write vtk file
   write_vtk( surface_mesh, "surface_mesh.vtk" );
@@ -541,10 +541,10 @@ int main( int argc, char** argv )
 
   // STEP 11: clean up
   delete surface_mesh;
-  surface_mesh = ATK_NULLPTR;
+  surface_mesh = AXOM_NULLPTR;
 
   delete umesh;
-  umesh = ATK_NULLPTR;
+  umesh = AXOM_NULLPTR;
 
   // STEP 12: Finalize SLIC environment
   axom::slic::finalize();

@@ -552,7 +552,7 @@ inline T* NumericArray< T,SIZE >::data()
 template < typename T,int SIZE >
 void NumericArray< T,SIZE >::to_array(T* arr) const
 {
-  SLIC_ASSERT( arr != ATK_NULLPTR);
+  SLIC_ASSERT( arr != AXOM_NULLPTR);
   memcpy( arr, m_components, NBYTES );
 }
 

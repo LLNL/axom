@@ -37,7 +37,7 @@ void Lumberjack::initialize(Communicator* communicator, int ranksLimit)
 
 void Lumberjack::finalize()
 {
-    m_communicator = ATK_NULLPTR;
+    m_communicator = AXOM_NULLPTR;
     clearCombiners();
     clearMessages();
 }

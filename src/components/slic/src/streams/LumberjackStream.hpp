@@ -148,8 +148,8 @@ private:
    *****************************************************************************
    */
   LumberjackStream(): m_lj( static_cast< axom::lumberjack::Lumberjack* >(
-                              ATK_NULLPTR) ),
-    m_stream( static_cast< std::ostream* >(ATK_NULLPTR) )
+                              AXOM_NULLPTR) ),
+    m_stream( static_cast< std::ostream* >(AXOM_NULLPTR) )
   { };
 
   DISABLE_COPY_AND_ASSIGNMENT(LumberjackStream);

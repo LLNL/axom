@@ -52,7 +52,7 @@ namespace spio
 IOManager::IOManager(MPI_Comm comm)
 : m_comm_size(1),
   m_my_rank(0),
-  m_baton(ATK_NULLPTR),
+  m_baton(AXOM_NULLPTR),
   m_mpi_comm(comm)
 {
   MPI_Comm_size(comm, &m_comm_size);
@@ -87,7 +87,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
   if (m_baton) {
     if (m_baton->getNumFiles() != num_files) {
       delete m_baton;
-      m_baton = ATK_NULLPTR;
+      m_baton = AXOM_NULLPTR;
     }
   }
  
@@ -172,7 +172,7 @@ void IOManager::read(
     if (m_baton) {
       if (m_baton->getNumFiles() != 1) {
         delete m_baton;
-        m_baton = ATK_NULLPTR;
+        m_baton = AXOM_NULLPTR;
       }
     }
 
@@ -220,7 +220,7 @@ void IOManager::readSidreHDF5(sidre::DataGroup * datagroup, const std::string& r
   if (m_baton) {
     if (m_baton->getNumFiles() != num_files) {
       delete m_baton;
-      m_baton = ATK_NULLPTR;
+      m_baton = AXOM_NULLPTR;
     }
   }
     
@@ -265,7 +265,7 @@ void IOManager::loadExternalData(sidre::DataGroup * datagroup, const std::string
   if (m_baton) {
     if (m_baton->getNumFiles() != num_files) {
       delete m_baton;
-      m_baton = ATK_NULLPTR;
+      m_baton = AXOM_NULLPTR;
     }
   }
 

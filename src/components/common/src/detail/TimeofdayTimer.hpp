@@ -11,7 +11,7 @@
 #ifndef TIMEOFDAY_TIMER_HPP_
 #define TIMEOFDAY_TIMER_HPP_
 
-#include "common/CommonTypes.hpp"   // For ATK_NULLPTR
+#include "common/CommonTypes.hpp"   // For AXOM_NULLPTR
 #include <sys/time.h>               // for gettimeofday() and timeval
                                     // Note: located in <time> on some systems
 
@@ -42,10 +42,10 @@ namespace detail {
     TimeofdayTimer() { reset(); }
 
     /** \brief Sets the start time of the timer */
-    void start() { gettimeofday(&m_startTime, ATK_NULLPTR); }
+    void start() { gettimeofday(&m_startTime, AXOM_NULLPTR); }
 
     /** \brief Sets the stop time of the timer */
-    void stop()  { gettimeofday(&m_stopTime, ATK_NULLPTR); }
+    void stop()  { gettimeofday(&m_stopTime, AXOM_NULLPTR); }
 
     /**  \brief Resets the timer */
     void reset()

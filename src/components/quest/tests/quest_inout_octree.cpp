@@ -159,7 +159,7 @@ TEST( quest_inout_octree, octahedron_mesh)
 
 
     delete mesh;
-    mesh = ATK_NULLPTR;
+    mesh = AXOM_NULLPTR;
 }
 
 

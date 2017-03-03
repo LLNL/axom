@@ -31,9 +31,9 @@ namespace axom {
 namespace common {
 
 #ifdef ATK_USE_CXX11
-#define ATK_NULLPTR nullptr
+#define AXOM_NULLPTR nullptr
 #else
-#define ATK_NULLPTR NULL
+#define AXOM_NULLPTR NULL
 #endif
 
 
