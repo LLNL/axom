@@ -29,7 +29,7 @@
 
 //#include <iostream>
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "slic/slic.hpp"
 
 #include "slam/OrderedSet.hpp"

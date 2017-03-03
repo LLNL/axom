@@ -39,7 +39,7 @@
 ################################
 # Setup build options and their default values
 ################################
-include(cmake/ATKOptions.cmake)
+include(cmake/AxomOptions.cmake)
 
 ################################
 # Setup toolkit generate targets
@@ -47,9 +47,9 @@ include(cmake/ATKOptions.cmake)
 include(cmake/SetupShroud.cmake)
 
 ################################
-# ATK's Third party library setup
+# AXOM's Third party library setup
 ################################
-include(cmake/thirdparty/SetupATKThirdParty.cmake)
+include(cmake/thirdparty/SetupAxomThirdParty.cmake)
 
 #
 # We don't try to use this approach for CMake generators that support
@@ -62,7 +62,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     if( (CMAKE_BUILD_TYPE MATCHES Debug)
         OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo )
       )
-        add_definitions(-DATK_DEBUG)
+        add_definitions(-DAXOM_DEBUG)
     endif()
 endif()
 
@@ -106,44 +106,44 @@ endif()
 set(custom_compiler_flags_list) # Tracks custom compiler flags for logging
 
 # Flag for disabling warnings about omp pragmas in the code
-blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_OMP_PRAGMA_WARNINGS
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_OMP_PRAGMA_WARNINGS
                   DEFAULT "-Wno-unknown-pragmas"
                   XL      "-qignprag=omp"
                   INTEL   "-diag-disable 3180"
                   )
-list(APPEND custom_compiler_flags_list ATK_DISABLE_OMP_PRAGMA_WARNINGS)
+list(APPEND custom_compiler_flags_list AXOM_DISABLE_OMP_PRAGMA_WARNINGS)
 
 # Flag for disabling warnings about unused parameters.
 # Useful when we include external code.
-blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_PARAMETER_WARNINGS
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS
                   DEFAULT "-Wno-unused-parameter"
                   XL      "-qinfo=nopar"
                   )
-list(APPEND custom_compiler_flags_list ATK_DISABLE_UNUSED_PARAMETER_WARNINGS)
+list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS)
 
 # Flag for disabling warnings about unused variables
 # Useful when we include external code.
-blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNUSED_VARIABLE_WARNINGS
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS
                   DEFAULT "-Wno-unused-variable"
                   XL      "-qinfo=nouse"
                   )
-list(APPEND custom_compiler_flags_list ATK_DISABLE_UNUSED_VARIABLE_WARNINGS)
+list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS)
 
 # Flag for disabling warnings about variables that may be uninitialized.
 # Useful when we are using compiler generated interface code (e.g. in shroud)
-blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_UNINITIALIZED_WARNINGS
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNINITIALIZED_WARNINGS
                   DEFAULT "-Wno-uninitialized"
                   XL      "-qsuppress=1540-1102"
                   )
-list(APPEND custom_compiler_flags_list ATK_DISABLE_UNINITIALIZED_WARNINGS)
+list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNINITIALIZED_WARNINGS)
 
 # Flag for disabling warnings about strict aliasing.
 # Useful when we are using compiler generated interface code (e.g. in shroud)
-blt_append_custom_compiler_flag(FLAGS_VAR ATK_DISABLE_ALIASING_WARNINGS
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_ALIASING_WARNINGS
                   DEFAULT "-Wno-strict-aliasing"
                   XL      ""
                   )
-list(APPEND custom_compiler_flags_list ATK_DISABLE_ALIASING_WARNINGS)
+list(APPEND custom_compiler_flags_list AXOM_DISABLE_ALIASING_WARNINGS)
 
    
 # message(STATUS "Custom compiler flags:")

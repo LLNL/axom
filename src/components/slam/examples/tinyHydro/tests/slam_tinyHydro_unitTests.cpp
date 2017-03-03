@@ -15,7 +15,7 @@
 
 #include "gtest/gtest.h"
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "slic/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"

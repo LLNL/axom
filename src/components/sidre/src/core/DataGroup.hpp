@@ -22,7 +22,7 @@
 #define DATAGROUP_HPP_
 
 #include "common/config.hpp"    // defines AXOM_USE_CXX11
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 
 // Standard C++ headers
 #include <memory>

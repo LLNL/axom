@@ -14,7 +14,7 @@
 #include "mint/StructuredMesh.hpp"
 #include "mint/MeshCoordinates.hpp"
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 
 namespace axom {

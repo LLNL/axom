@@ -23,7 +23,7 @@
 #include <sstream>
 #include <iostream>
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 

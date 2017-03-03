@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.1)
 ################################
 # ASCTK ToolKit
 ################################
-project(asctk LANGUAGES C CXX)
+project(axom LANGUAGES C CXX)
 
 if (ENABLE_FORTRAN)
    enable_language(Fortran)

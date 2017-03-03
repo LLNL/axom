@@ -28,7 +28,7 @@
 #include "hdf5.h"
 
 // Other CS Toolkit headers
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 

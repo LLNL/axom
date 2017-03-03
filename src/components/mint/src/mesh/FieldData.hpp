@@ -11,7 +11,7 @@
 #ifndef FIELDDATA_HPP_
 #define FIELDDATA_HPP_
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 
 // C/C++ includes
 #include <map>

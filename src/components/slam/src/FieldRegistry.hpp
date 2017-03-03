@@ -15,7 +15,7 @@
 
 #include <sstream>
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "slic/slic.hpp"
 
 #include "slam/Utilities.hpp"

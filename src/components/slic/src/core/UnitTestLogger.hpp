@@ -19,7 +19,7 @@
 #define UNITTESTLOGGER_HPP_
 
 // Other CS Toolkit headers
-#include "common/ATKMacros.hpp"    // defines DISABLE_{COPY,MOVE}_AND_ASSIGNMENT
+#include "common/AxomMacros.hpp"    // defines DISABLE_{COPY,MOVE}_AND_ASSIGNMENT
 
 // slic component headers
 #include "slic.hpp"

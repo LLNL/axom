@@ -13,7 +13,7 @@
 #define SIGNEDDISTANCE_HPP_
 
 // ATK includes
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/Utilities.hpp"
 

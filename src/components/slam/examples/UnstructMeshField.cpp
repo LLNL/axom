@@ -25,7 +25,7 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/FileUtilities.hpp"
 
 #include "slic/slic.hpp"

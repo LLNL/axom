@@ -18,7 +18,7 @@
  */
 
 // ATK Toolkit includes
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"
 #include "common/Timer.hpp"

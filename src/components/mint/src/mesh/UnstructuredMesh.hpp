@@ -22,7 +22,7 @@
 
 #include "slic/slic.hpp"
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 
 #include <cstring> // for memcpy()

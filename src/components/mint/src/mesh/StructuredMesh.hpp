@@ -16,7 +16,7 @@
 #include "mint/Extent.hpp"
 
 #include "common/CommonTypes.hpp"
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes

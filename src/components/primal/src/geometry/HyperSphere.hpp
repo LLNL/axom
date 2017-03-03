@@ -11,7 +11,7 @@
 #ifndef HYPERSPHERE_HPP_
 #define HYPERSPHERE_HPP_
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/Utilities.hpp"
 

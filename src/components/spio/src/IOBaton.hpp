@@ -24,7 +24,7 @@
 #include "mpi.h"
 
 // Other CS Toolkit headers
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 
 

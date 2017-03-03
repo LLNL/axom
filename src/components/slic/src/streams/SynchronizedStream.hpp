@@ -23,7 +23,7 @@
 
 #include "slic/LogStream.hpp"
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 
 // C/C++ includes

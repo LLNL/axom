@@ -12,7 +12,7 @@
 #include "STLReader.hpp"
 
 // ATK includes
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 

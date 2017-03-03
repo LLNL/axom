@@ -12,7 +12,7 @@
 
 // Quest includes
 #include "common/CommonTypes.hpp"
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 
 #include "slic/slic.hpp"
 

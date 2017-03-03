@@ -12,7 +12,7 @@
 
 /*!
  *******************************************************************************
- * \file ATKMacros.hpp
+ * \file AxomMacros.hpp
  *
  * \brief Contains several useful macros for the axom project
  *******************************************************************************

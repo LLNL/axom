@@ -11,7 +11,7 @@
 #ifndef MESH_HXX_
 #define MESH_HXX_
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "mint/MeshType.hpp"
 
 namespace axom {

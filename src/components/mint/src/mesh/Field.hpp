@@ -12,7 +12,7 @@
 #define FIELD_HPP_
 
 // ATK includes
-#include "common/ATKMacros.hpp" // for DISABLE_COPY_AND_ASSIGNMENT
+#include "common/AxomMacros.hpp" // for DISABLE_COPY_AND_ASSIGNMENT
 
 // C/C++ includes
 #include <string>

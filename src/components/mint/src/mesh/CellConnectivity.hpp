@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "mint/CellType.hpp"
 #include "slic/slic.hpp"

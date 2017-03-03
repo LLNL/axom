@@ -25,7 +25,7 @@
 #include <vector>
 
 // Other toolkit component headers
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 

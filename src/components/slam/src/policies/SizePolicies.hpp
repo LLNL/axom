@@ -26,7 +26,7 @@
 #ifndef SLAM_POLICIES_SIZE_H_
 #define SLAM_POLICIES_SIZE_H_
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "slic/slic.hpp"
 
 namespace axom {

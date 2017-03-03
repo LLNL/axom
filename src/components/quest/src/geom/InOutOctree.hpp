@@ -8,7 +8,7 @@
 #define INOUT_OCTREE__HXX_
 
 #include "common/config.hpp"       // defines AXOM_USE_CXX11
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/Timer.hpp"
 #include "common/Utilities.hpp"
 

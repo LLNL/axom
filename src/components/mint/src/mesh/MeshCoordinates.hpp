@@ -11,7 +11,7 @@
 #ifndef MESHCOORDINATES_HXX_
 #define MESHCOORDINATES_HXX_
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 
 // C/C++ includes
 #include <vector> // for STL vector

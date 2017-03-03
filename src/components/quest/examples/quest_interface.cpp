@@ -12,8 +12,9 @@
  *******************************************************************************
  * \file quest_interface.cpp
  *
- * \date Mar 16, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
+ * \brief Simple example that exercises the quest interface for point
+ *        containment and signed distance queries.
+ * \note This file assumes that MPI is enabled.  MPI usage is not guarded.
  *******************************************************************************
  */
 

@@ -14,7 +14,7 @@
 #include "mint/Field.hpp" // Base class
 
 // ATK includes
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "mint/FieldTypes.hpp"
 #include "slic/slic.hpp"
