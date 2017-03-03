@@ -21,7 +21,7 @@
 #ifndef DATAGROUP_HPP_
 #define DATAGROUP_HPP_
 
-#include "common/config.hpp"    // defines ATK_USE_CXX11
+#include "common/config.hpp"    // defines AXOM_USE_CXX11
 #include "common/ATKMacros.hpp"
 
 // Standard C++ headers

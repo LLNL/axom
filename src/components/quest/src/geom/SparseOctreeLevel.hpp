@@ -2,13 +2,13 @@
 #define SPARSE_OCTREE_LEVEL__HXX_
 
 
-#include "common/config.hpp"    // defines ATK_USE_CXX11
+#include "common/config.hpp"    // defines AXOM_USE_CXX11
 #include "common/CommonTypes.hpp"
 
 #include "quest/Brood.hpp"
 #include "quest/OctreeLevel.hpp"
 
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
   #include <type_traits>
   #include <unordered_map>
 #else
@@ -33,7 +33,7 @@ namespace quest {
         typedef RepresentationType PointRepresenationType;
 
         // Requires an unsigned int for RepresentationType with 8-,16-,32-, or 64- bits
-        #if defined(ATK_USE_CXX11)
+        #if defined(AXOM_USE_CXX11)
             static_assert( std::is_integral<CoordType>::value, "CoordType must be integral" );
             static_assert( std::is_integral<PointRepresenationType>::value, "RepresentationType must be integral" );
             static_assert( std::is_unsigned<PointRepresenationType>::value, "RepresentationType must be unsigned" );
@@ -68,7 +68,7 @@ namespace quest {
         typedef Point<CoordType,DIM> GridPt;
         typedef GridPt PointRepresenationType;
 
-      #if defined(ATK_USE_CXX11)
+      #if defined(AXOM_USE_CXX11)
         static_assert( std::is_integral<CoordType>::value, "CoordType must be integral" );
         typedef std::unordered_map<GridPt, BroodDataType, PointHash<int> > MapType;
       #else

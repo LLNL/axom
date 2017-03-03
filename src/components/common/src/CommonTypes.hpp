@@ -19,10 +19,10 @@
 #define COMMONTYPES_HPP_
 
 
-#include "common/config.hpp"           // defines ATK_USE_CXX11
+#include "common/config.hpp"           // defines AXOM_USE_CXX11
 #include "common/cstdint_wrapper.hpp"  // for fixed bitwidth integer types
 
-#ifndef ATK_USE_CXX11
+#ifndef AXOM_USE_CXX11
   #include <cstddef>            // brings in NULL
 #endif
 
@@ -30,7 +30,7 @@ namespace axom {
 
 namespace common {
 
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
 #define AXOM_NULLPTR nullptr
 #else
 #define AXOM_NULLPTR NULL

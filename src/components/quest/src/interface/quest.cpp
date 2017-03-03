@@ -16,8 +16,8 @@
 
 #include "slic/slic.hpp"
 
-#ifdef ATK_USE_MPI
-  #ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_LUMBERJACK
     #include "slic/LumberjackStream.hpp"
   #else
     #include "slic/SynchronizedStream.hpp"
@@ -32,7 +32,7 @@
 #include "quest/SignedDistance.hpp"
 
 #include "quest/STLReader.hpp"
-#ifdef ATK_USE_MPI
+#ifdef AXOM_USE_MPI
   #include "quest/PSTLReader.hpp"
 #endif
 
@@ -290,7 +290,7 @@ namespace quest {
         /**
          * \brief Sets up the formatted Slic logger for quest
          */
-#ifdef ATK_USE_MPI
+#ifdef AXOM_USE_MPI
         void setupQuestLogger( MPI_Comm comm)
 #else
         void setupQuestLogger()
@@ -311,9 +311,9 @@ namespace quest {
             {
               slic::LogStream* ls;
 
-              #ifdef ATK_USE_MPI
+              #ifdef AXOM_USE_MPI
                 std::string fmt = "[<RANK>][Quest <LEVEL>]: <MESSAGE>\n";
-                #ifdef ATK_USE_LUMBERJACK
+                #ifdef AXOM_USE_LUMBERJACK
                   const int RLIMIT = 8;
                   ls = new slic::LumberjackStream( &std::cout, comm, RLIMIT, fmt);
                 #else
@@ -370,7 +370,7 @@ namespace quest {
 
 
 //------------------------------------------------------------------------------
-#ifdef ATK_USE_MPI
+#ifdef AXOM_USE_MPI
 void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements, int maxLevels )
 {
@@ -457,7 +457,7 @@ void distance( const double* xyz, double* dist, int npoints )
   SLIC_ASSERT( xyz != AXOM_NULLPTR );
   SLIC_ASSERT( dist != AXOM_NULLPTR );
 
-#ifdef ATK_USE_OPENMP
+#ifdef AXOM_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
   for ( int i=0; i < npoints; ++i ) {
@@ -515,7 +515,7 @@ void inside( const double* xyz, int* in, int npoints )
   SLIC_ASSERT( xyz != AXOM_NULLPTR );
   SLIC_ASSERT( in != AXOM_NULLPTR );
 
-#ifdef ATK_USE_OPENMP
+#ifdef AXOM_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
   for ( int i=0; i < npoints; ++i ) {

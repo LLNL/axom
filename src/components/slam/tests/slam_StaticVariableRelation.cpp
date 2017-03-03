@@ -19,7 +19,7 @@
 
 #include <iostream>
 #include <iterator>
-#include <sstream>      // for ATK_USE_BOOST
+#include <sstream>      // for AXOM_USE_BOOST
 
 #include "gtest/gtest.h"
 
@@ -149,7 +149,7 @@ TEST(gtest_slam_static_variable_relation,simple_relation)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                SetIter;
   typedef StaticVariableRelation::RelationVecConstIterator  RelSetConstIter;
 
@@ -230,7 +230,7 @@ TEST(gtest_slam_static_variable_relation,test_iterator_range)
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                    SetIter;
   typedef StaticVariableRelation::RelationVecConstIterator      RelSetConstIter;
   typedef StaticVariableRelation::RelationVecConstIteratorPair  RelSetConstIterPair;
@@ -279,7 +279,7 @@ TEST(gtest_slam_static_variable_relation,double_subscript_test)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator SetIter;
 
   SLIC_INFO("\tLooking at relation's stored values...");

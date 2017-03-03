@@ -47,7 +47,7 @@ TEST(gtest_slam_range_set,construct_range_set)
   SLIC_INFO("Iterating through set of size " << s.size());
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   SLIC_INFO("Using begin/end");
   {
     std::stringstream sstr;

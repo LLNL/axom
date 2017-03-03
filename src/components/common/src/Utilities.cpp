@@ -22,7 +22,7 @@
 
 #include <cstdlib> // for exit, EXIT_SUCCESS, EXIT_FAILURE
 
-#ifdef ATK_USE_MPI
+#ifdef AXOM_USE_MPI
 #include <mpi.h>
 #endif
 
@@ -31,7 +31,7 @@ namespace utilities {
 
   void processAbort()
   {
-#ifndef ATK_USE_MPI
+#ifndef AXOM_USE_MPI
     exit( EXIT_FAILURE );
 #else
     int mpi = 0;

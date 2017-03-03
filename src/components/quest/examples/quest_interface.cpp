@@ -23,7 +23,7 @@
 // SLIC includes
 #include "slic/slic.hpp"
 
-#ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
   #include "slic/LumberjackStream.hpp"
 #else
   #include "slic/SynchronizedStream.hpp"
@@ -211,7 +211,7 @@ int main( int argc, char**argv )
   axom::slic::LogStream* logStream;
 
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
-  #ifdef ATK_USE_LUMBERJACK
+  #ifdef AXOM_USE_LUMBERJACK
     const int RLIMIT = 8;
     logStream = new axom::slic::LumberjackStream(&std::cout,MPI_COMM_WORLD, RLIMIT, fmt);
   #else

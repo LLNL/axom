@@ -40,7 +40,7 @@
 #include "slic/slic.hpp"
 #include "slic/LogStream.hpp"
 
-#ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
   #include "slic/LumberjackStream.hpp"
 #else
   #include "slic/GenericOutputStream.hpp"
@@ -442,7 +442,7 @@ void setupLogging()
 
     slic::setLoggingMsgLevel(slic::message::Info);
 
-#ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
     std::string rankStr = "[<RANK>]";
 #else
     std::string rankStr = "";
@@ -462,7 +462,7 @@ void setupLogging()
     slic::LogStream* wefStream;
     slic::LogStream* diStream;
 
-#ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
     const int ranksLimit = 16;
     wefStream = new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, ranksLimit, wefFormatStr );
     diStream =  new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, ranksLimit, diFormatStr );

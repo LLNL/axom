@@ -23,13 +23,13 @@
 #include <cstddef>
 #include <vector>
 
-#include "common/config.hpp"   // for ATK_USE_BOOST
+#include "common/config.hpp"   // for AXOM_USE_BOOST
 
 #ifndef SLAM_USE_COUNTING_ITERATOR
 //=    #define SLAM_USE_COUNTING_ITERATOR
 #endif
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
 #ifdef SLAM_USE_COUNTING_ITERATOR
     #include <boost/iterator/counting_iterator.hpp>
 #else
@@ -37,7 +37,7 @@
     #include <boost/utility/enable_if.hpp>
     #include <boost/type_traits.hpp>
 #endif
-#endif // ATK_USE_BOOST
+#endif // AXOM_USE_BOOST
 
 #include "common/CommonTypes.hpp" // for AXOM_NULLPTR
 #include "slic/slic.hpp"
@@ -91,7 +91,7 @@ namespace slam {
 
     struct SetBuilder;
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
 #ifdef SLAM_USE_COUNTING_ITERATOR
     typedef boost::counting_iterator<ElementType>     iterator;
     typedef std::pair<iterator,iterator>              iterator_pair;
@@ -107,7 +107,7 @@ namespace slam {
     typedef const_iterator                            iterator;
     typedef const_iterator_pair                       iterator_pair;
 #endif
-#endif // ATK_USE_BOOST
+#endif // AXOM_USE_BOOST
 
   public:
     OrderedSet(PositionType size    = SizePolicyType::DEFAULT_VALUE
@@ -177,7 +177,7 @@ namespace slam {
       SubsettingPolicyType m_parent;
     };
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
     /**
      * \class
      * \brief An iterator type for an ordered set
@@ -251,7 +251,7 @@ namespace slam {
     const_iterator      end()   const { return const_iterator( SizePolicyType::size() * StridePolicyType::stride() + OffsetPolicyType::offset(), this); }
     const_iterator_pair range() const { return std::make_pair(begin(), end()); }
   #endif
-#endif // ATK_USE_BOOST
+#endif // AXOM_USE_BOOST
 
   public:
     /**
@@ -313,7 +313,7 @@ namespace slam {
         && OffsetPolicyType::isValid(verboseOutput)
         && StridePolicyType::isValid(verboseOutput)
         && IndirectionPolicyType::isValid(size(), OffsetPolicy::offset(), StridePolicy::stride(), verboseOutput)
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
         && SubsettingPolicyType::isValid(begin(), end(), verboseOutput)
 #endif
     ;

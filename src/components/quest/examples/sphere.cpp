@@ -357,7 +357,7 @@ void expected_phi(axom::mint::UniformMesh* umesh)
 
    // STEP 2: loop over uniform mesh nodes and compute distance field
    SLIC_INFO( "Calculating analytic distance field...");
-#ifdef ATK_USE_OPENMP
+#ifdef AXOM_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
    for ( int i=0; i < nnodes; ++i ) {
@@ -390,7 +390,7 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
    // STEP 2: loop over uniform mesh nodes and compute distance field
    SLIC_INFO("Calculating distance field...");
 
-#ifdef ATK_USE_OPENMP
+#ifdef AXOM_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
    for ( int i=0; i < nnodes; ++i ) {

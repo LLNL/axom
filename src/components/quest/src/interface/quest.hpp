@@ -16,7 +16,7 @@
 
 #include "common/config.hpp"
 
-#ifdef ATK_USE_MPI
+#ifdef AXOM_USE_MPI
 #include "mpi.h"
 #endif
 
@@ -37,7 +37,7 @@ namespace quest {
  *       Otherwise, we build a structure that only supports containment queries.
  *******************************************************************************
  */
-#ifdef ATK_USE_MPI
+#ifdef AXOM_USE_MPI
 void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements, int maxLevels );
 #else

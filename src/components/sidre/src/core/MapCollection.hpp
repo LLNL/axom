@@ -136,15 +136,15 @@
 // SiDRe project headers
 #include "SidreTypes.hpp"
 
-#if defined(ATK_USE_STD_UNORDERED_MAP)
+#if defined(AXOM_USE_STD_UNORDERED_MAP)
 #include <unordered_map>
 #endif
 
-#if defined(ATK_USE_STD_MAP)
+#if defined(AXOM_USE_STD_MAP)
 #include <map>
 #endif
 
-#if defined(ATK_USE_SPARSEHASH)
+#if defined(AXOM_USE_SPARSEHASH)
 #include <sparsehash/dense_hash_map>
 #endif
 
@@ -274,7 +274,7 @@ public:
     {
       m_free_ids.pop();
     }
-#if defined(ATK_USE_SPARSEHASH)
+#if defined(AXOM_USE_SPARSEHASH)
     if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
     {
        m_empty_key = "DENSE_MAP_EMPTY_KEY";
@@ -290,20 +290,20 @@ private:
   std::vector<TYPE *>  m_items;
   std::stack< IndexType > m_free_ids;
 
-#if defined(ATK_USE_STD_UNORDERED_MAP)
+#if defined(AXOM_USE_STD_UNORDERED_MAP)
   typedef std::unordered_map<std::string, IndexType> MapType;
 #else
-#if defined(ATK_USE_SPARSEHASH)
+#if defined(AXOM_USE_SPARSEHASH)
   typedef google::dense_hash_map<std::string, IndexType> MapType;
 #else
-#if defined(ATK_USE_STD_MAP)
+#if defined(AXOM_USE_STD_MAP)
   typedef std::map<std::string, IndexType> MapType;
 #endif
 #endif
 #endif
 
   MapType m_name2idx_map;
-#if defined(ATK_USE_SPARSEHASH)
+#if defined(AXOM_USE_SPARSEHASH)
   std::string m_empty_key;
 #endif
 };
@@ -340,7 +340,7 @@ bool MapCollection<TYPE>::insertItem(TYPE * item,
     use_recycled_index = true;
   }
 
-#if defined(ATK_USE_SPARSEHASH)
+#if defined(AXOM_USE_SPARSEHASH)
   if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
   {
     m_empty_key = "DENSE_MAP_EMPTY_KEY";

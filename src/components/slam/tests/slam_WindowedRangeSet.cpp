@@ -80,7 +80,7 @@ TEST(gtest_slam_windowed_range_set,construct_windowed_range_set)
     SLIC_INFO(sstr.str());
   }
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   SLIC_INFO("Testing iterator access");
   {
     std::stringstream sstr;

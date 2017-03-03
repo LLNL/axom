@@ -7,7 +7,7 @@
 #ifndef INOUT_OCTREE__HXX_
 #define INOUT_OCTREE__HXX_
 
-#include "common/config.hpp"       // defines ATK_USE_CXX11
+#include "common/config.hpp"       // defines AXOM_USE_CXX11
 #include "common/ATKMacros.hpp"
 #include "common/Timer.hpp"
 #include "common/Utilities.hpp"
@@ -2523,7 +2523,7 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
     colorMap[ InOutBlockData::Gray ] = 0;
     colorMap[ InOutBlockData::Black ] = 1;
 
-#if defined(ATK_USE_CXX11)
+#if defined(AXOM_USE_CXX11)
   typedef std::unordered_map<GridPt, int, PointHash<int> > GridIntMap;
 #else
   typedef boost::unordered_map<GridPt, int, PointHash<int> > GridIntMap;

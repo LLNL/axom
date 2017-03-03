@@ -22,7 +22,7 @@
 #include "gtest/gtest.h"
 
 
-#include "common/config.hpp"  // for ATK_USE_BOOST
+#include "common/config.hpp"  // for AXOM_USE_BOOST
 
 #include "slic/slic.hpp"
 
@@ -136,7 +136,7 @@ TEST(gtest_slam_static_constant_relation,simple_relation)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                  SetIter;
   typedef StaticConstantRelation<>::RelationVecConstIterator  RelSetConstIter;
 
@@ -220,7 +220,7 @@ TEST(gtest_slam_static_constant_relation,test_iterator_range)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                      SetIter;
   typedef StaticConstantRelation<>::RelationVecConstIterator      RelSetConstIter;
   typedef StaticConstantRelation<>::RelationVecConstIteratorPair  RelSetConstIterPair;
@@ -267,7 +267,7 @@ TEST(gtest_slam_static_constant_relation,double_subscript_test)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator SetIter;
 
   SLIC_INFO("Looking at relation's stored values...");

@@ -20,7 +20,7 @@
 
 #include "gtest/gtest.h"
 
-#include "common/config.hpp"        // for ATK_USE_BOOST
+#include "common/config.hpp"        // for AXOM_USE_BOOST
 
 #include "slam/RangeSet.hpp"
 #include "slam/Relation.hpp"
@@ -104,7 +104,7 @@ TEST(gtest_slam_dynamic_variable_relation,simple_relation)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                SetIter;
   typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
 
@@ -134,7 +134,7 @@ TEST(gtest_slam_dynamic_variable_relation,simple_relation)
       ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
     }
   }
-#endif // ATK_USE_BOOST
+#endif // AXOM_USE_BOOST
 
   std::cout << "\n****** done." << std::endl;
 }
@@ -159,7 +159,7 @@ TEST(gtest_slam_dynamic_variable_relation,test_iterator_range)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                    SetIter;
   typedef DynamicVariableRelation::RelationVecConstIterator     RelSetConstIter;
   typedef DynamicVariableRelation::RelationVecConstIteratorPair RelSetConstIterPair;
@@ -181,7 +181,7 @@ TEST(gtest_slam_dynamic_variable_relation,test_iterator_range)
       ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
     }
   }
-#endif // ATK_USE_BOOST
+#endif // AXOM_USE_BOOST
 
   std::cout << "\n****** done." << std::endl;
 }
@@ -207,7 +207,7 @@ TEST(gtest_slam_dynamic_variable_relation,double_subscript_test)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator SetIter;
 
   std::cout << "\n\tLooking at relation's stored values...";
@@ -220,7 +220,7 @@ TEST(gtest_slam_dynamic_variable_relation,double_subscript_test)
       EXPECT_EQ( idx, incrementingRel[*sIt][idx]) << "incrementing relation's value was incorrect";
     }
   }
-#endif // ATK_USE_BOOST
+#endif // AXOM_USE_BOOST
 
   std::cout << "\n****** done." << std::endl;
 }

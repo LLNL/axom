@@ -8,20 +8,18 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
-#include "common/config.hpp"           // defines ATK_USE_CXX11
+#include "common/config.hpp"           // defines AXOM_USE_CXX11
 
 /*!
  *******************************************************************************
  * \file ATKMacros.hpp
  *
- * \date Jul 28, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *
+ * \brief Contains several useful macros for the axom project
  *******************************************************************************
  */
 
-#ifndef ATKMACROS_HPP_
-#define ATKMACROS_HPP_
+#ifndef AXOM_MACROS_HPP_
+#define AXOM_MACROS_HPP_
 
 /*!
  *******************************************************************************
@@ -110,7 +108,7 @@
  * \endcode
  *******************************************************************************
  */
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
 #define DISABLE_DEFAULT_CTOR(className)                      \
   className( ) = delete;
 #else
@@ -142,7 +140,7 @@
  * \endcode
  *******************************************************************************
  */
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
   className( const className& ) = delete;                                     \
   className& operator=(const className&) = delete
@@ -177,7 +175,7 @@
  * \endcode
  *******************************************************************************
  */
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
 #define DISABLE_MOVE_AND_ASSIGNMENT(className)                                \
   className( const className&& ) = delete;                                    \
   className& operator=(const className&&) = delete
@@ -186,4 +184,4 @@
 #endif
 
 
-#endif /* ATKMACROS_HPP_ */
+#endif /* AXOM_MACROS_HPP_ */
