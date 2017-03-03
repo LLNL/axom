@@ -81,7 +81,7 @@ public:
    * \post nnodes >= 0
    *****************************************************************************
    */
-  int getNumberOfNodes( int ATK_NOT_USED(cellIdx) ) const { return m_stride; };
+  int getNumberOfNodes( int AXOM_NOT_USED(cellIdx) ) const { return m_stride; };
 
   /*!
    *****************************************************************************
@@ -92,7 +92,7 @@ public:
    * \post ctype >= mint::VERTEX && ctype < mint::NUM_CELL_TYPES.
    *****************************************************************************
    */
-  int getCellType( int ATK_NOT_USED(cellIdx) ) const { return cell_type; }
+  int getCellType( int AXOM_NOT_USED(cellIdx) ) const { return cell_type; }
 
   /*!
    *****************************************************************************
@@ -118,8 +118,8 @@ public:
    *****************************************************************************
    */
   void insertCell( const index_type* cell,
-                   int ATK_NOT_USED(type),
-                   int ATK_NOT_USED(nnodes) )
+                   int AXOM_NOT_USED(type),
+                   int AXOM_NOT_USED(nnodes) )
   {
     SLIC_ASSERT( cell != ATK_NULLPTR );
 

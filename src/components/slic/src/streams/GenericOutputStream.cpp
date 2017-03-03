@@ -47,7 +47,7 @@ void GenericOutputStream::append( message::Level msgLevel,
                                   const std::string& tagName,
                                   const std::string& fileName,
                                   int line,
-                                  bool ATK_NOT_USED(filtered_duplicates) )
+                                  bool AXOM_NOT_USED(filtered_duplicates) )
 {
   if ( m_stream == ATK_NULLPTR ) {
     std::cerr << "ERROR: NULL stream!\n";

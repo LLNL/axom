@@ -1148,7 +1148,7 @@ void BVHTree< T,NDIMS >::writeVtkFile(
 template < typename T, int NDIMS >
 void BVHTree< T,NDIMS >::writeVtkFile(
   const std::string& fileName,
-  bool ATK_NOT_USED(include_objects) ) const
+  bool AXOM_NOT_USED(include_objects) ) const
 {
   // STEP 0: Write VTK header
   std::ofstream ofs;

@@ -84,7 +84,7 @@ void LumberjackStream::append( message::Level msgLevel,
                                const std::string& tagName,
                                const std::string& fileName,
                                int line,
-                               bool ATK_NOT_USED(filter_duplicates) )
+                               bool AXOM_NOT_USED(filter_duplicates) )
 {
   if ( m_lj == ATK_NULLPTR ) {
     std::cerr <<

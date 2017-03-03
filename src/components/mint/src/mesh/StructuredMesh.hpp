@@ -68,7 +68,7 @@ public:
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    *****************************************************************************
    */
-  virtual int getMeshNumberOfCellNodes( int ATK_NOT_USED(cellIdx) ) const
+  virtual int getMeshNumberOfCellNodes( int AXOM_NOT_USED(cellIdx) ) const
   { return this->getNumberOfCellNodes(); }
 
   /*!
@@ -93,7 +93,7 @@ public:
    * \return cellType the cell type of the cell at the given index.
    *****************************************************************************
    */
-  virtual int getMeshCellType( int ATK_NOT_USED(cellIdx) ) const
+  virtual int getMeshCellType( int AXOM_NOT_USED(cellIdx) ) const
   { return ( (m_ndims==3) ? MINT_HEX : MINT_QUAD ); };
 
   /*!
