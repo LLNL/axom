@@ -23,7 +23,7 @@ Livermore Computing Collaboration Zone (CZ). These tools can be accessed through
 the `MyLC Portal <https://lc.llnl.gov>`_. Developer-level access to Axom 
 project spaces requires membership in the LC group 'toolkitd'. If you are not 
 in this group and need to be, please send an email request to 
-'asctoolkit-dev@llnl.gov'.
+'axom-dev@llnl.gov'.
 
 .. _gitflow-label:
 

@@ -95,7 +95,7 @@ Look for documentation to appear for new components as they are developed.
 Other Tools Application Developers May Find Useful
 ======================================================
 
-Axom developers support other tools that can be used by software projects
+Axom developers support other tools that can be used by software 
 projects independent of the Axom. These include:
 
   *  `BLT <https://github.com/LLNL/blt>`_ (CMake-based buld system developed by the Axom team to simplify CMake usage and development tool integration)
@@ -123,8 +123,8 @@ Mailing Lists
 
 The project maintains two email lists: 
 
-  * 'asctoolkit-users@llnl.gov' is how Axom users can contact developers for questions, report issues, etc. 
-  * 'asctoolkit-dev@llnl.gov' is for communication among team members. 
+  * 'axom-users@llnl.gov' is how Axom users can contact developers for questions, report issues, etc. 
+  * 'axom-dev@llnl.gov' is for communication among team members. 
 
 You can add or remove yourself from either of these lists via the 
 `LLNL E-Mail List Manager (ListServ) <https://listserv.llnl.gov>`_
@@ -165,7 +165,7 @@ LC Groups
 
 Access to Axom projects/spaces in these Atlassian tools requires
 membership in the `toolkit` group on LC systems. Please contact the team for
-group access by sending an email request to 'asctoolkit-dev@llnl.gov'.
+group access by sending an email request to 'axom-dev@llnl.gov'.
 
 
 ======================================================

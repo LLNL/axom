@@ -14,7 +14,7 @@ Configuration and Building
 ======================================================
 
 This section provides information about configuring and building
-the Axom software after you have clones the repository.
+the Axom software after you have cloned the repository.
 The main steps for using Axom are:
 
   #. Configure, build, and install third-party libraries (TPLs) on which Axom depends.
@@ -137,7 +137,7 @@ drive it with a python script called ``uberenv.py``, which is located in the
 
   * Clones the Spack repo from GitHub and checks out a specific version that we have tested.
   * Configures Spack compiler sets, adds custom package build rules and sets any options specific to Axom.
-  * Invokes Spack to build a complete set of TPLs for each configuration and generates a *host-config* file for each that captures all details of the configuration and the build dependencies.
+  * Invokes Spack to build a complete set of TPLs for each configuration and generates a *host-config* file that captures all details of the configuration and build dependencies.
 
 The figure illustrates what the script does.
 

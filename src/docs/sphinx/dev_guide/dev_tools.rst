@@ -57,7 +57,7 @@ Axom development:
     *Google Benchmark*
 
 We use `Spack <https://github.com/LLNL/spack>`_ to manage and build the 
-third-party libraries on which the Axom depends.
+third-party libraries on which Axom depends.
 
 
 -------------------------------------------------------
@@ -603,7 +603,7 @@ To add a repository to a plan:
 
 To create plans that use the branches feature:
 
-  Axom has a nightly build plan that uses the develop branch as it's primary repository.  
+  Axom has a nightly build plan that uses the develop branch as its primary repository.  
   If you want to run the same plan on branches of this repository they can be set up a few different ways, 
   selecting specific branches in the repository and/or create branch plans for branches matching a regular expression.  
   The branches will then inherit all of the stages and jobs of the parent plan without having to duplicate the plan, 

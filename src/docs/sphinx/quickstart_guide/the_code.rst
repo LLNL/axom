@@ -27,9 +27,9 @@ email to the Axom development team.
 Getting the Code
 --------------------------------
 
-Access to our repository and Atlassian tools requires membership in the LC group 
-``toolkit``. If you're not in the group, please send email to 
-'asctoolkit-dev@llnl.gov' and request to be added.
+Access to our repository and Atlassian tools requires membership in the LC 
+group ``toolkit``. If you're not in the group, please send email to 
+'axom-dev@llnl.gov' and request to be added.
 
 SSH keys
 ^^^^^^^^^
@@ -52,7 +52,7 @@ Important notes:
     clicking on the 'Clone' action button that appears when you hover your
     mouse cursor over the ellipses at top of the web page on the left.
   * The ``--recursive`` argument above is needed to pull in our build system,
-    called *BLT*, which is standalone product that lives in its own repository.
+    called *BLT*, which is a standalone product that lives in its own repository.
     It is a Git sub-module in Axom.
 
 

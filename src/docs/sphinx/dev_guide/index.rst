@@ -17,7 +17,7 @@ in the Axom project. The guide is intended for all team members and
 contributors. It is especially helpful for familiarizing new individuals
 about how the team works. The overarching goal is that all Axom
 development follows similar practices to ensure robustness, consistency,
-ease of use, and comprehensive testing. Everyone who contributes to the 
+ease of use, and comprehensive testing. Everyone who contributes to 
 Axom should be aware of and follow these guidelines. However, the
 benefits of uniformity should be balanced with allowances for individual 
 preferences, which may be superior to rigid conventions in certain situations.
