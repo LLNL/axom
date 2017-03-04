@@ -1051,8 +1051,6 @@ void DataGroup::createNativeLayout(Node& n) const
     gidx = getNextValidGroupIndex(gidx);
   }
 
-  n["sidre_group_name"] = m_name;
-
 }
 
 /*
@@ -1193,7 +1191,7 @@ void DataGroup::printTree( const int nlevels,
  */
 void DataGroup::copyToConduitNode(Node& n) const
 {
-  n["sidre_group_name"] = m_name;
+  n["name"] = m_name;
 
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
@@ -1744,8 +1742,6 @@ void DataGroup::exportTo(conduit::Node & result) const
     }
   }
 
-  result["sidre_group_name"] = m_name;
-
 }
 
 /*
@@ -1789,8 +1785,6 @@ void DataGroup::exportTo(conduit::Node& result,
       gidx = getNextValidGroupIndex(gidx);
     }
   }
-
-  result["sidre_group_name"] = m_name;
 
   result.set(DataType::object());
 }
