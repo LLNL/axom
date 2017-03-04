@@ -1050,6 +1050,9 @@ void DataGroup::createNativeLayout(Node& n) const
     group->createNativeLayout(n[group->getName()]);
     gidx = getNextValidGroupIndex(gidx);
   }
+
+  n["sidre_group_name"] = m_name;
+
 }
 
 /*
@@ -1190,7 +1193,7 @@ void DataGroup::printTree( const int nlevels,
  */
 void DataGroup::copyToConduitNode(Node& n) const
 {
-  n["name"] = m_name;
+  n["sidre_group_name"] = m_name;
 
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
@@ -1285,6 +1288,7 @@ void DataGroup::save(const std::string& path,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "hdf5");
   }
   else if (protocol == "sidre_conduit_json")
@@ -1292,6 +1296,7 @@ void DataGroup::save(const std::string& path,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "conduit_json");
   }
   else if (protocol == "sidre_json")
@@ -1299,12 +1304,14 @@ void DataGroup::save(const std::string& path,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "json");
   }
   else if (protocol == "conduit_hdf5" )
   {
     Node n;
     createNativeLayout(n);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path,"hdf5");
   }
   else if (protocol == "conduit_bin"  ||
@@ -1313,6 +1320,7 @@ void DataGroup::save(const std::string& path,
   {
     Node n;
     createNativeLayout(n);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, protocol);
   }
   else
@@ -1339,12 +1347,14 @@ void DataGroup::save(const hid_t& h5_id,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::hdf5_write(n,h5_id);
   }
   else if( protocol == "conduit_hdf5")
   {
     Node n;
     createNativeLayout(n);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::hdf5_write(n, h5_id);
   }
   else
@@ -1375,6 +1385,9 @@ void DataGroup::load(const std::string& path,
     conduit::relay::io::load(path,"hdf5", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      m_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "sidre_conduit_json")
   {
@@ -1382,6 +1395,9 @@ void DataGroup::load(const std::string& path,
     conduit::relay::io::load(path,"conduit_json", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      m_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "sidre_json")
   {
@@ -1389,12 +1405,18 @@ void DataGroup::load(const std::string& path,
     conduit::relay::io::load(path,"json", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      m_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "conduit_hdf5")
   {
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
     importConduitTree(n);
+    if (n.has_path("sidre_group_name")) {
+      m_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "conduit_bin"  ||
            protocol == "conduit_json" ||
@@ -1403,6 +1425,9 @@ void DataGroup::load(const std::string& path,
     Node n;
     conduit::relay::io::load(path,protocol, n);
     importConduitTree(n);
+    if (n.has_path("sidre_group_name")) {
+      m_name = n["sidre_group_name"].as_string();
+    }
   }
   else
   {
@@ -1429,6 +1454,9 @@ void DataGroup::load(const hid_t& h5_id,
     conduit::relay::io::hdf5_read(h5_id,n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      m_name = n["sidre_group_name"].as_string();
+    }
   }
   else if( protocol == "conduit_hdf5")
   {
@@ -1436,6 +1464,9 @@ void DataGroup::load(const hid_t& h5_id,
     Node n;
     conduit::relay::io::hdf5_read(h5_id, n);
     importConduitTree(n);
+    if (n.has_path("sidre_group_name")) {
+      m_name = n["sidre_group_name"].as_string();
+    }
   }
   else
   {
@@ -1712,6 +1743,9 @@ void DataGroup::exportTo(conduit::Node & result) const
       getDataStore()->getBuffer( *s_it )->exportTo(n_buffer);
     }
   }
+
+  result["sidre_group_name"] = m_name;
+
 }
 
 /*
@@ -1755,6 +1789,8 @@ void DataGroup::exportTo(conduit::Node& result,
       gidx = getNextValidGroupIndex(gidx);
     }
   }
+
+  result["sidre_group_name"] = m_name;
 
   result.set(DataType::object());
 }
@@ -1849,6 +1885,7 @@ void DataGroup::importFrom(conduit::Node& node,
       group->importFrom(n_group, buffer_id_map);
     }
   }
+
 }
 
 
@@ -1890,8 +1927,10 @@ void DataGroup::importConduitTree(conduit::Node &node)
       }
       else if(cld_dtype.is_string())
       {
-        //create string view
-        createViewString(cld_name,cld_node.as_string());
+        if (cld_name != "sidre_group_name") {
+          //create string view
+          createViewString(cld_name,cld_node.as_string());
+        }
       }
       else if(cld_dtype.is_number())
       {
