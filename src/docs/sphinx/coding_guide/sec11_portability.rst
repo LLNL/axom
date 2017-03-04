@@ -46,14 +46,14 @@ Use C++11, but don't depend on it
 11.2 Whenever C++11 features are used, an alternative implementation **must** 
 be provided that conforms to the 2003 C++ standard.
 
-      Applications that use the CS Toolkit will rely on non-C++11 compilers 
+      Applications that use Axom will rely on non-C++11 compilers 
       for our current generation of computing platforms, and possibly beyond, 
       so we must be able to compile and run our code with those compilers.
-      Applications that use the CS Toolkit will expect the code to compile
+      Applications that use Axom will expect the code to compile
       and run with full functionality on all platforms they use. 
 
 11.3 All C++11 usage **must** be guarded using the macro constant 
-"ATK_USE_CXX11" so that it can be compiled out of the code when necessary.
+"AXOM_USE_CXX11" so that it can be compiled out of the code when necessary.
 
    For example, suppose you have a class that you want to support *move*
    semantics when available (i.e., when using a C++11-compliant compiler)
@@ -74,7 +74,7 @@ be provided that conforms to the 2003 C++ standard.
       MyClass(const MyClass& other);
       /// Copy-assignment operator.
       MyClass& operator=(const MyClass& rhs);
-   #if defined(USE_CXX11)
+   #if defined(AXOM_USE_CXX11)
       /// Move constructor.
       MyClass(MyClass&& other);
 
@@ -139,13 +139,13 @@ Minimize dependencies on third-party libraries (TPLs)
 
 11.7 While it is generally desirable to avoid recreating functionality that
 others have already implemented, we **should** limit third-party library
-dependencies for the CS Toolkit to make it easier for users. We are a library,
+dependencies for Axom to make it easier for users. We are a library,
 and everything we necessarily depend on will become a dependency for our
 user.  
 
-      **Before introducing any significant TPL dependency on the Toolkit
+      **Before introducing any significant TPL dependency on Axom
       (e.g., Boost), it must be agreed on by the development team and vetted
       with our main users.**
 
 11.8 Unless absolutely necessary, any TPL we depend on **must not** be 
-exposed through any public interface in the CS Toolkit.
+exposed through any public interface in Axom.

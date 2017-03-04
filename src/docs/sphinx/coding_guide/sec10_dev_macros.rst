@@ -16,7 +16,7 @@
 =======================================================
 
 This section provides guidelines for consistent use of macros and types
-defined in the "common" and "slic" Toolkit components and in our build 
+defined in Axom components, such as "axom_utils" and "slic", and in our build 
 system that we use in day-to-day code development.
 
 .. important:: Code that is guarded with macros described in this section 
@@ -31,9 +31,9 @@ Null pointers
 ------------------------------------
 
 10.1 For consistency and to make it easier to find where pointer types are
-set to *null*, the `ATK_NULLPTR` macro **must** be used. For example,::
+set to *null*, the `AXOM_NULLPTR` macro **must** be used. For example,::
 
-   double* var = ATK_NULLPTR;
+   double* var = AXOM_NULLPTR;
 
 This macro is defined in the `CommonTypes.hpp` header file in the "common"
 component. This usage prevents inconsistencies that occur when different 
@@ -47,20 +47,20 @@ Unused variables
 ------------------------------------
 
 10.2 To silence compiler warnings and express variable usage intent more 
-clearly, macros in the `ATKMacros.hpp` header file in the "common" component 
-**must** be used when appropriate. For example,::
+clearly, macros in the `AxomMacros.hpp` header file in the source include 
+directory **must** be used when appropriate. For example,::
 
-    void my_function(int x, int ATK_DEBUG_PARAM(y))
+    void my_function(int x, int AXOM_DEBUG_PARAM(y))
     {
       // use variable y only for debug compilation
     }
 
-Here, the `ATK_DEBUG_PARAM` macro indicates that the variable 'y' is only
+Here, the `AXOM_DEBUG_PARAM` macro indicates that the variable 'y' is only
 used when the code is compiled in debug mode. It also removes the variable
 name in the argument list in non-debug compilation to prevent unwanted
 compiler warnings.
 
-Please see the `ATKMacros.hpp` header file for other available macros and 
+Please see the `AxomMacros.hpp` header file for other available macros and 
 usage examples.
 
 
@@ -69,12 +69,12 @@ Disabling compiler-generated methods
 ------------------------------------
 
 10.3 To disable compiler-generated class/struct methods when this is desired 
-and to clearly express this intent, the `ATKMacros.hpp` header file in the 
-"common" component contains macros that **should** be used for this purpose. 
-See :ref:`compilergenmethods-label` for more information about 
+and to clearly express this intent, the `AXOMMacros.hpp` header file in 
+source include directory contains macros that **should** be used for this 
+purpose. See :ref:`compilergenmethods-label` for more information about 
 compiler-generated methods.
 
-Please see the `ATKMacros.hpp` header file for other available macros and 
+Please see the `AXOMMacros.hpp` header file for other available macros and 
 usage examples.
 
 
@@ -82,15 +82,15 @@ usage examples.
 Conditionally compiled code
 ------------------------------------
 
-10.4 Macros defined by the CS Toolkit build system **must** be used to 
+10.4 Macros defined by Axom build system **must** be used to 
 control conditional code compilation. 
 
 For example, complex or multi-line code that is intended to be exposed only
-for a debug build **must** be guarded using the `ATK_DEBUG` macro::
+for a debug build **must** be guarded using the `AXOM_DEBUG` macro::
 
    void MyMethod(...) 
    {
-   #if defined(ATK_DEBUG)
+   #if defined(AXOM_DEBUG)
      // Code that performs debugging checks on object state, method args,
      // reports diagnostic messages, etc. goes here 
    #endif 
@@ -98,10 +98,10 @@ for a debug build **must** be guarded using the `ATK_DEBUG` macro::
       // rest of method implementation
    }
 
-The CS Toolkit build system provides various other macros for controlling 
-conditionally-compiled code. Please see the `config.hpp` header file in
-common for a complete list. The macro constants will be defined based on
-CMake options given when the code is configured. 
+The Axom build system provides various other macros for controlling 
+conditionally-compiled code. The macro constants will be defined based 
+on CMake options given when the code is configured. Please see the 
+`config.hpp` header file in the source include directory for a complete list.
 
 
 ------------------------------------
@@ -121,16 +121,15 @@ the code.
 
 When certain conditions are encountered, the macros can emit failed boolean 
 expressions and descriptive messages that help to understand potentially
-problematic usage. Here's an example of common *SLIC* macro usage in the CS 
-Toolkit::
+problematic usage. Here's an example of common *SLIC* macro usage in AXOM::
 
    Bar* myCoolFunction(int in_val, Foo* in_foo)
    {
-     if ( in_val < 0 || in_foo == ATK_NULLPTR )  
+     if ( in_val < 0 || in_foo == AXOM_NULLPTR )  
      {
        SLIC_CHECK_MSG( in_val >= 0, "in_val must be non-negative" );
-       SLIC_CHECK( in_foo != ATK_NULL_PTR );
-       return ATK_NULLPTR;
+       SLIC_CHECK( in_foo != AXOM_NULLPTR );
+       return AXOM_NULLPTR;
      } else if ( !in_foo->isSet() ) {
        SLIC_CHECK_MSG( in_foo->isSet(), 
                        "in_foo is not set, will use default settings");
@@ -146,7 +145,7 @@ Toolkit::
 This example uses slic macros that are only active when the code is compiled
 in debug mode. When compiled in release mode, for example, the macros are 
 empty and so do nothing. Also, when a condition is encountered that is 
-problematic, such as 'in_val < 0' or 'in_foo == ATK_NULLPTR', the code will
+problematic, such as 'in_val < 0' or 'in_foo == AXOM_NULLPTR', the code will
 emit the condition and an optional message and not halt. This allows calling
 code to catch the issue (in this case a null return value) and react. There
 are other macros (e.g., SLIC_ASSERT) that will halt the code if that is 

@@ -32,9 +32,9 @@ styles.
 Only change code from other sources when it makes sense
 --------------------------------------------------------
 
-1.3 The CS Toolkit may contain code pulled in from sources outside the 
-Toolkit. These guidelines apply to code developed within the Toolkit 
+1.3 The Axom project may contain code pulled in from sources outside
+Axom. These guidelines apply to code developed within Axom
 primarily. The decision to modify externally-developed code that we pull 
-in to the Toolkit will be evaluated on a case-by-case basis. Modifying such 
+into Axom will be evaluated on a case-by-case basis. Modifying such 
 code to be compliant with these guidelines should typically be done only if 
 a significant rewrite is undertaken for other reasons.

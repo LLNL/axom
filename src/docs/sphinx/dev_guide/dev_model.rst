@@ -10,44 +10,20 @@
 .. ##
 
 ****************************************
-CS Toolkit Development Process Overview
+Axom Development Process Overview
 ****************************************
 
-The CS Toolkit team uses an agile, sprint-based development process where
+The Axom team uses an agile, sprint-based development process where
 we target a set of development tasks for each release. We also employ a 
 variety of tools to manage our workflow and software development. This guide
-contains descriptions of our processes and information about how we use tools 
-and about getting started with them.
+describes team processes and how we use our tools.
 
-The CS Toolkit Git repository lives in a
-`Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_
-on the Livermore Computing CZ Atlassian Space. The repository is the central
-interaction hub for CS Toolkit code development.
-
-=======================
-First Things First...
-=======================
-
-The CS Toolkit team uses various means of communication and interaction.
-
-The main interaction hub for developers is the Atlassian tool suite on the
+The main interaction hub for Axom developers is the Atlassian tool suite on the
 Livermore Computing Collaboration Zone (CZ). These tools can be accessed through
-the `MyLC Portal <https://lc.llnl.gov>`_.  Access to our Atlassian project 
-spaces requires membership in one or both of the LC groups 'toolkit' and 
-'toolkitd'. The first is for users and the second is for developers -- 
-team members are in both. If you're not in these groups, send email to 
-'asctoolkit-dev@llnl.gov' and request to be added.
-
-We maintain two email lists: 'asctoolkit-dev@llnl.gov' 
-(mainly for developer communication) and 'asctoolkit-users@llnl.gov' 
-(for developer-user interaction). Go to the 
-`LLNL E-Mail List Manager Site <https://lists.llnl.gov>`_ to subscribe to
-these lists.
-
-We also have a chat room on LLNL's Cisco Jabber instance called 
-'CS Toolkit Dev'. It's open to anyone. You just have to log on to Jabber and 
-join.
-
+the `MyLC Portal <https://lc.llnl.gov>`_. Developer-level access to Axom 
+project spaces requires membership in the LC group 'toolkitd'. If you are not 
+in this group and need to be, please send an email request to 
+'axom-dev@llnl.gov'.
 
 .. _gitflow-label:
 
@@ -55,7 +31,7 @@ join.
 Gitflow Branching Model
 ======================================================
 
-The CS Toolkit team follows the 'Gitflow' branch development model, which is
+The Axom team follows the 'Gitflow' branch development model, which is
 summarized in this section. See the `Atlassian Gitflow Description <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_ for more details.
 
 Gitflow is a branching model centered around software releases. It is a simple 
@@ -165,7 +141,7 @@ The figure below shows how branches interact in Gitflow.
 Semantic Versioning
 ======================================================
 
-The CS Toolkit team follows the *semantic* versioning scheme for assigning
+The Axom team follows the *semantic* versioning scheme for assigning
 release numbers. Semantic versioning is a methodology for assigning version 
 numbers to software releases in a way that conveys specific meaning about 
 the code and modifications from version to version. 
@@ -227,7 +203,7 @@ conventions followed when using semantic versioning are:
 
 By following these conventions, it is fairly easy to communicate intent of
 version changes to users and it should be straightforward for users
-to manage dependencies on the CS Toolkit.
+to manage dependencies on Axom.
 
 
 .. _review-label:
@@ -238,7 +214,7 @@ Code Reviews and Acceptance
 
 Before any code is merged into the develop or master branches, it
 must be tested, reviewed, and accepted. Submitting a pull request on
-the Toolkit Bitbucket project to merge a branch into develop or master 
+the Axom Bitbucket project to merge a branch into develop or master 
 initiates the test and review processes. All builds and tests must pass 
 for a pull request to be approved. Also, it is expected that unit tests 
 are constructed to exercise any new functionality that is introduced. This 
@@ -246,7 +222,7 @@ will be assessed by reviewers of each pull request. See :ref:`testing-label`
 for more information about testing.
 
 Code changes in a pull request must be accepted by at least one member
-of the Toolkit development team other than the originator of the pull
+of the Axom development team other than the originator of the pull
 request. It is recommended to have several team members review pull 
 requests, especially when changes affect APIs. Pull request reviewers can be 
 selected on Bitbucket when the pull request is created. Changes reviewed by 
@@ -287,7 +263,7 @@ Pull Request Summary
 ---------------------
 
   #. When code is ready to be considered for acceptance, create a pull request
-     on the CS Toolkit Bitbucket project. Identify the appropriate reviewers 
+     on the Axom Bitbucket project. Identify the appropriate reviewers 
      and add them to the pull request.
 
   #. Code must build successfully and all relevant tests must pass, including
@@ -311,7 +287,7 @@ Code Review Checklist
 Beyond build and test correctness, we also want to ensure that code follows
 common conventions before acceptance. The following list summarizes concerns 
 we want to identify during pull request reviews and resolve before a pull 
-request is approved for merging. Please see the CS Toolkit coding guidelines
+request is approved for merging. Please see the Axom coding guidelines
 **(insert link here)**
 document for details. 
 
