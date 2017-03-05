@@ -179,9 +179,9 @@ def set_toolkit_group_and_perms(directory):
     directory. 
     """
     print "[changing group and access perms of: %s]" % directory
-    # change group to toolktid
+    # change group to axomdev
     print "[changing group to toolkitd]"
-    sexe("chgrp -f -R toolkitd -v  %s" % (directory),echo=True)
+    sexe("chgrp -f -R axomdev -v  %s" % (directory),echo=True)
     # change group perms to rwX
     print "[changing perms for toolkitd members to rwX]"
     sexe("chmod -f -R g+rwX  -v %s" % (directory),echo=True)
