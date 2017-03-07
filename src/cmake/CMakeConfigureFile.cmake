@@ -1,5 +1,5 @@
 #
-# CMakeConfigueFile.cmake - Create header of configuration options
+# CMakeConfigureFile.cmake - Create header of configuration options
 #
 
 if( (CMAKE_CXX_STANDARD EQUAL 11) OR (CMAKE_CXX_STANDARD EQUAL 14) )
@@ -27,6 +27,20 @@ if(ENABLE_MPI AND ENABLE_FORTRAN)
 endif()
 
 
+# If Sparsehash was found, ATK_USE_SPARSEHASH was set above in the TPL_DEPS
+# loop.  If not, we must use a standard container--std::unordered_map when
+# using C++11, std::map otherwise.  std::map is expected to perform poorly
+# with large amounts of Sidre objects, so it is recommended to make sure
+# Sparsehash is available for non-C++ 11 builds.
+if(NOT ATK_USE_SPARSEHASH)
+  if(ATK_USE_CXX11)
+    set(ATK_USE_STD_UNORDERED_MAP TRUE)
+  else()
+    set(ATK_USE_STD_MAP TRUE)
+  endif()
+endif()
+
+
 ## Add a configuration define for each enabled toolkit component
 set(COMPS COMMON LUMBERJACK SLIC SLAM SIDRE MINT QUEST SPIO)
 foreach(comp in ${COMPS})
@@ -34,7 +48,6 @@ foreach(comp in ${COMPS})
         set(ATK_USE_${comp} TRUE)
     endif()
 endforeach()
-
 
 
 

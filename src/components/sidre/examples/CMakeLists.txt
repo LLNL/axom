@@ -40,7 +40,7 @@ if(ENABLE_FORTRAN)
         blt_add_executable(
             NAME ${exe_name}
             SOURCES ${example_source}
-            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORy}
+            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
             DEPENDS_ON sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
         blt_add_test(
             NAME ${exe_name}
