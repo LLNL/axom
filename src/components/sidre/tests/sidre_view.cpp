@@ -903,7 +903,7 @@ TEST(sidre_view,int_array_depth_view)
   for (int id = 0 ; id < 4 ; ++id)
   {
     int * dv_ptr = views[id]->getData();
-    for (size_t i = 0 ; i < depth_nelems ; ++i)
+    for (SidreLength i = 0 ; i < depth_nelems ; ++i)
     {
       EXPECT_EQ(dv_ptr[i], id);
     }
@@ -1120,12 +1120,12 @@ TEST(sidre_view,int_array_view_attach_buffer)
 
   // check values in field views...
   int * f0_ptr = field0->getData();
-  for (size_t i = 0 ; i < field_nelems ; ++i)
+  for (SidreLength i = 0 ; i < field_nelems ; ++i)
   {
     EXPECT_EQ(f0_ptr[i], 0);
   }
   int * f1_ptr = field1->getData();
-  for (size_t i = 0 ; i < field_nelems ; ++i)
+  for (SidreLength i = 0 ; i < field_nelems ; ++i)
   {
     EXPECT_EQ(f1_ptr[i], 1);
   }
