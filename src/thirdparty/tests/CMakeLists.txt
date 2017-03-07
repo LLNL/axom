@@ -17,7 +17,7 @@ if (CONDUIT_FOUND)
         blt_add_executable(NAME f_conduit_smoke
                            SOURCES f_conduit_smoke.f
                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON conduit conduit_fortran fruit)
+                           DEPENDS_ON conduit fruit)
         blt_add_test(NAME f_conduit_smoke
                      COMMAND f_conduit_smoke)
   endif()

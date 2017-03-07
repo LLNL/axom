@@ -30,12 +30,7 @@ class Cmake(Package):
     homepage  = 'https://www.cmake.org'
     url       = 'https://cmake.org/files/v3.4/cmake-3.4.3.tar.gz'
 
-    version('3.6.0',    'aa40fbecf49d99c083415c2411d12db9')
-    version('3.5.2',    '701386a1b5ec95f8d1075ecf96383e02')
-    version('3.5.1',    'ca051f4a66375c89d1a524e726da0296')
-    version('3.5.0',    '33c5d09d4c33d4ffcc63578a6ba8777e')
-    version('3.4.3',    '4cb3ff35b2472aae70f542116d616e63')
-    version('3.4.0',    'cd3034e0a44256a0917e254167217fc8')
+    version('3.7.2',    '79bd7e65cd81ea3aa2619484ad6ff25a')
     version('3.3.1',    '52638576f4e1e621fed6c3410d3a1b12')
     version('3.0.2',    'db4c687a31444a929d2fdc36c4dfb95f')
     version('2.8.10.2', '097278785da7182ec0aea8769d06860c')
@@ -51,6 +46,7 @@ class Cmake(Package):
     depends_on('python@2.7.11:', when='+doc')
     depends_on('py-sphinx', when='+doc')
 
+    patch('cmake-3.7-find-python-libs.patch', when='@3.7.2')
 
     def url_for_version(self, version):
         """Handle CMake's version-based custom URLs."""

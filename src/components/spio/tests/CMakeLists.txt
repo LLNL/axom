@@ -33,7 +33,7 @@ if (ENABLE_MPI)
    blt_add_executable(NAME spio_externalWriteRead
                       SOURCES spio_externalWriteRead.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                      DEPENDS_ON spio conduit hdf5
+                      DEPENDS_ON slic spio conduit hdf5
                       )
    blt_add_test(NAME spio_externalWriteRead
                 COMMAND spio_externalWriteRead

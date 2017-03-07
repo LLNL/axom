@@ -7,7 +7,7 @@
  file: llnl_lc_uberenv_install_tools.py
 
  description: 
-  helpers for installing toolkit tpls on llnl lc systems.
+  helpers for installing axom tpls on llnl lc systems.
 
 """
 
@@ -92,7 +92,13 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
     cmd = "python ../uberenv.py --prefix %s --spec %s " % (prefix,spec)
     if not mirror is None:
         cmd += "--mirror %s" % mirror
-    return sexe(cmd,echo=True)
+        
+    spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec)
+    print "[starting tpl install of spec %s]" % spec
+    print "[log file: %s]" % spack_tpl_build_log
+    return sexe(cmd,
+                echo=True,
+                output_file = spack_tpl_build_log)
 
 def patch_host_configs(prefix):
     """
@@ -136,29 +142,49 @@ def build_and_test_host_config(test_root,host_config):
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
     install_dir = pjoin(test_root,"install-%s" % host_config_root)
     # configure
-    sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
-         echo=True)
+    res = sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
+               output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root),
+               echo=True)
+    
+    if res != 0:
+        print "[ERROR: Configure for host-config: %s failed]" % host_config
+        return res
+        
     ####
     # build, test, and install
     ####
-    sexe("cd %s && make -j 8 " % build_dir,
-         output_file = pjoin(build_dir,"output.log.make.txt"),
-         echo=True)
+    res = sexe("cd %s && make -j 8 " % build_dir,
+                output_file = pjoin(build_dir,"output.log.make.txt"),
+                echo=True)
 
-    sexe("cd %s && make test " % build_dir,
-         output_file = pjoin(build_dir,"output.log.make.test.txt"),
-         echo=True)
+    if res != 0:
+        print "[ERROR: Build for host-config: %s failed]" % host_config
+        return res
 
-    sexe("cd %s && make install " % build_dir,
-         output_file = pjoin(build_dir,"output.log.make.install.txt"),
-         echo=True)
+    res = sexe("cd %s && make test " % build_dir,
+               output_file = pjoin(build_dir,"output.log.make.test.txt"),
+               echo=True)
+
+    if res != 0:
+        print "[ERROR: Tests for host-config: %s failed]" % host_config
+        return res
+
+
+    res = sexe("cd %s && make install " % build_dir,
+               output_file = pjoin(build_dir,"output.log.make.install.txt"),
+               echo=True)
+
+    if res != 0:
+        print "[ERROR: Install for host-config: %s failed]" % host_config
+        return res
 
     # simple sanity check for make install
     print "[checking install dir %s]" % install_dir 
-    sexe("ls %s/bin" %     install_dir, echo=True)
     sexe("ls %s/docs" %    install_dir, echo=True)
     sexe("ls %s/include" % install_dir, echo=True)
     sexe("ls %s/lib" %     install_dir, echo=True)
+    print "[SUCCESS: Build, test, and install for host-config: %s complete]" % host_config
+    return 0
 
 
 def build_and_test_host_configs(prefix):
@@ -170,24 +196,30 @@ def build_and_test_host_configs(prefix):
         for host_config in host_configs:
             build_and_test_host_config(test_root,host_config)
     else:
-        print "[error no host configs found at %s]" % prefix
+        print "[ERROR: No host configs found at %s]" % prefix
 
 
-def set_toolkit_group_and_perms(directory):
+def set_axom_group_and_perms(directory):
     """
     Sets the proper group and access permissions of given input
     directory. 
     """
     print "[changing group and access perms of: %s]" % directory
     # change group to axomdev
+<<<<<<< HEAD
     print "[changing group to toolkitd]"
     sexe("chgrp -f -R axomdev -v  %s" % (directory),echo=True)
+=======
+    print "[changing group to axomdev]"
+    sexe("chgrp -f -R axomdev %s" % (directory),echo=True)
+>>>>>>> develop
     # change group perms to rwX
-    print "[changing perms for toolkitd members to rwX]"
-    sexe("chmod -f -R g+rwX  -v %s" % (directory),echo=True)
+    print "[changing perms for axomdev members to rwX]"
+    sexe("chmod -f -R g+rwX %s" % (directory),echo=True)
     # change perms for all to rX
     print "[changing perms for all users to rX]"
-    sexe("chmod -f -R a+rX -v %s" % (directory),echo=True)
+    sexe("chmod -f -R a+rX %s" % (directory),echo=True)
+    print "[done setting perms for: %s]" % directory
 
 
 

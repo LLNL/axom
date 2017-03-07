@@ -23,8 +23,7 @@
 
 #include <string>
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 namespace message {
@@ -54,10 +53,10 @@ enum Level {
  * \brief Array of strings corresponding to the Level enum.
  */
 static const std::string MessageLevelName[ Num_Levels ] = {
-    "ERROR",
-    "WARNING",
-    "INFO",
-    "DEBUG"
+  "ERROR",
+  "WARNING",
+  "INFO",
+  "DEBUG"
 };
 
 /*!
@@ -114,17 +113,16 @@ static const char errors_and_warnings = error | warning;
  * \note Used to loop through the bit mask associated with each level.
  */
 static const flags masks[ message::Num_Levels ] = {
-    error,
-    warning,
-    info,
-    debug
+  error,
+  warning,
+  info,
+  debug
 };
 
 } /* namespace inherit */
 
-
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* MESSAGELEVEL_H_ */

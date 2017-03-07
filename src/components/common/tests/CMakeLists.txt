@@ -37,7 +37,7 @@ endforeach()
 
 set(common_config_test_depends ${common_tests_depends})
 
-if(ENABLE_BOOST)
+if(BOOST_FOUND)
     list(APPEND common_config_test_depends boost)
 endif()
 

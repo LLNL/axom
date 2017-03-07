@@ -36,7 +36,6 @@ void shroud_c_loc_(void * addr, void ** out)
   *out = addr;
 }
 
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

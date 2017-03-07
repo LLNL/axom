@@ -80,7 +80,7 @@ recompiling after header file changes.
 
 .. note:: **Exceptions to this guideline:**
 
-    * Header files that define external APIs for the Toolkit  
+    * Header files that define external APIs for the Axom  
       project **must** include all header files for all types that 
       appear in the API. This makes use of the API much easier.
     
@@ -115,7 +115,7 @@ for all files.
       dependencies in other files. A common, recommended header file 
       inclusion ordering scheme is (only some of these may be needed):
 
-      #. Headers in the same Toolkit component
+      #. Headers in the same Axom component
       #. Other headers within the project
       #. TPL headers; e.g., MPI, OpenMP, HDF5, etc.
       #. C++ and C standard library headers
@@ -188,7 +188,7 @@ are contained in the guidelines after the summary.
 
 .. code-block:: cpp
 
-   // (1) CS Toolkit copyright and release statement
+   // (1) Axom copyright and release statement
 
    // (2) Doxygen file prologue
 
@@ -202,8 +202,8 @@ are contained in the guidelines after the summary.
    // (5) Forward declarations NEEDED in header file (outside of project namespace)
    class ...;
 
-   // (6a) Toolkit project namespace declaration
-   namespace asctoolkit {
+   // (6a) Axom project namespace declaration
+   namespace axom {
 
    // (7a) Internal namespace (if used); e.g.,
    namespace awesome {
@@ -225,14 +225,14 @@ are contained in the guidelines after the summary.
    } // awesome namespace closing brace
 
    // (6b) Project namespace closing brace
-   } // asctoolkit namespace closing brace
+   } // axom namespace closing brace
 
    // (3b) Header file include guard closing endif */
    #endif // closing endif for header file include guard
 
 
 4.10 **(Item 1)** Each header file **must** contain a comment section that 
-includes the CS Toolkit copyright and release statement.
+includes the Axom copyright and release statement.
 
       See :ref:`docsec-label` for details.
 
@@ -259,12 +259,12 @@ forward declarations, type definitions, etc.
 
 4.14 **(Item 5)** Any necessary forward declarations for types defined outside 
 the project namespace **must** appear after the header include statements
-and before the Toolkit project namespace statement.
+and before the Axom project namespace statement.
 
 4.15 **(Items 6a, 6b, 7a, 7b)** All types defined and methods defined in a 
 header file **must** be included in a namespace.
 
-      Either the project "asctoolkit" namespace (item 6a) or a namespace
+      Either the project "axom" namespace (item 6a) or a namespace
       nested within the project namespace (item 7a) may be used, or 
       both may be used. A closing brace ( "}" ) is required to close each
       namespace declaration (items 6b and 7b) before the closing '#endif' 

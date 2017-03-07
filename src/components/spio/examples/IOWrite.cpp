@@ -36,9 +36,11 @@ using namespace asctoolkit::utilities;
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
-  SLIC_ASSERT(argc == 3);
+  SLIC_ERROR_IF(argc != 3,
+      "Missing command line arguments. \n\t"
+      << "Usage: spio_IOWrite <num_files> <base_file_name>");
 
   size_t num_files = 0;
   std::string file_base;
@@ -53,7 +55,7 @@ int main(int argc, char * argv[])
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
   DataStore * ds = new DataStore();
-  SLIC_ASSERT(ds); 
+  SLIC_ASSERT(ds);
   DataGroup * root = ds->getRoot();
 
   DataGroup * flds = root->createGroup("fields");
@@ -83,7 +85,7 @@ int main(int argc, char * argv[])
     child->createViewString("word0", "hello");
     child->createViewString("word1", "world");
 
-    std::string root_name = file_base + ".hdf5.root";
+    std::string root_name = file_base + ".root";
     writer.writeGroupToRootFile(extra, root_name);
   }
   MPI_Barrier(MPI_COMM_WORLD);

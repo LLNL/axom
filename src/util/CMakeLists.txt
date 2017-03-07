@@ -14,7 +14,7 @@ set(datastore_converter_sources
     convert_sidre_protocol.cpp
 )
 set(datastore_converter_depends 
-    spio sidre conduit conduit_relay hdf5 
+    spio sidre conduit conduit_relay hdf5
     slic fmt 
     slam 
     )
@@ -24,7 +24,7 @@ if(ENABLE_LUMBERJACK)
 endif()
 
 
-if(ENABLE_BOOST)
+if(BOOST_FOUND)
   list(APPEND datastore_converter_depends boost)
 endif()
 

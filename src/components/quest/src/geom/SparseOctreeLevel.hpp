@@ -114,7 +114,7 @@ namespace quest
       typedef typename Base::BlockIteratorHelper      BaseBlockIteratorHelper;
       typedef typename Base::ConstBlockIteratorHelper ConstBaseBlockIteratorHelper;
 
-      typedef BroodRepresentationTraits<typename GridPt::CoordType, GridPt::NDIMS, BroodData, PointRepresenationType> BroodTraits;
+      typedef BroodRepresentationTraits<typename GridPt::CoordType, GridPt::DIMENSION, BroodData, PointRepresenationType> BroodTraits;
       typedef typename BroodTraits::MapType MapType;
       typedef typename BroodTraits::BroodType BroodType;
 

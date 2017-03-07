@@ -10,10 +10,10 @@
 .. ##
 
 
-CS Toolkit Coding Guidelines
+Axom Coding Guidelines
 ==============================
 
-These guidelines define code style conventions for the CS Toolkit. Most of the
+These guidelines define code style conventions for the Axom project. Most of the
 items were taken from the cited references, sometimes with modifications and 
 simplifications; see :ref:`codingrefs-label`.
 
@@ -39,11 +39,11 @@ How to apply "should" and "may" items often depends on the particular code
 situation. It is best to use these in ways that enhance code readability 
 and help reduce user and developer errors.
 
-.. important:: * Variations in coding style for different Toolkit components 
-                 is permitted. However, coding style *within each* Toolkit 
+.. important:: * Variations in coding style for different Axom components 
+                 is permitted. However, coding style *within each* Axom 
                  component **must** be consistent.
                * Deviations from these guidelines **must** be 
-                 agreed upon by the Toolkit team.
+                 agreed upon by the Axom team.
                * When the team agrees to change the guidelines, this
                  guide **must** be updated.
 

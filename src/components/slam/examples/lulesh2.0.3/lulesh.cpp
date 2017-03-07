@@ -2846,7 +2846,7 @@ namespace slamLulesh {
 int main(int argc, char *argv[])
 {
   using namespace slamLulesh;
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   Domain *locDom;
   Int_t numRanks;
@@ -2941,7 +2941,7 @@ int main(int argc, char *argv[])
     if ((opts.showProg != 0) && (opts.quiet == 0) && (myRank == 0))
     {
       SLIC_INFO("cycle = " << locDom->cycle() << ", time = " << locDom->time() << ", dt= " << locDom->deltatime());
-      asctoolkit::slic::flushStreams();
+      axom::slic::flushStreams();
     }
   }
 
