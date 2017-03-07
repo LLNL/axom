@@ -13,22 +13,23 @@
 The Code
 ======================================================
 
-Our Git repository contains the Toolkit source code, documentation, test 
+Our Git repository contains the Axom source code, documentation, test 
 suites and all files and scripts used for configuring and building the code.
-The repo lives in our 
+The repository lives in our 
 `CZ Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 
 We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for 
-issue tracking.
+issue tracking. Please report issues, feature requests, etc. there or send 
+email to the Axom development team.
 
 
 --------------------------------
 Getting the Code
 --------------------------------
 
-Access to our repository and Atlassian tools requires membership in the LC group 
-``toolkit``. If you're not in the group, please send email to 
-'asctoolkit-dev@llnl.gov' and request to be added.
+Access to our repository and Atlassian tools requires membership in the LC 
+group ``toolkit``. If you're not in the group, please send email to 
+'axom-dev@llnl.gov' and request to be added.
 
 SSH keys
 ^^^^^^^^^
@@ -46,14 +47,13 @@ To clone the repo into your local working space, type the following::
 
 Important notes:
 
-  * You don't need to remember the URL for the Toolkit repo above. It can be
-    found by going to the CS Toolkit repo on our Bitbucket project and
+  * You don't need to remember the URL for the Axom repo above. It can be
+    found by going to the Axom repo on our Bitbucket project and
     clicking on the 'Clone' action button that appears when you hover your
-    mouse cursor over the ellipses on the top left of the web page.
+    mouse cursor over the ellipses at top of the web page on the left.
   * The ``--recursive`` argument above is needed to pull in our build system,
-    called *BLT*. BLT is standalone product that is used by other code projects;
-    thus, it lives in its own reposiotory. It is a Git sub-module of the 
-    Toolkit.
+    called *BLT*, which is a standalone product that lives in its own repository.
+    It is a Git sub-module in Axom.
 
 
 --------------------
@@ -64,7 +64,7 @@ If you need to look through the repository, this section explains how it is
 organized. If you do not need this information and just want to build the
 code, please continue on to the next section.
 
-The top-level CS Toolkit directory contains three directories:
+The top-level Axom directory contains three directories:
 
   scripts
     Scripts that we maintain to simplify development and usage tasks
@@ -78,17 +78,17 @@ The top-level CS Toolkit directory contains three directories:
     blt
       BLT build system submodule is cloned here
     cmake
-      Toolkit-specific CMake customizations to BLT build system
+      Axom-specific CMake customizations to BLT build system
     components
-      Files for individual Toolkit components
+      Files for individual Axom components (see below)
     docs
-      General Toolkit documentation files
+      General Axom documentation files
     thirdparty
       Tests to make sure TPLs are built properly
 
 In the **components** directory, you will find a directory for each of the
-Toolkit components. Although there are dependencies among them, each is 
-developed and maintained in a largely self-contained fashion. Toolkit 
+Axom components. Although there are dependencies among them, each is 
+developed and maintained in a largely self-contained fashion. Axom 
 component dependencies are essentially treated as library dependencies.
 Each component directory contains subdirectories for: user documentation,
 examples, tests, and the component header and implementation files.

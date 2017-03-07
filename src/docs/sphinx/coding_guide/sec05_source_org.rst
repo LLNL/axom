@@ -81,15 +81,15 @@ are contained in the guidelines after the summary.
 
 .. code-block:: cpp
 
-   // (1) CS Toolkit copyright and release statement
+   // (1) Axom copyright and release statement
 
    // (2) Doxygen file prologue
 
    // (3) Header file inclusions (only those that are NECESSARY)
    #include "..."
 
-   // (4a) Toolkit project namespace declaration
-   namespace asctoolkit {
+   // (4a) Axom project namespace declaration
+   namespace axom {
 
    // (5a) Internal namespace (if used); e.g.,
    namespace awesome {
@@ -105,11 +105,11 @@ are contained in the guidelines after the summary.
    } // awesome namespace closing brace
 
    // (4b) Project namespace closing brace
-   } // asctoolkit namespace closing brace
+   } // axom namespace closing brace
 
 
 5.4 **(Item 1)** Each source file **must** contain a comment section that 
-includes the CS Toolkit copyright and release statement.
+includes the Axom copyright and release statement.
 
       See :ref:`docsec-label` for details.
 

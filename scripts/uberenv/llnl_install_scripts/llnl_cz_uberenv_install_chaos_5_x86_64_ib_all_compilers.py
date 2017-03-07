@@ -15,7 +15,7 @@
 from llnl_lc_uberenv_install_tools import *
 
 def main():
-    builds_dir = "/usr/workspace/wsa/toolkit/thirdparty_libs/builds/"
+    builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs/builds/"
     mirror_dir = pjoin(builds_dir,"mirror")
     # unique install location
     prefix =  pjoin(builds_dir,timestamp())
@@ -39,12 +39,12 @@ def main():
             print "[SUCCESS: Finished build tpls for spec %s]" % spec
     # patch manual edits into host config files
     patch_host_configs(prefix)
-    # build the toolkit against the new tpls
+    # build axom against the new tpls
     build_and_test_host_configs(prefix)
     # set proper perms for installed tpls
-    set_toolkit_group_and_perms(prefix)
+    set_axom_group_and_perms(prefix)
     # set proper perms for the mirror files
-    set_toolkit_group_and_perms(mirror_dir)
+    set_axom_group_and_perms(mirror_dir)
     return 0
 
 
