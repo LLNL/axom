@@ -7,7 +7,7 @@
  file: llnl_lc_uberenv_test_host_configs.py
 
  description: 
-  builds and tests toolkit against a set of host config files created by
+  builds and tests axom against a set of host config files created by
   spack / uberenv. 
 
   To use, set the env var UBERENV_PREFIX to the path of an uberenv install.
@@ -33,7 +33,7 @@ def main():
         print "[error %s is not a valid directory]" % prefix
         sys.exit(-1)
     build_and_test_host_configs(prefix)
-    set_toolkit_group_and_perms(prefix)
+    set_axom_group_and_perms(prefix)
 
 
 if __name__ == "__main__":
