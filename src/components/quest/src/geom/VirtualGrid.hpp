@@ -29,11 +29,14 @@
 
 namespace quest {
 
-/**
+/*!
  *******************************************************************************
  * \class VirtualGrid
  *
  * \brief A spatial index defined by origin, spacing, and resolution.
+ *
+ * \tparam T The type of object that this VirtualGrid will hold
+ * \tparam NDIMS The VirtualGrid dimensionality: supported values are 2 or 3
  *
  * The VirtualGrid class is parameterized on the type of object it will contain
  * and the dimensionality of the grid.  Currently the VirtualGrid will index
@@ -45,8 +48,8 @@ namespace quest {
  * by the spacing constructor argument, and the number of bins is specified by
  * the res constructor argument.
  *
- * Generally, a user will instantiate a VirtualGrid and insert a number of
- * objects (each with its own bounding box).  The insert operation puts the
+ * To use this class, a user will instantiate a VirtualGrid and insert a number
+ * of objects (each with its own bounding box).  The insert operation puts the
  * object into some of the bins.  The user may retrieve the bin index of any
  * point, then retrieve any objects associated with the bin at that index.
  *******************************************************************************
@@ -55,62 +58,107 @@ template< typename T, int NDIMS >
 class VirtualGrid
 {
 public:
-  /** \brief The type used for specifying spatial extent of the contents */
+  /*! \brief The type used for specifying spatial extent of the contents */
   typedef BoundingBox< double, NDIMS > BoxType;
 
-  /** \brief The type used to query the index */
+  /*! \brief The type used to query the index */
   typedef Point< double, NDIMS > PointType;
 
 public:
 
-  /**
+  /*!
    *****************************************************************************
-   * \brief Constructor.  User specifies origin, size of bins, number of bins.
-   * Each pointer argument is assumed to point to an array of at least length
-   * NDIMS.
+   * \brief Constructor specifying origin, size of bins, number of bins.
+   *
+   * The origin is specified as a point.  Each pointer argument is assumed to
+   * point to an array of at least length NDIMS.
    *****************************************************************************
    */
   VirtualGrid(const PointType& origin, const double * spacing, const int * res);
+  /*!
+   *****************************************************************************
+   * \brief Constructor specifying origin, size of bins, number of bins.
+   *
+   * The origin is specified as a double array.  Each pointer argument is
+   * assumed to point to an array of at least length NDIMS.
+   *****************************************************************************
+   */
   VirtualGrid(const double * origin, const double * spacing, const int * res);
+
+  /*! \brief Destructor: present for symmetry with constructor */
   ~VirtualGrid();
 
-  /**
+  /*!
    *****************************************************************************
-   * \brief The index of the bin containing the specified point, or a special
-   * value (INVALID_BIN_INDEX) to indicate that the point is outside the grid.
+   * \brief Returns the index of the bin containing the specified point.
+   *
+   * If the specified point is outside the grid, the function returns a
+   * special value (INVALID_BIN_INDEX).
    * \param [in] pt The point to query.
    *****************************************************************************
    */
   int getBinIndex(const PointType & pt);
 
-  /** \brief The number of bins in this VirtualGrid. */
+  /*! \brief Returns the number of bins in this VirtualGrid. */
   int getNumBins();
 
-  /** \brief Whether the bin specified by index is empty.  True if index is invalid. */
+  /*!
+   *****************************************************************************
+   * \brief Returns whether the bin specified by index is empty.
+   *
+   * Returns true if index is invalid.
+   * \param [in] index The index of the bin to test.
+   *****************************************************************************
+   */
   bool binEmpty(int index);
 
-  /** \brief The contents of the bin indicated by index.  Error if index is invalid. */
+  /*!
+   *****************************************************************************
+   * \brief Returns the contents of the bin indicated by index.
+   *
+   * It is an error if index is invalid.
+   * \param [in] index The index of the bin to retrieve.
+   *****************************************************************************
+   */
   std::vector<T>& getBinContents(int index);
+  /*!
+   *****************************************************************************
+   * \brief Returns the contents of the bin indicated by index.
+   *
+   * It is an error if index is invalid.  This is the const version.
+   * \param [in] index The index of the bin to retrieve.
+   *****************************************************************************
+   */
   const std::vector<T>& getBinContents(int index) const;
 
-  /** \brief Clears the bin indicated by index.  No-op if index is invalid. */
+  /*!
+   *****************************************************************************
+   * \brief Clears the bin indicated by index.
+   *
+   * No-op if index is invalid.
+   * \param [in] index The index of the bin to clear.
+   *****************************************************************************
+   */
   void clear(int index);
 
-  /**
+  /*!
    *****************************************************************************
-   * \brief Inserts obj into each bin overlapped by BB.  No error if BB falls
-   * partly or wholly outside the VirtualGrid.
+   * \brief Inserts obj into each bin overlapped by BB.
+   *
+   * No error is signalled if BB falls partly or wholly outside the VirtualGrid.
+   *
    * \param [in] BB The region in which to record obj
    * \param [in] obj The object to insert into any bins overlapped by BB
    *****************************************************************************
    */
   void insert(const BoxType& BB, const T& obj);
 
-  /**
+  /*!
    *****************************************************************************
-   * \brief A special value indicating a point outside the VirtualGrid.
+   * \brief A special value indicating any location not in the VirtualGrid.
+   *
    * Returned by getBinIndex() if that function is passed an exterior point.
-   * An error is thrown if getBinContents is passed INVALID_BIN_INDEX.
+   * An error is thrown if getBinContents() is passed INVALID_BIN_INDEX.
    * clear(INVALID_BIN_INDEX) is a no-op; binEmpty(INVALID_BIN_INDEX) returns
    * true.
    *****************************************************************************
@@ -119,6 +167,7 @@ public:
 
 protected:
 
+  /*! \brief The default constructor should not be used, so it is protected. */
   VirtualGrid();
     
 private:
