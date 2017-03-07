@@ -13,53 +13,38 @@ set( quest_headers
     SignedDistance.hpp
 
     ## Geometry Headers
-    geom/BVHTree.hpp
-    geom/BoundingBox.hpp
     geom/Brood.hpp
-    geom/Determinants.hpp
     geom/DenseOctreeLevel.hpp
-    geom/HyperSphere.hpp
     geom/InOutOctree.hpp
-    geom/Intersection.hpp
-    geom/intersection_impl.hpp
     geom/MortonIndex.hpp
-    geom/NumericArray.hpp
     geom/OctreeBase.hpp
     geom/OctreeLevel.hpp
-    geom/Orientation.hpp
-    geom/Point.hpp
-    geom/Ray.hpp
-    geom/Segment.hpp
     geom/SparseOctreeLevel.hpp
     geom/SpatialOctree.hpp
-    geom/SquaredDistance.hpp
-    geom/Triangle.hpp
-    geom/Vector.hpp
     geom/VirtualGrid.hpp
-    geom/closest_point.hpp
-    
+
     ## STL library headers
     stl/STLReader.hpp
-    
+
     ## quest interface headers
     interface/quest.hpp
-    
-   )
-   
-set( quest_sources
-    
-    ## Geometry Sources
-    # <nothing yet>
-    
-    ## STL library sources
-    stl/STLReader.cpp
-    
-    ## quest interface sources
-    interface/quest.cpp
-    
+
    )
 
-set( quest_depends_on 
+set( quest_sources
+
+    ## Geometry Sources
+    # <nothing yet>
+
+    ## STL library sources
+    stl/STLReader.cpp
+
+    ## quest interface sources
+    interface/quest.cpp
+
+   )
+
+set( quest_depends_on
      common
      slic
      mint
@@ -71,9 +56,9 @@ if (BOOST_FOUND)
 endif()
 
 if (ENABLE_MPI)
-  list(APPEND quest_headers stl/PSTLReader.hpp)  
+  list(APPEND quest_headers stl/PSTLReader.hpp)
   list(APPEND quest_sources stl/PSTLReader.cpp)
-  
+
   if(ENABLE_LUMBERJACK)
       list(APPEND quest_depends_on lumberjack)
   endif()
@@ -91,7 +76,7 @@ if (ENABLE_FORTRAN AND ENABLE_MPI)
   list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
 endif()
 
-blt_add_library( 
+blt_add_library(
     NAME        quest
     SOURCES     ${quest_sources}
     HEADERS     ${quest_headers}

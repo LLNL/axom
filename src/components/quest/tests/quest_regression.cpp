@@ -58,9 +58,10 @@
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
-#include "quest/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Vector.hpp"
+#include "primal/BoundingBox.hpp"
+
 #include "quest/quest.hpp"
 
 #include "sidre/sidre.hpp"
@@ -78,10 +79,10 @@ const int DIM = 3;
 const int MAX_RESULTS = 10;         // Max number of disagreeing entries to show when comparing results
 const int DEFAULT_RESOLUTION = 32;  // Default resolution of query grid
 
-typedef quest::BoundingBox<double,DIM> SpaceBoundingBox;
-typedef quest::Point<double, DIM> SpacePt;
-typedef quest::Vector<double, DIM> SpaceVec;
-typedef quest::Point<int, DIM> GridPt;
+typedef axom::primal::BoundingBox<double,DIM> SpaceBoundingBox;
+typedef axom::primal::Point<double, DIM> SpacePt;
+typedef axom::primal::Vector<double, DIM> SpaceVec;
+typedef axom::primal::Point<int, DIM> GridPt;
 
 /** Simple structure to hold the command line arguments */
 struct CommandLineArguments
@@ -108,7 +109,7 @@ struct CommandLineArguments
    SpaceBoundingBox meshBoundingBox;
    GridPt queryResolution;
 
-   mint::UniformMesh* queryMesh;
+   axom::mint::UniformMesh* queryMesh;
 
    bool testDistance;
    bool testContainment;
@@ -334,7 +335,7 @@ void loadBaselineData(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& a
  * \brief Generates a mint Uniform mesh with the given bounding box and resolution
  * \note Allocates a UniformMesh instance, which must be deleted by the user
  */
-mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res)
+axom::mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res)
 {
     // Set up the query mesh
     SpaceVec h( bb.getMin(), bb.getMax());
@@ -347,7 +348,7 @@ mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res
     ext[2] = 0; ext[3] = res[1];
     ext[4] = 0; ext[5] = res[2];
 
-    return new mint::UniformMesh(DIM, bb.getMin().data(), h.data(), ext);
+    return new axom::mint::UniformMesh(DIM, bb.getMin().data(), h.data(), ext);
 }
 
 /**
@@ -377,19 +378,19 @@ void runContainmentQueries(CommandLineArguments& clargs)
 
     // Add a scalar field for the containment queries
     SLIC_ASSERT(clargs.queryMesh != ATK_NULLPTR);
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
-    mint::FieldData* PD = umesh->getNodeFieldData();
+    axom::mint::FieldData* PD = umesh->getNodeFieldData();
     SLIC_ASSERT( PD != ATK_NULLPTR );
 
-    PD->addField( new mint::FieldVariable< int >("octree_containment",nnodes) );
+    PD->addField( new axom::mint::FieldVariable< int >("octree_containment",nnodes) );
     int* containment = PD->getField( "octree_containment" )->getIntPtr();
     SLIC_ASSERT( containment != ATK_NULLPTR );
 
     asctoolkit::utilities::Timer timer(true);
     for ( int inode=0; inode < nnodes; ++inode )
     {
-        quest::Point< double,3 > pt;
+        axom::primal::Point< double,3 > pt;
         umesh->getMeshNode( inode, pt.data() );
 
         containment[ inode ] = quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
@@ -430,23 +431,23 @@ void runDistanceQueries(CommandLineArguments& clargs)
 
     // Add a scalar field for the containment queries
     SLIC_ASSERT(clargs.queryMesh != ATK_NULLPTR);
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
-    mint::FieldData* PD = umesh->getNodeFieldData();
+    axom::mint::FieldData* PD = umesh->getNodeFieldData();
     SLIC_ASSERT( PD != ATK_NULLPTR );
 
-    PD->addField( new mint::FieldVariable< int >("bvh_containment",nnodes) );
+    PD->addField( new axom::mint::FieldVariable< int >("bvh_containment",nnodes) );
     int* containment = PD->getField( "bvh_containment" )->getIntPtr();
     SLIC_ASSERT( containment != ATK_NULLPTR );
 
-    PD->addField( new mint::FieldVariable< double >("bvh_distance",nnodes) );
+    PD->addField( new axom::mint::FieldVariable< double >("bvh_distance",nnodes) );
     double* distance = PD->getField( "bvh_distance" )->getDoublePtr();
     SLIC_ASSERT( distance != ATK_NULLPTR );
 
     asctoolkit::utilities::Timer timer(true);
     for ( int inode=0; inode < nnodes; ++inode )
     {
-        quest::Point< double,3 > pt;
+        axom::primal::Point< double,3 > pt;
         umesh->getMeshNode( inode, pt.data() );
 
         distance[ inode ] = quest::distance(pt[0],pt[1],pt[2]);
@@ -471,7 +472,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
 
     bool passed = true;
 
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
 
     if(!clargs.testContainment)
@@ -504,7 +505,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
             {
                 if(diffCount < MAX_RESULTS)
                 {
-                    quest::Point< double,3 > pt;
+                    axom::primal::Point< double,3 > pt;
                     umesh->getMeshNode( inode, pt.data() );
 
                     out.write("\n  Disagreement on sample {} @ {}.  Signed distance: {} -- InOutOctree: {} "
@@ -541,7 +542,7 @@ bool compareToBaselineResults(asctoolkit::sidre::DataGroup* grp, CommandLineArgu
 
     bool passed = true;
 
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
 
     if(clargs.testContainment)
@@ -560,7 +561,7 @@ bool compareToBaselineResults(asctoolkit::sidre::DataGroup* grp, CommandLineArgu
             {
                 if(diffCount < MAX_RESULTS)
                 {
-                    quest::Point< double,3 > pt;
+                    axom::primal::Point< double,3 > pt;
                     umesh->getMeshNode( inode, pt.data() );
 
                     out.write("\n  Disagreement on sample {} @ {}.  Expected {}, got {}"
@@ -599,7 +600,7 @@ bool compareToBaselineResults(asctoolkit::sidre::DataGroup* grp, CommandLineArgu
             {
                 if(diffCount < MAX_RESULTS)
                 {
-                    quest::Point< double,3 > pt;
+                    axom::primal::Point< double,3 > pt;
                     umesh->getMeshNode( inode, pt.data() );
 
                     out.write("\n  Disagreement on sample {} @ {}.  Expected {} ({}), got {} ({})"
@@ -654,7 +655,7 @@ void saveBaseline(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& clarg
     view = grp->createView("query_resolution", asctoolkit::sidre::INT_ID, 3)->allocate();
     clargs.queryResolution.to_array( view->getArray());
 
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
     if(clargs.testContainment)
     {
@@ -707,7 +708,7 @@ int main( int argc, char**argv )
   {
     // Note: this code is in a different context since UnitTestLogger's destructor
     //       might have MPI calls and would otherwise be invoked after MPI_Finalize()
-    asctoolkit::slic::UnitTestLogger logger;
+    axom::slic::UnitTestLogger logger;
     asctoolkit::sidre::DataStore ds;
 
     // parse the command arguments

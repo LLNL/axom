@@ -22,28 +22,24 @@
 
 #include "common/ATKMacros.hpp"
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 GenericOutputStream::GenericOutputStream( std::ostream* os ):
-    m_stream( os )
-{
-
-}
+  m_stream( os )
+{}
 
 //------------------------------------------------------------------------------
-GenericOutputStream::GenericOutputStream(std::ostream* os, const std::string& format):
-    m_stream( os )
+GenericOutputStream::GenericOutputStream(std::ostream* os,
+                                         const std::string& format):
+  m_stream( os )
 {
   this->setFormatString( format );
 }
 
 //------------------------------------------------------------------------------
 GenericOutputStream::~GenericOutputStream()
-{
-
-}
+{}
 
 //------------------------------------------------------------------------------
 void GenericOutputStream::append( message::Level msgLevel,
@@ -59,13 +55,13 @@ void GenericOutputStream::append( message::Level msgLevel,
   }
 
   (*m_stream) << this->getFormatedMessage( message::getLevelAsString(msgLevel),
-                                            message,
-                                            tagName,
-                                            "",
-                                            fileName,
-                                            line );
+                                           message,
+                                           tagName,
+                                           "",
+                                           fileName,
+                                           line );
 }
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */

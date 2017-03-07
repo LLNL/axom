@@ -30,7 +30,7 @@
 // MPI
 #include <mpi.h>
 
-using namespace asctoolkit;
+using namespace axom;
 
 #define N 20
 

@@ -136,7 +136,7 @@ TEST(gtest_slam_range_set,test_indirection_set_out_of_bounds)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

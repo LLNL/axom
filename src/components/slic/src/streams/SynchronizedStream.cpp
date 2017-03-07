@@ -24,7 +24,7 @@
 #include "common/ATKMacros.hpp"
 #include "common/StringUtilities.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slic {
 
 struct SynchronizedStream::MessageCache
@@ -41,13 +41,13 @@ struct SynchronizedStream::MessageCache
 
     const unsigned N = messages.size();
 
-    if( N==0 ) {
+    if ( N==0 ) {
       /* short-circuit */
       return;
     }
 
     for ( unsigned i=0; i < N; ++i ) {
-      (*stream) << messages[ i ] ;
+      (*stream) << messages[ i ];
     } // END for all messages
 
     messages.clear();
@@ -57,20 +57,18 @@ struct SynchronizedStream::MessageCache
 
 //------------------------------------------------------------------------------
 SynchronizedStream::SynchronizedStream(std::ostream* stream, MPI_Comm comm):
-    m_comm( comm ),
-    m_cache( new MessageCache() ),
-    m_stream( stream )
-{
-
-}
+  m_comm( comm ),
+  m_cache( new MessageCache() ),
+  m_stream( stream )
+{}
 
 //------------------------------------------------------------------------------
 SynchronizedStream::SynchronizedStream( std::ostream* stream,
                                         MPI_Comm comm,
-                                        const std::string& format ) :
-                                            m_comm( comm ),
-                                            m_cache( new MessageCache ),
-                                            m_stream( stream )
+                                        const std::string& format ):
+  m_comm( comm ),
+  m_cache( new MessageCache ),
+  m_stream( stream )
 {
   this->setFormatString( format );
 }
@@ -84,11 +82,11 @@ SynchronizedStream::~SynchronizedStream()
 
 //------------------------------------------------------------------------------
 void SynchronizedStream::append( message::Level msgLevel,
-                                  const std::string& message,
-                                  const std::string& tagName,
-                                  const std::string& fileName,
-                                  int line,
-                                  bool ATK_NOT_USED(filter_duplicates) )
+                                 const std::string& message,
+                                 const std::string& tagName,
+                                 const std::string& fileName,
+                                 int line,
+                                 bool ATK_NOT_USED(filter_duplicates) )
 {
 
   if ( m_cache == ATK_NULLPTR ) {
@@ -101,10 +99,10 @@ void SynchronizedStream::append( message::Level msgLevel,
 
   // STEP 1: cache formatted message
   m_cache->messages.push_back(
-        this->getFormatedMessage(message::getLevelAsString( msgLevel ),
-                                 message, tagName,
-                                 asctoolkit::utilities::string::intToString(rank),
-                                 fileName, line) );
+    this->getFormatedMessage(message::getLevelAsString( msgLevel ),
+                             message, tagName,
+                             asctoolkit::utilities::string::intToString(rank),
+                             fileName, line) );
 }
 
 //------------------------------------------------------------------------------
@@ -144,20 +142,24 @@ void SynchronizedStream::flush()
 
     } // END if
 
-  } else if( rank == nranks-1 ) {
+  }
+  else if ( rank == nranks-1 ) {
 
     /* last rank */
 
     // Wait for signal from previous rank
-    MPI_Recv(ATK_NULLPTR,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,MPI_STATUSES_IGNORE);
+    MPI_Recv(ATK_NULLPTR,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,
+             MPI_STATUSES_IGNORE);
 
     // print messages at this rank
     m_cache->printMessages( m_stream );
 
-  } else {
+  }
+  else {
 
     // Wait for signal from previous rank
-    MPI_Recv(ATK_NULLPTR,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,MPI_STATUSES_IGNORE);
+    MPI_Recv(ATK_NULLPTR,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,
+             MPI_STATUSES_IGNORE);
 
     // print messages at this rank
     m_cache->printMessages( m_stream );
@@ -170,4 +172,4 @@ void SynchronizedStream::flush()
 }
 
 } /* namespace slic */
-} /* namespace asctoolkit */
+} /* namespace axom */

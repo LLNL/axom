@@ -79,7 +79,7 @@ TEST( quest_spatial_octree, spatial_octree_point_location)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

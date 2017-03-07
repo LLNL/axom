@@ -241,7 +241,7 @@ copy-assignment operator.
 Note that in this example, the default constructor is disabled to prevent
 default construction. This can help prevent programming errors when 
 object state must be fully initialialized on construction. For more 
-information about common CS Toolkit macros, see :ref:`codemacros-label`.
+information about common Axom macros, see :ref:`codemacros-label`.
 
 
 .. _automethods-label:
@@ -675,7 +675,7 @@ Consistent argument order makes interfaces easier to use
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 8.41 Function arguments **must** be ordered similarly for all routines 
-in a Toolkit component.
+in an Axom component.
 
       Common conventions are either to put all input arguments first, then
       outputs, or vice versa. Input and output arguments **must not** be mixed 
@@ -902,16 +902,16 @@ in the class destructor.
 8.60 Pointers **should** be set to null explicitly when memory is deallocated.
 This makes it easy to check pointers for "null-ness" when needed.
 
-      For uniformity across the CS Toolkit and to facilitate C++11 and
+      For uniformity across Axom and to facilitate C++11 and
       non-C++11 usage, this should be done using the common macro
-      "ATK\_NULLPTR"; For example::
+      "AXOM\_NULLPTR"; For example::
 
          // #include "common/CommonTypes.hpp"
          
          double* data = new double[10];
          // ...
          delete [ ] data;
-         data = ATK_NULLPTR;
+         data = AXOM_NULLPTR;
 
 
 Use new/delete consistently

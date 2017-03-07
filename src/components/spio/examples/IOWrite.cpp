@@ -36,7 +36,7 @@ using namespace asctoolkit::utilities;
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   SLIC_ERROR_IF(argc != 3,
       "Missing command line arguments. \n\t"
@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
   DataStore * ds = new DataStore();
-  SLIC_ASSERT(ds); 
+  SLIC_ASSERT(ds);
   DataGroup * root = ds->getRoot();
 
   DataGroup * flds = root->createGroup("fields");

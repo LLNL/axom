@@ -25,7 +25,7 @@ using asctoolkit::sidre::DataView;
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   MPI_Init(&argc, &argv);
 
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2; 
+  int num_output = num_ranks / 2;
   if (num_output == 0) {
     num_output = 1;
   }
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
         result |= EXT_UNDESC_ERROR;
 	  break;
       }
-  } 
+  }
   SLIC_WARNING_IF( result & EXT_UNDESC_ERROR, "External_undescribed data was modified.");
 
   delete ds1;

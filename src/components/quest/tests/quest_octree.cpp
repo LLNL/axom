@@ -12,7 +12,7 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Point.hpp"
+#include "primal/Point.hpp"
 #include "quest/OctreeBase.hpp"
 
 #include "slic/slic.hpp"
@@ -355,7 +355,7 @@ TEST( quest_octree, count_octree_blocks)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

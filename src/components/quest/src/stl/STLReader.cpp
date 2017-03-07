@@ -158,7 +158,7 @@ void STLReader::read()
 
 //------------------------------------------------------------------------------
 void STLReader::getMesh(
-        mint::UnstructuredMesh< MINT_TRIANGLE >* mesh )
+        axom::mint::UnstructuredMesh< MINT_TRIANGLE >* mesh )
 {
   /* Sanity checks */
   SLIC_ASSERT( mesh != ATK_NULLPTR );

@@ -26,7 +26,8 @@
   #include "slic/GenericOutputStream.hpp"
 #endif
 
-#include "quest/BoundingBox.hpp"
+#include "primal/BoundingBox.hpp"
+
 #include "quest/InOutOctree.hpp"
 #include "quest/SignedDistance.hpp"
 
@@ -42,7 +43,7 @@ namespace quest
     // Note: Define everything in a local namespace
   namespace
   {
-    typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+    typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
     enum QueryMode { QUERY_MODE_NONE, QUERY_MODE_CONTAINMENT, QUERY_MODE_SIGNED_DISTANCE };
 
     /**
@@ -70,7 +71,7 @@ namespace quest
         /**
          * \brief Sets the internal mesh pointer and computes some surface properties (bounding box and center of mass)
          */
-        void setMesh(mint::Mesh* surface_mesh)
+        void setMesh( axom::mint::Mesh* surface_mesh)
         {
             SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
 
@@ -99,7 +100,7 @@ namespace quest
          * \param surface_mesh The surface mesh
          * \pre Assumes that we are not yet initialized
          */
-        void initializeContainmentTree(mint::Mesh* surface_mesh)
+        void initializeContainmentTree( axom::mint::Mesh* surface_mesh)
         {
             SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
 
@@ -114,7 +115,9 @@ namespace quest
          * \param surface_mesh The surface mesh
          * \pre Assumes that we are not yet initialized
          */
-        void initializeSignedDistance(mint::Mesh* surface_mesh, int maxElements, int maxLevels)
+        void initializeSignedDistance( axom::mint::Mesh* surface_mesh,
+                                       int maxElements,
+                                       int maxLevels )
         {
             SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
 
@@ -292,7 +295,7 @@ namespace quest
         void setupQuestLogger()
 #endif
         {
-            namespace slic = asctoolkit::slic;
+            namespace slic = axom::slic;
 
             // Setup the formatted quest logger
             if( ! slic::isInitialized() )
@@ -331,7 +334,7 @@ namespace quest
          */
         void teardownQuestLogger()
         {
-            namespace slic = asctoolkit::slic;
+            namespace slic = axom::slic;
 
             if(m_originalLoggerName != "")
             {
@@ -344,7 +347,7 @@ namespace quest
 
 
     private:
-        mint::Mesh* m_surface_mesh;
+        axom::mint::Mesh* m_surface_mesh;
         SignedDistance< DIM >* m_region;
         InOutOctree< DIM >* m_containmentTree;
         QueryMode m_queryMode;
@@ -386,7 +389,7 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   reader->setFileName( fileName );
   reader->read();
 
-  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
@@ -422,7 +425,7 @@ void initialize( const std::string& fileName,
   reader->setFileName( fileName );
   reader->read();
 
-  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );

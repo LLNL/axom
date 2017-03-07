@@ -13,8 +13,8 @@
 #include "common/config.hpp"    // defines ATK_USE_CXX11
 #include "common/CommonTypes.hpp"
 
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
+#include "primal/Point.hpp"
+#include "primal/Vector.hpp"
 
 #ifdef ATK_USE_CXX11
     #include <type_traits>
@@ -24,6 +24,8 @@
 #endif
 
 #include <limits>           // for numeric_limits
+
+using axom::primal::Point;
 
 namespace {
     /**

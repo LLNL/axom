@@ -27,7 +27,7 @@
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 #include "slam/RangeSet.hpp"
 #include "slam/Relation.hpp"

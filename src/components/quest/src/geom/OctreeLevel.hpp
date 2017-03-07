@@ -20,14 +20,16 @@
 
 #include "slic/slic.hpp"
 
-#include "quest/MortonIndex.hpp"
-#include "quest/NumericArray.hpp"
-#include "quest/Point.hpp"
-#include "quest/Brood.hpp"
+#include "primal/NumericArray.hpp"
+#include "primal/Point.hpp"
 
+#include "quest/Brood.hpp"
+#include "quest/MortonIndex.hpp"
 
 #include <boost/iterator/iterator_facade.hpp>
 
+using axom::primal::Point;
+using axom::primal::NumericArray;
 
 namespace quest
 {
@@ -62,12 +64,12 @@ namespace quest
          * \brief A type for the grid points of the octree.
          * \note CoordType must be an integral type
          */
-        typedef quest::Point<CoordType,DIM> GridPt;
+        typedef Point<CoordType,DIM> GridPt;
 
         enum { BROOD_SIZE = 1 << DIM };
 
         /** A brood is a collection of sibling blocks that are generated simultaneously */
-        typedef quest::NumericArray< BlockDataType, BROOD_SIZE> BroodData;
+        typedef NumericArray< BlockDataType, BROOD_SIZE> BroodData;
 
         /** Predeclare the BlockIterator type */
         template<typename OctreeLevel, typename IterHelper, typename DataType> class BlockIterator;

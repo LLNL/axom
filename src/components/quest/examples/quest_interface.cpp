@@ -205,25 +205,25 @@ int main( int argc, char**argv )
   MPI_Init( &argc, &argv );
 
   // Initialize Logger
-  slic::initialize();
-  slic::setLoggingMsgLevel( slic::message::Info );
+  axom::slic::initialize();
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
-  slic::LogStream* logStream;
+  axom::slic::LogStream* logStream;
 
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
   #ifdef ATK_USE_LUMBERJACK
     const int RLIMIT = 8;
-    logStream = new slic::LumberjackStream(&std::cout,MPI_COMM_WORLD, RLIMIT, fmt);
+    logStream = new axom::slic::LumberjackStream(&std::cout,MPI_COMM_WORLD, RLIMIT, fmt);
   #else
-    logStream = new slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, fmt);
+    logStream = new axom::slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, fmt);
   #endif
 
-  slic::addStreamToAllMsgLevels( logStream );
+  axom::slic::addStreamToAllMsgLevels( logStream );
 
   if(argc != 2)
   {
       SLIC_WARNING("Usage: [mpirun -np N] ./quest_interface <stl_file>");
-      slic::finalize();
+      axom::slic::finalize();
       MPI_Finalize();
       exit(1);
   }
@@ -253,7 +253,7 @@ int main( int argc, char**argv )
   SLIC_INFO("--");
 
 
-  slic::finalize();
+  axom::slic::finalize();
 
   MPI_Finalize();
 

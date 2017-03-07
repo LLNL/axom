@@ -52,7 +52,7 @@ namespace {
         ~AssertDtor() { SLIC_WARNING_IF(IS_VALID,"Testing warning in .dtor"); }
     };
 
-    
+
     class SetFixtureC : public ::benchmark::Fixture
     {
     public:
@@ -67,13 +67,13 @@ namespace {
     public:
         void SetUp() {SLIC_WARNING_IF(IS_VALID,"Testing warning in setup"); }
     };
-    
+
     class SetFixtureT : public ::benchmark::Fixture
     {
     public:
         void TearDown() {SLIC_WARNING_IF(IS_VALID,"Testing warning in teardown"); }
     };
-    
+
     class SetFixtureD : public ::benchmark::Fixture
     {
     public:
@@ -82,7 +82,7 @@ namespace {
             printMsg("*** Note: the slic log is not printed for SetFixtureD/assertDtor since it is called after slic::finalize() ***", true);
         }
     };
-    
+
     class SetFixtureOutput : public ::benchmark::Fixture
     {
     public:
@@ -90,8 +90,8 @@ namespace {
         void SetUp() { printMsg("  fixure SetUp"); }
         void TearDown() { printMsg("  fixure TearDown"); }
         ~SetFixtureOutput() { printMsg("  fixure ~.dtor"); }
-    };    
-    
+    };
+
     static void BM_AssertBefore(benchmark::State& state) {
         SLIC_WARNING_IF(IS_VALID, "Testing warning before running benchmark");
       while(state.KeepRunning())
