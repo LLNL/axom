@@ -187,7 +187,7 @@ contains
     type(datagroup) root
     type(dataview) dv
     integer(C_INT), pointer :: data(:)
-    integer i
+    integer(C_INT) i
     integer int_size, elem_count
 
     int_size = c_sizeof(i)
@@ -548,7 +548,7 @@ contains
 
     real(C_DOUBLE), pointer :: data(:)
     type(C_PTR) data_ptr
-    integer i
+    integer(C_INT) i
     integer(C_LONG) field_nelems
     integer(C_LONG) v1_nelems, v1_stride, v1_offset
     integer(C_LONG) v2_nelems, v2_stride, v2_offset
