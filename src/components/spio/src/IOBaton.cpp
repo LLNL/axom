@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file IOBaton.cpp
  *
  * \brief   Implementation file for IOBaton class.
  *
@@ -21,9 +21,9 @@
 // Associated header file
 #include "IOBaton.hpp"
 
-const int asctoolkit::spio::IOBaton::s_invalid_rank_id = -1;
+const int axom::spio::IOBaton::s_invalid_rank_id = -1;
 
-namespace asctoolkit
+namespace axom
 {
 namespace spio
 {
@@ -117,4 +117,4 @@ int IOBaton::pass()
 
 
 } /* end namespace spio */
-} /* end namespace asctoolkit */
+} /* end namespace axom */

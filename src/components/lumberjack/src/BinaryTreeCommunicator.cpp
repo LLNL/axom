@@ -26,7 +26,7 @@
 
 #include "lumberjack/MPIUtility.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 void BinaryTreeCommunicator::initialize(MPI_Comm comm, int ranksLimit)
@@ -94,7 +94,7 @@ void BinaryTreeCommunicator::push(const char* packedMessagesToBeSent,
     const char* currPackedMessages;
     while(childrenDoneCount < m_childCount){
         currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm);
-        if (currPackedMessages != ATK_NULLPTR) {
+        if (currPackedMessages != AXOM_NULLPTR) {
             receivedPackedMessages.push_back(currPackedMessages);
         }
         ++childrenDoneCount;
@@ -112,4 +112,4 @@ bool BinaryTreeCommunicator::isOutputNode()
 }
 
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom

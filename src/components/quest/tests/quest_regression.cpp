@@ -58,9 +58,10 @@
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
-#include "quest/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Vector.hpp"
+#include "primal/BoundingBox.hpp"
+
 #include "quest/quest.hpp"
 
 #include "sidre/sidre.hpp"
@@ -78,10 +79,10 @@ const int DIM = 3;
 const int MAX_RESULTS = 10;         // Max number of disagreeing entries to show when comparing results
 const int DEFAULT_RESOLUTION = 32;  // Default resolution of query grid
 
-typedef quest::BoundingBox<double,DIM> SpaceBoundingBox;
-typedef quest::Point<double, DIM> SpacePt;
-typedef quest::Vector<double, DIM> SpaceVec;
-typedef quest::Point<int, DIM> GridPt;
+typedef axom::primal::BoundingBox<double,DIM> SpaceBoundingBox;
+typedef axom::primal::Point<double, DIM> SpacePt;
+typedef axom::primal::Vector<double, DIM> SpaceVec;
+typedef axom::primal::Point<int, DIM> GridPt;
 
 /** Simple structure to hold the command line arguments */
 struct CommandLineArguments
@@ -89,16 +90,16 @@ struct CommandLineArguments
    CommandLineArguments()
      : meshName(""), baselineRoot("")
      , meshBoundingBox(), queryResolution(DEFAULT_RESOLUTION)
-     , queryMesh(ATK_NULLPTR)
+     , queryMesh(AXOM_NULLPTR)
      , testDistance(true), testContainment(true)
      {}
 
    ~CommandLineArguments()
    {
-       if(queryMesh != ATK_NULLPTR)
+       if(queryMesh != AXOM_NULLPTR)
        {
            delete queryMesh;
-           queryMesh = ATK_NULLPTR;
+           queryMesh = AXOM_NULLPTR;
        }
    }
 
@@ -108,7 +109,7 @@ struct CommandLineArguments
    SpaceBoundingBox meshBoundingBox;
    GridPt queryResolution;
 
-   mint::UniformMesh* queryMesh;
+   axom::mint::UniformMesh* queryMesh;
 
    bool testDistance;
    bool testContainment;
@@ -116,7 +117,7 @@ struct CommandLineArguments
    bool hasBaseline() const { return !baselineRoot.empty(); }
    bool hasMeshName() const { return !meshName.empty(); }
    bool hasBoundingBox() const { return meshBoundingBox != SpaceBoundingBox(); }
-   bool hasQueryMesh() const { return queryMesh != ATK_NULLPTR; }
+   bool hasQueryMesh() const { return queryMesh != AXOM_NULLPTR; }
 
    void usage()
    {
@@ -250,9 +251,9 @@ CommandLineArguments parseArguments(int argc, char** argv)
 }
 
 /** Loads the baseline dataset into the given sidre group */
-void loadBaselineData(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& args)
+void loadBaselineData(axom::sidre::DataGroup* grp, CommandLineArguments& args)
 {
-    asctoolkit::spio::IOManager reader(MPI_COMM_WORLD);
+    axom::spio::IOManager reader(MPI_COMM_WORLD);
     reader.read(grp, args.baselineRoot, "sidre_hdf5");
 
     /// Check that the required fields are present
@@ -269,7 +270,7 @@ void loadBaselineData(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& a
     }
     else
     {
-        asctoolkit::sidre::DataView* view = grp->getView("mesh_bounding_box");
+        axom::sidre::DataView* view = grp->getView("mesh_bounding_box");
         if(view->getNumElements() != 6)
             SLIC_ERROR("Bounding box must contain six doubles");
 
@@ -284,7 +285,7 @@ void loadBaselineData(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& a
     }
     else
     {
-        asctoolkit::sidre::DataView* view = grp->getView("query_resolution");
+        axom::sidre::DataView* view = grp->getView("query_resolution");
         if(view->getNumElements() != 3)
             SLIC_ERROR("Query resolution must contain three ints");
 
@@ -299,7 +300,7 @@ void loadBaselineData(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& a
             SLIC_ERROR("Requested containment, but baseline does not have a 'octree_containment' view");
         else
         {
-            SLIC_ASSERT_MSG(grp->getView("octree_containment")->getTypeID() == asctoolkit::sidre::INT_ID
+            SLIC_ASSERT_MSG(grp->getView("octree_containment")->getTypeID() == axom::sidre::INT_ID
                             , "Type of 'octree_containment' view must be int (SIDRE_INT_ID)");
         }
     }
@@ -313,7 +314,7 @@ void loadBaselineData(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& a
         }
         else
         {
-            SLIC_ASSERT_MSG(grp->getView("bvh_distance")->getTypeID() == asctoolkit::sidre::DOUBLE_ID
+            SLIC_ASSERT_MSG(grp->getView("bvh_distance")->getTypeID() == axom::sidre::DOUBLE_ID
                             , "Type of 'bvh_distance' view must be double (SIDRE_DOUBLE_ID)");
         }
 
@@ -323,7 +324,7 @@ void loadBaselineData(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& a
         }
         else
         {
-            SLIC_ASSERT_MSG(grp->getView("bvh_containment")->getTypeID() == asctoolkit::sidre::INT_ID
+            SLIC_ASSERT_MSG(grp->getView("bvh_containment")->getTypeID() == axom::sidre::INT_ID
                             , "Type of 'bvh_containment' view must be int (SIDRE_INT_ID)");
         }
     }
@@ -334,7 +335,7 @@ void loadBaselineData(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& a
  * \brief Generates a mint Uniform mesh with the given bounding box and resolution
  * \note Allocates a UniformMesh instance, which must be deleted by the user
  */
-mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res)
+axom::mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res)
 {
     // Set up the query mesh
     SpaceVec h( bb.getMin(), bb.getMax());
@@ -347,7 +348,7 @@ mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb, const GridPt& res
     ext[2] = 0; ext[3] = res[1];
     ext[4] = 0; ext[5] = res[2];
 
-    return new mint::UniformMesh(DIM, bb.getMin().data(), h.data(), ext);
+    return new axom::mint::UniformMesh(DIM, bb.getMin().data(), h.data(), ext);
 }
 
 /**
@@ -357,14 +358,14 @@ void runContainmentQueries(CommandLineArguments& clargs)
 {
     const int IGNORE = -1;
     const bool USE_DISTANCE = false;
-    quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, IGNORE, IGNORE);
+    axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, IGNORE, IGNORE);
 
     if(!clargs.hasBoundingBox())
     {
         SpacePt bbMin;
         SpacePt bbMax;
-        quest::mesh_min_bounds(bbMin.data());
-        quest::mesh_max_bounds(bbMax.data());
+        axom::quest::mesh_min_bounds(bbMin.data());
+        axom::quest::mesh_max_bounds(bbMax.data());
         clargs.meshBoundingBox = SpaceBoundingBox(bbMin, bbMax);
         clargs.meshBoundingBox.expand(1.5);
     }
@@ -376,30 +377,30 @@ void runContainmentQueries(CommandLineArguments& clargs)
 
 
     // Add a scalar field for the containment queries
-    SLIC_ASSERT(clargs.queryMesh != ATK_NULLPTR);
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
-    mint::FieldData* PD = umesh->getNodeFieldData();
-    SLIC_ASSERT( PD != ATK_NULLPTR );
+    axom::mint::FieldData* PD = umesh->getNodeFieldData();
+    SLIC_ASSERT( PD != AXOM_NULLPTR );
 
-    PD->addField( new mint::FieldVariable< int >("octree_containment",nnodes) );
+    PD->addField( new axom::mint::FieldVariable< int >("octree_containment",nnodes) );
     int* containment = PD->getField( "octree_containment" )->getIntPtr();
-    SLIC_ASSERT( containment != ATK_NULLPTR );
+    SLIC_ASSERT( containment != AXOM_NULLPTR );
 
-    asctoolkit::utilities::Timer timer(true);
+    axom::utilities::Timer timer(true);
     for ( int inode=0; inode < nnodes; ++inode )
     {
-        quest::Point< double,3 > pt;
+        axom::primal::Point< double,3 > pt;
         umesh->getMeshNode( inode, pt.data() );
 
-        containment[ inode ] = quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
+        containment[ inode ] = axom::quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
     }
     timer.stop();
     SLIC_INFO(fmt::format("Querying {}^3 containment field took {} seconds (@ {} queries per second)",
                     clargs.queryResolution, timer.elapsed(), nnodes / timer.elapsed()));
 
 
-    quest::finalize();
+    axom::quest::finalize();
 }
 
 /**
@@ -410,14 +411,14 @@ void runDistanceQueries(CommandLineArguments& clargs)
     int maxDepth = 10;
     int maxEltsPerBucket = 25;
     const bool USE_DISTANCE = true;
-    quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, maxDepth, maxEltsPerBucket);
+    axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, maxDepth, maxEltsPerBucket);
 
     if(!clargs.hasBoundingBox())
     {
         SpacePt bbMin;
         SpacePt bbMax;
-        quest::mesh_min_bounds(bbMin.data());
-        quest::mesh_max_bounds(bbMax.data());
+        axom::quest::mesh_min_bounds(bbMin.data());
+        axom::quest::mesh_max_bounds(bbMax.data());
         clargs.meshBoundingBox = SpaceBoundingBox(bbMin, bbMax);
         clargs.meshBoundingBox.expand(1.5);
     }
@@ -429,34 +430,34 @@ void runDistanceQueries(CommandLineArguments& clargs)
 
 
     // Add a scalar field for the containment queries
-    SLIC_ASSERT(clargs.queryMesh != ATK_NULLPTR);
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
-    mint::FieldData* PD = umesh->getNodeFieldData();
-    SLIC_ASSERT( PD != ATK_NULLPTR );
+    axom::mint::FieldData* PD = umesh->getNodeFieldData();
+    SLIC_ASSERT( PD != AXOM_NULLPTR );
 
-    PD->addField( new mint::FieldVariable< int >("bvh_containment",nnodes) );
+    PD->addField( new axom::mint::FieldVariable< int >("bvh_containment",nnodes) );
     int* containment = PD->getField( "bvh_containment" )->getIntPtr();
-    SLIC_ASSERT( containment != ATK_NULLPTR );
+    SLIC_ASSERT( containment != AXOM_NULLPTR );
 
-    PD->addField( new mint::FieldVariable< double >("bvh_distance",nnodes) );
+    PD->addField( new axom::mint::FieldVariable< double >("bvh_distance",nnodes) );
     double* distance = PD->getField( "bvh_distance" )->getDoublePtr();
-    SLIC_ASSERT( distance != ATK_NULLPTR );
+    SLIC_ASSERT( distance != AXOM_NULLPTR );
 
-    asctoolkit::utilities::Timer timer(true);
+    axom::utilities::Timer timer(true);
     for ( int inode=0; inode < nnodes; ++inode )
     {
-        quest::Point< double,3 > pt;
+        axom::primal::Point< double,3 > pt;
         umesh->getMeshNode( inode, pt.data() );
 
-        distance[ inode ] = quest::distance(pt[0],pt[1],pt[2]);
-        containment[ inode ] = quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
+        distance[ inode ] = axom::quest::distance(pt[0],pt[1],pt[2]);
+        containment[ inode ] = axom::quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
     }
     timer.stop();
     SLIC_INFO(fmt::format("Querying {}^3 distance field took {} seconds (@ {} queries per second)"
                     , clargs.queryResolution, timer.elapsed(), nnodes / timer.elapsed()));
 
-    quest::finalize();
+    axom::quest::finalize();
 }
 
 
@@ -471,7 +472,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
 
     bool passed = true;
 
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
 
     if(!clargs.testContainment)
@@ -504,7 +505,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
             {
                 if(diffCount < MAX_RESULTS)
                 {
-                    quest::Point< double,3 > pt;
+                    axom::primal::Point< double,3 > pt;
                     umesh->getMeshNode( inode, pt.data() );
 
                     out.write("\n  Disagreement on sample {} @ {}.  Signed distance: {} -- InOutOctree: {} "
@@ -534,14 +535,14 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
  * \return True if all results agree, False otherwise.
  * \note When there are differences, the first few are logged
  */
-bool compareToBaselineResults(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& clargs)
+bool compareToBaselineResults(axom::sidre::DataGroup* grp, CommandLineArguments& clargs)
 {
-    SLIC_ASSERT( grp != ATK_NULLPTR);
+    SLIC_ASSERT( grp != AXOM_NULLPTR);
     SLIC_ASSERT( clargs.hasQueryMesh());
 
     bool passed = true;
 
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
 
     if(clargs.testContainment)
@@ -560,7 +561,7 @@ bool compareToBaselineResults(asctoolkit::sidre::DataGroup* grp, CommandLineArgu
             {
                 if(diffCount < MAX_RESULTS)
                 {
-                    quest::Point< double,3 > pt;
+                    axom::primal::Point< double,3 > pt;
                     umesh->getMeshNode( inode, pt.data() );
 
                     out.write("\n  Disagreement on sample {} @ {}.  Expected {}, got {}"
@@ -595,11 +596,11 @@ bool compareToBaselineResults(asctoolkit::sidre::DataGroup* grp, CommandLineArgu
             const int actual_c = exp_containment[inode];
             const double expected_d = base_distance[inode];
             const double actual_d = exp_distance[inode];
-            if(expected_c != actual_c || !asctoolkit::utilities::isNearlyEqual(expected_d,actual_d) )
+            if(expected_c != actual_c || !axom::utilities::isNearlyEqual(expected_d,actual_d) )
             {
                 if(diffCount < MAX_RESULTS)
                 {
-                    quest::Point< double,3 > pt;
+                    axom::primal::Point< double,3 > pt;
                     umesh->getMeshNode( inode, pt.data() );
 
                     out.write("\n  Disagreement on sample {} @ {}.  Expected {} ({}), got {} ({})"
@@ -630,9 +631,9 @@ bool compareToBaselineResults(asctoolkit::sidre::DataGroup* grp, CommandLineArgu
  *       and a corresponding folder ./<mesh>_<res>_baseline/
  *       (both in the same directory)
  */
-void saveBaseline(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& clargs)
+void saveBaseline(axom::sidre::DataGroup* grp, CommandLineArguments& clargs)
 {
-    SLIC_ASSERT( grp != ATK_NULLPTR);
+    SLIC_ASSERT( grp != AXOM_NULLPTR);
     SLIC_ASSERT( clargs.hasQueryMesh());
 
     std::string fullMeshName = clargs.meshName;
@@ -644,22 +645,22 @@ void saveBaseline(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& clarg
 
     grp->createViewString("mesh_name", meshName);
 
-    asctoolkit::sidre::DataView* view = ATK_NULLPTR;
+    axom::sidre::DataView* view = AXOM_NULLPTR;
 
-    view = grp->createView("mesh_bounding_box", asctoolkit::sidre::DOUBLE_ID, 6)->allocate();
+    view = grp->createView("mesh_bounding_box", axom::sidre::DOUBLE_ID, 6)->allocate();
     double* bb = view->getArray();
     clargs.meshBoundingBox.getMin().to_array(bb);
     clargs.meshBoundingBox.getMax().to_array(bb+3);
 
-    view = grp->createView("query_resolution", asctoolkit::sidre::INT_ID, 3)->allocate();
+    view = grp->createView("query_resolution", axom::sidre::INT_ID, 3)->allocate();
     clargs.queryResolution.to_array( view->getArray());
 
-    mint::UniformMesh* umesh = clargs.queryMesh;
+    axom::mint::UniformMesh* umesh = clargs.queryMesh;
     const int nnodes = umesh->getNumberOfNodes();
     if(clargs.testContainment)
     {
         int* oct_containment = umesh->getNodeFieldData()->getField( "octree_containment" )->getIntPtr();
-        view = grp->createView("octree_containment", asctoolkit::sidre::INT_ID, nnodes)->allocate();
+        view = grp->createView("octree_containment", axom::sidre::INT_ID, nnodes)->allocate();
         int* contData = view->getArray();
         std::copy(oct_containment, oct_containment + nnodes, contData);
     }
@@ -667,12 +668,12 @@ void saveBaseline(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& clarg
     if(clargs.testDistance)
     {
         int* bvh_containment = umesh->getNodeFieldData()->getField( "bvh_containment" )->getIntPtr();
-        view = grp->createView("bvh_containment", asctoolkit::sidre::INT_ID, nnodes)->allocate();
+        view = grp->createView("bvh_containment", axom::sidre::INT_ID, nnodes)->allocate();
         int* contData = view->getArray();
         std::copy(bvh_containment, bvh_containment+nnodes, contData);
 
         double* bvh_distance= umesh->getNodeFieldData()->getField( "bvh_distance" )->getDoublePtr();
-        view = grp->createView("bvh_distance", asctoolkit::sidre::DOUBLE_ID, nnodes)->allocate();
+        view = grp->createView("bvh_distance", axom::sidre::DOUBLE_ID, nnodes)->allocate();
         double* distData = view->getArray();
         std::copy(bvh_distance, bvh_distance+nnodes, distData);
     }
@@ -687,7 +688,7 @@ void saveBaseline(asctoolkit::sidre::DataGroup* grp, CommandLineArguments& clarg
 
     std::string outfile = fmt::format("{}_{}_{}", meshNameNoExt, resStr, "baseline");
     std::string protocol = "sidre_hdf5";
-    asctoolkit::spio::IOManager writer(MPI_COMM_WORLD);
+    axom::spio::IOManager writer(MPI_COMM_WORLD);
     writer.write(grp,1, outfile, protocol);
     SLIC_INFO(fmt::format("** Saved baseline file '{}' using '{}' protocol.", outfile , protocol));
 
@@ -707,8 +708,8 @@ int main( int argc, char**argv )
   {
     // Note: this code is in a different context since UnitTestLogger's destructor
     //       might have MPI calls and would otherwise be invoked after MPI_Finalize()
-    asctoolkit::slic::UnitTestLogger logger;
-    asctoolkit::sidre::DataStore ds;
+    axom::slic::UnitTestLogger logger;
+    axom::sidre::DataStore ds;
 
     // parse the command arguments
     CommandLineArguments args = parseArguments(argc, argv);

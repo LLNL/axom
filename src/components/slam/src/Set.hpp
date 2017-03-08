@@ -25,7 +25,7 @@
 #include "common/Utilities.hpp"
 #include "slam/Utilities.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
 
@@ -168,6 +168,6 @@ namespace slam {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif //  SLAM_SET_H_

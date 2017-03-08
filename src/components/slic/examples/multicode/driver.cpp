@@ -30,10 +30,9 @@
 
 #define N 10
 
-using namespace asctoolkit;
+using namespace axom;
 
 std::ofstream hsp;
-
 
 //-----------------------------------------------------------------------------
 int getRandInt( const int start, const int end )
@@ -45,7 +44,7 @@ int getRandInt( const int start, const int end )
 slic::message::Level getRandomLevel()
 {
   return( static_cast< slic::message::Level >(
-                getRandInt(0,slic::message::Num_Levels)) );
+            getRandInt(0,slic::message::Num_Levels)) );
 }
 
 //-----------------------------------------------------------------------------
@@ -56,9 +55,9 @@ void driver_init()
   slic::disableAbortOnError();
 
   std::string hsp_format =
-      std::string( "[<LEVEL>]: <MESSAGE>\n" ) +
-      std::string( "\t FILE:<FILE>\n" ) +
-      std::string( "\t LINE:<LINE>\n" );
+    std:: string( "[<LEVEL>]: <MESSAGE>\n" ) +
+    std:: string( "\t FILE:<FILE>\n" ) +
+    std:: string( "\t LINE:<LINE>\n" );
 
   // setup main hsp output
   hsp.open( "hsp.log" );
@@ -66,14 +65,14 @@ void driver_init()
   slic::addStreamToAllMsgLevels( ls );
 
   std::string console_format =
-      std::string( "[<LEVEL>]: <MESSAGE>\n" );
+    std::string( "[<LEVEL>]: <MESSAGE>\n" );
 
   // setup console output
   slic::LogStream* console =
-      new slic::GenericOutputStream( &std::cout, console_format );
-  slic::addStreamToMsgLevel( console, slic::message::Error );
-  slic::addStreamToMsgLevel( console, slic::message::Warning );
-  slic::addStreamToMsgLevel( console, slic::message::Info );
+    new slic::GenericOutputStream( &std::cout, console_format );
+  slic::addStreamToMsgLevel(  console,  slic::message::Error );
+  slic::addStreamToMsgLevel(  console,  slic::message::Warning );
+  slic::addStreamToMsgLevel(  console,  slic::message::Info );
 }
 
 //-----------------------------------------------------------------------------
@@ -87,8 +86,8 @@ void driver_finalize()
 int main( int argc, char **argv )
 {
   /* silence compiler warnings */
-  static_cast<void>(argc);
-  static_cast<void>(argv);
+  static_cast< void >(argc);
+  static_cast< void >(argv);
 
   driver_init();
   physicsA::init();
@@ -106,12 +105,12 @@ int main( int argc, char **argv )
     slic::message::Level random = getRandomLevel();
     oss.str("");
     oss << "t=" << t << " a random message!";
-    slic::logMessage(random,oss.str(),__FILE__,__LINE__);
+    slic::logMessage( random,               oss.str(),__FILE__,__LINE__);
 
-    slic::logMessage( slic::message::Info, "== Done Executing physicsA ==\n" );
+    slic::logMessage( slic::message::Info,  "== Done Executing physicsA ==\n" );
 
     // STEP 1: Execute
-    slic::logMessage( slic::message::Info, "== Executing physicsB ==\n" );
+    slic::logMessage( slic::message::Info,  "== Executing physicsB ==\n" );
     physicsB::timestep( t, getRandInt(2,N) );
 
     slic::logMessage( slic::message::Info, "== Done Executing physicsB ==\n" );

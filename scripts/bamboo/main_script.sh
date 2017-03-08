@@ -95,7 +95,7 @@ if [ "$INSTALL_DOCS" = true ]; then
     exit 1
    fi
 
-   chgrp -R toolkit ${DOCS_DIR}
+   chgrp -R axom ${DOCS_DIR}
    if [ $? -ne 0 ]; then
     echo "Error: 'chgrp' failed"
     exit 1

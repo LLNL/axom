@@ -27,16 +27,16 @@
 #include "slam/Set.hpp"
 #include "slam/RangeSet.hpp"
 
-typedef asctoolkit::slam::Set::PositionType                                                   SetPosition;
-typedef asctoolkit::slam::Set::ElementType                                                    SetElement;
+typedef axom::slam::Set::PositionType                                                   SetPosition;
+typedef axom::slam::Set::ElementType                                                    SetElement;
 
-typedef asctoolkit::slam::policies::StrideOne<SetPosition>                                    StrideOnePolicy;
-typedef asctoolkit::slam::policies::NoIndirection<SetPosition,SetElement>                     NoIndirectionPolicy;
-typedef asctoolkit::slam::policies::VirtualParentSubset                                       SubsetPolicy;
+typedef axom::slam::policies::StrideOne<SetPosition>                                    StrideOnePolicy;
+typedef axom::slam::policies::NoIndirection<SetPosition,SetElement>                     NoIndirectionPolicy;
+typedef axom::slam::policies::VirtualParentSubset                                       SubsetPolicy;
 
 
 
-typedef asctoolkit::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, SubsetPolicy> SetType;
+typedef axom::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, SubsetPolicy> SetType;
 static const SetPosition MAX_SET_SIZE = 20;
 
 
@@ -80,7 +80,7 @@ TEST(gtest_slam_windowed_range_set,construct_windowed_range_set)
     SLIC_INFO(sstr.str());
   }
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   SLIC_INFO("Testing iterator access");
   {
     std::stringstream sstr;
@@ -99,13 +99,13 @@ TEST(gtest_slam_windowed_range_set,construct_windowed_range_set)
 #endif
 
   SLIC_INFO("Using random access on invalid address -- Note: We are testing for the expected failures.");
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( s.at(upperIndex),   "") << "tried to access out of range element (" << upperIndex << ")";
-  ASSERT_DEATH( s.at(MAX_SET_SIZE), "") << "tried to access out of range element (" << MAX_SET_SIZE << ")";
+  EXPECT_DEATH_IF_SUPPORTED( s.at(upperIndex),   "") << "tried to access out of range element (" << upperIndex << ")";
+  EXPECT_DEATH_IF_SUPPORTED( s.at(MAX_SET_SIZE), "") << "tried to access out of range element (" << MAX_SET_SIZE << ")";
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -142,7 +142,7 @@ TEST(gtest_slam_windowed_range_set,test_windowed_range_set_parents)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

@@ -8,16 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/*!
- *******************************************************************************
- * \file Logger.cpp
- *
- * \date May 7, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *
- *******************************************************************************
- */
-
 #include "Logger.hpp"
 
 #include "LogStream.hpp"
@@ -28,15 +18,14 @@
 // C/C++ includes
 #include <iostream> // for std::cout, std::cerr
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
-Logger* Logger::s_Logger = ATK_NULLPTR;
+Logger* Logger::s_Logger = AXOM_NULLPTR;
 std::map< std::string, Logger* > Logger::s_loggers;
 
 //------------------------------------------------------------------------------
-Logger::Logger() : m_abortOnError( true ), m_abortOnWarning( false )
+Logger::Logger(): m_abortOnError( true ), m_abortOnWarning( false )
 {
   // by default, all message streams are disabled
   for ( int i=0; i < message::Num_Levels; ++i ) {
@@ -45,14 +34,13 @@ Logger::Logger() : m_abortOnError( true ), m_abortOnWarning( false )
 
   }
 
-
 }
 
 //------------------------------------------------------------------------------
-Logger::Logger(const std::string& name) :
-        m_name( name ),
-        m_abortOnError( true ),
-        m_abortOnWarning( false )
+Logger::Logger(const std::string& name):
+  m_name( name ),
+  m_abortOnError( true ),
+  m_abortOnWarning( false )
 {
   // by default, all message streams are disabled
   for ( int i=0; i < message::Num_Levels; ++i ) {
@@ -67,8 +55,8 @@ Logger::Logger(const std::string& name) :
 Logger::~Logger()
 {
   std::map< LogStream*, LogStream* >::iterator it =
-      m_streamObjectsManager.begin();
-  for ( ; it != m_streamObjectsManager.end(); ++it ) {
+    m_streamObjectsManager.begin();
+  for (; it != m_streamObjectsManager.end(); ++it ) {
     delete it->second;
   } // END for all logStreams
 
@@ -91,9 +79,9 @@ void Logger::setLoggingMsgLevel( message::Level level )
 
 //------------------------------------------------------------------------------
 void Logger::addStreamToMsgLevel( LogStream* ls, message::Level level,
-                               bool pass_ownership )
+                                  bool pass_ownership )
 {
-  if ( ls == ATK_NULLPTR ) {
+  if ( ls == AXOM_NULLPTR ) {
 
     std::cerr << "WARNING: supplied log stream is NULL!\n";
     return;
@@ -113,7 +101,7 @@ void Logger::addStreamToMsgLevel( LogStream* ls, message::Level level,
 //------------------------------------------------------------------------------
 void Logger::addStreamToAllMsgLevels( LogStream* ls )
 {
-  if ( ls == ATK_NULLPTR ) {
+  if ( ls == AXOM_NULLPTR ) {
 
     std::cerr << "WARNING: supplied log stream is NULL!\n";
     return;
@@ -122,7 +110,7 @@ void Logger::addStreamToAllMsgLevels( LogStream* ls )
 
   for ( int level=message::Error; level < message::Num_Levels; ++level ) {
 
-    this->addStreamToMsgLevel( ls, static_cast<message::Level>( level ) );
+    this->addStreamToMsgLevel( ls, static_cast< message::Level >( level ) );
 
   } // END for all levels
 
@@ -137,9 +125,9 @@ int Logger::getNumStreamsAtMsgLevel( message::Level level )
 //------------------------------------------------------------------------------
 LogStream* Logger::getStream( message::Level level , int i )
 {
-  if ( i < 0 || i >= static_cast<int>(m_logStreams[ level ].size()) ) {
+  if ( i < 0 || i >= static_cast< int >(m_logStreams[ level ].size()) ) {
     std::cerr << "ERROR: stream index is out-of-bounds!\n";
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   return m_logStreams[ level ][ i ];
@@ -151,8 +139,8 @@ void Logger::logMessage( message::Level level,
                          bool filter_duplicates )
 {
   this->logMessage(
-      level,message,MSG_IGNORE_TAG,MSG_IGNORE_FILE,MSG_IGNORE_LINE,
-      filter_duplicates );
+    level,message,MSG_IGNORE_TAG,MSG_IGNORE_FILE,MSG_IGNORE_LINE,
+    filter_duplicates );
 }
 
 //------------------------------------------------------------------------------
@@ -195,16 +183,16 @@ void Logger::logMessage( message::Level level,
   for ( unsigned istream=0; istream < nstreams; ++istream ) {
 
     m_logStreams[ level ][ istream ]->append(
-                              level,message,tagName,fileName,line,
-                              filter_duplicates );
+      level,message,tagName,fileName,line,
+      filter_duplicates );
 
   } // END for all streams
 
-  if ( ( m_abortOnError && (level==message::Error) )     ||
+  if ( ( m_abortOnError && (level==message::Error) ) ||
        ( m_abortOnWarning && (level==message::Warning) )    ) {
 
-     this->flushStreams();
-     asctoolkit::utilities::processAbort();
+    this->flushStreams();
+    axom::utilities::processAbort();
 
   } // END if
 
@@ -268,7 +256,7 @@ bool Logger::createLogger( const std::string& name, char imask )
   } // END if inherit nothing
 
   Logger* rootLogger = Logger::getRootLogger();
-  if ( rootLogger == ATK_NULLPTR ) {
+  if ( rootLogger == AXOM_NULLPTR ) {
     std::cerr << "ERROR: no root logger found!\n";
     return false;
   }
@@ -287,16 +275,15 @@ bool Logger::createLogger( const std::string& name, char imask )
       for ( int istream=0; istream < nstreams; ++istream ) {
 
         s_loggers[ name ]->addStreamToMsgLevel(
-            rootLogger->getStream(current_level,istream),
-            current_level,
-            /* pass_ownership */ false );
+          rootLogger->getStream(current_level,istream),
+          current_level,
+          /* pass_ownership */ false );
 
       } // END for all streams at this level
 
     } // END if inherit streams at the given level
 
   } // END for all message levels
-
 
   return true;
 }
@@ -325,7 +312,7 @@ void Logger::finalize()
   }
 
   s_loggers.clear();
-  s_Logger = ATK_NULLPTR;
+  s_Logger = AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
@@ -345,7 +332,7 @@ Logger* Logger::getRootLogger()
 {
   if ( s_loggers.find( "root" ) == s_loggers.end() ) {
     // no root logger
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   return ( s_loggers[ "root" ] );
@@ -353,4 +340,4 @@ Logger* Logger::getRootLogger()
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */

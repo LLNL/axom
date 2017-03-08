@@ -27,7 +27,7 @@
 #include "slam/RangeSet.hpp"
 
 
-typedef asctoolkit::slam::RangeSet  SetType;
+typedef axom::slam::RangeSet  SetType;
 typedef SetType::PositionType       SetPosition;
 typedef SetType::ElementType        SetElement;
 
@@ -47,7 +47,7 @@ TEST(gtest_slam_range_set,construct_range_set)
   SLIC_INFO("Iterating through set of size " << s.size());
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   SLIC_INFO("Using begin/end");
   {
     std::stringstream sstr;
@@ -90,14 +90,14 @@ TEST(gtest_slam_range_set,construct_range_set)
     SLIC_INFO("Element of slam set using at():\n" << sstr.str());
   }
 
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
 
   SLIC_INFO("Using checked random access -- at() with invalid address");
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH(s.at(MAX_SET_SIZE),"") << "tried to access out of range element";
+  EXPECT_DEATH_IF_SUPPORTED(s.at(MAX_SET_SIZE),"") << "tried to access out of range element";
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -114,10 +114,10 @@ TEST(gtest_slam_range_set,test_range_set_out_of_bounds)
 
   SetType s(MAX_SET_SIZE);
 
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( s[MAX_SET_SIZE], "");
+  EXPECT_DEATH_IF_SUPPORTED( s[MAX_SET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -127,7 +127,7 @@ TEST(gtest_slam_range_set,test_range_set_out_of_bounds)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

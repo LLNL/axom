@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-// Toolkit includes
+// axom includes
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 #include "slic/LumberjackStream.hpp"
@@ -33,7 +33,7 @@
 // MPI
 #include <mpi.h>
 
-using namespace asctoolkit;
+using namespace axom;
 
 #define CYCLELIMIT 5
 #define RANKSLIMIT 5
@@ -65,7 +65,7 @@ int main( int argc, char** argv )
   // Set SLIC logging level and Lumberjack Logging stream
   slic::setLoggingMsgLevel( slic::message::Debug );
   slic::disableAbortOnError();
-  slic::LumberjackStream* ljStream = 
+  slic::LumberjackStream* ljStream =
         new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, RANKSLIMIT, format );
   slic::addStreamToAllMsgLevels( ljStream );
 

@@ -21,7 +21,7 @@ TEST(gtest_common_fileUtilities,getCWD_smoke)
 
   std::cout<<"Checking that we can call getCWD()" << std::endl;
 
-  std::string cwd = asctoolkit::utilities::filesystem::getCWD();
+  std::string cwd = axom::utilities::filesystem::getCWD();
 
   std::cout <<" CWD is: " << cwd << std::endl;
 
@@ -32,7 +32,7 @@ TEST(gtest_common_fileUtilities,getCWD_smoke)
 
 TEST(gtest_common_fileUtilities,common_fileUtil_joinPath)
 {
-  using namespace asctoolkit::utilities::filesystem;
+  using namespace axom::utilities::filesystem;
 
   std::string fdir = "abc";
   std::string fdirWithSlash = "abc/";
@@ -55,12 +55,12 @@ TEST(gtest_common_fileUtilities,common_fileUtil_joinPath)
 
 TEST(gtest_common_fileUtilities,common_fileUtil_pathExists)
 {
-  using namespace asctoolkit::utilities::filesystem;
+  using namespace axom::utilities::filesystem;
 
   std::cout<<"Testing pathExists on file that we know is present (the cwd)."<< std::endl;
   const std::string missingFile = "m_i_s_s_i_n_g__f_i_l_e";
 
-  std::string cwd = asctoolkit::utilities::filesystem::getCWD();
+  std::string cwd = axom::utilities::filesystem::getCWD();
   EXPECT_TRUE( pathExists(cwd) );
   EXPECT_FALSE( pathExists( joinPath(cwd,missingFile) ) );
 }

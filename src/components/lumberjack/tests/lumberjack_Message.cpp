@@ -15,7 +15,7 @@
 TEST(lumberjack_Message, getSet01)
 {
     //Test most basic case: one text, one rank, file name, line number
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.text("I never wanted to do this job in the first place!");
     m.addRank(14, 5);
     m.fileName("foo.cpp");
@@ -34,7 +34,7 @@ TEST(lumberjack_Message, getSet02)
     //Test that const char* will convert fine to string
     const char* textConstCharPointer = "I... I wanted to be... A LUMBERJACK!";
     std::string textString = "I... I wanted to be... A LUMBERJACK!";
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.text(textConstCharPointer);
     m.addRank(14, 5);
 
@@ -48,7 +48,7 @@ TEST(lumberjack_Message, getSet03)
 {
     //Test case: one text, filled ranks to rank limit
     const int ranksLimit = 5;
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.text("Leaping from tree to tree! As they float down the mighty rivers of British Columbia!");
     for(int i=0; i<(int)ranksLimit; ++i){
         m.addRank(i+1, ranksLimit);
@@ -66,7 +66,7 @@ TEST(lumberjack_Message, getSet04)
 {
     //Test case: one text, filled ranks to past rank limit
     const int ranksLimit = 5;
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.text("With my best girl by my side!");
     for(int i=0; i<(int)ranksLimit*2; ++i){
         m.addRank(i+1, ranksLimit);
@@ -85,7 +85,7 @@ TEST(lumberjack_Message, getSet05)
     //Test case: one text, fill ranks with vector of 1 rank
     const int ranksLimit = 5;
     std::vector<int> ranks;
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.text("The Larch! The Pine! The Giant Redwood tree! The Sequoia!");
     ranks.push_back(123);
     m.addRanks(ranks, 1, ranksLimit);
@@ -101,7 +101,7 @@ TEST(lumberjack_Message, getSet06)
     //Test case: one text, fill ranks with vector of ranks don't go past ranksLimit
     const int ranksLimit = 5;
     std::vector<int> ranks;
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.text("Oh, I'm a lumberjack, and I'm okay,");
     for(int i=0; i<(int)ranksLimit; ++i){
         ranks.push_back(i+1);
@@ -121,7 +121,7 @@ TEST(lumberjack_Message, getSet07)
     //Test case: one text, fill ranks with vector of ranks that will go past ranksLimit
     const int ranksLimit = 5;
     std::vector<int> ranks;
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.text("I sleep all night and I work all day.");
     for(int i=0; i<(int)ranksLimit*3; ++i){
         ranks.push_back(i+1);
@@ -141,7 +141,7 @@ TEST(lumberjack_Message, getSet08)
     //Test case: one text, add same rank multiple times to make sure ranks stays 1 but count increments
     const int ranksLimit = 5;
     std::vector<int> ranks;
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.text("This message is unimportant.");
     for(int i=0; i<(int)ranksLimit*3; ++i){
         m.addRank(1, ranksLimit);
@@ -158,7 +158,7 @@ TEST(lumberjack_Message, getSet09)
     //Test case: one text, fill ranks with vector of ranks that will go past ranksLimit
     const int ranksLimit = 5;
     std::vector<int> ranks;
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.text("This message is unimportant.");
     for(int i=0; i<(int)ranksLimit*3; ++i){
         ranks.push_back(1);
@@ -174,7 +174,7 @@ TEST(lumberjack_Message, getSet09)
 TEST(lumberjack_Message, testConstructor01)
 {
     //Test most basic case: one text, one rank, file name, line number
-    asctoolkit::lumberjack::Message m("He's a lumberjack, and he's okay,",
+    axom::lumberjack::Message m("He's a lumberjack, and he's okay,",
                                       122, "foo.cpp", 154, 1, "tag1");
 
     EXPECT_EQ(m.text(), "He's a lumberjack, and he's okay,");
@@ -196,7 +196,7 @@ TEST(lumberjack_Message, testConstructor02)
         ranks.push_back(i+1);
     }
 
-    asctoolkit::lumberjack::Message m("He sleeps all night and he works all day.",
+    axom::lumberjack::Message m("He sleeps all night and he works all day.",
                                       ranks, ranksLimit, ranksLimit, "foo.cpp", 154,
                                       2, "mytag");
 
@@ -216,7 +216,7 @@ TEST(lumberjack_Message, stringOfRanks01)
 {
     //Test most basic case: one rank
     const int ranksLimit = 5;
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.addRank(400, ranksLimit);
 
     EXPECT_EQ(m.text(), "");
@@ -239,7 +239,7 @@ TEST(lumberjack_Message, stringOfRanks02)
         ranks.push_back(i+1);
     }
 
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.addRanks(ranks, ranksLimit, ranksLimit);
 
     EXPECT_EQ(m.text(), "");
@@ -262,7 +262,7 @@ TEST(lumberjack_Message, stringOfRanks03)
         ranks.push_back(i*2);
     }
 
-    asctoolkit::lumberjack::Message m("Unimportant message", ranks, ranksLimit, ranksLimit,
+    axom::lumberjack::Message m("Unimportant message", ranks, ranksLimit, ranksLimit,
                                           "test/foo.cpp", 987654321, 0, "");
 
     EXPECT_EQ(m.text(), "Unimportant message");
@@ -285,7 +285,7 @@ TEST(lumberjack_Message, pack01)
         ranks.push_back(i*2);
     }
 
-    asctoolkit::lumberjack::Message m("Unimportant message", ranks, ranksLimit, ranksLimit,
+    axom::lumberjack::Message m("Unimportant message", ranks, ranksLimit, ranksLimit,
                                           "test/foo.cpp", 987654321, 0, "");
 
     EXPECT_EQ(m.text(), "Unimportant message");
@@ -306,7 +306,7 @@ TEST(lumberjack_Message, unpack01)
     //Test case: full Message
     const int ranksLimit = 5;
 
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.unpack("0,2,4,6,8*15*test/foo.cpp*987654321*1*gtest*Unimportant message", ranksLimit);
 
     EXPECT_EQ(m.text(), "Unimportant message");
@@ -326,7 +326,7 @@ TEST(lumberjack_Message, unpack02)
     //Test case: semi full Message
     const int ranksLimit = 5;
 
-    asctoolkit::lumberjack::Message m;
+    axom::lumberjack::Message m;
     m.unpack("0,2,4,6,8*15*test/foo.cpp*987654321*0**Unimportant message", ranksLimit);
 
     EXPECT_EQ(m.text(), "Unimportant message");

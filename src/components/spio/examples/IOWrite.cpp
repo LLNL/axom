@@ -22,11 +22,11 @@
 #include "sidre/DataStore.hpp"
 #include "spio/IOManager.hpp"
 
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataType;
-using asctoolkit::spio::IOManager;
-using namespace asctoolkit::utilities;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataType;
+using axom::spio::IOManager;
+using namespace axom::utilities;
 
 /**************************************************************************
  * Subroutine:  main
@@ -36,7 +36,7 @@ using namespace asctoolkit::utilities;
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   SLIC_ERROR_IF(argc != 3,
       "Missing command line arguments. \n\t"
@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
   DataStore * ds = new DataStore();
-  SLIC_ASSERT(ds); 
+  SLIC_ASSERT(ds);
   DataGroup * root = ds->getRoot();
 
   DataGroup * flds = root->createGroup("fields");

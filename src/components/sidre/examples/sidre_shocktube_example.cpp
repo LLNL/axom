@@ -41,11 +41,11 @@
 // SiDRe component headers
 #include "sidre/sidre.hpp"
 
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::TypeID;
+using axom::sidre::DataBuffer;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataView;
+using axom::sidre::TypeID;
 
 using namespace conduit;
 
@@ -537,13 +537,13 @@ void DumpUltra( DataGroup * const prob)
     const std::string& name = view->getName();
     if( length <= 1 )
     {
-      if( view->getTypeID() == asctoolkit::sidre::INT32_ID )
+      if( view->getTypeID() == axom::sidre::INT32_ID )
       {
         fprintf(fp, "# %s = %d\n",
                 name.c_str(),
                 view->getData<int>());
       }
-      else if( view->getTypeID() == asctoolkit::sidre::FLOAT64_ID )
+      else if( view->getTypeID() == axom::sidre::FLOAT64_ID )
       {
         fprintf(fp, "# %s = %f\n",
                 name.c_str(),
@@ -562,7 +562,7 @@ void DumpUltra( DataGroup * const prob)
     const std::string& name = view->getName();
     fprintf(fp, "# %s\n", name.c_str() );
 
-    if( view->getTypeID() == asctoolkit::sidre::INT32_ID )
+    if( view->getTypeID() == axom::sidre::INT32_ID )
     {
       int32 const * const data = view->getData();
       for ( int j=0 ; j<length ; ++j)
@@ -571,7 +571,7 @@ void DumpUltra( DataGroup * const prob)
       }
       fprintf(fp, "\n");
     }
-    else if( view->getTypeID() == asctoolkit::sidre::FLOAT64_ID )
+    else if( view->getTypeID() == axom::sidre::FLOAT64_ID )
     {
       float64 const * const data = view->getData();
       for ( int j=0 ; j<length ; ++j)

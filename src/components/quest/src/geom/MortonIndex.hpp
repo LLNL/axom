@@ -10,13 +10,13 @@
 #ifndef MORTON_INDEX_HXX_
 #define MORTON_INDEX_HXX_
 
-#include "common/config.hpp"    // defines ATK_USE_CXX11
+#include "common/config.hpp"    // defines AXOM_USE_CXX11
 #include "common/CommonTypes.hpp"
 
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
+#include "primal/Point.hpp"
+#include "primal/Vector.hpp"
 
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
     #include <type_traits>
 #else
     #include <boost/static_assert.hpp>
@@ -24,6 +24,8 @@
 #endif
 
 #include <limits>           // for numeric_limits
+
+using axom::primal::Point;
 
 namespace {
     /**
@@ -34,22 +36,22 @@ namespace {
      */
     template<typename IntegerType> struct NumReps {  enum {value = 5}; };
 
-    template<> struct NumReps<asctoolkit::common::int64>  { enum {value = 5}; };
-    template<> struct NumReps<asctoolkit::common::uint64> { enum {value = 5}; };
+    template<> struct NumReps<axom::common::int64>  { enum {value = 5}; };
+    template<> struct NumReps<axom::common::uint64> { enum {value = 5}; };
 
-    template<> struct NumReps<asctoolkit::common::int32>  { enum {value = 4}; };
-    template<> struct NumReps<asctoolkit::common::uint32> { enum {value = 4}; };
+    template<> struct NumReps<axom::common::int32>  { enum {value = 4}; };
+    template<> struct NumReps<axom::common::uint32> { enum {value = 4}; };
 
-    template<> struct NumReps<asctoolkit::common::int16>  { enum {value = 3}; };
-    template<> struct NumReps<asctoolkit::common::uint16> { enum {value = 3}; };
+    template<> struct NumReps<axom::common::int16>  { enum {value = 3}; };
+    template<> struct NumReps<axom::common::uint16> { enum {value = 3}; };
 
-    template<> struct NumReps<asctoolkit::common::int8>   { enum {value = 2}; };
-    template<> struct NumReps<asctoolkit::common::uint8>  { enum {value = 2}; };
+    template<> struct NumReps<axom::common::int8>   { enum {value = 2}; };
+    template<> struct NumReps<axom::common::uint8>  { enum {value = 2}; };
 }
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
     /**
      * \class
@@ -62,7 +64,7 @@ namespace quest
     struct MortonBase
     {
         // static assert to ensure that this class is only instantiated on integral types
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
         static_assert( std::is_integral<CoordType>::value, "Coordtype must be integral for Morton indexing" );
         static_assert( std::is_integral<MortonIndexType>::value, "MortonIndexType must be integral for Morton indexing" );
 #else
@@ -528,5 +530,6 @@ namespace quest
     };
 
 } // end namespace quest
+} // end namespace axom 
 
 #endif  // MORTON_INDEX_HXX_

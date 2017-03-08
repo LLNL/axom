@@ -16,13 +16,13 @@
 
 #include "common/config.hpp"
 
-#ifdef ATK_USE_MPI
+#ifdef AXOM_USE_MPI
 #include "mpi.h"
 #endif
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
 /*!
  *******************************************************************************
@@ -37,7 +37,7 @@ namespace quest
  *       Otherwise, we build a structure that only supports containment queries.
  *******************************************************************************
  */
-#ifdef ATK_USE_MPI
+#ifdef AXOM_USE_MPI
 void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements, int maxLevels );
 #else
@@ -64,8 +64,8 @@ double distance(double x, double y, double z=0.0);
  * \param [out] dist user-supplied array where to store the signed distance.
  * \param [in]  npoints total number of points.
  * \note This function is only valid when initialized with requiresDistance=true
- * \pre xyz  != ATK_NULLPTR
- * \pre dist != ATK_NULLPTR
+ * \pre xyz  != AXOM_NULLPTR
+ * \pre dist != AXOM_NULLPTR
  * \pre npoints >= 0
  *******************************************************************************
  */
@@ -88,8 +88,8 @@ int inside(double x, double y, double z=0.0);
  * \param [in]  xyz user-supplied array of coordinates stored
  * \param [out] in user-supplied array where to store result for each point.
  * \param [in]  npoints total number of points.
- * \pre xyz != ATK_NULLPTR
- * \pre  in != ATK_NULLPTR
+ * \pre xyz != AXOM_NULLPTR
+ * \pre  in != AXOM_NULLPTR
  *******************************************************************************
  */
 void inside( const double* xyz, int* in, int npoints);
@@ -133,6 +133,7 @@ void mesh_center_of_mass(double* coords);
  */
 void finalize();
 
-} /* end namespace quest */
+} // end namespace quest 
+} // end namespace axom 
 
 #endif /* QUEST_HPP_ */

@@ -28,7 +28,7 @@
 #include "Set.hpp"
 #include "NullSet.hpp"
 
-namespace asctoolkit{
+namespace axom{
 namespace slam{
 
 
@@ -67,7 +67,7 @@ namespace slam{
     private:
       inline void  verifyPosition(SetPosition pos)       const
       {
-          ATK_ASSERT_MSG( pos < static_cast<SetPosition>( size() )
+          SLIC_ASSERT_MSG( pos < static_cast<SetPosition>( size() )
                           , "SLAM::RangeSet -- requested out of range element at position "
                           << pos << ", but set only has " << size() << " elements." );
       }
@@ -94,6 +94,6 @@ namespace slam{
 #endif
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif //  SLAM_ORDERED_SET_H_

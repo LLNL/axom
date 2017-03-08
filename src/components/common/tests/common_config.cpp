@@ -13,11 +13,11 @@
 
 #include "common/config.hpp"
 
-#ifdef ATK_USE_OPENMP
+#ifdef AXOM_USE_OPENMP
   #include <omp.h>
 #endif
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   #include "boost/version.hpp"
 #endif
 
@@ -36,44 +36,48 @@ TEST(gtest_common_config,config_libraries)
 
   std::vector<std::string> libs;
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   libs.push_back("boost");
 #endif
 
-#ifdef ATK_USE_CONDUIT
+#ifdef AXOM_USE_CONDUIT
   libs.push_back("conduit");
 #endif
 
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
   libs.push_back("C++11");
 #endif
 
-#ifdef ATK_USE_FMT
+#ifdef AXOM_USE_FMT
   libs.push_back("fmt");
 #endif
 
-#ifdef ATK_USE_HDF5
+#ifdef AXOM_USE_HDF5
   libs.push_back("hdf5");
 #endif
 
-#ifdef ATK_USE_OPENMP
+#ifdef AXOM_USE_OPENMP
   libs.push_back("openmp");
 #endif
 
-  #ifdef ATK_USE_MPI
+  #ifdef AXOM_USE_MPI
   libs.push_back("mpi");
 #endif
 
-#ifdef ATK_USE_MPIF_HEADERS
+#ifdef AXOM_USE_MPIF_HEADERS
   libs.push_back("mpif headers");
 #endif
 
-#ifdef ATK_USE_SPARSEHASH
+#ifdef AXOM_USE_SPARSEHASH
   libs.push_back("sparsehash");
 #endif
 
+#ifdef AXOM_USE_STD_UNORDERED_MAP
+  libs.push_back("std::unordered_map");
+#endif
+
   std::stringstream sstr;
-  std:: copy( libs.begin(), libs.end(), std::ostream_iterator<std::string>(sstr, "; "));
+  std::copy( libs.begin(), libs.end(), std::ostream_iterator<std::string>(sstr, "; "));
   std::cout << "\t{ " << sstr.str() << "}" << std::endl;
 
   EXPECT_TRUE(true);
@@ -88,37 +92,41 @@ TEST(gtest_common_config,config_components)
 
   std::vector<std::string> comps;
 
-#ifdef ATK_USE_COMMON
+#ifdef AXOM_USE_COMMON
   comps.push_back("common");
 #endif
 
   EXPECT_EQ(1u, comps.size()) << "Common component is always available.";
 
-#ifdef ATK_USE_MINT
+#ifdef AXOM_USE_MINT
   comps.push_back("mint");
 #endif
 
-  #ifdef ATK_USE_LUMBERJACK
+  #ifdef AXOM_USE_LUMBERJACK
   comps.push_back("lumberjack");
 #endif
 
-#ifdef ATK_USE_QUEST
+#ifdef AXOM_USE_PRIMAL
+  comps.push_back("primal");
+#endif
+
+#ifdef AXOM_USE_QUEST
   comps.push_back("quest");
 #endif
 
-#ifdef ATK_USE_SIDRE
+#ifdef AXOM_USE_SIDRE
   comps.push_back("sidre");
 #endif
 
-  #ifdef ATK_USE_SLAM
+  #ifdef AXOM_USE_SLAM
   comps.push_back("slam");
 #endif
 
-#ifdef ATK_USE_SLIC
+#ifdef AXOM_USE_SLIC
   comps.push_back("slic");
 #endif
 
-#ifdef ATK_USE_SPIO
+#ifdef AXOM_USE_SPIO
   comps.push_back("spio");
 #endif
 
@@ -135,7 +143,7 @@ TEST(gtest_common_config,config_openmp)
     // This test checks that the per-target OpenMP guards
     // in our configuration file 'common/config.hpp' are working properly
 
-#ifdef ATK_USE_OPENMP
+#ifdef AXOM_USE_OPENMP
     std::cout << "OpenMP is available in this configuration." << std::endl;
 
     #pragma omp parallel
@@ -171,7 +179,7 @@ TEST(gtest_common_config,config_openmp)
 
 }
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
 TEST(gtest_common_config,boost_version)
 {
     std::cout << "Using boost version "
@@ -180,5 +188,5 @@ TEST(gtest_common_config,boost_version)
           << BOOST_VERSION % 100                // patch level
           << std::endl;
 }
-#endif // ATK_USE_BOOST
+#endif // AXOM_USE_BOOST
 

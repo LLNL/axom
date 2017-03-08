@@ -13,15 +13,15 @@
 #include "sidre/sidre.hpp"
 
 
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::IndexType;
-using asctoolkit::sidre::InvalidIndex;
-using asctoolkit::sidre::DataTypeId;
+using axom::sidre::DataStore;
+using axom::sidre::DataView;
+using axom::sidre::DataGroup;
+using axom::sidre::DataBuffer;
+using axom::sidre::IndexType;
+using axom::sidre::InvalidIndex;
+using axom::sidre::DataTypeId;
 
-using asctoolkit::sidre::getTypeID;
+using axom::sidre::getTypeID;
 
 #include <map>
 
@@ -57,8 +57,8 @@ TEST(sidre_databuffer, buffer_create)
 
   DataBuffer * buf1 = ds->createBuffer();
 
-  EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), buf1->getVoidPtr());
-  // EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), buf1->getData());
+  EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), buf1->getVoidPtr());
+  // EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), buf1->getData());
   EXPECT_EQ(0, buf1->getIndex());
   EXPECT_EQ(0, buf1->getNumViews());
   EXPECT_EQ(0, buf1->getTotalBytes());
@@ -78,7 +78,7 @@ void verifyDescribedBuffer(DataBuffer * buf, bool isDescribed,
   EXPECT_EQ(eltsize, buf->getBytesPerElement());
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
-  EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), buf->getVoidPtr());
+  EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), buf->getVoidPtr());
 }
 
 void verifyAllocatedBuffer(DataBuffer * buf, DataTypeId tid, int eltsize,
@@ -90,7 +90,7 @@ void verifyAllocatedBuffer(DataBuffer * buf, DataTypeId tid, int eltsize,
   EXPECT_EQ(eltsize, buf->getBytesPerElement());
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
-  EXPECT_NE(static_cast<void *>(ATK_NULLPTR), buf->getVoidPtr());
+  EXPECT_NE(static_cast<void *>(AXOM_NULLPTR), buf->getVoidPtr());
 }
 
 // Test describe methods
@@ -384,7 +384,7 @@ TEST(sidre_databuffer,buffer_delete_view_detach)
   EXPECT_EQ(1, bA->getNumViews());
   EXPECT_EQ(bA, vA->getBuffer());
   EXPECT_EQ(0, countMismatch(8, vAtest, vA->getArray()));
-  EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), vB->getBuffer());
+  EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), vB->getBuffer());
 
   // Make a new buffer bB and attach to vB; verify we can see the data in bB
   DataBuffer * bB = ds->createBuffer(tid, Bcount)->allocate();
@@ -393,7 +393,7 @@ TEST(sidre_databuffer,buffer_delete_view_detach)
 
   // Detach bA from vA using attach(NULL); verify that vA nas no buffer and bA is destroyed
   IndexType aidx = bA->getIndex();
-  vA->attachBuffer(ATK_NULLPTR);
+  vA->attachBuffer(AXOM_NULLPTR);
   //  EXPECT_FALSE(vA->isAttached());
   EXPECT_FALSE(ds->hasBuffer(aidx));
   // Destroy bB; verify that vB now has no buffer and cannot access data

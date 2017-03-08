@@ -14,7 +14,7 @@ copyright:
 
 library: SLIC
 cpp_header: slic/slic.hpp
-namespace: asctoolkit slic
+namespace: axom slic
 
 options:
   C_prefix: SLIC_

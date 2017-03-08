@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file SidreUtilities.cpp
  *
  * \brief   Implementation file for SidreUtilities.
  *
@@ -25,10 +25,10 @@
 // Associated header file
 #include "SidreUtilities.hpp"
 
-// Other toolkit component headers
+// Other axom headers
 #include "slic/slic.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -99,4 +99,4 @@ std::string::size_type find_exclusive( const std::string& s, char c)
 
 } //end namespace sidre
 
-} // end namespace asctoolkit
+} // end namespace axom

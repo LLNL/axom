@@ -102,7 +102,7 @@ void tinyHydroSedov_2part()
 
   double E0 = h.totalEnergy();
 
-  asctoolkit::utilities::Timer timer;
+  axom::utilities::Timer timer;
   timer.start();
   if(steps > 0)
   {
@@ -128,7 +128,7 @@ void tinyHydroSedov_2part()
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main()
 {

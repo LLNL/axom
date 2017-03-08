@@ -15,17 +15,17 @@
 
 #include "sidre/sidre.hpp"
 
-using asctoolkit::spio::IOManager;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataType;
-using asctoolkit::sidre::DataView;
+using axom::spio::IOManager;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataType;
+using axom::sidre::DataView;
 
 
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   MPI_Init(&argc, &argv);
 
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2; 
+  int num_output = num_ranks / 2;
   if (num_output == 0) {
     num_output = 1;
   }
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 
   DataGroup * ga = flds->createGroup("a");
   DataGroup * gb = flds2->createGroup("b");
-  ga->createView("external_array", asctoolkit::sidre::INT_ID, nvals, orig_vals1);
+  ga->createView("external_array", axom::sidre::INT_ID, nvals, orig_vals1);
   gb->createView("external_undescribed")->setExternalDataPtr(orig_vals2);
 
   /*
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
         result |= EXT_UNDESC_ERROR;
 	  break;
       }
-  } 
+  }
   SLIC_WARNING_IF( result & EXT_UNDESC_ERROR, "External_undescribed data was modified.");
 
   delete ds1;

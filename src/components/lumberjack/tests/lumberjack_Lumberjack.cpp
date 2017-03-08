@@ -19,13 +19,13 @@
 #include <stdlib.h>
 #include <time.h>
 
-class TestCommunicator: public asctoolkit::lumberjack::Communicator {
+class TestCommunicator: public axom::lumberjack::Communicator {
     public:
         void initialize(MPI_Comm comm, int ranksLimit)
         {
             m_mpiComm = comm;
             m_ranksLimit = ranksLimit;
-            srand(time(ATK_NULLPTR));
+            srand(time(AXOM_NULLPTR));
         }
 
         void finalize()
@@ -74,7 +74,7 @@ TEST(lumberjack_Lumberjack, combineMessages01)
     int ranksLimit = 5;
     TestCommunicator communicator;
     communicator.initialize(MPI_COMM_NULL, ranksLimit);
-    asctoolkit::lumberjack::Lumberjack lumberjack;
+    axom::lumberjack::Lumberjack lumberjack;
     lumberjack.initialize(&communicator, ranksLimit);
 
     lumberjack.queueMessage("Should be combined.");
@@ -86,7 +86,7 @@ TEST(lumberjack_Lumberjack, combineMessages01)
 
     lumberjack.pushMessagesFully();
 
-    std::vector<asctoolkit::lumberjack::Message*> messages = lumberjack.getMessages();
+    std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
 
     EXPECT_EQ((int)messages.size(), 1);
     EXPECT_EQ(messages[0]->text(), "Should be combined.");

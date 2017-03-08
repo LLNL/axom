@@ -26,21 +26,26 @@ The main tools we use are listed below. Details about how we use
 them and helpful information about getting started are provided 
 in the sections that follow.
 
-* We use our `Confluence space <https://lc.llnl.gov/confluence/display/ASCT/ASC+Simulation+CS+Toolkit+Home>`_ for team discussion, planning, maintaining meeting notes, etc.
-* Our Git repository contains Toolkit source code, build configurations, scripts, test suites, documentation, etc. The repository lives in our `Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
-* We use our `JIRA project <https://lc.llnl.gov/jira/projects/ATK>`_ for issue tracking.
-* We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for continuous integration and automated testing.
+* We use the `Axom Confluence space <https://lc.llnl.gov/confluence/display/ASCT>`_ for team discussion, planning, maintaining meeting notes, etc.
+* We use the `Axom Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_ to manage our Git repository which contains the Axom source code, build configurations, scripts, test suites, documentation, etc. 
+* We use the `Axom JIRA project <https://lc.llnl.gov/jira/projects/ATK>`_ for issue tracking.
+* We use the `Axom Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for continuous integration and automated testing.
 
 
 --------------------------
-Build, Link, Triumph (BLT)
+Building the Code (BLT)
 --------------------------
 
-Our build system, called *BLT*, is maintained in `its own repo <https://lc.llnl.gov/bitbucket/projects/ATK/repos/blt/browse>`_ in our 
-Bitbucket project. BLT provides a "common sense" setup based on CMake for 
-configuring and building the Toolkit code. It also enables software development 
-tool integration via *make targets*. BLT has built-in support for the following
-tools, all of which we use for Toolkit development:
+The `Axom Quickstart Guide <../../../quickstart_guide_docs/html/index.html>`_ 
+describes how to build the Axom code and its third-party library dependencies.
+
+The Axom build system is built on top of a streamlined CMake-based build 
+system foundation, called *BLT*, that we maintain and share with other 
+software projects. It is available in the 
+`BLT GitHub Project <https://github.com/LLNL/blt>`_. BLT provides a "common 
+sense" CMake setup that helps to simplify configuration and building the Axom 
+code. It also enables software development tool integration via *make targets*. BLT has built-in support for the following tools, all of which we use for 
+Axom development:
 
   Documentation
     *Doxygen* (source code docs) and *Sphinx* (user docs)
@@ -51,32 +56,24 @@ tools, all of which we use for Toolkit development:
   Benchmarking
     *Google Benchmark*
 
-See **BLT documentation (add link)** for more information.  
-
 We use `Spack <https://github.com/LLNL/spack>`_ to manage and build the 
-third-party libraries on which the Toolkit depends.
-
-The Toolkit **Quick Start Guide (add link)** describes how to build the
-code and third-party libraries.
-
-.. note :: BLT is supported as a standalone product and used by other 
-           software projects.
+third-party libraries on which Axom depends.
 
 
---------------------------------------
-Git/Bitbucket
---------------------------------------
+-------------------------------------------------------
+Version Control and Branch Development (Git/Bitbucket)
+-------------------------------------------------------
 
 This section provides some information about getting started with Git and 
 Bitbucket and describes operations related to topic branch development 
-on the CS Toolkit project. Our Git repository lives in our 
+on the Axom project. Our Git repository lives in our 
 `Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 
 If you are new to the Git or want to brush up on its features, there are 
 several good source of information available on the web:
 
   * `Atlassian Git Tutorial <https://www.atlassian.com/git/>`_ has a lot of useful stuff.
-  * The `Git Docs <https://git-scm.com/docs/>`_ is a complete reference for Git commands and options. It also provides soem *cheat sheets* you can download.
+  * The `Git Docs <https://git-scm.com/docs/>`_ is a complete reference for Git commands and options. It also provides some *cheat sheets* you can download.
   * `Learn Git Branching <http://learngitbranching.js.org/>`_ is nice for visual, hands-on learners. 
   * The e-book `Pro Git, by Scott Chacon <https://git-scm.com/book/en/v2>`_ is an excellent overview guide to using Git effectively.
 
@@ -111,14 +108,14 @@ space. This is done by typing::
 
 Important notes:
 
-  * You don't need to remember the URL for the Toolkit repo above. It can be 
-    found by going to the CS Toolkit repo on our Bitbucket project and 
+  * You don't need to remember the URL for the Axom repo above. It can be 
+    found by going to the Axom repo on our Bitbucket project and 
     clicking on the 'Clone' Action button that appears when you hover your 
     mouse cursor over the ellipses on the top left of the web page.
-  * The '--recursive' argument above is needed to pull the BLT build system into
-    your local copy of the repo. It is a Git sub-module of the Toolkit.
+  * The '--recursive' argument above is needed to pull the BLT build system 
+    into your local copy of the repo. It is a Git sub-module in Axom.
 
-After cloning, enter the top-level Toolkit directory and run the development
+After cloning, enter the top-level Axom directory and run the development
 setup script we provide to ensure that your Git environment is configured 
 properly and client-side hooks we use are installed; i.e.,::
 
@@ -254,7 +251,7 @@ Here are some details about each of these steps.
     When your work is complete, and you are 
     ready to merge your topic branch to the develop branch, you must initiate a 
     pull request in Bitbucket. This is done by going 
-    into the Toolkit Bitbucket project, selecting your branch, and clicking the 
+    into the Axom Bitbucket project, selecting your branch, and clicking the 
     pull request button -- make sure you select the correct destination branch. 
     The default destination branch in our project is set up to be the develop 
     branch. So, in most cases, you won't have to do anything special. 
@@ -324,14 +321,23 @@ Here is a concrete example::
     Switched to a new branch 'feature/homer/pick-up-bart'
 
 
---------------------------------------
-JIRA Issue Workflow
---------------------------------------
+----------------------------------------------
+Planning Development (JIRA)
+----------------------------------------------
 
 We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for 
-issue tracking. There you can create issues, edit them, comment on them,
-check issue status, and search for issues in various ways, including setting 
-up filters to customize your searches.
+issue tracking and project planning. In JIRA, you can create issues, edit 
+them, comment on them, check issue status, group them together for sprint
+development, and search for issues in various ways, including setting up 
+filters to customize your searches.
+
+
+.. note:: Fill this in....
+
+
+------------------------
+Issue Workflow (JIRA)
+------------------------
 
 Issue states
 ^^^^^^^^^^^^^
@@ -367,7 +373,7 @@ The figure below shows issue state transitions in our JIRA workflow.
 Creating a new issue
 ^^^^^^^^^^^^^^^^^^^^^
 
-To create a new issue, click the 'Create' button at the top of the CS Toolkit
+To create a new issue, click the 'Create' button at the top of the Axom
 JIRA project page and enter information in the issue fields. Filling in the
 fields properly greatly helps other team members search through project issues
 to find what they are looking for. Note that issue fields marked with a red 
@@ -375,7 +381,7 @@ asterisk are required. The others are not required, but may be used to include
 helpful information. The main issues we use regularly are:
 
   Project
-    The CS Toolkit will show up as the default. You shouldn't need
+    Axom will show up as the default. You shouldn't need
     to change this.
   Issue Type
     We use only three issue types: *Bug*, *New Feature*, and
@@ -391,7 +397,7 @@ helpful information. The main issues we use regularly are:
     of importance or urgency. Clicking on the question mark to the right of
     the priority field provides a description of each option.
   Components
-    Each issue is labeled with the Toolkit component it 
+    Each issue is labeled with the Axom component it 
     applies to. Other "component" labels indicate build system issues, 
     documentation issues, etc. 
   Assignee
@@ -459,13 +465,16 @@ demonstrate how to use JIRA features:
 
 
 --------------------------------------
-Bamboo Continuous Integration
+Continuous Integration (Bamboo)
 --------------------------------------
 
 We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for 
 continuous integration and automated testing. We maintain a collection of
 test plans for performing automated and manual builds, tests, and other
 code health monitoring tasks.
+
+
+.. note:: This section needs work and cleanup....
 
 Bamboo Agent Notes
 ^^^^^^^^^^^^^^^^^^^
@@ -475,7 +484,7 @@ The Atlassian admin will take care of associating your approved agent with your 
 
 Restarting the Agent:
  On occasion, the agent can die.  This results in bamboo jobs being queued and stalled until the agent is restarted.  
- You must have access to the toolkit 'ATK' user to restart the agent. 
+ You must have access to the Axom 'atk' shared user account to restart the agent. 
  To manually restart the CZ agent: ::
 
   $ ssh cab687 xsu atk
@@ -511,7 +520,7 @@ And you can view the jobs on the RZ using::
 Quick setup for adding additional agents::
 
 
-  $ pick a node, for example if we are to create a bamboo agent on rzgenie for asctoolkit
+  $ pick a node, for example if we are to create a bamboo agent on rzgenie for Axom
   $ atk@rzgenie2 ~/bamboo:/collab/usr/global/tools/bamboo/install-agent asctoolkit chang28@llnl.gov
   $ follow the instructions
 
@@ -541,7 +550,7 @@ Steps to Configure Bamboo Test Plan on a new system:
 
   1. First we need a bamboo agent on the new system.  
   2. After the agent is up and running, we need to make sure the Third Party Libraries (TPL) are built. 
-     TPL needs to happen before we can build the Asctoolkit code (for example, cmake needs to be ready). 
+     TPL needs to happen before we can build the Axom code (for example, cmake needs to be ready). 
      To set up a new system, modify the ``compilers.yaml`` script under ``scripts/uberenv``. 
      A successful TPL build would generate host configuration files for each compiler defined in ``compilers.yaml``.
   3. The next step is to create a python script similar to ``llnl_cz_uberenv_install_chaos_5_x86_64_ib_all_compilers.py``. 
@@ -564,7 +573,7 @@ Currently, we have the following test plans on CZ:
     This is done manually on the develop branch. 
 
 
-Currentl,y we have the following test plans on RZ:
+Currently, we have the following test plans on RZ:
 
   Build and Test Develop Branch (all compilers, nightly, rzalastor)
     This is done on a nightly basis on the develop branch. 
@@ -581,7 +590,7 @@ To add a repository to a plan:
      Basic options:
        * Repository Host is "Bitbucket / Stash" (the cz server can also pull from Github)
        * Server is CZ Bitbucket (only option available)
-       * Repository "ASC Simulation CS Toolkit / ASCToolkit"
+       * Repository "Axom"
        * Select the branch
      
      Advanced Options:
@@ -594,7 +603,7 @@ To add a repository to a plan:
 
 To create plans that use the branches feature:
 
-  ASC Toolkit has a nightly build plan that uses the develop branch as it's primary repository.  
+  Axom has a nightly build plan that uses the develop branch as its primary repository.  
   If you want to run the same plan on branches of this repository they can be set up a few different ways, 
   selecting specific branches in the repository and/or create branch plans for branches matching a regular expression.  
   The branches will then inherit all of the stages and jobs of the parent plan without having to duplicate the plan, 
@@ -614,9 +623,9 @@ Use a regular expression for your branch plan:
   * This would be useful to enable the sprint plans w/out having to worry about the sprint number
   * Also on the Branches tab of the plan configuration
   * In the Automatic branch management section
-  * Select "Create plan branches for matching new branches" from the New Branches listbox.  
+  * Select "Create plan branches for matching new branches" from the New Branches list  
     * Add a regular expression in the 'Match name' text box (something like "/sprint\/([0-9]*)/" or "/feature\/")
-    * Determine if you want Bamboo to delete plan branches after a period of time or a period of inactivity.  These are both set to do not delete by default, but once you selct  the "Create plan branches for matching new branches" option they are set to automatically delete.
+    * Determine if you want Bamboo to delete plan branches after a period of time or a period of inactivity.  These are both set to do not delete by default, but once you select  the "Create plan branches for matching new branches" option they are set to automatically delete.
     * Branch merging is disabled by default (this would automatically merge branches if tests are successful)
     * IRA feature branches is selected by default, so if you enable the branches on this page, Bamboo will automatically create plan branches for branches that contain a JIRA ticket in the name.
     * Select triggers - either inherit the parent plan triggers or run the branch plan manually.

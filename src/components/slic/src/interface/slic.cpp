@@ -24,10 +24,8 @@
 #include <sstream>    // for std::ostringstream
 #include <execinfo.h> // for backtrace()
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
-
 
 //------------------------------------------------------------------------------
 // Initialize static variables for controlling runtime behavior of asserts and
@@ -43,7 +41,7 @@ void initialize()
 //------------------------------------------------------------------------------
 bool isInitialized()
 {
-  return ( Logger::getActiveLogger() != ATK_NULLPTR );
+  return ( Logger::getActiveLogger() != AXOM_NULLPTR );
 }
 
 //------------------------------------------------------------------------------
@@ -126,7 +124,7 @@ void setAbortOnWarning( bool status )
   if ( !isInitialized() ) {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
-     return;
+    return;
   }
 
   Logger::getActiveLogger()->setAbortOnWarning( status );
@@ -184,7 +182,7 @@ void logMessage( message::Level level,
                  bool filter_duplicates )
 {
   if ( !isInitialized() ) {
-     return;
+    return;
   }
   Logger::getActiveLogger()->logMessage( level, message, tag,
                                          filter_duplicates );
@@ -192,13 +190,13 @@ void logMessage( message::Level level,
 
 //------------------------------------------------------------------------------
 void logMessage( message::Level level,
-                const std::string& message,
-                const std::string& fileName,
-                int line,
-                bool filter_duplicates )
+                 const std::string& message,
+                 const std::string& fileName,
+                 int line,
+                 bool filter_duplicates )
 {
   if ( !isInitialized() ) {
-     return;
+    return;
   }
   Logger::getActiveLogger()->logMessage( level, message, fileName, line,
                                          filter_duplicates );
@@ -213,7 +211,7 @@ void logMessage( message::Level level,
                  bool filter_duplicates )
 {
   if ( !isInitialized() ) {
-     return;
+    return;
   }
   Logger::getActiveLogger()->logMessage( level, message, tag, fileName, line,
                                          filter_duplicates );
@@ -276,10 +274,9 @@ std::string stacktrace( )
   std::ostringstream oss;
   oss << "\n** StackTrace of " << size << " frames **\n";
   for ( int i=0; i < size; ++i ) {
-     oss << strings[ i ] << std::endl;
+    oss << strings[ i ] << std::endl;
   }
   oss << "=====\n\n";
-
 
   free( strings );
 
@@ -288,5 +285,4 @@ std::string stacktrace( )
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
-
+} /* namespace axom */

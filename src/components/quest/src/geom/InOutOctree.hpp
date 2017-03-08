@@ -7,17 +7,20 @@
 #ifndef INOUT_OCTREE__HXX_
 #define INOUT_OCTREE__HXX_
 
-#include "common/config.hpp"       // defines ATK_USE_CXX11
-#include "common/ATKMacros.hpp"
+#include "common/config.hpp"       // defines AXOM_USE_CXX11
+#include "common/AxomMacros.hpp"
 #include "common/Timer.hpp"
 #include "common/Utilities.hpp"
 
-#include "quest/BoundingBox.hpp"
-#include "quest/Intersection.hpp"
-#include "quest/Orientation.hpp"
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
-#include "quest/SquaredDistance.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
+#include "primal/Vector.hpp"
+
+#include "primal/intersection.hpp"
+#include "primal/orientation.hpp"
+#include "primal/squared_distance.hpp"
+
 
 #include "slic/slic.hpp"
 
@@ -27,7 +30,6 @@
 #include "slam/StaticVariableRelation.hpp"
 
 #include "quest/SpatialOctree.hpp"
-#include "quest/Triangle.hpp"
 
 #include "mint/Mesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
@@ -59,15 +61,15 @@
 //    #define DEBUG_OCTREE_ACTIVE
 #endif
 
-#if defined(DEBUG_OCTREE_ACTIVE) and defined(ATK_DEBUG)
+#if defined(DEBUG_OCTREE_ACTIVE) and defined(AXOM_DEBUG)
   #define QUEST_OCTREE_DEBUG_LOG_IF( _cond, _msg)  if( _cond ) SLIC_DEBUG( _msg )
 #else
   #define QUEST_OCTREE_DEBUG_LOG_IF( _cond, _msg)  ( (void)0 )
 #endif
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
     /**
      * \brief Compact BlockDataType for an InOutOctree
@@ -502,7 +504,7 @@ private:
     public:
         typedef int VertexIndex;
         typedef int TriangleIndex;
-        typedef mint::Mesh SurfaceMesh;
+        typedef axom::mint::Mesh SurfaceMesh;
 
         /** \brief A vertex index to indicate that there is no associated vertex */
         static const VertexIndex NO_VERTEX = -1;
@@ -510,17 +512,17 @@ private:
         /** \brief A constant for the number of boundary vertices in a triangle */
         static const int NUM_TRI_VERTS = 3;
 
-        typedef Triangle<double, DIM> SpaceTriangle;
+        typedef axom::primal::Triangle<double, DIM> SpaceTriangle;
 
 
-        typedef asctoolkit::slam::PositionSet MeshVertexSet;
-        typedef asctoolkit::slam::PositionSet MeshElementSet;
+        typedef axom::slam::PositionSet MeshVertexSet;
+        typedef axom::slam::PositionSet MeshElementSet;
 
-        typedef asctoolkit::slam::Map<VertexIndex> VertexIndexMap;
-        typedef asctoolkit::slam::Map<SpacePt> VertexPositionMap;
+        typedef axom::slam::Map<VertexIndex> VertexIndexMap;
+        typedef axom::slam::Map<SpacePt> VertexPositionMap;
 
-        typedef asctoolkit::slam::policies::CompileTimeStrideHolder<VertexIndex, NUM_TRI_VERTS>  TVStride;
-        typedef asctoolkit::slam::StaticConstantRelation<TVStride, MeshElementSet, MeshVertexSet> TriangleVertexRelation;
+        typedef axom::slam::policies::CompileTimeStrideHolder<VertexIndex, NUM_TRI_VERTS>  TVStride;
+        typedef axom::slam::StaticConstantRelation<TVStride, MeshElementSet, MeshVertexSet> TriangleVertexRelation;
         typedef typename TriangleVertexRelation::RelationSet TriVertIndices;
 
     public:
@@ -775,7 +777,7 @@ private:
 
             // Delete old mesh, and NULL its pointer
             delete m_surfaceMesh;
-            m_surfaceMesh = ATK_NULLPTR;
+            m_surfaceMesh = AXOM_NULLPTR;
 
             m_meshWasReindexed = true;
         }
@@ -783,13 +785,13 @@ private:
         /** \brief Add the vertex positions and triangle boundary relations to the surface mesh */
         void regenerateSurfaceMesh()
         {
-          if(m_surfaceMesh != ATK_NULLPTR)
+          if(m_surfaceMesh != AXOM_NULLPTR)
           {
               delete m_surfaceMesh;
-              m_surfaceMesh = ATK_NULLPTR;
+              m_surfaceMesh = AXOM_NULLPTR;
           }
 
-          typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+          typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
           TriangleMesh* triMesh = new TriangleMesh(3);
 
           // Add vertices to the mesh (i.e. vertex positions)
@@ -824,7 +826,7 @@ private:
 public:
 
     typedef typename MeshWrapper::SurfaceMesh SurfaceMesh;
-    typedef mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
+    typedef axom::mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
 
     typedef typename MeshWrapper::VertexIndex VertexIndex;
     typedef typename MeshWrapper::TriangleIndex TriangleIndex;
@@ -838,17 +840,17 @@ public:
 
     // Some type defs for the Relations from Gray leaf blocks to mesh vertices and elements
     static const int MAX_VERTS_PER_BLOCK = 1;
-    typedef asctoolkit::slam::Map<BlockIndex> VertexBlockMap;
+    typedef axom::slam::Map<BlockIndex> VertexBlockMap;
 
-    typedef asctoolkit::slam::PositionSet GrayLeafSet;
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<VertexIndex, MAX_VERTS_PER_BLOCK>  BVStride;
-    typedef asctoolkit::slam::StaticConstantRelation<BVStride, GrayLeafSet, MeshVertexSet> GrayLeafVertexRelation;
-    typedef asctoolkit::slam::StaticVariableRelation                                       GrayLeafElementRelation;
+    typedef axom::slam::PositionSet GrayLeafSet;
+    typedef axom::slam::policies::CompileTimeStrideHolder<VertexIndex, MAX_VERTS_PER_BLOCK>  BVStride;
+    typedef axom::slam::StaticConstantRelation<BVStride, GrayLeafSet, MeshVertexSet> GrayLeafVertexRelation;
+    typedef axom::slam::StaticVariableRelation                                       GrayLeafElementRelation;
     typedef typename GrayLeafElementRelation::RelationSet TriangleIndexSet;
 
-    typedef asctoolkit::slam::Map<GrayLeafSet>            GrayLeafsLevelMap;
-    typedef asctoolkit::slam::Map<GrayLeafVertexRelation> GrayLeafVertexRelationLevelMap;
-    typedef asctoolkit::slam::Map<GrayLeafElementRelation> GrayLeafElementRelationLevelMap;
+    typedef axom::slam::Map<GrayLeafSet>            GrayLeafsLevelMap;
+    typedef axom::slam::Map<GrayLeafVertexRelation> GrayLeafVertexRelationLevelMap;
+    typedef axom::slam::Map<GrayLeafElementRelation> GrayLeafElementRelationLevelMap;
 
 public:
     /**
@@ -1022,7 +1024,7 @@ private:
 
 
     /** \brief Helper function to verify that all leaves at the given level have a color */
-    void checkAllLeavesColoredAtLevel(int ATK_DEBUG_PARAM(level)) const;
+    void checkAllLeavesColoredAtLevel(int AXOM_DEBUG_PARAM(level)) const;
 
     void dumpOctreeMeshVTK( const std::string& name) const;
 
@@ -1067,7 +1069,7 @@ protected:
 
 
 namespace{
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
     /**
      * \brief Utility function to print the vertex indices of a cell
      */
@@ -1095,7 +1097,7 @@ namespace{
 template<int DIM>
 void InOutOctree<DIM>::generateIndex ()
 {
-    typedef asctoolkit::utilities::Timer Timer;
+    typedef axom::utilities::Timer Timer;
 
     // Loop through mesh vertices
     SLIC_INFO("  Generating InOutOctree over surface mesh with "
@@ -1225,7 +1227,7 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
 template<int DIM>
 void InOutOctree<DIM>::insertMeshTriangles ()
 {
-    typedef asctoolkit::utilities::Timer Timer;
+    typedef axom::utilities::Timer Timer;
 
     typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
     typedef typename OctreeBaseType::LevelMapIterator LeavesIterator;
@@ -1464,7 +1466,7 @@ void InOutOctree<DIM>::colorOctreeLeaves()
     // * one of its siblings is gray
     // * one of its siblings has a gray descendant
 
-    typedef asctoolkit::utilities::Timer Timer;
+    typedef axom::utilities::Timer Timer;
     typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
     typedef typename OctreeBaseType::LevelMapIterator LeavesIterator;
     typedef std::vector<GridPt> GridPtVec;
@@ -1493,7 +1495,7 @@ void InOutOctree<DIM>::colorOctreeLeaves()
         while(! uncoloredBlocks.empty())
         {
             int prevCount = uncoloredBlocks.size();
-            ATK_DEBUG_VAR(prevCount);
+            AXOM_DEBUG_VAR(prevCount);
 
             GridPtVec prevVec;
             prevVec.swap(uncoloredBlocks);
@@ -1720,7 +1722,7 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & pt, const BlockIndex& lea
     SpaceVector norm;
     for(int i=0; i< numTris; ++i)
     {
-        if( asctoolkit::utilities::isNearlyEqual(minDistSq, sqDists[i]))
+        if( axom::utilities::isNearlyEqual(minDistSq, sqDists[i]))
             norm += unitNorms[i];
     }
 
@@ -1862,7 +1864,7 @@ void InOutOctree<DIM>::printOctreeStats() const
 {
     typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
     typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
-    typedef asctoolkit::slam::Map<int> LeafCountMap;
+    typedef axom::slam::Map<int> LeafCountMap;
 
     LeafCountMap levelBlocks( &this->m_levels);
     LeafCountMap levelLeaves( &this->m_levels);
@@ -2002,8 +2004,8 @@ void InOutOctree<DIM>::printOctreeStats() const
 
         }
 
-        typedef asctoolkit::slam::Map<int> TriCountMap;
-        typedef asctoolkit::slam::Map<int> CardinalityVTMap;
+        typedef axom::slam::Map<int> TriCountMap;
+        typedef axom::slam::Map<int> CardinalityVTMap;
 
         TriCountMap triCount( &m_meshWrapper.elementSet());
         for(int lev=0; lev< this->m_levels.size(); ++lev)
@@ -2036,7 +2038,7 @@ void InOutOctree<DIM>::printOctreeStats() const
         typedef std::map<int,int> LogHistogram;
         LogHistogram triCountHist;        // Create histogram of edge lengths (log scale)
 
-        typedef quest::BoundingBox<double,1> MinMaxRange;
+        typedef axom::primal::BoundingBox<double,1> MinMaxRange;
         typedef MinMaxRange::PointType LengthType;
 
         typedef std::map<int,MinMaxRange> LogRangeMap;
@@ -2098,7 +2100,7 @@ void InOutOctree<DIM>::printOctreeStats() const
 //
 //        int* blockCount = CD->getField( "blockCount" )->getIntPtr();
 //
-//        SLIC_ASSERT( blockCount != ATK_NULLPTR );
+//        SLIC_ASSERT( blockCount != AXOM_NULLPTR );
 //
 //        for ( int i=0; i < meshTris.size(); ++i ) {
 //            blockCount[i] = triCount[i];
@@ -2110,7 +2112,7 @@ void InOutOctree<DIM>::printOctreeStats() const
 //
 //        int* vtCount = ND->getField( "vtCount" )->getIntPtr();
 //
-//        SLIC_ASSERT( vtCount != ATK_NULLPTR );
+//        SLIC_ASSERT( vtCount != AXOM_NULLPTR );
 //
 //        for ( int i=0; i < m_vertexSet.size(); ++i ) {
 //            vtCount[i] = cardVT[i];
@@ -2122,9 +2124,9 @@ void InOutOctree<DIM>::printOctreeStats() const
 
 
 template<int DIM>
-void InOutOctree<DIM>::checkAllLeavesColoredAtLevel(int ATK_DEBUG_PARAM(level)) const
+void InOutOctree<DIM>::checkAllLeavesColoredAtLevel(int AXOM_DEBUG_PARAM(level)) const
 {
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
     typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
     typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
 
@@ -2146,7 +2148,7 @@ void InOutOctree<DIM>::checkAllLeavesColoredAtLevel(int ATK_DEBUG_PARAM(level)) 
 template<int DIM>
 void InOutOctree<DIM>::checkValid() const
 {
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
     typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
     typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
 
@@ -2379,9 +2381,9 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
     colorMap[ InOutBlockData::Black ] = 1;
 
     // Allocate Slam Maps for the field data
-    asctoolkit::slam::PositionSet leafSet(totalLeaves);
-    typedef asctoolkit::slam::Map<VertexIndex> LeafVertMap;
-    typedef asctoolkit::slam::Map<int> LeafIntMap;
+    axom::slam::PositionSet leafSet(totalLeaves);
+    typedef axom::slam::Map<VertexIndex> LeafVertMap;
+    typedef axom::slam::Map<int> LeafIntMap;
     LeafVertMap leafVertID(&leafSet);
     LeafVertMap leafVertID_unique(&leafSet);
     LeafIntMap leafTriCount(&leafSet);
@@ -2448,11 +2450,11 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
 
         CD->addField( new mint::FieldVariable< VertexIndex >("vertID", leafSet.size()) );
         VertexIndex* vertID = CD->getField( "vertID" )->getIntPtr();
-        SLIC_ASSERT( vertID != ATK_NULLPTR );
+        SLIC_ASSERT( vertID != AXOM_NULLPTR );
 
         CD->addField( new mint::FieldVariable< VertexIndex >("level", leafSet.size()) );
         VertexIndex* lLevel = CD->getField( "level" )->getIntPtr();
-        SLIC_ASSERT( lLevel != ATK_NULLPTR );
+        SLIC_ASSERT( lLevel != AXOM_NULLPTR );
 
         for ( int i=0; i < leafSet.size(); ++i )
         {
@@ -2463,12 +2465,12 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
         if(hasTriangles)
         {
             CD->addField( new mint::FieldVariable< VertexIndex >("uniqVertID", leafSet.size()) );
-            VertexIndex* uniqVertID = hasTriangles ? CD->getField( "uniqVertID" )->getIntPtr(): ATK_NULLPTR;
-            SLIC_ASSERT( uniqVertID != ATK_NULLPTR );
+            VertexIndex* uniqVertID = hasTriangles ? CD->getField( "uniqVertID" )->getIntPtr(): AXOM_NULLPTR;
+            SLIC_ASSERT( uniqVertID != AXOM_NULLPTR );
 
             CD->addField( new mint::FieldVariable< int >("triCount", leafSet.size()) );
-            int* triCount = hasTriangles ? CD->getField( "triCount" )->getIntPtr() : ATK_NULLPTR;
-            SLIC_ASSERT( triCount != ATK_NULLPTR );
+            int* triCount = hasTriangles ? CD->getField( "triCount" )->getIntPtr() : AXOM_NULLPTR;
+            SLIC_ASSERT( triCount != AXOM_NULLPTR );
 
             for ( int i=0; i < leafSet.size(); ++i )
             {
@@ -2480,8 +2482,8 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
         if(hasColors)
         {
             CD->addField( new mint::FieldVariable< int >("colors", leafSet.size()) );
-            int* colors = hasColors ? CD->getField( "colors" )->getIntPtr() : ATK_NULLPTR;
-            SLIC_ASSERT( !hasColors || colors != ATK_NULLPTR );
+            int* colors = hasColors ? CD->getField( "colors" )->getIntPtr() : AXOM_NULLPTR;
+            SLIC_ASSERT( !hasColors || colors != AXOM_NULLPTR );
             for ( int i=0; i < leafSet.size(); ++i )
                 colors[i] = leafColors[i];
         }
@@ -2490,10 +2492,10 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
     }
 
     delete debugMesh;
-    debugMesh = ATK_NULLPTR;
+    debugMesh = AXOM_NULLPTR;
   #else
     // Do something with the parameters to avoid a warning about unused parameters
-    ATK_DEBUG_VAR(name);
+    AXOM_DEBUG_VAR(name);
   #endif
 }
 
@@ -2521,14 +2523,14 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
     colorMap[ InOutBlockData::Gray ] = 0;
     colorMap[ InOutBlockData::Black ] = 1;
 
-#if defined(ATK_USE_CXX11)
+#if defined(AXOM_USE_CXX11)
   typedef std::unordered_map<GridPt, int, PointHash<int> > GridIntMap;
 #else
   typedef boost::unordered_map<GridPt, int, PointHash<int> > GridIntMap;
 #endif
   typedef typename GridIntMap::iterator GridIntIter;
 
-  typedef asctoolkit::slam::Map<GridIntMap> LevelGridIntMap;
+  typedef axom::slam::Map<GridIntMap> LevelGridIntMap;
   LevelGridIntMap diffBlocks( &(this->m_levels) );
 
   // Iterate through the octree leaves looking for neigbor blocks with different labelings
@@ -2624,8 +2626,8 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
     CD->addField( new mint::FieldVariable< int >("debugIdx", debugIdxField.size()) );
     int* colors = CD->getField( "colors" )->getIntPtr();
     int* debIdx = CD->getField( "debugIdx" )->getIntPtr();
-    SLIC_ASSERT(colors != ATK_NULLPTR );
-    SLIC_ASSERT(debIdx != ATK_NULLPTR );
+    SLIC_ASSERT(colors != AXOM_NULLPTR );
+    SLIC_ASSERT(debIdx != AXOM_NULLPTR );
     for ( std::size_t i=0; i < colorsField.size(); ++i )
     {
       debIdx[i] = debugIdxField[i];
@@ -2636,10 +2638,10 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
   }
 
   delete debugMesh;
-  debugMesh = ATK_NULLPTR;
+  debugMesh = AXOM_NULLPTR;
  #else
   // Do something with the parameters to avoid a warning about unused parameters
-  ATK_DEBUG_VAR(fName);
+  AXOM_DEBUG_VAR(fName);
  #endif
 }
 
@@ -2704,18 +2706,19 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name
     debugMesh->toVtkFile(fNameStr.str());
 
     delete debugMesh;
-    debugMesh = ATK_NULLPTR;
+    debugMesh = AXOM_NULLPTR;
   #else
     // Do something with the parameters to avoid a warning about unused parameters
-    ATK_DEBUG_VAR(name);
-    ATK_DEBUG_VAR(idx);
-    ATK_DEBUG_VAR(block);
-    ATK_DEBUG_VAR(blockBB);
-    ATK_DEBUG_VAR(isTri);
+    AXOM_DEBUG_VAR(name);
+    AXOM_DEBUG_VAR(idx);
+    AXOM_DEBUG_VAR(block);
+    AXOM_DEBUG_VAR(blockBB);
+    AXOM_DEBUG_VAR(isTri);
   #endif
 }
 
 
-} // end namespace quest
+} // end namespace quest 
+} // end namespace axom 
 
 #endif  // SPATIAL_OCTREE__HXX_

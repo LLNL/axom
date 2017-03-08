@@ -20,30 +20,26 @@
 
 #include "GenericOutputStream.hpp"
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 GenericOutputStream::GenericOutputStream( std::ostream* os ):
-    m_stream( os )
-{
-
-}
+  m_stream( os )
+{}
 
 //------------------------------------------------------------------------------
-GenericOutputStream::GenericOutputStream(std::ostream* os, const std::string& format):
-    m_stream( os )
+GenericOutputStream::GenericOutputStream(std::ostream* os,
+                                         const std::string& format):
+  m_stream( os )
 {
   this->setFormatString( format );
 }
 
 //------------------------------------------------------------------------------
 GenericOutputStream::~GenericOutputStream()
-{
-
-}
+{}
 
 //------------------------------------------------------------------------------
 void GenericOutputStream::append( message::Level msgLevel,
@@ -51,21 +47,21 @@ void GenericOutputStream::append( message::Level msgLevel,
                                   const std::string& tagName,
                                   const std::string& fileName,
                                   int line,
-                                  bool ATK_NOT_USED(filtered_duplicates) )
+                                  bool AXOM_NOT_USED(filtered_duplicates) )
 {
-  if ( m_stream == ATK_NULLPTR ) {
+  if ( m_stream == AXOM_NULLPTR ) {
     std::cerr << "ERROR: NULL stream!\n";
     return;
   }
 
   (*m_stream) << this->getFormatedMessage( message::getLevelAsString(msgLevel),
-                                            message,
-                                            tagName,
-                                            "",
-                                            fileName,
-                                            line );
+                                           message,
+                                           tagName,
+                                           "",
+                                           fileName,
+                                           line );
 }
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */

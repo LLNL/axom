@@ -30,7 +30,7 @@
 #include "lumberjack/Message.hpp"
 #include "lumberjack/TextEqualityCombiner.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 /*!
@@ -257,6 +257,6 @@ class Lumberjack {
 };
 
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif

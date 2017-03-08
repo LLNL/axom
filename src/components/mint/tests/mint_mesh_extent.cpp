@@ -8,75 +8,60 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
-/*
- * $Id$
- */
-
-/*!
- *******************************************************************************
- * \file
- *
- * \date Dec 15, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
-
 #include "gtest/gtest.h"
 
 #include "mint/Extent.hpp"
+using namespace axom;
 
 TEST( mint_extent, basic )
 {
-   int ext[6]={ 0,5,0,5,0,5 };
-   mint::Extent< int > extent(3,ext);
+  int ext[6]={ 0,5,0,5,0,5 };
+  mint::Extent< int > extent(3,ext);
 
-   EXPECT_EQ( 3, extent.getDimension() );
+  EXPECT_EQ( 3, extent.getDimension() );
 
-   int numNodes = 1;
-   int numCells = 1;
-   for ( int i=0; i < 3; ++i ) {
-       EXPECT_EQ( extent.min( i ), 0  );
-       EXPECT_EQ( extent.max( i ), 5  );
-       EXPECT_EQ( extent.size( i ), 6 );
+  int numNodes = 1;
+  int numCells = 1;
+  for ( int i=0; i < 3; ++i ) {
+    EXPECT_EQ(  extent.min( i ),  0  );
+    EXPECT_EQ(  extent.max( i ),  5  );
+    EXPECT_EQ(  extent.size( i ), 6 );
 
-       numNodes *= extent.size( i );
-       numCells *= (extent.size( i )-1);
-   }
+    numNodes *= extent.size( i );
+    numCells *= (extent.size( i )-1);
+  }
 
-   EXPECT_EQ( numNodes, extent.getNumNodes() );
-   EXPECT_EQ( numCells, extent.getNumCells() );
+  EXPECT_EQ(  numNodes, extent.getNumNodes() );
+  EXPECT_EQ(  numCells, extent.getNumCells() );
 
-   const int imin = extent.min(0);
-   const int imax = extent.max(0);
-   const int jmin = extent.min(1);
-   const int jmax = extent.max(1);
-   const int kmin = extent.min(2);
-   const int kmax = extent.max(2);
+  const int imin = extent.min(0);
+  const int imax = extent.max(0);
+  const int jmin = extent.min(1);
+  const int jmax = extent.max(1);
+  const int kmin = extent.min(2);
+  const int kmax = extent.max(2);
 
-   int count = 0;
-   for ( int k=kmin; k <= kmax; ++k ) {
-      for ( int j=jmin; j <= jmax; ++j ) {
-         for ( int i=imin; i <= imax; ++i ) {
+  int count = 0;
+  for ( int k=kmin; k <= kmax; ++k ) {
+    for ( int j=jmin; j <= jmax; ++j ) {
+      for ( int i=imin; i <= imax; ++i ) {
 
-             const int idx = extent.getLinearIndex( i,j,k );
-             EXPECT_EQ( count, idx );
+        const int idx = extent.getLinearIndex( i,j,k );
+        EXPECT_EQ( count, idx );
 
-             int ii = -1;
-             int jj = -1;
-             int kk = -1;
-             extent.getGridIndex( idx, ii, jj, kk );
+        int ii = -1;
+        int jj = -1;
+        int kk = -1;
+        extent.getGridIndex( idx, ii, jj, kk );
 
-             EXPECT_EQ(i,ii);
-             EXPECT_EQ(j,jj);
-             EXPECT_EQ(k,kk);
+        EXPECT_EQ(i,ii);
+        EXPECT_EQ(j,jj);
+        EXPECT_EQ(k,kk);
 
-            ++count;
+        ++count;
 
-         } // END for all i
-      } // END for all j
-   } // END for all k
+      }    // END for all i
+    }   // END for all j
+  }  // END for all k
 
 }
-
-

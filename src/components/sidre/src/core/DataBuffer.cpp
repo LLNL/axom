@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataBuffer.cpp
  *
  * \brief   Implementation file for DataBuffer class.
  *
@@ -29,7 +29,7 @@
 #include "DataGroup.hpp"
 #include "DataView.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -76,11 +76,11 @@ DataBuffer * DataBuffer::allocate()
 
   void * data = allocateBytes( getTotalBytes() );
 
-  SLIC_CHECK_MSG( data != ATK_NULLPTR,
+  SLIC_CHECK_MSG( data != AXOM_NULLPTR,
                   "Buffer failed to allocate memory of size " <<
                   getTotalBytes() );
 
-  if (data != ATK_NULLPTR)
+  if (data != AXOM_NULLPTR)
   {
     m_node.set_external( DataType( m_node.dtype() ), data );
   }
@@ -148,7 +148,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
   SidreLength new_size = dtype.strided_bytes();
   void * new_data_ptr = allocateBytes(new_size);
 
-  if ( new_data_ptr != ATK_NULLPTR )
+  if ( new_data_ptr != AXOM_NULLPTR )
   {
     m_node.reset();
     m_node.set_external(dtype, new_data_ptr);
@@ -157,7 +157,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
   }
   else
   {
-    SLIC_CHECK_MSG(new_data_ptr != ATK_NULLPTR,
+    SLIC_CHECK_MSG(new_data_ptr != AXOM_NULLPTR,
                    "Buffer re-allocate failed with " << new_size << " bytes.");
   }
 
@@ -179,7 +179,7 @@ DataBuffer * DataBuffer::deallocate()
   }
 
   releaseBytes(getVoidPtr());
-  m_node.set_external( DataType( m_node.dtype() ), ATK_NULLPTR );
+  m_node.set_external( DataType( m_node.dtype() ), AXOM_NULLPTR );
 
   for (size_t i = 0 ; i < m_views.size() ; ++i)
   {
@@ -200,9 +200,9 @@ DataBuffer * DataBuffer::deallocate()
 DataBuffer * DataBuffer::copyBytesIntoBuffer(const void * src,
                                              SidreLength nbytes)
 {
-  if ( src == ATK_NULLPTR || nbytes < 0 || nbytes > getTotalBytes() )
+  if ( src == AXOM_NULLPTR || nbytes < 0 || nbytes > getTotalBytes() )
   {
-    SLIC_CHECK_MSG(src != ATK_NULLPTR,
+    SLIC_CHECK_MSG(src != AXOM_NULLPTR,
                    "Cannot copy data into Buffer from null pointer.");
     SLIC_CHECK_MSG(nbytes >= 0, "Cannot copy < 0 bytes of data into Buffer.");
     SLIC_CHECK_MSG(
@@ -458,4 +458,4 @@ void DataBuffer::importFrom( conduit::Node& buffer_holder)
 
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */

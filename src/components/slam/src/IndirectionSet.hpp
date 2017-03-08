@@ -23,7 +23,7 @@
 
 #include "slam/OrderedSet.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
 
@@ -108,6 +108,6 @@ namespace slam {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif //  SLAM_INDIRECTION_SET_H_

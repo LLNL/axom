@@ -15,7 +15,7 @@
 #include "sidre/SidreTypes.hpp"
 
 extern "C" {
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -106,6 +106,6 @@ void SIDRE_datastore_print(const SIDRE_datastore * self)
 // splicer begin class.DataStore.additional_functions
 // splicer end class.DataStore.additional_functions
 
-}  // namespace asctoolkit
+}  // namespace axom
 }  // namespace sidre
 }  // extern "C"

@@ -26,7 +26,7 @@
 #include "slam/SizePolicies.hpp"
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
 
@@ -172,6 +172,6 @@ namespace slam {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif //  SLAM_MODULAR_INT_H_

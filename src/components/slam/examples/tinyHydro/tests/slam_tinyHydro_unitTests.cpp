@@ -15,7 +15,7 @@
 
 #include "gtest/gtest.h"
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "slic/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"
@@ -75,7 +75,7 @@ TEST(gtest_slam_tinyHydro,test_02_density_with_prescribed_velocity)
 
   s.addPart(&p);
   Part* pp = s.getPart(0);
-  ATK_DEBUG_VAR(pp);
+  AXOM_DEBUG_VAR(pp);
 
   SLIC_INFO("**making hydro");
   Hydro h(&s);
@@ -101,7 +101,7 @@ TEST(gtest_slam_tinyHydro,test_02_density_with_prescribed_velocity)
   rhoTheory = rhoTheory * rhoTheory * rho0;
 
   double tol = 1.0e-10;
-  ATK_DEBUG_VAR(tol);
+  AXOM_DEBUG_VAR(tol);
   SLIC_ASSERT_MSG(
     std::fabs(pp->rho(0) - rhoTheory) < tol
     && std::fabs(pp->rho(n - 1) - rhoTheory) < tol
@@ -186,7 +186,7 @@ TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
 
 
   double tol = 1e-12;
-  ATK_DEBUG_VAR(tol);
+  AXOM_DEBUG_VAR(tol);
   VectorXY f12 = h.getForce(12);
   VectorXY f13 = h.getForce(13);
   SLIC_ASSERT_MSG( std::fabs(f12.x - f13.x) < tol
@@ -307,7 +307,7 @@ TEST(gtest_slam_tinyHydro,test_04_BC)
 
 
   double tol = 1e-21;
-  ATK_DEBUG_VAR(tol);
+  AXOM_DEBUG_VAR(tol);
 
   SLIC_ASSERT_MSG( std::fabs(u0.y) < tol
       && std::fabs(u11.x) > tol
@@ -409,10 +409,10 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Noh)
   SLIC_INFO("\tnewDT = " << dt );
 
   double tol = 1.0e-16;
-  ATK_DEBUG_VAR(tol);
+  AXOM_DEBUG_VAR(tol);
 
   double expDT = 0.1 * h.cfl;
-  ATK_DEBUG_VAR(expDT);
+  AXOM_DEBUG_VAR(expDT);
 
   SLIC_ASSERT_MSG( std::fabs(dt - expDT) < tol
       , " newDT calculation FAILS -- expected dt = " << expDT << " but got " << dt << " instead, leaving " << dt - expDT);
@@ -483,10 +483,10 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Sedov)
   double cfl = 0.7;
   double cs = sqrt(10 * E / (4 * zonemass * 9));
   double theoryDT = cfl * L / cs;
-  ATK_DEBUG_VAR(theoryDT);
+  AXOM_DEBUG_VAR(theoryDT);
 
   double tol = 1.0e-16;
-  ATK_DEBUG_VAR(tol);
+  AXOM_DEBUG_VAR(tol);
 
   SLIC_ASSERT_MSG( std::fabs(dt - theoryDT) < tol
       , " newDT calculation FAILS -- expected dt = " << theoryDT << " but code got " << dt << ". Diff:" <<  dt - theoryDT);
@@ -565,11 +565,11 @@ TEST(gtest_slam_tinyHydro,test_06_PdV_work)
   SLIC_INFO("**done stepping. ");
 
   double tol = 1.0e-6;
-  ATK_DEBUG_VAR(tol);
+  AXOM_DEBUG_VAR(tol);
 
   double theoryRho = 1.0 / (1.0 + h.time * u0);
   double rhoCode = h.getState()->getPart(0)->rho(0);
-  ATK_DEBUG_VAR(rhoCode);
+  AXOM_DEBUG_VAR(rhoCode);
 
   SLIC_ASSERT_MSG( std::fabs(theoryRho - rhoCode) < tol
       , "density calculation FAILS -- rhoCode = " << rhoCode << " but should be " << theoryRho );
@@ -591,7 +591,7 @@ TEST(gtest_slam_tinyHydro,test_06_PdV_work)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

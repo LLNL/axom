@@ -52,7 +52,7 @@ blt_add_test( NAME common_config
 
 # Add flag to ignore unknown openmp pragmas in common_config
 set_target_properties(common_config 
-                      PROPERTIES COMPILE_FLAGS ${ATK_DISABLE_OMP_PRAGMA_WARNINGS})
+                      PROPERTIES COMPILE_FLAGS ${AXOM_DISABLE_OMP_PRAGMA_WARNINGS})
 
 
 if(ENABLE_OPENMP)

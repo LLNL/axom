@@ -12,11 +12,11 @@
 
 #include "sidre/sidre.hpp"
 
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::DataType;
+using axom::sidre::DataBuffer;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataView;
+using axom::sidre::DataType;
 
 //------------------------------------------------------------------------------
 // Some simple types and functions used in tests

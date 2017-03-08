@@ -25,7 +25,7 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 #include "common/FileUtilities.hpp"
 
 #include "slic/slic.hpp"
@@ -54,7 +54,7 @@
 
 namespace slamUnstructuredHex {
 
-  typedef asctoolkit::slam::MeshIndexType IndexType;
+  typedef axom::slam::MeshIndexType IndexType;
   typedef double                          DataType;
 
 
@@ -94,18 +94,18 @@ namespace slamUnstructuredHex {
     enum { NODES_PER_ZONE = 8 };
 
     // types for sets
-    typedef asctoolkit::slam::PositionSet                                                               NodeSet;
-    typedef asctoolkit::slam::PositionSet                                                               ZoneSet;
+    typedef axom::slam::PositionSet                                                               NodeSet;
+    typedef axom::slam::PositionSet                                                               ZoneSet;
 
     // types for relations
-    typedef asctoolkit::slam::StaticVariableRelation                                                    NodeToZoneRelation;
+    typedef axom::slam::StaticVariableRelation                                                    NodeToZoneRelation;
     typedef NodeToZoneRelation::RelationVecConstIterator                                                NodeZoneIterator;
 
 #ifdef USE_CONSTANT_RELATION
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE>  ZNStride;
-    typedef asctoolkit::slam::StaticConstantRelation<ZNStride>                                          ZoneToNodeRelation;
+    typedef axom::slam::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE>  ZNStride;
+    typedef axom::slam::StaticConstantRelation<ZNStride>                                          ZoneToNodeRelation;
 #else
-    typedef asctoolkit::slam::StaticVariableRelation                                                    ZoneToNodeRelation;
+    typedef axom::slam::StaticVariableRelation                                                    ZoneToNodeRelation;
 #endif
     typedef ZoneToNodeRelation::RelationVecConstIterator                                                ZoneNodeIterator;
 
@@ -113,9 +113,9 @@ namespace slamUnstructuredHex {
     typedef NodeSet::PositionType                                                                       PositionType;
 
     // types for maps
-    typedef asctoolkit::slam::Map< Point >                                                              PositionsVec;
-    typedef asctoolkit::slam::Map< DataType >                                                           NodeField;
-    typedef asctoolkit::slam::Map< DataType >                                                           ZoneField;
+    typedef axom::slam::Map< Point >                                                              PositionsVec;
+    typedef axom::slam::Map< DataType >                                                           NodeField;
+    typedef axom::slam::Map< DataType >                                                           ZoneField;
 
   public:
     /** \brief Simple accessor for the number of nodes in the mesh  */
@@ -151,9 +151,9 @@ namespace slamUnstructuredHex {
     {
       if(!vtkMesh)
       {
-        using namespace asctoolkit::slam::util;
+        using namespace axom::slam::util;
         std::string ancesFile = findFileInAncestorDirs( fileName);
-        SLIC_ERROR_IF( !asctoolkit::utilities::filesystem::pathExists( ancesFile),
+        SLIC_ERROR_IF( !axom::utilities::filesystem::pathExists( ancesFile),
             fmt::format("Tried opening file '{}', but it does not exist.", ancesFile) );
 
         SLIC_INFO("Opening file " << ancesFile);
@@ -289,7 +289,7 @@ namespace slamUnstructuredHex {
     // In both cases, we are using the relation's range() function to get a pair of iterators to the inner relation
 
     // --- Step 1: Generate a dynamic variable relation from Nodes to Zones
-    typedef asctoolkit::slam::DynamicVariableRelation DynRelation;
+    typedef axom::slam::DynamicVariableRelation DynRelation;
     typedef DynRelation::RelationVecConstIteratorPair DynRelationIteratorPair;
 
     DynRelation tmpZonesOfNode( &mesh->nodes, &mesh->zones );
@@ -434,7 +434,7 @@ int main(int argc, char** argv)
 {
   using namespace slamUnstructuredHex;
 
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
 #ifndef USE_ONE
   int const NUM_RESOLUTIONS = 4;
@@ -444,7 +444,7 @@ int main(int argc, char** argv)
 
   int fileResolutions[] = {1,2,4,8};
   DataType expectedResults[] = {0.10736689892, 0.037977237476, 0.013251067479, 0.0046357167735};
-  ATK_DEBUG_VAR(expectedResults);
+  AXOM_DEBUG_VAR(expectedResults);
 
   // Parse command line for data directory, with fallback
   const std::string DEFAULT_DATA_DIR = "../src/components/slam/data";
@@ -483,10 +483,10 @@ int main(int argc, char** argv)
     createZoneRadiusField(&hexMesh);
 
     DataType errVal = computeNodalErrors(&hexMesh);
-    ATK_DEBUG_VAR(errVal);
+    AXOM_DEBUG_VAR(errVal);
 
     // Some error checking based on precomputed values
-    SLIC_ASSERT_MSG(asctoolkit::utilities::isNearlyEqual(errVal, expectedResults[res]),
+    SLIC_ASSERT_MSG(axom::utilities::isNearlyEqual(errVal, expectedResults[res]),
         "Error differed from expected value -- "
         << fmt::format("Expected {}, but got {} (difference: {}",
         expectedResults[res], errVal, errVal - expectedResults[res]));

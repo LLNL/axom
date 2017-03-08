@@ -49,8 +49,9 @@ class Tester:
         self.result_dir = ''
 
     def open_log(self, logname):
-        logging.basicConfig(filename=os.path.join(
-            self.test_output_dir, logname),
+        filename=os.path.join(self.test_output_dir, logname)
+        print("Log file: {}".format(filename))
+        logging.basicConfig(filename=filename,
                             filemode='w',
                             level=logging.DEBUG,
                         )

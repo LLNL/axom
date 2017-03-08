@@ -16,16 +16,12 @@ endif()
 
 # Note: sidre depends on boost OR C++11 b/c USE_UNORDERED_MAP is defined in DataGroup.hpp
 
-if(NOT BOOST_FOUND AND NOT ATK_USE_CXX11)
-  message(FATAL_ERROR "Sidre requires Boost, or C++11 support. 
-           Set BOOST_DIR to location of a Boost install if specifying Boost.")
+if(NOT AXOM_USE_CXX11 AND NOT SPARSEHASH_FOUND)
+  message(WARNING "No hashmap implementation available. 
+    Defaulting to using an ordered map for Sidre groups.
+    For improved performance, set SPARSEHASH_DIR to location of a sparsehash install
+    or enable C++11 (e.g. set BLT_CXX_STD to 'c++11').")
 endif()
-
-# Enable when sparse hash is required ....   USE_DENSE_HASH_MAP 
-# 
-#if(NOT SPARSEHASH_FOUND)
-#  message(FATAL_ERROR "Sidre requires SparseHash. Set SPARSEHASH_DIR to location of a SparseHash install.")
-#endif()
 
 
 ################################

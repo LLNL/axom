@@ -97,25 +97,25 @@ namespace {
       volatile int off_vol = OFFSET;        // pass through volatile variable so the
       off = off_vol;                        // number is not a compile time constant
 
-      ind = ATK_NULLPTR;
-      data = ATK_NULLPTR;
+      ind = AXOM_NULLPTR;
+      data = AXOM_NULLPTR;
 
     }
 
     void TearDown() {
-      if(ind != ATK_NULLPTR)
+      if(ind != AXOM_NULLPTR)
       {
         delete[] ind;
-        ind = ATK_NULLPTR;
+        ind = AXOM_NULLPTR;
       }
-      if(data != ATK_NULLPTR)
+      if(data != AXOM_NULLPTR)
       {
         delete[] data;
-        data = ATK_NULLPTR;
+        data = AXOM_NULLPTR;
       }
 
-      SLIC_ASSERT(  ind == ATK_NULLPTR);
-      SLIC_ASSERT(  data == ATK_NULLPTR);
+      SLIC_ASSERT(  ind == AXOM_NULLPTR);
+      SLIC_ASSERT(  data == AXOM_NULLPTR);
 
     }
 
@@ -564,7 +564,7 @@ int main(int argc, char * argv[])
 
   ::benchmark::Initialize(&argc, argv);
 
-  asctoolkit::slic::UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
 
   ::benchmark::RunSpecifiedBenchmarks();
 

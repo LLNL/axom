@@ -23,9 +23,9 @@ TEST( quest_spatial_octree, spatial_octree_point_location)
             << " a child block.");
 
     static const int DIM = 3;
-    typedef quest::BlockData  LeafNodeType;
+    typedef axom::quest::BlockData  LeafNodeType;
 
-    typedef quest::SpatialOctree<DIM, LeafNodeType> OctreeType;
+    typedef axom::quest::SpatialOctree<DIM, LeafNodeType> OctreeType;
     typedef OctreeType::BlockIndex BlockIndex;
     typedef OctreeType::SpacePt SpacePt;
     typedef OctreeType::GeometricBoundingBox GeometricBoundingBox;
@@ -79,7 +79,7 @@ TEST( quest_spatial_octree, spatial_octree_point_location)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
