@@ -14,8 +14,8 @@
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
-#include "quest/BoundingBox.hpp"
-#include "quest/Point.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
 
 
 // C/C++ includes
@@ -59,10 +59,10 @@ class VirtualGrid
 {
 public:
   /*! \brief The type used for specifying spatial extent of the contents */
-  typedef BoundingBox< double, NDIMS > BoxType;
+  typedef axom::primal::BoundingBox< double, NDIMS > BoxType;
 
   /*! \brief The type used to query the index */
-  typedef Point< double, NDIMS > PointType;
+  typedef axom::primal::Point< double, NDIMS > PointType;
 
 public:
 

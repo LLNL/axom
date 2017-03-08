@@ -12,8 +12,9 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Point.hpp"
-#include "quest/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/BoundingBox.hpp"
+
 #include "quest/VirtualGrid.hpp"
 
 //-----------------------------------------------------------------------------
@@ -21,7 +22,7 @@ TEST( quest_virtual_grid, point_constructor)
 {
     static const int DIM = 3;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
+    typedef axom::primal::Point<CoordType, DIM> QPoint;
     
     QPoint origin = QPoint::make_point(0,0,0);
     const int spacing = 10;
@@ -39,7 +40,7 @@ TEST( quest_virtual_grid, double_array_constructor)
 {
     static const int DIM = 3;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
+    typedef axom::primal::Point<CoordType, DIM> QPoint;
     
     double origin[DIM] = {0, 0, 0};
     const int spacing = 10;
@@ -57,7 +58,7 @@ TEST( quest_virtual_grid, indexing)
 {
     static const int DIM = 3;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
+    typedef axom::primal::Point<CoordType, DIM> QPoint;
     
     double origin[DIM] = {0, 0, 0};
     const int spacing = 1;
@@ -84,8 +85,8 @@ TEST( quest_virtual_grid, indexing)
 TEST(quest_virtual_grid, add_stuff){
     static const int DIM = 3;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
-    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+    typedef axom::primal::Point<CoordType, DIM> QPoint;
+    typedef axom::primal::BoundingBox<CoordType, DIM> QBBox;
 
     double origin[DIM] = {0, 0, 0};
     const int spacing = 1;
@@ -105,8 +106,8 @@ TEST(quest_virtual_grid, add_stuff){
 TEST(quest_virtual_grid, delete_stuff){
     static const int DIM = 3;
     typedef double CoordType;
-    typedef quest::Point<CoordType, DIM> QPoint;
-    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+    typedef axom::primal::Point<CoordType, DIM> QPoint;
+    typedef axom::primal::BoundingBox<CoordType, DIM> QBBox;
 
     double origin[DIM] = {0, 0, 0};
     const int spacing = 1;
