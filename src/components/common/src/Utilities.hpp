@@ -25,7 +25,7 @@
 #include <cmath>
 #include <algorithm>
 
-namespace asctoolkit {
+namespace axom {
 namespace utilities {
 
 /*!
@@ -71,6 +71,6 @@ namespace utilities {
 
 
 }  // ending brace for utilities namespace
-}  // ending brace for asctoolkit namespace
+}  // ending brace for axom namespace
 
 #endif  // header include guard

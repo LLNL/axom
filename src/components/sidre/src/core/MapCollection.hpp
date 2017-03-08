@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file MapCollection.hpp
  *
  * \brief   Header file for Collection classes.
  *
@@ -72,12 +72,12 @@
  *
  *               bool hasItem(IndexType idx) const;
  *
- *          - // Return pointer to item with given name (ATK_NULLPTR if none).
+ *          - // Return pointer to item with given name (AXOM_NULLPTR if none).
  *
  *               TYPE* getItem(const std::string& name);
  *               TYPE const* getItem(const std::string& name) const ;
  *
- *          - // Return pointer to item with given index (ATK_NULLPTR if none).
+ *          - // Return pointer to item with given index (AXOM_NULLPTR if none).
  *
  *               TYPE* getItem(IndexType idx);
  *               TYPE const* getItem(IndexType idx) const;
@@ -98,12 +98,12 @@
  *               bool insertItem(TYPE* item, const std::string& name);
  *
  *          - // Remove item with given name if it exists and return a
- *            // pointer to it. If it doesn't exist, return ATK_NULLPTR.
+ *            // pointer to it. If it doesn't exist, return AXOM_NULLPTR.
  *
  *               TYPE* removeItem(const std::string& name);
  *
  *          - // Remove item with given name if it exists and return a
- *            // pointer to it. If it doesn't exist, return ATK_NULLPTR.
+ *            // pointer to it. If it doesn't exist, return AXOM_NULLPTR.
  *
  *               TYPE* removeItem(IndexType idx);
  *
@@ -120,8 +120,8 @@
  ******************************************************************************
  */
 
-#ifndef COLLECTIONS_HPP_
-#define COLLECTIONS_HPP_
+#ifndef MAP_COLLECTIONS_HPP_
+#define MAP_COLLECTIONS_HPP_
 
 // Standard C++ headers
 #include <map>
@@ -129,26 +129,23 @@
 #include <string>
 #include <vector>
 
-// other CS Toolkit headers
+// Other axom headers
 #include "common/config.hpp"
 #include "common/CommonTypes.hpp"
 
-// SiDRe project headers
+// Sidre project headers
 #include "SidreTypes.hpp"
 
-#if defined(ATK_USE_STD_UNORDERED_MAP)
-#include <unordered_map>
+#if defined(AXOM_USE_SPARSEHASH)
+  #include <sparsehash/dense_hash_map>
+#elif defined(AXOM_USE_STD_UNORDERED_MAP)
+  #include <unordered_map>
+#else // AXOM_USE_STD_MAP
+  #include <map>
 #endif
 
-#if defined(ATK_USE_STD_MAP)
-#include <map>
-#endif
 
-#if defined(ATK_USE_SPARSEHASH)
-#include <sparsehash/dense_hash_map>
-#endif
-
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -219,7 +216,7 @@ public:
   {
     typename MapType::iterator mit = m_name2idx_map.find(name);
     return ( mit != m_name2idx_map.end() ?
-             m_items[ mit->second ] : ATK_NULLPTR );
+             m_items[ mit->second ] : AXOM_NULLPTR );
   }
 
   ///
@@ -227,19 +224,19 @@ public:
   {
     typename MapType::const_iterator mit = m_name2idx_map.find(name);
     return ( mit != m_name2idx_map.end() ?
-             m_items[ mit->second ] : ATK_NULLPTR );
+             m_items[ mit->second ] : AXOM_NULLPTR );
   }
 
   ///
   TYPE * getItem(IndexType idx)
   {
-    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : ATK_NULLPTR );
+    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : AXOM_NULLPTR );
   }
 
   ///
   TYPE const * getItem(IndexType idx) const
   {
-    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : ATK_NULLPTR );
+    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : AXOM_NULLPTR );
   }
 
   ///
@@ -274,12 +271,12 @@ public:
     {
       m_free_ids.pop();
     }
-#if defined(ATK_USE_SPARSEHASH)
+#if defined(AXOM_USE_SPARSEHASH)
     if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
     {
-       m_empty_key = "DENSE_MAP_EMPTY_KEY";
-       m_name2idx_map.set_empty_key(m_empty_key);
-       m_name2idx_map.set_deleted_key("DENSE_MAP_DELETED_KEY");
+      m_empty_key = "DENSE_MAP_EMPTY_KEY";
+      m_name2idx_map.set_empty_key(m_empty_key);
+      m_name2idx_map.set_deleted_key("DENSE_MAP_DELETED_KEY");
     }
 #endif
 
@@ -290,20 +287,16 @@ private:
   std::vector<TYPE *>  m_items;
   std::stack< IndexType > m_free_ids;
 
-#if defined(ATK_USE_STD_UNORDERED_MAP)
-  typedef std::unordered_map<std::string, IndexType> MapType;
-#else
-#if defined(ATK_USE_SPARSEHASH)
+#if defined(AXOM_USE_SPARSEHASH)
   typedef google::dense_hash_map<std::string, IndexType> MapType;
-#else
-#if defined(ATK_USE_STD_MAP)
+#elif defined(AXOM_USE_STD_UNORDERED_MAP)
+  typedef std::unordered_map<std::string, IndexType> MapType;
+#else // AXOM_USE_STD_MAP
   typedef std::map<std::string, IndexType> MapType;
-#endif
-#endif
 #endif
 
   MapType m_name2idx_map;
-#if defined(ATK_USE_SPARSEHASH)
+#if defined(AXOM_USE_SPARSEHASH)
   std::string m_empty_key;
 #endif
 };
@@ -319,7 +312,7 @@ IndexType MapCollection<TYPE>::getNextValidIndex(IndexType idx) const
 {
   idx++;
   while ( static_cast<unsigned>(idx) < m_items.size() &&
-          m_items[static_cast<unsigned>(idx)] == ATK_NULLPTR )
+          m_items[static_cast<unsigned>(idx)] == AXOM_NULLPTR )
   {
     idx++;
   }
@@ -340,7 +333,7 @@ bool MapCollection<TYPE>::insertItem(TYPE * item,
     use_recycled_index = true;
   }
 
-#if defined(ATK_USE_SPARSEHASH)
+#if defined(AXOM_USE_SPARSEHASH)
   if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
   {
     m_empty_key = "DENSE_MAP_EMPTY_KEY";
@@ -376,7 +369,7 @@ bool MapCollection<TYPE>::insertItem(TYPE * item,
 template <typename TYPE>
 TYPE * MapCollection<TYPE>::removeItem(const std::string& name)
 {
-  TYPE * ret_val = ATK_NULLPTR;
+  TYPE * ret_val = AXOM_NULLPTR;
 
   typename MapType::iterator mit = m_name2idx_map.find(name);
   if ( mit != m_name2idx_map.end() )
@@ -386,7 +379,7 @@ TYPE * MapCollection<TYPE>::removeItem(const std::string& name)
     ret_val = m_items[idx];
 
     m_name2idx_map.erase(mit);
-    m_items[idx] = ATK_NULLPTR;
+    m_items[idx] = AXOM_NULLPTR;
     m_free_ids.push(idx);
   }
 
@@ -403,11 +396,11 @@ TYPE * MapCollection<TYPE>::removeItem(IndexType idx)
   }
   else
   {
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 }
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
-#endif /* COLLECTIONS_HPP_ */
+#endif /* MAP_COLLECTIONS_HPP_ */

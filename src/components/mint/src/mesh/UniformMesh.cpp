@@ -19,7 +19,7 @@ namespace axom {
 namespace mint {
 
 UniformMesh::UniformMesh():
-  StructuredMesh( MINT_UNDEFINED_MESH,-1,ATK_NULLPTR)
+  StructuredMesh( MINT_UNDEFINED_MESH,-1,AXOM_NULLPTR)
 {
   std:: fill( m_origin, m_origin+3, 0.0);
   std:: fill( m_h,      m_h+3,      1.0);

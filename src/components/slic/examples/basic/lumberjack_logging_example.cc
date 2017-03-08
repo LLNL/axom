@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-// Toolkit includes
+// axom includes
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 #include "slic/LumberjackStream.hpp"

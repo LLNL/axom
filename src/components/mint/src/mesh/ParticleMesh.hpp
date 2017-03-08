@@ -16,7 +16,7 @@
 #include "mint/MeshCoordinates.hpp"
 #include "slic/slic.hpp"
 
-#include <cstddef> // for ATK_NULLPTR
+#include <cstddef> // for AXOM_NULLPTR
 
 namespace axom {
 namespace mint {
@@ -94,7 +94,7 @@ public:
    * \param [out] cell user-supplied buffer to store cell connectivity info.
    * \note cell must have sufficient size to hold the connectivity information.
    * \pre cellIdx >= 0 && cellIdx < this->getMeshNumberOfCells()
-   * \pre cell != ATK_NULLPTR.
+   * \pre cell != AXOM_NULLPTR.
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    *****************************************************************************

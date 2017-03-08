@@ -42,7 +42,7 @@
 
 
 
-namespace asctoolkit {
+namespace axom {
 namespace utilities {
 namespace filesystem {
 
@@ -124,4 +124,4 @@ namespace filesystem {
 
 }   // end namespace filesystem
 }   // end namespace utilities
-}   // end namespace asctoolkit
+}   // end namespace axom

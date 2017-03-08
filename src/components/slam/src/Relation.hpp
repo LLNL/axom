@@ -24,7 +24,7 @@
 #include "slam/Set.hpp"
 #include "slam/NullSet.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam    {
 
   class NullSet;
@@ -33,10 +33,10 @@ namespace slam    {
   struct EmptySetTraits
   {
     typedef SetType* EmptySetType;
-    static EmptySetType emptySet() { return ATK_NULLPTR; }
+    static EmptySetType emptySet() { return AXOM_NULLPTR; }
 
     template<typename ASetType>
-    static bool         isEmpty(ASetType* set) { return set == ATK_NULLPTR || set->empty(); }
+    static bool         isEmpty(ASetType* set) { return set == AXOM_NULLPTR || set->empty(); }
   };
 
   template<>
@@ -105,6 +105,6 @@ namespace slam    {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_RELATION_HPP_

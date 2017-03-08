@@ -12,17 +12,17 @@
 
 #include "sidre/sidre.hpp"
 
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::SidreLength;
-using asctoolkit::sidre::IndexType;
-using asctoolkit::sidre::TypeID;
-using asctoolkit::sidre::NO_TYPE_ID;
-using asctoolkit::sidre::INT_ID;
-using asctoolkit::sidre::DOUBLE_ID;
-using asctoolkit::sidre::CHAR8_STR_ID;
+using axom::sidre::DataBuffer;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataView;
+using axom::sidre::SidreLength;
+using axom::sidre::IndexType;
+using axom::sidre::TypeID;
+using axom::sidre::NO_TYPE_ID;
+using axom::sidre::INT_ID;
+using axom::sidre::DOUBLE_ID;
+using axom::sidre::CHAR8_STR_ID;
 
 using namespace conduit;
 
@@ -238,7 +238,7 @@ TEST(sidre_view,create_view_from_path)
 
   // Verify create works when groups already exist.
   baz = root->createView("foo/bar/baz");
-  EXPECT_TRUE( baz != ATK_NULLPTR );
+  EXPECT_TRUE( baz != AXOM_NULLPTR );
 
   EXPECT_TRUE( root->hasGroup("foo") );
 
@@ -903,7 +903,7 @@ TEST(sidre_view,int_array_depth_view)
   for (int id = 0 ; id < 4 ; ++id)
   {
     int * dv_ptr = views[id]->getData();
-    for (size_t i = 0 ; i < depth_nelems ; ++i)
+    for (SidreLength i = 0 ; i < depth_nelems ; ++i)
     {
       EXPECT_EQ(dv_ptr[i], id);
     }
@@ -1018,16 +1018,16 @@ TEST(sidre_view,view_offset_and_stride)
 
   typedef std::vector<DataView *> ViewVec;
   ViewVec views;
-  asctoolkit::sidre::detail::sidre_uint8 ui8  = 3;
-  asctoolkit::sidre::detail::sidre_uint16 ui16 = 4;
-  asctoolkit::sidre::detail::sidre_uint32 ui32 = 5;
-  asctoolkit::sidre::detail::sidre_uint64 ui64 = 6;
-  asctoolkit::sidre::detail::sidre_int8 i8   = -3;
-  asctoolkit::sidre::detail::sidre_int16 i16   = -4;
-  asctoolkit::sidre::detail::sidre_int32 i32   = -5;
-  asctoolkit::sidre::detail::sidre_int64 i64   = -6;
-  asctoolkit::sidre::detail::sidre_float32 f32 = 7.7f;
-  asctoolkit::sidre::detail::sidre_float64 f64 = 8.8;
+  axom::sidre::detail::sidre_uint8 ui8  = 3;
+  axom::sidre::detail::sidre_uint16 ui16 = 4;
+  axom::sidre::detail::sidre_uint32 ui32 = 5;
+  axom::sidre::detail::sidre_uint64 ui64 = 6;
+  axom::sidre::detail::sidre_int8 i8   = -3;
+  axom::sidre::detail::sidre_int16 i16   = -4;
+  axom::sidre::detail::sidre_int32 i32   = -5;
+  axom::sidre::detail::sidre_int64 i64   = -6;
+  axom::sidre::detail::sidre_float32 f32 = 7.7f;
+  axom::sidre::detail::sidre_float64 f64 = 8.8;
 
 
   views.push_back( othersGroup->createView("key_empty"));
@@ -1120,12 +1120,12 @@ TEST(sidre_view,int_array_view_attach_buffer)
 
   // check values in field views...
   int * f0_ptr = field0->getData();
-  for (size_t i = 0 ; i < field_nelems ; ++i)
+  for (SidreLength i = 0 ; i < field_nelems ; ++i)
   {
     EXPECT_EQ(f0_ptr[i], 0);
   }
   int * f1_ptr = field1->getData();
-  for (size_t i = 0 ; i < field_nelems ; ++i)
+  for (SidreLength i = 0 ; i < field_nelems ; ++i)
   {
     EXPECT_EQ(f1_ptr[i], 1);
   }

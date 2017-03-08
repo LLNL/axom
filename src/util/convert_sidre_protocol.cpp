@@ -40,7 +40,7 @@
 #include "slic/slic.hpp"
 #include "slic/LogStream.hpp"
 
-#ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
   #include "slic/LumberjackStream.hpp"
 #else
   #include "slic/GenericOutputStream.hpp"
@@ -63,18 +63,18 @@
 #include <cstdlib>      // for atoi
 
 
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataView;
-using asctoolkit::spio::IOManager;
+using axom::sidre::DataStore;
+using axom::sidre::DataGroup;
+using axom::sidre::DataBuffer;
+using axom::sidre::DataView;
+using axom::spio::IOManager;
 
 
-typedef asctoolkit::sidre::IndexType IndexType;
-typedef asctoolkit::slam::policies::RuntimeSizeHolder<IndexType>   SzPol;
-typedef asctoolkit::slam::policies::ZeroOffset<IndexType> OffPol;
-typedef asctoolkit::slam::policies::RuntimeStrideHolder<IndexType> StrPol;
-typedef asctoolkit::slam::OrderedSet<SzPol, OffPol, StrPol> DataViewSet;
+typedef axom::sidre::IndexType IndexType;
+typedef axom::slam::policies::RuntimeSizeHolder<IndexType>   SzPol;
+typedef axom::slam::policies::ZeroOffset<IndexType> OffPol;
+typedef axom::slam::policies::RuntimeStrideHolder<IndexType> StrPol;
+typedef axom::slam::OrderedSet<SzPol, OffPol, StrPol> DataViewSet;
 
 void setupLogging();
 void teardownLogging();
@@ -252,7 +252,7 @@ CommandLineArguments parseArguments(int argc, char** argv, int myRank)
  */
 void allocateExternalData(DataGroup* grp, std::vector<void*>& extPtrs)
 {
-    using namespace asctoolkit;
+    using namespace axom;
 
     // for each view
     for(sidre::IndexType idx =  grp->getFirstValidViewIndex();
@@ -306,7 +306,7 @@ void modifyFinalValuesImpl(DataView* view, int origSize)
                         .size(view->getNumElements())
                         .stride(view->getStride());
 
-  #ifdef ATK_DEBUG
+  #ifdef AXOM_DEBUG
     fmt::MemoryWriter out_fwd;
     for(int i=0; i < idxSet.size(); ++i)
     {
@@ -327,7 +327,7 @@ void modifyFinalValuesImpl(DataView* view, int origSize)
     arr[ idxSet[0] ] = static_cast<sidre_type>(origSize);
     arr[ idxSet[1] ] = std::numeric_limits<sidre_type>::quiet_NaN();
 
-  #ifdef ATK_DEBUG
+  #ifdef AXOM_DEBUG
     fmt::MemoryWriter out_rev;
     for(int i=0; i < idxSet.size(); ++i)
     {
@@ -344,7 +344,7 @@ void modifyFinalValues(DataView* view, int origSize)
 {
     SLIC_DEBUG("Truncating view " << view->getPathName());
 
-    using namespace asctoolkit;
+    using namespace axom;
 
     switch(view->getTypeID())
     {
@@ -392,7 +392,7 @@ void modifyFinalValues(DataView* view, int origSize)
  */
 void truncateBulkData(DataGroup* grp, int maxSize)
 {
-    using namespace asctoolkit;
+    using namespace axom;
 
     // Add two to maxSize
     for(sidre::IndexType idx =  grp->getFirstValidViewIndex();
@@ -442,7 +442,7 @@ void setupLogging()
 
     slic::setLoggingMsgLevel(slic::message::Info);
 
-#ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
     std::string rankStr = "[<RANK>]";
 #else
     std::string rankStr = "";
@@ -462,7 +462,7 @@ void setupLogging()
     slic::LogStream* wefStream;
     slic::LogStream* diStream;
 
-#ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
     const int ranksLimit = 16;
     wefStream = new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, ranksLimit, wefFormatStr );
     diStream =  new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, ranksLimit, diFormatStr );
@@ -545,7 +545,7 @@ int main(int argc, char * argv[])
           ++it)
   {
       delete [] static_cast<char*>(*it);
-      *it = ATK_NULLPTR;
+      *it = AXOM_NULLPTR;
   }
 
   teardownLogging();

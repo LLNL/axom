@@ -20,7 +20,7 @@ set(lulesh_sources
 # Ignore omp pragmas when openMP is not defined
 if ( NOT ENABLE_OPENMP )
     set_source_files_properties(${lulesh_sources} 
-        PROPERTIES COMPILE_FLAGS "${ATK_DISABLE_OMP_PRAGMA_WARNINGS}" )
+        PROPERTIES COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
 

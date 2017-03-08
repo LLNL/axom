@@ -17,7 +17,7 @@
 #include "sidre/SidreTypes.hpp"
 
 extern "C" {
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -1046,6 +1046,6 @@ void SIDRE_datagroup_load_external_data_bufferify(SIDRE_datagroup * self,
 // splicer begin class.DataGroup.additional_functions
 // splicer end class.DataGroup.additional_functions
 
-}  // namespace asctoolkit
+}  // namespace axom
 }  // namespace sidre
 }  // extern "C"

@@ -13,7 +13,7 @@
 
 #include <limits>
 
-#include "common/config.hpp"    // defines ATK_USE_CXX11
+#include "common/config.hpp"    // defines AXOM_USE_CXX11
 
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
@@ -81,7 +81,7 @@ struct ValueRange
   /*! \brief Returns the lowest representable value of type T */
   static T lowest()
   {
-    #ifdef ATK_USE_CXX11
+    #ifdef AXOM_USE_CXX11
     return std::numeric_limits< T >::lowest();
     #else
     return std::numeric_limits< T >::min();
@@ -89,7 +89,7 @@ struct ValueRange
   }
 };
 
-#ifndef ATK_USE_CXX11
+#ifndef AXOM_USE_CXX11
 /*!
  *******************************************************************************
  * \brief Template specialization of ValueRange for float types
@@ -117,7 +117,7 @@ struct ValueRange< double >
   static T highest() { return std::numeric_limits< T >::max(); }
   static T lowest()  { return -std::numeric_limits< T >::max(); }
 };
-#endif  // ATK_USE_CXX11
+#endif  // AXOM_USE_CXX11
 
 /*!
  *******************************************************************************

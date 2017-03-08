@@ -13,14 +13,14 @@
 #include "sidre/sidre.hpp"
 
 
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataType;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::IndexType;
-using asctoolkit::sidre::SidreLength;
-using asctoolkit::sidre::INT_ID;
+using axom::sidre::DataStore;
+using axom::sidre::DataBuffer;
+using axom::sidre::DataType;
+using axom::sidre::DataGroup;
+using axom::sidre::DataView;
+using axom::sidre::IndexType;
+using axom::sidre::SidreLength;
+using axom::sidre::INT_ID;
 
 //------------------------------------------------------------------------------
 

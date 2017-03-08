@@ -14,7 +14,7 @@ copyright:
 
 library: QUEST
 cpp_header: quest/quest.hpp
-namespace: quest
+namespace: axom quest
 
 options:
   C_prefix: QUEST_

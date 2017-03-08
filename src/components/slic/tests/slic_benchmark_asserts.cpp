@@ -13,7 +13,7 @@
 #include "benchmark/benchmark_api.h"
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 /**
  * \file
@@ -148,7 +148,7 @@ int main(int argc, char * argv[])
 
 
   printMsg(" Before init logger");
-  asctoolkit::slic::UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
   printMsg(" After init logger");
 
 

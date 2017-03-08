@@ -11,7 +11,7 @@
 #ifndef MESHCOORDINATES_HXX_
 #define MESHCOORDINATES_HXX_
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 
 // C/C++ includes
 #include <vector> // for STL vector
@@ -67,7 +67,7 @@ public:
    * \param [in] dimension the dimension of the ambient space.
    * \param [in] ndims number of coordinate values along each dimension.
    * \pre dimension >= 1 && dimension <= 3
-   * \pre ndims != ATK_NULLPTR.
+   * \pre ndims != AXOM_NULLPTR.
    *****************************************************************************
    */
   MeshCoordinates( int dimension, int ndims[3] );
@@ -143,7 +143,7 @@ public:
    * \param [in] dim the requested dimension.
    * \return coord_array const pointer to the coordinate array
    * \pre dim < m_ndims
-   * \post coord_array != ATK_NULLPTR.
+   * \post coord_array != AXOM_NULLPTR.
    *****************************************************************************
    */
   double* getCoordinateArray( int dim );

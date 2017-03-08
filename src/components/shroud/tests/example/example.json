@@ -2550,7 +2550,7 @@
             "c_type": "SIDRE_datagroup", 
             "cpp_header": "sidre/DataGroup.hpp", 
             "cpp_local_var": true, 
-            "cpp_type": "asctoolkit::sidre::DataGroup", 
+            "cpp_type": "axom::sidre::DataGroup", 
             "f_module": {
                 "sidre_mod": [
                     "datagroup"
@@ -2649,7 +2649,7 @@
             "PY_format": "l", 
             "c_fortran": "integer(C_LONG)", 
             "c_header": "sidre/SidreTypes.h", 
-            "c_type": "ATK_SidreLength", 
+            "c_type": "SIDRE_SidreLength", 
             "cpp_type": "SidreLength", 
             "f_cast": "int({f_var}, C_LONG)", 
             "f_kind": "C_LONG", 

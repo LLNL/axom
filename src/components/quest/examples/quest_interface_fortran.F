@@ -18,13 +18,13 @@ module quest_fortran_usage
 
 #include "common/config.hpp"
 
-#ifndef ATK_USE_MPIF_HEADER
+#ifndef AXOM_USE_MPIF_HEADER
   use mpi
 #endif
   use quest_mod
   implicit none
 
-#ifdef ATK_USE_MPIF_HEADER
+#ifdef AXOM_USE_MPIF_HEADER
   include 'mpif.h'
 #endif
 

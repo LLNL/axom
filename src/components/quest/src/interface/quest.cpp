@@ -12,12 +12,12 @@
 
 // Quest includes
 #include "common/CommonTypes.hpp"
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 
 #include "slic/slic.hpp"
 
-#ifdef ATK_USE_MPI
-  #ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_LUMBERJACK
     #include "slic/LumberjackStream.hpp"
   #else
     #include "slic/SynchronizedStream.hpp"
@@ -32,13 +32,14 @@
 #include "quest/SignedDistance.hpp"
 
 #include "quest/STLReader.hpp"
-#ifdef ATK_USE_MPI
+#ifdef AXOM_USE_MPI
   #include "quest/PSTLReader.hpp"
 #endif
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
+
     // NOTE: supporting just one region/surface for now
     // Note: Define everything in a local namespace
   namespace
@@ -60,9 +61,9 @@ namespace quest
 
         /** \brief Default constructor */
         QuestAccelerator()
-            : m_surface_mesh(ATK_NULLPTR)
-            , m_region(ATK_NULLPTR)
-            , m_containmentTree(ATK_NULLPTR)
+            : m_surface_mesh(AXOM_NULLPTR)
+            , m_region(AXOM_NULLPTR)
+            , m_containmentTree(AXOM_NULLPTR)
             , m_queryMode(QUERY_MODE_NONE)
             , m_originalLoggerName("")
         {
@@ -73,7 +74,7 @@ namespace quest
          */
         void setMesh( axom::mint::Mesh* surface_mesh)
         {
-            SLIC_ASSERT( surface_mesh != ATK_NULLPTR);
+            SLIC_ASSERT( surface_mesh != AXOM_NULLPTR);
 
             m_surface_mesh = surface_mesh;
 
@@ -131,22 +132,22 @@ namespace quest
          */
         void finalize()
         {
-            if ( m_region != ATK_NULLPTR ) {
+            if ( m_region != AXOM_NULLPTR ) {
                delete m_region;
-               m_region = ATK_NULLPTR;
+               m_region = AXOM_NULLPTR;
             }
 
-            if( m_containmentTree != ATK_NULLPTR )
+            if( m_containmentTree != AXOM_NULLPTR )
             {
                 delete m_containmentTree;
-                m_containmentTree = ATK_NULLPTR;
+                m_containmentTree = AXOM_NULLPTR;
             }
             m_queryMode = QUERY_MODE_NONE;
 
-            if ( m_surface_mesh != ATK_NULLPTR ) {
+            if ( m_surface_mesh != AXOM_NULLPTR ) {
 
                delete m_surface_mesh;
-               m_surface_mesh = ATK_NULLPTR;
+               m_surface_mesh = AXOM_NULLPTR;
             }
 
             m_meshBoundingBox.clear();
@@ -195,7 +196,7 @@ namespace quest
             case QUERY_MODE_SIGNED_DISTANCE:
               {
                 const quest::SignedDistance<3>::BVHTreeType* tree = m_region->getBVHTree();
-                SLIC_ASSERT( tree != ATK_NULLPTR );
+                SLIC_ASSERT( tree != AXOM_NULLPTR );
 
                 if ( !tree->contains( pt ) ) {
                   sign = 0;
@@ -227,7 +228,7 @@ namespace quest
             return m_meshCenterOfMass;
         }
 
-      #ifdef ATK_DEBUG
+      #ifdef AXOM_DEBUG
         /**
          * \brief Utility function to determine if we are in a mode that supports distance queries
          */
@@ -241,7 +242,7 @@ namespace quest
                 isValid = false;
                 break;
             case QUERY_MODE_SIGNED_DISTANCE:
-                if( m_region == ATK_NULLPTR)
+                if( m_region == AXOM_NULLPTR)
                     isValid = false;
                 break;
             case QUERY_MODE_NONE:
@@ -262,11 +263,11 @@ namespace quest
             switch(m_queryMode)
             {
             case QUERY_MODE_CONTAINMENT:
-                if( m_containmentTree == ATK_NULLPTR)
+                if( m_containmentTree == AXOM_NULLPTR)
                     isValid = false;
                 break;
             case QUERY_MODE_SIGNED_DISTANCE:
-                if( m_region == ATK_NULLPTR)
+                if( m_region == AXOM_NULLPTR)
                     isValid = false;
                 break;
             case QUERY_MODE_NONE:
@@ -289,7 +290,7 @@ namespace quest
         /**
          * \brief Sets up the formatted Slic logger for quest
          */
-#ifdef ATK_USE_MPI
+#ifdef AXOM_USE_MPI
         void setupQuestLogger( MPI_Comm comm)
 #else
         void setupQuestLogger()
@@ -310,9 +311,9 @@ namespace quest
             {
               slic::LogStream* ls;
 
-              #ifdef ATK_USE_MPI
+              #ifdef AXOM_USE_MPI
                 std::string fmt = "[<RANK>][Quest <LEVEL>]: <MESSAGE>\n";
-                #ifdef ATK_USE_LUMBERJACK
+                #ifdef AXOM_USE_LUMBERJACK
                   const int RLIMIT = 8;
                   ls = new slic::LumberjackStream( &std::cout, comm, RLIMIT, fmt);
                 #else
@@ -369,14 +370,14 @@ namespace quest
 
 
 //------------------------------------------------------------------------------
-#ifdef ATK_USE_MPI
+#ifdef AXOM_USE_MPI
 void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements, int maxLevels )
 {
   SLIC_ASSERT( ! accelerator3D.isInitialized() );
   SLIC_ASSERT( comm != MPI_COMM_NULL );
 
-  ATK_DEBUG_VAR(ndims);
+  AXOM_DEBUG_VAR(ndims);
   SLIC_ASSERT( ndims==2 || ndims==3 );
 
   // In the future, we will also support 2D, but we currently only support 3D
@@ -390,7 +391,7 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   reader->read();
 
   axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
+  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
   delete reader;
@@ -412,7 +413,7 @@ void initialize( const std::string& fileName,
 {
   SLIC_ASSERT( ! accelerator3D.isInitialized() );
 
-  ATK_DEBUG_VAR(ndims);
+  AXOM_DEBUG_VAR(ndims);
   SLIC_ASSERT( ndims==2 || ndims==3 );
 
   // In the future, we will also support 2D, but we currently only support 3D
@@ -426,7 +427,7 @@ void initialize( const std::string& fileName,
   reader->read();
 
   axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
+  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
 
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
   delete reader;
@@ -453,10 +454,10 @@ double distance( double x, double y, double z )
 //------------------------------------------------------------------------------
 void distance( const double* xyz, double* dist, int npoints )
 {
-  SLIC_ASSERT( xyz != ATK_NULLPTR );
-  SLIC_ASSERT( dist != ATK_NULLPTR );
+  SLIC_ASSERT( xyz != AXOM_NULLPTR );
+  SLIC_ASSERT( dist != AXOM_NULLPTR );
 
-#ifdef ATK_USE_OPENMP
+#ifdef AXOM_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
   for ( int i=0; i < npoints; ++i ) {
@@ -480,7 +481,7 @@ int inside( double x, double y, double z )
 void mesh_min_bounds(double* coords)
 {
     typedef QuestAccelerator<3>::SpacePt SpacePt;
-    SLIC_ASSERT(coords != ATK_NULLPTR);
+    SLIC_ASSERT(coords != AXOM_NULLPTR);
 
     const SpacePt& bbMin = accelerator3D.meshBoundingBox().getMin();
     bbMin.array().to_array(coords);
@@ -490,7 +491,7 @@ void mesh_min_bounds(double* coords)
 void mesh_max_bounds(double* coords)
 {
     typedef QuestAccelerator<3>::SpacePt SpacePt;
-    SLIC_ASSERT(coords != ATK_NULLPTR);
+    SLIC_ASSERT(coords != AXOM_NULLPTR);
 
     const SpacePt& bbMax = accelerator3D.meshBoundingBox().getMax();
     bbMax.array().to_array(coords);
@@ -502,7 +503,7 @@ void mesh_max_bounds(double* coords)
 void mesh_center_of_mass(double* coords)
 {
     typedef QuestAccelerator<3>::SpacePt SpacePt;
-    SLIC_ASSERT(coords != ATK_NULLPTR);
+    SLIC_ASSERT(coords != AXOM_NULLPTR);
 
     const SpacePt& cMass = accelerator3D.meshCenterOfMass();
     cMass.array().to_array(coords);
@@ -511,10 +512,10 @@ void mesh_center_of_mass(double* coords)
 //------------------------------------------------------------------------------
 void inside( const double* xyz, int* in, int npoints )
 {
-  SLIC_ASSERT( xyz != ATK_NULLPTR );
-  SLIC_ASSERT( in != ATK_NULLPTR );
+  SLIC_ASSERT( xyz != AXOM_NULLPTR );
+  SLIC_ASSERT( in != AXOM_NULLPTR );
 
-#ifdef ATK_USE_OPENMP
+#ifdef AXOM_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
   for ( int i=0; i < npoints; ++i ) {
@@ -530,5 +531,6 @@ void finalize()
   accelerator3D.teardownQuestLogger();
 }
 
-} /* end namespace quest */
+} // end namespace quest 
+} // end namespace axom 
 

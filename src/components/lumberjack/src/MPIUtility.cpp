@@ -24,12 +24,12 @@
 #include <cstdlib>
 #include <cstring>
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 const char* mpiBlockingRecieveMessages(MPI_Comm comm)
 {
-    char* charArray = ATK_NULLPTR;
+    char* charArray = AXOM_NULLPTR;
     int messageSize = -1;
     MPI_Status mpiStatus;
 
@@ -43,7 +43,7 @@ const char* mpiBlockingRecieveMessages(MPI_Comm comm)
 
     if (messageSize == 1) {
         delete charArray;
-        return ATK_NULLPTR;
+        return AXOM_NULLPTR;
     }
 
     return charArray;
@@ -57,4 +57,4 @@ void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank, const char* 
 }
 
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom

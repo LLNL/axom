@@ -17,7 +17,7 @@
 #include "sidre/SidreTypes.hpp"
 
 extern "C" {
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -551,6 +551,6 @@ void SIDRE_dataview_print(const SIDRE_dataview * self)
 // splicer begin class.DataView.additional_functions
 // splicer end class.DataView.additional_functions
 
-}  // namespace asctoolkit
+}  // namespace axom
 }  // namespace sidre
 }  // extern "C"
