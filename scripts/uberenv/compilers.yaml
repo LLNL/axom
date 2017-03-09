@@ -42,10 +42,10 @@ compilers:
             f77: /usr/tce/packages/intel/intel-16.0.4/bin/ifort
             fc:  /usr/tce/packages/intel/intel-16.0.4/bin/ifort
         intel@17.0.0:
-            cc: /usr/tce/packages/intel/intel-16.0.4/bin/icc
-            cxx: /usr/tce/packages/intel/intel-16.0.4/bin/icpc
-            f77: /usr/tce/packages/intel/intel-16.0.4/bin/ifort
-            fc: /usr/tce/packages/intel/intel-16.0.4/bin/ifort
+            cc: /usr/tce/packages/intel/intel-17.0.0/bin/icc
+            cxx: /usr/tce/packages/intel/intel-17.0.0/bin/icpc
+            f77: /usr/tce/packages/intel/intel-17.0.0/bin/ifort
+            fc: /usr/tce/packages/intel/intel-17.0.0/bin/ifort
     bgqos_0:
           gcc@4.7.2:
              cc:  /usr/local/tools/toolchain-4.7.2/scripts/bggcc
