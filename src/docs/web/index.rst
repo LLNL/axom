@@ -14,8 +14,9 @@ Axom (a.k.a. The CS Toolkit)
 ****************************
 
 .. note:: The project recently changed its name from "The CS Toolkit" to 
-          "Axom". The names of various items described here (e.g., email 
-          lists) will be changed to reflect that.
+          "Axom". We have not completed converted everything on the project
+          to the new name. The contents of this page, and linked pages, will
+          continue to be updated as the conversion continues.
 
 Axom is a project in WCI/WSC that is funded by ECP/ATDM.
 Its principal goal is to provide a collection of robust and flexible software 
@@ -130,10 +131,6 @@ You can add or remove yourself from either of these lists via the
 `LLNL E-Mail List Manager (ListServ) <https://listserv.llnl.gov>`_
 
 
-.. note:: The project recently changed its name from "The CS Toolkit" to 
-          "Axom". The names of these email lists will change to reflect that.
-
-
 -------------- 
 Chat Room
 -------------- 
@@ -164,7 +161,7 @@ LC Groups
 --------------------
 
 Access to Axom projects/spaces in these Atlassian tools requires
-membership in the `toolkit` group on LC systems. Please contact the team for
+membership in the `axom` group on LC systems. Please contact the team for
 group access by sending an email request to 'axom-dev@llnl.gov'.
 
 
