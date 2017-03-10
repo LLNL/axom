@@ -70,7 +70,7 @@ set(MPI_Fortran_COMPILER  "/usr/local/tools/compilers/ibm/mpif90-4.7.2-fastmpi" 
 
 set("MPI_C_LIBRARIES"   "/usr/local/tools/toolchain-4.7.2/mpclib/lib/libmpc.a" CACHE PATH "")
 set("MPI_CXX_LIBRARIES" "/usr/local/tools/toolchain-4.7.2/mpclib/lib/libmpc.a" CACHE PATH "")
-set("MPI_CXX_INCLUDE_PATH" usr/local/tools/toolchain-4.7.2/mpclib/include" CACHE PATH "")
+set("MPI_CXX_INCLUDE_PATH" "/usr/local/tools/toolchain-4.7.2/mpclib/include" CACHE PATH "")
 
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
