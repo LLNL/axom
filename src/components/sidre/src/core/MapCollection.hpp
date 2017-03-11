@@ -130,8 +130,8 @@
 #include <vector>
 
 // Other axom headers
-#include "common/config.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/config.hpp"
+#include "axom/CommonTypes.hpp"
 
 // Sidre project headers
 #include "SidreTypes.hpp"

@@ -9,7 +9,6 @@ set(common_headers
 
     detail/ChronoTimer.hpp
     detail/TimeofdayTimer.hpp
-    detail/cstdint_wrapper.hpp
     )
 
 #
@@ -24,11 +23,8 @@ set(common_sources
 #
 # make the library
 #
-blt_add_library( NAME
-                    common
-                 SOURCES
-                    "${common_sources}"
-                 HEADERS
-                    "${common_headers}"
-                 HEADERS_OUTPUT_SUBDIR
-                    common )
+blt_add_library( NAME                  common
+                 SOURCES              "${common_sources}"
+                 HEADERS              "${common_headers}"
+                 HEADERS_OUTPUT_SUBDIR common
+                 )

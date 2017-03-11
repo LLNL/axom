@@ -12,7 +12,7 @@
 
 #include <limits>
 
-#include "common/CommonTypes.hpp"
+#include "axom/CommonTypes.hpp"
 
 #include "sidre/sidre.hpp"
 #include "sidre/SidreTypes.h"

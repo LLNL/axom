@@ -19,7 +19,7 @@
 
 #include "lumberjack/MPIUtility.hpp"
 
-#include "common/CommonTypes.hpp"
+#include "axom/CommonTypes.hpp"
 
 #include <cstdlib>
 #include <cstring>

@@ -8,7 +8,7 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
-#include "common/config.hpp"           // defines AXOM_USE_CXX11
+#include "axom/config.hpp"           // defines AXOM_USE_CXX11
 
 /*!
  *******************************************************************************
@@ -153,7 +153,7 @@
 /*!
  *******************************************************************************
  * \def DISABLE_MOVE_AND_ASSIGNMENT(className)
- * \brief Macro to disable move constructor and move assignment operations for 
+ * \brief Macro to disable move constructor and move assignment operations for
  * the given class.
  * \note This macro should only be used within the private section of a class,
  *  as indicated in the example below.

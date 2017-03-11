@@ -24,7 +24,7 @@ foreach(test ${gtest_common_tests})
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON ${common_tests_depends} )
-    blt_add_test( NAME ${test_name} 
+    blt_add_test( NAME ${test_name}
                   COMMAND ${test_name} )
 endforeach()
 
@@ -44,14 +44,14 @@ endif()
 blt_add_executable( NAME common_config
                     SOURCES common_config.cpp
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                    DEPENDS_ON ${common_config_test_depends} 
+                    DEPENDS_ON ${common_config_test_depends}
                     )
-                   
+
 blt_add_test( NAME common_config
               COMMAND common_config )
 
 # Add flag to ignore unknown openmp pragmas in common_config
-set_target_properties(common_config 
+set_target_properties(common_config
                       PROPERTIES COMPILE_FLAGS ${AXOM_DISABLE_OMP_PRAGMA_WARNINGS})
 
 
@@ -60,9 +60,9 @@ if(ENABLE_OPENMP)
     blt_add_executable( NAME common_config_openmp
                         SOURCES common_config.cpp
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${common_config_test_depends} 
+                        DEPENDS_ON ${common_config_test_depends}
                         USE_OPENMP True)
-                       
+
     blt_add_test( NAME common_config_openmp
                   COMMAND common_config_openmp )
 endif()

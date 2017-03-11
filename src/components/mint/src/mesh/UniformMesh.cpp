@@ -11,7 +11,7 @@
 #include "mint/UniformMesh.hpp"
 #include "mint/MeshType.hpp"
 
-#include "common/CommonTypes.hpp"
+#include "axom/CommonTypes.hpp"
 
 #include <algorithm> // for std::fill()
 

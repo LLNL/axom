@@ -23,8 +23,8 @@
 
 #include "slic/LogStream.hpp"
 
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp" // for AXOM_NULLPTR
+#include "axom/Macros.hpp"
+#include "axom/CommonTypes.hpp" // for AXOM_NULLPTR
 
 // C/C++ includes
 #include <iostream> // for ostream

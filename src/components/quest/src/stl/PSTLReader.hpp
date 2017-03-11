@@ -2,7 +2,7 @@
 #ifndef PSTLREADER_HPP_
 #define PSTLREADER_HPP_
 
-#include "common/AxomMacros.hpp"
+#include "axom/Macros.hpp"
 #include "quest/STLReader.hpp" // base class
 
 #include "mpi.h"

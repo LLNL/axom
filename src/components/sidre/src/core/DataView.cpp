@@ -22,7 +22,7 @@
 #include "DataView.hpp"
 
 // Other axom headers
-#include "common/CommonTypes.hpp"
+#include "axom/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
 // Sidre project headers

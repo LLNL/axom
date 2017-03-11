@@ -7,8 +7,8 @@
 #ifndef INOUT_OCTREE__HXX_
 #define INOUT_OCTREE__HXX_
 
-#include "common/config.hpp"       // defines AXOM_USE_CXX11
-#include "common/AxomMacros.hpp"
+#include "axom/config.hpp"       // defines AXOM_USE_CXX11
+#include "axom/Macros.hpp"
 #include "common/Timer.hpp"
 #include "common/Utilities.hpp"
 

@@ -10,7 +10,7 @@
 
 #include "common/StringUtilities.hpp"
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 
 #ifndef AXOM_USE_CXX11
 #include <sstream>

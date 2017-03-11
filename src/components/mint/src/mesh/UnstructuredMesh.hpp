@@ -22,8 +22,8 @@
 
 #include "slic/slic.hpp"
 
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/CommonTypes.hpp"
 
 #include <cstring> // for memcpy()
 #include <fstream> // for fstream

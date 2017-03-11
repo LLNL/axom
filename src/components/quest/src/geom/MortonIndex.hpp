@@ -10,8 +10,8 @@
 #ifndef MORTON_INDEX_HXX_
 #define MORTON_INDEX_HXX_
 
-#include "common/config.hpp"    // defines AXOM_USE_CXX11
-#include "common/CommonTypes.hpp"
+#include "axom/config.hpp"    // defines AXOM_USE_CXX11
+#include "axom/CommonTypes.hpp"
 
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"

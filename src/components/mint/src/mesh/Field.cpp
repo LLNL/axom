@@ -11,7 +11,7 @@
 #include "Field.hpp"
 
 #include "mint/FieldTypes.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/CommonTypes.hpp"
 
 #include <cstddef>
 

@@ -21,7 +21,7 @@
 
 #include <vector>
 
-#include "common/AxomMacros.hpp"
+#include "axom/Macros.hpp"
 #include "common/StringUtilities.hpp"
 
 namespace axom {

@@ -1,6 +1,6 @@
 #include "PSTLReader.hpp"
 
-#include "common/CommonTypes.hpp"
+#include "axom/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
 namespace axom {  

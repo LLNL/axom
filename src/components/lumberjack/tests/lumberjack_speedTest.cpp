@@ -20,7 +20,7 @@
 #include "lumberjack/RootCommunicator.hpp"
 #include "lumberjack/Message.hpp"
 
-#include "common/CommonTypes.hpp"
+#include "axom/CommonTypes.hpp"
 #include "common/StringUtilities.hpp"
 
 #include <mpi.h>

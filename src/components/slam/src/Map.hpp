@@ -23,8 +23,8 @@
 #include <sstream>
 #include <iostream>
 
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
 #include "slam/Set.hpp"

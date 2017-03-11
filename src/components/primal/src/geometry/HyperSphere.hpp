@@ -11,8 +11,8 @@
 #ifndef HYPERSPHERE_HPP_
 #define HYPERSPHERE_HPP_
 
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/CommonTypes.hpp"
 #include "common/Utilities.hpp"
 
 #include "slic/slic.hpp"

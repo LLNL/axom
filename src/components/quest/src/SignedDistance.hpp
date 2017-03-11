@@ -13,8 +13,8 @@
 #define SIGNEDDISTANCE_HPP_
 
 // axom includes
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/CommonTypes.hpp"
 #include "common/Utilities.hpp"
 
 #include "primal/BVHTree.hpp"

@@ -11,8 +11,8 @@
 #include "quest/quest.hpp"
 
 // Quest includes
-#include "common/CommonTypes.hpp"
-#include "common/AxomMacros.hpp"
+#include "axom/CommonTypes.hpp"
+#include "axom/Macros.hpp"
 
 #include "slic/slic.hpp"
 

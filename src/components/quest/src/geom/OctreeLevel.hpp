@@ -15,8 +15,8 @@
 #define OCTREE_LEVEL__HXX_
 
 
-#include "common/config.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/config.hpp"
+#include "axom/CommonTypes.hpp"
 
 #include "slic/slic.hpp"
 

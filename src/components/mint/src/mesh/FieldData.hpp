@@ -11,7 +11,7 @@
 #ifndef FIELDDATA_HPP_
 #define FIELDDATA_HPP_
 
-#include "common/AxomMacros.hpp"
+#include "axom/Macros.hpp"
 
 // C/C++ includes
 #include <map>

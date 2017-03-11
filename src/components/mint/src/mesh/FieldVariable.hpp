@@ -14,8 +14,8 @@
 #include "mint/Field.hpp" // Base class
 
 // axom includes
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/CommonTypes.hpp"
 #include "mint/FieldTypes.hpp"
 #include "slic/slic.hpp"
 

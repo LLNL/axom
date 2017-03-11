@@ -12,8 +12,8 @@
 #define BVHTREE_HPP_
 
 // axom includes
-#include "common/AxomMacros.hpp"   // for DISABLE_COPY_AND_ASSIGNMENT macro
-#include "common/CommonTypes.hpp"  // for AXOM_NULLPTR
+#include "axom/Macros.hpp"   // for DISABLE_COPY_AND_ASSIGNMENT macro
+#include "axom/CommonTypes.hpp"  // for AXOM_NULLPTR
 
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"

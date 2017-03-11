@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 #include <limits>
 
-#include "common/CommonTypes.hpp"
+#include "axom/CommonTypes.hpp"
 
 TEST(gtest_common_types,check_types_8)
 {

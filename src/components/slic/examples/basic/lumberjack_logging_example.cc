@@ -26,7 +26,7 @@
 #include <vector>
 
 // axom includes
-#include "common/CommonTypes.hpp"
+#include "axom/CommonTypes.hpp"
 #include "slic/slic.hpp"
 #include "slic/LumberjackStream.hpp"
 

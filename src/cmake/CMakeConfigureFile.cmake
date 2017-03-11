@@ -7,7 +7,7 @@ if( (CMAKE_CXX_STANDARD EQUAL 11) OR (CMAKE_CXX_STANDARD EQUAL 14) )
 endif()
 
 
-## Add a definition to the generated config file for each library dependency   
+## Add a definition to the generated config file for each library dependency
 ## (optional and built-in) that we might need to know about in the code
 ## Note: BLT adds USE_MPI and USE_OPENMP as compile define flags for targets
 ##       that are configured with MPI and OPENMP, respectively.
@@ -50,6 +50,6 @@ endforeach()
 
 
 configure_file(
-    components/common/src/config.hpp.in
-    ${HEADER_INCLUDES_DIRECTORY}/common/config.hpp
+    include/config.hpp.in
+    ${HEADER_INCLUDES_DIRECTORY}/axom/config.hpp
 )

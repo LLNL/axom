@@ -11,7 +11,7 @@
 #include "mint/Mesh.hpp"
 
 // axom includes
-#include "common/CommonTypes.hpp"
+#include "axom/CommonTypes.hpp"
 #include "mint/FieldData.hpp"
 
 // C/C++ includes

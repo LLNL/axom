@@ -17,8 +17,8 @@
  */
 
 // axom includes
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"
 #include "common/Timer.hpp"
 

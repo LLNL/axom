@@ -2,8 +2,8 @@
 #define DENSE_OCTREE_LEVEL__HXX_
 
 
-#include "common/config.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/config.hpp"
+#include "axom/CommonTypes.hpp"
 
 #include "quest/Brood.hpp"
 #include "quest/OctreeLevel.hpp"

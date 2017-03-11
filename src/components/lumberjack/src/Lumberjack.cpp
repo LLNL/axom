@@ -20,7 +20,7 @@
 
 #include "lumberjack/Lumberjack.hpp"
 
-#include "common/CommonTypes.hpp"
+#include "axom/CommonTypes.hpp"
 #include "common/StringUtilities.hpp"
 
 #include <cstring>
