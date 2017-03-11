@@ -2,13 +2,11 @@
 # Specify all headers
 #
 set(common_headers
-    AxomMacros.hpp
-    CommonTypes.hpp
     FileUtilities.hpp
     StringUtilities.hpp
     Timer.hpp
     Utilities.hpp
-    
+
     detail/ChronoTimer.hpp
     detail/TimeofdayTimer.hpp
     detail/cstdint_wrapper.hpp
