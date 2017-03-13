@@ -75,11 +75,33 @@ TEST( quest_virtual_grid, indexing)
     
     QPoint pt1 = QPoint::make_point(1.5,0,0);
     int expectedBin = 1;  // The 0th z-slab, the 0th y-row, the 1st x-bin
-    EXPECT_TRUE(valid.getBinIndex(pt1) == expectedBin);
+    EXPECT_EQ(valid.getBinIndex(pt1), expectedBin);
     
     QPoint pt2 = QPoint::make_point(0,1.5,0);
     expectedBin = 100;  // The 0th z-slab, the 1st y-row, the 0th x-bin
-    EXPECT_TRUE(valid.getBinIndex(pt2) == expectedBin);
+    EXPECT_EQ(valid.getBinIndex(pt2), expectedBin);
+
+    QPoint pt3 = QPoint::make_point(99.5, 0, 99.5);
+    // The (0-based) 99th z-slab, the 0th y-row, the 99th x-bin:
+    expectedBin = 99*100*100 + 0 + 99;
+    EXPECT_EQ(valid.getBinIndex(pt3), expectedBin);
+
+    QPoint pt4 = QPoint::make_point(16.1, 99.6, 89.2);
+    // The 89th z-slab, the 99th y-row, the 16th x-bin:
+    expectedBin = 89*100*100 + 99*100 + 16;
+    EXPECT_EQ(valid.getBinIndex(pt4), expectedBin);
+
+    // Now go outside the grid, and get some invalid ones.
+
+    QPoint pt5 = QPoint::make_point(12.5, 100.1, 0);
+    // Above 100 is over the fence.
+    expectedBin = quest::VirtualGrid<QPoint,DIM>::INVALID_BIN_INDEX;  
+    EXPECT_EQ(valid.getBinIndex(pt5), expectedBin);
+
+    QPoint pt6 = QPoint::make_point(-0.5, 12, 54.3);
+    // Below 0 is over (under?) the fence.
+    expectedBin = quest::VirtualGrid<QPoint,DIM>::INVALID_BIN_INDEX;  
+    EXPECT_EQ(valid.getBinIndex(pt6), expectedBin);
 }
 
 TEST(quest_virtual_grid, add_stuff){
@@ -95,12 +117,46 @@ TEST(quest_virtual_grid, add_stuff){
     int res[DIM] = {resolution, resolution, resolution};
     quest::VirtualGrid<QPoint,DIM> valid(origin, step, res);
 
-    QPoint pt1 = QPoint::make_point(1.1,1.1,1.1);
+    QPoint pt1 = QPoint::make_point(2.5, 2.5, 2.5);
     QBBox bbox1(pt1);
-
     valid.insert(bbox1,pt1);
     int index = valid.getBinIndex(pt1);
     EXPECT_TRUE(valid.getBinContents(index).size() == 1);
+
+    QPoint pt2 = QPoint::make_point(2.1,2.1,2.1);
+    QPoint pt3 = QPoint::make_point(4.2,2.9,2.1);
+    QBBox bbox2(pt2, pt3);
+    valid.insert(bbox2, pt2);
+    for (int j = 2; j < 5; ++j) {
+      for (int i = 1; i < 6; ++i) {
+        QPoint tpoint1 = QPoint::make_point(i + 0.5, j + 0.5, 1.8);
+        int tidx = valid.getBinIndex(tpoint1);
+        EXPECT_EQ(valid.getBinContents(tidx).size(), 0);
+
+        QPoint tpoint2 = QPoint::make_point(i + 0.5, j + 0.5, 3.2);
+        tidx = valid.getBinIndex(tpoint2);
+        EXPECT_EQ(valid.getBinContents(tidx).size(), 0);
+      }
+    }
+    for (int i = 1; i < 6; ++i) {
+      QPoint tpoint1 = QPoint::make_point(i + 0.5, 1.8, 2.5);
+      int tidx = valid.getBinIndex(tpoint1);
+      EXPECT_EQ(valid.getBinContents(tidx).size(), 0);
+
+      QPoint tpoint2 = QPoint::make_point(i + 0.5, 3.2, 2.5);
+      tidx = valid.getBinIndex(tpoint2);
+      EXPECT_EQ(valid.getBinContents(tidx).size(), 0);
+    }
+    QPoint pt4 = QPoint::make_point(2.3, 2.3, 2.6);
+    index = valid.getBinIndex(pt4);
+    EXPECT_EQ(valid.getBinContents(index).size(), 2);
+    QPoint pt5 = QPoint::make_point(3.4, 2.3, 2.6);
+    index = valid.getBinIndex(pt5);
+    EXPECT_EQ(valid.getBinContents(index).size(), 1);
+    QPoint pt6 = QPoint::make_point(4.7, 2.3, 2.6);
+    index = valid.getBinIndex(pt6);
+    EXPECT_EQ(valid.getBinContents(index).size(), 1);
+
 }
 
 TEST(quest_virtual_grid, delete_stuff){

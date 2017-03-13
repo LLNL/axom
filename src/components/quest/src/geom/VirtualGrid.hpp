@@ -163,7 +163,9 @@ public:
    * true.
    *****************************************************************************
    */
-  const static int INVALID_BIN_INDEX = -1;
+  enum {
+    INVALID_BIN_INDEX = -1
+  };
 
 protected:
 
@@ -178,6 +180,7 @@ private:
 
   void addObj(const T& obj, int index);
   bool isValidIndex(int index) const;
+  void insertIntoBins(int start, int * binlength, const T& obj);
 
   struct Bin {
     std::vector<T> ObjectArray;
@@ -276,7 +279,7 @@ int VirtualGrid<T, NDIMS>::getBinIndex(const PointType & pt)
 
   int retval = 0;
   for (int i = 0; i < NDIMS; ++i) {
-    int tmp = (pt[i] - m_origin[i]) / m_spacing[i];
+    int tmp = static_cast<int>(floor((pt[i] - m_origin[i]) / m_spacing[i]));
 
     if (tmp < 0 || tmp >= m_resolution[i]) {
       return INVALID_BIN_INDEX;
@@ -359,30 +362,62 @@ void VirtualGrid<T, NDIMS>::insert(const BoxType& BB,
                                   const T& obj)
 {
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
-  PointType min, max;
    
-  min = BB.getMin();
-  max = BB.getMax();
+  PointType bmin = BB.getMin();
+  PointType bmax = BB.getMax();
 
-  PointType tempx = PointType::make_point(max[0], min[1], min[2]);
-  PointType tempy = PointType::make_point(min[0], max[1], min[2]);
-  PointType tempz = PointType::make_point(max[0], min[1], max[2]);
-   
-  int start = getBinIndex(min);
+  // Clamp the input bounding-box to at most the VirtualGrid bounding box
+  for (int dim = 0; dim < NDIMS; ++dim) {
+    if (bmin[dim] < m_origin[dim]) {
+      bmin[dim] = m_origin[dim];
+    }
+    double dimlimit = m_origin[dim] + m_spacing[dim] * (m_resolution[dim] - 1);
+    if (bmax[dim] > dimlimit) {
+      bmax[dim] = dimlimit;
+    }
+  }
 
-  int xlength = (getBinIndex(tempx)- start);
-  int x_res = m_resolution[0];
-  int y_res = m_resolution[1];
-  int ylength = (getBinIndex(tempy) / x_res) - ( start / x_res);
-  int zlength = (getBinIndex(tempz) / (x_res * y_res)) - (start / (x_res*y_res));
+  int bincount[NDIMS];
+  int start = getBinIndex(bmin);
+  int end = getBinIndex(bmax);
 
+  // Guard against BB not overlapping the grid at all
+  if (isValidIndex(start) && isValidIndex(end)) {
+    int res = 1;
+    // Find how many bboxes in each dimension (at least one)
+    for (int dim = 0; dim < NDIMS; ++dim) {
+      PointType extent(bmin);
+      extent[dim] = bmax[dim];
+      int bextent = getBinIndex(extent);
+      bincount[dim] = 1 + (bextent - start) / res;
 
-  for (int k=0; k<= zlength; ++k) {
-    for (int j=0; j<=ylength; ++j) {
-      for (int i=0; i<=xlength; ++i) {
-        addObj(obj, start + i + (j * x_res) + (k * x_res * y_res));
+      // res accumulates the factor separating each dimension
+      res *= m_resolution[dim];
+    }
+
+    const int x_res = m_resolution[0];
+    const int y_res = m_resolution[1];
+
+#if NDIMS == 2
+    for (int j = 0; j < bincount[1]; ++j) {
+      const int j_offset = j * x_res;
+      for (int i = 0; i < bincount[0]; ++i) {
+        addObj(obj, start + i + j_offset);
       }
     }
+#else
+    const int kstep = x_res * y_res;
+
+    for (int k = 0; k < bincount[2]; ++k) {
+      const int k_offset = k * kstep;
+      for (int j = 0; j < bincount[1]; ++j) {
+        const int j_offset = j * x_res;
+        for (int i = 0; i < bincount[0]; ++i) {
+          addObj(obj, start + i + j_offset + k_offset);
+        }
+      }
+    }
+#endif
   }
 }
 
