@@ -77,13 +77,14 @@ public:
   VirtualGrid(const PointType& origin, const double * spacing, const int * res);
   /*!
    *****************************************************************************
-   * \brief Constructor specifying origin, size of bins, number of bins.
+   * \brief Constructor specifying bounding box (min and max points) and
+   *        number of bins.
    *
-   * The origin is specified as a double array.  Each pointer argument is
-   * assumed to point to an array of at least length NDIMS.
+   * The min and max points are specified as double arrays.  Each pointer
+   * argument is assumed to point to an array of at least length NDIMS.
    *****************************************************************************
    */
-  VirtualGrid(const double * origin, const double * spacing, const int * res);
+  VirtualGrid(const double * min, const double * max, const int * res);
 
   /*! \brief Destructor: present for symmetry with constructor */
   ~VirtualGrid();
@@ -180,7 +181,6 @@ private:
 
   void addObj(const T& obj, int index);
   bool isValidIndex(int index) const;
-  void insertIntoBins(int start, int * binlength, const T& obj);
 
   struct Bin {
     std::vector<T> ObjectArray;
@@ -244,21 +244,22 @@ VirtualGrid< T, NDIMS >::VirtualGrid(const PointType& origin,
 }
 
 template< typename T, int NDIMS >
-VirtualGrid< T, NDIMS >::VirtualGrid(const double * origin,
-                                     const double * step,
+VirtualGrid< T, NDIMS >::VirtualGrid(const double * min,
+                                     const double * max,
                                      const int * res)
 {
-  SLIC_ASSERT(origin != ATK_NULLPTR);
-  SLIC_ASSERT(step != ATK_NULLPTR);
+  SLIC_ASSERT(min != ATK_NULLPTR);
+  SLIC_ASSERT(max != ATK_NULLPTR);
   SLIC_ASSERT(res != ATK_NULLPTR);
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
   size_t newsize = 1;
   for (int i=0; i<NDIMS;++i) {
-    m_origin[i] = origin[i];
-    
-    SLIC_ASSERT(step[i] !=0 );
-    m_spacing[i] = step[i];
+    m_origin[i] = min[i];
+
+    SLIC_ASSERT(min[i] <= max[i]);
+    SLIC_ASSERT(res[i] > 0 );
+    m_spacing[i] = (max[i] - min[i]) / res[i];
     m_resolution[i] = res[i];
     newsize *= res[i];
   }
@@ -355,7 +356,6 @@ void VirtualGrid<T, NDIMS>::addObj(const T& obj, int index)
   }
 }
 
-
 //------------------------------------------------------------------------------
 template< typename T, int NDIMS>
 void VirtualGrid<T, NDIMS>::insert(const BoxType& BB,
@@ -396,28 +396,28 @@ void VirtualGrid<T, NDIMS>::insert(const BoxType& BB,
     }
 
     const int x_res = m_resolution[0];
-    const int y_res = m_resolution[1];
 
-#if NDIMS == 2
-    for (int j = 0; j < bincount[1]; ++j) {
-      const int j_offset = j * x_res;
-      for (int i = 0; i < bincount[0]; ++i) {
-        addObj(obj, start + i + j_offset);
-      }
-    }
-#else
-    const int kstep = x_res * y_res;
-
-    for (int k = 0; k < bincount[2]; ++k) {
-      const int k_offset = k * kstep;
+    if (NDIMS == 2) {
       for (int j = 0; j < bincount[1]; ++j) {
         const int j_offset = j * x_res;
         for (int i = 0; i < bincount[0]; ++i) {
-          addObj(obj, start + i + j_offset + k_offset);
+          addObj(obj, start + i + j_offset);
+        }
+      }
+    } else {
+      const int y_res = m_resolution[1];
+      const int kstep = x_res * y_res;
+
+      for (int k = 0; k < bincount[2]; ++k) {
+        const int k_offset = k * kstep;
+        for (int j = 0; j < bincount[1]; ++j) {
+          const int j_offset = j * x_res;
+          for (int i = 0; i < bincount[0]; ++i) {
+            addObj(obj, start + i + j_offset + k_offset);
+          }
         }
       }
     }
-#endif
   }
 }
 

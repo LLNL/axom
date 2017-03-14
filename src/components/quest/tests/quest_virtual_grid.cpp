@@ -31,25 +31,24 @@ TEST( quest_virtual_grid, point_constructor)
     int res[DIM] = {resolution, resolution, resolution};
 
     quest::VirtualGrid<QPoint,DIM> valid(origin, step, res);
-    EXPECT_TRUE(valid.getNumBins() == (spacing * spacing * spacing));
+    EXPECT_EQ(valid.getNumBins(), resolution * resolution * resolution);
     EXPECT_TRUE(valid.binEmpty(0));
 
 }
 
-TEST( quest_virtual_grid, double_array_constructor)
+TEST( quest_virtual_grid, bbox_constructor)
 {
     static const int DIM = 3;
     typedef double CoordType;
     typedef axom::primal::Point<CoordType, DIM> QPoint;
     
-    double origin[DIM] = {0, 0, 0};
-    const int spacing = 10;
-    double step[DIM] = {spacing, spacing, spacing};
-    const int resolution = 10;
+    double max[DIM] = {10, 10, 10};
+    double min[DIM] = {0, 0, 0};
+    const int resolution = 4;
     int res[DIM] = {resolution, resolution, resolution};
 
-    quest::VirtualGrid<QPoint,DIM> valid(origin, step, res);
-    EXPECT_TRUE(valid.getNumBins() == (spacing * spacing * spacing));
+    quest::VirtualGrid<QPoint,DIM> valid(min, max, res);
+    EXPECT_EQ(valid.getNumBins(),  resolution * resolution * resolution);
     EXPECT_TRUE(valid.binEmpty(0));
 
 }
@@ -60,7 +59,7 @@ TEST( quest_virtual_grid, indexing)
     typedef double CoordType;
     typedef axom::primal::Point<CoordType, DIM> QPoint;
     
-    double origin[DIM] = {0, 0, 0};
+    QPoint origin = QPoint::make_point(0, 0, 0);
     const int spacing = 1;
     double step[DIM] = {spacing, spacing, spacing};
     const int resolution = 100;
@@ -104,80 +103,320 @@ TEST( quest_virtual_grid, indexing)
     EXPECT_EQ(valid.getBinIndex(pt6), expectedBin);
 }
 
-TEST(quest_virtual_grid, add_stuff){
+// For insertions and deletions, we use these next few helper functions
+// to track the count of objects in each bin.  
+
+// Verify the count in each bin against the map maintained "by hand".
+template< typename T, int NDIMS >
+void checkBinCounts(quest::VirtualGrid<T, NDIMS> & v,
+                   std::map<int, int> & bincounts)
+{
+  int bcount = v.getNumBins();
+  for (int i = 0; i < bcount; ++i) {
+    bool binAgrees =
+      (bincounts.count(i) < 1 && v.binEmpty(i)) ||
+      (bincounts[i] == ((int)v.getBinContents(i).size()));
+    EXPECT_TRUE(binAgrees) << "Difference at bin " << i << ": v has " <<
+      v.getBinContents(i).size() << " and bincounts has " <<
+      (((int)bincounts.count(i)) < 1 ? 0 : bincounts[i]);
+  }
+}
+
+// Increment the count for a bin
+void incr(std::map<int, int> & m, int idx)
+{
+  int dat = 0;
+  if (m.count(idx) > 0) {
+    dat = m[idx];
+  }
+  m[idx] = dat + 1;
+}
+
+// Zero out the count for a bin
+void zero(std::map<int, int> & m, int idx)
+{
+  m.erase(idx);
+}
+
+TEST(quest_virtual_grid, add_stuff_3D){
     static const int DIM = 3;
     typedef double CoordType;
     typedef axom::primal::Point<CoordType, DIM> QPoint;
     typedef axom::primal::BoundingBox<CoordType, DIM> QBBox;
 
     double origin[DIM] = {0, 0, 0};
-    const int spacing = 1;
-    double step[DIM] = {spacing, spacing, spacing};
-    const int resolution = 100;
+    const int mpt = 6;
+    double maxpoint[DIM] = {mpt, mpt, mpt};
+    const int resolution = 6;
     int res[DIM] = {resolution, resolution, resolution};
-    quest::VirtualGrid<QPoint,DIM> valid(origin, step, res);
+    quest::VirtualGrid<QPoint,DIM> valid(origin, maxpoint, res);
+
+    std::map<int, int> check;
 
     QPoint pt1 = QPoint::make_point(2.5, 2.5, 2.5);
     QBBox bbox1(pt1);
     valid.insert(bbox1,pt1);
     int index = valid.getBinIndex(pt1);
-    EXPECT_TRUE(valid.getBinContents(index).size() == 1);
+    incr(check, index);
+    {
+      SCOPED_TRACE("One bin");
+      checkBinCounts(valid, check);
+    }
 
+    // Add a point with a bounding box overlapping the first one
     QPoint pt2 = QPoint::make_point(2.1,2.1,2.1);
     QPoint pt3 = QPoint::make_point(4.2,2.9,2.1);
     QBBox bbox2(pt2, pt3);
     valid.insert(bbox2, pt2);
-    for (int j = 2; j < 5; ++j) {
-      for (int i = 1; i < 6; ++i) {
-        QPoint tpoint1 = QPoint::make_point(i + 0.5, j + 0.5, 1.8);
-        int tidx = valid.getBinIndex(tpoint1);
-        EXPECT_EQ(valid.getBinContents(tidx).size(), 0);
+    incr(check, valid.getBinIndex(pt2));
+    incr(check, valid.getBinIndex(QPoint::make_point(3.5, 2.5, 2.1)));
+    incr(check, valid.getBinIndex(pt3));
+    {
+      SCOPED_TRACE("Added an overlapping bin");
+      checkBinCounts(valid, check);
+    }
 
-        QPoint tpoint2 = QPoint::make_point(i + 0.5, j + 0.5, 3.2);
-        tidx = valid.getBinIndex(tpoint2);
-        EXPECT_EQ(valid.getBinContents(tidx).size(), 0);
+    // Try inserting something partially outside the index
+    QPoint pt4 = QPoint::make_point(2.7, 5.2, -3.1);
+    QPoint pt5 = QPoint::make_point(3.1, 9.0, 2.8);
+    QBBox bbox3(pt4, pt5);
+    valid.insert(bbox3, pt4);
+    for (int k = 0; k < 3; ++k) {
+      for (int i = 2; i < 4; ++i) {
+        incr(check, valid.getBinIndex(QPoint::make_point(i + 0.5, 5.5, k + 0.5)));
       }
     }
-    for (int i = 1; i < 6; ++i) {
-      QPoint tpoint1 = QPoint::make_point(i + 0.5, 1.8, 2.5);
-      int tidx = valid.getBinIndex(tpoint1);
-      EXPECT_EQ(valid.getBinContents(tidx).size(), 0);
-
-      QPoint tpoint2 = QPoint::make_point(i + 0.5, 3.2, 2.5);
-      tidx = valid.getBinIndex(tpoint2);
-      EXPECT_EQ(valid.getBinContents(tidx).size(), 0);
+    {
+      SCOPED_TRACE("Bbox partially overlaps grid");
+      checkBinCounts(valid, check);
     }
-    QPoint pt4 = QPoint::make_point(2.3, 2.3, 2.6);
-    index = valid.getBinIndex(pt4);
-    EXPECT_EQ(valid.getBinContents(index).size(), 2);
-    QPoint pt5 = QPoint::make_point(3.4, 2.3, 2.6);
-    index = valid.getBinIndex(pt5);
-    EXPECT_EQ(valid.getBinContents(index).size(), 1);
-    QPoint pt6 = QPoint::make_point(4.7, 2.3, 2.6);
-    index = valid.getBinIndex(pt6);
-    EXPECT_EQ(valid.getBinContents(index).size(), 1);
 
+    // Try inserting something completely outside the index
+    QPoint pt6 = QPoint::make_point(-2, 7.2, -3.1);
+    QPoint pt7 = QPoint::make_point(-0.1, 9.0, 2.8);
+    QBBox bbox4(pt6, pt7);
+    valid.insert(bbox4, pt6);
+    {
+      SCOPED_TRACE("Bbox completely misses grid");
+      checkBinCounts(valid, check);
+    }
+
+    // Try inserting something completely overlapping the box
+    QPoint pt8 = QPoint::make_point(-2, -0.2, -3.1);
+    QPoint pt9 = QPoint::make_point(7, 6.2, 6.1);
+    QBBox bbox5(pt8, pt9);
+    valid.insert(bbox5, pt8);
+    for (int i = 0; i < valid.getNumBins(); ++i) {
+      incr(check, i);
+    }
+    {
+      SCOPED_TRACE("Bbox completely overlaps grid");
+      checkBinCounts(valid, check);
+    }
 }
 
-TEST(quest_virtual_grid, delete_stuff){
+TEST(quest_virtual_grid, delete_stuff_3D){
     static const int DIM = 3;
     typedef double CoordType;
     typedef axom::primal::Point<CoordType, DIM> QPoint;
     typedef axom::primal::BoundingBox<CoordType, DIM> QBBox;
 
-    double origin[DIM] = {0, 0, 0};
+    QPoint origin = QPoint::make_point(0, 0, 0);
     const int spacing = 1;
     double step[DIM] = {spacing, spacing, spacing};
-    const int resolution = 100;
+    const int resolution = 6;
     int res[DIM] = {resolution, resolution, resolution};
     quest::VirtualGrid<QPoint,DIM> valid(origin, step, res);
 
+    std::map<int, int> check;
+
+    // Insert something small (one bin), then clear its bin
     QPoint pt1 = QPoint::make_point(1.1,1.1,1.1);
     QBBox bbox1(pt1);
-
     valid.insert(bbox1,pt1);
     int index = valid.getBinIndex(pt1);
+    incr(check, index);
     valid.clear(index);
-    EXPECT_TRUE(valid.binEmpty(index));   
+    zero(check, index);
+    {
+      SCOPED_TRACE("Inserted one, then deleted it");
+      checkBinCounts(valid, check);
+    }
+
+    // Insert some objects, clear some bins
+    valid.insert(bbox1,pt1);
+    incr(check, valid.getBinIndex(pt1));
+    QPoint pt2 = QPoint::make_point(0.1, 0.1, -1.1);
+    QPoint pt3 = QPoint::make_point(1.9, 2.3, 7.1);
+    QBBox bbox2(pt2, pt3);
+    valid.insert(bbox2,pt2);
+    for (int k = 0; k < 6; ++k) {
+      for (int j = 0; j < 3; ++j) {
+        for (int i = 0; i < 2; ++i) {
+          incr(check, valid.getBinIndex(QPoint::make_point(i + 0.5, j + 0.5, k + 0.5)));
+        }
+      }
+    }
+    {
+      SCOPED_TRACE("Insert two, clear several bins");
+      QPoint test = QPoint::make_point(0.5, 2.5, 5.5);
+      int tidx = valid.getBinIndex(test);
+      valid.clear(tidx);
+      zero(check, tidx);
+      test = QPoint::make_point(0.5, 1.5, 0.5);
+      tidx = valid.getBinIndex(test);
+      valid.clear(tidx);
+      zero(check, tidx);
+      test = QPoint::make_point(0.5, 2.5, 5.5);
+      tidx = valid.getBinIndex(test);
+      valid.clear(tidx);
+      zero(check, tidx);
+
+      checkBinCounts(valid, check);
+    }
+    {
+      SCOPED_TRACE("Try clearing the invalid bin");
+      valid.clear(quest::VirtualGrid<QPoint,DIM>::INVALID_BIN_INDEX);
+      checkBinCounts(valid, check);
+    }
+}
+
+TEST(quest_virtual_grid, add_stuff_2D){
+    static const int DIM = 2;
+    typedef double CoordType;
+    typedef axom::primal::Point<CoordType, DIM> QPoint;
+    typedef axom::primal::BoundingBox<CoordType, DIM> QBBox;
+
+    double origin[DIM] = {0, 0};
+    const int mpt = 6;
+    double maxpoint[DIM] = {mpt, mpt};
+    const int resolution = 6;
+    int res[DIM] = {resolution, resolution};
+    quest::VirtualGrid<QPoint,DIM> valid(origin, maxpoint, res);
+
+    std::map<int, int> check;
+
+    QPoint pt1 = QPoint::make_point(2.5, 2.5);
+    QBBox bbox1(pt1);
+    valid.insert(bbox1,pt1);
+    int index = valid.getBinIndex(pt1);
+    incr(check, index);
+    {
+      SCOPED_TRACE("One bin");
+      checkBinCounts(valid, check);
+    }
+
+    // Add a point with a bounding box overlapping the first one
+    QPoint pt2 = QPoint::make_point(2.1,2.1);
+    QPoint pt3 = QPoint::make_point(4.2,2.9);
+    QBBox bbox2(pt2, pt3);
+    valid.insert(bbox2, pt2);
+    incr(check, valid.getBinIndex(pt2));
+    incr(check, valid.getBinIndex(QPoint::make_point(3.5, 2.5)));
+    incr(check, valid.getBinIndex(pt3));
+    {
+      SCOPED_TRACE("Added an overlapping bin");
+      checkBinCounts(valid, check);
+    }
+
+    // Try inserting something partially outside the index
+    QPoint pt4 = QPoint::make_point(2.7, 5.2);
+    QPoint pt5 = QPoint::make_point(3.1, 9.0);
+    QBBox bbox3(pt4, pt5);
+    valid.insert(bbox3, pt4);
+    for (int i = 2; i < 4; ++i) {
+      incr(check, valid.getBinIndex(QPoint::make_point(i + 0.5, 5.5)));
+    }
+    {
+      SCOPED_TRACE("Bbox partially overlaps grid");
+      checkBinCounts(valid, check);
+    }
+
+    // Try inserting something completely outside the index
+    QPoint pt6 = QPoint::make_point(-2, 7.2);
+    QPoint pt7 = QPoint::make_point(-0.1, 9.0);
+    QBBox bbox4(pt6, pt7);
+    valid.insert(bbox4, pt6);
+    {
+      SCOPED_TRACE("Bbox completely misses grid");
+      checkBinCounts(valid, check);
+    }
+
+    // Try inserting something completely overlapping the box
+    QPoint pt8 = QPoint::make_point(-2, -0.2);
+    QPoint pt9 = QPoint::make_point(7, 6.2);
+    QBBox bbox5(pt8, pt9);
+    valid.insert(bbox5, pt8);
+    for (int i = 0; i < valid.getNumBins(); ++i) {
+      incr(check, i);
+    }
+    {
+      SCOPED_TRACE("Bbox completely overlaps grid");
+      checkBinCounts(valid, check);
+    }
+}
+
+TEST(quest_virtual_grid, delete_stuff_2D){
+    static const int DIM = 2;
+    typedef double CoordType;
+    typedef axom::primal::Point<CoordType, DIM> QPoint;
+    typedef axom::primal::BoundingBox<CoordType, DIM> QBBox;
+
+    QPoint origin = QPoint::make_point(0, 0);
+    const int spacing = 1;
+    double step[DIM] = {spacing, spacing};
+    const int resolution = 6;
+    int res[DIM] = {resolution, resolution};
+    quest::VirtualGrid<QPoint,DIM> valid(origin, step, res);
+
+    std::map<int, int> check;
+
+    // Insert something small (one bin), then clear its bin
+    QPoint pt1 = QPoint::make_point(1.1, 1.1);
+    QBBox bbox1(pt1);
+    valid.insert(bbox1,pt1);
+    int index = valid.getBinIndex(pt1);
+    incr(check, index);
+    valid.clear(index);
+    zero(check, index);
+    {
+      SCOPED_TRACE("Inserted one, then deleted it");
+      checkBinCounts(valid, check);
+    }
+
+    // Insert some objects, clear some bins
+    valid.insert(bbox1,pt1);
+    incr(check, valid.getBinIndex(pt1));
+    QPoint pt2 = QPoint::make_point(0.1, 0.1);
+    QPoint pt3 = QPoint::make_point(1.9, 2.3);
+    QBBox bbox2(pt2, pt3);
+    valid.insert(bbox2,pt2);
+    for (int j = 0; j < 3; ++j) {
+      for (int i = 0; i < 2; ++i) {
+        incr(check, valid.getBinIndex(QPoint::make_point(i + 0.5, j + 0.5)));
+      }
+    }
+    {
+      SCOPED_TRACE("Insert two, clear several bins");
+      QPoint test = QPoint::make_point(0.5, 2.5);
+      int tidx = valid.getBinIndex(test);
+      valid.clear(tidx);
+      zero(check, tidx);
+      test = QPoint::make_point(0.5, 1.5);
+      tidx = valid.getBinIndex(test);
+      valid.clear(tidx);
+      zero(check, tidx);
+      test = QPoint::make_point(0.5, 2.5);
+      tidx = valid.getBinIndex(test);
+      valid.clear(tidx);
+      zero(check, tidx);
+
+      checkBinCounts(valid, check);
+    }
+    {
+      SCOPED_TRACE("Try clearing the invalid bin");
+      valid.clear(quest::VirtualGrid<QPoint,DIM>::INVALID_BIN_INDEX);
+      checkBinCounts(valid, check);
+    }
 }
 
