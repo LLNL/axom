@@ -31,7 +31,7 @@
 
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 namespace policies {
 
@@ -57,7 +57,7 @@ namespace policies {
     inline IndirectionResult          indirection(PositionType pos) const { return static_cast<ElementType>(pos); }
     inline IndirectionResult operator ()(PositionType pos)  const { return indirection(pos); }
 
-    IndirectionBufferType*            data() { return ATK_NULLPTR; }
+    IndirectionBufferType*            data() { return AXOM_NULLPTR; }
 
     bool                              hasIndirection() const { return false; }
     inline bool                       isValid(PositionType, PositionType, PositionType, bool ) const { return true; }
@@ -72,7 +72,7 @@ namespace policies {
     typedef const ElementType&  IndirectionResult;
     typedef ElementType         IndirectionBufferType;
 
-    ArrayIndirection(IndirectionBufferType* buf = ATK_NULLPTR) : m_arrBuf(buf) {}
+    ArrayIndirection(IndirectionBufferType* buf = AXOM_NULLPTR) : m_arrBuf(buf) {}
 
     IndirectionBufferType*&   data() { return m_arrBuf; }
 
@@ -85,12 +85,12 @@ namespace policies {
 
     inline IndirectionResult operator ()(PositionType pos)  const { return indirection(pos); }
 
-    bool                              hasIndirection() const { return m_arrBuf != ATK_NULLPTR; }
+    bool                              hasIndirection() const { return m_arrBuf != AXOM_NULLPTR; }
 
     inline bool                       isValid( PositionType size,
         PositionType,
         PositionType,
-        bool ATK_DEBUG_PARAM(verboseOutput = false)) const
+        bool AXOM_DEBUG_PARAM(verboseOutput = false)) const
     {
       // set of zero size is always valid
       if(size == 0)
@@ -121,7 +121,7 @@ namespace policies {
     typedef const VectorType          IndirectionBufferType;
 
 
-    STLVectorIndirection(IndirectionBufferType* buf = ATK_NULLPTR) : m_vecBuf(buf) {}
+    STLVectorIndirection(IndirectionBufferType* buf = AXOM_NULLPTR) : m_vecBuf(buf) {}
 
     IndirectionBufferType*&   data() { return m_vecBuf; }
 
@@ -135,12 +135,12 @@ namespace policies {
     }
     inline IndirectionResult operator ()(PositionType pos)  const { return indirection(pos); }
 
-    bool                              hasIndirection() const { return m_vecBuf != ATK_NULLPTR; }
+    bool                              hasIndirection() const { return m_vecBuf != AXOM_NULLPTR; }
 
     inline bool                       isValid(PositionType size,
         PositionType offset,
         PositionType stride,
-        bool ATK_DEBUG_PARAM(verboseOutput = false)) const
+        bool AXOM_DEBUG_PARAM(verboseOutput = false)) const
     {
       // If set has zero size, we are always valid (even if indirection buffer is null)
       if(size == 0)
@@ -177,6 +177,6 @@ namespace policies {
 
 } // end namespace policies
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_POLICIES_INDIRECTION_H_

@@ -12,8 +12,9 @@
  *******************************************************************************
  * \file quest_interface.cpp
  *
- * \date Mar 16, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
+ * \brief Simple example that exercises the quest interface for point
+ *        containment and signed distance queries.
+ * \note This file assumes that MPI is enabled.  MPI usage is not guarded.
  *******************************************************************************
  */
 
@@ -23,7 +24,7 @@
 // SLIC includes
 #include "slic/slic.hpp"
 
-#ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
   #include "slic/LumberjackStream.hpp"
 #else
   #include "slic/SynchronizedStream.hpp"
@@ -37,7 +38,7 @@
 // MPI includes
 #include "mpi.h"
 
-using namespace asctoolkit;
+using namespace axom;
 
 typedef std::vector<double> CoordsVec;
 
@@ -211,7 +212,7 @@ int main( int argc, char**argv )
   axom::slic::LogStream* logStream;
 
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
-  #ifdef ATK_USE_LUMBERJACK
+  #ifdef AXOM_USE_LUMBERJACK
     const int RLIMIT = 8;
     logStream = new axom::slic::LumberjackStream(&std::cout,MPI_COMM_WORLD, RLIMIT, fmt);
   #else

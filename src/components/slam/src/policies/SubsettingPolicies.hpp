@@ -25,11 +25,11 @@
 #ifndef SLAM_POLICIES_SUBSET_H_
 #define SLAM_POLICIES_SUBSET_H_
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 
 #include <set>
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 namespace policies {
 
@@ -52,7 +52,7 @@ namespace policies {
      * \brief Checks whether the set containing this policy class is a subset
      */
     bool                  isSubset() const { return false; }
-    const ParentSetType*  parentSet() const { return ATK_NULLPTR; }
+    const ParentSetType*  parentSet() const { return AXOM_NULLPTR; }
 
     template<typename OrderedSetIt>
     bool                  isValid(OrderedSetIt, OrderedSetIt, bool) const { return true; }
@@ -74,10 +74,10 @@ namespace policies {
     Set*&       parentSet()       { return m_parentSet; }
 
     template<typename OrderedSetIt>
-    bool        isValid(OrderedSetIt beg, OrderedSetIt end, bool ATK_DEBUG_PARAM(verboseOutput = false)) const
+    bool        isValid(OrderedSetIt beg, OrderedSetIt end, bool AXOM_DEBUG_PARAM(verboseOutput = false)) const
     {
       // We allow parent sets to be null (i.e. the subset feature is deactivated)
-      if( !isSubset() || m_parentSet == ATK_NULLPTR)
+      if( !isSubset() || m_parentSet == AXOM_NULLPTR)
         return true;
 
       // Next, check if child is empty -- null set is a subset of all sets
@@ -87,7 +87,7 @@ namespace policies {
 
       // Next, since child has at least one element, the parent cannot be empty
       bool bValid = ( m_parentSet->size() > 0);
-      ATK_DEBUG_VAR(bValid);
+      AXOM_DEBUG_VAR(bValid);
       SLIC_CHECK_MSG(verboseOutput && !bValid
           , "VirtualParentSubset -- if we are a subset and input set is non-empty, then parent set must be non-empty");
 
@@ -118,12 +118,12 @@ namespace policies {
   {
     typedef TheParentSetType ParentSetType;
 
-    ConcreteParentSubset(ParentSetType* parSet = ATK_NULLPTR) : m_parentSet(parSet) {}
+    ConcreteParentSubset(ParentSetType* parSet = AXOM_NULLPTR) : m_parentSet(parSet) {}
 
     /**
      * \brief Checks whether the set containing this policy class is a subset
      */
-    bool                  isSubset() const { return m_parentSet != ATK_NULLPTR; }
+    bool                  isSubset() const { return m_parentSet != AXOM_NULLPTR; }
     const ParentSetType*  parentSet() const { return m_parentSet; }
     ParentSetType*&       parentSet()       { return m_parentSet; }
 
@@ -131,7 +131,7 @@ namespace policies {
     template<typename OrderedSetIt>
     bool                  isValid( OrderedSetIt beg,
         OrderedSetIt end,
-        bool ATK_DEBUG_PARAM(verboseOutput = false)) const
+        bool AXOM_DEBUG_PARAM(verboseOutput = false)) const
     {
       // We allow parent sets to be null (i.e. the subset feature is deactivated)
       if( !isSubset() )
@@ -144,7 +144,7 @@ namespace policies {
 
       // Next, since child has at least one element, the parent cannot be empty
       bool bValid = (m_parentSet->size() > 0);
-      ATK_DEBUG_VAR(bValid);
+      AXOM_DEBUG_VAR(bValid);
       SLIC_CHECK_MSG(verboseOutput && !bValid
           , "VirtualParentSubset -- if input set is non-empty, then parent set must be non-empty");
 
@@ -175,6 +175,6 @@ namespace policies {
 
 } // end namespace policies
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_POLICIES_SUBSET_H_

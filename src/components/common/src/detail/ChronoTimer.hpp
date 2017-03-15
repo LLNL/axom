@@ -12,13 +12,13 @@
 #ifndef CHRONO_TIMER_HPP_
 #define CHRONO_TIMER_HPP_
 
-#include "common/config.hpp"    // defines ATK_USE_CXX11
+#include "common/config.hpp"    // defines AXOM_USE_CXX11
 
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
 
 #include <chrono>
 
-namespace asctoolkit {
+namespace axom {
 namespace utilities {
 namespace detail {
 
@@ -80,9 +80,9 @@ namespace detail {
 
 } /* namespace detail */
 } /* namespace utilities */
-} /* namespace asctoolkit */
+} /* namespace axom */
 
-#endif // ATK_USE_CXX11
+#endif // AXOM_USE_CXX11
 
 #endif // CHRONO_TIMER_HPP_
 

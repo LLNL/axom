@@ -35,7 +35,7 @@
 #include "slam/Relation.hpp"
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam    {
 
   class StaticVariableRelation : public Relation
@@ -176,7 +176,7 @@ namespace slam    {
       return toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex);
     }
 
-    inline void         verifyPosition(SetPosition ATK_DEBUG_PARAM(fromSetIndex))    const
+    inline void         verifyPosition(SetPosition AXOM_DEBUG_PARAM(fromSetIndex))    const
     {
       SLIC_ASSERT( fromSetIndex >= 0 && fromSetIndex <  m_fromSet->size()  );
     }
@@ -196,6 +196,6 @@ namespace slam    {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_STATIC_VARIABLE_RELATION_HPP_

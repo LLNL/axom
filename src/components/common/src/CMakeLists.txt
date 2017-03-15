@@ -2,7 +2,7 @@
 # Specify all headers
 #
 set(common_headers
-    ATKMacros.hpp
+    AxomMacros.hpp
     CommonTypes.hpp
     FileUtilities.hpp
     StringUtilities.hpp

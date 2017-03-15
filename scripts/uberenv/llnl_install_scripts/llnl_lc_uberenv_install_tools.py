@@ -7,7 +7,7 @@
  file: llnl_lc_uberenv_install_tools.py
 
  description: 
-  helpers for installing toolkit tpls on llnl lc systems.
+  helpers for installing axom tpls on llnl lc systems.
 
 """
 
@@ -199,17 +199,17 @@ def build_and_test_host_configs(prefix):
         print "[ERROR: No host configs found at %s]" % prefix
 
 
-def set_toolkit_group_and_perms(directory):
+def set_axom_group_and_perms(directory):
     """
     Sets the proper group and access permissions of given input
     directory. 
     """
     print "[changing group and access perms of: %s]" % directory
-    # change group to toolktid
-    print "[changing group to toolkitd]"
-    sexe("chgrp -f -R toolkitd %s" % (directory),echo=True)
+    # change group to axomdev
+    print "[changing group to axomdev]"
+    sexe("chgrp -f -R axomdev %s" % (directory),echo=True)
     # change group perms to rwX
-    print "[changing perms for toolkitd members to rwX]"
+    print "[changing perms for axomdev members to rwX]"
     sexe("chmod -f -R g+rwX %s" % (directory),echo=True)
     # change perms for all to rX
     print "[changing perms for all users to rX]"

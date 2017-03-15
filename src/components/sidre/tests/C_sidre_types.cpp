@@ -18,9 +18,9 @@
 #include "sidre/SidreTypes.h"
 #include "sidre/SidreTypes.hpp"
 
-using asctoolkit::sidre::DataType;
-using asctoolkit::sidre::TypeID;
-using asctoolkit::sidre::getTypeID;
+using axom::sidre::DataType;
+using axom::sidre::TypeID;
+using axom::sidre::getTypeID;
 
 namespace
 {
@@ -59,8 +59,8 @@ void testTypesForEquality()
 //------------------------------------------------------------------------------
 TEST(sidre_types,compare_common_types)
 {
-  namespace com = asctoolkit::common;
-  namespace sid = asctoolkit::sidre::detail;
+  namespace com = axom::common;
+  namespace sid = axom::sidre::detail;
 
   testTypesForEquality<com::int8, sid::sidre_int8>();
   testTypesForEquality<com::uint8, sid::sidre_uint8>();
@@ -71,7 +71,7 @@ TEST(sidre_types,compare_common_types)
   testTypesForEquality<com::int32,sid::sidre_int32>();
   testTypesForEquality<com::uint32,sid::sidre_uint32>();
 
-  #ifndef ATK_NO_INT64_T
+  #ifndef AXOM_NO_INT64_T
   testTypesForEquality<com::int64,sid::sidre_int64>();
   testTypesForEquality<com::uint64,sid::sidre_uint64>();
   #endif
@@ -101,25 +101,25 @@ TEST(sidre_types,get_sidre_type)
   EXPECT_EQ(SIDRE_FLOAT_ID,  CONDUIT_NATIVE_FLOAT_ID);
   EXPECT_EQ(SIDRE_DOUBLE_ID, CONDUIT_NATIVE_DOUBLE_ID);
 
-  EXPECT_EQ(asctoolkit::sidre::INT8_ID,   getTypeID(SIDRE_INT8_ID));
-  EXPECT_EQ(asctoolkit::sidre::INT16_ID,  getTypeID(SIDRE_INT16_ID));
-  EXPECT_EQ(asctoolkit::sidre::INT32_ID,  getTypeID(SIDRE_INT32_ID));
-  EXPECT_EQ(asctoolkit::sidre::INT64_ID,  getTypeID(SIDRE_INT64_ID));
+  EXPECT_EQ(axom::sidre::INT8_ID,   getTypeID(SIDRE_INT8_ID));
+  EXPECT_EQ(axom::sidre::INT16_ID,  getTypeID(SIDRE_INT16_ID));
+  EXPECT_EQ(axom::sidre::INT32_ID,  getTypeID(SIDRE_INT32_ID));
+  EXPECT_EQ(axom::sidre::INT64_ID,  getTypeID(SIDRE_INT64_ID));
 
-  EXPECT_EQ(asctoolkit::sidre::UINT8_ID,   getTypeID(SIDRE_UINT8_ID));
-  EXPECT_EQ(asctoolkit::sidre::UINT16_ID,  getTypeID(SIDRE_UINT16_ID));
-  EXPECT_EQ(asctoolkit::sidre::UINT32_ID,  getTypeID(SIDRE_UINT32_ID));
-  EXPECT_EQ(asctoolkit::sidre::UINT64_ID,  getTypeID(SIDRE_UINT64_ID));
+  EXPECT_EQ(axom::sidre::UINT8_ID,   getTypeID(SIDRE_UINT8_ID));
+  EXPECT_EQ(axom::sidre::UINT16_ID,  getTypeID(SIDRE_UINT16_ID));
+  EXPECT_EQ(axom::sidre::UINT32_ID,  getTypeID(SIDRE_UINT32_ID));
+  EXPECT_EQ(axom::sidre::UINT64_ID,  getTypeID(SIDRE_UINT64_ID));
 
-  EXPECT_EQ(asctoolkit::sidre::FLOAT32_ID,    getTypeID(SIDRE_FLOAT32_ID));
-  EXPECT_EQ(asctoolkit::sidre::FLOAT64_ID,    getTypeID(SIDRE_FLOAT64_ID));
-  EXPECT_EQ(asctoolkit::sidre::CHAR8_STR_ID,  getTypeID(SIDRE_CHAR8_STR_ID));
+  EXPECT_EQ(axom::sidre::FLOAT32_ID,    getTypeID(SIDRE_FLOAT32_ID));
+  EXPECT_EQ(axom::sidre::FLOAT64_ID,    getTypeID(SIDRE_FLOAT64_ID));
+  EXPECT_EQ(axom::sidre::CHAR8_STR_ID,  getTypeID(SIDRE_CHAR8_STR_ID));
 
-  EXPECT_EQ(asctoolkit::sidre::INT_ID,  getTypeID(SIDRE_INT_ID));
-  EXPECT_EQ(asctoolkit::sidre::UINT_ID,  getTypeID(SIDRE_UINT_ID));
-  EXPECT_EQ(asctoolkit::sidre::LONG_ID,  getTypeID(SIDRE_LONG_ID));
-  EXPECT_EQ(asctoolkit::sidre::ULONG_ID,  getTypeID(SIDRE_ULONG_ID));
-  EXPECT_EQ(asctoolkit::sidre::FLOAT_ID,  getTypeID(SIDRE_FLOAT_ID));
-  EXPECT_EQ(asctoolkit::sidre::DOUBLE_ID,  getTypeID(SIDRE_DOUBLE_ID));
+  EXPECT_EQ(axom::sidre::INT_ID,  getTypeID(SIDRE_INT_ID));
+  EXPECT_EQ(axom::sidre::UINT_ID,  getTypeID(SIDRE_UINT_ID));
+  EXPECT_EQ(axom::sidre::LONG_ID,  getTypeID(SIDRE_LONG_ID));
+  EXPECT_EQ(axom::sidre::ULONG_ID,  getTypeID(SIDRE_ULONG_ID));
+  EXPECT_EQ(axom::sidre::FLOAT_ID,  getTypeID(SIDRE_FLOAT_ID));
+  EXPECT_EQ(axom::sidre::DOUBLE_ID,  getTypeID(SIDRE_DOUBLE_ID));
 
 }

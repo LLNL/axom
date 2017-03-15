@@ -19,17 +19,17 @@
 Use namespaces to avoid name collisions
 ---------------------------------------------------------
 
-6.1 All CS Toolkit code **must** be included in the project namespace 
-'asctoolkit'; e.g.,::
+6.1 All Axom code **must** be included in the project namespace 
+'axom'; e.g.,::
 
-         namespace asctoolkit {
+         namespace axom {
               // . . .
          }
 
 .. note::We will change the top-level namespace at some point to shorten it.
 
-6.2 Each Toolkit component **must** define its own unique namespace within
-the "asctoolkit" namespace. All contents of each component **must** reside
+6.2 Each Axom component **must** define its own unique namespace within
+the "axom" namespace. All contents of each component **must** reside
 within that namespace.
 
 
@@ -41,9 +41,10 @@ Use namespaces to hide non-API code in header files
 intended to be part of a public interface, such as helper classes/structs 
 and methods, **should** be placed in an internal namespace. 
 
-      Common names for such namespaces include 'internal' and 'detailed'. 
-      Any reasonable choice is acceptable; however, the choice **must**
-      be the same within each Toolkit component.
+      Common names for such namespaces include 'internal' (for implementations
+      used only internally) and 'detailed' (for types, etc. used only 
+      internally). Any reasonable choice is acceptable; however, the choice 
+      **must** be the same within each Axom component.
 
       Note that declaring helper classes/structs private within a class 
       definition is another good option. See :ref:`scopenestedclass-label`

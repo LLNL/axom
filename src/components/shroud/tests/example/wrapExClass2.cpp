@@ -176,7 +176,7 @@ ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 
 // void * declare(TypeID type+intent(in)+value, SidreLength len+default(1)+intent(in)+value)
 // function_index=26
-void AA_exclass2_declare_1(AA_exclass2 * self, int type, ATK_SidreLength len)
+void AA_exclass2_declare_1(AA_exclass2 * self, int type, SIDRE_SidreLength len)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.declare_1

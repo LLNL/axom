@@ -11,9 +11,9 @@
 #ifndef BVHTREE_HPP_
 #define BVHTREE_HPP_
 
-// ASC Toolkit includes
-#include "common/ATKMacros.hpp"   // for DISABLE_COPY_AND_ASSIGNMENT macro
-#include "common/CommonTypes.hpp" // for ATK_NULLPTR
+// axom includes
+#include "common/AxomMacros.hpp"   // for DISABLE_COPY_AND_ASSIGNMENT macro
+#include "common/CommonTypes.hpp"  // for AXOM_NULLPTR
 
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
@@ -204,7 +204,7 @@ public:
    * \param [in] bucketIdx the index of the bucket in query.
    * \return arrayPtr pointer to the buckets object array
    * \pre bucketIdx >= 0 && bucketIdx < m_tree.size()
-   * \post arryPtr != ATK_NULLPTR
+   * \post arryPtr != AXOM_NULLPTR
    *****************************************************************************
    */
   const int* getBucketObjectArray( int bucketIdx ) const;
@@ -1148,7 +1148,7 @@ void BVHTree< T,NDIMS >::writeVtkFile(
 template < typename T, int NDIMS >
 void BVHTree< T,NDIMS >::writeVtkFile(
   const std::string& fileName,
-  bool ATK_NOT_USED(include_objects) ) const
+  bool AXOM_NOT_USED(include_objects) ) const
 {
   // STEP 0: Write VTK header
   std::ofstream ofs;

@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataStore.cpp
  *
  * \brief   Implementation file for DataStore class.
  *
@@ -26,15 +26,16 @@
 // Associated header file
 #include "DataStore.hpp"
 
+// Other axom headers
+#include "slic/slic.hpp"
+#include "slic/GenericOutputStream.hpp"
+
 // Sidre project headers
 #include "DataBuffer.hpp"
 #include "DataGroup.hpp"
 
-// Other CS Toolkit headers
-#include "slic/slic.hpp"
-#include "slic/GenericOutputStream.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -91,7 +92,7 @@ void DataStoreConduitInfoHandler( const std::string& message,
  *************************************************************************
  */
 DataStore::DataStore()
-  : m_RootGroup(ATK_NULLPTR), m_need_to_finalize_slic(false)
+  : m_RootGroup(AXOM_NULLPTR), m_need_to_finalize_slic(false)
 {
 
   if ( !axom::slic::isInitialized() )
@@ -107,8 +108,8 @@ DataStore::DataStore()
       std::string("***********************************\n");
 
     axom::slic::setLoggingMsgLevel( axom::slic::message::Debug );
-    axom::slic::addStreamToAllMsgLevels( new axom::slic::GenericOutputStream(&std::cout,
-                                                                 format) );
+    axom::slic::addStreamToAllMsgLevels(
+      new axom::slic::GenericOutputStream(&std::cout,format) );
 
     m_need_to_finalize_slic = true;
   }
@@ -157,7 +158,7 @@ DataBuffer * DataStore::getBuffer( IndexType idx ) const
   {
     SLIC_CHECK_MSG(hasBuffer(idx),
                    "DataStore has no Buffer with index == " << idx);
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   return m_data_buffers[idx];
@@ -177,7 +178,7 @@ DataBuffer * DataStore::createBuffer()
   if( m_free_buffer_ids.empty() )
   {
     newIndex = m_data_buffers.size();
-    m_data_buffers.push_back( ATK_NULLPTR );
+    m_data_buffers.push_back( AXOM_NULLPTR );
   }
   else
   {
@@ -202,7 +203,7 @@ DataBuffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
 {
   DataBuffer * buffer = createBuffer();
 
-  if (buffer != ATK_NULLPTR)
+  if (buffer != AXOM_NULLPTR)
   {
     buffer->describe(type, num_elems);
   }
@@ -220,13 +221,13 @@ DataBuffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
  */
 void DataStore::destroyBuffer( DataBuffer * buff )
 {
-  if ( buff != ATK_NULLPTR )
+  if ( buff != AXOM_NULLPTR )
   {
     buff->detachFromAllViews();
     IndexType idx = buff->getIndex();
     delete buff;
-    SLIC_ASSERT( m_data_buffers[idx] != ATK_NULLPTR);
-    m_data_buffers[idx] = ATK_NULLPTR;
+    SLIC_ASSERT( m_data_buffers[idx] != AXOM_NULLPTR);
+    m_data_buffers[idx] = AXOM_NULLPTR;
     m_free_buffer_ids.push(idx);
   }
 }
@@ -284,7 +285,7 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
 {
   idx++;
   while ( static_cast<unsigned>(idx) < m_data_buffers.size() &&
-          m_data_buffers[idx] == ATK_NULLPTR )
+          m_data_buffers[idx] == AXOM_NULLPTR )
   {
     idx++;
   }
@@ -322,4 +323,4 @@ void DataStore::print(std::ostream& os) const
 }
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */

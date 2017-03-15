@@ -187,7 +187,7 @@ contains
     type(datagroup) root
     type(dataview) dv
     integer(C_INT), pointer :: data(:)
-    integer i
+    integer(C_INT) i
     integer int_size, elem_count
 
     int_size = c_sizeof(i)
@@ -238,7 +238,7 @@ contains
 
     call dv%print()
 
-!--    EXPECT_EQ(ATK_dataview_get_total_bytes(dv), sizeof(int) * 10)
+!--    EXPECT_EQ(SIDRE_dataview_get_total_bytes(dv), sizeof(int) * 10)
     call ds%delete()
   end subroutine int_buffer_from_view_conduit_value
 
@@ -548,7 +548,7 @@ contains
 
     real(C_DOUBLE), pointer :: data(:)
     type(C_PTR) data_ptr
-    integer i
+    integer(C_INT) i
     integer(C_LONG) field_nelems
     integer(C_LONG) v1_nelems, v1_stride, v1_offset
     integer(C_LONG) v2_nelems, v2_stride, v2_offset
@@ -713,12 +713,12 @@ contains
 
 !--#ifdef XXX
 !--  ! setup our 4 views
-!--  ATK_databuffer * buff_old = ATK_dataview_get_buffer(base_old)
+!--  SIDRE_databuffer * buff_old = SIDRE_dataview_get_buffer(base_old)
 !--  call buff_old%print()
-!--  ATK_dataview * r0_old = ATK_dataview_create_view(r_old, "r0",buff_old)
-!--  ATK_dataview * r1_old = ATK_dataview_create_view(r_old, "r1",buff_old)
-!--  ATK_dataview * r2_old = ATK_dataview_create_view(r_old, "r2",buff_old)
-!--  ATK_dataview * r3_old = ATK_dataview_create_view(r_old, "r3",buff_old)
+!--  SIDRE_dataview * r0_old = SIDRE_dataview_create_view(r_old, "r0",buff_old)
+!--  SIDRE_dataview * r1_old = SIDRE_dataview_create_view(r_old, "r1",buff_old)
+!--  SIDRE_dataview * r2_old = SIDRE_dataview_create_view(r_old, "r2",buff_old)
+!--  SIDRE_dataview * r3_old = SIDRE_dataview_create_view(r_old, "r3",buff_old)
 !--
 !--  ! each view is offset by 10 * the # of bytes in a uint32
 !--  ! uint32(num_elems, offset)
@@ -753,27 +753,27 @@ contains
 !--  }
 !--
 !--  ! create a group to hold the "old" or data we want to copy into
-!--  ATK_datagroup * r_new = ATK_datagroup_create_group(root, "r_new")
+!--  SIDRE_datagroup * r_new = SIDRE_datagroup_create_group(root, "r_new")
 !--  ! create a view to hold the base buffer
-!--  ATK_dataview * base_new = ATK_datagroup_create_view_and_buffer(r_new, "base_data")
+!--  SIDRE_dataview * base_new = SIDRE_datagroup_create_view_and_buffer(r_new, "base_data")
 !--
 !--  ! alloc our buffer
 !--  ! create a buffer to hold larger subarrays
 !--  base_new->allocate(base_new, DataType::uint32(4 * 12))
-!--  int* base_new_data = (int *) ATK_databuffer_det_data(base_new)
+!--  int* base_new_data = (int *) SIDRE_databuffer_det_data(base_new)
 !--  for (int i = 0 i < 4 * 12 ++i) 
 !--  {
 !--     base_new_data[i] = 0
 !--  } 
 !--
-!--  ATK_databuffer * buff_new = ATK_dataview_get_buffer(base_new)
+!--  SIDRE_databuffer * buff_new = SIDRE_dataview_get_buffer(base_new)
 !--  call buff_new%print()
 !--
 !--  ! create the 4 sub views of this array
-!--  ATK_dataview * r0_new = ATK_datagroup_create_view(r_new, "r0",buff_new)
-!--  ATK_dataview * r1_new = ATK_datagroup_create_view(r_new, "r1",buff_new)
-!--  ATK_dataview * r2_new = ATK_datagroup_create_view(r_new, "r2",buff_new)
-!--  ATK_dataview * r3_new = ATK_datagroup_create_view(r_new, "r3",buff_new)
+!--  SIDRE_dataview * r0_new = SIDRE_datagroup_create_view(r_new, "r0",buff_new)
+!--  SIDRE_dataview * r1_new = SIDRE_datagroup_create_view(r_new, "r1",buff_new)
+!--  SIDRE_dataview * r2_new = SIDRE_datagroup_create_view(r_new, "r2",buff_new)
+!--  SIDRE_dataview * r3_new = SIDRE_datagroup_create_view(r_new, "r3",buff_new)
 !--
 !--  ! apply views to r0,r1,r2,r3
 !--  ! each view is offset by 12 * the # of bytes in a uint32
@@ -802,7 +802,7 @@ contains
 !--
 !--
 !--  ! check pointer values
-!--  int * r2_new_ptr = (int *) ATK_dataview_get_data_pointer(r2_new)
+!--  int * r2_new_ptr = (int *) SIDRE_dataview_get_data_pointer(r2_new)
 !--
 !--  for(int i=0  i<10  i++)
 !--  {
@@ -862,8 +862,8 @@ contains
     call assert_true(size(a2_data) == 5, &
          "a2_data is incorrect size")
 
-!--  EXPECT_EQ(ATK_dataview_get_total_bytes(a1), sizeof(float)*5)
-!--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*5)
+!--  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a1), sizeof(float)*5)
+!--  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a2), sizeof(int)*5)
 
     a1_data(1:5) =  5.0
     a2_data(1:5) = -5
@@ -889,8 +889,8 @@ contains
 
     a2_data(11:15) = -15
 
-!--  EXPECT_EQ(ATK_dataview_get_total_bytes(a1), sizeof(float)*10)
-!--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*15)
+!--  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a1), sizeof(float)*10)
+!--  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a2), sizeof(int)*15)
 
     call ds%print()
     call ds%delete()

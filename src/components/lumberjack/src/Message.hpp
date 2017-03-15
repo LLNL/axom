@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 /*!
@@ -288,6 +288,6 @@ class Message {
 };
 
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif

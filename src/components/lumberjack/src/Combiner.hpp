@@ -22,7 +22,7 @@
 
 #include "lumberjack/Message.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 /*!
@@ -81,6 +81,6 @@ class Combiner {
 };
 
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif

@@ -17,7 +17,7 @@ namespace mint {
 
 StructuredMesh::StructuredMesh():
   Mesh(-1,MINT_UNDEFINED_MESH,-1,-1),
-  m_extent( ATK_NULLPTR )
+  m_extent( AXOM_NULLPTR )
 {
 // TODO Auto-generated constructor stub
 
@@ -41,7 +41,7 @@ StructuredMesh::StructuredMesh( int meshType, int ndims, int ext[6],
 StructuredMesh::~StructuredMesh()
 {
   delete m_extent;
-  m_extent = ATK_NULLPTR;
+  m_extent = AXOM_NULLPTR;
 }
 
 } /* namespace mint */

@@ -15,13 +15,13 @@
 #include "common/CommonTypes.hpp"
 #include "sidre/sidre.hpp"
 
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::SidreLength;
-using asctoolkit::sidre::DOUBLE_ID;
-using asctoolkit::sidre::INT_ID;
+using axom::sidre::DataBuffer;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataView;
+using axom::sidre::SidreLength;
+using axom::sidre::DOUBLE_ID;
+using axom::sidre::INT_ID;
 
 //------------------------------------------------------------------------------
 // Test DataGroup::createView() -- external
@@ -44,7 +44,7 @@ TEST(sidre_external, create_external_view)
 
   for (unsigned int i=0 ; i < 8 ; i++)
   {
-    DataView * view = ATK_NULLPTR;
+    DataView * view = AXOM_NULLPTR;
 
     switch (i)
     {
@@ -115,11 +115,11 @@ TEST(sidre_external, create_external_view_null)
 {
   DataStore * ds   = new DataStore();
   DataGroup * root = ds->getRoot();
-  int * idata = ATK_NULLPTR;
+  int * idata = AXOM_NULLPTR;
 
   for (int i=0 ; i < 2 ; i++)
   {
-    DataView * view = ATK_NULLPTR;
+    DataView * view = AXOM_NULLPTR;
 
     switch (i)
     {
@@ -147,11 +147,11 @@ TEST(sidre_external, create_external_view_null)
     EXPECT_EQ(view->getTotalBytes(), 0u);
 
     void * ptr = view->getVoidPtr();
-    EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), ptr);
+    EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), ptr);
 
     // getData will not work since the address is NULL
     //  int * idata_chk = view->getData();
-    //EXPECT_EQ(idata_chk, ATK_NULLPTR);
+    //EXPECT_EQ(idata_chk, AXOM_NULLPTR);
 
     view->print();
 
@@ -194,7 +194,7 @@ TEST(sidre_external, transition_external_view_to_empty)
   EXPECT_EQ(view->getNumElements(), len);
 
   void * ptr = view->getVoidPtr();
-  EXPECT_EQ(static_cast<void *>(ATK_NULLPTR), ptr);
+  EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), ptr);
 
   view->print();
 
@@ -215,7 +215,7 @@ TEST(sidre_external, verify_external_layout)
             << " associated with external pointers (described or undescribed).");
 
   // Create some internal views
-  root->createViewAndAllocate("int/desc/bufferview", asctoolkit::sidre::INT_ID,
+  root->createViewAndAllocate("int/desc/bufferview", axom::sidre::INT_ID,
                               SZ);
   root->createViewScalar("int/scalar/scalarview", SZ);
   root->createViewString("int/string/stringview", "A string");
@@ -230,7 +230,7 @@ TEST(sidre_external, verify_external_layout)
 
   // Check that the generated external layout is empty
   {
-    asctoolkit::sidre::Node emptyNode;
+    axom::sidre::Node emptyNode;
     root->createExternalLayout(emptyNode);
 
     SLIC_INFO("External node's json before adding external data."
@@ -240,7 +240,7 @@ TEST(sidre_external, verify_external_layout)
   }
 
   // Create some external views
-  root->createView("ext/desc/external_desc", asctoolkit::sidre::INT_ID, SZ,
+  root->createView("ext/desc/external_desc", axom::sidre::INT_ID, SZ,
                    extData);
   root->createView("ext/undesc/external_opaque")->setExternalDataPtr(extData);
 
@@ -263,7 +263,7 @@ TEST(sidre_external, verify_external_layout)
   // Check that the generated external layout matches expectation
   {
     /// Copy the external layout into a conduit node and test the layout
-    asctoolkit::sidre::Node node;
+    axom::sidre::Node node;
     root->createExternalLayout(node);
 
     SLIC_INFO("External node's json: \n\t" << node.to_json());

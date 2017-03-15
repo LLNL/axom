@@ -194,7 +194,7 @@ public:
    */
   Point< T,3 > barycentricCoords(const PointType& p) const
   {
-    SLIC_CHECK(asctoolkit::utilities::isNearlyEqual(ppedVolume(p), 0.));
+    SLIC_CHECK(axom::utilities::isNearlyEqual(ppedVolume(p), 0.));
 
     Point< T,3 > bary;
 
@@ -250,7 +250,7 @@ public:
    */
   bool degenerate(double eps = 1.0e-12) const
   {
-    return asctoolkit::utilities::isNearlyEqual(area(),  0.0, eps);
+    return axom::utilities::isNearlyEqual(area(),  0.0, eps);
   }
 
   /*!
@@ -262,7 +262,7 @@ public:
    */
   bool checkInTriangle(const PointType& p, double eps = 1.0e-8) const
   {
-    if (!asctoolkit::utilities::isNearlyEqual(ppedVolume(p), 0., eps)) {
+    if (!axom::utilities::isNearlyEqual(ppedVolume(p), 0., eps)) {
       return false;
     }
 

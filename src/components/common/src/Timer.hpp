@@ -13,23 +13,23 @@
 #define TIMER_HPP_
 
 #include "common/config.hpp"
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
   #include "common/ChronoTimer.hpp"
 #else
   #include "common/TimeofdayTimer.hpp"
 #endif
 
 namespace {
-#ifdef ATK_USE_CXX11
-  typedef asctoolkit::utilities::detail::ChronoTimer HighPrecisionTimer;
+#ifdef AXOM_USE_CXX11
+  typedef axom::utilities::detail::ChronoTimer HighPrecisionTimer;
 #else
-  typedef asctoolkit::utilities::detail::TimeofdayTimer HighPrecisionTimer;
+  typedef axom::utilities::detail::TimeofdayTimer HighPrecisionTimer;
 #endif
 }
 
 
 
-namespace asctoolkit {
+namespace axom {
 namespace utilities {
 
 /*!
@@ -165,6 +165,6 @@ private:
 };
 
 } // namespace utilities 
-} // namespace asctoolkit 
+} // namespace axom 
 
 #endif // TIMER_HPP_ 

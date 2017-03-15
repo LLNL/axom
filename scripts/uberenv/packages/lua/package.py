@@ -43,7 +43,7 @@ class Lua(Package):
     version('5.1.3', 'a70a8dfaa150e047866dc01a46272599')
 
     ######
-    # for the toolkit:
+    # for axom:
     # disable ncurses and readline as dependents.
     ######
     # lua's build system is not linking these with rpath, which 

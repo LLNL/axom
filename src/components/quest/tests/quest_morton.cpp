@@ -67,7 +67,7 @@ TEST( quest_point, test_max_set_bit)
     typedef int CoordType;
     typedef std::size_t MortonIndexType;
 
-    quest::Mortonizer<CoordType,MortonIndexType,2> morton2;
+    axom::quest::Mortonizer<CoordType,MortonIndexType,2> morton2;
     EXPECT_EQ( morton2.maxSetBit( 0), 0);
 
 
@@ -89,7 +89,7 @@ TEST( quest_point, test_max_set_bit)
 
 TEST( quest_point, test_mortonizer)
 {
-  using namespace quest;
+  using namespace axom::quest ;
 
   SLIC_INFO("Testing Morton conversion on some simple points");
 
@@ -138,11 +138,11 @@ TEST( quest_point, test_mortonizer)
 template<typename CoordType, typename MortonIndexType, int DIM>
 void testMortonizer()
 {
-    using namespace quest;
+    using namespace axom::quest ;
 
     typedef Point<CoordType, DIM> GridPoint;
 
-    int maxBits = quest::Mortonizer<CoordType,MortonIndexType,DIM>::maxBitsPerCoord();
+    int maxBits = axom::quest::Mortonizer<CoordType,MortonIndexType,DIM>::maxBitsPerCoord();
     SLIC_INFO("\tMax bits per dimension: " << std::numeric_limits<CoordType>::digits);
     SLIC_INFO("\tMax unique bits per dimension: " << maxBits);
 
@@ -171,7 +171,7 @@ void testMortonizer()
 template<int DIM>
 void testIntegralTypes()
 {
-    namespace common = asctoolkit::common;
+    namespace common = axom::common;
 
     SLIC_INFO("Testing char in " << DIM << "d -- ");
     testMortonizer<common::int8,common::uint8,DIM>();
@@ -245,7 +245,7 @@ TEST( quest_point, test_integral_types_3D)
 
 TEST( quest_point, test_point_hasher)
 {
-    using namespace quest;
+    using namespace axom::quest ;
 
     SLIC_INFO("** Here we test the point hasher which can be used e.g. in an unordered_map");
 

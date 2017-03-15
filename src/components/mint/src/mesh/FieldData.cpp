@@ -10,7 +10,7 @@
 
 #include "FieldData.hpp"
 
-// ATK includes
+// axom includes
 #include "mint/Field.hpp"
 #include "slic/slic.hpp"
 
@@ -43,7 +43,7 @@ bool FieldData::hasField( const std::string& name )
 //------------------------------------------------------------------------------
 void FieldData::addField( Field* f )
 {
-  SLIC_ASSERT(  f != ATK_NULLPTR );
+  SLIC_ASSERT(  f != AXOM_NULLPTR );
   SLIC_ASSERT(  this->hasField( f->getName() )==false );
 
   m_fields.push_back( f->getName() );
@@ -65,7 +65,7 @@ Field* FieldData::getField( int i )
   SLIC_ASSERT( i >= 0 && i < this->getNumberOfFields() );
 
   if ( i < 0 || i >= this->getNumberOfFields() ) {
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   return this->getField( m_fields[ i ] );
@@ -84,7 +84,7 @@ void FieldData::clear()
   std::map< std::string, Field* >::iterator iter = m_container.begin();
   for (; iter != m_container.end(); ++iter ) {
     delete iter->second;
-    iter->second = ATK_NULLPTR;
+    iter->second = AXOM_NULLPTR;
   }
   m_container.clear();
 }

@@ -18,9 +18,9 @@ set(lulesh_sources
         )
 
 # Add some extra configuration flags for MPI, OpenMP and allowing unused parameters (in 3rd party source code)
-set(luleshExtraCompileFlags ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS})
+set(luleshExtraCompileFlags ${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS})
 if ( NOT ENABLE_OPENMP )
-    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} ${ATK_DISABLE_OMP_PRAGMA_WARNINGS}")
+    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} ${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
 endif()
 
 if ( ENABLE_MPI )

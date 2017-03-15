@@ -2,9 +2,9 @@
 #ifndef COMMON_CSTDINT_WRAPPER_HPP_
 #define COMMON_CSTDINT_WRAPPER_HPP_
 
-#include "common/config.hpp"    // defines ATK_USE_CXX11
+#include "common/config.hpp"    // defines AXOM_USE_CXX11
 
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
   #include <cstdint>            // for fixed width types in c++11
 #endif
 
@@ -23,12 +23,12 @@
 
 
 
-namespace asctoolkit {
+namespace axom {
 namespace common {
 namespace detail {
 
 
-#ifdef ATK_USE_CXX11
+#ifdef AXOM_USE_CXX11
   typedef std::int8_t int8_t;
   typedef std::uint8_t uint8_t;
 
@@ -38,7 +38,7 @@ namespace detail {
   typedef std::int32_t int32_t;
   typedef std::uint32_t uint32_t;
 
-  #ifndef  ATK_NO_INT64_T
+  #ifndef  AXOM_NO_INT64_T
   typedef std::int64_t int64_t;
   typedef std::uint64_t uint64_t;
   #endif
@@ -77,17 +77,17 @@ namespace detail {
  *
  * KW for asc toolkit:
  *      - Only took parts of file that we needed for fixed-bitwidth types in the toolkit
- *      - Appended 'ATK_COMMON_' to macros to avoid possible collisions with stdint
+ *      - Appended 'AXOM_COMMON_' to macros to avoid possible collisions with stdint
  */
 
 
 #if _MSC_VER && (_MSC_VER < 1300)
 /* using MSVC 6 or earlier - no "long long" type, but might have _int64 type */
-  #define __ATK_COMMON_STDINT_LONGLONG           __int64
-  #define __ATK_COMMON_STDINT_LONGLONG_SUFFIX    i64
+  #define __AXOM_COMMON_STDINT_LONGLONG           __int64
+  #define __AXOM_COMMON_STDINT_LONGLONG_SUFFIX    i64
 #else
-  #define __ATK_COMMON_STDINT_LONGLONG           long long
-  #define __ATK_COMMON_STDINT_LONGLONG_SUFFIX    LL
+  #define __AXOM_COMMON_STDINT_LONGLONG           long long
+  #define __AXOM_COMMON_STDINT_LONGLONG_SUFFIX    LL
 #endif
 
 
@@ -101,8 +101,8 @@ namespace detail {
   typedef int int32_t;
   typedef unsigned uint32_t;
 
-  typedef __ATK_COMMON_STDINT_LONGLONG int64_t;
-  typedef unsigned __ATK_COMMON_STDINT_LONGLONG uint64_t;
+  typedef __AXOM_COMMON_STDINT_LONGLONG int64_t;
+  typedef unsigned __AXOM_COMMON_STDINT_LONGLONG uint64_t;
 
 
 /* 7.18.1.2  Minimum-width integer types */
@@ -115,8 +115,8 @@ namespace detail {
   typedef int int_least32_t;
   typedef unsigned uint_least32_t;
 
-  typedef __ATK_COMMON_STDINT_LONGLONG int_least64_t;
-  typedef unsigned __ATK_COMMON_STDINT_LONGLONG uint_least64_t;
+  typedef __AXOM_COMMON_STDINT_LONGLONG int_least64_t;
+  typedef unsigned __AXOM_COMMON_STDINT_LONGLONG uint_least64_t;
 
 
 /*  7.18.1.3  Fastest minimum-width integer types
@@ -132,17 +132,17 @@ namespace detail {
   typedef int int_fast32_t;
   typedef unsigned int uint_fast32_t;
 
-  typedef __ATK_COMMON_STDINT_LONGLONG int_fast64_t;
-  typedef unsigned __ATK_COMMON_STDINT_LONGLONG uint_fast64_t;
+  typedef __AXOM_COMMON_STDINT_LONGLONG int_fast64_t;
+  typedef unsigned __AXOM_COMMON_STDINT_LONGLONG uint_fast64_t;
 
 
-  #undef __ATK_COMMON_STDINT_LONGLONG
-  #undef __ATK_COMMON_STDINT_LONGLONG_SUFFIX
+  #undef __AXOM_COMMON_STDINT_LONGLONG
+  #undef __AXOM_COMMON_STDINT_LONGLONG_SUFFIX
 
-#endif  // ATK_USE_CXX11
+#endif  // AXOM_USE_CXX11
 }     // end namespace detail
 }     // end namespace common
-}     // end namespace asctoolkit
+}     // end namespace axom
 
 
 #endif // COMMON_CSTDINT_WRAPPER_HPP_

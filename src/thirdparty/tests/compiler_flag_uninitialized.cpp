@@ -4,7 +4,7 @@
 /**
  * \file
  * This file tests the ability to disable warnings about uninitialized variables
- * on all supported compilers using the ATK_DISABLE_UNINITIALIZED_WARNINGS build variable.
+ * on all supported compilers using the AXOM_DISABLE_UNINITIALIZED_WARNINGS build variable.
  */
 
 

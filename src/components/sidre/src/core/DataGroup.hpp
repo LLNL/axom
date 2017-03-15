@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataGroup.hpp
  *
  * \brief   Header file containing definition of DataGroup class.
  *
@@ -21,8 +21,8 @@
 #ifndef DATAGROUP_HPP_
 #define DATAGROUP_HPP_
 
-#include "common/config.hpp"    // defines ATK_USE_CXX11
-#include "common/ATKMacros.hpp"
+#include "common/config.hpp"    // defines AXOM_USE_CXX11
+#include "common/AxomMacros.hpp"
 
 // Standard C++ headers
 #include <memory>
@@ -35,16 +35,16 @@
 // third party lib headers
 #include "hdf5.h"
 
-// Other CS Toolkit headers
+// Other axom headers
 #include "slic/slic.hpp"
 #include "common/CommonTypes.hpp"
 
-// SiDRe project headers
+// Sidre project headers
 #include "SidreTypes.hpp"
 #include "DataView.hpp"
 
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -180,7 +180,7 @@ public:
    * \brief Return pointer to non-const parent Group of a Group.
    *
    * Note that if this method is called on the root Group in a
-   * DataStore, ATK_NULLPTR is returned.
+   * DataStore, AXOM_NULLPTR is returned.
    */
   DataGroup * getParent()
   {
@@ -191,7 +191,7 @@ public:
    * \brief Return pointer to const parent Group of a Group.
    *
    * Note that if this method is called on the root Group in a
-   * DataStore, ATK_NULLPTR is returned.
+   * DataStore, AXOM_NULLPTR is returned.
    */
   const DataGroup * getParent() const
   {
@@ -275,7 +275,7 @@ public:
    *
    * This method requires that all groups in the path exist if a path is given.
    *
-   * If no such View exists, ATK_NULLPTR is returned.
+   * If no such View exists, AXOM_NULLPTR is returned.
    */
   DataView * getView( const std::string& path );
 
@@ -284,21 +284,21 @@ public:
    *
    * This method requires that all Groups in the path exist if a path is given.
    *
-   * If no such View exists, ATK_NULLPTR is returned.
+   * If no such View exists, AXOM_NULLPTR is returned.
    */
   const DataView * getView( const std::string& path ) const;
 
   /*!
    * \brief Return pointer to non-const View with given index.
    *
-   * If no such View exists, ATK_NULLPTR is returned.
+   * If no such View exists, AXOM_NULLPTR is returned.
    */
   DataView * getView( IndexType idx );
 
   /*!
    * \brief Return pointer to const View with given index.
    *
-   * If no such View exists, ATK_NULLPTR is returned.
+   * If no such View exists, AXOM_NULLPTR is returned.
    */
   const DataView * getView( IndexType idx ) const;
 
@@ -340,7 +340,7 @@ public:
    * \brief Create an undescribed (i.e., empty) View object with given name
    * or path in this Group.
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
   DataView * createView( const std::string& path );
 
@@ -351,7 +351,7 @@ public:
    * If given data type is undefined, or given number of elements is < 0,
    * method is a no-op.
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
   DataView * createView( const std::string& path,
                          TypeID type,
@@ -364,7 +364,7 @@ public:
    * If given data type is undefined, or given number of dimensions is < 0,
    * or given shape ptr is null, method is a no-op.
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
   DataView * createView( const std::string& path,
                          TypeID type,
@@ -375,7 +375,7 @@ public:
    * \brief Create View object with given name or path in this Group that
    *  is described by a Conduit DataType object.
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
   DataView * createView( const std::string& path,
                          const DataType& dtype);
@@ -410,7 +410,7 @@ public:
    * This method is equivalent to:
    * group->createView(name)->attachBuffer(buff).
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::attachBuffer
    */
@@ -429,7 +429,7 @@ public:
    * group->createView(name, type, num_elems)->attachBuffer(buff), or
    * group->createView(name)->attachBuffer(buff)->apply(type, num_elems).
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::attachBuffer
    */
@@ -450,7 +450,7 @@ public:
    * group->createView(name, type, ndims, shape)->attachBuffer(buff), or
    * group->createView(name)->attachBuffer(buff)->apply(type, ndims, shape).
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::attachBuffer
    */
@@ -468,7 +468,7 @@ public:
    * group->createView(name, dtype)->attachBuffer(buff), or
    * group->createView(name)->attachBuffer(buff)->apply(dtype).
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::attachBuffer
    */
@@ -503,7 +503,7 @@ public:
    * This method is equivalent to:
    * group->createView(name)->setExternalDataPtr(external_ptr).
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::setExternalDataPtr
    */
@@ -523,7 +523,7 @@ public:
    * or group->createView(name)->setExternalDataPtr(external_ptr)->
    *           apply(type, num_elems).
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::setExternalDataPtr
    */
@@ -547,7 +547,7 @@ public:
    * group->createView(name)->setExternalDataPtr(external_ptr)->
    *        apply(type, ndims, shape).
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::setExternalDataPtr
    */
@@ -565,7 +565,7 @@ public:
    * group->createView(name, dtype)->setExternalDataPtr(external_ptr), or
    * group->createView(name)->setExternalDataPtr(external_ptr)->apply(dtype).
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::attachBuffer
    */
@@ -596,7 +596,7 @@ public:
    * This is equivalent to: createView(name)->allocate(type, num_elems), or
    * createView(name, type, num_elems)->allocate()
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::allocate
    */
@@ -615,7 +615,7 @@ public:
    * group->createView(name)->allocate(type, ndims, shape), or
    * createView(name, type, ndims, shape)->allocate().
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::allocate
    */
@@ -634,7 +634,7 @@ public:
    *
    * If given data type object is empty, data will not be allocated.
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::allocate
    */
@@ -649,7 +649,7 @@ public:
    *
    * If given data type object is empty, data will not be allocated.
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::setScalar
    */
@@ -657,7 +657,7 @@ public:
   DataView * createViewScalar( const std::string& path, ScalarType value)
   {
     DataView * view = createView(path);
-    if (view != ATK_NULLPTR)
+    if (view != AXOM_NULLPTR)
     {
       view->setScalar(value);
     }
@@ -673,7 +673,7 @@ public:
    *
    * If given data type object is empty, data will not be allocated.
    *
-   * \return pointer to new View object or ATK_NULLPTR if one is not created.
+   * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
    * \sa DataView::setString
    */
@@ -737,7 +737,7 @@ public:
    * If given View pointer is null or Group already has a View with
    * same name as given View, method is a no-op.
    *
-   * \return pointer to given argument View object or ATK_NULLPTR if View
+   * \return pointer to given argument View object or AXOM_NULLPTR if View
    * is not moved into this Group.
    */
   DataView * moveView(DataView * view);
@@ -752,7 +752,7 @@ public:
    * If given Group pointer is null or Group already has a child Group with
    * same name as given Group, method is a no-op.
    *
-   * \return pointer to given argument Group object or ATK_NULLPTR if Group
+   * \return pointer to given argument Group object or AXOM_NULLPTR if Group
    * is not moved into this Group.
    */
   DataView * copyView(DataView * view);
@@ -806,7 +806,7 @@ public:
    *
    * This method requires that all Groups in the path exist if a path is given.
    *
-   * If no such Group exists, ATK_NULLPTR is returned.
+   * If no such Group exists, AXOM_NULLPTR is returned.
    */
   DataGroup * getGroup( const std::string& path );
 
@@ -815,21 +815,21 @@ public:
    *
    * This method requires that all Groups in the path exist if a path is given.
    *
-   * If no such Group exists, ATK_NULLPTR is returned.
+   * If no such Group exists, AXOM_NULLPTR is returned.
    */
   DataGroup const * getGroup( const std::string& path ) const;
 
   /*!
    * \brief Return pointer to non-const immediate child Group with given index.
    *
-   * If no such Group exists, ATK_NULLPTR is returned.
+   * If no such Group exists, AXOM_NULLPTR is returned.
    */
   DataGroup * getGroup( IndexType idx );
 
   /*!
    * \brief Return pointer to const immediate child Group with given index.
    *
-   * If no such Group exists, ATK_NULLPTR is returned.
+   * If no such Group exists, AXOM_NULLPTR is returned.
    */
   const DataGroup * getGroup( IndexType idx ) const;
 
@@ -863,7 +863,7 @@ public:
    * If name is an empty string or Group already has a child Group with
    * given name or path, method is a no-op.
    *
-   * \return pointer to created DataGroup object or ATK_NULLPTR if new
+   * \return pointer to created DataGroup object or AXOM_NULLPTR if new
    * Group is not created.
    */
   DataGroup * createGroup( const std::string& path );
@@ -903,7 +903,7 @@ public:
    * If given Group pointer is null or Group already has a child Group with
    * same name as given Group, method is a no-op.
    *
-   * \return pointer to given argument Group object or ATK_NULLPTR if Group
+   * \return pointer to given argument Group object or AXOM_NULLPTR if Group
    * is not moved into this Group.
    */
   DataGroup * moveGroup(DataGroup * group);
@@ -922,7 +922,7 @@ public:
    * If given Group pointer is null or Group already has a child Group with
    * same name as given Group, method is a no-op.
    *
-   * \return pointer to given argument Group object or ATK_NULLPTR if Group
+   * \return pointer to given argument Group object or AXOM_NULLPTR if Group
    * is not moved into this Group.
    */
   DataGroup * copyGroup(DataGroup * group);
@@ -1287,6 +1287,6 @@ private:
 
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
 #endif /* DATAGROUP_HPP_ */

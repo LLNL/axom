@@ -67,7 +67,7 @@ namespace primal {
 template < typename T, int NDIMS >
 inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
                                        const Triangle< T,NDIMS >& tri,
-                                       int* loc=ATK_NULLPTR )
+                                       int* loc=AXOM_NULLPTR )
 {
 // convenience macros to access triangle vertices
 #define A(t) t[0]
@@ -83,7 +83,7 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   if ( d1 <= 0.0f && d2 <= 0.0f ) {
 
     // A is the closest point
-    if ( loc != ATK_NULLPTR) {
+    if ( loc != AXOM_NULLPTR) {
       *loc = 0;
     }
 
@@ -99,7 +99,7 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   if ( d3 >= 0.0f && d4 <= d3 ) {
 
     // B is the closest point
-    if ( loc != ATK_NULLPTR) {
+    if ( loc != AXOM_NULLPTR) {
       *loc = 1;
     }
 
@@ -119,7 +119,7 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
     double y = A(tri)[1] + v_ab[1];
     double z = (NDIMS==3) ? A(tri)[2] + v_ab[2] : 0.0;
 
-    if ( loc != ATK_NULLPTR ) {
+    if ( loc != AXOM_NULLPTR ) {
       *loc = -1;
     }
 
@@ -134,7 +134,7 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   if ( d6 >= 0.0f && d5 <= d6 ) {
 
     // C is the closest point
-    if ( loc != ATK_NULLPTR ) {
+    if ( loc != AXOM_NULLPTR ) {
       *loc = 2;
     }
 
@@ -153,7 +153,7 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
     double y = A(tri)[1] + w_ac[1];
     double z = (NDIMS==3) ? A(tri)[2] + w_ac[2] : 0.0;
 
-    if ( loc != ATK_NULLPTR) {
+    if ( loc != AXOM_NULLPTR) {
       *loc = -3;
     }
 
@@ -173,7 +173,7 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
     double y = B(tri)[1] + w_bc[1];
     double z = (NDIMS==3) ? B(tri)[2] + w_bc[2] : 0.0;
 
-    if ( loc != ATK_NULLPTR ) {
+    if ( loc != AXOM_NULLPTR ) {
       *loc = -2;
     }
 
@@ -191,7 +191,7 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   double y = A(tri)[1] + N[1];
   double z = (NDIMS==3) ? A(tri)[2] + N[2] : 0.0;
 
-  if ( loc != ATK_NULLPTR ) {
+  if ( loc != AXOM_NULLPTR ) {
     *loc = Triangle< T,NDIMS >::NUM_TRI_VERTS;
   }
 

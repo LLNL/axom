@@ -20,7 +20,7 @@
 
 #include "IndirectionSet.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
   const NullSet IndirectionSet::s_nullSet;
@@ -43,4 +43,4 @@ namespace slam {
   }
 
 } /* namespace slam */
-} /* namespace asctoolkit */
+} /* namespace axom */

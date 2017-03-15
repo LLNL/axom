@@ -13,7 +13,7 @@ copyright:
   -
 
 library: SPIO
-namespace: asctoolkit spio
+namespace: axom spio
 
 options:
   C_prefix: SPIO_
@@ -27,7 +27,7 @@ options:
 types:
   DataGroup:
     cpp_header: sidre/DataGroup.hpp
-    cpp_type: asctoolkit::sidre::DataGroup
+    cpp_type: axom::sidre::DataGroup
     f_type: type(datagroup)
     f_module:
       sidre_mod: [ datagroup ]

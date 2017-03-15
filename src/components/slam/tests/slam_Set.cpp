@@ -25,7 +25,7 @@ static unsigned int const NUM_ELEMS = 5;
 
 TEST(gtest_slam_set,construct_set)
 {
-  asctoolkit::slam::Set* s = new asctoolkit::slam::RangeSet(NUM_ELEMS);
+  axom::slam::Set* s = new axom::slam::RangeSet(NUM_ELEMS);
 
   delete s;
 

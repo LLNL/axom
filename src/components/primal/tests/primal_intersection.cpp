@@ -403,7 +403,7 @@ TEST( primal_intersection, 2D_triangle_triangle_intersection )
                   Point2::make_point(5.0,5.0),
                   Point2::make_point(0.0,0.0) );
 
-  // asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
+  // axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
   // Several intersection cases (and one non-intersection)
 
@@ -892,7 +892,7 @@ TEST( primal_intersection, ray_aabb_intersection_general3D )
   SLIC_INFO("Point at: "<<ip);
   EXPECT_FALSE( intersects);
 
-  //asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  //axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
 TEST( primal_intersection, ray_aabb_intersection_tinyDirectionVector3D )
@@ -930,7 +930,7 @@ TEST( primal_intersection, ray_aabb_intersection_tinyDirectionVector3D )
   SLIC_INFO("Point at: "<<ip);
   EXPECT_FALSE(intersects);
 
-  //asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Warning);
+  //axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
 template < int DIM >

@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataStore.hpp
  *
  * \brief   Header file containing definition of DataStore class.
  *
@@ -27,15 +27,15 @@
 
 #include "hdf5.h"
 
-// Other CS Toolkit headers
-#include "common/ATKMacros.hpp"
+// Other axom headers
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
 // Sidre project headers
 #include "SidreTypes.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -105,12 +105,12 @@ public:
   bool hasBuffer( IndexType idx ) const
   {
     return ( 0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() &&
-             m_data_buffers[static_cast<unsigned>(idx)] != ATK_NULLPTR );
+             m_data_buffers[static_cast<unsigned>(idx)] != AXOM_NULLPTR );
   }
 
   /*!
    * \brief Return (non-const) pointer to Buffer object with given index,
-   *        or ATK_NULLPTR if none exists.
+   *        or AXOM_NULLPTR if none exists.
    */
   DataBuffer * getBuffer( IndexType idx ) const;
 
@@ -214,6 +214,6 @@ private:
 
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
 #endif /* DATASTORE_HPP_ */
