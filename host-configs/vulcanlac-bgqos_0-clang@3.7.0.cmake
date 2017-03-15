@@ -64,15 +64,19 @@ set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_09_22_20
 # MPI - manually added for now
 ##############################################################################
 set(ENABLE_MPI ON CACHE PATH "")
-#set(MPI_C_COMPILER "/usr/apps/gnu/clang/llnl/bin/mpiclang-fastmpi" CACHE PATH "")
-#set(MPI_CXX_COMPILER "/usr/apps/gnu/clang/llnl/bin/mpiclang++11-fastmpi" CACHE PATH "")
 
 set(MPI_C_COMPILER "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3/bin/mpicc" CACHE PATH "")
 set(MPI_CXX_COMPILER "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3/bin/mpicxx" CACHE PATH "")
 
-set("MPI_C_LIBRARIES"   "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3/lib/libmpi.a" CACHE PATH "")
-set("MPI_CXX_LIBRARIES" "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3/lib/libmpicxx.a" CACHE PATH "")
-set("MPI_CXX_INCLUDE_PATH" "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3/include" CACHE PATH "")
+set(MPI_LIBS "/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpich-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libopa-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpl-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libpami-gcc.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI_cnk.a;rt;pthread;stdc++;pthread")
+
+set(MPI_INCLUDE_PATHS "/bgsys/drivers/V1R2M4/ppc64/comm/include;/bgsys/drivers/V1R2M4/ppc64/comm/lib/gnu;/bgsys/drivers/V1R2M4/ppc64;/bgsys/drivers/V1R2M4/ppc64/comm/sys/include;/bgsys/drivers/V1R2M4/ppc64/spi/include;/bgsys/drivers/V1R2M4/ppc64/spi/include/kernel/cnk" )
+
+set(MPI_C_INCLUDE_PATH ${MPI_INCLUDE_PATHS} CACHE PATH "")
+set(MPI_C_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+
+set(MPI_CXX_INCLUDE_PATH  ${MPI_INCLUDE_PATHS} CACHE PATH "")
+set(MPI_CXX_LIBRARIES ${MPI_LIBS} CACHE PATH "")
 
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")

@@ -20,7 +20,7 @@ set("CMAKE_C_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bggcc" CACHE PA
 set("CMAKE_CXX_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bgg++" CACHE PATH "")
 
 # fortran compiler used by spack
-set("ENABLE_FORTRAN" "ON" CACHE PATH "")
+set("ENABLE_FORTRAN" "OFF" CACHE PATH "")
 
 set("CMAKE_Fortran_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bggfortran" CACHE PATH "")
 
@@ -68,9 +68,16 @@ set(MPI_C_COMPILER "/usr/local/tools/compilers/ibm/mpicc-4.7.2-fastmpi" CACHE PA
 set(MPI_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2-fastmpi" CACHE PATH "")
 set(MPI_Fortran_COMPILER  "/usr/local/tools/compilers/ibm/mpif90-4.7.2-fastmpi" CACHE PATH "")
 
-set("MPI_C_LIBRARIES"   "/usr/local/tools/toolchain-4.7.2/mpclib/lib/libmpc.a" CACHE PATH "")
-set("MPI_CXX_LIBRARIES" "/usr/local/tools/toolchain-4.7.2/mpclib/lib/libmpc.a" CACHE PATH "")
-set("MPI_CXX_INCLUDE_PATH" "/usr/local/tools/toolchain-4.7.2/mpclib/include" CACHE PATH "")
+set(MPI_LIBS "/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpich-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libopa-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpl-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libpami-gcc.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI_cnk.a;rt;pthread;stdc++;pthread")
+
+set(MPI_INCLUDE_PATHS "/bgsys/drivers/V1R2M4/ppc64/comm/include;/bgsys/drivers/V1R2M4/ppc64/comm/lib/gnu;/bgsys/drivers/V1R2M4/ppc64;/bgsys/drivers/V1R2M4/ppc64/comm/sys/include;/bgsys/drivers/V1R2M4/ppc64/spi/include;/bgsys/drivers/V1R2M4/ppc64/spi/include/kernel/cnk" )
+
+set(MPI_C_INCLUDE_PATH ${MPI_INCLUDE_PATHS} CACHE PATH "")
+set(MPI_C_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+
+set(MPI_CXX_INCLUDE_PATH  ${MPI_INCLUDE_PATHS} CACHE PATH "")
+set(MPI_CXX_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+set(MPI_Fortran_LIBRARIES ${MPI_LIBS} CACHE PATH "")
 
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
@@ -78,4 +85,6 @@ set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 ##############################################################################
 # !---------------------------------------------------------------------------
 ##############################################################################
+#set(ENABLE_EXAMPLES OFF CACHE PATH "")
+#set(ENABLE_TESTS OFF CACHE PATH "")
 
