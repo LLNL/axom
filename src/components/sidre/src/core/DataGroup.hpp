@@ -761,6 +761,55 @@ public:
 
 
 //@{
+//!  @name View attach and detach methods.
+
+  /*!
+   * \brief Attach View object to this Group.
+   */
+  DataView * attachView(DataView * view);
+
+  /*!
+   * \brief Detach View object from this Group.
+   */
+  DataView * detachView(const DataView * view)
+  {
+    return detachView(view->getName());
+  }
+
+  /*!
+   * \brief Detach View with given name from this Group.
+   */
+  DataView * detachView(const std::string& name);
+
+  /*!
+   * \brief Detach View with given index from this Group.
+   */
+  DataView * detachView(IndexType idx);
+
+//@}
+
+//@{
+//!  @name Group attach and detach methods.
+
+  /*!
+   * \brief Attach Group object to this Group.
+   */
+  DataGroup * attachGroup(DataGroup * view);
+
+  /*!
+   * \brief Detach Child Group with given name from this Group.
+   */
+  DataGroup * detachGroup(const std::string& name);
+
+  /*!
+   * \brief Detach Child Group with given index from this Group.
+   */
+  DataGroup * detachGroup(IndexType idx);
+
+//@}
+
+
+//@{
 //!  @name Child Group query methods.
 
   /*!
@@ -1088,6 +1137,22 @@ public:
    */
   void loadExternalData(const hid_t& h5_id);
 
+  /*!
+   * \brief Change the name of this Group.
+   *
+   * The name of this group is changed to the new name.  If this group
+   * has a parent group, the name for this group held by the parent is
+   * also changed.
+   *
+   * The name cannot be a path--an error will occur if the name if the
+   * path delimiter (usually '/') is in the string.
+   *
+   * Errors will also occur if the new name is identical to a name that
+   * is already held by the parent for another Group or View object.
+   *
+   * /param new_name    The new name for this group.
+   */
+  void rename(const std::string& new_name);
 
 private:
   DISABLE_DEFAULT_CTOR(DataGroup);
@@ -1122,29 +1187,6 @@ private:
 //!  @name Private Group View manipulation methods.
 
   /*!
-   * \brief Attach View object to this Group.
-   */
-  DataView * attachView(DataView * view);
-
-  /*!
-   * \brief Detach View object from this Group.
-   */
-  DataView * detachView(const DataView * view)
-  {
-    return detachView(view->getName());
-  }
-
-  /*!
-   * \brief Detach View with given name from this Group.
-   */
-  DataView * detachView(const std::string& name);
-
-  /*!
-   * \brief Detach View with given index from this Group.
-   */
-  DataView * detachView(IndexType idx);
-
-  /*!
    * \brief Destroy View and its data if its data is not shared with any
    * other View.
    *
@@ -1157,26 +1199,6 @@ private:
 
 //@}
 
-
-//@{
-//!  @name Private (child) Group manipulation methods.
-
-  /*!
-   * \brief Attach Group to this Group as a child.
-   */
-  DataGroup * attachGroup(DataGroup * group);
-
-  /*!
-   * \brief Detaich child Group with given name from this Group.
-   */
-  DataGroup * detachGroup(const std::string& name);
-
-  /*!
-   * \brief Detaich child Group with given index from this Group.
-   */
-  DataGroup * detachGroup(IndexType idx);
-
-//@}
 
 
 //@{
@@ -1257,6 +1279,16 @@ private:
    * input path string if it contains no "/".
    */
   const DataGroup * walkPath(std::string& path ) const;
+
+  /*!
+   * \brief Private method to rename this Group if possible, give warning if
+   * not.
+   *
+   * If the parent group already holds a Group or View with the new name,
+   * a warning will be given and the name will not be changed.  Otherwise
+   * the name will be changed to the new name.
+   */
+  void renameOrWarn(const std::string& new_name);
 
   /// Name of this DataGroup object.
   std::string m_name;

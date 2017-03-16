@@ -1043,6 +1043,55 @@ TEST(sidre_group,save_restore_scalars_and_strings)
 }
 
 //------------------------------------------------------------------------------
+TEST(sidre_group,save_restore_name_change)
+{
+  const std::string file_path_base("sidre_save_name_change_");
+  DataStore * ds1 = new DataStore();
+  DataGroup * root1 = ds1->getRoot();
+  DataGroup * child1 = root1->createGroup("child1");
+
+  child1->createViewScalar<int>("i0", 1);
+  child1->createViewString("s0", "I am a string");
+
+  for (int i = 0 ; i < nprotocols ; ++i)
+  {
+    //      if ( protocols[i] == "conduit_hdf5")
+    //	  continue;   // XXX - Does not work
+    const std::string file_path = file_path_base + protocols[i];
+    child1->save(file_path, protocols[i]);
+  }
+
+
+  // Only restore conduit_hdf
+  for (int i = 1 ; i < 2 ; ++i)
+  {
+    const std::string file_path = file_path_base + protocols[i];
+
+    DataStore * ds2 = new DataStore();
+    DataGroup * root2 = ds2->getRoot();
+    DataGroup * child2 = root2->createGroup("child2");
+
+    EXPECT_EQ(child2->getName(), "child2");
+
+    child2->load(file_path, protocols[i]);
+
+    EXPECT_EQ(child2->getName(), "child1");
+
+    EXPECT_TRUE( root1->isEquivalentTo( root2 ));
+
+    int i0 = child2->getView("i0")->getScalar();
+    const char * s0 = child2->getView("s0")->getString();
+
+    EXPECT_EQ( 1, i0);
+    EXPECT_EQ( std::string(s0), "I am a string");
+
+    delete ds2;
+  }
+
+  delete ds1;
+}
+
+//------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_external_data)
 {
   const std::string file_path_base("sidre_save_external_");
