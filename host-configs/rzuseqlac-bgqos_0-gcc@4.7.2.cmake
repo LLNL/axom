@@ -20,7 +20,7 @@ set("CMAKE_C_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bggcc" CACHE PA
 set("CMAKE_CXX_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bgg++" CACHE PATH "")
 
 # fortran compiler used by spack
-set("ENABLE_FORTRAN" "ON" CACHE PATH "")
+set("ENABLE_FORTRAN" "OFF" CACHE PATH "")
 
 set("CMAKE_Fortran_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bggfortran" CACHE PATH "")
 
