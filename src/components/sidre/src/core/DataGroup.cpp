@@ -1487,8 +1487,9 @@ void DataGroup::load(const hid_t& h5_id,
 void DataGroup::renameOrWarn(const std::string& new_name)
 {
   if (new_name != m_name) {
+    const DataGroup * root = getDataStore()->getRoot();
     DataGroup * parent = getParent();
-    if (parent == AXOM_NULLPTR)
+    if (this == root || parent == AXOM_NULLPTR)
     {
       rename(new_name);
     }
@@ -2405,11 +2406,12 @@ void DataGroup::rename(const std::string& new_name)
     SLIC_ERROR_IF(new_name.find(s_path_delimiter) != std::string::npos,
                   "Cannot rename an existing DataGroup with a path name.");
 
+    const DataGroup * root = getDataStore()->getRoot();
     DataGroup * parent = getParent();
 
-    //If parent is AXOM_NULLPTR, this is the root group, and we don't need
+    //If this is the root group, we don't need
     //to do anything to change the parent's handle to this group.
-    if (parent != AXOM_NULLPTR) {
+    if (this != root && parent != AXOM_NULLPTR) {
       SLIC_ERROR_IF(new_name.empty(),
                     "Empty string given to DataGroup::rename for " <<
                      "non-root DataGroup");

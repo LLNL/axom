@@ -1053,6 +1053,11 @@ TEST(sidre_group,save_restore_name_change)
   child1->createViewScalar<int>("i0", 1);
   child1->createViewString("s0", "I am a string");
 
+  child1->getView("s0")->rename("s0_renamed");
+
+  EXPECT_FALSE( child1->hasView("s0") );
+  EXPECT_TRUE( child1->hasView("s0_renamed") );
+
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     //      if ( protocols[i] == "conduit_hdf5")
@@ -1071,19 +1076,19 @@ TEST(sidre_group,save_restore_name_change)
     DataGroup * root2 = ds2->getRoot();
     DataGroup * child2 = root2->createGroup("child2");
 
-    EXPECT_EQ(child2->getName(), "child2");
+    EXPECT_EQ( child2->getName(), "child2" );
 
     child2->load(file_path, protocols[i]);
 
-    EXPECT_EQ(child2->getName(), "child1");
+    EXPECT_EQ( child2->getName(), "child1" );
 
-    EXPECT_TRUE( root1->isEquivalentTo( root2 ));
+    EXPECT_TRUE( root1->isEquivalentTo( root2 ) );
 
     int i0 = child2->getView("i0")->getScalar();
-    const char * s0 = child2->getView("s0")->getString();
+    const char * s0 = child2->getView("s0_renamed")->getString();
 
-    EXPECT_EQ( 1, i0);
-    EXPECT_EQ( std::string(s0), "I am a string");
+    EXPECT_EQ( 1, i0 );
+    EXPECT_EQ( std::string(s0), "I am a string" );
 
     delete ds2;
   }
