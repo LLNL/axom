@@ -66,7 +66,7 @@ set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_09_22_20
 set(ENABLE_MPI ON CACHE PATH "")
 set(MPI_C_COMPILER "/usr/local/tools/compilers/ibm/mpicc-4.7.2-fastmpi" CACHE PATH "")
 set(MPI_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2-fastmpi" CACHE PATH "")
-set(MPI_Fortran_COMPILER  "/usr/local/tools/compilers/ibm/mpif90-4.7.2-fastmpi" CACHE PATH "")
+set(MPI_Fortran_COMPILER  "/usr/local/tools/compilers/ibm/mpigfortran-4.7.2-fastmpi" CACHE PATH "")
 
 set(MPI_LIBS "/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpich-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libopa-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpl-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libpami-gcc.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI_cnk.a;rt;pthread;stdc++;pthread")
 
@@ -85,6 +85,4 @@ set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 ##############################################################################
 # !---------------------------------------------------------------------------
 ##############################################################################
-#set(ENABLE_EXAMPLES OFF CACHE PATH "")
-#set(ENABLE_TESTS OFF CACHE PATH "")
 
