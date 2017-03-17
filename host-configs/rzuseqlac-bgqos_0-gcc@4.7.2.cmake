@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/global/tools/CMake/bgqos_0/cmake-3.1.2-bgq-experimental/bin/cmake
+# cmake executable path: /usr/local/tools/cmake-3.4.3/bin/cmake
 
 #######
 # using gcc@4.7.2 compiler spec
@@ -20,21 +20,21 @@ set("CMAKE_C_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bggcc" CACHE PA
 set("CMAKE_CXX_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bgg++" CACHE PATH "")
 
 # fortran compiler used by spack
-set("ENABLE_FORTRAN" "ON" CACHE PATH "")
+set("ENABLE_FORTRAN" "OFF" CACHE PATH "")
 
 set("CMAKE_Fortran_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bggfortran" CACHE PATH "")
 
 # hdf5 from uberenv
-set("HDF5_DIR" "/usr/workspace/wsrzc/toolkit/thirdparty_libs/builds/2017_02_20_22_32_06/spack/opt/spack/bgqos_0/gcc-4.7.2/hdf5-1.8.16-gsqekrbdiryaddbxrb7lkv5ivwyyylcc" CACHE PATH "")
+set("HDF5_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_15_11_07_28/spack/opt/spack/bgqos_0/gcc-4.7.2/hdf5-1.8.16-gsqekrbdiryaddbxrb7lkv5ivwyyylcc" CACHE PATH "")
 
 # conduit from uberenv
-set("CONDUIT_DIR" "/usr/workspace/wsrzc/toolkit/thirdparty_libs/builds/2017_02_20_22_32_06/spack/opt/spack/bgqos_0/gcc-4.7.2/conduit-0.2.1-y7kksgazxhxo4qkgbz54vdjfkpmkqu52" CACHE PATH "")
+set("CONDUIT_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_15_11_07_28/spack/opt/spack/bgqos_0/gcc-4.7.2/conduit-0.2.1-y7kksgazxhxo4qkgbz54vdjfkpmkqu52" CACHE PATH "")
 
 # sparsehash headers from uberenv
-set("SPARSEHASH_DIR" "/usr/workspace/wsrzc/toolkit/thirdparty_libs/builds/2017_02_20_22_32_06/spack/opt/spack/bgqos_0/gcc-4.7.2/sparsehash-headers-2.0.2-24icetuqyud64fxt3dfx3vxlucy5apk6" CACHE PATH "")
+set("SPARSEHASH_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_15_11_07_28/spack/opt/spack/bgqos_0/gcc-4.7.2/sparsehash-headers-2.0.2-24icetuqyud64fxt3dfx3vxlucy5apk6" CACHE PATH "")
 
 # boost headers from uberenv
-set("BOOST_DIR" "/usr/workspace/wsrzc/toolkit/thirdparty_libs/builds/2017_02_20_22_32_06/spack/opt/spack/bgqos_0/gcc-4.7.2/boost-headers-1.58.0-bgbbwvnccff6bzg32vt2dk5343c346jn" CACHE PATH "")
+set("BOOST_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_15_11_07_28/spack/opt/spack/bgqos_0/gcc-4.7.2/boost-headers-1.58.0-bgbbwvnccff6bzg32vt2dk5343c346jn" CACHE PATH "")
 
 # python not build by uberenv
 
@@ -52,4 +52,37 @@ set("BOOST_DIR" "/usr/workspace/wsrzc/toolkit/thirdparty_libs/builds/2017_02_20_
 ##################################
 # end uberenv host-config
 ##################################
+
+##############################################################################
+# !---------------------------------------------------------------------------
+##############################################################################
+# Options added manually to 
+# lc bgq gcc@4.7.2 host configs
+##############################################################################
+
+##############################################################################
+# MPI - manually added for now
+##############################################################################
+set(ENABLE_MPI ON CACHE PATH "")
+set(MPI_C_COMPILER "/usr/local/tools/compilers/ibm/mpicc-4.7.2-fastmpi" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2-fastmpi" CACHE PATH "")
+set(MPI_Fortran_COMPILER  "/usr/local/tools/compilers/ibm/mpif90-4.7.2-fastmpi" CACHE PATH "")
+
+set(MPI_LIBS "/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpich-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libopa-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpl-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libpami-gcc.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI_cnk.a;rt;pthread;stdc++;pthread")
+
+set(MPI_INCLUDE_PATHS "/bgsys/drivers/V1R2M4/ppc64/comm/include;/bgsys/drivers/V1R2M4/ppc64/comm/lib/gnu;/bgsys/drivers/V1R2M4/ppc64;/bgsys/drivers/V1R2M4/ppc64/comm/sys/include;/bgsys/drivers/V1R2M4/ppc64/spi/include;/bgsys/drivers/V1R2M4/ppc64/spi/include/kernel/cnk" )
+
+set(MPI_C_INCLUDE_PATH ${MPI_INCLUDE_PATHS} CACHE PATH "")
+set(MPI_C_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+
+set(MPI_CXX_INCLUDE_PATH  ${MPI_INCLUDE_PATHS} CACHE PATH "")
+set(MPI_CXX_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+set(MPI_Fortran_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+
+set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+
+##############################################################################
+# !---------------------------------------------------------------------------
+##############################################################################
 
