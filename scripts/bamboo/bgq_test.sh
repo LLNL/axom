@@ -7,7 +7,12 @@
 echo "running bgq_test.sh version 1.00"
 echo "cd atk_build"
 cd atk_build
-grep -v ^# project_test_commands.txt | awk '{$1 = ""; printf "echo "; print; {{if (index($2, "srun") > 0){$2="";$3="";$4=""; printf "srun -n 4 -ppsmall"} else  printf "srun -n1 -ppsmall "} ;print}}' > bgq_autogen_test.sh
-#find ./tests -print > bgq_test_lists.txt
-#grep -v ^# bgq_test_lists.txt | awk '{printf "echo "; print; printf "srun -N1 -n1 -ppsmall " ;print}' > bgq_autogen_test.sh
+
+if [[ $HOSTNAME == rz* ]]; then
+    PARTITION="pdebug"
+else
+    PARITTION="psmall"
+fi
+
+grep -v ^# project_test_commands.txt | awk -v part="${PARTITION}" '{printf "echo Runnning test " $1 "...\n"; $1=""; {{if (index($2, "srun") > 0){$2="srun -p" part} else  printf "srun -n1 -p" part} ;print}}' > bgq_autogen_test.sh
 chmod a+x bgq_autogen_test.sh
