@@ -19,17 +19,16 @@ INSTALL_DOCS=false
 
 JOBS=16
 
-TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/toolkit"
+TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/axom"
 DOCS_DIR_OLD="${TOOLKIT_WEB_ROOT}/docs_old"
 DOCS_DIR="${TOOLKIT_WEB_ROOT}/docs"
 
 COMPILER=$3
-#if [[ $HOSTNAME == rz* ]]; then
-#    HOST_CONFIGURATION="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"
-#else
-#    HOST_CONFIGURATION="host-configs/surface-chaos_5_x86_64_ib-${COMPILER}.cmake"
-#fi
-    HOST_CONFIGURATION="host-configs/vulcan-bgqos_0-${COMPILER}.cmake"
+if [[ $HOSTNAME == rz* ]]; then
+    HOST_CONFIGURATION="host-configs/rzuseqlac-bgqos_0-${COMPILER}.cmake"
+else
+    HOST_CONFIGURATION="host-configs/vulcanlac-bgqos_0-${COMPILER}.cmake"
+fi
 
 OPTIONS="-ecc -hc $HOST_CONFIGURATION -bt $BUILD_TYPE -bp $BUILD_PATH -ip $INSTALL_PATH $COMP_OPT $BUILD_OPT"
 echo Running $COMPILER
