@@ -2399,43 +2399,51 @@ IndexType DataGroup::getNextValidGroupIndex(IndexType idx) const
  *
  *************************************************************************
  */
-void DataGroup::rename(const std::string& new_name)
+bool DataGroup::rename(const std::string& new_name)
 {
+  bool do_rename = true;
   if (new_name != m_name) {
 
-    SLIC_ERROR_IF(new_name.find(s_path_delimiter) != std::string::npos,
-                  "Cannot rename an existing DataGroup with a path name.");
+    if (new_name.empty()) {
+      SLIC_WARNING("Cannot rename Group " << m_name << " to an empty " <<
+                   "string.");
+      do_rename = false;
+    } else if (new_name.find(s_path_delimiter) != std::string::npos) {
+      SLIC_WARNING("Cannot rename Group "<< m_name << " to path name " <<
+                   new_name << ". Only strings without path delimiters can " <<
+                   "be passed into the rename method.");
+      do_rename = false;
+    }
 
-    const DataGroup * root = getDataStore()->getRoot();
-    DataGroup * parent = getParent();
+    if (do_rename) {
+      const DataGroup * root = getDataStore()->getRoot();
+      DataGroup * parent = getParent();
 
-    //If this is the root group, we don't need
-    //to do anything to change the parent's handle to this group.
-    if (this != root && parent != AXOM_NULLPTR) {
-      SLIC_ERROR_IF(new_name.empty(),
-                    "Empty string given to DataGroup::rename for " <<
-                     "non-root DataGroup");
+      //If this is the root group, we don't need
+      //to do anything to change the parent's handle to this group.
+      if (this != root && parent != AXOM_NULLPTR) {
 
-      SLIC_ERROR_IF(parent->hasGroup(new_name),
-                    "Parent group " << parent->getName() <<
-                    " already has a child group named " << new_name);
+        if (parent->hasGroup(new_name) || parent->hasView(new_name)) {
+          SLIC_WARNING("Parent group " << parent->getName() <<
+                       " already has a child group named " << new_name <<
+                       ". Group " << m_name << " will not be renamed."); 
+          do_rename = false;
+        } else {
+          DataGroup * detached_group = parent->detachGroup(m_name);
+          SLIC_CHECK(detached_group == this); 
 
-      SLIC_ERROR_IF(parent->hasView(new_name),
-                    "Parent group " << parent->getName() <<
-                    " already has a child view named " << new_name);
+          m_name = new_name;
 
-      DataGroup * detached_group = parent->detachGroup(m_name);
-      SLIC_CHECK(detached_group == this); 
-
-      m_name = new_name;
-
-      DataGroup * attached_group = parent->attachGroup(detached_group);
-      SLIC_ERROR_IF(attached_group != this,
-                    "Failed to change name of group");
-    } else {
-      m_name = new_name;
+          DataGroup * attached_group = parent->attachGroup(detached_group);
+          SLIC_CHECK(attached_group == this);
+        }
+      } else {
+        m_name = new_name;
+      }
     }
   }
+
+  return do_rename;
 }
 
 

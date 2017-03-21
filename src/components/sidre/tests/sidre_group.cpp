@@ -1043,6 +1043,33 @@ TEST(sidre_group,save_restore_scalars_and_strings)
 }
 
 //------------------------------------------------------------------------------
+TEST(sidre_group,rename_group)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  DataGroup * child1 = root->createGroup("g_a");
+  DataGroup * child2 = root->createGroup("g_b");
+  DataGroup * child3 = root->createGroup("g_c");
+
+  bool success = child1->rename("g_r");
+  EXPECT_TRUE( success );
+  EXPECT_TRUE( child1->getName() == "g_r" );
+  EXPECT_TRUE( root->hasGroup("g_r") );
+  EXPECT_FALSE( root->hasGroup("g_a") );
+
+  success = child2->rename("fields/g_s");
+  EXPECT_FALSE( success );
+  EXPECT_TRUE( child2->getName() == "g_b" );
+
+  success = child3->rename("g_b");
+  EXPECT_FALSE( success );
+  EXPECT_TRUE( child3->getName() == "g_c" );
+
+}
+
+
+
+//------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_name_change)
 {
   const std::string file_path_base("sidre_save_name_change_");
@@ -1053,8 +1080,9 @@ TEST(sidre_group,save_restore_name_change)
   child1->createViewScalar<int>("i0", 1);
   child1->createViewString("s0", "I am a string");
 
-  child1->getView("s0")->rename("s0_renamed");
+  bool success = child1->getView("s0")->rename("s0_renamed");
 
+  EXPECT_TRUE( success );
   EXPECT_FALSE( child1->hasView("s0") );
   EXPECT_TRUE( child1->hasView("s0_renamed") );
 

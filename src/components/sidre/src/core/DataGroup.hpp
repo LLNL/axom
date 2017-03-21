@@ -1144,15 +1144,17 @@ public:
    * has a parent group, the name for this group held by the parent is
    * also changed.
    *
-   * The name cannot be a path--an error will occur if the name if the
-   * path delimiter (usually '/') is in the string.
-   *
-   * Errors will also occur if the new name is identical to a name that
-   * is already held by the parent for another Group or View object.
+   * Warnings will occur and the name will not be changed under these
+   * conditions:  If the new name is an empty string, if the new name
+   * contains a path delimiter (usually '/'), or if the new name is
+   * identical to a name that is already held by the parent for another
+   * Group or View object.
    *
    * /param new_name    The new name for this group.
+   *
+   * /return            Success or failure of rename.
    */
-  void rename(const std::string& new_name);
+  bool rename(const std::string& new_name);
 
 private:
   DISABLE_DEFAULT_CTOR(DataGroup);
