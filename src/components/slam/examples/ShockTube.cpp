@@ -116,7 +116,7 @@ namespace slamShocktube {
     typedef axom::slam::policies::ConstantCardinalityPolicy<PositionType, EFStride>             EFCard;
     typedef axom::slam::policies::ConstantCardinalityPolicy<PositionType, FEStride>             FECard;
     typedef axom::slam::policies::STLVectorIndirection<PositionType, PositionType>              STLIndirection;
-    typedef STLIndirection::VectorType                                                                IndexVec;
+    typedef STLIndirection::VectorType                                                          IndexVec;
 
     typedef axom::slam::StaticRelation<EFCard, STLIndirection, ElemSubset, FaceSet>             TubeElemToFaceRelation;
     typedef axom::slam::StaticRelation<FECard, STLIndirection, FaceSet, ElemSet>                FaceToElemRelation;

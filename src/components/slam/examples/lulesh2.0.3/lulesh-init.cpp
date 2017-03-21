@@ -308,7 +308,7 @@ namespace slamLulesh {
       }
 
       // Invert the zones to corner relation
-      IntsRegistry::BufferType& local_begins = m_intsRegistry.addBuffer("node_corner_begins", numNode()+1 );
+      IntsRegistry::BufferType& local_begins = m_intsRegistry.addBuffer("node_corner_begins", numNode() + 1 );
       IntsRegistry::BufferType& local_offsets = m_intsRegistry.addBuffer("node_corner_offsets", m_cornerSet.size() );
 
       local_begins[0] = 0;                                    // use the counts array to set the begins array
@@ -478,7 +478,7 @@ namespace slamLulesh {
         Int_t binSize = rand() % 1000;
         Index_t binIndex = 0;
         while(binSize >= sizeChooserProbs[binIndex])
-            ++binIndex;
+          ++binIndex;
 
         const axom::slam::RangeSet& rset = sizeChooser[ binIndex ];
         elements = rset[ rand() % rset.size() ]; // gets a random number from this bin's sizeChooser set
@@ -498,7 +498,7 @@ namespace slamLulesh {
     SLIC_ASSERT(reg2Elems.isValid());    // Ensure that the dynamic relation is valid
 
     // Convert from a Dynamic to a Static relation
-    IntsRegistry::BufferType& local_begins = m_intsRegistry.addBuffer("reg_elem_begins", numReg()+1 );
+    IntsRegistry::BufferType& local_begins = m_intsRegistry.addBuffer("reg_elem_begins", numReg() + 1 );
     IntsRegistry::BufferType& local_offsets = m_intsRegistry.addBuffer("reg_elem_offsets", numElem() );
     Index_t curOffIdx = 0;
     for(Index_t regionPos = 0; regionPos < numReg(); ++regionPos)

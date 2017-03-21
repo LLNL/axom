@@ -33,8 +33,8 @@
 
 namespace {
   typedef axom::slam::RangeSet  SetType;
-  typedef SetType::PositionType       SetPosition;
-  typedef SetType::ElementType        SetElement;
+  typedef SetType::PositionType SetPosition;
+  typedef SetType::ElementType  SetElement;
 
   static const SetPosition MAX_SET_SIZE = 20;
   static const SetElement lowerIndex = static_cast<SetElement>( .3 * MAX_SET_SIZE);
@@ -217,8 +217,8 @@ TEST(gtest_slam_range_set,out_of_range)
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  EXPECT_DEATH_IF_SUPPORTED( s.at(upperIndex),   "");
-  EXPECT_DEATH_IF_SUPPORTED( s.at(MAX_SET_SIZE), "");
+  EXPECT_DEATH_IF_SUPPORTED(  s.at(upperIndex),   "");
+  EXPECT_DEATH_IF_SUPPORTED(  s.at(MAX_SET_SIZE), "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif

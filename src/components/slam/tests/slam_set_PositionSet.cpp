@@ -30,8 +30,8 @@
 
 
 typedef axom::slam::PositionSet SetType;
-typedef SetType::PositionType         SetPosition;
-typedef SetType::ElementType          SetElement;
+typedef SetType::PositionType   SetPosition;
+typedef SetType::ElementType    SetElement;
 
 static const SetPosition MAX_SET_SIZE = 10;
 

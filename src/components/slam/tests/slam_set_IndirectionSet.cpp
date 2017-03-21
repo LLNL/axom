@@ -32,8 +32,8 @@
 
 namespace {
   typedef axom::slam::ArrayIndirectionSet SetType;
-  typedef SetType::PositionType                 SetPosition;
-  typedef SetType::ElementType                  SetElement;
+  typedef SetType::PositionType           SetPosition;
+  typedef SetType::ElementType            SetElement;
 
   static const SetPosition MAX_SET_SIZE = 10;
 
@@ -256,7 +256,7 @@ TEST(gtest_slam_set_indirectionset,vector_indirection)
   SLIC_INFO("Testing basic set operations on a VectorIndirectionSet");
 
   typedef axom::slam::VectorIndirectionSet  VectorIndirectionSet;
-  typedef VectorIndirectionSet::SetBuilder        Builder;
+  typedef VectorIndirectionSet::SetBuilder  Builder;
 
   // Set up data -- an array of incrementing integers
   std::vector<int> intVec;

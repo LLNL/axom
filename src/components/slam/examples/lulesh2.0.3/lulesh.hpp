@@ -102,8 +102,7 @@ namespace slamLulesh {
          ZETA_P_SYMM = 1 << 15,
          ZETA_P_FREE = 1 << 16,
          ZETA_P_COMM = 1 << 17,
-         ZETA_P      = ZETA_P_SYMM | ZETA_P_FREE | ZETA_P_COMM
-  };
+         ZETA_P      = ZETA_P_SYMM | ZETA_P_FREE | ZETA_P_COMM};
 
 // MPI Message Tags
 #define MSG_COMM_SBN      1024
@@ -181,7 +180,7 @@ namespace slamLulesh {
           STLIndirection,
           RegionSet,
           ElemSet>                                                                                RegionToElemRelation;
-    typedef const RegionToElemRelation::RelationSet                                               RegionElemSet;
+    typedef const RegionToElemRelation::RelationSet RegionElemSet;
 
 
     typedef axom::slam::StaticRelation<
@@ -189,13 +188,13 @@ namespace slamLulesh {
           STLIndirection,
           NodeSet,
           CornerSet>                                                                              NodeToCornerRelation;
-    typedef const NodeToCornerRelation::RelationSet                                               NodeCornerSet;
+    typedef const NodeToCornerRelation::RelationSet NodeCornerSet;
 
-    typedef axom::slam::Map<Index_t>                                                              ElemIndexMap;
-    typedef axom::slam::Map<Int_t>                                                                ElemIntMap;
+    typedef axom::slam::Map<Index_t>                ElemIndexMap;
+    typedef axom::slam::Map<Int_t>                  ElemIntMap;
     //typedef axom::slam::Map<Real_t>            ElemRealMap;
 
-    typedef axom::slam::Map<Index_t>                                                              NodeIndexMap;
+    typedef axom::slam::Map<Index_t>                NodeIndexMap;
     //typedef axom::slam::Map<Int_t>             NodeIntMap;
     //typedef axom::slam::Map<Real_t>            NodeRealMap;
 
@@ -205,10 +204,10 @@ namespace slamLulesh {
 
     //typedef axom::slam::Map<Index_t>           CornerIndexMap;
     //typedef axom::slam::Map<Int_t>             CornerIntMap;
-    typedef axom::slam::Map<Real_t> CornerRealMap;
+    typedef axom::slam::Map<Real_t>             CornerRealMap;
 
-    typedef axom::slam::FieldRegistry<Real_t>    RealsRegistry;
-    typedef axom::slam::FieldRegistry<Index_t>   IntsRegistry;
+    typedef axom::slam::FieldRegistry<Real_t>   RealsRegistry;
+    typedef axom::slam::FieldRegistry<Index_t>  IntsRegistry;
 
   public:
 
@@ -673,7 +672,7 @@ namespace slamLulesh {
     Index_t m_planeMin, m_planeMax;
 
     RealsRegistry m_realsRegistry;
-    IntsRegistry  m_intsRegistry;
+    IntsRegistry m_intsRegistry;
   };
 
   typedef Real_t & (Domain::* Domain_member )(Index_t);

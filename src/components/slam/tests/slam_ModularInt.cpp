@@ -33,10 +33,10 @@ TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(0,0),"") << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(1,0),"") << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(),   "") << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(1),  "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(0,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(1,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(),   "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(1),  "") << " SIZE of Modular int not allowed to be zero";
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -62,10 +62,10 @@ TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(0,0),"") << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(1,0),"") << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(),   "") << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(1),  "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(0,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(1,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(),   "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(1),  "") << " SIZE of Modular int not allowed to be zero";
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif

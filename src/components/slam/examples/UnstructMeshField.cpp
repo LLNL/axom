@@ -48,7 +48,7 @@
 namespace slamUnstructuredHex {
 
   typedef axom::slam::MeshIndexType IndexType;
-  typedef double                          DataType;
+  typedef double                    DataType;
 
 
   /** Simple point class for this example */
@@ -86,7 +86,8 @@ namespace slamUnstructuredHex {
   {
 
   public:
-    enum {
+    enum
+    {
       COORDS_PER_NODE = 3,
       NODES_PER_ZONE = 8
     };
@@ -94,8 +95,8 @@ namespace slamUnstructuredHex {
     /// types for sets
     typedef axom::slam::PositionSet                                                       NodeSet;
     typedef axom::slam::PositionSet                                                       ZoneSet;
-    typedef ZoneSet::PositionType                                                               PositionType;
-    typedef ZoneSet::IndexType                                                                  IndexType;
+    typedef ZoneSet::PositionType                                                         PositionType;
+    typedef ZoneSet::IndexType                                                            IndexType;
 
     /// types for relations
     typedef axom::slam::policies::STLVectorIndirection<PositionType, PositionType>        STLIndirection;
@@ -105,7 +106,7 @@ namespace slamUnstructuredHex {
           STLIndirection,
           NodeSet,
           ZoneSet>                                                                            NodeToZoneRelation;
-    typedef typename NodeToZoneRelation::RelationConstIterator                                NodeZoneIterator;
+    typedef typename NodeToZoneRelation::RelationConstIterator                          NodeZoneIterator;
 
     typedef axom::slam::policies::CompileTimeStrideHolder<PositionType, NODES_PER_ZONE> ZNStride;
     typedef axom::slam::policies::ConstantCardinalityPolicy<PositionType, ZNStride>     ConstantCardinalityPolicy;
@@ -117,9 +118,9 @@ namespace slamUnstructuredHex {
     typedef ZoneToNodeRelation::RelationConstIterator ZoneNodeIterator;
 
     /// types for maps
-    typedef axom::slam::Map< Point >            PositionsVec;
-    typedef axom::slam::Map< DataType >         NodeField;
-    typedef axom::slam::Map< DataType >         ZoneField;
+    typedef axom::slam::Map< Point >                  PositionsVec;
+    typedef axom::slam::Map< DataType >               NodeField;
+    typedef axom::slam::Map< DataType >               ZoneField;
 
   public:
     /** \brief Simple accessor for the number of nodes in the mesh  */
@@ -189,7 +190,7 @@ namespace slamUnstructuredHex {
 
     void parseMeshFile()
     {
-      typedef Repository::RealsRegistry::BufferType  RealBuf;
+      typedef Repository::RealsRegistry::BufferType RealBuf;
       typedef Repository::IntsRegistry::BufferType  IndexBuf;
 
       // Read some initial header stuff.  Note: this is not a robust vtkreader
@@ -206,7 +207,7 @@ namespace slamUnstructuredHex {
 
       const IndexType numCoords = HexMesh::COORDS_PER_NODE * numNodes;
       RealBuf& pointData = Repository::realsRegistry.addBuffer("node_positions", numCoords);
-      for(IndexType idx=0; idx < numCoords; ++idx)
+      for(IndexType idx = 0; idx < numCoords; ++idx)
       {
         vtkMesh >> pointData[idx];
       }
@@ -228,7 +229,7 @@ namespace slamUnstructuredHex {
 
       IndexBuf& zn_indices = Repository::intsRegistry.addBuffer("zone_node_indices", numNodeZoneIndices );
       IndexType idx = 0;
-      for(IndexType zoneIdx=0; zoneIdx < numZones; ++zoneIdx)
+      for(IndexType zoneIdx = 0; zoneIdx < numZones; ++zoneIdx)
       {
         vtkMesh >> nodeCount;
         SLIC_ASSERT( nodeCount == HexMesh::NODES_PER_ZONE);
@@ -250,14 +251,14 @@ namespace slamUnstructuredHex {
       SimpleVTKHexMeshReader vtkMeshReader(fileName);
       vtkMeshReader.parseMeshFile();
     }
-    typedef Repository::RealsRegistry::BufferType  RealBuf;
+    typedef Repository::RealsRegistry::BufferType RealBuf;
     typedef Repository::IntsRegistry::BufferType  IndexBuf;
 
     /// Check that the mesh has been loaded properly
     if(   !(Repository::intsRegistry.hasScalar("num_nodes")
-           && Repository::intsRegistry.hasScalar("num_zones")
-           && Repository::realsRegistry.hasBuffer("node_positions")
-           && Repository::intsRegistry.hasBuffer("zone_node_indices") ))
+        && Repository::intsRegistry.hasScalar("num_zones")
+        && Repository::realsRegistry.hasBuffer("node_positions")
+        && Repository::intsRegistry.hasBuffer("zone_node_indices") ))
     {
       SLIC_ERROR("Hex mesh not loaded properly from file " << fileName);
     }
@@ -283,7 +284,7 @@ namespace slamUnstructuredHex {
     mesh->zoneToNodeRelation.setRelationData(zn_indices.size(), &zn_indices);
 
     // Check that the relation is valid
-    SLIC_ASSERT_MSG(  mesh->zoneToNodeRelation.isValid(),
+    SLIC_ASSERT_MSG( mesh->zoneToNodeRelation.isValid(),
         "Error creating (static) relation from zones to nodes!");
     SLIC_INFO("-- numNodesOfZones: " << zn_indices.size());
 
@@ -294,7 +295,7 @@ namespace slamUnstructuredHex {
     // Create NodeToZone relation by inverting the ZoneToZone relation
     // TODO: This function to invert a relation should be moved into Slam
 
-    typedef Repository::IntsRegistry::BufferType  IndexBuf;
+    typedef Repository::IntsRegistry::BufferType IndexBuf;
 
     /// Step 1: Compute the cardinalities of each node by looping through zone to node relation
     IndexBuf& nzBegins = Repository::intsRegistry.addBuffer("node_zone_begins", mesh->nodes.size() + 1 );
@@ -311,10 +312,10 @@ namespace slamUnstructuredHex {
     // Strategy: perform (inplace) exclusive prefix sum of cardinalities in nzBegins
     IndexType prevVal = nzBegins[0];
     nzBegins[0] = 0;
-    for(int i=1; i <= mesh->numNodes(); ++i)
+    for(int i = 1; i <= mesh->numNodes(); ++i)
     {
       IndexType nextVal = nzBegins[i];
-      nzBegins[i] = nzBegins[i-1] + prevVal;
+      nzBegins[i] = nzBegins[i - 1] + prevVal;
       prevVal = nextVal;
     }
 
@@ -333,11 +334,11 @@ namespace slamUnstructuredHex {
     }
 
     /// Step 4: Fix begin offsets by shifting back by one index
-    for(int i=mesh->numNodes(); i > 0; --i)
+    for(int i = mesh->numNodes(); i > 0; --i)
     {
-      nzBegins[i] = nzBegins[i-1];
+      nzBegins[i] = nzBegins[i - 1];
     }
-    nzBegins[0]=0;
+    nzBegins[0] = 0;
 
 
     /// We can finally create the node to zone relation
@@ -345,7 +346,7 @@ namespace slamUnstructuredHex {
     mesh->nodeToZoneRelation.setOffsets(mesh->nodes.size(), &nzBegins);
     mesh->nodeToZoneRelation.setRelationData(zIndices.size(), &zIndices);
 
-    SLIC_ASSERT_MSG(  mesh->nodeToZoneRelation.isValid(true), "Error creating (static) relation from nodes to zones!\n");
+    SLIC_ASSERT_MSG( mesh->nodeToZoneRelation.isValid(true), "Error creating (static) relation from nodes to zones!\n");
 
     SLIC_INFO("-- numZonesOfNode: " << zIndices.size());
 
@@ -486,7 +487,7 @@ int main(int argc, char** argv)
     DataType errVal = computeNodalErrors(&hexMesh);
 
     // Some error checking based on precomputed values
-    if(! axom::utilities::isNearlyEqual(errVal, expectedResults[res]) )
+    if(!axom::utilities::isNearlyEqual(errVal, expectedResults[res]) )
     {
       SLIC_WARNING("Error differed from expected value -- "
           << fmt::format("Expected {}, but got {} (difference: {}",

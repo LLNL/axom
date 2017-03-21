@@ -134,7 +134,7 @@ namespace policies {
 
 
     template<typename OrderedSetIt>
-    bool isValid( OrderedSetIt beg, OrderedSetIt end, bool verboseOutput = false) const
+    bool                  isValid( OrderedSetIt beg, OrderedSetIt end, bool verboseOutput = false) const
     {
       // We allow parent sets to be null (i.e. the subset feature is deactivated)
       if( !isSubset() )

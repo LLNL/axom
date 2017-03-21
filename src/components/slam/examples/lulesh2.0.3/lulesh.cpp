@@ -2883,19 +2883,19 @@ int main(int argc, char *argv[])
     axom::slic::LogStream *weStream, *idStream;
 
 #ifdef AXOM_USE_MPI
-    std::string rankStr = numRanks == 1? "" : "[<RANK>]";
-    weStream = new axom::slic::SynchronizedStream(&std::cerr,MPI_COMM_WORLD, rankStr+fmt_we);
-    idStream = new axom::slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, rankStr+fmt_id);
+    std::string rankStr = numRanks == 1 ? "" : "[<RANK>]";
+    weStream = new axom::slic::SynchronizedStream(&std::cerr,MPI_COMM_WORLD, rankStr + fmt_we);
+    idStream = new axom::slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, rankStr + fmt_id);
 
 #else
     weStream = new axom::slic::GenericOutputStream(&std::cerr, fmt_we);
     idStream = new axom::slic::GenericOutputStream(&std::cout, fmt_id);
 #endif
 
-    addStreamToMsgLevel(weStream,  axom::slic::message::Error);
-    addStreamToMsgLevel(weStream,  axom::slic::message::Warning);
-    addStreamToMsgLevel(idStream,  axom::slic::message::Info);
-    addStreamToMsgLevel(idStream,  axom::slic::message::Debug);
+    addStreamToMsgLevel(weStream, axom::slic::message::Error);
+    addStreamToMsgLevel(weStream, axom::slic::message::Warning);
+    addStreamToMsgLevel(idStream, axom::slic::message::Info);
+    addStreamToMsgLevel(idStream, axom::slic::message::Debug);
   }
 
   /* Set defaults that can be overridden by command line opts */
