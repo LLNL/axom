@@ -1495,13 +1495,13 @@ void DataGroup::renameOrWarn(const std::string& new_name)
     }
     else
     {
-      if (parent->hasGroup("new_name"))
+      if (parent->hasGroup(new_name))
       {
         SLIC_WARNING("Parent already has a child group named " << new_name <<
                      ". The name of group " << m_name <<
                      " will not be changed.");
       }
-      else if (parent->hasView("new_name"))
+      else if (parent->hasView(new_name))
       {
         SLIC_WARNING("Parent already has a child view named " << new_name <<
                      ". The name of group " << m_name <<
