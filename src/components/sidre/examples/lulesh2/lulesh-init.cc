@@ -520,9 +520,9 @@ void
 Domain::SetupSymmetryPlanes(Int_t edgeNodes)
 {
 #if USE_SIDRE==1
-  Index_t * const symmX = m_DataGroup->getView("m_symmX")->getData();
-  Index_t * const symmY = m_DataGroup->getView("m_symmY")->getData();
-  Index_t * const symmZ = m_DataGroup->getView("m_symmZ")->getData();
+  Index_t * const symmX = m_symmX;
+  Index_t * const symmY = m_symmY;
+  Index_t * const symmZ = m_symmZ;
 #else
   Index_t * const symmX = m_symmX.data();
   Index_t * const symmY = m_symmY.data();

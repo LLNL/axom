@@ -25,7 +25,7 @@ blt_add_executable(
 if(ENABLE_MPI)
     blt_add_test(NAME sidre_lulesh2
                  COMMAND sidre_lulesh2 -s 5
-                 NUM_PROC 8
+                 NUM_PROCS 8
                 )
 else()
     blt_add_test(NAME sidre_lulesh2

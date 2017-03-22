@@ -442,16 +442,16 @@ public:
   Index_t symmY(Index_t idx) { return m_symmY[idx]; }
   Index_t symmZ(Index_t idx) { return m_symmZ[idx]; }
   bool symmXempty()          {
-    return m_DataGroup->getView("m_symmX")->
-           getNumElements();
+    return ! (m_DataGroup->hasView("m_symmX")
+        && (m_DataGroup->getView("m_symmX")->getNumElements() > 0) );
   }
   bool symmYempty()          {
-    return m_DataGroup->getView("m_symmY")->
-           getNumElements();
+    return ! (m_DataGroup->hasView("m_symmY")
+        && (m_DataGroup->getView("m_symmY")->getNumElements() > 0) );
   }
   bool symmZempty()          {
-    return m_DataGroup->getView("m_symmZ")->
-           getNumElements();
+    return ! (m_DataGroup->hasView("m_symmZ")
+        && (m_DataGroup->getView("m_symmZ")->getNumElements() > 0) );
   }
 
   //

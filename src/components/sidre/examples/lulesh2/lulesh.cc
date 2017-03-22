@@ -1207,7 +1207,7 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
 #pragma omp parallel
 #endif
    {
-      if (!domain.symmXempty() != 0) {
+      if (!domain.symmXempty()) {
 #ifdef _OPENMP
 #pragma omp for nowait firstprivate(numNodeBC)
 #endif
@@ -1215,7 +1215,7 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
             domain.xdd(domain.symmX(i)) = Real_t(0.0) ;
       }
 
-      if (!domain.symmYempty() != 0) {
+      if (!domain.symmYempty()) {
 #ifdef _OPENMP
 #pragma omp for nowait firstprivate(numNodeBC)
 #endif
@@ -1223,7 +1223,7 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
             domain.ydd(domain.symmY(i)) = Real_t(0.0) ;
       }
 
-      if (!domain.symmZempty() != 0) {
+      if (!domain.symmZempty()) {
 #ifdef _OPENMP
 #pragma omp for nowait firstprivate(numNodeBC)
 #endif
@@ -2824,6 +2824,8 @@ int main(int argc, char *argv[])
    // Set up the mesh and decompose. Assumes regular cubes for now
    Int_t col, row, plane, side;
    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
+
+   axom::slic::debug::checksAreErrors = true;
 
    // Build the main data structure and initialize it
    locDom = new Domain(numRanks, col, row, plane, opts.nx,
