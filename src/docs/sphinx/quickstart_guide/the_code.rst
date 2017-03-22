@@ -28,7 +28,7 @@ Getting the Code
 --------------------------------
 
 Access to our repository and Atlassian tools requires membership in the LC 
-group ``toolkit``. If you're not in the group, please send email to 
+group ``axom``. If you're not in the group, please send email to 
 'axom-dev@llnl.gov' and request to be added.
 
 SSH keys
@@ -90,7 +90,7 @@ In the **components** directory, you will find a directory for each of the
 Axom components. Although there are dependencies among them, each is 
 developed and maintained in a largely self-contained fashion. Axom 
 component dependencies are essentially treated as library dependencies.
-Each component directory contains subdirectories for: user documentation,
-examples, tests, and the component header and implementation files.
+Each component directory contains subdirectories for the component header
+and implementation files, as well as user documentation, examples and tests.
 
  

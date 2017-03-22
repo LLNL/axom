@@ -1,20 +1,20 @@
 ================================
-Getting Started with the Toolkit
+Getting Started with Axom
 ================================
 
-This page gives details about getting started using the Toolkit on LLNL LC platforms where third-party dependencies are already installed.
-Note: Until we have a more formal release process in place, please follow the instructions below to use the Toolkit.
+This page gives details about getting started using Axom on LLNL LC platforms where third-party dependencies are already installed.
+Note: Until we have a more formal release process in place, please follow the instructions below to use Axom.
 
 ---------------------
 Checking out the code  
 ---------------------
 
-The Toolkit source code can be obtained from the Toolkit git/Stash project located at
+The Axom source code can be obtained from the axom git/bitbucket project located at
   `<https://lc.llnl.gov/stash/projects/ATK>`_
 
 If you've never used git/Stash, you will need to create an `SSH key <https://confluence.atlassian.com/bitbucketserver/creating-ssh-keys-776639788.html>`_ and  `add that SSH Key <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_ to your `CZ Stash Profile <https://lc.llnl.gov/stash/account>`_.
 
-1.  First, clone the Toolkit repo in some local directory you own.::
+1.  First, clone the Axom repo in some local directory you own.::
 
      git clone ssh://git@cz-stash.llnl.gov:7999/atk/asctoolkit.git
 
@@ -24,15 +24,15 @@ If you've never used git/Stash, you will need to create an `SSH key <https://con
 
             ./scripts/setup-for-development
 
-3.  Then checkout the branch you wish to use. For example, the *"develop"* branch is currently the most robust and tested branch. Toolkit development work is pushed to it regularly.::
+3.  Then checkout the branch you wish to use. For example, the *"develop"* branch is currently the most robust and tested branch. Axom development work is pushed to it regularly.::
 
             git checkout develop
 
-    *   If you are using a development branch of the Toolkit and wish to keep up with the latest developments, you will need to pull them into your local copy.  This can be done as follows: ::
+    *   If you are using a development branch of Axom and wish to keep up with the latest developments, you will need to pull them into your local copy.  This can be done as follows: ::
 
             git pull
 
-    *  If you wish to follow and use a different Toolkit branch (i.e., a topic branch), you can check it out with the following commands: ::
+    *  If you wish to follow and use a different Axom branch (i.e., a topic branch), you can check it out with the following commands: ::
 
          # update the list of remote branches
            git fetch
@@ -55,7 +55,7 @@ If you've never used git/Stash, you will need to create an `SSH key <https://con
 
        Switched to a new branch 'feature/zagaris2/restructure-and-unify'
 
-If you wish to do development on the Toolkit and push your work back to the Toolkit git/Stash repo, please see the instructions for `Code Development in the Toolkit <https://lc.llnl.gov/confluence/display/ASCT/Code+Development+in+the+Toolkit>`_.
+If you wish to do development on Axom and push your work back to the Axom git/bitbucket repo, please see the instructions for `Code Development in the Toolkit <https://lc.llnl.gov/confluence/display/ASCT/Code+Development+in+the+Toolkit>`_.
 
 -------- 
 Git Tips
@@ -64,12 +64,12 @@ Git Tips
 2) Enable tab-autocompletion for git commands. See `git-completion <https://github.com/git/git/tree/master/contrib/completion>`_.
 
 ------------------------------------
-Configuring and Building the Toolkit
+Configuring and Building Axom
 ------------------------------------
-The Toolkit build system requires that you use a version of CMake greater than 3.1.  You can download cmake binaries or source from:
+The Axom build system requires that you use a version of CMake greater than 3.1.  You can download cmake binaries or source from:
  * `<http://www.cmake.org/download/>`_
 
-Once you have a working version of CMake, here are two ways to configure and build the toolkit:
+Once you have a working version of CMake, here are two ways to configure and build axom:
 
 ------------------------------------------------------
 Configuring using the 'configure' python helper script
@@ -78,7 +78,7 @@ If you have python on your platform, you can use the script "scripts/config-buil
 
 **Example:** ::
  
- 1.  From the root of the asctoolkit repo, with cmake in your path run:
+ 1.  From the root of the axom repo, with cmake in your path run:
        ./scripts/config-build.py
 
      # If no options are provided, will configure and create a build directory with the default compiler for this platform
@@ -86,10 +86,10 @@ If you have python on your platform, you can use the script "scripts/config-buil
  2.  cd into the build directory; e.g., 
        cd build-chaos-gnu-debug
 
- 3.  Build the toolkit libs and unit tests
+ 3.  Build axom's libs and unit tests
          make 
 
- 4.  Run the toolkit unit tests
+ 4.  Run the axom unit tests
          make test
 
 --------------------------------
@@ -97,7 +97,7 @@ Configuring manually using CMake
 --------------------------------
 You can also execute CMake directly to configure a build. ::
 
- 1. From the root of the asctoolkit repo:
+ 1. From the root of the axom repo:
     # our CMake setup disallows in-source builds, so you need to create a build directory
 
          mkdir mybuild
@@ -112,10 +112,10 @@ You can also execute CMake directly to configure a build. ::
 
          cmake  -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/$SYS_TYPE.cmake ../src
 
- 3. Build the toolkit libs and unit tests
+ 3. Build axom's libs and unit tests
         make 
 
- 4. Run the toolkit unit tests
+ 4. Run the axom unit tests
         make test
 
 You can use ccmake or cmake-gui to modify specific build options.
