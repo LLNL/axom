@@ -14,7 +14,9 @@
 // used supports it (i.e. the _OPENMP symbol is defined)
 #define USE_OMP 1
 
-#if USE_MPI
+#include "common/config.hpp"
+
+#ifdef AXOM_USE_MPI
 #include <mpi.h>
 
 /*
@@ -588,7 +590,7 @@ public:
   // MPI-Related additional data
   //
 
-#if USE_MPI
+#ifdef AXOM_USE_MPI
   // Communication Work space
   Real_t * commDataSend;
   Real_t * commDataRecv;

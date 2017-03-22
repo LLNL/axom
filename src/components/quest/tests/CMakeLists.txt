@@ -80,6 +80,7 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
                 COMMAND quest_regression
                         --mesh ${quest_data_dir}/${dataset}.stl
                         --baseline ${quest_data_dir}/${dataset}_${res}_baseline.root
+                NUM_PROCS 1
             )
         endforeach()
     endforeach()
