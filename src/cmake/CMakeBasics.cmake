@@ -152,6 +152,14 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF
                   )                  
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF)
 
+# Linker flag for allowing multiple definitions of a symbol
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_MULTIPLE_DEFINITIONS
+                  DEFAULT " "
+                  GNU     "-Wl,--allow-multiple-definition"
+                  )                  
+list(APPEND custom_compiler_flags_list AXOM_ALLOW_MULTIPLE_DEFINITIONS)
+
+
    
 # message(STATUS "Custom compiler flags:")
 # foreach(flag ${custom_compiler_flags_list})

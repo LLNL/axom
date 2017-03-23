@@ -135,13 +135,16 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
 
     datagroup->save(h5_group_id);
 
-    herr_t status = H5Gclose(h5_group_id);
+    herr_t status;
+    AXOM_DEBUG_VAR(status);
+
+    status = H5Gclose(h5_group_id);
     SLIC_ASSERT(status >= 0);
     status = H5Fflush(h5_file_id, H5F_SCOPE_LOCAL);
     SLIC_ASSERT(status >= 0);
     status = H5Fclose(h5_file_id);
     SLIC_ASSERT(status >= 0);
-
+    
   } else {
     int group_id = m_baton->wait();
     std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
@@ -231,6 +234,7 @@ void IOManager::readSidreHDF5(sidre::DataGroup * datagroup, const std::string& r
   int group_id = m_baton->wait();
 
   herr_t errv;
+  AXOM_DEBUG_VAR(errv);
 
   std::string hdf5_name = getHDF5FileName(file_pattern, root_file, group_id);
 
@@ -276,6 +280,7 @@ void IOManager::loadExternalData(sidre::DataGroup * datagroup, const std::string
   int group_id = m_baton->wait();
 
   herr_t errv;
+  AXOM_DEBUG_VAR(errv);
 
   std::string hdf5_name = getHDF5FileName(file_pattern, root_file, group_id);
 
@@ -561,7 +566,10 @@ void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
 
   conduit::relay::io::hdf5_write(data_holder, group_id);
 
-  herr_t errv = H5Gclose(group_id);
+  herr_t errv;
+  AXOM_DEBUG_VAR(errv);
+  
+  errv = H5Gclose(group_id);
   SLIC_ASSERT(errv >= 0);
 
   errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
@@ -606,7 +614,10 @@ void IOManager::writeGroupToRootFileAtPath(sidre::DataGroup * group,
 
   conduit::relay::io::hdf5_write(data_holder, group_id);
 
-  herr_t errv = H5Gclose(group_id);
+  herr_t errv;
+  AXOM_DEBUG_VAR(errv);
+  
+  errv = H5Gclose(group_id);
   SLIC_ASSERT(errv >= 0);
 
   errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
@@ -644,7 +655,10 @@ void IOManager::writeViewToRootFileAtPath(sidre::DataView * view,
 
   conduit::relay::io::hdf5_write(data_holder, path_id);
 
-  herr_t errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
+  herr_t errv;
+  AXOM_DEBUG_VAR(errv);
+
+  errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
   SLIC_ASSERT(errv >= 0);
 
   errv =  H5Fclose(root_file_id);
