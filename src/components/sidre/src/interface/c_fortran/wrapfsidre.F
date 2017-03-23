@@ -104,6 +104,7 @@ module sidre_mod
         procedure :: get_num_groups => datagroup_get_num_groups
         procedure :: has_view => datagroup_has_view
         procedure :: has_child_view => datagroup_has_child_view
+        procedure :: rename => datagroup_rename
         procedure :: get_view_from_name => datagroup_get_view_from_name
         procedure :: get_view_from_index => datagroup_get_view_from_index
         procedure :: get_view_index => datagroup_get_view_index
@@ -409,6 +410,7 @@ module sidre_mod
         procedure :: get_stride => dataview_get_stride
         procedure :: get_num_dimensions => dataview_get_num_dimensions
         procedure :: get_shape => dataview_get_shape
+        procedure :: rename => dataview_rename
         procedure :: print => dataview_print
         procedure :: get_instance => dataview_get_instance
         procedure :: set_instance => dataview_set_instance
@@ -735,6 +737,27 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lname
             logical(C_BOOL) :: rv
         end function c_datagroup_has_child_view_bufferify
+
+        function c_datagroup_rename(self, new_name) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_rename")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: new_name(*)
+            logical(C_BOOL) :: rv
+        end function c_datagroup_rename
+
+        function c_datagroup_rename_bufferify(self, new_name, Lnew_name) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_rename_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: new_name(*)
+            integer(C_INT), value, intent(IN) :: Lnew_name
+            logical(C_BOOL) :: rv
+        end function c_datagroup_rename_bufferify
 
         function c_datagroup_get_view_from_name(self, path) &
                 result(rv) &
@@ -2109,6 +2132,27 @@ module sidre_mod
             integer(C_INT) :: rv
         end function c_dataview_get_shape
 
+        function c_dataview_rename(self, new_name) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_rename")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: new_name(*)
+            logical(C_BOOL) :: rv
+        end function c_dataview_rename
+
+        function c_dataview_rename_bufferify(self, new_name, Lnew_name) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_rename_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: new_name(*)
+            integer(C_INT), value, intent(IN) :: Lnew_name
+            logical(C_BOOL) :: rv
+        end function c_dataview_rename_bufferify
+
         subroutine c_dataview_print(self) &
                 bind(C, name="SIDRE_dataview_print")
             use iso_c_binding
@@ -2361,6 +2405,20 @@ contains
             len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.has_child_view
     end function datagroup_has_child_view
+
+    function datagroup_rename(obj, new_name) result(rv)
+        use iso_c_binding, only : C_BOOL, C_INT
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: new_name
+        logical :: rv
+        ! splicer begin class.DataGroup.method.rename
+        rv = c_datagroup_rename_bufferify(  &
+            obj%voidptr,  &
+            new_name,  &
+            len_trim(new_name, kind=C_INT))
+        ! splicer end class.DataGroup.method.rename
+    end function datagroup_rename
 
     function datagroup_get_view_from_name(obj, path) result(rv)
         use iso_c_binding, only : C_INT
@@ -5259,6 +5317,20 @@ contains
             shape)
         ! splicer end class.DataView.method.get_shape
     end function dataview_get_shape
+
+    function dataview_rename(obj, new_name) result(rv)
+        use iso_c_binding, only : C_BOOL, C_INT
+        implicit none
+        class(dataview) :: obj
+        character(*), intent(IN) :: new_name
+        logical :: rv
+        ! splicer begin class.DataView.method.rename
+        rv = c_dataview_rename_bufferify(  &
+            obj%voidptr,  &
+            new_name,  &
+            len_trim(new_name, kind=C_INT))
+        ! splicer end class.DataView.method.rename
+    end function dataview_rename
 
     subroutine dataview_print(obj)
         implicit none

@@ -63,6 +63,11 @@ bool SIDRE_datagroup_has_child_view(const SIDRE_datagroup * self,
 bool SIDRE_datagroup_has_child_view_bufferify(const SIDRE_datagroup * self,
                                               const char * name, int Lname);
 
+bool SIDRE_datagroup_rename(SIDRE_datagroup * self, const char * new_name);
+
+bool SIDRE_datagroup_rename_bufferify(SIDRE_datagroup * self,
+                                      const char * new_name, int Lnew_name);
+
 SIDRE_dataview * SIDRE_datagroup_get_view_from_name(SIDRE_datagroup * self,
                                                     const char * path);
 

@@ -1050,6 +1050,7 @@ void DataGroup::createNativeLayout(Node& n) const
     group->createNativeLayout(n[group->getName()]);
     gidx = getNextValidGroupIndex(gidx);
   }
+
 }
 
 /*
@@ -1285,6 +1286,7 @@ void DataGroup::save(const std::string& path,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "hdf5");
   }
   else if (protocol == "sidre_conduit_json")
@@ -1292,6 +1294,7 @@ void DataGroup::save(const std::string& path,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "conduit_json");
   }
   else if (protocol == "sidre_json")
@@ -1299,12 +1302,14 @@ void DataGroup::save(const std::string& path,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "json");
   }
   else if (protocol == "conduit_hdf5" )
   {
     Node n;
     createNativeLayout(n);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path,"hdf5");
   }
   else if (protocol == "conduit_bin"  ||
@@ -1313,6 +1318,7 @@ void DataGroup::save(const std::string& path,
   {
     Node n;
     createNativeLayout(n);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, protocol);
   }
   else
@@ -1339,12 +1345,14 @@ void DataGroup::save(const hid_t& h5_id,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::hdf5_write(n,h5_id);
   }
   else if( protocol == "conduit_hdf5")
   {
     Node n;
     createNativeLayout(n);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::hdf5_write(n, h5_id);
   }
   else
@@ -1368,13 +1376,16 @@ void DataGroup::save(const hid_t& h5_id,
 void DataGroup::load(const std::string& path,
                      const std::string& protocol)
 {
-
+  std::string new_name; 
   if (protocol == "sidre_hdf5")
   {
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "sidre_conduit_json")
   {
@@ -1382,6 +1393,9 @@ void DataGroup::load(const std::string& path,
     conduit::relay::io::load(path,"conduit_json", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "sidre_json")
   {
@@ -1389,12 +1403,18 @@ void DataGroup::load(const std::string& path,
     conduit::relay::io::load(path,"json", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "conduit_hdf5")
   {
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
     importConduitTree(n);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "conduit_bin"  ||
            protocol == "conduit_json" ||
@@ -1403,11 +1423,16 @@ void DataGroup::load(const std::string& path,
     Node n;
     conduit::relay::io::load(path,protocol, n);
     importConduitTree(n);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else
   {
     SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
   }
+
+  renameOrWarn(new_name);
 }
 
 /*
@@ -1423,12 +1448,16 @@ void DataGroup::load(const hid_t& h5_id,
   // supported here:
   // "sidre_hdf5"
   // "conduit_hdf5"
+  std::string new_name;
   if(protocol == "sidre_hdf5")
   {
     Node n;
     conduit::relay::io::hdf5_read(h5_id,n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else if( protocol == "conduit_hdf5")
   {
@@ -1436,10 +1465,53 @@ void DataGroup::load(const hid_t& h5_id,
     Node n;
     conduit::relay::io::hdf5_read(h5_id, n);
     importConduitTree(n);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else
   {
     SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+  }
+
+  renameOrWarn(new_name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Rename this group unless the new name already is held by the parent.
+ *
+ *************************************************************************
+ */
+void DataGroup::renameOrWarn(const std::string& new_name)
+{
+  if (new_name != m_name) {
+    const DataGroup * root = getDataStore()->getRoot();
+    DataGroup * parent = getParent();
+    if (this == root || parent == AXOM_NULLPTR)
+    {
+      rename(new_name);
+    }
+    else
+    {
+      if (parent->hasGroup(new_name))
+      {
+        SLIC_WARNING("Parent already has a child group named " << new_name <<
+                     ". The name of group " << m_name <<
+                     " will not be changed.");
+      }
+      else if (parent->hasView(new_name))
+      {
+        SLIC_WARNING("Parent already has a child view named " << new_name <<
+                     ". The name of group " << m_name <<
+                     " will not be changed.");
+      }
+      else
+      {
+        rename(new_name);
+      }
+    }
   }
 }
 
@@ -1712,6 +1784,7 @@ void DataGroup::exportTo(conduit::Node & result) const
       getDataStore()->getBuffer( *s_it )->exportTo(n_buffer);
     }
   }
+
 }
 
 /*
@@ -1849,6 +1922,7 @@ void DataGroup::importFrom(conduit::Node& node,
       group->importFrom(n_group, buffer_id_map);
     }
   }
+
 }
 
 
@@ -1890,8 +1964,10 @@ void DataGroup::importConduitTree(conduit::Node &node)
       }
       else if(cld_dtype.is_string())
       {
-        //create string view
-        createViewString(cld_name,cld_node.as_string());
+        if (cld_name != "sidre_group_name") {
+          //create string view
+          createViewString(cld_name,cld_node.as_string());
+        }
       }
       else if(cld_dtype.is_number())
       {
@@ -2314,6 +2390,60 @@ IndexType DataGroup::getFirstValidGroupIndex() const
 IndexType DataGroup::getNextValidGroupIndex(IndexType idx) const
 {
   return m_group_coll->getNextValidIndex(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Rename this Group with a new string name.
+ *
+ *************************************************************************
+ */
+bool DataGroup::rename(const std::string& new_name)
+{
+  bool do_rename = true;
+  if (new_name != m_name) {
+
+    if (new_name.empty()) {
+      SLIC_WARNING("Cannot rename Group " << m_name << " to an empty " <<
+                   "string.");
+      do_rename = false;
+    } else if (new_name.find(s_path_delimiter) != std::string::npos) {
+      SLIC_WARNING("Cannot rename Group "<< m_name << " to path name " <<
+                   new_name << ". Only strings without path delimiters can " <<
+                   "be passed into the rename method.");
+      do_rename = false;
+    }
+
+    if (do_rename) {
+      const DataGroup * root = getDataStore()->getRoot();
+      DataGroup * parent = getParent();
+
+      //If this is the root group, we don't need
+      //to do anything to change the parent's handle to this group.
+      if (this != root && parent != AXOM_NULLPTR) {
+
+        if (parent->hasGroup(new_name) || parent->hasView(new_name)) {
+          SLIC_WARNING("Parent group " << parent->getName() <<
+                       " already has a child group named " << new_name <<
+                       ". Group " << m_name << " will not be renamed."); 
+          do_rename = false;
+        } else {
+          DataGroup * detached_group = parent->detachGroup(m_name);
+          SLIC_CHECK(detached_group == this); 
+
+          m_name = new_name;
+
+          DataGroup * attached_group = parent->attachGroup(detached_group);
+          SLIC_CHECK(attached_group == this);
+        }
+      } else {
+        m_name = new_name;
+      }
+    }
+  }
+
+  return do_rename;
 }
 
 
