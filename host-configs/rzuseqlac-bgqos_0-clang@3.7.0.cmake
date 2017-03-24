@@ -84,6 +84,12 @@ set(MPI_CXX_LIBRARIES ${MPI_LIBS} CACHE PATH "")
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
+
+# GTest death tests use forked threads, which does now work on BG/Q 
+set(EXTRA_C_FLAGS   -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
+set(EXTRA_CXX_FLAGS -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
+
+
 ##############################################################################
 # !---------------------------------------------------------------------------
 ##############################################################################
