@@ -3,7 +3,7 @@
 # 10-20-2016 chang28, bgq_build_test_uno_compiler.sh "Debug" "" "gcc@4.7.2"
 # 01-13-2017 chang28, turn off testing
 # 03-22-2017 weiss27, Need to run with two configuration options on BG/Q and compile on login nodes
-#                     bgq_build_test_uno_compiler.sh "Debug" "-DENABLE_WRAP_TESTS_WITH_MPIEXEC=ON" gcc@4.7.2
+#                     bgq_build_test_uno_compiler.sh "Debug" "" gcc@4.7.2
 
 echo bgq version 1.0.0
 #BT="Debug"

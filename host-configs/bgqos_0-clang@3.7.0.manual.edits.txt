@@ -34,6 +34,7 @@ set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 set(EXTRA_C_FLAGS   -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
 set(EXTRA_CXX_FLAGS -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
 
+set(BLT_ALWAYS_WRAP_TESTS_WITH_MPIEXEC TRUE CACHE PATH "Ensures that tests will be wrapped with srun to run on the backend nodes")
 
 ##############################################################################
 # !---------------------------------------------------------------------------
