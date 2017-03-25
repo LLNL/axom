@@ -11,6 +11,8 @@
 #include "spio/IOManager.hpp"
 #include "sidre/sidre.hpp"
 
+#include "mpi.h"
+
 using axom::spio::IOManager;
 using axom::sidre::DataGroup;
 using axom::sidre::DataStore;
