@@ -12,7 +12,7 @@ import re
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with codecs.open(os.path.join(here, 'src', '__init__.py'),
+with codecs.open(os.path.join(here, 'shroud', '__init__.py'),
                  encoding='utf8') as version_file:
     metadata = dict(re.findall(r"""__([a-z]+)__ = "([^"]+)""", version_file.read()))
 
@@ -93,9 +93,9 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-#    package_data={
-#        'sample': ['package_data.dat'],
-#    },
+    package_data={
+        'shroud': ['cmake/SetupShroud.cmake'],
+    },
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
