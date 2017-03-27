@@ -1400,6 +1400,31 @@ TEST(sidre_view,simple_opaque)
 }
 
 //------------------------------------------------------------------------------
+TEST(sidre_view,rename_view)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  DataView * v1 = root->createView("v_a");
+  DataView * v2 = root->createView("v_b");
+  DataView * v3 = root->createView("v_c");
+
+  bool success = v1->rename("v_r");
+  EXPECT_TRUE( success );
+  EXPECT_TRUE( v1->getName() == "v_r" );
+  EXPECT_TRUE( root->hasView("v_r") );
+  EXPECT_FALSE( root->hasView("v_a") );
+
+  success = v2->rename("fields/v_s");
+  EXPECT_FALSE( success );
+  EXPECT_TRUE( v2->getName() == "v_b" );
+
+  success = v3->rename("v_b");
+  EXPECT_FALSE( success );
+  EXPECT_TRUE( v3->getName() == "v_c" );
+
+}
+
+//------------------------------------------------------------------------------
 
 TEST(sidre_datastore,destroy_buffer)
 {

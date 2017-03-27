@@ -538,6 +538,27 @@ int SIDRE_dataview_get_shape(const SIDRE_dataview * self, int ndims,
 // splicer end class.DataView.method.get_shape
 }
 
+bool SIDRE_dataview_rename(SIDRE_dataview * self, const char * new_name)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.rename
+  const std::string SH_new_name(new_name);
+  bool rv = selfobj->rename(SH_new_name);
+  return rv;
+// splicer end class.DataView.method.rename
+}
+
+bool SIDRE_dataview_rename_bufferify(SIDRE_dataview * self,
+                                     const char * new_name, int Lnew_name)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.rename_bufferify
+  const std::string SH_new_name(new_name, Lnew_name);
+  bool rv = selfobj->rename(SH_new_name);
+  return rv;
+// splicer end class.DataView.method.rename_bufferify
+}
+
 void SIDRE_dataview_print(const SIDRE_dataview * self)
 {
   const DataView * selfobj =

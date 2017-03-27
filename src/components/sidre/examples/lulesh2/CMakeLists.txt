@@ -19,8 +19,16 @@ blt_add_executable(
     NAME sidre_lulesh2
     SOURCES ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON sidre conduit conduit_relay hdf5 slic
+    DEPENDS_ON common sidre conduit conduit_relay hdf5 slic
     )
-blt_add_test( NAME sidre_lulesh2
-              COMMAND sidre_lulesh2 -s 10
-              )
+
+if(ENABLE_MPI)
+    blt_add_test(NAME sidre_lulesh2
+                 COMMAND sidre_lulesh2 -s 5
+                 NUM_PROCS 8
+                )
+else()
+    blt_add_test(NAME sidre_lulesh2
+                 COMMAND sidre_lulesh2 -s 5
+                )
+endif()

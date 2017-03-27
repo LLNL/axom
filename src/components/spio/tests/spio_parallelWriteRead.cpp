@@ -12,6 +12,8 @@
 #include "sidre/sidre.hpp"
 #include "conduit_relay.hpp"
 
+#include "mpi.h"
+
 using axom::spio::IOManager;
 using axom::sidre::DataGroup;
 using axom::sidre::DataStore;

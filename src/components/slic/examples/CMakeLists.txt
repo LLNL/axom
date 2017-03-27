@@ -42,7 +42,8 @@ if ( ENABLE_MPI )
                             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
                             DEPENDS_ON slic )
         blt_add_test( NAME "slic_mpi_${example_name}"
-                      COMMAND "slic_mpi_${example_name}" )
+                      COMMAND "slic_mpi_${example_name}" 
+                      NUM_PROCS 4)
     endforeach()
 endif()
 

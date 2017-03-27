@@ -914,6 +914,24 @@ public:
    */
   void createNativeLayout(Node& n) const;
 
+  /*!
+   * \brief Change the name of this View.
+   *
+   * The name of this view is changed to the new name.  This also changes
+   * the name for this view held by the owning group.
+   *
+   * Warnings will occur and the name will not be changed under these
+   * conditions:  If the new name is an empty string, if the new name
+   * contains a path delimiter (usually '/'), or if the new name is
+   * identical to a name that is already held by the parent for another
+   * Group or View object.
+   *
+   * /param new_name    The new name for this view.
+   *
+   * /return            Success or failure of rename.
+   */
+  bool rename(const std::string& new_name);
+
 private:
 
   DISABLE_DEFAULT_CTOR(DataView);

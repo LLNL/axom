@@ -210,7 +210,7 @@ void TimeIncrement(Domain& domain)
          gnewdt = domain.dthydro() * Real_t(2.0) / Real_t(3.0) ;
       }
 
-#if USE_MPI      
+#ifdef AXOM_USE_MPI      
       MPI_Allreduce(&gnewdt, &newdt, 1,
                     ((sizeof(Real_t) == 4) ? MPI_FLOAT : MPI_DOUBLE),
                     MPI_MIN, MPI_COMM_WORLD) ;
@@ -1073,7 +1073,7 @@ void CalcHourglassControlForElems(Domain& domain,
 
       /* Do a check for negative volumes */
       if ( domain.v(i) <= Real_t(0.0) ) {
-#if USE_MPI         
+#ifdef AXOM_USE_MPI         
          MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
          exit(VolumeError);
@@ -1125,7 +1125,7 @@ void CalcVolumeForceForElems(Domain& domain)
 #endif
       for ( Index_t k=0 ; k<numElem ; ++k ) {
          if (determ[k] <= Real_t(0.0)) {
-#if USE_MPI            
+#ifdef AXOM_USE_MPI            
             MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
             exit(VolumeError);
@@ -1148,7 +1148,7 @@ static inline void CalcForceForNodes(Domain& domain)
 {
   Index_t numNode = domain.numNode() ;
 
-#if USE_MPI  
+#ifdef AXOM_USE_MPI  
   CommRecv(domain, MSG_COMM_SBN, 3,
            domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
            true, false) ;
@@ -1166,7 +1166,7 @@ static inline void CalcForceForNodes(Domain& domain)
   /* Calcforce calls partial, force, hourq */
   CalcVolumeForceForElems(domain) ;
 
-#if USE_MPI  
+#ifdef AXOM_USE_MPI  
   Domain_member fieldData[3] ;
   fieldData[0] = &Domain::fx ;
   fieldData[1] = &Domain::fy ;
@@ -1207,7 +1207,7 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
 #pragma omp parallel
 #endif
    {
-      if (!domain.symmXempty() != 0) {
+      if (!domain.symmXempty()) {
 #ifdef _OPENMP
 #pragma omp for nowait firstprivate(numNodeBC)
 #endif
@@ -1215,7 +1215,7 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
             domain.xdd(domain.symmX(i)) = Real_t(0.0) ;
       }
 
-      if (!domain.symmYempty() != 0) {
+      if (!domain.symmYempty()) {
 #ifdef _OPENMP
 #pragma omp for nowait firstprivate(numNodeBC)
 #endif
@@ -1223,7 +1223,7 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
             domain.ydd(domain.symmY(i)) = Real_t(0.0) ;
       }
 
-      if (!domain.symmZempty() != 0) {
+      if (!domain.symmZempty()) {
 #ifdef _OPENMP
 #pragma omp for nowait firstprivate(numNodeBC)
 #endif
@@ -1293,7 +1293,7 @@ void LagrangeNodal(Domain& domain)
    * acceleration boundary conditions. */
   CalcForceForNodes(domain);
 
-#if USE_MPI  
+#ifdef AXOM_USE_MPI  
 #ifdef SEDOV_SYNC_POS_VEL_EARLY
    CommRecv(domain, MSG_SYNC_POS_VEL, 6,
             domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
@@ -1308,7 +1308,7 @@ void LagrangeNodal(Domain& domain)
    CalcVelocityForNodes( domain, delt, u_cut, domain.numNode()) ;
 
    CalcPositionForNodes( domain, delt, domain.numNode() );
-#if USE_MPI
+#ifdef AXOM_USE_MPI
 #ifdef SEDOV_SYNC_POS_VEL_EARLY
   fieldData[0] = &Domain::x ;
   fieldData[1] = &Domain::y ;
@@ -1660,7 +1660,7 @@ void CalcLagrangeElements(Domain& domain, Real_t* vnew)
         // See if any volumes are negative, and take appropriate action.
          if (vnew[k] <= Real_t(0.0))
         {
-#if USE_MPI           
+#ifdef AXOM_USE_MPI           
            MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
            exit(VolumeError);
@@ -2027,7 +2027,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
 
       domain.AllocateGradients(numElem, allElem);
 
-#if USE_MPI      
+#ifdef AXOM_USE_MPI      
       CommRecv(domain, MSG_MONOQ, 3,
                domain.sizeX(), domain.sizeY(), domain.sizeZ(),
                true, true) ;
@@ -2036,7 +2036,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       /* Calculate velocity gradients */
       CalcMonotonicQGradientsForElems(domain, vnew);
 
-#if USE_MPI      
+#ifdef AXOM_USE_MPI      
       Domain_member fieldData[3] ;
       
       /* Transfer veloctiy gradients in the first order elements */
@@ -2068,7 +2068,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       }
 
       if(idx >= 0) {
-#if USE_MPI         
+#ifdef AXOM_USE_MPI         
          MPI_Abort(MPI_COMM_WORLD, QStopError) ;
 #else
          exit(QStopError);
@@ -2476,7 +2476,7 @@ void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
                 vc = eosvmax ;
           }
           if (vc <= 0.) {
-#if USE_MPI             
+#ifdef AXOM_USE_MPI             
              MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
              exit(VolumeError);
@@ -2743,7 +2743,7 @@ void LagrangeLeapFrog(Domain& domain)
     * material states */
    LagrangeElements(domain, domain.numElem());
 
-#if USE_MPI   
+#ifdef AXOM_USE_MPI   
 #ifdef SEDOV_SYNC_POS_VEL_LATE
    CommRecv(domain, MSG_SYNC_POS_VEL, 6,
             domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
@@ -2764,7 +2764,7 @@ void LagrangeLeapFrog(Domain& domain)
 
    CalcTimeConstraintsForElems(domain);
 
-#if USE_MPI   
+#ifdef AXOM_USE_MPI   
 #ifdef SEDOV_SYNC_POS_VEL_LATE
    CommSyncPosVel(domain) ;
 #endif
@@ -2781,7 +2781,7 @@ int main(int argc, char *argv[])
    Int_t myRank ;
    struct cmdLineOpts opts;
 
-#if USE_MPI   
+#ifdef AXOM_USE_MPI   
    Domain_member fieldData ;
 
    MPI_Init(&argc, &argv) ;
@@ -2825,12 +2825,14 @@ int main(int argc, char *argv[])
    Int_t col, row, plane, side;
    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
 
+   axom::slic::debug::checksAreErrors = true;
+
    // Build the main data structure and initialize it
    locDom = new Domain(numRanks, col, row, plane, opts.nx,
                        side, opts.numReg, opts.balance, opts.cost) ;
 
 
-#if USE_MPI   
+#ifdef AXOM_USE_MPI   
    fieldData = &Domain::nodalMass ;
 
    // Initial domain boundary communication 
@@ -2847,7 +2849,7 @@ int main(int argc, char *argv[])
 #endif   
    
    // BEGIN timestep to solution */
-#if USE_MPI   
+#ifdef AXOM_USE_MPI   
    double start = MPI_Wtime();
 #else
    timeval start;
@@ -2869,7 +2871,7 @@ int main(int argc, char *argv[])
 
    // Use reduced max elapsed time
    double elapsed_time;
-#if USE_MPI   
+#ifdef AXOM_USE_MPI   
    elapsed_time = MPI_Wtime() - start;
 #else
    timeval end;
@@ -2877,7 +2879,7 @@ int main(int argc, char *argv[])
    elapsed_time = (double)(end.tv_sec - start.tv_sec) + ((double)(end.tv_usec - start.tv_usec))/1000000 ;
 #endif
    double elapsed_timeG;
-#if USE_MPI   
+#ifdef AXOM_USE_MPI   
    MPI_Reduce(&elapsed_time, &elapsed_timeG, 1, MPI_DOUBLE,
               MPI_MAX, 0, MPI_COMM_WORLD);
 #else
@@ -2893,7 +2895,7 @@ int main(int argc, char *argv[])
       VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks);
    }
 
-#if USE_MPI
+#ifdef AXOM_USE_MPI
    MPI_Finalize() ;
 #endif
 

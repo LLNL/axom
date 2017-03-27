@@ -14,7 +14,9 @@
 // used supports it (i.e. the _OPENMP symbol is defined)
 #define USE_OMP 1
 
-#if USE_MPI
+#include "common/config.hpp"
+
+#ifdef AXOM_USE_MPI
 #include <mpi.h>
 
 /*
@@ -440,16 +442,16 @@ public:
   Index_t symmY(Index_t idx) { return m_symmY[idx]; }
   Index_t symmZ(Index_t idx) { return m_symmZ[idx]; }
   bool symmXempty()          {
-    return m_DataGroup->getView("m_symmX")->
-           getNumElements();
+    return ! (m_DataGroup->hasView("m_symmX")
+        && (m_DataGroup->getView("m_symmX")->getNumElements() > 0) );
   }
   bool symmYempty()          {
-    return m_DataGroup->getView("m_symmY")->
-           getNumElements();
+    return ! (m_DataGroup->hasView("m_symmY")
+        && (m_DataGroup->getView("m_symmY")->getNumElements() > 0) );
   }
   bool symmZempty()          {
-    return m_DataGroup->getView("m_symmZ")->
-           getNumElements();
+    return ! (m_DataGroup->hasView("m_symmZ")
+        && (m_DataGroup->getView("m_symmZ")->getNumElements() > 0) );
   }
 
   //
@@ -588,7 +590,7 @@ public:
   // MPI-Related additional data
   //
 
-#if USE_MPI
+#ifdef AXOM_USE_MPI
   // Communication Work space
   Real_t * commDataSend;
   Real_t * commDataRecv;

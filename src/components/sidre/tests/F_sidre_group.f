@@ -867,6 +867,31 @@ contains
   end subroutine save_restore_other
 
   !------------------------------------------------------------------------------
+  subroutine rename_group
+    type(datastore) ds
+    type(datagroup) root, child1, child2, child3
+
+    call set_case_name("rename_group")
+
+    ds = datastore_new()
+    root = ds%get_root()
+    child1 = root%create_group("g_a")
+    child2 = root%create_group("g_b")
+    child3 = root%create_group("g_c")
+
+    call assert_true(child1%rename("g_r"))
+    call assert_equals(child1%get_name(), "g_r")
+    call assert_true(root%has_group("g_r"))
+    call assert_false(root%has_group("g_a"))
+
+    call assert_false(child2%rename("fields/g_s"))
+    call assert_equals(child2%get_name(), "g_b")
+
+    call assert_false(child3%rename("g_b"))
+    call assert_equals(child3%get_name(), "g_c")
+  end subroutine rename_group
+
+  !------------------------------------------------------------------------------
   subroutine save_restore_simple
     type(datastore) ds, ds2
     type(datagroup) root, root2, flds, ga

@@ -40,7 +40,14 @@ blt_add_executable(
     USE_OPENMP  ${ENABLE_OPENMP}
     )
 
-blt_add_test(
-    NAME        slam_lulesh
-    COMMAND     slam_lulesh
-    )
+if(ENABLE_MPI)
+    blt_add_test(NAME        slam_lulesh
+                 COMMAND     slam_lulesh
+                 NUM_PROCS   8
+                )
+else()
+    blt_add_test(NAME        slam_lulesh
+                 COMMAND     slam_lulesh
+                )
+endif()
+

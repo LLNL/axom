@@ -108,6 +108,7 @@ classes:
     -  decl: size_t getNumGroups() const
     -  decl: bool hasView( const string& path ) const
     -  decl: bool hasChildView( const string& name ) const
+    -  decl: bool rename( const string& new_name )
 #    -  decl: bool hasView( IndexType idx ) const
     -  decl: DataView *getView( const std::string& path )
        function_suffix: _from_name
@@ -428,6 +429,7 @@ classes:
     - decl: size_t getStride() const
     - decl: int getNumDimensions() const
     - decl: int getShape(int ndims, SidreLength * shape+dimension+intent(OUT) ) const
+    - decl: bool rename( const string& new_name ) 
 #    - decl: void info(Node& n) const
     - decl: void print() const
 #    - decl: void createNativeLayout(Node &) const
