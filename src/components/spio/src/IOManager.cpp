@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file IOManager.cpp
  *
  * \brief   Implementation file for IOManager class.
  *
@@ -21,22 +21,20 @@
 // Associated header file
 #include "IOManager.hpp"
 
-#include "hdf5.h"
-
-// Other toolkit component headers
-#include "common/CommonTypes.hpp"
+// Other axom headers
 #include "common/FileUtilities.hpp"
 
 // SiDRe project headers
 #include "sidre/DataGroup.hpp"
 #include "sidre/DataStore.hpp"
 #include "sidre/SidreTypes.hpp"
-
-#include "conduit_relay.hpp"
-#include "conduit_relay_hdf5.hpp"
 #include "fmt/fmt.hpp"
 
-namespace asctoolkit
+// Conduit headers
+#include "conduit_relay.hpp"
+#include "conduit_relay_hdf5.hpp"
+
+namespace axom
 {
 namespace spio
 {
@@ -52,7 +50,7 @@ namespace spio
 IOManager::IOManager(MPI_Comm comm)
 : m_comm_size(1),
   m_my_rank(0),
-  m_baton(ATK_NULLPTR),
+  m_baton(AXOM_NULLPTR),
   m_mpi_comm(comm)
 {
   MPI_Comm_size(comm, &m_comm_size);
@@ -87,7 +85,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
   if (m_baton) {
     if (m_baton->getNumFiles() != num_files) {
       delete m_baton;
-      m_baton = ATK_NULLPTR;
+      m_baton = AXOM_NULLPTR;
     }
   }
  
@@ -137,13 +135,16 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
 
     datagroup->save(h5_group_id);
 
-    herr_t status = H5Gclose(h5_group_id);
+    herr_t status;
+    AXOM_DEBUG_VAR(status);
+
+    status = H5Gclose(h5_group_id);
     SLIC_ASSERT(status >= 0);
     status = H5Fflush(h5_file_id, H5F_SCOPE_LOCAL);
     SLIC_ASSERT(status >= 0);
     status = H5Fclose(h5_file_id);
     SLIC_ASSERT(status >= 0);
-
+    
   } else {
     int group_id = m_baton->wait();
     std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
@@ -172,7 +173,7 @@ void IOManager::read(
     if (m_baton) {
       if (m_baton->getNumFiles() != 1) {
         delete m_baton;
-        m_baton = ATK_NULLPTR;
+        m_baton = AXOM_NULLPTR;
       }
     }
 
@@ -220,7 +221,7 @@ void IOManager::readSidreHDF5(sidre::DataGroup * datagroup, const std::string& r
   if (m_baton) {
     if (m_baton->getNumFiles() != num_files) {
       delete m_baton;
-      m_baton = ATK_NULLPTR;
+      m_baton = AXOM_NULLPTR;
     }
   }
     
@@ -233,6 +234,7 @@ void IOManager::readSidreHDF5(sidre::DataGroup * datagroup, const std::string& r
   int group_id = m_baton->wait();
 
   herr_t errv;
+  AXOM_DEBUG_VAR(errv);
 
   std::string hdf5_name = getHDF5FileName(file_pattern, root_file, group_id);
 
@@ -265,7 +267,7 @@ void IOManager::loadExternalData(sidre::DataGroup * datagroup, const std::string
   if (m_baton) {
     if (m_baton->getNumFiles() != num_files) {
       delete m_baton;
-      m_baton = ATK_NULLPTR;
+      m_baton = AXOM_NULLPTR;
     }
   }
 
@@ -278,6 +280,7 @@ void IOManager::loadExternalData(sidre::DataGroup * datagroup, const std::string
   int group_id = m_baton->wait();
 
   herr_t errv;
+  AXOM_DEBUG_VAR(errv);
 
   std::string hdf5_name = getHDF5FileName(file_pattern, root_file, group_id);
 
@@ -563,7 +566,10 @@ void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
 
   conduit::relay::io::hdf5_write(data_holder, group_id);
 
-  herr_t errv = H5Gclose(group_id);
+  herr_t errv;
+  AXOM_DEBUG_VAR(errv);
+  
+  errv = H5Gclose(group_id);
   SLIC_ASSERT(errv >= 0);
 
   errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
@@ -608,7 +614,10 @@ void IOManager::writeGroupToRootFileAtPath(sidre::DataGroup * group,
 
   conduit::relay::io::hdf5_write(data_holder, group_id);
 
-  herr_t errv = H5Gclose(group_id);
+  herr_t errv;
+  AXOM_DEBUG_VAR(errv);
+  
+  errv = H5Gclose(group_id);
   SLIC_ASSERT(errv >= 0);
 
   errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
@@ -646,7 +655,10 @@ void IOManager::writeViewToRootFileAtPath(sidre::DataView * view,
 
   conduit::relay::io::hdf5_write(data_holder, path_id);
 
-  herr_t errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
+  herr_t errv;
+  AXOM_DEBUG_VAR(errv);
+
+  errv = H5Fflush(root_file_id, H5F_SCOPE_LOCAL);
   SLIC_ASSERT(errv >= 0);
 
   errv =  H5Fclose(root_file_id);
@@ -657,4 +669,4 @@ void IOManager::writeViewToRootFileAtPath(sidre::DataView * view,
 
 
 } /* end namespace spio */
-} /* end namespace asctoolkit */
+} /* end namespace axom */

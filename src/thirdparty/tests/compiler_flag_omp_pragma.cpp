@@ -4,7 +4,7 @@
 /**
  * \file
  * This file tests the ability to disable warnings about unknown [openmp] pragmas
- * on all supported compilers using the ATK_DISABLE_OMP_PRAGMA_WARNINGS build variable.
+ * on all supported compilers using the AXOM_DISABLE_OMP_PRAGMA_WARNINGS build variable.
  * It should be compiled without the openmp flag.
  */
 

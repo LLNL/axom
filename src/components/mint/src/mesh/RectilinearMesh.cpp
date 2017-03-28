@@ -16,8 +16,8 @@ namespace axom {
 namespace mint {
 
 RectilinearMesh::RectilinearMesh():
-  StructuredMesh(MINT_UNDEFINED_MESH,-1,ATK_NULLPTR),
-  m_coordinates( ATK_NULLPTR )
+  StructuredMesh(MINT_UNDEFINED_MESH,-1,AXOM_NULLPTR),
+  m_coordinates( AXOM_NULLPTR )
 {}
 
 //------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ RectilinearMesh::RectilinearMesh( int dimension, int ext[6],
 RectilinearMesh::~RectilinearMesh()
 {
   delete m_coordinates;
-  m_coordinates = ATK_NULLPTR;
+  m_coordinates = AXOM_NULLPTR;
 }
 
 } /* namespace mint */

@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataView.cpp
  *
  * \brief   Implementation file for DataView class.
  *
@@ -21,16 +21,16 @@
 // Associated header file
 #include "DataView.hpp"
 
-// Other toolkit project headers
+// Other axom headers
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
-// SiDRe project headers
+// Sidre project headers
 #include "DataBuffer.hpp"
 #include "DataGroup.hpp"
 #include "DataStore.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -84,7 +84,7 @@ DataView * DataView::allocate()
   {
     if (m_state == EMPTY)
     {
-      SLIC_ASSERT( m_data_buffer == ATK_NULLPTR );
+      SLIC_ASSERT( m_data_buffer == AXOM_NULLPTR );
       m_data_buffer = m_owning_group->getDataStore()->createBuffer();
       m_data_buffer->attachToView(this);
       m_state = BUFFER;
@@ -257,7 +257,7 @@ DataView * DataView::reallocate(const DataType& dtype)
  */
 DataView * DataView::attachBuffer(DataBuffer * buff)
 {
-  if ( m_state == BUFFER && buff == ATK_NULLPTR)
+  if ( m_state == BUFFER && buff == AXOM_NULLPTR)
   {
     DataBuffer * old_buffer = detachBuffer();
     if (old_buffer->getNumViews() == 0)
@@ -265,7 +265,7 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
       getOwningGroup()->getDataStore()->destroyBuffer(old_buffer);
     }
   }
-  else if ( m_state == EMPTY && buff != ATK_NULLPTR )
+  else if ( m_state == EMPTY && buff != AXOM_NULLPTR )
   {
     m_data_buffer = buff;
     buff->attachToView(this);
@@ -291,7 +291,7 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
  */
 DataBuffer * DataView::detachBuffer()
 {
-  DataBuffer * buff = ATK_NULLPTR;
+  DataBuffer * buff = AXOM_NULLPTR;
 
   if ( m_state == BUFFER)
   {
@@ -319,7 +319,7 @@ DataView * DataView::apply()
     return this;
   }
 
-  void * data_pointer = ATK_NULLPTR;
+  void * data_pointer = AXOM_NULLPTR;
 
   if ( hasBuffer() )
   {
@@ -415,11 +415,11 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
  */
 DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
 {
-  if ( type == NO_TYPE_ID || ndims < 1 || shape == ATK_NULLPTR )
+  if ( type == NO_TYPE_ID || ndims < 1 || shape == AXOM_NULLPTR )
   {
     SLIC_CHECK(type != NO_TYPE_ID);
     SLIC_CHECK(ndims >= 1);
-    SLIC_CHECK(shape != ATK_NULLPTR);
+    SLIC_CHECK(shape != AXOM_NULLPTR);
 
     return this;
   }
@@ -461,7 +461,7 @@ DataView * DataView::apply(const DataType &dtype)
  */
 void * DataView::getVoidPtr() const
 {
-  void * rv = ATK_NULLPTR;
+  void * rv = AXOM_NULLPTR;
 
   switch (m_state)
   {
@@ -509,10 +509,10 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
 {
   if ( m_state == EMPTY || m_state == EXTERNAL )
   {
-    if (external_ptr == ATK_NULLPTR)
+    if (external_ptr == AXOM_NULLPTR)
     {
       unapply();
-      m_external_ptr = ATK_NULLPTR;
+      m_external_ptr = AXOM_NULLPTR;
       m_state = EMPTY;
     }
     else
@@ -758,12 +758,12 @@ void DataView::createNativeLayout(Node &n) const
  */
 DataView::DataView( const std::string& name)
   :   m_name(name),
-  m_owning_group(ATK_NULLPTR),
-  m_data_buffer(ATK_NULLPTR),
+  m_owning_group(AXOM_NULLPTR),
+  m_data_buffer(AXOM_NULLPTR),
   m_schema(),
   m_node(),
   m_shape(),
-  m_external_ptr(ATK_NULLPTR),
+  m_external_ptr(AXOM_NULLPTR),
   m_state(EMPTY),
   m_is_applied(false)
 {}
@@ -777,7 +777,7 @@ DataView::DataView( const std::string& name)
  */
 DataView::~DataView()
 {
-  if (m_data_buffer != ATK_NULLPTR)
+  if (m_data_buffer != AXOM_NULLPTR)
   {
     m_data_buffer->detachFromView(this);
   }
@@ -976,7 +976,7 @@ bool DataView::isApplyValid() const
                     getStateStringName(m_state) << " with scalar data type.");
     break;
   case EXTERNAL:
-    SLIC_ASSERT ( m_external_ptr != ATK_NULLPTR );
+    SLIC_ASSERT ( m_external_ptr != AXOM_NULLPTR );
     rv = isDescribed();
     break;
   case BUFFER:
@@ -1218,6 +1218,50 @@ void DataView::importDescription(conduit::Node& data_holder)
   }
 }
 
+/*
+ *************************************************************************
+ *
+ * Rename this View with a new string name.
+ *
+ *************************************************************************
+ */
+bool DataView::rename(const std::string& new_name)
+{
+  bool do_rename = true;
+  if (new_name != m_name) {
+
+    DataGroup * parent = getOwningGroup();
+    SLIC_CHECK(parent != AXOM_NULLPTR);
+
+    if (new_name.empty()) {
+      SLIC_WARNING("Cannot rename View " << m_name << " to an empty " <<
+                   "string.");
+      do_rename = false;
+    } else if (new_name.find(parent->getPathDelimiter()) != std::string::npos) {
+      SLIC_WARNING("Cannot rename View "<< m_name << " to path name " <<
+                   new_name << ". Only strings without path delimiters can " <<
+                   "be passed into the rename method.");
+      do_rename = false;
+    } else if (parent->hasGroup(new_name) || parent->hasView(new_name)) {
+      SLIC_WARNING("Parent group " << parent->getName() <<
+                   " already has a child object named " << new_name <<
+                   ". View " << m_name << " will not be renamed.");
+      do_rename = false;
+    } else {
+
+      DataView * detached_view = parent->detachView(m_name);
+      SLIC_CHECK(detached_view == this);
+
+      m_name = new_name;
+
+      DataView * attached_view = parent->attachView(detached_view);
+      SLIC_CHECK(attached_view == this);
+
+    }
+  }
+
+  return do_rename;
+}
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */

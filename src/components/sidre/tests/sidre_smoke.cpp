@@ -12,13 +12,13 @@
 
 #include "sidre/sidre.hpp"
 
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::IndexType;
-using asctoolkit::sidre::InvalidIndex;
-using asctoolkit::sidre::indexIsValid;
-using asctoolkit::sidre::InvalidName;
-using asctoolkit::sidre::nameIsValid;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::IndexType;
+using axom::sidre::InvalidIndex;
+using axom::sidre::indexIsValid;
+using axom::sidre::InvalidName;
+using axom::sidre::nameIsValid;
 
 //------------------------------------------------------------------------------
 

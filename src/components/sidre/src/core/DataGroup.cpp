@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataGroup.cpp
  *
  * \brief   Implementation file for DataGroup class.
  *
@@ -24,15 +24,15 @@
 #include "conduit_relay.hpp"
 #include "conduit_relay_hdf5.hpp"
 
-// Other toolkit component headers
+// Other axom component headers
 
-// SiDRe project headers
+// Sidre project headers
 #include "MapCollection.hpp"
 #include "DataBuffer.hpp"
 #include "DataStore.hpp"
 #include "SidreUtilities.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -88,7 +88,7 @@ bool DataGroup::hasView( const std::string& path ) const
   std::string intpath(path);
   const DataGroup * group = walkPath( intpath );
 
-  if (group == ATK_NULLPTR)
+  if (group == AXOM_NULLPTR)
   {
     return false;
   }
@@ -116,11 +116,11 @@ DataView * DataGroup::getView( const std::string& path )
   bool create_groups_in_path = false;
   DataGroup * group = walkPath( intpath, create_groups_in_path );
 
-  if ( group == ATK_NULLPTR )
+  if ( group == AXOM_NULLPTR )
   {
-    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+    SLIC_CHECK_MSG( group != AXOM_NULLPTR,
                     "Non-existent group in path " << path );
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   SLIC_CHECK_MSG( !intpath.empty() && group->hasChildView(intpath),
@@ -142,11 +142,11 @@ const DataView * DataGroup::getView( const std::string& path ) const
   std::string intpath(path);
   const DataGroup * group = walkPath( intpath );
 
-  if (group == ATK_NULLPTR)
+  if (group == AXOM_NULLPTR)
   {
-    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+    SLIC_CHECK_MSG( group != AXOM_NULLPTR,
                     "Non-existent group in path " << path );
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   SLIC_CHECK_MSG( !intpath.empty() && group->hasChildView(intpath),
@@ -177,12 +177,12 @@ DataView * DataGroup::createView( const std::string& path )
   bool create_groups_in_path = true;
   DataGroup * group = walkPath( intpath, create_groups_in_path );
 
-  if ( group == ATK_NULLPTR )
+  if ( group == AXOM_NULLPTR )
   {
-    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+    SLIC_CHECK_MSG( group != AXOM_NULLPTR,
                     "Could not find or create path " << path <<
                     " since it appears there is already a view with that name" );
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
   else if ( intpath.empty() || group->hasChildView(intpath) ||
             group->hasChildGroup(intpath) )
@@ -196,11 +196,11 @@ DataView * DataGroup::createView( const std::string& path )
                     "Cannot create View with name '" << intpath <<
                     "' in Group '" << getName() <<
                     " since it already has a Group with that name" );
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   DataView * view = new(std::nothrow) DataView(intpath);
-  if ( view != ATK_NULLPTR )
+  if ( view != AXOM_NULLPTR )
   {
     group->attachView(view);
   }
@@ -227,11 +227,11 @@ DataView * DataGroup::createView( const std::string& path,
     SLIC_CHECK_MSG(num_elems >= 0,
                    "Cannot create View with name '" << path <<
                    "' in Group '" << getName() << " with # elems < 0" );
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   DataView * view = createView(path);
-  if (view != ATK_NULLPTR)
+  if (view != AXOM_NULLPTR)
   {
     view->describe(type, num_elems);
   }
@@ -251,7 +251,7 @@ DataView * DataGroup::createView( const std::string& path,
                                   int ndims,
                                   SidreLength * shape )
 {
-  if ( type == NO_TYPE_ID || ndims < 0 || shape == ATK_NULLPTR )
+  if ( type == NO_TYPE_ID || ndims < 0 || shape == AXOM_NULLPTR )
   {
     SLIC_CHECK_MSG(type != NO_TYPE_ID,
                    "Cannot create View with name '" << path <<
@@ -259,14 +259,14 @@ DataView * DataGroup::createView( const std::string& path,
     SLIC_CHECK_MSG(ndims >= 0,
                    "Cannot create View with name '" << path <<
                    "' in Group '" << getName() << " with ndims < 0" );
-    SLIC_CHECK_MSG(shape != ATK_NULLPTR,
+    SLIC_CHECK_MSG(shape != AXOM_NULLPTR,
                    "Cannot create View with name '" << path <<
                    "' in Group '" << getName() << " with null shape ptr" );
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   DataView * view = createView(path);
-  if (view != ATK_NULLPTR)
+  if (view != AXOM_NULLPTR)
   {
     view->describe(type, ndims, shape);
   }
@@ -284,7 +284,7 @@ DataView * DataGroup::createView( const std::string& path,
                                   const DataType& dtype )
 {
   DataView * view = createView(path);
-  if (view != ATK_NULLPTR)
+  if (view != AXOM_NULLPTR)
   {
     view->describe(dtype);
   }
@@ -311,7 +311,7 @@ DataView * DataGroup::createView( const std::string& path,
                                   DataBuffer * buff )
 {
   DataView * view = createView(path);
-  if ( view != ATK_NULLPTR )
+  if ( view != AXOM_NULLPTR )
   {
     view->attachBuffer( buff );
   }
@@ -332,7 +332,7 @@ DataView * DataGroup::createView( const std::string& path,
                                   DataBuffer * buff )
 {
   DataView * view = createView(path, type, num_elems);
-  if (view != ATK_NULLPTR)
+  if (view != AXOM_NULLPTR)
   {
     view->attachBuffer(buff);
   }
@@ -354,7 +354,7 @@ DataView * DataGroup::createView( const std::string& path,
                                   DataBuffer * buff )
 {
   DataView * view = createView(path, type, ndims, shape);
-  if (view != ATK_NULLPTR)
+  if (view != AXOM_NULLPTR)
   {
     view->attachBuffer(buff);
   }
@@ -374,7 +374,7 @@ DataView * DataGroup::createView( const std::string& path,
                                   DataBuffer * buff )
 {
   DataView * view = createView(path, dtype);
-  if (view != ATK_NULLPTR)
+  if (view != AXOM_NULLPTR)
   {
     view->attachBuffer(buff);
   }
@@ -401,7 +401,7 @@ DataView * DataGroup::createView( const std::string& path,
                                   void * external_ptr )
 {
   DataView * view = createView(path);
-  if ( view != ATK_NULLPTR )
+  if ( view != AXOM_NULLPTR )
   {
     view->setExternalDataPtr(external_ptr);
   }
@@ -422,7 +422,7 @@ DataView * DataGroup::createView( const std::string& path,
                                   void * external_ptr )
 {
   DataView * view = createView(path, type, num_elems);
-  if (view != ATK_NULLPTR)
+  if (view != AXOM_NULLPTR)
   {
     view->setExternalDataPtr(external_ptr);
   }
@@ -444,7 +444,7 @@ DataView * DataGroup::createView( const std::string& path,
                                   void * external_ptr )
 {
   DataView * view = createView(path, type, ndims, shape);
-  if (view != ATK_NULLPTR)
+  if (view != AXOM_NULLPTR)
   {
     view->setExternalDataPtr(external_ptr);
   }
@@ -464,7 +464,7 @@ DataView * DataGroup::createView( const std::string& path,
                                   void * external_ptr )
 {
   DataView * view = createView(path, dtype);
-  if (view != ATK_NULLPTR)
+  if (view != AXOM_NULLPTR)
   {
     view->setExternalDataPtr(external_ptr);
   }
@@ -491,7 +491,7 @@ DataView * DataGroup::createViewAndAllocate( const std::string& path,
                                              SidreLength num_elems )
 {
   DataView * view = createView(path, type, num_elems);
-  if ( view != ATK_NULLPTR )
+  if ( view != AXOM_NULLPTR )
   {
     view->allocate();
   }
@@ -512,7 +512,7 @@ DataView * DataGroup::createViewAndAllocate( const std::string& path,
                                              SidreLength * shape )
 {
   DataView * view = createView(path, type, ndims, shape);
-  if ( view != ATK_NULLPTR )
+  if ( view != AXOM_NULLPTR )
   {
     view->allocate();
   }
@@ -531,7 +531,7 @@ DataView * DataGroup::createViewAndAllocate( const std::string& path,
                                              const DataType& dtype)
 {
   DataView * view = createView(path, dtype);
-  if ( view != ATK_NULLPTR )
+  if ( view != AXOM_NULLPTR )
   {
     view->allocate();
   }
@@ -549,7 +549,7 @@ DataView * DataGroup::createViewString( const std::string& path,
                                         const std::string& value)
 {
   DataView * view = createView(path);
-  if (view != ATK_NULLPTR)
+  if (view != AXOM_NULLPTR)
   {
     view->setString(value);
   }
@@ -577,10 +577,10 @@ void DataGroup::destroyView( const std::string& path )
   bool create_groups_in_path = false;
   DataGroup * group = walkPath( intpath, create_groups_in_path );
 
-  if ( group != ATK_NULLPTR )
+  if ( group != AXOM_NULLPTR )
   {
     DataView * view = group->detachView(intpath);
-    if ( view != ATK_NULLPTR )
+    if ( view != AXOM_NULLPTR )
     {
       delete view;
     }
@@ -597,7 +597,7 @@ void DataGroup::destroyView( const std::string& path )
 void DataGroup::destroyView( IndexType idx )
 {
   DataView * view = detachView(idx);
-  if ( view != ATK_NULLPTR )
+  if ( view != AXOM_NULLPTR )
   {
     delete view;
   }
@@ -616,7 +616,7 @@ void DataGroup::destroyViews()
   while ( indexIsValid(vidx) )
   {
     DataView * view = detachView(vidx);
-    if ( view != ATK_NULLPTR )
+    if ( view != AXOM_NULLPTR )
     {
       delete view;
     }
@@ -689,10 +689,10 @@ void DataGroup::destroyViewsAndData()
  */
 DataView * DataGroup::moveView(DataView * view)
 {
-  if ( view == ATK_NULLPTR )
+  if ( view == AXOM_NULLPTR )
   {
-    SLIC_CHECK( view != ATK_NULLPTR );
-    return ATK_NULLPTR;
+    SLIC_CHECK( view != AXOM_NULLPTR );
+    return AXOM_NULLPTR;
   }
 
   DataGroup * curr_group = view->getOwningGroup();
@@ -707,7 +707,7 @@ DataView * DataGroup::moveView(DataView * view)
                    "Group '" << getName() <<
                    "' already has a View named'" << view->getName() <<
                    "' so View move operation cannot happen");
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   curr_group->detachView(view);
@@ -727,15 +727,15 @@ DataView * DataGroup::moveView(DataView * view)
  */
 DataView * DataGroup::copyView(DataView * view)
 {
-  if ( view == ATK_NULLPTR || hasChildView(view->getName()) )
+  if ( view == AXOM_NULLPTR || hasChildView(view->getName()) )
   {
-    SLIC_CHECK( view != ATK_NULLPTR );
+    SLIC_CHECK( view != AXOM_NULLPTR );
     SLIC_CHECK_MSG(!hasChildView(view->getName()),
                    "Group '" << getName() <<
                    "' already has a View named'" << view->getName() <<
                    "' so View copy operation cannot happen");
 
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   DataView * copy = createView(view->getName());
@@ -763,7 +763,7 @@ bool DataGroup::hasGroup( const std::string& path ) const
   std::string intpath(path);
   const DataGroup * group = walkPath( intpath );
 
-  if ( group == ATK_NULLPTR )
+  if ( group == AXOM_NULLPTR )
   {
     return false;
   }
@@ -793,11 +793,11 @@ DataGroup * DataGroup::getGroup( const std::string& path )
   bool create_groups_in_path = false;
   DataGroup * group = walkPath( intpath, create_groups_in_path );
 
-  if (group == ATK_NULLPTR)
+  if (group == AXOM_NULLPTR)
   {
-    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+    SLIC_CHECK_MSG( group != AXOM_NULLPTR,
                     "Non-existent group in path " << path );
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
@@ -819,11 +819,11 @@ const DataGroup * DataGroup::getGroup( const std::string& path ) const
   std::string intpath(path);
   const DataGroup * group = walkPath( intpath );
 
-  if (group == ATK_NULLPTR)
+  if (group == AXOM_NULLPTR)
   {
-    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+    SLIC_CHECK_MSG( group != AXOM_NULLPTR,
                     "Non-existent group in path " << path );
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
@@ -854,12 +854,12 @@ DataGroup * DataGroup::createGroup( const std::string& path )
   bool create_groups_in_path = true;
   DataGroup * group = walkPath( intpath, create_groups_in_path );
 
-  if ( group == ATK_NULLPTR )
+  if ( group == AXOM_NULLPTR )
   {
-    SLIC_CHECK_MSG( group != ATK_NULLPTR,
+    SLIC_CHECK_MSG( group != AXOM_NULLPTR,
                     "Could not find or create path " << path <<
                     " since it appears there is already a view with that name" );
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
   else if ( intpath.empty() || group->hasChildGroup(intpath) ||
             group->hasChildView(intpath) )
@@ -874,13 +874,13 @@ DataGroup * DataGroup::createGroup( const std::string& path )
                     " in Group '" << getName() <<
                     " since it already has a View with that name" );
 
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   DataGroup * new_group = new(std::nothrow) DataGroup(intpath, group);
-  if ( new_group == ATK_NULLPTR )
+  if ( new_group == AXOM_NULLPTR )
   {
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
   return group->attachGroup(new_group);
 }
@@ -898,10 +898,10 @@ void DataGroup::destroyGroup( const std::string& path )
   bool create_groups_in_path = false;
   DataGroup * group = walkPath( intpath, create_groups_in_path );
 
-  if ( group != ATK_NULLPTR )
+  if ( group != AXOM_NULLPTR )
   {
     DataGroup * targetgroup = group->detachGroup(intpath);
-    if ( targetgroup != ATK_NULLPTR )
+    if ( targetgroup != AXOM_NULLPTR )
     {
       delete targetgroup;
     }
@@ -918,7 +918,7 @@ void DataGroup::destroyGroup( const std::string& path )
 void DataGroup::destroyGroup( IndexType idx )
 {
   DataGroup * group = detachGroup(idx);
-  if ( group != ATK_NULLPTR )
+  if ( group != AXOM_NULLPTR )
   {
     delete group;
   }
@@ -954,15 +954,15 @@ void DataGroup::destroyGroups()
  */
 DataGroup * DataGroup::moveGroup(DataGroup * group)
 {
-  if ( group == ATK_NULLPTR || hasChildGroup(group->getName()))
+  if ( group == AXOM_NULLPTR || hasChildGroup(group->getName()))
   {
-    SLIC_CHECK( group != ATK_NULLPTR );
+    SLIC_CHECK( group != AXOM_NULLPTR );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
                    "Group '" << getName() <<
                    "' already has a child Group named'" << group->getName() <<
                    "' so Group move operation cannot happen");
 
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
 
   DataGroup * curr_group = group->getParent();
@@ -982,15 +982,15 @@ DataGroup * DataGroup::moveGroup(DataGroup * group)
  */
 DataGroup * DataGroup::copyGroup(DataGroup * group)
 {
-  if ( group == ATK_NULLPTR || hasChildGroup(group->getName()) )
+  if ( group == AXOM_NULLPTR || hasChildGroup(group->getName()) )
   {
-    SLIC_CHECK( group != ATK_NULLPTR );
+    SLIC_CHECK( group != AXOM_NULLPTR );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
                    "Group '" << getName() <<
                    "' already has a child Group named'" << group->getName() <<
                    "' so Group copy operation cannot happen");
 
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
   else
   {
@@ -1050,6 +1050,7 @@ void DataGroup::createNativeLayout(Node& n) const
     group->createNativeLayout(n[group->getName()]);
     gidx = getNextValidGroupIndex(gidx);
   }
+
 }
 
 /*
@@ -1285,6 +1286,7 @@ void DataGroup::save(const std::string& path,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "hdf5");
   }
   else if (protocol == "sidre_conduit_json")
@@ -1292,6 +1294,7 @@ void DataGroup::save(const std::string& path,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "conduit_json");
   }
   else if (protocol == "sidre_json")
@@ -1299,12 +1302,14 @@ void DataGroup::save(const std::string& path,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "json");
   }
   else if (protocol == "conduit_hdf5" )
   {
     Node n;
     createNativeLayout(n);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path,"hdf5");
   }
   else if (protocol == "conduit_bin"  ||
@@ -1313,6 +1318,7 @@ void DataGroup::save(const std::string& path,
   {
     Node n;
     createNativeLayout(n);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, protocol);
   }
   else
@@ -1339,12 +1345,14 @@ void DataGroup::save(const hid_t& h5_id,
     Node n;
     exportTo(n["sidre"]);
     createExternalLayout(n["sidre/external"]);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::hdf5_write(n,h5_id);
   }
   else if( protocol == "conduit_hdf5")
   {
     Node n;
     createNativeLayout(n);
+    n["sidre_group_name"] = m_name;
     conduit::relay::io::hdf5_write(n, h5_id);
   }
   else
@@ -1368,13 +1376,16 @@ void DataGroup::save(const hid_t& h5_id,
 void DataGroup::load(const std::string& path,
                      const std::string& protocol)
 {
-
+  std::string new_name; 
   if (protocol == "sidre_hdf5")
   {
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "sidre_conduit_json")
   {
@@ -1382,6 +1393,9 @@ void DataGroup::load(const std::string& path,
     conduit::relay::io::load(path,"conduit_json", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "sidre_json")
   {
@@ -1389,12 +1403,18 @@ void DataGroup::load(const std::string& path,
     conduit::relay::io::load(path,"json", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "conduit_hdf5")
   {
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
     importConduitTree(n);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else if (protocol == "conduit_bin"  ||
            protocol == "conduit_json" ||
@@ -1403,11 +1423,16 @@ void DataGroup::load(const std::string& path,
     Node n;
     conduit::relay::io::load(path,protocol, n);
     importConduitTree(n);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else
   {
     SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
   }
+
+  renameOrWarn(new_name);
 }
 
 /*
@@ -1423,12 +1448,16 @@ void DataGroup::load(const hid_t& h5_id,
   // supported here:
   // "sidre_hdf5"
   // "conduit_hdf5"
+  std::string new_name;
   if(protocol == "sidre_hdf5")
   {
     Node n;
     conduit::relay::io::hdf5_read(h5_id,n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"]);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else if( protocol == "conduit_hdf5")
   {
@@ -1436,10 +1465,53 @@ void DataGroup::load(const hid_t& h5_id,
     Node n;
     conduit::relay::io::hdf5_read(h5_id, n);
     importConduitTree(n);
+    if (n.has_path("sidre_group_name")) {
+      new_name = n["sidre_group_name"].as_string();
+    }
   }
   else
   {
     SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+  }
+
+  renameOrWarn(new_name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Rename this group unless the new name already is held by the parent.
+ *
+ *************************************************************************
+ */
+void DataGroup::renameOrWarn(const std::string& new_name)
+{
+  if (new_name != m_name) {
+    const DataGroup * root = getDataStore()->getRoot();
+    DataGroup * parent = getParent();
+    if (this == root || parent == AXOM_NULLPTR)
+    {
+      rename(new_name);
+    }
+    else
+    {
+      if (parent->hasGroup(new_name))
+      {
+        SLIC_WARNING("Parent already has a child group named " << new_name <<
+                     ". The name of group " << m_name <<
+                     " will not be changed.");
+      }
+      else if (parent->hasView(new_name))
+      {
+        SLIC_WARNING("Parent already has a child view named " << new_name <<
+                     ". The name of group " << m_name <<
+                     " will not be changed.");
+      }
+      else
+      {
+        rename(new_name);
+      }
+    }
   }
 }
 
@@ -1538,13 +1610,13 @@ DataGroup::~DataGroup()
  */
 DataView * DataGroup::attachView(DataView * view)
 {
-  if ( view == ATK_NULLPTR || hasChildView(view->getName()) )
+  if ( view == AXOM_NULLPTR || hasChildView(view->getName()) )
   {
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
   else
   {
-    SLIC_ASSERT(view->m_owning_group == ATK_NULLPTR);
+    SLIC_ASSERT(view->m_owning_group == AXOM_NULLPTR);
     view->m_owning_group = this;
     m_view_coll->insertItem(view, view->getName());
     return view;
@@ -1561,9 +1633,9 @@ DataView * DataGroup::attachView(DataView * view)
 DataView * DataGroup::detachView(const std::string& name )
 {
   DataView * view = m_view_coll->removeItem(name);
-  if ( view != ATK_NULLPTR )
+  if ( view != AXOM_NULLPTR )
   {
-    view->m_owning_group = ATK_NULLPTR;
+    view->m_owning_group = AXOM_NULLPTR;
   }
 
   return view;
@@ -1579,9 +1651,9 @@ DataView * DataGroup::detachView(const std::string& name )
 DataView * DataGroup::detachView(IndexType idx)
 {
   DataView * view = m_view_coll->removeItem(idx);
-  if ( view != ATK_NULLPTR )
+  if ( view != AXOM_NULLPTR )
   {
-    view->m_owning_group = ATK_NULLPTR;
+    view->m_owning_group = AXOM_NULLPTR;
   }
 
   return view;
@@ -1596,12 +1668,12 @@ DataView * DataGroup::detachView(IndexType idx)
  */
 void DataGroup::destroyViewAndData( DataView * view )
 {
-  if ( view != ATK_NULLPTR )
+  if ( view != AXOM_NULLPTR )
   {
     DataGroup * group = view->getOwningGroup();
     group->detachView( view->getName() );
     DataBuffer * const buffer = view->detachBuffer();
-    if ( buffer != ATK_NULLPTR && buffer->getNumViews() == 0 )
+    if ( buffer != AXOM_NULLPTR && buffer->getNumViews() == 0 )
     {
       getDataStore()->destroyBuffer(buffer);
     }
@@ -1618,9 +1690,9 @@ void DataGroup::destroyViewAndData( DataView * view )
  */
 DataGroup * DataGroup::attachGroup(DataGroup * group)
 {
-  if ( group == ATK_NULLPTR || hasChildGroup(group->getName()) )
+  if ( group == AXOM_NULLPTR || hasChildGroup(group->getName()) )
   {
-    return ATK_NULLPTR;
+    return AXOM_NULLPTR;
   }
   else
   {
@@ -1639,9 +1711,9 @@ DataGroup * DataGroup::attachGroup(DataGroup * group)
 DataGroup * DataGroup::detachGroup(const std::string& name )
 {
   DataGroup * group = m_group_coll->removeItem(name);
-  if ( group != ATK_NULLPTR )
+  if ( group != AXOM_NULLPTR )
   {
-    group->m_parent = ATK_NULLPTR;
+    group->m_parent = AXOM_NULLPTR;
   }
 
   return group;
@@ -1657,9 +1729,9 @@ DataGroup * DataGroup::detachGroup(const std::string& name )
 DataGroup * DataGroup::detachGroup(IndexType idx)
 {
   DataGroup * group = m_group_coll->removeItem(idx);
-  if ( group != ATK_NULLPTR )
+  if ( group != AXOM_NULLPTR )
   {
-    group->m_parent = ATK_NULLPTR;
+    group->m_parent = AXOM_NULLPTR;
   }
 
   return group;
@@ -1712,6 +1784,7 @@ void DataGroup::exportTo(conduit::Node & result) const
       getDataStore()->getBuffer( *s_it )->exportTo(n_buffer);
     }
   }
+
 }
 
 /*
@@ -1849,6 +1922,7 @@ void DataGroup::importFrom(conduit::Node& node,
       group->importFrom(n_group, buffer_id_map);
     }
   }
+
 }
 
 
@@ -1890,8 +1964,10 @@ void DataGroup::importConduitTree(conduit::Node &node)
       }
       else if(cld_dtype.is_string())
       {
-        //create string view
-        createViewString(cld_name,cld_node.as_string());
+        if (cld_name != "sidre_group_name") {
+          //create string view
+          createViewString(cld_name,cld_node.as_string());
+        }
       }
       else if(cld_dtype.is_number())
       {
@@ -1946,7 +2022,7 @@ void DataGroup::importConduitTree(conduit::Node &node)
  *
  * PRIVATE method to walk down a path to the next-to-last entry.
  *
- * If an error is encountered, this private function will return ATK_NULLPTR
+ * If an error is encountered, this private function will return AXOM_NULLPTR
  *
  *************************************************************************
  */
@@ -1976,7 +2052,7 @@ DataGroup * DataGroup::walkPath( std::string& path,
       {
         group_ptr = group_ptr->createGroup(*iter);
 
-        if ( group_ptr == ATK_NULLPTR )
+        if ( group_ptr == AXOM_NULLPTR )
         {
           iter = stop;
         }
@@ -1984,7 +2060,7 @@ DataGroup * DataGroup::walkPath( std::string& path,
       else
       {
         iter = stop;
-        group_ptr = ATK_NULLPTR;
+        group_ptr = AXOM_NULLPTR;
       }
     }
     path = tokens.back();
@@ -1998,7 +2074,7 @@ DataGroup * DataGroup::walkPath( std::string& path,
  *
  * PRIVATE const method to walk down a path to the next-to-last entry.
  *
- * If an error is encountered, this private function will return ATK_NULLPTR
+ * If an error is encountered, this private function will return AXOM_NULLPTR
  *
  *************************************************************************
  */
@@ -2025,7 +2101,7 @@ const DataGroup * DataGroup::walkPath( std::string& path ) const
       }
       else
       {
-        group_ptr = ATK_NULLPTR;
+        group_ptr = AXOM_NULLPTR;
         iter = stop;
       }
     }
@@ -2125,7 +2201,7 @@ const std::string& DataGroup::getViewName(IndexType idx) const
  *
  * Return pointer to non-const View with given index.
  *
- * If no such View exists, ATK_NULLPTR is returned.
+ * If no such View exists, AXOM_NULLPTR is returned.
  *
  *************************************************************************
  */
@@ -2140,10 +2216,10 @@ DataView * DataGroup::getView( IndexType idx )
 
 /*
  *************************************************************************
- * 
+ *
  * Return pointer to const View with given index.
  *
- * If no such View exists, ATK_NULLPTR is returned.
+ * If no such View exists, AXOM_NULLPTR is returned.
  *
  *************************************************************************
  */
@@ -2192,7 +2268,7 @@ IndexType DataGroup::getNextValidViewIndex(IndexType idx) const
  *
  * Return true if this Group has a child Group with given
  * name; else false.
- * 
+ *
  *************************************************************************
  */
 bool DataGroup::hasChildGroup( const std::string& name ) const
@@ -2253,7 +2329,7 @@ const std::string& DataGroup::getGroupName(IndexType idx) const
  *
  * Return pointer to non-const immediate child Group with given index.
  *
- * If no such Group exists, ATK_NULLPTR is returned.
+ * If no such Group exists, AXOM_NULLPTR is returned.
  *
  *************************************************************************
  */
@@ -2271,7 +2347,7 @@ DataGroup * DataGroup::getGroup( IndexType idx )
  *
  * Return pointer to const immediate child Group with given index.
  *
- * If no such Group exists, ATK_NULLPTR is returned.
+ * If no such Group exists, AXOM_NULLPTR is returned.
  *
  *************************************************************************
  */
@@ -2316,8 +2392,62 @@ IndexType DataGroup::getNextValidGroupIndex(IndexType idx) const
   return m_group_coll->getNextValidIndex(idx);
 }
 
+/*
+ *************************************************************************
+ *
+ * Rename this Group with a new string name.
+ *
+ *************************************************************************
+ */
+bool DataGroup::rename(const std::string& new_name)
+{
+  bool do_rename = true;
+  if (new_name != m_name) {
+
+    if (new_name.empty()) {
+      SLIC_WARNING("Cannot rename Group " << m_name << " to an empty " <<
+                   "string.");
+      do_rename = false;
+    } else if (new_name.find(s_path_delimiter) != std::string::npos) {
+      SLIC_WARNING("Cannot rename Group "<< m_name << " to path name " <<
+                   new_name << ". Only strings without path delimiters can " <<
+                   "be passed into the rename method.");
+      do_rename = false;
+    }
+
+    if (do_rename) {
+      const DataGroup * root = getDataStore()->getRoot();
+      DataGroup * parent = getParent();
+
+      //If this is the root group, we don't need
+      //to do anything to change the parent's handle to this group.
+      if (this != root && parent != AXOM_NULLPTR) {
+
+        if (parent->hasGroup(new_name) || parent->hasView(new_name)) {
+          SLIC_WARNING("Parent group " << parent->getName() <<
+                       " already has a child group named " << new_name <<
+                       ". Group " << m_name << " will not be renamed."); 
+          do_rename = false;
+        } else {
+          DataGroup * detached_group = parent->detachGroup(m_name);
+          SLIC_CHECK(detached_group == this); 
+
+          m_name = new_name;
+
+          DataGroup * attached_group = parent->attachGroup(detached_group);
+          SLIC_CHECK(attached_group == this);
+        }
+      } else {
+        m_name = new_name;
+      }
+    }
+  }
+
+  return do_rename;
+}
+
 
 
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */

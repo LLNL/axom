@@ -8,7 +8,7 @@
 ! further review from lawrence livermore national laboratory.
 !
 
-program spio_basis_write_read
+program spio_basic_write_read
   use iso_c_binding
   use sidre_mod
   use spio_mod
@@ -84,4 +84,4 @@ program spio_basis_write_read
   call mpi_finalize(mpierr)
 
   call exit(return_val)
-end program spio_basis_write_read
+end program spio_basic_write_read

@@ -11,14 +11,13 @@
 
 /*!
  *******************************************************************************
- * \file
- * \brief Basic demo for the in/out octree.
- *        WIP towards point containment acceleration structure over surface.
+ * \file octree_driver.cpp
+ * \brief Basic demo of point containment acceleration structure over surfaces.
  *******************************************************************************
  */
 
-// ATK Toolkit includes
-#include "common/ATKMacros.hpp"
+// axom includes
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/FileUtilities.hpp"
 #include "common/Timer.hpp"
@@ -57,11 +56,11 @@
 #include <fstream>
 #include <iomanip>  // for setprecision()
 
-using namespace asctoolkit;
+using namespace axom;
 
 typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
-typedef quest::InOutOctree<3> Octree3D;
+typedef axom::quest::InOutOctree<3> Octree3D;
 
 typedef axom::primal::Point<int,3> TriVertIndices;
 typedef axom::primal::Triangle<double, 3> SpaceTriangle;
@@ -72,7 +71,7 @@ typedef Octree3D::SpaceVector SpaceVector;
 typedef Octree3D::GridPt GridPt;
 typedef Octree3D::BlockIndex BlockIndex;
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   const int MAX_CONTAINMENT_QUERY_LEVEL = 7;
 #else
   const int MAX_CONTAINMENT_QUERY_LEVEL = 9;
@@ -85,7 +84,7 @@ typedef Octree3D::BlockIndex BlockIndex;
  */
 GeometricBoundingBox compute_bounds( axom::mint::Mesh* mesh)
 {
-   SLIC_ASSERT( mesh != ATK_NULLPTR );
+   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
    GeometricBoundingBox meshBB;
    SpacePt pt;
@@ -105,7 +104,7 @@ GeometricBoundingBox compute_bounds( axom::mint::Mesh* mesh)
 //------------------------------------------------------------------------------
 void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   std::ofstream ofs;
   ofs.open( fileName.c_str() );
@@ -178,7 +177,7 @@ void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
       if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "double\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -189,7 +188,7 @@ void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
       } else {
 
           int* dataPtr = field->getIntPtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "int\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -268,7 +267,7 @@ void testIntersectionOnRegularGrid()
     PointType bbMax(1.1);
     BoundingBoxType bbox( bbMin,bbMax );
 
-    typedef quest::SpatialOctree<DIM, quest::BlockData> SpaceOctree;
+    typedef axom::quest::SpatialOctree<DIM, quest::BlockData> SpaceOctree;
     SpaceOctree oct( bbox);
 
 
@@ -332,14 +331,14 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
 
     const int nnodes = umesh->getNumberOfNodes();
     axom::mint::FieldData* PD = umesh->getNodeFieldData();
-    SLIC_ASSERT( PD != ATK_NULLPTR );
+    SLIC_ASSERT( PD != AXOM_NULLPTR );
 
     PD->addField( new axom::mint::FieldVariable< int >("containment",nnodes) );
     int* containment = PD->getField( "containment" )->getIntPtr();
-    SLIC_ASSERT( containment != ATK_NULLPTR );
+    SLIC_ASSERT( containment != AXOM_NULLPTR );
 
 
-    asctoolkit::utilities::Timer timer(true);
+    axom::utilities::Timer timer(true);
     for ( int inode=0; inode < nnodes; ++inode )
     {
         axom::primal::Point< double,3 > pt;
@@ -366,7 +365,7 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
  */
 TriVertIndices getTriangleVertIndices(axom::mint::Mesh* mesh, int cellIndex)
 {
-    SLIC_ASSERT(mesh != ATK_NULLPTR);
+    SLIC_ASSERT(mesh != AXOM_NULLPTR);
     SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getMeshNumberOfCells());
 
     TriVertIndices tvInd;
@@ -380,7 +379,7 @@ TriVertIndices getTriangleVertIndices(axom::mint::Mesh* mesh, int cellIndex)
  */
 SpaceTriangle getMeshTriangle(axom::mint::Mesh* mesh, const TriVertIndices& vertIndices )
 {
-    SLIC_ASSERT(mesh != ATK_NULLPTR);
+    SLIC_ASSERT(mesh != AXOM_NULLPTR);
 
     SpaceTriangle tri;
     for(int i=0; i< 3; ++i)
@@ -397,7 +396,7 @@ SpaceTriangle getMeshTriangle(axom::mint::Mesh* mesh, const TriVertIndices& vert
  */
 void print_surface_stats( axom::mint::Mesh* mesh)
 {
-   SLIC_ASSERT( mesh != ATK_NULLPTR );
+   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
    SpacePt pt;
 
@@ -433,7 +432,7 @@ void print_surface_stats( axom::mint::Mesh* mesh)
       for(int j=0; j<3; ++j)
       {
           double len = SpaceVector(tri[j],tri[(j+1)%3]).norm();
-          if(asctoolkit::utilities::isNearlyEqual(len,0.))
+          if(axom::utilities::isNearlyEqual(len,0.))
           {
               badTriangles.insert(i);
           }
@@ -449,7 +448,7 @@ void print_surface_stats( axom::mint::Mesh* mesh)
 
       // Compute triangle area stats
       double area = tri.area();
-      if( asctoolkit::utilities::isNearlyEqual(area, 0.))
+      if( axom::utilities::isNearlyEqual(area, 0.))
       {
           badTriangles.insert(i);
       }
@@ -555,11 +554,11 @@ int main( int argc, char** argv )
       const std::string defaultFileName = "plane_simp.stl";
       const std::string defaultDir = "src/components/quest/data/";
 
-      stlFile = asctoolkit::utilities::filesystem::joinPath(defaultDir, defaultFileName);
+      stlFile = axom::utilities::filesystem::joinPath(defaultDir, defaultFileName);
   }
 
-  stlFile = asctoolkit::slam::util::findFileInAncestorDirs(stlFile);
-  SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( stlFile));
+  stlFile = axom::slam::util::findFileInAncestorDirs(stlFile);
+  SLIC_ASSERT( axom::utilities::filesystem::pathExists( stlFile));
 
   // STEP 2: read mesh file
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Loading the mesh "));
@@ -581,7 +580,7 @@ int main( int argc, char** argv )
 
   // STEP 4: Delete the reader
   delete reader;
-  reader = ATK_NULLPTR;
+  reader = AXOM_NULLPTR;
 
 
   // STEP 5: Compute the bounding box and log some stats about the surface

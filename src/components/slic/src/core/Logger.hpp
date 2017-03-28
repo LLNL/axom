@@ -28,7 +28,7 @@
 #include <vector> // for STL vector
 #include <map>    // for STL map
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 
 namespace axom {
 namespace slic {

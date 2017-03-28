@@ -13,7 +13,7 @@
 
 #include <string>
 
-namespace asctoolkit {
+namespace axom {
 namespace utilities {
 namespace string {
 
@@ -38,6 +38,6 @@ int stringToInt(const std::string& stringValue);
 
 } // end namespace string
 } // end namespace utilities
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif //  COMMON_STRING_UTILITIES_H_

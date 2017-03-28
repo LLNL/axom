@@ -9,20 +9,15 @@
  */
 
 
-#if !defined(USE_MPI)
-# error "You should specify USE_MPI=0 or USE_MPI=1 on the compile line"
-#endif
-
+#include "common/config.hpp"
 
 // OpenMP will be compiled in if this flag is set to 1 AND the compiler beging
 // used supports it (i.e. the _OPENMP symbol is defined)
 #define USE_OMP 1
 
-#if USE_MPI
+#ifdef AXOM_USE_MPI
 #include <mpi.h>
 #endif
-
-#include <mpi.h>
 
 /*
    define one of these three symbols:
@@ -420,7 +415,7 @@ public:
   // MPI-Related additional data
   //
 
-#if USE_MPI
+#ifdef AXOM_USE_MPI
   // Communication Work space
   Real_t * commDataSend;
   Real_t * commDataRecv;

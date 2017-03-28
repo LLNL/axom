@@ -21,7 +21,7 @@
 #include <iostream>
 #include "RangeSet.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
 
@@ -69,5 +69,5 @@ bool RangeSet::isValid(bool verboseOutput) const
 }
 
 } /* namespace slam */
-} /* namespace asctoolkit */
+} /* namespace axom */
 

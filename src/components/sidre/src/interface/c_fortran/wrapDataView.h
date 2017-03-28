@@ -169,6 +169,11 @@ int SIDRE_dataview_get_num_dimensions(const SIDRE_dataview * self);
 int SIDRE_dataview_get_shape(const SIDRE_dataview * self, int ndims,
                              SIDRE_SidreLength * shape);
 
+bool SIDRE_dataview_rename(SIDRE_dataview * self, const char * new_name);
+
+bool SIDRE_dataview_rename_bufferify(SIDRE_dataview * self,
+                                     const char * new_name, int Lnew_name);
+
 void SIDRE_dataview_print(const SIDRE_dataview * self);
 
 #ifdef __cplusplus

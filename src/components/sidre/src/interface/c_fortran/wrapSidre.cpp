@@ -14,7 +14,7 @@
 #include <string>
 
 extern "C" {
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -29,6 +29,6 @@ bool SIDRE_name_is_valid(const char * name)
 // splicer begin additional_functions
 // splicer end additional_functions
 
-}  // namespace asctoolkit
+}  // namespace axom
 }  // namespace sidre
 }  // extern "C"

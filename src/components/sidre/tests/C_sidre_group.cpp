@@ -615,6 +615,31 @@ TEST(C_sidre_group,save_restore_simple)
 }
 
 //------------------------------------------------------------------------------
+TEST(C_sidre_group,rename_group)
+{
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * child1 = SIDRE_datagroup_create_group(root, "g_a");
+  SIDRE_datagroup * child2 = SIDRE_datagroup_create_group(root, "g_b");
+  SIDRE_datagroup * child3 = SIDRE_datagroup_create_group(root, "g_c");
+
+  bool success = SIDRE_datagroup_rename(child1, "g_r");
+  EXPECT_TRUE( success );
+  EXPECT_TRUE( strcmp(SIDRE_datagroup_get_name(child1), "g_r") == 0 );
+  EXPECT_TRUE( SIDRE_datagroup_has_group(root, "g_r") );
+  EXPECT_FALSE( SIDRE_datagroup_has_group(root, "g_a") );
+
+  success = SIDRE_datagroup_rename(child2, "fields/g_s");
+  EXPECT_FALSE( success );
+  EXPECT_TRUE( strcmp(SIDRE_datagroup_get_name(child2), "g_b") == 0 );
+
+  success = SIDRE_datagroup_rename(child3, "g_b");
+  EXPECT_FALSE( success );
+  EXPECT_TRUE( strcmp(SIDRE_datagroup_get_name(child3), "g_c") == 0 );
+
+}
+
+//------------------------------------------------------------------------------
 TEST(C_sidre_group,save_restore_complex)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();

@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -49,6 +49,6 @@ namespace detail
 
 } // end namespace sidre
 
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif /* UTILITIES_HPP_ */

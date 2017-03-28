@@ -12,7 +12,7 @@
 #include "Relation.hpp"
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
 /**
@@ -22,4 +22,4 @@ namespace slam {
   NullSet Relation::s_nullSet;
 
 } // namespace slam
-} // namespace asctoolkit
+} // namespace axom

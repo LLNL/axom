@@ -20,7 +20,7 @@
 #define SLAM_PRODUCT_SET_H_
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
 
@@ -28,6 +28,6 @@ namespace slam {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif //  SLAM_ORDERED_SET_H_

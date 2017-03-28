@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataBuffer.hpp
  *
  * \brief   Header file containing definition of DataBuffer class.
  *
@@ -24,15 +24,15 @@
 // Standard C++ headers
 #include <vector>
 
-// Other toolkit component headers
-#include "common/ATKMacros.hpp"
+// Other axom headers
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
 // Sidre project headers
 #include "SidreTypes.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -164,7 +164,7 @@ public:
    */
   bool isAllocated() const
   {
-    return (m_node.data_ptr() != ATK_NULLPTR);
+    return (m_node.data_ptr() != AXOM_NULLPTR);
   }
 
   /*!
@@ -351,6 +351,6 @@ private:
 };
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
 #endif /* DATABUFFER_HPP_ */

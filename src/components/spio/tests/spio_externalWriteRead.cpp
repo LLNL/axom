@@ -15,11 +15,13 @@
 
 #include "sidre/sidre.hpp"
 
-using asctoolkit::spio::IOManager;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataType;
-using asctoolkit::sidre::DataView;
+#include "mpi.h"
+
+using axom::spio::IOManager;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataType;
+using axom::sidre::DataView;
 
 
 //------------------------------------------------------------------------------
@@ -63,7 +65,7 @@ int main(int argc, char** argv)
 
   DataGroup * ga = flds->createGroup("a");
   DataGroup * gb = flds2->createGroup("b");
-  ga->createView("external_array", asctoolkit::sidre::INT_ID, nvals, orig_vals1);
+  ga->createView("external_array", axom::sidre::INT_ID, nvals, orig_vals1);
   gb->createView("external_undescribed")->setExternalDataPtr(orig_vals2);
 
   /*

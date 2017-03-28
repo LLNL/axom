@@ -12,11 +12,13 @@
 #include "sidre/sidre.hpp"
 #include "conduit_relay.hpp"
 
-using asctoolkit::spio::IOManager;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataType;
-using asctoolkit::sidre::DataView;
+#include "mpi.h"
+
+using axom::spio::IOManager;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::sidre::DataType;
+using axom::sidre::DataView;
 
 
 //------------------------------------------------------------------------------

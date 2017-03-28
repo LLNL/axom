@@ -46,7 +46,7 @@ contains
     type(databuffer) dbuff
     type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
-    integer i
+    integer(C_INT) i
     integer int_size, elem_count
 
     int_size = c_sizeof(i)
@@ -84,7 +84,7 @@ contains
     type(databuffer) dbuff
     type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
-    integer i
+    integer(C_INT) i
     integer int_size, elem_count
 
     int_size = c_sizeof(i)

@@ -21,9 +21,9 @@
 #include "sidre/DataStore.hpp"
 #include "spio/IOManager.hpp"
 
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::spio::IOManager;
+using axom::sidre::DataGroup;
+using axom::sidre::DataStore;
+using axom::spio::IOManager;
 
 /**************************************************************************
  * Subroutine:  main

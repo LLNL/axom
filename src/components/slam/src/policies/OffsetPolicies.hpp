@@ -25,10 +25,10 @@
 #ifndef SLAM_POLICIES_OFFSET_H_
 #define SLAM_POLICIES_OFFSET_H_
 
-#include "common/ATKMacros.hpp"
+#include "common/AxomMacros.hpp"
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 namespace policies {
 
@@ -71,7 +71,7 @@ namespace policies {
     static const IntType DEFAULT_VALUE = INT_VAL;
 
     CompileTimeOffsetHolder(IntType val = DEFAULT_VALUE) {
-      ATK_DEBUG_VAR(val);
+      AXOM_DEBUG_VAR(val);
       SLIC_ASSERT_MSG( val == INT_VAL
           , "SLAM::CompileTimeOffsetHolder -- tried to initialize a compile time offset with value ("
           << val << " ) that differs from the template parameter of " << INT_VAL << ".");
@@ -92,7 +92,7 @@ namespace policies {
 
     ZeroOffset(IntType val = DEFAULT_VALUE)
     {
-      ATK_DEBUG_VAR(val);
+      AXOM_DEBUG_VAR(val);
       SLIC_ASSERT_MSG( val == DEFAULT_VALUE
           , "SLAM::ZeroOffset policy -- tried to initialize a NoOffset policy with ("
           << val << ", but should always be 0");
@@ -107,6 +107,6 @@ namespace policies {
 
 } // end namespace policies
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_POLICIES_OFFSET_H_

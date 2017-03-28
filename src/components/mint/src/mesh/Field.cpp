@@ -43,13 +43,13 @@ Field::~Field()
 //------------------------------------------------------------------------------
 double* Field::getDoublePtr()
 {
-  return ATK_NULLPTR;
+  return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
 int* Field::getIntPtr()
 {
-  return ATK_NULLPTR;
+  return AXOM_NULLPTR;
 }
 
 } /* namespace mint */

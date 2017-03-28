@@ -15,6 +15,7 @@
 #include "quest/quest.hpp"
 
 extern "C" {
+namespace axom {
 namespace quest {
 
 void QUEST_initialize(MPI_Fint comm, const char * fileName, bool requiresDistance, int ndims, int maxElements, int maxLevels)
@@ -86,5 +87,6 @@ void QUEST_mesh_center_of_mass(double * coords)
 // splicer begin additional_functions
 // splicer end additional_functions
 
+}  // namespace axom
 }  // namespace quest
 }  // extern "C"

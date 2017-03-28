@@ -17,7 +17,7 @@
 #include "sidre/SidreTypes.hpp"
 
 extern "C" {
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -130,6 +130,27 @@ bool SIDRE_datagroup_has_child_view_bufferify(const SIDRE_datagroup * self,
   bool rv = selfobj->hasChildView(SH_name);
   return rv;
 // splicer end class.DataGroup.method.has_child_view_bufferify
+}
+
+bool SIDRE_datagroup_rename(SIDRE_datagroup * self, const char * new_name)
+{
+  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.rename
+  const std::string SH_new_name(new_name);
+  bool rv = selfobj->rename(SH_new_name);
+  return rv;
+// splicer end class.DataGroup.method.rename
+}
+
+bool SIDRE_datagroup_rename_bufferify(SIDRE_datagroup * self,
+                                      const char * new_name, int Lnew_name)
+{
+  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.rename_bufferify
+  const std::string SH_new_name(new_name, Lnew_name);
+  bool rv = selfobj->rename(SH_new_name);
+  return rv;
+// splicer end class.DataGroup.method.rename_bufferify
 }
 
 SIDRE_dataview * SIDRE_datagroup_get_view_from_name(SIDRE_datagroup * self,
@@ -1046,6 +1067,6 @@ void SIDRE_datagroup_load_external_data_bufferify(SIDRE_datagroup * self,
 // splicer begin class.DataGroup.additional_functions
 // splicer end class.DataGroup.additional_functions
 
-}  // namespace asctoolkit
+}  // namespace axom
 }  // namespace sidre
 }  // extern "C"

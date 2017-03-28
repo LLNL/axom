@@ -33,7 +33,7 @@ void sleep(int numSeconds)
 
 TEST(gtest_common_Timer, timer_check )
 {
-  asctoolkit::utilities::Timer t;
+  axom::utilities::Timer t;
 
   std::cout << "Checking that a newly constructed timer indicates 0 time elapsed" << std::endl;
   EXPECT_EQ(0., t.elapsed());
@@ -58,7 +58,7 @@ TEST(gtest_common_Timer, timer_check )
 
 TEST(gtest_common_Timer, timer_check_duration )
 {
-  asctoolkit::utilities::Timer t;
+  axom::utilities::Timer t;
   t.start();
 
   sleep( 1 );

@@ -16,7 +16,7 @@ namespace mint {
 
 ParticleMesh::ParticleMesh( ):
   Mesh( -1, MINT_UNDEFINED_MESH, -1, -1 ),
-  m_particle_coordinates( ATK_NULLPTR )
+  m_particle_coordinates( AXOM_NULLPTR )
 {}
 
 //------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ ParticleMesh::ParticleMesh( int dimension, int blockId, int partId ):
 ParticleMesh::~ParticleMesh()
 {
   delete m_particle_coordinates;
-  m_particle_coordinates = ATK_NULLPTR;
+  m_particle_coordinates = AXOM_NULLPTR;
 }
 
 } /* namespace mint */

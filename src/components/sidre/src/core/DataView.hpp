@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file DataView.hpp
  *
  * \brief   Header file containing definition of DataView class.
  *
@@ -25,15 +25,15 @@
 #include <string>
 #include <set>
 
-// Other CS Toolkit headers
-#include "common/ATKMacros.hpp"
+// Other axom headers
+#include "common/AxomMacros.hpp"
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
-// SiDRe project headers
+// Sidre project headers
 #include "sidre/SidreTypes.hpp"
 
-namespace asctoolkit
+namespace axom
 {
 namespace sidre
 {
@@ -153,7 +153,7 @@ public:
    */
   bool  hasBuffer() const
   {
-    return m_data_buffer != ATK_NULLPTR;
+    return m_data_buffer != AXOM_NULLPTR;
   }
 
   /*!
@@ -611,7 +611,7 @@ public:
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
-#if defined(ATK_DEBUG)
+#if defined(AXOM_DEBUG)
     if (m_state == SCALAR)
     {
       DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
@@ -657,7 +657,7 @@ public:
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
-  #if defined(ATK_DEBUG)
+  #if defined(AXOM_DEBUG)
     if (m_state == SCALAR)
     {
       SLIC_CHECK_MSG(value.dtype().id() == m_node.dtype().id(),
@@ -799,7 +799,7 @@ public:
   /*!
    * \brief Returns a pointer to the string contained in the view.
    *
-   *  If the view is not a STRING, then ATK_NULLPTR is returned.
+   *  If the view is not a STRING, then AXOM_NULLPTR is returned.
      //
      // RDH -- Should we also provide an overload that returns a const char *?
      //        It seems excessive to create copies of strings for most usage.
@@ -814,7 +814,7 @@ public:
     }
     else
     {
-      return ATK_NULLPTR;
+      return AXOM_NULLPTR;
     }
   }
 
@@ -913,6 +913,24 @@ public:
    * in the file (independent of file format) and can be accessed as a Conduit tree.
    */
   void createNativeLayout(Node& n) const;
+
+  /*!
+   * \brief Change the name of this View.
+   *
+   * The name of this view is changed to the new name.  This also changes
+   * the name for this view held by the owning group.
+   *
+   * Warnings will occur and the name will not be changed under these
+   * conditions:  If the new name is an empty string, if the new name
+   * contains a path delimiter (usually '/'), or if the new name is
+   * identical to a name that is already held by the parent for another
+   * Group or View object.
+   *
+   * /param new_name    The new name for this view.
+   *
+   * /return            Success or failure of rename.
+   */
+  bool rename(const std::string& new_name);
 
 private:
 
@@ -1050,7 +1068,7 @@ private:
    */
   void setBufferViewToEmpty()
   {
-    m_data_buffer = ATK_NULLPTR;
+    m_data_buffer = AXOM_NULLPTR;
     m_state = EMPTY;
     unapply();
   }
@@ -1138,6 +1156,6 @@ private:
 
 
 } /* end namespace sidre */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
 #endif /* DATAVIEW_HPP_ */

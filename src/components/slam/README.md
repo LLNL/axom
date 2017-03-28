@@ -1,7 +1,7 @@
 SLAM: A (S)et-theoretic (L)ightweight (A)PI for (M)eshes {#slamtop}
 =========
 
-The ASC toolkit's MeshAPI provides a collection of high performance, thoroughly tested, reusable components that can be combined to define distributed mesh data structures for [the lab's multiphysics] simulation codes. 
+Axom's Slam component provides a collection of high performance, thoroughly tested, reusable components that can be combined to define distributed mesh data structures for [the lab's multiphysics] simulation codes. 
 
 The SLAM component is a collection of low-level primitives that provide context to the mesh's entities and associated data stored as raw data. Specifically, it models meshes in terms of three set-theoretic concepts: 
 
@@ -25,7 +25,7 @@ We intend to shield our users from these details through a generative model whic
 
 # Sets {#sets}
 
-We model the basic entities of a distributed mesh, such as its vertices and cells, as *sets*, collections of entities. For performance, we implement these as [ordered sets](@ref asctoolkit::slam::OrderedSet)
+We model the basic entities of a distributed mesh, such as its vertices and cells, as *sets*, collections of entities. For performance, we implement these as [ordered sets](@ref axom::slam::OrderedSet)
 where we can associate an index with each element.
 
 Each element of such a set can be described in terms of an offset, a stride and an indirection.
@@ -56,9 +56,9 @@ Maps are
 # Expected usage
 * Codes will use this layer and the components (described below) to define a concrete mesh implementation.
           
-* A generic outer layer that toolkit components can target.
+* A generic outer layer that axom components can target.
   This layer will define a generic API for accessing the mesh geometry.
-  All mesh implementations must satisfy this API (either natively or through an adaptor) to work with the toolkit components.  
+  All mesh implementations must satisfy this API (either natively or through an adaptor) to work with axom components.  
           
   We envision a CMI-like interface for this layer.
   [It should also be possible to have an ITAPS iMesh interface as well since the design goals will be similar at this level].
@@ -66,6 +66,6 @@ Maps are
   
   
   <!--
--- example [OrderedSet](@ref asctoolkit::slam::OrderedSet)
+-- example [OrderedSet](@ref axom::slam::OrderedSet)
 -->
   

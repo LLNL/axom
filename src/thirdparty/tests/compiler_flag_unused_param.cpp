@@ -3,7 +3,7 @@
 /**
  * \file
  * This file tests the ability to disable warnings about unused parameters
- * on all supported compilers using the ATK_DISABLE_UNUSED_PARAMETER_WARNINGS build variable.
+ * on all supported compilers using the AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS build variable.
  */
 
 void foo(int param)
