@@ -12,7 +12,7 @@
 .. _testing-label:
 
 ======================================================
-Testing and Code Health
+Software Testing and Code Health Tools
 ======================================================
 
 This section describes how to write and run tests and perform other 

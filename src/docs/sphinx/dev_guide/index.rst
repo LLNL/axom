@@ -12,21 +12,23 @@
 Axom Developer Guide
 =========================================================
 
-This guide describes key aspects of the software development processes used
+This guide describes the main software development processes used
 in the Axom project. The guide is intended for all team members and 
-contributors. It is especially helpful for familiarizing new individuals
-about how the team works. The overarching goal is that all Axom
-development follows similar practices to ensure robustness, consistency,
-ease of use, and comprehensive testing. Everyone who contributes to 
-Axom should be aware of and follow these guidelines. However, the
-benefits of uniformity should be balanced with allowances for individual 
-preferences, which may be superior to rigid conventions in certain situations.
+contributors. It is especially helpful for familiarizing individuals
+with how the team works. Our goal is to establish simple development
+practices that are easy for all contributors to understand and follow.
+We believe that when everyone on the team follows similar practices, this
+helps to ensure that our code will be robust, consist, correct, and easy to 
+use. Everyone who contributes to Axom should be aware of and follow these 
+guidelines. 
 
-Our processes should not be viewed as fixed for all time. They should evolve 
-with project needs and be improved when processes can be improved. Changes 
-should be agreed to by team members after assessing their merits using 
-their collective professional judgment. When changes are made, this guide
-should be updated accordingly.
+We realize that the benefits of uniformity are best balanced with 
+allowances for individual preferences, which may work better in 
+certain situations. Therefore, our processes should not be viewed as fixed 
+for all time. They should evolve with project needs and be improved when 
+processes can be improved. Changes should be agreed to by team members after 
+assessing their merits using their collective professional judgment. When 
+changes are made, this guide should be updated accordingly.
 
 
 **Contents:**
@@ -34,10 +36,14 @@ should be updated accordingly.
 .. toctree::
    :maxdepth: 3
 
-   dev_model
+   dev_summary
+   release_cycles
+   semantic_versioning
+   gitflow_branching
+   pull_requests
+   testing
    dev_tools
    add_new_component
-   testing
    misc_tasks
 
 
