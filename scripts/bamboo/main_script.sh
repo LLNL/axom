@@ -8,7 +8,7 @@ echo main_script version 0.9.9
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
 if [ "$DOC" = false ]; then
-   OPTIONS=$OPTIONS " -DENABLE_DOCS=false";
+   OPTIONS+=" -DENABLE_DOCS=OFF;
 fi
 echo "Options: $OPTIONS"
 ./scripts/config-build.py $OPTIONS
