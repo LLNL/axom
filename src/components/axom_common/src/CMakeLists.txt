@@ -2,10 +2,10 @@
 # Specify all headers
 #
 set(axom_common_headers
-    FileUtilities.hpp
-    StringUtilities.hpp
-    Timer.hpp
-    Utilities.hpp
+    utilities/FileUtilities.hpp
+    utilities/StringUtilities.hpp
+    utilities/Timer.hpp
+    utilities/Utilities.hpp
 
     detail/ChronoTimer.hpp
     detail/TimeofdayTimer.hpp
@@ -15,9 +15,9 @@ set(axom_common_headers
 # Specify all sources
 #
 set(axom_common_sources
-    FileUtilities.cpp
-    StringUtilities.cpp
-    Utilities.cpp
+    utilities/FileUtilities.cpp
+    utilities/StringUtilities.cpp
+    utilities/Utilities.cpp
     )
 
 #
