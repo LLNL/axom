@@ -1,4 +1,4 @@
-PROJECT_NAME  = Common
-PROJECT_BRIEF = "Common utilities for the ASC Toolkit components"
-INPUT = @PROJECT_SOURCE_DIR@/src 
+PROJECT_NAME  = AxomCommon
+PROJECT_BRIEF = "Common utilities for Axom"
+INPUT = @PROJECT_SOURCE_DIR@/src/utilities
 GENERATE_XML = YES
