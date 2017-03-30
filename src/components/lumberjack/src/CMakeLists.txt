@@ -46,5 +46,5 @@ blt_add_library( NAME
                  HEADERS_OUTPUT_SUBDIR
                      lumberjack
                  DEPENDS_ON
-                     common
+                     axom_common
                  )

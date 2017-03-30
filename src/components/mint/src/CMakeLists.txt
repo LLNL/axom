@@ -47,5 +47,5 @@ blt_add_library(
     SOURCES ${mint_sources}
     HEADERS ${mint_headers}
     HEADERS_OUTPUT_SUBDIR mint
-    DEPENDS_ON common
+    DEPENDS_ON axom_common
    )

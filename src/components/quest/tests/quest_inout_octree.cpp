@@ -13,7 +13,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/CommonTypes.hpp"
-#include "common/Timer.hpp"
+#include "axom_common/Timer.hpp"
 
 #include "primal/orientation.hpp"
 #include "primal/Triangle.hpp"

@@ -8,7 +8,7 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
-#include "common/StringUtilities.hpp"
+#include "axom_common/StringUtilities.hpp"
 
 #include "axom/config.hpp"
 

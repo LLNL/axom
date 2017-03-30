@@ -21,7 +21,7 @@
 #include "lumberjack/Lumberjack.hpp"
 
 #include "axom/CommonTypes.hpp"
-#include "common/StringUtilities.hpp"
+#include "axom_common/StringUtilities.hpp"
 
 #include <cstring>
 
@@ -171,7 +171,7 @@ const char* Lumberjack::packMessages()
     //  in the following format:
     //
     // <message count><packed message size><packed message><packed message size>...
- 
+
     if (m_messages.size() == 0) {
         return "0";
     }
@@ -233,7 +233,7 @@ void Lumberjack::unpackMessages(const char* packedMessages)
     int messageCount = axom::utilities::string::stringToInt(packedMessagesString.substr(0, end));
     start = end + 1;
 
-    // Grab each message    
+    // Grab each message
     Message* message;
     int messageSize;
     for (int j = 0; j < messageCount; ++j) {

@@ -13,8 +13,8 @@
 
 #include "axom/Macros.hpp"
 #include "axom/CommonTypes.hpp"
-#include "common/FileUtilities.hpp"
-#include "common/Timer.hpp"
+#include "axom_common/FileUtilities.hpp"
+#include "axom_common/Timer.hpp"
 
 #include "primal/BVHTree.hpp"
 #include "primal/BoundingBox.hpp"

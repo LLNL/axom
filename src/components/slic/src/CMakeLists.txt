@@ -51,7 +51,7 @@ endif()
 if (ENABLE_FORTRAN)
     list(APPEND slic_headers
         interface/c_fortran/wrapSLIC.h
-    )   
+    )
     set(slic_fortran_sources
         interface/c_fortran/wrapSLIC.cpp
         interface/c_fortran/shroudrt.cpp
@@ -63,7 +63,7 @@ endif()
 # make the library
 #
 set(slic_depends_on
-    common
+    axom_common
 )
 if (ENABLE_LUMBERJACK)
     list(APPEND slic_depends_on lumberjack)

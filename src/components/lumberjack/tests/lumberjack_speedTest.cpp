@@ -21,7 +21,7 @@
 #include "lumberjack/Message.hpp"
 
 #include "axom/CommonTypes.hpp"
-#include "common/StringUtilities.hpp"
+#include "axom_common/StringUtilities.hpp"
 
 #include <mpi.h>
 
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     //Process command line options
     bool commandLineError = false;
     if (argc != 4) {
-        std::cout << "Error: Wrong amount of command line arguments given. Usage:" << std::endl << 
+        std::cout << "Error: Wrong amount of command line arguments given. Usage:" << std::endl <<
                      "   " << argv[0] << " <b|r depending on binary or root communicator> <num messages before push once> <file to be read>" << std::endl;
         return 1;
     }
@@ -50,8 +50,8 @@ int main(int argc, char** argv)
     } else if (std::string(argv[1]) == "r") {
         communicatorName = "root";
     } else {
-        std::cout << "Error: First parameter must be either 'b' or 'r' for " << 
-                     "BinaryTreeCommunicator or RootCommunicator respectively." << 
+        std::cout << "Error: First parameter must be either 'b' or 'r' for " <<
+                     "BinaryTreeCommunicator or RootCommunicator respectively." <<
                      std::endl;
         commandLineError = true;
     }
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
        outFile.close();
    }
 
-    // Finalize lumberjack 
+    // Finalize lumberjack
     lj.finalize();
     // Finalize the lumberjack communicator
     communicator->finalize();

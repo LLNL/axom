@@ -28,7 +28,7 @@
 
 #include "slic/slic.hpp"
 
-#include "common/Utilities.hpp"
+#include "axom_common/Utilities.hpp"
 
 namespace axom {
 namespace primal {

@@ -10,7 +10,7 @@ set(gtest_common_tests
 
 
 set(common_tests_depends
-   common
+   axom_common
    gtest
    )
 

@@ -13,7 +13,7 @@
 
 #include "axom/Macros.hpp"
 #include "axom/CommonTypes.hpp"
-#include "common/Utilities.hpp"
+#include "axom_common/Utilities.hpp"
 
 #include "slic/slic.hpp"
 

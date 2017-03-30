@@ -18,7 +18,7 @@
  ******************************************************************************
  */
 
-#include "common/Utilities.hpp"
+#include "axom_common/Utilities.hpp"
 
 #include <cstdlib> // for exit, EXIT_SUCCESS, EXIT_FAILURE
 

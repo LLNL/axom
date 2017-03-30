@@ -19,7 +19,7 @@
 
 #include "gtest/gtest.h"
 
-#include "common/Timer.hpp"
+#include "axom_common/Timer.hpp"
 
 #ifdef WIN32
 #include "windows.h"

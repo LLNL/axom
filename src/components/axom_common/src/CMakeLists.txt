@@ -1,7 +1,7 @@
 #
 # Specify all headers
 #
-set(common_headers
+set(axom_common_headers
     FileUtilities.hpp
     StringUtilities.hpp
     Timer.hpp
@@ -14,7 +14,7 @@ set(common_headers
 #
 # Specify all sources
 #
-set(common_sources
+set(axom_common_sources
     FileUtilities.cpp
     StringUtilities.cpp
     Utilities.cpp
@@ -23,8 +23,8 @@ set(common_sources
 #
 # make the library
 #
-blt_add_library( NAME                  common
-                 SOURCES              "${common_sources}"
-                 HEADERS              "${common_headers}"
-                 HEADERS_OUTPUT_SUBDIR common
+blt_add_library( NAME                  axom_common
+                 SOURCES              "${axom_common_sources}"
+                 HEADERS              "${axom_common_headers}"
+                 HEADERS_OUTPUT_SUBDIR axom_common
                  )

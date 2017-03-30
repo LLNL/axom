@@ -23,7 +23,7 @@
 #include "gtest/gtest.h"
 
 
-#include "common/FileUtilities.hpp"
+#include "axom_common/FileUtilities.hpp"
 #include "slam/Utilities.hpp"
 #include "slic/slic.hpp"
 

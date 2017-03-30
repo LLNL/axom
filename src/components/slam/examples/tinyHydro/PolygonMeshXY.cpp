@@ -12,7 +12,7 @@
 
 #include "PolygonMeshXY.hpp"
 
-#include "common/Timer.hpp"
+#include "axom_common/Timer.hpp"
 #include "slic/slic.hpp"
 
 #include <sstream>

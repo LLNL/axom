@@ -44,7 +44,7 @@ set( quest_sources
    )
 
 set( quest_depends_on
-     common
+     axom_common
      slic
      mint
      slam

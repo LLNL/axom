@@ -19,20 +19,20 @@ set(lulesh_sources
 
 # Ignore omp pragmas when openMP is not defined
 if ( NOT ENABLE_OPENMP )
-    set_source_files_properties(${lulesh_sources} 
+    set_source_files_properties(${lulesh_sources}
         PROPERTIES COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
 
 # blt_add_executable depends_on handles our include dir settings
 # these teste are using boost so boost needs to be a dep
-set(slam_tests_depends_on common slic slam)
+set(slam_tests_depends_on axom_common slic slam)
 if (BOOST_FOUND)
     list(APPEND slam_tests_depends_on boost)
 endif()
 
 
-blt_add_executable( 
+blt_add_executable(
     NAME        slam_lulesh
     SOURCES     ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}

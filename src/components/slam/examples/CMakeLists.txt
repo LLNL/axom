@@ -16,7 +16,7 @@ set(example_sources
     TemplateEx.cpp
     )
 
-set(slam_tests_depends_on common slic slam)
+set(slam_tests_depends_on slic slam)
 
 # Slam works without boost, but we need to add the header dependency when boost is available
 set(slam_tests_extra_depends)
@@ -32,9 +32,9 @@ foreach(example_source ${example_sources})
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
         )
-        
+
     blt_add_test(
-        NAME        slam_${example_name} 
+        NAME        slam_${example_name}
         COMMAND     slam_${example_name}
         )
 endforeach()
@@ -71,7 +71,7 @@ if(BOOST_FOUND)
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
         )
-        
+
     blt_add_test(
         NAME        slam_unstructMesh
         COMMAND     slam_unstructMesh ${CMAKE_CURRENT_SOURCE_DIR}/../data

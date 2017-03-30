@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 #include <fstream>
 
-#include "common/FileUtilities.hpp"
+#include "axom_common/FileUtilities.hpp"
 
 TEST(gtest_common_fileUtilities,getCWD_smoke)
 {

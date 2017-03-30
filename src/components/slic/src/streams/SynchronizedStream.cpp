@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "axom/Macros.hpp"
-#include "common/StringUtilities.hpp"
+#include "axom_common/StringUtilities.hpp"
 
 namespace axom {
 namespace slic {

@@ -11,7 +11,7 @@
 #ifndef TRIANGLE_HPP_
 #define TRIANGLE_HPP_
 
-#include "common/Utilities.hpp"
+#include "axom_common/Utilities.hpp"
 
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
