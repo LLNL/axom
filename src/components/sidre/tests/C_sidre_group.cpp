@@ -363,8 +363,8 @@ TEST(C_sidre_group,view_copy_move)
   double * d0_data;
   {
     SIDRE_dataview * tmpview = SIDRE_datagroup_get_view_from_name(sub, "d0");
-    SIDRE_databuffer * tmpbuf = SIDRE_dataview_get_buffer(tmpview);
-    d0_data = (double *) SIDRE_databuffer_get_void_ptr(tmpbuf);
+    SIDRE_buffer * tmpbuf = SIDRE_dataview_get_buffer(tmpview);
+    d0_data = (double *) SIDRE_buffer_get_void_ptr(tmpbuf);
   }
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
@@ -459,8 +459,8 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
   EXPECT_TRUE(SIDRE_datagroup_has_view(grp, viewName2));
   EXPECT_EQ( SIDRE_datagroup_get_view_from_name(grp, viewName2), view2 );
 
-  SIDRE_databuffer * tmpbuf = SIDRE_dataview_get_buffer(view1);
-  SIDRE_IndexType bufferId1 = SIDRE_databuffer_get_index(tmpbuf);
+  SIDRE_buffer * tmpbuf = SIDRE_dataview_get_buffer(view1);
+  SIDRE_IndexType bufferId1 = SIDRE_buffer_get_index(tmpbuf);
 
   SIDRE_datagroup_destroy_view_and_data_name(grp, viewName1);
 
@@ -468,7 +468,7 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
   EXPECT_FALSE(SIDRE_datagroup_has_view(grp, viewName1));
   EXPECT_EQ(SIDRE_datastore_get_num_buffers(ds), 1u);
 
-  SIDRE_databuffer * buffer1 = SIDRE_datastore_get_buffer(ds, bufferId1);
+  SIDRE_buffer * buffer1 = SIDRE_datastore_get_buffer(ds, bufferId1);
   bool buffValid = true;
   if( buffer1 == NULL )
   {
@@ -544,7 +544,7 @@ TEST(C_sidre_group,create_view_of_buffer_with_datatype)
   }
 #endif
 
-  SIDRE_databuffer * base_buff = SIDRE_dataview_get_buffer(base);
+  SIDRE_buffer * base_buff = SIDRE_dataview_get_buffer(base);
   // create two views into this buffer
   // view for the first 5 values
   SIDRE_datagroup_create_view(root, "sub_a", base_buff, SIDRE_C_INT_T, 5);

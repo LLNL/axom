@@ -12,7 +12,7 @@
 
 #include "sidre/sidre.hpp"
 
-using axom::sidre::DataBuffer;
+using axom::sidre::Buffer;
 using axom::sidre::DataGroup;
 using axom::sidre::DataStore;
 using axom::sidre::DataView;
@@ -179,8 +179,8 @@ TEST(sidre_view,create_views)
   DataView * dv_1 = root->createViewAndAllocate("field1", INT_ID, 1);
 
 
-  DataBuffer * db_0 = dv_0->getBuffer();
-  DataBuffer * db_1 = dv_1->getBuffer();
+  Buffer * db_0 = dv_0->getBuffer();
+  Buffer * db_1 = dv_1->getBuffer();
 
   EXPECT_EQ(db_0->getIndex(), 0);
   EXPECT_EQ(db_1->getIndex(), 1);
@@ -345,7 +345,7 @@ TEST(sidre_view,dealloc)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  DataBuffer * dbuff;
+  Buffer * dbuff;
   DataView * dv;
 
   //----------  EMPTY(F,F,F)
@@ -435,7 +435,7 @@ TEST(sidre_view,alloc_and_dealloc_multiview)
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataBuffer * dbuff;
+  Buffer * dbuff;
   DataView * dv1, * dv2;
   void * baddr;
 
@@ -564,7 +564,7 @@ TEST(sidre_view,int_buffer_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  DataBuffer * dbuff, * otherbuffer;
+  Buffer * dbuff, * otherbuffer;
   DataView * dv;
   IndexType bindex;
   //  long shape[] = { BLEN };
@@ -707,7 +707,7 @@ TEST(sidre_view,int_array_strided_views)
 
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  DataBuffer * dbuff = ds->createBuffer(INT_ID, num_elts);
+  Buffer * dbuff = ds->createBuffer(INT_ID, num_elts);
 
   dbuff->allocate();
   int * data_ptr = dbuff->getData();
@@ -850,7 +850,7 @@ TEST(sidre_view,int_array_depth_view)
   DataGroup * root = ds->getRoot();
 
   const SidreLength depth_nelems = 10;
-  DataBuffer * dbuff = ds->createBuffer(INT_ID, 4 * depth_nelems);
+  Buffer * dbuff = ds->createBuffer(INT_ID, 4 * depth_nelems);
 
   // Allocate buffer to hold data for 4 "depth" views
   dbuff->allocate();
@@ -921,7 +921,7 @@ TEST(sidre_view,view_offset_and_stride)
   DataGroup * root = ds->getRoot();
 
   const SidreLength nelems = 15;
-  DataBuffer * dbuff = ds->createBuffer(DOUBLE_ID, nelems)
+  Buffer * dbuff = ds->createBuffer(DOUBLE_ID, nelems)
                        ->allocate();
 
   double * data_ptr = dbuff->getData();
@@ -1097,7 +1097,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
   EXPECT_EQ(elem_count, 2 * field_nelems);
 
   // create buffer to hold data for fields and allocate
-  DataBuffer * dbuff = ds->createBuffer()->allocate(INT_ID, elem_count);
+  Buffer * dbuff = ds->createBuffer()->allocate(INT_ID, elem_count);
   EXPECT_EQ(dbuff->getNumElements(), elem_count);
 
   // Initialize buffer data for testing below.
@@ -1186,7 +1186,7 @@ TEST(sidre_view,int_array_multi_view_resize)
 
 
   /// setup our 4 views
-  DataBuffer * buff_old = base_old->getBuffer();
+  Buffer * buff_old = base_old->getBuffer();
   buff_old->print();
   DataView * r0_old = r_old->createView("r0",buff_old);
   DataView * r1_old = r_old->createView("r1",buff_old);
@@ -1237,7 +1237,7 @@ TEST(sidre_view,int_array_multi_view_resize)
     base_new_data[i] = 0;
   }
 
-  DataBuffer * buff_new = base_new->getBuffer();
+  Buffer * buff_new = base_new->getBuffer();
   buff_new->print();
 
   // create the 4 sub views of this array
@@ -1431,7 +1431,7 @@ TEST(sidre_datastore,destroy_buffer)
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataBuffer * dbuff1 = ds->createBuffer()->allocate(INT_ID, BLEN);
+  Buffer * dbuff1 = ds->createBuffer()->allocate(INT_ID, BLEN);
   DataView * view1a = root->createView("view1a", INT_ID, BLEN)
                       ->attachBuffer(dbuff1);
   DataView * view1b = root->createView("view1b", INT_ID, BLEN)

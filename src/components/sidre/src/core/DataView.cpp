@@ -25,8 +25,8 @@
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
-// Sidre project headers
-#include "DataBuffer.hpp"
+// Sidre component headers
+#include "Buffer.hpp"
 #include "DataGroup.hpp"
 #include "DataStore.hpp"
 
@@ -255,11 +255,11 @@ DataView * DataView::reallocate(const DataType& dtype)
  *
  *************************************************************************
  */
-DataView * DataView::attachBuffer(DataBuffer * buff)
+DataView * DataView::attachBuffer(Buffer * buff)
 {
   if ( m_state == BUFFER && buff == AXOM_NULLPTR)
   {
-    DataBuffer * old_buffer = detachBuffer();
+    Buffer * old_buffer = detachBuffer();
     if (old_buffer->getNumViews() == 0)
     {
       getOwningGroup()->getDataStore()->destroyBuffer(old_buffer);
@@ -289,9 +289,9 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
  *
  *************************************************************************
  */
-DataBuffer * DataView::detachBuffer()
+Buffer * DataView::detachBuffer()
 {
-  DataBuffer * buff = AXOM_NULLPTR;
+  Buffer * buff = AXOM_NULLPTR;
 
   if ( m_state == BUFFER)
   {
@@ -1152,7 +1152,7 @@ void DataView::importFrom(conduit::Node& data_holder,
                      "Buffer id map is old-new id entry for buffer " <<
                      old_buffer_id );
 
-    DataBuffer * buffer = m_owning_group->getDataStore()->
+    Buffer * buffer = m_owning_group->getDataStore()->
                           getBuffer( buffer_id_map.at(old_buffer_id) );
 
     importDescription(data_holder);

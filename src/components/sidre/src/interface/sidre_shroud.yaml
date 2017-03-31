@@ -67,10 +67,10 @@ classes:
     -  decl: void delete() +destructor
     -  decl: DataGroup * getRoot()
 #    -  decl: bool hasBuffer( IndexType idx ) const
-    - decl:  DataBuffer * getBuffer( IndexType idx )
-    -  decl: DataBuffer * createBuffer()
+    - decl:  Buffer * getBuffer( IndexType idx )
+    -  decl: Buffer * createBuffer()
        function_suffix: _empty
-    -  decl: DataBuffer * createBuffer( TypeID type, SidreLength num_elems )
+    -  decl: Buffer * createBuffer( TypeID type, SidreLength num_elems )
        function_suffix: _from_type
        fortran_generic:
          num_elems:
@@ -80,7 +80,7 @@ classes:
 
     -  decl: void destroyBuffer( IndexType id )
 #    -  decl: void Destroybuffers()
-#    -  decl: DataBuffer * detachBuffer( const IndexType id )
+#    -  decl: Buffer * detachBuffer( const IndexType id )
     -  decl: size_t getNumBuffers() const
 #    -  decl: IndexType getFirstValidBufferIndex() const
 #    -  decl: IndexType getNextValidBufferIndex(IndexType idx) const;
@@ -164,7 +164,7 @@ classes:
          -  long
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createView( const std::string& path, TypeID type, SidreLength num_elems, DataBuffer *buff)
+    -  decl: DataView *createView( const std::string& path, TypeID type, SidreLength num_elems, Buffer *buff)
        function_suffix: _from_type_and_buffer
        fortran_generic:
          num_elems:
@@ -184,7 +184,7 @@ classes:
        function_suffix: _from_shape
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension, DataBuffer * buff)
+    -  decl: DataView *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension, Buffer * buff)
        function_suffix: _from_shape_and_buffer
        PY_error_pattern: PY_null_to_none
 
@@ -194,7 +194,7 @@ classes:
 
 #    -  decl: DataView *createView( const std::string& path, const DataType& dtype)
 
-    -  decl: DataView *createView( const std::string& path, DataBuffer *buff)
+    -  decl: DataView *createView( const std::string& path, Buffer *buff)
        function_suffix: _into_buffer
        PY_error_pattern: PY_null_to_none
 
@@ -260,29 +260,29 @@ classes:
       type: [ init, richcompare ]
 
   ####################################################################
-  - name: DataBuffer
-    cpp_header: sidre/DataBuffer.hpp
+  - name: Buffer
+    cpp_header: sidre/Buffer.hpp
     methods:
       - decl: IndexType getIndex() const
       - decl: size_t getNumViews() const
-      - decl: DataBuffer* describe(TypeID type, SidreLength num_elems)
+      - decl: Buffer* describe(TypeID type, SidreLength num_elems)
         return_this: True
         fortran_generic:
           num_elems:
           -  int
           -  long
-#      - decl: DataBuffer* describe(const DataType& dtype)
-      - decl: DataBuffer* allocate()
+#      - decl: Buffer* describe(const DataType& dtype)
+      - decl: Buffer* allocate()
         function_suffix: _existing
         return_this: True
-      - decl: DataBuffer* allocate(TypeID type, SidreLength num_elems)
+      - decl: Buffer* allocate(TypeID type, SidreLength num_elems)
         function_suffix: _from_type
         return_this: True
         fortran_generic:
           num_elems:
           -  int
           -  long
-      - decl: DataBuffer * reallocate(SidreLength num_elems)
+      - decl: Buffer * reallocate(SidreLength num_elems)
         return_this: True
         fortran_generic:
           num_elems:
@@ -328,11 +328,11 @@ classes:
     - decl: DataView* apply()
       return_this: True
 
-    - decl: DataView* attachBuffer(DataBuffer * buff)
+    - decl: DataView* attachBuffer(Buffer * buff)
       return_this: True
       function_suffix: _only
 
-    - decl: DataView* attachBuffer(TypeID type, SidreLength num_elems, DataBuffer * buff)
+    - decl: DataView* attachBuffer(TypeID type, SidreLength num_elems, Buffer * buff)
       return_this: True
       function_suffix: _type
       fortran_generic:
@@ -340,7 +340,7 @@ classes:
         -  int
         -  long
 
-    - decl: DataView* attachBuffer(TypeID type, int ndims, SidreLength * shape+dimension, DataBuffer * buff)
+    - decl: DataView* attachBuffer(TypeID type, int ndims, SidreLength * shape+dimension, Buffer * buff)
       return_this: True
       function_suffix: _shape
 
@@ -370,8 +370,8 @@ classes:
     - decl: bool isScalar() const
     - decl: bool isString() const
     - decl: const std::string& getName+len(MAXNAMESIZE)() const
-    - decl: DataBuffer* getBuffer()
-#    - decl: DataBuffer const* getBuffer() const
+    - decl: Buffer* getBuffer()
+#    - decl: Buffer const* getBuffer() const
     - decl: void * getVoidPtr() const
 #    - decl: Node& getNode()
 #    - decl: const Node& getNode() const

@@ -418,8 +418,8 @@ contains
 !    call assert_true(subgrp%has_view("i0"))
 
     ! we expect the actual data  pointers to be the same
-!--    call assert_equals(flds%get_view("i0")%getDataBuffer(),
-!--    call flds%get_group("sub")%get_view("i0")%getDataBuffer())
+!--    call assert_equals(flds%get_view("i0")%getBuffer(),
+!--    call flds%get_group("sub")%get_view("i0")%getBuffer())
     call ds%delete()
   end subroutine view_copy_move
 
@@ -469,8 +469,8 @@ contains
     type(datastore) ds
     type(datagroup) root, grp
     type(dataview) view1, view2
-    type(databuffer) tmpbuf
-!XX    type(databuffer) buffer1, tmpbuf
+    type(buffer) tmpbuf
+!XX    type(buffer) buffer1, tmpbuf
     integer bufferid1      ! IndexType
     character(len=30) view_name1, view_name2
 !XX    logical buffvalid
@@ -556,7 +556,7 @@ contains
     type(datastore) ds
     type(datagroup) root
     type(dataview) base
-    type(databuffer) base_buff
+    type(buffer) base_buff
     integer(C_INT), pointer :: base_vals(:)
 !--    integer i
 !    integer(C_INT), pointer :: sub_a_vals(:)

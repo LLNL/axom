@@ -41,7 +41,7 @@
 // SiDRe component headers
 #include "sidre/sidre.hpp"
 
-using axom::sidre::DataBuffer;
+using axom::sidre::Buffer;
 using axom::sidre::DataGroup;
 using axom::sidre::DataStore;
 using axom::sidre::DataView;

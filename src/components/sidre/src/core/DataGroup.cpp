@@ -28,7 +28,7 @@
 
 // Sidre project headers
 #include "MapCollection.hpp"
-#include "DataBuffer.hpp"
+#include "Buffer.hpp"
 #include "DataStore.hpp"
 #include "SidreUtilities.hpp"
 
@@ -308,7 +308,7 @@ DataView * DataGroup::createView( const std::string& path,
  *************************************************************************
  */
 DataView * DataGroup::createView( const std::string& path,
-                                  DataBuffer * buff )
+                                  Buffer * buff )
 {
   DataView * view = createView(path);
   if ( view != AXOM_NULLPTR )
@@ -329,7 +329,7 @@ DataView * DataGroup::createView( const std::string& path,
 DataView * DataGroup::createView( const std::string& path,
                                   TypeID type,
                                   SidreLength num_elems,
-                                  DataBuffer * buff )
+                                  Buffer * buff )
 {
   DataView * view = createView(path, type, num_elems);
   if (view != AXOM_NULLPTR)
@@ -351,7 +351,7 @@ DataView * DataGroup::createView( const std::string& path,
                                   TypeID type,
                                   int ndims,
                                   SidreLength * shape,
-                                  DataBuffer * buff )
+                                  Buffer * buff )
 {
   DataView * view = createView(path, type, ndims, shape);
   if (view != AXOM_NULLPTR)
@@ -371,7 +371,7 @@ DataView * DataGroup::createView( const std::string& path,
  */
 DataView * DataGroup::createView( const std::string& path,
                                   const DataType& dtype,
-                                  DataBuffer * buff )
+                                  Buffer * buff )
 {
   DataView * view = createView(path, dtype);
   if (view != AXOM_NULLPTR)
@@ -1672,7 +1672,7 @@ void DataGroup::destroyViewAndData( DataView * view )
   {
     DataGroup * group = view->getOwningGroup();
     group->detachView( view->getName() );
-    DataBuffer * const buffer = view->detachBuffer();
+    Buffer * const buffer = view->detachBuffer();
     if ( buffer != AXOM_NULLPTR && buffer->getNumViews() == 0 )
     {
       getDataStore()->destroyBuffer(buffer);
@@ -1864,7 +1864,7 @@ void DataGroup::importFrom(conduit::Node & node)
       Node& n_buffer = buffs_itr.next();
       IndexType old_buffer_id = n_buffer["id"].as_int32();
 
-      DataBuffer * buffer = getDataStore()->createBuffer();
+      Buffer * buffer = getDataStore()->createBuffer();
 
       // track change of old Buffer id to new Buffer id
       buffer_indices_map[ old_buffer_id ] = buffer->getIndex();
@@ -1980,7 +1980,7 @@ void DataGroup::importConduitTree(conduit::Node &node)
         else
         {
           // create view with buffer
-          DataBuffer * buff = getDataStore()->createBuffer();
+          Buffer * buff = getDataStore()->createBuffer();
 
           conduit::index_t num_ele   = cld_dtype.number_of_elements();
           conduit::index_t ele_bytes = DataType::default_bytes(cld_dtype.id());

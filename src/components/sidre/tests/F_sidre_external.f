@@ -72,7 +72,7 @@ contains
     type(datastore) ds, ds2
     type(datagroup) root, root2
     type(dataview)  iview, dview, iview2, dview2
-    type(databuffer) tmpbuff
+    type(buffer) tmpbuff
     integer(C_INT), allocatable, target :: idata(:)
     real(C_DOUBLE), allocatable, target :: ddata(:)
     integer(C_INT), pointer :: idata_chk(:)

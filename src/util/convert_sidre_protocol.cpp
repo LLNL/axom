@@ -49,7 +49,7 @@
 #include "sidre/SidreTypes.hpp"
 #include "sidre/DataStore.hpp"
 #include "sidre/DataGroup.hpp"
-#include "sidre/DataBuffer.hpp"
+#include "sidre/Buffer.hpp"
 #include "sidre/DataView.hpp"
 
 #include "spio/IOManager.hpp"
@@ -65,7 +65,7 @@
 
 using axom::sidre::DataStore;
 using axom::sidre::DataGroup;
-using axom::sidre::DataBuffer;
+using axom::sidre::Buffer;
 using axom::sidre::DataView;
 using axom::spio::IOManager;
 

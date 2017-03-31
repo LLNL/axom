@@ -38,7 +38,7 @@ namespace axom
 namespace sidre
 {
 
-class DataBuffer;
+class Buffer;
 class DataGroup;
 class DataStore;
 
@@ -46,7 +46,7 @@ class DataStore;
  * \class DataView
  *
  * \brief A DataView object describes a "view" into data, which may be
- *        owned by the view object (via an attached DataBuffer) or
+ *        owned by the view object (via an attached Buffer) or
  *        owned externally.
  *
  * The DataView class has the following properties:
@@ -63,11 +63,11 @@ class DataStore;
  *    - A DataView object can describe and provide access to data in one of
  *      four ways:
  *        # A view can describe (a subset of) data owned by an existing
- *          DataBuffer. In this case, the data can be (re)allocated or
+ *          Buffer. In this case, the data can be (re)allocated or
  *          deallocated by the view if and only if it is the only view
  *          attached to the buffer.
  *        # A view can describe and allocate data using semantics similar
- *          to DataBuffer data description and allocation. In this case, no
+ *          to Buffer data description and allocation. In this case, no
  *          other view is allowed to (re)allocate or deallocate the data held
  *          by the associated data buffer.
  *        # A view can describe data associated with a pointer to an
@@ -78,7 +78,7 @@ class DataStore;
  *          object. In this case, the view knows nothing about the type or
  *          structure of the data; it is essentially just a handle to the data.
  *    - For any DataView object that is "external" or associated with a
- *      DataBuffer, the data description of the view may be specified, or
+ *      Buffer, the data description of the view may be specified, or
  *      changed, by calling one of the apply() methods.
  *
  */
@@ -91,7 +91,7 @@ public:
   // private members.
   //
   friend class DataGroup;
-  friend class DataBuffer;
+  friend class Buffer;
 
 
 //@{
@@ -147,7 +147,7 @@ public:
   }
 
   /*!
-   * \brief Return true if view has a an associated DataBuffer object
+   * \brief Return true if view has a an associated Buffer object
    *        (e.g., view is not opaque, it has been created with a buffer,
    *         it has been allocated, etc.); false otherwise.
    */
@@ -157,17 +157,17 @@ public:
   }
 
   /*!
-   * \brief Return pointer to non-const DataBuffer associated with DataView.
+   * \brief Return pointer to non-const Buffer associated with DataView.
    */
-  DataBuffer * getBuffer()
+  Buffer * getBuffer()
   {
     return m_data_buffer;
   }
 
   /*!
-   * \brief Return pointer to const DataBuffer associated with DataView.
+   * \brief Return pointer to const Buffer associated with DataView.
    */
-  const DataBuffer * getBuffer() const
+  const Buffer * getBuffer() const
   {
     return m_data_buffer;
   }
@@ -441,7 +441,7 @@ public:
    *
    * NOTE: Deallocation from a view is only allowed under that same conditions
    *       described by the allocate() method. If none of those is true,
-   *       or a DataBuffer is not attached, this method does nothing.
+   *       or a Buffer is not attached, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -451,7 +451,7 @@ public:
 
 
   /*!
-   * \brief Attach DataBuffer object to data view.
+   * \brief Attach Buffer object to data view.
    *
    * If the view has no description, then the buffer's description
    * is copied into the view.
@@ -472,16 +472,16 @@ public:
    *
    * \return pointer to this DataView object.
    */
-  DataView * attachBuffer( DataBuffer * buff );
+  DataView * attachBuffer( Buffer * buff );
 
   /*!
-   * \brief Describe the data view and attach DataBuffer object.
+   * \brief Describe the data view and attach Buffer object.
    *
    * \return pointer to this DataView object.
    */
   DataView * attachBuffer( TypeID type,
                            SidreLength num_elems,
-                           DataBuffer * buff )
+                           Buffer * buff )
   {
     describe(type, num_elems);
     attachBuffer(buff);
@@ -489,14 +489,14 @@ public:
   }
 
   /*!
-   * \brief Describe the data view and attach DataBuffer object.
+   * \brief Describe the data view and attach Buffer object.
    *
    * \return pointer to this DataView object.
    */
   DataView * attachBuffer( TypeID type,
                            int ndims,
                            SidreLength * shape,
-                           DataBuffer * buff )
+                           Buffer * buff )
   {
     describe(type, ndims, shape);
     attachBuffer(buff);
@@ -505,13 +505,13 @@ public:
 
 
   /*!
-   * \brief Detach this view from its DataBuffer.
+   * \brief Detach this view from its Buffer.
    *
    * If the view has no buffer, the method does nothing.
    *
    * \return pointer to detached buffer.
    */
-  DataBuffer * detachBuffer();
+  Buffer * detachBuffer();
 
 //@{
 //!  @name Methods to apply DataView description to data.
@@ -1064,7 +1064,7 @@ private:
   /*!
    *  \brief Private method to reset a view from BUFFER to EMPTY.
    *
-   *         Used by DataBuffer when detaching from a view.
+   *         Used by Buffer when detaching from a view.
    */
   void setBufferViewToEmpty()
   {
@@ -1131,8 +1131,8 @@ private:
   /// DataGroup object that owns this DataView object.
   DataGroup * m_owning_group;
 
-  /// DataBuffer associated with this DataView object.
-  DataBuffer * m_data_buffer;
+  /// Buffer associated with this DataView object.
+  Buffer * m_data_buffer;
 
   /// Data description (schema) that describes the view's data.
   Schema m_schema;

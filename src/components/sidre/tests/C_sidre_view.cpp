@@ -26,11 +26,11 @@ TEST(C_sidre_view,create_views)
     SIDRE_datagroup_create_view_and_allocate_nelems(root, "field1",
                                                     SIDRE_INT_ID, 1);
 
-  SIDRE_databuffer * db_0 = SIDRE_dataview_get_buffer(dv_0);
-  SIDRE_databuffer * db_1 = SIDRE_dataview_get_buffer(dv_1);
+  SIDRE_buffer * db_0 = SIDRE_dataview_get_buffer(dv_0);
+  SIDRE_buffer * db_1 = SIDRE_dataview_get_buffer(dv_1);
 
-  EXPECT_EQ(SIDRE_databuffer_get_index(db_0), 0);
-  EXPECT_EQ(SIDRE_databuffer_get_index(db_1), 1);
+  EXPECT_EQ(SIDRE_buffer_get_index(db_0), 0);
+  EXPECT_EQ(SIDRE_buffer_get_index(db_1), 1);
   SIDRE_datastore_delete(ds);
 }
 
@@ -98,21 +98,21 @@ TEST(C_sidre_view,int_array_strided_views)
 
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
-  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
+  SIDRE_buffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
                                                                      SIDRE_INT_ID,
                                                                      num_elts);
 
-  SIDRE_databuffer_allocate_existing(dbuff);
-  int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
+  SIDRE_buffer_allocate_existing(dbuff);
+  int * data_ptr = (int *) SIDRE_buffer_get_void_ptr(dbuff);
 
   for(int i=0 ; i< (int)num_elts ; i++)
   {
     data_ptr[i] = i;
   }
 
-  SIDRE_databuffer_print(dbuff);
+  SIDRE_buffer_print(dbuff);
 
-  EXPECT_EQ(num_elts * elt_bytes, SIDRE_databuffer_get_total_bytes(dbuff));
+  EXPECT_EQ(num_elts * elt_bytes, SIDRE_buffer_get_total_bytes(dbuff));
 
 
   SIDRE_dataview * dv_e = SIDRE_datagroup_create_view_into_buffer(root, "even",
@@ -121,7 +121,7 @@ TEST(C_sidre_view,int_array_strided_views)
                                                                   dbuff);
   EXPECT_TRUE(dv_e != NULL);
   EXPECT_TRUE(dv_o != NULL);
-  EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 2u);
+  EXPECT_EQ(SIDRE_buffer_get_num_views(dbuff), 2u);
 
   SIDRE_dataview_apply_nelems_offset_stride(dv_e, num_view_elts, offset_even,
                                             stride);
@@ -163,7 +163,7 @@ TEST(C_sidre_view,int_array_strided_views)
     SIDRE_datagroup_create_view_into_buffer(root, "odd1", dbuff);
   EXPECT_TRUE(dv_e1 != NULL);
   EXPECT_TRUE(dv_o1 != NULL);
-  EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 4u);
+  EXPECT_EQ(SIDRE_buffer_get_num_views(dbuff), 4u);
 
   SIDRE_dataview_apply_type_nelems_offset_stride(dv_e1, SIDRE_INT_ID,
                                                  num_view_elts, offset_even,
@@ -210,23 +210,23 @@ TEST(C_sidre_view,int_array_depth_view)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   const size_t depth_nelems = 10;
-  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
+  SIDRE_buffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
                                                                      SIDRE_INT_ID,
                                                                      4 *
                                                                      depth_nelems);
 
 
-  SIDRE_databuffer_allocate_existing(dbuff);
-  int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
+  SIDRE_buffer_allocate_existing(dbuff);
+  int * data_ptr = (int *) SIDRE_buffer_get_void_ptr(dbuff);
 
   for(size_t i=0 ; i < 4 * depth_nelems ; i++)
   {
     data_ptr[i] = i / depth_nelems;
   }
 
-  SIDRE_databuffer_print(dbuff);
+  SIDRE_buffer_print(dbuff);
 
-  EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 4 * depth_nelems);
+  EXPECT_EQ(SIDRE_buffer_get_num_elements(dbuff), 4 * depth_nelems);
 
   // create 4 "depth" views and apply offsets into buffer
   SIDRE_dataview * views[4];
@@ -242,7 +242,7 @@ TEST(C_sidre_view,int_array_depth_view)
     SIDRE_dataview_apply_nelems_offset(views[id], depth_nelems,
                                        view_offsets[id]);
   }
-  EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 4u);
+  EXPECT_EQ(SIDRE_buffer_get_num_views(dbuff), 4u);
 
   // print depth views...
   for (int id = 0 ; id < 4 ; ++id)
@@ -292,21 +292,21 @@ TEST(sidre_view,int_array_view_attach_buffer)
   EXPECT_EQ(elem_count, 2 * field_nelems);
 
   // create buffer to hold data for all fields and allocate
-  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
+  SIDRE_buffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
                                                                      SIDRE_INT_ID,
                                                                      2 *
                                                                      field_nelems);
-  SIDRE_databuffer_allocate_existing(dbuff);
-  EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), elem_count);
+  SIDRE_buffer_allocate_existing(dbuff);
+  EXPECT_EQ(SIDRE_buffer_get_num_elements(dbuff), elem_count);
 
   // Initilize buffer data for testing below.
-  int * b_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
+  int * b_ptr = (int *) SIDRE_buffer_get_void_ptr(dbuff);
   for(size_t i = 0 ; i < elem_count ; ++i)
   {
     b_ptr[i] = i / field_nelems;
   }
 
-  SIDRE_databuffer_print(dbuff);
+  SIDRE_buffer_print(dbuff);
 
   const int offset0 = 0 * field_nelems;
   const int offset1 = 1 * field_nelems;
@@ -317,7 +317,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
   SIDRE_dataview_attach_buffer_only(field1, dbuff);
   SIDRE_dataview_apply_nelems_offset(field1, field_nelems, offset1);
 
-  EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 2u);
+  EXPECT_EQ(SIDRE_buffer_get_num_views(dbuff), 2u);
   EXPECT_EQ(b_ptr, SIDRE_dataview_get_void_ptr(field0));
   EXPECT_EQ(b_ptr, SIDRE_dataview_get_void_ptr(field1));
 
@@ -392,7 +392,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
 
 #ifdef XXX
   /// setup our 4 views
-  SIDRE_databuffer * buff_old = SIDRE_dataview_get_buffer(base_old);
+  SIDRE_buffer * buff_old = SIDRE_dataview_get_buffer(base_old);
   buff_old->getNode().print();
   SIDRE_dataview * r0_old = SIDRE_dataview_create_view(r_old, "r0",buff_old);
   SIDRE_dataview * r1_old = SIDRE_dataview_create_view(r_old, "r1",buff_old);
@@ -440,13 +440,13 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   // alloc our buffer
   // create a buffer to hold larger subarrays
   base_new->allocate_from_type(base_new, DataType::uint32(4 * 12));
-  int * base_new_data = (int *) SIDRE_databuffer_det_data(base_new);
+  int * base_new_data = (int *) SIDRE_buffer_det_data(base_new);
   for (int i = 0 ; i < 4 * 12 ; ++i)
   {
     base_new_data[i] = 0;
   }
 
-  SIDRE_databuffer * buff_new = SIDRE_dataview_get_buffer(base_new);
+  SIDRE_buffer * buff_new = SIDRE_dataview_get_buffer(base_new);
   buff_new->getNode().print();
 
   // create the 4 sub views of this array

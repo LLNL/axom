@@ -58,7 +58,7 @@ def convert(filename):
          # convert camelCase to snake_case
          def fixit(m):
             s = m.group(0)
-            if s in [ 'DataStore', 'DataGroup', 'DataView', 'DataBuffer']:
+            if s in [ 'DataStore', 'DataGroup', 'DataView', 'Buffer']:
                return s.lower()
             return un_camel(m.group(0))
          line = re.sub('\w+', fixit, line)

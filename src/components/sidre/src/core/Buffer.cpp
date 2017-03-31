@@ -11,15 +11,15 @@
 /*!
  ******************************************************************************
  *
- * \file DataBuffer.cpp
+ * \file Buffer.cpp
  *
- * \brief   Implementation file for DataBuffer class.
+ * \brief   Implementation file for Buffer class.
  *
  ******************************************************************************
  */
 
 // Associated header file
-#include "DataBuffer.hpp"
+#include "Buffer.hpp"
 
 // Standard C++ headers
 #include <algorithm>
@@ -41,7 +41,7 @@ namespace sidre
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::describe(TypeID type, SidreLength num_elems)
+Buffer * Buffer::describe(TypeID type, SidreLength num_elems)
 {
   if ( isAllocated() || num_elems < 0 )
   {
@@ -64,7 +64,7 @@ DataBuffer * DataBuffer::describe(TypeID type, SidreLength num_elems)
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::allocate()
+Buffer * Buffer::allocate()
 {
   if ( !isDescribed() || isAllocated() )
   {
@@ -94,7 +94,7 @@ DataBuffer * DataBuffer::allocate()
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
+Buffer * Buffer::allocate(TypeID type, SidreLength num_elems)
 {
   if (isAllocated())
   {
@@ -116,7 +116,7 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
+Buffer * Buffer::reallocate( SidreLength num_elems)
 {
   if (!isAllocated())
   {
@@ -171,7 +171,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::deallocate()
+Buffer * Buffer::deallocate()
 {
   if (!isAllocated())
   {
@@ -197,7 +197,7 @@ DataBuffer * DataBuffer::deallocate()
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::copyBytesIntoBuffer(const void * src,
+Buffer * Buffer::copyBytesIntoBuffer(const void * src,
                                              SidreLength nbytes)
 {
   if ( src == AXOM_NULLPTR || nbytes < 0 || nbytes > getTotalBytes() )
@@ -225,7 +225,7 @@ DataBuffer * DataBuffer::copyBytesIntoBuffer(const void * src,
  *
  *************************************************************************
  */
-void DataBuffer::copyToConduitNode(Node &n) const
+void Buffer::copyToConduitNode(Node &n) const
 {
   n["index"].set(m_index);
   n["value"].set(m_node.to_json());
@@ -238,7 +238,7 @@ void DataBuffer::copyToConduitNode(Node &n) const
  *
  *************************************************************************
  */
-void DataBuffer::print() const
+void Buffer::print() const
 {
   print(std::cout);
 }
@@ -250,7 +250,7 @@ void DataBuffer::print() const
  *
  *************************************************************************
  */
-void DataBuffer::print(std::ostream& os) const
+void Buffer::print(std::ostream& os) const
 {
   Node n;
   copyToConduitNode(n);
@@ -266,7 +266,7 @@ void DataBuffer::print(std::ostream& os) const
  *
  *************************************************************************
  */
-DataBuffer::DataBuffer( IndexType uid )
+Buffer::Buffer( IndexType uid )
   : m_index(uid),
   m_views(),
   m_node()
@@ -279,7 +279,7 @@ DataBuffer::DataBuffer( IndexType uid )
  *
  *************************************************************************
  */
-DataBuffer::DataBuffer(const DataBuffer& source )
+Buffer::Buffer(const Buffer& source )
   : m_index(source.m_index),
   m_views(source.m_views),
   m_node(source.m_node)
@@ -295,7 +295,7 @@ DataBuffer::DataBuffer(const DataBuffer& source )
  *
  *************************************************************************
  */
-DataBuffer::~DataBuffer()
+Buffer::~Buffer()
 {
   releaseBytes(getVoidPtr());
 }
@@ -307,7 +307,7 @@ DataBuffer::~DataBuffer()
  *
  *************************************************************************
  */
-void DataBuffer::attachToView( DataView * view )
+void Buffer::attachToView( DataView * view )
 {
   SLIC_ASSERT(view->m_data_buffer == this);
 
@@ -324,7 +324,7 @@ void DataBuffer::attachToView( DataView * view )
  *
  *************************************************************************
  */
-void DataBuffer::detachFromView( DataView * view )
+void Buffer::detachFromView( DataView * view )
 {
   SLIC_ASSERT(view->m_data_buffer == this);
 
@@ -349,7 +349,7 @@ void DataBuffer::detachFromView( DataView * view )
  *
  *************************************************************************
  */
-void DataBuffer::detachFromAllViews()
+void Buffer::detachFromAllViews()
 {
   for (size_t i = 0 ; i < m_views.size() ; ++i)
   {
@@ -367,7 +367,7 @@ void DataBuffer::detachFromAllViews()
  *
  *************************************************************************
  */
-void * DataBuffer::allocateBytes(std::size_t num_bytes)
+void * Buffer::allocateBytes(std::size_t num_bytes)
 {
   return new(std::nothrow) detail::sidre_int8[num_bytes];
 }
@@ -379,7 +379,7 @@ void * DataBuffer::allocateBytes(std::size_t num_bytes)
  *
  *************************************************************************
  */
-void DataBuffer::copyBytes( const void * src, void * dst, size_t num_bytes )
+void Buffer::copyBytes( const void * src, void * dst, size_t num_bytes )
 {
   std::memcpy( dst, src, num_bytes );
 }
@@ -391,7 +391,7 @@ void DataBuffer::copyBytes( const void * src, void * dst, size_t num_bytes )
  *
  *************************************************************************
  */
-void DataBuffer::releaseBytes( void * ptr)
+void Buffer::releaseBytes( void * ptr)
 {
   // Pointer type here should always match new call in allocateBytes.
   delete[] static_cast<detail::sidre_int8 *>(ptr);
@@ -405,7 +405,7 @@ void DataBuffer::releaseBytes( void * ptr)
  *
  *************************************************************************
  */
-void DataBuffer::exportTo( conduit::Node& data_holder)
+void Buffer::exportTo( conduit::Node& data_holder)
 {
   data_holder["id"] = m_index;
 
@@ -435,7 +435,7 @@ void DataBuffer::exportTo( conduit::Node& data_holder)
  *
  *************************************************************************
  */
-void DataBuffer::importFrom( conduit::Node& buffer_holder)
+void Buffer::importFrom( conduit::Node& buffer_holder)
 {
   if (buffer_holder.has_path("schema"))
   {

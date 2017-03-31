@@ -14,7 +14,7 @@
 
 
 using axom::sidre::DataStore;
-using axom::sidre::DataBuffer;
+using axom::sidre::Buffer;
 using axom::sidre::DataType;
 using axom::sidre::DataGroup;
 using axom::sidre::DataView;
@@ -34,11 +34,11 @@ TEST(sidre_buffer,create_buffers)
   EXPECT_EQ(0u, ds->getNumBuffers());
 
   // Create two buffers
-  DataBuffer * dbuff_0 = ds->createBuffer();
+  Buffer * dbuff_0 = ds->createBuffer();
   EXPECT_EQ(1u, ds->getNumBuffers());
   EXPECT_EQ(0, dbuff_0->getIndex());
 
-  DataBuffer * dbuff_1 = ds->createBuffer();
+  Buffer * dbuff_1 = ds->createBuffer();
   EXPECT_EQ(2u, ds->getNumBuffers());
   EXPECT_EQ(1, dbuff_1->getIndex());
 
@@ -47,7 +47,7 @@ TEST(sidre_buffer,create_buffers)
   ds->destroyBuffer(0);
   EXPECT_EQ(1u, ds->getNumBuffers());
 
-  DataBuffer * dbuff_0b = ds->createBuffer();
+  Buffer * dbuff_0b = ds->createBuffer();
   EXPECT_EQ(2u, ds->getNumBuffers());
   EXPECT_EQ(0, dbuff_0b->getIndex());
 
@@ -56,7 +56,7 @@ TEST(sidre_buffer,create_buffers)
   ds->destroyBuffer(dbuff_1);
   EXPECT_EQ(1u, ds->getNumBuffers());
 
-  DataBuffer * dbuff_1b = ds->createBuffer();
+  Buffer * dbuff_1b = ds->createBuffer();
   EXPECT_EQ(2u, ds->getNumBuffers());
   EXPECT_EQ(1, dbuff_1b->getIndex());
 
@@ -68,7 +68,7 @@ TEST(sidre_buffer,create_buffers)
 TEST(sidre_buffer,create_buffer_with_description)
 {
   DataStore * ds = new DataStore();
-  DataBuffer * dbuff = ds->createBuffer(INT_ID, 10);
+  Buffer * dbuff = ds->createBuffer(INT_ID, 10);
   dbuff->allocate();
 
   EXPECT_EQ(dbuff->getTypeID(), INT_ID);
@@ -94,7 +94,7 @@ TEST(sidre_buffer,create_buffer_with_description)
 TEST(sidre_buffer,alloc_buffer_for_int_array)
 {
   DataStore * ds = new DataStore();
-  DataBuffer * dbuff = ds->createBuffer();
+  Buffer * dbuff = ds->createBuffer();
 
   dbuff->allocate(INT_ID, 10);
   // Should be a warning and no-op, buffer is already allocated, we don't want
@@ -127,7 +127,7 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
 TEST(sidre_buffer,init_buffer_for_int_array)
 {
   DataStore * ds = new DataStore();
-  DataBuffer * dbuff = ds->createBuffer();
+  Buffer * dbuff = ds->createBuffer();
 
   dbuff->allocate(INT_ID, 10);
 
@@ -154,7 +154,7 @@ TEST(sidre_buffer,init_buffer_for_int_array)
 TEST(sidre_buffer,realloc_buffer)
 {
   DataStore * ds = new DataStore();
-  DataBuffer * dbuff = ds->createBuffer();
+  Buffer * dbuff = ds->createBuffer();
 
   dbuff->allocate(INT_ID, 5);
 
@@ -218,7 +218,7 @@ TEST(sidre_buffer, create_buffer_view)
   const int ndims = 1;
   SidreLength shape[] = { len };
 
-  DataBuffer * buff = ds->createBuffer(INT_ID, len)->allocate();
+  Buffer * buff = ds->createBuffer(INT_ID, len)->allocate();
 
   int * idata = buff->getData();
 
@@ -296,7 +296,7 @@ TEST(sidre_buffer,with_multiple_views)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  DataBuffer * dbuff;
+  Buffer * dbuff;
   DataView * dv1, * dv2;
 
   dbuff = ds->createBuffer();
@@ -331,7 +331,7 @@ TEST(sidre_buffer,move_buffer)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  DataBuffer * dbuff, * dbuff2;
+  Buffer * dbuff, * dbuff2;
   DataView * dv1, * dv2;
 
   dbuff = ds->createBuffer();

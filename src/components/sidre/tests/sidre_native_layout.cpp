@@ -17,7 +17,7 @@
 #include <iostream>
 
 
-using axom::sidre::DataBuffer;
+using axom::sidre::Buffer;
 using axom::sidre::DataGroup;
 using axom::sidre::DataStore;
 using axom::sidre::IndexType;
@@ -160,7 +160,7 @@ TEST(sidre_native_layout,generate_native_layout)
 
   // Setup a buffer that will have two views
   const int REAL_BUF_SIZE = 100;
-  DataBuffer * realBuf = ds->createBuffer(DOUBLE_ID, REAL_BUF_SIZE)->allocate();
+  Buffer * realBuf = ds->createBuffer(DOUBLE_ID, REAL_BUF_SIZE)->allocate();
   setData<double>(realBuf->getData(), REAL_BUF_SIZE, 0., 10, 1.);
 
   // create the views using the path syntax

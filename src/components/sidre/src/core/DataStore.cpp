@@ -30,8 +30,8 @@
 #include "slic/slic.hpp"
 #include "slic/GenericOutputStream.hpp"
 
-// Sidre project headers
-#include "DataBuffer.hpp"
+// Sidre component headers
+#include "Buffer.hpp"
 #include "DataGroup.hpp"
 
 
@@ -152,7 +152,7 @@ DataStore::~DataStore()
  *
  *************************************************************************
  */
-DataBuffer * DataStore::getBuffer( IndexType idx ) const
+Buffer * DataStore::getBuffer( IndexType idx ) const
 {
   if ( !hasBuffer(idx) )
   {
@@ -171,7 +171,7 @@ DataBuffer * DataStore::getBuffer( IndexType idx ) const
  *
  *************************************************************************
  */
-DataBuffer * DataStore::createBuffer()
+Buffer * DataStore::createBuffer()
 {
   // TODO: implement pool, look for free nodes.  Allocate in blocks.
   IndexType newIndex;
@@ -186,7 +186,7 @@ DataBuffer * DataStore::createBuffer()
     m_free_buffer_ids.pop();
   }
 
-  DataBuffer * const obj = new(std::nothrow) DataBuffer( newIndex );
+  Buffer * const obj = new(std::nothrow) Buffer( newIndex );
   m_data_buffers[newIndex] = obj;
 
   return obj;
@@ -199,9 +199,9 @@ DataBuffer * DataStore::createBuffer()
  *
  *************************************************************************
  */
-DataBuffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
+Buffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
 {
-  DataBuffer * buffer = createBuffer();
+  Buffer * buffer = createBuffer();
 
   if (buffer != AXOM_NULLPTR)
   {
@@ -219,7 +219,7 @@ DataBuffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
  *
  *************************************************************************
  */
-void DataStore::destroyBuffer( DataBuffer * buff )
+void DataStore::destroyBuffer( Buffer * buff )
 {
   if ( buff != AXOM_NULLPTR )
   {

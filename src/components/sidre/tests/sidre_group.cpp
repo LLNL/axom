@@ -15,7 +15,7 @@
 
 using axom::sidre::SidreLength;
 using axom::sidre::TypeID;
-using axom::sidre::DataBuffer;
+using axom::sidre::Buffer;
 using axom::sidre::DataGroup;
 using axom::sidre::DataStore;
 using axom::sidre::DataView;
@@ -514,7 +514,7 @@ TEST(sidre_group,create_destroy_has_view)
 
   // Destroy view but not the buffer
   view = group->createViewAndAllocate( "viewWithLength2", INT_ID, 50 );
-  DataBuffer * buff = view->getBuffer();
+  Buffer * buff = view->getBuffer();
   group->destroyView("viewWithLength2");
   EXPECT_TRUE( buff->isAllocated() );
 
@@ -767,7 +767,7 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
   EXPECT_FALSE(grp->hasView(viewName1));
   EXPECT_EQ(ds->getNumBuffers(), 1u);
 
-  DataBuffer const * const buffer1 = ds->getBuffer(bufferId1);
+  Buffer const * const buffer1 = ds->getBuffer(bufferId1);
   EXPECT_TRUE( buffer1 == AXOM_NULLPTR );
 
   DataView const * const view3 = grp->createView("viewBuffer3");
@@ -835,7 +835,7 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
     }
   }
 
-  DataBuffer * base_buff = base->getBuffer();
+  Buffer * base_buff = base->getBuffer();
 
   // create two views into this buffer
   //
@@ -1262,33 +1262,33 @@ static void save_restore_buffer_association(const std::string & msg,
   // Get all views and their buffers
   DataView * view1 = root->getView("undescribed_attached_buffer");
   ASSERT_TRUE(view1->hasBuffer());
-  DataBuffer * buff1a = view1->getBuffer();
+  Buffer * buff1a = view1->getBuffer();
   ASSERT_FALSE(buff1a->isDescribed());
   ASSERT_FALSE(buff1a->isAllocated());
 
   DataView * view2 = root->getView("unallocated_attached_buffer");
   ASSERT_TRUE(view2->hasBuffer());
-  DataBuffer * buff2a = view2->getBuffer();
+  Buffer * buff2a = view2->getBuffer();
   ASSERT_TRUE(buff2a->isDescribed());
   ASSERT_FALSE(buff2a->isAllocated());
 
   DataView * view3 = root->getView("undescribed_view_described_buffer");
   ASSERT_TRUE(view3->hasBuffer());
-  DataBuffer * buff3a = view3->getBuffer();
+  Buffer * buff3a = view3->getBuffer();
   ASSERT_TRUE(buff3a->isDescribed());
   ASSERT_TRUE(buff3a->isAllocated());
 
   DataView * view4 = root->getView("describe_view_described_buffer");
   ASSERT_TRUE(view4->hasBuffer());
-  DataBuffer * buff3b = view4->getBuffer();
+  Buffer * buff3b = view4->getBuffer();
 
   DataView * view5 = root->getView("even");
   ASSERT_TRUE(view5->hasBuffer());
-  DataBuffer * buff3c = view5->getBuffer();
+  Buffer * buff3c = view5->getBuffer();
 
   DataView * view6 = root->getView("odd");
   ASSERT_TRUE(view6->hasBuffer());
-  DataBuffer * buff3d = view6->getBuffer();
+  Buffer * buff3d = view6->getBuffer();
 
   DataView * view7 = root->getView("empty_described");
   ASSERT_FALSE(view7->hasBuffer());
@@ -1296,7 +1296,7 @@ static void save_restore_buffer_association(const std::string & msg,
 
   DataView * view8 = root->getView("allocated");
   ASSERT_TRUE(view8->hasBuffer());
-  DataBuffer * buff4a = view8->getBuffer();
+  Buffer * buff4a = view8->getBuffer();
   ASSERT_TRUE(buff4a->isDescribed());
   ASSERT_TRUE(buff4a->isAllocated());
 
@@ -1339,9 +1339,9 @@ TEST(sidre_group,save_restore_buffer)
 
   DataStore * ds1 = new DataStore();
   DataGroup * root1 = ds1->getRoot();
-  DataBuffer * buff1 = ds1->createBuffer();
-  DataBuffer * buff2 = ds1->createBuffer(INT_ID, len);
-  DataBuffer * buff3 = ds1->createBuffer(INT_ID, len)->allocate();
+  Buffer * buff1 = ds1->createBuffer();
+  Buffer * buff2 = ds1->createBuffer(INT_ID, len);
+  Buffer * buff3 = ds1->createBuffer(INT_ID, len)->allocate();
 
   int * idata = buff3->getData();
   for (int ii = 0 ; ii < len ; ++ii)

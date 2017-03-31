@@ -49,7 +49,7 @@ namespace axom
 namespace sidre
 {
 
-class DataBuffer;
+class Buffer;
 class DataGroup;
 class DataStore;
 template <typename TYPE> class MapCollection;
@@ -415,7 +415,7 @@ public:
    * \sa DataView::attachBuffer
    */
   DataView * createView( const std::string& path,
-                         DataBuffer * buff );
+                         Buffer * buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -436,7 +436,7 @@ public:
   DataView * createView( const std::string& path,
                          TypeID type,
                          SidreLength num_elems,
-                         DataBuffer * buff );
+                         Buffer * buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -458,7 +458,7 @@ public:
                          TypeID type,
                          int ndims,
                          SidreLength * shape,
-                         DataBuffer * buff );
+                         Buffer * buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -474,7 +474,7 @@ public:
    */
   DataView * createView( const std::string& path,
                          const DataType& dtype,
-                         DataBuffer * buff );
+                         Buffer * buff );
 
 //@}
 

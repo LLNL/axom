@@ -2,7 +2,7 @@
 # Specify all headers
 #
 set(sidre_headers
-    core/DataBuffer.hpp
+    core/Buffer.hpp
     core/DataGroup.hpp
     core/DataStore.hpp
     core/DataView.hpp
@@ -16,7 +16,7 @@ set(sidre_headers
 # Specify all sources
 #
 set(sidre_sources
-    core/DataBuffer.cpp
+    core/Buffer.cpp
     core/DataGroup.cpp
     core/DataStore.cpp
     core/DataView.cpp
@@ -37,7 +37,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapSidre.h
         interface/c_fortran/wrapDataStore.h
         interface/c_fortran/wrapDataGroup.h
-        interface/c_fortran/wrapDataBuffer.h
+        interface/c_fortran/wrapBuffer.h
         interface/c_fortran/wrapDataView.h
     )   
     set(sidre_fortran_sources
@@ -45,7 +45,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapSidre.cpp
         interface/c_fortran/wrapDataStore.cpp
         interface/c_fortran/wrapDataGroup.cpp
-        interface/c_fortran/wrapDataBuffer.cpp
+        interface/c_fortran/wrapBuffer.cpp
         interface/c_fortran/wrapDataView.cpp
         interface/c_fortran/wrapfsidre.F
         interface/c_fortran/shroudrt.cpp

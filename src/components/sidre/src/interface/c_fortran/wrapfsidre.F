@@ -45,8 +45,8 @@ module sidre_mod
     ! splicer end class.DataStore.module_use
     ! splicer begin class.DataGroup.module_use
     ! splicer end class.DataGroup.module_use
-    ! splicer begin class.DataBuffer.module_use
-    ! splicer end class.DataBuffer.module_use
+    ! splicer begin class.Buffer.module_use
+    ! splicer end class.Buffer.module_use
     ! splicer begin class.DataView.module_use
     ! splicer end class.DataView.module_use
     implicit none
@@ -304,51 +304,51 @@ module sidre_mod
         ! splicer end class.DataGroup.type_bound_procedure_part
     end type datagroup
 
-    ! splicer begin class.DataBuffer.module_top
-    ! splicer end class.DataBuffer.module_top
+    ! splicer begin class.Buffer.module_top
+    ! splicer end class.Buffer.module_top
 
-    type databuffer
+    type buffer
         type(C_PTR), private :: voidptr
-        ! splicer begin class.DataBuffer.component_part
-        ! splicer end class.DataBuffer.component_part
+        ! splicer begin class.Buffer.component_part
+        ! splicer end class.Buffer.component_part
     contains
-        procedure :: get_index => databuffer_get_index
-        procedure :: get_num_views => databuffer_get_num_views
-        procedure :: describe_int => databuffer_describe_int
-        procedure :: describe_long => databuffer_describe_long
-        procedure :: allocate_existing => databuffer_allocate_existing
-        procedure :: allocate_from_type_int => databuffer_allocate_from_type_int
-        procedure :: allocate_from_type_long => databuffer_allocate_from_type_long
-        procedure :: reallocate_int => databuffer_reallocate_int
-        procedure :: reallocate_long => databuffer_reallocate_long
-        procedure :: get_void_ptr => databuffer_get_void_ptr
-        procedure :: get_type_id => databuffer_get_type_id
-        procedure :: get_num_elements => databuffer_get_num_elements
-        procedure :: get_total_bytes => databuffer_get_total_bytes
-        procedure :: get_bytes_per_element => databuffer_get_bytes_per_element
-        procedure :: print => databuffer_print
-        procedure :: get_instance => databuffer_get_instance
-        procedure :: set_instance => databuffer_set_instance
-        procedure :: associated => databuffer_associated
+        procedure :: get_index => buffer_get_index
+        procedure :: get_num_views => buffer_get_num_views
+        procedure :: describe_int => buffer_describe_int
+        procedure :: describe_long => buffer_describe_long
+        procedure :: allocate_existing => buffer_allocate_existing
+        procedure :: allocate_from_type_int => buffer_allocate_from_type_int
+        procedure :: allocate_from_type_long => buffer_allocate_from_type_long
+        procedure :: reallocate_int => buffer_reallocate_int
+        procedure :: reallocate_long => buffer_reallocate_long
+        procedure :: get_void_ptr => buffer_get_void_ptr
+        procedure :: get_type_id => buffer_get_type_id
+        procedure :: get_num_elements => buffer_get_num_elements
+        procedure :: get_total_bytes => buffer_get_total_bytes
+        procedure :: get_bytes_per_element => buffer_get_bytes_per_element
+        procedure :: print => buffer_print
+        procedure :: get_instance => buffer_get_instance
+        procedure :: set_instance => buffer_set_instance
+        procedure :: associated => buffer_associated
         generic :: allocate => &
-            ! splicer begin class.DataBuffer.generic.allocate
-            ! splicer end class.DataBuffer.generic.allocate
+            ! splicer begin class.Buffer.generic.allocate
+            ! splicer end class.Buffer.generic.allocate
             allocate_existing,  &
             allocate_from_type_int,  &
             allocate_from_type_long
         generic :: describe => &
-            ! splicer begin class.DataBuffer.generic.describe
-            ! splicer end class.DataBuffer.generic.describe
+            ! splicer begin class.Buffer.generic.describe
+            ! splicer end class.Buffer.generic.describe
             describe_int,  &
             describe_long
         generic :: reallocate => &
-            ! splicer begin class.DataBuffer.generic.reallocate
-            ! splicer end class.DataBuffer.generic.reallocate
+            ! splicer begin class.Buffer.generic.reallocate
+            ! splicer end class.Buffer.generic.reallocate
             reallocate_int,  &
             reallocate_long
-        ! splicer begin class.DataBuffer.type_bound_procedure_part
-        ! splicer end class.DataBuffer.type_bound_procedure_part
-    end type databuffer
+        ! splicer begin class.Buffer.type_bound_procedure_part
+        ! splicer end class.Buffer.type_bound_procedure_part
+    end type buffer
 
     ! splicer begin class.DataView.module_top
     ! splicer end class.DataView.module_top
@@ -548,14 +548,14 @@ module sidre_mod
     interface operator (.eq.)
         module procedure datastore_eq
         module procedure datagroup_eq
-        module procedure databuffer_eq
+        module procedure buffer_eq
         module procedure dataview_eq
     end interface
 
     interface operator (.ne.)
         module procedure datastore_ne
         module procedure datagroup_ne
-        module procedure databuffer_ne
+        module procedure buffer_ne
         module procedure dataview_ne
     end interface
 
@@ -1567,111 +1567,111 @@ module sidre_mod
         ! splicer begin class.DataGroup.additional_interfaces
         ! splicer end class.DataGroup.additional_interfaces
 
-        pure function c_databuffer_get_index(self) &
+        pure function c_buffer_get_index(self) &
                 result(rv) &
-                bind(C, name="SIDRE_databuffer_get_index")
+                bind(C, name="SIDRE_buffer_get_index")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
-        end function c_databuffer_get_index
+        end function c_buffer_get_index
 
-        pure function c_databuffer_get_num_views(self) &
+        pure function c_buffer_get_num_views(self) &
                 result(rv) &
-                bind(C, name="SIDRE_databuffer_get_num_views")
+                bind(C, name="SIDRE_buffer_get_num_views")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function c_databuffer_get_num_views
+        end function c_buffer_get_num_views
 
-        subroutine c_databuffer_describe(self, type, num_elems) &
-                bind(C, name="SIDRE_databuffer_describe")
+        subroutine c_buffer_describe(self, type, num_elems) &
+                bind(C, name="SIDRE_buffer_describe")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-        end subroutine c_databuffer_describe
+        end subroutine c_buffer_describe
 
-        subroutine c_databuffer_allocate_existing(self) &
-                bind(C, name="SIDRE_databuffer_allocate_existing")
+        subroutine c_buffer_allocate_existing(self) &
+                bind(C, name="SIDRE_buffer_allocate_existing")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine c_databuffer_allocate_existing
+        end subroutine c_buffer_allocate_existing
 
-        subroutine c_databuffer_allocate_from_type(self, type, num_elems) &
-                bind(C, name="SIDRE_databuffer_allocate_from_type")
+        subroutine c_buffer_allocate_from_type(self, type, num_elems) &
+                bind(C, name="SIDRE_buffer_allocate_from_type")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-        end subroutine c_databuffer_allocate_from_type
+        end subroutine c_buffer_allocate_from_type
 
-        subroutine c_databuffer_reallocate(self, num_elems) &
-                bind(C, name="SIDRE_databuffer_reallocate")
+        subroutine c_buffer_reallocate(self, num_elems) &
+                bind(C, name="SIDRE_buffer_reallocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
-        end subroutine c_databuffer_reallocate
+        end subroutine c_buffer_reallocate
 
-        function c_databuffer_get_void_ptr(self) &
+        function c_buffer_get_void_ptr(self) &
                 result(rv) &
-                bind(C, name="SIDRE_databuffer_get_void_ptr")
+                bind(C, name="SIDRE_buffer_get_void_ptr")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function c_databuffer_get_void_ptr
+        end function c_buffer_get_void_ptr
 
-        pure function c_databuffer_get_type_id(self) &
+        pure function c_buffer_get_type_id(self) &
                 result(rv) &
-                bind(C, name="SIDRE_databuffer_get_type_id")
+                bind(C, name="SIDRE_buffer_get_type_id")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
-        end function c_databuffer_get_type_id
+        end function c_buffer_get_type_id
 
-        pure function c_databuffer_get_num_elements(self) &
+        pure function c_buffer_get_num_elements(self) &
                 result(rv) &
-                bind(C, name="SIDRE_databuffer_get_num_elements")
+                bind(C, name="SIDRE_buffer_get_num_elements")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function c_databuffer_get_num_elements
+        end function c_buffer_get_num_elements
 
-        pure function c_databuffer_get_total_bytes(self) &
+        pure function c_buffer_get_total_bytes(self) &
                 result(rv) &
-                bind(C, name="SIDRE_databuffer_get_total_bytes")
+                bind(C, name="SIDRE_buffer_get_total_bytes")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function c_databuffer_get_total_bytes
+        end function c_buffer_get_total_bytes
 
-        pure function c_databuffer_get_bytes_per_element(self) &
+        pure function c_buffer_get_bytes_per_element(self) &
                 result(rv) &
-                bind(C, name="SIDRE_databuffer_get_bytes_per_element")
+                bind(C, name="SIDRE_buffer_get_bytes_per_element")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function c_databuffer_get_bytes_per_element
+        end function c_buffer_get_bytes_per_element
 
-        subroutine c_databuffer_print(self) &
-                bind(C, name="SIDRE_databuffer_print")
+        subroutine c_buffer_print(self) &
+                bind(C, name="SIDRE_buffer_print")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine c_databuffer_print
+        end subroutine c_buffer_print
 
-        ! splicer begin class.DataBuffer.additional_interfaces
-        ! splicer end class.DataBuffer.additional_interfaces
+        ! splicer begin class.Buffer.additional_interfaces
+        ! splicer end class.Buffer.additional_interfaces
 
         subroutine c_dataview_allocate_simple(self) &
                 bind(C, name="SIDRE_dataview_allocate_simple")
@@ -2223,7 +2223,7 @@ contains
         implicit none
         class(datastore) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        type(databuffer) :: rv
+        type(buffer) :: rv
         ! splicer begin class.DataStore.method.get_buffer
         rv%voidptr = c_datastore_get_buffer(  &
             obj%voidptr,  &
@@ -2234,7 +2234,7 @@ contains
     function datastore_create_buffer_empty(obj) result(rv)
         implicit none
         class(datastore) :: obj
-        type(databuffer) :: rv
+        type(buffer) :: rv
         ! splicer begin class.DataStore.method.create_buffer_empty
         rv%voidptr = c_datastore_create_buffer_empty(obj%voidptr)
         ! splicer end class.DataStore.method.create_buffer_empty
@@ -2246,7 +2246,7 @@ contains
         class(datastore) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
-        type(databuffer) :: rv
+        type(buffer) :: rv
         ! splicer begin class.DataStore.method.create_buffer_from_type_int
         rv%voidptr = c_datastore_create_buffer_from_type(  &
             obj%voidptr,  &
@@ -2261,7 +2261,7 @@ contains
         class(datastore) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
-        type(databuffer) :: rv
+        type(buffer) :: rv
         ! splicer begin class.DataStore.method.create_buffer_from_type_long
         rv%voidptr = c_datastore_create_buffer_from_type(  &
             obj%voidptr,  &
@@ -2693,7 +2693,7 @@ contains
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
-        type(databuffer), value, intent(IN) :: buff
+        type(buffer), value, intent(IN) :: buff
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_from_type_and_buffer_int
         rv%voidptr = c_datagroup_create_view_from_type_and_buffer_bufferify(  &
@@ -2713,7 +2713,7 @@ contains
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
-        type(databuffer), value, intent(IN) :: buff
+        type(buffer), value, intent(IN) :: buff
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_from_type_and_buffer_long
         rv%voidptr = c_datagroup_create_view_from_type_and_buffer_bufferify(  &
@@ -2794,7 +2794,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_LONG), intent(IN) :: shape(*)
-        type(databuffer), value, intent(IN) :: buff
+        type(buffer), value, intent(IN) :: buff
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_from_shape_and_buffer
         rv%voidptr = c_datagroup_create_view_from_shape_and_buffer_bufferify(  &
@@ -2835,7 +2835,7 @@ contains
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: path
-        type(databuffer), value, intent(IN) :: buff
+        type(buffer), value, intent(IN) :: buff
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_into_buffer
         rv%voidptr = c_datagroup_create_view_into_buffer_bufferify(  &
@@ -4501,197 +4501,197 @@ contains
 
     ! splicer end class.DataGroup.additional_functions
 
-    function databuffer_get_index(obj) result(rv)
+    function buffer_get_index(obj) result(rv)
         use iso_c_binding, only : C_INT
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_INT) :: rv
-        ! splicer begin class.DataBuffer.method.get_index
-        rv = c_databuffer_get_index(obj%voidptr)
-        ! splicer end class.DataBuffer.method.get_index
-    end function databuffer_get_index
+        ! splicer begin class.Buffer.method.get_index
+        rv = c_buffer_get_index(obj%voidptr)
+        ! splicer end class.Buffer.method.get_index
+    end function buffer_get_index
 
-    function databuffer_get_num_views(obj) result(rv)
+    function buffer_get_num_views(obj) result(rv)
         use iso_c_binding, only : C_SIZE_T
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin class.DataBuffer.method.get_num_views
-        rv = c_databuffer_get_num_views(obj%voidptr)
-        ! splicer end class.DataBuffer.method.get_num_views
-    end function databuffer_get_num_views
+        ! splicer begin class.Buffer.method.get_num_views
+        rv = c_buffer_get_num_views(obj%voidptr)
+        ! splicer end class.Buffer.method.get_num_views
+    end function buffer_get_num_views
 
-    subroutine databuffer_describe_int(obj, type, num_elems)
+    subroutine buffer_describe_int(obj, type, num_elems)
         use iso_c_binding, only : C_LONG, C_INT
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
-        ! splicer begin class.DataBuffer.method.describe_int
-        call c_databuffer_describe(  &
+        ! splicer begin class.Buffer.method.describe_int
+        call c_buffer_describe(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataBuffer.method.describe_int
-    end subroutine databuffer_describe_int
+        ! splicer end class.Buffer.method.describe_int
+    end subroutine buffer_describe_int
 
-    subroutine databuffer_describe_long(obj, type, num_elems)
+    subroutine buffer_describe_long(obj, type, num_elems)
         use iso_c_binding, only : C_LONG, C_INT
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
-        ! splicer begin class.DataBuffer.method.describe_long
-        call c_databuffer_describe(  &
+        ! splicer begin class.Buffer.method.describe_long
+        call c_buffer_describe(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataBuffer.method.describe_long
-    end subroutine databuffer_describe_long
+        ! splicer end class.Buffer.method.describe_long
+    end subroutine buffer_describe_long
 
-    subroutine databuffer_allocate_existing(obj)
+    subroutine buffer_allocate_existing(obj)
         implicit none
-        class(databuffer) :: obj
-        ! splicer begin class.DataBuffer.method.allocate_existing
-        call c_databuffer_allocate_existing(obj%voidptr)
-        ! splicer end class.DataBuffer.method.allocate_existing
-    end subroutine databuffer_allocate_existing
+        class(buffer) :: obj
+        ! splicer begin class.Buffer.method.allocate_existing
+        call c_buffer_allocate_existing(obj%voidptr)
+        ! splicer end class.Buffer.method.allocate_existing
+    end subroutine buffer_allocate_existing
 
-    subroutine databuffer_allocate_from_type_int(obj, type, num_elems)
+    subroutine buffer_allocate_from_type_int(obj, type, num_elems)
         use iso_c_binding, only : C_LONG, C_INT
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
-        ! splicer begin class.DataBuffer.method.allocate_from_type_int
-        call c_databuffer_allocate_from_type(  &
+        ! splicer begin class.Buffer.method.allocate_from_type_int
+        call c_buffer_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataBuffer.method.allocate_from_type_int
-    end subroutine databuffer_allocate_from_type_int
+        ! splicer end class.Buffer.method.allocate_from_type_int
+    end subroutine buffer_allocate_from_type_int
 
-    subroutine databuffer_allocate_from_type_long(obj, type, num_elems)
+    subroutine buffer_allocate_from_type_long(obj, type, num_elems)
         use iso_c_binding, only : C_LONG, C_INT
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
-        ! splicer begin class.DataBuffer.method.allocate_from_type_long
-        call c_databuffer_allocate_from_type(  &
+        ! splicer begin class.Buffer.method.allocate_from_type_long
+        call c_buffer_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataBuffer.method.allocate_from_type_long
-    end subroutine databuffer_allocate_from_type_long
+        ! splicer end class.Buffer.method.allocate_from_type_long
+    end subroutine buffer_allocate_from_type_long
 
-    subroutine databuffer_reallocate_int(obj, num_elems)
+    subroutine buffer_reallocate_int(obj, num_elems)
         use iso_c_binding, only : C_LONG, C_INT
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_INT), value, intent(IN) :: num_elems
-        ! splicer begin class.DataBuffer.method.reallocate_int
-        call c_databuffer_reallocate(  &
+        ! splicer begin class.Buffer.method.reallocate_int
+        call c_buffer_reallocate(  &
             obj%voidptr,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataBuffer.method.reallocate_int
-    end subroutine databuffer_reallocate_int
+        ! splicer end class.Buffer.method.reallocate_int
+    end subroutine buffer_reallocate_int
 
-    subroutine databuffer_reallocate_long(obj, num_elems)
+    subroutine buffer_reallocate_long(obj, num_elems)
         use iso_c_binding, only : C_LONG
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
-        ! splicer begin class.DataBuffer.method.reallocate_long
-        call c_databuffer_reallocate(  &
+        ! splicer begin class.Buffer.method.reallocate_long
+        call c_buffer_reallocate(  &
             obj%voidptr,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataBuffer.method.reallocate_long
-    end subroutine databuffer_reallocate_long
+        ! splicer end class.Buffer.method.reallocate_long
+    end subroutine buffer_reallocate_long
 
-    function databuffer_get_void_ptr(obj) result(rv)
+    function buffer_get_void_ptr(obj) result(rv)
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         type(C_PTR) :: rv
-        ! splicer begin class.DataBuffer.method.get_void_ptr
-        rv = c_databuffer_get_void_ptr(obj%voidptr)
-        ! splicer end class.DataBuffer.method.get_void_ptr
-    end function databuffer_get_void_ptr
+        ! splicer begin class.Buffer.method.get_void_ptr
+        rv = c_buffer_get_void_ptr(obj%voidptr)
+        ! splicer end class.Buffer.method.get_void_ptr
+    end function buffer_get_void_ptr
 
-    function databuffer_get_type_id(obj) result(rv)
+    function buffer_get_type_id(obj) result(rv)
         use iso_c_binding, only : C_INT
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_INT) :: rv
-        ! splicer begin class.DataBuffer.method.get_type_id
-        rv = c_databuffer_get_type_id(obj%voidptr)
-        ! splicer end class.DataBuffer.method.get_type_id
-    end function databuffer_get_type_id
+        ! splicer begin class.Buffer.method.get_type_id
+        rv = c_buffer_get_type_id(obj%voidptr)
+        ! splicer end class.Buffer.method.get_type_id
+    end function buffer_get_type_id
 
-    function databuffer_get_num_elements(obj) result(rv)
+    function buffer_get_num_elements(obj) result(rv)
         use iso_c_binding, only : C_SIZE_T
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin class.DataBuffer.method.get_num_elements
-        rv = c_databuffer_get_num_elements(obj%voidptr)
-        ! splicer end class.DataBuffer.method.get_num_elements
-    end function databuffer_get_num_elements
+        ! splicer begin class.Buffer.method.get_num_elements
+        rv = c_buffer_get_num_elements(obj%voidptr)
+        ! splicer end class.Buffer.method.get_num_elements
+    end function buffer_get_num_elements
 
-    function databuffer_get_total_bytes(obj) result(rv)
+    function buffer_get_total_bytes(obj) result(rv)
         use iso_c_binding, only : C_SIZE_T
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin class.DataBuffer.method.get_total_bytes
-        rv = c_databuffer_get_total_bytes(obj%voidptr)
-        ! splicer end class.DataBuffer.method.get_total_bytes
-    end function databuffer_get_total_bytes
+        ! splicer begin class.Buffer.method.get_total_bytes
+        rv = c_buffer_get_total_bytes(obj%voidptr)
+        ! splicer end class.Buffer.method.get_total_bytes
+    end function buffer_get_total_bytes
 
-    function databuffer_get_bytes_per_element(obj) result(rv)
+    function buffer_get_bytes_per_element(obj) result(rv)
         use iso_c_binding, only : C_SIZE_T
         implicit none
-        class(databuffer) :: obj
+        class(buffer) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin class.DataBuffer.method.get_bytes_per_element
-        rv = c_databuffer_get_bytes_per_element(obj%voidptr)
-        ! splicer end class.DataBuffer.method.get_bytes_per_element
-    end function databuffer_get_bytes_per_element
+        ! splicer begin class.Buffer.method.get_bytes_per_element
+        rv = c_buffer_get_bytes_per_element(obj%voidptr)
+        ! splicer end class.Buffer.method.get_bytes_per_element
+    end function buffer_get_bytes_per_element
 
-    subroutine databuffer_print(obj)
+    subroutine buffer_print(obj)
         implicit none
-        class(databuffer) :: obj
-        ! splicer begin class.DataBuffer.method.print
-        call c_databuffer_print(obj%voidptr)
-        ! splicer end class.DataBuffer.method.print
-    end subroutine databuffer_print
+        class(buffer) :: obj
+        ! splicer begin class.Buffer.method.print
+        call c_buffer_print(obj%voidptr)
+        ! splicer end class.Buffer.method.print
+    end subroutine buffer_print
 
-    function databuffer_get_instance(obj) result (voidptr)
+    function buffer_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
         implicit none
-        class(databuffer), intent(IN) :: obj
+        class(buffer), intent(IN) :: obj
         type(C_PTR) :: voidptr
         voidptr = obj%voidptr
-    end function databuffer_get_instance
+    end function buffer_get_instance
 
-    subroutine databuffer_set_instance(obj, voidptr)
+    subroutine buffer_set_instance(obj, voidptr)
         use iso_c_binding, only: C_PTR
         implicit none
-        class(databuffer), intent(INOUT) :: obj
+        class(buffer), intent(INOUT) :: obj
         type(C_PTR), intent(IN) :: voidptr
         obj%voidptr = voidptr
-    end subroutine databuffer_set_instance
+    end subroutine buffer_set_instance
 
-    function databuffer_associated(obj) result (rv)
+    function buffer_associated(obj) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
-        class(databuffer), intent(IN) :: obj
+        class(buffer), intent(IN) :: obj
         logical rv
         rv = c_associated(obj%voidptr)
-    end function databuffer_associated
+    end function buffer_associated
 
-    ! splicer begin class.DataBuffer.additional_functions
-    ! splicer end class.DataBuffer.additional_functions
+    ! splicer begin class.Buffer.additional_functions
+    ! splicer end class.Buffer.additional_functions
 
     subroutine dataview_allocate_simple(obj)
         implicit none
@@ -4764,7 +4764,7 @@ contains
     subroutine dataview_attach_buffer_only(obj, buff)
         implicit none
         class(dataview) :: obj
-        type(databuffer), value, intent(IN) :: buff
+        type(buffer), value, intent(IN) :: buff
         ! splicer begin class.DataView.method.attach_buffer_only
         call c_dataview_attach_buffer_only(  &
             obj%voidptr,  &
@@ -4778,7 +4778,7 @@ contains
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
-        type(databuffer), value, intent(IN) :: buff
+        type(buffer), value, intent(IN) :: buff
         ! splicer begin class.DataView.method.attach_buffer_type_int
         call c_dataview_attach_buffer_type(  &
             obj%voidptr,  &
@@ -4794,7 +4794,7 @@ contains
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
-        type(databuffer), value, intent(IN) :: buff
+        type(buffer), value, intent(IN) :: buff
         ! splicer begin class.DataView.method.attach_buffer_type_long
         call c_dataview_attach_buffer_type(  &
             obj%voidptr,  &
@@ -4811,7 +4811,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_LONG), intent(IN) :: shape(*)
-        type(databuffer), value, intent(IN) :: buff
+        type(buffer), value, intent(IN) :: buff
         ! splicer begin class.DataView.method.attach_buffer_shape
         call c_dataview_attach_buffer_shape(  &
             obj%voidptr,  &
@@ -5034,7 +5034,7 @@ contains
     function dataview_get_buffer(obj) result(rv)
         implicit none
         class(dataview) :: obj
-        type(databuffer) :: rv
+        type(buffer) :: rv
         ! splicer begin class.DataView.method.get_buffer
         rv%voidptr = c_dataview_get_buffer(obj%voidptr)
         ! splicer end class.DataView.method.get_buffer
@@ -6396,29 +6396,29 @@ contains
         endif
     end function datagroup_ne
 
-    function databuffer_eq(a,b) result (rv)
+    function buffer_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
-        type(databuffer), intent(IN) ::a,b
+        type(buffer), intent(IN) ::a,b
         logical :: rv
         if (c_associated(a%voidptr, b%voidptr)) then
             rv = .true.
         else
             rv = .false.
         endif
-    end function databuffer_eq
+    end function buffer_eq
 
-    function databuffer_ne(a,b) result (rv)
+    function buffer_ne(a,b) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
-        type(databuffer), intent(IN) ::a,b
+        type(buffer), intent(IN) ::a,b
         logical :: rv
         if (.not. c_associated(a%voidptr, b%voidptr)) then
             rv = .true.
         else
             rv = .false.
         endif
-    end function databuffer_ne
+    end function buffer_ne
 
     function dataview_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
