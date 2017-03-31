@@ -68,23 +68,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Constructor specifying origin, size of bins, number of bins.
-   *
-   * The origin is specified as a point.  Each pointer argument is assumed to
-   * point to an array of at least length NDIMS.
-   *****************************************************************************
-   */
-  VirtualGrid(const PointType& origin, const double * spacing, const int * res);
-  /*!
-   *****************************************************************************
    * \brief Constructor specifying bounding box (min and max points) and
    *        number of bins.
    *
-   * The min and max points are specified as double arrays.  Each pointer
+   * The lower and upper bounds are specified as double arrays.  Each pointer
    * argument is assumed to point to an array of at least length NDIMS.
    *****************************************************************************
    */
-  VirtualGrid(const double * min, const double * max, const int * res);
+  VirtualGrid(const double * lower_bound, const double * upper_bound, const int * res);
 
   /*! \brief Destructor: present for symmetry with constructor */
   ~VirtualGrid();
@@ -111,7 +102,7 @@ public:
    * \param [in] index The index of the bin to test.
    *****************************************************************************
    */
-  bool binEmpty(int index);
+  bool isBinEmpty(int index);
 
   /*!
    *****************************************************************************
@@ -160,7 +151,7 @@ public:
    *
    * Returned by getBinIndex() if that function is passed an exterior point.
    * An error is thrown if getBinContents() is passed INVALID_BIN_INDEX.
-   * clear(INVALID_BIN_INDEX) is a no-op; binEmpty(INVALID_BIN_INDEX) returns
+   * clear(INVALID_BIN_INDEX) is a no-op; isBinEmpty(INVALID_BIN_INDEX) returns
    * true.
    *****************************************************************************
    */
@@ -222,44 +213,22 @@ VirtualGrid< T, NDIMS >::VirtualGrid()
 }
 
 template< typename T, int NDIMS >
-VirtualGrid< T, NDIMS >::VirtualGrid(const PointType& origin,
-                                     const double * step,
+VirtualGrid< T, NDIMS >::VirtualGrid(const double * lower_bound,
+                                     const double * upper_bound,
                                      const int * res)
 {
-  SLIC_ASSERT(step != AXOM_NULLPTR);
+  SLIC_ASSERT(lower_bound != AXOM_NULLPTR);
+  SLIC_ASSERT(upper_bound != AXOM_NULLPTR);
   SLIC_ASSERT(res != AXOM_NULLPTR);
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
   size_t newsize = 1;
   for (int i=0; i<NDIMS;++i) {
-    m_origin[i] = origin[i];
+    m_origin[i] = lower_bound[i];
 
-    SLIC_ASSERT(step[i] !=0 );
-    m_spacing[i] = step[i];
-    m_resolution[i] = res[i];
-    newsize *= res[i];
-  }
-
-  m_bins.resize(newsize);
-}
-
-template< typename T, int NDIMS >
-VirtualGrid< T, NDIMS >::VirtualGrid(const double * min,
-                                     const double * max,
-                                     const int * res)
-{
-  SLIC_ASSERT(min != AXOM_NULLPTR);
-  SLIC_ASSERT(max != AXOM_NULLPTR);
-  SLIC_ASSERT(res != AXOM_NULLPTR);
-  SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
-
-  size_t newsize = 1;
-  for (int i=0; i<NDIMS;++i) {
-    m_origin[i] = min[i];
-
-    SLIC_ASSERT(min[i] <= max[i]);
+    SLIC_ASSERT(lower_bound[i] <= upper_bound[i]);
     SLIC_ASSERT(res[i] > 0 );
-    m_spacing[i] = (max[i] - min[i]) / res[i];
+    m_spacing[i] = (upper_bound[i] - lower_bound[i]) / res[i];
     m_resolution[i] = res[i];
     newsize *= res[i];
   }
@@ -280,7 +249,7 @@ int VirtualGrid<T, NDIMS>::getBinIndex(const PointType & pt)
 
   int retval = 0;
   for (int i = 0; i < NDIMS; ++i) {
-    int tmp = static_cast<int>(floor((pt[i] - m_origin[i]) / m_spacing[i]));
+    int tmp = static_cast<int>((pt[i] - m_origin[i]) / m_spacing[i]);
 
     if (tmp < 0 || tmp >= m_resolution[i]) {
       return INVALID_BIN_INDEX;
@@ -310,7 +279,7 @@ int VirtualGrid<T, NDIMS>::getNumBins()
 }
 
 template< typename T, int NDIMS >
-bool VirtualGrid<T, NDIMS>::binEmpty(int index)
+bool VirtualGrid<T, NDIMS>::isBinEmpty(int index)
 {
   if (!isValidIndex(index)) {
     return true;

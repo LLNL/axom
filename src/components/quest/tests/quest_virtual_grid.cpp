@@ -18,38 +18,20 @@
 #include "quest/VirtualGrid.hpp"
 
 //-----------------------------------------------------------------------------
-TEST( quest_virtual_grid, point_constructor)
-{
-    static const int DIM = 3;
-    typedef double CoordType;
-    typedef axom::primal::Point<CoordType, DIM> QPoint;
-    
-    QPoint origin = QPoint::make_point(0,0,0);
-    const int spacing = 10;
-    double step[DIM] = {spacing, spacing, spacing};
-    const int resolution = 10;
-    int res[DIM] = {resolution, resolution, resolution};
-
-    quest::VirtualGrid<QPoint,DIM> valid(origin, step, res);
-    EXPECT_EQ(valid.getNumBins(), resolution * resolution * resolution);
-    EXPECT_TRUE(valid.binEmpty(0));
-
-}
-
 TEST( quest_virtual_grid, bbox_constructor)
 {
     static const int DIM = 3;
     typedef double CoordType;
     typedef axom::primal::Point<CoordType, DIM> QPoint;
-    
-    double max[DIM] = {10, 10, 10};
-    double min[DIM] = {0, 0, 0};
+
+    double p_max[DIM] = {10, 10, 10};
+    double p_min[DIM] = {0, 0, 0};
     const int resolution = 4;
     int res[DIM] = {resolution, resolution, resolution};
 
-    quest::VirtualGrid<QPoint,DIM> valid(min, max, res);
+    quest::VirtualGrid<QPoint,DIM> valid(p_min, p_max, res);
     EXPECT_EQ(valid.getNumBins(),  resolution * resolution * resolution);
-    EXPECT_TRUE(valid.binEmpty(0));
+    EXPECT_TRUE(valid.isBinEmpty(0));
 
 }
 
@@ -59,12 +41,12 @@ TEST( quest_virtual_grid, indexing)
     typedef double CoordType;
     typedef axom::primal::Point<CoordType, DIM> QPoint;
     
-    QPoint origin = QPoint::make_point(0, 0, 0);
-    const int spacing = 1;
-    double step[DIM] = {spacing, spacing, spacing};
+    double p_max[DIM] = {100, 100, 100};
+    double p_min[DIM] = {0, 0, 0};
     const int resolution = 100;
     int res[DIM] = {resolution, resolution, resolution};
-    quest::VirtualGrid<QPoint,DIM> valid(origin, step, res);
+
+    quest::VirtualGrid<QPoint,DIM> valid(p_min, p_max, res);
 
     // valid has 100 bins in each dimension, and each bin has a
     // width of 1.0.  The bins are laid out in row-major order.
@@ -114,7 +96,7 @@ void checkBinCounts(quest::VirtualGrid<T, NDIMS> & v,
   int bcount = v.getNumBins();
   for (int i = 0; i < bcount; ++i) {
     bool binAgrees =
-      (bincounts.count(i) < 1 && v.binEmpty(i)) ||
+      (bincounts.count(i) < 1 && v.isBinEmpty(i)) ||
       (bincounts[i] == ((int)v.getBinContents(i).size()));
     EXPECT_TRUE(binAgrees) << "Difference at bin " << i << ": v has " <<
       v.getBinContents(i).size() << " and bincounts has " <<
@@ -221,12 +203,12 @@ TEST(quest_virtual_grid, delete_stuff_3D){
     typedef axom::primal::Point<CoordType, DIM> QPoint;
     typedef axom::primal::BoundingBox<CoordType, DIM> QBBox;
 
-    QPoint origin = QPoint::make_point(0, 0, 0);
-    const int spacing = 1;
-    double step[DIM] = {spacing, spacing, spacing};
+    double origin[DIM] = {0, 0, 0};
+    const int mpt = 6;
+    double maxpoint[DIM] = {mpt, mpt, mpt};
     const int resolution = 6;
     int res[DIM] = {resolution, resolution, resolution};
-    quest::VirtualGrid<QPoint,DIM> valid(origin, step, res);
+    quest::VirtualGrid<QPoint,DIM> valid(origin, maxpoint, res);
 
     std::map<int, int> check;
 
@@ -362,12 +344,12 @@ TEST(quest_virtual_grid, delete_stuff_2D){
     typedef axom::primal::Point<CoordType, DIM> QPoint;
     typedef axom::primal::BoundingBox<CoordType, DIM> QBBox;
 
-    QPoint origin = QPoint::make_point(0, 0);
-    const int spacing = 1;
-    double step[DIM] = {spacing, spacing};
+    double origin[DIM] = {0, 0};
+    const int mpt = 6;
+    double maxpoint[DIM] = {mpt, mpt};
     const int resolution = 6;
     int res[DIM] = {resolution, resolution};
-    quest::VirtualGrid<QPoint,DIM> valid(origin, step, res);
+    quest::VirtualGrid<QPoint,DIM> valid(origin, maxpoint, res);
 
     std::map<int, int> check;
 
