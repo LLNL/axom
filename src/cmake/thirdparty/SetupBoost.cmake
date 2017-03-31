@@ -17,4 +17,4 @@ MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
 MESSAGE(STATUS "Boost version: " ${Boost_VERSION})
 
 # this is what we used to signal boost is on in our build system
-set(BOOST_FOUND TRUE)
+set(BOOST_FOUND ${Boost_FOUND})
