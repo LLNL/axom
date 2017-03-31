@@ -27,9 +27,9 @@ program spio_external_write_read
   integer i
 
   type(datastore) ds1, ds2
-  type(datagroup) root1, root2
-  type(datagroup) flds, flds2
-  type(datagroup) ga, gb
+  type(group) root1, root2
+  type(group) flds, flds2
+  type(group) ga, gb
   type(dataview)  view1, view2
 
   type(iomanager) writer, reader

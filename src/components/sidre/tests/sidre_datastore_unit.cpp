@@ -15,7 +15,7 @@
 
 using axom::sidre::DataStore;
 using axom::sidre::DataView;
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::Buffer;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
@@ -40,7 +40,7 @@ using axom::sidre::InvalidIndex;
 
 // Public APIs for getting state:
 //
-//   DataGroup * getRoot()
+//   Group * getRoot()
 //   size_t getNumBuffers() const
 //   bool hasBuffer( IndexType idx ) const
 //   Buffer * getBuffer( IndexType idx ) const;
@@ -50,7 +50,7 @@ using axom::sidre::InvalidIndex;
 
 // I will assume print() works, and I don't plan to use it.
 
-void verifyEmptyGroupNamed( DataGroup * dg, std::string name )
+void verifyEmptyGroupNamed( Group * dg, std::string name )
 {
   EXPECT_EQ( name, dg->getName() );
 
@@ -122,7 +122,7 @@ TEST(sidre_datastore,default_ctor)
   // The new DataStore should contain exactly one group, the root group.
   // The root group should be named "/" and should contain no views and no groups.
 
-  DataGroup * dg = ds->getRoot();
+  Group * dg = ds->getRoot();
 
   EXPECT_FALSE( AXOM_NULLPTR == dg );
   EXPECT_EQ(dg, dg->getParent() );
@@ -298,7 +298,7 @@ TEST(sidre_datastore,create_destroy_buffers_views)
   EXPECT_FALSE(vD->hasBuffer());
   EXPECT_FALSE(vE->hasBuffer());
 
-  // More tests will be found in sidre_datagroup_unit.cpp.
+  // More tests will be found in sidre_group_unit.cpp.
 
   delete ds;
 }

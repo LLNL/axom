@@ -39,7 +39,7 @@ namespace sidre
 {
 
 class Buffer;
-class DataGroup;
+class Group;
 class DataStore;
 
 /*!
@@ -51,14 +51,14 @@ class DataStore;
  *
  * The DataView class has the following properties:
  *
- *    - DataView objects can only be created via the DataGroup interface,
- *      not constructed directly. A View object is owned by the DataGroup
- *      object that creates it. A View object owned by a DataGroup object
- *      that is a descendant of some ancestor DataGroup is a descendant
+ *    - DataView objects can only be created via the Group interface,
+ *      not constructed directly. A View object is owned by the Group
+ *      object that creates it. A View object owned by a Group object
+ *      that is a descendant of some ancestor Group is a descendant
  *      View of the ancestor Group.
- *    - A DataView object has a unique name (string) within the DataGroup
+ *    - A DataView object has a unique name (string) within the Group
  *      that owns it.
- *    - A DataView holds a pointer to the DataGroup that created it and which
+ *    - A DataView holds a pointer to the Group that created it and which
  *      owns it.
  *    - A DataView object can describe and provide access to data in one of
  *      four ways:
@@ -90,7 +90,7 @@ public:
   // Friend declaration to constrain usage via controlled access to
   // private members.
   //
-  friend class DataGroup;
+  friend class Group;
   friend class Buffer;
 
 
@@ -117,7 +117,7 @@ public:
   /*!
    * \brief Return full path of View object, including its name.
    *
-   * If a DataStore contains a DataGroup tree structure a/b/c/d/e, with
+   * If a DataStore contains a Group tree structure a/b/c/d/e, with
    * group d owning a view v, the following results are expected:
    *
    * Method Call      | Result
@@ -126,22 +126,22 @@ public:
    * v->getPath()     | a/b/c/d
    * v->getPathName() | a/b/c/d/v
    *
-   * \sa getName(), getPath(), DataGroup::getPathName()
+   * \sa getName(), getPath(), Group::getPathName()
    */
   std::string getPathName() const;
 
   /*!
-   * \brief Return pointer to non-const DataGroup that owns DataView object.
+   * \brief Return pointer to non-const Group that owns DataView object.
    */
-  DataGroup * getOwningGroup()
+  Group * getOwningGroup()
   {
     return m_owning_group;
   }
 
   /*!
-   * \brief Return pointer to const DataGroup that owns DataView object.
+   * \brief Return pointer to const Group that owns DataView object.
    */
-  const DataGroup * getOwningGroup() const
+  const Group * getOwningGroup() const
   {
     return m_owning_group;
   }
@@ -940,7 +940,7 @@ private:
 
 //@{
 //!  @name Private DataView ctor and dtor
-//!        (callable only by DataGroup and DataView methods).
+//!        (callable only by Group and DataView methods).
 
   /*!
    *  \brief Private ctor that creates a DataView with given name
@@ -963,7 +963,7 @@ private:
 
 //@{
 //!  @name Private DataView declaration methods.
-//!        (callable only by DataGroup and DataView methods).
+//!        (callable only by Group and DataView methods).
 
   /*!
    * \brief Describe a data view with given type and number of elements.
@@ -1128,8 +1128,8 @@ private:
   /// Name of this DataView object.
   std::string m_name;
 
-  /// DataGroup object that owns this DataView object.
-  DataGroup * m_owning_group;
+  /// Group object that owns this DataView object.
+  Group * m_owning_group;
 
   /// Buffer associated with this DataView object.
   Buffer * m_data_buffer;

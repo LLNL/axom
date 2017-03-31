@@ -39,7 +39,7 @@ namespace detail
    * If c is not found, or if c is in the first or last position of s, the
    * function returns std::string::npos.
    *
-   * This function is used by DataGroup when checking for a valid path,
+   * This function is used by Group when checking for a valid path,
    * and the path delimiter is not considered valid when in the first
    * or last spot of the string.  See ATK-316 for more info.
    */

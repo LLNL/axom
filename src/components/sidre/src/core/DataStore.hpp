@@ -41,7 +41,7 @@ namespace sidre
 {
 
 class Buffer;
-class DataGroup;
+class Group;
 
 /*!
  * \class DataStore
@@ -74,15 +74,15 @@ public:
   /*!
    * \brief Return pointer to the root Group.
    */
-  DataGroup * getRoot()
+  Group * getRoot()
   {
     return m_RootGroup;
   };
 
   /*!
-   * \brief Return pointer to the root DataGroup.
+   * \brief Return pointer to the root Group.
    */
-  const DataGroup * getRoot() const
+  const Group * getRoot() const
   {
     return m_RootGroup;
   };
@@ -200,7 +200,7 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(DataStore);
 
   /// Root Group, created when DataStore object is created.
-  DataGroup * m_RootGroup;
+  Group * m_RootGroup;
 
   /// Collection of Buffers in DataStore instance.
   std::vector<Buffer *> m_data_buffers;

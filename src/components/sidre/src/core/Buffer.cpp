@@ -26,7 +26,7 @@
 #include <cstring> // for std::memcpy
 
 // Sidre project headers
-#include "DataGroup.hpp"
+#include "Group.hpp"
 #include "DataView.hpp"
 
 namespace axom

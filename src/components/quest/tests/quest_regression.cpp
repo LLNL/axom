@@ -251,7 +251,7 @@ CommandLineArguments parseArguments(int argc, char** argv)
 }
 
 /** Loads the baseline dataset into the given sidre group */
-void loadBaselineData(axom::sidre::DataGroup* grp, CommandLineArguments& args)
+void loadBaselineData(axom::sidre::Group* grp, CommandLineArguments& args)
 {
     axom::spio::IOManager reader(MPI_COMM_WORLD);
     reader.read(grp, args.baselineRoot, "sidre_hdf5");
@@ -535,7 +535,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
  * \return True if all results agree, False otherwise.
  * \note When there are differences, the first few are logged
  */
-bool compareToBaselineResults(axom::sidre::DataGroup* grp, CommandLineArguments& clargs)
+bool compareToBaselineResults(axom::sidre::Group* grp, CommandLineArguments& clargs)
 {
     SLIC_ASSERT( grp != AXOM_NULLPTR);
     SLIC_ASSERT( clargs.hasQueryMesh());
@@ -631,7 +631,7 @@ bool compareToBaselineResults(axom::sidre::DataGroup* grp, CommandLineArguments&
  *       and a corresponding folder ./<mesh>_<res>_baseline/
  *       (both in the same directory)
  */
-void saveBaseline(axom::sidre::DataGroup* grp, CommandLineArguments& clargs)
+void saveBaseline(axom::sidre::Group* grp, CommandLineArguments& clargs)
 {
     SLIC_ASSERT( grp != AXOM_NULLPTR);
     SLIC_ASSERT( clargs.hasQueryMesh());

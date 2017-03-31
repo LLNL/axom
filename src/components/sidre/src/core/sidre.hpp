@@ -23,7 +23,7 @@
 #define SIDRE_H_
 
 #include "Buffer.hpp"
-#include "DataGroup.hpp"
+#include "Group.hpp"
 #include "DataStore.hpp"
 #include "DataView.hpp"
 #include "SidreTypes.hpp"

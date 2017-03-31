@@ -28,10 +28,10 @@ extern "C" {
 // declaration of wrapped types
 struct s_SIDRE_buffer;
 typedef struct s_SIDRE_buffer SIDRE_buffer;
-struct s_SIDRE_datagroup;
-typedef struct s_SIDRE_datagroup SIDRE_datagroup;
 struct s_SIDRE_dataview;
 typedef struct s_SIDRE_dataview SIDRE_dataview;
+struct s_SIDRE_group;
+typedef struct s_SIDRE_group SIDRE_group;
 
 // splicer begin class.DataView.C_definition
 // splicer end class.DataView.C_definition
@@ -120,7 +120,7 @@ float SIDRE_dataview_get_data_float(SIDRE_dataview * self);
 
 double SIDRE_dataview_get_data_double(SIDRE_dataview * self);
 
-SIDRE_datagroup * SIDRE_dataview_get_owning_group(SIDRE_dataview * self);
+SIDRE_group * SIDRE_dataview_get_owning_group(SIDRE_dataview * self);
 
 int SIDRE_dataview_get_type_id(const SIDRE_dataview * self);
 

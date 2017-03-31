@@ -48,7 +48,7 @@ contains
 
   subroutine create_views()
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview) dv_0, dv_1
     type(buffer) db_0, db_1
 
@@ -72,7 +72,7 @@ contains
 
   subroutine scalar_view
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview) i0view, i1view, s0view, s1view
     integer(C_INT) i1, i2
     character(80) s1, s2
@@ -184,7 +184,7 @@ contains
 
   subroutine int_buffer_from_view()
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview) dv
     integer(C_INT), pointer :: data(:)
     integer(C_INT) i
@@ -219,7 +219,7 @@ contains
 
   subroutine int_buffer_from_view_conduit_value()
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview) dv
     integer(C_INT), pointer :: data(:)
     integer i
@@ -246,7 +246,7 @@ contains
 
   subroutine int_array_multi_view()
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(buffer) dbuff
     type(dataview) dv_e, dv_o 
     type(C_PTR) data_ptr
@@ -309,7 +309,7 @@ contains
 
   subroutine init_int_array_multi_view()
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(buffer) dbuff
     type(dataview) dv_e, dv_o 
     type(C_PTR) data_ptr
@@ -376,7 +376,7 @@ contains
 
   subroutine int_array_depth_view()
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(buffer) dbuff
     type(dataview) view0
     type(dataview) view1
@@ -457,7 +457,7 @@ contains
 
   subroutine int_array_view_attach_buffer()
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(buffer) dbuff
     type(dataview) field0
     type(dataview) field1
@@ -542,7 +542,7 @@ contains
 
   subroutine int_array_offset_stride()
     type(datastore) ds
-    type(datagroup) root, other
+    type(group) root, other
     type(buffer) dbuff
     type(dataview) field0, view1, view2, view3
 
@@ -682,7 +682,7 @@ contains
      ! into the new views
      !
     type(datastore) ds
-    type(datagroup) root, r_old
+    type(group) root, r_old
     type(dataview) base_old
     integer(C_INT), pointer :: data(:)
     integer i
@@ -753,9 +753,9 @@ contains
 !--  }
 !--
 !--  ! create a group to hold the "old" or data we want to copy into
-!--  SIDRE_datagroup * r_new = SIDRE_datagroup_create_group(root, "r_new")
+!--  SIDRE_group * r_new = SIDRE_group_create_group(root, "r_new")
 !--  ! create a view to hold the base buffer
-!--  SIDRE_dataview * base_new = SIDRE_datagroup_create_view_and_buffer(r_new, "base_data")
+!--  SIDRE_dataview * base_new = SIDRE_group_create_view_and_buffer(r_new, "base_data")
 !--
 !--  ! alloc our buffer
 !--  ! create a buffer to hold larger subarrays
@@ -770,10 +770,10 @@ contains
 !--  call buff_new%print()
 !--
 !--  ! create the 4 sub views of this array
-!--  SIDRE_dataview * r0_new = SIDRE_datagroup_create_view(r_new, "r0",buff_new)
-!--  SIDRE_dataview * r1_new = SIDRE_datagroup_create_view(r_new, "r1",buff_new)
-!--  SIDRE_dataview * r2_new = SIDRE_datagroup_create_view(r_new, "r2",buff_new)
-!--  SIDRE_dataview * r3_new = SIDRE_datagroup_create_view(r_new, "r3",buff_new)
+!--  SIDRE_dataview * r0_new = SIDRE_group_create_view(r_new, "r0",buff_new)
+!--  SIDRE_dataview * r1_new = SIDRE_group_create_view(r_new, "r1",buff_new)
+!--  SIDRE_dataview * r2_new = SIDRE_group_create_view(r_new, "r2",buff_new)
+!--  SIDRE_dataview * r3_new = SIDRE_group_create_view(r_new, "r3",buff_new)
 !--
 !--  ! apply views to r0,r1,r2,r3
 !--  ! each view is offset by 12 * the # of bytes in a uint32
@@ -835,7 +835,7 @@ contains
     ! info
     !
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview) a1, a2
 !    type(C_PTR) a1_ptr, a2_ptr
     real(C_FLOAT), pointer :: a1_data(:)
@@ -901,7 +901,7 @@ contains
 
   subroutine simple_opaque()
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview) opq_view
     integer(C_INT), target :: src_data
     integer(C_INT), pointer :: out_data

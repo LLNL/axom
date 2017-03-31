@@ -3,7 +3,7 @@
 #
 set(sidre_headers
     core/Buffer.hpp
-    core/DataGroup.hpp
+    core/Group.hpp
     core/DataStore.hpp
     core/DataView.hpp
     core/MapCollection.hpp
@@ -17,7 +17,7 @@ set(sidre_headers
 #
 set(sidre_sources
     core/Buffer.cpp
-    core/DataGroup.cpp
+    core/Group.cpp
     core/DataStore.cpp
     core/DataView.cpp
     core/SidreUtilities.cpp
@@ -36,7 +36,7 @@ if (ENABLE_FORTRAN)
         # generated headers
         interface/c_fortran/wrapSidre.h
         interface/c_fortran/wrapDataStore.h
-        interface/c_fortran/wrapDataGroup.h
+        interface/c_fortran/wrapGroup.h
         interface/c_fortran/wrapBuffer.h
         interface/c_fortran/wrapDataView.h
     )   
@@ -44,7 +44,7 @@ if (ENABLE_FORTRAN)
         # generated source
         interface/c_fortran/wrapSidre.cpp
         interface/c_fortran/wrapDataStore.cpp
-        interface/c_fortran/wrapDataGroup.cpp
+        interface/c_fortran/wrapGroup.cpp
         interface/c_fortran/wrapBuffer.cpp
         interface/c_fortran/wrapDataView.cpp
         interface/c_fortran/wrapfsidre.F
@@ -84,7 +84,7 @@ set_target_properties(sidre  PROPERTIES COMPILE_FLAGS ${AXOM_DISABLE_UNUSED_PARA
 
 if(SPARSEHASH_FOUND)
   # disable a warning that sparsehash emits due to an unused local typedef
-  set_property(SOURCE core/DataGroup.cpp
+  set_property(SOURCE core/Group.cpp
                APPEND_STRING PROPERTY COMPILE_FLAGS ${AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF} )
 endif()
 
@@ -99,8 +99,8 @@ if(FALSE)  # The Python module is not create yet.
 #if(ENABLE_PYTHON_API)
     set(sidre_python_sources
         interface/python/pyDataStoretype.cpp
-        interface/python/pyDataGrouptype.cpp
-        interface/python/pyDataBuffertype.cpp
+        interface/python/pyGrouptype.cpp
+        interface/python/pyBuffertype.cpp
         interface/python/pyDataViewtype.cpp
         interface/python/pySidremodule.cpp
         interface/python/pySidrehelper.cpp

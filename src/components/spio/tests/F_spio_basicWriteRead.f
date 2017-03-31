@@ -22,9 +22,9 @@ program spio_basic_write_read
   integer return_val
 
   type(datastore) ds1, ds2
-  type(datagroup) root1, root2
-  type(datagroup) flds1, flds2
-  type(datagroup) ga, gb
+  type(group) root1, root2
+  type(group) flds1, flds2
+  type(group) ga, gb
   type(dataview)  view1, view2
 
   type(iomanager) writer, reader

@@ -79,23 +79,23 @@ module spio_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine c_iomanager_delete
 
-        subroutine c_iomanager_write(self, group, num_files, file_string, protocol) &
+        subroutine c_iomanager_write(self, grp, num_files, file_string, protocol) &
                 bind(C, name="SPIO_iomanager_write")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: group
+            type(C_PTR), value, intent(IN) :: grp
             integer(C_INT), value, intent(IN) :: num_files
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
         end subroutine c_iomanager_write
 
-        subroutine c_iomanager_write_bufferify(self, group, num_files, file_string, Lfile_string, protocol, Lprotocol) &
+        subroutine c_iomanager_write_bufferify(self, grp, num_files, file_string, Lfile_string, protocol, Lprotocol) &
                 bind(C, name="SPIO_iomanager_write_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: group
+            type(C_PTR), value, intent(IN) :: grp
             integer(C_INT), value, intent(IN) :: num_files
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             integer(C_INT), value, intent(IN) :: Lfile_string
@@ -103,81 +103,81 @@ module spio_mod
             integer(C_INT), value, intent(IN) :: Lprotocol
         end subroutine c_iomanager_write_bufferify
 
-        subroutine c_iomanager_write_group_to_root_file(self, group, file_name) &
+        subroutine c_iomanager_write_group_to_root_file(self, grp, file_name) &
                 bind(C, name="SPIO_iomanager_write_group_to_root_file")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: group
+            type(C_PTR), value, intent(IN) :: grp
             character(kind=C_CHAR), intent(IN) :: file_name(*)
         end subroutine c_iomanager_write_group_to_root_file
 
-        subroutine c_iomanager_write_group_to_root_file_bufferify(self, group, file_name, Lfile_name) &
+        subroutine c_iomanager_write_group_to_root_file_bufferify(self, grp, file_name, Lfile_name) &
                 bind(C, name="SPIO_iomanager_write_group_to_root_file_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: group
+            type(C_PTR), value, intent(IN) :: grp
             character(kind=C_CHAR), intent(IN) :: file_name(*)
             integer(C_INT), value, intent(IN) :: Lfile_name
         end subroutine c_iomanager_write_group_to_root_file_bufferify
 
-        subroutine c_iomanager_read_0(self, group, file_string, protocol) &
+        subroutine c_iomanager_read_0(self, grp, file_string, protocol) &
                 bind(C, name="SPIO_iomanager_read_0")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: group
+            type(C_PTR), value, intent(IN) :: grp
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
         end subroutine c_iomanager_read_0
 
-        subroutine c_iomanager_read_0_bufferify(self, group, file_string, Lfile_string, protocol, Lprotocol) &
+        subroutine c_iomanager_read_0_bufferify(self, grp, file_string, Lfile_string, protocol, Lprotocol) &
                 bind(C, name="SPIO_iomanager_read_0_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: group
+            type(C_PTR), value, intent(IN) :: grp
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             integer(C_INT), value, intent(IN) :: Lfile_string
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             integer(C_INT), value, intent(IN) :: Lprotocol
         end subroutine c_iomanager_read_0_bufferify
 
-        subroutine c_iomanager_read_1(self, group, root_file) &
+        subroutine c_iomanager_read_1(self, grp, root_file) &
                 bind(C, name="SPIO_iomanager_read_1")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: group
+            type(C_PTR), value, intent(IN) :: grp
             character(kind=C_CHAR), intent(IN) :: root_file(*)
         end subroutine c_iomanager_read_1
 
-        subroutine c_iomanager_read_1_bufferify(self, group, root_file, Lroot_file) &
+        subroutine c_iomanager_read_1_bufferify(self, grp, root_file, Lroot_file) &
                 bind(C, name="SPIO_iomanager_read_1_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: group
+            type(C_PTR), value, intent(IN) :: grp
             character(kind=C_CHAR), intent(IN) :: root_file(*)
             integer(C_INT), value, intent(IN) :: Lroot_file
         end subroutine c_iomanager_read_1_bufferify
 
-        subroutine c_iomanager_load_external_data(self, group, root_file) &
+        subroutine c_iomanager_load_external_data(self, grp, root_file) &
                 bind(C, name="SPIO_iomanager_load_external_data")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: group
+            type(C_PTR), value, intent(IN) :: grp
             character(kind=C_CHAR), intent(IN) :: root_file(*)
         end subroutine c_iomanager_load_external_data
 
-        subroutine c_iomanager_load_external_data_bufferify(self, group, root_file, Lroot_file) &
+        subroutine c_iomanager_load_external_data_bufferify(self, grp, root_file, Lroot_file) &
                 bind(C, name="SPIO_iomanager_load_external_data_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: group
+            type(C_PTR), value, intent(IN) :: grp
             character(kind=C_CHAR), intent(IN) :: root_file(*)
             integer(C_INT), value, intent(IN) :: Lroot_file
         end subroutine c_iomanager_load_external_data_bufferify
@@ -207,19 +207,19 @@ contains
         ! splicer end class.IOManager.method.delete
     end subroutine iomanager_delete
 
-    subroutine iomanager_write(obj, group, num_files, file_string, protocol)
+    subroutine iomanager_write(obj, grp, num_files, file_string, protocol)
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : datagroup
+        use sidre_mod, only : group
         implicit none
         class(iomanager) :: obj
-        type(datagroup), value, intent(IN) :: group
+        type(group), value, intent(IN) :: grp
         integer(C_INT), value, intent(IN) :: num_files
         character(*), intent(IN) :: file_string
         character(*), intent(IN) :: protocol
         ! splicer begin class.IOManager.method.write
         call c_iomanager_write_bufferify(  &
             obj%voidptr,  &
-            group%get_instance(),  &
+            grp%get_instance(),  &
             num_files,  &
             file_string,  &
             len_trim(file_string, kind=C_INT),  &
@@ -228,34 +228,34 @@ contains
         ! splicer end class.IOManager.method.write
     end subroutine iomanager_write
 
-    subroutine iomanager_write_group_to_root_file(obj, group, file_name)
+    subroutine iomanager_write_group_to_root_file(obj, grp, file_name)
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : datagroup
+        use sidre_mod, only : group
         implicit none
         class(iomanager) :: obj
-        type(datagroup), value, intent(IN) :: group
+        type(group), value, intent(IN) :: grp
         character(*), intent(IN) :: file_name
         ! splicer begin class.IOManager.method.write_group_to_root_file
         call c_iomanager_write_group_to_root_file_bufferify(  &
             obj%voidptr,  &
-            group%get_instance(),  &
+            grp%get_instance(),  &
             file_name,  &
             len_trim(file_name, kind=C_INT))
         ! splicer end class.IOManager.method.write_group_to_root_file
     end subroutine iomanager_write_group_to_root_file
 
-    subroutine iomanager_read_0(obj, group, file_string, protocol)
+    subroutine iomanager_read_0(obj, grp, file_string, protocol)
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : datagroup
+        use sidre_mod, only : group
         implicit none
         class(iomanager) :: obj
-        type(datagroup), value, intent(IN) :: group
+        type(group), value, intent(IN) :: grp
         character(*), intent(IN) :: file_string
         character(*), intent(IN) :: protocol
         ! splicer begin class.IOManager.method.read_0
         call c_iomanager_read_0_bufferify(  &
             obj%voidptr,  &
-            group%get_instance(),  &
+            grp%get_instance(),  &
             file_string,  &
             len_trim(file_string, kind=C_INT),  &
             protocol,  &
@@ -263,33 +263,33 @@ contains
         ! splicer end class.IOManager.method.read_0
     end subroutine iomanager_read_0
 
-    subroutine iomanager_read_1(obj, group, root_file)
+    subroutine iomanager_read_1(obj, grp, root_file)
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : datagroup
+        use sidre_mod, only : group
         implicit none
         class(iomanager) :: obj
-        type(datagroup), value, intent(IN) :: group
+        type(group), value, intent(IN) :: grp
         character(*), intent(IN) :: root_file
         ! splicer begin class.IOManager.method.read_1
         call c_iomanager_read_1_bufferify(  &
             obj%voidptr,  &
-            group%get_instance(),  &
+            grp%get_instance(),  &
             root_file,  &
             len_trim(root_file, kind=C_INT))
         ! splicer end class.IOManager.method.read_1
     end subroutine iomanager_read_1
 
-    subroutine iomanager_load_external_data(obj, group, root_file)
+    subroutine iomanager_load_external_data(obj, grp, root_file)
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : datagroup
+        use sidre_mod, only : group
         implicit none
         class(iomanager) :: obj
-        type(datagroup), value, intent(IN) :: group
+        type(group), value, intent(IN) :: grp
         character(*), intent(IN) :: root_file
         ! splicer begin class.IOManager.method.load_external_data
         call c_iomanager_load_external_data_bufferify(  &
             obj%voidptr,  &
-            group%get_instance(),  &
+            grp%get_instance(),  &
             root_file,  &
             len_trim(root_file, kind=C_INT))
         ! splicer end class.IOManager.method.load_external_data

@@ -34,12 +34,12 @@ DataStore *selfobj = static_cast<DataStore *>(static_cast<void *>(self));
 // splicer end class.DataStore.method.delete
 }
 
-SIDRE_datagroup * SIDRE_datastore_get_root(SIDRE_datastore * self)
+SIDRE_group * SIDRE_datastore_get_root(SIDRE_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(static_cast<void *>(self));
 // splicer begin class.DataStore.method.get_root
-    DataGroup * rv = selfobj->getRoot();
-    return static_cast<SIDRE_datagroup *>(static_cast<void *>(rv));
+    Group * rv = selfobj->getRoot();
+    return static_cast<SIDRE_group *>(static_cast<void *>(rv));
 // splicer end class.DataStore.method.get_root
 }
 

@@ -70,7 +70,7 @@ public:
    * private members.
    */
   friend class DataStore;
-  friend class DataGroup;
+  friend class Group;
   friend class DataView;
 
 //@{

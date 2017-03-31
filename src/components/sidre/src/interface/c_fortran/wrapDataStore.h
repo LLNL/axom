@@ -28,10 +28,10 @@ extern "C" {
 // declaration of wrapped types
 struct s_SIDRE_buffer;
 typedef struct s_SIDRE_buffer SIDRE_buffer;
-struct s_SIDRE_datagroup;
-typedef struct s_SIDRE_datagroup SIDRE_datagroup;
 struct s_SIDRE_datastore;
 typedef struct s_SIDRE_datastore SIDRE_datastore;
+struct s_SIDRE_group;
+typedef struct s_SIDRE_group SIDRE_group;
 
 // splicer begin class.DataStore.C_definition
 // splicer end class.DataStore.C_definition
@@ -40,7 +40,7 @@ SIDRE_datastore * SIDRE_datastore_new();
 
 void SIDRE_datastore_delete(SIDRE_datastore * self);
 
-SIDRE_datagroup * SIDRE_datastore_get_root(SIDRE_datastore * self);
+SIDRE_group * SIDRE_datastore_get_root(SIDRE_datastore * self);
 
 SIDRE_buffer * SIDRE_datastore_get_buffer(SIDRE_datastore * self, SIDRE_IndexType idx);
 

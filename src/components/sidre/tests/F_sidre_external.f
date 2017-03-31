@@ -17,11 +17,11 @@ module sidre_external
 contains
 
 !------------------------------------------------------------------------------
-! Test DataGroup::createExternalView()
+! Test Group::createExternalView()
 !------------------------------------------------------------------------------
   subroutine create_external_view
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview) iview, dview
     integer(C_INT), allocatable, target :: idata(:)
     real(C_DOUBLE), allocatable, target :: ddata(:)
@@ -66,11 +66,11 @@ contains
   end subroutine create_external_view
 
 !------------------------------------------------------------------------------
-! Test DataGroup::save(), DataGroup::load() with external buffers
+! Test Group::save(), Group::load() with external buffers
 !------------------------------------------------------------------------------
   subroutine save_load_external_view
     type(datastore) ds, ds2
-    type(datagroup) root, root2
+    type(group) root, root2
     type(dataview)  iview, dview, iview2, dview2
     type(buffer) tmpbuff
     integer(C_INT), allocatable, target :: idata(:)

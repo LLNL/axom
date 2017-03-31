@@ -28,9 +28,9 @@ program spio_irregularWriteRead
   character(80) name
 
   type(datastore) ds1, ds2
-  type(datagroup) root1, root2
-  type(datagroup) flds1, flds2
-  type(datagroup) sg1, sg2
+  type(group) root1, root2
+  type(group) flds1, flds2
+  type(group) sg1, sg2
   type(dataview)  view1, view2
 
   type(iomanager) writer, reader

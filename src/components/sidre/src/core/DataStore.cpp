@@ -32,7 +32,7 @@
 
 // Sidre component headers
 #include "Buffer.hpp"
-#include "DataGroup.hpp"
+#include "Group.hpp"
 
 
 namespace axom
@@ -120,7 +120,7 @@ DataStore::DataStore()
   conduit::utils::set_warning_handler( DataStoreConduitWarningHandler );
   conduit::utils::set_info_handler( DataStoreConduitInfoHandler );
 
-  m_RootGroup = new DataGroup("", this);
+  m_RootGroup = new Group("", this);
   m_RootGroup->m_parent = m_RootGroup;
 };
 

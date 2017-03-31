@@ -42,7 +42,7 @@
 #include "sidre/sidre.hpp"
 
 using axom::sidre::Buffer;
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataView;
 using axom::sidre::TypeID;
@@ -56,14 +56,14 @@ const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;
 
 
-void CreateScalarIntViewAndSetVal( DataGroup * const grp,
+void CreateScalarIntViewAndSetVal( Group * const grp,
                                    const std::string& name, int32 const value )
 {
   grp->createViewScalar(name, value);
 }
 
 
-void CreateScalarFloatBufferViewAndSetVal( DataGroup * const grp,
+void CreateScalarFloatBufferViewAndSetVal( Group * const grp,
                                            const std::string& name,
                                            float64 const value )
 {
@@ -78,7 +78,7 @@ void CreateScalarFloatBufferViewAndSetVal( DataGroup * const grp,
  * Purpose   :  Ask for control and output information
  *************************************************************************/
 
-void GetUserInput(DataGroup * const prob)
+void GetUserInput(Group * const prob)
 {
   /**********************************/
   /* Get mesh info, and create mesh */
@@ -181,7 +181,7 @@ void GetUserInput(DataGroup * const prob)
 
  *************************************************************************/
 
-void CreateShockTubeMesh(DataGroup * const prob)
+void CreateShockTubeMesh(Group * const prob)
 {
   int i;
   int32 const numElems = prob->getView("numElems")->getData();
@@ -192,8 +192,8 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* create element and face classes */
 
-  DataGroup * const elem = prob->createGroup("elem");
-  DataGroup * const face = prob->createGroup("face");
+  Group * const elem = prob->createGroup("elem");
+  Group * const face = prob->createGroup("face");
 
   /* set up some important views */
 
@@ -208,7 +208,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
 
   int32 numTubeElems = numElems - 2;
-  DataGroup * const tube = elem->createGroup("tube");//->SetDataShape(DataStoreNS::DataShape(numTubeElems));
+  Group * const tube = elem->createGroup("tube");//->SetDataShape(DataStoreNS::DataShape(numTubeElems));
 
   int32 * const mapToElems = tube->createViewAndAllocate("mapToElems", DataType::int32(
                                                            numTubeElems))->
@@ -253,13 +253,13 @@ void CreateShockTubeMesh(DataGroup * const prob)
  * Purpose   :  Populate the mesh with values
  *************************************************************************/
 
-void InitializeShockTube(DataGroup * const prob)
+void InitializeShockTube(Group * const prob)
 {
   int i;
 
   /* These were created in GetUserInput() */
-  DataGroup * const elem = (prob->getGroup("elem"));
-  DataGroup * const face = (prob->getGroup("face"));
+  Group * const elem = (prob->getGroup("elem"));
+  Group * const face = (prob->getGroup("face"));
 
   /* Create element centered quantities */
 
@@ -350,10 +350,10 @@ void InitializeShockTube(DataGroup * const prob)
  *
  *************************************************************************/
 
-void ComputeFaceInfo(DataGroup * const prob)
+void ComputeFaceInfo(Group * const prob)
 {
   int i;
-  DataGroup * const face = prob->getGroup("face");
+  Group * const face = prob->getGroup("face");
 //  Relation &faceToElem = *face->relation("faceToElem");
   int32 const * const faceToElem = face->getView("faceToElem")->getData();
 
@@ -362,7 +362,7 @@ void ComputeFaceInfo(DataGroup * const prob)
   float64 * const F2 = face->getView("F2")->getData();
   int numFaces = face->getView("F0")->getNumElements();
 
-  DataGroup * const elem = prob->getGroup("elem");
+  Group * const elem = prob->getGroup("elem");
   float64 * const mass = elem->getView("mass")->getData();
   float64 * const momentum = elem->getView("momentum")->getData();
   float64 * const energy = elem->getView("energy")->getData();
@@ -443,19 +443,19 @@ void ComputeFaceInfo(DataGroup * const prob)
  *
  *************************************************************************/
 
-void UpdateElemInfo(DataGroup * const prob)
+void UpdateElemInfo(Group * const prob)
 {
   int i;
 
   /* get the element quantities we want to update */
-  DataGroup * const elem = prob->getGroup("elem");
+  Group * const elem = prob->getGroup("elem");
   float64 * const mass = elem->getView("mass")->getData();
   float64 * const momentum = elem->getView("momentum")->getData();
   float64 * const energy = elem->getView("energy")->getData();
   float64 * const pressure = elem->getView("pressure")->getData();
 
   /* focus on just the elements within the shock tube */
-  DataGroup * const tube = elem->getGroup("tube");
+  Group * const tube = elem->getGroup("tube");
   int32 * const elemToFace = tube->getView("elemToFace")->getData();
 
 //  Relation &elemToFace = *tube->relation("elemToFace");
@@ -465,7 +465,7 @@ void UpdateElemInfo(DataGroup * const prob)
   int32 * const is = tube->getView("mapToElems")->getData();
 
   /* The element update is calculated as the flux between faces */
-  DataGroup * const face = prob->getGroup("face");
+  Group * const face = prob->getGroup("face");
   float64 * const F0 = face->getView("F0")->getData();
   float64 * const F1 = face->getView("F1")->getData();
   float64 * const F2 = face->getView("F2")->getData();
@@ -503,7 +503,7 @@ void UpdateElemInfo(DataGroup * const prob)
 #include <ctype.h>
 
 
-void DumpUltra( DataGroup * const prob)
+void DumpUltra( Group * const prob)
 {
 #if 1
   FILE * fp;
@@ -553,7 +553,7 @@ void DumpUltra( DataGroup * const prob)
   }
 
 
-  DataGroup * const elem = prob->getGroup("elem");
+  Group * const elem = prob->getGroup("elem");
 
   for(size_t i=0 ; i<elem->getNumViews() ; i++)
   {
@@ -594,7 +594,7 @@ void DumpUltra( DataGroup * const prob)
 
 int main(void)
 {
-  // extern void DumpUltra(DataGroup * const prob);
+  // extern void DumpUltra(Group * const prob);
 
   /* We should be able to parallelize pretty easily by */
   /* adding an MPI_Init() here, modifying the setup slightly, */
@@ -603,8 +603,8 @@ int main(void)
 
   DataStore DATASTORE;
   DataStore * const dataStore = &DATASTORE;
-  DataGroup * const rootGroup = dataStore->getRoot();
-  DataGroup * const prob = rootGroup->createGroup("problem");
+  Group * const rootGroup = dataStore->getRoot();
+  Group * const prob = rootGroup->createGroup("problem");
 
   GetUserInput(prob);
   CreateShockTubeMesh(prob);

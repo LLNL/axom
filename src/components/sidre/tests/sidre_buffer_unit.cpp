@@ -15,7 +15,7 @@
 
 using axom::sidre::DataStore;
 using axom::sidre::DataView;
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::Buffer;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;

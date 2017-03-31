@@ -48,7 +48,7 @@
 
 #include "sidre/SidreTypes.hpp"
 #include "sidre/DataStore.hpp"
-#include "sidre/DataGroup.hpp"
+#include "sidre/Group.hpp"
 #include "sidre/Buffer.hpp"
 #include "sidre/DataView.hpp"
 
@@ -64,7 +64,7 @@
 
 
 using axom::sidre::DataStore;
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::Buffer;
 using axom::sidre::DataView;
 using axom::spio::IOManager;
@@ -250,7 +250,7 @@ CommandLineArguments parseArguments(int argc, char** argv, int myRank)
  *
  * \note We also set the data in each allocated array to zeros
  */
-void allocateExternalData(DataGroup* grp, std::vector<void*>& extPtrs)
+void allocateExternalData(Group* grp, std::vector<void*>& extPtrs)
 {
     using namespace axom;
 
@@ -390,7 +390,7 @@ void modifyFinalValues(DataView* view, int origSize)
  * be 0 for integers and nan for floating points.
  * This will be followed by (at most) the first maxSize elements of the original array
  */
-void truncateBulkData(DataGroup* grp, int maxSize)
+void truncateBulkData(Group* grp, int maxSize)
 {
     using namespace axom;
 

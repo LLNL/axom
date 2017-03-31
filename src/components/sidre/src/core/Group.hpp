@@ -11,9 +11,9 @@
 /*!
  ******************************************************************************
  *
- * \file DataGroup.hpp
+ * \file Group.hpp
  *
- * \brief   Header file containing definition of DataGroup class.
+ * \brief   Header file containing definition of Group class.
  *
  ******************************************************************************
  */
@@ -50,40 +50,40 @@ namespace sidre
 {
 
 class Buffer;
-class DataGroup;
+class Group;
 class DataStore;
 template <typename TYPE> class MapCollection;
 
 /*!
- * \class DataGroup
+ * \class Group
  *
- * \brief DataGroup holds a collection of DataViews and (child) DataGroups.
+ * \brief Group holds a collection of DataViews and (child) Groups.
  *
- * The DataGroup class has the following properties:
+ * The Group class has the following properties:
  *
- *    - DataGroups can be organized into a (tree) hierachy by creating
+ *    - Groups can be organized into a (tree) hierachy by creating
  *      child Groups from the root Group owned by a DataStore object.
- *    - A DataGroup object can only be created by another DataGroup; the
- *      DataGroup ctor is not visible externally. A DataGroup is owned
- *      by the DataGroup that creates it (its parent) and becomes a
- *      (direct) child Group of the parent. DataGroups in the subtree
- *      rooted at an ancestor DataGroup are that Group's descendants.
- *    - A DataGroup object has a unique name (string) within its parent
- *      DataGroup.
- *    - A DataGroup object maintains a pointer to its parent DataGroup.
- *    - A DataGroup object can be moved or copied to another DataGroup.
- *    - DataGroup objects can create DataView objects within them. The
- *      DataGroup that creates a DataView owns it.
- *    - A DataView object has a unique name (string) within the DataGroup
+ *    - A Group object can only be created by another Group; the
+ *      Group ctor is not visible externally. A Group is owned
+ *      by the Group that creates it (its parent) and becomes a
+ *      (direct) child Group of the parent. Groups in the subtree
+ *      rooted at an ancestor Group are that Group's descendants.
+ *    - A Group object has a unique name (string) within its parent
+ *      Group.
+ *    - A Group object maintains a pointer to its parent Group.
+ *    - A Group object can be moved or copied to another Group.
+ *    - Group objects can create DataView objects within them. The
+ *      Group that creates a DataView owns it.
+ *    - A DataView object has a unique name (string) within the Group
  *      that owns it.
- *    - A DataView object can be moved or copied to another DataGroup.
+ *    - A DataView object can be moved or copied to another Group.
  *
- * Note that DataViews and child DataGroups within a Group can be accessed
+ * Note that DataViews and child Groups within a Group can be accessed
  * by name or index.
  *
  * Note that certain methods for querying, creating, retrieving, and
- * deleting DataGroups and DataViews take a string with path syntax,
- * while others take the name of a direct child of the current DataGroup.
+ * deleting Groups and DataViews take a string with path syntax,
+ * while others take the name of a direct child of the current Group.
  * Methods that require the name of a direct child are marked with
  * "Child", for example hasChildView() and hasChildGroup().  When a path
  * string is passed to a method that accepts path syntax, the last item in
@@ -108,12 +108,12 @@ template <typename TYPE> class MapCollection;
  * of the indexed group.  None of these methods is marked with "Child".
  *
  * IMPORTANT: when Views or Groups are created, destroyed, copied, or moved,
- * indices of other Views and Groups in associated DataGroup objects may
+ * indices of other Views and Groups in associated Group objects may
  * become invalid. This is analogous to iterator invalidation for STL
  * containers when the container contents change.
  *
  */
-class DataGroup
+class Group
 {
 public:
 
@@ -155,7 +155,7 @@ public:
   /*!
    * \brief Return full path of Group object, including its name.
    *
-   * If a DataStore contains a DataGroup tree structure a/b/c/d/e, with
+   * If a DataStore contains a Group tree structure a/b/c/d/e, with
    * group d owning a view v, the following results are expected:
    *
    * Method Call      | Result
@@ -182,7 +182,7 @@ public:
    * Note that if this method is called on the root Group in a
    * DataStore, AXOM_NULLPTR is returned.
    */
-  DataGroup * getParent()
+  Group * getParent()
   {
     return m_parent;
   }
@@ -193,7 +193,7 @@ public:
    * Note that if this method is called on the root Group in a
    * DataStore, AXOM_NULLPTR is returned.
    */
-  const DataGroup * getParent() const
+  const Group * getParent() const
   {
     return m_parent;
   }
@@ -794,17 +794,17 @@ public:
   /*!
    * \brief Attach Group object to this Group.
    */
-  DataGroup * attachGroup(DataGroup * view);
+  Group * attachGroup(Group * view);
 
   /*!
    * \brief Detach Child Group with given name from this Group.
    */
-  DataGroup * detachGroup(const std::string& name);
+  Group * detachGroup(const std::string& name);
 
   /*!
    * \brief Detach Child Group with given index from this Group.
    */
-  DataGroup * detachGroup(IndexType idx);
+  Group * detachGroup(IndexType idx);
 
 //@}
 
@@ -857,7 +857,7 @@ public:
    *
    * If no such Group exists, AXOM_NULLPTR is returned.
    */
-  DataGroup * getGroup( const std::string& path );
+  Group * getGroup( const std::string& path );
 
   /*!
    * \brief Return pointer to const child Group with given name or path.
@@ -866,21 +866,21 @@ public:
    *
    * If no such Group exists, AXOM_NULLPTR is returned.
    */
-  DataGroup const * getGroup( const std::string& path ) const;
+  Group const * getGroup( const std::string& path ) const;
 
   /*!
    * \brief Return pointer to non-const immediate child Group with given index.
    *
    * If no such Group exists, AXOM_NULLPTR is returned.
    */
-  DataGroup * getGroup( IndexType idx );
+  Group * getGroup( IndexType idx );
 
   /*!
    * \brief Return pointer to const immediate child Group with given index.
    *
    * If no such Group exists, AXOM_NULLPTR is returned.
    */
-  const DataGroup * getGroup( IndexType idx ) const;
+  const Group * getGroup( IndexType idx ) const;
 
   /*!
    * \brief Return first valid child Group index (i.e., smallest
@@ -912,10 +912,10 @@ public:
    * If name is an empty string or Group already has a child Group with
    * given name or path, method is a no-op.
    *
-   * \return pointer to created DataGroup object or AXOM_NULLPTR if new
+   * \return pointer to created Group object or AXOM_NULLPTR if new
    * Group is not created.
    */
-  DataGroup * createGroup( const std::string& path );
+  Group * createGroup( const std::string& path );
 
   /*!
    * \brief Destroy child Group in this Group with given name or path.
@@ -955,7 +955,7 @@ public:
    * \return pointer to given argument Group object or AXOM_NULLPTR if Group
    * is not moved into this Group.
    */
-  DataGroup * moveGroup(DataGroup * group);
+  Group * moveGroup(Group * group);
 
   /*!
    * \brief Create a copy of Group hierarchy rooted at given Group and make it
@@ -974,7 +974,7 @@ public:
    * \return pointer to given argument Group object or AXOM_NULLPTR if Group
    * is not moved into this Group.
    */
-  DataGroup * copyGroup(DataGroup * group);
+  Group * copyGroup(Group * group);
 
 //@}
 
@@ -1048,7 +1048,7 @@ public:
    *
    * \sa DataView::isEquivalentTo
    */
-  bool isEquivalentTo(const DataGroup * other) const;
+  bool isEquivalentTo(const Group * other) const;
 
 
   /*!
@@ -1157,30 +1157,30 @@ public:
   bool rename(const std::string& new_name);
 
 private:
-  DISABLE_DEFAULT_CTOR(DataGroup);
-  DISABLE_COPY_AND_ASSIGNMENT(DataGroup);
-  DISABLE_MOVE_AND_ASSIGNMENT(DataGroup);
+  DISABLE_DEFAULT_CTOR(Group);
+  DISABLE_COPY_AND_ASSIGNMENT(Group);
+  DISABLE_MOVE_AND_ASSIGNMENT(Group);
 
 //@{
 //!  @name Private Group ctors and dtors
-//!        (callable only by DataStore and DataGroup methods).
+//!        (callable only by DataStore and Group methods).
 
   /*!
    *  \brief Private ctor that creates a Group with given name
    *         in given parent Group.
    */
-  DataGroup(const std::string& name, DataGroup * parent);
+  Group(const std::string& name, Group * parent);
 
   /*!
    *  \brief Private ctor that creates a Group with given name
    *         in the given DataStore root Group.
    */
-  DataGroup(const std::string& name, DataStore * datastore);
+  Group(const std::string& name, DataStore * datastore);
 
   /*!
    * \brief Destructor destroys all Views and child Groups.
    */
-  ~DataGroup();
+  ~Group();
 
 //@}
 
@@ -1204,18 +1204,18 @@ private:
 
 
 //@{
-//!  @name Private DataGroup methods for interacting with Conduit Nodes.
+//!  @name Private Group methods for interacting with Conduit Nodes.
 
 
   /*!
-   * \brief Private method to copy DataGroup to Conduit Node.
+   * \brief Private method to copy Group to Conduit Node.
    *
    * Note: This is for the "sidre_hdf5" protocol.
    */
   void exportTo(conduit::Node& result) const;
 
   /*!
-   * \brief Private method to copy DataGroup to Conduit Node.
+   * \brief Private method to copy Group to Conduit Node.
    *
    * \param buffer_indices Used to track what Buffers are referenced
    * by the Views in this Group and Groups in the sub-tree below it.
@@ -1231,7 +1231,7 @@ private:
   void importFrom(conduit::Node& node);
 
   /*!
-   * \brief Private method to copy DataGroup from Conduit Node.
+   * \brief Private method to copy Group from Conduit Node.
    *
    * Map of Buffer indices tracks old Buffer ids in the file to the
    * new Buffer ids in the datastore.  Buffer ids are not guaranteed
@@ -1269,7 +1269,7 @@ private:
    * following the last "/" in the input (if there is one) or the entire
    * input path string if it contains no "/".
    */
-  DataGroup * walkPath(std::string& path, bool create_groups_in_path );
+  Group * walkPath(std::string& path, bool create_groups_in_path );
 
   /*!
    * \brief Const private method that returns the Group that is the
@@ -1280,7 +1280,7 @@ private:
    * following the last "/" in the input (if there is one) or the entire
    * input path string if it contains no "/".
    */
-  const DataGroup * walkPath(std::string& path ) const;
+  const Group * walkPath(std::string& path ) const;
 
   /*!
    * \brief Private method to rename this Group if possible, give warning if
@@ -1292,13 +1292,13 @@ private:
    */
   void renameOrWarn(const std::string& new_name);
 
-  /// Name of this DataGroup object.
+  /// Name of this Group object.
   std::string m_name;
 
-  /// Parent DataGroup of this DataGroup object.
-  DataGroup * m_parent;
+  /// Parent Group of this Group object.
+  Group * m_parent;
 
-  /// This DataGroup object lives in the tree of this DataStore object.
+  /// This Group object lives in the tree of this DataStore object.
   DataStore * m_datastore;
 
   /// Character used to denote a path string passed to get/create calls.
@@ -1308,14 +1308,14 @@ private:
   //
   typedef MapCollection<DataView> DataViewCollection;
   //
-  typedef MapCollection<DataGroup> DataGroupCollection;
+  typedef MapCollection<Group> GroupCollection;
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Views
   DataViewCollection * m_view_coll;
 
   /// Collection of child Groups
-  DataGroupCollection * m_group_coll;
+  GroupCollection * m_group_coll;
 
 };
 

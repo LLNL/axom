@@ -402,12 +402,12 @@ DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer end class.DataView.method.get_data_double
 }
 
-SIDRE_datagroup * SIDRE_dataview_get_owning_group(SIDRE_dataview * self)
+SIDRE_group * SIDRE_dataview_get_owning_group(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_owning_group
-    DataGroup * rv = selfobj->getOwningGroup();
-    return static_cast<SIDRE_datagroup *>(static_cast<void *>(rv));
+    Group * rv = selfobj->getOwningGroup();
+    return static_cast<SIDRE_group *>(static_cast<void *>(rv));
 // splicer end class.DataView.method.get_owning_group
 }
 

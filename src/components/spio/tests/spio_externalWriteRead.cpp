@@ -18,7 +18,7 @@
 #include "mpi.h"
 
 using axom::spio::IOManager;
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
 using axom::sidre::DataView;
@@ -58,13 +58,13 @@ int main(int argc, char** argv)
    */
   DataStore * ds1 = new DataStore();
 
-  DataGroup * root1 = ds1->getRoot();
+  Group * root1 = ds1->getRoot();
 
-  DataGroup * flds = root1->createGroup("fields");
-  DataGroup * flds2 = root1->createGroup("fields2");
+  Group * flds = root1->createGroup("fields");
+  Group * flds2 = root1->createGroup("fields2");
 
-  DataGroup * ga = flds->createGroup("a");
-  DataGroup * gb = flds2->createGroup("b");
+  Group * ga = flds->createGroup("a");
+  Group * gb = flds2->createGroup("b");
   ga->createView("external_array", axom::sidre::INT_ID, nvals, orig_vals1);
   gb->createView("external_undescribed")->setExternalDataPtr(orig_vals2);
 
@@ -80,7 +80,7 @@ int main(int argc, char** argv)
    * Create another DataStore than holds nothing but the root group.
    */
   DataStore * ds2 = new DataStore();
-  DataGroup * root2 = ds2->getRoot();
+  Group * root2 = ds2->getRoot();
 
   /*
    * Read from the files that were written above.

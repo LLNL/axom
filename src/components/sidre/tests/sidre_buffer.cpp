@@ -16,7 +16,7 @@
 using axom::sidre::DataStore;
 using axom::sidre::Buffer;
 using axom::sidre::DataType;
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataView;
 using axom::sidre::IndexType;
 using axom::sidre::SidreLength;
@@ -212,7 +212,7 @@ TEST(sidre_buffer,realloc_buffer)
 TEST(sidre_buffer, create_buffer_view)
 {
   DataStore * ds   = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
   const SidreLength len = 11;
   const int ndims = 1;
@@ -295,7 +295,7 @@ TEST(sidre_buffer, create_buffer_view)
 TEST(sidre_buffer,with_multiple_views)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
   Buffer * dbuff;
   DataView * dv1, * dv2;
 
@@ -330,7 +330,7 @@ TEST(sidre_buffer,with_multiple_views)
 TEST(sidre_buffer,move_buffer)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
   Buffer * dbuff, * dbuff2;
   DataView * dv1, * dv2;
 

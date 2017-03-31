@@ -28,18 +28,18 @@ contains
   !------------------------------------------------------------------------------
   subroutine get_name
     type(datastore) ds
-    type(datagroup) root, group, group2
+    type(group) root, grp, grp2
 
     call set_case_name("get_name")
 
     ds = datastore_new()
     root = ds%get_root()
-    group = root%create_group("test")
+    grp = root%create_group("test")
 
-    call assert_true(group%get_name() == "test" )
+    call assert_true(grp%get_name() == "test" )
 
-    group2 = root%get_group("foo")
-    call assert_false( group2%associated() )
+    grp2 = root%get_group("foo")
+    call assert_false( grp2%associated() )
     
     call ds%delete()
   end subroutine get_name
@@ -49,7 +49,7 @@ contains
   !------------------------------------------------------------------------------
   subroutine get_parent
     type(datastore) ds
-    type(datagroup) root, parent, child
+    type(group) root, parent, child
 
     call set_case_name("get_parent")
 
@@ -68,17 +68,17 @@ contains
 !------------------------------------------------------------------------------
   subroutine get_datastore
     type(datastore) ds, const_ds
-    type(datagroup) root, group
+    type(group) root, grp
 
     call set_case_name("get_datastore")
 
     ds = datastore_new()
     root = ds%get_root()
-    group = root%create_group("parent")
+    grp = root%create_group("parent")
 
-    call assert_true( group%get_data_store() == ds )
+    call assert_true( grp%get_data_store() == ds )
 
-    const_ds = group%get_data_store()
+    const_ds = grp%get_data_store()
     call assert_true( const_ds == ds )
 
     call ds%delete()
@@ -89,7 +89,7 @@ contains
   !------------------------------------------------------------------------------
   subroutine get_group
     type(datastore) ds
-    type(datagroup) root, parent, child, child1, errgrp
+    type(group) root, parent, child, child1, errgrp
 
     call set_case_name("has_group")
 
@@ -115,7 +115,7 @@ contains
 !------------------------------------------------------------------------------
   subroutine get_view
     type(datastore) ds
-    type(datagroup) root,parent
+    type(group) root,parent
     type(dataview) view, view2
 
     call set_case_name("get_view")
@@ -141,7 +141,7 @@ contains
 !------------------------------------------------------------------------------
   subroutine get_view_name_index
     type(datastore) ds
-    type(datagroup) root, parent
+    type(group) root, parent
     type(dataview) view1, view2
     integer idx1, idx2, idx3    ! IndexType
     character(len=MAXNAMESIZE) name1, name2, name3
@@ -184,7 +184,7 @@ contains
 !------------------------------------------------------------------------------
   subroutine get_first_and_next_view_index
     type(datastore) ds
-    type(datagroup) root, parent, emptygroup
+    type(group) root, parent, emptygrp
     type(dataview) view1, view2
     integer idx1, idx2, idx3, badidx1, badidx2    ! IndexType
     character(len=30) name1, name2, name3
@@ -200,7 +200,7 @@ contains
 
     call assert_true(parent%get_num_views() == 2)
 
-    emptyGroup = root%create_group("emptyGroup")
+    emptygrp = root%create_group("emptyGroup")
 
     call assert_true(parent%get_num_views() == 2)
 
@@ -217,8 +217,8 @@ contains
     call assert_true(view2%get_name() == "view2")
 
     ! check error conditions
-    badidx1 = emptygroup%get_first_valid_view_index()
-    badidx2 = emptygroup%get_next_valid_view_index(badidx1)
+    badidx1 = emptygrp%get_first_valid_view_index()
+    badidx2 = emptygrp%get_next_valid_view_index(badidx1)
 
 !    EXPECT_TRUE(badidx1 == InvalidIndex)
 !    EXPECT_TRUE(badidx2 == InvalidIndex)
@@ -231,7 +231,7 @@ contains
 !------------------------------------------------------------------------------
   subroutine get_group_name_index
     type(datastore) ds
-    type(datagroup) root, parent, group1, group2
+    type(group) root, parent, grp1, grp2
     integer idx1, idx2, idx3     ! IndexType
     character(len=MAXNAMESIZE) name1, name2, name3
 
@@ -241,25 +241,25 @@ contains
     root = ds%get_root()
 
     parent = root%create_group("parent")
-    group1 = parent%create_group("group1")
-    group2 = parent%create_group("group2")
+    grp1 = parent%create_group("grp1")
+    grp2 = parent%create_group("grp2")
 
 !--    call assert_equals(parent%get_num_groups(), 2)  ! size_t
     call assert_true(parent%get_num_groups() == 2)
 
-    idx1 = parent%get_group_index("group1")
-    idx2 = parent%get_group_index("group2")
+    idx1 = parent%get_group_index("grp1")
+    idx2 = parent%get_group_index("grp2")
 
     name1 = parent%get_group_name(idx1)
     name2 = parent%get_group_name(idx2)
 
-    call assert_equals(name1, "group1")
-    call assert_equals(group1%get_name(), name1)
+    call assert_equals(name1, "grp1")
+    call assert_equals(grp1%get_name(), name1)
 
-    call assert_equals(name2, "group2")
-    call assert_equals(group2%get_name(), name2)
+    call assert_equals(name2, "grp2")
+    call assert_equals(grp2%get_name(), name2)
 
-    idx3 = parent%get_group_index("group3")
+    idx3 = parent%get_group_index("grp3")
     call assert_equals(idx3, invalid_index)
 
     name3 = parent%get_group_name(idx3)
@@ -276,47 +276,47 @@ contains
   !------------------------------------------------------------------------------
   subroutine create_destroy_has_view
     type(datastore) ds
-    type(datagroup) root,group
+    type(group) root,grp
     type(dataview) view, view1, view2
 
     call set_case_name("create_destroy_has_view")
 
     ds = datastore_new()
     root = ds%get_root()
-    group = root%create_group("parent")
+    grp = root%create_group("parent")
 
-    view = group%create_view("view")
-    call assert_true( group%get_parent() == root )
+    view = grp%create_view("view")
+    call assert_true( grp%get_parent() == root )
     call assert_false( view%has_buffer() )
 
-    call assert_true( group%has_view("view") )
+    call assert_true( grp%has_view("view") )
     ! try creating view again, should be a no-op.
-    view1 = group%create_view("view")
+    view1 = grp%create_view("view")
     call assert_false( view1%associated() )
 
-    call group%destroy_view("view")
+    call grp%destroy_view("view")
 
-    call assert_false( group%has_view("view"), 'group%has_view("view")')
+    call assert_false( grp%has_view("view"), 'grp%has_view("view")')
 
     ! try api call that specifies specific type and length
-    view1 = group%create_view_and_allocate( "viewWithLength1", SIDRE_FLOAT_ID, 50 )
+    view1 = grp%create_view_and_allocate( "viewWithLength1", SIDRE_FLOAT_ID, 50 )
 
     ! error condition check - try again with duplicate name, should be a no-op
-!XXX    view1 = group%create_view_and_allocate( "viewWithLength1", SIDRE_FLOAT64_ID, 50 )
+!XXX    view1 = grp%create_view_and_allocate( "viewWithLength1", SIDRE_FLOAT64_ID, 50 )
 !XXX    call assert_true( view1%associated() )
-    call group%destroy_view_and_data("viewWithLength1")
-    call assert_false( group%has_view("viewWithLength1"), &
-         'group%has_view("viewWithLength1"' )
+    call grp%destroy_view_and_data("viewWithLength1")
+    call assert_false( grp%has_view("viewWithLength1"), &
+         'grp%has_view("viewWithLength1"' )
 
-    view1 = group%create_view_and_allocate( "viewWithLengthBadLen", SIDRE_FLOAT64_ID, -1 )
+    view1 = grp%create_view_and_allocate( "viewWithLengthBadLen", SIDRE_FLOAT64_ID, -1 )
     call assert_false( view1%associated(), 'view1%associated()' )
 
     ! try api call that specifies data type in another way
-    view1 = group%create_view_and_allocate( "viewWithLength2", SIDRE_FLOAT64_ID, 50 )
-    view2 = group%create_view_and_allocate( "viewWithLength2", SIDRE_FLOAT64_ID, 50 )
+    view1 = grp%create_view_and_allocate( "viewWithLength2", SIDRE_FLOAT64_ID, 50 )
+    view2 = grp%create_view_and_allocate( "viewWithLength2", SIDRE_FLOAT64_ID, 50 )
     call assert_false( view2%associated(), 'view2%associated()')
     ! destroy this view using index
-    call group%destroy_view_and_data( group%get_first_valid_view_index() )
+    call grp%destroy_view_and_data( grp%get_first_valid_view_index() )
 
     call ds%delete()
 
@@ -329,21 +329,21 @@ contains
   !------------------------------------------------------------------------------
   subroutine create_destroy_has_group
     type(datastore) ds
-    type(datagroup) root, group, group2
+    type(group) root, grp, grp2
 
     call set_case_name("create_destroy_has_group")
 
     ds = datastore_new()
     root = ds%get_root()
-    group = root%create_group("group")
-    call assert_true( group%get_parent() == root )
+    grp = root%create_group("grp")
+    call assert_true( grp%get_parent() == root )
 
-    call assert_true( root%has_group("group") )
+    call assert_true( root%has_group("grp") )
 
-    call root%destroy_group("group")
-    call assert_false( root%has_group("group") )
+    call root%destroy_group("grp")
+    call assert_false( root%has_group("grp") )
 
-    group2 = root%create_group("group2")
+    grp2 = root%create_group("grp2")
     call root%destroy_group( root%get_first_valid_group_index() )
 
     call ds%delete()
@@ -352,7 +352,7 @@ contains
   !------------------------------------------------------------------------------
   subroutine group_name_collisions
     type(datastore) ds
-    type(datagroup) root, flds, badgroup
+    type(group) root, flds, badgrp
     type(dataview) view
 
     call set_case_name("group_name_collisions")
@@ -366,8 +366,8 @@ contains
 
     ! attempt to create duplicate group name
 
-    badGroup = root%create_group("fields")
-    call assert_false( badgroup%associated() )
+    badgrp = root%create_group("fields")
+    call assert_false( badgrp%associated() )
 
     ! check error condition
     ! attempt to create duplicate view name.
@@ -381,7 +381,7 @@ contains
 ! Restore this after copy_move is working. ATK-667
   subroutine view_copy_move
     type(datastore) ds
-    type(datagroup) root, flds, subgrp
+    type(group) root, flds, subgrp
     type(dataview) i0_view, f0_view, d0_view, tmpview
 
     call set_case_name("view_copy_move")
@@ -426,8 +426,8 @@ contains
   !------------------------------------------------------------------------------
   subroutine groups_move_copy
     type(datastore) ds
-    type(datagroup) root, flds, ga, gb, gc
-    type(datagroup) subgrp, tmpgrp
+    type(group) root, flds, ga, gb, gc
+    type(group) subgrp, tmpgrp
     type(dataview) i0_view, f0_view, d0_view, tmpview
 
     call set_case_name("groups_move_copy")
@@ -467,7 +467,7 @@ contains
   !------------------------------------------------------------------------------
   subroutine create_destroy_view_and_data
     type(datastore) ds
-    type(datagroup) root, grp
+    type(group) root, grp
     type(dataview) view1, view2
     type(buffer) tmpbuf
 !XX    type(buffer) buffer1, tmpbuf
@@ -514,7 +514,7 @@ contains
   !------------------------------------------------------------------------------
   subroutine create_destroy_alloc_view_and_data
     type(datastore) ds
-    type(datagroup) root, grp
+    type(group) root, grp
     type(dataview) view1
     integer i
     character(len=30) view_name1, view_name2
@@ -554,7 +554,7 @@ contains
   !------------------------------------------------------------------------------
   subroutine create_view_of_buffer_with_datatype
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview) base
     type(buffer) base_buff
     integer(C_INT), pointer :: base_vals(:)
@@ -595,7 +595,7 @@ contains
     character(80) file_path
     integer i
     type(datastore) ds1, ds2
-    type(datagroup) root1, root2
+    type(group) root1, root2
 
     call set_case_name("save_restore_empty_datastore")
 
@@ -633,7 +633,7 @@ contains
     character(80) file_path
     integer i
     type(datastore) ds1, ds2
-    type(datagroup) root1, root2
+    type(group) root1, root2
     type(dataview) view
 
     integer(C_INT) :: i0
@@ -703,7 +703,7 @@ contains
     integer rank
     integer(SIDRE_LENGTH) extents(7)
     type(datastore) ds1, ds2
-    type(datagroup) root1, root2
+    type(group) root1, root2
     type(dataview) view1, view2, view3, view4
 
     call set_case_name("save_restore_external_data")
@@ -800,7 +800,7 @@ contains
     integer(SIDRE_LENGTH) :: shape1(2), shape2(7)
     integer rank
     type(datastore) ds1, ds2
-    type(datagroup) root1, root2
+    type(group) root1, root2
     type(dataview) view1, view2, view3, view4
 
     call set_case_name("save_restore_other")
@@ -869,7 +869,7 @@ contains
   !------------------------------------------------------------------------------
   subroutine rename_group
     type(datastore) ds
-    type(datagroup) root, child1, child2, child3
+    type(group) root, child1, child2, child3
 
     call set_case_name("rename_group")
 
@@ -894,7 +894,7 @@ contains
   !------------------------------------------------------------------------------
   subroutine save_restore_simple
     type(datastore) ds, ds2
-    type(datagroup) root, root2, flds, ga
+    type(group) root, root2, flds, ga
     type(dataview) i0_view
 
     call set_case_name("save_restore_simple")
@@ -939,8 +939,8 @@ contains
   !------------------------------------------------------------------------------
   subroutine save_restore_complex
     type(datastore) ds, ds2
-    type(datagroup) root, flds, root2
-    type(datagroup) ga, gb, gc
+    type(group) root, flds, root2
+    type(group) ga, gb, gc
     type(dataview) i0_view, f0_view, d0_view
     
     call set_case_name("save_restore_complex")

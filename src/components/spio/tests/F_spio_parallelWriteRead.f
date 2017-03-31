@@ -26,13 +26,13 @@ program spio_parallel_write_read
   integer, pointer :: i1_vals(:), i2_vals(:)
 
   type(datastore) ds1, ds2
-  type(datagroup) root1, root2
-  type(datagroup) flds, flds2
-  type(datagroup) ga, gb
+  type(group) root1, root2
+  type(group) flds, flds2
+  type(group) ga, gb
   type(dataview)  view1, view2
 
   type(datastore) dsextra
-  type(datagroup) extra_root, extra, child
+  type(group) extra_root, extra, child
   type(dataview) view
 
   type(iomanager) writer, reader

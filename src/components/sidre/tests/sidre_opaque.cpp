@@ -12,7 +12,7 @@
 
 #include "sidre/sidre.hpp"
 
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataView;
 using axom::sidre::DataType;
@@ -103,9 +103,9 @@ TEST(sidre_opaque,basic_inout)
   const int ihi_val = 9;
 
   DataStore * ds   = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
-  DataGroup * problem_gp = root->createGroup("problem");
+  Group * problem_gp = root->createGroup("problem");
 
   Extent * ext = new Extent(0, ihi_val);
 
@@ -165,12 +165,12 @@ TEST(sidre_opaque,meshvar)
   const int node_var_depth = 2;
 
   DataStore * ds   = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
-  DataGroup * problem_gp = root->createGroup("problem");
+  Group * problem_gp = root->createGroup("problem");
 
   // Add two different mesh vars to mesh var group
-  DataGroup * meshvar_gp = problem_gp->createGroup("mesh_var");
+  Group * meshvar_gp = problem_gp->createGroup("mesh_var");
   MeshVar * zone_mv = new MeshVar(_Zone_, _Int_, zone_var_depth);
   DataView * zone_mv_view = meshvar_gp->createView("zone_mv", zone_mv);
   EXPECT_EQ(zone_mv, zone_mv_view->getVoidPtr());
@@ -185,7 +185,7 @@ TEST(sidre_opaque,meshvar)
   //
   for (int idom = 0 ; idom < NUM_DOMAINS ; ++idom)
   {
-    DataGroup * dom_gp = problem_gp->createGroup(dom_name[idom]);
+    Group * dom_gp = problem_gp->createGroup(dom_name[idom]);
     Extent * dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
     dom_gp->createView("ext", dom_ext);
     EXPECT_EQ(dom_ext, dom_gp->getView("ext")->getVoidPtr());
@@ -212,7 +212,7 @@ TEST(sidre_opaque,meshvar)
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
 
-    DataGroup * dom_gp = problem_gp->getGroup(dom_name[idom]);
+    Group * dom_gp = problem_gp->getGroup(dom_name[idom]);
     Extent * dom_ext = static_cast<Extent *>(
       dom_gp->getView("ext")->getVoidPtr() );
 

@@ -17,13 +17,13 @@
 TEST(C_sidre_view,create_views)
 {
   SIDRE_datastore * ds   = SIDRE_datastore_new();
-  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_group * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv_0 =
-    SIDRE_datagroup_create_view_and_allocate_nelems(root, "field0",
+    SIDRE_group_create_view_and_allocate_nelems(root, "field0",
                                                     SIDRE_INT_ID, 1);
   SIDRE_dataview * dv_1 =
-    SIDRE_datagroup_create_view_and_allocate_nelems(root, "field1",
+    SIDRE_group_create_view_and_allocate_nelems(root, "field1",
                                                     SIDRE_INT_ID, 1);
 
   SIDRE_buffer * db_0 = SIDRE_dataview_get_buffer(dv_0);
@@ -39,10 +39,10 @@ TEST(C_sidre_view,create_views)
 TEST(C_sidre_view,int_buffer_from_view)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
-  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_group * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv =
-    SIDRE_datagroup_create_view_and_allocate_nelems(root, "u0", SIDRE_INT_ID,
+    SIDRE_group_create_view_and_allocate_nelems(root, "u0", SIDRE_INT_ID,
                                                     10);
 
   EXPECT_EQ(SIDRE_dataview_get_type_id(dv), SIDRE_INT_ID);
@@ -66,10 +66,10 @@ TEST(C_sidre_view,int_buffer_from_view)
 TEST(C_sidre_view,int_buffer_from_view_conduit_value)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
-  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_group * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv =
-    SIDRE_datagroup_create_view_and_allocate_nelems(root, "u0", SIDRE_INT_ID,
+    SIDRE_group_create_view_and_allocate_nelems(root, "u0", SIDRE_INT_ID,
                                                     10);
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
 
@@ -97,7 +97,7 @@ TEST(C_sidre_view,int_array_strided_views)
   const unsigned int elt_bytes = sizeof(int);
 
   SIDRE_datastore * ds = SIDRE_datastore_new();
-  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_group * root = SIDRE_datastore_get_root(ds);
   SIDRE_buffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
                                                                      SIDRE_INT_ID,
                                                                      num_elts);
@@ -115,9 +115,9 @@ TEST(C_sidre_view,int_array_strided_views)
   EXPECT_EQ(num_elts * elt_bytes, SIDRE_buffer_get_total_bytes(dbuff));
 
 
-  SIDRE_dataview * dv_e = SIDRE_datagroup_create_view_into_buffer(root, "even",
+  SIDRE_dataview * dv_e = SIDRE_group_create_view_into_buffer(root, "even",
                                                                   dbuff);
-  SIDRE_dataview * dv_o = SIDRE_datagroup_create_view_into_buffer(root, "odd",
+  SIDRE_dataview * dv_o = SIDRE_group_create_view_into_buffer(root, "odd",
                                                                   dbuff);
   EXPECT_TRUE(dv_e != NULL);
   EXPECT_TRUE(dv_o != NULL);
@@ -158,9 +158,9 @@ TEST(C_sidre_view,int_array_strided_views)
 
   // Run similar test to above with different view apply method
   SIDRE_dataview * dv_e1 =
-    SIDRE_datagroup_create_view_into_buffer(root, "even1", dbuff);
+    SIDRE_group_create_view_into_buffer(root, "even1", dbuff);
   SIDRE_dataview * dv_o1 =
-    SIDRE_datagroup_create_view_into_buffer(root, "odd1", dbuff);
+    SIDRE_group_create_view_into_buffer(root, "odd1", dbuff);
   EXPECT_TRUE(dv_e1 != NULL);
   EXPECT_TRUE(dv_o1 != NULL);
   EXPECT_EQ(SIDRE_buffer_get_num_views(dbuff), 4u);
@@ -207,7 +207,7 @@ TEST(C_sidre_view,int_array_strided_views)
 TEST(C_sidre_view,int_array_depth_view)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
-  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_group * root = SIDRE_datastore_get_root(ds);
 
   const size_t depth_nelems = 10;
   SIDRE_buffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
@@ -235,7 +235,7 @@ TEST(C_sidre_view,int_array_depth_view)
 
   for (int id = 0 ; id < 4 ; ++id)
   {
-    views[id] = SIDRE_datagroup_create_view_into_buffer(root, view_names[id],
+    views[id] = SIDRE_group_create_view_into_buffer(root, view_names[id],
                                                         dbuff);
     view_offsets[id] = id*depth_nelems;
 
@@ -275,18 +275,18 @@ TEST(C_sidre_view,int_array_depth_view)
 TEST(sidre_view,int_array_view_attach_buffer)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
-  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_group * root = SIDRE_datastore_get_root(ds);
 
   const size_t field_nelems = 10;
 
   // create 2 "field" views with type and # elems
   size_t elem_count = 0;
   SIDRE_dataview * field0 =
-    SIDRE_datagroup_create_view_from_type(root,"field0",
+    SIDRE_group_create_view_from_type(root,"field0",
                                           SIDRE_INT_ID, field_nelems);
   elem_count += SIDRE_dataview_get_num_elements(field0);
   SIDRE_dataview * field1 =
-    SIDRE_datagroup_create_view_from_type(root, "field1",
+    SIDRE_group_create_view_from_type(root, "field1",
                                           SIDRE_INT_ID, field_nelems);
   elem_count += SIDRE_dataview_get_num_elements(field1);
   EXPECT_EQ(elem_count, 2 * field_nelems);
@@ -359,13 +359,13 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   // create our main data store
   SIDRE_datastore * ds = SIDRE_datastore_new();
   // get access to our root data Group
-  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_group * root = SIDRE_datastore_get_root(ds);
 
   // create a group to hold the "old" or data we want to copy
-  SIDRE_datagroup * r_old = SIDRE_datagroup_create_group(root, "r_old");
+  SIDRE_group * r_old = SIDRE_group_create_group(root, "r_old");
   // create a view to hold the base buffer
   SIDRE_dataview * base_old =
-    SIDRE_datagroup_create_view_and_allocate_nelems(r_old, "base_data",
+    SIDRE_group_create_view_and_allocate_nelems(r_old, "base_data",
                                                     SIDRE_INT_ID, 40);
 
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(base_old);
@@ -432,9 +432,9 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   }
 
   // create a group to hold the "old" or data we want to copy into
-  SIDRE_datagroup * r_new = SIDRE_datagroup_create_group(root, "r_new");
+  SIDRE_group * r_new = SIDRE_group_create_group(root, "r_new");
   // create a view to hold the base buffer
-  SIDRE_dataview * base_new = SIDRE_datagroup_create_view_and_buffer_simple(
+  SIDRE_dataview * base_new = SIDRE_group_create_view_and_buffer_simple(
     r_new, "base_data");
 
   // alloc our buffer
@@ -450,10 +450,10 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   buff_new->getNode().print();
 
   // create the 4 sub views of this array
-  SIDRE_dataview * r0_new = SIDRE_datagroup_create_view(r_new, "r0",buff_new);
-  SIDRE_dataview * r1_new = SIDRE_datagroup_create_view(r_new, "r1",buff_new);
-  SIDRE_dataview * r2_new = SIDRE_datagroup_create_view(r_new, "r2",buff_new);
-  SIDRE_dataview * r3_new = SIDRE_datagroup_create_view(r_new, "r3",buff_new);
+  SIDRE_dataview * r0_new = SIDRE_group_create_view(r_new, "r0",buff_new);
+  SIDRE_dataview * r1_new = SIDRE_group_create_view(r_new, "r1",buff_new);
+  SIDRE_dataview * r2_new = SIDRE_group_create_view(r_new, "r2",buff_new);
+  SIDRE_dataview * r3_new = SIDRE_group_create_view(r_new, "r3",buff_new);
 
   // apply views to r0,r1,r2,r3
   // each view is offset by 12 * the # of bytes in a uint32
@@ -519,14 +519,14 @@ TEST(C_sidre_view,int_array_realloc)
   // create our main data store
   SIDRE_datastore * ds = SIDRE_datastore_new();
   // get access to our root data Group
-  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_group * root = SIDRE_datastore_get_root(ds);
 
   // create a view to hold the base buffer
   SIDRE_dataview * a1 =
-    SIDRE_datagroup_create_view_and_allocate_nelems(root, "a1",
+    SIDRE_group_create_view_and_allocate_nelems(root, "a1",
                                                     SIDRE_FLOAT_ID, 5);
   SIDRE_dataview * a2 =
-    SIDRE_datagroup_create_view_and_allocate_nelems(root, "a2",
+    SIDRE_group_create_view_and_allocate_nelems(root, "a2",
                                                     SIDRE_INT_ID, 5);
 
   float * a1_ptr = (float *)SIDRE_dataview_get_void_ptr(a1);
@@ -586,14 +586,14 @@ TEST(C_sidre_view,simple_opaque)
   // create our main data store
   SIDRE_datastore * ds = SIDRE_datastore_new();
   // get access to our root data Group
-  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_group * root = SIDRE_datastore_get_root(ds);
   int * src_data = (int *) malloc(sizeof(int));
 
   src_data[0] = 42;
 
   void * src_ptr = (void *)src_data;
 
-  SIDRE_dataview * opq_view = SIDRE_datagroup_create_view_external(root,
+  SIDRE_dataview * opq_view = SIDRE_group_create_view_external(root,
                                                                    "my_opaque",
                                                                    src_ptr);
 

@@ -27,7 +27,7 @@
 
 // Sidre component headers
 #include "Buffer.hpp"
-#include "DataGroup.hpp"
+#include "Group.hpp"
 #include "DataStore.hpp"
 
 namespace axom
@@ -39,7 +39,7 @@ namespace sidre
  *************************************************************************
  *
  * Return path of View's owning Group object.
- * Needs to be in the .cpp file because DataGroup methods aren't
+ * Needs to be in the .cpp file because Group methods aren't
  * accessible in .hpp file.
  *
  *************************************************************************
@@ -53,7 +53,7 @@ std::string DataView::getPath() const
  *************************************************************************
  *
  * Return full path of View object, including its name.
- * Needs to be in the .cpp file because DataGroup methods aren't
+ * Needs to be in the .cpp file because Group methods aren't
  * accessible in .hpp file.
  *
  *************************************************************************
@@ -1230,7 +1230,7 @@ bool DataView::rename(const std::string& new_name)
   bool do_rename = true;
   if (new_name != m_name) {
 
-    DataGroup * parent = getOwningGroup();
+    Group * parent = getOwningGroup();
     SLIC_CHECK(parent != AXOM_NULLPTR);
 
     if (new_name.empty()) {

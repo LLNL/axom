@@ -56,7 +56,7 @@ program main
   ! and calling MPI_Finalize() at the end of main()
 
   type(datastore) ds
-  type(datagroup) root, prob
+  type(group) root, prob
   type(dataview) tmpview
 
   integer(C_INT) numTotalCycles, dumpInterval
@@ -95,7 +95,7 @@ program main
 contains
 
   subroutine CreateScalarIntBufferViewAndSetVal(grp, name, value)
-    type(datagroup) grp
+    type(group) grp
     character(*) name
     integer(C_INT) value
     type(dataview) tmpview
@@ -105,7 +105,7 @@ contains
 
 
   subroutine CreateScalarFloatBufferViewAndSetVal(grp, name, value)
-    type(datagroup) grp
+    type(group) grp
     character(*) name
     real(C_DOUBLE) value
     type(dataview) tmpview
@@ -120,7 +120,7 @@ contains
 
 subroutine GetUserInput(prob)
 
-  type(datagroup), intent(IN) :: prob
+  type(group), intent(IN) :: prob
   real(C_DOUBLE) :: pratio, dratio
   integer(C_INT) numUltraDumps, numCyclesPerDump
   integer(C_INT) numElems, numFaces
@@ -212,9 +212,9 @@ end subroutine GetUserInput
 !**************************************************************************
 
 subroutine CreateShockTubeMesh(prob)
-  type(datagroup), intent(IN) :: prob
-  type(datagroup) elem, face, tube
-  type(datagroup) ingrp, outgrp  ! XXX unused
+  type(group), intent(IN) :: prob
+  type(group) elem, face, tube
+  type(group) ingrp, outgrp  ! XXX unused
   type(dataview) tmpview
   type(dataview) mapToElemsView
   type(dataview) faceToElemView
@@ -298,10 +298,10 @@ end subroutine CreateShockTubeMesh
 !************************************************************************
 
 subroutine InitializeShockTube(prob)
-  type(datagroup), intent(IN) :: prob
+  type(group), intent(IN) :: prob
   integer i
 
-  type(datagroup) elem, face
+  type(group) elem, face
   type(dataview) tmpview
   integer(C_INT) numElems, numFaces
   integer startTube
@@ -414,9 +414,9 @@ end subroutine InitializeShockTube
 !*************************************************************************
 
 subroutine ComputeFaceInfo(prob)
-  type(datagroup), intent(IN) :: prob
+  type(group), intent(IN) :: prob
 
-  type(datagroup) face, elem
+  type(group) face, elem
   type(dataview) tmpview
 
   integer i
@@ -534,8 +534,8 @@ end subroutine ComputeFaceInfo
 !*************************************************************************
 
 subroutine UpdateElemInfo(prob)
-  type(datagroup), intent(IN) :: prob
-  type(datagroup) elem, face, tube
+  type(group), intent(IN) :: prob
+  type(group) elem, face, tube
   type(dataview) tmpview
 
   real(C_DOUBLE) dx, dt
@@ -611,10 +611,10 @@ subroutine UpdateElemInfo(prob)
 end subroutine UpdateElemInfo
 
 subroutine DumpUltra( prob )
-  type(datagroup), intent(IN) :: prob
+  type(group), intent(IN) :: prob
   character(100) fname
 
-  type(datagroup) elem
+  type(group) elem
   type(dataview) view
   integer, parameter :: fp = 8
   integer i, j

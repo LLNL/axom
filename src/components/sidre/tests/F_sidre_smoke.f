@@ -31,7 +31,7 @@ contains
 
   subroutine valid_invalid
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     integer idx
     character(10) name
 

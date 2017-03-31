@@ -136,11 +136,11 @@ class SidreGroup(unittest.TestCase):
         ds = sidre.DataStore()
         root = ds.getRoot()
 
-#  DataGroup * parent = root->createGroup("parent")
+#  Group * parent = root->createGroup("parent")
 #  DataView * view1 = parent->createView("view1")
 #  DataView * view2 = parent->createView("view2")
 #
-#  DataGroup * emptyGroup = root->createGroup("emptyGroup")
+#  Group * emptyGroup = root->createGroup("emptyGroup")
 #
 #  EXPECT_EQ(parent->getNumViews(), 2u)
 #

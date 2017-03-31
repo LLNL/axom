@@ -20,7 +20,7 @@ contains
     integer, pointer :: ipointer(:)
 
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview)  view
     integer type
     integer num_elements
@@ -67,7 +67,7 @@ contains
     integer, pointer :: ipointer(:)
 
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview)  view
     integer type
     integer num_elements
@@ -120,7 +120,7 @@ contains
     integer, pointer :: ipointer(:,:,:)
 
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview)  view
     integer type
     integer num_elements
@@ -181,7 +181,7 @@ contains
     integer, pointer :: ipointer(:)
 
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview)  view
     integer type
     integer num_elements
@@ -220,7 +220,7 @@ contains
     real(C_DOUBLE), pointer :: dpointer(:)
 
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview)  view
     integer num_elements
     integer type
@@ -263,7 +263,7 @@ contains
     integer, pointer :: ipointer(:,:,:)
 
     type(datastore) ds
-    type(datagroup) root
+    type(group) root
     type(dataview)  view
     integer type
     integer num_elements

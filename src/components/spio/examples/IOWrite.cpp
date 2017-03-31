@@ -18,11 +18,11 @@
 #include "slic/UnitTestLogger.hpp"
 
 #include "common/FileUtilities.hpp"
-#include "sidre/DataGroup.hpp"
+#include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
 #include "spio/IOManager.hpp"
 
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
 using axom::spio::IOManager;
@@ -56,13 +56,13 @@ int main(int argc, char * argv[])
 
   DataStore * ds = new DataStore();
   SLIC_ASSERT(ds);
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
-  DataGroup * flds = root->createGroup("fields");
-  DataGroup * flds2 = root->createGroup("fields2");
+  Group * flds = root->createGroup("fields");
+  Group * flds2 = root->createGroup("fields2");
 
-  DataGroup * ga = flds->createGroup("a");
-  DataGroup * gb = flds2->createGroup("b");
+  Group * ga = flds->createGroup("a");
+  Group * gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", my_rank + 101);
   gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
 
@@ -78,9 +78,9 @@ int main(int argc, char * argv[])
 
   MPI_Barrier(MPI_COMM_WORLD);
   if (my_rank == 0) {
-    DataGroup * extra = root->createGroup("extra");
+    Group * extra = root->createGroup("extra");
     extra->createViewScalar<double>("dval", 1.1);
-    DataGroup * child = extra->createGroup("child");
+    Group * child = extra->createGroup("child");
     child->createViewScalar<int>("ival", 7);
     child->createViewString("word0", "hello");
     child->createViewString("word1", "world");
