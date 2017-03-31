@@ -110,7 +110,7 @@ bool Group::hasView( const std::string& path ) const
  *
  *************************************************************************
  */
-DataView * Group::getView( const std::string& path )
+View * Group::getView( const std::string& path )
 {
   std::string intpath(path);
   bool create_groups_in_path = false;
@@ -137,7 +137,7 @@ DataView * Group::getView( const std::string& path )
  *
  *************************************************************************
  */
-const DataView * Group::getView( const std::string& path ) const
+const View * Group::getView( const std::string& path ) const
 {
   std::string intpath(path);
   const Group * group = walkPath( intpath );
@@ -171,7 +171,7 @@ const DataView * Group::getView( const std::string& path ) const
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path )
+View * Group::createView( const std::string& path )
 {
   std::string intpath(path);
   bool create_groups_in_path = true;
@@ -199,7 +199,7 @@ DataView * Group::createView( const std::string& path )
     return AXOM_NULLPTR;
   }
 
-  DataView * view = new(std::nothrow) DataView(intpath);
+  View * view = new(std::nothrow) View(intpath);
   if ( view != AXOM_NULLPTR )
   {
     group->attachView(view);
@@ -215,7 +215,7 @@ DataView * Group::createView( const std::string& path )
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path,
+View * Group::createView( const std::string& path,
                                   TypeID type,
                                   SidreLength num_elems )
 {
@@ -230,7 +230,7 @@ DataView * Group::createView( const std::string& path,
     return AXOM_NULLPTR;
   }
 
-  DataView * view = createView(path);
+  View * view = createView(path);
   if (view != AXOM_NULLPTR)
   {
     view->describe(type, num_elems);
@@ -246,7 +246,7 @@ DataView * Group::createView( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path,
+View * Group::createView( const std::string& path,
                                   TypeID type,
                                   int ndims,
                                   SidreLength * shape )
@@ -265,7 +265,7 @@ DataView * Group::createView( const std::string& path,
     return AXOM_NULLPTR;
   }
 
-  DataView * view = createView(path);
+  View * view = createView(path);
   if (view != AXOM_NULLPTR)
   {
     view->describe(type, ndims, shape);
@@ -280,10 +280,10 @@ DataView * Group::createView( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path,
+View * Group::createView( const std::string& path,
                                   const DataType& dtype )
 {
-  DataView * view = createView(path);
+  View * view = createView(path);
   if (view != AXOM_NULLPTR)
   {
     view->describe(dtype);
@@ -307,10 +307,10 @@ DataView * Group::createView( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path,
+View * Group::createView( const std::string& path,
                                   Buffer * buff )
 {
-  DataView * view = createView(path);
+  View * view = createView(path);
   if ( view != AXOM_NULLPTR )
   {
     view->attachBuffer( buff );
@@ -326,12 +326,12 @@ DataView * Group::createView( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path,
+View * Group::createView( const std::string& path,
                                   TypeID type,
                                   SidreLength num_elems,
                                   Buffer * buff )
 {
-  DataView * view = createView(path, type, num_elems);
+  View * view = createView(path, type, num_elems);
   if (view != AXOM_NULLPTR)
   {
     view->attachBuffer(buff);
@@ -347,13 +347,13 @@ DataView * Group::createView( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path,
+View * Group::createView( const std::string& path,
                                   TypeID type,
                                   int ndims,
                                   SidreLength * shape,
                                   Buffer * buff )
 {
-  DataView * view = createView(path, type, ndims, shape);
+  View * view = createView(path, type, ndims, shape);
   if (view != AXOM_NULLPTR)
   {
     view->attachBuffer(buff);
@@ -369,11 +369,11 @@ DataView * Group::createView( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path,
+View * Group::createView( const std::string& path,
                                   const DataType& dtype,
                                   Buffer * buff )
 {
-  DataView * view = createView(path, dtype);
+  View * view = createView(path, dtype);
   if (view != AXOM_NULLPTR)
   {
     view->attachBuffer(buff);
@@ -397,10 +397,10 @@ DataView * Group::createView( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path,
+View * Group::createView( const std::string& path,
                                   void * external_ptr )
 {
-  DataView * view = createView(path);
+  View * view = createView(path);
   if ( view != AXOM_NULLPTR )
   {
     view->setExternalDataPtr(external_ptr);
@@ -416,12 +416,12 @@ DataView * Group::createView( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path,
+View * Group::createView( const std::string& path,
                                   TypeID type,
                                   SidreLength num_elems,
                                   void * external_ptr )
 {
-  DataView * view = createView(path, type, num_elems);
+  View * view = createView(path, type, num_elems);
   if (view != AXOM_NULLPTR)
   {
     view->setExternalDataPtr(external_ptr);
@@ -437,13 +437,13 @@ DataView * Group::createView( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path,
+View * Group::createView( const std::string& path,
                                   TypeID type,
                                   int ndims,
                                   SidreLength * shape,
                                   void * external_ptr )
 {
-  DataView * view = createView(path, type, ndims, shape);
+  View * view = createView(path, type, ndims, shape);
   if (view != AXOM_NULLPTR)
   {
     view->setExternalDataPtr(external_ptr);
@@ -459,11 +459,11 @@ DataView * Group::createView( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createView( const std::string& path,
+View * Group::createView( const std::string& path,
                                   const DataType& dtype,
                                   void * external_ptr )
 {
-  DataView * view = createView(path, dtype);
+  View * view = createView(path, dtype);
   if (view != AXOM_NULLPTR)
   {
     view->setExternalDataPtr(external_ptr);
@@ -486,11 +486,11 @@ DataView * Group::createView( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createViewAndAllocate( const std::string& path,
+View * Group::createViewAndAllocate( const std::string& path,
                                              TypeID type,
                                              SidreLength num_elems )
 {
-  DataView * view = createView(path, type, num_elems);
+  View * view = createView(path, type, num_elems);
   if ( view != AXOM_NULLPTR )
   {
     view->allocate();
@@ -506,12 +506,12 @@ DataView * Group::createViewAndAllocate( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createViewAndAllocate( const std::string& path,
+View * Group::createViewAndAllocate( const std::string& path,
                                              TypeID type,
                                              int ndims,
                                              SidreLength * shape )
 {
-  DataView * view = createView(path, type, ndims, shape);
+  View * view = createView(path, type, ndims, shape);
   if ( view != AXOM_NULLPTR )
   {
     view->allocate();
@@ -527,10 +527,10 @@ DataView * Group::createViewAndAllocate( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createViewAndAllocate( const std::string& path,
+View * Group::createViewAndAllocate( const std::string& path,
                                              const DataType& dtype)
 {
-  DataView * view = createView(path, dtype);
+  View * view = createView(path, dtype);
   if ( view != AXOM_NULLPTR )
   {
     view->allocate();
@@ -545,10 +545,10 @@ DataView * Group::createViewAndAllocate( const std::string& path,
  *
  *************************************************************************
  */
-DataView * Group::createViewString( const std::string& path,
+View * Group::createViewString( const std::string& path,
                                         const std::string& value)
 {
-  DataView * view = createView(path);
+  View * view = createView(path);
   if (view != AXOM_NULLPTR)
   {
     view->setString(value);
@@ -579,7 +579,7 @@ void Group::destroyView( const std::string& path )
 
   if ( group != AXOM_NULLPTR )
   {
-    DataView * view = group->detachView(intpath);
+    View * view = group->detachView(intpath);
     if ( view != AXOM_NULLPTR )
     {
       delete view;
@@ -596,7 +596,7 @@ void Group::destroyView( const std::string& path )
  */
 void Group::destroyView( IndexType idx )
 {
-  DataView * view = detachView(idx);
+  View * view = detachView(idx);
   if ( view != AXOM_NULLPTR )
   {
     delete view;
@@ -615,7 +615,7 @@ void Group::destroyViews()
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
-    DataView * view = detachView(vidx);
+    View * view = detachView(vidx);
     if ( view != AXOM_NULLPTR )
     {
       delete view;
@@ -687,7 +687,7 @@ void Group::destroyViewsAndData()
  *
  *************************************************************************
  */
-DataView * Group::moveView(DataView * view)
+View * Group::moveView(View * view)
 {
   if ( view == AXOM_NULLPTR )
   {
@@ -725,7 +725,7 @@ DataView * Group::moveView(DataView * view)
  *
  *************************************************************************
  */
-DataView * Group::copyView(DataView * view)
+View * Group::copyView(View * view)
 {
   if ( view == AXOM_NULLPTR || hasChildView(view->getName()) )
   {
@@ -738,7 +738,7 @@ DataView * Group::copyView(DataView * view)
     return AXOM_NULLPTR;
   }
 
-  DataView * copy = createView(view->getName());
+  View * copy = createView(view->getName());
   view->copyView(copy);
   return copy;
 }
@@ -1032,7 +1032,7 @@ void Group::createNativeLayout(Node& n) const
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
-    const DataView * view = getView(vidx);
+    const View * view = getView(vidx);
 
     // Check that the view's name is not also a child group name
     SLIC_CHECK_MSG( !hasChildGroup(view->getName())
@@ -1074,7 +1074,7 @@ bool Group::createExternalLayout(Node& n) const
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
-    const DataView * view = getView(vidx);
+    const View * view = getView(vidx);
 
     // Check that the view's name is not also a child group name
     SLIC_CHECK_MSG( !hasChildGroup(view->getName()),
@@ -1160,7 +1160,7 @@ void Group::printTree( const int nlevels,
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
-    const DataView * view = getView(vidx);
+    const View * view = getView(vidx);
 
     for ( int i=0 ; i<nlevels+1 ; ++i )
     {
@@ -1196,7 +1196,7 @@ void Group::copyToConduitNode(Node& n) const
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
-    const DataView * view = getView(vidx);
+    const View * view = getView(vidx);
     Node& v = n["views"].fetch(view->getName());
     view->copyToConduitNode(v);
 
@@ -1240,7 +1240,7 @@ bool Group::isEquivalentTo(const Group * other) const
     IndexType vidx = getFirstValidViewIndex();
     while ( is_equiv && indexIsValid(vidx) )
     {
-      const DataView * view = getView(vidx);
+      const View * view = getView(vidx);
       const std::string& name = view->getName();
 
       is_equiv = other->hasChildView( name )
@@ -1565,7 +1565,7 @@ Group::Group(const std::string& name,
   : m_name(name),
   m_parent(parent),
   m_datastore(parent->getDataStore()),
-  m_view_coll(new DataViewCollection()),
+  m_view_coll(new ViewCollection()),
   m_group_coll(new GroupCollection())
 {}
 
@@ -1582,7 +1582,7 @@ Group::Group(const std::string& name,
   : m_name(name),
   m_parent(datastore->getRoot()),
   m_datastore(datastore),
-  m_view_coll(new DataViewCollection()),
+  m_view_coll(new ViewCollection()),
   m_group_coll(new GroupCollection())
 {}
 
@@ -1608,7 +1608,7 @@ Group::~Group()
  *
  *************************************************************************
  */
-DataView * Group::attachView(DataView * view)
+View * Group::attachView(View * view)
 {
   if ( view == AXOM_NULLPTR || hasChildView(view->getName()) )
   {
@@ -1630,9 +1630,9 @@ DataView * Group::attachView(DataView * view)
  *
  *************************************************************************
  */
-DataView * Group::detachView(const std::string& name )
+View * Group::detachView(const std::string& name )
 {
-  DataView * view = m_view_coll->removeItem(name);
+  View * view = m_view_coll->removeItem(name);
   if ( view != AXOM_NULLPTR )
   {
     view->m_owning_group = AXOM_NULLPTR;
@@ -1648,9 +1648,9 @@ DataView * Group::detachView(const std::string& name )
  *
  *************************************************************************
  */
-DataView * Group::detachView(IndexType idx)
+View * Group::detachView(IndexType idx)
 {
-  DataView * view = m_view_coll->removeItem(idx);
+  View * view = m_view_coll->removeItem(idx);
   if ( view != AXOM_NULLPTR )
   {
     view->m_owning_group = AXOM_NULLPTR;
@@ -1666,7 +1666,7 @@ DataView * Group::detachView(IndexType idx)
  *
  *************************************************************************
  */
-void Group::destroyViewAndData( DataView * view )
+void Group::destroyViewAndData( View * view )
 {
   if ( view != AXOM_NULLPTR )
   {
@@ -1808,7 +1808,7 @@ void Group::exportTo(conduit::Node& result,
     IndexType vidx = getFirstValidViewIndex();
     while ( indexIsValid(vidx) )
     {
-      const DataView * view = getView(vidx);
+      const View * view = getView(vidx);
       Node& n_view = vnode.fetch(view->getName());
       view->exportTo( n_view, buffer_indices );
       vidx = getNextValidViewIndex(vidx);
@@ -1906,7 +1906,7 @@ void Group::importFrom(conduit::Node& node,
       Node& n_view = views_itr.next();
       std::string view_name = views_itr.name();
 
-      DataView * view = createView( view_name );
+      View * view = createView( view_name );
       view->importFrom(n_view, buffer_id_map);
     }
   }
@@ -1974,7 +1974,7 @@ void Group::importConduitTree(conduit::Node &node)
         if(cld_dtype.number_of_elements() == 1)
         {
           // create scalar view
-          DataView * view = createView(cld_name);
+          View * view = createView(cld_name);
           view->setScalar(cld_node);
         }
         else
@@ -1999,7 +1999,7 @@ void Group::importConduitTree(conduit::Node &node)
           }
 
 
-          DataView * view = createView(cld_name);
+          View * view = createView(cld_name);
           view->attachBuffer(buff);
           // it is important to not use the data type directly
           // it could contain offsets that are no longer
@@ -2205,7 +2205,7 @@ const std::string& Group::getViewName(IndexType idx) const
  *
  *************************************************************************
  */
-DataView * Group::getView( IndexType idx )
+View * Group::getView( IndexType idx )
 {
   SLIC_CHECK_MSG( hasView(idx),
                   "Group " << this->getName()
@@ -2223,7 +2223,7 @@ DataView * Group::getView( IndexType idx )
  *
  *************************************************************************
  */
-const DataView * Group::getView( IndexType idx ) const
+const View * Group::getView( IndexType idx ) const
 {
   SLIC_CHECK_MSG( hasView(idx),
                   "Group " << this->getName()

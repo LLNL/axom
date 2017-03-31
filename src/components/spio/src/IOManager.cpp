@@ -636,7 +636,7 @@ void IOManager::writeGroupToRootFileAtPath(sidre::Group * group,
  *************************************************************************
  */
 
-void IOManager::writeViewToRootFileAtPath(sidre::DataView * view,
+void IOManager::writeViewToRootFileAtPath(sidre::View * view,
                                           const std::string& file_name,
                                           const std::string& group_path)
 {

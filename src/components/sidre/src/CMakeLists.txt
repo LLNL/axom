@@ -5,7 +5,7 @@ set(sidre_headers
     core/Buffer.hpp
     core/Group.hpp
     core/DataStore.hpp
-    core/DataView.hpp
+    core/View.hpp
     core/MapCollection.hpp
     core/SidreTypes.hpp
     core/SidreDataTypeIds.h
@@ -19,7 +19,7 @@ set(sidre_sources
     core/Buffer.cpp
     core/Group.cpp
     core/DataStore.cpp
-    core/DataView.cpp
+    core/View.cpp
     core/SidreUtilities.cpp
 )
 
@@ -38,7 +38,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapDataStore.h
         interface/c_fortran/wrapGroup.h
         interface/c_fortran/wrapBuffer.h
-        interface/c_fortran/wrapDataView.h
+        interface/c_fortran/wrapView.h
     )   
     set(sidre_fortran_sources
         # generated source
@@ -46,7 +46,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapDataStore.cpp
         interface/c_fortran/wrapGroup.cpp
         interface/c_fortran/wrapBuffer.cpp
-        interface/c_fortran/wrapDataView.cpp
+        interface/c_fortran/wrapView.cpp
         interface/c_fortran/wrapfsidre.F
         interface/c_fortran/shroudrt.cpp
     )
@@ -101,7 +101,7 @@ if(FALSE)  # The Python module is not create yet.
         interface/python/pyDataStoretype.cpp
         interface/python/pyGrouptype.cpp
         interface/python/pyBuffertype.cpp
-        interface/python/pyDataViewtype.cpp
+        interface/python/pyViewtype.cpp
         interface/python/pySidremodule.cpp
         interface/python/pySidrehelper.cpp
     )

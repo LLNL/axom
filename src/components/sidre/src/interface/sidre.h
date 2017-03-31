@@ -23,7 +23,7 @@
 #include "sidre/wrapDataStore.h"
 #include "sidre/wrapBuffer.h"
 #include "sidre/wrapGroup.h"
-#include "sidre/wrapDataView.h"
+#include "sidre/wrapView.h"
 
 
 #endif

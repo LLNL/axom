@@ -153,11 +153,11 @@ public:
    * This currently only works if the root file was created for protocol
    * sidre_hdf5.
    *
-   * \param view          DataView to add to root file
+   * \param view          View to add to root file
    * \param file_name     name of existing root file
    * \param group_path    path to a location within the root file
    */
-  void writeViewToRootFileAtPath(sidre::DataView * view,
+  void writeViewToRootFileAtPath(sidre::View * view,
                                  const std::string& file_name,
                                  const std::string& group_path);
 

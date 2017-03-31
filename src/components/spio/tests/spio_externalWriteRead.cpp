@@ -21,7 +21,7 @@ using axom::spio::IOManager;
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
-using axom::sidre::DataView;
+using axom::sidre::View;
 
 
 //------------------------------------------------------------------------------
@@ -95,10 +95,10 @@ int main(int argc, char** argv)
     restored_vals2[i] = -1;
   }
 
-  DataView * view1 = root2->getView("fields/a/external_array");
+  View * view1 = root2->getView("fields/a/external_array");
   view1->setExternalDataPtr(restored_vals1);
 
-  DataView * view2 = root2->getView("fields2/b/external_undescribed");
+  View * view2 = root2->getView("fields2/b/external_undescribed");
   view2->setExternalDataPtr(restored_vals2);
 
   reader.loadExternalData(root2, "out_spio_external_write_read.root");

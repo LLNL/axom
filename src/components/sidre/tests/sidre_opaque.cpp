@@ -14,7 +14,7 @@
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::DataView;
+using axom::sidre::View;
 using axom::sidre::DataType;
 
 //------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ TEST(sidre_opaque,basic_inout)
 
   Extent * ext = new Extent(0, ihi_val);
 
-  DataView * ext_view = problem_gp->createView("ext", ext);
+  View * ext_view = problem_gp->createView("ext", ext);
 
   EXPECT_TRUE(ext_view->isExternal());
   EXPECT_FALSE(ext_view->isApplied());
@@ -127,7 +127,7 @@ TEST(sidre_opaque,basic_inout)
 
   Extent * ext2 = new Extent(0, 2 * ihi_val);
 
-  DataView * ext2_view =
+  View * ext2_view =
     problem_gp->createView("ext2")->setExternalDataPtr(ext2);
 
   EXPECT_TRUE(ext2_view->isOpaque());
@@ -172,11 +172,11 @@ TEST(sidre_opaque,meshvar)
   // Add two different mesh vars to mesh var group
   Group * meshvar_gp = problem_gp->createGroup("mesh_var");
   MeshVar * zone_mv = new MeshVar(_Zone_, _Int_, zone_var_depth);
-  DataView * zone_mv_view = meshvar_gp->createView("zone_mv", zone_mv);
+  View * zone_mv_view = meshvar_gp->createView("zone_mv", zone_mv);
   EXPECT_EQ(zone_mv, zone_mv_view->getVoidPtr());
 
   MeshVar * node_mv = new MeshVar(_Node_, _Double_, node_var_depth);
-  DataView * node_mv_view = meshvar_gp->createView("node_mv", node_mv);
+  View * node_mv_view = meshvar_gp->createView("node_mv", node_mv);
   EXPECT_EQ(node_mv, node_mv_view->getVoidPtr());
 
   //
@@ -191,11 +191,11 @@ TEST(sidre_opaque,meshvar)
     EXPECT_EQ(dom_ext, dom_gp->getView("ext")->getVoidPtr());
 
     MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getVoidPtr() );
-    DataView * dom_zone_view = dom_gp->createView("zone_data");
+    View * dom_zone_view = dom_gp->createView("zone_data");
     dom_zone_view->allocate( DataType::c_int(zonemv->getNumVals(dom_ext)) );
 
     MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getVoidPtr() );
-    DataView * dom_node_view = dom_gp->createView("node_data");
+    View * dom_node_view = dom_gp->createView("node_data");
     dom_node_view->allocate( DataType::c_double(nodemv->getNumVals(dom_ext)) );
 
   }

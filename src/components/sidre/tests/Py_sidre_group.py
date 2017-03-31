@@ -137,8 +137,8 @@ class SidreGroup(unittest.TestCase):
         root = ds.getRoot()
 
 #  Group * parent = root->createGroup("parent")
-#  DataView * view1 = parent->createView("view1")
-#  DataView * view2 = parent->createView("view2")
+#  View * view1 = parent->createView("view1")
+#  View * view2 = parent->createView("view2")
 #
 #  Group * emptyGroup = root->createGroup("emptyGroup")
 #

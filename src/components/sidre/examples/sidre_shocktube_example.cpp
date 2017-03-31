@@ -44,7 +44,7 @@
 using axom::sidre::Buffer;
 using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::DataView;
+using axom::sidre::View;
 using axom::sidre::TypeID;
 
 using namespace conduit;
@@ -532,7 +532,7 @@ void DumpUltra( Group * const prob)
 
   for(size_t i=0 ; i<prob->getNumViews() ; i++)
   {
-    DataView * const view = prob->getView(i);
+    View * const view = prob->getView(i);
     const int length = view->getNumElements();
     const std::string& name = view->getName();
     if( length <= 1 )
@@ -557,7 +557,7 @@ void DumpUltra( Group * const prob)
 
   for(size_t i=0 ; i<elem->getNumViews() ; i++)
   {
-    DataView * const view = elem->getView(i);
+    View * const view = elem->getView(i);
     const int length = view->getNumElements();
     const std::string& name = view->getName();
     fprintf(fp, "# %s\n", name.c_str() );

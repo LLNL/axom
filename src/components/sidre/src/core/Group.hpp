@@ -41,7 +41,7 @@
 
 // Sidre project headers
 #include "SidreTypes.hpp"
-#include "DataView.hpp"
+#include "View.hpp"
 
 
 namespace axom
@@ -57,7 +57,7 @@ template <typename TYPE> class MapCollection;
 /*!
  * \class Group
  *
- * \brief Group holds a collection of DataViews and (child) Groups.
+ * \brief Group holds a collection of Views and (child) Groups.
  *
  * The Group class has the following properties:
  *
@@ -72,17 +72,17 @@ template <typename TYPE> class MapCollection;
  *      Group.
  *    - A Group object maintains a pointer to its parent Group.
  *    - A Group object can be moved or copied to another Group.
- *    - Group objects can create DataView objects within them. The
- *      Group that creates a DataView owns it.
- *    - A DataView object has a unique name (string) within the Group
+ *    - Group objects can create View objects within them. The
+ *      Group that creates a View owns it.
+ *    - A View object has a unique name (string) within the Group
  *      that owns it.
- *    - A DataView object can be moved or copied to another Group.
+ *    - A View object can be moved or copied to another Group.
  *
- * Note that DataViews and child Groups within a Group can be accessed
+ * Note that Views and child Groups within a Group can be accessed
  * by name or index.
  *
  * Note that certain methods for querying, creating, retrieving, and
- * deleting Groups and DataViews take a string with path syntax,
+ * deleting Groups and Views take a string with path syntax,
  * while others take the name of a direct child of the current Group.
  * Methods that require the name of a direct child are marked with
  * "Child", for example hasChildView() and hasChildGroup().  When a path
@@ -91,11 +91,11 @@ template <typename TYPE> class MapCollection;
  *
  * \verbatim
  *
- *    DataView* view = group->createView("foo/bar/baz");
+ *    View* view = group->createView("foo/bar/baz");
  *
  *    is equivalent to:
  *
- *    DataView* view =
+ *    View* view =
  *      group->createGroup("foo")->createGroup("bar")->createView("baz");
  *
  * \endverbatim
@@ -164,7 +164,7 @@ public:
    * d->getPath()     | a/b/c
    * d->getPathName() | a/b/c/d
    *
-   * \sa getName(), getPath(), DataView::getPathName()
+   * \sa getName(), getPath(), View::getPathName()
    */
   std::string getPathName() const
   {
@@ -277,7 +277,7 @@ public:
    *
    * If no such View exists, AXOM_NULLPTR is returned.
    */
-  DataView * getView( const std::string& path );
+  View * getView( const std::string& path );
 
   /*!
    * \brief Return pointer to const View with given name or path.
@@ -286,21 +286,21 @@ public:
    *
    * If no such View exists, AXOM_NULLPTR is returned.
    */
-  const DataView * getView( const std::string& path ) const;
+  const View * getView( const std::string& path ) const;
 
   /*!
    * \brief Return pointer to non-const View with given index.
    *
    * If no such View exists, AXOM_NULLPTR is returned.
    */
-  DataView * getView( IndexType idx );
+  View * getView( IndexType idx );
 
   /*!
    * \brief Return pointer to const View with given index.
    *
    * If no such View exists, AXOM_NULLPTR is returned.
    */
-  const DataView * getView( IndexType idx ) const;
+  const View * getView( IndexType idx ) const;
 
   /*!
    * \brief Return first valid View index in Group object
@@ -342,7 +342,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
-  DataView * createView( const std::string& path );
+  View * createView( const std::string& path );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -353,7 +353,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
-  DataView * createView( const std::string& path,
+  View * createView( const std::string& path,
                          TypeID type,
                          SidreLength num_elems );
 
@@ -366,7 +366,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
-  DataView * createView( const std::string& path,
+  View * createView( const std::string& path,
                          TypeID type,
                          int ndims,
                          SidreLength * shape );
@@ -377,7 +377,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
-  DataView * createView( const std::string& path,
+  View * createView( const std::string& path,
                          const DataType& dtype);
 
 //@}
@@ -405,16 +405,16 @@ public:
    * this Group and attach given Buffer to it.
    *
    * IMPORTANT: The View cannot be used to access data in Buffer until it
-   * is described by calling a DataView::apply() method.
+   * is described by calling a View::apply() method.
    *
    * This method is equivalent to:
    * group->createView(name)->attachBuffer(buff).
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::attachBuffer
+   * \sa View::attachBuffer
    */
-  DataView * createView( const std::string& path,
+  View * createView( const std::string& path,
                          Buffer * buff );
 
   /*!
@@ -431,9 +431,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::attachBuffer
+   * \sa View::attachBuffer
    */
-  DataView * createView( const std::string& path,
+  View * createView( const std::string& path,
                          TypeID type,
                          SidreLength num_elems,
                          Buffer * buff );
@@ -452,9 +452,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::attachBuffer
+   * \sa View::attachBuffer
    */
-  DataView * createView( const std::string& path,
+  View * createView( const std::string& path,
                          TypeID type,
                          int ndims,
                          SidreLength * shape,
@@ -470,9 +470,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::attachBuffer
+   * \sa View::attachBuffer
    */
-  DataView * createView( const std::string& path,
+  View * createView( const std::string& path,
                          const DataType& dtype,
                          Buffer * buff );
 
@@ -497,7 +497,7 @@ public:
    * this Group and attach external data ptr to it.
    *
    * IMPORTANT: Note that the View is "opaque" (it has no knowledge of
-   * the type or structure of the data) until a DataView::apply() method
+   * the type or structure of the data) until a View::apply() method
    * is called.
    *
    * This method is equivalent to:
@@ -505,9 +505,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::setExternalDataPtr
+   * \sa View::setExternalDataPtr
    */
-  DataView * createView( const std::string& path,
+  View * createView( const std::string& path,
                          void * external_ptr );
 
   /*!
@@ -525,9 +525,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::setExternalDataPtr
+   * \sa View::setExternalDataPtr
    */
-  DataView * createView( const std::string& path,
+  View * createView( const std::string& path,
                          TypeID type,
                          SidreLength num_elems,
                          void * external_ptr );
@@ -549,9 +549,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::setExternalDataPtr
+   * \sa View::setExternalDataPtr
    */
-  DataView * createView( const std::string& path,
+  View * createView( const std::string& path,
                          TypeID type,
                          int ndims,
                          SidreLength * shape,
@@ -567,9 +567,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::attachBuffer
+   * \sa View::attachBuffer
    */
-  DataView * createView( const std::string& path,
+  View * createView( const std::string& path,
                          const DataType& dtype,
                          void * external_ptr );
 
@@ -598,9 +598,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::allocate
+   * \sa View::allocate
    */
-  DataView * createViewAndAllocate( const std::string& path,
+  View * createViewAndAllocate( const std::string& path,
                                     TypeID type,
                                     SidreLength num_elems );
 
@@ -617,9 +617,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::allocate
+   * \sa View::allocate
    */
-  DataView * createViewAndAllocate( const std::string& path,
+  View * createViewAndAllocate( const std::string& path,
                                     TypeID type,
                                     int ndims,
                                     SidreLength * shape );
@@ -636,9 +636,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::allocate
+   * \sa View::allocate
    */
-  DataView * createViewAndAllocate( const std::string& path,
+  View * createViewAndAllocate( const std::string& path,
                                     const DataType& dtype);
 
   /*!
@@ -651,12 +651,12 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::setScalar
+   * \sa View::setScalar
    */
   template<typename ScalarType>
-  DataView * createViewScalar( const std::string& path, ScalarType value)
+  View * createViewScalar( const std::string& path, ScalarType value)
   {
-    DataView * view = createView(path);
+    View * view = createView(path);
     if (view != AXOM_NULLPTR)
     {
       view->setScalar(value);
@@ -675,9 +675,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa DataView::setString
+   * \sa View::setString
    */
-  DataView * createViewString( const std::string& path,
+  View * createViewString( const std::string& path,
                                const std::string& value);
 
 //@}
@@ -740,7 +740,7 @@ public:
    * \return pointer to given argument View object or AXOM_NULLPTR if View
    * is not moved into this Group.
    */
-  DataView * moveView(DataView * view);
+  View * moveView(View * view);
 
   /*!
    * \brief Create a copy of given View object and add it to this Group.
@@ -755,7 +755,7 @@ public:
    * \return pointer to given argument Group object or AXOM_NULLPTR if Group
    * is not moved into this Group.
    */
-  DataView * copyView(DataView * view);
+  View * copyView(View * view);
 
 //@}
 
@@ -766,12 +766,12 @@ public:
   /*!
    * \brief Attach View object to this Group.
    */
-  DataView * attachView(DataView * view);
+  View * attachView(View * view);
 
   /*!
    * \brief Detach View object from this Group.
    */
-  DataView * detachView(const DataView * view)
+  View * detachView(const View * view)
   {
     return detachView(view->getName());
   }
@@ -779,12 +779,12 @@ public:
   /*!
    * \brief Detach View with given name from this Group.
    */
-  DataView * detachView(const std::string& name);
+  View * detachView(const std::string& name);
 
   /*!
    * \brief Detach View with given index from this Group.
    */
-  DataView * detachView(IndexType idx);
+  View * detachView(IndexType idx);
 
 //@}
 
@@ -1046,7 +1046,7 @@ public:
    * Group hierarchy structures with the same names for all Views and
    * Groups in the hierarchy, and the Views are also equivalent.
    *
-   * \sa DataView::isEquivalentTo
+   * \sa View::isEquivalentTo
    */
   bool isEquivalentTo(const Group * other) const;
 
@@ -1197,7 +1197,7 @@ private:
    *
    * IMPORTANT: this method assumes View is owned by this Group.
    */
-  void destroyViewAndData( DataView * view );
+  void destroyViewAndData( View * view );
 
 //@}
 
@@ -1306,13 +1306,13 @@ private:
 
   ///////////////////////////////////////////////////////////////////
   //
-  typedef MapCollection<DataView> DataViewCollection;
+  typedef MapCollection<View> ViewCollection;
   //
   typedef MapCollection<Group> GroupCollection;
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Views
-  DataViewCollection * m_view_coll;
+  ViewCollection * m_view_coll;
 
   /// Collection of child Groups
   GroupCollection * m_group_coll;

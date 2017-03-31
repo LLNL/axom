@@ -270,7 +270,7 @@ void loadBaselineData(axom::sidre::Group* grp, CommandLineArguments& args)
     }
     else
     {
-        axom::sidre::DataView* view = grp->getView("mesh_bounding_box");
+        axom::sidre::View* view = grp->getView("mesh_bounding_box");
         if(view->getNumElements() != 6)
             SLIC_ERROR("Bounding box must contain six doubles");
 
@@ -285,7 +285,7 @@ void loadBaselineData(axom::sidre::Group* grp, CommandLineArguments& args)
     }
     else
     {
-        axom::sidre::DataView* view = grp->getView("query_resolution");
+        axom::sidre::View* view = grp->getView("query_resolution");
         if(view->getNumElements() != 3)
             SLIC_ERROR("Query resolution must contain three ints");
 
@@ -645,7 +645,7 @@ void saveBaseline(axom::sidre::Group* grp, CommandLineArguments& clargs)
 
     grp->createViewString("mesh_name", meshName);
 
-    axom::sidre::DataView* view = AXOM_NULLPTR;
+    axom::sidre::View* view = AXOM_NULLPTR;
 
     view = grp->createView("mesh_bounding_box", axom::sidre::DOUBLE_ID, 6)->allocate();
     double* bb = view->getArray();

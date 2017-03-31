@@ -27,7 +27,7 @@
 
 // Sidre project headers
 #include "Group.hpp"
-#include "DataView.hpp"
+#include "View.hpp"
 
 namespace axom
 {
@@ -307,7 +307,7 @@ Buffer::~Buffer()
  *
  *************************************************************************
  */
-void Buffer::attachToView( DataView * view )
+void Buffer::attachToView( View * view )
 {
   SLIC_ASSERT(view->m_data_buffer == this);
 
@@ -324,15 +324,15 @@ void Buffer::attachToView( DataView * view )
  *
  *************************************************************************
  */
-void Buffer::detachFromView( DataView * view )
+void Buffer::detachFromView( View * view )
 {
   SLIC_ASSERT(view->m_data_buffer == this);
 
   if (view->m_data_buffer == this)
   {
-    std::vector<DataView *>::iterator pos = std::find(m_views.begin(),
-                                                      m_views.end(),
-                                                      view);
+    std::vector<View *>::iterator pos = std::find(m_views.begin(),
+                                                  m_views.end(),
+                                                  view);
     if ( pos != m_views.end() )
     {
       SLIC_ASSERT(pos != m_views.end());

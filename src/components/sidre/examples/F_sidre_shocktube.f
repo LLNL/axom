@@ -57,7 +57,7 @@ program main
 
   type(datastore) ds
   type(group) root, prob
-  type(dataview) tmpview
+  type(view) tmpview
 
   integer(C_INT) numTotalCycles, dumpInterval
   integer(C_INT), pointer :: currCycle
@@ -98,7 +98,7 @@ contains
     type(group) grp
     character(*) name
     integer(C_INT) value
-    type(dataview) tmpview
+    type(view) tmpview
 
     tmpview = grp%create_view_scalar(name, value)
   end subroutine CreateScalarIntBufferViewAndSetVal
@@ -108,7 +108,7 @@ contains
     type(group) grp
     character(*) name
     real(C_DOUBLE) value
-    type(dataview) tmpview
+    type(view) tmpview
 
     tmpview = grp%create_view_scalar(name, value)
   end subroutine CreateScalarFloatBufferViewAndSetVal
@@ -215,10 +215,10 @@ subroutine CreateShockTubeMesh(prob)
   type(group), intent(IN) :: prob
   type(group) elem, face, tube
   type(group) ingrp, outgrp  ! XXX unused
-  type(dataview) tmpview
-  type(dataview) mapToElemsView
-  type(dataview) faceToElemView
-  type(dataview) elemToFaceView
+  type(view) tmpview
+  type(view) mapToElemsView
+  type(view) faceToElemView
+  type(view) elemToFaceView
   integer(C_INT), pointer :: mapToElems(:)
   integer(C_INT), pointer :: faceToElem(:)
   integer(C_INT), pointer :: elemToFace(:)
@@ -302,7 +302,7 @@ subroutine InitializeShockTube(prob)
   integer i
 
   type(group) elem, face
-  type(dataview) tmpview
+  type(view) tmpview
   integer(C_INT) numElems, numFaces
   integer startTube
   integer endTube
@@ -417,7 +417,7 @@ subroutine ComputeFaceInfo(prob)
   type(group), intent(IN) :: prob
 
   type(group) face, elem
-  type(dataview) tmpview
+  type(view) tmpview
 
   integer i
   integer upWind, downWind, contributor
@@ -536,7 +536,7 @@ end subroutine ComputeFaceInfo
 subroutine UpdateElemInfo(prob)
   type(group), intent(IN) :: prob
   type(group) elem, face, tube
-  type(dataview) tmpview
+  type(view) tmpview
 
   real(C_DOUBLE) dx, dt
   real(C_DOUBLE), pointer :: time
@@ -615,7 +615,7 @@ subroutine DumpUltra( prob )
   character(100) fname
 
   type(group) elem
-  type(dataview) view
+  type(view) tview
   integer, parameter :: fp = 8
   integer i, j
   integer ierr
@@ -626,9 +626,9 @@ subroutine DumpUltra( prob )
 
   fname = "F_problem"
 
-  view = prob%get_view("cycle")
+  tview = prob%get_view("cycle")
 
-  write(fname, '(a, "_", i4.4, ".ult")') trim(fname), view%get_data_int()
+  write(fname, '(a, "_", i4.4, ".ult")') trim(fname), tview%get_data_int()
   open(fp, file=fname, iostat=ierr)
   if (ierr /= 0) then
      print *, "Could not open file ", trim(fname), ". Aborting."
@@ -639,15 +639,15 @@ subroutine DumpUltra( prob )
   write(fp, '(a)') "# Problem: problem"
 
   do i=1, prob%get_num_views()
-     view = prob%get_view(i-1)
-     length = view%get_num_elements()
-     name = view%get_name()
+     tview = prob%get_view(i-1)
+     length = tview%get_num_elements()
+     name = tview%get_name()
      if ( length <= 1 ) then
-        select case (view%get_type_id())
+        select case (tview%get_type_id())
         case (SIDRE_INT32_ID)
-           write(fp, '("# ", a, " = ", i4)') name, view%get_data_int()
+           write(fp, '("# ", a, " = ", i4)') name, tview%get_data_int()
         case (SIDRE_FLOAT64_ID)
-           write(fp, '("# ", a, " = ", f16.5)') name, view%get_data_double()
+           write(fp, '("# ", a, " = ", f16.5)') name, tview%get_data_double()
         end select
     endif
   enddo
@@ -655,19 +655,19 @@ subroutine DumpUltra( prob )
   elem = prob%get_group("elem")
 
   do i=1, elem%get_num_views()
-     view = elem%get_view(i-1)
-     length = view%get_num_elements()
-     name = view%get_name()
+     tview = elem%get_view(i-1)
+     length = tview%get_num_elements()
+     name = tview%get_name()
      write(fp, '("# ", a)') trim(name)
 
-     select case (view%get_type_id())
+     select case (tview%get_type_id())
      case (SIDRE_INT32_ID)
-        call view%get_data(idata)
+        call tview%get_data(idata)
         do j = 1, length
            write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), real(idata(j), C_DOUBLE)
         enddo
      case (SIDRE_FLOAT64_ID)
-        call view%get_data(ddata)
+        call tview%get_data(ddata)
         do j = 1, length
            write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), ddata(j)
         enddo

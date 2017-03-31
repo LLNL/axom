@@ -17,7 +17,7 @@ using axom::sidre::DataStore;
 using axom::sidre::Buffer;
 using axom::sidre::DataType;
 using axom::sidre::Group;
-using axom::sidre::DataView;
+using axom::sidre::View;
 using axom::sidre::IndexType;
 using axom::sidre::SidreLength;
 using axom::sidre::INT_ID;
@@ -229,7 +229,7 @@ TEST(sidre_buffer, create_buffer_view)
 
   for (unsigned int i=0 ; i < 8 ; i++)
   {
-    DataView * view;
+    View * view;
 
     switch (i)
     {
@@ -297,7 +297,7 @@ TEST(sidre_buffer,with_multiple_views)
   DataStore * ds = new DataStore();
   Group * root = ds->getRoot();
   Buffer * dbuff;
-  DataView * dv1, * dv2;
+  View * dv1, * dv2;
 
   dbuff = ds->createBuffer();
   IndexType idx = dbuff->getIndex();
@@ -332,7 +332,7 @@ TEST(sidre_buffer,move_buffer)
   DataStore * ds = new DataStore();
   Group * root = ds->getRoot();
   Buffer * dbuff, * dbuff2;
-  DataView * dv1, * dv2;
+  View * dv1, * dv2;
 
   dbuff = ds->createBuffer();
 

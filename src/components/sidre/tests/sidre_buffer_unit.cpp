@@ -14,7 +14,7 @@
 
 
 using axom::sidre::DataStore;
-using axom::sidre::DataView;
+using axom::sidre::View;
 using axom::sidre::Group;
 using axom::sidre::Buffer;
 using axom::sidre::IndexType;
@@ -367,8 +367,8 @@ TEST(sidre_buffer,buffer_delete_view_detach)
   // Create a buffer bA, fill with dummy data, attach two views vA and vB
   Buffer * bA = ds->createBuffer(tid, Acount)->allocate();
   bA->copyBytesIntoBuffer(vAtest, Acount * eltsize);
-  DataView * vA = ds->getRoot()->createView("vA", bA)->apply(tid, Acount);
-  DataView * vB = ds->getRoot()->createView("vB", bA)->apply(tid, Bcount, 1, 1);
+  View * vA = ds->getRoot()->createView("vA", bA)->apply(tid, Acount);
+  View * vB = ds->getRoot()->createView("vB", bA)->apply(tid, Bcount, 1, 1);
 
   // Verify vA and vB are attached to bA, and we can see the data
   EXPECT_EQ(2, bA->getNumViews());

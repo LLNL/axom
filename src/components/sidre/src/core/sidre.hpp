@@ -25,7 +25,7 @@
 #include "Buffer.hpp"
 #include "Group.hpp"
 #include "DataStore.hpp"
-#include "DataView.hpp"
+#include "View.hpp"
 #include "SidreTypes.hpp"
 
 #endif

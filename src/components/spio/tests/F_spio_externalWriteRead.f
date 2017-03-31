@@ -30,7 +30,7 @@ program spio_external_write_read
   type(group) root1, root2
   type(group) flds, flds2
   type(group) ga, gb
-  type(dataview)  view1, view2
+  type(view)  view1, view2
 
   type(iomanager) writer, reader
 

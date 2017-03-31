@@ -11,9 +11,9 @@
 /*!
  ******************************************************************************
  *
- * \file DataView.hpp
+ * \file View.hpp
  *
- * \brief   Header file containing definition of DataView class.
+ * \brief   Header file containing definition of View class.
  *
  ******************************************************************************
  */
@@ -43,24 +43,24 @@ class Group;
 class DataStore;
 
 /*!
- * \class DataView
+ * \class View
  *
- * \brief A DataView object describes a "view" into data, which may be
+ * \brief A View object describes a "view" into data, which may be
  *        owned by the view object (via an attached Buffer) or
  *        owned externally.
  *
- * The DataView class has the following properties:
+ * The View class has the following properties:
  *
- *    - DataView objects can only be created via the Group interface,
+ *    - View objects can only be created via the Group interface,
  *      not constructed directly. A View object is owned by the Group
  *      object that creates it. A View object owned by a Group object
  *      that is a descendant of some ancestor Group is a descendant
  *      View of the ancestor Group.
- *    - A DataView object has a unique name (string) within the Group
+ *    - A View object has a unique name (string) within the Group
  *      that owns it.
- *    - A DataView holds a pointer to the Group that created it and which
+ *    - A View holds a pointer to the Group that created it and which
  *      owns it.
- *    - A DataView object can describe and provide access to data in one of
+ *    - A View object can describe and provide access to data in one of
  *      four ways:
  *        # A view can describe (a subset of) data owned by an existing
  *          Buffer. In this case, the data can be (re)allocated or
@@ -77,12 +77,12 @@ class DataStore;
  *        # It can hold a pointer to an undescribed (i.e., "opaque") data
  *          object. In this case, the view knows nothing about the type or
  *          structure of the data; it is essentially just a handle to the data.
- *    - For any DataView object that is "external" or associated with a
+ *    - For any View object that is "external" or associated with a
  *      Buffer, the data description of the view may be specified, or
  *      changed, by calling one of the apply() methods.
  *
  */
-class DataView
+class View
 {
 public:
 
@@ -95,10 +95,10 @@ public:
 
 
 //@{
-//!  @name DataView query and accessor methods methods
+//!  @name View query and accessor methods methods
 
   /*!
-   * \brief Return const reference to name of DataView.
+   * \brief Return const reference to name of View.
    *
    * \sa getPath(), getPathName()
    */
@@ -131,7 +131,7 @@ public:
   std::string getPathName() const;
 
   /*!
-   * \brief Return pointer to non-const Group that owns DataView object.
+   * \brief Return pointer to non-const Group that owns View object.
    */
   Group * getOwningGroup()
   {
@@ -139,7 +139,7 @@ public:
   }
 
   /*!
-   * \brief Return pointer to const Group that owns DataView object.
+   * \brief Return pointer to const Group that owns View object.
    */
   const Group * getOwningGroup() const
   {
@@ -157,7 +157,7 @@ public:
   }
 
   /*!
-   * \brief Return pointer to non-const Buffer associated with DataView.
+   * \brief Return pointer to non-const Buffer associated with View.
    */
   Buffer * getBuffer()
   {
@@ -165,7 +165,7 @@ public:
   }
 
   /*!
-   * \brief Return pointer to const Buffer associated with DataView.
+   * \brief Return pointer to const Buffer associated with View.
    */
   const Buffer * getBuffer() const
   {
@@ -240,7 +240,7 @@ public:
   }
 
   /*!
-   * \brief Return type of data for this DataView object.
+   * \brief Return type of data for this View object.
    *        Return NO_TYPE_ID for an undescribed view.
    */
   TypeID getTypeID() const
@@ -256,7 +256,7 @@ public:
   }
 
   /*!
-   * \brief Return total number of bytes associated with this DataView object.
+   * \brief Return total number of bytes associated with this View object.
    *
    * IMPORTANT: This is the total bytes described by the view; they may not
    *            yet be allocated.
@@ -267,7 +267,7 @@ public:
   }
 
   /*!
-   * \brief Return total number of elements described by this DataView object.
+   * \brief Return total number of elements described by this View object.
    *
    * IMPORTANT: This is the number of elements described by the view;
    *            they may not yet be allocated.
@@ -289,15 +289,15 @@ public:
   }
 
   /*!
-   * \brief Return the offset in number of elements for the data described by this DataView object.
+   * \brief Return the offset in number of elements for the data described by this View object.
    *
    * \warning The code currently assumes that offsets into a view are given in terms of whole elements.
    *       And it is an assertion error if this is not the case.
    *       If you have a different use case, please talk to the Sidre team
    *
-   * \note DataView::getData() and DataView::getArray() already account for the offset,
+   * \note View::getData() and View::getArray() already account for the offset,
    *        and return a pointer to the first element in the array:
-   *        DataView::getVoidPtr() does not account for the offset.
+   *        View::getVoidPtr() does not account for the offset.
    *
    * IMPORTANT: This function is based on the view description, it does not imply that the data is allocated
    *
@@ -306,7 +306,7 @@ public:
   SidreLength getOffset() const;
 
   /*!
-   * \brief Return the stride in number of elements for the data described by this DataView object.
+   * \brief Return the stride in number of elements for the data described by this View object.
    *
    * \warning The code currently assumes that strides into a view are given in terms of whole elements.
    *       And it is an assertion error if this is not the case.
@@ -363,17 +363,17 @@ public:
   }
 
   /*!
-   * \brief Returns boolean telling whether two DataViews have equivalent
+   * \brief Returns boolean telling whether two Views have equivalent
    * internal description, in terms of name, datatype, and current state of the
    * object.  Values of the data are not checked.
    */
-  bool isEquivalentTo(const DataView * other) const;
+  bool isEquivalentTo(const View * other) const;
 
 //@}
 
 
 //@{
-//!  @name DataView allocation methods
+//!  @name View allocation methods
 
   /*!
    * \brief Allocate data for a view, previously described.
@@ -383,9 +383,9 @@ public:
    *       is not external, not a string view, or not a scalar view.
    *       If none of these condition is true, this method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * allocate();
+  View * allocate();
 
   /*!
    * \brief Allocate data for view given type and number of elements.
@@ -395,9 +395,9 @@ public:
    *       a type of NO_TYPE_ID or number of elements is < 0,
    *       this method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * allocate( TypeID type, SidreLength num_elems);
+  View * allocate( TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Allocate data for view described by a Conduit data type object.
@@ -406,9 +406,9 @@ public:
    *       allocation is allowed. If none of those is true,
    *       this method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * allocate(const DataType& dtype);
+  View * allocate(const DataType& dtype);
 
   /*!
    * \brief  Reallocate data for view to given number of elements (type
@@ -418,9 +418,9 @@ public:
    *       for the allocate() method. If none of those is true,
    *       or given number of elements is < 0, this method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * reallocate(SidreLength num_elems);
+  View * reallocate(SidreLength num_elems);
 
   /*!
    * \brief  Reallocate data for view as specified by Conduit data type object.
@@ -432,9 +432,9 @@ public:
    * NOTE: The given data type object must match the view type, if it is
    *       defined. If not, the method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * reallocate(const DataType& dtype);
+  View * reallocate(const DataType& dtype);
 
   /*!
    * \brief  Deallocate data for view.
@@ -443,9 +443,9 @@ public:
    *       described by the allocate() method. If none of those is true,
    *       or a Buffer is not attached, this method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * deallocate();
+  View * deallocate();
 
 //@}
 
@@ -470,16 +470,16 @@ public:
    * buffer, if the buffer has no views attached to it, then it will
    * be destroyed.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * attachBuffer( Buffer * buff );
+  View * attachBuffer( Buffer * buff );
 
   /*!
    * \brief Describe the data view and attach Buffer object.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * attachBuffer( TypeID type,
+  View * attachBuffer( TypeID type,
                            SidreLength num_elems,
                            Buffer * buff )
   {
@@ -491,9 +491,9 @@ public:
   /*!
    * \brief Describe the data view and attach Buffer object.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * attachBuffer( TypeID type,
+  View * attachBuffer( TypeID type,
                            int ndims,
                            SidreLength * shape,
                            Buffer * buff )
@@ -514,16 +514,16 @@ public:
   Buffer * detachBuffer();
 
 //@{
-//!  @name Methods to apply DataView description to data.
+//!  @name Methods to apply View description to data.
 
   /*!
    * \brief Apply view description to data.
    *
    * If view holds a scalar or a string, the method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * apply();
+  View * apply();
 
   /*!
    * \brief Apply data description defined by number of elements, and
@@ -543,9 +543,9 @@ public:
    * sufficient data description to get type information, or given number
    * of elements < 0, or offset < 0, the method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * apply( SidreLength num_elems,
+  View * apply( SidreLength num_elems,
                     SidreLength offset = 0,
                     SidreLength stride = 1);
 
@@ -563,9 +563,9 @@ public:
    * If view holds a scalar or a string, or type is NO_TYPE_ID,
    * or given number of elements < 0, or offset < 0, the method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * apply( TypeID type, SidreLength num_elems,
+  View * apply( TypeID type, SidreLength num_elems,
                     SidreLength offset = 0,
                     SidreLength stride = 1);
 
@@ -582,18 +582,18 @@ public:
    * or given number of dimensions < 0, or pointer to shape is null,
    * the method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * apply( TypeID type, int ndims, SidreLength * shape );
+  View * apply( TypeID type, int ndims, SidreLength * shape );
 
   /*!
    * \brief Apply data description of given Conduit data type to data view.
    *
    * If view holds a scalar or a string, the method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * apply(const DataType& dtype);
+  View * apply(const DataType& dtype);
 
 //@}
 
@@ -604,10 +604,10 @@ public:
   /*!
    * \brief Set the view to hold the given scalar.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
   template<typename ScalarType>
-  DataView * setScalar(ScalarType value)
+  View * setScalar(ScalarType value)
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
@@ -651,9 +651,9 @@ public:
   /*!
    * \brief Set the view to hold the given scalar.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * setScalar(Node &value)
+  View * setScalar(Node &value)
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
@@ -698,9 +698,9 @@ public:
 /*!
  * \brief Set the view to hold the given string.
  *
- * \return pointer to this DataView object.
+ * \return pointer to this View object.
  */
-  DataView * setString(const std::string& value)
+  View * setString(const std::string& value)
   {
     // Note: most of these calls that set the view class members are
     //       unnecessary if the view already holds a string.  May be
@@ -732,18 +732,18 @@ public:
    * If external_ptr is NULL, the view will be EMPTY.
    * Any existing description is unchanged.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * setExternalDataPtr(void * external_ptr);
+  View * setExternalDataPtr(void * external_ptr);
 
   /*!
    * \brief Set view to hold described external data.
    *
    * If external_ptr is NULL, the view will be EMPTY.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * setExternalDataPtr(TypeID type,
+  View * setExternalDataPtr(TypeID type,
                                 SidreLength num_elems,
                                 void * external_ptr)
   {
@@ -757,9 +757,9 @@ public:
    *
    * If external_ptr is NULL, the view will be EMPTY.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
-  DataView * setExternalDataPtr(TypeID type,
+  View * setExternalDataPtr(TypeID type,
                                 int ndims,
                                 SidreLength * shape,
                                 void * external_ptr)
@@ -824,7 +824,7 @@ public:
   Node::Value getScalar()
   {
     SLIC_CHECK_MSG( (m_state == SCALAR),
-                    "DataView::getScalar() called on non-scalar view.");
+                    "View::getScalar() called on non-scalar view.");
     return getData();
   }
 
@@ -886,7 +886,7 @@ public:
 
 
 //@{
-//!  @name DataView print methods.
+//!  @name View print methods.
 
   /*!
    * \brief Print JSON description of data view to stdout.
@@ -934,36 +934,36 @@ public:
 
 private:
 
-  DISABLE_DEFAULT_CTOR(DataView);
-  DISABLE_MOVE_AND_ASSIGNMENT(DataView);
+  DISABLE_DEFAULT_CTOR(View);
+  DISABLE_MOVE_AND_ASSIGNMENT(View);
 
 
 //@{
-//!  @name Private DataView ctor and dtor
-//!        (callable only by Group and DataView methods).
+//!  @name Private View ctor and dtor
+//!        (callable only by Group and View methods).
 
   /*!
-   *  \brief Private ctor that creates a DataView with given name
+   *  \brief Private ctor that creates a View with given name
    *         which has no data associated with it.
    */
-  DataView( const std::string& name );
+  View( const std::string& name );
 
   /*!
    * \brief Private copy ctor.
    */
-  DataView(const DataView& source);
+  View(const View& source);
 
   /*!
    * \brief Private dtor.
    */
-  ~DataView();
+  ~View();
 
 //@}
 
 
 //@{
-//!  @name Private DataView declaration methods.
-//!        (callable only by Group and DataView methods).
+//!  @name Private View declaration methods.
+//!        (callable only by Group and View methods).
 
   /*!
    * \brief Describe a data view with given type and number of elements.
@@ -991,7 +991,7 @@ private:
    * If given type of NO_TYPE_ID, or number of dimensions or total
    * number of elements < 0, or view is opaque, method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
   void describe(TypeID type, int ndims, SidreLength * shape);
 
@@ -1004,7 +1004,7 @@ private:
    *
    * If view is opaque, the method does nothing.
    *
-   * \return pointer to this DataView object.
+   * \return pointer to this View object.
    */
   void describe(const DataType& dtype);
 
@@ -1024,7 +1024,7 @@ private:
    * For SCALAR and STRING the data is copied; EXTERNAL,
    * data pointer is copied; BUFFER attaches the buffer.
    */
-  void copyView( DataView * copy ) const;
+  void copyView( View * copy ) const;
 
   /*!
    * \brief Add view description and references to it's data to a conduit tree.
@@ -1125,19 +1125,19 @@ private:
    */
   State getStateId(const std::string &name);
 
-  /// Name of this DataView object.
+  /// Name of this View object.
   std::string m_name;
 
-  /// Group object that owns this DataView object.
+  /// Group object that owns this View object.
   Group * m_owning_group;
 
-  /// Buffer associated with this DataView object.
+  /// Buffer associated with this View object.
   Buffer * m_data_buffer;
 
   /// Data description (schema) that describes the view's data.
   Schema m_schema;
 
-  /// Conduit node used to access the data in this DataView.
+  /// Conduit node used to access the data in this View.
   Node m_node;
 
   /// Shape information

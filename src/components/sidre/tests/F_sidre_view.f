@@ -25,19 +25,19 @@ module sidre_view
 contains
 !------------------------------------------------------------------------------
 
-  function get_state(view) result(state)
-    type(dataview), intent(IN) :: view
+  function get_state(tview) result(state)
+    type(view), intent(IN) :: tview
     integer state
 
-    if (view%is_empty()) then
+    if (tview%is_empty()) then
        state = EMPTYVIEW
-    else if (view%has_buffer()) then
+    else if (tview%has_buffer()) then
        state = BUFFERVIEW
-    else if (view%is_external()) then
+    else if (tview%is_external()) then
        state = EXTERNALVIEW
-    else if (view%is_scalar()) then
+    else if (tview%is_scalar()) then
        state = SCALARVIEW
-    else if (view%is_string()) then
+    else if (tview%is_string()) then
        state = STRINGVIEW
     else
        state = NOTYPE
@@ -49,7 +49,7 @@ contains
   subroutine create_views()
     type(datastore) ds
     type(group) root
-    type(dataview) dv_0, dv_1
+    type(view) dv_0, dv_1
     type(buffer) db_0, db_1
 
     call set_case_name("create_views")
@@ -73,7 +73,7 @@ contains
   subroutine scalar_view
     type(datastore) ds
     type(group) root
-    type(dataview) i0view, i1view, s0view, s1view
+    type(view) i0view, i1view, s0view, s1view
     integer(C_INT) i1, i2
     character(80) s1, s2
 
@@ -120,7 +120,7 @@ contains
 !  call s0view%allocate()
 !  call s0view%deallocate()
 
-!type(dataview) empty
+!type(view) empty
 !empty = root%create_view("empty")
 !#if 0
 !  try
@@ -153,10 +153,10 @@ contains
 
     contains
 
-      subroutine check_scalar_values(view, state, is_described, is_allocated, &
+      subroutine check_scalar_values(tview, state, is_described, is_allocated, &
            is_applied, type, length)
 
-        type(dataview), intent(IN) :: view
+        type(view), intent(IN) :: tview
         integer, intent(IN) :: state
         logical, intent(IN) :: is_described, is_allocated, is_applied
         integer, intent(IN) :: type
@@ -165,17 +165,17 @@ contains
 
         integer(SIDRE_LENGTH) dims(2)
 
-        name = view%get_name()
+        name = tview%get_name()
 
-        call assert_equals(get_state(view), state)
-        call assert_equals(view%is_described(), is_described, trim(name) // " is_described")
-        call assert_equals(view%is_allocated(), is_allocated, trim(name) // "is_allocated")
-        call assert_equals(view%is_applied(), is_applied, trim(name) // " is_applied")
+        call assert_equals(get_state(tview), state)
+        call assert_equals(tview%is_described(), is_described, trim(name) // " is_described")
+        call assert_equals(tview%is_allocated(), is_allocated, trim(name) // "is_allocated")
+        call assert_equals(tview%is_applied(), is_applied, trim(name) // " is_applied")
 
-        call assert_equals(view%get_type_id(), type, trim(name) // " get_type_id")
-        call assert_equals(int(view%get_num_elements(), kind(length)), length, trim(name) // " get_num_elements")
-        call assert_equals(view%get_num_dimensions(), 1, trim(name) // " get_num_dimensions")
-        call assert_true(view%get_shape(1, dims) == 1 .and. dims(1) == length)
+        call assert_equals(tview%get_type_id(), type, trim(name) // " get_type_id")
+        call assert_equals(int(tview%get_num_elements(), kind(length)), length, trim(name) // " get_num_elements")
+        call assert_equals(tview%get_num_dimensions(), 1, trim(name) // " get_num_dimensions")
+        call assert_true(tview%get_shape(1, dims) == 1 .and. dims(1) == length)
       end subroutine check_scalar_values
 
   end subroutine scalar_view
@@ -185,7 +185,7 @@ contains
   subroutine int_buffer_from_view()
     type(datastore) ds
     type(group) root
-    type(dataview) dv
+    type(view) dv
     integer(C_INT), pointer :: data(:)
     integer(C_INT) i
     integer int_size, elem_count
@@ -220,7 +220,7 @@ contains
   subroutine int_buffer_from_view_conduit_value()
     type(datastore) ds
     type(group) root
-    type(dataview) dv
+    type(view) dv
     integer(C_INT), pointer :: data(:)
     integer i
 
@@ -238,7 +238,7 @@ contains
 
     call dv%print()
 
-!--    EXPECT_EQ(SIDRE_dataview_get_total_bytes(dv), sizeof(int) * 10)
+!--    EXPECT_EQ(SIDRE_view_get_total_bytes(dv), sizeof(int) * 10)
     call ds%delete()
   end subroutine int_buffer_from_view_conduit_value
 
@@ -248,7 +248,7 @@ contains
     type(datastore) ds
     type(group) root
     type(buffer) dbuff
-    type(dataview) dv_e, dv_o 
+    type(view) dv_e, dv_o 
     type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
     integer i
@@ -311,7 +311,7 @@ contains
     type(datastore) ds
     type(group) root
     type(buffer) dbuff
-    type(dataview) dv_e, dv_o 
+    type(view) dv_e, dv_o 
     type(C_PTR) data_ptr
     integer, pointer :: data(:)
     integer i
@@ -378,10 +378,10 @@ contains
     type(datastore) ds
     type(group) root
     type(buffer) dbuff
-    type(dataview) view0
-    type(dataview) view1
-    type(dataview) view2
-    type(dataview) view3
+    type(view) view0
+    type(view) view1
+    type(view) view2
+    type(view) view3
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
@@ -459,8 +459,8 @@ contains
     type(datastore) ds
     type(group) root
     type(buffer) dbuff
-    type(dataview) field0
-    type(dataview) field1
+    type(view) field0
+    type(view) field1
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
@@ -544,7 +544,7 @@ contains
     type(datastore) ds
     type(group) root, other
     type(buffer) dbuff
-    type(dataview) field0, view1, view2, view3
+    type(view) field0, view1, view2, view3
 
     real(C_DOUBLE), pointer :: data(:)
     type(C_PTR) data_ptr
@@ -683,7 +683,7 @@ contains
      !
     type(datastore) ds
     type(group) root, r_old
-    type(dataview) base_old
+    type(view) base_old
     integer(C_INT), pointer :: data(:)
     integer i
 
@@ -713,12 +713,12 @@ contains
 
 !--#ifdef XXX
 !--  ! setup our 4 views
-!--  SIDRE_buffer * buff_old = SIDRE_dataview_get_buffer(base_old)
+!--  SIDRE_buffer * buff_old = SIDRE_view_get_buffer(base_old)
 !--  call buff_old%print()
-!--  SIDRE_dataview * r0_old = SIDRE_dataview_create_view(r_old, "r0",buff_old)
-!--  SIDRE_dataview * r1_old = SIDRE_dataview_create_view(r_old, "r1",buff_old)
-!--  SIDRE_dataview * r2_old = SIDRE_dataview_create_view(r_old, "r2",buff_old)
-!--  SIDRE_dataview * r3_old = SIDRE_dataview_create_view(r_old, "r3",buff_old)
+!--  SIDRE_view * r0_old = SIDRE_view_create_view(r_old, "r0",buff_old)
+!--  SIDRE_view * r1_old = SIDRE_view_create_view(r_old, "r1",buff_old)
+!--  SIDRE_view * r2_old = SIDRE_view_create_view(r_old, "r2",buff_old)
+!--  SIDRE_view * r3_old = SIDRE_view_create_view(r_old, "r3",buff_old)
 !--
 !--  ! each view is offset by 10 * the # of bytes in a uint32
 !--  ! uint32(num_elems, offset)
@@ -755,7 +755,7 @@ contains
 !--  ! create a group to hold the "old" or data we want to copy into
 !--  SIDRE_group * r_new = SIDRE_group_create_group(root, "r_new")
 !--  ! create a view to hold the base buffer
-!--  SIDRE_dataview * base_new = SIDRE_group_create_view_and_buffer(r_new, "base_data")
+!--  SIDRE_view * base_new = SIDRE_group_create_view_and_buffer(r_new, "base_data")
 !--
 !--  ! alloc our buffer
 !--  ! create a buffer to hold larger subarrays
@@ -766,14 +766,14 @@ contains
 !--     base_new_data[i] = 0
 !--  } 
 !--
-!--  SIDRE_buffer * buff_new = SIDRE_dataview_get_buffer(base_new)
+!--  SIDRE_buffer * buff_new = SIDRE_view_get_buffer(base_new)
 !--  call buff_new%print()
 !--
 !--  ! create the 4 sub views of this array
-!--  SIDRE_dataview * r0_new = SIDRE_group_create_view(r_new, "r0",buff_new)
-!--  SIDRE_dataview * r1_new = SIDRE_group_create_view(r_new, "r1",buff_new)
-!--  SIDRE_dataview * r2_new = SIDRE_group_create_view(r_new, "r2",buff_new)
-!--  SIDRE_dataview * r3_new = SIDRE_group_create_view(r_new, "r3",buff_new)
+!--  SIDRE_view * r0_new = SIDRE_group_create_view(r_new, "r0",buff_new)
+!--  SIDRE_view * r1_new = SIDRE_group_create_view(r_new, "r1",buff_new)
+!--  SIDRE_view * r2_new = SIDRE_group_create_view(r_new, "r2",buff_new)
+!--  SIDRE_view * r3_new = SIDRE_group_create_view(r_new, "r3",buff_new)
 !--
 !--  ! apply views to r0,r1,r2,r3
 !--  ! each view is offset by 12 * the # of bytes in a uint32
@@ -802,7 +802,7 @@ contains
 !--
 !--
 !--  ! check pointer values
-!--  int * r2_new_ptr = (int *) SIDRE_dataview_get_data_pointer(r2_new)
+!--  int * r2_new_ptr = (int *) SIDRE_view_get_data_pointer(r2_new)
 !--
 !--  for(int i=0  i<10  i++)
 !--  {
@@ -836,7 +836,7 @@ contains
     !
     type(datastore) ds
     type(group) root
-    type(dataview) a1, a2
+    type(view) a1, a2
 !    type(C_PTR) a1_ptr, a2_ptr
     real(C_FLOAT), pointer :: a1_data(:)
     integer(C_INT), pointer :: a2_data(:)
@@ -862,8 +862,8 @@ contains
     call assert_true(size(a2_data) == 5, &
          "a2_data is incorrect size")
 
-!--  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a1), sizeof(float)*5)
-!--  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a2), sizeof(int)*5)
+!--  EXPECT_EQ(SIDRE_view_get_total_bytes(a1), sizeof(float)*5)
+!--  EXPECT_EQ(SIDRE_view_get_total_bytes(a2), sizeof(int)*5)
 
     a1_data(1:5) =  5.0
     a2_data(1:5) = -5
@@ -889,8 +889,8 @@ contains
 
     a2_data(11:15) = -15
 
-!--  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a1), sizeof(float)*10)
-!--  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a2), sizeof(int)*15)
+!--  EXPECT_EQ(SIDRE_view_get_total_bytes(a1), sizeof(float)*10)
+!--  EXPECT_EQ(SIDRE_view_get_total_bytes(a2), sizeof(int)*15)
 
     call ds%print()
     call ds%delete()
@@ -902,7 +902,7 @@ contains
   subroutine simple_opaque()
     type(datastore) ds
     type(group) root
-    type(dataview) opq_view
+    type(view) opq_view
     integer(C_INT), target :: src_data
     integer(C_INT), pointer :: out_data
     type(C_PTR) src_ptr, opq_ptr

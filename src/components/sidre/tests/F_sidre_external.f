@@ -22,7 +22,7 @@ contains
   subroutine create_external_view
     type(datastore) ds
     type(group) root
-    type(dataview) iview, dview
+    type(view) iview, dview
     integer(C_INT), allocatable, target :: idata(:)
     real(C_DOUBLE), allocatable, target :: ddata(:)
     integer(C_INT), pointer :: idata_chk(:)
@@ -71,7 +71,7 @@ contains
   subroutine save_load_external_view
     type(datastore) ds, ds2
     type(group) root, root2
-    type(dataview)  iview, dview, iview2, dview2
+    type(view)  iview, dview, iview2, dview2
     type(buffer) tmpbuff
     integer(C_INT), allocatable, target :: idata(:)
     real(C_DOUBLE), allocatable, target :: ddata(:)

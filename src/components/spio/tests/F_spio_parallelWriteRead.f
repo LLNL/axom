@@ -29,11 +29,11 @@ program spio_parallel_write_read
   type(group) root1, root2
   type(group) flds, flds2
   type(group) ga, gb
-  type(dataview)  view1, view2
+  type(view)  view1, view2
 
   type(datastore) dsextra
   type(group) extra_root, extra, child
-  type(dataview) view
+  type(view) tview
 
   type(iomanager) writer, reader
 
@@ -81,11 +81,11 @@ program spio_parallel_write_read
      dsextra = datastore_new()
      extra_root = dsextra%get_root()
      extra = extra_root%create_group("extra")
-     view = extra%create_View_Scalar("dval", 1.1d0)
+     tview = extra%create_View_Scalar("dval", 1.1d0)
      child = extra%create_group("child")
-     view = child%create_view_scalar("ival", 7)
-     view = child%create_view_string("word0", "hello")
-     view = child%create_view_string("word1", "world")
+     tview = child%create_view_scalar("ival", 7)
+     tview = child%create_view_string("word0", "hello")
+     tview = child%create_view_string("word1", "world")
 
      call writer%write_group_to_root_file(extra, "F_out_spio_parallel_write_read.root")
 

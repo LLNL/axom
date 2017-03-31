@@ -17,7 +17,7 @@ using axom::spio::IOManager;
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
-using axom::sidre::DataView;
+using axom::sidre::View;
 
 
 //------------------------------------------------------------------------------
@@ -123,8 +123,8 @@ int main(int argc, char** argv)
       vstream << "view" << g;
       if (g % 2) {
 
-        DataView * view_orig = sg1->getView(vstream.str());
-        DataView * view_restored = sg2->getView(vstream.str());
+        View * view_orig = sg1->getView(vstream.str());
+        View * view_restored = sg2->getView(vstream.str());
 
         int num_elems = view_orig->getNumElements();
         if (view_restored->getNumElements() != num_elems) {

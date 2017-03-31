@@ -18,7 +18,7 @@ using axom::sidre::TypeID;
 using axom::sidre::Buffer;
 using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::DataView;
+using axom::sidre::View;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
 using axom::sidre::nameIsValid;
@@ -240,7 +240,7 @@ TEST(sidre_group,get_view)
   Group * root = ds->getRoot();
 
   Group * parent = root->createGroup("parent");
-  DataView * view = parent->createView("view");
+  View * view = parent->createView("view");
 
   EXPECT_TRUE( parent->getView("view") == view );
 
@@ -259,26 +259,26 @@ TEST(sidre_group,view_with_path)
   Group * root = ds->getRoot();
 
   // Test with full path access when building incrementally
-  DataView * view =
+  View * view =
     root->createGroup("group1")->createGroup("group2")->createView("view1");
-  DataView * view2 = root->getView("group1/group2/view1");
+  View * view2 = root->getView("group1/group2/view1");
 
   EXPECT_TRUE(AXOM_NULLPTR != view2);
   EXPECT_EQ( view, view2 );
 
 
   // Test incremental access when building with full path
-  DataView * viewP = root->createView("groupA/groupB/viewA");
-  DataView * viewP2 =
+  View * viewP = root->createView("groupA/groupB/viewA");
+  View * viewP2 =
     root->getGroup("groupA")->getGroup("groupB")->getView("viewA");
 
   EXPECT_TRUE(AXOM_NULLPTR != viewP2);
   EXPECT_EQ( viewP, viewP2 );
 
   // Now verify that bad paths just return null, and don't create missing groups
-  DataView * v_bad1 = root->getView("BAD/groupB/viewA");
-  DataView * v_bad2 = root->getView("groupA/BAD/viewA");
-  DataView * v_bad3 = root->getView("groupA/groupB/BAD");
+  View * v_bad1 = root->getView("BAD/groupB/viewA");
+  View * v_bad2 = root->getView("groupA/BAD/viewA");
+  View * v_bad3 = root->getView("groupA/groupB/BAD");
 
   EXPECT_EQ(v_bad1, static_cast<void *>(AXOM_NULLPTR));
   EXPECT_EQ(v_bad2, static_cast<void *>(AXOM_NULLPTR));
@@ -346,8 +346,8 @@ TEST(sidre_group,get_view_names_and_indicies)
   Group * root = ds->getRoot();
 
   Group * parent = root->createGroup("parent");
-  DataView * view1 = parent->createView("view1");
-  DataView * view2 = parent->createView("view2");
+  View * view1 = parent->createView("view1");
+  View * view2 = parent->createView("view2");
 
   EXPECT_EQ(parent->getNumViews(), 2u);
 
@@ -383,8 +383,8 @@ TEST(sidre_group,get_first_and_next_view_index)
   Group * root = ds->getRoot();
 
   Group * parent = root->createGroup("parent");
-  DataView * view1 = parent->createView("view1");
-  DataView * view2 = parent->createView("view2");
+  View * view1 = parent->createView("view1");
+  View * view2 = parent->createView("view2");
 
   Group * emptyGroup = root->createGroup("emptyGroup");
 
@@ -461,7 +461,7 @@ TEST(sidre_group,create_destroy_has_view)
   Group * root = ds->getRoot();
   Group * group = root->createGroup("parent");
 
-  DataView * view = group->createView("view");
+  View * view = group->createView("view");
   EXPECT_TRUE( group->getParent() == root );
   EXPECT_FALSE( view->hasBuffer() );
   EXPECT_TRUE( group->hasView("view") );
@@ -592,7 +592,7 @@ TEST(sidre_group,view_copy_move)
   int * buffdata;
   int extdata[10];
 
-  DataView * views[6];
+  View * views[6];
   std::string names[6];
 
   // Create view in different states
@@ -645,8 +645,8 @@ TEST(sidre_group,view_copy_move)
   }
 
   // Check copies
-  DataView * view1 = sub1->getView("empty0");
-  DataView * view2 = sub2->getView("empty0");
+  View * view1 = sub1->getView("empty0");
+  View * view2 = sub2->getView("empty0");
   EXPECT_NE(view1, view2);
   EXPECT_TRUE(view2->isEmpty());
   EXPECT_FALSE(view2->isDescribed());
@@ -751,8 +751,8 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
   std::string viewName1("viewBuffer1");
   std::string viewName2("viewBuffer2");
 
-  DataView * view1 = grp->createViewAndAllocate(viewName1, INT_ID, 1);
-  DataView * view2 = grp->createViewAndAllocate(viewName2, INT_ID, 1);
+  View * view1 = grp->createViewAndAllocate(viewName1, INT_ID, 1);
+  View * view2 = grp->createViewAndAllocate(viewName2, INT_ID, 1);
 
   EXPECT_TRUE(grp->hasView(viewName1));
   EXPECT_EQ( grp->getView(viewName1), view1 );
@@ -770,7 +770,7 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
   Buffer const * const buffer1 = ds->getBuffer(bufferId1);
   EXPECT_TRUE( buffer1 == AXOM_NULLPTR );
 
-  DataView const * const view3 = grp->createView("viewBuffer3");
+  View const * const view3 = grp->createView("viewBuffer3");
   grp->destroyViewsAndData();
   // should be no-op
   grp->destroyViewsAndData();
@@ -792,7 +792,7 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
 
   // use create + alloc convenience methods
   // this one is the DataType & method
-  DataView * const view1 = grp->createViewAndAllocate(viewName1,
+  View * const view1 = grp->createViewAndAllocate(viewName1,
                                                       DataType::c_int(10));
 
   EXPECT_TRUE(grp->hasChildView(viewName1));
@@ -821,7 +821,7 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
   Group * root = ds->getRoot();
   // use create + alloc convenience methods
   // this one is the DataType & method
-  DataView * base =  root->createViewAndAllocate("base", DataType::c_int(10));
+  View * base =  root->createViewAndAllocate("base", DataType::c_int(10));
   int * base_vals = base->getData();
   for(int i=0 ; i<10 ; i++)
   {
@@ -1180,7 +1180,7 @@ TEST(sidre_group,save_restore_external_data)
 
     // load has set the type and size of the view.
     // Now set the external address before calling loadExternal.
-    DataView * view1 = root2->getView("external_array");
+    View * view1 = root2->getView("external_array");
     EXPECT_TRUE(view1->isExternal());
     EXPECT_TRUE(view1->isDescribed());
     EXPECT_EQ(view1->getTypeID(), INT_ID);
@@ -1188,14 +1188,14 @@ TEST(sidre_group,save_restore_external_data)
     EXPECT_TRUE(view1->getVoidPtr() == AXOM_NULLPTR);
     view1->setExternalDataPtr(foo2);
 
-    DataView * view2 = root2->getView("empty_array");
+    View * view2 = root2->getView("empty_array");
     EXPECT_TRUE(view2->isEmpty());
     EXPECT_TRUE(view2->isDescribed());
     EXPECT_EQ(view2->getTypeID(), INT_ID);
     EXPECT_TRUE(view2->getVoidPtr() == AXOM_NULLPTR);
     view2->setExternalDataPtr(foo3);
 
-    DataView * view3 = root2->getView("external_undescribed");
+    View * view3 = root2->getView("external_undescribed");
     EXPECT_TRUE(view3->isEmpty());
     EXPECT_FALSE(view3->isDescribed());
     EXPECT_TRUE(view3->getVoidPtr() == AXOM_NULLPTR);
@@ -1204,7 +1204,7 @@ TEST(sidre_group,save_restore_external_data)
     // written to the dump since it is undescribed.
     view3->setExternalDataPtr(foo2);
 
-    DataView * view4 = root2->getView("int2d");
+    View * view4 = root2->getView("int2d");
     EXPECT_FALSE(view4->isEmpty());
     EXPECT_TRUE(view4->isDescribed());
     EXPECT_TRUE(view4->getVoidPtr() == AXOM_NULLPTR);
@@ -1260,41 +1260,41 @@ static void save_restore_buffer_association(const std::string & msg,
   Group * root = ds->getRoot();
 
   // Get all views and their buffers
-  DataView * view1 = root->getView("undescribed_attached_buffer");
+  View * view1 = root->getView("undescribed_attached_buffer");
   ASSERT_TRUE(view1->hasBuffer());
   Buffer * buff1a = view1->getBuffer();
   ASSERT_FALSE(buff1a->isDescribed());
   ASSERT_FALSE(buff1a->isAllocated());
 
-  DataView * view2 = root->getView("unallocated_attached_buffer");
+  View * view2 = root->getView("unallocated_attached_buffer");
   ASSERT_TRUE(view2->hasBuffer());
   Buffer * buff2a = view2->getBuffer();
   ASSERT_TRUE(buff2a->isDescribed());
   ASSERT_FALSE(buff2a->isAllocated());
 
-  DataView * view3 = root->getView("undescribed_view_described_buffer");
+  View * view3 = root->getView("undescribed_view_described_buffer");
   ASSERT_TRUE(view3->hasBuffer());
   Buffer * buff3a = view3->getBuffer();
   ASSERT_TRUE(buff3a->isDescribed());
   ASSERT_TRUE(buff3a->isAllocated());
 
-  DataView * view4 = root->getView("describe_view_described_buffer");
+  View * view4 = root->getView("describe_view_described_buffer");
   ASSERT_TRUE(view4->hasBuffer());
   Buffer * buff3b = view4->getBuffer();
 
-  DataView * view5 = root->getView("even");
+  View * view5 = root->getView("even");
   ASSERT_TRUE(view5->hasBuffer());
   Buffer * buff3c = view5->getBuffer();
 
-  DataView * view6 = root->getView("odd");
+  View * view6 = root->getView("odd");
   ASSERT_TRUE(view6->hasBuffer());
   Buffer * buff3d = view6->getBuffer();
 
-  DataView * view7 = root->getView("empty_described");
+  View * view7 = root->getView("empty_described");
   ASSERT_FALSE(view7->hasBuffer());
   ASSERT_TRUE(view7->isEmpty());
 
-  DataView * view8 = root->getView("allocated");
+  View * view8 = root->getView("allocated");
   ASSERT_TRUE(view8->hasBuffer());
   Buffer * buff4a = view8->getBuffer();
   ASSERT_TRUE(buff4a->isDescribed());
@@ -1359,7 +1359,7 @@ TEST(sidre_group,save_restore_buffer)
   root1->createView("odd", buff3)->apply(INT_ID, 5, 1, 2);
 
   root1->createView("empty_described", INT_ID, len);
-  DataView * view = root1->createViewAndAllocate("allocated", INT_ID, len);
+  View * view = root1->createViewAndAllocate("allocated", INT_ID, len);
 
   idata = view->getData();
   for (int ii = 0 ; ii < len ; ++ii)
@@ -1437,17 +1437,17 @@ TEST(sidre_group,save_restore_other)
 
     root2->load(file_path, protocols[i]);
 
-    DataView * view1 = root2->getView("empty_view");
+    View * view1 = root2->getView("empty_view");
     EXPECT_TRUE(view1->isEmpty());
     EXPECT_FALSE(view1->isDescribed());
 
-    DataView * view2 = root2->getView("empty_described");
+    View * view2 = root2->getView("empty_described");
     EXPECT_TRUE(view2->isEmpty());
     EXPECT_TRUE(view2->isDescribed());
     EXPECT_EQ(view2->getTypeID(), INT_ID);
     EXPECT_EQ(view2->getNumElements(), ndata);
 
-    DataView * view3 = root2->getView("empty_shape");
+    View * view3 = root2->getView("empty_shape");
     EXPECT_TRUE(view3->isEmpty());
     EXPECT_TRUE(view3->isDescribed());
     EXPECT_EQ(view3->getTypeID(), INT_ID);
@@ -1458,7 +1458,7 @@ TEST(sidre_group,save_restore_other)
     EXPECT_EQ(rank, 2);
     EXPECT_TRUE(shape2[0] == ndata && shape2[1] == 2);
 
-    DataView * view4 = root2->getView("buffer_shape");
+    View * view4 = root2->getView("buffer_shape");
     EXPECT_TRUE(view4->hasBuffer());
     EXPECT_TRUE(view4->isDescribed());
     EXPECT_EQ(view4->getTypeID(), INT_ID);

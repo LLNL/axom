@@ -17,7 +17,7 @@
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::DataView;
+using axom::sidre::View;
 using axom::sidre::SidreLength;
 using axom::sidre::DOUBLE_ID;
 using axom::sidre::INT_ID;
@@ -43,7 +43,7 @@ TEST(sidre_external, create_external_view)
 
   for (unsigned int i=0 ; i < 8 ; i++)
   {
-    DataView * view = AXOM_NULLPTR;
+    View * view = AXOM_NULLPTR;
 
     switch (i)
     {
@@ -118,7 +118,7 @@ TEST(sidre_external, create_external_view_null)
 
   for (int i=0 ; i < 2 ; i++)
   {
-    DataView * view = AXOM_NULLPTR;
+    View * view = AXOM_NULLPTR;
 
     switch (i)
     {
@@ -173,7 +173,7 @@ TEST(sidre_external, transition_external_view_to_empty)
     idata[ii] = ii;
   }
 
-  DataView * view = root->createView("data0", INT_ID, len)
+  View * view = root->createView("data0", INT_ID, len)
                     ->setExternalDataPtr(idata);
   EXPECT_TRUE(view->isExternal());
   EXPECT_EQ(idata, view->getVoidPtr());
@@ -314,8 +314,8 @@ TEST(sidre_external, save_load_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  DataView * iview = root->createView("idata", idata)->apply(INT_ID, len);
-  DataView * dview = root->createView("ddata", ddata)->apply(DOUBLE_ID, len);
+  View * iview = root->createView("idata", idata)->apply(INT_ID, len);
+  View * dview = root->createView("ddata", ddata)->apply(DOUBLE_ID, len);
   EXPECT_EQ(root->getNumViews(), 2u);
 
 //  iview->print();

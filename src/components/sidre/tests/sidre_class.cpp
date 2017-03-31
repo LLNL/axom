@@ -17,7 +17,7 @@
 using axom::sidre::Buffer;
 using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::DataView;
+using axom::sidre::View;
 using axom::sidre::DataType;
 
 namespace classtest
@@ -49,7 +49,7 @@ public:
 
   void copyFromGroup(Group * gp)
   {
-    DataView * iview = gp->getView("idata");
+    View * iview = gp->getView("idata");
     size_t ilen = iview->getNumElements();
     m_idata = std::vector<int>(ilen);
 
@@ -124,7 +124,7 @@ public:
 
   void copyFromGroup(Group * gp)
   {
-    DataView * iview = gp->getView("idata");
+    View * iview = gp->getView("idata");
     size_t ilen = iview->getBuffer()->getTotalBytes() /
                   sizeof(CONDUIT_NATIVE_INT);
     m_idata = std::vector<int>(ilen);
@@ -135,7 +135,7 @@ public:
       m_idata[ii] = g_idata[ii];
     }
 
-    DataView * dview = gp->getView("ddata");
+    View * dview = gp->getView("ddata");
     size_t dlen = dview->getNumElements();
     m_ddata = std::vector<double>(dlen);
 

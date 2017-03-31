@@ -18,7 +18,7 @@ using axom::spio::IOManager;
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
-using axom::sidre::DataView;
+using axom::sidre::View;
 
 
 //------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 
     writer.writeGroupToRootFileAtPath(path_test, root_name, "extra/child");
 
-    DataView * view_test = dsextra->getRoot()->createViewString("word3", "new_view");
+    View * view_test = dsextra->getRoot()->createViewString("word3", "new_view");
 
     writer.writeViewToRootFileAtPath(view_test,
                                      root_name,
@@ -173,9 +173,9 @@ int main(int argc, char** argv)
     return_val = 1;
   }
 
-  DataView * view_i1_orig =
+  View * view_i1_orig =
     ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
-  DataView * view_i1_restored =
+  View * view_i1_restored =
     ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
 
   int num_elems = view_i1_orig->getNumElements();

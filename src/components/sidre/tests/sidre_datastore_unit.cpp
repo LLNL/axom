@@ -14,7 +14,7 @@
 
 
 using axom::sidre::DataStore;
-using axom::sidre::DataView;
+using axom::sidre::View;
 using axom::sidre::Group;
 using axom::sidre::Buffer;
 using axom::sidre::IndexType;
@@ -245,11 +245,11 @@ TEST(sidre_datastore,create_destroy_buffers_views)
   EXPECT_EQ(dbuff6, ds->getBuffer(d6Index));
 
   // Create and verify views referencing buffers
-  DataView * vA = ds->getRoot()->createView("vA", dbuff3);
-  DataView * vB = ds->getRoot()->createView("vB", dbuff3);
-  DataView * vC = ds->getRoot()->createView("vC", dbuff4);
-  DataView * vD = ds->getRoot()->createView("vD", dbuff6);
-  DataView * vE = ds->getRoot()->createView("vE", dbuff6);
+  View * vA = ds->getRoot()->createView("vA", dbuff3);
+  View * vB = ds->getRoot()->createView("vB", dbuff3);
+  View * vC = ds->getRoot()->createView("vC", dbuff4);
+  View * vD = ds->getRoot()->createView("vD", dbuff6);
+  View * vE = ds->getRoot()->createView("vE", dbuff6);
   EXPECT_EQ(dbuff3, vA->getBuffer());
   EXPECT_EQ(dbuff3, vB->getBuffer());
   EXPECT_EQ(2, dbuff3->getNumViews());

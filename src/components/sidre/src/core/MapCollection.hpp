@@ -20,10 +20,10 @@
  *
  *          The primary intent is to decouple the implementation of the
  *          collections from the Group class which owns collections of
- *          DataView and child Group objects. They may have other uses,
+ *          View and child Group objects. They may have other uses,
  *          so they are not dependent on the Group class. Each class is
  *          templated on the item type so that the same class can be used
- *          to hold either DataView or Group object pointers without
+ *          to hold either View or Group object pointers without
  *          having to code a separate class for each.
  *
  *          By having various collections that obey the same interface,

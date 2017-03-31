@@ -65,7 +65,7 @@ void checkPointersAndData(const std::string& path
   axom::sidre::Node& node = rootNode[path];
   T * nD = static_cast<T *>(node.element_ptr(0));
 
-  axom::sidre::DataView * view = rootGroup->getView(path);
+  axom::sidre::View * view = rootGroup->getView(path);
   EXPECT_TRUE(AXOM_NULLPTR != view);
 
   T * vD = view->getData<T *>();
@@ -99,7 +99,7 @@ void checkPointersAndData<std::string>(const std::string& path
   axom::sidre::Node& node = rootNode[path];
   std::string nD = node.as_string();
 
-  axom::sidre::DataView * view = rootGroup->getView(path);
+  axom::sidre::View * view = rootGroup->getView(path);
   EXPECT_TRUE(AXOM_NULLPTR != view);
   EXPECT_TRUE(view->isString());
 

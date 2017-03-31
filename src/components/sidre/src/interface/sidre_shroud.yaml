@@ -110,14 +110,14 @@ classes:
     -  decl: bool hasChildView( const string& name ) const
     -  decl: bool rename( const string& new_name )
 #    -  decl: bool hasView( IndexType idx ) const
-    -  decl: DataView *getView( const std::string& path )
+    -  decl: View *getView( const std::string& path )
        function_suffix: _from_name
        PY_error_pattern: PY_null_to_none
-#    -  decl: DataView const * getView( const std::string& path ) const
-    -  decl: DataView *getView( const IndexType idx )
+#    -  decl: View const * getView( const std::string& path ) const
+    -  decl: View *getView( const IndexType idx )
        function_suffix: _from_index
        PY_error_pattern: PY_null_to_none
-#    -  decl: DataView const *getView( const IndexType idx ) const
+#    -  decl: View const *getView( const IndexType idx ) const
     -  decl: IndexType getViewIndex(const std::string &name) const
     -  decl: const std::string& getViewName+len(MAXNAMESIZE)(IndexType idx) const
        C_error_pattern: C_invalid_name
@@ -126,7 +126,7 @@ classes:
     -  decl: IndexType getFirstValidViewIndex() const
     -  decl: IndexType getNextValidViewIndex(IndexType idx) const
 
-    -  decl: DataView *createViewAndAllocate( const std::string& path, TypeID type, SidreLength num_elems)
+    -  decl: View *createViewAndAllocate( const std::string& path, TypeID type, SidreLength num_elems)
        function_suffix: _nelems
        fortran_generic:
          num_elems:
@@ -134,13 +134,13 @@ classes:
          -  long
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createViewAndAllocate( const std::string& path, TypeID type, int ndims, SidreLength *shape+dimension)
+    -  decl: View *createViewAndAllocate( const std::string& path, TypeID type, int ndims, SidreLength *shape+dimension)
        function_suffix: _shape
        PY_error_pattern: PY_null_to_none
 
-#    -  decl: DataView *createViewAndAllocate( const std::string& path, const DataType& dtype)
+#    -  decl: View *createViewAndAllocate( const std::string& path, const DataType& dtype)
 
-    -  decl: DataView *createViewScalar( const std::string& path, ScalarType value)
+    -  decl: View *createViewScalar( const std::string& path, ScalarType value)
        cpp_template:
          ScalarType:
          - int
@@ -149,14 +149,14 @@ classes:
          - double
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createViewString( const std::string& path, const std::string& value)
+    -  decl: View *createViewString( const std::string& path, const std::string& value)
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createView( const string& path )
+    -  decl: View *createView( const string& path )
        function_suffix: _empty
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createView( const std::string& path, TypeID type, SidreLength num_elems)
+    -  decl: View *createView( const std::string& path, TypeID type, SidreLength num_elems)
        function_suffix: _from_type
        fortran_generic:
          num_elems:
@@ -164,7 +164,7 @@ classes:
          -  long
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createView( const std::string& path, TypeID type, SidreLength num_elems, Buffer *buff)
+    -  decl: View *createView( const std::string& path, TypeID type, SidreLength num_elems, Buffer *buff)
        function_suffix: _from_type_and_buffer
        fortran_generic:
          num_elems:
@@ -172,7 +172,7 @@ classes:
          -  long
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createView( const std::string& path, TypeID type, SidreLength num_elems, void * external_ptr)
+    -  decl: View *createView( const std::string& path, TypeID type, SidreLength num_elems, void * external_ptr)
        function_suffix: _from_type_external
        fortran_generic:
          num_elems:
@@ -180,25 +180,25 @@ classes:
          -  long
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension)
+    -  decl: View *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension)
        function_suffix: _from_shape
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension, Buffer * buff)
+    -  decl: View *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension, Buffer * buff)
        function_suffix: _from_shape_and_buffer
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
+    -  decl: View *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
        function_suffix: _from_shape_external
        PY_error_pattern: PY_null_to_none
 
-#    -  decl: DataView *createView( const std::string& path, const DataType& dtype)
+#    -  decl: View *createView( const std::string& path, const DataType& dtype)
 
-    -  decl: DataView *createView( const std::string& path, Buffer *buff)
+    -  decl: View *createView( const std::string& path, Buffer *buff)
        function_suffix: _into_buffer
        PY_error_pattern: PY_null_to_none
 
-    -  decl: DataView * createView( const std::string& path, void * external_ptr)
+    -  decl: View * createView( const std::string& path, void * external_ptr)
        function_suffix: _external
        PY_error_pattern: PY_null_to_none
 
@@ -210,8 +210,8 @@ classes:
     -  decl: void destroyViewAndData(IndexType idx)
        function_suffix: _index
 #    -  decl: void destroyViewsAndData()
-    -  decl: DataView *moveView(DataView *view)
-    -  decl: DataView *copyView(DataView *view)
+    -  decl: View *moveView(View *tview)
+    -  decl: View *copyView(View *tview)
 
     -  decl: bool hasGroup( const string& path )
 #    -  decl: bool hasGroup( IndexType idx )
@@ -295,7 +295,7 @@ classes:
       - decl: size_t getBytesPerElement() const
 #      - decl: Node& getNode()
 #      - decl: const Node& getNode() const
-#      - decl: DataView* getView(IndexType idx)
+#      - decl: View* getView(IndexType idx)
 #      - decl: void info(Node& n) const
       - decl: void print() const
 
@@ -303,36 +303,36 @@ classes:
       type: [ init, richcompare ]
 
   ####################################################################
-  - name: DataView
-    cpp_header: sidre/DataView.hpp
+  - name: View
+    cpp_header: sidre/View.hpp
 
     methods:
-    - decl: DataView* allocate()
+    - decl: View* allocate()
       function_suffix: _simple
       return_this: True
-    - decl: DataView* allocate(TypeID type, SidreLength num_elems)
+    - decl: View* allocate(TypeID type, SidreLength num_elems)
       function_suffix: _from_type
       return_this: True
       fortran_generic:
         num_elems:
         -  int
         -  long
-#    - decl: DataView* allocate(const DataType& dtype)
-    - decl: DataView * reallocate(SidreLength num_elems)
+#    - decl: View* allocate(const DataType& dtype)
+    - decl: View * reallocate(SidreLength num_elems)
       return_this: True
       fortran_generic:
         num_elems:
         -  int
         -  long
-#    - decl: DataView* reallocate(const DataType& dtype)
-    - decl: DataView* apply()
+#    - decl: View* reallocate(const DataType& dtype)
+    - decl: View* apply()
       return_this: True
 
-    - decl: DataView* attachBuffer(Buffer * buff)
+    - decl: View* attachBuffer(Buffer * buff)
       return_this: True
       function_suffix: _only
 
-    - decl: DataView* attachBuffer(TypeID type, SidreLength num_elems, Buffer * buff)
+    - decl: View* attachBuffer(TypeID type, SidreLength num_elems, Buffer * buff)
       return_this: True
       function_suffix: _type
       fortran_generic:
@@ -340,26 +340,26 @@ classes:
         -  int
         -  long
 
-    - decl: DataView* attachBuffer(TypeID type, int ndims, SidreLength * shape+dimension, Buffer * buff)
+    - decl: View* attachBuffer(TypeID type, int ndims, SidreLength * shape+dimension, Buffer * buff)
       return_this: True
       function_suffix: _shape
 
-    - decl: DataView* apply(SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
+    - decl: View* apply(SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
       default_arg_suffix:
         -  _nelems
         -  _nelems_offset
         -  _nelems_offset_stride
       return_this: True
-    - decl: DataView* apply(TypeID type, SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
+    - decl: View* apply(TypeID type, SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
       default_arg_suffix:
         -  _type_nelems
         -  _type_nelems_offset
         -  _type_nelems_offset_stride
       return_this: True
-    - decl: DataView * apply( TypeID type, int ndims, SidreLength * shape+dimension )
+    - decl: View * apply( TypeID type, int ndims, SidreLength * shape+dimension )
       function_suffix: _type_shape
       return_this: True
-#    - decl: DataView* apply(const DataType& dtype)
+#    - decl: View* apply(const DataType& dtype)
     - decl: bool hasBuffer() const
     - decl: bool isExternal() const
     - decl: bool isAllocated()
@@ -386,11 +386,11 @@ classes:
         - float
         - double
 
-    -  decl: DataView * setExternalDataPtr(void * external_ptr)
+    -  decl: View * setExternalDataPtr(void * external_ptr)
        return_this: True
        function_suffix: _only
 
-    -  decl: DataView * setExternalDataPtr(TypeID type, SidreLength num_elems, void * external_ptr)
+    -  decl: View * setExternalDataPtr(TypeID type, SidreLength num_elems, void * external_ptr)
        return_this: True
        function_suffix: _type
        fortran_generic:
@@ -398,10 +398,10 @@ classes:
          -  int
          -  long
 
-    -  decl: DataView * setString(const std::string& value)
+    -  decl: View * setString(const std::string& value)
        return_this: True
 
-    -  decl: DataView * setExternalDataPtr(TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
+    -  decl: View * setExternalDataPtr(TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
        return_this: True
        function_suffix: _shape
 

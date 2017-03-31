@@ -31,7 +31,7 @@ program spio_irregularWriteRead
   type(group) root1, root2
   type(group) flds1, flds2
   type(group) sg1, sg2
-  type(dataview)  view1, view2
+  type(view)  view1, view2
 
   type(iomanager) writer, reader
 

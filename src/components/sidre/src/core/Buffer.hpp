@@ -38,7 +38,7 @@ namespace sidre
 {
 
 class DataStore;
-class DataView;
+class View;
 
 /*!
  * \class Buffer
@@ -56,9 +56,9 @@ class DataView;
  *    - Typical usage is to describe the data a Buffer will hold and then
  *      allocate it by calling one of the Buffer allocate or
  *      reallocate methods.
- *    - A Buffer object maintains a collection of DataViews that
+ *    - A Buffer object maintains a collection of Views that
  *      refer to its data. These references are created when a Buffer
- *      object is attached to a DataView.
+ *      object is attached to a View.
  */
 class Buffer
 {
@@ -71,7 +71,7 @@ public:
    */
   friend class DataStore;
   friend class Group;
-  friend class DataView;
+  friend class View;
 
 //@{
 //!  @name Basic query and accessor methods
@@ -309,14 +309,14 @@ private:
    *
    * Note: If View's Buffer pointer does not match 'this', method is a no-op.
    */
-  void attachToView( DataView * view );
+  void attachToView( View * view );
 
   /*!
    * \brief Private method to detach Buffer from View.
    *
    * Note: If View's Buffer pointer does not match 'this', method is a no-op.
    */
-  void detachFromView( DataView * view );
+  void detachFromView( View * view );
 
   /*!
    * \brief Private method to detach Buffer from all Views it is attached to.
@@ -343,7 +343,7 @@ private:
   IndexType m_index;
 
   /// Container of Views attached to this Buffer.
-  std::vector<DataView *> m_views;
+  std::vector<View *> m_views;
 
   /// Conduit Node that holds Buffer data.
   Node m_node;
