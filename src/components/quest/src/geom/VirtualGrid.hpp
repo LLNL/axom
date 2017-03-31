@@ -226,8 +226,8 @@ VirtualGrid< T, NDIMS >::VirtualGrid(const PointType& origin,
                                      const double * step,
                                      const int * res)
 {
-  SLIC_ASSERT(step != ATK_NULLPTR);
-  SLIC_ASSERT(res != ATK_NULLPTR);
+  SLIC_ASSERT(step != AXOM_NULLPTR);
+  SLIC_ASSERT(res != AXOM_NULLPTR);
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
   size_t newsize = 1;
@@ -248,9 +248,9 @@ VirtualGrid< T, NDIMS >::VirtualGrid(const double * min,
                                      const double * max,
                                      const int * res)
 {
-  SLIC_ASSERT(min != ATK_NULLPTR);
-  SLIC_ASSERT(max != ATK_NULLPTR);
-  SLIC_ASSERT(res != ATK_NULLPTR);
+  SLIC_ASSERT(min != AXOM_NULLPTR);
+  SLIC_ASSERT(max != AXOM_NULLPTR);
+  SLIC_ASSERT(res != AXOM_NULLPTR);
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
   size_t newsize = 1;
@@ -377,9 +377,11 @@ void VirtualGrid<T, NDIMS>::insert(const BoxType& BB,
     }
   }
 
-  int bincount[NDIMS];
   int start = getBinIndex(bmin);
   int end = getBinIndex(bmax);
+
+  // Initialize bincount.  Note that NDIMS == 2 or NDIMS == 3.
+  int bincount[3] = {1, 1, 1};
 
   // Guard against BB not overlapping the grid at all
   if (isValidIndex(start) && isValidIndex(end)) {
@@ -397,24 +399,15 @@ void VirtualGrid<T, NDIMS>::insert(const BoxType& BB,
 
     const int x_res = m_resolution[0];
 
-    if (NDIMS == 2) {
+    const int y_res = m_resolution[1];
+    const int kstep = x_res * y_res;
+
+    for (int k = 0; k < bincount[2]; ++k) {
+      const int k_offset = k * kstep;
       for (int j = 0; j < bincount[1]; ++j) {
         const int j_offset = j * x_res;
         for (int i = 0; i < bincount[0]; ++i) {
-          addObj(obj, start + i + j_offset);
-        }
-      }
-    } else {
-      const int y_res = m_resolution[1];
-      const int kstep = x_res * y_res;
-
-      for (int k = 0; k < bincount[2]; ++k) {
-        const int k_offset = k * kstep;
-        for (int j = 0; j < bincount[1]; ++j) {
-          const int j_offset = j * x_res;
-          for (int i = 0; i < bincount[0]; ++i) {
-            addObj(obj, start + i + j_offset + k_offset);
-          }
+          addObj(obj, start + i + j_offset + k_offset);
         }
       }
     }
