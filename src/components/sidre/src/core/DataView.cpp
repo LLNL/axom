@@ -1255,8 +1255,8 @@ bool DataView::rename(const std::string& new_name)
       m_name = new_name;
 
       DataView * attached_view = parent->attachView(detached_view);
+      AXOM_DEBUG_VAR(attached_view);
       SLIC_CHECK(attached_view == this);
-
     }
   }
 
