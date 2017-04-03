@@ -59,10 +59,10 @@ class UniformGrid
 {
 public:
   /*! \brief The type used for specifying spatial extent of the contents */
-  typedef axom::primal::BoundingBox< double, NDIMS > BoxType;
+  typedef BoundingBox< double, NDIMS > BoxType;
 
   /*! \brief The type used to query the index */
-  typedef axom::primal::Point< double, NDIMS > PointType;
+  typedef Point< double, NDIMS > PointType;
 
 public:
 
@@ -71,8 +71,15 @@ public:
    * \brief Constructor specifying bounding box (min and max points) and
    *        number of bins.
    *
-   * The lower and upper bounds are specified as double arrays.  Each pointer
-   * argument is assumed to point to an array of at least length NDIMS.
+   * The lower and upper bounds are specified as double arrays.  Each argument
+   * points to an array of at least length NDIMS.  The nth element in each array
+   * specifies, for the nth dimension, the lower bound (inclusive), the upper
+   * bound (exclusive), and the number of bins.  Thus,
+   *     UniformGrid({0., 0.}, {2., 4.}, {2, 4});
+   * defines an index extending from 0 up to 2 divided into two bins in the
+   * x-dimension and from 0 up to 4 divided into four bins in the y dimension.
+   * The points in the set {(2., y), (x, 4.)} are not included in the
+   * UniformGrid.
    *****************************************************************************
    */
   UniformGrid(const double * lower_bound, const double * upper_bound, const int * res);
@@ -85,7 +92,11 @@ public:
    * \brief Returns the index of the bin containing the specified point.
    *
    * If the specified point is outside the grid, the function returns a
-   * special value (INVALID_BIN_INDEX).
+   * special value (INVALID_BIN_INDEX).  Note that the upper boundaries of a
+   * UniformGrid are not in a bin.  Thus, if a UniformGrid divides the region
+   * from (0., 0.) to (10., 10.) into 10 x 10 bins, the code
+   *     getBinIndex(PointType::makePoint(10., 10.))
+   * will return INVALID_BIN_INDEX,
    * \param [in] pt The point to query.
    *****************************************************************************
    */
