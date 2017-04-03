@@ -17,6 +17,7 @@ set( primal_headers
      geometry/Ray.hpp
      geometry/Segment.hpp
      geometry/Triangle.hpp
+     geometry/UniformGrid.hpp
 
      ## numerics
      numerics/Determinants.hpp

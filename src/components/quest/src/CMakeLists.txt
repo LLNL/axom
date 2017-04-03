@@ -21,7 +21,6 @@ set( quest_headers
     geom/OctreeLevel.hpp
     geom/SparseOctreeLevel.hpp
     geom/SpatialOctree.hpp
-    geom/VirtualGrid.hpp
 
     ## STL library headers
     stl/STLReader.hpp
