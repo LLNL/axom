@@ -37,7 +37,7 @@
 
 // Other axom headers
 #include "slic/slic.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 // Sidre project headers
 #include "SidreTypes.hpp"

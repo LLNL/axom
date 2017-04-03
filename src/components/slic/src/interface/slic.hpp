@@ -25,7 +25,7 @@
 #include "slic/LogStream.hpp"
 #include "slic/MessageLevel.h"
 
-#include "axom/CommonTypes.hpp" // for AXOM_NULLPTR
+#include "axom/Types.hpp" // for AXOM_NULLPTR
 
 // C/C++ includes
 #include <iostream> // for std::endl, std::ends

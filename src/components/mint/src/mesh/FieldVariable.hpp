@@ -15,7 +15,7 @@
 
 // axom includes
 #include "axom/Macros.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "mint/FieldTypes.hpp"
 #include "slic/slic.hpp"
 

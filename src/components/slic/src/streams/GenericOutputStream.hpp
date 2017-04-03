@@ -24,7 +24,7 @@
 #include "slic/LogStream.hpp"
 
 #include "axom/Macros.hpp"
-#include "axom/CommonTypes.hpp" // for AXOM_NULLPTR
+#include "axom/Types.hpp" // for AXOM_NULLPTR
 
 // C/C++ includes
 #include <iostream> // for ostream

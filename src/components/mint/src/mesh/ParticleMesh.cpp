@@ -9,7 +9,7 @@
  */
 
 #include "mint/ParticleMesh.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 namespace axom {
 namespace mint {

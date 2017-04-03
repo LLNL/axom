@@ -39,7 +39,7 @@
 #endif
 #endif // AXOM_USE_BOOST
 
-#include "axom/CommonTypes.hpp" // for AXOM_NULLPTR
+#include "axom/Types.hpp" // for AXOM_NULLPTR
 #include "slic/slic.hpp"
 
 #include "slam/Set.hpp"

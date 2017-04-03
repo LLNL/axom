@@ -11,7 +11,7 @@
 #define MORTON_INDEX_HXX_
 
 #include "axom/config.hpp"    // defines AXOM_USE_CXX11
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"

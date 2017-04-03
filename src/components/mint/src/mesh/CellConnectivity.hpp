@@ -14,7 +14,7 @@
 #include <iostream>
 
 #include "axom/Macros.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "mint/CellType.hpp"
 #include "slic/slic.hpp"
 

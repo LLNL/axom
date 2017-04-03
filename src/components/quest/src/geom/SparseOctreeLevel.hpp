@@ -3,7 +3,7 @@
 
 
 #include "axom/config.hpp"    // defines AXOM_USE_CXX11
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 #include "quest/Brood.hpp"
 #include "quest/OctreeLevel.hpp"

@@ -12,7 +12,7 @@
 
 #include "LogStream.hpp"
 
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "axom_common/Utilities.hpp"   // for utilities::processAbort()
 
 // C/C++ includes

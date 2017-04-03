@@ -19,7 +19,7 @@
 
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 #include <cstdlib>
 #include <cmath>

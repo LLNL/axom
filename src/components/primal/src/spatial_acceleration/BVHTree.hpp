@@ -13,7 +13,7 @@
 
 // axom includes
 #include "axom/Macros.hpp"   // for DISABLE_COPY_AND_ASSIGNMENT macro
-#include "axom/CommonTypes.hpp"  // for AXOM_NULLPTR
+#include "axom/Types.hpp"  // for AXOM_NULLPTR
 
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"

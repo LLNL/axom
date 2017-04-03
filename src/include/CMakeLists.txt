@@ -14,7 +14,7 @@ set( axom_headers
      detail/cstdint_wrapper.hpp
 
      Macros.hpp
-     CommonTypes.hpp
+     Types.hpp
      )
 
 ## set include path for build and install spaces

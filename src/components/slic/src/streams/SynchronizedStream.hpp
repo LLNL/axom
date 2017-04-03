@@ -24,7 +24,7 @@
 #include "slic/LogStream.hpp"
 
 #include "axom/Macros.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 // C/C++ includes
 #include <iostream> // for std::ostream

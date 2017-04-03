@@ -12,7 +12,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "axom_common/Timer.hpp"
 
 #include "primal/orientation.hpp"

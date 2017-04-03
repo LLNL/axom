@@ -12,7 +12,7 @@
 #define HYPERSPHERE_HPP_
 
 #include "axom/Macros.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "axom_common/Utilities.hpp"
 
 #include "slic/slic.hpp"

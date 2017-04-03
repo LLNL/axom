@@ -12,7 +12,7 @@
 #include "axom/config.hpp"
 
 #include "axom/Macros.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "axom_common/FileUtilities.hpp"
 #include "axom_common/Timer.hpp"
 

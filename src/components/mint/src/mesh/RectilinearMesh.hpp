@@ -15,7 +15,7 @@
 #include "mint/MeshCoordinates.hpp"
 
 #include "axom/Macros.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 namespace axom {
 namespace mint {

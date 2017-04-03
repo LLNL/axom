@@ -131,7 +131,7 @@
 
 // Other axom headers
 #include "axom/config.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 // Sidre project headers
 #include "SidreTypes.hpp"

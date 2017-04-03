@@ -26,7 +26,7 @@
 
 // Other axom headers
 #include "axom/Macros.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "slic/slic.hpp"
 
 // Sidre project headers

@@ -51,7 +51,7 @@
 // toolkit includes
 #include "fmt/fmt.hpp"
 
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "axom_common/Timer.hpp"
 #include "axom_common/Utilities.hpp"
 

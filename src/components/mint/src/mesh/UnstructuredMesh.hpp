@@ -23,7 +23,7 @@
 #include "slic/slic.hpp"
 
 #include "axom/Macros.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 #include <cstring> // for memcpy()
 #include <fstream> // for fstream

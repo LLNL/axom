@@ -3,7 +3,7 @@
 
 
 #include "axom/config.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 #include "quest/Brood.hpp"
 #include "quest/OctreeLevel.hpp"

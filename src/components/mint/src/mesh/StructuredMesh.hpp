@@ -15,7 +15,7 @@
 #include "mint/CellType.hpp"
 #include "mint/Extent.hpp"
 
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "axom/Macros.hpp"
 #include "slic/slic.hpp"
 

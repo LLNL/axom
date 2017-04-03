@@ -13,7 +13,7 @@
 
 // axom includes
 #include "axom/Macros.hpp"
-#include "axom/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "slic/slic.hpp"
 
 
