@@ -92,8 +92,8 @@ TEST(gtest_common_config,config_components)
 
   std::vector<std::string> comps;
 
-#ifdef AXOM_USE_COMMON
-  comps.push_back("common");
+#ifdef AXOM_USE_AXOM_UTILS
+  comps.push_back("axom_utils");
 #endif
 
   EXPECT_EQ(1u, comps.size()) << "Common component is always available.";

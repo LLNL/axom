@@ -11,8 +11,8 @@
 #ifndef AXOM_COMMON_CONFIG_HPP
 #define AXOM_COMMON_CONFIG_HPP
 
-/* 
- * Note: Use only C-style comments in this file 
+/*
+ * Note: Use only C-style comments in this file
  *       since it might be included from a C file
  */
 
@@ -21,8 +21,8 @@
  */
 #cmakedefine USE_C_LOC_WITH_ASSUMED_SHAPE
 
-/* 
- * Compiler defines for libraries (built-in and third party) 
+/*
+ * Compiler defines for libraries (built-in and third party)
  */
 #cmakedefine AXOM_USE_BOOST
 #cmakedefine AXOM_USE_CONDUIT
@@ -35,21 +35,21 @@
 #cmakedefine AXOM_USE_STD_UNORDERED_MAP
 
 
-/* OpenMP is a special case since it varies by target and the compiler 
- * provides its own definition. For consistency, the project exposes  
+/* OpenMP is a special case since it varies by target and the compiler
+ * provides its own definition. For consistency, the project exposes
  * and uses this through its own AXOM_USE define.
- */ 
+ */
 #ifdef _OPENMP
 #define AXOM_USE_OPENMP
-#else                    
-#undef AXOM_USE_OPENMP   
+#else
+#undef AXOM_USE_OPENMP
 #endif
 
 
-/* 
- * Compiler defines for the toolkit components 
+/*
+ * Compiler defines for the toolkit components
  */
-#cmakedefine AXOM_USE_COMMON
+#cmakedefine AXOM_USE_AXOM_UTILS
 #cmakedefine AXOM_USE_MINT
 #cmakedefine AXOM_USE_LUMBERJACK
 #cmakedefine AXOM_USE_PRIMAL
