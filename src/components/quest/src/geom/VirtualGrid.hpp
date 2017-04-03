@@ -8,8 +8,8 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-#ifndef VIRTUALGRID_HPP_
-#define VIRTUALGRID_HPP_
+#ifndef UNIFORMGRID_HPP_
+#define UNIFORMGRID_HPP_
 
 #include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
@@ -26,36 +26,36 @@
 #include <vector>
 #include <stdio.h>
 
-
-namespace quest {
+namespace axom {
+namespace primal {
 
 /*!
  *******************************************************************************
- * \class VirtualGrid
+ * \class UniformGrid
  *
  * \brief A spatial index defined by origin, spacing, and resolution.
  *
- * \tparam T The type of object that this VirtualGrid will hold
- * \tparam NDIMS The VirtualGrid dimensionality: supported values are 2 or 3
+ * \tparam T The type of object that this UniformGrid will hold
+ * \tparam NDIMS The UniformGrid dimensionality: supported values are 2 or 3
  *
- * The VirtualGrid class is parameterized on the type of object it will contain
- * and the dimensionality of the grid.  Currently the VirtualGrid will index
+ * The UniformGrid class is parameterized on the type of object it will contain
+ * and the dimensionality of the grid.  Currently the UniformGrid will index
  * 2D and 3D space.
  *
- * The VirtualGrid divides space into a number of bins, extending in a block
+ * The UniformGrid divides space into a number of bins, extending in a block
  * from an origin point and arranged in row-major order.  Each bin extends over
  * an axis-aligned rectangle or parallelepiped.  The size of a bin is specified
  * by the spacing constructor argument, and the number of bins is specified by
  * the res constructor argument.
  *
- * To use this class, a user will instantiate a VirtualGrid and insert a number
+ * To use this class, a user will instantiate a UniformGrid and insert a number
  * of objects (each with its own bounding box).  The insert operation puts the
  * object into some of the bins.  The user may retrieve the bin index of any
  * point, then retrieve any objects associated with the bin at that index.
  *******************************************************************************
  */
 template< typename T, int NDIMS >
-class VirtualGrid
+class UniformGrid
 {
 public:
   /*! \brief The type used for specifying spatial extent of the contents */
@@ -75,10 +75,10 @@ public:
    * argument is assumed to point to an array of at least length NDIMS.
    *****************************************************************************
    */
-  VirtualGrid(const double * lower_bound, const double * upper_bound, const int * res);
+  UniformGrid(const double * lower_bound, const double * upper_bound, const int * res);
 
   /*! \brief Destructor: present for symmetry with constructor */
-  ~VirtualGrid();
+  ~UniformGrid();
 
   /*!
    *****************************************************************************
@@ -89,10 +89,10 @@ public:
    * \param [in] pt The point to query.
    *****************************************************************************
    */
-  int getBinIndex(const PointType & pt);
+  int getBinIndex(const PointType & pt) const;
 
-  /*! \brief Returns the number of bins in this VirtualGrid. */
-  int getNumBins();
+  /*! \brief Returns the number of bins in this UniformGrid. */
+  int getNumBins() const;
 
   /*!
    *****************************************************************************
@@ -102,7 +102,7 @@ public:
    * \param [in] index The index of the bin to test.
    *****************************************************************************
    */
-  bool isBinEmpty(int index);
+  bool isBinEmpty(int index) const;
 
   /*!
    *****************************************************************************
@@ -137,7 +137,7 @@ public:
    *****************************************************************************
    * \brief Inserts obj into each bin overlapped by BB.
    *
-   * No error is signalled if BB falls partly or wholly outside the VirtualGrid.
+   * No error is signalled if BB falls partly or wholly outside the UniformGrid.
    *
    * \param [in] BB The region in which to record obj
    * \param [in] obj The object to insert into any bins overlapped by BB
@@ -147,7 +147,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief A special value indicating any location not in the VirtualGrid.
+   * \brief A special value indicating any location not in the UniformGrid.
    *
    * Returned by getBinIndex() if that function is passed an exterior point.
    * An error is thrown if getBinContents() is passed INVALID_BIN_INDEX.
@@ -162,7 +162,7 @@ public:
 protected:
 
   /*! \brief The default constructor should not be used, so it is protected. */
-  VirtualGrid();
+  UniformGrid();
     
 private:
 
@@ -179,24 +179,25 @@ private:
   };
   std::vector<Bin> m_bins;
 
-  DISABLE_COPY_AND_ASSIGNMENT(VirtualGrid);
-  DISABLE_MOVE_AND_ASSIGNMENT(VirtualGrid);
+  DISABLE_COPY_AND_ASSIGNMENT(UniformGrid);
+  DISABLE_MOVE_AND_ASSIGNMENT(UniformGrid);
 
 };//end class
 
-}//end namespace quest
+} //end namespace primal
+} //end namespace axom
 
 
 
 //------------------------------------------------------------------------------
-// VirtualGrid implementation
+// UniformGrid implementation
 //------------------------------------------------------------------------------
-namespace quest
-{
+namespace axom {
+namespace primal {
 
 //------------------------------------------------------------------------------
 template< typename T, int NDIMS >
-VirtualGrid< T, NDIMS >::VirtualGrid()
+UniformGrid< T, NDIMS >::UniformGrid()
 {
 
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
@@ -213,7 +214,7 @@ VirtualGrid< T, NDIMS >::VirtualGrid()
 }
 
 template< typename T, int NDIMS >
-VirtualGrid< T, NDIMS >::VirtualGrid(const double * lower_bound,
+UniformGrid< T, NDIMS >::UniformGrid(const double * lower_bound,
                                      const double * upper_bound,
                                      const int * res)
 {
@@ -237,19 +238,19 @@ VirtualGrid< T, NDIMS >::VirtualGrid(const double * lower_bound,
 }
 
 template< typename T, int NDIMS >
-VirtualGrid< T, NDIMS >::~VirtualGrid()
+UniformGrid< T, NDIMS >::~UniformGrid()
 {
 }
 
 //------------------------------------------------------------------------------
 template< typename T, int NDIMS >
-int VirtualGrid<T, NDIMS>::getBinIndex(const PointType & pt)
+int UniformGrid<T, NDIMS>::getBinIndex(const PointType & pt) const
 {
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
   int retval = 0;
   for (int i = 0; i < NDIMS; ++i) {
-    int tmp = static_cast<int>((pt[i] - m_origin[i]) / m_spacing[i]);
+    int tmp = static_cast<int>(floor((pt[i] - m_origin[i]) / m_spacing[i]));
 
     if (tmp < 0 || tmp >= m_resolution[i]) {
       return INVALID_BIN_INDEX;
@@ -267,19 +268,19 @@ int VirtualGrid<T, NDIMS>::getBinIndex(const PointType & pt)
 }
 
 template< typename T, int NDIMS >
-bool VirtualGrid<T, NDIMS>::isValidIndex(int index) const
+bool UniformGrid<T, NDIMS>::isValidIndex(int index) const
 {
   return index >=0 && index < static_cast<int>(m_bins.size());
 }
 
 template< typename T, int NDIMS >
-int VirtualGrid<T, NDIMS>::getNumBins()
+int UniformGrid<T, NDIMS>::getNumBins() const
 {
   return m_bins.size();
 }
 
 template< typename T, int NDIMS >
-bool VirtualGrid<T, NDIMS>::isBinEmpty(int index)
+bool UniformGrid<T, NDIMS>::isBinEmpty(int index) const
 {
   if (!isValidIndex(index)) {
     return true;
@@ -290,7 +291,7 @@ bool VirtualGrid<T, NDIMS>::isBinEmpty(int index)
 
 //------------------------------------------------------------------------------
 template< typename T, int NDIMS >
-std::vector<T>& VirtualGrid<T, NDIMS>::getBinContents(int index)
+std::vector<T>& UniformGrid<T, NDIMS>::getBinContents(int index)
 {
   SLIC_ASSERT(isValidIndex(index));
 
@@ -298,7 +299,7 @@ std::vector<T>& VirtualGrid<T, NDIMS>::getBinContents(int index)
 }
 
 template< typename T, int NDIMS >
-const std::vector<T>& VirtualGrid<T, NDIMS>::getBinContents(int index) const
+const std::vector<T>& UniformGrid<T, NDIMS>::getBinContents(int index) const
 {
   SLIC_ASSERT(isValidIndex(index));
 
@@ -307,7 +308,7 @@ const std::vector<T>& VirtualGrid<T, NDIMS>::getBinContents(int index) const
 
 //------------------------------------------------------------------------------
 template< typename T, int NDIMS >
-void VirtualGrid<T, NDIMS>::clear(int index)
+void UniformGrid<T, NDIMS>::clear(int index)
 {
   if (isValidIndex(index)) {
     m_bins[index].ObjectArray.clear();
@@ -316,7 +317,7 @@ void VirtualGrid<T, NDIMS>::clear(int index)
 
 //------------------------------------------------------------------------------
 template< typename T, int NDIMS >
-void VirtualGrid<T, NDIMS>::addObj(const T& obj, int index)
+void UniformGrid<T, NDIMS>::addObj(const T& obj, int index)
 {
   SLIC_CHECK(!isValidIndex(index));
 
@@ -327,7 +328,7 @@ void VirtualGrid<T, NDIMS>::addObj(const T& obj, int index)
 
 //------------------------------------------------------------------------------
 template< typename T, int NDIMS>
-void VirtualGrid<T, NDIMS>::insert(const BoxType& BB,
+void UniformGrid<T, NDIMS>::insert(const BoxType& BB,
                                   const T& obj)
 {
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
@@ -335,7 +336,7 @@ void VirtualGrid<T, NDIMS>::insert(const BoxType& BB,
   PointType bmin = BB.getMin();
   PointType bmax = BB.getMax();
 
-  // Clamp the input bounding-box to at most the VirtualGrid bounding box
+  // Clamp the input bounding-box to at most the UniformGrid bounding box
   for (int dim = 0; dim < NDIMS; ++dim) {
     if (bmin[dim] < m_origin[dim]) {
       bmin[dim] = m_origin[dim];
@@ -383,9 +384,10 @@ void VirtualGrid<T, NDIMS>::insert(const BoxType& BB,
   }
 }
 
-}  /* end namespace quest */
+}  /* end namespace primal */
+}  /* end namespace axom */
 
 
-#endif /* VIRTUALGRID_HPP_ */
+#endif /* UNIFORMGRID_HPP_ */
 
 

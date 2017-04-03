@@ -27,7 +27,7 @@ TEST( quest_virtual_grid, bbox_constructor)
     const int resolution = 4;
     int res[DIM] = {resolution, resolution, resolution};
 
-    quest::VirtualGrid<int, DIM> valid(p_min, p_max, res);
+    axom::primal::UniformGrid<int, DIM> valid(p_min, p_max, res);
     EXPECT_EQ(valid.getNumBins(),  resolution * resolution * resolution);
     EXPECT_TRUE(valid.isBinEmpty(0));
 
@@ -44,7 +44,7 @@ TEST( quest_virtual_grid, indexing)
     const int resolution = 100;
     int res[DIM] = {resolution, resolution, resolution};
 
-    quest::VirtualGrid<int, DIM> valid(p_min, p_max, res);
+    axom::primal::UniformGrid<int, DIM> valid(p_min, p_max, res);
 
     // valid has 100 bins in each dimension, and each bin has a
     // width of 1.0.  The bins are laid out in row-major order.
@@ -74,12 +74,12 @@ TEST( quest_virtual_grid, indexing)
 
     QPoint pt5 = QPoint::make_point(12.5, 100.1, 0);
     // Above 100 is over the fence.
-    expectedBin = quest::VirtualGrid<int, DIM>::INVALID_BIN_INDEX;  
+    expectedBin = axom::primal::UniformGrid<int, DIM>::INVALID_BIN_INDEX;  
     EXPECT_EQ(expectedBin, valid.getBinIndex(pt5));
 
     QPoint pt6 = QPoint::make_point(-0.5, 12, 54.3);
     // Below 0 is over (under?) the fence.
-    expectedBin = quest::VirtualGrid<int, DIM>::INVALID_BIN_INDEX;  
+    expectedBin = axom::primal::UniformGrid<int, DIM>::INVALID_BIN_INDEX;  
     EXPECT_EQ(expectedBin, valid.getBinIndex(pt6));
 
     QPoint pt7 = QPoint::make_point(100., 100., 100.);
@@ -88,7 +88,7 @@ TEST( quest_virtual_grid, indexing)
     // (100., 100., 100.) is not included in the bin or the index.
     // TODO: Move this test case to right below pt4 in the event this
     // behavior changes.
-    expectedBin = quest::VirtualGrid<int, DIM>::INVALID_BIN_INDEX;  
+    expectedBin = axom::primal::UniformGrid<int, DIM>::INVALID_BIN_INDEX;  
     EXPECT_EQ(expectedBin, valid.getBinIndex(pt7));
 }
 
@@ -97,7 +97,7 @@ TEST( quest_virtual_grid, indexing)
 
 // Verify the count in each bin against the map maintained "by hand".
 template< typename T, int NDIMS >
-void checkBinCounts(quest::VirtualGrid<T, NDIMS> & v,
+void checkBinCounts(axom::primal::UniformGrid<T, NDIMS> & v,
                    std::map<int, int> & bincounts)
 {
   int bcount = v.getNumBins();
@@ -138,7 +138,7 @@ TEST(quest_virtual_grid, add_stuff_3D){
     double maxpoint[DIM] = {mpt, mpt, mpt};
     const int resolution = 6;
     int res[DIM] = {resolution, resolution, resolution};
-    quest::VirtualGrid<int, DIM> valid(origin, maxpoint, res);
+    axom::primal::UniformGrid<int, DIM> valid(origin, maxpoint, res);
 
     std::map<int, int> check;
 
@@ -215,7 +215,7 @@ TEST(quest_virtual_grid, delete_stuff_3D){
     double maxpoint[DIM] = {mpt, mpt, mpt};
     const int resolution = 6;
     int res[DIM] = {resolution, resolution, resolution};
-    quest::VirtualGrid<int, DIM> valid(origin, maxpoint, res);
+    axom::primal::UniformGrid<int, DIM> valid(origin, maxpoint, res);
 
     std::map<int, int> check;
 
@@ -265,7 +265,7 @@ TEST(quest_virtual_grid, delete_stuff_3D){
     }
     {
       SCOPED_TRACE("Try clearing the invalid bin");
-      valid.clear(quest::VirtualGrid<int, DIM>::INVALID_BIN_INDEX);
+      valid.clear(axom::primal::UniformGrid<int, DIM>::INVALID_BIN_INDEX);
       checkBinCounts(valid, check);
     }
 }
@@ -281,7 +281,7 @@ TEST(quest_virtual_grid, add_stuff_2D){
     double maxpoint[DIM] = {mpt, mpt};
     const int resolution = 6;
     int res[DIM] = {resolution, resolution};
-    quest::VirtualGrid<int, DIM> valid(origin, maxpoint, res);
+    axom::primal::UniformGrid<int, DIM> valid(origin, maxpoint, res);
 
     std::map<int, int> check;
 
@@ -356,7 +356,7 @@ TEST(quest_virtual_grid, delete_stuff_2D){
     double maxpoint[DIM] = {mpt, mpt};
     const int resolution = 6;
     int res[DIM] = {resolution, resolution};
-    quest::VirtualGrid<int, DIM> valid(origin, maxpoint, res);
+    axom::primal::UniformGrid<int, DIM> valid(origin, maxpoint, res);
 
     std::map<int, int> check;
 
@@ -404,7 +404,7 @@ TEST(quest_virtual_grid, delete_stuff_2D){
     }
     {
       SCOPED_TRACE("Try clearing the invalid bin");
-      valid.clear(quest::VirtualGrid<int, DIM>::INVALID_BIN_INDEX);
+      valid.clear(axom::primal::UniformGrid<int, DIM>::INVALID_BIN_INDEX);
       checkBinCounts(valid, check);
     }
 }
