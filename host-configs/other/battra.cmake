@@ -49,8 +49,7 @@ set(UNCRUSTIFY_EXECUTABLE "/home/taylor16/tpl/v2/bin/uncrustify" CACHE PATH "")
 set(SPARSEHASH_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
 
 # boost headers from uberenv
-set(ENABLE_BOOST ON CACHE PATH "")
-set(BOOST_ROOT "/home/taylor16/tpl/v2" CACHE PATH "")
+set(BOOST_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
 
 # lcov and genhtml from uberenv
 set(LCOV_PATH "/home/taylor16/tpl/v2/usr/bin/lcov" CACHE PATH "")
