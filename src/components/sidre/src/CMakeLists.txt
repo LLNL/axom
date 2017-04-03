@@ -60,7 +60,7 @@ set(sidre_depends
     slic)
 
 if(SPARSEHASH_FOUND)
-   set(sidre_depends ${sidre_depends} sparsehash)
+   set(sidre_depends ${sidre_depends} sparsehash sparsehash_internal)
 endif()
  
 #
