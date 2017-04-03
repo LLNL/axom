@@ -14,11 +14,10 @@
 
 #include "primal/Point.hpp"
 #include "primal/BoundingBox.hpp"
-
-#include "quest/VirtualGrid.hpp"
+#include "primal/UniformGrid.hpp"
 
 //-----------------------------------------------------------------------------
-TEST( quest_virtual_grid, bbox_constructor)
+TEST( primal_uniform_grid, bbox_constructor)
 {
     static const int DIM = 3;
 
@@ -33,7 +32,7 @@ TEST( quest_virtual_grid, bbox_constructor)
 
 }
 
-TEST( quest_virtual_grid, indexing)
+TEST( primal_uniform_grid, indexing)
 {
     static const int DIM = 3;
     typedef double CoordType;
@@ -127,7 +126,7 @@ void zero(std::map<int, int> & m, int idx)
   m.erase(idx);
 }
 
-TEST(quest_virtual_grid, add_stuff_3D){
+TEST(primal_uniform_grid, add_stuff_3D){
     static const int DIM = 3;
     typedef double CoordType;
     typedef axom::primal::Point<CoordType, DIM> QPoint;
@@ -204,7 +203,7 @@ TEST(quest_virtual_grid, add_stuff_3D){
     }
 }
 
-TEST(quest_virtual_grid, delete_stuff_3D){
+TEST(primal_uniform_grid, delete_stuff_3D){
     static const int DIM = 3;
     typedef double CoordType;
     typedef axom::primal::Point<CoordType, DIM> QPoint;
@@ -270,7 +269,7 @@ TEST(quest_virtual_grid, delete_stuff_3D){
     }
 }
 
-TEST(quest_virtual_grid, add_stuff_2D){
+TEST(primal_uniform_grid, add_stuff_2D){
     static const int DIM = 2;
     typedef double CoordType;
     typedef axom::primal::Point<CoordType, DIM> QPoint;
@@ -345,7 +344,7 @@ TEST(quest_virtual_grid, add_stuff_2D){
     }
 }
 
-TEST(quest_virtual_grid, delete_stuff_2D){
+TEST(primal_uniform_grid, delete_stuff_2D){
     static const int DIM = 2;
     typedef double CoordType;
     typedef axom::primal::Point<CoordType, DIM> QPoint;
