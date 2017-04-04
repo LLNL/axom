@@ -57,7 +57,6 @@ By default, Fortran will create one file per class similar to the way C is handl
 
 If one class makes use of another class, it is necessary to put all of the class
 into a single file using the *F_module_per_class* option.
-
 Each Fortran file will only contain one module to make it easier to create makefile
 dependencies using pattern rules::
 
@@ -123,6 +122,131 @@ Function name - Updated before processing each function or method.
 +------------------------+---------------------------------+------------------+
 | Fortran generic name   | *F_name_generic_template*       | *F_name_generic* |
 +------------------------+---------------------------------+------------------+
+
+example
+^^^^^^^
+
+For example, a library has an ``initialize`` function which is
+in a namespace.  In C++ it is called as::
+
+  #include "library.hpp"
+
+  library::initialize()
+
+By default this will be a function in a Fortran module and 
+can be called as::
+
+  use library
+
+  call initialize
+
+Since ``initialize`` is a rather common name for a function, it may 
+be desirable to rename the Fortran wrapper to something more specific.
+The name of the Fortran implementation wrapper can be changed
+by setting *F_name_impl*::
+
+  options:
+    library: library
+    namespace: library
+
+  function:
+  -  decl: void initialize
+     F_name_impl: library_initialize
+
+To rename all functions, set the template in the toplevel *options*::     
+
+  options:
+    library: library
+    namespace: library
+    F_name_impl_function_template:
+      "{library}_{underscore_name}{function_suffix}"
+
+  function:
+  -  decl: void initialize
+
+The alternative is to have the user rename it at the point
+of use if there is a conflict with other modules::
+
+   use library, library_initialize => initialize
+
+   call library_initialize
+
+
+How Code is Generated
+---------------------
+
+This section show the templates which are used to create code.
+The names in curly parens are user settable values. 
+
+The C wrapper code::
+
+    struct s_{C_type_name};
+    typedef struct s_{C_type_name} {C_type_name};
+
+    AA_exclass1 * AA_exclass1_new(const char * name);
+
+C implementation::
+
+    {C_return_type} {C_name}({C_prototype})
+    AA_exclass1 * AA_exclass1_new(const char * name)
+    {
+        {C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});
+        ExClass1 *selfobj = new ExClass1(name);
+        return static_cast<AA_exclass1 *>(static_cast<void *>(selfobj));
+    }
+
+    void AA_exclass1_delete(AA_exclass1 * self)
+    {
+        ExClass1 *selfobj = static_cast<ExClass1 *>(
+            static_cast<void *>(self));
+        delete selfobj;
+    }
+
+    int AA_exclass1_increment_count(AA_exclass1 * self, int incr)
+    {
+        {C_const}{cpp_class} *{C_this}obj =
+            static_cast<{C_const}{cpp_class} *>(
+                static_cast<{C_const}void *>({C_this}));
+        ExClass1 *selfobj = static_cast<ExClass1 *>(
+            static_cast<void *>(self));
+
+        {rv_decl} = {CPP_this_call}{method_name}{CPP_template}
+            ({C_call_list});
+        int rv = selfobj->incrementCount(incr);
+        return rv;
+    }
+
+
+The template for Fortran code showing names which may 
+be controlled directly by the input file::
+
+    module {F_module_name}
+
+      type {F_derived_name}
+        type(C_PTR) {F_derived_member}
+      contains
+        procedure :: {F_name_method} => {F_name_impl}
+        generic :: {F_name_generic} => {F_name_method}, ...
+      end type {F_derived_name}
+
+      interface
+        subroutine {F_C_name} bind(C, name="{C_name}")
+          ...
+        end subroutine {F_C_name}
+      end interface
+
+      interface {F_name_generic}
+        module procedure {F_name_impl}
+      end interface {F_name_generic}
+
+    contains
+
+      subroutine {F_name_impl}
+        ...
+      end subroutine {F_name_impl}
+
+    end module {F_module_name}
+
 
 Header Files
 ^^^^^^^^^^^^

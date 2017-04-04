@@ -20,7 +20,6 @@ Contents:
    tutorial
    advanced
    reference
-   faq
    previouswork
    futurework
 
