@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "axom/Macros.hpp"
-#include "axom_common/StringUtilities.hpp"
+#include "axom_utils/StringUtilities.hpp"
 
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 #include "lumberjack/Lumberjack.hpp"

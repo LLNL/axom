@@ -26,7 +26,7 @@ endif()
 
 # blt_add_executable depends_on handles our include dir settings
 # these teste are using boost so boost needs to be a dep
-set(slam_tests_depends_on axom_common slic slam)
+set(slam_tests_depends_on axom_utils slic slam)
 if (BOOST_FOUND)
     list(APPEND slam_tests_depends_on boost)
 endif()

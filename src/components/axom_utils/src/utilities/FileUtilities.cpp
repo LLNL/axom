@@ -18,7 +18,7 @@
  ******************************************************************************
  */
 
-#include "axom_common/FileUtilities.hpp"
+#include "axom_utils/FileUtilities.hpp"
 
 #include <string>
 #include <fstream>

@@ -15,7 +15,7 @@
 // axom includes
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
-#include "axom_common/Utilities.hpp"
+#include "axom_utils/Utilities.hpp"
 
 #include "primal/BVHTree.hpp"
 #include "primal/BoundingBox.hpp"

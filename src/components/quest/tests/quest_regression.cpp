@@ -52,8 +52,8 @@
 #include "fmt/fmt.hpp"
 
 #include "axom/Types.hpp"
-#include "axom_common/Timer.hpp"
-#include "axom_common/Utilities.hpp"
+#include "axom_utils/Timer.hpp"
+#include "axom_utils/Utilities.hpp"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"

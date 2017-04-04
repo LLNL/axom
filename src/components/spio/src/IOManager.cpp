@@ -22,7 +22,7 @@
 #include "IOManager.hpp"
 
 // Other axom headers
-#include "axom_common/FileUtilities.hpp"
+#include "axom_utils/FileUtilities.hpp"
 
 // SiDRe project headers
 #include "sidre/DataGroup.hpp"

@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------------------
 
 set(quest_example_depends
-        axom_common
+        axom_utils
         slic
         mint
         slam

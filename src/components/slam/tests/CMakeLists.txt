@@ -29,7 +29,7 @@ set(gtest_slam_tests
 
 # blt_add_executable depends_on handles our include dir settings
 # these teste are using boost so boost needs to be a dep
-set(slam_tests_depends_on axom_common slic slam gtest)
+set(slam_tests_depends_on axom_utils slic slam gtest)
 if (BOOST_FOUND)
     list(APPEND slam_tests_depends_on boost)
 endif()

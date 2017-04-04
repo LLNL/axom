@@ -63,7 +63,7 @@ endif()
 # make the library
 #
 set(slic_depends_on
-    axom_common
+    axom_utils
 )
 if (ENABLE_LUMBERJACK)
     list(APPEND slic_depends_on lumberjack)

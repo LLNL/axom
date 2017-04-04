@@ -9,8 +9,8 @@
 
 #include "axom/config.hpp"       // defines AXOM_USE_CXX11
 #include "axom/Macros.hpp"
-#include "axom_common/Timer.hpp"
-#include "axom_common/Utilities.hpp"
+#include "axom_utils/Timer.hpp"
+#include "axom_utils/Utilities.hpp"
 
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"

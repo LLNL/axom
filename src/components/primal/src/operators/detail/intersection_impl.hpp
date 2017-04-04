@@ -17,7 +17,7 @@
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
 
-#include "axom_common/Utilities.hpp"
+#include "axom_utils/Utilities.hpp"
 
 namespace axom {
 namespace primal {

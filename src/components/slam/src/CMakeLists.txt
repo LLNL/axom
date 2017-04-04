@@ -61,7 +61,7 @@ set(slam_sources
 # make the library
 ####################################
 
-set(slam_depends_on axom_common slic)
+set(slam_depends_on axom_utils slic)
 if (BOOST_FOUND)
     list(APPEND slam_depends_on boost)
 endif()

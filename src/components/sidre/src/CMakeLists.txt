@@ -53,7 +53,7 @@ if (ENABLE_FORTRAN)
 endif()
 
 set(sidre_depends
-    axom_common
+    axom_utils
     conduit
     conduit_relay
     hdf5

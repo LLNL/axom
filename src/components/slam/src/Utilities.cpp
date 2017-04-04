@@ -10,7 +10,7 @@
 
 #include "slam/Utilities.hpp"
 
-#include "axom_common/FileUtilities.hpp"
+#include "axom_utils/FileUtilities.hpp"
 #include "slic/slic.hpp"
 
 namespace axom {

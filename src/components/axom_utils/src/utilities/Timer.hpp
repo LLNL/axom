@@ -14,9 +14,9 @@
 
 #include "axom/config.hpp"
 #ifdef AXOM_USE_CXX11
-  #include "axom_common/ChronoTimer.hpp"
+  #include "axom_utils/ChronoTimer.hpp"
 #else
-  #include "axom_common/TimeofdayTimer.hpp"
+  #include "axom_utils/TimeofdayTimer.hpp"
 #endif
 
 namespace {

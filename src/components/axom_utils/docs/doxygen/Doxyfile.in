@@ -1,4 +1,4 @@
-PROJECT_NAME  = AxomCommon
+PROJECT_NAME  = AxomUtils
 PROJECT_BRIEF = "Common utilities for Axom"
 INPUT = @PROJECT_SOURCE_DIR@/src/utilities
 GENERATE_XML = YES
