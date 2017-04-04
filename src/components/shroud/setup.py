@@ -37,7 +37,7 @@ setup(
 
     # Author details
     author='Lawrence Livermore National Laboratory',
-    author_email='asctoolkit-users@llnl.gov',
+    author_email='axom-users@llnl.gov',
 
     # Choose your license
 #    license='MIT',

@@ -34,7 +34,9 @@ path PATH
        Colon delimited paths to search for splicer files, may
        be supplied multiple times to append to path.
 
-
+sitedir
+       Return the installation directory of shroud and exit.
+       This path can be used to find cmake/SetupShroud.cmake.
 
 Code
 ----

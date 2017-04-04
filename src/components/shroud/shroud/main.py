@@ -1472,6 +1472,8 @@ def main():
                         help='Colon delimited paths to search for '
                         'splicer files, may be supplied multiple '
                         'times to append to path.')
+    parser.add_argument('--sitedir', action='store_true',
+                        help='Print install location and quit')
     parser.add_argument('filename', nargs='*',
                         help='Input file to process.')
 
@@ -1485,6 +1487,9 @@ def main_with_args(args):
     """Main after args have been parsed.
     Useful for testing.
     """
+
+    if args.sitedir:
+        raise SystemExit(os.path.dirname(__file__))
 
     # check command line options
     if len(args.filename) == 0:
