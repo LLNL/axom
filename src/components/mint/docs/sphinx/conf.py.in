@@ -52,7 +52,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Primal'
+project = u'Mint'
 copyright = u'2016, LLNS'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -175,7 +175,7 @@ pygments_style = 'sphinx'
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Primaldoc'
+htmlhelp_basename = 'Mintdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -195,7 +195,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'Primal.tex', u'Primal Documentation',
+  ('index', 'Mint.tex', u'Mint Documentation',
    u'LLNS', 'manual'),
 ]
 
@@ -225,7 +225,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'primal', u'Primal Documentation',
+    ('index', 'mint', u'Mint Documentation',
      [u'LLNS'], 1)
 ]
 
@@ -239,8 +239,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Primal', u'Primal Documentation',
-   u'LLNS', 'Primal', 'Primitives & Algorithms',
+  ('index', 'Mint', u'Mint Documentation',
+   u'LLNS', 'Mint', 'Mesh Infrastructure Toolkit',
    'Miscellaneous'),
 ]
 
@@ -258,6 +258,6 @@ texinfo_documents = [
 
 # add breathe support
 
-breathe_projects = { "primal": "@CMAKE_CURRENT_BINARY_DIR@/../doxygen/xml/" }
+breathe_projects = { "mint": "@CMAKE_CURRENT_BINARY_DIR@/../doxygen/xml/" }
 
-breathe_default_project = "primal"
+breathe_default_project = "mint"
