@@ -39,6 +39,72 @@ sitedir
        This path can be used to find cmake/SetupShroud.cmake.
 
 
+Format Dictionary
+-----------------
+
+Each scope has its own format dictionary.  If a value is not found in
+the dictionary, then the parent dictionaries will be recursively
+searched.
+
+Library
+^^^^^^^
+
+library
+    The value of global **field** *library*.
+
+library_lower
+    Lowercase version of *library*.
+
+library_upper
+    Uppercase version of *library*.
+
+
+Class
+^^^^^
+
+cpp_class
+    The name of the C++ class from the YAML input file.
+
+class_lower
+    Lowercase version of *cpp_class*.
+
+class_upper
+    Uppercase version of *cpp_class*.
+
+class_name
+    Variable which may be used in creating function names.
+    Defaults to evaluation of *class_name_template*.
+    Outside of a class, set to empty string.
+
+C_prefix
+    Prefix for C wrapper functions.
+    Defaults to first three letters of *library*.
+    Set from **options**.
+
+F_C_prefix
+    Prefix for Fortran name for C wrapper.  Defaults to ``c_``.
+    Set from **options**.
+
+
+Function
+^^^^^^^^
+
+function_name
+    Name of function in the YAML file.
+
+underscore_name
+    *function_name* converted from CamelCase to snake_case.
+
+function_suffix
+    Suffix append to name.  Used to differentiate overloaded functions.
+    Defaults to a sequence number (e.g. `_0`, `_1`, ...) but can be set
+    by using the function field *function_suffix*.
+    Mulitple suffixes may be applied.
+
+Argument
+^^^^^^^^
+
+
 Global Fields
 -------------
 
@@ -123,6 +189,12 @@ CPP_this
 F_C_prefix
   Prefix added to name of generated Fortran interface for C routines.
   Defaults to **c_**.
+
+F_derived_member
+    The name of the member of the Fortran derived type which
+    wraps a C++ class.  It will contain a ``type(C_PTR)`` which
+    points to the C++ instance.
+    Defaults to *voidptr*.
 
 F_this
    Name of the Fortran argument which is the derived type
@@ -289,16 +361,6 @@ LUA_name_impl_template
 
 
 
-
-
-F_derived_member
-    The name of the member of the Fortran derived type which
-    wraps a C++ class.  It will contain a ``type(C_PTR)`` which
-    points to the C++ instance.
-    Defaults to *voidptr*.
-
-
-
 Types Dictionary
 ----------------
 
@@ -424,7 +486,8 @@ f_type
 
 f_derived_type
     Fortran derived type name.
-    Defaults to *None* i.e. use C++ class name.
+    Defaults to *None* which will use the C++ class name
+    for the Fortran derived type name.
 
 f_args
     Arguments in the Fortran wrapper to pass to the C function.
@@ -616,6 +679,10 @@ C_header_filename
 C_impl_filename
    Output file name for implementation of wrapper routines.
    Defaults to evaluation of option *C_impl_filename_class_template*.
+
+F_derived_name
+   Name of Fortran derived type for this class.
+   Defaults to the C++ class name.
 
 F_module_name
    Name of Fortran module for this class.

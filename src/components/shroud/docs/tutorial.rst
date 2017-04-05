@@ -654,7 +654,7 @@ Shroud predefines many of the native types.
   * std::string
 
 .. note:: Fortran has no support for unsigned types.
-          ``size_t`` will be the correct number of bites, but
+          ``size_t`` will be the correct number of bytes, but
           will be signed.
 
 Typedef

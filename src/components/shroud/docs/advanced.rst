@@ -1,23 +1,78 @@
 Advanced Usage
 ==============
 
-Customizing Behavior
---------------------
+How code is generated
+---------------------
+
+In some sense, Shroud can be thought of as a fancy macro processor.
+It takes the function declarations from the YAML file and break them
+down into a series of contexts (library, class, function) and defines
+a dictionary of format macros of the form key=value.  There are then a
+series of macro templates which are expanded to create the wrapper
+functions. Some name templates can be specified as options.  But the
+overall structure of the generated code is defined by the classes and
+functions in the YAML file as well as the requirements of C++ and
+Fortran syntax.
+
+Format strings contain “replacement fields” surrounded by curly braces
+``{}``. Anything that is not contained in braces is considered literal
+text, which is copied unchanged to the output. If you need to include
+a brace character in the literal text, it can be escaped by doubling:
+``{{`` and ``}}``. [Python_Format]_
+
+Due to a feature of YAML, if a string starts with a curly brace YAML
+will interpret it as a dictionary instead of as part of the
+string. To avoid this behavior, strings which start with a curly brace
+should be quoted::
+
+    name : "{fmt}"
+
+Some macros consist of blocks of code.  YAML provides a syntax for 
+add multiple lines::
+
+    C_invalid_name: >
+        if (! isNameValid({cpp_var})) {{
+            return NULL;
+        }}
+
+Declarations may be split across several lines::
+
+    - decl: void Sum(int len, int *values+dimension+intent(in),
+                     int *result+intent(out))
+
+
+
+Customizing Behavior in the YAML file
+-------------------------------------
 
 Fields
 ^^^^^^
 
-Fields only apply to the type, class or function to which it belongs.
-They are not inherited.
+A fields only apply to the type, class or function to which it belongs.
+It is not inherited.
 For example, *C_name* is a field which is used to explicitly name
 a single C wrapper function.  While *C_name_template* is an option which
-controls the default value of *C_name*.
+controls the default value of *C_name*::
+
+    library: testnames
+
+    classes:
+      - name: Names
+        C_header_filename: foo.h
+        C_impl_filename: foo.cpp
+        methods:
+        -  decl: void method1
+           C_name: testmethod1
 
 Annotations
 ^^^^^^^^^^^
 
 Annotations or attributes apply to specific arguments or results.
-They describe semantic behavior for an argument.
+They describe semantic behavior for an argument::
+
+    - decl: Class1 *new()  +constructor
+    - decl: void delete()  +destructor
+    - decl: void Sum(int len, int *values+dimension+intent(in))
 
 Options
 ^^^^^^^
@@ -49,82 +104,32 @@ This allows the user to modifiy behavior for all functions or just a single one:
 What files are created
 ----------------------
 
-Shroud will create multiple output file which must be compiled with C++ or Fortran compilers.
+Shroud will create multiple output file which must be compiled with
+C++ or Fortran compilers.
 
 One C++ file will be created for the library and one file for each C++ class.
 
-By default, Fortran will create one file per class similar to the way C is handled.
+By default, Fortran will create one file per class similar to the way
+C is handled.
 
-If one class makes use of another class, it is necessary to put all of the class
+If one class makes use of another class in a library,
+it is necessary to put all of the class
 into a single file using the *F_module_per_class* option.
-Each Fortran file will only contain one module to make it easier to create makefile
-dependencies using pattern rules::
+Each Fortran file will only contain one module to make it easier to
+create makefile dependencies using pattern rules::
 
     %.o %.mod : %.f
 
 
-How Names are Computed
-----------------------
+How Names are created
+---------------------
 
-Shroud attempts to provide user control of names while providing reasonable defaults.
-Names are controlled by a format string or can be specified explicitly.
-
-Format strings contain “replacement fields” surrounded by curly braces
-{}. Anything that is not contained in braces is considered literal
-text, which is copied unchanged to the output. If you need to include
-a brace character in the literal text, it can be escaped by doubling:
-{{ and }}. [Python_Format]_
-
-The replacement fields are defined by the format dictionary.  Shroud
-defines values which may be used.
-
-Library name - Updated after reading YAML file.
-   * library - The value of **field** *library*.
-   * library_lower - Lowercase version of *library*.
-   * library_upper - Uppercase version of *library*.
-
-Class name - Updated before processing each class.
-   * cpp_class - The name of the C++ class from the YAML input file.
-   * class_lower - Lowercase version of *cpp_class*.
-   * class_upper - Uppercase version of *cpp_class*.
-   * class_name  - Variable which may be used in creating function names.
-                   Defaults to evaluation of *class_name_template*.
-                   Outside of a class, set to empty string.
-   * C_prefix - Prefix for C wrapper functions.
-     Defaults to first three letters of *library*.
-     Set from **options**.
-   * F_C_prefix - Prefix for Fortran name for C wrapper.  Defaults to ``c_``.
-     Set from **options**.
-
-Function name - Updated before processing each function or method.
-   * function_name - Name of function in the YAML file.
-   * underscore_name - *function_name* converted from CamelCase to snake_case.
-   * function_suffix - Suffix append to name.  Used to differentiate overloaded functions.
-     Defaults to a sequence number (e.g. `_0`, `_1`, ...) but can be set
-     by using the function field *function_suffix*.
-     Mulitple suffixes may be applied.
-
-
-
-+------------------------+---------------------------------+------------------+
-| Description            | Option                          | Override         |
-+========================+=================================+==================+
-| C wrapper              | *C_name_template*               | *C_name*         |
-| implementation         |                                 |                  |
-+------------------------+---------------------------------+------------------+
-| Fortran BIND(C)        | *F_C_name_template*             | *F_C_name*       |
-| interface              |                                 |                  |
-+------------------------+---------------------------------+------------------+
-| Fortran wrapper        | *F_name_impl_template*          | *F_name_impl*    |
-| implementation         |                                 |                  |
-+------------------------+---------------------------------+------------------+
-| Fortran method         | *F_name_method_template*        | *F_name_method*  |
-+------------------------+---------------------------------+------------------+
-| Fortran generic name   | *F_name_generic_template*       | *F_name_generic* |
-+------------------------+---------------------------------+------------------+
-
-example
-^^^^^^^
+Shroud attempts to provide user control of names while providing
+reasonable defaults.
+Each name is based on the library, class, method or variable name
+in the current scope.  Most names have a template which may be used
+to control how the names are generated on a global scale.  Many names
+may also be explicitly specified by a field.
 
 For example, a library has an ``initialize`` function which is
 in a namespace.  In C++ it is called as::
@@ -164,19 +169,12 @@ To rename all functions, set the template in the toplevel *options*::
   function:
   -  decl: void initialize
 
-The alternative is to have the user rename it at the point
-of use if there is a conflict with other modules::
-
-   use library, library_initialize => initialize
-
-   call library_initialize
-
 
 How Functions are Generated
 ---------------------------
 
 This section show the format templates which are used to create code.
-The names in curly parens are user settable values. 
+The names in curly parens are from the format dictionary.
 
 The C wrapper code::
 
@@ -327,9 +325,17 @@ Local Variable
 
 *SH_* prefix on local variables.
 
-Results are named from *fmt.rv*.
+Results are named from *fmt.C_result* or *fmt.F_result*.
 
 Fortran option F_result.
+
+
+Type scope
+----------
+
+Shroud defines type maps for builtin types.
+
+User defined types may also be created.
 
 
 Character Type
