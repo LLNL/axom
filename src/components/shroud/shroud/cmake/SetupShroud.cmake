@@ -1,3 +1,16 @@
+# Setup Shroud
+# This file defines:
+#  SHROUD_FOUND - If Shroud was found
+
+if(NOT SHROUD_EXECUTABLE)
+    MESSAGE(FATAL_ERROR "Could not find Shroud. Shroud requires explicit SHROUD_EXECUTABLE.")
+endif()
+
+message(STATUS Found SHROUD: ${SHROUD_EXECUTABLE})
+
+add_custom_target(generate)
+set(SHROUD_FOUND TRUE)
+
 #
 # Setup targets to generate code.
 #
@@ -121,11 +134,3 @@ macro(add_shroud)
 
     add_dependencies(generate ${_shroud_target})
 endmacro(add_shroud)
-
-
-if(ENABLE_SHROUD)
-    message(STATUS "Shroud is enabled.")
-    add_custom_target(generate)
-else()
-    message(STATUS "Shroud is disabled.")
-endif()
