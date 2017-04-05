@@ -2435,6 +2435,7 @@ bool DataGroup::rename(const std::string& new_name)
           m_name = new_name;
 
           DataGroup * attached_group = parent->attachGroup(detached_group);
+          AXOM_DEBUG_VAR(attached_group);
           SLIC_CHECK(attached_group == this);
         }
       } else {

@@ -9,6 +9,7 @@
         {
             "C_header_filename": "foo.h", 
             "C_impl_filename": "foo.cpp", 
+            "F_derived_name": "FNames", 
             "F_impl_filename": "foo.f", 
             "F_module_dependencies": [
                 [
@@ -25,7 +26,7 @@
                 "C_impl_filename": "foo.cpp", 
                 "C_type_name": "TES_names", 
                 "F_C_prefix": "c_", 
-                "F_derived_name": "names", 
+                "F_derived_name": "FNames", 
                 "F_impl_filename": "foo.f", 
                 "F_module_name": "name_module", 
                 "PY_PyObject": "PY_Names", 
@@ -382,7 +383,7 @@
             "cpp_to_c": "static_cast<{C_const}TES_names *>(static_cast<{C_const}void *>({cpp_var}))", 
             "cpp_type": "Names", 
             "f_args": "{c_var}%{F_derived_member}", 
-            "f_derived_type": "names", 
+            "f_derived_type": "FNames", 
             "f_module": {
                 "name_module": [
                     "names"
