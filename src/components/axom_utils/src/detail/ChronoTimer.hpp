@@ -12,7 +12,7 @@
 #ifndef CHRONO_TIMER_HPP_
 #define CHRONO_TIMER_HPP_
 
-#include "common/config.hpp"    // defines AXOM_USE_CXX11
+#include "axom/config.hpp"    // defines AXOM_USE_CXX11
 
 #ifdef AXOM_USE_CXX11
 

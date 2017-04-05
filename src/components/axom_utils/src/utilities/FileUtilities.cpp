@@ -18,7 +18,7 @@
  ******************************************************************************
  */
 
-#include "common/FileUtilities.hpp"
+#include "axom_utils/FileUtilities.hpp"
 
 #include <string>
 #include <fstream>
@@ -118,7 +118,7 @@ namespace filesystem {
     }
     else
     {
-      dir = "."; 
+      dir = ".";
     }
   }
 

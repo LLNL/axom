@@ -8,9 +8,9 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
-#include "common/StringUtilities.hpp"
+#include "axom_utils/StringUtilities.hpp"
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 
 #ifndef AXOM_USE_CXX11
 #include <sstream>

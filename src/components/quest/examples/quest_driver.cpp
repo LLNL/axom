@@ -9,10 +9,10 @@
  */
 
 // axom includes
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
-#include "common/FileUtilities.hpp"
-#include "common/Timer.hpp"
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
+#include "axom_utils/FileUtilities.hpp"
+#include "axom_utils/Timer.hpp"
 
 #include "primal/BoundingBox.hpp"
 #include "primal/BVHTree.hpp"

@@ -21,8 +21,8 @@
 #ifndef DATAGROUP_HPP_
 #define DATAGROUP_HPP_
 
-#include "common/config.hpp"    // defines AXOM_USE_CXX11
-#include "common/AxomMacros.hpp"
+#include "axom/config.hpp"    // defines AXOM_USE_CXX11
+#include "axom/Macros.hpp"
 
 // Standard C++ headers
 #include <memory>
@@ -37,7 +37,7 @@
 
 // Other axom headers
 #include "slic/slic.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 // Sidre project headers
 #include "SidreTypes.hpp"

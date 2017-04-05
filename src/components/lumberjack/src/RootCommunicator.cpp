@@ -19,7 +19,7 @@
 
 #include "lumberjack/RootCommunicator.hpp"
 
-#include "common/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 #include <cstdlib>
 

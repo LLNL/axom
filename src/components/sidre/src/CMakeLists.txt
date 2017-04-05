@@ -39,7 +39,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapDataGroup.h
         interface/c_fortran/wrapDataBuffer.h
         interface/c_fortran/wrapDataView.h
-    )   
+    )
     set(sidre_fortran_sources
         # generated source
         interface/c_fortran/wrapSidre.cpp
@@ -53,7 +53,7 @@ if (ENABLE_FORTRAN)
 endif()
 
 set(sidre_depends
-    common
+    axom_utils
     conduit
     conduit_relay
     hdf5
@@ -62,7 +62,7 @@ set(sidre_depends
 if(SPARSEHASH_FOUND)
    set(sidre_depends ${sidre_depends} sparsehash)
 endif()
- 
+
 #
 # make the library
 #
@@ -78,8 +78,8 @@ blt_add_library( NAME
                  DEPENDS_ON
                      ${sidre_depends}
                  )
-  
-             
+
+
 set_target_properties(sidre  PROPERTIES COMPILE_FLAGS ${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS})
 
 if(SPARSEHASH_FOUND)

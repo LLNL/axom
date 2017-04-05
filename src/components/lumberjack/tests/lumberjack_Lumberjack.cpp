@@ -12,7 +12,7 @@
 
 #include "lumberjack/Lumberjack.hpp"
 
-#include "common/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "lumberjack/Communicator.hpp"
 #include "lumberjack/Message.hpp"
 

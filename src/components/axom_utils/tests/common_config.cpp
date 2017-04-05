@@ -11,7 +11,7 @@
 
 #include "gtest/gtest.h"
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 
 #ifdef AXOM_USE_OPENMP
   #include <omp.h>
@@ -92,8 +92,8 @@ TEST(gtest_common_config,config_components)
 
   std::vector<std::string> comps;
 
-#ifdef AXOM_USE_COMMON
-  comps.push_back("common");
+#ifdef AXOM_USE_AXOM_UTILS
+  comps.push_back("axom_utils");
 #endif
 
   EXPECT_EQ(1u, comps.size()) << "Common component is always available.";
@@ -141,7 +141,7 @@ TEST(gtest_common_config,config_components)
 TEST(gtest_common_config,config_openmp)
 {
     // This test checks that the per-target OpenMP guards
-    // in our configuration file 'common/config.hpp' are working properly
+    // in our configuration file 'axom/config.hpp' are working properly
 
 #ifdef AXOM_USE_OPENMP
     std::cout << "OpenMP is available in this configuration." << std::endl;

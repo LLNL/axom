@@ -19,7 +19,7 @@
 
 #include "lumberjack/Message.hpp"
 
-#include "common/StringUtilities.hpp"
+#include "axom_utils/StringUtilities.hpp"
 
 #include <algorithm>
 #include <iostream>

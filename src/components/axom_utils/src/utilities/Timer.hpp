@@ -12,11 +12,11 @@
 #ifndef TIMER_HPP_
 #define TIMER_HPP_
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 #ifdef AXOM_USE_CXX11
-  #include "common/ChronoTimer.hpp"
+  #include "axom_utils/ChronoTimer.hpp"
 #else
-  #include "common/TimeofdayTimer.hpp"
+  #include "axom_utils/TimeofdayTimer.hpp"
 #endif
 
 namespace {
@@ -164,7 +164,7 @@ private:
     bool                m_running;
 };
 
-} // namespace utilities 
-} // namespace axom 
+} // namespace utilities
+} // namespace axom
 
-#endif // TIMER_HPP_ 
+#endif // TIMER_HPP_

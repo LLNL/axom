@@ -1,7 +1,7 @@
 ################################
 # Datastore
 ################################
-project(common)
+project(axom_utils)
 
 
 ################################
@@ -44,7 +44,7 @@ if(ENABLE_FORTRAN)
 !      procedure 'c_loc' because it is not C interoperable
 ! https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53945
       program main
-      end program main 
+      end program main
       subroutine test(arg, addr)
         use iso_c_binding
         integer(C_INT), target, intent(IN) :: arg(:)
