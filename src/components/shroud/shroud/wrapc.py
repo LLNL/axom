@@ -564,7 +564,9 @@ class Wrapc(util.WrapperMixin):
         impl.append(wformat('{C_return_type} {C_name}({C_prototype})', fmt))
         impl.append('{')
         if cls and fmt.C_object:
+            impl.append(1)
             impl.append(fmt.C_object)
+            impl.append(-1)
         self._create_splicer(fmt_func.underscore_name +
                              fmt_func.function_suffix, impl, C_code)
         impl.append('}')

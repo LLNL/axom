@@ -10,7 +10,7 @@ namespace three {
 
 void DEF_class1_method1(DEF_class1 * self, int arg1)
 {
-Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));
+    Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));
 // splicer begin class.Class1.method.method1
     SH_this->method1(arg1);
     return;

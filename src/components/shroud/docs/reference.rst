@@ -114,7 +114,6 @@ C_return_type
 
 C_this
     Name of the C object argument.  Defauls to ``self``.
-    This is the argument name for the pointer to the object.
 
 CPP_this
     Name of the C++ object pointer set from the *C_this* argument.
@@ -124,6 +123,12 @@ CPP_this
 F_C_prefix
   Prefix added to name of generated Fortran interface for C routines.
   Defaults to **c_**.
+
+F_this
+   Name of the Fortran argument which is the derived type
+   which represents a C++ class.
+   It must not be the same as any of the routines arguments.
+   Defaults to ``obj``.
 
 F_result
     The name of the Fortran wrapper's result variable.
@@ -285,12 +290,6 @@ LUA_name_impl_template
 
 
 
-
-F_this
-   Name of the Fortran argument which is the derived type
-   which represents a C++ class.
-   It must not be the same as any of the routines arguments.
-   Defaults to ``obj``.
 
 F_derived_member
     The name of the member of the Fortran derived type which

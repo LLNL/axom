@@ -21,7 +21,7 @@ TUT_class1 * TUT_class1_new()
 // function_index=1
 void TUT_class1_delete(TUT_class1 * self)
 {
-Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));
+    Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));
 // splicer begin class.Class1.method.delete
     delete SH_this;
 // splicer end class.Class1.method.delete
@@ -31,7 +31,7 @@ Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));
 // function_index=2
 void TUT_class1_method1(TUT_class1 * self)
 {
-Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));
+    Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));
 // splicer begin class.Class1.method.method1
     SH_this->Method1();
     return;
