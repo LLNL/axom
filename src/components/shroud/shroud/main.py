@@ -1383,7 +1383,7 @@ class Namify(object):
         fmt_library.C_this = options.get('C_this', 'self')
 
         fmt_library.F_this = options.get('F_this', 'obj')
-        fmt_library.F_result = options.get('F_result', 'rv')
+        fmt_library.F_result = options.get('F_result', 'SH_rv')
         fmt_library.F_derived_member = options.get('F_derived_member',
                                                    'voidptr')
 

@@ -8,6 +8,7 @@ options:
   # always create wrappers to demonstrate name generation
   F_force_wrapper: True
   wrap_python: True
+  F_result: 'RV'
 
 C_header_filename: top.h
 C_impl_filename: top.cpp
@@ -51,3 +52,6 @@ functions:
   - decl: void function3a(long i)
     F_name_generic: generic3
     F_name_impl: F_name_function3a_long
+
+  # test F_result
+  - decl: int function4()

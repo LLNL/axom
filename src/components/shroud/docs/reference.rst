@@ -270,7 +270,7 @@ F_this
 F_result
     The name of the Fortran wrapper's result variable.
     It must not be the same as any of the routines arguments.
-    It defaults to *rv*  (return value).
+    It defaults to *SH_rv*  (Shroud return value).
 
 F_derived_member
     The name of the member of the Fortran derived type which

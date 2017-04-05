@@ -28,6 +28,7 @@ contains
 
   {F_pure_clause} {F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}
       {F_C_name}({F_arg_c_call_tab})
+     {F_code}
   end {F_subprogram} {F_name_impl}
 
 end module {F_module_name}
