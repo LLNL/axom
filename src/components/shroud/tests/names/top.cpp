@@ -45,6 +45,16 @@ void YYY_TES_function3a_1(long i)
 // splicer end function.function3a_1
 }
 
+// int function4()
+// function_index=6
+int YYY_TES_function4()
+{
+// splicer begin function.function4
+    int rv = function4();
+    return rv;
+// splicer end function.function4
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 

@@ -54,6 +54,7 @@
                         "F_name_generic": "method1", 
                         "F_name_impl": "names_method1", 
                         "F_name_method": "type_method1", 
+                        "F_result": "RV", 
                         "PY_name_impl": "PY_names_method1", 
                         "function_name": "method1", 
                         "underscore_name": "method1"
@@ -78,6 +79,7 @@
                         "F_name_generic": "method2", 
                         "F_name_impl": "names_method2", 
                         "F_name_method": "method2", 
+                        "F_result": "RV", 
                         "PY_name_impl": "PY_names_method2", 
                         "function_name": "method2", 
                         "underscore_name": "method2"
@@ -113,7 +115,7 @@
         "F_impl_filename": "top.f", 
         "F_module_name": "top_module", 
         "F_pure_clause": "", 
-        "F_result": "rv", 
+        "F_result": "RV", 
         "F_result_clause": "", 
         "F_this": "obj", 
         "PY_PyObject": "PyObject", 
@@ -152,6 +154,7 @@
                 "F_name_generic": "function1", 
                 "F_name_impl": "testnames_function1", 
                 "F_name_method": "function1", 
+                "F_result": "RV", 
                 "PY_name_impl": "PY_function1", 
                 "function_name": "function1", 
                 "underscore_name": "function1"
@@ -179,6 +182,7 @@
                 "F_name_generic": "function2", 
                 "F_name_impl": "f_name_special", 
                 "F_name_method": "function2", 
+                "F_result": "RV", 
                 "PY_name_impl": "PY_function2", 
                 "function_name": "function2", 
                 "underscore_name": "function2"
@@ -219,6 +223,7 @@
                 "F_name_generic": "generic3", 
                 "F_name_impl": "F_name_function3a_int", 
                 "F_name_method": "function3a_0", 
+                "F_result": "RV", 
                 "PY_name_impl": "PY_function3a_0", 
                 "function_name": "function3a", 
                 "function_suffix": "_0", 
@@ -260,6 +265,7 @@
                 "F_name_generic": "generic3", 
                 "F_name_impl": "F_name_function3a_long", 
                 "F_name_method": "function3a_1", 
+                "F_result": "RV", 
                 "PY_name_impl": "PY_function3a_1", 
                 "function_name": "function3a", 
                 "function_suffix": "_1", 
@@ -270,6 +276,31 @@
                 "attrs": {}, 
                 "name": "function3a", 
                 "type": "void"
+            }
+        }, 
+        {
+            "_decl": "int function4()", 
+            "_function_index": 6, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "int function4()", 
+            "fmt": {
+                "C_name": "YYY_TES_function4", 
+                "F_C_name": "yyy_tes_function4", 
+                "F_name_generic": "function4", 
+                "F_name_impl": "testnames_function4", 
+                "F_name_method": "function4", 
+                "F_result": "RV", 
+                "PY_name_impl": "PY_function4", 
+                "function_name": "function4", 
+                "underscore_name": "function4"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "function4", 
+                "type": "int"
             }
         }
     ], 
@@ -295,6 +326,7 @@
         "F_name_instance_get": "get_instance", 
         "F_name_instance_set": "set_instance", 
         "F_name_method_template": "{underscore_name}{function_suffix}", 
+        "F_result": "RV", 
         "F_string_len_trim": true, 
         "LUA_class_reg_template": "{LUA_prefix}{cpp_class}_Reg", 
         "LUA_ctor_name_template": "{cpp_class}", 

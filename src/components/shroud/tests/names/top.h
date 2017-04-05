@@ -26,6 +26,8 @@ void YYY_TES_function3a_0(int i);
 
 void YYY_TES_function3a_1(long i);
 
+int YYY_TES_function4();
+
 #ifdef __cplusplus
 }
 #endif

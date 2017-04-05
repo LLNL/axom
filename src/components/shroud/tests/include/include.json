@@ -178,7 +178,7 @@
         "F_impl_filename": "wrapfdefault_library.f", 
         "F_module_name": "default_library_mod", 
         "F_pure_clause": "", 
-        "F_result": "rv", 
+        "F_result": "SH_rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
         "class_name": "", 

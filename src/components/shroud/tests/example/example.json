@@ -1903,7 +1903,7 @@
         "F_impl_filename": "wrapfuserlibrary.f", 
         "F_module_name": "userlibrary_mod", 
         "F_pure_clause": "", 
-        "F_result": "rv", 
+        "F_result": "SH_rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
         "PY_PyObject": "PyObject", 

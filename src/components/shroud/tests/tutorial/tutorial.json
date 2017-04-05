@@ -144,7 +144,7 @@
         "F_impl_filename": "wrapftutorial.f", 
         "F_module_name": "tutorial_mod", 
         "F_pure_clause": "", 
-        "F_result": "rv", 
+        "F_result": "SH_rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
         "LUA_header_filename": "luaTutorialmodule.hpp", 

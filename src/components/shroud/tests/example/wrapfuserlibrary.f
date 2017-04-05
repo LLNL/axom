@@ -24,30 +24,30 @@ module userlibrary_mod
         end subroutine local_function1
 
         function c_is_name_valid(name) &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="AA_is_name_valid")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
-            logical(C_BOOL) :: rv
+            logical(C_BOOL) :: SH_rv
         end function c_is_name_valid
 
         function c_is_name_valid_bufferify(name, Lname) &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="AA_is_name_valid_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-            logical(C_BOOL) :: rv
+            logical(C_BOOL) :: SH_rv
         end function c_is_name_valid_bufferify
 
         function c_is_initialized() &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="AA_is_initialized")
             use iso_c_binding
             implicit none
-            logical(C_BOOL) :: rv
+            logical(C_BOOL) :: SH_rv
         end function c_is_initialized
 
         subroutine c_test_names(name) &
@@ -144,11 +144,11 @@ contains
     ! bool isNameValid(const std::string & name+intent(in))
     ! string_to_buffer_and_len
     ! function_index=48
-    function is_name_valid(name) result(rv)
+    function is_name_valid(name) result(SH_rv)
         use iso_c_binding, only : C_BOOL, C_INT
         implicit none
         character(*), intent(IN) :: name
-        logical :: rv
+        logical :: SH_rv
         ! splicer begin is_name_valid
         rv = name .ne. " "
         ! splicer end is_name_valid
@@ -156,12 +156,12 @@ contains
 
     ! bool isInitialized()
     ! function_index=49
-    function is_initialized() result(rv)
+    function is_initialized() result(SH_rv)
         use iso_c_binding, only : C_BOOL
         implicit none
-        logical :: rv
+        logical :: SH_rv
         ! splicer begin is_initialized
-        rv = c_is_initialized()
+        SH_rv = c_is_initialized()
         ! splicer end is_initialized
     end function is_initialized
 
