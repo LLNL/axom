@@ -1891,6 +1891,7 @@
     "cpp_header": "", 
     "fmt": {
         "BBB": "BBB", 
+        "CPP_this": "SH_this", 
         "C_const": "", 
         "C_header_filename": "wrapUserLibrary.h", 
         "C_impl_filename": "wrapUserLibrary.cpp", 

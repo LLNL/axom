@@ -310,7 +310,6 @@ class Wrapc(util.WrapperMixin):
 
         if result_is_const:
             fmt.C_const = 'const '
-        fmt.CPP_this = fmt_func.C_this + 'obj'
         # return value
         fmt.rv_decl = self._c_decl('cpp_type', CPP_result, name=fmt.C_result)
 
@@ -476,7 +475,7 @@ class Wrapc(util.WrapperMixin):
                     fmt.C_const = ''
                 # LHS is class' cpp_to_c
                 template = (
-                    '{C_const}{cpp_class} *{C_this}obj = '
+                    '{C_const}{cpp_class} *{CPP_this} = '
                     'static_cast<{C_const}{cpp_class} *>('
                     'static_cast<{C_const}void *>({C_this}));')
                 fmt.C_object = wformat(template, fmt)
@@ -500,7 +499,7 @@ class Wrapc(util.WrapperMixin):
                               + wformat(result_typedef.cpp_to_c, fmt)
                               + ';')
             elif is_dtor:
-                C_code.append('delete %sobj;' % fmt_func.C_this)
+                C_code.append('delete %s;' % fmt_func.CPP_this)
             elif CPP_subprogram == 'subroutine':
                 line = wformat(
                     '{CPP_this_call}{function_name}'

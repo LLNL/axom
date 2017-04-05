@@ -112,6 +112,15 @@ C_result
 C_return_type
    XXX   override return type of function
 
+C_this
+    Name of the C object argument.  Defauls to ``self``.
+    This is the argument name for the pointer to the object.
+
+CPP_this
+    Name of the C++ object pointer set from the *C_this* argument.
+    Defauls to ``SH_this``.
+
+
 F_C_prefix
   Prefix added to name of generated Fortran interface for C routines.
   Defaults to **c_**.
@@ -276,9 +285,6 @@ LUA_name_impl_template
 
 
 
-
-C_this
-    Name of the C object argument.  Defauls to ``self``.
 
 F_this
    Name of the Fortran argument which is the derived type

@@ -4,6 +4,7 @@
     "cpp_header": "strings.hpp", 
     "fmt": {
         "BBB": "BBB", 
+        "CPP_this": "SH_this", 
         "C_const": "", 
         "C_header_filename": "wrapstrings.h", 
         "C_impl_filename": "wrapstrings.cpp", 

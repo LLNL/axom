@@ -132,6 +132,7 @@
     "cpp_header": "tutorial.hpp", 
     "fmt": {
         "BBB": "BBB", 
+        "CPP_this": "SH_this", 
         "C_const": "", 
         "C_header_filename": "wrapTutorial.h", 
         "C_impl_filename": "wrapTutorial.cpp", 

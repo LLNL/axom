@@ -166,6 +166,7 @@
     ], 
     "cpp_header": "global_header.hpp", 
     "fmt": {
+        "CPP_this": "SH_this", 
         "C_const": "", 
         "C_header_filename": "wrapdefault_library.h", 
         "C_impl_filename": "wrapdefault_library.cpp", 

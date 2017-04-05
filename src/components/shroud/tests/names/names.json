@@ -103,6 +103,7 @@
     "cpp_header": "", 
     "fmt": {
         "BBB": "BBB", 
+        "CPP_this": "SH_this", 
         "C_const": "", 
         "C_header_filename": "top.h", 
         "C_impl_filename": "top.cpp", 
