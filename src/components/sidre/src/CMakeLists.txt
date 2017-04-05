@@ -60,7 +60,7 @@ set(sidre_depends
     slic)
 
 if(SPARSEHASH_FOUND)
-   set(sidre_depends ${sidre_depends} sparsehash sparsehash_internal)
+   set(sidre_depends ${sidre_depends} sparsehash)
 endif()
  
 #
@@ -80,14 +80,6 @@ blt_add_library( NAME
                  )
   
              
-set_target_properties(sidre  PROPERTIES COMPILE_FLAGS ${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS})
-
-if(SPARSEHASH_FOUND)
-  # disable a warning that sparsehash emits due to an unused local typedef
-  set_property(SOURCE core/DataGroup.cpp
-               APPEND_STRING PROPERTY COMPILE_FLAGS ${AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF} )
-endif()
-
 # Only needed if building the Fortran interface
 # XXX this can be used to automatically generate the files
 #if (ENABLE_FORTRAN)
