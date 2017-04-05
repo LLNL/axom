@@ -11,9 +11,9 @@
 #ifndef TIMEOFDAY_TIMER_HPP_
 #define TIMEOFDAY_TIMER_HPP_
 
-#include "common/CommonTypes.hpp"   // For AXOM_NULLPTR
-#include <sys/time.h>               // for gettimeofday() and timeval
-                                    // Note: located in <time> on some systems
+#include "axom/Types.hpp"   // For AXOM_NULLPTR
+#include <sys/time.h>       // for gettimeofday() and timeval
+                            // Note: located in <time> on some systems
 
 namespace axom {
 namespace utilities {
