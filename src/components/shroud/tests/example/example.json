@@ -283,6 +283,7 @@
                     }
                 }, 
                 {
+                    "C_code": "return selfobj->getName().length();", 
                     "_decl": "int GetNameLength() const", 
                     "_function_index": 4, 
                     "_subprogram": "function", 
@@ -305,9 +306,7 @@
                         "underscore_name": "get_name_length"
                     }, 
                     "helper": true, 
-                    "options": {
-                        "C_code": "return selfobj->getName().length();"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "GetNameLength", 
@@ -1157,6 +1156,7 @@
                     }
                 }, 
                 {
+                    "C_code": "return selfobj->getName().length();", 
                     "_decl": "const int GetNameLength()", 
                     "_function_index": 24, 
                     "_subprogram": "function", 
@@ -1175,9 +1175,7 @@
                         "function_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
                     }, 
-                    "options": {
-                        "C_code": "return selfobj->getName().length();"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {
                             "const": true
@@ -1957,6 +1955,8 @@
             }
         }, 
         {
+            "C_code": "return name != NULL;", 
+            "F_code": "rv = name .ne. \" \"", 
             "_PTR_F_C_index": 58, 
             "_decl": "bool isNameValid(const std::string & name+intent(in))", 
             "_function_index": 48, 
@@ -1985,10 +1985,7 @@
                 "function_name": "isNameValid", 
                 "underscore_name": "is_name_valid"
             }, 
-            "options": {
-                "C_code": "return name != NULL;", 
-                "F_code": "rv = name .ne. \" \""
-            }, 
+            "options": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "isNameValid", 
@@ -1996,6 +1993,8 @@
             }
         }, 
         {
+            "C_code": "return name != NULL;", 
+            "F_code": "rv = name .ne. \" \"", 
             "_PTR_C_CPP_index": 48, 
             "_decl": "bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))", 
             "_error_pattern_suffix": "_as_buffer", 

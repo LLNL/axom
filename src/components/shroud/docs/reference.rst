@@ -42,24 +42,6 @@ sitedir
 Global Fields
 -------------
 
-copyright
-   A list of lines to add to the top of each generate file.
-   Do not include any language specific comment characters since
-   Shroud will add the appropriate comment delimiters for each language.
-
-cpp_header
-  C++ header file name which will be included in the implementation file.
-
-library
-  The name of the library.
-  Used to name output files and modules.
-  The first three letters are used as the default for **C_prefix** option.
-  Defaults to *default_library*.
-  Each YAML file is intended to wrap a single library.
-
-patterns
-   Code blocks to insert into generated code.
-
 C_header_filename
    Output file name for header for  wrapper routines.
    Defaults to option *C_header_filename_library_template*.
@@ -67,6 +49,14 @@ C_header_filename
 C_impl_filename
    Output file name for implementation of wrapper routines.
    Defaults to option *C_impl_filename_library_template*.
+
+copyright
+   A list of lines to add to the top of each generate file.
+   Do not include any language specific comment characters since
+   Shroud will add the appropriate comment delimiters for each language.
+
+cpp_header
+  C++ header file name which will be included in the implementation file.
 
 F_module_name
    Name of Fortran module for this class.
@@ -76,9 +66,19 @@ F_impl_filename
    Name of Fortran file for functions.
    Defaults to option *F_impl_name_library_template*.
 
+library
+  The name of the library.
+  Used to name output files and modules.
+  The first three letters are used as the default for **C_prefix** option.
+  Defaults to *default_library*.
+  Each YAML file is intended to wrap a single library.
+
 namespace
   Blank delimited list of namespaces for **cpp_header**.
   The namespaces will be nested.
+
+patterns
+   Code blocks to insert into generated code.
 
 splicers
    A dictionary mapping file suffix to a list of splicer files
@@ -642,6 +642,8 @@ return_this
    Instead make the return type ``void``.
 
 
+C_code
+    C++ code to use within the splicer block for this function.
 
 C_name
     Name of the C wrapper function.
@@ -650,6 +652,9 @@ C_name
 F_C_name
     Name of the Fortran ``BIND(C)`` interface for a C function.
     Defaults to the lower case version of *F_C_name_template*.
+
+F_code
+    Fortran code to use within the splicer block for this function.
 
 ..    tut_class1_method1
 

@@ -86,7 +86,7 @@ Library name - Updated after reading YAML file.
 Class name - Updated before processing each class.
    * cpp_class - The name of the C++ class from the YAML input file.
    * class_lower - Lowercase version of *cpp_class*.
-   * class_upper - Uppercase version of *cpp_class*
+   * class_upper - Uppercase version of *cpp_class*.
    * class_name  - Variable which may be used in creating function names.
                    Defaults to evaluation of *class_name_template*.
                    Outside of a class, set to empty string.
@@ -172,10 +172,10 @@ of use if there is a conflict with other modules::
    call library_initialize
 
 
-How Code is Generated
----------------------
+How Functions are Generated
+---------------------------
 
-This section show the templates which are used to create code.
+This section show the format templates which are used to create code.
 The names in curly parens are user settable values. 
 
 The C wrapper code::
@@ -183,39 +183,20 @@ The C wrapper code::
     struct s_{C_type_name};
     typedef struct s_{C_type_name} {C_type_name};
 
-    AA_exclass1 * AA_exclass1_new(const char * name);
-
 C implementation::
 
     {C_return_type} {C_name}({C_prototype})
-    AA_exclass1 * AA_exclass1_new(const char * name)
-    {
-        {C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});
-        ExClass1 *selfobj = new ExClass1(name);
-        return static_cast<AA_exclass1 *>(static_cast<void *>(selfobj));
-    }
-
-    void AA_exclass1_delete(AA_exclass1 * self)
-    {
-        ExClass1 *selfobj = static_cast<ExClass1 *>(
-            static_cast<void *>(self));
-        delete selfobj;
-    }
-
-    int AA_exclass1_increment_count(AA_exclass1 * self, int incr)
     {
         {C_const}{cpp_class} *{C_this}obj =
             static_cast<{C_const}{cpp_class} *>(
                 static_cast<{C_const}void *>({C_this}));
-        ExClass1 *selfobj = static_cast<ExClass1 *>(
-            static_cast<void *>(self));
 
-        {rv_decl} = {CPP_this_call}{method_name}{CPP_template}
-            ({C_call_list});
-        int rv = selfobj->incrementCount(incr);
-        return rv;
+        {rv_decl} = {CPP_this_call}{method_name}{CPP_template}({C_call_list});
+        // pre_call
+        {C_code}
+        // post-call
+        // return_line
     }
-
 
 The template for Fortran code showing names which may 
 be controlled directly by the input file::
@@ -243,9 +224,37 @@ be controlled directly by the input file::
 
       subroutine {F_name_impl}
         ...
+        ! pre-call
+        {F_code}
       end subroutine {F_name_impl}
 
     end module {F_module_name}
+
+
+Code
+^^^^
+
+Each argument may add code to the *pre_call* and *post_call* sections.
+
+Return value.
+
+Example code::
+
+    {C_return_type} {C_name}({C_prototype})
+    {
+        {C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});
+        {C_code}
+        return static_cast<AA_exclass1 *>(static_cast<void *>(selfobj));
+    }
+
+
+
+        ExClass1 *selfobj = new ExClass1(name);
+
+
+Annotations may change how the code is generated.
+The *constructor* attribute will use the `new` C++ keyword and
+*destructor* will use `delete` in the *C_code*.
 
 
 Header Files

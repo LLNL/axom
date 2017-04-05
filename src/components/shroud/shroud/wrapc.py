@@ -483,8 +483,8 @@ class Wrapc(util.WrapperMixin):
 
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.function_name, None)
-        if 'C_code' in options:
-            C_code = [wformat(options.C_code, fmt)]
+        if 'C_code' in node:
+            C_code = [wformat(node['C_code'], fmt)]
         elif splicer_code:
             C_code = splicer_code
         else:

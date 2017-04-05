@@ -442,9 +442,9 @@ classes:
 functions:
   -  decl: bool nameIsValid(const std::string& name)
      # The concept of a valid name is different for C++, C and Fortran
+     C_code:  return name != NULL;
+     F_code:  rv = name .ne. " "
      options:
-       C_code:  return name != NULL;
-       F_code:  rv = name .ne. " "
        F_string_len_trim: false
 
 

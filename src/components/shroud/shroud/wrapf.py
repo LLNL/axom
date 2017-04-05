@@ -836,9 +836,9 @@ class Wrapf(util.WrapperMixin):
         # XXX sname = fmt_func.F_name_impl
         sname = fmt_func.F_name_method
         splicer_code = self.splicer_stack[-1].get(sname, None)
-        if 'F_code' in options:
+        if 'F_code' in node:
             need_wrapper = True
-            F_code = [wformat(options.F_code, fmt)]
+            F_code = [wformat(node['F_code'], fmt)]
         elif splicer_code:
             need_wrapper = True
             F_code = splicer_code
