@@ -473,12 +473,14 @@ class Wrapc(util.WrapperMixin):
                     fmt.C_const = 'const '
                 else:
                     fmt.C_const = ''
+                fmt.ptr = ' *'
+                fmt.c_var = fmt.C_this
                 # LHS is class' cpp_to_c
-                template = (
-                    '{C_const}{cpp_class} *{CPP_this} = '
-                    'static_cast<{C_const}{cpp_class} *>('
-                    'static_cast<{C_const}void *>({C_this}));')
-                fmt.C_object = wformat(template, fmt)
+                cls_typedef = self.typedef[cls['name']]
+                fmt.C_object = wformat(
+                    '{C_const}{cpp_class} *{CPP_this} = ' +
+                    cls_typedef.c_to_cpp + ';', fmt)
+
 
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.function_name, None)

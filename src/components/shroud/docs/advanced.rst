@@ -187,9 +187,8 @@ C implementation::
 
     {C_return_type} {C_name}({C_prototype})
     {
-        {C_const}{cpp_class} *{C_this}obj =
-            static_cast<{C_const}{cpp_class} *>(
-                static_cast<{C_const}void *>({C_this}));
+        // c_to_cpp for the class type
+        {C_const}{cpp_class} *{C_this}obj = {c_to_cpp};
 
         {rv_decl} = {CPP_this_call}{method_name}{CPP_template}({C_call_list});
         // pre_call
@@ -231,12 +230,18 @@ be controlled directly by the input file::
     end module {F_module_name}
 
 
-Code
-^^^^
+C++ Code
+^^^^^^^^
 
-Each argument may add code to the *pre_call* and *post_call* sections.
+The C wrapper uses a pointer to an opaque type *C_type_name* as the 
+object instance pointer.  The C++ wrapper must first cast this into
+a *cpp_class* pointer.
+The class's type *c_to_cpp* field is used to cast the pointer.
 
-Return value.
+Next each argument uses its type *pre_call* section to convert 
+the C argument into a C++ arguments. For most types this is nothing.
+
+In addition each argument may also have a *post_call* section.
 
 Example code::
 
