@@ -348,7 +348,7 @@ return 1;""", fmt)
         else:
             is_const = None
         fmt.rv_decl = self.std_c_decl(
-            'cpp_type', result, name=fmt.rv, const=is_const)  # return value
+            'cpp_type', result, name=fmt.PY_result, const=is_const)  # return value
 
         PY_decl = []     # variables for function
         PY_code = []
@@ -565,8 +565,8 @@ return 1;""", fmt)
 
             if 'PY_error_pattern' in node:
                 lfmt = util.Options(fmt)
-                lfmt.c_var = fmt.rv
-                lfmt.cpp_var = fmt.rv
+                lfmt.c_var = fmt.PY_result
+                lfmt.cpp_var = fmt.PY_result
                 append_format(PY_code,
                               self.patterns[node['PY_error_pattern']], lfmt)
 
@@ -589,8 +589,8 @@ return 1;""", fmt)
 
         # Compute return value
         if CPP_subprogram == 'function':
-            fmt.c_var = fmt.rv
-            fmt.cpp_var = fmt.rv
+            fmt.c_var = fmt.PY_result
+            fmt.cpp_var = fmt.PY_result
             fmt.py_var = 'SH_Py_' + fmt.cpp_var
             format, vargs = self.intent_out(result_typedef, fmt, PY_code)
             # Add result to front of result tuple

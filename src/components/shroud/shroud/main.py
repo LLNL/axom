@@ -190,7 +190,6 @@ class Schema(object):
         fmt_library.C_prefix = def_options.get(
             'C_prefix', fmt_library.library_upper[:3] + '_')
         fmt_library.F_C_prefix = def_options['F_C_prefix']
-        fmt_library.rv = 'rv'  # return value
         if node['namespace']:
             fmt_library.namespace_scope = (
                 '::'.join(node['namespace'].split()) + '::')
@@ -254,7 +253,7 @@ class Schema(object):
                 c_fortran='integer(C_SIZE_T)',
                 f_type='integer(C_SIZE_T)',
                 f_module=dict(iso_c_binding=['C_SIZE_T']),
-                PY_ctor='PyInt_FromLong({rv})',
+                PY_ctor='PyInt_FromLong({c_var})',
                 LUA_type='LUA_TNUMBER',
                 LUA_pop='lua_tointeger({LUA_state_var}, {LUA_index})',
                 LUA_push='lua_pushinteger({LUA_state_var}, {c_var})',
@@ -322,7 +321,7 @@ class Schema(object):
                     ),
 
                 # XXX PY_format='p',  # Python 3.3 or greater
-                PY_ctor='PyBool_FromLong({rv})',
+                PY_ctor='PyBool_FromLong({c_var})',
                 PY_PyTypeObject='PyBool_Type',
                 LUA_type='LUA_TBOOLEAN',
                 LUA_pop='lua_toboolean({LUA_state_var}, {LUA_index})',
@@ -1381,11 +1380,17 @@ class Namify(object):
         options = self.tree['options']
         fmt_library = self.tree['fmt']
         fmt_library.C_this = options.get('C_this', 'self')
+        fmt_library.C_result = options.get('C_result', 'SH_rv')
 
         fmt_library.F_this = options.get('F_this', 'obj')
         fmt_library.F_result = options.get('F_result', 'SH_rv')
         fmt_library.F_derived_member = options.get('F_derived_member',
                                                    'voidptr')
+
+        # don't have to worry about argument names in Python wrappers
+        # so skip the SH_ prefix by default.
+        fmt_library.PY_result = options.get('PY_result', 'rv')
+        fmt_library.LUA_result = options.get('LUA_result', 'rv')
 
         self.name_language(self.name_function_c)
         self.name_language(self.name_function_fortran)

@@ -420,7 +420,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             is_const = None
         # return value
         fmt.rv_decl = self.std_c_decl(
-            'cpp_type', result, name=fmt.rv, const=is_const)
+            'cpp_type', result, name=fmt.LUA_result, const=is_const)
 
         LUA_decl = []  # declare variables and pop values
         LUA_code = []  # call C++ function
@@ -552,14 +552,14 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 
 #        if 'LUA_error_pattern' in node:
 #            lfmt = util.Options(fmt)
-#            lfmt.c_var = fmt.rv
-#            lfmt.cpp_var = fmt.rv
+#            lfmt.c_var = fmt.LUA_result
+#            lfmt.cpp_var = fmt.LUA_result
 #            append_format(LUA_code,
 #                 self.patterns[node['PY_error_pattern']], lfmt)
 
         # Compute return value
         if CPP_subprogram == 'function' and not is_ctor:
-            fmt.cpp_var = fmt.rv
+            fmt.cpp_var = fmt.LUA_result
             fmt.c_var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
             fmt.LUA_used_param_state = True
             tmp = wformat(result_typedef.LUA_push, fmt)

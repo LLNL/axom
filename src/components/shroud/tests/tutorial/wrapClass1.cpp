@@ -12,8 +12,8 @@ namespace tutorial {
 TUT_class1 * TUT_class1_new()
 {
 // splicer begin class.Class1.method.new
-    Class1 * rv = new Class1();
-    return static_cast<TUT_class1 *>(static_cast<void *>(rv));
+    Class1 * SH_rv = new Class1();
+    return static_cast<TUT_class1 *>(static_cast<void *>(SH_rv));
 // splicer end class.Class1.method.new
 }
 

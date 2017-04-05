@@ -104,12 +104,22 @@ C_prefix
 C_proto_type
    XXX  override prototype of generated C function
 
+C_result
+    The name of the Fortran wrapper's result variable.
+    It must not be the same as any of the routines arguments.
+    It defaults to *SH_rv*  (Shroud return value).
+
 C_return_type
    XXX   override return type of function
 
 F_C_prefix
   Prefix added to name of generated Fortran interface for C routines.
   Defaults to **c_**.
+
+F_result
+    The name of the Fortran wrapper's result variable.
+    It must not be the same as any of the routines arguments.
+    It defaults to *SH_rv*  (Shroud return value).
 
 F_string_result_as_arg
   The name of the output argument.
@@ -134,6 +144,15 @@ F_force_wrapper
   numeric types does not need a wrapper since it can be called
   directly by defining the correct interface.
   The default is *false*.
+
+
+LUA_result
+    The name of the Lua wrapper's result variable.
+    It defaults to *rv*  (return value).
+
+PY_result
+    The name of the Python wrapper's result variable.
+    It defaults to *rv*  (return value).
 
 wrap_c
   If *true*, create C wrappers.
@@ -266,11 +285,6 @@ F_this
    which represents a C++ class.
    It must not be the same as any of the routines arguments.
    Defaults to ``obj``.
-
-F_result
-    The name of the Fortran wrapper's result variable.
-    It must not be the same as any of the routines arguments.
-    It defaults to *SH_rv*  (Shroud return value).
 
 F_derived_member
     The name of the member of the Fortran derived type which

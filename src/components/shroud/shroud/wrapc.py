@@ -312,7 +312,7 @@ class Wrapc(util.WrapperMixin):
             fmt.C_const = 'const '
         fmt.CPP_this = fmt_func.C_this + 'obj'
         # return value
-        fmt.rv_decl = self._c_decl('cpp_type', CPP_result, name=fmt.rv)
+        fmt.rv_decl = self._c_decl('cpp_type', CPP_result, name=fmt.C_result)
 
         proto_list = []
         call_list = []
@@ -414,7 +414,7 @@ class Wrapc(util.WrapperMixin):
                 if cmd_list:
                     # pick up c_str() from cpp_to_c
                     if intent == 'result':
-                        fmt_arg.cpp_var = fmt_arg.rv
+                        fmt_arg.cpp_var = fmt_arg.C_result
                     fmt_arg.cpp_val = wformat(arg_typedef.cpp_to_c, fmt_arg)
                     # append_format(post_call, '// c_var={c_var}  cpp_var={cpp_var}  cpp_val={cpp_val}', fmt_arg)
                     for cmd in cmd_list:
@@ -458,7 +458,7 @@ class Wrapc(util.WrapperMixin):
 
         fmt.C_prototype = options.get('C_prototype', ', '.join(proto_list))
 
-        fmt.cpp_var = fmt.rv
+        fmt.cpp_var = fmt.C_result
         if node.get('return_this', False):
             fmt.C_return_type = 'void'
         else:

@@ -20,8 +20,8 @@ AA_exclass2 * AA_exclass2_ex_class2(const char * name)
 {
 // splicer begin class.ExClass2.method.ex_class2
     const std::string SH_name(name);
-    ExClass2 * rv = new ExClass2(SH_name);
-    return static_cast<AA_exclass2 *>(static_cast<void *>(rv));
+    ExClass2 * SH_rv = new ExClass2(SH_name);
+    return static_cast<AA_exclass2 *>(static_cast<void *>(SH_rv));
 // splicer end class.ExClass2.method.ex_class2
 }
 
@@ -31,8 +31,8 @@ AA_exclass2 * AA_exclass2_ex_class2_bufferify(const char * name, int Lname)
 {
 // splicer begin class.ExClass2.method.ex_class2_bufferify
     const std::string SH_name(name, Lname);
-    ExClass2 * rv = new ExClass2(SH_name);
-    return static_cast<AA_exclass2 *>(static_cast<void *>(rv));
+    ExClass2 * SH_rv = new ExClass2(SH_name);
+    return static_cast<AA_exclass2 *>(static_cast<void *>(SH_rv));
 // splicer end class.ExClass2.method.ex_class2_bufferify
 }
 
@@ -52,8 +52,8 @@ const char * AA_exclass2_get_name(const AA_exclass2 * self)
 {
 const ExClass2 *selfobj = static_cast<const ExClass2 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass2.method.get_name
-    const std::string & rv = selfobj->getName();
-    return rv.c_str();
+    const std::string & SH_rv = selfobj->getName();
+    return SH_rv.c_str();
 // splicer end class.ExClass2.method.get_name
 }
 
@@ -63,8 +63,8 @@ void AA_exclass2_get_name_bufferify(const AA_exclass2 * self, char * SH_F_rv, in
 {
 const ExClass2 *selfobj = static_cast<const ExClass2 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass2.method.get_name_bufferify
-    const std::string & rv = selfobj->getName();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    const std::string & SH_rv = selfobj->getName();
+    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end class.ExClass2.method.get_name_bufferify
 }
@@ -75,8 +75,8 @@ const char * AA_exclass2_get_name2(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.get_name2
-    const std::string & rv = selfobj->getName2();
-    return rv.c_str();
+    const std::string & SH_rv = selfobj->getName2();
+    return SH_rv.c_str();
 // splicer end class.ExClass2.method.get_name2
 }
 
@@ -86,8 +86,8 @@ void AA_exclass2_get_name2_bufferify(AA_exclass2 * self, char * SH_F_rv, int LSH
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.get_name2_bufferify
-    const std::string & rv = selfobj->getName2();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    const std::string & SH_rv = selfobj->getName2();
+    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end class.ExClass2.method.get_name2_bufferify
 }
@@ -98,8 +98,8 @@ char * AA_exclass2_get_name3(const AA_exclass2 * self)
 {
 const ExClass2 *selfobj = static_cast<const ExClass2 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass2.method.get_name3
-    std::string & rv = selfobj->getName3();
-    return rv.c_str();
+    std::string & SH_rv = selfobj->getName3();
+    return SH_rv.c_str();
 // splicer end class.ExClass2.method.get_name3
 }
 
@@ -109,8 +109,8 @@ void AA_exclass2_get_name3_bufferify(const AA_exclass2 * self, char * SH_F_rv, i
 {
 const ExClass2 *selfobj = static_cast<const ExClass2 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass2.method.get_name3_bufferify
-    std::string & rv = selfobj->getName3();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    std::string & SH_rv = selfobj->getName3();
+    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end class.ExClass2.method.get_name3_bufferify
 }
@@ -121,8 +121,8 @@ char * AA_exclass2_get_name4(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.get_name4
-    std::string & rv = selfobj->getName4();
-    return rv.c_str();
+    std::string & SH_rv = selfobj->getName4();
+    return SH_rv.c_str();
 // splicer end class.ExClass2.method.get_name4
 }
 
@@ -132,8 +132,8 @@ void AA_exclass2_get_name4_bufferify(AA_exclass2 * self, char * SH_F_rv, int LSH
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.get_name4_bufferify
-    std::string & rv = selfobj->getName4();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    std::string & SH_rv = selfobj->getName4();
+    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end class.ExClass2.method.get_name4_bufferify
 }
@@ -158,8 +158,8 @@ AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, const AA_exclass1 * in)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.get_class1
-    ExClass1 * rv = selfobj->get_class1(static_cast<const ExClass1 *>(static_cast<const void *>(in)));
-    return static_cast<AA_exclass1 *>(static_cast<void *>(rv));
+    ExClass1 * SH_rv = selfobj->get_class1(static_cast<const ExClass1 *>(static_cast<const void *>(in)));
+    return static_cast<AA_exclass1 *>(static_cast<void *>(SH_rv));
 // splicer end class.ExClass2.method.get_class1
 }
 
@@ -202,8 +202,8 @@ int AA_exclass2_get_type_id(const AA_exclass2 * self)
 {
 const ExClass2 *selfobj = static_cast<const ExClass2 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass2.method.get_type_id
-    TypeID rv = selfobj->getTypeID();
-    return static_cast<int>(rv);
+    TypeID SH_rv = selfobj->getTypeID();
+    return static_cast<int>(SH_rv);
 // splicer end class.ExClass2.method.get_type_id
 }
 
@@ -257,8 +257,8 @@ int AA_exclass2_get_value_int(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.get_value_int
-    int rv = selfobj->getValue<int>();
-    return rv;
+    int SH_rv = selfobj->getValue<int>();
+    return SH_rv;
 // splicer end class.ExClass2.method.get_value_int
 }
 
@@ -268,8 +268,8 @@ double AA_exclass2_get_value_double(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.get_value_double
-    double rv = selfobj->getValue<double>();
-    return rv;
+    double SH_rv = selfobj->getValue<double>();
+    return SH_rv;
 // splicer end class.ExClass2.method.get_value_double
 }
 

@@ -170,6 +170,7 @@
         "C_header_filename": "wrapdefault_library.h", 
         "C_impl_filename": "wrapdefault_library.cpp", 
         "C_prefix": "DEF_", 
+        "C_result": "SH_rv", 
         "C_this": "self", 
         "F_C_prefix": "c_", 
         "F_C_pure_clause": "", 
@@ -181,14 +182,15 @@
         "F_result": "SH_rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
+        "LUA_result": "rv", 
+        "PY_result": "rv", 
         "class_name": "", 
         "function_suffix": "", 
         "library": "default_library", 
         "library_lower": "default_library", 
         "library_upper": "DEFAULT_LIBRARY", 
         "namespace_scope": "one::two::", 
-        "overloaded": false, 
-        "rv": "rv"
+        "overloaded": false
     }, 
     "functions": [
         {
@@ -366,7 +368,7 @@
             "LUA_push": "lua_pushboolean({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TBOOLEAN", 
             "PY_PyTypeObject": "PyBool_Type", 
-            "PY_ctor": "PyBool_FromLong({rv})", 
+            "PY_ctor": "PyBool_FromLong({c_var})", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
@@ -611,7 +613,7 @@
             "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
-            "PY_ctor": "PyInt_FromLong({rv})", 
+            "PY_ctor": "PyInt_FromLong({c_var})", 
             "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
             "c_type": "size_t", 

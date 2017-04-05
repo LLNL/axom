@@ -24,8 +24,8 @@ void TUT_function1()
 double TUT_function2(double arg1, int arg2)
 {
 // splicer begin function.function2
-    double rv = Function2(arg1, arg2);
-    return rv;
+    double SH_rv = Function2(arg1, arg2);
+    return SH_rv;
 // splicer end function.function2
 }
 
@@ -44,8 +44,8 @@ void TUT_sum(int len, int * values, int * result)
 bool TUT_function3(bool arg)
 {
 // splicer begin function.function3
-    bool rv = Function3(arg);
-    return rv;
+    bool SH_rv = Function3(arg);
+    return SH_rv;
 // splicer end function.function3
 }
 
@@ -56,8 +56,8 @@ void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, i
 // splicer begin function.function4a_bufferify
     const std::string SH_arg1(arg1, Larg1);
     const std::string SH_arg2(arg2, Larg2);
-    const std::string rv = Function4a(SH_arg1, SH_arg2);
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    const std::string SH_rv = Function4a(SH_arg1, SH_arg2);
+    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end function.function4a_bufferify
 }
@@ -69,8 +69,8 @@ const char * TUT_function4b(const char * arg1, const char * arg2)
 // splicer begin function.function4b
     const std::string SH_arg1(arg1);
     const std::string SH_arg2(arg2);
-    const std::string & rv = Function4b(SH_arg1, SH_arg2);
-    return rv.c_str();
+    const std::string & SH_rv = Function4b(SH_arg1, SH_arg2);
+    return SH_rv.c_str();
 // splicer end function.function4b
 }
 
@@ -81,8 +81,8 @@ void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, i
 // splicer begin function.function4b_bufferify
     const std::string SH_arg1(arg1, Larg1);
     const std::string SH_arg2(arg2, Larg2);
-    const std::string & rv = Function4b(SH_arg1, SH_arg2);
-    shroud::FccCopy(output, Loutput, rv.c_str());
+    const std::string & SH_rv = Function4b(SH_arg1, SH_arg2);
+    shroud::FccCopy(output, Loutput, SH_rv.c_str());
     return;
 // splicer end function.function4b_bufferify
 }
@@ -92,8 +92,8 @@ void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, i
 double TUT_function5()
 {
 // splicer begin function.function5
-    double rv = Function5();
-    return rv;
+    double SH_rv = Function5();
+    return SH_rv;
 // splicer end function.function5
 }
 
@@ -102,8 +102,8 @@ double TUT_function5()
 double TUT_function5_arg1(double arg1)
 {
 // splicer begin function.function5_arg1
-    double rv = Function5(arg1);
-    return rv;
+    double SH_rv = Function5(arg1);
+    return SH_rv;
 // splicer end function.function5_arg1
 }
 
@@ -112,8 +112,8 @@ double TUT_function5_arg1(double arg1)
 double TUT_function5_arg1_arg2(double arg1, bool arg2)
 {
 // splicer begin function.function5_arg1_arg2
-    double rv = Function5(arg1, arg2);
-    return rv;
+    double SH_rv = Function5(arg1, arg2);
+    return SH_rv;
 // splicer end function.function5_arg1_arg2
 }
 
@@ -174,8 +174,8 @@ void TUT_function7_double(double arg)
 int TUT_function8_int()
 {
 // splicer begin function.function8_int
-    int rv = Function8<int>();
-    return rv;
+    int SH_rv = Function8<int>();
+    return SH_rv;
 // splicer end function.function8_int
 }
 
@@ -184,8 +184,8 @@ int TUT_function8_int()
 double TUT_function8_double()
 {
 // splicer begin function.function8_double
-    double rv = Function8<double>();
-    return rv;
+    double SH_rv = Function8<double>();
+    return SH_rv;
 // splicer end function.function8_double
 }
 
@@ -236,8 +236,8 @@ void TUT_function10_1_bufferify(const char * name, int Lname, double arg2)
 int TUT_overload1_num(int num)
 {
 // splicer begin function.overload1_num
-    int rv = overload1(num);
-    return rv;
+    int SH_rv = overload1(num);
+    return SH_rv;
 // splicer end function.overload1_num
 }
 
@@ -246,8 +246,8 @@ int TUT_overload1_num(int num)
 int TUT_overload1_num_offset(int num, int offset)
 {
 // splicer begin function.overload1_num_offset
-    int rv = overload1(num, offset);
-    return rv;
+    int SH_rv = overload1(num, offset);
+    return SH_rv;
 // splicer end function.overload1_num_offset
 }
 
@@ -256,8 +256,8 @@ int TUT_overload1_num_offset(int num, int offset)
 int TUT_overload1_num_offset_stride(int num, int offset, int stride)
 {
 // splicer begin function.overload1_num_offset_stride
-    int rv = overload1(num, offset, stride);
-    return rv;
+    int SH_rv = overload1(num, offset, stride);
+    return SH_rv;
 // splicer end function.overload1_num_offset_stride
 }
 
@@ -266,8 +266,8 @@ int TUT_overload1_num_offset_stride(int num, int offset, int stride)
 int TUT_overload1_3(double type, int num)
 {
 // splicer begin function.overload1_3
-    int rv = overload1(type, num);
-    return rv;
+    int SH_rv = overload1(type, num);
+    return SH_rv;
 // splicer end function.overload1_3
 }
 
@@ -276,8 +276,8 @@ int TUT_overload1_3(double type, int num)
 int TUT_overload1_4(double type, int num, int offset)
 {
 // splicer begin function.overload1_4
-    int rv = overload1(type, num, offset);
-    return rv;
+    int SH_rv = overload1(type, num, offset);
+    return SH_rv;
 // splicer end function.overload1_4
 }
 
@@ -286,8 +286,8 @@ int TUT_overload1_4(double type, int num, int offset)
 int TUT_overload1_5(double type, int num, int offset, int stride)
 {
 // splicer begin function.overload1_5
-    int rv = overload1(type, num, offset, stride);
-    return rv;
+    int SH_rv = overload1(type, num, offset, stride);
+    return SH_rv;
 // splicer end function.overload1_5
 }
 
@@ -296,8 +296,8 @@ int TUT_overload1_5(double type, int num, int offset, int stride)
 int TUT_typefunc(int arg)
 {
 // splicer begin function.typefunc
-    TypeID rv = typefunc(arg);
-    return rv;
+    TypeID SH_rv = typefunc(arg);
+    return SH_rv;
 // splicer end function.typefunc
 }
 
@@ -306,8 +306,8 @@ int TUT_typefunc(int arg)
 int TUT_enumfunc(int arg)
 {
 // splicer begin function.enumfunc
-    EnumTypeID rv = enumfunc(static_cast<EnumTypeID>(arg));
-    return static_cast<int>(rv);
+    EnumTypeID SH_rv = enumfunc(static_cast<EnumTypeID>(arg));
+    return static_cast<int>(SH_rv);
 // splicer end function.enumfunc
 }
 
@@ -326,8 +326,8 @@ void TUT_useclass(const TUT_class1 * arg1)
 const char * TUT_last_function_called()
 {
 // splicer begin function.last_function_called
-    const std::string & rv = LastFunctionCalled();
-    return rv.c_str();
+    const std::string & SH_rv = LastFunctionCalled();
+    return SH_rv.c_str();
 // splicer end function.last_function_called
 }
 
@@ -336,8 +336,8 @@ const char * TUT_last_function_called()
 void TUT_last_function_called_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.last_function_called_bufferify
-    const std::string & rv = LastFunctionCalled();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+    const std::string & SH_rv = LastFunctionCalled();
+    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end function.last_function_called_bufferify
 }

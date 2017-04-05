@@ -50,8 +50,8 @@ void YYY_TES_function3a_1(long i)
 int YYY_TES_function4()
 {
 // splicer begin function.function4
-    int rv = function4();
-    return rv;
+    int SH_rv = function4();
+    return SH_rv;
 // splicer end function.function4
 }
 

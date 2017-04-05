@@ -136,6 +136,7 @@
         "C_header_filename": "wrapTutorial.h", 
         "C_impl_filename": "wrapTutorial.cpp", 
         "C_prefix": "TUT_", 
+        "C_result": "SH_rv", 
         "C_this": "self", 
         "F_C_prefix": "c_", 
         "F_C_pure_clause": "", 
@@ -152,6 +153,7 @@
         "LUA_module_name": "tutorial", 
         "LUA_module_reg": "l_Tutorial_Reg", 
         "LUA_prefix": "l_", 
+        "LUA_result": "rv", 
         "LUA_state_var": "L", 
         "LUA_used_param_state": false, 
         "PY_PyObject": "PyObject", 
@@ -164,6 +166,7 @@
         "PY_param_kwds": "kwds", 
         "PY_param_self": "self", 
         "PY_prefix": "PY_", 
+        "PY_result": "rv", 
         "PY_used_param_args": false, 
         "PY_used_param_kwds": false, 
         "PY_used_param_self": false, 
@@ -173,8 +176,7 @@
         "library_lower": "tutorial", 
         "library_upper": "TUTORIAL", 
         "namespace_scope": "tutorial::", 
-        "overloaded": false, 
-        "rv": "rv"
+        "overloaded": false
     }, 
     "functions": [
         {
@@ -2193,7 +2195,7 @@
             "LUA_push": "lua_pushboolean({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TBOOLEAN", 
             "PY_PyTypeObject": "PyBool_Type", 
-            "PY_ctor": "PyBool_FromLong({rv})", 
+            "PY_ctor": "PyBool_FromLong({c_var})", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
@@ -2438,7 +2440,7 @@
             "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
-            "PY_ctor": "PyInt_FromLong({rv})", 
+            "PY_ctor": "PyInt_FromLong({c_var})", 
             "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
             "c_type": "size_t", 

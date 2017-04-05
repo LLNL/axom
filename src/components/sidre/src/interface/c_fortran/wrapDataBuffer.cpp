@@ -25,8 +25,8 @@ SIDRE_IndexType SIDRE_databuffer_get_index(const SIDRE_databuffer * self)
   const DataBuffer * selfobj =
     static_cast<const DataBuffer *>(static_cast<const void *>(self));
 // splicer begin class.DataBuffer.method.get_index
-  IndexType rv = selfobj->getIndex();
-  return rv;
+  IndexType SH_rv = selfobj->getIndex();
+  return SH_rv;
 // splicer end class.DataBuffer.method.get_index
 }
 
@@ -35,8 +35,8 @@ size_t SIDRE_databuffer_get_num_views(const SIDRE_databuffer * self)
   const DataBuffer * selfobj =
     static_cast<const DataBuffer *>(static_cast<const void *>(self));
 // splicer begin class.DataBuffer.method.get_num_views
-  size_t rv = selfobj->getNumViews();
-  return rv;
+  size_t SH_rv = selfobj->getNumViews();
+  return SH_rv;
 // splicer end class.DataBuffer.method.get_num_views
 }
 
@@ -83,8 +83,8 @@ void * SIDRE_databuffer_get_void_ptr(SIDRE_databuffer * self)
 {
   DataBuffer * selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_void_ptr
-  void * rv = selfobj->getVoidPtr();
-  return rv;
+  void * SH_rv = selfobj->getVoidPtr();
+  return SH_rv;
 // splicer end class.DataBuffer.method.get_void_ptr
 }
 
@@ -93,8 +93,8 @@ int SIDRE_databuffer_get_type_id(const SIDRE_databuffer * self)
   const DataBuffer * selfobj =
     static_cast<const DataBuffer *>(static_cast<const void *>(self));
 // splicer begin class.DataBuffer.method.get_type_id
-  TypeID rv = selfobj->getTypeID();
-  return static_cast<int>(rv);
+  TypeID SH_rv = selfobj->getTypeID();
+  return static_cast<int>(SH_rv);
 // splicer end class.DataBuffer.method.get_type_id
 }
 
@@ -103,8 +103,8 @@ size_t SIDRE_databuffer_get_num_elements(const SIDRE_databuffer * self)
   const DataBuffer * selfobj =
     static_cast<const DataBuffer *>(static_cast<const void *>(self));
 // splicer begin class.DataBuffer.method.get_num_elements
-  size_t rv = selfobj->getNumElements();
-  return rv;
+  size_t SH_rv = selfobj->getNumElements();
+  return SH_rv;
 // splicer end class.DataBuffer.method.get_num_elements
 }
 
@@ -113,8 +113,8 @@ size_t SIDRE_databuffer_get_total_bytes(const SIDRE_databuffer * self)
   const DataBuffer * selfobj =
     static_cast<const DataBuffer *>(static_cast<const void *>(self));
 // splicer begin class.DataBuffer.method.get_total_bytes
-  size_t rv = selfobj->getTotalBytes();
-  return rv;
+  size_t SH_rv = selfobj->getTotalBytes();
+  return SH_rv;
 // splicer end class.DataBuffer.method.get_total_bytes
 }
 
@@ -123,8 +123,8 @@ size_t SIDRE_databuffer_get_bytes_per_element(const SIDRE_databuffer * self)
   const DataBuffer * selfobj =
     static_cast<const DataBuffer *>(static_cast<const void *>(self));
 // splicer begin class.DataBuffer.method.get_bytes_per_element
-  size_t rv = selfobj->getBytesPerElement();
-  return rv;
+  size_t SH_rv = selfobj->getBytesPerElement();
+  return SH_rv;
 // splicer end class.DataBuffer.method.get_bytes_per_element
 }
 

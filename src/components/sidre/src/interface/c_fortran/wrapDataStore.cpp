@@ -23,8 +23,8 @@ namespace sidre
 SIDRE_datastore * SIDRE_datastore_new()
 {
 // splicer begin class.DataStore.method.new
-  DataStore * rv = new DataStore();
-  return static_cast<SIDRE_datastore *>(static_cast<void *>(rv));
+  DataStore * SH_rv = new DataStore();
+  return static_cast<SIDRE_datastore *>(static_cast<void *>(SH_rv));
 // splicer end class.DataStore.method.new
 }
 
@@ -40,8 +40,8 @@ SIDRE_datagroup * SIDRE_datastore_get_root(SIDRE_datastore * self)
 {
   DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
 // splicer begin class.DataStore.method.get_root
-  DataGroup * rv = selfobj->getRoot();
-  return static_cast<SIDRE_datagroup *>(static_cast<void *>(rv));
+  DataGroup * SH_rv = selfobj->getRoot();
+  return static_cast<SIDRE_datagroup *>(static_cast<void *>(SH_rv));
 // splicer end class.DataStore.method.get_root
 }
 
@@ -50,8 +50,8 @@ SIDRE_databuffer * SIDRE_datastore_get_buffer(SIDRE_datastore * self,
 {
   DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
 // splicer begin class.DataStore.method.get_buffer
-  DataBuffer * rv = selfobj->getBuffer(idx);
-  return static_cast<SIDRE_databuffer *>(static_cast<void *>(rv));
+  DataBuffer * SH_rv = selfobj->getBuffer(idx);
+  return static_cast<SIDRE_databuffer *>(static_cast<void *>(SH_rv));
 // splicer end class.DataStore.method.get_buffer
 }
 
@@ -59,8 +59,8 @@ SIDRE_databuffer * SIDRE_datastore_create_buffer_empty(SIDRE_datastore * self)
 {
   DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
 // splicer begin class.DataStore.method.create_buffer_empty
-  DataBuffer * rv = selfobj->createBuffer();
-  return static_cast<SIDRE_databuffer *>(static_cast<void *>(rv));
+  DataBuffer * SH_rv = selfobj->createBuffer();
+  return static_cast<SIDRE_databuffer *>(static_cast<void *>(SH_rv));
 // splicer end class.DataStore.method.create_buffer_empty
 }
 
@@ -69,8 +69,8 @@ SIDRE_databuffer * SIDRE_datastore_create_buffer_from_type(
 {
   DataStore * selfobj = static_cast<DataStore *>(static_cast<void *>(self));
 // splicer begin class.DataStore.method.create_buffer_from_type
-  DataBuffer * rv = selfobj->createBuffer(getTypeID(type), num_elems);
-  return static_cast<SIDRE_databuffer *>(static_cast<void *>(rv));
+  DataBuffer * SH_rv = selfobj->createBuffer(getTypeID(type), num_elems);
+  return static_cast<SIDRE_databuffer *>(static_cast<void *>(SH_rv));
 // splicer end class.DataStore.method.create_buffer_from_type
 }
 
@@ -88,8 +88,8 @@ size_t SIDRE_datastore_get_num_buffers(const SIDRE_datastore * self)
   const DataStore * selfobj =
     static_cast<const DataStore *>(static_cast<const void *>(self));
 // splicer begin class.DataStore.method.get_num_buffers
-  size_t rv = selfobj->getNumBuffers();
-  return rv;
+  size_t SH_rv = selfobj->getNumBuffers();
+  return SH_rv;
 // splicer end class.DataStore.method.get_num_buffers
 }
 
