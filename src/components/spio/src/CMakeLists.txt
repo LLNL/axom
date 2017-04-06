@@ -14,7 +14,7 @@ set(spio_sources
     IOManager.cpp
     )
 
-if(ENABLE_SHROUD)
+if(SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
 

@@ -1,4 +1,4 @@
-##################################
+x##################################
 # uberenv host-config
 #
 # This is a generated file, edit at own risk.
@@ -80,6 +80,11 @@ set(MPI_Fortran_COMPILER  "/usr/local/tools/mvapich2-intel-2.0/bin/mpif90" CACHE
 
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+
+##############################################################################
+# SHROUD - manually added for now. Use a public build add to TPL later
+##############################################################################
+set(SHROUD_EXECUTABLE "/usr/workspace/wsrzd/axomdev/shroud/public/chaos_5_x86_64_ib/bin/shroud" CACHE PATH "")
 
 ##############################################################################
 # !---------------------------------------------------------------------------
