@@ -85,7 +85,7 @@ macro(add_shroud)
     set(_ffiles     ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.ffiles)
 
     set(_cmd
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shroud
+        ${SHROUD_EXECUTABLE}
         --logdir ${CMAKE_CURRENT_BINARY_DIR}
         ${SHROUD_C_FORTRAN_OUTPUT_DIR}
         ${SHROUD_PYTHON_OUTPUT_DIR}
@@ -99,7 +99,7 @@ macro(add_shroud)
 
     add_custom_command(
         OUTPUT  ${_timestamp}
-        DEPENDS shroud_python ${CMAKE_CURRENT_SOURCE_DIR}/${arg_YAML_INPUT_FILE} ${shroud_depends}
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${arg_YAML_INPUT_FILE} ${shroud_depends}
         COMMAND ${_cmd}
         COMMAND touch ${_timestamp}
         COMMAND rm -f ${_uncrustify}
