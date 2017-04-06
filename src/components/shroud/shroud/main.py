@@ -1496,7 +1496,8 @@ def main_with_args(args):
     """
 
     if args.sitedir:
-        raise SystemExit(os.path.dirname(__file__))
+        print(os.path.dirname(__file__)))
+        raise SystemExit
 
     # check command line options
     if len(args.filename) == 0:
