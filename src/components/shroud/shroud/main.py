@@ -1221,7 +1221,7 @@ class VerifyAttrs(object):
                           'static_cast<{C_const}void *>({c_var}))' % name),
                 c_fortran='type(C_PTR)',
                 f_type='type(%s)' % unname,
-                f_derived_type=unname,
+                f_derived_type=cls.get('F_derived_name',None) or unname,
                 f_args='{c_var}%{F_derived_member}',
                 # XXX module name may not conflict with type name
                 f_module={fmt_class.F_module_name:[unname]},
