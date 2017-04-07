@@ -158,43 +158,53 @@ CPP_this_call
     How to call the function.
     ``{CPP_this}->`` for instance methods and blank for library functions.
 
-F_result_clause
-    `` result({F_result})`` for functions.
-    Blank for subroutines.
+F_arg_c_call
+    Comma delimited arguments to call C function from Fortran.
 
-F_pure_clause
-    For non-void function, ``pure`` if the *pure* annotation is added or 
-    the function is ``const`` and all arguments are ``intent(in)``.
-
-F_C_arguments
-    Argument names to the ``bind(C)`` interface for the subprogram.
-
-F_C_result_clause
-    Result clause for the ``bind(C)`` interface.
-
-F_C_pure_clause
-    TODO
-
-F_C_subprogram
-    ``subroutine`` or ``function``.
+F_arg_c_call_tab
+    Tab delimited version *F_arg_c_call*.
+    Used to avoid long lines.
 
 F_arguments
     Set from option *F_arguments* or generated from YAML decl.
 
-F_arg_c_call
-    Comma delimited arguments to call C function.
+F_C_arguments
+    Argument names to the ``bind(C)`` interface for the subprogram.
 
-F_arg_c_call_tab
-    Tab delimited version of *F_arg_c_call*.
+F_C_call
+    The name of the C function to call.  Usually *F_C_name*, but it may
+    be different if calling a generated routine.
+    This can be done for functions with string arguments.
+
+F_C_name
+    The name of the ``bind(C)`` interface function.
+
+F_C_pure_clause
+    TODO
+
+F_C_result_clause
+    Result clause for the ``bind(C)`` interface.
+
+F_C_subprogram
+    ``subroutine`` or ``function``.
 
 F_instance_ptr
+    Derived member to access pointer to C++ class.
     ``{F_this}%{F_derived_member}``
+
+F_pure_clause
+    For non-void function, ``pure`` if the *pure* annotation is added or 
+    the function is ``const`` and all arguments are ``intent(in)``.
 
 F_name_method
     Evaluation of *F_name_method_template*.
 
 F_name_impl
     Evaluate of *F_name_impl_template*.
+
+F_result_clause
+    `` result({F_result})`` for functions.
+    Blank for subroutines.
 
 function_name
     Name of function in the YAML file.

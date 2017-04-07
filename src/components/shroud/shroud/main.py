@@ -388,7 +388,7 @@ class Schema(object):
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
-                #    fstr({F_C_name}({F_arg_c_call_tab}))',
+                #    fstr({F_C_call}({F_arg_c_call_tab}))',
                 PY_format='s',
                 PY_ctor='PyString_FromString({c_var})',
                 LUA_type='LUA_TSTRING',
@@ -412,7 +412,7 @@ class Schema(object):
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
-                #    fstr({F_C_name}({F_arg_c_call_tab}))',
+                #    fstr({F_C_call}({F_arg_c_call_tab}))',
                 PY_format='s',
                 PY_ctor='PyString_FromString({c_var})',
                 LUA_type='LUA_TSTRING',
@@ -463,7 +463,7 @@ class Schema(object):
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
-                #    fstr({F_C_name}({F_arg_c_call_tab}))',
+                #    fstr({F_C_call}({F_arg_c_call_tab}))',
 
                 py_statements=dict(
                     intent_in=dict(
@@ -517,7 +517,7 @@ class Schema(object):
         tmp = def_types['string'].clone_as('string_result_fstr')
         tmp.update(dict(
                 f_return_code=('{F_result} = '
-                               'fstr({F_C_name}({F_arg_c_call_tab}))'),
+                               'fstr({F_C_call}({F_arg_c_call_tab}))'),
                 f_helper=dict(f_return_code=dict(fstr=True)),
                 ))
         def_types[tmp.name] = tmp
@@ -1234,7 +1234,7 @@ class VerifyAttrs(object):
                 # return from C function
                 # f_c_return_decl='type(CPTR)' % unname,
                 f_return_code=('{F_result}%{F_derived_member} = '
-                               '{F_C_name}({F_arg_c_call_tab})'),
+                               '{F_C_call}({F_arg_c_call_tab})'),
 
                 py_statements=dict(
                     intent_in=dict(
