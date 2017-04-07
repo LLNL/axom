@@ -20,9 +20,9 @@ contains
 ! Test Group::createExternalView()
 !------------------------------------------------------------------------------
   subroutine create_external_view
-    type(datastore) ds
-    type(group) root
-    type(view) iview, dview
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) iview, dview
     integer(C_INT), allocatable, target :: idata(:)
     real(C_DOUBLE), allocatable, target :: ddata(:)
     integer(C_INT), pointer :: idata_chk(:)
@@ -69,10 +69,10 @@ contains
 ! Test Group::save(), Group::load() with external buffers
 !------------------------------------------------------------------------------
   subroutine save_load_external_view
-    type(datastore) ds, ds2
-    type(group) root, root2
-    type(view)  iview, dview, iview2, dview2
-    type(buffer) tmpbuff
+    type(SidreDataStore) ds, ds2
+    type(SidreGroup) root, root2
+    type(SidreView)  iview, dview, iview2, dview2
+    type(SidreBuffer) tmpbuff
     integer(C_INT), allocatable, target :: idata(:)
     real(C_DOUBLE), allocatable, target :: ddata(:)
     integer(C_INT), pointer :: idata_chk(:)

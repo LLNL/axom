@@ -209,10 +209,10 @@ contains
 
     subroutine iomanager_write(obj, grp, num_files, file_string, protocol)
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : group
+        use sidre_mod, only : SidreGroup
         implicit none
         class(iomanager) :: obj
-        type(group), value, intent(IN) :: grp
+        type(SidreGroup), value, intent(IN) :: grp
         integer(C_INT), value, intent(IN) :: num_files
         character(*), intent(IN) :: file_string
         character(*), intent(IN) :: protocol
@@ -230,10 +230,10 @@ contains
 
     subroutine iomanager_write_group_to_root_file(obj, grp, file_name)
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : group
+        use sidre_mod, only : SidreGroup
         implicit none
         class(iomanager) :: obj
-        type(group), value, intent(IN) :: grp
+        type(SidreGroup), value, intent(IN) :: grp
         character(*), intent(IN) :: file_name
         ! splicer begin class.IOManager.method.write_group_to_root_file
         call c_iomanager_write_group_to_root_file_bufferify(  &
@@ -246,10 +246,10 @@ contains
 
     subroutine iomanager_read_0(obj, grp, file_string, protocol)
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : group
+        use sidre_mod, only : SidreGroup
         implicit none
         class(iomanager) :: obj
-        type(group), value, intent(IN) :: grp
+        type(SidreGroup), value, intent(IN) :: grp
         character(*), intent(IN) :: file_string
         character(*), intent(IN) :: protocol
         ! splicer begin class.IOManager.method.read_0
@@ -265,10 +265,10 @@ contains
 
     subroutine iomanager_read_1(obj, grp, root_file)
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : group
+        use sidre_mod, only : SidreGroup
         implicit none
         class(iomanager) :: obj
-        type(group), value, intent(IN) :: grp
+        type(SidreGroup), value, intent(IN) :: grp
         character(*), intent(IN) :: root_file
         ! splicer begin class.IOManager.method.read_1
         call c_iomanager_read_1_bufferify(  &
@@ -281,10 +281,10 @@ contains
 
     subroutine iomanager_load_external_data(obj, grp, root_file)
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : group
+        use sidre_mod, only : SidreGroup
         implicit none
         class(iomanager) :: obj
-        type(group), value, intent(IN) :: grp
+        type(SidreGroup), value, intent(IN) :: grp
         character(*), intent(IN) :: root_file
         ! splicer begin class.IOManager.method.load_external_data
         call c_iomanager_load_external_data_bufferify(  &

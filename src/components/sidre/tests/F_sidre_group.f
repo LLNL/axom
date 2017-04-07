@@ -27,8 +27,8 @@ contains
   ! get_name()
   !------------------------------------------------------------------------------
   subroutine get_name
-    type(datastore) ds
-    type(group) root, grp, grp2
+    type(SidreDataStore) ds
+    type(SidreGroup) root, grp, grp2
 
     call set_case_name("get_name")
 
@@ -48,8 +48,8 @@ contains
   ! get_parent()
   !------------------------------------------------------------------------------
   subroutine get_parent
-    type(datastore) ds
-    type(group) root, parent, child
+    type(SidreDataStore) ds
+    type(SidreGroup) root, parent, child
 
     call set_case_name("get_parent")
 
@@ -67,8 +67,8 @@ contains
 ! Verify get_data_store()
 !------------------------------------------------------------------------------
   subroutine get_datastore
-    type(datastore) ds, const_ds
-    type(group) root, grp
+    type(SidreDataStore) ds, const_ds
+    type(SidreGroup) root, grp
 
     call set_case_name("get_datastore")
 
@@ -88,8 +88,8 @@ contains
   ! Verify get_group()
   !------------------------------------------------------------------------------
   subroutine get_group
-    type(datastore) ds
-    type(group) root, parent, child, child1, errgrp
+    type(SidreDataStore) ds
+    type(SidreGroup) root, parent, child, child1, errgrp
 
     call set_case_name("has_group")
 
@@ -114,9 +114,9 @@ contains
 ! Verify get_view()
 !------------------------------------------------------------------------------
   subroutine get_view
-    type(datastore) ds
-    type(group) root,parent
-    type(view) view1, view2
+    type(SidreDataStore) ds
+    type(SidreGroup) root,parent
+    type(SidreView) view1, view2
 
     call set_case_name("get_view")
 
@@ -140,9 +140,9 @@ contains
 ! Verify get_view_name(), get_view_index()
 !------------------------------------------------------------------------------
   subroutine get_view_name_index
-    type(datastore) ds
-    type(group) root, parent
-    type(view) view1, view2
+    type(SidreDataStore) ds
+    type(SidreGroup) root, parent
+    type(SidreView) view1, view2
     integer idx1, idx2, idx3    ! IndexType
     character(len=MAXNAMESIZE) name1, name2, name3
 
@@ -183,9 +183,9 @@ contains
 ! Verify getFirstValidViewIndex, getNextValidGroupIndex
 !------------------------------------------------------------------------------
   subroutine get_first_and_next_view_index
-    type(datastore) ds
-    type(group) root, parent, emptygrp
-    type(view) view1, view2
+    type(SidreDataStore) ds
+    type(SidreGroup) root, parent, emptygrp
+    type(SidreView) view1, view2
     integer idx1, idx2, idx3, badidx1, badidx2    ! IndexType
     character(len=30) name1, name2, name3
 
@@ -230,8 +230,8 @@ contains
 ! Verify get_group_name(), get_group_index()
 !------------------------------------------------------------------------------
   subroutine get_group_name_index
-    type(datastore) ds
-    type(group) root, parent, grp1, grp2
+    type(SidreDataStore) ds
+    type(SidreGroup) root, parent, grp1, grp2
     integer idx1, idx2, idx3     ! IndexType
     character(len=MAXNAMESIZE) name1, name2, name3
 
@@ -275,9 +275,9 @@ contains
   ! has_view()
   !------------------------------------------------------------------------------
   subroutine create_destroy_has_view
-    type(datastore) ds
-    type(group) root,grp
-    type(view) view0, view1, view2
+    type(SidreDataStore) ds
+    type(SidreGroup) root,grp
+    type(SidreView) view0, view1, view2
 
     call set_case_name("create_destroy_has_view")
 
@@ -328,8 +328,8 @@ contains
   ! has_group()
   !------------------------------------------------------------------------------
   subroutine create_destroy_has_group
-    type(datastore) ds
-    type(group) root, grp, grp2
+    type(SidreDataStore) ds
+    type(SidreGroup) root, grp, grp2
 
     call set_case_name("create_destroy_has_group")
 
@@ -351,9 +351,9 @@ contains
 
   !------------------------------------------------------------------------------
   subroutine group_name_collisions
-    type(datastore) ds
-    type(group) root, flds, badgrp
-    type(view) tview
+    type(SidreDataStore) ds
+    type(SidreGroup) root, flds, badgrp
+    type(SidreView) tview
 
     call set_case_name("group_name_collisions")
 
@@ -380,9 +380,9 @@ contains
   !------------------------------------------------------------------------------
 ! Restore this after copy_move is working. ATK-667
   subroutine view_copy_move
-    type(datastore) ds
-    type(group) root, flds, subgrp
-    type(view) i0_view, f0_view, d0_view, tmpview
+    type(SidreDataStore) ds
+    type(SidreGroup) root, flds, subgrp
+    type(SidreView) i0_view, f0_view, d0_view, tmpview
 
     call set_case_name("view_copy_move")
 
@@ -425,10 +425,10 @@ contains
 
   !------------------------------------------------------------------------------
   subroutine groups_move_copy
-    type(datastore) ds
-    type(group) root, flds, ga, gb, gc
-    type(group) subgrp, tmpgrp
-    type(view) i0_view, f0_view, d0_view, tmpview
+    type(SidreDataStore) ds
+    type(SidreGroup) root, flds, ga, gb, gc
+    type(SidreGroup) subgrp, tmpgrp
+    type(SidreView) i0_view, f0_view, d0_view, tmpview
 
     call set_case_name("groups_move_copy")
 
@@ -466,11 +466,11 @@ contains
 
   !------------------------------------------------------------------------------
   subroutine create_destroy_view_and_data
-    type(datastore) ds
-    type(group) root, grp
-    type(view) view1, view2
-    type(buffer) tmpbuf
-!XX    type(buffer) buffer1, tmpbuf
+    type(SidreDataStore) ds
+    type(SidreGroup) root, grp
+    type(SidreView) view1, view2
+    type(SidreBuffer) tmpbuf
+!XX    type(SidreBuffer) buffer1, tmpbuf
     integer bufferid1      ! IndexType
     character(len=30) view_name1, view_name2
 !XX    logical buffvalid
@@ -513,9 +513,9 @@ contains
 
   !------------------------------------------------------------------------------
   subroutine create_destroy_alloc_view_and_data
-    type(datastore) ds
-    type(group) root, grp
-    type(view) view1
+    type(SidreDataStore) ds
+    type(SidreGroup) root, grp
+    type(SidreView) view1
     integer i
     character(len=30) view_name1, view_name2
     integer(C_INT), pointer :: v1_vals(:)
@@ -553,10 +553,10 @@ contains
 
   !------------------------------------------------------------------------------
   subroutine create_view_of_buffer_with_datatype
-    type(datastore) ds
-    type(group) root
-    type(view) base
-    type(buffer) base_buff
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) base
+    type(SidreBuffer) base_buff
     integer(C_INT), pointer :: base_vals(:)
 !--    integer i
 !    integer(C_INT), pointer :: sub_a_vals(:)
@@ -594,8 +594,8 @@ contains
     character(24) :: file_path_base = "F_sidre_empty_datastore_"
     character(80) file_path
     integer i
-    type(datastore) ds1, ds2
-    type(group) root1, root2
+    type(SidreDataStore) ds1, ds2
+    type(SidreGroup) root1, root2
 
     call set_case_name("save_restore_empty_datastore")
 
@@ -632,9 +632,9 @@ contains
     character(33) :: file_path_base = "F_sidre_save_scalars_and_strings_"
     character(80) file_path
     integer i
-    type(datastore) ds1, ds2
-    type(group) root1, root2
-    type(view) tview
+    type(SidreDataStore) ds1, ds2
+    type(SidreGroup) root1, root2
+    type(SidreView) tview
 
     integer(C_INT) :: i0
     real(C_FLOAT) :: f0
@@ -702,9 +702,9 @@ contains
     integer, pointer :: int2d3(:,:)
     integer rank
     integer(SIDRE_LENGTH) extents(7)
-    type(datastore) ds1, ds2
-    type(group) root1, root2
-    type(view) view1, view2, view3, view4
+    type(SidreDataStore) ds1, ds2
+    type(SidreGroup) root1, root2
+    type(SidreView) view1, view2, view3, view4
 
     call set_case_name("save_restore_external_data")
 
@@ -799,9 +799,9 @@ contains
     integer, parameter :: ndata = 10
     integer(SIDRE_LENGTH) :: shape1(2), shape2(7)
     integer rank
-    type(datastore) ds1, ds2
-    type(group) root1, root2
-    type(view) view1, view2, view3, view4
+    type(SidreDataStore) ds1, ds2
+    type(SidreGroup) root1, root2
+    type(SidreView) view1, view2, view3, view4
 
     call set_case_name("save_restore_other")
 
@@ -868,8 +868,8 @@ contains
 
   !------------------------------------------------------------------------------
   subroutine rename_group
-    type(datastore) ds
-    type(group) root, child1, child2, child3
+    type(SidreDataStore) ds
+    type(SidreGroup) root, child1, child2, child3
 
     call set_case_name("rename_group")
 
@@ -893,9 +893,9 @@ contains
 
   !------------------------------------------------------------------------------
   subroutine save_restore_simple
-    type(datastore) ds, ds2
-    type(group) root, root2, flds, ga
-    type(view) i0_view
+    type(SidreDataStore) ds, ds2
+    type(SidreGroup) root, root2, flds, ga
+    type(SidreView) i0_view
 
     call set_case_name("save_restore_simple")
 
@@ -938,10 +938,10 @@ contains
 
   !------------------------------------------------------------------------------
   subroutine save_restore_complex
-    type(datastore) ds, ds2
-    type(group) root, flds, root2
-    type(group) ga, gb, gc
-    type(view) i0_view, f0_view, d0_view
+    type(SidreDataStore) ds, ds2
+    type(SidreGroup) root, flds, root2
+    type(SidreGroup) ga, gb, gc
+    type(SidreView) i0_view, f0_view, d0_view
     
     call set_case_name("save_restore_complex")
 

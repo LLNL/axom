@@ -26,7 +26,7 @@ contains
 !------------------------------------------------------------------------------
 
   function get_state(tview) result(state)
-    type(view), intent(IN) :: tview
+    type(SidreView), intent(IN) :: tview
     integer state
 
     if (tview%is_empty()) then
@@ -47,10 +47,10 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine create_views()
-    type(datastore) ds
-    type(group) root
-    type(view) dv_0, dv_1
-    type(buffer) db_0, db_1
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) dv_0, dv_1
+    type(SidreBuffer) db_0, db_1
 
     call set_case_name("create_views")
 
@@ -71,9 +71,9 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine scalar_view
-    type(datastore) ds
-    type(group) root
-    type(view) i0view, i1view, s0view, s1view
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) i0view, i1view, s0view, s1view
     integer(C_INT) i1, i2
     character(80) s1, s2
 
@@ -120,7 +120,7 @@ contains
 !  call s0view%allocate()
 !  call s0view%deallocate()
 
-!type(view) empty
+!type(SidreView) empty
 !empty = root%create_view("empty")
 !#if 0
 !  try
@@ -156,7 +156,7 @@ contains
       subroutine check_scalar_values(tview, state, is_described, is_allocated, &
            is_applied, type, length)
 
-        type(view), intent(IN) :: tview
+        type(SidreView), intent(IN) :: tview
         integer, intent(IN) :: state
         logical, intent(IN) :: is_described, is_allocated, is_applied
         integer, intent(IN) :: type
@@ -183,9 +183,9 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine int_buffer_from_view()
-    type(datastore) ds
-    type(group) root
-    type(view) dv
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) dv
     integer(C_INT), pointer :: data(:)
     integer(C_INT) i
     integer int_size, elem_count
@@ -218,9 +218,9 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine int_buffer_from_view_conduit_value()
-    type(datastore) ds
-    type(group) root
-    type(view) dv
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) dv
     integer(C_INT), pointer :: data(:)
     integer i
 
@@ -245,10 +245,10 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine int_array_multi_view()
-    type(datastore) ds
-    type(group) root
-    type(buffer) dbuff
-    type(view) dv_e, dv_o 
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreBuffer) dbuff
+    type(SidreView) dv_e, dv_o 
     type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
     integer i
@@ -308,10 +308,10 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine init_int_array_multi_view()
-    type(datastore) ds
-    type(group) root
-    type(buffer) dbuff
-    type(view) dv_e, dv_o 
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreBuffer) dbuff
+    type(SidreView) dv_e, dv_o 
     type(C_PTR) data_ptr
     integer, pointer :: data(:)
     integer i
@@ -375,13 +375,13 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine int_array_depth_view()
-    type(datastore) ds
-    type(group) root
-    type(buffer) dbuff
-    type(view) view0
-    type(view) view1
-    type(view) view2
-    type(view) view3
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreBuffer) dbuff
+    type(SidreView) view0
+    type(SidreView) view1
+    type(SidreView) view2
+    type(SidreView) view3
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
@@ -456,11 +456,11 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine int_array_view_attach_buffer()
-    type(datastore) ds
-    type(group) root
-    type(buffer) dbuff
-    type(view) field0
-    type(view) field1
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreBuffer) dbuff
+    type(SidreView) field0
+    type(SidreView) field1
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
@@ -541,10 +541,10 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine int_array_offset_stride()
-    type(datastore) ds
-    type(group) root, other
-    type(buffer) dbuff
-    type(view) field0, view1, view2, view3
+    type(SidreDataStore) ds
+    type(SidreGroup) root, other
+    type(SidreBuffer) dbuff
+    type(SidreView) field0, view1, view2, view3
 
     real(C_DOUBLE), pointer :: data(:)
     type(C_PTR) data_ptr
@@ -681,9 +681,9 @@ contains
      ! after this we use the old buffers to copy the values
      ! into the new views
      !
-    type(datastore) ds
-    type(group) root, r_old
-    type(view) base_old
+    type(SidreDataStore) ds
+    type(SidreGroup) root, r_old
+    type(SidreView) base_old
     integer(C_INT), pointer :: data(:)
     integer i
 
@@ -834,9 +834,9 @@ contains
     !
     ! info
     !
-    type(datastore) ds
-    type(group) root
-    type(view) a1, a2
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) a1, a2
 !    type(C_PTR) a1_ptr, a2_ptr
     real(C_FLOAT), pointer :: a1_data(:)
     integer(C_INT), pointer :: a2_data(:)
@@ -900,9 +900,9 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine simple_opaque()
-    type(datastore) ds
-    type(group) root
-    type(view) opq_view
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) opq_view
     integer(C_INT), target :: src_data
     integer(C_INT), pointer :: out_data
     type(C_PTR) src_ptr, opq_ptr

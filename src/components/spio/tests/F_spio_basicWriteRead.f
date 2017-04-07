@@ -21,11 +21,11 @@ program spio_basic_write_read
   integer testvalue1, testvalue2
   integer return_val
 
-  type(datastore) ds1, ds2
-  type(group) root1, root2
-  type(group) flds1, flds2
-  type(group) ga, gb
-  type(view)  view1, view2
+  type(SidreDataStore) ds1, ds2
+  type(SidreGroup) root1, root2
+  type(SidreGroup) flds1, flds2
+  type(SidreGroup) ga, gb
+  type(SidreView)  view1, view2
 
   type(iomanager) writer, reader
 

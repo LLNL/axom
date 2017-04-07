@@ -55,9 +55,9 @@ program main
   ! adding a communication subroutine in the main loop,
   ! and calling MPI_Finalize() at the end of main()
 
-  type(datastore) ds
-  type(group) root, prob
-  type(view) tmpview
+  type(SidreDataStore) ds
+  type(SidreGroup) root, prob
+  type(SidreView) tmpview
 
   integer(C_INT) numTotalCycles, dumpInterval
   integer(C_INT), pointer :: currCycle
@@ -95,20 +95,20 @@ program main
 contains
 
   subroutine CreateScalarIntBufferViewAndSetVal(grp, name, value)
-    type(group) grp
+    type(SidreGroup) grp
     character(*) name
     integer(C_INT) value
-    type(view) tmpview
+    type(SidreView) tmpview
 
     tmpview = grp%create_view_scalar(name, value)
   end subroutine CreateScalarIntBufferViewAndSetVal
 
 
   subroutine CreateScalarFloatBufferViewAndSetVal(grp, name, value)
-    type(group) grp
+    type(SidreGroup) grp
     character(*) name
     real(C_DOUBLE) value
-    type(view) tmpview
+    type(SidreView) tmpview
 
     tmpview = grp%create_view_scalar(name, value)
   end subroutine CreateScalarFloatBufferViewAndSetVal
@@ -120,7 +120,7 @@ contains
 
 subroutine GetUserInput(prob)
 
-  type(group), intent(IN) :: prob
+  type(SidreGroup), intent(IN) :: prob
   real(C_DOUBLE) :: pratio, dratio
   integer(C_INT) numUltraDumps, numCyclesPerDump
   integer(C_INT) numElems, numFaces
@@ -212,13 +212,13 @@ end subroutine GetUserInput
 !**************************************************************************
 
 subroutine CreateShockTubeMesh(prob)
-  type(group), intent(IN) :: prob
-  type(group) elem, face, tube
-  type(group) ingrp, outgrp  ! XXX unused
-  type(view) tmpview
-  type(view) mapToElemsView
-  type(view) faceToElemView
-  type(view) elemToFaceView
+  type(SidreGroup), intent(IN) :: prob
+  type(SidreGroup) elem, face, tube
+  type(SidreGroup) ingrp, outgrp  ! XXX unused
+  type(SidreView) tmpview
+  type(SidreView) mapToElemsView
+  type(SidreView) faceToElemView
+  type(SidreView) elemToFaceView
   integer(C_INT), pointer :: mapToElems(:)
   integer(C_INT), pointer :: faceToElem(:)
   integer(C_INT), pointer :: elemToFace(:)
@@ -298,11 +298,11 @@ end subroutine CreateShockTubeMesh
 !************************************************************************
 
 subroutine InitializeShockTube(prob)
-  type(group), intent(IN) :: prob
+  type(SidreGroup), intent(IN) :: prob
   integer i
 
-  type(group) elem, face
-  type(view) tmpview
+  type(SidreGroup) elem, face
+  type(SidreView) tmpview
   integer(C_INT) numElems, numFaces
   integer startTube
   integer endTube
@@ -414,10 +414,10 @@ end subroutine InitializeShockTube
 !*************************************************************************
 
 subroutine ComputeFaceInfo(prob)
-  type(group), intent(IN) :: prob
+  type(SidreGroup), intent(IN) :: prob
 
-  type(group) face, elem
-  type(view) tmpview
+  type(SidreGroup) face, elem
+  type(SidreView) tmpview
 
   integer i
   integer upWind, downWind, contributor
@@ -534,9 +534,9 @@ end subroutine ComputeFaceInfo
 !*************************************************************************
 
 subroutine UpdateElemInfo(prob)
-  type(group), intent(IN) :: prob
-  type(group) elem, face, tube
-  type(view) tmpview
+  type(SidreGroup), intent(IN) :: prob
+  type(SidreGroup) elem, face, tube
+  type(SidreView) tmpview
 
   real(C_DOUBLE) dx, dt
   real(C_DOUBLE), pointer :: time
@@ -611,11 +611,11 @@ subroutine UpdateElemInfo(prob)
 end subroutine UpdateElemInfo
 
 subroutine DumpUltra( prob )
-  type(group), intent(IN) :: prob
+  type(SidreGroup), intent(IN) :: prob
   character(100) fname
 
-  type(group) elem
-  type(view) tview
+  type(SidreGroup) elem
+  type(SidreView) tview
   integer, parameter :: fp = 8
   integer i, j
   integer ierr

@@ -26,11 +26,11 @@ program spio_external_write_read
   integer return_val
   integer i
 
-  type(datastore) ds1, ds2
-  type(group) root1, root2
-  type(group) flds, flds2
-  type(group) ga, gb
-  type(view)  view1, view2
+  type(SidreDataStore) ds1, ds2
+  type(SidreGroup) root1, root2
+  type(SidreGroup) flds, flds2
+  type(SidreGroup) ga, gb
+  type(SidreView)  view1, view2
 
   type(iomanager) writer, reader
 

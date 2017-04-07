@@ -62,6 +62,8 @@ classes:
   ####################################################################
   - name: DataStore
     cpp_header: sidre/DataStore.hpp
+    F_derived_name:  SidreDataStore
+
     methods:
     -  decl: DataStore * new() +constructor
     -  decl: void delete() +destructor
@@ -97,6 +99,7 @@ classes:
   ####################################################################
   - name: Group
     cpp_header: sidre/Group.hpp
+    F_derived_name:  SidreGroup
 
     methods:
     -  decl: const std::string& getName+len(MAXNAMESIZE)() const
@@ -262,6 +265,8 @@ classes:
   ####################################################################
   - name: Buffer
     cpp_header: sidre/Buffer.hpp
+    F_derived_name:  SidreBuffer
+
     methods:
       - decl: IndexType getIndex() const
       - decl: size_t getNumViews() const
@@ -305,6 +310,7 @@ classes:
   ####################################################################
   - name: View
     cpp_header: sidre/View.hpp
+    F_derived_name:  SidreView
 
     methods:
     - decl: View* allocate()

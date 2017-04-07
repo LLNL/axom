@@ -28,9 +28,9 @@ types:
   Group:
     cpp_header: sidre/Group.hpp
     cpp_type: axom::sidre::Group
-    f_type: type(group)
+    f_type: type(SidreGroup)
     f_module:
-      sidre_mod: [ group ]
+      sidre_mod: [ SidreGroup ]
     c_type: SIDRE_group
     c_header: sidre/wrapGroup.h
     c_fortran: type(C_PTR)
