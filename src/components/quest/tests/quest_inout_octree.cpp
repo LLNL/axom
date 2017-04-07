@@ -12,8 +12,8 @@
 
 #include "gtest/gtest.h"
 
-#include "common/CommonTypes.hpp"
-#include "common/Timer.hpp"
+#include "axom/Types.hpp"
+#include "axom_utils/Timer.hpp"
 
 #include "primal/orientation.hpp"
 #include "primal/Triangle.hpp"

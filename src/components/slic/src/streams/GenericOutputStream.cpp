@@ -20,7 +20,7 @@
 
 #include "GenericOutputStream.hpp"
 
-#include "common/AxomMacros.hpp"
+#include "axom/Macros.hpp"
 
 namespace axom {
 namespace slic {

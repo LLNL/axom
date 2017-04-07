@@ -19,7 +19,7 @@
 #ifndef SLAM_NULL_SET_H_
 #define SLAM_NULL_SET_H_
 
-#include "common/AxomMacros.hpp"
+#include "axom/Macros.hpp"
 
 #include "slic/slic.hpp"
 #include "slam/Set.hpp"
