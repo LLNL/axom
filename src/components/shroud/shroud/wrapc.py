@@ -344,8 +344,8 @@ class Wrapc(util.WrapperMixin):
 #
 #
 #
-        fmt_arg = util.Options(fmt)
         for arg in node['args']:
+            fmt_arg = arg.setdefault('fmtc', util.Options(fmt))
             c_attrs = arg['attrs']
             arg_typedef = self.typedef[arg['type']]
             c_statements = arg_typedef.c_statements

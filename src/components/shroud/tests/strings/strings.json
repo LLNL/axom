@@ -54,6 +54,27 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "status", 
+                        "c_var_len": "Lstatus", 
+                        "c_var_num": "Nstatus", 
+                        "cpp_type": "char", 
+                        "cpp_var": "status", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "status", 
+                        "f_var": "status"
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "status", 
+                        "cpp_type": "char", 
+                        "cpp_var": "status", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_status"
+                    }, 
                     "name": "status", 
                     "type": "char_scalar"
                 }
@@ -127,6 +148,22 @@
                         "ptr": true, 
                         "reference": false
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_rv", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv", 
+                        "ptr": " *"
+                    }, 
+                    "fmtf": {
+                        "c_var": "SH_rv", 
+                        "f_var": "SH_rv", 
+                        "result_arg": ""
+                    }, 
                     "name": "SH_F_rv", 
                     "type": "char_scalar"
                 }
@@ -171,6 +208,27 @@
                         "ptr": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "dest", 
+                        "c_var_len": "Ndest", 
+                        "c_var_num": "Ndest", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_dest", 
+                        "cpp_var": "SH_dest", 
+                        "len_arg": "Ndest", 
+                        "ptr": " *"
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "PyObject": "PyObject", 
+                        "PyTypeObject": null, 
+                        "c_var": "dest", 
+                        "cpp_type": "char", 
+                        "cpp_var": "dest", 
+                        "ptr": " *", 
+                        "py_var": "SH_Py_dest"
+                    }, 
                     "name": "dest", 
                     "type": "char"
                 }, 
@@ -180,6 +238,24 @@
                         "intent": "in", 
                         "ptr": true, 
                         "value": false
+                    }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "src", 
+                        "c_var_len": "Lsrc", 
+                        "c_var_num": "Nsrc", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_src", 
+                        "cpp_var": "SH_src", 
+                        "ptr": " *"
+                    }, 
+                    "fmtpy": {
+                        "C_const": "const ", 
+                        "c_var": "src", 
+                        "cpp_type": "char", 
+                        "cpp_var": "src", 
+                        "ptr": " *", 
+                        "py_var": "SH_Py_src"
                     }, 
                     "name": "src", 
                     "type": "char"
@@ -223,6 +299,21 @@
                         "ptr": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "dest", 
+                        "c_var_len": "Ndest", 
+                        "c_var_num": "Ndest", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_dest", 
+                        "cpp_var": "SH_dest", 
+                        "len_arg": "Ndest", 
+                        "ptr": " *"
+                    }, 
+                    "fmtf": {
+                        "c_var": "dest", 
+                        "f_var": "dest"
+                    }, 
                     "name": "dest", 
                     "type": "char"
                 }, 
@@ -233,6 +324,21 @@
                         "len_trim": "Lsrc", 
                         "ptr": true, 
                         "value": false
+                    }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "src", 
+                        "c_var_len": "Lsrc", 
+                        "c_var_num": "Nsrc", 
+                        "c_var_trim": "Lsrc", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_src", 
+                        "cpp_var": "SH_src", 
+                        "ptr": " *"
+                    }, 
+                    "fmtf": {
+                        "c_var": "src", 
+                        "f_var": "src"
                     }, 
                     "name": "src", 
                     "type": "char"
@@ -307,6 +413,17 @@
                         "intent": "out", 
                         "len": "LSH_F_rv", 
                         "ptr": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_rv", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv", 
+                        "ptr": " *"
                     }, 
                     "name": "SH_F_rv", 
                     "type": "char"
@@ -421,6 +538,22 @@
                         "len": "LSH_F_rv", 
                         "ptr": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_rv", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv", 
+                        "ptr": " *"
+                    }, 
+                    "fmtf": {
+                        "c_var": "SH_rv", 
+                        "f_var": "SH_rv", 
+                        "result_arg": ""
+                    }, 
                     "name": "SH_F_rv", 
                     "type": "char"
                 }
@@ -497,6 +630,21 @@
                         "intent": "out", 
                         "len": "Loutput", 
                         "ptr": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "output", 
+                        "c_var_len": "Loutput", 
+                        "c_var_num": "Noutput", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_rv", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "Loutput", 
+                        "ptr": " *"
+                    }, 
+                    "fmtf": {
+                        "c_var": "output", 
+                        "f_var": "output"
                     }, 
                     "name": "output", 
                     "type": "char"
@@ -623,6 +771,17 @@
                         "len": "LSH_F_rv", 
                         "reference": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_rv.c_str()", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv", 
+                        "ptr": ""
+                    }, 
                     "name": "SH_F_rv", 
                     "type": "string"
                 }
@@ -738,6 +897,22 @@
                         "len": "LSH_F_rv", 
                         "reference": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_rv.c_str()", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "SH_rv", 
+                        "f_var": "SH_rv", 
+                        "result_arg": ""
+                    }, 
                     "name": "SH_F_rv", 
                     "type": "string"
                 }
@@ -816,6 +991,21 @@
                         "intent": "out", 
                         "len": "Loutput", 
                         "reference": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "output", 
+                        "c_var_len": "Loutput", 
+                        "c_var_num": "Noutput", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_rv.c_str()", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "Loutput", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "output", 
+                        "f_var": "output"
                     }, 
                     "name": "output", 
                     "type": "string"
@@ -909,6 +1099,23 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "const ", 
+                        "c_var": "arg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "std::string"
                 }
@@ -952,6 +1159,20 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "c_var_trim": "Larg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg1", 
+                        "f_var": "arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "std::string"
                 }
@@ -991,6 +1212,27 @@
                         "len": "Narg1", 
                         "reference": true, 
                         "value": false
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Narg1", 
+                        "c_var_num": "Narg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_arg1.c_str()", 
+                        "cpp_var": "SH_arg1", 
+                        "len_arg": "Narg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "PyObject": "PyObject", 
+                        "PyTypeObject": null, 
+                        "c_var": "SH_arg1.c_str()", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg1"
                     }, 
                     "name": "arg1", 
                     "type": "std::string"
@@ -1034,6 +1276,22 @@
                         "len_trim": "Larg1", 
                         "reference": true, 
                         "value": false
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Narg1", 
+                        "c_var_num": "Narg1", 
+                        "c_var_trim": "Larg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_arg1.c_str()", 
+                        "cpp_var": "SH_arg1", 
+                        "len_arg": "Narg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg1", 
+                        "f_var": "arg1"
                     }, 
                     "name": "arg1", 
                     "type": "std::string"

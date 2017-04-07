@@ -450,10 +450,12 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         # Only process nargs.
         # Each variation of default-arguments produces a new call.
         fmt_arg = util.Options(fmt)
-        fmt_arg.LUA_index = 1
+        LUA_index = 1
         for iarg in range(luafcn.nargs):
             arg = node['args'][iarg]
             arg_name = arg['name']
+            fmt_arg = arg.setdefault('fmtl', util.Options(fmt))
+            fmt_arg.LUA_index = LUA_index
             fmt_arg.c_var = arg['name']
             fmt_arg.cpp_var = fmt_arg.c_var
             fmt_arg.lua_var = 'SH_Lua_' + fmt_arg.c_var
@@ -471,7 +473,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                 # lua_pop is a C++ expression
                 fmt_arg.c_var = wformat(arg_typedef.LUA_pop, fmt_arg)
                 lua_pop = wformat(arg_typedef.c_to_cpp, fmt_arg)
-                fmt_arg.LUA_index += 1
+                LUA_index += 1
 
             if attrs['intent'] in ['inout', 'out']:
                 # output variable must be a pointer

@@ -386,8 +386,9 @@ return 1;""", fmt)
             arg_names = []
             arg_offsets = []
             offset = 0
-            fmt_arg = util.Options(fmt)
+#            fmt_arg = util.Options(fmt)
             for arg in args:
+                fmt_arg = arg.setdefault('fmtpy', util.Options(fmt))
                 arg_name = arg['name']
                 fmt_arg.c_var = arg['name']
                 fmt_arg.cpp_var = fmt_arg.c_var

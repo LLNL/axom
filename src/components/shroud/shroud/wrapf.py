@@ -713,8 +713,8 @@ class Wrapf(util.WrapperMixin):
         pre_call = []
         f_args = node['args']
         f_index = -1       # index into f_args
-        fmt_arg = util.Options(fmt)
         for c_index, c_arg in enumerate(C_node['args']):
+            fmt_arg = c_arg.setdefault('fmtf', util.Options(fmt))
             fmt_arg.f_var = c_arg['name']
             fmt_arg.c_var = fmt_arg.f_var
 

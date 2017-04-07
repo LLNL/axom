@@ -215,6 +215,36 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg1", 
+                        "f_var": "arg1"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tonumber(L, 1)", 
+                        "c_var_len": "Larg1", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg1", 
+                        "lua_var": "SH_Lua_arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "arg1", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg1", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "double"
                 }, 
@@ -222,6 +252,36 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg2", 
+                        "c_var_len": "Larg2", 
+                        "c_var_num": "Narg2", 
+                        "cpp_type": "int", 
+                        "cpp_var": "arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg2", 
+                        "f_var": "arg2"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 2, 
+                        "c_var": "lua_tointeger(L, 2)", 
+                        "c_var_len": "Larg2", 
+                        "cpp_type": "int", 
+                        "cpp_var": "arg2", 
+                        "lua_var": "SH_Lua_arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "arg2", 
+                        "cpp_type": "int", 
+                        "cpp_var": "arg2", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg2"
                     }, 
                     "name": "arg2", 
                     "type": "int"
@@ -258,6 +318,19 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "len", 
+                        "c_var_len": "Llen", 
+                        "c_var_num": "Nlen", 
+                        "cpp_type": "int", 
+                        "cpp_var": "len", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "len", 
+                        "f_var": "len"
+                    }, 
                     "name": "len", 
                     "type": "int"
                 }, 
@@ -268,6 +341,19 @@
                         "ptr": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "values", 
+                        "c_var_len": "Lvalues", 
+                        "c_var_num": "Nvalues", 
+                        "cpp_type": "int", 
+                        "cpp_var": "values", 
+                        "ptr": " *"
+                    }, 
+                    "fmtf": {
+                        "c_var": "values", 
+                        "f_var": "values"
+                    }, 
                     "name": "values", 
                     "type": "int"
                 }, 
@@ -276,6 +362,19 @@
                         "intent": "out", 
                         "ptr": true, 
                         "value": false
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "result", 
+                        "c_var_len": "Lresult", 
+                        "c_var_num": "Nresult", 
+                        "cpp_type": "int", 
+                        "cpp_var": "result", 
+                        "ptr": " *"
+                    }, 
+                    "fmtf": {
+                        "c_var": "result", 
+                        "f_var": "result"
                     }, 
                     "name": "result", 
                     "type": "int"
@@ -311,6 +410,36 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg", 
+                        "c_var_len": "Larg", 
+                        "c_var_num": "Narg", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "tmp_arg", 
+                        "f_var": "arg"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_toboolean(L, 1)", 
+                        "c_var_len": "Larg", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg", 
+                        "lua_var": "SH_Lua_arg", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "arg", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg"
                     }, 
                     "name": "arg", 
                     "type": "bool"
@@ -350,6 +479,23 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tostring(L, 1)", 
+                        "c_var_len": "Larg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "arg1", 
+                        "lua_var": "SH_Lua_arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "const ", 
+                        "c_var": "arg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "std::string"
                 }, 
@@ -359,6 +505,23 @@
                         "intent": "in", 
                         "reference": true, 
                         "value": false
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 2, 
+                        "c_var": "lua_tostring(L, 2)", 
+                        "c_var_len": "Larg2", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "arg2", 
+                        "lua_var": "SH_Lua_arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "const ", 
+                        "c_var": "arg2", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg2", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg2"
                     }, 
                     "name": "arg2", 
                     "type": "std::string"
@@ -404,6 +567,20 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "c_var_trim": "Larg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg1", 
+                        "f_var": "arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "std::string"
                 }, 
@@ -414,6 +591,20 @@
                         "len_trim": "Larg2", 
                         "reference": true, 
                         "value": false
+                    }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "arg2", 
+                        "c_var_len": "Larg2", 
+                        "c_var_num": "Narg2", 
+                        "c_var_trim": "Larg2", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg2", 
+                        "f_var": "arg2"
                     }, 
                     "name": "arg2", 
                     "type": "std::string"
@@ -426,6 +617,22 @@
                         "len": "LSH_F_rv", 
                         "ptr": true, 
                         "reference": false
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_rv.c_str()", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv", 
+                        "ptr": " *"
+                    }, 
+                    "fmtf": {
+                        "c_var": "SH_rv", 
+                        "f_var": "SH_rv", 
+                        "result_arg": ""
                     }, 
                     "name": "SH_F_rv", 
                     "type": "std::string"
@@ -467,6 +674,32 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tostring(L, 1)", 
+                        "c_var_len": "Larg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "arg1", 
+                        "lua_var": "SH_Lua_arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "const ", 
+                        "c_var": "arg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "std::string"
                 }, 
@@ -476,6 +709,32 @@
                         "intent": "in", 
                         "reference": true, 
                         "value": false
+                    }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "arg2", 
+                        "c_var_len": "Larg2", 
+                        "c_var_num": "Narg2", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 2, 
+                        "c_var": "lua_tostring(L, 2)", 
+                        "c_var_len": "Larg2", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "arg2", 
+                        "lua_var": "SH_Lua_arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "const ", 
+                        "c_var": "arg2", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg2", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg2"
                     }, 
                     "name": "arg2", 
                     "type": "std::string"
@@ -521,6 +780,20 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "c_var_trim": "Larg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg1", 
+                        "f_var": "arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "std::string"
                 }, 
@@ -532,6 +805,20 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "arg2", 
+                        "c_var_len": "Larg2", 
+                        "c_var_num": "Narg2", 
+                        "c_var_trim": "Larg2", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg2", 
+                        "f_var": "arg2"
+                    }, 
                     "name": "arg2", 
                     "type": "std::string"
                 }, 
@@ -542,6 +829,21 @@
                         "intent": "out", 
                         "len": "Loutput", 
                         "reference": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "output", 
+                        "c_var_len": "Loutput", 
+                        "c_var_num": "Noutput", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_rv.c_str()", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "Loutput", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "output", 
+                        "f_var": "output"
                     }, 
                     "name": "output", 
                     "type": "std::string"
@@ -684,6 +986,19 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg1", 
+                        "f_var": "arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "double"
                 }
@@ -736,6 +1051,36 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg1", 
+                        "f_var": "arg1"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tonumber(L, 1)", 
+                        "c_var_len": "Larg1", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg1", 
+                        "lua_var": "SH_Lua_arg1", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "arg1", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg1", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "double"
                 }, 
@@ -744,6 +1089,36 @@
                         "default": "true", 
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg2", 
+                        "c_var_len": "Larg2", 
+                        "c_var_num": "Narg2", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "tmp_arg2", 
+                        "f_var": "arg2"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 2, 
+                        "c_var": "lua_toboolean(L, 2)", 
+                        "c_var_len": "Larg2", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg2", 
+                        "lua_var": "SH_Lua_arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "arg2", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg2", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg2"
                     }, 
                     "name": "arg2", 
                     "type": "bool"
@@ -794,6 +1169,32 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "name", 
+                        "c_var_len": "Lname", 
+                        "c_var_num": "Nname", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_name", 
+                        "ptr": ""
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tostring(L, 1)", 
+                        "c_var_len": "Lname", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "name", 
+                        "lua_var": "SH_Lua_name", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "const ", 
+                        "c_var": "name", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_name", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_name"
+                    }, 
                     "name": "name", 
                     "type": "std::string"
                 }
@@ -842,6 +1243,20 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "name", 
+                        "c_var_len": "Lname", 
+                        "c_var_num": "Nname", 
+                        "c_var_trim": "Lname", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_name", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "name", 
+                        "f_var": "name"
+                    }, 
                     "name": "name", 
                     "type": "std::string"
                 }
@@ -880,6 +1295,36 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "indx", 
+                        "c_var_len": "Lindx", 
+                        "c_var_num": "Nindx", 
+                        "cpp_type": "int", 
+                        "cpp_var": "indx", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "indx", 
+                        "f_var": "indx"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tointeger(L, 1)", 
+                        "c_var_len": "Lindx", 
+                        "cpp_type": "int", 
+                        "cpp_var": "indx", 
+                        "lua_var": "SH_Lua_indx", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "indx", 
+                        "cpp_type": "int", 
+                        "cpp_var": "indx", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_indx"
                     }, 
                     "name": "indx", 
                     "type": "int"
@@ -957,6 +1402,19 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg", 
+                        "c_var_len": "Larg", 
+                        "c_var_num": "Narg", 
+                        "cpp_type": "int", 
+                        "cpp_var": "arg", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg", 
+                        "f_var": "arg"
+                    }, 
                     "name": "arg", 
                     "type": "int"
                 }
@@ -995,6 +1453,19 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg", 
+                        "c_var_len": "Larg", 
+                        "c_var_num": "Narg", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg", 
+                        "f_var": "arg"
                     }, 
                     "name": "arg", 
                     "type": "double"
@@ -1125,6 +1596,36 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg", 
+                        "c_var_len": "Larg", 
+                        "c_var_num": "Narg", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg", 
+                        "f_var": "arg"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tonumber(L, 1)", 
+                        "c_var_len": "Larg", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg", 
+                        "lua_var": "SH_Lua_arg", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "arg", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg"
                     }, 
                     "name": "arg", 
                     "type": "double"
@@ -1280,6 +1781,32 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "name", 
+                        "c_var_len": "Lname", 
+                        "c_var_num": "Nname", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_name", 
+                        "ptr": ""
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tostring(L, 1)", 
+                        "c_var_len": "Lname", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "name", 
+                        "lua_var": "SH_Lua_name", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "const ", 
+                        "c_var": "name", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_name", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_name"
+                    }, 
                     "name": "name", 
                     "type": "std::string"
                 }, 
@@ -1287,6 +1814,32 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg2", 
+                        "c_var_len": "Larg2", 
+                        "c_var_num": "Narg2", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 2, 
+                        "c_var": "lua_tonumber(L, 2)", 
+                        "c_var_len": "Larg2", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg2", 
+                        "lua_var": "SH_Lua_arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "arg2", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg2", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg2"
                     }, 
                     "name": "arg2", 
                     "type": "double"
@@ -1441,6 +1994,20 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "name", 
+                        "c_var_len": "Lname", 
+                        "c_var_num": "Nname", 
+                        "c_var_trim": "Lname", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_name", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "name", 
+                        "f_var": "name"
+                    }, 
                     "name": "name", 
                     "type": "std::string"
                 }, 
@@ -1448,6 +2015,19 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg2", 
+                        "c_var_len": "Larg2", 
+                        "c_var_num": "Narg2", 
+                        "cpp_type": "double", 
+                        "cpp_var": "arg2", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg2", 
+                        "f_var": "arg2"
                     }, 
                     "name": "arg2", 
                     "type": "double"
@@ -1493,6 +2073,19 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "num", 
+                        "c_var_len": "Lnum", 
+                        "c_var_num": "Nnum", 
+                        "cpp_type": "int", 
+                        "cpp_var": "num", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "num", 
+                        "f_var": "num"
                     }, 
                     "name": "num", 
                     "type": "int"
@@ -1541,6 +2134,19 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "num", 
+                        "c_var_len": "Lnum", 
+                        "c_var_num": "Nnum", 
+                        "cpp_type": "int", 
+                        "cpp_var": "num", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "num", 
+                        "f_var": "num"
+                    }, 
                     "name": "num", 
                     "type": "int"
                 }, 
@@ -1549,6 +2155,19 @@
                         "default": 0, 
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "offset", 
+                        "c_var_len": "Loffset", 
+                        "c_var_num": "Noffset", 
+                        "cpp_type": "int", 
+                        "cpp_var": "offset", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "offset", 
+                        "f_var": "offset"
                     }, 
                     "name": "offset", 
                     "type": "int"
@@ -1605,6 +2224,36 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "num", 
+                        "c_var_len": "Lnum", 
+                        "c_var_num": "Nnum", 
+                        "cpp_type": "int", 
+                        "cpp_var": "num", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "num", 
+                        "f_var": "num"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tointeger(L, 1)", 
+                        "c_var_len": "Lnum", 
+                        "cpp_type": "int", 
+                        "cpp_var": "num", 
+                        "lua_var": "SH_Lua_num", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "num", 
+                        "cpp_type": "int", 
+                        "cpp_var": "num", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_num"
+                    }, 
                     "name": "num", 
                     "type": "int"
                 }, 
@@ -1614,6 +2263,36 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "offset", 
+                        "c_var_len": "Loffset", 
+                        "c_var_num": "Noffset", 
+                        "cpp_type": "int", 
+                        "cpp_var": "offset", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "offset", 
+                        "f_var": "offset"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 2, 
+                        "c_var": "lua_tointeger(L, 2)", 
+                        "c_var_len": "Loffset", 
+                        "cpp_type": "int", 
+                        "cpp_var": "offset", 
+                        "lua_var": "SH_Lua_offset", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "offset", 
+                        "cpp_type": "int", 
+                        "cpp_var": "offset", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_offset"
+                    }, 
                     "name": "offset", 
                     "type": "int"
                 }, 
@@ -1622,6 +2301,36 @@
                         "default": 1, 
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "stride", 
+                        "c_var_len": "Lstride", 
+                        "c_var_num": "Nstride", 
+                        "cpp_type": "int", 
+                        "cpp_var": "stride", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "stride", 
+                        "f_var": "stride"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 3, 
+                        "c_var": "lua_tointeger(L, 3)", 
+                        "c_var_len": "Lstride", 
+                        "cpp_type": "int", 
+                        "cpp_var": "stride", 
+                        "lua_var": "SH_Lua_stride", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "stride", 
+                        "cpp_type": "int", 
+                        "cpp_var": "stride", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_stride"
                     }, 
                     "name": "stride", 
                     "type": "int"
@@ -1670,6 +2379,19 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "type", 
+                        "c_var_len": "Ltype", 
+                        "c_var_num": "Ntype", 
+                        "cpp_type": "double", 
+                        "cpp_var": "type", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "type", 
+                        "f_var": "type"
+                    }, 
                     "name": "type", 
                     "type": "double"
                 }, 
@@ -1677,6 +2399,19 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "num", 
+                        "c_var_len": "Lnum", 
+                        "c_var_num": "Nnum", 
+                        "cpp_type": "int", 
+                        "cpp_var": "num", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "num", 
+                        "f_var": "num"
                     }, 
                     "name": "num", 
                     "type": "int"
@@ -1720,6 +2455,19 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "type", 
+                        "c_var_len": "Ltype", 
+                        "c_var_num": "Ntype", 
+                        "cpp_type": "double", 
+                        "cpp_var": "type", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "type", 
+                        "f_var": "type"
+                    }, 
                     "name": "type", 
                     "type": "double"
                 }, 
@@ -1727,6 +2475,19 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "num", 
+                        "c_var_len": "Lnum", 
+                        "c_var_num": "Nnum", 
+                        "cpp_type": "int", 
+                        "cpp_var": "num", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "num", 
+                        "f_var": "num"
                     }, 
                     "name": "num", 
                     "type": "int"
@@ -1736,6 +2497,19 @@
                         "default": 0, 
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "offset", 
+                        "c_var_len": "Loffset", 
+                        "c_var_num": "Noffset", 
+                        "cpp_type": "int", 
+                        "cpp_var": "offset", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "offset", 
+                        "f_var": "offset"
                     }, 
                     "name": "offset", 
                     "type": "int"
@@ -1787,6 +2561,36 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "type", 
+                        "c_var_len": "Ltype", 
+                        "c_var_num": "Ntype", 
+                        "cpp_type": "double", 
+                        "cpp_var": "type", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "type", 
+                        "f_var": "type"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tonumber(L, 1)", 
+                        "c_var_len": "Ltype", 
+                        "cpp_type": "double", 
+                        "cpp_var": "type", 
+                        "lua_var": "SH_Lua_type", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "type", 
+                        "cpp_type": "double", 
+                        "cpp_var": "type", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_type"
+                    }, 
                     "name": "type", 
                     "type": "double"
                 }, 
@@ -1794,6 +2598,36 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "num", 
+                        "c_var_len": "Lnum", 
+                        "c_var_num": "Nnum", 
+                        "cpp_type": "int", 
+                        "cpp_var": "num", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "num", 
+                        "f_var": "num"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 2, 
+                        "c_var": "lua_tointeger(L, 2)", 
+                        "c_var_len": "Lnum", 
+                        "cpp_type": "int", 
+                        "cpp_var": "num", 
+                        "lua_var": "SH_Lua_num", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "num", 
+                        "cpp_type": "int", 
+                        "cpp_var": "num", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_num"
                     }, 
                     "name": "num", 
                     "type": "int"
@@ -1804,6 +2638,36 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "offset", 
+                        "c_var_len": "Loffset", 
+                        "c_var_num": "Noffset", 
+                        "cpp_type": "int", 
+                        "cpp_var": "offset", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "offset", 
+                        "f_var": "offset"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 3, 
+                        "c_var": "lua_tointeger(L, 3)", 
+                        "c_var_len": "Loffset", 
+                        "cpp_type": "int", 
+                        "cpp_var": "offset", 
+                        "lua_var": "SH_Lua_offset", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "offset", 
+                        "cpp_type": "int", 
+                        "cpp_var": "offset", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_offset"
+                    }, 
                     "name": "offset", 
                     "type": "int"
                 }, 
@@ -1812,6 +2676,36 @@
                         "default": 1, 
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "stride", 
+                        "c_var_len": "Lstride", 
+                        "c_var_num": "Nstride", 
+                        "cpp_type": "int", 
+                        "cpp_var": "stride", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "stride", 
+                        "f_var": "stride"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 4, 
+                        "c_var": "lua_tointeger(L, 4)", 
+                        "c_var_len": "Lstride", 
+                        "cpp_type": "int", 
+                        "cpp_var": "stride", 
+                        "lua_var": "SH_Lua_stride", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "stride", 
+                        "cpp_type": "int", 
+                        "cpp_var": "stride", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_stride"
                     }, 
                     "name": "stride", 
                     "type": "int"
@@ -1847,6 +2741,36 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg", 
+                        "c_var_len": "Larg", 
+                        "c_var_num": "Narg", 
+                        "cpp_type": "TypeID", 
+                        "cpp_var": "arg", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg", 
+                        "f_var": "arg"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tointeger(L, 1)", 
+                        "c_var_len": "Larg", 
+                        "cpp_type": "TypeID", 
+                        "cpp_var": "arg", 
+                        "lua_var": "SH_Lua_arg", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "arg", 
+                        "cpp_type": "TypeID", 
+                        "cpp_var": "arg", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg"
+                    }, 
                     "name": "arg", 
                     "type": "TypeID"
                 }
@@ -1881,6 +2805,36 @@
                     "attrs": {
                         "intent": "in", 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "arg", 
+                        "c_var_len": "Larg", 
+                        "c_var_num": "Narg", 
+                        "cpp_type": "EnumTypeID", 
+                        "cpp_var": "arg", 
+                        "ptr": ""
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg", 
+                        "f_var": "arg"
+                    }, 
+                    "fmtl": {
+                        "LUA_index": 1, 
+                        "c_var": "lua_tointeger(L, 1)", 
+                        "c_var_len": "Larg", 
+                        "cpp_type": "EnumTypeID", 
+                        "cpp_var": "arg", 
+                        "lua_var": "SH_Lua_arg", 
+                        "ptr": ""
+                    }, 
+                    "fmtpy": {
+                        "C_const": "", 
+                        "c_var": "arg", 
+                        "cpp_type": "EnumTypeID", 
+                        "cpp_var": "arg", 
+                        "ptr": "", 
+                        "py_var": "SH_Py_arg"
                     }, 
                     "name": "arg", 
                     "type": "EnumTypeID"
@@ -1918,6 +2872,27 @@
                         "intent": "in", 
                         "ptr": true, 
                         "value": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "const ", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "cpp_type": "Class1", 
+                        "cpp_var": "arg1", 
+                        "ptr": " *"
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg1", 
+                        "f_var": "arg1"
+                    }, 
+                    "fmtpy": {
+                        "C_const": "const ", 
+                        "c_var": "arg1", 
+                        "cpp_type": "Class1", 
+                        "cpp_var": "arg1", 
+                        "ptr": " *", 
+                        "py_var": "SH_Py_arg1"
                     }, 
                     "name": "arg1", 
                     "type": "Class1"
@@ -1989,6 +2964,17 @@
                         "intent": "out", 
                         "len": "LSH_F_rv", 
                         "reference": true
+                    }, 
+                    "fmtc": {
+                        "C_const": "", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_rv.c_str()", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv", 
+                        "ptr": ""
                     }, 
                     "name": "SH_F_rv", 
                     "type": "std::string"

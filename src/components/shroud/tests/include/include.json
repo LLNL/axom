@@ -36,6 +36,19 @@
                                 "intent": "in", 
                                 "value": true
                             }, 
+                            "fmtc": {
+                                "C_const": "", 
+                                "c_var": "arg1", 
+                                "c_var_len": "Larg1", 
+                                "c_var_num": "Narg1", 
+                                "cpp_type": "int", 
+                                "cpp_var": "arg1", 
+                                "ptr": ""
+                            }, 
+                            "fmtf": {
+                                "c_var": "arg1", 
+                                "f_var": "arg1"
+                            }, 
                             "name": "arg1", 
                             "type": "CustomType"
                         }
@@ -103,6 +116,19 @@
                                 "intent": "in", 
                                 "value": true
                             }, 
+                            "fmtc": {
+                                "C_const": "", 
+                                "c_var": "comm", 
+                                "c_var_len": "Lcomm", 
+                                "c_var_num": "Ncomm", 
+                                "cpp_type": "MPI_Comm", 
+                                "cpp_var": "comm", 
+                                "ptr": ""
+                            }, 
+                            "fmtf": {
+                                "c_var": "comm", 
+                                "f_var": "comm"
+                            }, 
                             "name": "comm", 
                             "type": "MPI_Comm"
                         }
@@ -135,6 +161,19 @@
                                 "intent": "in", 
                                 "ptr": true, 
                                 "value": true
+                            }, 
+                            "fmtc": {
+                                "C_const": "", 
+                                "c_var": "c2", 
+                                "c_var_len": "Lc2", 
+                                "c_var_num": "Nc2", 
+                                "cpp_type": "Class1", 
+                                "cpp_var": "c2", 
+                                "ptr": " *"
+                            }, 
+                            "fmtf": {
+                                "c_var": "c2", 
+                                "f_var": "c2"
                             }, 
                             "name": "c2", 
                             "type": "Class1"
