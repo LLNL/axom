@@ -25,17 +25,6 @@ if (HDF5_DIR)
                        LIBRARIES ${HDF5_LIBRARIES} )
 endif()
 
-
-################################
-# Sparsehash
-################################
-if (SPARSEHASH_DIR)
-  include(cmake/thirdparty/FindSparsehash.cmake)
-  blt_register_library(NAME sparsehash
-                       INCLUDES ${SPARSEHASH_INCLUDE_DIRS})
-endif()
-
-
 ################################
 # Find boost headers
 ################################
