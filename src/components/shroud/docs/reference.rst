@@ -243,7 +243,7 @@ cpp_val
 f_var
     Fortran variable name for argument.
 
-ptr
+c_ptr
     `` * `` if argument is a pointer.
 
 len_var

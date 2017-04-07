@@ -39,12 +39,12 @@
                             }, 
                             "fmtc": {
                                 "C_const": "", 
+                                "c_ptr": "", 
                                 "c_var": "arg1", 
                                 "c_var_len": "Larg1", 
                                 "c_var_num": "Narg1", 
                                 "cpp_type": "int", 
-                                "cpp_var": "arg1", 
-                                "ptr": ""
+                                "cpp_var": "arg1"
                             }, 
                             "fmtf": {
                                 "c_var": "arg1", 
@@ -67,10 +67,10 @@
                         "F_name_generic": "method1", 
                         "F_name_impl": "class1_method1", 
                         "F_name_method": "method1", 
+                        "c_ptr": " *", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "method1", 
-                        "ptr": " *", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "method1"
                     }, 
@@ -129,12 +129,12 @@
                             }, 
                             "fmtc": {
                                 "C_const": "", 
+                                "c_ptr": "", 
                                 "c_var": "comm", 
                                 "c_var_len": "Lcomm", 
                                 "c_var_num": "Ncomm", 
                                 "cpp_type": "MPI_Comm", 
-                                "cpp_var": "comm", 
-                                "ptr": ""
+                                "cpp_var": "comm"
                             }, 
                             "fmtf": {
                                 "c_var": "comm", 
@@ -157,10 +157,10 @@
                         "F_name_generic": "method1", 
                         "F_name_impl": "class2_method1", 
                         "F_name_method": "method1", 
+                        "c_ptr": " *", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "method1", 
-                        "ptr": " *", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "method1"
                     }, 
@@ -184,12 +184,12 @@
                             }, 
                             "fmtc": {
                                 "C_const": "", 
+                                "c_ptr": " *", 
                                 "c_var": "c2", 
                                 "c_var_len": "Lc2", 
                                 "c_var_num": "Nc2", 
                                 "cpp_type": "Class1", 
-                                "cpp_var": "c2", 
-                                "ptr": " *"
+                                "cpp_var": "c2"
                             }, 
                             "fmtf": {
                                 "c_var": "c2", 
@@ -212,10 +212,10 @@
                         "F_name_generic": "method2", 
                         "F_name_impl": "class2_method2", 
                         "F_name_method": "method2", 
+                        "c_ptr": " *", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "method2", 
-                        "ptr": " *", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "method2"
                     }, 
@@ -349,7 +349,7 @@
             "LUA_type": "LUA_TUSERDATA", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}Class1{ptr}>(static_cast<{C_const}void *>({c_var}))", 
+            "c_to_cpp": "static_cast<{C_const}Class1{c_ptr}>(static_cast<{C_const}void *>({c_var}))", 
             "c_type": "DEF_class1", 
             "cpp_to_c": "static_cast<{C_const}DEF_class1 *>(static_cast<{C_const}void *>({cpp_var}))", 
             "cpp_type": "Class1", 
@@ -382,7 +382,7 @@
             "LUA_type": "LUA_TUSERDATA", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}Class2{ptr}>(static_cast<{C_const}void *>({c_var}))", 
+            "c_to_cpp": "static_cast<{C_const}Class2{c_ptr}>(static_cast<{C_const}void *>({c_var}))", 
             "c_type": "DEF_class2", 
             "cpp_to_c": "static_cast<{C_const}DEF_class2 *>(static_cast<{C_const}void *>({cpp_var}))", 
             "cpp_type": "Class2", 

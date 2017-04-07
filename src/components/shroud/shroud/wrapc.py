@@ -354,9 +354,9 @@ class Wrapc(util.WrapperMixin):
             else:
                 fmt_arg.C_const = ''
             if arg['attrs'].get('ptr', False):
-                fmt_arg.ptr = ' *'
+                fmt_arg.c_ptr = ' *'
             else:
-                fmt_arg.ptr = ''
+                fmt_arg.c_ptr = ''
             fmt_arg.cpp_type = arg_typedef.cpp_type
 
             if c_attrs.get('_is_result', False):
@@ -433,7 +433,7 @@ class Wrapc(util.WrapperMixin):
                         'defined for {}'
                         .format(arg_typedef.name))
                 append_format(pre_call,
-                              '{C_const}{cpp_type}{ptr} {cpp_var} = '
+                              '{C_const}{cpp_type}{c_ptr} {cpp_var} = '
                               + arg_typedef.c_to_cpp + ';', fmt_arg)
 
             if arg_call:
@@ -473,7 +473,7 @@ class Wrapc(util.WrapperMixin):
                     fmt_func.C_const = 'const '
                 else:
                     fmt_func.C_const = ''
-                fmt_func.ptr = ' *'
+                fmt_func.c_ptr = ' *'
                 fmt_func.c_var = fmt_func.C_this
                 # LHS is class' cpp_to_c
                 cls_typedef = self.typedef[cls['name']]

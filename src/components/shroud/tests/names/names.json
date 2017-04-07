@@ -63,10 +63,10 @@
                         "F_name_method": "type_method1", 
                         "F_result": "RV", 
                         "PY_name_impl": "PY_names_method1", 
+                        "c_ptr": " *", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "method1", 
-                        "ptr": " *", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "method1"
                     }, 
@@ -97,10 +97,10 @@
                         "F_name_method": "method2", 
                         "F_result": "RV", 
                         "PY_name_impl": "PY_names_method2", 
+                        "c_ptr": " *", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "method2", 
-                        "ptr": " *", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "method2"
                     }, 
@@ -250,12 +250,12 @@
                     }, 
                     "fmtc": {
                         "C_const": "", 
+                        "c_ptr": "", 
                         "c_var": "i", 
                         "c_var_len": "Li", 
                         "c_var_num": "Ni", 
                         "cpp_type": "int", 
-                        "cpp_var": "i", 
-                        "ptr": ""
+                        "cpp_var": "i"
                     }, 
                     "fmtf": {
                         "c_var": "i", 
@@ -263,10 +263,10 @@
                     }, 
                     "fmtpy": {
                         "C_const": "", 
+                        "c_ptr": "", 
                         "c_var": "i", 
                         "cpp_type": "int", 
                         "cpp_var": "i", 
-                        "ptr": "", 
                         "py_var": "SH_Py_i"
                     }, 
                     "name": "i", 
@@ -320,12 +320,12 @@
                     }, 
                     "fmtc": {
                         "C_const": "", 
+                        "c_ptr": "", 
                         "c_var": "i", 
                         "c_var_len": "Li", 
                         "c_var_num": "Ni", 
                         "cpp_type": "long", 
-                        "cpp_var": "i", 
-                        "ptr": ""
+                        "cpp_var": "i"
                     }, 
                     "fmtf": {
                         "c_var": "i", 
@@ -333,10 +333,10 @@
                     }, 
                     "fmtpy": {
                         "C_const": "", 
+                        "c_ptr": "", 
                         "c_var": "i", 
                         "cpp_type": "long", 
                         "cpp_var": "i", 
-                        "ptr": "", 
                         "py_var": "SH_Py_i"
                     }, 
                     "name": "i", 
@@ -474,7 +474,7 @@
             "PY_to_object": "PP_Names_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}Names{ptr}>(static_cast<{C_const}void *>({c_var}))", 
+            "c_to_cpp": "static_cast<{C_const}Names{c_ptr}>(static_cast<{C_const}void *>({c_var}))", 
             "c_type": "TES_names", 
             "cpp_to_c": "static_cast<{C_const}TES_names *>(static_cast<{C_const}void *>({cpp_var}))", 
             "cpp_type": "Names", 

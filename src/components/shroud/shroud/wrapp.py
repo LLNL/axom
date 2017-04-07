@@ -398,9 +398,9 @@ return 1;""", fmt)
                 else:
                     fmt_arg.C_const = ''
                 if arg['attrs'].get('ptr', False):
-                    fmt_arg.ptr = ' *'
+                    fmt_arg.c_ptr = ' *'
                 else:
-                    fmt_arg.ptr = ''
+                    fmt_arg.c_ptr = ''
                 attrs = arg['attrs']
 
                 arg_typedef = self.typedef[arg['type']]
@@ -477,7 +477,7 @@ return 1;""", fmt)
                             'both defined for {}'
                             .format(arg_typedef.name))
                     append_format(post_parse,
-                                  '{C_const}{cpp_type}{ptr} {cpp_var} = '
+                                  '{C_const}{cpp_type}{c_ptr} {cpp_var} = '
                                   + arg_typedef.c_to_cpp + ';', fmt_arg)
 
                 if arg_typedef.PY_PyTypeObject:

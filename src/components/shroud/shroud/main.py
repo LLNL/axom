@@ -1222,7 +1222,7 @@ class VerifyAttrs(object):
                           'static_cast<{C_const}void *>({cpp_var}))' % cname),
                 c_type=cname,
                 # opaque pointer -> void pointer -> class instance pointer
-                c_to_cpp=('static_cast<{C_const}%s{ptr}>('
+                c_to_cpp=('static_cast<{C_const}%s{c_ptr}>('
                           'static_cast<{C_const}void *>({c_var}))' % name),
                 c_fortran='type(C_PTR)',
                 f_type='type(%s)' % unname,
