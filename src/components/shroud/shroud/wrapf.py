@@ -713,9 +713,10 @@ class Wrapf(util.WrapperMixin):
         pre_call = []
         f_args = node['args']
         f_index = -1       # index into f_args
+        fmt_arg = util.Options(fmt)
         for c_index, c_arg in enumerate(C_node['args']):
-            fmt.f_var = c_arg['name']
-            fmt.c_var = fmt.f_var
+            fmt_arg.f_var = c_arg['name']
+            fmt_arg.c_var = fmt_arg.f_var
 
             f_arg = True   # assume C and Fortran arguments match
             c_attrs = c_arg['attrs']
@@ -725,14 +726,14 @@ class Wrapf(util.WrapperMixin):
                     # passing Fortran function result variable down to C
                     f_arg = False
                     result_arg = c_arg
-                    fmt.result_arg = result_as_arg   # c_arg['name']
-                    fmt.c_var = fmt.F_result
-                    fmt.f_var = fmt.F_result
+                    fmt_arg.result_arg = result_as_arg   # c_arg['name']
+                    fmt_arg.c_var = fmt.F_result
+                    fmt_arg.f_var = fmt.F_result
 
             if f_arg:
                 f_index += 1
                 f_arg = f_args[f_index]
-                arg_f_names.append(fmt.f_var)
+                arg_f_names.append(fmt_arg.f_var)
                 arg_f_decl.append(self._f_decl(f_arg))
 
                 arg_type = f_arg['type']
@@ -743,15 +744,15 @@ class Wrapf(util.WrapperMixin):
                     cmd_list = f_statements.get(intent, {}).get('declare', [])
                     if cmd_list:
                         need_wrapper = True
-                        fmt.c_var = 'tmp_' + fmt.f_var  # SH_
+                        fmt_arg.c_var = 'tmp_' + fmt_arg.f_var  # SH_
                         for cmd in cmd_list:
-                            append_format(arg_f_decl, cmd, fmt)
+                            append_format(arg_f_decl, cmd, fmt_arg)
 
                     cmd_list = f_statements.get(intent, {}).get('pre_call', [])
                     if cmd_list:
                         need_wrapper = True
                         for cmd in cmd_list:
-                            append_format(pre_call, cmd, fmt)
+                            append_format(pre_call, cmd, fmt_arg)
 
                     self.update_f_module(modules, arg_typedef.f_module)
 
@@ -765,26 +766,26 @@ class Wrapf(util.WrapperMixin):
             len_arg = c_arg['attrs'].get('len', None)
             if arg_typedef.f_args:
                 need_wrapper = True
-                append_format(arg_c_call, arg_typedef.f_args, fmt)
+                append_format(arg_c_call, arg_typedef.f_args, fmt_arg)
             elif arg_typedef.f_to_c:
                 need_wrapper = True
-                append_format(arg_c_call, arg_typedef.f_to_c, fmt)
+                append_format(arg_c_call, arg_typedef.f_to_c, fmt_arg)
             elif f_arg and c_arg['type'] != f_arg['type']:
                 need_wrapper = True
-                append_format(arg_c_call, arg_typedef.f_cast, fmt)
+                append_format(arg_c_call, arg_typedef.f_cast, fmt_arg)
                 self.update_f_module(modules, arg_typedef.f_module)
             else:
-                append_format(arg_c_call, '{c_var}', fmt)
+                append_format(arg_c_call, '{c_var}', fmt_arg)
 
             len_trim = c_arg['attrs'].get('len_trim', None)
             if len_trim:
                 need_wrapper = True
-                append_format(arg_c_call, 'len_trim({f_var}, kind=C_INT)', fmt)
+                append_format(arg_c_call, 'len_trim({f_var}, kind=C_INT)', fmt_arg)
                 self.set_f_module(modules, 'iso_c_binding', 'C_INT')
             len_arg = c_arg['attrs'].get('len', None)
             if len_arg:
                 need_wrapper = True
-                append_format(arg_c_call, 'len({f_var}, kind=C_INT)', fmt)
+                append_format(arg_c_call, 'len({f_var}, kind=C_INT)', fmt_arg)
                 self.set_f_module(modules, 'iso_c_binding', 'C_INT')
 
         fmt.F_arg_c_call = ', '.join(arg_c_call)
