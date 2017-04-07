@@ -218,7 +218,7 @@ function_suffix
     by using the function field *function_suffix*.
     Mulitple suffixes may be applied.
 
-rv_decl
+C_rv_decl
     Declaration of return value for function.
 
 Argument

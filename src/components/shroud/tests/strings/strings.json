@@ -91,6 +91,7 @@
                 "C_object": "", 
                 "C_prototype": "char status", 
                 "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_pass_char", 
                 "F_C_name": "pass_char", 
                 "F_arg_c_call": "status", 
@@ -105,7 +106,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "passChar", 
-                "rv_decl": "void SH_rv", 
                 "underscore_name": "pass_char"
             }, 
             "options": {}, 
@@ -132,6 +132,7 @@
                 "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "char", 
+                "C_rv_decl": "char SH_rv", 
                 "F_C_call": "c_return_char_bufferify", 
                 "F_C_name": "c_return_char", 
                 "F_arg_c_call": "SH_rv, len(SH_rv, kind=C_INT)", 
@@ -147,7 +148,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "returnChar", 
-                "rv_decl": "char SH_rv", 
                 "underscore_name": "return_char"
             }, 
             "options": {}, 
@@ -206,14 +206,14 @@
                 "C_object": "", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
+                "C_rv_decl": "char SH_rv", 
                 "F_C_name": "c_return_char_bufferify", 
                 "c_const": "", 
                 "c_string": "SH_rv", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
                 "f_string_len": "LSH_F_rv", 
-                "function_suffix": "_bufferify", 
-                "rv_decl": "char SH_rv"
+                "function_suffix": "_bufferify"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -310,6 +310,7 @@
                 "C_object": "", 
                 "C_prototype": "char * dest, int Ndest, const char * src", 
                 "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_pass_char_ptr_bufferify", 
                 "F_C_name": "c_pass_char_ptr", 
                 "F_arg_c_call": "dest, len(dest, kind=C_INT), src, len_trim(src, kind=C_INT)", 
@@ -324,7 +325,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "passCharPtr", 
-                "rv_decl": "void SH_rv", 
                 "underscore_name": "pass_char_ptr"
             }, 
             "options": {}, 
@@ -406,11 +406,11 @@
                 "C_object": "", 
                 "C_prototype": "char * dest, int Ndest, const char * src, int Lsrc", 
                 "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_pass_char_ptr_bufferify", 
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
-                "function_suffix": "_bufferify", 
-                "rv_decl": "void SH_rv"
+                "function_suffix": "_bufferify"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -442,12 +442,12 @@
                 "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
+                "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char1", 
                 "PY_name_impl": "PY_get_char1", 
                 "c_const": "const ", 
                 "cpp_var": "SH_rv", 
                 "function_name": "getChar1", 
-                "rv_decl": "const char * SH_rv", 
                 "underscore_name": "get_char1"
             }, 
             "options": {
@@ -506,14 +506,14 @@
                 "C_object": "", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
+                "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char1_bufferify", 
                 "c_const": "", 
                 "c_string": "SH_rv", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
                 "f_string_len": "LSH_F_rv", 
-                "function_suffix": "_bufferify", 
-                "rv_decl": "const char * SH_rv"
+                "function_suffix": "_bufferify"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -589,6 +589,7 @@
                 "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
+                "C_rv_decl": "const char * SH_rv", 
                 "F_C_call": "c_get_char2_bufferify", 
                 "F_C_name": "c_get_char2", 
                 "F_arg_c_call": "SH_rv, len(SH_rv, kind=C_INT)", 
@@ -604,7 +605,6 @@
                 "c_const": "const ", 
                 "cpp_var": "SH_rv", 
                 "function_name": "getChar2", 
-                "rv_decl": "const char * SH_rv", 
                 "rvlen": "30", 
                 "underscore_name": "get_char2"
             }, 
@@ -665,14 +665,14 @@
                 "C_object": "", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
+                "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char2_bufferify", 
                 "c_const": "", 
                 "c_string": "SH_rv", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
                 "f_string_len": "LSH_F_rv", 
-                "function_suffix": "_bufferify", 
-                "rv_decl": "const char * SH_rv"
+                "function_suffix": "_bufferify"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -707,12 +707,12 @@
                 "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
+                "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char3", 
                 "PY_name_impl": "PY_get_char3", 
                 "c_const": "const ", 
                 "cpp_var": "SH_rv", 
                 "function_name": "getChar3", 
-                "rv_decl": "const char * SH_rv", 
                 "underscore_name": "get_char3"
             }, 
             "options": {
@@ -774,14 +774,14 @@
                 "C_object": "", 
                 "C_prototype": "char * output, int Loutput", 
                 "C_return_type": "void", 
+                "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char3_bufferify", 
                 "c_const": "", 
                 "c_string": "SH_rv", 
                 "cpp_var": "SH_rv", 
                 "f_string": "output", 
                 "f_string_len": "Loutput", 
-                "function_suffix": "_bufferify", 
-                "rv_decl": "const char * SH_rv"
+                "function_suffix": "_bufferify"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -871,12 +871,12 @@
                 "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
+                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string1", 
                 "PY_name_impl": "PY_get_string1", 
                 "c_const": "const ", 
                 "cpp_var": "SH_rv", 
                 "function_name": "getString1", 
-                "rv_decl": "const std::string & SH_rv", 
                 "underscore_name": "get_string1"
             }, 
             "options": {
@@ -935,14 +935,14 @@
                 "C_object": "", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
+                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string1_bufferify", 
                 "c_const": "", 
                 "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
                 "f_string_len": "LSH_F_rv", 
-                "function_suffix": "_bufferify", 
-                "rv_decl": "const std::string & SH_rv"
+                "function_suffix": "_bufferify"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -1019,6 +1019,7 @@
                 "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
+                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_call": "c_get_string2_bufferify", 
                 "F_C_name": "c_get_string2", 
                 "F_arg_c_call": "SH_rv, len(SH_rv, kind=C_INT)", 
@@ -1034,7 +1035,6 @@
                 "c_const": "const ", 
                 "cpp_var": "SH_rv", 
                 "function_name": "getString2", 
-                "rv_decl": "const std::string & SH_rv", 
                 "rvlen": "30", 
                 "underscore_name": "get_string2"
             }, 
@@ -1096,14 +1096,14 @@
                 "C_object": "", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
+                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string2_bufferify", 
                 "c_const": "", 
                 "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
                 "f_string_len": "LSH_F_rv", 
-                "function_suffix": "_bufferify", 
-                "rv_decl": "const std::string & SH_rv"
+                "function_suffix": "_bufferify"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -1139,12 +1139,12 @@
                 "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
+                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string3", 
                 "PY_name_impl": "PY_get_string3", 
                 "c_const": "const ", 
                 "cpp_var": "SH_rv", 
                 "function_name": "getString3", 
-                "rv_decl": "const std::string & SH_rv", 
                 "underscore_name": "get_string3"
             }, 
             "options": {
@@ -1207,14 +1207,14 @@
                 "C_object": "", 
                 "C_prototype": "char * output, int Loutput", 
                 "C_return_type": "void", 
+                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string3_bufferify", 
                 "c_const": "", 
                 "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
                 "f_string": "output", 
                 "f_string_len": "Loutput", 
-                "function_suffix": "_bufferify", 
-                "rv_decl": "const std::string & SH_rv"
+                "function_suffix": "_bufferify"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -1333,6 +1333,7 @@
                 "C_object": "", 
                 "C_prototype": "const char * arg1", 
                 "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_accept_string_const_reference_bufferify", 
                 "F_C_name": "c_accept_string_const_reference", 
                 "F_arg_c_call": "arg1, len_trim(arg1, kind=C_INT)", 
@@ -1347,7 +1348,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "acceptStringConstReference", 
-                "rv_decl": "void SH_rv", 
                 "underscore_name": "accept_string_const_reference"
             }, 
             "options": {}, 
@@ -1403,11 +1403,11 @@
                 "C_object": "", 
                 "C_prototype": "const char * arg1, int Larg1", 
                 "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_accept_string_const_reference_bufferify", 
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
-                "function_suffix": "_bufferify", 
-                "rv_decl": "void SH_rv"
+                "function_suffix": "_bufferify"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -1471,6 +1471,7 @@
                 "C_object": "", 
                 "C_prototype": "char * arg1, int Narg1", 
                 "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_accept_string_reference_bufferify", 
                 "F_C_name": "c_accept_string_reference", 
                 "F_arg_c_call": "arg1, len_trim(arg1, kind=C_INT), len(arg1, kind=C_INT)", 
@@ -1485,7 +1486,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "acceptStringReference", 
-                "rv_decl": "void SH_rv", 
                 "underscore_name": "accept_string_reference"
             }, 
             "options": {}, 
@@ -1543,11 +1543,11 @@
                 "C_object": "", 
                 "C_prototype": "char * arg1, int Larg1, int Narg1", 
                 "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_accept_string_reference_bufferify", 
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
-                "function_suffix": "_bufferify", 
-                "rv_decl": "void SH_rv"
+                "function_suffix": "_bufferify"
             }, 
             "options": {
                 "wrap_c": true, 

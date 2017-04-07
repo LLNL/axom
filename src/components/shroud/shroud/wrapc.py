@@ -311,7 +311,7 @@ class Wrapc(util.WrapperMixin):
         else:
             fmt_func.c_const = ''
         # return value
-        fmt_func.rv_decl = self._c_decl('cpp_type', CPP_result, name=fmt_func.C_result)
+        fmt_func.C_rv_decl = self._c_decl('cpp_type', CPP_result, name=fmt_func.C_result)
 
         proto_list = []
         call_list = []
@@ -494,7 +494,7 @@ class Wrapc(util.WrapperMixin):
             C_code.extend(pre_call)
             return_line = ''
             if is_ctor:
-                line = wformat('{rv_decl} = new {cpp_class}'
+                line = wformat('{C_rv_decl} = new {cpp_class}'
                                '({C_call_list});', fmt_func)
                 C_code.append(line)
                 C_code.append('return '
@@ -511,7 +511,7 @@ class Wrapc(util.WrapperMixin):
                 return_line = 'return;'
             else:
                 line = wformat(
-                    '{rv_decl} = {CPP_this_call}{function_name}'
+                    '{C_rv_decl} = {CPP_this_call}{function_name}'
                     '{CPP_template}({C_call_list});',
                     fmt_func)
                 C_code.append(line)
