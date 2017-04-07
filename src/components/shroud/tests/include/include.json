@@ -38,7 +38,7 @@
                                 "value": true
                             }, 
                             "fmtc": {
-                                "C_const": "", 
+                                "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "arg1", 
                                 "c_var_len": "Larg1", 
@@ -58,7 +58,6 @@
                     "decl": "void method1(CustomType arg1)", 
                     "fmt": {
                         "C_call_list": "arg1", 
-                        "C_const": "", 
                         "C_name": "DEF_class1_method1", 
                         "C_object": "Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class1 * self, int arg1", 
@@ -67,6 +66,7 @@
                         "F_name_generic": "method1", 
                         "F_name_impl": "class1_method1", 
                         "F_name_method": "method1", 
+                        "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
@@ -128,7 +128,7 @@
                                 "value": true
                             }, 
                             "fmtc": {
-                                "C_const": "", 
+                                "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "comm", 
                                 "c_var_len": "Lcomm", 
@@ -148,7 +148,6 @@
                     "decl": "void method1(MPI_Comm comm)", 
                     "fmt": {
                         "C_call_list": "MPI_Comm_f2c(comm)", 
-                        "C_const": "", 
                         "C_name": "DEF_class2_method1", 
                         "C_object": "Class2 *SH_this = static_cast<Class2 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class2 * self, MPI_Fint comm", 
@@ -157,6 +156,7 @@
                         "F_name_generic": "method1", 
                         "F_name_impl": "class2_method1", 
                         "F_name_method": "method1", 
+                        "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
@@ -183,7 +183,7 @@
                                 "value": true
                             }, 
                             "fmtc": {
-                                "C_const": "", 
+                                "c_const": "", 
                                 "c_ptr": " *", 
                                 "c_var": "c2", 
                                 "c_var_len": "Lc2", 
@@ -203,7 +203,6 @@
                     "decl": "void method2(Class1 * c2)", 
                     "fmt": {
                         "C_call_list": "static_cast<Class1 *>(static_cast<void *>(c2))", 
-                        "C_const": "", 
                         "C_name": "DEF_class2_method2", 
                         "C_object": "Class2 *SH_this = static_cast<Class2 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class2 * self, DEF_class1 * c2", 
@@ -212,6 +211,7 @@
                         "F_name_generic": "method2", 
                         "F_name_impl": "class2_method2", 
                         "F_name_method": "method2", 
+                        "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
@@ -271,7 +271,6 @@
             "decl": "void function1()", 
             "fmt": {
                 "C_call_list": "", 
-                "C_const": "", 
                 "C_name": "DEF_function1", 
                 "C_object": "", 
                 "C_prototype": "", 
@@ -280,6 +279,7 @@
                 "F_name_generic": "function1", 
                 "F_name_impl": "function1", 
                 "F_name_method": "function1", 
+                "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "function1", 
                 "rv_decl": "void SH_rv", 
@@ -349,9 +349,9 @@
             "LUA_type": "LUA_TUSERDATA", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}Class1{c_ptr}>(static_cast<{C_const}void *>({c_var}))", 
+            "c_to_cpp": "static_cast<{c_const}Class1{c_ptr}>(static_cast<{c_const}void *>({c_var}))", 
             "c_type": "DEF_class1", 
-            "cpp_to_c": "static_cast<{C_const}DEF_class1 *>(static_cast<{C_const}void *>({cpp_var}))", 
+            "cpp_to_c": "static_cast<{c_const}DEF_class1 *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "Class1", 
             "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "class1", 
@@ -382,9 +382,9 @@
             "LUA_type": "LUA_TUSERDATA", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}Class2{c_ptr}>(static_cast<{C_const}void *>({c_var}))", 
+            "c_to_cpp": "static_cast<{c_const}Class2{c_ptr}>(static_cast<{c_const}void *>({c_var}))", 
             "c_type": "DEF_class2", 
-            "cpp_to_c": "static_cast<{C_const}DEF_class2 *>(static_cast<{C_const}void *>({cpp_var}))", 
+            "cpp_to_c": "static_cast<{c_const}DEF_class2 *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "Class2", 
             "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "class2", 
@@ -715,10 +715,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -746,7 +746,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
@@ -763,10 +763,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -794,7 +794,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
@@ -811,10 +811,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -848,7 +848,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }

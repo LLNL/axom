@@ -72,7 +72,7 @@ types:
     f_to_c: '{f_var}%get_instance()'
     # cpp_local_var uses c_to_cpp to assign a value to a local variable
     cpp_local_var: True
-    c_to_cpp: static_cast<{C_const}{cpp_type}{c_ptr}>(static_cast<{C_const}void *>({c_var}))
+    c_to_cpp: static_cast<{c_const}{cpp_type}{c_ptr}>(static_cast<{c_const}void *>({c_var}))
     PY_PyTypeObject: FillInTypeForGroup
 
 classes:

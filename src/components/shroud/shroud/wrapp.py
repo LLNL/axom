@@ -394,9 +394,9 @@ return 1;""", fmt)
                 fmt_arg.cpp_var = fmt_arg.c_var
                 fmt_arg.py_var = 'SH_Py_' + fmt_arg.c_var
                 if arg['attrs'].get('const', False):
-                    fmt_arg.C_const = 'const '
+                    fmt_arg.c_const = 'const '
                 else:
-                    fmt_arg.C_const = ''
+                    fmt_arg.c_const = ''
                 if arg['attrs'].get('ptr', False):
                     fmt_arg.c_ptr = ' *'
                 else:
@@ -477,7 +477,7 @@ return 1;""", fmt)
                             'both defined for {}'
                             .format(arg_typedef.name))
                     append_format(post_parse,
-                                  '{C_const}{cpp_type}{c_ptr} {cpp_var} = '
+                                  '{c_const}{cpp_type}{c_ptr} {cpp_var} = '
                                   + arg_typedef.c_to_cpp + ';', fmt_arg)
 
                 if arg_typedef.PY_PyTypeObject:
@@ -521,7 +521,7 @@ return 1;""", fmt)
             PY_code.extend(['{', 1, 'return NULL;', -1, '}'])
 
         if cls:
-            #  template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
+            #  template = '{c_const}{cpp_class} *{C_this}obj = static_cast<{c_const}{cpp_class} *>(static_cast<{c_const}void *>({C_this}));'
             #  fmt_func.C_object = wformat(template, fmt_func)
             # call method syntax
             fmt.PY_this_call = wformat('self->{BBB}->', fmt)

@@ -307,9 +307,9 @@ class Wrapc(util.WrapperMixin):
             self.header_forward[result_typedef.c_type] = True
 
         if result_is_const:
-            fmt_func.C_const = 'const '
+            fmt_func.c_const = 'const '
         else:
-            fmt_func.C_const = ''
+            fmt_func.c_const = ''
         # return value
         fmt_func.rv_decl = self._c_decl('cpp_type', CPP_result, name=fmt_func.C_result)
 
@@ -350,9 +350,9 @@ class Wrapc(util.WrapperMixin):
             fmt_arg.c_var_len = 'L' + fmt_arg.c_var
             fmt_arg.c_var_num = 'N' + fmt_arg.c_var
             if arg['attrs'].get('const', False):
-                fmt_arg.C_const = 'const '
+                fmt_arg.c_const = 'const '
             else:
-                fmt_arg.C_const = ''
+                fmt_arg.c_const = ''
             if arg['attrs'].get('ptr', False):
                 fmt_arg.c_ptr = ' *'
             else:
@@ -433,7 +433,7 @@ class Wrapc(util.WrapperMixin):
                         'defined for {}'
                         .format(arg_typedef.name))
                 append_format(pre_call,
-                              '{C_const}{cpp_type}{c_ptr} {cpp_var} = '
+                              '{c_const}{cpp_type}{c_ptr} {cpp_var} = '
                               + arg_typedef.c_to_cpp + ';', fmt_arg)
 
             if arg_call:
@@ -470,15 +470,15 @@ class Wrapc(util.WrapperMixin):
                 fmt_func.C_object = options.C_object
             elif not is_ctor:
                 if is_const:
-                    fmt_func.C_const = 'const '
+                    fmt_func.c_const = 'const '
                 else:
-                    fmt_func.C_const = ''
+                    fmt_func.c_const = ''
                 fmt_func.c_ptr = ' *'
                 fmt_func.c_var = fmt_func.C_this
                 # LHS is class' cpp_to_c
                 cls_typedef = self.typedef[cls['name']]
                 fmt_func.C_object = wformat(
-                    '{C_const}{cpp_class} *{CPP_this} = ' +
+                    '{c_const}{cpp_class} *{CPP_this} = ' +
                     cls_typedef.c_to_cpp + ';', fmt_func)
 
 

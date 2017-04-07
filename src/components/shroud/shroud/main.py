@@ -199,7 +199,7 @@ class Schema(object):
         # set default values for fields which may be unset.
         fmt_library.class_name = ''
 #        fmt_library.ptr = ''
-#        fmt_library.C_const = ''
+#        fmt_library.c_const = ''
         fmt_library.CPP_this_call = ''
         fmt_library.CPP_template = ''
 
@@ -434,10 +434,10 @@ class Schema(object):
                     intent_in=dict(
                         cpp_local_var=True,
                         pre_call=[
-                            '{C_const}std::string {cpp_var}({c_var});'
+                            '{c_const}std::string {cpp_var}({c_var});'
                             ],
                         pre_call_trim=[
-                            ('{C_const}std::string '
+                            ('{c_const}std::string '
                              '{cpp_var}({c_var}, {c_var_trim});')
                             ],
                     ),
@@ -469,7 +469,7 @@ class Schema(object):
                     intent_in=dict(
                         cpp_local_var=True,
                         post_parse=[
-                            '{C_const}std::string {cpp_var}({c_var});'
+                            '{c_const}std::string {cpp_var}({c_var});'
                             ],
                         ),
                     ),
@@ -1218,12 +1218,12 @@ class VerifyAttrs(object):
             self.typedef[name] = util.Typedef(
                 name,
                 cpp_type=name,
-                cpp_to_c=('static_cast<{C_const}%s *>('
-                          'static_cast<{C_const}void *>({cpp_var}))' % cname),
+                cpp_to_c=('static_cast<{c_const}%s *>('
+                          'static_cast<{c_const}void *>({cpp_var}))' % cname),
                 c_type=cname,
                 # opaque pointer -> void pointer -> class instance pointer
-                c_to_cpp=('static_cast<{C_const}%s{c_ptr}>('
-                          'static_cast<{C_const}void *>({c_var}))' % name),
+                c_to_cpp=('static_cast<{c_const}%s{c_ptr}>('
+                          'static_cast<{c_const}void *>({c_var}))' % name),
                 c_fortran='type(C_PTR)',
                 f_type='type(%s)' % unname,
                 f_derived_type=cls.get('F_derived_name',None) or unname,

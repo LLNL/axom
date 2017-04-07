@@ -52,7 +52,6 @@
                     "decl": "void method1", 
                     "fmt": {
                         "C_call_list": "", 
-                        "C_const": "", 
                         "C_name": "XXX_TES_names_method1", 
                         "C_object": "Names *SH_this = static_cast<Names *>(static_cast<void *>(self));", 
                         "C_prototype": "TES_names * self", 
@@ -63,6 +62,7 @@
                         "F_name_method": "type_method1", 
                         "F_result": "RV", 
                         "PY_name_impl": "PY_names_method1", 
+                        "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
@@ -86,7 +86,6 @@
                     "decl": "void method2", 
                     "fmt": {
                         "C_call_list": "", 
-                        "C_const": "", 
                         "C_name": "XXX_TES_names_method2", 
                         "C_object": "Names *SH_this = static_cast<Names *>(static_cast<void *>(self));", 
                         "C_prototype": "TES_names * self", 
@@ -97,6 +96,7 @@
                         "F_name_method": "method2", 
                         "F_result": "RV", 
                         "PY_name_impl": "PY_names_method2", 
+                        "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
@@ -173,7 +173,6 @@
             "decl": "void function1", 
             "fmt": {
                 "C_call_list": "", 
-                "C_const": "", 
                 "C_name": "YYY_TES_function1", 
                 "C_object": "", 
                 "C_prototype": "", 
@@ -184,6 +183,7 @@
                 "F_name_method": "function1", 
                 "F_result": "RV", 
                 "PY_name_impl": "PY_function1", 
+                "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "function1", 
                 "rv_decl": "void SH_rv", 
@@ -208,7 +208,6 @@
             "decl": "void function2", 
             "fmt": {
                 "C_call_list": "", 
-                "C_const": "", 
                 "C_name": "c_name_special", 
                 "C_object": "", 
                 "C_prototype": "", 
@@ -219,6 +218,7 @@
                 "F_name_method": "function2", 
                 "F_result": "RV", 
                 "PY_name_impl": "PY_function2", 
+                "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "function2", 
                 "rv_decl": "void SH_rv", 
@@ -249,7 +249,7 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
+                        "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "i", 
                         "c_var_len": "Li", 
@@ -262,7 +262,7 @@
                         "f_var": "i"
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
+                        "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "i", 
                         "cpp_type": "int", 
@@ -277,7 +277,6 @@
             "decl": "void function3a(int i)", 
             "fmt": {
                 "C_call_list": "i", 
-                "C_const": "", 
                 "C_name": "YYY_TES_function3a_0", 
                 "C_object": "", 
                 "C_prototype": "int i", 
@@ -288,6 +287,7 @@
                 "F_name_method": "function3a_0", 
                 "F_result": "RV", 
                 "PY_name_impl": "PY_function3a_0", 
+                "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "function3a", 
                 "function_suffix": "_0", 
@@ -319,7 +319,7 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
+                        "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "i", 
                         "c_var_len": "Li", 
@@ -332,7 +332,7 @@
                         "f_var": "i"
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
+                        "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "i", 
                         "cpp_type": "long", 
@@ -347,7 +347,6 @@
             "decl": "void function3a(long i)", 
             "fmt": {
                 "C_call_list": "i", 
-                "C_const": "", 
                 "C_name": "YYY_TES_function3a_1", 
                 "C_object": "", 
                 "C_prototype": "long i", 
@@ -358,6 +357,7 @@
                 "F_name_method": "function3a_1", 
                 "F_result": "RV", 
                 "PY_name_impl": "PY_function3a_1", 
+                "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "function3a", 
                 "function_suffix": "_1", 
@@ -380,7 +380,6 @@
             "decl": "int function4()", 
             "fmt": {
                 "C_call_list": "", 
-                "C_const": "", 
                 "C_name": "YYY_TES_function4", 
                 "C_object": "", 
                 "C_prototype": "", 
@@ -391,6 +390,7 @@
                 "F_name_method": "function4", 
                 "F_result": "RV", 
                 "PY_name_impl": "PY_function4", 
+                "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "function4", 
                 "rv_decl": "int SH_rv", 
@@ -474,9 +474,9 @@
             "PY_to_object": "PP_Names_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<{C_const}Names{c_ptr}>(static_cast<{C_const}void *>({c_var}))", 
+            "c_to_cpp": "static_cast<{c_const}Names{c_ptr}>(static_cast<{c_const}void *>({c_var}))", 
             "c_type": "TES_names", 
-            "cpp_to_c": "static_cast<{C_const}TES_names *>(static_cast<{C_const}void *>({cpp_var}))", 
+            "cpp_to_c": "static_cast<{c_const}TES_names *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "Names", 
             "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "FNames", 
@@ -778,10 +778,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -809,7 +809,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
@@ -826,10 +826,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -857,7 +857,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
@@ -874,10 +874,10 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
@@ -911,7 +911,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
