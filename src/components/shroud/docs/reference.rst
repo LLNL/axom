@@ -154,7 +154,7 @@ CPP_template
     The template component of the function declaration.
     ``<{type}>``
 
-CPP_this_all
+CPP_this_call
     How to call the function.
     ``{CPP_this}->`` for instance methods and blank for library functions.
 

@@ -821,7 +821,8 @@ class Wrapf(util.WrapperMixin):
             # XXX if not fmt.get('CPP_template', None):
             if '_overloaded' in node:
                 need_wrapper = True
-            if not fmt.get('CPP_return_templated', False):
+#            if not fmt.get('CPP_return_templated', False):
+            if '_CPP_return_templated' not in node:
                 # if return type is templated in C++,
                 # then do not set up generic since only the
                 # return type may be different (ex. getValue<T>())

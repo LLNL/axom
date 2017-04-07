@@ -2118,6 +2118,7 @@
                     }
                 }, 
                 {
+                    "_CPP_return_templated": true, 
                     "_decl": "int getValue()", 
                     "_function_index": 36, 
                     "_generated": "cpp_template", 
@@ -2127,7 +2128,6 @@
                     "attrs": {}, 
                     "decl": "ValueType getValue()", 
                     "fmt": {
-                        "CPP_return_templated": true, 
                         "CPP_template": "<int>", 
                         "C_name": "AA_exclass2_get_value_int", 
                         "F_C_name": "c_exclass2_get_value_int", 
@@ -2149,6 +2149,7 @@
                     }
                 }, 
                 {
+                    "_CPP_return_templated": true, 
                     "_decl": "double getValue()", 
                     "_function_index": 37, 
                     "_generated": "cpp_template", 
@@ -2158,7 +2159,6 @@
                     "attrs": {}, 
                     "decl": "ValueType getValue()", 
                     "fmt": {
-                        "CPP_return_templated": true, 
                         "CPP_template": "<double>", 
                         "C_name": "AA_exclass2_get_value_double", 
                         "F_C_name": "c_exclass2_get_value_double", 

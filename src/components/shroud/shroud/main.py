@@ -788,7 +788,7 @@ class GenFunctions(object):
                 fmt.CPP_template = '<{}>'.format(type)
                 if new['result']['type'] == typename:
                     new['result']['type'] = type
-                    fmt.CPP_return_templated = True
+                    new['_CPP_return_templated'] = True
                 for arg in new['args']:
                     if arg['type'] == typename:
                         arg['type'] = type
