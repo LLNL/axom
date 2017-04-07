@@ -21,7 +21,7 @@ contains
 
     type(SidreDataStore) ds
     type(SidreGroup) root
-    type(SidreView)  tview
+    type(SidreView)  view
     integer type
     integer num_elements
     integer i
@@ -35,25 +35,25 @@ contains
 
     call assert_false(allocated(iarray), "iarray is not allocated")
 
-    tview = root%create_array_view("iarray", iarray)
+    view = root%create_array_view("iarray", iarray)
 
-    call assert_true(tview%is_empty(), "tview is empty")
+    call assert_true(view%is_empty(), "view is empty")
 
-    type = tview%get_type_id()
+    type = view%get_type_id()
     call assert_equals(type, SIDRE_INT_ID, "check type")
 
-    num_elements = tview%get_num_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 0, "check size")
 
-    rank = tview%get_num_dimensions()
+    rank = view%get_num_dimensions()
     call assert_equals(rank, 1, "check dimensions")
 
-    rank = tview%get_shape(7, extents)
+    rank = view%get_shape(7, extents)
     call assert_equals(rank, 1, "check rank")
     call assert_true(extents(1) == 0, "check extents")
 
     ! get array via a pointer
-    call tview%get_data(ipointer)
+    call view%get_data(ipointer)
     call assert_false(associated(ipointer), "check association")
 
     call ds%delete()
@@ -68,7 +68,7 @@ contains
 
     type(SidreDataStore) ds
     type(SidreGroup) root
-    type(SidreView)  tview
+    type(SidreView)  view
     integer type
     integer num_elements
     integer i
@@ -86,25 +86,25 @@ contains
        iarray(i) = i
     enddo
 
-    tview = root%create_array_view("iarray", iarray)
+    view = root%create_array_view("iarray", iarray)
 
-    call assert_true(tview%is_external())
+    call assert_true(view%is_external())
 
-    type = tview%get_type_id()
+    type = view%get_type_id()
     call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = tview%get_num_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, size(iarray))
 
-    rank = tview%get_num_dimensions()
+    rank = view%get_num_dimensions()
     call assert_equals(rank, 1)
 
-    rank = tview%get_shape(7, extents)
+    rank = view%get_shape(7, extents)
     call assert_equals(rank, 1)
     call assert_true(extents(1) == size(iarray, 1))
 
     ! get array via a pointer
-    call tview%get_data(ipointer)
+    call view%get_data(ipointer)
     call assert_true(all(iarray.eq.ipointer))
 
     call ds%delete()
@@ -121,7 +121,7 @@ contains
 
     type(SidreDataStore) ds
     type(SidreGroup) root
-    type(SidreView)  tview
+    type(SidreView)  view
     integer type
     integer num_elements
     integer i, j, k
@@ -143,27 +143,27 @@ contains
        enddo
     enddo
 
-    tview = root%create_array_view("iarray", iarray)
+    view = root%create_array_view("iarray", iarray)
 
-    call assert_true(tview%is_external())
+    call assert_true(view%is_external())
 
-    type = tview%get_type_id()
+    type = view%get_type_id()
     call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = tview%get_num_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, size(iarray))
 
-    rank = tview%get_num_dimensions()
+    rank = view%get_num_dimensions()
     call assert_equals(rank, 3)
 
-    rank = tview%get_shape(7, extents)
+    rank = view%get_shape(7, extents)
     call assert_equals(rank, 3)
     call assert_true(extents(1) == size(iarray, 1))
     call assert_true(extents(2) == size(iarray, 2))
     call assert_true(extents(3) == size(iarray, 3))
 
     ! get array via a pointer
-    call tview%get_data(ipointer)
+    call view%get_data(ipointer)
     call assert_true(all(iarray.eq.ipointer))
 
     call ds%delete()
@@ -182,7 +182,7 @@ contains
 
     type(SidreDataStore) ds
     type(SidreGroup) root
-    type(SidreView)  tview
+    type(SidreView)  view
     integer type
     integer num_elements
     integer i
@@ -196,16 +196,16 @@ contains
        iarray(i) = i
     enddo
 
-    tview = root%create_array_view("iarray", iarray)
+    view = root%create_array_view("iarray", iarray)
 
-    type = tview%get_type_id()
+    type = view%get_type_id()
     call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = tview%get_num_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
-    call tview%get_data(ipointer)
+    call view%get_data(ipointer)
     call assert_true(all(iarray.eq.ipointer))
 
     call ds%delete()
@@ -221,7 +221,7 @@ contains
 
     type(SidreDataStore) ds
     type(SidreGroup) root
-    type(SidreView)  tview
+    type(SidreView)  view
     integer num_elements
     integer type
     integer i
@@ -237,16 +237,16 @@ contains
        darray(i) = i + 0.5d0
     enddo
 
-    tview = root%create_array_view("darray", darray)
+    view = root%create_array_view("darray", darray)
 
-    type = tview%get_type_id()
+    type = view%get_type_id()
     call assert_equals(type, SIDRE_DOUBLE_ID)
 
-    num_elements = tview%get_num_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
-    call tview%get_data(dpointer)
+    call view%get_data(dpointer)
     call assert_true(all(abs(darray-dpointer).lt..0005))
 
     call ds%delete()
@@ -264,7 +264,7 @@ contains
 
     type(SidreDataStore) ds
     type(SidreGroup) root
-    type(SidreView)  tview
+    type(SidreView)  view
     integer type
     integer num_elements
     integer i, j, k
@@ -280,20 +280,20 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    tview = root%create_view_and_allocate("iarray", SIDRE_INT_ID, 3, extents_in)
+    view = root%create_view_and_allocate("iarray", SIDRE_INT_ID, 3, extents_in)
 
-    call tview%get_data(ipointer)
+    call view%get_data(ipointer)
 
-    type = tview%get_type_id()
+    type = view%get_type_id()
     call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = tview%get_num_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, size(ipointer))
 
-    rank = tview%get_num_dimensions()
+    rank = view%get_num_dimensions()
     call assert_equals(rank, 3)
 
-    rank = tview%get_shape(7, extents)
+    rank = view%get_shape(7, extents)
     call assert_equals(rank, 3)
     call assert_true(extents(1) == size(ipointer, 1))
     call assert_true(extents(2) == size(ipointer, 2))
@@ -301,13 +301,13 @@ contains
 
     ! reshape as 1-d using shape
     extents_in(1) = size(ipointer)
-    call tview%apply(SIDRE_INT_ID, 1, extents_in(1:1))
-    num_elements = tview%get_num_elements()
+    call view%apply(SIDRE_INT_ID, 1, extents_in(1:1))
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, size(ipointer))
 
     ! reshape as 1-d using length
-    call tview%apply(SIDRE_INT_ID, extents_in(1))
-    num_elements = tview%get_num_elements()
+    call view%apply(SIDRE_INT_ID, extents_in(1))
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, size(ipointer))
 
     call ds%delete()

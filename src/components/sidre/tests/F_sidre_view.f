@@ -25,19 +25,19 @@ module sidre_view
 contains
 !------------------------------------------------------------------------------
 
-  function get_state(tview) result(state)
-    type(SidreView), intent(IN) :: tview
+  function get_state(view) result(state)
+    type(SidreView), intent(IN) :: view
     integer state
 
-    if (tview%is_empty()) then
+    if (view%is_empty()) then
        state = EMPTYVIEW
-    else if (tview%has_buffer()) then
+    else if (view%has_buffer()) then
        state = BUFFERVIEW
-    else if (tview%is_external()) then
+    else if (view%is_external()) then
        state = EXTERNALVIEW
-    else if (tview%is_scalar()) then
+    else if (view%is_scalar()) then
        state = SCALARVIEW
-    else if (tview%is_string()) then
+    else if (view%is_string()) then
        state = STRINGVIEW
     else
        state = NOTYPE
@@ -153,10 +153,10 @@ contains
 
     contains
 
-      subroutine check_scalar_values(tview, state, is_described, is_allocated, &
+      subroutine check_scalar_values(view, state, is_described, is_allocated, &
            is_applied, type, length)
 
-        type(SidreView), intent(IN) :: tview
+        type(SidreView), intent(IN) :: view
         integer, intent(IN) :: state
         logical, intent(IN) :: is_described, is_allocated, is_applied
         integer, intent(IN) :: type
@@ -165,17 +165,17 @@ contains
 
         integer(SIDRE_LENGTH) dims(2)
 
-        name = tview%get_name()
+        name = view%get_name()
 
-        call assert_equals(get_state(tview), state)
-        call assert_equals(tview%is_described(), is_described, trim(name) // " is_described")
-        call assert_equals(tview%is_allocated(), is_allocated, trim(name) // "is_allocated")
-        call assert_equals(tview%is_applied(), is_applied, trim(name) // " is_applied")
+        call assert_equals(get_state(view), state)
+        call assert_equals(view%is_described(), is_described, trim(name) // " is_described")
+        call assert_equals(view%is_allocated(), is_allocated, trim(name) // "is_allocated")
+        call assert_equals(view%is_applied(), is_applied, trim(name) // " is_applied")
 
-        call assert_equals(tview%get_type_id(), type, trim(name) // " get_type_id")
-        call assert_equals(int(tview%get_num_elements(), kind(length)), length, trim(name) // " get_num_elements")
-        call assert_equals(tview%get_num_dimensions(), 1, trim(name) // " get_num_dimensions")
-        call assert_true(tview%get_shape(1, dims) == 1 .and. dims(1) == length)
+        call assert_equals(view%get_type_id(), type, trim(name) // " get_type_id")
+        call assert_equals(int(view%get_num_elements(), kind(length)), length, trim(name) // " get_num_elements")
+        call assert_equals(view%get_num_dimensions(), 1, trim(name) // " get_num_dimensions")
+        call assert_true(view%get_shape(1, dims) == 1 .and. dims(1) == length)
       end subroutine check_scalar_values
 
   end subroutine scalar_view

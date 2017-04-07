@@ -353,14 +353,14 @@ contains
   subroutine group_name_collisions
     type(SidreDataStore) ds
     type(SidreGroup) root, flds, badgrp
-    type(SidreView) tview
+    type(SidreView) view
 
     call set_case_name("group_name_collisions")
 
     ds = datastore_new()
     root = ds%get_root()
     flds = root%create_group("fields")
-    tview = flds%create_view("a")
+    view = flds%create_view("a")
 
     call assert_true(flds%has_view("a"))
 
@@ -371,8 +371,8 @@ contains
 
     ! check error condition
     ! attempt to create duplicate view name.
-    tview = flds%create_view("a")
-    call assert_false( tview%associated())
+    view = flds%create_view("a")
+    call assert_false( view%associated())
 
     call ds%delete()
   end subroutine group_name_collisions
@@ -634,7 +634,7 @@ contains
     integer i
     type(SidreDataStore) ds1, ds2
     type(SidreGroup) root1, root2
-    type(SidreView) tview
+    type(SidreView) view
 
     integer(C_INT) :: i0
     real(C_FLOAT) :: f0
@@ -646,10 +646,10 @@ contains
     ds1 = datastore_new()
     root1 = ds1%get_root()
 
-    tview = root1%create_view_scalar_int("i0", 1)
-    tview = root1%create_view_scalar_float("f0", 1.e0)
-    tview = root1%create_view_scalar_double("d0", 10.d0)
-    tview = root1%create_view_string("s0", "I am a string")
+    view = root1%create_view_scalar_int("i0", 1)
+    view = root1%create_view_scalar_float("f0", 1.e0)
+    view = root1%create_view_scalar_double("d0", 10.d0)
+    view = root1%create_view_string("s0", "I am a string")
 
     do i = 1, nprotocols
        file_path = file_path_base // protocols(i)
@@ -667,20 +667,20 @@ contains
 
        call assert_true( root1%is_equivalent_to( root2 ))
 
-       tview = root2%get_view("i0")
-       i0 = tview%get_data_int()
+       view = root2%get_view("i0")
+       i0 = view%get_data_int()
        call assert_equals(i0, 1)
 
-       tview = root2%get_view("f0")
-       f0 = tview%get_data_float()
+       view = root2%get_view("f0")
+       f0 = view%get_data_float()
        call assert_equals(f0, 1.0)
 
-       tview = root2%get_view("d0")
-       d0 = tview%get_data_double()
+       view = root2%get_view("d0")
+       d0 = view%get_data_double()
        call assert_equals(d0, 10.0d0)
 
-       tview = root2%get_view("s0")
-       call tview%get_string(s0)
+       view = root2%get_view("s0")
+       call view%get_string(s0)
        call assert_equals(s0, "I am a string")
 
        call ds2%delete()

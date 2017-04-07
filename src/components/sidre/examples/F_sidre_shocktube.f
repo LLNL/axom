@@ -615,7 +615,7 @@ subroutine DumpUltra( prob )
   character(100) fname
 
   type(SidreGroup) elem
-  type(SidreView) tview
+  type(SidreView) view
   integer, parameter :: fp = 8
   integer i, j
   integer ierr
@@ -626,9 +626,9 @@ subroutine DumpUltra( prob )
 
   fname = "F_problem"
 
-  tview = prob%get_view("cycle")
+  view = prob%get_view("cycle")
 
-  write(fname, '(a, "_", i4.4, ".ult")') trim(fname), tview%get_data_int()
+  write(fname, '(a, "_", i4.4, ".ult")') trim(fname), view%get_data_int()
   open(fp, file=fname, iostat=ierr)
   if (ierr /= 0) then
      print *, "Could not open file ", trim(fname), ". Aborting."
@@ -639,15 +639,15 @@ subroutine DumpUltra( prob )
   write(fp, '(a)') "# Problem: problem"
 
   do i=1, prob%get_num_views()
-     tview = prob%get_view(i-1)
-     length = tview%get_num_elements()
-     name = tview%get_name()
+     view = prob%get_view(i-1)
+     length = view%get_num_elements()
+     name = view%get_name()
      if ( length <= 1 ) then
-        select case (tview%get_type_id())
+        select case (view%get_type_id())
         case (SIDRE_INT32_ID)
-           write(fp, '("# ", a, " = ", i4)') name, tview%get_data_int()
+           write(fp, '("# ", a, " = ", i4)') name, view%get_data_int()
         case (SIDRE_FLOAT64_ID)
-           write(fp, '("# ", a, " = ", f16.5)') name, tview%get_data_double()
+           write(fp, '("# ", a, " = ", f16.5)') name, view%get_data_double()
         end select
     endif
   enddo
@@ -655,19 +655,19 @@ subroutine DumpUltra( prob )
   elem = prob%get_group("elem")
 
   do i=1, elem%get_num_views()
-     tview = elem%get_view(i-1)
-     length = tview%get_num_elements()
-     name = tview%get_name()
+     view = elem%get_view(i-1)
+     length = view%get_num_elements()
+     name = view%get_name()
      write(fp, '("# ", a)') trim(name)
 
-     select case (tview%get_type_id())
+     select case (view%get_type_id())
      case (SIDRE_INT32_ID)
-        call tview%get_data(idata)
+        call view%get_data(idata)
         do j = 1, length
            write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), real(idata(j), C_DOUBLE)
         enddo
      case (SIDRE_FLOAT64_ID)
-        call tview%get_data(ddata)
+        call view%get_data(ddata)
         do j = 1, length
            write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), ddata(j)
         enddo

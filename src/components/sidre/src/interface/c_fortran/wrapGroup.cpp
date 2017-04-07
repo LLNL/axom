@@ -603,20 +603,20 @@ Group *selfobj = static_cast<Group *>(static_cast<void *>(self));
 // splicer end class.Group.method.destroy_view_and_data_index
 }
 
-SIDRE_view * SIDRE_group_move_view(SIDRE_group * self, SIDRE_view * tview)
+SIDRE_view * SIDRE_group_move_view(SIDRE_group * self, SIDRE_view * view)
 {
 Group *selfobj = static_cast<Group *>(static_cast<void *>(self));
 // splicer begin class.Group.method.move_view
-    View * rv = selfobj->moveView(static_cast<View *>(static_cast<void *>(tview)));
+    View * rv = selfobj->moveView(static_cast<View *>(static_cast<void *>(view)));
     return static_cast<SIDRE_view *>(static_cast<void *>(rv));
 // splicer end class.Group.method.move_view
 }
 
-SIDRE_view * SIDRE_group_copy_view(SIDRE_group * self, SIDRE_view * tview)
+SIDRE_view * SIDRE_group_copy_view(SIDRE_group * self, SIDRE_view * view)
 {
 Group *selfobj = static_cast<Group *>(static_cast<void *>(self));
 // splicer begin class.Group.method.copy_view
-    View * rv = selfobj->copyView(static_cast<View *>(static_cast<void *>(tview)));
+    View * rv = selfobj->copyView(static_cast<View *>(static_cast<void *>(view)));
     return static_cast<SIDRE_view *>(static_cast<void *>(rv));
 // splicer end class.Group.method.copy_view
 }

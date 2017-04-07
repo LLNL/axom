@@ -154,9 +154,9 @@ void SIDRE_group_destroy_view_and_data_name_bufferify(SIDRE_group * self, const 
 
 void SIDRE_group_destroy_view_and_data_index(SIDRE_group * self, SIDRE_IndexType idx);
 
-SIDRE_view * SIDRE_group_move_view(SIDRE_group * self, SIDRE_view * tview);
+SIDRE_view * SIDRE_group_move_view(SIDRE_group * self, SIDRE_view * view);
 
-SIDRE_view * SIDRE_group_copy_view(SIDRE_group * self, SIDRE_view * tview);
+SIDRE_view * SIDRE_group_copy_view(SIDRE_group * self, SIDRE_view * view);
 
 bool SIDRE_group_has_group(SIDRE_group * self, const char * path);
 

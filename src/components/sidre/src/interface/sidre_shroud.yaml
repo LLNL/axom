@@ -213,8 +213,8 @@ classes:
     -  decl: void destroyViewAndData(IndexType idx)
        function_suffix: _index
 #    -  decl: void destroyViewsAndData()
-    -  decl: View *moveView(View *tview)
-    -  decl: View *copyView(View *tview)
+    -  decl: View *moveView(View *view)
+    -  decl: View *copyView(View *view)
 
     -  decl: bool hasGroup( const string& path )
 #    -  decl: bool hasGroup( IndexType idx )
