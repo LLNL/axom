@@ -408,7 +408,7 @@
                         "cpp_var": "arg"
                     }, 
                     "fmtf": {
-                        "c_var": "tmp_arg", 
+                        "c_var": "SH_arg", 
                         "f_var": "arg"
                     }, 
                     "fmtl": {
@@ -1064,7 +1064,7 @@
                         "cpp_var": "arg2"
                     }, 
                     "fmtf": {
-                        "c_var": "tmp_arg2", 
+                        "c_var": "SH_arg2", 
                         "f_var": "arg2"
                     }, 
                     "fmtl": {

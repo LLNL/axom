@@ -773,7 +773,7 @@
                                 "cpp_var": "in"
                             }, 
                             "fmtf": {
-                                "c_var": "tmp_in", 
+                                "c_var": "SH_in", 
                                 "f_var": "in"
                             }, 
                             "fmtpy": {

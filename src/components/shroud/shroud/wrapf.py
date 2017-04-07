@@ -744,7 +744,7 @@ class Wrapf(util.WrapperMixin):
                     cmd_list = f_statements.get(intent, {}).get('declare', [])
                     if cmd_list:
                         need_wrapper = True
-                        fmt_arg.c_var = 'tmp_' + fmt_arg.f_var  # SH_
+                        fmt_arg.c_var = 'SH_' + fmt_arg.f_var
                         for cmd in cmd_list:
                             append_format(arg_f_decl, cmd, fmt_arg)
 

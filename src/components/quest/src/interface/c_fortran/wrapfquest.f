@@ -109,17 +109,17 @@ contains
         integer, value, intent(IN) :: comm
         character(*), intent(IN) :: fileName
         logical, value, intent(IN) :: requiresDistance
-        logical(C_BOOL) tmp_requiresDistance
+        logical(C_BOOL) SH_requiresDistance
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_INT), value, intent(IN) :: maxElements
         integer(C_INT), value, intent(IN) :: maxLevels
-        tmp_requiresDistance = requiresDistance  ! coerce to C_BOOL
+        SH_requiresDistance = requiresDistance  ! coerce to C_BOOL
         ! splicer begin initialize
         call c_initialize_bufferify(  &
             comm,  &
             fileName,  &
             len_trim(fileName, kind=C_INT),  &
-            tmp_requiresDistance,  &
+            SH_requiresDistance,  &
             ndims,  &
             maxElements,  &
             maxLevels)

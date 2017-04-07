@@ -476,11 +476,11 @@ contains
         use iso_c_binding, only : C_BOOL
         implicit none
         logical, value, intent(IN) :: arg
-        logical(C_BOOL) tmp_arg
+        logical(C_BOOL) SH_arg
         logical :: SH_rv
-        tmp_arg = arg  ! coerce to C_BOOL
+        SH_arg = arg  ! coerce to C_BOOL
         ! splicer begin function3
-        SH_rv = c_function3(tmp_arg)
+        SH_rv = c_function3(SH_arg)
         ! splicer end function3
     end function function3
 
@@ -556,13 +556,13 @@ contains
         implicit none
         real(C_DOUBLE), value, intent(IN) :: arg1
         logical, value, intent(IN) :: arg2
-        logical(C_BOOL) tmp_arg2
+        logical(C_BOOL) SH_arg2
         real(C_DOUBLE) :: SH_rv
-        tmp_arg2 = arg2  ! coerce to C_BOOL
+        SH_arg2 = arg2  ! coerce to C_BOOL
         ! splicer begin function5_arg1_arg2
         SH_rv = c_function5_arg1_arg2(  &
             arg1,  &
-            tmp_arg2)
+            SH_arg2)
         ! splicer end function5_arg1_arg2
     end function function5_arg1_arg2
 

@@ -227,10 +227,10 @@ contains
         use iso_c_binding, only : C_BOOL
         implicit none
         logical, value, intent(IN) :: status
-        logical(C_BOOL) tmp_status
-        tmp_status = status  ! coerce to C_BOOL
+        logical(C_BOOL) SH_status
+        SH_status = status  ! coerce to C_BOOL
         ! splicer begin set_abort_on_error
-        call c_set_abort_on_error(tmp_status)
+        call c_set_abort_on_error(SH_status)
         ! splicer end set_abort_on_error
     end subroutine slic_set_abort_on_error
 
@@ -247,10 +247,10 @@ contains
         use iso_c_binding, only : C_BOOL
         implicit none
         logical, value, intent(IN) :: status
-        logical(C_BOOL) tmp_status
-        tmp_status = status  ! coerce to C_BOOL
+        logical(C_BOOL) SH_status
+        SH_status = status  ! coerce to C_BOOL
         ! splicer begin set_abort_on_warning
-        call c_set_abort_on_warning(tmp_status)
+        call c_set_abort_on_warning(SH_status)
         ! splicer end set_abort_on_warning
     end subroutine slic_set_abort_on_warning
 
@@ -271,8 +271,8 @@ contains
         character(*), intent(IN) :: fileName
         integer(C_INT), value, intent(IN) :: line
         logical, value, intent(IN) :: filter
-        logical(C_BOOL) tmp_filter
-        tmp_filter = filter  ! coerce to C_BOOL
+        logical(C_BOOL) SH_filter
+        SH_filter = filter  ! coerce to C_BOOL
         ! splicer begin log_message
         call c_log_message_bufferify(  &
             level,  &
@@ -281,7 +281,7 @@ contains
             fileName,  &
             len_trim(fileName, kind=C_INT),  &
             line,  &
-            tmp_filter)
+            SH_filter)
         ! splicer end log_message
     end subroutine slic_log_message
 

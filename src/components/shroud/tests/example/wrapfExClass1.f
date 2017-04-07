@@ -403,13 +403,13 @@ contains
         implicit none
         class(exclass1) :: obj
         logical, value, intent(IN) :: in
-        logical(C_BOOL) tmp_in
+        logical(C_BOOL) SH_in
         logical :: SH_rv
-        tmp_in = in  ! coerce to C_BOOL
+        SH_in = in  ! coerce to C_BOOL
         ! splicer begin class.ExClass1.method.has_addr
         SH_rv = c_exclass1_has_addr(  &
             obj%voidptr,  &
-            tmp_in)
+            SH_in)
         ! splicer end class.ExClass1.method.has_addr
     end function exclass1_has_addr
 
