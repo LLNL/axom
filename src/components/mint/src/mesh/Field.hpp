@@ -12,7 +12,7 @@
 #define FIELD_HPP_
 
 // axom includes
-#include "common/AxomMacros.hpp" // for DISABLE_COPY_AND_ASSIGNMENT
+#include "axom/Macros.hpp" // for DISABLE_COPY_AND_ASSIGNMENT
 
 // C/C++ includes
 #include <string>

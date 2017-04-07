@@ -13,9 +13,9 @@
 #define SIGNEDDISTANCE_HPP_
 
 // axom includes
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
-#include "common/Utilities.hpp"
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
+#include "axom_utils/Utilities.hpp"
 
 #include "primal/BVHTree.hpp"
 #include "primal/BoundingBox.hpp"
@@ -263,7 +263,7 @@ private:
   double* m_dist;
 };
 
-} // end namespace detail 
+} // end namespace detail
 
 //------------------------------------------------------------------------------
 template < int NDIMS >
@@ -624,7 +624,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( int icell )
   return ( bb );
 }
 
-} // end namespace quest 
-} // end namespace axom 
+} // end namespace quest
+} // end namespace axom
 
 #endif /* SIGNEDDISTANCE_HPP_ */

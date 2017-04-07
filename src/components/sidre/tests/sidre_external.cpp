@@ -12,7 +12,7 @@
 
 #include <vector>
 
-#include "common/CommonTypes.hpp"
+#include "axom/Types.hpp"
 #include "sidre/sidre.hpp"
 
 using axom::sidre::Group;

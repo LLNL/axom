@@ -12,8 +12,8 @@
 #include "STLReader.hpp"
 
 // axom includes
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 #include "slic/slic.hpp"
 
 

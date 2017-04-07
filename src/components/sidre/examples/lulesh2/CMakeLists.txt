@@ -1,4 +1,4 @@
-# 
+#
 # Build lulesh example
 #
 
@@ -19,7 +19,7 @@ blt_add_executable(
     NAME sidre_lulesh2
     SOURCES ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON common sidre conduit conduit_relay hdf5 slic
+    DEPENDS_ON axom_utils sidre conduit conduit_relay hdf5 slic
     )
 
 if(ENABLE_MPI)

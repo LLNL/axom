@@ -17,7 +17,7 @@
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
-#include "common/FileUtilities.hpp"
+#include "axom_utils/FileUtilities.hpp"
 #include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
 #include "spio/IOManager.hpp"

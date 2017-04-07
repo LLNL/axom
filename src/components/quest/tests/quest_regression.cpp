@@ -51,9 +51,9 @@
 // toolkit includes
 #include "fmt/fmt.hpp"
 
-#include "common/CommonTypes.hpp"
-#include "common/Timer.hpp"
-#include "common/Utilities.hpp"
+#include "axom/Types.hpp"
+#include "axom_utils/Timer.hpp"
+#include "axom_utils/Utilities.hpp"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"

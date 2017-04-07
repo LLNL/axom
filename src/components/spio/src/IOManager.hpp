@@ -25,8 +25,8 @@
 #include "hdf5.h"
 
 // Other axom headers
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 #include "sidre/Group.hpp"
 
 // Spio headers

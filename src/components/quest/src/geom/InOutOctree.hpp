@@ -7,10 +7,10 @@
 #ifndef INOUT_OCTREE__HXX_
 #define INOUT_OCTREE__HXX_
 
-#include "common/config.hpp"       // defines AXOM_USE_CXX11
-#include "common/AxomMacros.hpp"
-#include "common/Timer.hpp"
-#include "common/Utilities.hpp"
+#include "axom/config.hpp"       // defines AXOM_USE_CXX11
+#include "axom/Macros.hpp"
+#include "axom_utils/Timer.hpp"
+#include "axom_utils/Utilities.hpp"
 
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
@@ -68,7 +68,7 @@
 #endif
 
 
-namespace axom {  
+namespace axom {
 namespace quest {
 
     /**
@@ -2718,7 +2718,7 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name
 }
 
 
-} // end namespace quest 
-} // end namespace axom 
+} // end namespace quest
+} // end namespace axom
 
 #endif  // SPATIAL_OCTREE__HXX_

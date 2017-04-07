@@ -13,8 +13,8 @@
 
 #include <iostream>
 
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 #include "mint/CellType.hpp"
 #include "slic/slic.hpp"
 

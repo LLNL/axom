@@ -1,4 +1,0 @@
-PROJECT_NAME  = Common
-PROJECT_BRIEF = "Common utilities for the ASC Toolkit components"
-INPUT = @PROJECT_SOURCE_DIR@/src 
-GENERATE_XML = YES

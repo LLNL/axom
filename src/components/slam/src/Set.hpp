@@ -22,7 +22,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "common/Utilities.hpp"
+#include "axom_utils/Utilities.hpp"
 #include "slam/Utilities.hpp"
 
 namespace axom {
