@@ -176,7 +176,8 @@
         "library": "Tutorial", 
         "library_lower": "tutorial", 
         "library_upper": "TUTORIAL", 
-        "namespace_scope": "tutorial::"
+        "namespace_scope": "tutorial::", 
+        "ptr": ""
     }, 
     "functions": [
         {
@@ -216,13 +217,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg1", 
                         "c_var_len": "Larg1", 
                         "c_var_num": "Narg1", 
                         "cpp_type": "double", 
-                        "cpp_var": "arg1", 
-                        "ptr": ""
+                        "cpp_var": "arg1"
                     }, 
                     "fmtf": {
                         "c_var": "arg1", 
@@ -238,11 +237,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "arg1", 
                         "cpp_type": "double", 
                         "cpp_var": "arg1", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg1"
                     }, 
                     "name": "arg1", 
@@ -254,13 +251,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg2", 
                         "c_var_len": "Larg2", 
                         "c_var_num": "Narg2", 
                         "cpp_type": "int", 
-                        "cpp_var": "arg2", 
-                        "ptr": ""
+                        "cpp_var": "arg2"
                     }, 
                     "fmtf": {
                         "c_var": "arg2", 
@@ -276,11 +271,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "arg2", 
                         "cpp_type": "int", 
                         "cpp_var": "arg2", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg2"
                     }, 
                     "name": "arg2", 
@@ -319,13 +312,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "len", 
                         "c_var_len": "Llen", 
                         "c_var_num": "Nlen", 
                         "cpp_type": "int", 
-                        "cpp_var": "len", 
-                        "ptr": ""
+                        "cpp_var": "len"
                     }, 
                     "fmtf": {
                         "c_var": "len", 
@@ -342,7 +333,6 @@
                         "value": false
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "values", 
                         "c_var_len": "Lvalues", 
                         "c_var_num": "Nvalues", 
@@ -364,7 +354,6 @@
                         "value": false
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "result", 
                         "c_var_len": "Lresult", 
                         "c_var_num": "Nresult", 
@@ -412,13 +401,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg", 
                         "c_var_len": "Larg", 
                         "c_var_num": "Narg", 
                         "cpp_type": "bool", 
-                        "cpp_var": "arg", 
-                        "ptr": ""
+                        "cpp_var": "arg"
                     }, 
                     "fmtf": {
                         "c_var": "tmp_arg", 
@@ -434,11 +421,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "arg", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg"
                     }, 
                     "name": "arg", 
@@ -493,7 +478,6 @@
                         "c_var": "arg1", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg1", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg1"
                     }, 
                     "name": "arg1", 
@@ -520,7 +504,6 @@
                         "c_var": "arg2", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg2", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg2"
                     }, 
                     "name": "arg2", 
@@ -574,8 +557,7 @@
                         "c_var_num": "Narg1", 
                         "c_var_trim": "Larg1", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_arg1", 
-                        "ptr": ""
+                        "cpp_var": "SH_arg1"
                     }, 
                     "fmtf": {
                         "c_var": "arg1", 
@@ -599,8 +581,7 @@
                         "c_var_num": "Narg2", 
                         "c_var_trim": "Larg2", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_arg2", 
-                        "ptr": ""
+                        "cpp_var": "SH_arg2"
                     }, 
                     "fmtf": {
                         "c_var": "arg2", 
@@ -619,7 +600,6 @@
                         "reference": false
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "SH_F_rv", 
                         "c_var_len": "LSH_F_rv", 
                         "c_var_num": "NSH_F_rv", 
@@ -680,8 +660,7 @@
                         "c_var_len": "Larg1", 
                         "c_var_num": "Narg1", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_arg1", 
-                        "ptr": ""
+                        "cpp_var": "SH_arg1"
                     }, 
                     "fmtl": {
                         "LUA_index": 1, 
@@ -697,7 +676,6 @@
                         "c_var": "arg1", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg1", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg1"
                     }, 
                     "name": "arg1", 
@@ -716,8 +694,7 @@
                         "c_var_len": "Larg2", 
                         "c_var_num": "Narg2", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_arg2", 
-                        "ptr": ""
+                        "cpp_var": "SH_arg2"
                     }, 
                     "fmtl": {
                         "LUA_index": 2, 
@@ -733,7 +710,6 @@
                         "c_var": "arg2", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg2", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg2"
                     }, 
                     "name": "arg2", 
@@ -787,8 +763,7 @@
                         "c_var_num": "Narg1", 
                         "c_var_trim": "Larg1", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_arg1", 
-                        "ptr": ""
+                        "cpp_var": "SH_arg1"
                     }, 
                     "fmtf": {
                         "c_var": "arg1", 
@@ -812,8 +787,7 @@
                         "c_var_num": "Narg2", 
                         "c_var_trim": "Larg2", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_arg2", 
-                        "ptr": ""
+                        "cpp_var": "SH_arg2"
                     }, 
                     "fmtf": {
                         "c_var": "arg2", 
@@ -831,15 +805,13 @@
                         "reference": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "output", 
                         "c_var_len": "Loutput", 
                         "c_var_num": "Noutput", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv", 
-                        "len_arg": "Loutput", 
-                        "ptr": ""
+                        "len_arg": "Loutput"
                     }, 
                     "fmtf": {
                         "c_var": "output", 
@@ -987,13 +959,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg1", 
                         "c_var_len": "Larg1", 
                         "c_var_num": "Narg1", 
                         "cpp_type": "double", 
-                        "cpp_var": "arg1", 
-                        "ptr": ""
+                        "cpp_var": "arg1"
                     }, 
                     "fmtf": {
                         "c_var": "arg1", 
@@ -1052,13 +1022,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg1", 
                         "c_var_len": "Larg1", 
                         "c_var_num": "Narg1", 
                         "cpp_type": "double", 
-                        "cpp_var": "arg1", 
-                        "ptr": ""
+                        "cpp_var": "arg1"
                     }, 
                     "fmtf": {
                         "c_var": "arg1", 
@@ -1074,11 +1042,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "arg1", 
                         "cpp_type": "double", 
                         "cpp_var": "arg1", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg1"
                     }, 
                     "name": "arg1", 
@@ -1091,13 +1057,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg2", 
                         "c_var_len": "Larg2", 
                         "c_var_num": "Narg2", 
                         "cpp_type": "bool", 
-                        "cpp_var": "arg2", 
-                        "ptr": ""
+                        "cpp_var": "arg2"
                     }, 
                     "fmtf": {
                         "c_var": "tmp_arg2", 
@@ -1113,11 +1077,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "arg2", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg2", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg2"
                     }, 
                     "name": "arg2", 
@@ -1175,8 +1137,7 @@
                         "c_var_len": "Lname", 
                         "c_var_num": "Nname", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_name", 
-                        "ptr": ""
+                        "cpp_var": "SH_name"
                     }, 
                     "fmtl": {
                         "LUA_index": 1, 
@@ -1192,7 +1153,6 @@
                         "c_var": "name", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_name", 
-                        "ptr": "", 
                         "py_var": "SH_Py_name"
                     }, 
                     "name": "name", 
@@ -1250,8 +1210,7 @@
                         "c_var_num": "Nname", 
                         "c_var_trim": "Lname", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_name", 
-                        "ptr": ""
+                        "cpp_var": "SH_name"
                     }, 
                     "fmtf": {
                         "c_var": "name", 
@@ -1297,13 +1256,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "indx", 
                         "c_var_len": "Lindx", 
                         "c_var_num": "Nindx", 
                         "cpp_type": "int", 
-                        "cpp_var": "indx", 
-                        "ptr": ""
+                        "cpp_var": "indx"
                     }, 
                     "fmtf": {
                         "c_var": "indx", 
@@ -1319,11 +1276,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "indx", 
                         "cpp_type": "int", 
                         "cpp_var": "indx", 
-                        "ptr": "", 
                         "py_var": "SH_Py_indx"
                     }, 
                     "name": "indx", 
@@ -1403,13 +1358,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg", 
                         "c_var_len": "Larg", 
                         "c_var_num": "Narg", 
                         "cpp_type": "int", 
-                        "cpp_var": "arg", 
-                        "ptr": ""
+                        "cpp_var": "arg"
                     }, 
                     "fmtf": {
                         "c_var": "arg", 
@@ -1455,13 +1408,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg", 
                         "c_var_len": "Larg", 
                         "c_var_num": "Narg", 
                         "cpp_type": "double", 
-                        "cpp_var": "arg", 
-                        "ptr": ""
+                        "cpp_var": "arg"
                     }, 
                     "fmtf": {
                         "c_var": "arg", 
@@ -1598,13 +1549,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg", 
                         "c_var_len": "Larg", 
                         "c_var_num": "Narg", 
                         "cpp_type": "double", 
-                        "cpp_var": "arg", 
-                        "ptr": ""
+                        "cpp_var": "arg"
                     }, 
                     "fmtf": {
                         "c_var": "arg", 
@@ -1620,11 +1569,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "arg", 
                         "cpp_type": "double", 
                         "cpp_var": "arg", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg"
                     }, 
                     "name": "arg", 
@@ -1787,8 +1734,7 @@
                         "c_var_len": "Lname", 
                         "c_var_num": "Nname", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_name", 
-                        "ptr": ""
+                        "cpp_var": "SH_name"
                     }, 
                     "fmtl": {
                         "LUA_index": 1, 
@@ -1804,7 +1750,6 @@
                         "c_var": "name", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_name", 
-                        "ptr": "", 
                         "py_var": "SH_Py_name"
                     }, 
                     "name": "name", 
@@ -1816,13 +1761,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg2", 
                         "c_var_len": "Larg2", 
                         "c_var_num": "Narg2", 
                         "cpp_type": "double", 
-                        "cpp_var": "arg2", 
-                        "ptr": ""
+                        "cpp_var": "arg2"
                     }, 
                     "fmtl": {
                         "LUA_index": 2, 
@@ -1834,11 +1777,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "arg2", 
                         "cpp_type": "double", 
                         "cpp_var": "arg2", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg2"
                     }, 
                     "name": "arg2", 
@@ -2001,8 +1942,7 @@
                         "c_var_num": "Nname", 
                         "c_var_trim": "Lname", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_name", 
-                        "ptr": ""
+                        "cpp_var": "SH_name"
                     }, 
                     "fmtf": {
                         "c_var": "name", 
@@ -2017,13 +1957,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg2", 
                         "c_var_len": "Larg2", 
                         "c_var_num": "Narg2", 
                         "cpp_type": "double", 
-                        "cpp_var": "arg2", 
-                        "ptr": ""
+                        "cpp_var": "arg2"
                     }, 
                     "fmtf": {
                         "c_var": "arg2", 
@@ -2075,13 +2013,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "num", 
                         "c_var_len": "Lnum", 
                         "c_var_num": "Nnum", 
                         "cpp_type": "int", 
-                        "cpp_var": "num", 
-                        "ptr": ""
+                        "cpp_var": "num"
                     }, 
                     "fmtf": {
                         "c_var": "num", 
@@ -2135,13 +2071,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "num", 
                         "c_var_len": "Lnum", 
                         "c_var_num": "Nnum", 
                         "cpp_type": "int", 
-                        "cpp_var": "num", 
-                        "ptr": ""
+                        "cpp_var": "num"
                     }, 
                     "fmtf": {
                         "c_var": "num", 
@@ -2157,13 +2091,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "offset", 
                         "c_var_len": "Loffset", 
                         "c_var_num": "Noffset", 
                         "cpp_type": "int", 
-                        "cpp_var": "offset", 
-                        "ptr": ""
+                        "cpp_var": "offset"
                     }, 
                     "fmtf": {
                         "c_var": "offset", 
@@ -2225,13 +2157,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "num", 
                         "c_var_len": "Lnum", 
                         "c_var_num": "Nnum", 
                         "cpp_type": "int", 
-                        "cpp_var": "num", 
-                        "ptr": ""
+                        "cpp_var": "num"
                     }, 
                     "fmtf": {
                         "c_var": "num", 
@@ -2247,11 +2177,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "num", 
                         "cpp_type": "int", 
                         "cpp_var": "num", 
-                        "ptr": "", 
                         "py_var": "SH_Py_num"
                     }, 
                     "name": "num", 
@@ -2264,13 +2192,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "offset", 
                         "c_var_len": "Loffset", 
                         "c_var_num": "Noffset", 
                         "cpp_type": "int", 
-                        "cpp_var": "offset", 
-                        "ptr": ""
+                        "cpp_var": "offset"
                     }, 
                     "fmtf": {
                         "c_var": "offset", 
@@ -2286,11 +2212,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "offset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset", 
-                        "ptr": "", 
                         "py_var": "SH_Py_offset"
                     }, 
                     "name": "offset", 
@@ -2303,13 +2227,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "stride", 
                         "c_var_len": "Lstride", 
                         "c_var_num": "Nstride", 
                         "cpp_type": "int", 
-                        "cpp_var": "stride", 
-                        "ptr": ""
+                        "cpp_var": "stride"
                     }, 
                     "fmtf": {
                         "c_var": "stride", 
@@ -2325,11 +2247,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "stride", 
                         "cpp_type": "int", 
                         "cpp_var": "stride", 
-                        "ptr": "", 
                         "py_var": "SH_Py_stride"
                     }, 
                     "name": "stride", 
@@ -2380,13 +2300,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "type", 
                         "c_var_len": "Ltype", 
                         "c_var_num": "Ntype", 
                         "cpp_type": "double", 
-                        "cpp_var": "type", 
-                        "ptr": ""
+                        "cpp_var": "type"
                     }, 
                     "fmtf": {
                         "c_var": "type", 
@@ -2401,13 +2319,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "num", 
                         "c_var_len": "Lnum", 
                         "c_var_num": "Nnum", 
                         "cpp_type": "int", 
-                        "cpp_var": "num", 
-                        "ptr": ""
+                        "cpp_var": "num"
                     }, 
                     "fmtf": {
                         "c_var": "num", 
@@ -2456,13 +2372,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "type", 
                         "c_var_len": "Ltype", 
                         "c_var_num": "Ntype", 
                         "cpp_type": "double", 
-                        "cpp_var": "type", 
-                        "ptr": ""
+                        "cpp_var": "type"
                     }, 
                     "fmtf": {
                         "c_var": "type", 
@@ -2477,13 +2391,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "num", 
                         "c_var_len": "Lnum", 
                         "c_var_num": "Nnum", 
                         "cpp_type": "int", 
-                        "cpp_var": "num", 
-                        "ptr": ""
+                        "cpp_var": "num"
                     }, 
                     "fmtf": {
                         "c_var": "num", 
@@ -2499,13 +2411,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "offset", 
                         "c_var_len": "Loffset", 
                         "c_var_num": "Noffset", 
                         "cpp_type": "int", 
-                        "cpp_var": "offset", 
-                        "ptr": ""
+                        "cpp_var": "offset"
                     }, 
                     "fmtf": {
                         "c_var": "offset", 
@@ -2562,13 +2472,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "type", 
                         "c_var_len": "Ltype", 
                         "c_var_num": "Ntype", 
                         "cpp_type": "double", 
-                        "cpp_var": "type", 
-                        "ptr": ""
+                        "cpp_var": "type"
                     }, 
                     "fmtf": {
                         "c_var": "type", 
@@ -2584,11 +2492,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "type", 
                         "cpp_type": "double", 
                         "cpp_var": "type", 
-                        "ptr": "", 
                         "py_var": "SH_Py_type"
                     }, 
                     "name": "type", 
@@ -2600,13 +2506,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "num", 
                         "c_var_len": "Lnum", 
                         "c_var_num": "Nnum", 
                         "cpp_type": "int", 
-                        "cpp_var": "num", 
-                        "ptr": ""
+                        "cpp_var": "num"
                     }, 
                     "fmtf": {
                         "c_var": "num", 
@@ -2622,11 +2526,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "num", 
                         "cpp_type": "int", 
                         "cpp_var": "num", 
-                        "ptr": "", 
                         "py_var": "SH_Py_num"
                     }, 
                     "name": "num", 
@@ -2639,13 +2541,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "offset", 
                         "c_var_len": "Loffset", 
                         "c_var_num": "Noffset", 
                         "cpp_type": "int", 
-                        "cpp_var": "offset", 
-                        "ptr": ""
+                        "cpp_var": "offset"
                     }, 
                     "fmtf": {
                         "c_var": "offset", 
@@ -2661,11 +2561,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "offset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset", 
-                        "ptr": "", 
                         "py_var": "SH_Py_offset"
                     }, 
                     "name": "offset", 
@@ -2678,13 +2576,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "stride", 
                         "c_var_len": "Lstride", 
                         "c_var_num": "Nstride", 
                         "cpp_type": "int", 
-                        "cpp_var": "stride", 
-                        "ptr": ""
+                        "cpp_var": "stride"
                     }, 
                     "fmtf": {
                         "c_var": "stride", 
@@ -2700,11 +2596,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "stride", 
                         "cpp_type": "int", 
                         "cpp_var": "stride", 
-                        "ptr": "", 
                         "py_var": "SH_Py_stride"
                     }, 
                     "name": "stride", 
@@ -2742,13 +2636,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg", 
                         "c_var_len": "Larg", 
                         "c_var_num": "Narg", 
                         "cpp_type": "TypeID", 
-                        "cpp_var": "arg", 
-                        "ptr": ""
+                        "cpp_var": "arg"
                     }, 
                     "fmtf": {
                         "c_var": "arg", 
@@ -2764,11 +2656,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "arg", 
                         "cpp_type": "TypeID", 
                         "cpp_var": "arg", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg"
                     }, 
                     "name": "arg", 
@@ -2807,13 +2697,11 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg", 
                         "c_var_len": "Larg", 
                         "c_var_num": "Narg", 
                         "cpp_type": "EnumTypeID", 
-                        "cpp_var": "arg", 
-                        "ptr": ""
+                        "cpp_var": "arg"
                     }, 
                     "fmtf": {
                         "c_var": "arg", 
@@ -2829,11 +2717,9 @@
                         "ptr": ""
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "arg", 
                         "cpp_type": "EnumTypeID", 
                         "cpp_var": "arg", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg"
                     }, 
                     "name": "arg", 
@@ -2966,15 +2852,13 @@
                         "reference": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "SH_F_rv", 
                         "c_var_len": "LSH_F_rv", 
                         "c_var_num": "NSH_F_rv", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv", 
-                        "len_arg": "LSH_F_rv", 
-                        "ptr": ""
+                        "len_arg": "LSH_F_rv"
                     }, 
                     "name": "SH_F_rv", 
                     "type": "std::string"

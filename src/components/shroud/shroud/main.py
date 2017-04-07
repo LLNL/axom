@@ -185,7 +185,6 @@ class Schema(object):
         fmt_library.library_lower = fmt_library.library.lower()
         fmt_library.library_upper = fmt_library.library.upper()
         fmt_library.function_suffix = ''   # assume no suffix
-        fmt_library.class_name = ''
         fmt_library.C_prefix = def_options.get(
             'C_prefix', fmt_library.library_upper[:3] + '_')
         fmt_library.F_C_prefix = def_options['F_C_prefix']
@@ -196,6 +195,12 @@ class Schema(object):
             fmt_library.namespace_scope = ''
         util.eval_template(node, 'C_header_filename', '_library')
         util.eval_template(node, 'C_impl_filename', '_library')
+
+        # set default values for fields which may be unset.
+        fmt_library.class_name = ''
+        fmt_library.ptr = ''
+        fmt_library.C_const = ''
+
         self.fmt_stack.append(fmt_library)
 
         # default some options based on other options

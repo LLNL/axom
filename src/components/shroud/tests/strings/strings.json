@@ -41,7 +41,8 @@
         "library": "strings", 
         "library_lower": "strings", 
         "library_upper": "STRINGS", 
-        "namespace_scope": ""
+        "namespace_scope": "", 
+        "ptr": ""
     }, 
     "functions": [
         {
@@ -55,24 +56,20 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "status", 
                         "c_var_len": "Lstatus", 
                         "c_var_num": "Nstatus", 
                         "cpp_type": "char", 
-                        "cpp_var": "status", 
-                        "ptr": ""
+                        "cpp_var": "status"
                     }, 
                     "fmtf": {
                         "c_var": "status", 
                         "f_var": "status"
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "status", 
                         "cpp_type": "char", 
                         "cpp_var": "status", 
-                        "ptr": "", 
                         "py_var": "SH_Py_status"
                     }, 
                     "name": "status", 
@@ -149,7 +146,6 @@
                         "reference": false
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "SH_F_rv", 
                         "c_var_len": "LSH_F_rv", 
                         "c_var_num": "NSH_F_rv", 
@@ -209,7 +205,6 @@
                         "value": false
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "dest", 
                         "c_var_len": "Ndest", 
                         "c_var_num": "Ndest", 
@@ -220,7 +215,6 @@
                         "ptr": " *"
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "PyObject": "PyObject", 
                         "PyTypeObject": null, 
                         "c_var": "dest", 
@@ -300,7 +294,6 @@
                         "value": false
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "dest", 
                         "c_var_len": "Ndest", 
                         "c_var_num": "Ndest", 
@@ -415,7 +408,6 @@
                         "ptr": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "SH_F_rv", 
                         "c_var_len": "LSH_F_rv", 
                         "c_var_num": "NSH_F_rv", 
@@ -539,7 +531,6 @@
                         "ptr": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "SH_F_rv", 
                         "c_var_len": "LSH_F_rv", 
                         "c_var_num": "NSH_F_rv", 
@@ -632,7 +623,6 @@
                         "ptr": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "output", 
                         "c_var_len": "Loutput", 
                         "c_var_num": "Noutput", 
@@ -772,15 +762,13 @@
                         "reference": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "SH_F_rv", 
                         "c_var_len": "LSH_F_rv", 
                         "c_var_num": "NSH_F_rv", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv", 
-                        "len_arg": "LSH_F_rv", 
-                        "ptr": ""
+                        "len_arg": "LSH_F_rv"
                     }, 
                     "name": "SH_F_rv", 
                     "type": "string"
@@ -898,15 +886,13 @@
                         "reference": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "SH_F_rv", 
                         "c_var_len": "LSH_F_rv", 
                         "c_var_num": "NSH_F_rv", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv", 
-                        "len_arg": "LSH_F_rv", 
-                        "ptr": ""
+                        "len_arg": "LSH_F_rv"
                     }, 
                     "fmtf": {
                         "c_var": "SH_rv", 
@@ -993,15 +979,13 @@
                         "reference": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "output", 
                         "c_var_len": "Loutput", 
                         "c_var_num": "Noutput", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv", 
-                        "len_arg": "Loutput", 
-                        "ptr": ""
+                        "len_arg": "Loutput"
                     }, 
                     "fmtf": {
                         "c_var": "output", 
@@ -1105,15 +1089,13 @@
                         "c_var_len": "Larg1", 
                         "c_var_num": "Narg1", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_arg1", 
-                        "ptr": ""
+                        "cpp_var": "SH_arg1"
                     }, 
                     "fmtpy": {
                         "C_const": "const ", 
                         "c_var": "arg1", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg1", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg1"
                     }, 
                     "name": "arg1", 
@@ -1166,8 +1148,7 @@
                         "c_var_num": "Narg1", 
                         "c_var_trim": "Larg1", 
                         "cpp_type": "std::string", 
-                        "cpp_var": "SH_arg1", 
-                        "ptr": ""
+                        "cpp_var": "SH_arg1"
                     }, 
                     "fmtf": {
                         "c_var": "arg1", 
@@ -1214,24 +1195,20 @@
                         "value": false
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg1", 
                         "c_var_len": "Narg1", 
                         "c_var_num": "Narg1", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_arg1.c_str()", 
                         "cpp_var": "SH_arg1", 
-                        "len_arg": "Narg1", 
-                        "ptr": ""
+                        "len_arg": "Narg1"
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "PyObject": "PyObject", 
                         "PyTypeObject": null, 
                         "c_var": "SH_arg1.c_str()", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg1", 
-                        "ptr": "", 
                         "py_var": "SH_Py_arg1"
                     }, 
                     "name": "arg1", 
@@ -1278,7 +1255,6 @@
                         "value": false
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "arg1", 
                         "c_var_len": "Narg1", 
                         "c_var_num": "Narg1", 
@@ -1286,8 +1262,7 @@
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_arg1.c_str()", 
                         "cpp_var": "SH_arg1", 
-                        "len_arg": "Narg1", 
-                        "ptr": ""
+                        "len_arg": "Narg1"
                     }, 
                     "fmtf": {
                         "c_var": "arg1", 

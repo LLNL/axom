@@ -395,9 +395,8 @@ return 1;""", fmt)
                 fmt_arg.py_var = 'SH_Py_' + fmt_arg.c_var
                 if arg['attrs'].get('const', False):
                     fmt_arg.C_const = 'const '
-                else:
-                    fmt_arg.C_const = ''
-                fmt_arg.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
+                if arg['attrs'].get('ptr', False):
+                    fmt_arg.ptr = ' *'
                 attrs = arg['attrs']
 
                 arg_typedef = self.typedef[arg['type']]
@@ -489,10 +488,6 @@ return 1;""", fmt)
                     cpp_call_list.append(fmt_arg.cpp_var)
                 else:
                     # convert to C++ type
-                    if arg['attrs'].get('ptr', False):
-                        fmt_arg.ptr = ' *'
-                    else:
-                        fmt_arg.ptr = ''
                     append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt_arg)
 
             if True:

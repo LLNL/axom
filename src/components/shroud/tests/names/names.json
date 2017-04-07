@@ -141,7 +141,8 @@
         "library": "testnames", 
         "library_lower": "testnames", 
         "library_upper": "TESTNAMES", 
-        "namespace_scope": ""
+        "namespace_scope": "", 
+        "ptr": ""
     }, 
     "functions": [
         {
@@ -215,24 +216,20 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "i", 
                         "c_var_len": "Li", 
                         "c_var_num": "Ni", 
                         "cpp_type": "int", 
-                        "cpp_var": "i", 
-                        "ptr": ""
+                        "cpp_var": "i"
                     }, 
                     "fmtf": {
                         "c_var": "i", 
                         "f_var": "i"
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "i", 
                         "cpp_type": "int", 
                         "cpp_var": "i", 
-                        "ptr": "", 
                         "py_var": "SH_Py_i"
                     }, 
                     "name": "i", 
@@ -278,24 +275,20 @@
                         "value": true
                     }, 
                     "fmtc": {
-                        "C_const": "", 
                         "c_var": "i", 
                         "c_var_len": "Li", 
                         "c_var_num": "Ni", 
                         "cpp_type": "long", 
-                        "cpp_var": "i", 
-                        "ptr": ""
+                        "cpp_var": "i"
                     }, 
                     "fmtf": {
                         "c_var": "i", 
                         "f_var": "i"
                     }, 
                     "fmtpy": {
-                        "C_const": "", 
                         "c_var": "i", 
                         "cpp_type": "long", 
                         "cpp_var": "i", 
-                        "ptr": "", 
                         "py_var": "SH_Py_i"
                     }, 
                     "name": "i", 

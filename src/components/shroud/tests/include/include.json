@@ -37,13 +37,11 @@
                                 "value": true
                             }, 
                             "fmtc": {
-                                "C_const": "", 
                                 "c_var": "arg1", 
                                 "c_var_len": "Larg1", 
                                 "c_var_num": "Narg1", 
                                 "cpp_type": "int", 
-                                "cpp_var": "arg1", 
-                                "ptr": ""
+                                "cpp_var": "arg1"
                             }, 
                             "fmtf": {
                                 "c_var": "arg1", 
@@ -117,13 +115,11 @@
                                 "value": true
                             }, 
                             "fmtc": {
-                                "C_const": "", 
                                 "c_var": "comm", 
                                 "c_var_len": "Lcomm", 
                                 "c_var_num": "Ncomm", 
                                 "cpp_type": "MPI_Comm", 
-                                "cpp_var": "comm", 
-                                "ptr": ""
+                                "cpp_var": "comm"
                             }, 
                             "fmtf": {
                                 "c_var": "comm", 
@@ -163,7 +159,6 @@
                                 "value": true
                             }, 
                             "fmtc": {
-                                "C_const": "", 
                                 "c_var": "c2", 
                                 "c_var_len": "Lc2", 
                                 "c_var_num": "Nc2", 
@@ -229,7 +224,8 @@
         "library": "default_library", 
         "library_lower": "default_library", 
         "library_upper": "DEFAULT_LIBRARY", 
-        "namespace_scope": "one::two::"
+        "namespace_scope": "one::two::", 
+        "ptr": ""
     }, 
     "functions": [
         {

@@ -354,9 +354,8 @@ class Wrapc(util.WrapperMixin):
             fmt_arg.c_var_num = 'N' + fmt_arg.c_var
             if arg['attrs'].get('const', False):
                 fmt_arg.C_const = 'const '
-            else:
-                fmt_arg.C_const = ''
-            fmt_arg.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
+            if arg['attrs'].get('ptr', False):
+                fmt_arg.ptr = ' *'
             fmt_arg.cpp_type = arg_typedef.cpp_type
 
             if c_attrs.get('_is_result', False):
