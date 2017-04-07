@@ -13,6 +13,7 @@
             ], 
             "cpp_header": "class_header.hpp", 
             "fmt": {
+                "CPP_this_call": "SH_this->", 
                 "C_header_filename": "wrapClass1.h", 
                 "C_impl_filename": "wrapClass1.cpp", 
                 "C_type_name": "DEF_class1", 
@@ -37,11 +38,13 @@
                                 "value": true
                             }, 
                             "fmtc": {
+                                "C_const": "", 
                                 "c_var": "arg1", 
                                 "c_var_len": "Larg1", 
                                 "c_var_num": "Narg1", 
                                 "cpp_type": "int", 
-                                "cpp_var": "arg1"
+                                "cpp_var": "arg1", 
+                                "ptr": ""
                             }, 
                             "fmtf": {
                                 "c_var": "arg1", 
@@ -54,12 +57,21 @@
                     "attrs": {}, 
                     "decl": "void method1(CustomType arg1)", 
                     "fmt": {
+                        "C_call_list": "arg1", 
+                        "C_const": "", 
                         "C_name": "DEF_class1_method1", 
+                        "C_object": "Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));", 
+                        "C_prototype": "DEF_class1 * self, int arg1", 
+                        "C_return_type": "void", 
                         "F_C_name": "c_class1_method1", 
                         "F_name_generic": "method1", 
                         "F_name_impl": "class1_method1", 
                         "F_name_method": "method1", 
+                        "c_var": "self", 
+                        "cpp_var": "SH_rv", 
                         "function_name": "method1", 
+                        "ptr": " *", 
+                        "rv_decl": "void SH_rv", 
                         "underscore_name": "method1"
                     }, 
                     "options": {}, 
@@ -91,6 +103,7 @@
             ], 
             "cpp_header": "", 
             "fmt": {
+                "CPP_this_call": "SH_this->", 
                 "C_header_filename": "wrapClass2.h", 
                 "C_impl_filename": "wrapClass2.cpp", 
                 "C_type_name": "DEF_class2", 
@@ -115,11 +128,13 @@
                                 "value": true
                             }, 
                             "fmtc": {
+                                "C_const": "", 
                                 "c_var": "comm", 
                                 "c_var_len": "Lcomm", 
                                 "c_var_num": "Ncomm", 
                                 "cpp_type": "MPI_Comm", 
-                                "cpp_var": "comm"
+                                "cpp_var": "comm", 
+                                "ptr": ""
                             }, 
                             "fmtf": {
                                 "c_var": "comm", 
@@ -132,12 +147,21 @@
                     "attrs": {}, 
                     "decl": "void method1(MPI_Comm comm)", 
                     "fmt": {
+                        "C_call_list": "MPI_Comm_f2c(comm)", 
+                        "C_const": "", 
                         "C_name": "DEF_class2_method1", 
+                        "C_object": "Class2 *SH_this = static_cast<Class2 *>(static_cast<void *>(self));", 
+                        "C_prototype": "DEF_class2 * self, MPI_Fint comm", 
+                        "C_return_type": "void", 
                         "F_C_name": "c_class2_method1", 
                         "F_name_generic": "method1", 
                         "F_name_impl": "class2_method1", 
                         "F_name_method": "method1", 
+                        "c_var": "self", 
+                        "cpp_var": "SH_rv", 
                         "function_name": "method1", 
+                        "ptr": " *", 
+                        "rv_decl": "void SH_rv", 
                         "underscore_name": "method1"
                     }, 
                     "options": {}, 
@@ -159,6 +183,7 @@
                                 "value": true
                             }, 
                             "fmtc": {
+                                "C_const": "", 
                                 "c_var": "c2", 
                                 "c_var_len": "Lc2", 
                                 "c_var_num": "Nc2", 
@@ -177,12 +202,21 @@
                     "attrs": {}, 
                     "decl": "void method2(Class1 * c2)", 
                     "fmt": {
+                        "C_call_list": "static_cast<Class1 *>(static_cast<void *>(c2))", 
+                        "C_const": "", 
                         "C_name": "DEF_class2_method2", 
+                        "C_object": "Class2 *SH_this = static_cast<Class2 *>(static_cast<void *>(self));", 
+                        "C_prototype": "DEF_class2 * self, DEF_class1 * c2", 
+                        "C_return_type": "void", 
                         "F_C_name": "c_class2_method2", 
                         "F_name_generic": "method2", 
                         "F_name_impl": "class2_method2", 
                         "F_name_method": "method2", 
+                        "c_var": "self", 
+                        "cpp_var": "SH_rv", 
                         "function_name": "method2", 
+                        "ptr": " *", 
+                        "rv_decl": "void SH_rv", 
                         "underscore_name": "method2"
                     }, 
                     "options": {}, 
@@ -200,8 +234,9 @@
     ], 
     "cpp_header": "global_header.hpp", 
     "fmt": {
+        "CPP_template": "", 
         "CPP_this": "SH_this", 
-        "C_const": "", 
+        "CPP_this_call": "", 
         "C_header_filename": "wrapdefault_library.h", 
         "C_impl_filename": "wrapdefault_library.cpp", 
         "C_prefix": "DEF_", 
@@ -224,8 +259,7 @@
         "library": "default_library", 
         "library_lower": "default_library", 
         "library_upper": "DEFAULT_LIBRARY", 
-        "namespace_scope": "one::two::", 
-        "ptr": ""
+        "namespace_scope": "one::two::"
     }, 
     "functions": [
         {
@@ -236,12 +270,19 @@
             "attrs": {}, 
             "decl": "void function1()", 
             "fmt": {
+                "C_call_list": "", 
+                "C_const": "", 
                 "C_name": "DEF_function1", 
+                "C_object": "", 
+                "C_prototype": "", 
+                "C_return_type": "void", 
                 "F_C_name": "function1", 
                 "F_name_generic": "function1", 
                 "F_name_impl": "function1", 
                 "F_name_method": "function1", 
+                "cpp_var": "SH_rv", 
                 "function_name": "function1", 
+                "rv_decl": "void SH_rv", 
                 "underscore_name": "function1"
             }, 
             "options": {}, 

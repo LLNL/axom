@@ -395,8 +395,12 @@ return 1;""", fmt)
                 fmt_arg.py_var = 'SH_Py_' + fmt_arg.c_var
                 if arg['attrs'].get('const', False):
                     fmt_arg.C_const = 'const '
+                else:
+                    fmt_arg.C_const = ''
                 if arg['attrs'].get('ptr', False):
                     fmt_arg.ptr = ' *'
+                else:
+                    fmt_arg.ptr = ''
                 attrs = arg['attrs']
 
                 arg_typedef = self.typedef[arg['type']]
