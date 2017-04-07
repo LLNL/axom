@@ -1928,8 +1928,7 @@
         "library": "UserLibrary", 
         "library_lower": "userlibrary", 
         "library_upper": "USERLIBRARY", 
-        "namespace_scope": "example::nested::", 
-        "overloaded": false
+        "namespace_scope": "example::nested::"
     }, 
     "functions": [
         {

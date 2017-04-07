@@ -41,8 +41,7 @@
         "library": "strings", 
         "library_lower": "strings", 
         "library_upper": "STRINGS", 
-        "namespace_scope": "", 
-        "overloaded": false
+        "namespace_scope": ""
     }, 
     "functions": [
         {

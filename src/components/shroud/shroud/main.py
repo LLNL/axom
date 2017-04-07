@@ -185,7 +185,6 @@ class Schema(object):
         fmt_library.library_lower = fmt_library.library.lower()
         fmt_library.library_upper = fmt_library.library.upper()
         fmt_library.function_suffix = ''   # assume no suffix
-        fmt_library.overloaded = False
         fmt_library.class_name = ''
         fmt_library.C_prefix = def_options.get(
             'C_prefix', fmt_library.library_upper[:3] + '_')
@@ -578,13 +577,13 @@ class Schema(object):
             fmt_class.F_C_prefix = options.F_C_prefix
         util.eval_template(node, 'class_name')
 
-        if options.F_module_per_class:
-            util.eval_template(node, 'F_module_name', '_class')
-            util.eval_template(node, 'F_impl_filename', '_class')
-
         # Only one file per class for C.
         util.eval_template(node, 'C_header_filename', '_class')
         util.eval_template(node, 'C_impl_filename', '_class')
+
+        if options.F_module_per_class:
+            util.eval_template(node, 'F_module_name', '_class')
+            util.eval_template(node, 'F_impl_filename', '_class')
 
         self.check_functions(node, 'methods')
         self.pop_fmt()

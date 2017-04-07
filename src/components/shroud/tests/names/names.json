@@ -141,8 +141,7 @@
         "library": "testnames", 
         "library_lower": "testnames", 
         "library_upper": "TESTNAMES", 
-        "namespace_scope": "", 
-        "overloaded": false
+        "namespace_scope": ""
     }, 
     "functions": [
         {

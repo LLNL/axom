@@ -176,8 +176,7 @@
         "library": "Tutorial", 
         "library_lower": "tutorial", 
         "library_upper": "TUTORIAL", 
-        "namespace_scope": "tutorial::", 
-        "overloaded": false
+        "namespace_scope": "tutorial::"
     }, 
     "functions": [
         {

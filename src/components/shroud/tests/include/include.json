@@ -190,8 +190,7 @@
         "library": "default_library", 
         "library_lower": "default_library", 
         "library_upper": "DEFAULT_LIBRARY", 
-        "namespace_scope": "one::two::", 
-        "overloaded": false
+        "namespace_scope": "one::two::"
     }, 
     "functions": [
         {
