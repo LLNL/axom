@@ -73,7 +73,6 @@
                         "c_const": "", 
                         "cpp_var": "SH_rv", 
                         "function_name": "new", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "Class1 * SH_rv", 
                         "underscore_name": "new"
                     }, 
@@ -119,7 +118,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "delete", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "delete"
                     }, 
@@ -161,7 +159,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "Method1", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "method1"
                     }, 
@@ -257,7 +254,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "Function1", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "function1"
             }, 
@@ -375,7 +371,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "Function2", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "double SH_rv", 
                 "underscore_name": "function2"
             }, 
@@ -479,7 +474,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "Sum", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "sum"
             }, 
@@ -562,7 +556,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "Function3", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "bool SH_rv", 
                 "underscore_name": "function3"
             }, 
@@ -651,7 +644,6 @@
                 "LUA_name_impl": "l_function4a", 
                 "PY_name_impl": "PY_function4a", 
                 "function_name": "Function4a", 
-                "result_arg": "UUU_result_arg", 
                 "rvlen": "(30)", 
                 "underscore_name": "function4a"
             }, 
@@ -747,8 +739,7 @@
                     }, 
                     "fmtf": {
                         "c_var": "SH_rv", 
-                        "f_var": "SH_rv", 
-                        "result_arg": ""
+                        "f_var": "SH_rv"
                     }, 
                     "name": "SH_F_rv", 
                     "type": "std::string"
@@ -1070,8 +1061,7 @@
                 "F_name_impl": "function4b", 
                 "F_name_method": "function4b", 
                 "F_subprogram": "subroutine", 
-                "function_suffix": "", 
-                "result_arg": "UUU_result_arg"
+                "function_suffix": ""
             }, 
             "options": {
                 "wrap_c": false, 
@@ -1123,7 +1113,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "double SH_rv"
             }, 
             "options": {
@@ -1195,7 +1184,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "_arg1", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "double SH_rv"
             }, 
             "options": {
@@ -1335,7 +1323,6 @@
                 "cpp_var": "SH_rv", 
                 "function_name": "Function5", 
                 "function_suffix": "_arg1_arg2", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "double SH_rv", 
                 "underscore_name": "function5"
             }, 
@@ -1419,7 +1406,6 @@
                 "cpp_var": "SH_rv", 
                 "function_name": "Function6", 
                 "function_suffix": "_from_name", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "function6"
             }, 
@@ -1569,7 +1555,6 @@
                 "cpp_var": "SH_rv", 
                 "function_name": "Function6", 
                 "function_suffix": "_from_index", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "function6"
             }, 
@@ -1671,7 +1656,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "_int", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv"
             }, 
             "options": {
@@ -1737,7 +1721,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "_double", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv"
             }, 
             "options": {
@@ -1813,7 +1796,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "_int", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "int SH_rv"
             }, 
             "options": {
@@ -1859,7 +1841,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "_double", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "double SH_rv"
             }, 
             "options": {
@@ -1981,8 +1962,7 @@
                 "F_name_impl": "function9_float", 
                 "F_name_method": "function9_float", 
                 "F_subprogram": "subroutine", 
-                "function_suffix": "_float", 
-                "result_arg": "UUU_result_arg"
+                "function_suffix": "_float"
             }, 
             "options": {
                 "wrap_c": false, 
@@ -2025,8 +2005,7 @@
                 "F_name_impl": "function9_double", 
                 "F_name_method": "function9_double", 
                 "F_subprogram": "subroutine", 
-                "function_suffix": "_double", 
-                "result_arg": "UUU_result_arg"
+                "function_suffix": "_double"
             }, 
             "options": {
                 "wrap_c": false, 
@@ -2075,7 +2054,6 @@
                 "cpp_var": "SH_rv", 
                 "function_name": "Function10", 
                 "function_suffix": "_0", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "function10"
             }, 
@@ -2244,8 +2222,7 @@
                 "F_name_impl": "function10_1_float", 
                 "F_name_method": "function10_1_float", 
                 "F_subprogram": "subroutine", 
-                "function_suffix": "_1_float", 
-                "result_arg": "UUU_result_arg"
+                "function_suffix": "_1_float"
             }, 
             "options": {
                 "wrap_c": false, 
@@ -2302,8 +2279,7 @@
                 "F_name_impl": "function10_1_double", 
                 "F_name_method": "function10_1_double", 
                 "F_subprogram": "subroutine", 
-                "function_suffix": "_1_double", 
-                "result_arg": "UUU_result_arg"
+                "function_suffix": "_1_double"
             }, 
             "options": {
                 "wrap_c": false, 
@@ -2469,7 +2445,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "_num", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "int SH_rv"
             }, 
             "options": {
@@ -2566,7 +2541,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "_num_offset", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "int SH_rv"
             }, 
             "options": {
@@ -2748,7 +2722,6 @@
                 "cpp_var": "SH_rv", 
                 "function_name": "overload1", 
                 "function_suffix": "_num_offset_stride", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "int SH_rv", 
                 "underscore_name": "overload1"
             }, 
@@ -2835,7 +2808,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "_3", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "int SH_rv"
             }, 
             "options": {
@@ -2948,7 +2920,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "_4", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "int SH_rv"
             }, 
             "options": {
@@ -3161,7 +3132,6 @@
                 "cpp_var": "SH_rv", 
                 "function_name": "overload1", 
                 "function_suffix": "_5", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "int SH_rv", 
                 "underscore_name": "overload1"
             }, 
@@ -3241,7 +3211,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "typefunc", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "TypeID SH_rv", 
                 "underscore_name": "typefunc"
             }, 
@@ -3321,7 +3290,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "enumfunc", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "EnumTypeID SH_rv", 
                 "underscore_name": "enumfunc"
             }, 
@@ -3391,7 +3359,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "useclass", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "useclass"
             }, 
@@ -3528,7 +3495,6 @@
                 "F_name_method": "last_function_called", 
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
-                "result_arg": "UUU_result_arg", 
                 "rvlen": "strlen_ptr(c_last_function_called(\t))"
             }, 
             "options": {

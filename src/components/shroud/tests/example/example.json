@@ -103,7 +103,6 @@
                         "c_const": "", 
                         "cpp_var": "SH_rv", 
                         "function_name": "new", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "ExClass1 * SH_rv", 
                         "underscore_name": "new"
                     }, 
@@ -219,7 +218,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "delete", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "delete"
                     }, 
@@ -290,7 +288,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "incrementCount", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "int SH_rv", 
                         "underscore_name": "increment_count"
                     }, 
@@ -336,7 +333,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "getName", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "const std::string & SH_rv", 
                         "rvlen": "aa_exclass1_get_name_length(obj%voidptr)", 
                         "underscore_name": "get_name"
@@ -383,8 +379,7 @@
                             }, 
                             "fmtf": {
                                 "c_var": "SH_rv", 
-                                "f_var": "SH_rv", 
-                                "result_arg": ""
+                                "f_var": "SH_rv"
                             }, 
                             "name": "SH_F_rv", 
                             "type": "string"
@@ -464,7 +459,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "GetNameLength", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "int SH_rv", 
                         "underscore_name": "get_name_length"
                     }, 
@@ -509,7 +503,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "getNameErrorCheck", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "const std::string & SH_rv", 
                         "rvlen": "strlen_ptr(c_exclass1_get_name_error_check_bufferify(\tobj%voidptr\tSH_rv\tlen(SH_rv, kind=C_INT)))", 
                         "underscore_name": "get_name_error_check"
@@ -553,8 +546,7 @@
                             }, 
                             "fmtf": {
                                 "c_var": "SH_rv", 
-                                "f_var": "SH_rv", 
-                                "result_arg": ""
+                                "f_var": "SH_rv"
                             }, 
                             "name": "SH_F_rv", 
                             "type": "string"
@@ -742,8 +734,7 @@
                         "F_name_impl": "exclass1_get_name_arg", 
                         "F_name_method": "get_name_arg", 
                         "F_subprogram": "subroutine", 
-                        "function_suffix": "", 
-                        "result_arg": "UUU_result_arg"
+                        "function_suffix": ""
                     }, 
                     "options": {
                         "wrap_c": false, 
@@ -791,7 +782,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "getRoot", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "ExClass2 * SH_rv", 
                         "underscore_name": "get_root"
                     }, 
@@ -870,7 +860,6 @@
                         "cpp_var": "SH_rv", 
                         "function_name": "getValue", 
                         "function_suffix": "_from_int", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "int SH_rv", 
                         "underscore_name": "get_value"
                     }, 
@@ -948,7 +937,6 @@
                         "cpp_var": "SH_rv", 
                         "function_name": "getValue", 
                         "function_suffix": "_1", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "long SH_rv", 
                         "underscore_name": "get_value"
                     }, 
@@ -989,7 +977,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "getAddr", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void * SH_rv", 
                         "underscore_name": "get_addr"
                     }, 
@@ -1062,7 +1049,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "hasAddr", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "bool SH_rv", 
                         "underscore_name": "has_addr"
                     }, 
@@ -1102,7 +1088,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "SplicerSpecial", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "splicer_special"
                     }, 
@@ -1222,7 +1207,6 @@
                         "c_const": "", 
                         "cpp_var": "SH_rv", 
                         "function_name": "ExClass2", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "ExClass2 * SH_rv", 
                         "underscore_name": "ex_class2"
                     }, 
@@ -1330,7 +1314,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "delete", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "delete"
                     }, 
@@ -1374,7 +1357,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "getName", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "const std::string & SH_rv", 
                         "rvlen": "aa_exclass2_get_name_length(obj%voidptr)", 
                         "underscore_name": "get_name"
@@ -1419,8 +1401,7 @@
                             }, 
                             "fmtf": {
                                 "c_var": "SH_rv", 
-                                "f_var": "SH_rv", 
-                                "result_arg": ""
+                                "f_var": "SH_rv"
                             }, 
                             "name": "SH_F_rv", 
                             "type": "string"
@@ -1495,7 +1476,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "getName2", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "const std::string & SH_rv", 
                         "rvlen": "strlen_ptr(c_exclass2_get_name2_bufferify(\tobj%voidptr\tSH_rv\tlen(SH_rv, kind=C_INT)))", 
                         "underscore_name": "get_name2"
@@ -1539,8 +1519,7 @@
                             }, 
                             "fmtf": {
                                 "c_var": "SH_rv", 
-                                "f_var": "SH_rv", 
-                                "result_arg": ""
+                                "f_var": "SH_rv"
                             }, 
                             "name": "SH_F_rv", 
                             "type": "string"
@@ -1614,7 +1593,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "getName3", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "std::string & SH_rv", 
                         "rvlen": "strlen_ptr(c_exclass2_get_name3_bufferify(\tobj%voidptr\tSH_rv\tlen(SH_rv, kind=C_INT)))", 
                         "underscore_name": "get_name3"
@@ -1657,8 +1635,7 @@
                             }, 
                             "fmtf": {
                                 "c_var": "SH_rv", 
-                                "f_var": "SH_rv", 
-                                "result_arg": ""
+                                "f_var": "SH_rv"
                             }, 
                             "name": "SH_F_rv", 
                             "type": "string"
@@ -1732,7 +1709,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "getName4", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "std::string & SH_rv", 
                         "rvlen": "strlen_ptr(c_exclass2_get_name4_bufferify(\tobj%voidptr\tSH_rv\tlen(SH_rv, kind=C_INT)))", 
                         "underscore_name": "get_name4"
@@ -1775,8 +1751,7 @@
                             }, 
                             "fmtf": {
                                 "c_var": "SH_rv", 
-                                "f_var": "SH_rv", 
-                                "result_arg": ""
+                                "f_var": "SH_rv"
                             }, 
                             "name": "SH_F_rv", 
                             "type": "string"
@@ -1850,7 +1825,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "GetNameLength", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "const int SH_rv", 
                         "underscore_name": "get_name_length"
                     }, 
@@ -1925,7 +1899,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "get_class1", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "ExClass1 * SH_rv", 
                         "underscore_name": "get_class1"
                     }, 
@@ -2033,8 +2006,7 @@
                         "F_name_impl": "exclass2_declare_0_int", 
                         "F_name_method": "declare_0_int", 
                         "F_subprogram": "subroutine", 
-                        "function_suffix": "_0_int", 
-                        "result_arg": "UUU_result_arg"
+                        "function_suffix": "_0_int"
                     }, 
                     "options": {
                         "wrap_c": false, 
@@ -2080,8 +2052,7 @@
                         "F_name_impl": "exclass2_declare_0_long", 
                         "F_name_method": "declare_0_long", 
                         "F_subprogram": "subroutine", 
-                        "function_suffix": "_0_long", 
-                        "result_arg": "UUU_result_arg"
+                        "function_suffix": "_0_long"
                     }, 
                     "options": {
                         "wrap_c": false, 
@@ -2255,8 +2226,7 @@
                         "F_name_impl": "exclass2_declare_1_int", 
                         "F_name_method": "declare_1_int", 
                         "F_subprogram": "subroutine", 
-                        "function_suffix": "_1_int", 
-                        "result_arg": "UUU_result_arg"
+                        "function_suffix": "_1_int"
                     }, 
                     "options": {
                         "wrap_c": false, 
@@ -2319,8 +2289,7 @@
                         "F_name_impl": "exclass2_declare_1_long", 
                         "F_name_method": "declare_1_long", 
                         "F_subprogram": "subroutine", 
-                        "function_suffix": "_1_long", 
-                        "result_arg": "UUU_result_arg"
+                        "function_suffix": "_1_long"
                     }, 
                     "options": {
                         "wrap_c": false, 
@@ -2366,7 +2335,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "destroyall", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "destroyall"
                     }, 
@@ -2409,7 +2377,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "getTypeID", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "TypeID SH_rv", 
                         "underscore_name": "get_type_id"
                     }, 
@@ -2514,7 +2481,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_suffix": "_int", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv"
                     }, 
                     "options": {
@@ -2582,7 +2548,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_suffix": "_long", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv"
                     }, 
                     "options": {
@@ -2650,7 +2615,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_suffix": "_float", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv"
                     }, 
                     "options": {
@@ -2718,7 +2682,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_suffix": "_double", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv"
                     }, 
                     "options": {
@@ -2796,7 +2759,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_suffix": "_int", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "int SH_rv"
                     }, 
                     "options": {
@@ -2844,7 +2806,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_suffix": "_double", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "double SH_rv"
                     }, 
                     "options": {
@@ -2961,7 +2922,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "local_function1", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "local_function1"
             }, 
@@ -3031,7 +2991,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "isNameValid", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "bool SH_rv", 
                 "underscore_name": "is_name_valid"
             }, 
@@ -3132,7 +3091,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "isInitialized", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "bool SH_rv", 
                 "underscore_name": "is_initialized"
             }, 
@@ -3205,7 +3163,6 @@
                 "cpp_var": "SH_rv", 
                 "function_name": "test_names", 
                 "function_suffix": "", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "test_names"
             }, 
@@ -3370,7 +3327,6 @@
                 "cpp_var": "SH_rv", 
                 "function_name": "test_names", 
                 "function_suffix": "_flag", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "test_names"
             }, 
@@ -3497,7 +3453,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "_0", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv"
             }, 
             "options": {
@@ -3563,7 +3518,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_suffix": "_1", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv"
             }, 
             "options": {
@@ -3677,7 +3631,6 @@
                 "cpp_var": "SH_rv", 
                 "function_name": "testoptional", 
                 "function_suffix": "_2", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "testoptional"
             }, 
@@ -3745,7 +3698,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "testmpi", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "testmpi"
             }, 
@@ -3814,7 +3766,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "testgroup1", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "testgroup1"
             }, 
@@ -3884,7 +3835,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "testgroup2", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "testgroup2"
             }, 

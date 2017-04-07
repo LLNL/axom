@@ -105,7 +105,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "passChar", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "pass_char"
             }, 
@@ -148,7 +147,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "returnChar", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "char SH_rv", 
                 "underscore_name": "return_char"
             }, 
@@ -191,8 +189,7 @@
                     }, 
                     "fmtf": {
                         "c_var": "SH_rv", 
-                        "f_var": "SH_rv", 
-                        "result_arg": ""
+                        "f_var": "SH_rv"
                     }, 
                     "name": "SH_F_rv", 
                     "type": "char_scalar"
@@ -327,7 +324,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "passCharPtr", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "pass_char_ptr"
             }, 
@@ -559,7 +555,6 @@
                 "F_name_method": "get_char1", 
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
-                "result_arg": "UUU_result_arg", 
                 "rvlen": "strlen_ptr(c_get_char1(\t))"
             }, 
             "options": {
@@ -609,7 +604,6 @@
                 "c_const": "const ", 
                 "cpp_var": "SH_rv", 
                 "function_name": "getChar2", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "const char * SH_rv", 
                 "rvlen": "30", 
                 "underscore_name": "get_char2"
@@ -654,8 +648,7 @@
                     }, 
                     "fmtf": {
                         "c_var": "SH_rv", 
-                        "f_var": "SH_rv", 
-                        "result_arg": ""
+                        "f_var": "SH_rv"
                     }, 
                     "name": "SH_F_rv", 
                     "type": "char"
@@ -842,8 +835,7 @@
                 "F_name_impl": "get_char3", 
                 "F_name_method": "get_char3", 
                 "F_subprogram": "subroutine", 
-                "function_suffix": "", 
-                "result_arg": "UUU_result_arg"
+                "function_suffix": ""
             }, 
             "options": {
                 "wrap_c": false, 
@@ -992,7 +984,6 @@
                 "F_name_method": "get_string1", 
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
-                "result_arg": "UUU_result_arg", 
                 "rvlen": "strlen_ptr(c_get_string1(\t))"
             }, 
             "options": {
@@ -1043,7 +1034,6 @@
                 "c_const": "const ", 
                 "cpp_var": "SH_rv", 
                 "function_name": "getString2", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "const std::string & SH_rv", 
                 "rvlen": "30", 
                 "underscore_name": "get_string2"
@@ -1089,8 +1079,7 @@
                     }, 
                     "fmtf": {
                         "c_var": "SH_rv", 
-                        "f_var": "SH_rv", 
-                        "result_arg": ""
+                        "f_var": "SH_rv"
                     }, 
                     "name": "SH_F_rv", 
                     "type": "string"
@@ -1280,8 +1269,7 @@
                 "F_name_impl": "get_string3", 
                 "F_name_method": "get_string3", 
                 "F_subprogram": "subroutine", 
-                "function_suffix": "", 
-                "result_arg": "UUU_result_arg"
+                "function_suffix": ""
             }, 
             "options": {
                 "wrap_c": false, 
@@ -1359,7 +1347,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "acceptStringConstReference", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "accept_string_const_reference"
             }, 
@@ -1498,7 +1485,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "acceptStringReference", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "accept_string_reference"
             }, 

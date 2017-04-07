@@ -77,7 +77,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "method1", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "method1"
                     }, 
@@ -174,7 +173,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "method1", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "method1"
                     }, 
@@ -236,7 +234,6 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "function_name": "method2", 
-                        "result_arg": "UUU_result_arg", 
                         "rv_decl": "void SH_rv", 
                         "underscore_name": "method2"
                     }, 
@@ -309,7 +306,6 @@
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
                 "function_name": "function1", 
-                "result_arg": "UUU_result_arg", 
                 "rv_decl": "void SH_rv", 
                 "underscore_name": "function1"
             }, 

@@ -706,9 +706,6 @@ class Wrapf(util.WrapperMixin):
         # May be one more argument to C function than Fortran function
         # (the result)
         #
-        # indicate which argument contains function result, usually none
-        result_arg = None
-        fmt_func.result_arg = 'UUU_result_arg'
         pre_call = []
         f_args = node['args']
         f_index = -1       # index into f_args
@@ -724,8 +721,6 @@ class Wrapf(util.WrapperMixin):
                 if not result_as_arg:
                     # passing Fortran function result variable down to C
                     f_arg = False
-                    result_arg = c_arg
-                    fmt_arg.result_arg = result_as_arg   # c_arg['name']
                     fmt_arg.c_var = fmt_func.F_result
                     fmt_arg.f_var = fmt_func.F_result
 
