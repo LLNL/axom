@@ -39,7 +39,7 @@ void SIDRE_datagroup_get_name_bufferify(const SIDRE_datagroup * self,
     static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.get_name_bufferify
   const std::string & SH_rv = SH_this->getName();
-  shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+  shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
   return;
 // splicer end class.DataGroup.method.get_name_bufferify
 }
@@ -241,7 +241,7 @@ void SIDRE_datagroup_get_view_name_bufferify(const SIDRE_datagroup * self,
     return;
   }
 
-  shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+  shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
   return;
 // splicer end class.DataGroup.method.get_view_name_bufferify
 }
@@ -874,7 +874,7 @@ void SIDRE_datagroup_get_group_name_bufferify(const SIDRE_datagroup * self,
     return;
   }
 
-  shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+  shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
   return;
 // splicer end class.DataGroup.method.get_group_name_bufferify
 }

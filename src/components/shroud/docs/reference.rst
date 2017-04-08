@@ -557,7 +557,7 @@ cpp_type
 
 cpp_to_c
     Expression to convert from C++ to C.
-    Defaults to *{cpp_var}*.
+    Defaults to *{cpp_var}*.  i.e. no conversion required.
 
 cpp_header
     Name of C++ header file required for implementation.
@@ -588,10 +588,10 @@ c_header
 
 c_to_cpp
     Expression to convert from C to C++.
-    Defaults to *{c_var}*.
+    Defaults to *{c_var}*.  i.e. no conversion required.
 
 c_fortran
-    Expression to convert from C to Fortran.
+    Type declaration for ``bind(C)`` interface.
     Defaults to *None*.
 
 c_statements
@@ -623,6 +623,7 @@ c_statements
            True if a local C++ variable is created.
            This is the case when C and C++ are not directly compatible.
            Usually a C++ constructor is involved.
+           This sets *cpp_var* is set to ``SH_{c_var}``.
 
 c_return_code
     Fortran code used to call function and assign the return value.

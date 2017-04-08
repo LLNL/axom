@@ -64,7 +64,7 @@ void AA_exclass2_get_name_bufferify(const AA_exclass2 * self, char * SH_F_rv, in
     const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass2.method.get_name_bufferify
     const std::string & SH_rv = SH_this->getName();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end class.ExClass2.method.get_name_bufferify
 }
@@ -87,7 +87,7 @@ void AA_exclass2_get_name2_bufferify(AA_exclass2 * self, char * SH_F_rv, int LSH
     ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.get_name2_bufferify
     const std::string & SH_rv = SH_this->getName2();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end class.ExClass2.method.get_name2_bufferify
 }
@@ -110,7 +110,7 @@ void AA_exclass2_get_name3_bufferify(const AA_exclass2 * self, char * SH_F_rv, i
     const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass2.method.get_name3_bufferify
     std::string & SH_rv = SH_this->getName3();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end class.ExClass2.method.get_name3_bufferify
 }
@@ -133,7 +133,7 @@ void AA_exclass2_get_name4_bufferify(AA_exclass2 * self, char * SH_F_rv, int LSH
     ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.get_name4_bufferify
     std::string & SH_rv = SH_this->getName4();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end class.ExClass2.method.get_name4_bufferify
 }

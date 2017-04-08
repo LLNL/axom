@@ -4121,7 +4121,7 @@
                     "cpp_header": "shroudrt.hpp", 
                     "cpp_local_var": true, 
                     "post_call": [
-                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});", 
                         "delete [] {cpp_var};"
                     ], 
                     "pre_call": [
@@ -4131,7 +4131,7 @@
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -4342,13 +4342,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -4390,13 +4390,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -4438,13 +4438,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 

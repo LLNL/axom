@@ -2,8 +2,22 @@
 // This is generated code, do not edit
 
 #ifdef __cplusplus
+// Standard C++ headers
+#include <cstring>
+using namespace std;
 extern "C" {
+#else
+#include <string.h>
 #endif
+
+void shroud_FccCopy(char *a, int la, const char *s)
+{
+   int ls,nm;
+   ls = strlen(s);
+   nm = ls < la ? ls : la;
+   memcpy(a,s,nm);
+   if(la > nm) { memset(a+nm,' ',la-nm);}
+}
 
 // equivalent to C_LOC
 // called from Fortran

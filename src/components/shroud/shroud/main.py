@@ -367,7 +367,7 @@ class Schema(object):
                             'char * {cpp_var} = new char [{c_var_num} + 1];',
                             ],
                         post_call=[
-                            'shroud::FccCopy'
+                            'shroud_FccCopy'
                             '({c_var}, {c_var_len}, {cpp_val});',
                             'delete [] {cpp_var};',
                             ],
@@ -375,7 +375,7 @@ class Schema(object):
                         ),
                     result=dict(
                         post_call=[
-                            ('shroud::FccCopy'
+                            ('shroud_FccCopy'
                              '({c_var}, {c_var_len}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp',
@@ -443,14 +443,14 @@ class Schema(object):
                     ),
                     intent_out=dict(
                         post_call=[
-                            ('shroud::FccCopy'
+                            ('shroud_FccCopy'
                              '({c_var}, {c_var_len}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp'
                         ),
                     result=dict(
                         post_call=[
-                            ('shroud::FccCopy'
+                            ('shroud_FccCopy'
                              '({c_var}, {c_var_len}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp'

@@ -18,6 +18,7 @@ Contents:
 
    introduction
    tutorial
+   types
    advanced
    reference
    previouswork

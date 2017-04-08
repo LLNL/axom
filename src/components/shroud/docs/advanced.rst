@@ -431,7 +431,7 @@ The generated C wrapper::
         const std::string SH_arg1(arg1, Larg1);
         const std::string SH_arg2(arg2, Larg2);
         const std::string & rv = Function4b(SH_arg1, SH_arg2);
-        asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
+        shroud_FccCopy(output, Loutput, rv.c_str());
         return;
     }
 

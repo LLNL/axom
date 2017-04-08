@@ -69,7 +69,7 @@ void STR_pass_char_ptr(char * dest, int Ndest, const char * src)
     std::strncpy(SH_src, src, Lsrc);
     SH_src[Lsrc] = '\0';
     passCharPtr(SH_dest, SH_src);
-    shroud::FccCopy(dest, Ndest, SH_dest);
+    shroud_FccCopy(dest, Ndest, SH_dest);
     delete [] SH_dest;
     delete [] SH_src;
     return;
@@ -92,7 +92,7 @@ void STR_pass_char_ptr_bufferify(char * dest, int Ndest, const char * src, int L
     std::strncpy(SH_src, src, Lsrc);
     SH_src[Lsrc] = '\0';
     passCharPtr(SH_dest, SH_src);
-    shroud::FccCopy(dest, Ndest, SH_dest);
+    shroud_FccCopy(dest, Ndest, SH_dest);
     delete [] SH_dest;
     delete [] SH_src;
     return;
@@ -123,7 +123,7 @@ void STR_get_char1_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.get_char1_bufferify
     const char * SH_rv = getChar1();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv);
+    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv);
     return;
 // splicer end function.get_char1_bufferify
 }
@@ -152,7 +152,7 @@ void STR_get_char2_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.get_char2_bufferify
     const char * SH_rv = getChar2();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv);
+    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv);
     return;
 // splicer end function.get_char2_bufferify
 }
@@ -181,7 +181,7 @@ void STR_get_char3_bufferify(char * output, int Loutput)
 {
 // splicer begin function.get_char3_bufferify
     const char * SH_rv = getChar3();
-    shroud::FccCopy(output, Loutput, SH_rv);
+    shroud_FccCopy(output, Loutput, SH_rv);
     return;
 // splicer end function.get_char3_bufferify
 }
@@ -210,7 +210,7 @@ void STR_get_string1_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.get_string1_bufferify
     const std::string & SH_rv = getString1();
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end function.get_string1_bufferify
 }
@@ -250,7 +250,7 @@ void STR_get_string2_bufferify(char * SH_F_rv, int LSH_F_rv)
         return;
     }
 
-    shroud::FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
     return;
 // splicer end function.get_string2_bufferify
 }
@@ -290,7 +290,7 @@ void STR_get_string3_bufferify(char * output, int Loutput)
         return;
     }
 
-    shroud::FccCopy(output, Loutput, SH_rv.c_str());
+    shroud_FccCopy(output, Loutput, SH_rv.c_str());
     return;
 // splicer end function.get_string3_bufferify
 }
@@ -345,7 +345,7 @@ void STR_accept_string_reference(char * arg1, int Narg1)
 // splicer begin function.accept_string_reference
     std::string SH_arg1(arg1);
     acceptStringReference(SH_arg1);
-    shroud::FccCopy(arg1, Narg1, SH_arg1.c_str());
+    shroud_FccCopy(arg1, Narg1, SH_arg1.c_str());
     return;
 // splicer end function.accept_string_reference
 }
@@ -364,7 +364,7 @@ void STR_accept_string_reference_bufferify(char * arg1, int Larg1, int Narg1)
 // splicer begin function.accept_string_reference_bufferify
     std::string SH_arg1(arg1, Larg1);
     acceptStringReference(SH_arg1);
-    shroud::FccCopy(arg1, Narg1, SH_arg1.c_str());
+    shroud_FccCopy(arg1, Narg1, SH_arg1.c_str());
     return;
 // splicer end function.accept_string_reference_bufferify
 }
