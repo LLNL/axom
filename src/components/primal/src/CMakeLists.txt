@@ -17,7 +17,6 @@ set( primal_headers
      geometry/Ray.hpp
      geometry/Segment.hpp
      geometry/Triangle.hpp
-     geometry/UniformGrid.hpp
 
      ## numerics
      numerics/Determinants.hpp
@@ -34,6 +33,7 @@ set( primal_headers
 
      ## spatial acceleration
      spatial_acceleration/BVHTree.hpp
+     spatial_acceleration/UniformGrid.hpp
    )
 
 ## NOTE: dummy source since BLT does not support header only libraries
