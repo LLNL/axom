@@ -17,8 +17,8 @@
 #include <iostream>
 
 
-using axom::sidre::DataBuffer;
-using axom::sidre::DataGroup;
+using axom::sidre::Buffer;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
@@ -60,12 +60,12 @@ void setData(T * data, int size, T initVal=T(0), int intDiv=1, T scaleFac=T(1))
 template<typename T>
 void checkPointersAndData(const std::string& path
                           , axom::sidre::Node& rootNode
-                          , axom::sidre::DataGroup * rootGroup)
+                          , axom::sidre::Group * rootGroup)
 {
   axom::sidre::Node& node = rootNode[path];
   T * nD = static_cast<T *>(node.element_ptr(0));
 
-  axom::sidre::DataView * view = rootGroup->getView(path);
+  axom::sidre::View * view = rootGroup->getView(path);
   EXPECT_TRUE(AXOM_NULLPTR != view);
 
   T * vD = view->getData<T *>();
@@ -94,12 +94,12 @@ template<>
 void checkPointersAndData<std::string>(const std::string& path
                                        , axom::sidre::Node& rootNode
                                        ,
-                                       axom::sidre::DataGroup * rootGroup)
+                                       axom::sidre::Group * rootGroup)
 {
   axom::sidre::Node& node = rootNode[path];
   std::string nD = node.as_string();
 
-  axom::sidre::DataView * view = rootGroup->getView(path);
+  axom::sidre::View * view = rootGroup->getView(path);
   EXPECT_TRUE(AXOM_NULLPTR != view);
   EXPECT_TRUE(view->isString());
 
@@ -156,11 +156,11 @@ TEST(sidre_native_layout,generate_native_layout)
 
 
   DataStore * ds   = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
   // Setup a buffer that will have two views
   const int REAL_BUF_SIZE = 100;
-  DataBuffer * realBuf = ds->createBuffer(DOUBLE_ID, REAL_BUF_SIZE)->allocate();
+  Buffer * realBuf = ds->createBuffer(DOUBLE_ID, REAL_BUF_SIZE)->allocate();
   setData<double>(realBuf->getData(), REAL_BUF_SIZE, 0., 10, 1.);
 
   // create the views using the path syntax
@@ -226,7 +226,7 @@ TEST(sidre_native_layout,native_layout_with_scalars)
 {
 
   DataStore * ds   = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
   root->createView("Garray/Vdbl20",DOUBLE_ID, 20)->allocate();
   root->createView("Garray/Vint10",INT32_ID, 10)->allocate();

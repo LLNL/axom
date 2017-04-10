@@ -33,13 +33,13 @@ TEST(sidre_smoke,valid_invalid)
   const char * name = "foo";
   EXPECT_TRUE(SIDRE_name_is_valid(name));
 
-  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_group * root = SIDRE_datastore_get_root(ds);
 
-  const char * gp_name = SIDRE_datagroup_get_group_name(root, idx);
+  const char * gp_name = SIDRE_group_get_group_name(root, idx);
   EXPECT_TRUE(gp_name == NULL);
   EXPECT_TRUE(gp_name == SIDRE_InvalidName);
   EXPECT_FALSE(SIDRE_name_is_valid(gp_name));
-  EXPECT_TRUE(SIDRE_datagroup_get_group_index(root,
+  EXPECT_TRUE(SIDRE_group_get_group_index(root,
                                               name) == SIDRE_InvalidIndex);
 
   SIDRE_datastore_delete(ds);

@@ -94,10 +94,10 @@ contains
 !
   subroutine basic_inout
     use dsopaquetest
-    type(datastore) ds
-    type(datagroup) root, problem_gp
-    type(dataview) ext_view
-    type(dataview) ext2_view
+    type(SidreDataStore) ds
+    type(SidreGroup) root, problem_gp
+    type(SidreView) ext_view
+    type(SidreView) ext2_view
     integer, parameter :: ihi_val = 9
     integer(C_INT) test_ihi
     integer(C_INT) test_ihi2
@@ -157,15 +157,15 @@ contains
   subroutine meshvar_test
     use dsopaquetest
 
-    type(datastore) ds
-    type(datagroup) root, problem_gp, meshvar_gp
-    type(dataview) zone_mv_view, node_mv_view
+    type(SidreDataStore) ds
+    type(SidreGroup) root, problem_gp, meshvar_gp
+    type(SidreView) zone_mv_view, node_mv_view
 
-    type(datagroup) dom_gp
-    type(dataview) dom_zone_view, dom_node_view, ext_view
+    type(SidreGroup) dom_gp
+    type(SidreView) dom_zone_view, dom_node_view, ext_view
 
-    type(datagroup) tmpgroup
-    type(dataview) tmpview
+    type(SidreGroup) tmpgroup
+    type(SidreView) tmpview
 
     integer num_zone_vals, num_node_vals
     integer test_num_zone_vals, test_num_node_vals
