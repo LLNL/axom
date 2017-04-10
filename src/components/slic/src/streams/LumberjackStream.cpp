@@ -22,8 +22,8 @@
 
 #include <vector>
 
-#include "common/AxomMacros.hpp"
-#include "common/StringUtilities.hpp"
+#include "axom/Macros.hpp"
+#include "axom_utils/StringUtilities.hpp"
 
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 #include "lumberjack/Lumberjack.hpp"

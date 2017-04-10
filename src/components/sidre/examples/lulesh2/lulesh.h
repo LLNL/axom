@@ -14,7 +14,7 @@
 // used supports it (i.e. the _OPENMP symbol is defined)
 #define USE_OMP 1
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 
 #ifdef AXOM_USE_MPI
 #include <mpi.h>

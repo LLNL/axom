@@ -19,7 +19,7 @@
 
 #include "gtest/gtest.h"
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 
 #include "slic/slic.hpp"
 
