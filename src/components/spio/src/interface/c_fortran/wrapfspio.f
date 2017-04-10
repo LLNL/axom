@@ -64,12 +64,12 @@ module spio_mod
     interface
 
         function c_iomanager_new(com) &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="SPIO_iomanager_new")
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: com
-            type(C_PTR) :: rv
+            type(C_PTR) :: SH_rv
         end function c_iomanager_new
 
         subroutine c_iomanager_delete(self) &
@@ -188,12 +188,12 @@ module spio_mod
 
 contains
 
-    function iomanager_new(com) result(rv)
+    function iomanager_new(com) result(SH_rv)
         implicit none
         integer, value, intent(IN) :: com
-        type(iomanager) :: rv
+        type(iomanager) :: SH_rv
         ! splicer begin class.IOManager.method.new
-        rv%voidptr = c_iomanager_new(com)
+        SH_rv%voidptr = c_iomanager_new(com)
         ! splicer end class.IOManager.method.new
     end function iomanager_new
 
