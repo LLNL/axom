@@ -19,7 +19,7 @@
 #define UNITTESTLOGGER_HPP_
 
 // Other axom headers
-#include "common/AxomMacros.hpp"    // defines DISABLE_{COPY,MOVE}_AND_ASSIGNMENT
+#include "axom/Macros.hpp"    // defines DISABLE_{COPY,MOVE}_AND_ASSIGNMENT
 
 // slic component headers
 #include "slic.hpp"

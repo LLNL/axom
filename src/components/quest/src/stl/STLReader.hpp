@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "common/AxomMacros.hpp"
+#include "axom/Macros.hpp"
 #include "mint/UnstructuredMesh.hpp"
 
 namespace axom {  

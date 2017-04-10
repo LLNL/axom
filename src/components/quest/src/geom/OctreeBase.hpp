@@ -6,7 +6,7 @@
 #ifndef OCTREE_BASE__HXX_
 #define OCTREE_BASE__HXX_
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 
 #include "slic/slic.hpp"
 

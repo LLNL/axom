@@ -31,7 +31,6 @@ class UberenvAsctoolkit(Package):
     depends_on("conduit~shared~cmake",when="~cmake")
     
     depends_on("hdf5~cxx~shared~fortran")
-    depends_on("sparsehash-headers")
 
     # optional tpl builds
     depends_on("cmake@3.3.1",when="+cmake")
@@ -132,9 +131,6 @@ class UberenvAsctoolkit(Package):
         cfg.write("# conduit from uberenv\n")
         cfg.write(cmake_cache_entry("CONDUIT_DIR",spec['conduit'].prefix))
 
-        cfg.write("# sparsehash headers from uberenv\n")
-        cfg.write(cmake_cache_entry("SPARSEHASH_DIR",spec['sparsehash-headers'].prefix))
-    
         if "boost-headers" in spec:
             cfg.write("# boost headers from uberenv\n")
             cfg.write(cmake_cache_entry("BOOST_DIR",spec['boost-headers'].prefix))

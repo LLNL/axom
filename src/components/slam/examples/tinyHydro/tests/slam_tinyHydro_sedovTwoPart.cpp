@@ -13,7 +13,7 @@
 #include <vector>
 #include <cmath>
 
-#include "common/Timer.hpp"
+#include "axom_utils/Timer.hpp"
 #include "slic/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"

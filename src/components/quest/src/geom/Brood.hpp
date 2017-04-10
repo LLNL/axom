@@ -3,7 +3,7 @@
 #define QUEST_BROOD__HXX_
 
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 
 #include "quest/MortonIndex.hpp"
 

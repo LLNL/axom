@@ -21,9 +21,9 @@
 #include "sidre/SidreTypes.h"
 #include "sidre/wrapSidre.h"
 #include "sidre/wrapDataStore.h"
-#include "sidre/wrapDataBuffer.h"
-#include "sidre/wrapDataGroup.h"
-#include "sidre/wrapDataView.h"
+#include "sidre/wrapBuffer.h"
+#include "sidre/wrapGroup.h"
+#include "sidre/wrapView.h"
 
 
 #endif

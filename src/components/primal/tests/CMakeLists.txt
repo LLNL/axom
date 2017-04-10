@@ -30,7 +30,7 @@ foreach ( test ${primal_tests} )
         NAME       ${test_name}
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON primal common slic gtest
+        DEPENDS_ON primal slic gtest
        )
 
    blt_add_test(

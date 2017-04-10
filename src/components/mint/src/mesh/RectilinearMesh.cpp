@@ -10,7 +10,7 @@
 
 #include "mint/RectilinearMesh.hpp"
 
-#include "common/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 namespace axom {
 namespace mint {
