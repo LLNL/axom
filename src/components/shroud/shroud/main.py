@@ -1216,6 +1216,7 @@ class VerifyAttrs(object):
             # unname = util.un_camel(name)
             unname = name.lower()
             cname = fmt_class.C_prefix + unname
+            f_derived_name=cls.get('F_derived_name',None) or unname
             self.typedef[name] = util.Typedef(
                 name,
                 cpp_type=name,
@@ -1226,8 +1227,8 @@ class VerifyAttrs(object):
                 c_to_cpp=('static_cast<{c_const}%s{c_ptr}>('
                           'static_cast<{c_const}void *>({c_var}))' % name),
                 c_fortran='type(C_PTR)',
-                f_type='type(%s)' % unname,
-                f_derived_type=cls.get('F_derived_name',None) or unname,
+                f_type='type(%s)' % f_derived_name,
+                f_derived_type=f_derived_name,
                 f_args='{c_var}%{F_derived_member}',
                 # XXX module name may not conflict with type name
                 f_module={fmt_class.F_module_name:[unname]},

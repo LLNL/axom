@@ -529,7 +529,7 @@
                 ]
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})", 
-            "f_type": "type(names)", 
+            "f_type": "type(FNames)", 
             "forward": "Names", 
             "py_statements": {
                 "intent_in": {

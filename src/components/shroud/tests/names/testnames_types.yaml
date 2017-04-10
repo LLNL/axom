@@ -11,7 +11,7 @@ types:
     c_type = TES_names
     c_to_cpp = static_cast<{c_const}Names{c_ptr}>(static_cast<{c_const}void *>({c_var}))
     c_fortran = type(C_PTR)
-    f_type = type(names)
+    f_type = type(FNames)
     f_derived_type = FNames
     f_args = "{c_var}%{F_derived_member}"
     f_module:
