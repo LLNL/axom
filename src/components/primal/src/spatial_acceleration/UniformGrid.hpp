@@ -11,7 +11,6 @@
 #ifndef UNIFORMGRID_HPP_
 #define UNIFORMGRID_HPP_
 
-#include "common/CommonTypes.hpp"
 #include "slic/slic.hpp"
 
 #include "primal/BoundingBox.hpp"
