@@ -8,58 +8,18 @@ types:
 
   ExClass1:
     base = wrapped
-    forward = ExClass1
     cpp_type = ExClass1
-    cpp_to_c = static_cast<{c_const}AA_exclass1 *>(static_cast<{c_const}void *>({cpp_var}))
     c_type = AA_exclass1
-    c_to_cpp = static_cast<{c_const}ExClass1{c_ptr}>(static_cast<{c_const}void *>({c_var}))
-    c_fortran = type(C_PTR)
-    f_type = type(exclass1)
     f_derived_type = exclass1
-    f_args = "{c_var}%{F_derived_member}"
     f_module:
       exclass1_mod:
       - exclass1
-    f_return_code = "{F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})"
-    f_cast = "{f_var}"
-    PY_format = O
-    py_statements:
-      intent_in:
-        post_parse: |
-          {cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;
-      intent_out:
-        ctor: |
-          {PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});
-          {py_var}->{BBB} = {cpp_var};
-    LUA_type = LUA_TUSERDATA
-    LUA_pop = ({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, "{LUA_metadata}")
-    LUA_push = PUSH
 
   ExClass2:
     base = wrapped
-    forward = ExClass2
     cpp_type = ExClass2
-    cpp_to_c = static_cast<{c_const}AA_exclass2 *>(static_cast<{c_const}void *>({cpp_var}))
     c_type = AA_exclass2
-    c_to_cpp = static_cast<{c_const}ExClass2{c_ptr}>(static_cast<{c_const}void *>({c_var}))
-    c_fortran = type(C_PTR)
-    f_type = type(exclass2)
     f_derived_type = exclass2
-    f_args = "{c_var}%{F_derived_member}"
     f_module:
       exclass2_mod:
       - exclass2
-    f_return_code = "{F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})"
-    f_cast = "{f_var}"
-    PY_format = O
-    py_statements:
-      intent_in:
-        post_parse: |
-          {cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;
-      intent_out:
-        ctor: |
-          {PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});
-          {py_var}->{BBB} = {cpp_var};
-    LUA_type = LUA_TUSERDATA
-    LUA_pop = ({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, "{LUA_metadata}")
-    LUA_push = PUSH

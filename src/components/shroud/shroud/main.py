@@ -1216,54 +1216,15 @@ class VerifyAttrs(object):
             # unname = util.un_camel(name)
             unname = name.lower()
             cname = fmt_class.C_prefix + unname
-            f_derived_name=cls.get('F_derived_name',None) or unname
             self.typedef[name] = util.Typedef(
                 name,
-                cpp_type=name,
-                cpp_to_c=('static_cast<{c_const}%s *>('
-                          'static_cast<{c_const}void *>({cpp_var}))' % cname),
-                c_type=cname,
-                # opaque pointer -> void pointer -> class instance pointer
-                c_to_cpp=('static_cast<{c_const}%s{c_ptr}>('
-                          'static_cast<{c_const}void *>({c_var}))' % name),
-                c_fortran='type(C_PTR)',
-                f_type='type(%s)' % f_derived_name,
-                f_derived_type=f_derived_name,
-                f_args='{c_var}%{F_derived_member}',
-                # XXX module name may not conflict with type name
-                f_module={fmt_class.F_module_name:[unname]},
-
-                # return from C function
-                # f_c_return_decl='type(CPTR)' % unname,
-                f_return_code=('{F_result}%{F_derived_member} = '
-                               '{F_C_call}({F_arg_c_call_tab})'),
-
-                py_statements=dict(
-                    intent_in=dict(
-                        post_parse=[
-                            '{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;',
-                            ],
-                        ),
-                    intent_out=dict(
-                        ctor=[
-                            ('{PyObject} * {py_var} = '
-                             'PyObject_New({PyObject}, &{PyTypeObject});'),
-                            '{py_var}->{BBB} = {cpp_var};',
-                            ]
-                        ),
-                    ),
-                # PY_ctor='PyObject_New({PyObject}, &{PyTypeObject})',
-
-                LUA_type='LUA_TUSERDATA',
-                LUA_pop=('({LUA_userdata_type} *)luaL_checkudata'
-                         '({LUA_state_var}, 1, "{LUA_metadata}")'),
-                # LUA_push=None,  # XXX create a userdata object with metatable
-                # LUA_statements={},
-
-                # allow forward declarations to avoid recursive headers
-                forward=name,
                 base='wrapped',
+                cpp_type=name,
+                c_type=cname,
+                f_derived_type=cls.get('F_derived_name',None) or unname,
+                f_module={fmt_class.F_module_name:[unname]},
                 )
+            util.typedef_wrapped_defaults(self.typedef[name])
 
         typedef = self.typedef[name]
         fmt_class.C_type_name = typedef.c_type
@@ -1477,7 +1438,7 @@ class TypeOut(util.WrapperMixin):
             name = cls['name']
             output.append('')
             output.append('  {}:'.format(name))
-            self.tree['types'][name].__as_yaml__(2, output)
+            self.tree['types'][name].__export_yaml__(2, output)
             write_file = True
 
             # yaml.dump does not make a nice output

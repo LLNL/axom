@@ -138,6 +138,62 @@ def as_yaml(obj, order, indent, output):
             output.append('{}{} = {}'.format(prefix, key, value))
 
 
+def typedef_wrapped_defaults(typedef):
+    """Add some defaults to typedef.
+    When dumping typedefs to a file, only a subset is written
+    since the rest are boilerplate.  This function restores
+    the boilerplate.
+    """
+    if typedef.base is not 'wrapped':
+        return
+
+    typedef.cpp_to_c=('static_cast<{c_const}%s *>('
+                      'static_cast<{c_const}void *>({cpp_var}))' %
+                      typedef.c_type)
+
+    # opaque pointer -> void pointer -> class instance pointer
+    typedef.c_to_cpp=('static_cast<{c_const}%s{c_ptr}>('
+                      'static_cast<{c_const}void *>({c_var}))' %
+                      typedef.cpp_type)
+
+    typedef.f_type='type(%s)' % typedef.f_derived_type
+    typedef.c_fortran='type(C_PTR)'
+
+    typedef.f_args='{c_var}%{F_derived_member}'
+    # XXX module name may not conflict with type name
+#    typedef.f_module={fmt_class.F_module_name:[unname]}
+
+    # return from C function
+    # f_c_return_decl='type(CPTR)' % unname,
+    typedef.f_return_code=('{F_result}%{F_derived_member} = '
+                           '{F_C_call}({F_arg_c_call_tab})')
+
+    typedef.py_statements=dict(
+        intent_in=dict(
+            post_parse=[
+                '{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;',
+            ],
+        ),
+        intent_out=dict(
+            ctor=[
+                ('{PyObject} * {py_var} = '
+                 'PyObject_New({PyObject}, &{PyTypeObject});'),
+                '{py_var}->{BBB} = {cpp_var};',
+            ]
+        ),
+    )
+    # typedef.PY_ctor='PyObject_New({PyObject}, &{PyTypeObject})'
+
+    typedef.LUA_type='LUA_TUSERDATA'
+    typedef.LUA_pop=('({LUA_userdata_type} *)luaL_checkudata'
+                     '({LUA_state_var}, 1, "{LUA_metadata}")')
+    # typedef.LUA_push=None  # XXX create a userdata object with metatable
+    # typedef.LUA_statements={}
+
+    # allow forward declarations to avoid recursive headers
+    typedef.forward=typedef.cpp_type
+
+
 def extern_C(output, position):
     """Create extern "C" guards for C++
     """
@@ -464,7 +520,23 @@ class Typedef(object):
         return "Typedef('%s', " % self.name + ','.join(args) + ')'
 
     def __as_yaml__(self, indent, output):
+        """Write out entire typedef as YAML.
+        """
         as_yaml(self, self._keyorder, indent, output)
+
+    def __export_yaml__(self, indent, output):
+        """Write out a subset of a wrapped type.
+        Other fields are set with typedef_wrapped_defaults.
+        """
+        as_yaml(self, [
+            'base',
+            'cpp_header',
+            'cpp_type',
+            'c_type',
+            'c_header',
+            'f_derived_type',
+            'f_module',
+        ], indent, output)
 
 
 class Options(object):
