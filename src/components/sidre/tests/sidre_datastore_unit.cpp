@@ -14,9 +14,9 @@
 
 
 using axom::sidre::DataStore;
-using axom::sidre::DataView;
-using axom::sidre::DataGroup;
-using axom::sidre::DataBuffer;
+using axom::sidre::View;
+using axom::sidre::Group;
+using axom::sidre::Buffer;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
 
@@ -32,25 +32,25 @@ using axom::sidre::InvalidIndex;
 //
 //   DataStore();
 //   ~DataStore();
-//   DataBuffer * createBuffer();
-//   DataBuffer * createBuffer( TypeID type, SidreLength num_elems );
-//   void destroyBuffer( DataBuffer * buff );
+//   Buffer * createBuffer();
+//   Buffer * createBuffer( TypeID type, SidreLength num_elems );
+//   void destroyBuffer( Buffer * buff );
 //   void destroyBuffer( IndexType idx );
 //   void destroyAllBuffers();
 
 // Public APIs for getting state:
 //
-//   DataGroup * getRoot()
+//   Group * getRoot()
 //   size_t getNumBuffers() const
 //   bool hasBuffer( IndexType idx ) const
-//   DataBuffer * getBuffer( IndexType idx ) const;
+//   Buffer * getBuffer( IndexType idx ) const;
 //   IndexType getFirstValidBufferIndex() const;
 //   IndexType getNextValidBufferIndex(IndexType idx) const;
 //   void info(Node& n) const;
 
 // I will assume print() works, and I don't plan to use it.
 
-void verifyEmptyGroupNamed( DataGroup * dg, std::string name )
+void verifyEmptyGroupNamed( Group * dg, std::string name )
 {
   EXPECT_EQ( name, dg->getName() );
 
@@ -76,7 +76,7 @@ void verifyEmptyGroupNamed( DataGroup * dg, std::string name )
 }
 
 void verifyBufferIdentity(DataStore * ds,
-                          std::map<IndexType, DataBuffer *> & bs)
+                          std::map<IndexType, Buffer *> & bs)
 {
   int bufcount = bs.size();
 
@@ -122,7 +122,7 @@ TEST(sidre_datastore,default_ctor)
   // The new DataStore should contain exactly one group, the root group.
   // The root group should be named "/" and should contain no views and no groups.
 
-  DataGroup * dg = ds->getRoot();
+  Group * dg = ds->getRoot();
 
   EXPECT_FALSE( AXOM_NULLPTR == dg );
   EXPECT_EQ(dg, dg->getParent() );
@@ -143,7 +143,7 @@ TEST(sidre_datastore,create_destroy_buffers_basic)
 
   // Basic tests
 
-  DataBuffer * dbuff = ds->createBuffer();
+  Buffer * dbuff = ds->createBuffer();
   EXPECT_EQ( 1, static_cast<int>(ds->getNumBuffers() ) );
 
   IndexType bufferIndex = ds->getFirstValidBufferIndex();
@@ -172,21 +172,21 @@ TEST(sidre_datastore,create_destroy_buffers_order)
   DataStore * ds = new DataStore();
   EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers() ) );
 
-  DataBuffer * dbuff = ds->createBuffer();
+  Buffer * dbuff = ds->createBuffer();
   EXPECT_EQ( 1, static_cast<int>(ds->getNumBuffers()) );
 
   IndexType bufferIndex = ds->getFirstValidBufferIndex();
   ds->destroyBuffer(dbuff);
 
   // After destroy, test that buffer index should be available again for reuse.
-  DataBuffer * dbuff2 = ds->createBuffer( axom::sidre::FLOAT32_ID, 16 );
+  Buffer * dbuff2 = ds->createBuffer( axom::sidre::FLOAT32_ID, 16 );
   IndexType d2Index = dbuff2->getIndex();
   EXPECT_EQ(bufferIndex, ds->getFirstValidBufferIndex());
   EXPECT_EQ(bufferIndex, d2Index);
   EXPECT_TRUE(ds->hasBuffer(d2Index));
   EXPECT_EQ(dbuff2, ds->getBuffer(bufferIndex));
 
-  DataBuffer * dbuff3 = ds->createBuffer();
+  Buffer * dbuff3 = ds->createBuffer();
   IndexType d3Index = dbuff3->getIndex();
   EXPECT_EQ( 2, static_cast<int>(ds->getNumBuffers()) );
   EXPECT_TRUE(ds->hasBuffer(d3Index));
@@ -199,8 +199,8 @@ TEST(sidre_datastore,create_destroy_buffers_order)
 
   // Add some more buffers, then try destroying the second one; see if we have
   // the correct count and indices
-  DataBuffer * dbuff4 = ds->createBuffer();
-  DataBuffer * dbuff5 = ds->createBuffer();
+  Buffer * dbuff4 = ds->createBuffer();
+  Buffer * dbuff5 = ds->createBuffer();
   IndexType d4Index = dbuff4->getIndex();
   IndexType d5Index = dbuff5->getIndex();
   EXPECT_EQ( 3, static_cast<int>(ds->getNumBuffers()) );
@@ -230,13 +230,13 @@ TEST(sidre_datastore,create_destroy_buffers_views)
   DataStore * ds = new DataStore();
   EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
 
-  DataBuffer * dbuff3 = ds->createBuffer();
+  Buffer * dbuff3 = ds->createBuffer();
   IndexType d3Index = dbuff3->getIndex();
-  DataBuffer * dbuff4 = ds->createBuffer();
+  Buffer * dbuff4 = ds->createBuffer();
   IndexType d4Index = dbuff4->getIndex();
-  DataBuffer * dbuff5 = ds->createBuffer();
+  Buffer * dbuff5 = ds->createBuffer();
   IndexType d5Index = dbuff5->getIndex();
-  DataBuffer * dbuff6 = ds->createBuffer();
+  Buffer * dbuff6 = ds->createBuffer();
   IndexType d6Index = dbuff6->getIndex();
 
   EXPECT_EQ(dbuff3, ds->getBuffer(d3Index));
@@ -245,11 +245,11 @@ TEST(sidre_datastore,create_destroy_buffers_views)
   EXPECT_EQ(dbuff6, ds->getBuffer(d6Index));
 
   // Create and verify views referencing buffers
-  DataView * vA = ds->getRoot()->createView("vA", dbuff3);
-  DataView * vB = ds->getRoot()->createView("vB", dbuff3);
-  DataView * vC = ds->getRoot()->createView("vC", dbuff4);
-  DataView * vD = ds->getRoot()->createView("vD", dbuff6);
-  DataView * vE = ds->getRoot()->createView("vE", dbuff6);
+  View * vA = ds->getRoot()->createView("vA", dbuff3);
+  View * vB = ds->getRoot()->createView("vB", dbuff3);
+  View * vC = ds->getRoot()->createView("vC", dbuff4);
+  View * vD = ds->getRoot()->createView("vD", dbuff6);
+  View * vE = ds->getRoot()->createView("vE", dbuff6);
   EXPECT_EQ(dbuff3, vA->getBuffer());
   EXPECT_EQ(dbuff3, vB->getBuffer());
   EXPECT_EQ(2, dbuff3->getNumViews());
@@ -298,7 +298,7 @@ TEST(sidre_datastore,create_destroy_buffers_views)
   EXPECT_FALSE(vD->hasBuffer());
   EXPECT_FALSE(vE->hasBuffer());
 
-  // More tests will be found in sidre_datagroup_unit.cpp.
+  // More tests will be found in sidre_group_unit.cpp.
 
   delete ds;
 }
@@ -339,7 +339,7 @@ TEST(sidre_datastore,iterate_buffers_basic)
   EXPECT_EQ(InvalidIndex, ds->getNextValidBufferIndex(InvalidIndex));
 
   // Create one data buffer, verify its index is zero, and that iterators behave as expected
-  DataBuffer * initial = ds->createBuffer();
+  Buffer * initial = ds->createBuffer();
   EXPECT_EQ(0, initial->getIndex());
   EXPECT_EQ(1, static_cast<int>(ds->getNumBuffers()) );
   EXPECT_EQ(0, ds->getFirstValidBufferIndex());
@@ -359,12 +359,12 @@ TEST(sidre_datastore,iterate_buffers_simple)
   DataStore * ds = new DataStore();
   EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
 
-  std::map<IndexType, DataBuffer *> bs;
+  std::map<IndexType, Buffer *> bs;
   int bufcount = 20;
 
   for (int i = 0 ; i < bufcount ; ++i)
   {
-    DataBuffer * b = ds->createBuffer(axom::sidre::FLOAT64_ID, 400*i);
+    Buffer * b = ds->createBuffer(axom::sidre::FLOAT64_ID, 400*i);
     IndexType idx = b->getIndex();
     bs[idx] = b;
   }
@@ -379,21 +379,21 @@ TEST(sidre_datastore,create_delete_buffers_iterate)
   DataStore * ds = new DataStore();
   EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
 
-  std::map<IndexType, DataBuffer *> bs;
+  std::map<IndexType, Buffer *> bs;
   int bufcount = 50;  // Arbitrary number of buffers
 
   // Initially, create some buffers of varying size
   for (int i = 0 ; i < bufcount ; ++i)
   {
-    DataBuffer * b = ds->createBuffer(axom::sidre::FLOAT64_ID,
+    Buffer * b = ds->createBuffer(axom::sidre::FLOAT64_ID,
                                       400*i % 10000)->allocate();
     IndexType idx = b->getIndex();
     bs[idx] = b;
   }
 
   int i = 0;
-  std::map<IndexType, DataBuffer *> nbs;
-  std::map<IndexType, DataBuffer *>::iterator bsit = bs.begin(),
+  std::map<IndexType, Buffer *> nbs;
+  std::map<IndexType, Buffer *>::iterator bsit = bs.begin(),
                                               bsend = bs.end();
   for ( ; bsit != bsend ; ++bsit)
   {
@@ -419,14 +419,14 @@ TEST(sidre_datastore,loop_create_delete_buffers_iterate)
   DataStore * ds = new DataStore();
   EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers()) );
 
-  std::map<IndexType, DataBuffer *> bs;
+  std::map<IndexType, Buffer *> bs;
   std::vector<int> idxlist;
   int initbufcount = 50;  // Arbitrary number of buffers
 
   // Initially, create some buffers of varying size
   for (int i = 0 ; i < initbufcount ; ++i)
   {
-    DataBuffer * b = ds->createBuffer(axom::sidre::FLOAT64_ID,
+    Buffer * b = ds->createBuffer(axom::sidre::FLOAT64_ID,
                                       400*i % 10000)->allocate();
     IndexType idx = b->getIndex();
     bs[idx] = b;
@@ -467,7 +467,7 @@ TEST(sidre_datastore,loop_create_delete_buffers_iterate)
         int addcount = delta;
         for (int i = 0 ; i < addcount ; ++i)
         {
-          DataBuffer * buf =
+          Buffer * buf =
             ds->createBuffer(axom::sidre::FLOAT64_ID, 400)->allocate();
           int addid = buf->getIndex();
           EXPECT_TRUE(ds->hasBuffer(addid));

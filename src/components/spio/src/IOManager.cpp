@@ -25,7 +25,7 @@
 #include "axom_utils/FileUtilities.hpp"
 
 // SiDRe project headers
-#include "sidre/DataGroup.hpp"
+#include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
 #include "sidre/SidreTypes.hpp"
 #include "fmt/fmt.hpp"
@@ -80,7 +80,7 @@ IOManager::~IOManager()
  *
  *************************************************************************
  */
-void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::string& file_string, const std::string& protocol)
+void IOManager::write(sidre::Group * datagroup, int num_files, const std::string& file_string, const std::string& protocol)
 {
   if (m_baton) {
     if (m_baton->getNumFiles() != num_files) {
@@ -163,7 +163,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
  *************************************************************************
  */
 void IOManager::read(
-  sidre::DataGroup * datagroup,
+  sidre::Group * datagroup,
   const std::string& root_file,
   const std::string& protocol)
 {
@@ -199,7 +199,7 @@ void IOManager::read(
  *
  *************************************************************************
  */
-void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
+void IOManager::read(sidre::Group * datagroup, const std::string& root_file)
 {
   std::string protocol = getProtocol(root_file);
 
@@ -213,7 +213,7 @@ void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
  *
  *************************************************************************
  */
-void IOManager::readSidreHDF5(sidre::DataGroup * datagroup, const std::string& root_file)
+void IOManager::readSidreHDF5(sidre::Group * datagroup, const std::string& root_file)
 {
   int num_files = getNumFilesFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
@@ -259,7 +259,7 @@ void IOManager::readSidreHDF5(sidre::DataGroup * datagroup, const std::string& r
 }
 
 
-void IOManager::loadExternalData(sidre::DataGroup * datagroup, const std::string& root_file)
+void IOManager::loadExternalData(sidre::Group * datagroup, const std::string& root_file)
 {
   int num_files = getNumFilesFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
@@ -360,7 +360,7 @@ void IOManager::createRootFile(const std::string& file_base,
 /*
  *************************************************************************
  *
- * Get namescheme pattern for a file holding DataGroup data.
+ * Get namescheme pattern for a file holding Group data.
  *
  *************************************************************************
  */
@@ -544,7 +544,7 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
  *************************************************************************
  */
 
-void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
+void IOManager::writeGroupToRootFile(sidre::Group * group,
                                      const std::string& file_name)
 {
 
@@ -587,7 +587,7 @@ void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
  *************************************************************************
  */
 
-void IOManager::writeGroupToRootFileAtPath(sidre::DataGroup * group,
+void IOManager::writeGroupToRootFileAtPath(sidre::Group * group,
                                            const std::string& file_name,
                                            const std::string& group_path)
 {
@@ -636,7 +636,7 @@ void IOManager::writeGroupToRootFileAtPath(sidre::DataGroup * group,
  *************************************************************************
  */
 
-void IOManager::writeViewToRootFileAtPath(sidre::DataView * view,
+void IOManager::writeViewToRootFileAtPath(sidre::View * view,
                                           const std::string& file_name,
                                           const std::string& group_path)
 {

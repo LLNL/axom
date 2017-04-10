@@ -12,7 +12,7 @@
 
 #include "sidre/sidre.hpp"
 
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
@@ -41,7 +41,7 @@ TEST(sidre_smoke,valid_invalid)
   std::string name("foo");
   EXPECT_TRUE(nameIsValid(name));
 
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
   EXPECT_TRUE(root->getGroupName(idx) == InvalidName);
   EXPECT_TRUE(root->getGroupIndex(name) == InvalidIndex);

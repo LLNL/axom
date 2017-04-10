@@ -16,7 +16,7 @@ module name_module
     ! splicer begin class.Names.module_top
     ! splicer end class.Names.module_top
 
-    type names
+    type FNames
         type(C_PTR), private :: voidptr
         ! splicer begin class.Names.component_part
         ! splicer end class.Names.component_part
@@ -28,7 +28,7 @@ module name_module
         procedure :: associated => names_associated
         ! splicer begin class.Names.type_bound_procedure_part
         ! splicer end class.Names.type_bound_procedure_part
-    end type names
+    end type FNames
 
 
     interface operator (.eq.)
@@ -65,7 +65,7 @@ contains
     ! function_index=0
     subroutine names_method1(obj)
         implicit none
-        class(names) :: obj
+        class(FNames) :: obj
         ! splicer begin class.Names.method.type_method1
         call xxx_tes_names_method1(obj%voidptr)
         ! splicer end class.Names.method.type_method1
@@ -75,7 +75,7 @@ contains
     ! function_index=1
     subroutine names_method2(obj)
         implicit none
-        class(names) :: obj
+        class(FNames) :: obj
         ! splicer begin class.Names.method.method2
         call xxx_tes_names_method2(obj%voidptr)
         ! splicer end class.Names.method.method2
@@ -84,7 +84,7 @@ contains
     function names_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
         implicit none
-        class(names), intent(IN) :: obj
+        class(FNames), intent(IN) :: obj
         type(C_PTR) :: voidptr
         voidptr = obj%voidptr
     end function names_get_instance
@@ -92,7 +92,7 @@ contains
     subroutine names_set_instance(obj, voidptr)
         use iso_c_binding, only: C_PTR
         implicit none
-        class(names), intent(INOUT) :: obj
+        class(FNames), intent(INOUT) :: obj
         type(C_PTR), intent(IN) :: voidptr
         obj%voidptr = voidptr
     end subroutine names_set_instance
@@ -100,7 +100,7 @@ contains
     function names_associated(obj) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
-        class(names), intent(IN) :: obj
+        class(FNames), intent(IN) :: obj
         logical rv
         rv = c_associated(obj%voidptr)
     end function names_associated
@@ -111,7 +111,7 @@ contains
     function names_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
-        type(names), intent(IN) ::a,b
+        type(FNames), intent(IN) ::a,b
         logical :: rv
         if (c_associated(a%voidptr, b%voidptr)) then
             rv = .true.
@@ -123,7 +123,7 @@ contains
     function names_ne(a,b) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
-        type(names), intent(IN) ::a,b
+        type(FNames), intent(IN) ::a,b
         logical :: rv
         if (.not. c_associated(a%voidptr, b%voidptr)) then
             rv = .true.
