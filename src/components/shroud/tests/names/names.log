@@ -1,4 +1,5 @@
 Read yaml names.yaml
+Close testnames_types.yaml
 class Names
 C method void method1()
 C method void method2()

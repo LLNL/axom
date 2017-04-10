@@ -20,6 +20,12 @@ outdir-c-fortran OUTDIR_C_FORTRAN
 outdir-python OUTDIR_PYTHON
        Directory for Python wrapper output files, overrides *--outdir*.
 
+outdir-lua OUTDIR_LUA
+       Directory for Lua wrapper output files, overrides *--outdir*.
+
+outdir-yaml OUTDIR_YAML
+       Directory for YAML output files, overrides *--outdir*.
+
 logdir LOGDIR
        Directory for log files.
        Defaults to current directory.

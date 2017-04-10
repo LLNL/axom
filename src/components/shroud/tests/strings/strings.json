@@ -1672,12 +1672,13 @@
             "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
+                    "cpp_header": "<cstring>", 
                     "cpp_local_var": true, 
                     "post_call": [
                         "delete [] {cpp_var};"
                     ], 
                     "pre_call": [
-                        "int {c_var_len} = strlen({c_var});", 
+                        "int {c_var_len} = std::strlen({c_var});", 
                         "char * {cpp_var} = new char [{c_var_len} + 1];", 
                         "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
                         "{cpp_var}[{c_var_len}] = '\\0';"

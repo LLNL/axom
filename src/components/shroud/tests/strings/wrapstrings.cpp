@@ -2,6 +2,7 @@
 // This is generated code, do not edit
 // wrapstrings.cpp
 #include "wrapstrings.h"
+#include <cstring>
 #include <string>
 #include "shroudrt.hpp"
 #include "strings.hpp"
@@ -64,7 +65,7 @@ void STR_pass_char_ptr(char * dest, int Ndest, const char * src)
 {
 // splicer begin function.pass_char_ptr
     char * SH_dest = new char [Ndest + 1];
-    int Lsrc = strlen(src);
+    int Lsrc = std::strlen(src);
     char * SH_src = new char [Lsrc + 1];
     std::strncpy(SH_src, src, Lsrc);
     SH_src[Lsrc] = '\0';

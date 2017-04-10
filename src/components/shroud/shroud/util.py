@@ -86,6 +86,58 @@ def update(d, u):
     return d
 
 
+def as_yaml(obj, order, indent, output):
+    """Write out obj in YAML syntax
+    obj    - a dictionary or an instance with attributes to dump.
+    order  - order of keys to dump
+    indent - indention level.
+    output - list of output lines.
+
+    This is not really intendent to be a general routine.
+    It has some knowledge of what it expects in order to create
+    a YAML file similar to what a user may write.
+    """
+
+    prefix = "  " * indent
+    for key in order:
+        if isinstance(obj, collections.Mapping):
+            value = obj[key]
+        else:
+            value = getattr(obj, key)
+
+        if not value:
+            # skip empty values such as None or {}
+            pass
+        elif isinstance(value, basestring):
+            # avoid treating strings as a sequence
+            # quote strings which start with { to avoid treating them
+            # as a dictionary.
+            if value.startswith('{'):
+                output.append('{}{} = "{}"'.format(prefix, key, value))
+            else:
+                output.append('{}{} = {}'.format(prefix, key, value))
+        elif isinstance(value, collections.Sequence):
+            # Keys which are are an array of string (code templates)
+            if key in ('declare', 'pre_call', 'pre_call_trim', 'post_call',
+                       'post_parse', 'ctor',
+                   ):
+                output.append('{}{}: |'.format(prefix, key))
+                for i in value:
+                    output.append('{}  {}'.format(prefix, i))
+            else:
+                output.append('{}{}:'.format(prefix, key))
+                for i in value:
+                    output.append('{}- {}'.format(prefix, i))
+        elif isinstance(value, collections.Mapping):
+            output.append('{}{}:'.format(prefix, key))
+            order0 = value.keys()
+            order0.sort()
+            as_yaml(value, order0, indent + 1, output)
+        else:
+            # numbers or booleans
+            output.append('{}{} = {}'.format(prefix, key, value))
+
+
 def extern_C(output, position):
     """Create extern "C" guards for C++
     """
@@ -302,58 +354,65 @@ class Typedef(object):
        i.attr vs d['attr']
     It also initializes default values to avoid  d.get('attr', default)
     """
-    # valid fields
-    defaults = dict(
-        base='unknown',       # Base type: 'string'
-        forward=None,         # Forward declaration
-        typedef=None,         # Initialize from existing type
 
-        cpp_type=None,        # Name of type in C++
-        cpp_to_c='{cpp_var}',  # Expression to convert from C++ to C
-        cpp_header=None,      # Name of C++ header file required for implementation
-                              # For example, if cpp_to_c was a function
-        cpp_local_var=False,
+    # Array of known keys with default values
+    _order = (
+        ('base', 'unknown'),      # Base type: 'string'
+        ('forward', None),        # Forward declaration
+        ('typedef', None),        # Initialize from existing type
 
-        c_type=None,          # Name of type in C
-        c_header=None,        # Name of C header file required for type
-        c_to_cpp='{c_var}',   # Expression to convert from C to C++
-        c_fortran=None,       # Expression to convert from C to Fortran
-        c_statements={},
-        c_return_code=None,
+        ('cpp_type', None),       # Name of type in C++
+        ('cpp_to_c', '{cpp_var}'), # Expression to convert from C++ to C
+        ('cpp_header', None),     # Name of C++ header file required for implementation
+                                  # For example, if cpp_to_c was a function
+        ('cpp_local_var', False),
 
-        f_c_args=None,        # List of argument names to F_C routine
-        f_c_argdecl=None,     # List of declarations to F_C routine
+        ('c_type', None),         # Name of type in C
+        ('c_header', None),       # Name of C header file required for type
+        ('c_to_cpp', '{c_var}'),  # Expression to convert from C to C++
+        ('c_fortran', None),      # Expression to convert from C to Fortran
+        ('c_statements', {}),
+        ('c_return_code', None),
 
-        f_type=None,          # Name of type in Fortran
-        f_to_c=None,          # Expression to convert from Fortran to C
-        f_derived_type=None,  # Fortran derived type name
-        f_args=None,          # Argument in Fortran wrapper to call C.
-        f_module=None,        # Fortran modules needed for type  (dictionary)
-        f_return_code=None,
-        f_kind=None,          # Fortran kind of type
-        f_cast='{f_var}',     # Expression to convert to type
-                              # e.g. intrinsics such as int and real
-        f_statements={},
-        f_helper={},          # helper functions to insert into module as PRIVATE
+        ('f_c_args', None),       # List of argument names to F_C routine
+        ('f_c_argdecl', None),    # List of declarations to F_C routine
 
-        result_as_arg=None,   # override fields when result should be treated as an argument
+        ('f_type', None),         # Name of type in Fortran
+        ('f_to_c', None),         # Expression to convert from Fortran to C
+        ('f_derived_type', None), # Fortran derived type name
+        ('f_args', None),         # Argument in Fortran wrapper to call C.
+        ('f_module', None),       # Fortran modules needed for type  (dictionary)
+        ('f_return_code', None),
+        ('f_kind', None),         # Fortran kind of type
+        ('f_cast', '{f_var}'),    # Expression to convert to type
+                                  # e.g. intrinsics such as int and real
+        ('f_statements', {}),
+        ('f_helper', {}),         # helper functions to insert into module as PRIVATE
+
+        ('result_as_arg', None),  # override fields when result should be treated as an argument
 
         # Python
-        PY_format='O',        # 'format unit' for PyArg_Parse
-        PY_PyTypeObject=None,  # variable name of PyTypeObject instance
-        PY_PyObject=None,     # typedef name of PyObject instance
-        PY_ctor=None,         # expression to create object.
-                              # ex. PyBool_FromLong({rv})
-        PY_to_object=None,    # PyBuild - object=converter(address)
-        PY_from_object=None,  # PyArg_Parse - status=converter(object, address);
-        py_statements={},
+        ('PY_format', 'O'),       # 'format unit' for PyArg_Parse
+        ('PY_PyTypeObject', None), # variable name of PyTypeObject instance
+        ('PY_PyObject', None),    # typedef name of PyObject instance
+        ('PY_ctor', None),        # expression to create object.
+                                  # ex. PyBool_FromLong({rv})
+        ('PY_to_object', None),   # PyBuild - object'=converter(address)
+        ('PY_from_object', None), # PyArg_Parse - status=converter(object, address);
+        ('py_statements', {}),
 
         # Lua
-        LUA_type='LUA_TNONE',
-        LUA_pop='POP',
-        LUA_push='PUSH',
-        LUA_statements={},
-        )
+        ('LUA_type', 'LUA_TNONE'),
+        ('LUA_pop', 'POP'),
+        ('LUA_push', 'PUSH'),
+        ('LUA_statements', {}),
+    )
+
+
+    _keyorder, _valueorder = zip(*_order)
+
+    # valid fields
+    defaults = dict(_order)
 
     def __init__(self, name, **kw):
         self.name = name
@@ -403,6 +462,9 @@ class Typedef(object):
                 else:
                     args.append("{0}={1}".format(key, value))
         return "Typedef('%s', " % self.name + ','.join(args) + ')'
+
+    def __as_yaml__(self, indent, output):
+        as_yaml(self, self._keyorder, indent, output)
 
 
 class Options(object):
