@@ -1,5 +1,5 @@
-Advanced Usage
-==============
+YAML Input
+==========
 
 How code is generated
 ---------------------

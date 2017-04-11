@@ -18,7 +18,7 @@ Contents:
 
    introduction
    tutorial
-   advanced
+   input
    types
    reference
    previouswork

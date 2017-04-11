@@ -10,6 +10,10 @@ Other types, such as logical and in particular strings, require additional
 conversions.
 
 
+Logical Type
+------------
+
+The f_statements is::
 
                 f_statements=dict(
                     intent_in=dict(
