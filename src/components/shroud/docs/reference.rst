@@ -422,8 +422,21 @@ Option Templates
 Templates are set in options then expanded to assign to the format 
 dictionary.
 
+C_header_filename_class_template
+    ``wrap{cpp_class}.h``
+
+C_header_filename_library_template
+   ``wrap{library}.h``
+
+C_impl_filename_class_template
+    ``wrap{cpp_class}.cpp``
+
+C_impl_filename_library_template
+    ``wrap{library}.cpp``
+
 C_name_template
     ``{C_prefix}{class_name}_{underscore_name}{function_suffix}``
+
 
 F_C_name_template
     ``{F_C_prefix}{class_name}{underscore_name}{function_suffix}``
@@ -431,63 +444,46 @@ F_C_name_template
 F_name_generic_template
     ``{underscore_name}``
 
+F_impl_filename_class_template
+    ``wrapf{cpp_class}.f``
+
+F_impl_filename_library_template
+    ``wrapf{library_lower}.f``
+
+F_name_impl_template
+    ``{name_class}{underscore_name}{function_suffix}``
+
+F_module_name_class_template
+    ``{class_lower}_mod``
+
+F_module_name_library_template
+    ``{library_lower}_mod``
+
 F_name_impl_template
     ``{class_name}{underscore_name}{function_suffix}``
 
 F_name_method_template
     ``{underscore_name}{function_suffix}``
 
-PY_name_impl
-    PY_class1_method1
-
-
-
-
-C_header_filename_library_template
-   ``wrap{library}.h``
-
-C_impl_filename_library_template
-    ``wrap{library}.cpp``
-
-C_header_filename_class_template
-    ``wrap{cpp_class}.h``
-
-C_impl_filename_class_template
-    ``wrap{cpp_class}.cpp``
-
-
-F_module_name_library_template
-    ``{library_lower}_mod``
-
-F_impl_filename_library_template
-    ``wrapf{library_lower}.f``
-
-F_module_name_class_template
-    ``{class_lower}_mod``
-
-F_impl_filename_class_template
-    ``wrapf{cpp_class}.f``
-
-F_name_impl_template
-    ``{name_class}{underscore_name}{function_suffix}``
-
-
-LUA_module_filename_template
-    ``lua{library}module.cpp``
-
-LUA_header_filename_template
-    ``lua{library}module.hpp``
-
-LUA_userdata_type_template
-    ``{LUA_prefix}{cpp_class}_Type``
-
-LUA_userdata_member_template
-    Name of pointer to class instance in userdata.
-    ``self``
 
 LUA_class_reg_template
     Name of `luaL_Reg` array of function names for a class.
     ``{LUA_prefix}{cpp_class}_Reg``
+
+LUA_ctor_name_template
+    Name of constructor for a class.
+    Added to the library's table.
+    ``{cpp_class}``
+
+LUA_header_filename_template
+    ``lua{library}module.hpp``
+
+LUA_metadata_template
+    Name of metatable for a class.
+    ``{cpp_class}.metatable``
+
+LUA_module_filename_template
+    ``lua{library}module.cpp``
 
 LUA_module_name
     Name of Lua module for library.
@@ -497,14 +493,11 @@ LUA_module_reg_template
     Name of `luaL_Reg` array of function names for a library.
     ``{LUA_prefix}{library}_Reg``
 
-LUA_metadata_template
-    Name of metatable for a class.
-    ``{cpp_class}.metatable``
-
-LUA_ctor_name_template
-    Name of constructor for a class.
-    Added to the library's table.
-    ``{cpp_class}``
+LUA_name_impl_template
+    Name of implementation function.
+    All overloaded function use the same Lua wrapper so 
+    *function_suffix* is not needed.
+    ``{LUA_prefix}{class_name}{underscore_name}``
 
 LUA_name_template
     Name of function as know by Lua.
@@ -512,12 +505,16 @@ LUA_name_template
     *function_suffix* is not needed.
     ``{function_name}``
 
-LUA_name_impl_template
-    Name of implementation function.
-    All overloaded function use the same Lua wrapper so 
-    *function_suffix* is not needed.
-    ``{LUA_prefix}{class_name}{underscore_name}``
+LUA_userdata_type_template
+    ``{LUA_prefix}{cpp_class}_Type``
 
+LUA_userdata_member_template
+    Name of pointer to class instance in userdata.
+    ``self``
+
+
+PY_name_impl
+    PY_class1_method1
 
 
 Types Dictionary

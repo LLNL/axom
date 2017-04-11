@@ -28,9 +28,9 @@ should be quoted::
     name : "{fmt}"
 
 Some macros consist of blocks of code.  YAML provides a syntax for 
-add multiple lines::
+add multiple lines while preserving newlines::
 
-    C_invalid_name: >
+    C_invalid_name: |
         if (! isNameValid({cpp_var})) {{
             return NULL;
         }}

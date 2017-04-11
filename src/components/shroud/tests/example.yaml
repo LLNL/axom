@@ -256,11 +256,11 @@ functions:
 
 ######################################################################
 patterns:
-    C_invalid_name: >
+    C_invalid_name: |
         if (! isNameValid({cpp_var})) {{
             return NULL;
         }}
-    PY_invalid_name: >
+    PY_invalid_name: |
         if (! isNameValid({cpp_var})) {{
             PyErr_SetString(PyExc_KeyError, "XXX need value of name");
             return NULL;
