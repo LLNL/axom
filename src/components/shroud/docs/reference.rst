@@ -337,9 +337,6 @@ C_return_type
 C_this
     Name of the C object argument.  Defauls to ``self``.
 
-class_name_template
-    ``{class_lower}_``
-
 CPP_this
     Name of the C++ object pointer set from the *C_this* argument.
     Defauls to ``SH_this``.
@@ -437,6 +434,10 @@ C_impl_filename_library_template
 C_name_template
     ``{C_prefix}{class_name}_{underscore_name}{function_suffix}``
 
+class_name_template
+    Class component for function names.
+    Will be blank if the function is not in a class.
+    ``{class_lower}_``
 
 F_C_name_template
     ``{F_C_prefix}{class_name}{underscore_name}{function_suffix}``
