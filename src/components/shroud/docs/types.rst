@@ -13,11 +13,15 @@ conversions.
 
                 f_statements=dict(
                     intent_in=dict(
-                        declare=[
-                            'logical(C_BOOL) {c_var}',
-                            ],
+                        c_local_var=True,
                         pre_call=[
                             '{c_var} = {f_var}  ! coerce to C_BOOL',
+                            ],
+                        ),
+                    intent_out=dict(
+                        c_local_var=True,
+                        post_call=[
+                            '{f_var} = {c_var}  ! coerce to logical',
                             ],
                         ),
                     result=dict(
@@ -25,3 +29,120 @@ conversions.
                         need_wrapper=True,
                         ),
                     ),
+
+
+
+Character Type
+--------------
+
+Fortran, C, and C++ all have their own semantics for character variables.
+
+  * Fortran ``character`` variables know their length and are blank filled
+  * C ``char *`` variables are assumed to be ``NULL`` terminated.
+  * C++ ``std::string`` know their own length and are ``NULL`` terminated.
+
+It is not sufficient to pass an address between Fortran and C++ like
+it is with other native types.  In order to get ideomatic behavior in
+the Fortran wrappers it is often necessary to copy the values.  This
+is to account for blank filled vs ``NULL`` terminated.  It also helps
+support ``const`` vs non-``const`` strings.
+
+A C 'bufferify' wrapper is created which accepts the address of the
+Fortran character variable with a ``int`` argument for the declared
+length of the variable (``len``) and/or a ``int`` argument for the
+length with blanks trimmed off (``len_trim``).
+The wrapper then uses these arguments to create a ``NULL`` terminated string
+or a std::string instance.
+
+Character Arguments
+^^^^^^^^^^^^^^^^^^^
+
+When an argument has intent *out*, then *len* attribute is added.
+This allows the wrapper routine to know how much space as available for the output string.
+
+When the argument has intent *in*, then the *len_trim* attribute is added to the *bufferify*
+wrapper only.  The non-bufferify version will use ``strlen`` to compute the length of data.
+
+Character Function
+^^^^^^^^^^^^^^^^^^
+
+.. This stuff was moved here from the tutorial and should be cleaned up
+
+This attribute marks the routine as Fortran ``pure`` meaning there are
+no side effects.  This is necessary because the function will be
+called twice.  Once to compute the length of the result and once to
+return the result.
+
+The length of result variable ``rv`` is computed by calling the
+function.  Once the result is declared, ``tut_function4a`` is called
+which returns a ``type(C_PTR)``.  This result is dereferenced by
+``fstr`` and copied into ``rv``.
+
+
+.. XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+It is possible to avoid calling the C++ function twice by passing in
+another argument to hold the result.  It would be up to the caller to
+ensure it is long enough.  This is done by setting the option
+**F_string_result_as_arg** to true.  Like all options, it may also be
+set in the global **options** and it will apply to all functions::
+
+.. update code examples from current output
+
+
+
+
+
+
+    - decl: const std::string& Function4b(
+        const std::string& arg1,
+        const std::string& arg2)
+      options:
+        F_string_result_as_arg: output
+
+The generated Fortran wrapper::
+
+    subroutine function4b(arg1, arg2, output)
+        use iso_c_binding, only : C_INT
+        implicit none
+        character(*), intent(IN) :: arg1
+        character(*), intent(IN) :: arg2
+        character(*), intent(OUT) :: output
+        rv = c_function4b_bufferify(  &
+            arg1,  &
+            len_trim(arg1),  &
+            arg2,  &
+            len_trim(arg2),
+            output,  &
+            len(output))
+    end subroutine function4b
+
+The generated C wrapper::
+
+    void TUT_function4b_bufferify(const char * arg1, int Larg1,
+                                  const char * arg2, int Larg2,
+                                  char * output, int Loutput) {
+        const std::string SH_arg1(arg1, Larg1);
+        const std::string SH_arg2(arg2, Larg2);
+        const std::string & rv = Function4b(SH_arg1, SH_arg2);
+        shroud_FccCopy(output, Loutput, rv.c_str());
+        return;
+    }
+
+
+ ``FccCopy`` will copy the result into ``output`` and blank fill.
+
+
+.. char **
+
+
+Complex Type
+------------
+
+
+Derived Types
+-------------
+
+
+
+* chained function calls

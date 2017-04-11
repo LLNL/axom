@@ -198,7 +198,7 @@ class Schema(object):
 
         # set default values for fields which may be unset.
         fmt_library.class_name = ''
-#        fmt_library.ptr = ''
+#        fmt_library.c_ptr = ''
 #        fmt_library.c_const = ''
         fmt_library.CPP_this_call = ''
         fmt_library.CPP_template = ''

@@ -18,8 +18,8 @@ Contents:
 
    introduction
    tutorial
-   types
    advanced
+   types
    reference
    previouswork
    futurework
