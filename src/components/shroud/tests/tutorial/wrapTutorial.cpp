@@ -49,12 +49,12 @@ bool TUT_function3(bool arg)
 // splicer end function.function3
 }
 
-// void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out))
+// void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out), bool * arg3+intent(inout))
 // function_index=7
-void TUT_function3b(const bool arg1, bool * arg2)
+void TUT_function3b(const bool arg1, bool * arg2, bool * arg3)
 {
 // splicer begin function.function3b
-    Function3b(arg1, arg2);
+    Function3b(arg1, arg2, arg3);
     return;
 // splicer end function.function3b
 }

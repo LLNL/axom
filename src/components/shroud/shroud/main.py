@@ -305,17 +305,13 @@ class Schema(object):
                 f_module=dict(iso_c_binding=['C_BOOL']),
                 f_statements=dict(
                     intent_in=dict(
-                        declare=[
-                            'logical(C_BOOL) {c_var}',
-                            ],
+                        c_local_var=True,
                         pre_call=[
                             '{c_var} = {f_var}  ! coerce to C_BOOL',
                             ],
                         ),
                     intent_out=dict(
-                        declare=[
-                            'logical(C_BOOL) {c_var}',
-                            ],
+                        c_local_var=True,
                         post_call=[
                             '{f_var} = {c_var}  ! coerce to logical',
                             ],

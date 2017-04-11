@@ -104,12 +104,13 @@ module tutorial_mod
             logical(C_BOOL) :: SH_rv
         end function c_function3
 
-        subroutine c_function3b(arg1, arg2) &
+        subroutine c_function3b(arg1, arg2, arg3) &
                 bind(C, name="TUT_function3b")
             use iso_c_binding
             implicit none
             logical(C_BOOL), value, intent(IN) :: arg1
             logical(C_BOOL), intent(OUT) :: arg2
+            logical(C_BOOL), intent(INOUT) :: arg3
         end subroutine c_function3b
 
         subroutine c_function4a_bufferify(arg1, Larg1, arg2, Larg2, SH_F_rv, LSH_F_rv) &
@@ -492,22 +493,27 @@ contains
         ! splicer end function3
     end function function3
 
-    ! void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out))
+    ! void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out), bool * arg3+intent(inout))
     ! function_index=7
-    subroutine function3b(arg1, arg2)
+    subroutine function3b(arg1, arg2, arg3)
         use iso_c_binding, only : C_BOOL
         implicit none
         logical, value, intent(IN) :: arg1
         logical(C_BOOL) SH_arg1
         logical, intent(OUT) :: arg2
         logical(C_BOOL) SH_arg2
+        logical, intent(INOUT) :: arg3
+        logical(C_BOOL) SH_arg3
         SH_arg1 = arg1  ! coerce to C_BOOL
+        SH_arg3 = arg3  ! coerce to C_BOOL
         ! splicer begin function3b
         call c_function3b(  &
             SH_arg1,  &
-            SH_arg2)
+            SH_arg2,  &
+            SH_arg3)
         ! splicer end function3b
         arg2 = SH_arg2  ! coerce to logical
+        arg3 = SH_arg3  ! coerce to logical
     end subroutine function3b
 
     ! const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))

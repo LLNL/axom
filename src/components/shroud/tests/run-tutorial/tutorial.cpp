@@ -35,10 +35,11 @@ bool Function3(bool arg)
     return ! arg;
 }
 
-void Function3b(const bool arg1, bool *arg2)
+void Function3b(const bool arg1, bool *arg2, bool *arg3)
 {
     last_function_called = "Function3b";
     *arg2 = ! arg1;
+    *arg3 = ! *arg3;
     return;
 }
 

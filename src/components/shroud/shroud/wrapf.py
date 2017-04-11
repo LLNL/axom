@@ -739,6 +739,16 @@ class Wrapf(util.WrapperMixin):
                 if c_attrs['intent'] in ['inout', 'out']:
                     slist.append('intent_out')
 
+                # Create a local C variable if necessary
+                have_c_local_var = False
+                for intent in slist:
+                    have_c_local_var = have_c_local_var or \
+                        f_statements.get(intent, {}).get('c_local_var', False)
+                if have_c_local_var:
+                    fmt_arg.c_var = 'SH_' + fmt_arg.f_var
+                    arg_f_decl.append('{} {}'.format(
+                        arg_typedef.c_fortran, fmt_arg.c_var))
+
                 for intent in slist:
                     cmd_list = f_statements.get(intent, {}).get('declare', [])
                     if cmd_list:

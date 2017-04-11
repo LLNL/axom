@@ -694,8 +694,16 @@ f_statement
     The second layer is *declare*, *pre_call*, and *post_call*
     The entries are a list of format strings.
 
+    c_local_var
+        If true, generate a local variable using the C declaration for the argument.
+        This variable can be used by the pre_call and post_call statements.
+        A single declaration will be added even if with ``intent(inout)``.
+
     declare
         A list of declarations needed by *pre_call* or *f_post_call*.
+        Usually a *c_local_var* is sufficient.
+        If both *pre_call* and *post_call* are specified then both *declare*
+        clause will be added and thus should not declare the same variable.
 
     pre_call
         Statement to execute before call, often to coerce types

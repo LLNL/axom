@@ -8,7 +8,7 @@ program tester
   implicit none
   logical ok
 
-  logical rv_logical
+  logical rv_logical, wrk_logical
   integer rv_integer
   integer(C_INT) rv_int
   real(C_DOUBLE) rv_double
@@ -46,12 +46,16 @@ contains
     call assert_true(rv_logical)
 
     rv_logical = .true.
-    call function3b(.true., rv_logical)
+    wrk_logical = .true.
+    call function3b(.true., rv_logical, wrk_logical)
     call assert_false(rv_logical)
+    call assert_false(wrk_logical)
 
     rv_logical = .false.
-    call function3b(.false., rv_logical)
+    wrk_logical = .false.
+    call function3b(.false., rv_logical, wrk_logical)
     call assert_true(rv_logical)
+    call assert_true(wrk_logical)
 
     call assert_true( function4a("dog", "cat") == "dogcat")
 

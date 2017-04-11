@@ -476,17 +476,13 @@
             }, 
             "f_statements": {
                 "intent_in": {
-                    "declare": [
-                        "logical(C_BOOL) {c_var}"
-                    ], 
+                    "c_local_var": true, 
                     "pre_call": [
                         "{c_var} = {f_var}  ! coerce to C_BOOL"
                     ]
                 }, 
                 "intent_out": {
-                    "declare": [
-                        "logical(C_BOOL) {c_var}"
-                    ], 
+                    "c_local_var": true, 
                     "post_call": [
                         "{f_var} = {c_var}  ! coerce to logical"
                     ]

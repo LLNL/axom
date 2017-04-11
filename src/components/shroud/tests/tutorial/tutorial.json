@@ -560,7 +560,7 @@
             }
         }, 
         {
-            "_decl": "void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out))", 
+            "_decl": "void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out), bool * arg3+intent(inout))", 
             "_function_index": 7, 
             "_subprogram": "subroutine", 
             "args": [
@@ -607,22 +607,44 @@
                     }, 
                     "name": "arg2", 
                     "type": "bool"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "inout", 
+                        "ptr": true, 
+                        "value": false
+                    }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "arg3", 
+                        "c_var_len": "Larg3", 
+                        "c_var_num": "Narg3", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg3"
+                    }, 
+                    "fmtf": {
+                        "c_var": "SH_arg3", 
+                        "f_var": "arg3"
+                    }, 
+                    "name": "arg3", 
+                    "type": "bool"
                 }
             ], 
             "attrs": {}, 
-            "decl": "void Function3b(const bool arg1, bool *arg2+intent(out))", 
+            "decl": "void Function3b(const bool arg1, bool *arg2+intent(out), bool *arg3+intent(inout))", 
             "fmt": {
-                "C_call_list": "arg1, arg2", 
+                "C_call_list": "arg1, arg2, arg3", 
                 "C_name": "TUT_function3b", 
                 "C_object": "", 
-                "C_prototype": "const bool arg1, bool * arg2", 
+                "C_prototype": "const bool arg1, bool * arg2, bool * arg3", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_function3b", 
                 "F_C_name": "c_function3b", 
-                "F_arg_c_call": "SH_arg1, SH_arg2", 
-                "F_arg_c_call_tab": "\tSH_arg1\tSH_arg2", 
-                "F_arguments": "arg1, arg2", 
+                "F_arg_c_call": "SH_arg1, SH_arg2, SH_arg3", 
+                "F_arg_c_call_tab": "\tSH_arg1\tSH_arg2\tSH_arg3", 
+                "F_arguments": "arg1, arg2, arg3", 
                 "F_name_generic": "function3b", 
                 "F_name_impl": "function3b", 
                 "F_name_method": "function3b", 
@@ -3720,17 +3742,13 @@
             }, 
             "f_statements": {
                 "intent_in": {
-                    "declare": [
-                        "logical(C_BOOL) {c_var}"
-                    ], 
+                    "c_local_var": true, 
                     "pre_call": [
                         "{c_var} = {f_var}  ! coerce to C_BOOL"
                     ]
                 }, 
                 "intent_out": {
-                    "declare": [
-                        "logical(C_BOOL) {c_var}"
-                    ], 
+                    "c_local_var": true, 
                     "post_call": [
                         "{f_var} = {c_var}  ! coerce to logical"
                     ]
