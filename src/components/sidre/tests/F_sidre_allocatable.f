@@ -19,9 +19,9 @@ contains
     integer, allocatable :: iarray(:)
     integer, pointer :: ipointer(:)
 
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview)  view
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView)  view
     integer type
     integer num_elements
     integer i
@@ -66,9 +66,9 @@ contains
     integer, allocatable :: iarray(:)
     integer, pointer :: ipointer(:)
 
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview)  view
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView)  view
     integer type
     integer num_elements
     integer i
@@ -119,9 +119,9 @@ contains
     integer, allocatable :: iarray(:,:,:)
     integer, pointer :: ipointer(:,:,:)
 
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview)  view
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView)  view
     integer type
     integer num_elements
     integer i, j, k
@@ -180,9 +180,9 @@ contains
     integer :: iarray(10)
     integer, pointer :: ipointer(:)
 
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview)  view
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView)  view
     integer type
     integer num_elements
     integer i
@@ -219,9 +219,9 @@ contains
     real(C_DOUBLE), allocatable :: darray(:)
     real(C_DOUBLE), pointer :: dpointer(:)
 
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview)  view
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView)  view
     integer num_elements
     integer type
     integer i
@@ -262,9 +262,9 @@ contains
   subroutine datastore_int_3d
     integer, pointer :: ipointer(:,:,:)
 
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview)  view
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView)  view
     integer type
     integer num_elements
     integer i, j, k

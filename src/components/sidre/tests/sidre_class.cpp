@@ -14,10 +14,10 @@
 
 #include "sidre/sidre.hpp"
 
-using axom::sidre::DataBuffer;
-using axom::sidre::DataGroup;
+using axom::sidre::Buffer;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::DataView;
+using axom::sidre::View;
 using axom::sidre::DataType;
 
 namespace classtest
@@ -41,15 +41,15 @@ public:
 
   std::vector<int>& getIData() { return m_idata; }
 
-  void copyToGroup(DataGroup * gp)
+  void copyToGroup(Group * gp)
   {
     gp->createView("idata",
                    &m_idata[0])->apply(DataType::c_int(m_idata.size()));
   }
 
-  void copyFromGroup(DataGroup * gp)
+  void copyFromGroup(Group * gp)
   {
-    DataView * iview = gp->getView("idata");
+    View * iview = gp->getView("idata");
     size_t ilen = iview->getNumElements();
     m_idata = std::vector<int>(ilen);
 
@@ -65,7 +65,7 @@ public:
     checkState( &(class1.m_idata[0]) );
   }
 
-  void checkState(DataGroup * gp)
+  void checkState(Group * gp)
   {
     int * idata_chk =
       gp->getView("idata")->getData();
@@ -108,7 +108,7 @@ public:
   std::vector<double>& getDData() { return m_ddata; }
   Class1& getClass1() { return m_class1; }
 
-  void copyToGroup(DataGroup * gp)
+  void copyToGroup(Group * gp)
   {
     gp->createView("idata", &m_idata[0])->
 //     apply(DataType::c_int(m_idata.size()));
@@ -117,14 +117,14 @@ public:
 //     apply(DataType::c_double(m_ddata.size()));
     apply(axom::sidre::DOUBLE_ID, m_ddata.size());
 
-    DataGroup * gp1 = gp->createGroup("myclass1");
+    Group * gp1 = gp->createGroup("myclass1");
 
     m_class1.copyToGroup(gp1);
   }
 
-  void copyFromGroup(DataGroup * gp)
+  void copyFromGroup(Group * gp)
   {
-    DataView * iview = gp->getView("idata");
+    View * iview = gp->getView("idata");
     size_t ilen = iview->getBuffer()->getTotalBytes() /
                   sizeof(CONDUIT_NATIVE_INT);
     m_idata = std::vector<int>(ilen);
@@ -135,7 +135,7 @@ public:
       m_idata[ii] = g_idata[ii];
     }
 
-    DataView * dview = gp->getView("ddata");
+    View * dview = gp->getView("ddata");
     size_t dlen = dview->getNumElements();
     m_ddata = std::vector<double>(dlen);
 
@@ -145,7 +145,7 @@ public:
       m_ddata[ii] = g_ddata[ii];
     }
 
-    DataGroup * gp1 = gp->getGroup("myclass1");
+    Group * gp1 = gp->getGroup("myclass1");
     m_class1.copyFromGroup(gp1);
   }
 
@@ -155,13 +155,13 @@ public:
     m_class1.checkState( class2.m_class1 );
   }
 
-  void checkState(DataGroup * gp)
+  void checkState(Group * gp)
   {
     int * idata_chk = gp->getView("idata")->getData();
     double * ddata_chk = gp->getView("ddata")->getData();
     checkState(idata_chk, ddata_chk);
 
-    DataGroup * gp1 = gp->getGroup("myclass1");
+    Group * gp1 = gp->getGroup("myclass1");
     m_class1.checkState(gp1);
   }
 
@@ -205,9 +205,9 @@ TEST(sidre_class, class_to_group)
   myclass2.checkState(myclass2);
 
   DataStore * ds   = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
-  DataGroup * c2group = root->createGroup("myclass2");
+  Group * c2group = root->createGroup("myclass2");
   myclass2.copyToGroup(c2group);
 
   ds->print();
@@ -234,9 +234,9 @@ TEST(sidre_class, save_load_class_to_group)
   Class2 myclass2(len);
 
   DataStore * ds   = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
-  DataGroup * c2group = root->createGroup("myclass2");
+  Group * c2group = root->createGroup("myclass2");
   myclass2.copyToGroup(c2group);
 
   EXPECT_EQ(c2group->getNumViews(), 2u);
@@ -254,7 +254,7 @@ TEST(sidre_class, save_load_class_to_group)
 
   ds2->print();
 
-  DataGroup * load_myclass2 = ds2->getRoot()->getGroup("myclass2");
+  Group * load_myclass2 = ds2->getRoot()->getGroup("myclass2");
   Class2 load_class2;
 
   load_class2.copyFromGroup(load_myclass2);

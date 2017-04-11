@@ -251,7 +251,7 @@ CommandLineArguments parseArguments(int argc, char** argv)
 }
 
 /** Loads the baseline dataset into the given sidre group */
-void loadBaselineData(axom::sidre::DataGroup* grp, CommandLineArguments& args)
+void loadBaselineData(axom::sidre::Group* grp, CommandLineArguments& args)
 {
     axom::spio::IOManager reader(MPI_COMM_WORLD);
     reader.read(grp, args.baselineRoot, "sidre_hdf5");
@@ -270,7 +270,7 @@ void loadBaselineData(axom::sidre::DataGroup* grp, CommandLineArguments& args)
     }
     else
     {
-        axom::sidre::DataView* view = grp->getView("mesh_bounding_box");
+        axom::sidre::View* view = grp->getView("mesh_bounding_box");
         if(view->getNumElements() != 6)
             SLIC_ERROR("Bounding box must contain six doubles");
 
@@ -285,7 +285,7 @@ void loadBaselineData(axom::sidre::DataGroup* grp, CommandLineArguments& args)
     }
     else
     {
-        axom::sidre::DataView* view = grp->getView("query_resolution");
+        axom::sidre::View* view = grp->getView("query_resolution");
         if(view->getNumElements() != 3)
             SLIC_ERROR("Query resolution must contain three ints");
 
@@ -535,7 +535,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
  * \return True if all results agree, False otherwise.
  * \note When there are differences, the first few are logged
  */
-bool compareToBaselineResults(axom::sidre::DataGroup* grp, CommandLineArguments& clargs)
+bool compareToBaselineResults(axom::sidre::Group* grp, CommandLineArguments& clargs)
 {
     SLIC_ASSERT( grp != AXOM_NULLPTR);
     SLIC_ASSERT( clargs.hasQueryMesh());
@@ -631,7 +631,7 @@ bool compareToBaselineResults(axom::sidre::DataGroup* grp, CommandLineArguments&
  *       and a corresponding folder ./<mesh>_<res>_baseline/
  *       (both in the same directory)
  */
-void saveBaseline(axom::sidre::DataGroup* grp, CommandLineArguments& clargs)
+void saveBaseline(axom::sidre::Group* grp, CommandLineArguments& clargs)
 {
     SLIC_ASSERT( grp != AXOM_NULLPTR);
     SLIC_ASSERT( clargs.hasQueryMesh());
@@ -645,7 +645,7 @@ void saveBaseline(axom::sidre::DataGroup* grp, CommandLineArguments& clargs)
 
     grp->createViewString("mesh_name", meshName);
 
-    axom::sidre::DataView* view = AXOM_NULLPTR;
+    axom::sidre::View* view = AXOM_NULLPTR;
 
     view = grp->createView("mesh_bounding_box", axom::sidre::DOUBLE_ID, 6)->allocate();
     double* bb = view->getArray();

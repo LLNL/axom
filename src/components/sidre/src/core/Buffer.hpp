@@ -11,15 +11,15 @@
 /*!
  ******************************************************************************
  *
- * \file DataBuffer.hpp
+ * \file Buffer.hpp
  *
- * \brief   Header file containing definition of DataBuffer class.
+ * \brief   Header file containing definition of Buffer class.
  *
  ******************************************************************************
  */
 
-#ifndef DATABUFFER_HPP_
-#define DATABUFFER_HPP_
+#ifndef BUFFER_HPP_
+#define BUFFER_HPP_
 
 // Standard C++ headers
 #include <vector>
@@ -38,29 +38,29 @@ namespace sidre
 {
 
 class DataStore;
-class DataView;
+class View;
 
 /*!
- * \class DataBuffer
+ * \class Buffer
  *
- * \brief DataBuffer is a container that describes and holds data in memory.
+ * \brief Buffer is a container that describes and holds data in memory.
  *
- * The DataBuffer class has the following properties:
+ * The Buffer class has the following properties:
  *
- *    - DataBuffer objects can only be created using the DataStore
- *      createBuffer() methods. The DataBuffer ctor is private.
- *    - A DataBuffer object has a unique identifier within a DataStore,
+ *    - Buffer objects can only be created using the DataStore
+ *      createBuffer() methods. The Buffer ctor is private.
+ *    - A Buffer object has a unique identifier within a DataStore,
  *      which is assigned by the DataStore when the Buffer is created.
- *    - The data owned by a DataBuffer is unique to that DataBuffer
- *      object; i.e.,  DataBuffers do not share their data.
- *    - Typical usage is to describe the data a DataBuffer will hold and then
- *      allocate it by calling one of the DataBuffer allocate or
+ *    - The data owned by a Buffer is unique to that Buffer
+ *      object; i.e.,  Buffers do not share their data.
+ *    - Typical usage is to describe the data a Buffer will hold and then
+ *      allocate it by calling one of the Buffer allocate or
  *      reallocate methods.
- *    - A DataBuffer object maintains a collection of DataViews that
- *      refer to its data. These references are created when a DataBuffer
- *      object is attached to a DataView.
+ *    - A Buffer object maintains a collection of Views that
+ *      refer to its data. These references are created when a Buffer
+ *      object is attached to a View.
  */
-class DataBuffer
+class Buffer
 {
 
 public:
@@ -70,8 +70,8 @@ public:
    * private members.
    */
   friend class DataStore;
-  friend class DataGroup;
-  friend class DataView;
+  friend class Group;
+  friend class View;
 
 //@{
 //!  @name Basic query and accessor methods
@@ -190,18 +190,18 @@ public:
    * If Buffer is already allocated or given number of elements is < 0,
    * method is a no-op.
    *
-   * \return pointer to this DataBuffer object.
+   * \return pointer to this Buffer object.
    */
-  DataBuffer * describe(TypeID type, SidreLength num_elems);
+  Buffer * describe(TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Allocate data for a Buffer.
    *
    * If the Buffer is not described or already allocated the method is a no-op.
    *
-   * \return pointer to this DataBuffer object.
+   * \return pointer to this Buffer object.
    */
-  DataBuffer * allocate();
+  Buffer * allocate();
 
   /*!
    * \brief Allocate Buffer with data type and number of elements.
@@ -210,9 +210,9 @@ public:
    *
    * Method is a no-op under the same conditions as either of those methods.
    *
-   * \return pointer to this DataBuffer object.
+   * \return pointer to this Buffer object.
    */
-  DataBuffer * allocate(TypeID type, SidreLength num_elems);
+  Buffer * allocate(TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Reallocate data to given number of elements.
@@ -223,9 +223,9 @@ public:
    * If given number of elements < 0, or the Buffer is not already described
    * with type information, this method is a no-op.
    *
-   * \return pointer to this DataBuffer object.
+   * \return pointer to this Buffer object.
    */
-  DataBuffer * reallocate(SidreLength num_elems);
+  Buffer * reallocate(SidreLength num_elems);
 
   /*!
    * \brief Deallocate data in a Buffer.
@@ -240,9 +240,9 @@ public:
    *
    * If the Buffer is not allocated, method is a no-op.
    *
-   * \return pointer to this DataBuffer object.
+   * \return pointer to this Buffer object.
    */
-  DataBuffer * deallocate();
+  Buffer * deallocate();
 
 //@}
 
@@ -253,9 +253,9 @@ public:
    * If nbytes < 0 or nbytes > getTotalBytes(), or give ptr is null,
    * method is a no-op.
    *
-   * \return pointer to this DataBuffer object.
+   * \return pointer to this Buffer object.
    */
-  DataBuffer * copyBytesIntoBuffer(const void * src, SidreLength nbytes);
+  Buffer * copyBytesIntoBuffer(const void * src, SidreLength nbytes);
 
   /*!
    * \brief Copy Buffer description to given Conduit node.
@@ -285,38 +285,38 @@ public:
 
 
 private:
-  DISABLE_DEFAULT_CTOR(DataBuffer);
-  DISABLE_MOVE_AND_ASSIGNMENT(DataBuffer);
+  DISABLE_DEFAULT_CTOR(Buffer);
+  DISABLE_MOVE_AND_ASSIGNMENT(Buffer);
 
   /*!
    *  \brief Private ctor assigns id generated by DataStore (must be
    *         unique among Buffers in DataStore.
    */
-  DataBuffer( IndexType uid );
+  Buffer( IndexType uid );
 
   /*!
    * \brief Private copy ctor.
    */
-  DataBuffer(const DataBuffer& source );
+  Buffer(const Buffer& source );
 
   /*!
    * \brief Private dtor.
    */
-  ~DataBuffer();
+  ~Buffer();
 
   /*!
    * \brief Private method to attach Buffer to View.
    *
    * Note: If View's Buffer pointer does not match 'this', method is a no-op.
    */
-  void attachToView( DataView * view );
+  void attachToView( View * view );
 
   /*!
    * \brief Private method to detach Buffer from View.
    *
    * Note: If View's Buffer pointer does not match 'this', method is a no-op.
    */
-  void detachFromView( DataView * view );
+  void detachFromView( View * view );
 
   /*!
    * \brief Private method to detach Buffer from all Views it is attached to.
@@ -343,7 +343,7 @@ private:
   IndexType m_index;
 
   /// Container of Views attached to this Buffer.
-  std::vector<DataView *> m_views;
+  std::vector<View *> m_views;
 
   /// Conduit Node that holds Buffer data.
   Node m_node;
@@ -353,4 +353,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* DATABUFFER_HPP_ */
+#endif /* BUFFER_HPP_ */

@@ -19,18 +19,18 @@
  *          type that can be accessed by string name or sidre::IndexType.
  *
  *          The primary intent is to decouple the implementation of the
- *          collections from the DataGroup class which owns collections of
- *          DataView and child DataGroup objects. They may have other uses,
- *          so they are not dependent on the DataGroup class. Each class is
+ *          collections from the Group class which owns collections of
+ *          View and child Group objects. They may have other uses,
+ *          so they are not dependent on the Group class. Each class is
  *          templated on the item type so that the same class can be used
- *          to hold either DataView or DataGroup object pointers without
+ *          to hold either View or Group object pointers without
  *          having to code a separate class for each.
  *
  *          By having various collections that obey the same interface,
  *          we can explore alternative collection implementations for
  *          performance (insertion, lookup, etc.) and memory overhead.
- *          The collection used by the DataGroup class can be changed via
- *          the collection typedef in the DataGroup class header file.
+ *          The collection used by the Group class can be changed via
+ *          the collection typedef in the Group class header file.
  *
  *          To try another collection, encapsulate it in a new class with
  *          the API described below or pass it as a template parameter to

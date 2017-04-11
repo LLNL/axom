@@ -47,8 +47,8 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_dvovmax(Real_t(0.1)),
    m_refdens(Real_t(1.0))
 {
-  m_DataGroup = m_DataStore.getRoot()->createGroup("Domain");
-  m_DataGroup->createView("LuleshDomain",this);
+  m_Group = m_DataStore.getRoot()->createGroup("Domain");
+  m_Group->createView("LuleshDomain",this);
 
    Index_t edgeElems = nx ;
    Index_t edgeNodes = edgeElems+1 ;
@@ -380,7 +380,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_colLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmX = m_DataGroup->createViewAndAllocate("m_symmX",axom::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
+    m_symmX = m_Group->createViewAndAllocate("m_symmX",axom::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
 #else
     m_symmX.resize(edgeNodes*edgeNodes);
 #endif
@@ -388,7 +388,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_rowLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmY = m_DataGroup->createViewAndAllocate("m_symmY",axom::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
+    m_symmY = m_Group->createViewAndAllocate("m_symmY",axom::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
 #else
     m_symmY.resize(edgeNodes*edgeNodes);
 #endif
@@ -396,7 +396,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_planeLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmZ = m_DataGroup->createViewAndAllocate("m_symmZ",axom::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
+    m_symmZ = m_Group->createViewAndAllocate("m_symmZ",axom::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
 #else
     m_symmZ.resize(edgeNodes*edgeNodes);
 #endif

@@ -11,23 +11,23 @@
 /*!
  ******************************************************************************
  *
- * \file DataView.cpp
+ * \file View.cpp
  *
- * \brief   Implementation file for DataView class.
+ * \brief   Implementation file for View class.
  *
  ******************************************************************************
  */
 
 // Associated header file
-#include "DataView.hpp"
+#include "View.hpp"
 
 // Other axom headers
 #include "axom/Types.hpp"
 #include "slic/slic.hpp"
 
-// Sidre project headers
-#include "DataBuffer.hpp"
-#include "DataGroup.hpp"
+// Sidre component headers
+#include "Buffer.hpp"
+#include "Group.hpp"
 #include "DataStore.hpp"
 
 namespace axom
@@ -39,12 +39,12 @@ namespace sidre
  *************************************************************************
  *
  * Return path of View's owning Group object.
- * Needs to be in the .cpp file because DataGroup methods aren't
+ * Needs to be in the .cpp file because Group methods aren't
  * accessible in .hpp file.
  *
  *************************************************************************
  */
-std::string DataView::getPath() const
+std::string View::getPath() const
 {
   return getOwningGroup()->getPathName();
 }
@@ -53,12 +53,12 @@ std::string DataView::getPath() const
  *************************************************************************
  *
  * Return full path of View object, including its name.
- * Needs to be in the .cpp file because DataGroup methods aren't
+ * Needs to be in the .cpp file because Group methods aren't
  * accessible in .hpp file.
  *
  *************************************************************************
  */
-std::string DataView::getPathName() const
+std::string View::getPathName() const
 {
   if (getPath().length() < 1)
   {
@@ -78,7 +78,7 @@ std::string DataView::getPathName() const
  *
  *************************************************************************
  */
-DataView * DataView::allocate()
+View * View::allocate()
 {
   if ( isAllocateValid() )
   {
@@ -106,7 +106,7 @@ DataView * DataView::allocate()
  *
  *************************************************************************
  */
-DataView * DataView::allocate( TypeID type, SidreLength num_elems)
+View * View::allocate( TypeID type, SidreLength num_elems)
 {
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
@@ -128,7 +128,7 @@ DataView * DataView::allocate( TypeID type, SidreLength num_elems)
  *
  *************************************************************************
  */
-DataView * DataView::allocate(const DataType& dtype)
+View * View::allocate(const DataType& dtype)
 {
   if ( dtype.is_empty() )
   {
@@ -153,7 +153,7 @@ DataView * DataView::allocate(const DataType& dtype)
  *
  *************************************************************************
  */
-DataView * DataView::reallocate(SidreLength num_elems)
+View * View::reallocate(SidreLength num_elems)
 {
   TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
 
@@ -189,7 +189,7 @@ DataView * DataView::reallocate(SidreLength num_elems)
  *
  *************************************************************************
  */
-DataView * DataView::deallocate()
+View * View::deallocate()
 {
   if ( !isAllocateValid() )
   {
@@ -215,7 +215,7 @@ DataView * DataView::deallocate()
  *
  *************************************************************************
  */
-DataView * DataView::reallocate(const DataType& dtype)
+View * View::reallocate(const DataType& dtype)
 {
   // If we don't have an allocated buffer, we can just call allocate.
   if ( !isAllocated() )
@@ -255,11 +255,11 @@ DataView * DataView::reallocate(const DataType& dtype)
  *
  *************************************************************************
  */
-DataView * DataView::attachBuffer(DataBuffer * buff)
+View * View::attachBuffer(Buffer * buff)
 {
   if ( m_state == BUFFER && buff == AXOM_NULLPTR)
   {
-    DataBuffer * old_buffer = detachBuffer();
+    Buffer * old_buffer = detachBuffer();
     if (old_buffer->getNumViews() == 0)
     {
       getOwningGroup()->getDataStore()->destroyBuffer(old_buffer);
@@ -289,9 +289,9 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
  *
  *************************************************************************
  */
-DataBuffer * DataView::detachBuffer()
+Buffer * View::detachBuffer()
 {
-  DataBuffer * buff = AXOM_NULLPTR;
+  Buffer * buff = AXOM_NULLPTR;
 
   if ( m_state == BUFFER)
   {
@@ -309,7 +309,7 @@ DataBuffer * DataView::detachBuffer()
  *
  *************************************************************************
  */
-DataView * DataView::apply()
+View * View::apply()
 {
   if ( !isApplyValid() )
   {
@@ -344,7 +344,7 @@ DataView * DataView::apply()
  *
  *************************************************************************
  */
-DataView * DataView::apply(SidreLength num_elems,
+View * View::apply(SidreLength num_elems,
                            SidreLength offset,
                            SidreLength stride)
 {
@@ -380,7 +380,7 @@ DataView * DataView::apply(SidreLength num_elems,
  *
  *************************************************************************
  */
-DataView * DataView::apply(TypeID type, SidreLength num_elems,
+View * View::apply(TypeID type, SidreLength num_elems,
                            SidreLength offset,
                            SidreLength stride)
 {
@@ -413,7 +413,7 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
  *
  *************************************************************************
  */
-DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
+View * View::apply(TypeID type, int ndims, SidreLength * shape)
 {
   if ( type == NO_TYPE_ID || ndims < 1 || shape == AXOM_NULLPTR )
   {
@@ -437,7 +437,7 @@ DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
  *
  *************************************************************************
  */
-DataView * DataView::apply(const DataType &dtype)
+View * View::apply(const DataType &dtype)
 {
   if ( dtype.is_empty() )
   {
@@ -459,7 +459,7 @@ DataView * DataView::apply(const DataType &dtype)
  *
  *************************************************************************
  */
-void * DataView::getVoidPtr() const
+void * View::getVoidPtr() const
 {
   void * rv = AXOM_NULLPTR;
 
@@ -505,7 +505,7 @@ void * DataView::getVoidPtr() const
  *
  *************************************************************************
  */
-DataView * DataView::setExternalDataPtr(void * external_ptr)
+View * View::setExternalDataPtr(void * external_ptr)
 {
   if ( m_state == EMPTY || m_state == EXTERNAL )
   {
@@ -547,7 +547,7 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
  * class in the view header.
  *************************************************************************
  */
-bool DataView::isAllocated()
+bool View::isAllocated()
 {
   bool rv = false;
 
@@ -578,7 +578,7 @@ bool DataView::isAllocated()
  *
  *************************************************************************
  */
-int DataView::getShape(int ndims, SidreLength * shape) const
+int View::getShape(int ndims, SidreLength * shape) const
 {
   if (static_cast<unsigned>(ndims) < m_shape.size())
   {
@@ -610,7 +610,7 @@ int DataView::getShape(int ndims, SidreLength * shape) const
  *
  *************************************************************************
  */
-SidreLength DataView::getOffset() const
+SidreLength View::getOffset() const
 {
   int offset = 0;
 
@@ -643,7 +643,7 @@ SidreLength DataView::getOffset() const
  *
  *************************************************************************
  */
-SidreLength DataView::getStride() const
+SidreLength View::getStride() const
 {
   int stride = 1;
 
@@ -672,11 +672,11 @@ SidreLength DataView::getStride() const
 /*
  *************************************************************************
  *
- * Test equivalence of two DataViews
+ * Test equivalence of two Views
  *
  *************************************************************************
  */
-bool DataView::isEquivalentTo(const DataView * other) const
+bool View::isEquivalentTo(const View * other) const
 {
   //add isAllocated() if it can be declared const
   return (getName() == other->getName()) && (getTypeID() == other->getTypeID())
@@ -693,7 +693,7 @@ bool DataView::isEquivalentTo(const DataView * other) const
  *
  *************************************************************************
  */
-void DataView::print() const
+void View::print() const
 {
   print(std::cout);
 }
@@ -705,7 +705,7 @@ void DataView::print() const
  *
  *************************************************************************
  */
-void DataView::print(std::ostream& os) const
+void View::print(std::ostream& os) const
 {
   Node n;
   copyToConduitNode(n);
@@ -719,7 +719,7 @@ void DataView::print(std::ostream& os) const
  *
  *************************************************************************
  */
-void DataView::copyToConduitNode(Node &n) const
+void View::copyToConduitNode(Node &n) const
 {
   n["name"] = m_name;
   n["schema"] = m_schema.to_json();
@@ -735,14 +735,14 @@ void DataView::copyToConduitNode(Node &n) const
  *
  *************************************************************************
  */
-void DataView::createNativeLayout(Node &n) const
+void View::createNativeLayout(Node &n) const
 {
   // see ATK-726 - Handle undescribed and unallocated views in Sidre's createNativeLayout()
   // TODO: Need to handle cases where the view is not described
   // TODO: Need to handle cases where the view is not allocated
   // TODO: Need to handle cases where the view is not applied
 
-  // Note: We are using conduit's pointer rather than the DataView pointer
+  // Note: We are using conduit's pointer rather than the View pointer
   //    since the conduit pointer handles offsetting
   // Note: const_cast the pointer to satisfy conduit's interface
   void * data_ptr = const_cast<void *>(m_node.data_ptr());
@@ -752,11 +752,11 @@ void DataView::createNativeLayout(Node &n) const
 /*
  *************************************************************************
  *
- * PRIVATE ctor for DataView not associated with any data.
+ * PRIVATE ctor for View not associated with any data.
  *
  *************************************************************************
  */
-DataView::DataView( const std::string& name)
+View::View( const std::string& name)
   :   m_name(name),
   m_owning_group(AXOM_NULLPTR),
   m_data_buffer(AXOM_NULLPTR),
@@ -775,7 +775,7 @@ DataView::DataView( const std::string& name)
  *
  *************************************************************************
  */
-DataView::~DataView()
+View::~View()
 {
   if (m_data_buffer != AXOM_NULLPTR)
   {
@@ -791,7 +791,7 @@ DataView::~DataView()
  *
  *************************************************************************
  */
-void DataView::describe(TypeID type, SidreLength num_elems)
+void View::describe(TypeID type, SidreLength num_elems)
 {
   DataType dtype = conduit::DataType::default_dtype(type);
   dtype.set_number_of_elements(num_elems);
@@ -809,7 +809,7 @@ void DataView::describe(TypeID type, SidreLength num_elems)
  *
  *************************************************************************
  */
-void DataView::describe(TypeID type, int ndims, SidreLength * shape)
+void View::describe(TypeID type, int ndims, SidreLength * shape)
 {
   SidreLength num_elems = 0;
   if (ndims > 0)
@@ -833,7 +833,7 @@ void DataView::describe(TypeID type, int ndims, SidreLength * shape)
  *
  *************************************************************************
  */
-void DataView::describe(const DataType& dtype)
+void View::describe(const DataType& dtype)
 {
   m_schema.set(dtype);
   describeShape();
@@ -848,7 +848,7 @@ void DataView::describe(const DataType& dtype)
  *
  *************************************************************************
  */
-void DataView::describeShape()
+void View::describeShape()
 {
   m_shape.clear();
   m_shape.push_back(m_schema.dtype().number_of_elements());
@@ -861,7 +861,7 @@ void DataView::describeShape()
  *
  *************************************************************************
  */
-void DataView::describeShape(int ndims, SidreLength * shape)
+void View::describeShape(int ndims, SidreLength * shape)
 {
   m_shape.clear();
   for (int i=0 ; i < ndims ; i++)
@@ -877,7 +877,7 @@ void DataView::describeShape(int ndims, SidreLength * shape)
  *
  *************************************************************************
  */
-void DataView::copyView( DataView * copy ) const
+void View::copyView( View * copy ) const
 {
   SLIC_ASSERT( copy->m_state == EMPTY && !copy->isDescribed());
 
@@ -918,7 +918,7 @@ void DataView::copyView( DataView * copy ) const
  * state if this function returns false.
  *************************************************************************
  */
-bool DataView::isAllocateValid() const
+bool View::isAllocateValid() const
 {
   bool rv = false;
 
@@ -955,7 +955,7 @@ bool DataView::isAllocateValid() const
  *
  *************************************************************************
  */
-bool DataView::isApplyValid() const
+bool View::isApplyValid() const
 {
   bool rv = false;
 
@@ -1002,7 +1002,7 @@ bool DataView::isApplyValid() const
  *
  *************************************************************************
  */
-char const * DataView::getStateStringName(State state)
+char const * View::getStateStringName(State state)
 {
   char const * ret_string = NULL;
 
@@ -1038,7 +1038,7 @@ char const * DataView::getStateStringName(State state)
  *
  *************************************************************************
  */
-DataView::State DataView::getStateId(const std::string &name)
+View::State View::getStateId(const std::string &name)
 {
   State res = EMPTY;
   if(name == "EMPTY")
@@ -1078,7 +1078,7 @@ DataView::State DataView::getStateId(const std::string &name)
  *
  *************************************************************************
  */
-void DataView::exportTo(conduit::Node& data_holder,
+void View::exportTo(conduit::Node& data_holder,
                         std::set<IndexType>& buffer_indices) const
 {
   data_holder["state"] = getStateStringName(m_state);
@@ -1128,7 +1128,7 @@ void DataView::exportTo(conduit::Node& data_holder,
  *
  *************************************************************************
  */
-void DataView::importFrom(conduit::Node& data_holder,
+void View::importFrom(conduit::Node& data_holder,
                           const std::map<IndexType, IndexType>& buffer_id_map)
 {
   m_state = getStateId(data_holder["state"].as_string());
@@ -1152,7 +1152,7 @@ void DataView::importFrom(conduit::Node& data_holder,
                      "Buffer id map is old-new id entry for buffer " <<
                      old_buffer_id );
 
-    DataBuffer * buffer = m_owning_group->getDataStore()->
+    Buffer * buffer = m_owning_group->getDataStore()->
                           getBuffer( buffer_id_map.at(old_buffer_id) );
 
     importDescription(data_holder);
@@ -1186,7 +1186,7 @@ void DataView::importFrom(conduit::Node& data_holder,
  *
  *************************************************************************
  */
-void DataView::exportDescription(conduit::Node& data_holder) const
+void View::exportDescription(conduit::Node& data_holder) const
 {
   data_holder["schema"] = m_schema.to_json();
   if (getNumDimensions() > 1)
@@ -1202,7 +1202,7 @@ void DataView::exportDescription(conduit::Node& data_holder) const
  *
  *************************************************************************
  */
-void DataView::importDescription(conduit::Node& data_holder)
+void View::importDescription(conduit::Node& data_holder)
 {
   if (data_holder.has_path("schema"))
   {
@@ -1225,12 +1225,12 @@ void DataView::importDescription(conduit::Node& data_holder)
  *
  *************************************************************************
  */
-bool DataView::rename(const std::string& new_name)
+bool View::rename(const std::string& new_name)
 {
   bool do_rename = true;
   if (new_name != m_name) {
 
-    DataGroup * parent = getOwningGroup();
+    Group * parent = getOwningGroup();
     SLIC_CHECK(parent != AXOM_NULLPTR);
 
     if (new_name.empty()) {
@@ -1249,12 +1249,12 @@ bool DataView::rename(const std::string& new_name)
       do_rename = false;
     } else {
 
-      DataView * detached_view = parent->detachView(m_name);
+      View * detached_view = parent->detachView(m_name);
       SLIC_CHECK(detached_view == this);
 
       m_name = new_name;
 
-      DataView * attached_view = parent->attachView(detached_view);
+      View * attached_view = parent->attachView(detached_view);
       AXOM_DEBUG_VAR(attached_view);
       SLIC_CHECK(attached_view == this);
     }

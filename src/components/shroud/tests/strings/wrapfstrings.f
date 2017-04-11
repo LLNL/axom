@@ -22,11 +22,11 @@ module strings_mod
         end subroutine pass_char
 
         function c_return_char() &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="STR_return_char")
             use iso_c_binding
             implicit none
-            character(kind=C_CHAR) :: rv
+            character(kind=C_CHAR) :: SH_rv
         end function c_return_char
 
         subroutine c_return_char_bufferify(SH_F_rv, LSH_F_rv) &
@@ -57,11 +57,11 @@ module strings_mod
         end subroutine c_pass_char_ptr_bufferify
 
         pure function c_get_char1() &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="STR_get_char1")
             use iso_c_binding
             implicit none
-            type(C_PTR) rv
+            type(C_PTR) SH_rv
         end function c_get_char1
 
         subroutine c_get_char1_bufferify(SH_F_rv, LSH_F_rv) &
@@ -73,11 +73,11 @@ module strings_mod
         end subroutine c_get_char1_bufferify
 
         function c_get_char2() &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="STR_get_char2")
             use iso_c_binding
             implicit none
-            type(C_PTR) rv
+            type(C_PTR) SH_rv
         end function c_get_char2
 
         subroutine c_get_char2_bufferify(SH_F_rv, LSH_F_rv) &
@@ -89,11 +89,11 @@ module strings_mod
         end subroutine c_get_char2_bufferify
 
         function c_get_char3() &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="STR_get_char3")
             use iso_c_binding
             implicit none
-            type(C_PTR) rv
+            type(C_PTR) SH_rv
         end function c_get_char3
 
         subroutine c_get_char3_bufferify(output, Loutput) &
@@ -105,11 +105,11 @@ module strings_mod
         end subroutine c_get_char3_bufferify
 
         pure function c_get_string1() &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="STR_get_string1")
             use iso_c_binding
             implicit none
-            type(C_PTR) rv
+            type(C_PTR) SH_rv
         end function c_get_string1
 
         subroutine c_get_string1_bufferify(SH_F_rv, LSH_F_rv) &
@@ -121,11 +121,11 @@ module strings_mod
         end subroutine c_get_string1_bufferify
 
         function c_get_string2() &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="STR_get_string2")
             use iso_c_binding
             implicit none
-            type(C_PTR) rv
+            type(C_PTR) SH_rv
         end function c_get_string2
 
         subroutine c_get_string2_bufferify(SH_F_rv, LSH_F_rv) &
@@ -137,11 +137,11 @@ module strings_mod
         end subroutine c_get_string2_bufferify
 
         function c_get_string3() &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="STR_get_string3")
             use iso_c_binding
             implicit none
-            type(C_PTR) rv
+            type(C_PTR) SH_rv
         end function c_get_string3
 
         subroutine c_get_string3_bufferify(output, Loutput) &
@@ -211,14 +211,14 @@ contains
     !! \brief return a char argument (non-pointer)
     !!
     !<
-    function return_char() result(rv)
+    function return_char() result(SH_rv)
         use iso_c_binding, only : C_INT
         implicit none
-        character :: rv
+        character :: SH_rv
         ! splicer begin return_char
         call c_return_char_bufferify(  &
-            rv,  &
-            len(rv, kind=C_INT))
+            SH_rv,  &
+            len(SH_rv, kind=C_INT))
         ! splicer end return_char
     end function return_char
 
@@ -251,12 +251,12 @@ contains
     !! \brief return a 'const char *' as character(*)
     !!
     !<
-    function get_char1() result(rv)
+    function get_char1() result(SH_rv)
         use iso_c_binding, only : C_CHAR
         implicit none
-        character(kind=C_CHAR, len=strlen_ptr(c_get_char1())) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(c_get_char1())) :: SH_rv
         ! splicer begin get_char1
-        rv = fstr(c_get_char1())
+        SH_rv = fstr(c_get_char1())
         ! splicer end get_char1
     end function get_char1
 
@@ -267,14 +267,14 @@ contains
     !! \brief return 'const char *' with fixed size (len=30)
     !!
     !<
-    function get_char2() result(rv)
+    function get_char2() result(SH_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         implicit none
-        character(kind=C_CHAR, len=30) :: rv
+        character(kind=C_CHAR, len=30) :: SH_rv
         ! splicer begin get_char2
         call c_get_char2_bufferify(  &
-            rv,  &
-            len(rv, kind=C_INT))
+            SH_rv,  &
+            len(SH_rv, kind=C_INT))
         ! splicer end get_char2
     end function get_char2
 
@@ -302,12 +302,12 @@ contains
     !! \brief return a 'const string&' as character(*)
     !!
     !<
-    function get_string1() result(rv)
+    function get_string1() result(SH_rv)
         use iso_c_binding, only : C_CHAR
         implicit none
-        character(kind=C_CHAR, len=strlen_ptr(c_get_string1())) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(c_get_string1())) :: SH_rv
         ! splicer begin get_string1
-        rv = fstr(c_get_string1())
+        SH_rv = fstr(c_get_string1())
         ! splicer end get_string1
     end function get_string1
 
@@ -318,14 +318,14 @@ contains
     !! \brief return 'const string&' with fixed size (len=30)
     !!
     !<
-    function get_string2() result(rv)
+    function get_string2() result(SH_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         implicit none
-        character(kind=C_CHAR, len=30) :: rv
+        character(kind=C_CHAR, len=30) :: SH_rv
         ! splicer begin get_string2
         call c_get_string2_bufferify(  &
-            rv,  &
-            len(rv, kind=C_INT))
+            SH_rv,  &
+            len(SH_rv, kind=C_INT))
         ! splicer end get_string2
     end function get_string2
 

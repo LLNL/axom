@@ -40,8 +40,8 @@ namespace axom
 namespace sidre
 {
 
-class DataBuffer;
-class DataGroup;
+class Buffer;
+class Group;
 
 /*!
  * \class DataStore
@@ -74,15 +74,15 @@ public:
   /*!
    * \brief Return pointer to the root Group.
    */
-  DataGroup * getRoot()
+  Group * getRoot()
   {
     return m_RootGroup;
   };
 
   /*!
-   * \brief Return pointer to the root DataGroup.
+   * \brief Return pointer to the root Group.
    */
-  const DataGroup * getRoot() const
+  const Group * getRoot() const
   {
     return m_RootGroup;
   };
@@ -112,7 +112,7 @@ public:
    * \brief Return (non-const) pointer to Buffer object with given index,
    *        or AXOM_NULLPTR if none exists.
    */
-  DataBuffer * getBuffer( IndexType idx ) const;
+  Buffer * getBuffer( IndexType idx ) const;
 
   /*!
    * \brief Create an undescribed Buffer object and return a pointer to it.
@@ -122,18 +122,18 @@ public:
    *        The Buffer object is assigned a unique index when created and the
    *        Buffer object is owned by the DataStore object.
    */
-  DataBuffer * createBuffer();
+  Buffer * createBuffer();
 
   /*!
    * \brief Create a Buffer object with specified type and number of
    *        elements and return a pointer to it.
    *
-   *        See the DataBuffer::describe() method for valid data description.
+   *        See the Buffer::describe() method for valid data description.
    *
    *        The Buffer object is assigned a unique index when created and the
    *        Buffer object is owned by the DataStore object.
    */
-  DataBuffer * createBuffer( TypeID type, SidreLength num_elems );
+  Buffer * createBuffer( TypeID type, SidreLength num_elems );
 
   /*!
    * \brief Remove Buffer from the DataStore and destroy it and
@@ -142,7 +142,7 @@ public:
    *        Note that Buffer destruction detaches it from all Views to
    *        which it is attached.
    */
-  void destroyBuffer( DataBuffer * buff );
+  void destroyBuffer( Buffer * buff );
 
   /*!
    * \brief Remove Buffer with given index from the DataStore and
@@ -200,10 +200,10 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(DataStore);
 
   /// Root Group, created when DataStore object is created.
-  DataGroup * m_RootGroup;
+  Group * m_RootGroup;
 
   /// Collection of Buffers in DataStore instance.
-  std::vector<DataBuffer *> m_data_buffers;
+  std::vector<Buffer *> m_data_buffers;
 
   /// Collection of unused unique Buffer indices (they can be recycled).
   std::stack< IndexType > m_free_buffer_ids;

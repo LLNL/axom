@@ -30,8 +30,8 @@ void SLIC_initialize()
 bool SLIC_is_initialized()
 {
 // splicer begin function.is_initialized
-  bool rv = isInitialized();
-  return rv;
+  bool SH_rv = isInitialized();
+  return SH_rv;
 // splicer end function.is_initialized
 }
 
@@ -65,8 +65,8 @@ bool SLIC_activate_logger(const char * name)
 {
 // splicer begin function.activate_logger
   const std::string SH_name(name);
-  bool rv = activateLogger(SH_name);
-  return rv;
+  bool SH_rv = activateLogger(SH_name);
+  return SH_rv;
 // splicer end function.activate_logger
 }
 
@@ -74,16 +74,16 @@ bool SLIC_activate_logger_bufferify(const char * name, int Lname)
 {
 // splicer begin function.activate_logger_bufferify
   const std::string SH_name(name, Lname);
-  bool rv = activateLogger(SH_name);
-  return rv;
+  bool SH_rv = activateLogger(SH_name);
+  return SH_rv;
 // splicer end function.activate_logger_bufferify
 }
 
 void SLIC_get_active_logger_name_bufferify(char * name, int Lname)
 {
 // splicer begin function.get_active_logger_name_bufferify
-  std::string rv = getActiveLoggerName();
-  shroud::FccCopy(name, Lname, rv.c_str());
+  std::string SH_rv = getActiveLoggerName();
+  shroud_FccCopy(name, Lname, SH_rv.c_str());
   return;
 // splicer end function.get_active_logger_name_bufferify
 }
@@ -123,8 +123,8 @@ void SLIC_disable_abort_on_error()
 bool SLIC_is_abort_on_errors_enabled()
 {
 // splicer begin function.is_abort_on_errors_enabled
-  bool rv = isAbortOnErrorsEnabled();
-  return rv;
+  bool SH_rv = isAbortOnErrorsEnabled();
+  return SH_rv;
 // splicer end function.is_abort_on_errors_enabled
 }
 
@@ -155,8 +155,8 @@ void SLIC_disable_abort_on_warning()
 bool SLIC_is_abort_on_warnings_enabled()
 {
 // splicer begin function.is_abort_on_warnings_enabled
-  bool rv = isAbortOnWarningsEnabled();
-  return rv;
+  bool SH_rv = isAbortOnWarningsEnabled();
+  return SH_rv;
 // splicer end function.is_abort_on_warnings_enabled
 }
 
