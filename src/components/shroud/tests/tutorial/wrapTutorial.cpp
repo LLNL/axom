@@ -49,8 +49,18 @@ bool TUT_function3(bool arg)
 // splicer end function.function3
 }
 
+// void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out))
+// function_index=7
+void TUT_function3b(const bool arg1, bool * arg2)
+{
+// splicer begin function.function3b
+    Function3b(arg1, arg2);
+    return;
+// splicer end function.function3b
+}
+
 // void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(LSH_F_rv))
-// function_index=33
+// function_index=34
 void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.function4a_bufferify
@@ -63,7 +73,7 @@ void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, i
 }
 
 // const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
-// function_index=8
+// function_index=9
 const char * TUT_function4b(const char * arg1, const char * arg2)
 {
 // splicer begin function.function4b
@@ -75,7 +85,7 @@ const char * TUT_function4b(const char * arg1, const char * arg2)
 }
 
 // void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))
-// function_index=34
+// function_index=35
 void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput)
 {
 // splicer begin function.function4b_bufferify
@@ -88,7 +98,7 @@ void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, i
 }
 
 // double Function5()
-// function_index=23
+// function_index=24
 double TUT_function5()
 {
 // splicer begin function.function5
@@ -98,7 +108,7 @@ double TUT_function5()
 }
 
 // double Function5(double arg1+default(3.1415)+intent(in)+value)
-// function_index=24
+// function_index=25
 double TUT_function5_arg1(double arg1)
 {
 // splicer begin function.function5_arg1
@@ -108,7 +118,7 @@ double TUT_function5_arg1(double arg1)
 }
 
 // double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
-// function_index=9
+// function_index=10
 double TUT_function5_arg1_arg2(double arg1, bool arg2)
 {
 // splicer begin function.function5_arg1_arg2
@@ -118,7 +128,7 @@ double TUT_function5_arg1_arg2(double arg1, bool arg2)
 }
 
 // void Function6(const std::string & name+intent(in))
-// function_index=10
+// function_index=11
 void TUT_function6_from_name(const char * name)
 {
 // splicer begin function.function6_from_name
@@ -129,7 +139,7 @@ void TUT_function6_from_name(const char * name)
 }
 
 // void Function6(const std::string & name+intent(in)+len_trim(Lname))
-// function_index=36
+// function_index=37
 void TUT_function6_from_name_bufferify(const char * name, int Lname)
 {
 // splicer begin function.function6_from_name_bufferify
@@ -140,7 +150,7 @@ void TUT_function6_from_name_bufferify(const char * name, int Lname)
 }
 
 // void Function6(int indx+intent(in)+value)
-// function_index=11
+// function_index=12
 void TUT_function6_from_index(int indx)
 {
 // splicer begin function.function6_from_index
@@ -150,7 +160,7 @@ void TUT_function6_from_index(int indx)
 }
 
 // void Function7(int arg+intent(in)+value)
-// function_index=25
+// function_index=26
 void TUT_function7_int(int arg)
 {
 // splicer begin function.function7_int
@@ -160,7 +170,7 @@ void TUT_function7_int(int arg)
 }
 
 // void Function7(double arg+intent(in)+value)
-// function_index=26
+// function_index=27
 void TUT_function7_double(double arg)
 {
 // splicer begin function.function7_double
@@ -170,7 +180,7 @@ void TUT_function7_double(double arg)
 }
 
 // int Function8()
-// function_index=27
+// function_index=28
 int TUT_function8_int()
 {
 // splicer begin function.function8_int
@@ -180,7 +190,7 @@ int TUT_function8_int()
 }
 
 // double Function8()
-// function_index=28
+// function_index=29
 double TUT_function8_double()
 {
 // splicer begin function.function8_double
@@ -190,7 +200,7 @@ double TUT_function8_double()
 }
 
 // void Function9(double arg+intent(in)+value)
-// function_index=14
+// function_index=15
 void TUT_function9(double arg)
 {
 // splicer begin function.function9
@@ -200,7 +210,7 @@ void TUT_function9(double arg)
 }
 
 // void Function10()
-// function_index=15
+// function_index=16
 void TUT_function10_0()
 {
 // splicer begin function.function10_0
@@ -210,7 +220,7 @@ void TUT_function10_0()
 }
 
 // void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)
-// function_index=16
+// function_index=17
 void TUT_function10_1(const char * name, double arg2)
 {
 // splicer begin function.function10_1
@@ -221,7 +231,7 @@ void TUT_function10_1(const char * name, double arg2)
 }
 
 // void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)
-// function_index=37
+// function_index=38
 void TUT_function10_1_bufferify(const char * name, int Lname, double arg2)
 {
 // splicer begin function.function10_1_bufferify
@@ -232,7 +242,7 @@ void TUT_function10_1_bufferify(const char * name, int Lname, double arg2)
 }
 
 // int overload1(int num+intent(in)+value)
-// function_index=29
+// function_index=30
 int TUT_overload1_num(int num)
 {
 // splicer begin function.overload1_num
@@ -242,7 +252,7 @@ int TUT_overload1_num(int num)
 }
 
 // int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value)
-// function_index=30
+// function_index=31
 int TUT_overload1_num_offset(int num, int offset)
 {
 // splicer begin function.overload1_num_offset
@@ -252,7 +262,7 @@ int TUT_overload1_num_offset(int num, int offset)
 }
 
 // int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
-// function_index=17
+// function_index=18
 int TUT_overload1_num_offset_stride(int num, int offset, int stride)
 {
 // splicer begin function.overload1_num_offset_stride
@@ -262,7 +272,7 @@ int TUT_overload1_num_offset_stride(int num, int offset, int stride)
 }
 
 // int overload1(double type+intent(in)+value, int num+intent(in)+value)
-// function_index=31
+// function_index=32
 int TUT_overload1_3(double type, int num)
 {
 // splicer begin function.overload1_3
@@ -272,7 +282,7 @@ int TUT_overload1_3(double type, int num)
 }
 
 // int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)
-// function_index=32
+// function_index=33
 int TUT_overload1_4(double type, int num, int offset)
 {
 // splicer begin function.overload1_4
@@ -282,7 +292,7 @@ int TUT_overload1_4(double type, int num, int offset)
 }
 
 // int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
-// function_index=18
+// function_index=19
 int TUT_overload1_5(double type, int num, int offset, int stride)
 {
 // splicer begin function.overload1_5
@@ -292,7 +302,7 @@ int TUT_overload1_5(double type, int num, int offset, int stride)
 }
 
 // TypeID typefunc(TypeID arg+intent(in)+value)
-// function_index=19
+// function_index=20
 int TUT_typefunc(int arg)
 {
 // splicer begin function.typefunc
@@ -302,7 +312,7 @@ int TUT_typefunc(int arg)
 }
 
 // EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)
-// function_index=20
+// function_index=21
 int TUT_enumfunc(int arg)
 {
 // splicer begin function.enumfunc
@@ -312,7 +322,7 @@ int TUT_enumfunc(int arg)
 }
 
 // void useclass(const Class1 * arg1+intent(in)+value)
-// function_index=21
+// function_index=22
 void TUT_useclass(const TUT_class1 * arg1)
 {
 // splicer begin function.useclass
@@ -322,7 +332,7 @@ void TUT_useclass(const TUT_class1 * arg1)
 }
 
 // const std::string & LastFunctionCalled()+pure
-// function_index=22
+// function_index=23
 const char * TUT_last_function_called()
 {
 // splicer begin function.last_function_called
@@ -332,7 +342,7 @@ const char * TUT_last_function_called()
 }
 
 // void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
-// function_index=38
+// function_index=39
 void TUT_last_function_called_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.last_function_called_bufferify

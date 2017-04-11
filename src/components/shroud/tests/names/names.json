@@ -562,6 +562,14 @@
                         "{c_var} = {f_var}  ! coerce to C_BOOL"
                     ]
                 }, 
+                "intent_out": {
+                    "declare": [
+                        "logical(C_BOOL) {c_var}"
+                    ], 
+                    "post_call": [
+                        "{f_var} = {c_var}  ! coerce to logical"
+                    ]
+                }, 
                 "result": {
                     "need_wrapper": true
                 }

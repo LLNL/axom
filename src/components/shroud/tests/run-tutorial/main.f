@@ -45,6 +45,14 @@ contains
     rv_logical = function3(.false.)
     call assert_true(rv_logical)
 
+    rv_logical = .true.
+    call function3b(.true., rv_logical)
+    call assert_false(rv_logical)
+
+    rv_logical = .false.
+    call function3b(.false., rv_logical)
+    call assert_true(rv_logical)
+
     call assert_true( function4a("dog", "cat") == "dogcat")
 
     call function4b("dog", "cat", rv_char)

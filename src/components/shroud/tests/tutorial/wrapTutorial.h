@@ -28,6 +28,8 @@ void TUT_sum(int len, int * values, int * result);
 
 bool TUT_function3(bool arg);
 
+void TUT_function3b(const bool arg1, bool * arg2);
+
 void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int LSH_F_rv);
 
 const char * TUT_function4b(const char * arg1, const char * arg2);

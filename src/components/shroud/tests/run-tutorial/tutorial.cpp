@@ -13,7 +13,7 @@ static std::string last_function_called;
 static std::string global_str;
 static int global_int;
 static double global_double;
-
+static const Class1 *global_class1;
 
 
 
@@ -33,6 +33,13 @@ bool Function3(bool arg)
 {
     last_function_called = "Function3";
     return ! arg;
+}
+
+void Function3b(const bool arg1, bool *arg2)
+{
+    last_function_called = "Function3b";
+    *arg2 = ! arg1;
+    return;
 }
 
 const std::string Function4a(const std::string& arg1, const std::string& arg2)
@@ -161,7 +168,13 @@ EnumTypeID enumfunc(EnumTypeID arg)
 void useclass(const Class1 *arg)
 {
     last_function_called = "useclass";
-    (void)arg;  // "use" argument
+    global_class1 = arg;
+}
+
+void getclass(const Class1 **arg)
+{
+    last_function_called = "getclass";
+    *arg = global_class1;
 }
 
 //----------------------------------------------------------------------

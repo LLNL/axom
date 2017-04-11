@@ -34,6 +34,12 @@ functions:
     wrap_python: False
     wrap_lua: False
 - decl: bool Function3(bool arg)
+- decl: void Function3b(const bool arg1, bool *arg2+intent(out))
+  options:
+    # check out arguments
+    wrap_python: False
+    wrap_lua: False
+
 - decl: const std::string Function4a+len(30)(
     const std::string& arg1,
     const std::string& arg2 )
@@ -127,6 +133,12 @@ functions:
 - decl: void useclass(const Class1 *arg1) 
   options:
     wrap_lua: False
+
+# parser does not recognized **
+#- decl: void getclass(const Class1 **arg1) 
+#  options:
+#    wrap_python: False
+#    wrap_lua: False
 
 
 ##################################################

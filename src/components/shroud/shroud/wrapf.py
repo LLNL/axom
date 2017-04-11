@@ -704,6 +704,7 @@ class Wrapf(util.WrapperMixin):
         # (the result)
         #
         pre_call = []
+        post_call = []
         f_args = node['args']
         f_index = -1       # index into f_args
         for c_index, c_arg in enumerate(C_node['args']):
@@ -731,7 +732,14 @@ class Wrapf(util.WrapperMixin):
                 arg_typedef = self.typedef[arg_type]
 
                 f_statements = arg_typedef.f_statements
-                for intent in ['intent_in']:
+
+                slist = []
+                if c_attrs['intent'] in ['inout', 'in']:
+                    slist.append('intent_in')
+                if c_attrs['intent'] in ['inout', 'out']:
+                    slist.append('intent_out')
+
+                for intent in slist:
                     cmd_list = f_statements.get(intent, {}).get('declare', [])
                     if cmd_list:
                         need_wrapper = True
@@ -744,6 +752,12 @@ class Wrapf(util.WrapperMixin):
                         need_wrapper = True
                         for cmd in cmd_list:
                             append_format(pre_call, cmd, fmt_arg)
+
+                    cmd_list = f_statements.get(intent, {}).get('post_call', [])
+                    if cmd_list:
+                        need_wrapper = True
+                        for cmd in cmd_list:
+                            append_format(post_call, cmd, fmt_arg)
 
                     self.update_f_module(modules, arg_typedef.f_module)
 
@@ -889,6 +903,7 @@ class Wrapf(util.WrapperMixin):
             impl.extend(arg_f_decl)
             impl.extend(pre_call)
             self._create_splicer(sname, impl, F_code)
+            impl.extend(post_call)
             impl.append(-1)
             impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
         else:
