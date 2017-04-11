@@ -11,6 +11,7 @@ types:
     cpp_type = ExClass1
     c_type = AA_exclass1
     f_derived_type = exclass1
+    f_to_c = "{f_var}%yadda()"
     f_module:
       exclass1_mod:
       - exclass1
@@ -20,6 +21,7 @@ types:
     cpp_type = ExClass2
     c_type = AA_exclass2
     f_derived_type = exclass2
+    f_to_c = "{f_var}%yadda()"
     f_module:
       exclass2_mod:
       - exclass2
