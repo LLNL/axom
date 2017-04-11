@@ -3348,8 +3348,8 @@
                 "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_useclass", 
                 "F_C_name": "c_useclass", 
-                "F_arg_c_call": "arg1%voidptr", 
-                "F_arg_c_call_tab": "\targ1%voidptr", 
+                "F_arg_c_call": "arg1%get_instance()", 
+                "F_arg_c_call_tab": "\targ1%get_instance()", 
                 "F_arguments": "arg1", 
                 "F_instance_ptr": "obj%voidptr", 
                 "F_name_generic": "useclass", 
@@ -3582,7 +3582,6 @@
             "c_type": "TUT_class1", 
             "cpp_to_c": "static_cast<{c_const}TUT_class1 *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "Class1", 
-            "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "class1", 
             "f_module": {
                 "tutorial_mod": [
@@ -3590,6 +3589,7 @@
                 ]
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})", 
+            "f_to_c": "{f_var}%get_instance()", 
             "f_type": "type(class1)", 
             "forward": "Class1", 
             "py_statements": {

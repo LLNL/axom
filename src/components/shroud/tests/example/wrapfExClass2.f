@@ -409,7 +409,7 @@ contains
         ! splicer begin class.ExClass2.method.get_class1
         SH_rv%voidptr = c_exclass2_get_class1(  &
             obj%voidptr,  &
-            in%voidptr)
+            in%yadda())
         ! splicer end class.ExClass2.method.get_class1
     end function exclass2_get_class1
 

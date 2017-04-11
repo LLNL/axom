@@ -809,7 +809,7 @@ contains
         implicit none
         type(class1), value, intent(IN) :: arg1
         ! splicer begin useclass
-        call c_useclass(arg1%voidptr)
+        call c_useclass(arg1%get_instance())
         ! splicer end useclass
     end subroutine useclass
 

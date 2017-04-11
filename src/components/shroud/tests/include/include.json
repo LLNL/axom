@@ -222,8 +222,8 @@
                         "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_class2_method2", 
                         "F_C_name": "c_class2_method2", 
-                        "F_arg_c_call": "obj%voidptr, c2%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tc2%voidptr", 
+                        "F_arg_c_call": "obj%voidptr, c2%get_instance()", 
+                        "F_arg_c_call_tab": "\tobj%voidptr\tc2%get_instance()", 
                         "F_arguments": "obj, c2", 
                         "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "method2", 
@@ -377,7 +377,6 @@
             "c_type": "DEF_class1", 
             "cpp_to_c": "static_cast<{c_const}DEF_class1 *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "Class1", 
-            "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "class1", 
             "f_module": {
                 "class1_mod": [
@@ -385,6 +384,7 @@
                 ]
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})", 
+            "f_to_c": "{f_var}%get_instance()", 
             "f_type": "type(class1)", 
             "forward": "Class1", 
             "py_statements": {
@@ -410,7 +410,6 @@
             "c_type": "DEF_class2", 
             "cpp_to_c": "static_cast<{c_const}DEF_class2 *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "Class2", 
-            "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "class2", 
             "f_module": {
                 "class2_mod": [
@@ -418,6 +417,7 @@
                 ]
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})", 
+            "f_to_c": "{f_var}%get_instance()", 
             "f_type": "type(class2)", 
             "forward": "Class2", 
             "py_statements": {

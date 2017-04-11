@@ -521,7 +521,6 @@
             "c_type": "TES_names", 
             "cpp_to_c": "static_cast<{c_const}TES_names *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "Names", 
-            "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "FNames", 
             "f_module": {
                 "name_module": [
@@ -529,6 +528,7 @@
                 ]
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})", 
+            "f_to_c": "{f_var}%get_instance()", 
             "f_type": "type(FNames)", 
             "forward": "Names", 
             "py_statements": {

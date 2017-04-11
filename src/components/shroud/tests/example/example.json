@@ -341,7 +341,7 @@
                     "result": {
                         "attrs": {
                             "const": true, 
-                            "len": "aa_exclass1_get_name_length({F_instance_ptr})", 
+                            "len": "aa_exclass1_get_name_length({F_this}%{F_derived_member})", 
                             "reference": true
                         }, 
                         "name": "getName", 
@@ -415,7 +415,7 @@
                     "result": {
                         "attrs": {
                             "const": false, 
-                            "len": "aa_exclass1_get_name_length({F_instance_ptr})", 
+                            "len": "aa_exclass1_get_name_length({F_this}%{F_derived_member})", 
                             "ptr": false, 
                             "reference": false
                         }, 
@@ -1365,7 +1365,7 @@
                     "result": {
                         "attrs": {
                             "const": true, 
-                            "len": "aa_exclass2_get_name_length({F_instance_ptr})", 
+                            "len": "aa_exclass2_get_name_length({F_this}%{F_derived_member})", 
                             "reference": true
                         }, 
                         "name": "getName", 
@@ -1437,7 +1437,7 @@
                     "result": {
                         "attrs": {
                             "const": false, 
-                            "len": "aa_exclass2_get_name_length({F_instance_ptr})", 
+                            "len": "aa_exclass2_get_name_length({F_this}%{F_derived_member})", 
                             "ptr": false, 
                             "reference": false
                         }, 
@@ -1885,8 +1885,8 @@
                         "C_rv_decl": "ExClass1 * SH_rv", 
                         "F_C_call": "c_exclass2_get_class1", 
                         "F_C_name": "c_exclass2_get_class1", 
-                        "F_arg_c_call": "obj%voidptr, in%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tin%voidptr", 
+                        "F_arg_c_call": "obj%voidptr, in%yadda()", 
+                        "F_arg_c_call_tab": "\tobj%voidptr\tin%yadda()", 
                         "F_arguments": "obj, in", 
                         "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_class1", 
@@ -3943,7 +3943,6 @@
             "c_type": "AA_exclass1", 
             "cpp_to_c": "static_cast<{c_const}AA_exclass1 *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "ExClass1", 
-            "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "exclass1", 
             "f_module": {
                 "exclass1_mod": [
@@ -3951,6 +3950,7 @@
                 ]
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})", 
+            "f_to_c": "{f_var}%yadda()", 
             "f_type": "type(exclass1)", 
             "forward": "ExClass1", 
             "py_statements": {
@@ -3980,7 +3980,6 @@
             "c_type": "AA_exclass2", 
             "cpp_to_c": "static_cast<{c_const}AA_exclass2 *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "ExClass2", 
-            "f_args": "{c_var}%{F_derived_member}", 
             "f_derived_type": "exclass2", 
             "f_module": {
                 "exclass2_mod": [
@@ -3988,6 +3987,7 @@
                 ]
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})", 
+            "f_to_c": "{f_var}%yadda()", 
             "f_type": "type(exclass2)", 
             "forward": "ExClass2", 
             "py_statements": {
