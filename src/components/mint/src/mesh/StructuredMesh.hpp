@@ -15,8 +15,8 @@
 #include "mint/CellType.hpp"
 #include "mint/Extent.hpp"
 
-#include "common/CommonTypes.hpp"
-#include "common/AxomMacros.hpp"
+#include "axom/Types.hpp"
+#include "axom/Macros.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes

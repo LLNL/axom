@@ -48,9 +48,9 @@
 
 #include "sidre/SidreTypes.hpp"
 #include "sidre/DataStore.hpp"
-#include "sidre/DataGroup.hpp"
-#include "sidre/DataBuffer.hpp"
-#include "sidre/DataView.hpp"
+#include "sidre/Group.hpp"
+#include "sidre/Buffer.hpp"
+#include "sidre/View.hpp"
 
 #include "spio/IOManager.hpp"
 
@@ -64,9 +64,9 @@
 
 
 using axom::sidre::DataStore;
-using axom::sidre::DataGroup;
-using axom::sidre::DataBuffer;
-using axom::sidre::DataView;
+using axom::sidre::Group;
+using axom::sidre::Buffer;
+using axom::sidre::View;
 using axom::spio::IOManager;
 
 
@@ -74,7 +74,7 @@ typedef axom::sidre::IndexType IndexType;
 typedef axom::slam::policies::RuntimeSizeHolder<IndexType>   SzPol;
 typedef axom::slam::policies::ZeroOffset<IndexType> OffPol;
 typedef axom::slam::policies::RuntimeStrideHolder<IndexType> StrPol;
-typedef axom::slam::OrderedSet<SzPol, OffPol, StrPol> DataViewSet;
+typedef axom::slam::OrderedSet<SzPol, OffPol, StrPol> ViewSet;
 
 void setupLogging();
 void teardownLogging();
@@ -250,7 +250,7 @@ CommandLineArguments parseArguments(int argc, char** argv, int myRank)
  *
  * \note We also set the data in each allocated array to zeros
  */
-void allocateExternalData(DataGroup* grp, std::vector<void*>& extPtrs)
+void allocateExternalData(Group* grp, std::vector<void*>& extPtrs)
 {
     using namespace axom;
 
@@ -259,7 +259,7 @@ void allocateExternalData(DataGroup* grp, std::vector<void*>& extPtrs)
         sidre::indexIsValid(idx);
         idx = grp->getNextValidViewIndex(idx) )
     {
-        DataView* view = grp->getView(idx);
+        View* view = grp->getView(idx);
         if(view->isExternal())
         {
             SLIC_INFO("External view " << view->getPathName()
@@ -294,7 +294,7 @@ void allocateExternalData(DataGroup* grp, std::vector<void*>& extPtrs)
  * \param origSize The size of the original array
  */
 template<typename sidre_type>
-void modifyFinalValuesImpl(DataView* view, int origSize)
+void modifyFinalValuesImpl(View* view, int origSize)
 {
     SLIC_DEBUG("Looking at view " << view->getPathName());
 
@@ -302,7 +302,7 @@ void modifyFinalValuesImpl(DataView* view, int origSize)
 
     // Uses a Slam set to help manage the indirection to the view data
     // Note: offset is zero since getData() already accounts for the offset
-    DataViewSet idxSet = DataViewSet::SetBuilder()
+    ViewSet idxSet = ViewSet::SetBuilder()
                         .size(view->getNumElements())
                         .stride(view->getStride());
 
@@ -340,7 +340,7 @@ void modifyFinalValuesImpl(DataView* view, int origSize)
 }
 
 
-void modifyFinalValues(DataView* view, int origSize)
+void modifyFinalValues(View* view, int origSize)
 {
     SLIC_DEBUG("Truncating view " << view->getPathName());
 
@@ -390,7 +390,7 @@ void modifyFinalValues(DataView* view, int origSize)
  * be 0 for integers and nan for floating points.
  * This will be followed by (at most) the first maxSize elements of the original array
  */
-void truncateBulkData(DataGroup* grp, int maxSize)
+void truncateBulkData(Group* grp, int maxSize)
 {
     using namespace axom;
 
@@ -399,7 +399,7 @@ void truncateBulkData(DataGroup* grp, int maxSize)
         sidre::indexIsValid(idx);
         idx = grp->getNextValidViewIndex(idx) )
     {
-        DataView* view = grp->getView(idx);
+        View* view = grp->getView(idx);
         bool isArray = view->hasBuffer() || view->isExternal();
 
         if(isArray)

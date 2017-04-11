@@ -22,10 +22,10 @@
 #include "IOManager.hpp"
 
 // Other axom headers
-#include "common/FileUtilities.hpp"
+#include "axom_utils/FileUtilities.hpp"
 
 // SiDRe project headers
-#include "sidre/DataGroup.hpp"
+#include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
 #include "sidre/SidreTypes.hpp"
 #include "fmt/fmt.hpp"
@@ -80,7 +80,7 @@ IOManager::~IOManager()
  *
  *************************************************************************
  */
-void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::string& file_string, const std::string& protocol)
+void IOManager::write(sidre::Group * datagroup, int num_files, const std::string& file_string, const std::string& protocol)
 {
   if (m_baton) {
     if (m_baton->getNumFiles() != num_files) {
@@ -88,7 +88,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
       m_baton = AXOM_NULLPTR;
     }
   }
- 
+
   if (!m_baton) {
     m_baton = new IOBaton(m_mpi_comm, num_files);
   }
@@ -109,7 +109,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
 
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup()) {
-      std::string dir_name; 
+      std::string dir_name;
       utilities::filesystem::getDirName(dir_name, hdf5_name);
       if (!dir_name.empty()) {
         utilities::filesystem::makeDirsForPath(dir_name);
@@ -144,7 +144,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
     SLIC_ASSERT(status >= 0);
     status = H5Fclose(h5_file_id);
     SLIC_ASSERT(status >= 0);
-    
+
   } else {
     int group_id = m_baton->wait();
     std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
@@ -163,7 +163,7 @@ void IOManager::write(sidre::DataGroup * datagroup, int num_files, const std::st
  *************************************************************************
  */
 void IOManager::read(
-  sidre::DataGroup * datagroup,
+  sidre::Group * datagroup,
   const std::string& root_file,
   const std::string& protocol)
 {
@@ -199,7 +199,7 @@ void IOManager::read(
  *
  *************************************************************************
  */
-void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
+void IOManager::read(sidre::Group * datagroup, const std::string& root_file)
 {
   std::string protocol = getProtocol(root_file);
 
@@ -213,7 +213,7 @@ void IOManager::read(sidre::DataGroup * datagroup, const std::string& root_file)
  *
  *************************************************************************
  */
-void IOManager::readSidreHDF5(sidre::DataGroup * datagroup, const std::string& root_file)
+void IOManager::readSidreHDF5(sidre::Group * datagroup, const std::string& root_file)
 {
   int num_files = getNumFilesFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
@@ -224,7 +224,7 @@ void IOManager::readSidreHDF5(sidre::DataGroup * datagroup, const std::string& r
       m_baton = AXOM_NULLPTR;
     }
   }
-    
+
   if (!m_baton) {
     m_baton = new IOBaton(m_mpi_comm, num_files);
   }
@@ -259,7 +259,7 @@ void IOManager::readSidreHDF5(sidre::DataGroup * datagroup, const std::string& r
 }
 
 
-void IOManager::loadExternalData(sidre::DataGroup * datagroup, const std::string& root_file)
+void IOManager::loadExternalData(sidre::Group * datagroup, const std::string& root_file)
 {
   int num_files = getNumFilesFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
@@ -307,7 +307,7 @@ void IOManager::loadExternalData(sidre::DataGroup * datagroup, const std::string
 /*
  *************************************************************************
  *
- * Create a root file. 
+ * Create a root file.
  *
  *************************************************************************
  */
@@ -316,7 +316,7 @@ void IOManager::createRootFile(const std::string& file_base,
                                const std::string& protocol)
 {
 
-  if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5") {  
+  if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5") {
     conduit::Node n;
 
     n["number_of_files"] = num_files;
@@ -330,11 +330,11 @@ void IOManager::createRootFile(const std::string& file_base,
       n["file_pattern"] = file_base + "_" + "%07d.conduit_hdf5";
     }
     n["number_of_trees"] = m_comm_size;
-  
+
     n["tree_pattern"] = "datagroup_%07d";
     n["protocol/name"] = protocol;
     n["protocol/version"] = "0.0";
-  
+
     conduit::relay::io::save(n, file_base + ".root", "hdf5");
   } else {
     conduit::Node n;
@@ -360,7 +360,7 @@ void IOManager::createRootFile(const std::string& file_base,
 /*
  *************************************************************************
  *
- * Get namescheme pattern for a file holding DataGroup data.
+ * Get namescheme pattern for a file holding Group data.
  *
  *************************************************************************
  */
@@ -501,7 +501,7 @@ std::string IOManager::getRankGroupFileName(
     }
     conduit::relay::io::load(root_name, relay_protocol, n);
     std::string file_pattern = n["file_pattern"].as_string();
-    file_name = getHDF5FileName(file_pattern, root_name, rankgroup_id); 
+    file_name = getHDF5FileName(file_pattern, root_name, rankgroup_id);
   }
 
   return file_name;
@@ -544,7 +544,7 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
  *************************************************************************
  */
 
-void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
+void IOManager::writeGroupToRootFile(sidre::Group * group,
                                      const std::string& file_name)
 {
 
@@ -552,7 +552,7 @@ void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
                                H5F_ACC_RDWR,
                                H5P_DEFAULT);
 
-  SLIC_ASSERT(root_file_id >= 0); 
+  SLIC_ASSERT(root_file_id >= 0);
 
   hid_t group_id = H5Gcreate2(root_file_id,
                               group->getName().c_str(),
@@ -568,7 +568,7 @@ void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
 
   herr_t errv;
   AXOM_DEBUG_VAR(errv);
-  
+
   errv = H5Gclose(group_id);
   SLIC_ASSERT(errv >= 0);
 
@@ -576,7 +576,7 @@ void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
   SLIC_ASSERT(errv >= 0);
 
   errv =  H5Fclose(root_file_id);
-  SLIC_ASSERT(errv >= 0); 
+  SLIC_ASSERT(errv >= 0);
 }
 
 /*
@@ -587,7 +587,7 @@ void IOManager::writeGroupToRootFile(sidre::DataGroup * group,
  *************************************************************************
  */
 
-void IOManager::writeGroupToRootFileAtPath(sidre::DataGroup * group,
+void IOManager::writeGroupToRootFileAtPath(sidre::Group * group,
                                            const std::string& file_name,
                                            const std::string& group_path)
 {
@@ -616,7 +616,7 @@ void IOManager::writeGroupToRootFileAtPath(sidre::DataGroup * group,
 
   herr_t errv;
   AXOM_DEBUG_VAR(errv);
-  
+
   errv = H5Gclose(group_id);
   SLIC_ASSERT(errv >= 0);
 
@@ -636,7 +636,7 @@ void IOManager::writeGroupToRootFileAtPath(sidre::DataGroup * group,
  *************************************************************************
  */
 
-void IOManager::writeViewToRootFileAtPath(sidre::DataView * view,
+void IOManager::writeViewToRootFileAtPath(sidre::View * view,
                                           const std::string& file_name,
                                           const std::string& group_path)
 {

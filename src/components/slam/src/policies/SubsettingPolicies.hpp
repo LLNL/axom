@@ -25,7 +25,7 @@
 #ifndef SLAM_POLICIES_SUBSET_H_
 #define SLAM_POLICIES_SUBSET_H_
 
-#include "common/AxomMacros.hpp"
+#include "axom/Macros.hpp"
 
 #include <set>
 

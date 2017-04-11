@@ -30,9 +30,6 @@ set("HDF5_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_06_14_5
 # conduit from uberenv
 set("CONDUIT_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_06_14_56_50/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.187/conduit-0.2.1-ldvfo5r46mpnc2taxmwm6lt2sa53qomi" CACHE PATH "")
 
-# sparsehash headers from uberenv
-set("SPARSEHASH_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_06_14_56_50/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.187/sparsehash-headers-2.0.2-4q2ms4ib3yes7y7hrekj5zigrrzh3qhp" CACHE PATH "")
-
 # boost headers from uberenv
 set("BOOST_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_06_14_56_50/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.187/boost-headers-1.58.0-m4zq524o33mi34qimoxtn5rae4amyk6w" CACHE PATH "")
 

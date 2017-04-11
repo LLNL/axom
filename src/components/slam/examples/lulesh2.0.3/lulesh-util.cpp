@@ -21,7 +21,7 @@
 #endif
 #include "lulesh.hpp"
 
-#include "common/Utilities.hpp"
+#include "axom_utils/Utilities.hpp"
 
 
 namespace slamLulesh {

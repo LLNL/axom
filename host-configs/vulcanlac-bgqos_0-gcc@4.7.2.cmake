@@ -30,9 +30,6 @@ set("HDF5_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_
 # conduit from uberenv
 set("CONDUIT_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/gcc-4.7.2/conduit-0.2.1-y7kksgazxhxo4qkgbz54vdjfkpmkqu52" CACHE PATH "")
 
-# sparsehash headers from uberenv
-set("SPARSEHASH_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/gcc-4.7.2/sparsehash-headers-2.0.2-24icetuqyud64fxt3dfx3vxlucy5apk6" CACHE PATH "")
-
 # boost headers from uberenv
 set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/gcc-4.7.2/boost-headers-1.58.0-bgbbwvnccff6bzg32vt2dk5343c346jn" CACHE PATH "")
 

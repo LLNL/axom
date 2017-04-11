@@ -225,7 +225,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'sidre', u'Primal Documentation',
+    ('index', 'primal', u'Primal Documentation',
      [u'LLNS'], 1)
 ]
 
@@ -258,6 +258,6 @@ texinfo_documents = [
 
 # add breathe support
 
-breathe_projects = { "sidre": "@CMAKE_CURRENT_BINARY_DIR@/../doxygen/xml/" }
+breathe_projects = { "primal": "@CMAKE_CURRENT_BINARY_DIR@/../doxygen/xml/" }
 
-breathe_default_project = "sidre"
+breathe_default_project = "primal"

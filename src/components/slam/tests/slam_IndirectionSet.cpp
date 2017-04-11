@@ -19,7 +19,7 @@
 
 #include "gtest/gtest.h"
 
-#include "common/config.hpp"        // for AXOM_USE_BOOST
+#include "axom/config.hpp"        // for AXOM_USE_BOOST
 
 #include "slic/slic.hpp"
 
