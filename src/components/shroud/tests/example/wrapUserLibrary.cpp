@@ -45,8 +45,8 @@ return name != NULL;
 bool AA_is_initialized()
 {
 // splicer begin function.is_initialized
-    bool rv = isInitialized();
-    return rv;
+    bool SH_rv = isInitialized();
+    return SH_rv;
 // splicer end function.is_initialized
 }
 

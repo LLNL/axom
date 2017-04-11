@@ -55,25 +55,25 @@ module quest_mod
         end subroutine quest_finalize
 
         function quest_distance(x, y, z) &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="QUEST_distance")
             use iso_c_binding
             implicit none
             real(C_DOUBLE), value, intent(IN) :: x
             real(C_DOUBLE), value, intent(IN) :: y
             real(C_DOUBLE), value, intent(IN) :: z
-            real(C_DOUBLE) :: rv
+            real(C_DOUBLE) :: SH_rv
         end function quest_distance
 
         function quest_inside(x, y, z) &
-                result(rv) &
+                result(SH_rv) &
                 bind(C, name="QUEST_inside")
             use iso_c_binding
             implicit none
             real(C_DOUBLE), value, intent(IN) :: x
             real(C_DOUBLE), value, intent(IN) :: y
             real(C_DOUBLE), value, intent(IN) :: z
-            integer(C_INT) :: rv
+            integer(C_INT) :: SH_rv
         end function quest_inside
 
         subroutine quest_mesh_min_bounds(coords) &
@@ -109,17 +109,17 @@ contains
         integer, value, intent(IN) :: comm
         character(*), intent(IN) :: fileName
         logical, value, intent(IN) :: requiresDistance
-        logical(C_BOOL) tmp_requiresDistance
+        logical(C_BOOL) SH_requiresDistance
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_INT), value, intent(IN) :: maxElements
         integer(C_INT), value, intent(IN) :: maxLevels
-        tmp_requiresDistance = requiresDistance  ! coerce to C_BOOL
+        SH_requiresDistance = requiresDistance  ! coerce to C_BOOL
         ! splicer begin initialize
         call c_initialize_bufferify(  &
             comm,  &
             fileName,  &
             len_trim(fileName, kind=C_INT),  &
-            tmp_requiresDistance,  &
+            SH_requiresDistance,  &
             ndims,  &
             maxElements,  &
             maxLevels)

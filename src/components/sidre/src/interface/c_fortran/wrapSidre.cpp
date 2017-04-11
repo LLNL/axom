@@ -14,13 +14,15 @@
 #include <string>
 
 extern "C" {
-namespace axom {
-namespace sidre {
+namespace axom
+{
+namespace sidre
+{
 
 bool SIDRE_name_is_valid(const char * name)
 {
 // splicer begin function.name_is_valid
-return name != NULL;
+  return name != NULL;
 // splicer end function.name_is_valid
 }
 

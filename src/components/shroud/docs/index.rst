@@ -18,9 +18,9 @@ Contents:
 
    introduction
    tutorial
-   advanced
+   input
+   types
    reference
-   faq
    previouswork
    futurework
 

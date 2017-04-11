@@ -185,12 +185,9 @@ class Schema(object):
         fmt_library.library_lower = fmt_library.library.lower()
         fmt_library.library_upper = fmt_library.library.upper()
         fmt_library.function_suffix = ''   # assume no suffix
-        fmt_library.overloaded = False
-        fmt_library.class_name = ''
         fmt_library.C_prefix = def_options.get(
             'C_prefix', fmt_library.library_upper[:3] + '_')
         fmt_library.F_C_prefix = def_options['F_C_prefix']
-        fmt_library.rv = 'rv'  # return value
         if node['namespace']:
             fmt_library.namespace_scope = (
                 '::'.join(node['namespace'].split()) + '::')
@@ -198,6 +195,14 @@ class Schema(object):
             fmt_library.namespace_scope = ''
         util.eval_template(node, 'C_header_filename', '_library')
         util.eval_template(node, 'C_impl_filename', '_library')
+
+        # set default values for fields which may be unset.
+        fmt_library.class_name = ''
+#        fmt_library.c_ptr = ''
+#        fmt_library.c_const = ''
+        fmt_library.CPP_this_call = ''
+        fmt_library.CPP_template = ''
+
         self.fmt_stack.append(fmt_library)
 
         # default some options based on other options
@@ -254,7 +259,7 @@ class Schema(object):
                 c_fortran='integer(C_SIZE_T)',
                 f_type='integer(C_SIZE_T)',
                 f_module=dict(iso_c_binding=['C_SIZE_T']),
-                PY_ctor='PyInt_FromLong({rv})',
+                PY_ctor='PyInt_FromLong({c_var})',
                 LUA_type='LUA_TNUMBER',
                 LUA_pop='lua_tointeger({LUA_state_var}, {LUA_index})',
                 LUA_push='lua_pushinteger({LUA_state_var}, {c_var})',
@@ -300,11 +305,15 @@ class Schema(object):
                 f_module=dict(iso_c_binding=['C_BOOL']),
                 f_statements=dict(
                     intent_in=dict(
-                        declare=[
-                            'logical(C_BOOL) {c_var}',
-                            ],
+                        c_local_var=True,
                         pre_call=[
                             '{c_var} = {f_var}  ! coerce to C_BOOL',
+                            ],
+                        ),
+                    intent_out=dict(
+                        c_local_var=True,
+                        post_call=[
+                            '{f_var} = {c_var}  ! coerce to logical',
                             ],
                         ),
                     result=dict(
@@ -322,7 +331,7 @@ class Schema(object):
                     ),
 
                 # XXX PY_format='p',  # Python 3.3 or greater
-                PY_ctor='PyBool_FromLong({rv})',
+                PY_ctor='PyBool_FromLong({c_var})',
                 PY_PyTypeObject='PyBool_Type',
                 LUA_type='LUA_TBOOLEAN',
                 LUA_pop='lua_toboolean({LUA_state_var}, {LUA_index})',
@@ -341,8 +350,9 @@ class Schema(object):
                 c_statements=dict(
                     intent_in=dict(
                         cpp_local_var=True,
+                        cpp_header='<cstring>',
                         pre_call=[
-                            'int {c_var_len} = strlen({c_var});',
+                            'int {c_var_len} = std::strlen({c_var});',
                             'char * {cpp_var} = new char [{c_var_len} + 1];',
                             'std::strncpy({cpp_var}, {c_var}, {c_var_len});',
                             '{cpp_var}[{c_var_len}] = \'\\0\';'
@@ -362,7 +372,7 @@ class Schema(object):
                             'char * {cpp_var} = new char [{c_var_num} + 1];',
                             ],
                         post_call=[
-                            'shroud::FccCopy'
+                            'shroud_FccCopy'
                             '({c_var}, {c_var_len}, {cpp_val});',
                             'delete [] {cpp_var};',
                             ],
@@ -370,7 +380,7 @@ class Schema(object):
                         ),
                     result=dict(
                         post_call=[
-                            ('shroud::FccCopy'
+                            ('shroud_FccCopy'
                              '({c_var}, {c_var_len}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp',
@@ -379,11 +389,10 @@ class Schema(object):
 
                 c_fortran='character(kind=C_CHAR)',
                 f_type='character(*)',
-                # # f_args='trim({var}) // C_NULL_CHAR',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
-                #    fstr({F_C_name}({F_arg_c_call_tab}))',
+                #    fstr({F_C_call}({F_arg_c_call_tab}))',
                 PY_format='s',
                 PY_ctor='PyString_FromString({c_var})',
                 LUA_type='LUA_TSTRING',
@@ -403,11 +412,10 @@ class Schema(object):
 
                 c_fortran='character(kind=C_CHAR)',
                 f_type='character',
-                # # f_args='trim({var}) // C_NULL_CHAR',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
-                #    fstr({F_C_name}({F_arg_c_call_tab}))',
+                #    fstr({F_C_call}({F_arg_c_call_tab}))',
                 PY_format='s',
                 PY_ctor='PyString_FromString({c_var})',
                 LUA_type='LUA_TSTRING',
@@ -429,23 +437,23 @@ class Schema(object):
                     intent_in=dict(
                         cpp_local_var=True,
                         pre_call=[
-                            '{C_const}std::string {cpp_var}({c_var});'
+                            '{c_const}std::string {cpp_var}({c_var});'
                             ],
                         pre_call_trim=[
-                            ('{C_const}std::string '
+                            ('{c_const}std::string '
                              '{cpp_var}({c_var}, {c_var_trim});')
                             ],
                     ),
                     intent_out=dict(
                         post_call=[
-                            ('shroud::FccCopy'
+                            ('shroud_FccCopy'
                              '({c_var}, {c_var_len}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp'
                         ),
                     result=dict(
                         post_call=[
-                            ('shroud::FccCopy'
+                            ('shroud_FccCopy'
                              '({c_var}, {c_var_len}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp'
@@ -454,17 +462,16 @@ class Schema(object):
 
                 c_fortran='character(kind=C_CHAR)',
                 f_type='character(*)',
-                # # f_args='trim({var}) // C_NULL_CHAR',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
-                #    fstr({F_C_name}({F_arg_c_call_tab}))',
+                #    fstr({F_C_call}({F_arg_c_call_tab}))',
 
                 py_statements=dict(
                     intent_in=dict(
                         cpp_local_var=True,
                         post_parse=[
-                            '{C_const}std::string {cpp_var}({c_var});'
+                            '{c_const}std::string {cpp_var}({c_var});'
                             ],
                         ),
                     ),
@@ -512,7 +519,7 @@ class Schema(object):
         tmp = def_types['string'].clone_as('string_result_fstr')
         tmp.update(dict(
                 f_return_code=('{F_result} = '
-                               'fstr({F_C_name}({F_arg_c_call_tab}))'),
+                               'fstr({F_C_call}({F_arg_c_call_tab}))'),
                 f_helper=dict(f_return_code=dict(fstr=True)),
                 ))
         def_types[tmp.name] = tmp
@@ -579,13 +586,13 @@ class Schema(object):
             fmt_class.F_C_prefix = options.F_C_prefix
         util.eval_template(node, 'class_name')
 
-        if options.F_module_per_class:
-            util.eval_template(node, 'F_module_name', '_class')
-            util.eval_template(node, 'F_impl_filename', '_class')
-
         # Only one file per class for C.
         util.eval_template(node, 'C_header_filename', '_class')
         util.eval_template(node, 'C_impl_filename', '_class')
+
+        if options.F_module_per_class:
+            util.eval_template(node, 'F_module_name', '_class')
+            util.eval_template(node, 'F_impl_filename', '_class')
 
         self.check_functions(node, 'methods')
         self.pop_fmt()
@@ -785,7 +792,7 @@ class GenFunctions(object):
                 fmt.CPP_template = '<{}>'.format(type)
                 if new['result']['type'] == typename:
                     new['result']['type'] = type
-                    fmt.CPP_return_templated = True
+                    new['_CPP_return_templated'] = True
                 for arg in new['args']:
                     if arg['type'] == typename:
                         arg['type'] = type
@@ -1205,59 +1212,22 @@ class VerifyAttrs(object):
         # this allows classes to reference each other
         name = cls['name']
         fmt_class = cls['fmt']
+        options = cls['options']
 
         if name not in self.typedef:
             # unname = util.un_camel(name)
             unname = name.lower()
             cname = fmt_class.C_prefix + unname
-            f_derived_name=cls.get('F_derived_name',None) or unname
             self.typedef[name] = util.Typedef(
                 name,
-                cpp_type=name,
-                cpp_to_c=('static_cast<{C_const}%s *>('
-                          'static_cast<{C_const}void *>({cpp_var}))' % cname),
-                c_type=cname,
-                # opaque pointer -> void pointer -> class instance pointer
-                c_to_cpp=('static_cast<{C_const}%s{ptr}>('
-                          'static_cast<{C_const}void *>({c_var}))' % name),
-                c_fortran='type(C_PTR)',
-                f_type='type(%s)' % f_derived_name,
-                f_derived_type=f_derived_name,
-                f_args='{c_var}%{F_derived_member}',
-                # XXX module name may not conflict with type name
-                f_module={fmt_class.F_module_name:[unname]},
-
-                # return from C function
-                # f_c_return_decl='type(CPTR)' % unname,
-                f_return_code=('{F_result}%{F_derived_member} = '
-                               '{F_C_name}({F_arg_c_call_tab})'),
-
-                py_statements=dict(
-                    intent_in=dict(
-                        post_parse=[
-                            '{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;',
-                            ],
-                        ),
-                    intent_out=dict(
-                        ctor=[
-                            ('{PyObject} * {py_var} = '
-                             'PyObject_New({PyObject}, &{PyTypeObject});'),
-                            '{py_var}->{BBB} = {cpp_var};',
-                            ]
-                        ),
-                    ),
-                # PY_ctor='PyObject_New({PyObject}, &{PyTypeObject})',
-
-                LUA_type='LUA_TUSERDATA',
-                LUA_pop=('({LUA_userdata_type} *)luaL_checkudata'
-                         '({LUA_state_var}, 1, "{LUA_metadata}")'),
-                # LUA_push=None,  # XXX create a userdata object with metatable
-                # LUA_statements={},
-
-                # allow forward declarations to avoid recursive headers
-                forward=name,
                 base='wrapped',
+                cpp_type=name,
+                c_type=cname,
+                f_derived_type=cls.get('F_derived_name',None) or unname,
+                f_module={fmt_class.F_module_name:[unname]},
+                f_to_c = '{f_var}%%%s()' % options.F_name_instance_get,
                 )
+            util.typedef_wrapped_defaults(self.typedef[name])
 
         typedef = self.typedef[name]
         fmt_class.C_type_name = typedef.c_type
@@ -1382,11 +1352,19 @@ class Namify(object):
         options = self.tree['options']
         fmt_library = self.tree['fmt']
         fmt_library.C_this = options.get('C_this', 'self')
+        fmt_library.C_result = options.get('C_result', 'SH_rv')
+
+        fmt_library.CPP_this = options.get('CPP_this', 'SH_this')
 
         fmt_library.F_this = options.get('F_this', 'obj')
-        fmt_library.F_result = options.get('F_result', 'rv')
+        fmt_library.F_result = options.get('F_result', 'SH_rv')
         fmt_library.F_derived_member = options.get('F_derived_member',
                                                    'voidptr')
+
+        # don't have to worry about argument names in Python wrappers
+        # so skip the SH_ prefix by default.
+        fmt_library.PY_result = options.get('PY_result', 'rv')
+        fmt_library.LUA_result = options.get('LUA_result', 'rv')
 
         self.name_language(self.name_function_c)
         self.name_language(self.name_function_fortran)
@@ -1436,6 +1414,49 @@ class Namify(object):
             fmt_func.F_result = options.F_result
 
 
+class TypeOut(util.WrapperMixin):
+    """A class to write out type information.
+    It subclasses util.WrapperMixin in order to access 
+    write routines.
+    """
+    def __init__(self, tree, config):
+        self.tree = tree    # json tree
+        self.config = config
+        self.log = config.log
+        self.comment = '#'
+
+    def write_types(self):
+        """Write out types into a file.
+        This file can be read by Shroud to share types.
+        """
+        fname = util.wformat('{library_lower}_types.yaml', self.tree['fmt'])
+        output = [
+            '# Types generated by Shroud for class {}'.format(
+                self.tree['library']),
+            'types:',
+        ]
+
+        write_file = False
+        for cls in self.tree['classes']:
+            name = cls['name']
+            output.append('')
+            output.append('  {}:'.format(name))
+            self.tree['types'][name].__export_yaml__(2, output)
+            write_file = True
+
+            # yaml.dump does not make a nice output
+            # line = yaml.dump(self.tree['types'][cls['name']],
+            #                  default_flow_style=False)
+
+        # debug prints
+        # name = 'bool'
+        # output.append('  {}:'.format(name))
+        # self.tree['types'][name].__as_yaml__(2, output)
+
+        if write_file:
+            self.write_output_file(fname, self.config.yaml_dir, output)
+
+
 def main():
     from . import __version__
 
@@ -1461,6 +1482,10 @@ def main():
                         dest='outdir_lua',
                         help='Directory for Lua wrapper output files, '
                         'overrides --outdir.')
+    parser.add_argument('--outdir-yaml', default='',
+                        dest='outdir_yaml',
+                        help='Directory for yaml output files, '
+                        'overrides --outdir.')
     parser.add_argument('--logdir', default='',
                         help='Directory for log files.'
                         'Defaults to current directory.')
@@ -1473,6 +1498,8 @@ def main():
                         help='Colon delimited paths to search for '
                         'splicer files, may be supplied multiple '
                         'times to append to path.')
+    parser.add_argument('--sitedir', action='store_true',
+                        help='Print install location and quit')
     parser.add_argument('filename', nargs='*',
                         help='Input file to process.')
 
@@ -1487,12 +1514,16 @@ def main_with_args(args):
     Useful for testing.
     """
 
+    if args.sitedir:
+        print(os.path.dirname(__file__))
+        raise SystemExit
+
     # check command line options
     if len(args.filename) == 0:
         raise SystemExit("Must give at least one input file")
     if args.outdir and not os.path.isdir(args.outdir):
         raise SystemExit("outdir {} does not exist"
-                         .formata(args.outdir))
+                         .format(args.outdir))
     if args.outdir_c_fortran and not os.path.isdir(args.outdir_c_fortran):
         raise SystemExit("outdir-fortran {} does not exist"
                          .format(args.outdir_c_fortran))
@@ -1500,8 +1531,11 @@ def main_with_args(args):
         raise SystemExit("outdir-python {} does not exist"
                          .format(args.outdir_python))
     if args.outdir_lua and not os.path.isdir(args.outdir_lua):
-        raise SystemExit("outdir-luan {} does not exist"
+        raise SystemExit("outdir-lua {} does not exist"
                          .format(args.outdir_lua))
+    if args.outdir_yaml and not os.path.isdir(args.outdir_yaml):
+        raise SystemExit("outdir-yaml {} does not exist"
+                         .format(args.outdir_yaml))
     if args.logdir and not os.path.isdir(args.logdir):
         raise SystemExit("logdir {} does not exist"
                          .format(args.logdir))
@@ -1523,6 +1557,7 @@ def main_with_args(args):
     config.c_fortran_dir = args.outdir_c_fortran or args.outdir
     config.python_dir = args.outdir_python or args.outdir
     config.lua_dir = args.outdir_lua or args.outdir
+    config.yaml_dir = args.outdir_yaml or args.outdir
     config.log = log
     config.cfiles = []  # list of C/C++ files created
     config.ffiles = []  # list of Fortran files created
@@ -1575,6 +1610,9 @@ def main_with_args(args):
                     raise RuntimeError("File not found: %s" % name)
                 log.write("Read splicer %s\n" % name)
                 splicer.get_splicers(fullname, subsplicer)
+
+    # Write out generated types
+    TypeOut(all, config).write_types()
 
     if all['options'].wrap_c:
         wrapc.Wrapc(all, config, splicers['c']).wrap_library()
