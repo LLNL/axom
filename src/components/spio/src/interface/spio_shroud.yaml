@@ -45,8 +45,8 @@ classes:
     methods:
     - decl: IOManager * new(MPI_Comm com) +constructor
     - decl: void delete() +destructor
-    - decl: void write(Group * grp, int num_files, const std::string& file_string, const std::string& protocol)
-    - decl: void writeGroupToRootFile(Group * grp, const std::string& file_name)
-    - decl: void read(Group * grp, const std::string& file_string, const std::string& protocol)
-    - decl: void read(Group * grp, const std::string& root_file)
-    - decl: void loadExternalData(Group * grp, const std::string& root_file)
+    - decl: void write(Group * group, int num_files, const std::string& file_string, const std::string& protocol)
+    - decl: void writeGroupToRootFile(Group * group, const std::string& file_name)
+    - decl: void read(Group * group, const std::string& file_string, const std::string& protocol)
+    - decl: void read(Group * group, const std::string& root_file)
+    - decl: void loadExternalData(Group * group, const std::string& root_file)
