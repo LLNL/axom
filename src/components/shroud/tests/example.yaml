@@ -103,7 +103,8 @@ classes:
     - decl: const string& getName() const
       result:
          attrs:
-            len: aa_exclass1_get_name_length({F_instance_ptr})
+#            len: aa_exclass1_get_name_length({f_to_c})
+            len: aa_exclass1_get_name_length({F_this}%{F_derived_member})
       C_error_pattern: C_invalid_name
       PY_error_pattern: PY_invalid_name
 
@@ -157,7 +158,7 @@ classes:
       # test annotating result
       result:
          attrs:
-            len: aa_exclass2_get_name_length({F_instance_ptr})
+            len: aa_exclass2_get_name_length({F_this}%{F_derived_member})
 
 # test variations of const for result and method
     - decl: const string& getName2

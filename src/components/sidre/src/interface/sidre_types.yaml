@@ -17,6 +17,7 @@ types:
     cpp_type = DataStore
     c_type = SIDRE_datastore
     f_derived_type = datastore
+    f_to_c = "{f_var}%get_instance()"
     f_module:
       sidre_mod:
       - datastore
@@ -26,6 +27,7 @@ types:
     cpp_type = DataGroup
     c_type = SIDRE_datagroup
     f_derived_type = datagroup
+    f_to_c = "{f_var}%get_instance()"
     f_module:
       sidre_mod:
       - datagroup
@@ -35,6 +37,7 @@ types:
     cpp_type = DataBuffer
     c_type = SIDRE_databuffer
     f_derived_type = databuffer
+    f_to_c = "{f_var}%get_instance()"
     f_module:
       sidre_mod:
       - databuffer
@@ -44,6 +47,7 @@ types:
     cpp_type = DataView
     c_type = SIDRE_dataview
     f_derived_type = dataview
+    f_to_c = "{f_var}%get_instance()"
     f_module:
       sidre_mod:
       - dataview

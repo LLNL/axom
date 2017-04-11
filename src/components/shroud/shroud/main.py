@@ -385,7 +385,6 @@ class Schema(object):
 
                 c_fortran='character(kind=C_CHAR)',
                 f_type='character(*)',
-                # # f_args='trim({var}) // C_NULL_CHAR',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
@@ -409,7 +408,6 @@ class Schema(object):
 
                 c_fortran='character(kind=C_CHAR)',
                 f_type='character',
-                # # f_args='trim({var}) // C_NULL_CHAR',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
@@ -460,7 +458,6 @@ class Schema(object):
 
                 c_fortran='character(kind=C_CHAR)',
                 f_type='character(*)',
-                # # f_args='trim({var}) // C_NULL_CHAR',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
@@ -1211,6 +1208,7 @@ class VerifyAttrs(object):
         # this allows classes to reference each other
         name = cls['name']
         fmt_class = cls['fmt']
+        options = cls['options']
 
         if name not in self.typedef:
             # unname = util.un_camel(name)
@@ -1223,6 +1221,7 @@ class VerifyAttrs(object):
                 c_type=cname,
                 f_derived_type=cls.get('F_derived_name',None) or unname,
                 f_module={fmt_class.F_module_name:[unname]},
+                f_to_c = '{f_var}%%%s()' % options.F_name_instance_get,
                 )
             util.typedef_wrapped_defaults(self.typedef[name])
 

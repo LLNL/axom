@@ -194,10 +194,6 @@ F_C_result_clause
 F_C_subprogram
     ``subroutine`` or ``function``.
 
-F_instance_ptr
-    Derived member to access pointer to C++ class.
-    ``{F_this}%{F_derived_member}``
-
 F_pure_clause
     For non-void function, ``pure`` if the *pure* annotation is added or 
     the function is ``const`` and all arguments are ``intent(in)``.
@@ -653,7 +649,7 @@ f_derived_type
     Defaults to *None* which will use the C++ class name
     for the Fortran derived type name.
 
-f_args
+.. f_args
     Arguments in the Fortran wrapper to pass to the C function.
     This can pass multiple arguments to C for a single
     argument to the wrapper; for example, an address and length

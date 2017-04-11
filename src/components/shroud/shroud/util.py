@@ -159,7 +159,6 @@ def typedef_wrapped_defaults(typedef):
     typedef.f_type='type(%s)' % typedef.f_derived_type
     typedef.c_fortran='type(C_PTR)'
 
-    typedef.f_args='{c_var}%{F_derived_member}'
     # XXX module name may not conflict with type name
 #    typedef.f_module={fmt_class.F_module_name:[unname]}
 
@@ -535,6 +534,7 @@ class Typedef(object):
             'c_type',
             'c_header',
             'f_derived_type',
+            'f_to_c',
             'f_module',
         ], indent, output)
 

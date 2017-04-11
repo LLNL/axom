@@ -2702,7 +2702,7 @@ contains
             len_trim(path, kind=C_INT),  &
             type,  &
             int(num_elems, C_LONG),  &
-            buff%voidptr)
+            buff%get_instance())
         ! splicer end class.DataGroup.method.create_view_from_type_and_buffer_int
     end function datagroup_create_view_from_type_and_buffer_int
 
@@ -2722,7 +2722,7 @@ contains
             len_trim(path, kind=C_INT),  &
             type,  &
             int(num_elems, C_LONG),  &
-            buff%voidptr)
+            buff%get_instance())
         ! splicer end class.DataGroup.method.create_view_from_type_and_buffer_long
     end function datagroup_create_view_from_type_and_buffer_long
 
@@ -2804,7 +2804,7 @@ contains
             type,  &
             ndims,  &
             shape,  &
-            buff%voidptr)
+            buff%get_instance())
         ! splicer end class.DataGroup.method.create_view_from_shape_and_buffer
     end function datagroup_create_view_from_shape_and_buffer
 
@@ -2842,7 +2842,7 @@ contains
             obj%voidptr,  &
             path,  &
             len_trim(path, kind=C_INT),  &
-            buff%voidptr)
+            buff%get_instance())
         ! splicer end class.DataGroup.method.create_view_into_buffer
     end function datagroup_create_view_into_buffer
 
@@ -2908,7 +2908,7 @@ contains
         ! splicer begin class.DataGroup.method.move_view
         SH_rv%voidptr = c_datagroup_move_view(  &
             obj%voidptr,  &
-            view%voidptr)
+            view%get_instance())
         ! splicer end class.DataGroup.method.move_view
     end function datagroup_move_view
 
@@ -2920,7 +2920,7 @@ contains
         ! splicer begin class.DataGroup.method.copy_view
         SH_rv%voidptr = c_datagroup_copy_view(  &
             obj%voidptr,  &
-            view%voidptr)
+            view%get_instance())
         ! splicer end class.DataGroup.method.copy_view
     end function datagroup_copy_view
 
@@ -3065,7 +3065,7 @@ contains
         ! splicer begin class.DataGroup.method.move_group
         SH_rv%voidptr = c_datagroup_move_group(  &
             obj%voidptr,  &
-            grp%voidptr)
+            grp%get_instance())
         ! splicer end class.DataGroup.method.move_group
     end function datagroup_move_group
 
@@ -3086,7 +3086,7 @@ contains
         ! splicer begin class.DataGroup.method.is_equivalent_to
         SH_rv = c_datagroup_is_equivalent_to(  &
             obj%voidptr,  &
-            other%voidptr)
+            other%get_instance())
         ! splicer end class.DataGroup.method.is_equivalent_to
     end function datagroup_is_equivalent_to
 
@@ -4768,7 +4768,7 @@ contains
         ! splicer begin class.DataView.method.attach_buffer_only
         call c_dataview_attach_buffer_only(  &
             obj%voidptr,  &
-            buff%voidptr)
+            buff%get_instance())
         ! splicer end class.DataView.method.attach_buffer_only
     end subroutine dataview_attach_buffer_only
 
@@ -4784,7 +4784,7 @@ contains
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG),  &
-            buff%voidptr)
+            buff%get_instance())
         ! splicer end class.DataView.method.attach_buffer_type_int
     end subroutine dataview_attach_buffer_type_int
 
@@ -4800,7 +4800,7 @@ contains
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG),  &
-            buff%voidptr)
+            buff%get_instance())
         ! splicer end class.DataView.method.attach_buffer_type_long
     end subroutine dataview_attach_buffer_type_long
 
@@ -4818,7 +4818,7 @@ contains
             type,  &
             ndims,  &
             shape,  &
-            buff%voidptr)
+            buff%get_instance())
         ! splicer end class.DataView.method.attach_buffer_shape
     end subroutine dataview_attach_buffer_shape
 

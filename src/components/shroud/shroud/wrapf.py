@@ -322,8 +322,6 @@ class Wrapf(util.WrapperMixin):
         impl = self.impl
         fmt = util.Options(fmt_class)
 
-        fmt.F_instance_ptr = wformat('{F_this}%{F_derived_member}', fmt)
-
         # get
         fmt.underscore_name = options['F_name_instance_get']
         if fmt.underscore_name:
@@ -344,7 +342,7 @@ class Wrapf(util.WrapperMixin):
             append_format(
                 impl, 'class({F_derived_name}), intent(IN) :: {F_this}', fmt)
             append_format(impl, 'type(C_PTR) :: {F_derived_member}', fmt)
-            append_format(impl, '{F_derived_member} = {F_instance_ptr}', fmt)
+            append_format(impl, '{F_derived_member} = {F_this}%{F_derived_member}', fmt)
             impl.append(-1)
             append_format(impl, 'end function {F_name_impl}', fmt)
 
@@ -369,7 +367,7 @@ class Wrapf(util.WrapperMixin):
                 fmt)
             append_format(
                 impl, 'type(C_PTR), intent(IN) :: {F_derived_member}', fmt)
-            append_format(impl, '{F_instance_ptr} = {F_derived_member}', fmt)
+            append_format(impl, '{F_this}%{F_derived_member} = {F_derived_member}', fmt)
             impl.append(-1)
             append_format(impl, 'end subroutine {F_name_impl}', fmt)
 
@@ -391,7 +389,7 @@ class Wrapf(util.WrapperMixin):
             append_format(
                 impl, 'class({F_derived_name}), intent(IN) :: {F_this}', fmt)
             impl.append('logical rv')
-            append_format(impl, 'rv = c_associated({F_instance_ptr})', fmt)
+            append_format(impl, 'rv = c_associated({F_this}%{F_derived_member})', fmt)
             impl.append(-1)
             append_format(impl, 'end function {F_name_impl}', fmt)
 
@@ -675,8 +673,6 @@ class Wrapf(util.WrapperMixin):
                                       .get('need_wrapper', False):
             need_wrapper = True
 
-        fmt_func.F_instance_ptr = wformat('{F_this}%{F_derived_member}', fmt_func)
-
         arg_c_call = []      # arguments to C function
 
         arg_f_names = []
@@ -691,7 +687,8 @@ class Wrapf(util.WrapperMixin):
             need_wrapper = True
             # Add 'this' argument
             if not is_ctor:
-                arg_c_call.append(fmt_func.F_instance_ptr)
+                # could use {f_to_c} but I'd rather not hide the shadow class
+                arg_c_call.append(wformat('{F_this}%{F_derived_member}', fmt_func))
                 arg_f_names.append(fmt_func.F_this)
                 arg_f_decl.append(wformat(
                         'class({F_derived_name}) :: {F_this}',
@@ -759,6 +756,7 @@ class Wrapf(util.WrapperMixin):
             len_trim = c_arg['attrs'].get('len_trim', None)
             len_arg = c_arg['attrs'].get('len', None)
             if arg_typedef.f_args:
+                # TODO - Not sure if this is still needed.
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_args, fmt_arg)
             elif arg_typedef.f_to_c:
