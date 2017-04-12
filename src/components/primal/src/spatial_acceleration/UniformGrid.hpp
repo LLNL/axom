@@ -123,6 +123,7 @@ public:
    *****************************************************************************
    */
   std::vector<T>& getBinContents(int index);
+
   /*!
    *****************************************************************************
    * \brief Returns the contents of the bin indicated by index.
