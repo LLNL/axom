@@ -16,7 +16,7 @@
 
 module quest_fortran_usage
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 
 #ifndef AXOM_USE_MPIF_HEADER
   use mpi

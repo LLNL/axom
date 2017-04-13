@@ -2,6 +2,7 @@ Read yaml example.yaml
 Read splicer csplicer.c
 Read splicer pysplicer.c
 Read splicer fsplicer.f
+Close userlibrary_types.yaml
 class ExClass1
 C method ExClass1 * new(const string * name+intent(in))+constructor
 C method ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor

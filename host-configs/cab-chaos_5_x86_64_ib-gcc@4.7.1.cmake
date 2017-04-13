@@ -30,9 +30,12 @@ set("HDF5_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_22_09_30_
 # conduit from uberenv
 set("CONDUIT_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_22_09_30_19/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.7.1/conduit-0.2.1-3j42b5cmds7mv3nkrhra2m7uprclz5id" CACHE PATH "")
 
+<<<<<<< HEAD:host-configs/cab-chaos_5_x86_64_ib-gcc@4.7.1.cmake
 # sparsehash headers from uberenv
 set("SPARSEHASH_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_22_09_30_19/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.7.1/sparsehash-headers-2.0.2-ebexhuxsncs6fbkmof6djiv3d26rclik" CACHE PATH "")
 
+=======
+>>>>>>> 6fc779798a8ed375d0a6de251efd58f3ce4566f4:host-configs/surface-chaos_5_x86_64_ib-gcc@4.7.1.cmake
 # boost headers from uberenv
 set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_22_09_30_19/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.7.1/boost-headers-1.58.0-zhkwg3db5a6xbucdytnjq3my52l5jlwu" CACHE PATH "")
 

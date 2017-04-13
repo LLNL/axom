@@ -17,11 +17,11 @@
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
-#include "sidre/DataGroup.hpp"
+#include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
 #include "spio/IOManager.hpp"
 
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::spio::IOManager;
 
@@ -41,7 +41,7 @@ int main(int argc, char * argv[])
 
   DataStore * ds = new DataStore();
   SLIC_ASSERT(ds);
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
   std::string root_file;
   if (argc == 2) {

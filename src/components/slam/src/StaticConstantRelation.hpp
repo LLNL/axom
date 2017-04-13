@@ -29,7 +29,7 @@
 
 //#include <iostream>
 
-#include "common/AxomMacros.hpp"
+#include "axom/Macros.hpp"
 #include "slic/slic.hpp"
 
 #include "slam/OrderedSet.hpp"

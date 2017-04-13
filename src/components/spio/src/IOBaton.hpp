@@ -24,8 +24,8 @@
 #include "mpi.h"
 
 // Other axom headers
-#include "common/AxomMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 
 
 namespace axom

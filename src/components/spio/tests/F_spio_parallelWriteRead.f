@@ -25,15 +25,15 @@ program spio_parallel_write_read
   integer my_rank, num_ranks, num_output
   integer, pointer :: i1_vals(:), i2_vals(:)
 
-  type(datastore) ds1, ds2
-  type(datagroup) root1, root2
-  type(datagroup) flds, flds2
-  type(datagroup) ga, gb
-  type(dataview)  view1, view2
+  type(SidreDataStore) ds1, ds2
+  type(SidreGroup) root1, root2
+  type(SidreGroup) flds, flds2
+  type(SidreGroup) ga, gb
+  type(SidreView)  view1, view2
 
-  type(datastore) dsextra
-  type(datagroup) extra_root, extra, child
-  type(dataview) view
+  type(SidreDataStore) dsextra
+  type(SidreGroup) extra_root, extra, child
+  type(SidreView) view
 
   type(iomanager) writer, reader
 

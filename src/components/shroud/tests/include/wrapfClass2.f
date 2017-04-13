@@ -83,7 +83,7 @@ contains
         ! splicer begin class.Class2.method.method2
         call c_class2_method2(  &
             obj%voidptr,  &
-            c2%voidptr)
+            c2%get_instance())
         ! splicer end class.Class2.method.method2
     end subroutine class2_method2
 
