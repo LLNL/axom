@@ -122,9 +122,9 @@ class_lower
 class_upper
     Uppercase version of *cpp_class*.
 
-class_name
+class_prefix
     Variable which may be used in creating function names.
-    Defaults to evaluation of *class_name_template*.
+    Defaults to evaluation of *class_prefix_template*.
     Outside of a class, set to empty string.
 
 C_prefix
@@ -432,15 +432,15 @@ C_impl_filename_library_template
     ``wrap{library}.cpp``
 
 C_name_template
-    ``{C_prefix}{class_name}_{underscore_name}{function_suffix}``
+    ``{C_prefix}{class_prefix}{underscore_name}{function_suffix}``
 
-class_name_template
+class_prefix_template
     Class component for function names.
     Will be blank if the function is not in a class.
     ``{class_lower}_``
 
 F_C_name_template
-    ``{F_C_prefix}{class_name}{underscore_name}{function_suffix}``
+    ``{F_C_prefix}{class_prefix}{underscore_name}{function_suffix}``
 
 F_name_generic_template
     ``{underscore_name}``
@@ -461,7 +461,7 @@ F_module_name_library_template
     ``{library_lower}_mod``
 
 F_name_impl_template
-    ``{class_name}{underscore_name}{function_suffix}``
+    ``{class_prefix}{underscore_name}{function_suffix}``
 
 F_name_method_template
     ``{underscore_name}{function_suffix}``
@@ -498,7 +498,7 @@ LUA_name_impl_template
     Name of implementation function.
     All overloaded function use the same Lua wrapper so 
     *function_suffix* is not needed.
-    ``{LUA_prefix}{class_name}{underscore_name}``
+    ``{LUA_prefix}{class_prefix}{underscore_name}``
 
 LUA_name_template
     Name of function as know by Lua.

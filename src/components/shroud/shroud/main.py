@@ -139,7 +139,7 @@ class Schema(object):
             doxygen=True,       # create doxygen comments
 
             # blank for functions, set in classes.
-            class_name_template='{class_lower}_',
+            class_prefix_template='{class_lower}_',
 
             C_header_filename_library_template='wrap{library}.h',
             C_impl_filename_library_template='wrap{library}.cpp',
@@ -148,15 +148,15 @@ class Schema(object):
             C_impl_filename_class_template='wrap{cpp_class}.cpp',
 
             C_name_template=(
-                '{C_prefix}{class_name}{underscore_name}{function_suffix}'),
+                '{C_prefix}{class_prefix}{underscore_name}{function_suffix}'),
 
             # Fortran's names for C functions
             F_C_prefix='c_',
             F_C_name_template=(
-                '{F_C_prefix}{class_name}{underscore_name}{function_suffix}'),
+                '{F_C_prefix}{class_prefix}{underscore_name}{function_suffix}'),
 
             F_name_impl_template=(
-                '{class_name}{underscore_name}{function_suffix}'),
+                '{class_prefix}{underscore_name}{function_suffix}'),
 
             F_name_method_template='{underscore_name}{function_suffix}',
             F_name_generic_template='{underscore_name}',
@@ -197,7 +197,7 @@ class Schema(object):
         util.eval_template(node, 'C_impl_filename', '_library')
 
         # set default values for fields which may be unset.
-        fmt_library.class_name = ''
+        fmt_library.class_prefix = ''
 #        fmt_library.c_ptr = ''
 #        fmt_library.c_const = ''
         fmt_library.CPP_this_call = ''
@@ -584,7 +584,7 @@ class Schema(object):
             fmt_class.C_prefix = options.C_prefix
         if 'F_C_prefix' in options:
             fmt_class.F_C_prefix = options.F_C_prefix
-        util.eval_template(node, 'class_name')
+        util.eval_template(node, 'class_prefix')
 
         # Only one file per class for C.
         util.eval_template(node, 'C_header_filename', '_class')

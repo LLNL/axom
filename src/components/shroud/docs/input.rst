@@ -1,44 +1,47 @@
-YAML Input
-==========
+Input
+=====
 
-How code is generated
----------------------
+The input to Shroud is a YAML formatted file.
+YAML is a human friendly data serialization standard. [yaml]_
+Structure is shown through indentation (one or more spaces).  Sequence
+items are denoted by a dash, and key value pairs within a map are
+separated by a colon::
 
-In some sense, Shroud can be thought of as a fancy macro processor.
-It takes the function declarations from the YAML file and break them
-down into a series of contexts (library, class, function) and defines
-a dictionary of format macros of the form key=value.  There are then a
-series of macro templates which are expanded to create the wrapper
-functions. Some name templates can be specified as options.  But the
-overall structure of the generated code is defined by the classes and
-functions in the YAML file as well as the requirements of C++ and
-Fortran syntax.
+    library: Tutorial
 
-Format strings contain “replacement fields” surrounded by curly braces
-``{}``. Anything that is not contained in braces is considered literal
-text, which is copied unchanged to the output. If you need to include
-a brace character in the literal text, it can be escaped by doubling:
-``{{`` and ``}}``. [Python_Format]_
+    types:
+      TypeID:
+        typedef  : int
+        cpp_type : TypeID
+    
+    functions:
+    - decl: void Function1
 
-Due to a feature of YAML, if a string starts with a curly brace YAML
-will interpret it as a dictionary instead of as part of the
+    classes:
+    - name: Class1
+      methods:
+      - decl: void Method1()
+
+Shroud use curly braces for format strings.
+If a string starts with a curly brace YAML
+will interpret it as a map/dictionary instead of as part of the
 string. To avoid this behavior, strings which start with a curly brace
 should be quoted::
 
     name : "{fmt}"
 
-Some macros consist of blocks of code.  YAML provides a syntax for 
+Strings may be split across several lines::
+
+    - decl: void Sum(int len, int *values+dimension+intent(in),
+                     int *result+intent(out))
+
+Some values consist of blocks of code.  YAML provides a syntax for 
 add multiple lines while preserving newlines::
 
     C_invalid_name: |
         if (! isNameValid({cpp_var})) {{
             return NULL;
         }}
-
-Declarations may be split across several lines::
-
-    - decl: void Sum(int len, int *values+dimension+intent(in),
-                     int *result+intent(out))
 
 
 
@@ -101,6 +104,16 @@ This allows the user to modifiy behavior for all functions or just a single one:
     #     option_b = true     # ihherited
           option_c = true
 
+How code is formatted
+---------------------
+
+Format strings contain “replacement fields” surrounded by curly braces
+``{}``. Anything that is not contained in braces is considered literal
+text, which is copied unchanged to the output. If you need to include
+a brace character in the literal text, it can be escaped by doubling:
+``{{`` and ``}}``. [Python_Format]_
+
+
 What files are created
 ----------------------
 
@@ -126,7 +139,7 @@ How Names are created
 
 Shroud attempts to provide user control of names while providing
 reasonable defaults.
-Each name is based on the library, class, method or variable name
+Each name is based on the library, class, method or argument name
 in the current scope.  Most names have a template which may be used
 to control how the names are generated on a global scale.  Many names
 may also be explicitly specified by a field.
@@ -160,28 +173,24 @@ by setting *F_name_impl*::
 
 To rename all functions, set the template in the toplevel *options*::     
 
-  options:
     library: library
     namespace: library
-    F_name_impl_function_template:
-      "{library}_{underscore_name}{function_suffix}"
 
-  function:
-  -  decl: void initialize
+    options:
+      F_name_impl_template: "{library}_{underscore_name}{function_suffix}"
+
+    function:
+    -  decl: void initialize
 
 
-How Functions are Generated
----------------------------
+How Functions are Wrapped
+-------------------------
 
 This section show the format templates which are used to create code.
 The names in curly parens are from the format dictionary.
 
-The C wrapper code::
 
-    struct s_{C_type_name};
-    typedef struct s_{C_type_name} {C_type_name};
-
-C implementation::
+C wrapper::
 
     {C_return_type} {C_name}({C_prototype})
     {
@@ -228,11 +237,23 @@ be controlled directly by the input file::
     end module {F_module_name}
 
 
-C++ Code
-^^^^^^^^
+C++ Classes
+^^^^^^^^^^^
 
 The C wrapper uses a pointer to an opaque type *C_type_name* as the 
-object instance pointer.  The C++ wrapper must first cast this into
+object instance pointer.
+
+
+.. wrapc.py   Wrapc.write_header
+
+The C wrapper header file::
+
+    struct s_{C_type_name};
+    typedef struct s_{C_type_name} {C_type_name};
+
+
+
+The C++ wrapper must first cast this into
 a *cpp_class* pointer.
 The class's type *c_to_cpp* field is used to cast the pointer.
 
@@ -258,6 +279,9 @@ Example code::
 Annotations may change how the code is generated.
 The *constructor* attribute will use the `new` C++ keyword and
 *destructor* will use `delete` in the *C_code*.
+
+
+.. Fortran shadow class
 
 
 Header Files
@@ -333,8 +357,10 @@ Fortran option F_result.
 splicers
 --------
 
-
 .. [Python_Format] https://docs.python.org/2/library/string.html#format-string-syntax
+
+.. [yaml] `yaml.org <http://yaml.org/>`_
+
 
 
 

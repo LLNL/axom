@@ -26,8 +26,8 @@ classes:
     F_derived_name: FNames
     options:
       none: foo
-      C_name_template: XXX_{C_prefix}{class_name}{underscore_name}{function_suffix}
-      F_C_name_template: XXX_{C_prefix}{class_name}{underscore_name}{function_suffix}
+      C_name_template: XXX_{C_prefix}{class_prefix}{underscore_name}{function_suffix}
+      F_C_name_template: XXX_{C_prefix}{class_prefix}{underscore_name}{function_suffix}
 
     methods:
     -  decl: void method1
@@ -39,7 +39,7 @@ functions:
   - options:
        C_name_template: YYY_{C_prefix}{underscore_name}{function_suffix}
        F_C_name_template: YYY_{C_prefix}{underscore_name}{function_suffix}
-       F_name_impl_template: "{library}_{class_name}{underscore_name}{function_suffix}"
+       F_name_impl_template: "{library}_{class_prefix}{underscore_name}{function_suffix}"
   - decl: void function1
   - decl: void function2
     C_name: c_name_special

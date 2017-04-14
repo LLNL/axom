@@ -20,7 +20,7 @@ def add_templates(options):
         LUA_metadata_template='{cpp_class}.metatable',
         LUA_ctor_name_template='{cpp_class}',
         LUA_name_template='{function_name}',
-        LUA_name_impl_template='{LUA_prefix}{class_name}{underscore_name}',
+        LUA_name_impl_template='{LUA_prefix}{class_prefix}{underscore_name}',
         ))
 
 

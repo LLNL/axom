@@ -52,7 +52,7 @@ In addition, Fortran 2003 provides some object oriented programming facilities:
    * Procedure Polymorphism with Type-Bound Procedures
    * Enumerations compatible with C
 
-A Fortran pointer is similar to a C++ instance pointer in that it not only has the address of 
+A Fortran pointer is similar to a C++ instance in that it not only has the address of 
 the memory but also contains meta-data such as the type, kind and shape of the array.  Some vendors document the struct used to store the metadata for an array.
 
    * GNU Fortran http://gcc.gnu.org/wiki/ArrayDescriptorUpdate
@@ -65,6 +65,28 @@ directly supported by C.  Each vendor has their own pointer struct.
 Eventually this will be supported in Fortran via the Further Interoperability of Fortran and C -
 `Technical Specification ISO/IEC TS 29113:2012 <http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=45136>`_
 
+Overview
+--------
+
+Input is read from a YAML file which describes the types, functions,
+and classes to wrap.  This file must be created by the user.  Shroud
+does not parse C++ code to extract the API. That was considered a
+large task and not needed for the size of the API of the library that
+inspired Shroud's development. In addition, there is a lot of semantic
+information which must be provided by the user that may be difficult
+to infer from the source alone.  However, the task of created the
+input file is simplified since the C++ declaration can be
+cut-and-pasted into the YAML file.
+
+In some sense, Shroud can be thought of as a fancy macro processor.
+It takes the function declarations from the YAML file and break them
+down into a series of contexts (library, class, function, argument) and defines
+a dictionary of format macros of the form key=value.  There are then a
+series of macro templates which are expanded to create the wrapper
+functions. Some name templates can be specified as options.  But the
+overall structure of the generated code is defined by the classes and
+functions in the YAML file as well as the requirements of C++ and
+Fortran syntax.
 
 Requirements
 ------------
