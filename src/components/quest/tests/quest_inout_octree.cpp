@@ -12,12 +12,13 @@
 
 #include "gtest/gtest.h"
 
-#include "common/CommonTypes.hpp"
-#include "common/Timer.hpp"
+#include "axom/Types.hpp"
+#include "axom_utils/Timer.hpp"
+
+#include "primal/orientation.hpp"
+#include "primal/Triangle.hpp"
 
 #include "quest/InOutOctree.hpp"
-#include "quest/Orientation.hpp"
-#include "quest/Triangle.hpp"
 
 #include "mint/Mesh.hpp"
 
@@ -31,7 +32,7 @@ namespace {
     const int DIM = 3;
 }
 
-typedef quest::InOutOctree<DIM> Octree3D;
+typedef axom::quest::InOutOctree<DIM> Octree3D;
 
 typedef Octree3D::GeometricBoundingBox GeometricBoundingBox;
 typedef Octree3D::SpacePt SpacePt;
@@ -55,7 +56,7 @@ typedef Octree3D::BlockIndex BlockIndex;
 
 
 
-void queryOctahedronMesh(mint::Mesh*& mesh, const GeometricBoundingBox& bbox)
+void queryOctahedronMesh(axom::mint::Mesh*& mesh, const GeometricBoundingBox& bbox)
 {
     const double bbMin = bbox.getMin()[0];
     const double bbMax = bbox.getMax()[0];
@@ -64,7 +65,7 @@ void queryOctahedronMesh(mint::Mesh*& mesh, const GeometricBoundingBox& bbox)
     octree.generateIndex();
 
     // Query the mesh containment
-    asctoolkit::utilities::Timer timer(true);
+    axom::utilities::Timer timer(true);
     for(int i=0; i < NUM_PT_TESTS; ++i)
     {
         SpacePt pt;
@@ -103,7 +104,7 @@ void queryOctahedronMesh(mint::Mesh*& mesh, const GeometricBoundingBox& bbox)
 //            pt = SpacePt(2* bbMax);
 //            break;
 //        default:                // random points in bounding box
-            pt = quest::utilities::randomSpacePt<DIM>(bbMin, bbMax);
+            pt = axom::quest::utilities::randomSpacePt<DIM>(bbMin, bbMax);
 //            break;
 //        }
 
@@ -113,7 +114,7 @@ void queryOctahedronMesh(mint::Mesh*& mesh, const GeometricBoundingBox& bbox)
         // query point is sufficiently close to the surface
         bool expectInside = absCoordSum < 1.;
         EXPECT_TRUE( octree.within(pt) == expectInside
-                || asctoolkit::utilities::isNearlyEqual(absCoordSum, 1.) )
+                || axom::utilities::isNearlyEqual(absCoordSum, 1.) )
             << "Point " << pt << " was not "
             << (expectInside? "inside" : "outside")
             << " surface of octahedron as expected."
@@ -135,7 +136,7 @@ TEST( quest_inout_octree, octahedron_mesh)
     SLIC_INFO("*** This test creates a simple mesh of an octahedron and tests point containment.\n");
 
     // Generate the InOutOctree
-    mint::Mesh* mesh = quest::utilities::make_octahedron_mesh();
+    axom::mint::Mesh* mesh = axom::quest::utilities::make_octahedron_mesh();
     // quest::utilities::write_vtk(mesh, "octahedron.vtk");
 
     ///
@@ -158,14 +159,14 @@ TEST( quest_inout_octree, octahedron_mesh)
 
 
     delete mesh;
-    mesh = ATK_NULLPTR;
+    mesh = AXOM_NULLPTR;
 }
 
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
@@ -175,7 +176,7 @@ int main(int argc, char * argv[])
 
   UnitTestLogger logger;  // create & initialize test logger,
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
 
   // finalized when exiting main scope

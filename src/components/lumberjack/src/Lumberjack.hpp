@@ -30,7 +30,7 @@
 #include "lumberjack/Message.hpp"
 #include "lumberjack/TextEqualityCombiner.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 /*!
@@ -149,8 +149,6 @@ class Lumberjack {
          * This returns a const reference to the vector that holds the Message classes held by
          * this node. You should check isOutputNode() to indicate if you should
          * output messages depending on your communication scheme.
-         *
-         * \param [in,out] filledVector An empty vector that will be filled with Message classes.
          *****************************************************************************
          */
         const std::vector<Message*>& getMessages() const;
@@ -259,6 +257,6 @@ class Lumberjack {
 };
 
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif

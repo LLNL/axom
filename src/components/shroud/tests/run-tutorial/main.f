@@ -8,7 +8,7 @@ program tester
   implicit none
   logical ok
 
-  logical rv_logical
+  logical rv_logical, wrk_logical
   integer rv_integer
   integer(C_INT) rv_int
   real(C_DOUBLE) rv_double
@@ -44,6 +44,18 @@ contains
 
     rv_logical = function3(.false.)
     call assert_true(rv_logical)
+
+    rv_logical = .true.
+    wrk_logical = .true.
+    call function3b(.true., rv_logical, wrk_logical)
+    call assert_false(rv_logical)
+    call assert_false(wrk_logical)
+
+    rv_logical = .false.
+    wrk_logical = .false.
+    call function3b(.false., rv_logical, wrk_logical)
+    call assert_true(rv_logical)
+    call assert_true(wrk_logical)
 
     call assert_true( function4a("dog", "cat") == "dogcat")
 
@@ -111,12 +123,12 @@ contains
     obj = class1_new()
     call assert_true(c_associated(obj%get_instance()), "class1_new")
 
-    call obj%method1()
+    call obj%method1
     call assert_true(.true.)
 
     call useclass(obj)
 
-    call obj%delete()
+    call obj%delete
     call assert_true(.not. c_associated(obj%get_instance()), "class1_delete")
   end subroutine test_class1
 

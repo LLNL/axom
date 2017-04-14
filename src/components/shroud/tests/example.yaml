@@ -1,3 +1,6 @@
+library: UserLibrary
+namespace: example nested
+
 copyright:
   - blah blah
   - yada yada
@@ -14,9 +17,7 @@ splicer:
 options:
 #  module_name: exclass1_mod
   debug: True
-  library: UserLibrary
   C_prefix: AA_
-  namespace: example nested
   F_module_per_class: True
   # include files to add to module
   wrap_python: True
@@ -39,7 +40,7 @@ types:
     typedef  : long
 # defined in SidreTypes.hpp
     c_header : sidre/SidreTypes.h
-    c_type   : ATK_SidreLength
+    c_type   : SIDRE_SidreLength
     cpp_type : SidreLength
 #    c_fortran: integer(C_LONG)
 #    f_type   : integer(C_LONG)
@@ -61,7 +62,7 @@ types:
   # DataGroup is a type which is provided by another shroud wrapped library
   DataGroup:
     cpp_header: sidre/DataGroup.hpp
-    cpp_type: asctoolkit::sidre::DataGroup
+    cpp_type: axom::sidre::DataGroup
     f_type: type(datagroup)
     f_module:
       sidre_mod: [ datagroup ]
@@ -71,14 +72,13 @@ types:
     f_to_c: '{f_var}%get_instance()'
     # cpp_local_var uses c_to_cpp to assign a value to a local variable
     cpp_local_var: True
-    c_to_cpp: static_cast<{C_const}{cpp_type}{ptr}>(static_cast<{C_const}void *>({c_var}))
+    c_to_cpp: static_cast<{c_const}{cpp_type}{c_ptr}>(static_cast<{c_const}void *>({c_var}))
     PY_PyTypeObject: FillInTypeForGroup
 
 classes:
   - name: ExClass1
-    options:
-      cpp_header: ExClass1.hpp
-      # include files to add to module
+    cpp_header: ExClass1.hpp
+    # include files to add to module
 
     python:
       type: [ init, repr, richcompare ]
@@ -103,7 +103,8 @@ classes:
     - decl: const string& getName() const
       result:
          attrs:
-            len: aa_exclass1_get_name_length({F_instance_ptr})
+#            len: aa_exclass1_get_name_length({f_to_c})
+            len: aa_exclass1_get_name_length({F_this}%{F_derived_member})
       C_error_pattern: C_invalid_name
       PY_error_pattern: PY_invalid_name
 
@@ -111,8 +112,7 @@ classes:
       doxygen:
         brief: helper function for Fortran
       helper: True
-      options:
-         C_code: return selfobj->getName().length();
+      C_code: return selfobj->getName().length();
 
     - decl: const string& getNameErrorCheck() const
 
@@ -134,8 +134,7 @@ classes:
 
   ######################################################################
   - name: ExClass2
-    options:
-      cpp_header: ExClass2.hpp
+    cpp_header: ExClass2.hpp
     python:
       type: [dealloc, print, compare, getattr, setattr,
              getattro, setattro,
@@ -159,7 +158,7 @@ classes:
       # test annotating result
       result:
          attrs:
-            len: aa_exclass2_get_name_length({F_instance_ptr})
+            len: aa_exclass2_get_name_length({F_this}%{F_derived_member})
 
 # test variations of const for result and method
     - decl: const string& getName2
@@ -173,8 +172,7 @@ classes:
          type: int
          attrs:
            const: true
-      options:
-          C_code: return selfobj->getName().length();
+      C_code: return selfobj->getName().length();
 
     # test forward declarations
     - decl: ExClass1 *get_class1(const ExClass1 *in)
@@ -220,9 +218,8 @@ functions:
 
   # override the C code.
   -  decl: bool isNameValid(const std::string& name)
-     options:
-       C_code:  "return name != NULL;"
-       F_code:  rv = name .ne. " "
+     C_code:  "return name != NULL;"
+     F_code:  rv = name .ne. " "
 
   # return bool, no arguments.
   # This needs to generate a Fortran wrapper to convert the bool to logical
@@ -259,11 +256,11 @@ functions:
 
 ######################################################################
 patterns:
-    C_invalid_name: >
+    C_invalid_name: |
         if (! isNameValid({cpp_var})) {{
             return NULL;
         }}
-    PY_invalid_name: >
+    PY_invalid_name: |
         if (! isNameValid({cpp_var})) {{
             PyErr_SetString(PyExc_KeyError, "XXX need value of name");
             return NULL;

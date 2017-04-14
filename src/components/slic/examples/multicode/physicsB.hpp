@@ -26,7 +26,7 @@
 #include "slic/slic.hpp"
 #include "slic/GenericOutputStream.hpp"
 
-using namespace asctoolkit;
+using namespace axom;
 
 namespace physicsB {
 
@@ -60,6 +60,7 @@ void init()
 
   slic::createLogger( "physicsB", slic::inherit::errors_and_warnings );
   slic::activateLogger( "physicsB" );
+  slic::disableAbortOnError();
   slic::setLoggingMsgLevel( slic::message::Debug );
   slic::addStreamToAllMsgLevels( ls );
 

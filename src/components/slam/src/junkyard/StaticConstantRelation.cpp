@@ -15,7 +15,7 @@
 #include <iostream>
 #include <iterator>
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
   StaticConstantRelation::StaticConstantRelation (Set* fromSet, Set* toSet)
@@ -122,4 +122,4 @@ namespace slam {
   }
 
 } // namespace slam
-} // namespace asctoolkit
+} // namespace axom

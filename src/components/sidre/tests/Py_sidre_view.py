@@ -19,7 +19,7 @@ class SidreView(unittest.TestCase):
     def test_create_views(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
-        self.assertEqual(type(root), sidre.DataGroup)
+        self.assertEqual(type(root), sidre.Group)
         
         dv_0 = root.createViewAndAllocate("field0", sidre.INT_ID, 1)
         dv_1 = root.createViewAndAllocate("field1", sidre.INT_ID, 1)

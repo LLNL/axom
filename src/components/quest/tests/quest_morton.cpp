@@ -12,11 +12,11 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Point.hpp"
+#include "primal/Point.hpp"
 #include "quest/MortonIndex.hpp"
 
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 #include <cstdlib>
 #include <limits>
@@ -29,6 +29,8 @@ using asctoolkit::slic::UnitTestLogger;
 #ifdef MORTON_TESTER_SHOULD_SEED
   #include <ctime>      // for time() used by srand()
 #endif
+
+using axom::primal::Point;
 
 namespace {
 
@@ -47,9 +49,9 @@ namespace {
     }
 
     template<typename CoordType, int DIM>
-    quest::Point<CoordType, DIM> randomPoint(CoordType beg, CoordType end)
+    Point<CoordType, DIM> randomPoint(CoordType beg, CoordType end)
     {
-        quest::Point<CoordType,DIM> pt;
+        Point<CoordType,DIM> pt;
         for(int i=0; i< DIM; ++i)
             pt[i] = randomInt(beg,end);
 
@@ -65,7 +67,7 @@ TEST( quest_point, test_max_set_bit)
     typedef int CoordType;
     typedef std::size_t MortonIndexType;
 
-    quest::Mortonizer<CoordType,MortonIndexType,2> morton2;
+    axom::quest::Mortonizer<CoordType,MortonIndexType,2> morton2;
     EXPECT_EQ( morton2.maxSetBit( 0), 0);
 
 
@@ -87,11 +89,11 @@ TEST( quest_point, test_max_set_bit)
 
 TEST( quest_point, test_mortonizer)
 {
-  using namespace quest;
+  using namespace axom::quest ;
 
   SLIC_INFO("Testing Morton conversion on some simple points");
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
   typedef std::size_t MortonIndexType;
 
 
@@ -126,7 +128,7 @@ TEST( quest_point, test_mortonizer)
   EXPECT_EQ( mIdx3, mIdx3Alt );
   EXPECT_EQ( morton3.demortonize(mIdx3Alt), pt3 );
 
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
   // The following will not compile -- static_assert CoordType must be integral
   //Mortonizer<double,2> mortonD;
@@ -136,11 +138,11 @@ TEST( quest_point, test_mortonizer)
 template<typename CoordType, typename MortonIndexType, int DIM>
 void testMortonizer()
 {
-    using namespace quest;
+    using namespace axom::quest ;
 
     typedef Point<CoordType, DIM> GridPoint;
 
-    int maxBits = quest::Mortonizer<CoordType,MortonIndexType,DIM>::maxBitsPerCoord();
+    int maxBits = axom::quest::Mortonizer<CoordType,MortonIndexType,DIM>::maxBitsPerCoord();
     SLIC_INFO("\tMax bits per dimension: " << std::numeric_limits<CoordType>::digits);
     SLIC_INFO("\tMax unique bits per dimension: " << maxBits);
 
@@ -169,7 +171,7 @@ void testMortonizer()
 template<int DIM>
 void testIntegralTypes()
 {
-    namespace common = asctoolkit::common;
+    namespace common = axom::common;
 
     SLIC_INFO("Testing char in " << DIM << "d -- ");
     testMortonizer<common::int8,common::uint8,DIM>();
@@ -243,11 +245,11 @@ TEST( quest_point, test_integral_types_3D)
 
 TEST( quest_point, test_point_hasher)
 {
-    using namespace quest;
+    using namespace axom::quest ;
 
     SLIC_INFO("** Here we test the point hasher which can be used e.g. in an unordered_map");
 
-    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug);
+    axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
     typedef int CoordType;
     PointHash<CoordType> ptHash;
@@ -282,7 +284,7 @@ TEST( quest_point, test_point_hasher)
     exp = 0x953111;                 // in hex (read bits bottom up, left to right)
     EXPECT_EQ( ptHash(p4), exp);
 
-    asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info);
+    axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
 }
 
@@ -295,7 +297,7 @@ int main(int argc, char * argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info );
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
   // finalized when exiting main scope
 

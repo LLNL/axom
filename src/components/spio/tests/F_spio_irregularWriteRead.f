@@ -27,11 +27,11 @@ program spio_irregularWriteRead
   integer, pointer :: vals1(:), vals2(:)
   character(80) name
 
-  type(datastore) ds1, ds2
-  type(datagroup) root1, root2
-  type(datagroup) flds1, flds2
-  type(datagroup) sg1, sg2
-  type(dataview)  view1, view2
+  type(SidreDataStore) ds1, ds2
+  type(SidreGroup) root1, root2
+  type(SidreGroup) flds1, flds2
+  type(SidreGroup) sg1, sg2
+  type(SidreView)  view1, view2
 
   type(iomanager) writer, reader
 

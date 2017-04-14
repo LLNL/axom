@@ -45,9 +45,28 @@ void SLIC_get_active_logger_name_bufferify(char * name, int Lname);
 
 void SLIC_set_logging_msg_level(int level);
 
-void SLIC_log_message(int level, const char * message, const char * fileName, int line, bool filter);
+void SLIC_set_abort_on_error(bool status);
 
-void SLIC_log_message_bufferify(int level, const char * message, int Lmessage, const char * fileName, int LfileName, int line, bool filter);
+void SLIC_enable_abort_on_error();
+
+void SLIC_disable_abort_on_error();
+
+bool SLIC_is_abort_on_errors_enabled();
+
+void SLIC_set_abort_on_warning(bool status);
+
+void SLIC_enable_abort_on_warning();
+
+void SLIC_disable_abort_on_warning();
+
+bool SLIC_is_abort_on_warnings_enabled();
+
+void SLIC_log_message(int level, const char * message, const char * fileName,
+                      int line, bool filter);
+
+void SLIC_log_message_bufferify(int level, const char * message, int Lmessage,
+                                const char * fileName, int LfileName, int line,
+                                bool filter);
 
 #ifdef __cplusplus
 }

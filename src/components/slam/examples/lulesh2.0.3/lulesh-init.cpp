@@ -396,7 +396,7 @@ namespace slamLulesh {
   void
   Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
   {
-    typedef asctoolkit::slam::DynamicVariableRelation RegionToElemDynamicRelation;
+    typedef axom::slam::DynamicVariableRelation RegionToElemDynamicRelation;
 
 
 

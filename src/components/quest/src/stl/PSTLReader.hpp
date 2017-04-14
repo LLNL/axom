@@ -2,12 +2,13 @@
 #ifndef PSTLREADER_HPP_
 #define PSTLREADER_HPP_
 
-#include "common/ATKMacros.hpp"
+#include "axom/Macros.hpp"
 #include "quest/STLReader.hpp" // base class
 
 #include "mpi.h"
 
-namespace quest
+namespace axom {  
+namespace quest 
 {
 
 class PSTLReader : public STLReader
@@ -52,8 +53,10 @@ private:
   int m_my_rank;   /*!< MPI rank ID      */
 
   DISABLE_COPY_AND_ASSIGNMENT( PSTLReader );
+  DISABLE_MOVE_AND_ASSIGNMENT( PSTLReader );
 };
 
-} /* namespace quest */
+} // end namespace quest 
+} // end namespace axom 
 
 #endif /* PSTLREADER_HPP_ */

@@ -52,16 +52,18 @@ In addition, Fortran 2003 provides some object oriented programming facilities:
    * Procedure Polymorphism with Type-Bound Procedures
    * Enumerations compatible with C
 
-A Fortran pointer is similar to to a C++ class.  It not only has the address of 
-the memory but also contains meta-data such as the type, kind and shape of the array.
+A Fortran pointer is similar to a C++ instance pointer in that it not only has the address of 
+the memory but also contains meta-data such as the type, kind and shape of the array.  Some vendors document the struct used to store the metadata for an array.
 
    * GNU Fortran http://gcc.gnu.org/wiki/ArrayDescriptorUpdate
-   * Intel 15.0 https://software.intel.com/en-us/node/525356
+   * Intel 17 https://software.intel.com/en-us/node/678452
+
+..   * Intel 15.0 https://software.intel.com/en-us/node/525356
 
 Fortran provides a **pointer** and **allocatable** attributes which are not
 directly supported by C.  Each vendor has their own pointer struct.
-Eventually this will be supported in Fortran via the Further Interoperability of Fortran and C - Technical Specification ISO/IEC TS 29113:2012
-http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=45136
+Eventually this will be supported in Fortran via the Further Interoperability of Fortran and C -
+`Technical Specification ISO/IEC TS 29113:2012 <http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=45136>`_
 
 
 Requirements
@@ -69,7 +71,9 @@ Requirements
 
 Fortran wrappers are generated as free-form source and require a Fortran 2003 compiler.
 
-Shroud is written in Python and requires the modules:
+Shroud is written in Python and has been tested with version 2.7 and 3.6.
+It requires the modules:
+
   * PyYAML https://pypi.python.org/pypi/PyYAML/3.11
   * Parsley https://pypi.python.org/pypi/Parsley
 

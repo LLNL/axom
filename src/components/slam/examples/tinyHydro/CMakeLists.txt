@@ -23,8 +23,8 @@ set(tinyHydro_lib_sources
 
 # blt_add_executable depends_on handles our include dir settings
 # these teste are using boost so boost needs to be a dep
-set(slam_tiny_hydro_lib_depends_on common slam slic gtest)
-if (ENABLE_BOOST)
+set(slam_tiny_hydro_lib_depends_on axom_utils slam slic gtest)
+if (BOOST_FOUND)
     list(APPEND slam_tiny_hydro_lib_depends_on boost)
 endif()
 
@@ -35,10 +35,10 @@ endif()
 #
 blt_add_library(
     NAME        slamTinyHydroLib
-    SOURCES     ${tinyHydro_lib_sources} 
+    SOURCES     ${tinyHydro_lib_sources}
                 ${tinyHydro_lib_headers}
-    DEPENDS_ON  ${slam_tiny_hydro_lib_depends_on} 
-   ) 
+    DEPENDS_ON  ${slam_tiny_hydro_lib_depends_on}
+   )
 
 
 set(slam_tiny_hydro_tests_depends_on ${slam_tiny_hydro_lib_depends_on})

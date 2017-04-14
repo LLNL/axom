@@ -12,14 +12,13 @@ copyright:
   - further review from Lawrence Livermore National Laboratory.
   -
 
-options:
-  library: SLIC
-  C_prefix: SLIC_
-  namespace: asctoolkit slic
-#  F_module_per_class: False
+library: SLIC
+cpp_header: slic/slic.hpp
+namespace: axom slic
 
-  # header file for function, each class has its own header file
-  cpp_header: slic/slic.hpp
+options:
+  C_prefix: SLIC_
+#  F_module_per_class: False
 
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
@@ -52,5 +51,16 @@ functions:
 - decl: bool activateLogger( const std::string& name )
 - decl: std::string getActiveLoggerName()
 - decl: void setLoggingMsgLevel( Level level )
+
+- decl: void setAbortOnError( bool status )
+- decl: void enableAbortOnError()
+- decl: void disableAbortOnError()
+- decl: bool isAbortOnErrorsEnabled()
+
+- decl: void setAbortOnWarning( bool status )
+- decl: void enableAbortOnWarning()
+- decl: void disableAbortOnWarning()
+- decl: bool isAbortOnWarningsEnabled()
+
 - decl: void logMessage( Level level, const std::string& message, const std::string& fileName, int line, bool filter )
   

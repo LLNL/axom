@@ -23,14 +23,13 @@
 
 #include "slic/LogStream.hpp"
 
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp" // for ATK_NULLPTR
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp" // for AXOM_NULLPTR
 
 // C/C++ includes
 #include <iostream> // for ostream
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
 
 /*!
@@ -44,7 +43,7 @@ namespace slic {
  * \see LogStream Logger
  *******************************************************************************
  */
-class GenericOutputStream : public LogStream
+class GenericOutputStream:public LogStream
 {
 public:
 
@@ -66,7 +65,7 @@ public:
    * \see LogStream::setFormatString for the format string.
    *****************************************************************************
    */
-  GenericOutputStream( std::ostream* os, std::string& format );
+  GenericOutputStream( std::ostream* os, const std::string& format );
 
   /*!
    *****************************************************************************
@@ -92,14 +91,16 @@ private:
    * \note Made private to prevent applications from using it.
    *****************************************************************************
    */
-  GenericOutputStream(): m_stream( static_cast< std::ostream* >( ATK_NULLPTR ) ){};
+  GenericOutputStream(): m_stream( static_cast< std::ostream* >( AXOM_NULLPTR ) )
+  {};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);
+  DISABLE_MOVE_AND_ASSIGNMENT(GenericOutputStream);
 
 };
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* GENERICOUTPUTSTREAM_HPP_ */

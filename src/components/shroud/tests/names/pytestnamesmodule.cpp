@@ -52,7 +52,7 @@ PY_function3a_0(
     int i;
     const char *SH_kwcpp = "i";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:function3a", SH_kw_list,
         &i))
     {
@@ -73,7 +73,7 @@ PY_function3a_1(
     long i;
     const char *SH_kwcpp = "i";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:function3a", SH_kw_list,
         &i))
     {
@@ -82,6 +82,22 @@ PY_function3a_1(
     function3a(i);
     Py_RETURN_NONE;
 // splicer end function.function3a_1
+}
+
+static char PY_function4__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function4(
+  PyObject *,  // self unused
+  PyObject *,  // args unused
+  PyObject *)  // kwds unused
+{
+// splicer begin function.function4
+    int rv = function4();
+    return Py_BuildValue("i", rv);
+// splicer end function.function4
 }
 
 static char PY_function3a__doc__[] =
@@ -124,6 +140,7 @@ PY_function3a(
 static PyMethodDef PY_methods[] = {
 {"function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
 {"function2", (PyCFunction)PY_function2, METH_NOARGS, PY_function2__doc__},
+{"function4", (PyCFunction)PY_function4, METH_NOARGS, PY_function4__doc__},
 {"function3a", (PyCFunction)PY_function3a, METH_VARARGS|METH_KEYWORDS, PY_function3a__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };

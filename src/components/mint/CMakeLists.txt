@@ -32,15 +32,17 @@ if (ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-#
-#add_code_check_targets(uncrustify.cfg)
-#
+################################
+# add uncrustify
+################################
+add_code_check_targets(uncrustify.cfg)
+
 ################################
 # Add docs
 ################################
-#if (ENABLE_DOCS)
-#  add_subdirectory(docs)
-#endif()
+if (ENABLE_DOCS)
+  add_subdirectory(docs)
+endif()
 
 ################################
 # Create CMake importable

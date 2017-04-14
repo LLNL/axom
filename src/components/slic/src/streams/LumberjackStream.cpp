@@ -22,47 +22,50 @@
 
 #include <vector>
 
-#include "common/ATKMacros.hpp"
-#include "common/StringUtilities.hpp"
+#include "axom/Macros.hpp"
+#include "axom_utils/StringUtilities.hpp"
+
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 #include "lumberjack/Lumberjack.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slic {
 
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit ) :
-    m_isLJOwnedBySLIC( false ),
-    m_stream( stream )
+LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm,
+                                    int ranksLimit ):
+  m_isLJOwnedBySLIC( false ),
+  m_stream( stream )
 {
   this->initializeLumberjack( comm, ranksLimit );
 }
 
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
-                                    std::string& format ) :
-    m_isLJOwnedBySLIC( false ),
-    m_stream( stream )
+LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm,
+                                    int ranksLimit,
+                                    const std::string& format ):
+  m_isLJOwnedBySLIC( false ),
+  m_stream( stream )
 {
   this->initializeLumberjack( comm, ranksLimit );
   this->setFormatString( format );
 }
 
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream(std::ostream* stream, asctoolkit::lumberjack::Lumberjack* lj):
-    m_lj( lj ),
-    m_isLJOwnedBySLIC( false ),
-    m_stream( stream )
-{
-}
+LumberjackStream::LumberjackStream(std::ostream* stream,
+                                   axom::lumberjack::Lumberjack* lj):
+  m_lj( lj ),
+  m_isLJOwnedBySLIC( false ),
+  m_stream( stream )
+{}
 
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream( std::ostream* stream,
-                                    asctoolkit::lumberjack::Lumberjack* lj,
-                                    std::string& format ) :
-    m_lj( lj ),
-    m_isLJOwnedBySLIC( false ),
-    m_stream( stream )
+                                    axom::lumberjack::Lumberjack* lj,
+                                    const std::string& format ):
+  m_lj( lj ),
+  m_isLJOwnedBySLIC( false ),
+  m_stream( stream )
 {
   this->setFormatString( format );
 }
@@ -81,10 +84,11 @@ void LumberjackStream::append( message::Level msgLevel,
                                const std::string& tagName,
                                const std::string& fileName,
                                int line,
-                               bool ATK_NOT_USED(filter_duplicates) )
+                               bool AXOM_NOT_USED(filter_duplicates) )
 {
-  if ( m_lj == ATK_NULLPTR ) {
-    std::cerr << "ERROR: SLIC called NULL Lumberjack instance in LumberjackStream::append!\n";
+  if ( m_lj == AXOM_NULLPTR ) {
+    std::cerr <<
+      "ERROR: NULL Lumberjack instance in LumberjackStream::append!\n";
     return;
   }
 
@@ -94,8 +98,9 @@ void LumberjackStream::append( message::Level msgLevel,
 //------------------------------------------------------------------------------
 void LumberjackStream::flush()
 {
-  if ( m_lj == ATK_NULLPTR ) {
-    std::cerr << "ERROR: SLIC called NULL Lumberjack instance in LumberjackStream::flush!\n";
+  if ( m_lj == AXOM_NULLPTR ) {
+    std::cerr <<
+      "ERROR: NULL Lumberjack instance in LumberjackStream::flush!\n";
     return;
   }
 
@@ -106,8 +111,8 @@ void LumberjackStream::flush()
 //------------------------------------------------------------------------------
 void LumberjackStream::push()
 {
-  if ( m_lj == ATK_NULLPTR ) {
-    std::cerr << "ERROR: SLIC called NULL Lumberjack instance in LumberjackStream::push!\n";
+  if ( m_lj == AXOM_NULLPTR ) {
+    std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::push!\n";
     return;
   }
 
@@ -117,21 +122,30 @@ void LumberjackStream::push()
 //------------------------------------------------------------------------------
 void LumberjackStream::write()
 {
-  if ( m_lj == ATK_NULLPTR ) {
-    std::cerr << "ERROR: SLIC called NULL Lumberjack instance in LumberjackStream::write!\n";
+  if ( m_lj == AXOM_NULLPTR ) {
+    std::cerr <<
+      "ERROR: NULL Lumberjack instance in LumberjackStream::write!\n";
     return;
   }
 
-  if (m_lj->isOutputNode()) {
-    std::vector<asctoolkit::lumberjack::Message*> messages = m_lj->getMessages();
+  if ( m_lj->isOutputNode() ) {
 
-    for(int i=0; i<(int)(messages.size()); ++i){
+    std::vector< axom::lumberjack::Message* > messages =
+      m_lj->getMessages();
+
+    const int nmessages = static_cast< int >( messages.size() );
+    for ( int i=0; i < nmessages; ++i) {
+
       (*m_stream) << this->getFormatedMessage( message::getLevelAsString(
-                                                 static_cast<message::Level>(messages[i]->level()) ),
-                                               messages[i]->text(), messages[i]->tag(),
-                                               messages[i]->stringOfRanks(), messages[i]->fileName(),
+                                                 static_cast< message::Level >(
+                                                   messages[i]->level()) ),
+                                               messages[i]->text(),
+                                               messages[i]->tag(),
+                                               messages[i]->stringOfRanks(),
+                                               messages[i]->fileName(),
                                                messages[i]->lineNumber() );
     }
+
     m_lj->clearMessages();
   }
 }
@@ -139,9 +153,9 @@ void LumberjackStream::write()
 //------------------------------------------------------------------------------
 void LumberjackStream::initializeLumberjack( MPI_Comm comm, int ranksLimit )
 {
-  m_ljComm = new asctoolkit::lumberjack::BinaryTreeCommunicator;
+  m_ljComm = new axom::lumberjack::BinaryTreeCommunicator;
   m_ljComm->initialize(comm, ranksLimit);
-  m_lj = new asctoolkit::lumberjack::Lumberjack;
+  m_lj = new axom::lumberjack::Lumberjack;
   m_lj->initialize(m_ljComm, ranksLimit);
   m_isLJOwnedBySLIC = true;
 }
@@ -157,4 +171,4 @@ void LumberjackStream::finalizeLumberjack()
 }
 
 } /* namespace slic */
-} /* namespace asctoolkit */
+} /* namespace axom */

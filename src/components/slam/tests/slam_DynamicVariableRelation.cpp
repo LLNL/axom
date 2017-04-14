@@ -10,10 +10,8 @@
 
 
 /**
- * \file testDynamicVariableRelation.cxx
+ * \file testDynamicVariableRelation.cpp
  *
- *  Created on: Apr 29, 2015
- *      Author: weiss27
  */
 
 
@@ -22,17 +20,18 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"        // for AXOM_USE_BOOST
 
 #include "slam/RangeSet.hpp"
 #include "slam/Relation.hpp"
 #include "slam/DynamicVariableRelation.hpp"
 
-using asctoolkit::slam::RangeSet;
-using asctoolkit::slam::DynamicVariableRelation;
+using axom::slam::RangeSet;
+using axom::slam::DynamicVariableRelation;
 
 typedef RangeSet::PositionType  PositionType;
 typedef RangeSet::ElementType   ElementType;
-// typedef asctoolkit::slam::Set::SetPosition PositionType;
+// typedef axom::slam::Set::SetPosition PositionType;
 
 const PositionType FROMSET_SIZE = 5;
 const PositionType TOSET_SIZE = 8;
@@ -105,6 +104,7 @@ TEST(gtest_slam_dynamic_variable_relation,simple_relation)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                SetIter;
   typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
 
@@ -134,6 +134,7 @@ TEST(gtest_slam_dynamic_variable_relation,simple_relation)
       ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
     }
   }
+#endif // AXOM_USE_BOOST
 
   std::cout << "\n****** done." << std::endl;
 }
@@ -158,6 +159,7 @@ TEST(gtest_slam_dynamic_variable_relation,test_iterator_range)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                    SetIter;
   typedef DynamicVariableRelation::RelationVecConstIterator     RelSetConstIter;
   typedef DynamicVariableRelation::RelationVecConstIteratorPair RelSetConstIterPair;
@@ -179,6 +181,7 @@ TEST(gtest_slam_dynamic_variable_relation,test_iterator_range)
       ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
     }
   }
+#endif // AXOM_USE_BOOST
 
   std::cout << "\n****** done." << std::endl;
 }
@@ -204,6 +207,7 @@ TEST(gtest_slam_dynamic_variable_relation,double_subscript_test)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator SetIter;
 
   std::cout << "\n\tLooking at relation's stored values...";
@@ -216,6 +220,7 @@ TEST(gtest_slam_dynamic_variable_relation,double_subscript_test)
       EXPECT_EQ( idx, incrementingRel[*sIt][idx]) << "incrementing relation's value was incorrect";
     }
   }
+#endif // AXOM_USE_BOOST
 
   std::cout << "\n****** done." << std::endl;
 }

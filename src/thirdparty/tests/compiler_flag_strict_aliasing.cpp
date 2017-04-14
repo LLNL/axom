@@ -6,7 +6,7 @@ struct Bar {int i;  Foo* ob;};
 /**
  * \file
  * This file tests the ability to disable warnings about strict aliasing
- * on all supported compilers using the ATK_DISABLE_ALIASING_WARNINGS build variable.
+ * on all supported compilers using the AXOM_DISABLE_ALIASING_WARNINGS build variable.
  *
  * The example is modeled after a known example in python's headers
  * (see http://legacy.python.org/dev/peps/pep-3123) and might need

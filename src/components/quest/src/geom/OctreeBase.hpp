@@ -6,27 +6,31 @@
 #ifndef OCTREE_BASE__HXX_
 #define OCTREE_BASE__HXX_
 
-#include <ostream>   // for ostream in print
+#include "axom/config.hpp"
 
-#include "quest/BoundingBox.hpp"
+#include "slic/slic.hpp"
+
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Vector.hpp"
+
 #include "quest/MortonIndex.hpp"
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
 #include "quest/OctreeLevel.hpp"
 #include "quest/DenseOctreeLevel.hpp"
 #include "quest/SparseOctreeLevel.hpp"
-
-#include "common/config.hpp"
-
-#include "slic/slic.hpp"
 
 #include "slam/SizePolicies.hpp"
 #include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
 
+#include <ostream>   // for ostream in print
 
-namespace quest
-{
+using axom::primal::NumericArray;
+using axom::primal::Point;
+using axom::primal::Vector;
+
+namespace axom {  
+namespace quest {
 
   /**
    * \brief Minimal implementation of a BlockDataType for an OctreeBase.
@@ -125,18 +129,18 @@ class OctreeBase
 {
 public:
   typedef int CoordType;
-  typedef quest::Point<CoordType,DIM> GridPt;
-  typedef quest::Vector<CoordType,DIM> GridVec;
+  typedef Point<CoordType,DIM> GridPt;
+  typedef Vector<CoordType,DIM> GridVec;
 
-  typedef asctoolkit::slam::policies::CompileTimeSizeHolder<CoordType, std::numeric_limits<CoordType>::digits> MAX_LEVEL_SIZE;
-  typedef asctoolkit::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
+  typedef axom::slam::policies::CompileTimeSizeHolder<CoordType, std::numeric_limits<CoordType>::digits> MAX_LEVEL_SIZE;
+  typedef axom::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
 
   typedef OctreeLevel<DIM, BlockDataType>           OctreeLevelType;
   typedef typename OctreeLevelType::BlockIter       LevelMapIterator;
   typedef typename OctreeLevelType::ConstBlockIter  LevelMapCIterator;
 
 
-  typedef asctoolkit::slam::Map<OctreeLevelType*> LeafIndicesLevelMap;
+  typedef axom::slam::Map<OctreeLevelType*> LeafIndicesLevelMap;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
@@ -159,12 +163,12 @@ public:
           NUM_FACE_NEIGHBORS = 2 * DIM
       };
   private:
-      typedef asctoolkit::slam::policies::CompileTimeSizeHolder<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
-      typedef asctoolkit::slam::policies::CompileTimeSizeHolder<int, NUM_FACE_NEIGHBORS> OCTREE_FACE_NEIGHBORS_SIZE;
+      typedef axom::slam::policies::CompileTimeSizeHolder<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
+      typedef axom::slam::policies::CompileTimeSizeHolder<int, NUM_FACE_NEIGHBORS> OCTREE_FACE_NEIGHBORS_SIZE;
 
   public:
-      typedef asctoolkit::slam::OrderedSet<OCTREE_CHILDREN_SIZE> ChildIndexSet;
-      typedef asctoolkit::slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE> FaceNeighborIndexSet;
+      typedef axom::slam::OrderedSet<OCTREE_CHILDREN_SIZE> ChildIndexSet;
+      typedef axom::slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE> FaceNeighborIndexSet;
 
   public:
       /**
@@ -430,10 +434,10 @@ private:
       ,MAX_SPARSE64_LEV = 64 / DIM
   };
 
-  typedef DenseOctreeLevel<DIM, BlockDataType, asctoolkit::common::uint16> DenseOctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,asctoolkit::common::uint16> Sparse16OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,asctoolkit::common::uint32> Sparse32OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,asctoolkit::common::uint64> Sparse64OctLevType;
+  typedef DenseOctreeLevel<DIM, BlockDataType, axom::common::uint16> DenseOctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint16> Sparse16OctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint32> Sparse32OctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint64> Sparse64OctLevType;
   typedef SparseOctreeLevel<DIM, BlockDataType,GridPt>                     SparsePtOctLevType;
 
   typedef DenseOctLevType*      DenseOctLevPtr;
@@ -446,11 +450,11 @@ private:
    * \brief Simple utility to check if a pointer of type BasePtrType
    *
    *        can be cast to a pointer of type DerivedPtrType
-   */ 
+   */
   template<typename DerivedPtrType, typename BasePtrType>
   bool checkCast(BasePtrType base) const
   {
-      return dynamic_cast<DerivedPtrType>(base) != ATK_NULLPTR;
+      return dynamic_cast<DerivedPtrType>(base) != AXOM_NULLPTR;
   }
 
 
@@ -463,7 +467,7 @@ public:
   {
       for(int i=0; i< maxLeafLevel(); ++i)
       {
-          namespace common = asctoolkit::common;
+          namespace common = axom::common;
 
           // Use DenseOctreeLevel on first few levels to reduce allocations and fragmentation
           // Use Morton-based SparseOctreeLevel (key is smallest possible integer) on next few levels.
@@ -494,7 +498,7 @@ public:
       for(int i=0; i< maxLeafLevel(); ++i)
       {
           delete m_leavesLevelMap[i];
-          m_leavesLevelMap[i] = ATK_NULLPTR;
+          m_leavesLevelMap[i] = AXOM_NULLPTR;
       }
   }
 
@@ -956,6 +960,7 @@ protected:
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(OctreeBase);
+  DISABLE_MOVE_AND_ASSIGNMENT(OctreeBase);
 
 protected:
   OctreeLevels            m_levels;
@@ -963,6 +968,7 @@ protected:
 };
 
 
-} // end namespace quest
+} // end namespace quest 
+} // end namespace axom 
 
 #endif  // OCTREE_BASE_HXX_

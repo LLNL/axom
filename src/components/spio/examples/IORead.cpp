@@ -17,13 +17,13 @@
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
-#include "sidre/DataGroup.hpp"
+#include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
 #include "spio/IOManager.hpp"
 
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::spio::IOManager;
+using axom::sidre::Group;
+using axom::sidre::DataStore;
+using axom::spio::IOManager;
 
 /**************************************************************************
  * Subroutine:  main
@@ -33,13 +33,15 @@ using asctoolkit::spio::IOManager;
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
-  SLIC_ASSERT(argc == 2);
+  SLIC_ERROR_IF(argc != 2,
+      "Missing required command line argument. \n\t"
+      << "Usage: spio_IORead <sidre_root_file>");
 
   DataStore * ds = new DataStore();
   SLIC_ASSERT(ds);
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
   std::string root_file;
   if (argc == 2) {

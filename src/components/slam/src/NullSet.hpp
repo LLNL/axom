@@ -19,12 +19,12 @@
 #ifndef SLAM_NULL_SET_H_
 #define SLAM_NULL_SET_H_
 
-#include "common/ATKMacros.hpp"
+#include "axom/Macros.hpp"
 
 #include "slic/slic.hpp"
 #include "slam/Set.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
 
@@ -57,7 +57,7 @@ namespace slam {
     // iterator_pair range();
 
   private:
-    void verifyPosition(PositionType ATK_DEBUG_PARAM(pos)) const
+    void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos)) const
     {
       SLIC_ASSERT_MSG(false,"Subscripting on NullSet is never valid."
           << "\n\tAttempted to access item at index " << pos << ".");
@@ -70,16 +70,16 @@ namespace slam {
  * \brief NullSets are always equal
  * \note Two sets of different types are (currently) considered to be unequal
  */
-  inline bool operator==(NullSet const&, NullSet const&) { ATK_WARNING("operator==(NullSet,NullSet)"); return true; }
+  inline bool operator==(NullSet const&, NullSet const&) { SLIC_WARNING("operator==(NullSet,NullSet)"); return true; }
 /**
  * \brief NullSets are always equal
  * \note Two sets of different types are (currently) considered to be unequal
  */
-  inline bool operator!=(NullSet const&, NullSet const&) { ATK_WARNING("operator!=(NullSet,NullSet)"); return false; }
+  inline bool operator!=(NullSet const&, NullSet const&) { SLIC_WARNING("operator!=(NullSet,NullSet)"); return false; }
 #endif
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif //  SLAM_SET_H_

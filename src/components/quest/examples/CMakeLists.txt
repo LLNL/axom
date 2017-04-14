@@ -9,62 +9,63 @@
 #-------------------------------------------------------------------------------
 
 set(quest_example_depends
-        common 
+        axom_utils
         slic
         mint
         slam
-        quest 
+        quest
         )
 
-if (ENABLE_BOOST)
+if (BOOST_FOUND)
     list(APPEND quest_example_depends boost)
 endif()
 
-blt_add_executable( 
+blt_add_executable(
     NAME        quest_driver
     SOURCES     quest_driver.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends}
     )
 
-blt_add_executable( 
-    NAME        quest_sphere 
+blt_add_executable(
+    NAME        quest_sphere
     SOURCES     sphere.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends}
     )
 
-blt_add_executable( 
-    NAME        quest_octree_driver 
-    SOURCES     octree_driver.cpp 
+blt_add_executable(
+    NAME        quest_octree_driver
+    SOURCES     octree_driver.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends} fmt
     )
 
 if (ENABLE_MPI)
 
-  blt_add_executable( 
-    NAME        quest_interface 
+  set(quest_interface_extra_depends)
+  if (ENABLE_LUMBERJACK)
+    list(APPEND quest_interface_extra_depends lumberjack)
+  endif()
+
+  blt_add_executable(
+    NAME        quest_interface
     SOURCES     quest_interface.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${quest_example_depends}
+    DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
     )
-    
-  if (ENABLE_FORTRAN)                    
-    blt_add_executable( 
+
+  if (ENABLE_FORTRAN)
+    blt_add_executable(
         NAME        quest_interface_fortran
         SOURCES     quest_interface_fortran.F
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${quest_example_depends}
+        DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
         )
-        
-    set_target_properties(quest_interface_fortran 
+
+    set_target_properties(quest_interface_fortran
                           PROPERTIES LINKER_LANGUAGE Fortran)
-                          
-    if(MPI_Fortran_USE_MPIF)
-        blt_add_target_definitions(TO quest_interface_fortran TARGET_DEFINITIONS "USE_MPIF_HEADER")
-    endif()                              
-                          
+
   endif()
-                      
+
 endif()

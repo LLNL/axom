@@ -9,20 +9,11 @@
 #-------------------------------------------------------------------------------
 
 set(quest_tests
-    quest_boundingBox.cpp
-    quest_bucket_tree.cpp
     quest_inout_octree.cpp
-    quest_intersection.cpp
     quest_morton.cpp
-    quest_numeric_array.cpp
     quest_octree.cpp
-    quest_orient.cpp
-    quest_point.cpp
     quest_signed_distance.cpp
     quest_spatial_octree.cpp
-    quest_squared_distance.cpp
-    quest_triangle.cpp
-    quest_vector.cpp
    )
 
 set(quest_tests_depends
@@ -32,7 +23,7 @@ set(quest_tests_depends
     gtest
    )
 
-if (ENABLE_BOOST)
+if (BOOST_FOUND)
     list(APPEND quest_tests_depends boost)
 endif()
 
@@ -61,7 +52,17 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         DEPENDS_ON ${quest_tests_depends} conduit sidre spio hdf5
     )
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
-    
+
+
+    if ( ENV{SYS_TYPE} STREQUAL "bgqos_0" )
+
+       set_property(
+           TARGET quest_regression
+           APPEND_STRING PROPERTY LINK_FLAGS ${AXOM_ALLOW_MULTIPLE_DEFINITIONS}
+       )
+
+    endif()
+
     # Note: The following are all valid regression tests.
     #       Most are commented out to avoid excessive test runtimes, especially in debug mode.
     set(quest_regression_datasets
@@ -74,15 +75,16 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         16
         #32
     )
-    
+
     # Add resolution tests for each dataset and resolution
     foreach(dataset ${quest_regression_datasets})
         foreach(res ${quest_regression_resolutions})
             blt_add_test(
                 NAME quest_regression_${dataset}_${res}
-                COMMAND quest_regression 
-                        --mesh ${quest_data_dir}/${dataset}.stl 
+                COMMAND quest_regression
+                        --mesh ${quest_data_dir}/${dataset}.stl
                         --baseline ${quest_data_dir}/${dataset}_${res}_baseline.root
+                NUM_PROCS 1
             )
         endforeach()
     endforeach()

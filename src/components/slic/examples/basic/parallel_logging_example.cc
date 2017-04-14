@@ -29,7 +29,7 @@
 // MPI
 #include <mpi.h>
 
-using namespace asctoolkit;
+using namespace axom;
 
 #define N 20
 
@@ -57,6 +57,7 @@ int main( int argc, char** argv )
 
 
   slic::setLoggingMsgLevel( slic::message::Debug );
+  slic::disableAbortOnError();
   slic::addStreamToAllMsgLevels(
       new slic::SynchronizedStream( &std::cout, MPI_COMM_WORLD, format ) );
 

@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 /*!
@@ -103,8 +103,8 @@ class Message {
          * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
          * \param [in] fileName The file name where the Message originated.
          * \param [in] lineNumber The line number where the Message originated.
-         * \param [in] msgLevel The level of the severity of the Message.
-         * \param [in] tagName The tag of where the Message originated.
+         * \param [in] level The level of the severity of the Message.
+         * \param [in] tag The tag of where the Message originated.
          *****************************************************************************
          */
         Message(const std::string& text, const std::vector<int>& ranks,
@@ -288,6 +288,6 @@ class Message {
 };
 
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif

@@ -12,14 +12,14 @@
 /**
  *  \file SiderDataTypeIds.h
  *
- *  \brief Contains defines used to establish type ids for numeric types in SiDRe toolkit component.
+ *  \brief Contains defines used to establish type ids for numeric types in Sidre component.
  *
  */
 
 #ifndef SIDREDATATYPEIDS_H_
 #define SIDREDATATYPEIDS_H_
 
-// Other CS Toolkit headers
+// Libraries and other axom headers
 #include "conduit.h"
 
 #define SIDRE_NO_TYPE_ID    CONDUIT_EMPTY_ID

@@ -17,28 +17,31 @@
 
 #include "gtest/gtest.h"
 
+#include "slic/slic.hpp"
+
 #include "slam/SizePolicies.hpp"
 #include "slam/ModularInt.hpp"
 
 TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
 {
-  typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
 
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
-  std::cout << "\n -- Checking that modular int with modulus zero fails.\nNote: Expecting a SLIC Failure: " << std::endl;
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  SLIC_INFO("Checking that modular int with modulus zero fails.");
+  SLIC_INFO("Note: Expecting a SLIC Failure: ");
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( ModularIntType(0,0),"") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntType(1,0),"") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntType(),   "") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntType(1),  "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(0,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(1,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(),   "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntType(1),  "") << " SIZE of Modular int not allowed to be zero";
 #else
-  std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+  SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
 
-  std::cout << "\n -- Checking modular int with value set to modulus equals (i.e. is equivalent to) 0 (runtime)" << std::endl;
+  SLIC_INFO("Checking modular int with value set to modulus equals (i.e. is equivalent to) 0 (runtime)");
   volatile int sz = 5;
   for(int i = 1; i< sz; ++i)
   {
@@ -49,25 +52,25 @@ TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
 
 TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
 {
-  using namespace asctoolkit::slam;
+  using namespace axom::slam;
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   typedef ModularInt<policies::CompileTimeSizeHolder<int, 0> > ModularIntZero;
 
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
-  std::cout << "\n -- Checking that modular int with modulus zero fails.\nNote: Expecting a SLIC Failure: " << std::endl;
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  SLIC_INFO("Checking that modular int with modulus zero fails.\nNote: Expecting a SLIC Failure: ");
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( ModularIntZero(0,0),"") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntZero(1,0),"") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntZero(),   "") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntZero(1),  "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(0,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(1,0),"") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(),   "") << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED( ModularIntZero(1),  "") << " SIZE of Modular int not allowed to be zero";
 #else
-  std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+  SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
 
-  std::cout << "\n -- Checking modular int with value set to modulus equals (i.e. is equivalent to) 0 for (compile time)" << std::endl;
+  SLIC_INFO("Checking modular int with value set to modulus equals (i.e. is equivalent to) 0 for (compile time)");
   ModularInt<policies::CompileTimeSizeHolder<int, 1> > m1(1);
   EXPECT_EQ(  m1, 0);
 
@@ -85,9 +88,9 @@ TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
 
 TEST(gtest_slam_modInt,runtime_modular_int)
 {
-  std::cout << "\n -- Checking modular int addition and subtraction when supplying the max value at runtime" << std::endl;
+  SLIC_INFO("Checking modular int addition and subtraction when supplying the max value at runtime");
 
-  typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
 
   volatile int sz = 937;
 
@@ -120,11 +123,11 @@ TEST(gtest_slam_modInt,runtime_modular_int)
 
 TEST(gtest_slam_modInt,runtime_modular_int_mult)
 {
-  typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
 
   volatile int sz = 10;
 
-  std::cout << "\n -- Checking modular int multiplication " << std::endl;
+  SLIC_INFO("Checking modular int multiplication ");
 
 
   ModularIntType modInt5(5,sz);
@@ -150,11 +153,11 @@ TEST(gtest_slam_modInt,runtime_modular_int_mult)
 
 TEST(gtest_slam_modInt,compiletime_modular_int)
 {
-  std::cout << "\n -- Checking modular int addition and subtraction when supplying the max value at compile time" << std::endl;
+  SLIC_INFO("Checking modular int addition and subtraction when supplying the max value at compile time");
 
   const int SZ = 937;
 
-  typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::CompileTimeSizeHolder<int, SZ> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::CompileTimeSizeHolder<int, SZ> > ModularIntType;
 
   int sz = SZ;
 
@@ -194,7 +197,7 @@ TEST(gtest_slam_modInt,compiletime_modular_int)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

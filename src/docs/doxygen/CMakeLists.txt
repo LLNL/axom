@@ -2,7 +2,7 @@
 # documentation targets
 ################################
 
-add_doxygen_target( asc_toolkit_doxygen )
+add_doxygen_target( axom_doxygen )
 
 
 

@@ -29,7 +29,7 @@
 
 //#include <iostream>
 
-#include "common/ATKMacros.hpp"
+#include "axom/Macros.hpp"
 #include "slic/slic.hpp"
 
 #include "slam/OrderedSet.hpp"
@@ -52,7 +52,7 @@
 
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam    {
 
   template< typename StridePolicy = policies::RuntimeStrideHolder<Set::PositionType>
@@ -239,7 +239,7 @@ namespace slam    {
       verifyPosition(fromSetIndex);
       return stride();
     }
-    inline void verifyPosition(SetPosition ATK_DEBUG_PARAM(fromSetIndex))    const
+    inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(fromSetIndex))    const
     {
       SLIC_ASSERT_MSG( fromSetIndex >= 0 && fromSetIndex < m_fromSet->size(),
           "Failed verify position with position " << fromSetIndex
@@ -342,10 +342,12 @@ namespace slam    {
       if(m_toSet)
         sstr << "\n** toSet has size " << m_toSet->size() << ": ";
 
-      sstr << "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() << ": ";
-      std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<SetPosition>(sstr, " "));
+      int toSize = m_toSetIndicesVec.size();
+      sstr << "\n** toSetIndices vec w/ size " <<  toSize << ": ";
+      for(int i = 0; i< toSize; ++i)
+        sstr << m_toSetIndicesVec[i];
 
-      std::cout << sstr.str() << std::endl;
+      SLIC_DEBUG( sstr.str() );
 
     }
 
@@ -355,6 +357,6 @@ namespace slam    {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_STATIC_CONSTANT_RELATION_HPP_

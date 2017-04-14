@@ -3,15 +3,16 @@
 #define QUEST_BROOD__HXX_
 
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 
 #include "quest/MortonIndex.hpp"
-#include "quest/NumericArray.hpp"
-#include "quest/Point.hpp"
+
+#include "primal/NumericArray.hpp"
+#include "primal/Point.hpp"
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
 
     /**
@@ -26,7 +27,7 @@ namespace quest
     template<typename GridPt, typename MortonIndexType>
     struct Brood {
 
-        enum { DIM = GridPt::NDIMS,
+        enum { DIM = GridPt::DIMENSION,
                BROOD_BITMASK = (1 << DIM) -1
         };
 
@@ -88,7 +89,7 @@ namespace quest
         Brood(const GridPt& pt)
           : m_broodPt( pt.array() /2), m_offset(0)
         {
-          for(int i=0; i< GridPt::NDIMS; ++i)
+          for(int i=0; i< GridPt::DIMENSION; ++i)
           {
               m_offset |= (pt[i]& 1) << i; // interleave the least significant bits
           }
@@ -105,7 +106,7 @@ namespace quest
         {
             // shift and add offset to each coordinate
             GridPt retPt;
-            for(int i=0; i< GridPt::NDIMS; ++i)
+            for(int i=0; i< GridPt::DIMENSION; ++i)
                 retPt[i] = (pt[i]<<1) + ( offset & (1 << i)? 1 : 0);
 
             return retPt;
@@ -118,6 +119,7 @@ namespace quest
 
 
 
-} // end namespace quest
+} // end namespace quest 
+} // end namespace axom 
 
 #endif // QUEST_BROOD__HXX_

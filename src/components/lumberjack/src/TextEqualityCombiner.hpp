@@ -25,7 +25,7 @@
 
 #include <string>
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 /*!
@@ -99,6 +99,6 @@ class TextEqualityCombiner: public Combiner {
 };
 
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif

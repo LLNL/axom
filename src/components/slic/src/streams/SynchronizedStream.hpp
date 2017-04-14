@@ -23,8 +23,8 @@
 
 #include "slic/LogStream.hpp"
 
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 
 // C/C++ includes
 #include <iostream> // for std::ostream
@@ -32,8 +32,7 @@
 // MPI
 #include <mpi.h> // For MPI
 
-
-namespace asctoolkit {
+namespace axom {
 namespace slic {
 
 /*!
@@ -53,12 +52,12 @@ namespace slic {
  *  with an std::ofstream object.
  *******************************************************************************
  */
-class SynchronizedStream : public LogStream
+class SynchronizedStream:public LogStream
 {
 public:
   SynchronizedStream( std::ostream* stream, MPI_Comm comm );
   SynchronizedStream( std::ostream* stream, MPI_Comm comm,
-                      std::string& format);
+                      const std::string& format);
 
   virtual ~SynchronizedStream();
 
@@ -114,15 +113,15 @@ private:
    *****************************************************************************
    */
   SynchronizedStream(): m_comm(MPI_COMM_NULL),
-                        m_cache( static_cast<MessageCache*>(ATK_NULLPTR) ),
-                        m_stream( static_cast<std::ostream*>(ATK_NULLPTR) )
+    m_cache( static_cast< MessageCache* >(AXOM_NULLPTR) ),
+    m_stream( static_cast< std::ostream* >(AXOM_NULLPTR) )
   { };
 
-
   DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);
+  DISABLE_MOVE_AND_ASSIGNMENT(SynchronizedStream);
 };
 
 } /* namespace slic */
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* SYNCHRONIZEDSTREAM_HPP_ */

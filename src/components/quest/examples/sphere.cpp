@@ -8,37 +8,25 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
+// axom includes
+#include "axom/config.hpp"
 
-/*
- * $Id$
- */
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
+#include "axom_utils/FileUtilities.hpp"
+#include "axom_utils/Timer.hpp"
 
-/*!
- *******************************************************************************
- * \file sphere.cpp
- *
- * \date Dec 16, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *******************************************************************************
- */
+#include "primal/BVHTree.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/HyperSphere.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
+#include "primal/Vector.hpp"
 
+#include "primal/orientation.hpp"
+#include "primal/squared_distance.hpp"
 
-
-// ATK Toolkit includes
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp"
-#include "common/FileUtilities.hpp"
-#include "common/Timer.hpp"
-
-#include "quest/BoundingBox.hpp"
-#include "quest/BVHTree.hpp"
-#include "quest/HyperSphere.hpp"
-#include "quest/Orientation.hpp"
-#include "quest/Point.hpp"
 #include "quest/STLReader.hpp"
-#include "quest/SquaredDistance.hpp"
-#include "quest/Triangle.hpp"
-#include "quest/Vector.hpp"
 #include "quest/SignedDistance.hpp"
 
 #include "mint/Field.hpp"
@@ -53,24 +41,31 @@
 
 #include "slam/Utilities.hpp"
 
-
 // C/C++ includes
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>
 
-using namespace asctoolkit;
+using namespace axom;
+
+using axom::primal::Point;
+using axom::primal::Triangle;
+using axom::primal::BoundingBox;
+using axom::primal::BVHTree;
+using axom::primal::Vector;
+using axom::primal::HyperSphere;
+
 
 static const int NDIMS = 3;
-typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
-struct {
+static struct {
  std::string fileName;
  bool runN2Algorithm;
  double sphere_radius;
  double inflate_factor;
- quest::Point< double,3 > sphere_center;
+ Point< double,3 > sphere_center;
  int nx;
  int ny;
  int nz;
@@ -82,17 +77,17 @@ struct {
 void init();
 void parse_args( int argc, char** argv );
 void read_stl_mesh( TriangleMesh* stl_mesh );
-quest::BoundingBox< double,NDIMS > compute_bounds( mint::Mesh* mesh );
+BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh* mesh );
 void get_uniform_mesh( TriangleMesh* surface_mesh,
-                       mint::UniformMesh*& umesh);
-void write_vtk( mint::Mesh* mesh, const std::string& fileName );
-quest::BoundingBox< double,NDIMS > getCellBoundingBox(
-        int cellIdx, mint::Mesh* surface_mesh );
-void computeUsingBucketTree( mint::Mesh* surface_mesh,
-                             mint::UniformMesh* umesh );
-void n2( mint::Mesh* surface_mesh, mint::UniformMesh* umesh );
-void expected_phi(mint::UniformMesh* umesh);
-void compute_norms( mint::UniformMesh* umesh,
+                       axom::mint::UniformMesh*& umesh);
+void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName );
+BoundingBox< double,NDIMS > getCellBoundingBox(
+        int cellIdx, axom::mint::Mesh* surface_mesh );
+void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
+                             axom::mint::UniformMesh* umesh );
+void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh );
+void expected_phi(axom::mint::UniformMesh* umesh);
+void compute_norms( axom::mint::UniformMesh* umesh,
                     double& l1, double& l2, double& linf );
 void showHelp();
 void finalize();
@@ -110,9 +105,9 @@ int main( int argc, char** argv )
   write_vtk( surface_mesh, "surface_mesh.vtk" );
 
   // STEP 2: get uniform mesh
-  mint::UniformMesh* umesh = ATK_NULLPTR;
+  axom::mint::UniformMesh* umesh = AXOM_NULLPTR;
   get_uniform_mesh( surface_mesh, umesh );
-  SLIC_ASSERT( umesh != ATK_NULLPTR );
+  SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
   utilities::Timer timer;
 
@@ -155,10 +150,10 @@ int main( int argc, char** argv )
 
   // STEP 12: clean up
   delete surface_mesh;
-  surface_mesh = ATK_NULLPTR;
+  surface_mesh = AXOM_NULLPTR;
 
   delete umesh;
-  umesh = ATK_NULLPTR;
+  umesh = AXOM_NULLPTR;
 
   // STEP 13: Finalize SLIC environment
   finalize();
@@ -167,11 +162,11 @@ int main( int argc, char** argv )
 
 //------------------------------------------------------------------------------
 void get_uniform_mesh( TriangleMesh* surface_mesh,
-                       mint::UniformMesh*& umesh)
+                       axom::mint::UniformMesh*& umesh)
 {
-  SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
+  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
 
-  quest::BoundingBox< double,NDIMS > meshBounds = compute_bounds(surface_mesh);
+  BoundingBox< double,NDIMS > meshBounds = compute_bounds(surface_mesh);
   meshBounds.expand(Arguments.inflate_factor);
 
   double h[3];
@@ -187,7 +182,7 @@ void get_uniform_mesh( TriangleMesh* surface_mesh,
   ext[4] = 0;
   ext[5] = Arguments.nz;
 
-  umesh = new mint::UniformMesh(3,meshBounds.getMin().data(),h,ext);
+  umesh = new axom::mint::UniformMesh(3,meshBounds.getMin().data(),h,ext);
 }
 
 //------------------------------------------------------------------------------
@@ -271,52 +266,51 @@ void read_stl_mesh( TriangleMesh* stl_mesh )
    reader->getMesh( stl_mesh  );
 
    delete reader;
-   reader = ATK_NULLPTR;
+   reader = AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
 void init()
 {
-  slic::initialize();
-  slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
+  axom::slic::initialize();
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug );
 
   // Create a more verbose message for this application (only level and message)
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
-  slic::GenericOutputStream* defaultStream =
-          new slic::GenericOutputStream(&std::cout);
-  slic::GenericOutputStream* compactStream =
-          new slic::GenericOutputStream(&std::cout, slicFormatStr);
-  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Fatal) ;
-  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Error);
-  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Warning);
-  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Info);
-  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Debug);
+  axom::slic::GenericOutputStream* defaultStream =
+          new axom::slic::GenericOutputStream(&std::cout);
+  axom::slic::GenericOutputStream* compactStream =
+          new axom::slic::GenericOutputStream(&std::cout, slicFormatStr);
+  axom::slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
+  axom::slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
+  axom::slic::addStreamToMsgLevel(compactStream, axom::slic::message::Info);
+  axom::slic::addStreamToMsgLevel(compactStream, axom::slic::message::Debug);
 
 }
 
 //------------------------------------------------------------------------------
 void finalize()
 {
-  slic::finalize();
+  axom::slic::finalize();
 }
 
 //------------------------------------------------------------------------------
-void compute_norms( mint::UniformMesh* umesh,
+void compute_norms( axom::mint::UniformMesh* umesh,
                     double& l1, double& l2, double& linf )
 {
-   SLIC_ASSERT( umesh != ATK_NULLPTR );
+   SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
    const int nnodes = umesh->getNumberOfNodes();
 
    // STEP 0: grab field pointers
-   mint::FieldData* PD = umesh->getNodeFieldData();
+   axom::mint::FieldData* PD = umesh->getNodeFieldData();
    double* phi_computed  = PD->getField( "phi" )->getDoublePtr();
    double* phi_expected  = PD->getField( "expected_phi" )->getDoublePtr();
 
    // STEP 1: add field to store error
-   PD->addField( new mint::FieldVariable< double >( "error", nnodes ) );
+   PD->addField( new axom::mint::FieldVariable< double >( "error", nnodes ) );
    double* error = PD->getField( "error" )->getDoublePtr();
-   SLIC_ASSERT( error != ATK_NULLPTR );
+   SLIC_ASSERT( error != AXOM_NULLPTR );
 
    // STEP 2: loop over nodes and calculate norms
    l1 = l2 = 0.0;
@@ -341,29 +335,29 @@ void compute_norms( mint::UniformMesh* umesh,
 }
 
 //------------------------------------------------------------------------------
-void expected_phi(mint::UniformMesh* umesh)
+void expected_phi(axom::mint::UniformMesh* umesh)
 {
-   SLIC_ASSERT( umesh != ATK_NULLPTR );
+   SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
    // STEP 0: Construct sphere with user-supplied center and radius.
    SLIC_INFO("computing expected signed distance field...");
    SLIC_INFO("sphere radius: " << Arguments.sphere_radius );
    SLIC_INFO("sphere center: " << Arguments.sphere_center );
 
-   quest::HyperSphere< double, 3 > sphere( Arguments.sphere_radius );
+   HyperSphere< double, 3 > sphere( Arguments.sphere_radius );
 
    // STEP 1: Add node field to stored exact distance field.
    const int nnodes = umesh->getNumberOfNodes();
-   mint::FieldData* PD = umesh->getNodeFieldData();
-   SLIC_ASSERT( PD != ATK_NULLPTR );
+   axom::mint::FieldData* PD = umesh->getNodeFieldData();
+   SLIC_ASSERT( PD != AXOM_NULLPTR );
 
-   PD->addField( new mint::FieldVariable<double>("expected_phi",nnodes) );
+   PD->addField( new axom::mint::FieldVariable<double>("expected_phi",nnodes) );
    double* phi = PD->getField( "expected_phi" )->getDoublePtr();
-   SLIC_ASSERT( phi != ATK_NULLPTR );
+   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
    // STEP 2: loop over uniform mesh nodes and compute distance field
    SLIC_INFO( "Calculating analytic distance field...");
-#ifdef _OPENMP
+#ifdef AXOM_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
    for ( int i=0; i < nnodes; ++i ) {
@@ -378,33 +372,33 @@ void expected_phi(mint::UniformMesh* umesh)
 }
 
 //------------------------------------------------------------------------------
-void n2( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
+void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
 {
-   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
-   SLIC_ASSERT( umesh != ATK_NULLPTR );
+   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
+   SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
    // STEP 1: Setup node-centered signed distance field on uniform mesh
    const int nnodes = umesh->getNumberOfNodes();
-   mint::FieldData* PD = umesh->getNodeFieldData();
-   SLIC_ASSERT( PD != ATK_NULLPTR );
+   axom::mint::FieldData* PD = umesh->getNodeFieldData();
+   SLIC_ASSERT( PD != AXOM_NULLPTR );
 
-   PD->addField( new mint::FieldVariable<double>("n2_phi",nnodes) );
+   PD->addField( new axom::mint::FieldVariable<double>("n2_phi",nnodes) );
    double* phi = PD->getField( "n2_phi" )->getDoublePtr();
-   SLIC_ASSERT( phi != ATK_NULLPTR );
+   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
 
    // STEP 2: loop over uniform mesh nodes and compute distance field
    SLIC_INFO("Calculating distance field...");
 
-#ifdef _OPENMP
+#ifdef AXOM_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
    for ( int i=0; i < nnodes; ++i ) {
 
       // get target node
-      quest::Point< double,NDIMS > pnt;
+      Point< double,NDIMS > pnt;
       umesh->getNode( i, pnt.data() );
-      quest::Point< double,NDIMS > Q = pnt;
+      Point< double,NDIMS > Q = pnt;
 
       double unsignedMinDistSQ = std::numeric_limits< double >::max();
       int sign = 0;
@@ -416,15 +410,17 @@ void n2( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
           int closest_cell[ 3 ];
           surface_mesh->getMeshCell( j, closest_cell );
 
-          quest::Point< double,NDIMS > a,b,c;
+          Point< double,NDIMS > a,b,c;
           surface_mesh->getMeshNode( closest_cell[0], a.data() );
           surface_mesh->getMeshNode( closest_cell[1], b.data() );
           surface_mesh->getMeshNode( closest_cell[2], c.data() );
-          quest::Triangle< double,3 > T( a,b,c);
-          const double sqDist = quest::squared_distance( Q, T );
+          Triangle< double,3 > T( a,b,c);
+          const double sqDist = axom::primal::squared_distance( Q, T );
           if ( sqDist < unsignedMinDistSQ)  {
 
-              bool negSide = quest::orientation(Q,T) == quest::ON_NEGATIVE_SIDE;
+              bool negSide =
+                 axom::primal::orientation(Q,T)==axom::primal::ON_NEGATIVE_SIDE;
+
               sign = negSide? -1: 1;
               unsignedMinDistSQ = sqDist;
 
@@ -439,45 +435,45 @@ void n2( mint::Mesh* surface_mesh, mint::UniformMesh* umesh )
 }
 
 //------------------------------------------------------------------------------
-void computeUsingBucketTree( mint::Mesh* surface_mesh,
-                             mint::UniformMesh* umesh )
+void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
+                             axom::mint::UniformMesh* umesh )
 {
   // Sanity Checks
-  SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
-  SLIC_ASSERT( umesh != ATK_NULLPTR );
+  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
   quest::SignedDistance< NDIMS > signedDistance( surface_mesh, 25, 32 );
 
   const int nnodes = umesh->getNumberOfNodes();
-  mint::FieldData* PD = umesh->getNodeFieldData();
-  SLIC_ASSERT( PD != ATK_NULLPTR );
+  axom::mint::FieldData* PD = umesh->getNodeFieldData();
+  SLIC_ASSERT( PD != AXOM_NULLPTR );
 
-  PD->addField( new mint::FieldVariable< double >("phi",nnodes) );
+  PD->addField( new axom::mint::FieldVariable< double >("phi",nnodes) );
   double* phi = PD->getField( "phi" )->getDoublePtr();
-  SLIC_ASSERT( phi != ATK_NULLPTR );
+  SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   for ( int inode=0; inode < nnodes; ++inode ) {
 
-      quest::Point< double,NDIMS > pt;
+      Point< double,NDIMS > pt;
       umesh->getMeshNode( inode, pt.data() );
 
       phi[ inode ] = signedDistance.computeDistance( pt );
 
   } // END for all nodes
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   // write the bucket tree to a file
-  const quest::BVHTree< int,NDIMS >* btree = signedDistance.getBVHTree();
-  SLIC_ASSERT( btree != ATK_NULLPTR );
+  const BVHTree< int,NDIMS >* btree = signedDistance.getBVHTree();
+  SLIC_ASSERT( btree != AXOM_NULLPTR );
 
   btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
   const int ncells = surface_mesh->getMeshNumberOfCells();
-  mint::FieldData* CD = surface_mesh->getCellFieldData();
-  CD->addField( new mint::FieldVariable<int>( "BucketID", ncells ) );
+  axom::mint::FieldData* CD = surface_mesh->getCellFieldData();
+  CD->addField( new axom::mint::FieldVariable<int>( "BucketID", ncells ) );
   int* bidx = CD->getField( "BucketID" )->getIntPtr();
-  SLIC_ASSERT( bidx != ATK_NULLPTR );
+  SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
   for ( int i=0; i < numObjects; ++i ) {
@@ -492,14 +488,14 @@ void computeUsingBucketTree( mint::Mesh* surface_mesh,
 }
 
 //------------------------------------------------------------------------------
-quest::BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
-                                                   mint::Mesh* surface_mesh )
+BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
+                                                   axom::mint::Mesh* surface_mesh )
 {
    // Sanity checks
-   SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
+   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
    SLIC_ASSERT( cellIdx >= 0 && cellIdx < surface_mesh->getMeshNumberOfCells());
 
-   using namespace quest;
+   using namespace axom::quest ;
 
    int cell[3];
    surface_mesh->getMeshCell( cellIdx, cell );
@@ -517,12 +513,12 @@ quest::BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
 
 
 //------------------------------------------------------------------------------
-quest::BoundingBox< double,NDIMS > compute_bounds( mint::Mesh* mesh)
+BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh* mesh)
 {
-   SLIC_ASSERT( mesh != ATK_NULLPTR );
+   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
-   quest::BoundingBox< double,NDIMS > meshBB;
-   quest::Point< double,NDIMS > pt;
+   BoundingBox< double,NDIMS > meshBB;
+   Point< double,NDIMS > pt;
 
    for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i ) {
        mesh->getMeshNode( i, pt.data() );
@@ -536,9 +532,9 @@ quest::BoundingBox< double,NDIMS > compute_bounds( mint::Mesh* mesh)
 
 
 //------------------------------------------------------------------------------
-void write_vtk( mint::Mesh* mesh, const std::string& fileName )
+void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   std::ofstream ofs;
   ofs.open( fileName.c_str() );
@@ -596,22 +592,22 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   ofs << "CELL_TYPES " << ncells << std::endl;
   for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
     int ctype    = mesh->getMeshCellType( cellIdx );
-    int vtk_type = mint::cell::vtk_types[ ctype ];
+    int vtk_type = axom::mint::cell::vtk_types[ ctype ];
     ofs << vtk_type << std::endl;
   } // END for all cells
 
   // STEP 4: Write Cell Data
   ofs << "CELL_DATA " << ncells << std::endl;
-  mint::FieldData* CD = mesh->getCellFieldData();
+  axom::mint::FieldData* CD = mesh->getCellFieldData();
   for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
 
-      mint::Field* field = CD->getField( f );
+      axom::mint::Field* field = CD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "double\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -622,7 +618,7 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
       } else {
 
           int* dataPtr = field->getIntPtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "int\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -638,13 +634,13 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   // STEP 5: Write Point Data
   const int nnodes = mesh->getMeshNumberOfNodes();
   ofs << "POINT_DATA " << nnodes << std::endl;
-  mint::FieldData* PD = mesh->getNodeFieldData();
+  axom::mint::FieldData* PD = mesh->getNodeFieldData();
   for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
 
-      mint::Field* field = PD->getField( f );
+      axom::mint::Field* field = PD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           ofs << "double\n";

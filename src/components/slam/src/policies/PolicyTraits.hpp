@@ -16,7 +16,7 @@
 #include "slam/SizePolicies.hpp"
 #include "slam/StridePolicies.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 namespace policies {
 
@@ -42,6 +42,6 @@ namespace policies {
 
 } // end namespace policies
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_POLICY_TRAITS_H_

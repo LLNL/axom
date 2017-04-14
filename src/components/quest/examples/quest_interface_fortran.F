@@ -16,13 +16,15 @@
 
 module quest_fortran_usage
 
-#ifndef USE_MPIF_HEADER
+#include "axom/config.hpp"
+
+#ifndef AXOM_USE_MPIF_HEADER
   use mpi
 #endif
   use quest_mod
   implicit none
 
-#ifdef USE_MPIF_HEADER
+#ifdef AXOM_USE_MPIF_HEADER
   include 'mpif.h'
 #endif
 

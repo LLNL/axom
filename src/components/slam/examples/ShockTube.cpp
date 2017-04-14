@@ -45,7 +45,7 @@
 #include <cmath>
 #include <string>
 #include <iomanip>
-
+#include <sstream>
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
@@ -57,8 +57,8 @@
 
 namespace slamShocktube {
 
-  asctoolkit::slam::MeshIndexType const UPWIND   = 0;
-  asctoolkit::slam::MeshIndexType const DOWNWIND = 1;
+  axom::slam::MeshIndexType const UPWIND   = 0;
+  axom::slam::MeshIndexType const DOWNWIND = 1;
 
   const double gammaa = M_SQRT2;
   const double gammaaInverse = M_SQRT1_2;
@@ -70,7 +70,7 @@ namespace slamShocktube {
   const double INIT_P_RATIO = 0.5;
   const double INIT_D_RATIO = 0.5;
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
   const bool verboseOutput = false;
 #endif
 
@@ -94,27 +94,27 @@ namespace slamShocktube {
   public:
 
     // other types
-    typedef asctoolkit::slam::Set::IndexType                                                            IndexType;
-    typedef asctoolkit::slam::Set::PositionType                                                         PositionType;
-    typedef asctoolkit::slam::Set::ElementType                                                          ElementType;
+    typedef axom::slam::Set::IndexType                                                            IndexType;
+    typedef axom::slam::Set::PositionType                                                         PositionType;
+    typedef axom::slam::Set::ElementType                                                          ElementType;
 
     // types for Element and Face sets
-    typedef asctoolkit::slam::PositionSet                                                               ElemSet;
-    typedef asctoolkit::slam::PositionSet                                                               FaceSet;
+    typedef axom::slam::PositionSet                                                               ElemSet;
+    typedef axom::slam::PositionSet                                                               FaceSet;
 
     // types for Tube and {In,Out}Flow subsets
-    typedef asctoolkit::slam::policies::StrideOne<PositionType>                                         StrideOnePolicy;
-    typedef asctoolkit::slam::policies::NoIndirection<PositionType,ElementType>                         NoIndirectionPolicy;
-    typedef asctoolkit::slam::policies::ConcreteParentSubset<ElemSet>                                   TubeSubsetPolicy;
-    typedef asctoolkit::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy>   ElemSubset;
-    typedef asctoolkit::slam::RangeSet                                                                  RangeSet;
+    typedef axom::slam::policies::StrideOne<PositionType>                                         StrideOnePolicy;
+    typedef axom::slam::policies::NoIndirection<PositionType,ElementType>                         NoIndirectionPolicy;
+    typedef axom::slam::policies::ConcreteParentSubset<ElemSet>                                   TubeSubsetPolicy;
+    typedef axom::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy>   ElemSubset;
+    typedef axom::slam::RangeSet                                                                  RangeSet;
 
     // types for relations
     enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ELEM>  EFStride;
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, ELEMS_PER_FACE>  FEStride;
-    typedef asctoolkit::slam::StaticConstantRelation<EFStride>                                          ElemToFaceRelation;
-    typedef asctoolkit::slam::StaticConstantRelation<FEStride>                                          FaceToElemRelation;
+    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ELEM>  EFStride;
+    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, ELEMS_PER_FACE>  FEStride;
+    typedef axom::slam::StaticConstantRelation<EFStride>                                          ElemToFaceRelation;
+    typedef axom::slam::StaticConstantRelation<FEStride>                                          FaceToElemRelation;
 
   public:
     ElemSet elems;              // The entire set of elements
@@ -131,8 +131,8 @@ namespace slamShocktube {
 
 // Define the explicit instances of our local (key/value) datastore for int and double
 // TODO: Might need an additional uint version for mesh data
-  typedef asctoolkit::slam::FieldRegistry<int>    IntsRegistry;
-  typedef asctoolkit::slam::FieldRegistry<double> RealsRegistry;
+  typedef axom::slam::FieldRegistry<int>    IntsRegistry;
+  typedef axom::slam::FieldRegistry<double> RealsRegistry;
   typedef IntsRegistry::MapType                   IntField;
   typedef RealsRegistry::MapType                  RealField;
 
@@ -333,12 +333,13 @@ namespace slamShocktube {
 
     // Initialize zonal quantities
     RangeSet lowerTube(0, midTube);
-    for (RangeSet::iterator elemIt = lowerTube.begin(); elemIt < lowerTube.end(); ++elemIt)
+    for (IndexType i = 0; i < lowerTube.size(); ++i)
     {
-      mass[*elemIt]     = massInitial;
-      momentum[*elemIt] = momentumInitial;
-      pressure[*elemIt] = pressureInitial;
-      energy[*elemIt]   = energyInitial;
+      IndexType ind = lowerTube[i];
+      mass[ind]     = massInitial;
+      momentum[ind] = momentumInitial;
+      pressure[ind] = pressureInitial;
+      energy[ind]   = energyInitial;
     }
 
     // adjust parameters for low pressure portion of tube
@@ -347,12 +348,13 @@ namespace slamShocktube {
     energyInitial     = pressureInitial / (gammaa - 1.0);
 
     RangeSet upperTube(midTube, mesh.elems.size());
-    for (RangeSet::iterator elemIt = upperTube.begin(); elemIt < upperTube.end(); ++elemIt)
+    for (IndexType i = 0; i < upperTube.size(); ++i)
     {
-      mass[*elemIt]     = massInitial;
-      momentum[*elemIt] = momentumInitial;
-      pressure[*elemIt] = pressureInitial;
-      energy[*elemIt]   = energyInitial;
+      IndexType ind = upperTube[i];
+      mass[ind]     = massInitial;
+      momentum[ind] = momentumInitial;
+      pressure[ind] = pressureInitial;
+      energy[ind]   = energyInitial;
     }
 
     // Create needed time info
@@ -518,34 +520,44 @@ namespace slamShocktube {
     // I would like to create a subset with a stride to only print every n_th element
     // Alternatively -- it can use an indirection map to grab the values, and write out to an sstream
 
-    std::stringstream dumpStream;
+    std::stringstream elemStream, mStream, pStream, eStream, prStream;
 
-    dumpStream << "\n\t\tElem idx: ";
-    std:: copy( mesh.elems.begin(),               mesh.elems.begin() + maxDump,       std::ostream_iterator<ShockTubeMesh::IndexType>(dumpStream, "\t"));
-    dumpStream << "...\t";
-    std:: copy( mesh.elems.end() - rmaxDump,      mesh.elems.end(),                   std::ostream_iterator<ShockTubeMesh::IndexType>(dumpStream, "\t"));
+    mStream << std::setprecision(3);
+    pStream << std::setprecision(3);
+    eStream << std::setprecision(3);
+    prStream << std::setprecision(3);
 
-    dumpStream << "\n\t\tMass : " << std::setprecision(3);
-    std:: copy( mass.data().begin(),              mass.data().begin() + maxDump,      std::ostream_iterator<double>(dumpStream, "\t"));
-    dumpStream << "...\t";
-    std:: copy( mass.data().end() - rmaxDump,     mass.data().end(),                  std::ostream_iterator<double>(dumpStream, "\t"));
+    for(int i = 0; i<maxDump; ++i)
+    {
+      ShockTubeMesh::IndexType ind = mesh.elems[i];
+      elemStream << ind << "\t";
+      mStream << mass[ind] << "\t";
+      pStream << momentum[ind] << "\t";
+      eStream << energy[ind] << "\t";
+      prStream << pressure[ind] << "\t";
+    }
+    elemStream << "...\t";
+    mStream << "...\t";
+    pStream << "...\t";
+    eStream << "...\t";
+    prStream << "...\t";
 
-    dumpStream << "\n\t\tMomentum: ";
-    std:: copy( momentum.data().begin(),          momentum.data().begin() + maxDump,  std::ostream_iterator<double>(dumpStream, "\t"));
-    dumpStream << "...\t";
-    std:: copy( momentum.data().end() - rmaxDump, momentum.data().end(),              std::ostream_iterator<double>(dumpStream, "\t"));
+    for(int i = mesh.elems.size() - rmaxDump; i<mesh.elems.size(); ++i)
+    {
+      ShockTubeMesh::IndexType ind = mesh.elems[i];
+      elemStream << ind << "\t";
+      mStream << mass[ind] << "\t";
+      pStream << momentum[ind] << "\t";
+      eStream << energy[ind] << "\t";
+      prStream << pressure[ind] << "\t";
+    }
 
-    dumpStream << "\n\t\tEnergy : ";
-    std:: copy( energy.data().begin(),            energy.data().begin() + maxDump,    std::ostream_iterator<double>(dumpStream, "\t"));
-    dumpStream << "...\t";
-    std:: copy( energy.data().end() - rmaxDump,   energy.data().end(),                std::ostream_iterator<double>(dumpStream, "\t"));
-
-    dumpStream << "\n\t\tPressure: ";
-    std:: copy( pressure.data().begin(),          pressure.data().begin() + maxDump,  std::ostream_iterator<double>(dumpStream, "\t"));
-    dumpStream << "...\t";
-    std:: copy( pressure.data().end() - rmaxDump, pressure.data().end(),              std::ostream_iterator<double>(dumpStream, "\t"));
-
-    SLIC_INFO( dumpStream.str() );
+    SLIC_INFO( "Data dump: \n"
+        << "Elem idx: " << elemStream.str() << "\n"
+        << "mass:     " << mStream.str() << "\n"
+        << "momemtum: " << pStream.str() << "\n"
+        << "energy:   " << eStream.str() << "\n"
+        << "pressure: " << prStream.str() << "\n" );
 
   }
 
@@ -560,7 +572,7 @@ namespace slamShocktube {
 int main(void)
 {
   using namespace slamShocktube;
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   // We should be able to parallelize pretty easily by
   // adding an MPI_Init() here, modifying the setup slightly,

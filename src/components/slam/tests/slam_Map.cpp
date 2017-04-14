@@ -9,11 +9,10 @@
  */
 
 
-/*
- * testSet.cxx
+/**
+ * \file slam_Map.cpp
  *
- *  Created on: Apr 23, 2015
- *      Author: weiss27
+ * \brief Unit tests for Slam's Map
  */
 
 #include <iterator>
@@ -23,18 +22,18 @@
 #include "slam/RangeSet.hpp"
 #include "slam/Map.hpp"
 
+#include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 
-typedef asctoolkit::slam::RangeSet    SetType;
-typedef asctoolkit::slam::Map<int>    IntMap;
-typedef asctoolkit::slam::Map<double> RealMap;
+typedef axom::slam::RangeSet    SetType;
+typedef axom::slam::Map<int>    IntMap;
+typedef axom::slam::Map<double> RealMap;
 
 typedef SetType::PositionType         PositionType;
 typedef SetType::ElementType          ElementType;
 
-typedef SetType::iterator             SetIterator;
 static PositionType const MAX_SET_SIZE = 10;
 
 TEST(gtest_slam_map,construct_empty_map)
@@ -49,23 +48,23 @@ bool constructAndTestMap()
 {
   SetType s(MAX_SET_SIZE);
 
-  std::cout << "\nCreating set of size " << s.size() << std::endl;
+  SLIC_INFO("\nCreating set of size " << s.size() );
 
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  std::cout << "\nCreating " << asctoolkit::slam::util::TypeToString<T>::to_string() << " map on the set " << std::endl;
-  asctoolkit::slam::Map<T> m(&s);
+  SLIC_INFO("\nCreating " << axom::slam::util::TypeToString<T>::to_string() << " map on the set ");
+  axom::slam::Map<T> m(&s);
   EXPECT_TRUE(m.isValid());
 
-  std::cout << "\nSetting the elements.";
+  SLIC_INFO( "\nSetting the elements.");
   double multFac = 1.0001;
   for(PositionType idx = 0; idx < m.size(); ++idx)
   {
     m[idx] = static_cast<T>(idx * multFac);
   }
 
-  std::cout << "\nChecking the elements.";
+  SLIC_INFO("\nChecking the elements.");
   for(PositionType idx = 0; idx < m.size(); ++idx)
   {
     EXPECT_EQ(m[idx], static_cast<T>(idx * multFac) );
@@ -99,15 +98,15 @@ TEST(gtest_slam_map,out_of_bounds)
 
   // Test out of bounds
   SLIC_INFO("Testing Map element access -- out of bounds access; Expecting the test to fail");
-  #ifdef ATK_DEBUG
+  #ifdef AXOM_DEBUG
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( m[-1],      "") << " Accessed element -1 of Map -- out of bounds";
-  ASSERT_DEATH( m[m.size()],"") << " Accessed element " << m.size() << " of Map -- out of bounds";
+  EXPECT_DEATH_IF_SUPPORTED( m[-1],      "") << " Accessed element -1 of Map -- out of bounds";
+  EXPECT_DEATH_IF_SUPPORTED( m[m.size()],"") << " Accessed element " << m.size() << " of Map -- out of bounds";
 
   #else
-  SLIC_INFO("Did not check for assertion failure since assertions are compiled out in release mode.");
+  SLIC_INFO("Skipped assertion failure check in release mode.");
   #endif
 }
 
@@ -121,7 +120,7 @@ int main(int argc, char * argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,
-  asctoolkit::slic::setLoggingMsgLevel( asctoolkit::slic::message::Info );
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
   // finalized when exiting main scope
 

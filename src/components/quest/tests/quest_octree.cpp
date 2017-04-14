@@ -12,7 +12,7 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/Point.hpp"
+#include "primal/Point.hpp"
 #include "quest/OctreeBase.hpp"
 
 #include "slic/slic.hpp"
@@ -25,9 +25,9 @@ TEST( quest_octree, topological_octree_parent_child)
 
   static const int DIM = 2;
   typedef int CoordType;
-  typedef quest::BlockData LeafNodeType;
+  typedef axom::quest::BlockData LeafNodeType;
 
-  typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
+  typedef axom::quest::OctreeBase<DIM, LeafNodeType> OctreeType;
   typedef OctreeType::GridPt GridPt;
   typedef OctreeType::BlockIndex BlockIndex;
   typedef BlockIndex::ChildIndexSet OctreeChildIndexSet;
@@ -73,9 +73,9 @@ TEST( quest_octree, topological_octree_refine)
               <<"\nSpecifically, that refining the root block adds all its children to the octree.");
 
   static const int DIM = 3;
-  typedef quest::BlockData LeafNodeType;
+  typedef axom::quest::BlockData LeafNodeType;
 
-  typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
+  typedef axom::quest::OctreeBase<DIM, LeafNodeType> OctreeType;
   typedef OctreeType::BlockIndex BlockIndex;
 
   OctreeType octree;
@@ -115,8 +115,8 @@ TEST( quest_octree, octree_coveringLeafBlocks)
   SLIC_INFO("*** This test exercises the coveringLeafBlock function of OctreeBase");
 
   static const int DIM = 2;
-  typedef quest::BlockData LeafNodeType;
-  typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
+  typedef axom::quest::BlockData LeafNodeType;
+  typedef axom::quest::OctreeBase<DIM, LeafNodeType> OctreeType;
   typedef OctreeType::BlockIndex BlockIndex;
   typedef OctreeType::GridPt GridPt;
 
@@ -223,8 +223,8 @@ TEST( quest_octree, octree_block_is_descendant)
   SLIC_INFO("*** This test exercises the isDescendantOf() function of OctreeBase::BlockIndex");
 
   static const int DIM = 2;
-  typedef quest::BlockData LeafNodeType;
-  typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
+  typedef axom::quest::BlockData LeafNodeType;
+  typedef axom::quest::OctreeBase<DIM, LeafNodeType> OctreeType;
   typedef OctreeType::BlockIndex BlockIndex;
 
   OctreeType octree;
@@ -275,8 +275,8 @@ TEST( quest_octree, octree_block_is_descendant)
 TEST( quest_octree, count_octree_blocks)
 {
     static const int DIM = 2;
-    typedef quest::BlockData LeafNodeType;
-    typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
+    typedef axom::quest::BlockData LeafNodeType;
+    typedef axom::quest::OctreeBase<DIM, LeafNodeType> OctreeType;
     //typedef OctreeType::BlockIndex BlockIndex;
 
     OctreeType octree;
@@ -355,7 +355,7 @@ TEST( quest_octree, count_octree_blocks)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {

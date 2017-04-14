@@ -20,16 +20,12 @@
 
 #include "slic/slic.hpp"
 
-#include "common/Utilities.hpp"   // for utilities::processAbort()
-
 #include <cstdlib>    // for free
 #include <sstream>    // for std::ostringstream
 #include <execinfo.h> // for backtrace()
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
-
 
 //------------------------------------------------------------------------------
 // Initialize static variables for controlling runtime behavior of asserts and
@@ -45,7 +41,7 @@ void initialize()
 //------------------------------------------------------------------------------
 bool isInitialized()
 {
-  return ( Logger::getActiveLogger() != ATK_NULLPTR );
+  return ( Logger::getActiveLogger() != AXOM_NULLPTR );
 }
 
 //------------------------------------------------------------------------------
@@ -93,6 +89,66 @@ void setLoggingMsgLevel( message::Level level )
 }
 
 //------------------------------------------------------------------------------
+void setAbortOnError( bool status )
+{
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return;
+  }
+
+  Logger::getActiveLogger()->setAbortOnError( status );
+}
+
+//------------------------------------------------------------------------------
+void enableAbortOnError() { setAbortOnError( true ); }
+
+//------------------------------------------------------------------------------
+void disableAbortOnError() { setAbortOnError( false ); }
+
+//------------------------------------------------------------------------------
+bool isAbortOnErrorsEnabled()
+{
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return false;
+  }
+
+  return ( Logger::getActiveLogger()->isAbortOnErrorsEnabled() );
+}
+
+//------------------------------------------------------------------------------
+void setAbortOnWarning( bool status )
+{
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return;
+  }
+
+  Logger::getActiveLogger()->setAbortOnWarning( status );
+}
+
+//------------------------------------------------------------------------------
+void enableAbortOnWarning() { setAbortOnWarning(true); }
+
+//------------------------------------------------------------------------------
+void disableAbortOnWarning() { setAbortOnWarning(false); }
+
+//------------------------------------------------------------------------------
+bool isAbortOnWarningsEnabled()
+{
+  if ( !isInitialized() ) {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return false;
+  }
+
+  return ( Logger::getActiveLogger()->isAbortOnWarningsEnabled() );
+}
+
+//------------------------------------------------------------------------------
 void addStreamToMsgLevel( LogStream* ls, message::Level level )
 {
   if ( !isInitialized() ) {
@@ -126,7 +182,7 @@ void logMessage( message::Level level,
                  bool filter_duplicates )
 {
   if ( !isInitialized() ) {
-     return;
+    return;
   }
   Logger::getActiveLogger()->logMessage( level, message, tag,
                                          filter_duplicates );
@@ -134,13 +190,13 @@ void logMessage( message::Level level,
 
 //------------------------------------------------------------------------------
 void logMessage( message::Level level,
-                const std::string& message,
-                const std::string& fileName,
-                int line,
-                bool filter_duplicates )
+                 const std::string& message,
+                 const std::string& fileName,
+                 int line,
+                 bool filter_duplicates )
 {
   if ( !isInitialized() ) {
-     return;
+    return;
   }
   Logger::getActiveLogger()->logMessage( level, message, fileName, line,
                                          filter_duplicates );
@@ -155,7 +211,7 @@ void logMessage( message::Level level,
                  bool filter_duplicates )
 {
   if ( !isInitialized() ) {
-     return;
+    return;
   }
   Logger::getActiveLogger()->logMessage( level, message, tag, fileName, line,
                                          filter_duplicates );
@@ -169,9 +225,7 @@ void logErrorMessage( const std::string& message,
   std::ostringstream oss;
   oss << message << slic::stacktrace();
 
-  slic::logMessage( message::Fatal, oss.str(), fileName, line );
-  slic::flushStreams();
-  asctoolkit::utilities::processAbort();
+  slic::logMessage( message::Error, oss.str(), fileName, line );
 }
 
 //------------------------------------------------------------------------------
@@ -220,10 +274,9 @@ std::string stacktrace( )
   std::ostringstream oss;
   oss << "\n** StackTrace of " << size << " frames **\n";
   for ( int i=0; i < size; ++i ) {
-     oss << strings[ i ] << std::endl;
+    oss << strings[ i ] << std::endl;
   }
   oss << "=====\n\n";
-
 
   free( strings );
 
@@ -232,5 +285,4 @@ std::string stacktrace( )
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
-
+} /* namespace axom */

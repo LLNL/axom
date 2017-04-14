@@ -10,42 +10,41 @@
 
 ## mint headers
 set( mint_headers
-    CellConnectivity.hpp
-    CellType.hpp
-    CurvilinearMesh.hpp
-    Extent.hpp
-    Field.hpp
-    FieldData.hpp
-    FieldTypes.hpp
-    FieldVariable.hpp
-    Mesh.hpp
-    MeshCoordinates.hpp
-    MeshType.hpp
-    ParticleMesh.hpp
-    RectilinearMesh.hpp
-    StructuredMesh.hpp
-    UniformMesh.hpp
-    UnstructuredMesh.hpp
+    mesh/CellConnectivity.hpp
+    mesh/CellType.hpp
+    mesh/CurvilinearMesh.hpp
+    mesh/Extent.hpp
+    mesh/Field.hpp
+    mesh/FieldData.hpp
+    mesh/FieldTypes.hpp
+    mesh/FieldVariable.hpp
+    mesh/Mesh.hpp
+    mesh/MeshCoordinates.hpp
+    mesh/MeshType.hpp
+    mesh/ParticleMesh.hpp
+    mesh/RectilinearMesh.hpp
+    mesh/StructuredMesh.hpp
+    mesh/UniformMesh.hpp
+    mesh/UnstructuredMesh.hpp
    )
 
 ## mint sources
 set( mint_sources
-    CurvilinearMesh.cpp
-    Field.cpp
-    FieldData.cpp
-    Mesh.cpp
-    MeshCoordinates.cpp
-    ParticleMesh.cpp
-    RectilinearMesh.cpp
-    StructuredMesh.cpp
-    UniformMesh.cpp
+    mesh/CurvilinearMesh.cpp
+    mesh/Field.cpp
+    mesh/FieldData.cpp
+    mesh/Mesh.cpp
+    mesh/MeshCoordinates.cpp
+    mesh/ParticleMesh.cpp
+    mesh/RectilinearMesh.cpp
+    mesh/StructuredMesh.cpp
+    mesh/UniformMesh.cpp
    )
 
-## create the mint library 
+## create the mint library
 blt_add_library(
     NAME mint
     SOURCES ${mint_sources}
     HEADERS ${mint_headers}
     HEADERS_OUTPUT_SUBDIR mint
-    DEPENDS_ON common
    )

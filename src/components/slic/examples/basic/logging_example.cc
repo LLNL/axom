@@ -25,7 +25,7 @@
 #include "slic/slic.hpp"
 #include "slic/GenericOutputStream.hpp"
 
-using namespace asctoolkit;
+using namespace axom;
 
 #define N 10
 
@@ -42,6 +42,7 @@ int main( int argc, char** argv )
 
   // STEP 0: initialize logging environment
   slic::initialize();
+  slic::disableAbortOnError();
 
   std::string format =  std::string( "***********************************\n" )+
                         std::string( "* <TIMESTAMP>\n\n" ) +

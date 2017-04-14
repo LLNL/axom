@@ -15,10 +15,11 @@
 #include <string>
 #include <vector>
 
-#include "common/ATKMacros.hpp"
+#include "axom/Macros.hpp"
 #include "mint/UnstructuredMesh.hpp"
 
-namespace quest
+namespace axom {  
+namespace quest 
 {
 
 class STLReader
@@ -66,10 +67,10 @@ public:
      ***************************************************************************
      * \brief Stores the STL data in the supplied unstructured mesh object.
      * \param [in,out] mesh pointer to the unstructured mesh.
-     * \pre mesh != ATK_NULLPTR.
+     * \pre mesh != AXOM_NULLPTR.
      ***************************************************************************
      */
-    void getMesh( mint::UnstructuredMesh< MINT_TRIANGLE >* mesh );
+    void getMesh( axom::mint::UnstructuredMesh< MINT_TRIANGLE >* mesh );
 
 
 private:
@@ -101,8 +102,10 @@ protected:
 private:
 
     DISABLE_COPY_AND_ASSIGNMENT(STLReader);
+    DISABLE_MOVE_AND_ASSIGNMENT(STLReader);
 };
 
-} /* namespace quest */
+} // end namespace quest 
+} // end namespace axom 
 
 #endif /* STLREADER_HPP_ */

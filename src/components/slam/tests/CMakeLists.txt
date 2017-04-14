@@ -29,8 +29,8 @@ set(gtest_slam_tests
 
 # blt_add_executable depends_on handles our include dir settings
 # these teste are using boost so boost needs to be a dep
-set(slam_tests_depends_on common slic slam gtest)
-if (ENABLE_BOOST)
+set(slam_tests_depends_on axom_utils slic slam gtest)
+if (BOOST_FOUND)
     list(APPEND slam_tests_depends_on boost)
 endif()
 
@@ -44,18 +44,18 @@ foreach(test ${gtest_slam_tests})
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON ${slam_tests_depends_on} )
-    blt_add_test( NAME ${test_name} 
+    blt_add_test( NAME ${test_name}
                   COMMAND ${test_name} )
 endforeach()
 
 # The slam utilities test requires a directory
-blt_add_executable( 
+blt_add_executable(
     NAME    slam_utilities
     SOURCES slam_utilities.cpp
     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-    DEPENDS_ON ${slam_tests_depends_on} 
+    DEPENDS_ON ${slam_tests_depends_on}
     )
-blt_add_test( 
-    NAME    slam_utilities 
+blt_add_test(
+    NAME    slam_utilities
     COMMAND slam_utilities ${CMAKE_CURRENT_SOURCE_DIR}
     )

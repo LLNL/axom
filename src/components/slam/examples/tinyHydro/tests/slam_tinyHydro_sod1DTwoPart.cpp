@@ -13,7 +13,7 @@
 #include <vector>
 #include <cmath>
 
-#include "common/Timer.hpp"
+#include "axom_utils/Timer.hpp"
 #include "slic/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"
@@ -121,7 +121,7 @@ void tinyHydroSod1D_2part()
   bool special = false;
   double E0 = 0.;   // starting energy
 
-  asctoolkit::utilities::Timer timer;
+  axom::utilities::Timer timer;
   timer.start();
 
   if (special)
@@ -163,7 +163,7 @@ void tinyHydroSod1D_2part()
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 int main()
 {

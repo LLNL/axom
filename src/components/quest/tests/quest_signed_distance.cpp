@@ -10,15 +10,17 @@
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+using axom::slic::UnitTestLogger;
 
 #include "mint/CellType.hpp"
 #include "mint/MeshType.hpp"
 #include "mint/UniformMesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
 
-#include "quest/BoundingBox.hpp"
-#include "quest/HyperSphere.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/HyperSphere.hpp"
+#include "primal/Point.hpp"
+
 #include "quest/SignedDistance.hpp"
 
 // Google Test includes
@@ -27,8 +29,12 @@ using asctoolkit::slic::UnitTestLogger;
 // C/C++ includes
 #include <cmath>
 
-typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
-typedef mint::UniformMesh UniformMesh;
+typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UniformMesh UniformMesh;
+
+using axom::primal::BoundingBox;
+using axom::primal::HyperSphere;
+using axom::primal::Point;
 
 // pi / 180
 #define DEG_TO_RAD 0.01745329251
@@ -43,12 +49,12 @@ namespace detail
  *******************************************************************************
  * \brief Gets a surface mesh instance for the sphere.
  * \param [in] mesh pointer to the mesh instance.
- * \pre mesh != ATK_NULLPTR
+ * \pre mesh != AXOM_NULLPTR
  *******************************************************************************
  */
 void getMesh( TriangleMesh* mesh )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   const int THETA_RES             = 25;
   const int PHI_RES               = 25;
@@ -149,12 +155,12 @@ void getMesh( TriangleMesh* mesh )
  * \return bb bounding box of the mesh
  *******************************************************************************
  */
-quest::BoundingBox< double,3 > getBounds( const mint::Mesh* mesh )
+BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
-  quest::BoundingBox< double,3 > bb;
-  quest::Point< double,3 > pt;
+  BoundingBox< double,3 > bb;
+  Point< double,3 > pt;
 
   const int nnodes = mesh->getMeshNumberOfNodes();
   for ( int inode=0; inode < nnodes; ++inode ) {
@@ -174,12 +180,12 @@ quest::BoundingBox< double,3 > getBounds( const mint::Mesh* mesh )
  */
 void getUniformMesh( const TriangleMesh* mesh, UniformMesh*& umesh )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
-  SLIC_ASSERT( umesh == ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( umesh == AXOM_NULLPTR );
 
   const int N = 16; // number of points along each dimension
 
-  quest::BoundingBox< double,3 > bb = getBounds( mesh );
+  BoundingBox< double,3 > bb = getBounds( mesh );
   bb.expand( 2.0 );
 
   double h[3];
@@ -211,23 +217,23 @@ TEST( quest_signed_distance, sphere_test )
   detail::getMesh( surface_mesh );
 
   SLIC_INFO( "Generating uniform mesh..." );
-  UniformMesh* umesh = ATK_NULLPTR;
+  UniformMesh* umesh = AXOM_NULLPTR;
   detail::getUniformMesh( surface_mesh, umesh );
 
   const int nnodes = umesh->getNumberOfNodes();
 
   SLIC_INFO( "Generate BVHTree..." );
-  quest::SignedDistance< 3 > signed_distance( surface_mesh, 25, 25 );
+  axom::quest::SignedDistance< 3 > signed_distance( surface_mesh, 25, 25 );
 
   SLIC_INFO( "Compute signed distance..." );
-  quest::HyperSphere< double,3 > analytic_sphere( sphere_radius );
+  HyperSphere< double,3 > analytic_sphere( sphere_radius );
   double l1norm = 0.0;
   double l2norm = 0.0;
   double linf   = std::numeric_limits< double >::min( );
 
   for ( int inode=0; inode < nnodes; ++inode ) {
 
-     quest::Point< double,3 > pt;
+     Point< double,3 > pt;
      umesh->getNode( inode, pt.data() );
 
      double computed = signed_distance.computeDistance( pt );

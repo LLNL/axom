@@ -25,10 +25,10 @@
 #ifndef SLAM_POLICIES_STRIDE_H_
 #define SLAM_POLICIES_STRIDE_H_
 
-#include "common/ATKMacros.hpp"
+#include "axom/Macros.hpp"
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 namespace policies {
 
@@ -82,7 +82,7 @@ namespace policies {
     inline IntType          stride()      const { return INT_VAL; }
     inline IntType operator ()()  const { return stride(); }
 
-    void                    setStride(IntType ATK_DEBUG_PARAM(val))
+    void                    setStride(IntType AXOM_DEBUG_PARAM(val))
     {
       SLIC_ASSERT_MSG( val == INT_VAL
           , "SLAM::CompileTimeStrideHolder -- tried to set a compile time stride with value ("
@@ -110,7 +110,7 @@ namespace policies {
     inline const IntType          stride()     const { return DEFAULT_VALUE; }
     inline const IntType operator ()() const { return stride(); }
 
-    void                          setStride(IntType ATK_DEBUG_PARAM(val))
+    void                          setStride(IntType AXOM_DEBUG_PARAM(val))
     {
       SLIC_ASSERT_MSG( val == DEFAULT_VALUE
           , "SLAM::StrideOne policy -- tried to set a stride-one StridePolicy with value ("
@@ -124,6 +124,6 @@ namespace policies {
 
 } // end namespace policies
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_POLICIES_STRIDE_H_

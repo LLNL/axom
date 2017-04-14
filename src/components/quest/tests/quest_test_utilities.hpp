@@ -4,15 +4,17 @@
 
 #include "slic/slic.hpp"
 
-#include "quest/Point.hpp"
-#include "quest/Triangle.hpp"
-#include "quest/Orientation.hpp"
+#include "primal/Point.hpp"
+#include "primal/Triangle.hpp"
+#include "primal/orientation.hpp"
 
 #include "mint/Mesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
 
+using axom::primal::Point;
+using axom::primal::Triangle;
 
 /**
  * \file
@@ -22,7 +24,8 @@
  * We may later decide to move some of these into the actual component if they are deemed useful.
  */
 
-namespace quest {
+namespace axom {  
+namespace quest  {
 namespace utilities {
 
 
@@ -47,9 +50,9 @@ double randomDouble(double beg = 0., double end = 1.)
   * \brief Simple utility to generate a Point whose entries are random values in the range [beg, end]
   */
 template<int DIM>
-quest::Point<double,DIM> randomSpacePt(double beg, double end)
+Point<double,DIM> randomSpacePt(double beg, double end)
 {
-    quest::Point<double,DIM> pt;
+    Point<double,DIM> pt;
     for(int i=0; i< DIM; ++i)
         pt[i] = randomDouble(beg,end);
 
@@ -61,7 +64,8 @@ quest::Point<double,DIM> randomSpacePt(double beg, double end)
  * \brief Simple utility to find the centroid of two points
  */
 template<int DIM>
-quest::Point<double,DIM> getCentroid(const quest::Point<double,DIM>& pt0, const quest::Point<double,DIM>& pt1)
+Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
+                               const  Point<double,DIM>& pt1)
 {
     return (pt0.array() + pt1.array()) /2.;
 }
@@ -70,7 +74,9 @@ quest::Point<double,DIM> getCentroid(const quest::Point<double,DIM>& pt0, const 
  * \brief Simple utility to find the centroid of three points
  */
 template<int DIM>
-quest::Point<double,DIM> getCentroid(const quest::Point<double,DIM>& pt0, const quest::Point<double,DIM>& pt1, const quest::Point<double,DIM>& pt2)
+Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
+                               const Point<double,DIM>& pt1,
+                               const Point<double,DIM>& pt2  )
 {
     return (pt0.array() + pt1.array() + pt2.array()) /3.;
 }
@@ -80,11 +86,11 @@ quest::Point<double,DIM> getCentroid(const quest::Point<double,DIM>& pt0, const 
  * Vertices of the octahedron are at +-i, +-j and +-k.
  * \note The caller must delete the mesh
  */
-mint::Mesh*  make_octahedron_mesh()
+axom::mint::Mesh*  make_octahedron_mesh()
 {
     typedef int VertexIndex;
-    typedef quest::Point<double, 3> SpacePt;
-    typedef quest::Triangle<double, 3> SpaceTriangle;
+    typedef Point<double, 3> SpacePt;
+    typedef Triangle<double, 3> SpaceTriangle;
 
     enum { POS_X, NEG_X, POS_Y, NEG_Y, POS_Z, NEG_Z };
 
@@ -140,11 +146,11 @@ mint::Mesh*  make_octahedron_mesh()
                          , verts[ tvRelation[ baseIndex + 1]]
                          , verts[ tvRelation[ baseIndex + 2]] );
 
-        SLIC_ASSERT( quest::ON_NEGATIVE_SIDE == quest::orientation( SpacePt(), tri) );
+        SLIC_ASSERT( axom::primal::ON_NEGATIVE_SIDE == axom::primal::orientation( SpacePt(), tri) );
     }
 
     // Now create an unstructured triangle mesh from the two arrays
-    typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+    typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
     TriangleMesh* triMesh = new TriangleMesh(3);
 
     // insert verts
@@ -165,9 +171,9 @@ mint::Mesh*  make_octahedron_mesh()
 /**
  * \brief Utility function to write a VTK file from a mint Mesh instance
  */
-void write_vtk( mint::Mesh* mesh, const std::string& fileName )
+void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   std::ofstream ofs;
   ofs.open( fileName.c_str() );
@@ -225,22 +231,22 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   ofs << "CELL_TYPES " << ncells << std::endl;
   for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
     int ctype    = mesh->getMeshCellType( cellIdx );
-    int vtk_type = mint::cell::vtk_types[ ctype ];
+    int vtk_type = axom::mint::cell::vtk_types[ ctype ];
     ofs << vtk_type << std::endl;
   } // END for all cells
 
   // STEP 4: Write Cell Data
   ofs << "CELL_DATA " << ncells << std::endl;
-  mint::FieldData* CD = mesh->getCellFieldData();
+  axom::mint::FieldData* CD = mesh->getCellFieldData();
   for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
 
-      mint::Field* field = CD->getField( f );
+      axom::mint::Field* field = CD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "double\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -251,7 +257,7 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
       } else {
 
           int* dataPtr = field->getIntPtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "int\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -267,13 +273,13 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
   // STEP 5: Write Point Data
   const int nnodes = mesh->getMeshNumberOfNodes();
   ofs << "POINT_DATA " << nnodes << std::endl;
-  mint::FieldData* PD = mesh->getNodeFieldData();
+  axom::mint::FieldData* PD = mesh->getNodeFieldData();
   for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
 
-      mint::Field* field = PD->getField( f );
+      axom::mint::Field* field = PD->getField( f );
 
       ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == mint::DOUBLE_FIELD_TYPE ) {
+      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
           ofs << "double\n";
@@ -302,8 +308,9 @@ void write_vtk( mint::Mesh* mesh, const std::string& fileName )
 
 
 
-}   // end namespace utilities
-}   // end namespace quest
+} // end namespace utilities
+} // end namespace quest 
+} // end namespace axom 
 
 
 #endif // QUEST_TEST_UTILITIES_HPP_

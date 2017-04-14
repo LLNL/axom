@@ -17,16 +17,16 @@
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
-#include "common/FileUtilities.hpp"
-#include "sidre/DataGroup.hpp"
+#include "axom_utils/FileUtilities.hpp"
+#include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
 #include "spio/IOManager.hpp"
 
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataType;
-using asctoolkit::spio::IOManager;
-using namespace asctoolkit::utilities;
+using axom::sidre::Group;
+using axom::sidre::DataStore;
+using axom::sidre::DataType;
+using axom::spio::IOManager;
+using namespace axom::utilities;
 
 /**************************************************************************
  * Subroutine:  main
@@ -36,9 +36,11 @@ using namespace asctoolkit::utilities;
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
-  asctoolkit::slic::UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
-  SLIC_ASSERT(argc == 3);
+  SLIC_ERROR_IF(argc != 3,
+      "Missing command line arguments. \n\t"
+      << "Usage: spio_IOWrite <num_files> <base_file_name>");
 
   size_t num_files = 0;
   std::string file_base;
@@ -53,14 +55,14 @@ int main(int argc, char * argv[])
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
   DataStore * ds = new DataStore();
-  SLIC_ASSERT(ds); 
-  DataGroup * root = ds->getRoot();
+  SLIC_ASSERT(ds);
+  Group * root = ds->getRoot();
 
-  DataGroup * flds = root->createGroup("fields");
-  DataGroup * flds2 = root->createGroup("fields2");
+  Group * flds = root->createGroup("fields");
+  Group * flds2 = root->createGroup("fields2");
 
-  DataGroup * ga = flds->createGroup("a");
-  DataGroup * gb = flds2->createGroup("b");
+  Group * ga = flds->createGroup("a");
+  Group * gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", my_rank + 101);
   gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
 
@@ -76,9 +78,9 @@ int main(int argc, char * argv[])
 
   MPI_Barrier(MPI_COMM_WORLD);
   if (my_rank == 0) {
-    DataGroup * extra = root->createGroup("extra");
+    Group * extra = root->createGroup("extra");
     extra->createViewScalar<double>("dval", 1.1);
-    DataGroup * child = extra->createGroup("child");
+    Group * child = extra->createGroup("child");
     child->createViewScalar<int>("ival", 7);
     child->createViewString("word0", "hello");
     child->createViewString("word1", "world");

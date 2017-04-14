@@ -28,12 +28,10 @@
 #include <vector> // for STL vector
 #include <map>    // for STL map
 
-#include "common/ATKMacros.hpp"
+#include "axom/Macros.hpp"
 
-namespace asctoolkit {
-
+namespace axom {
 namespace slic {
-
 
 // Forward declarations
 class LogStream;
@@ -75,6 +73,70 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Toggles the abort behavior for error messages. Default is false.
+   * \param [in] status user-supplied flag.
+   *****************************************************************************
+   */
+  void setAbortOnError( bool status ) { m_abortOnError=status; };
+
+  /*!
+   *****************************************************************************
+   * \brief Enables abort on error messages.
+   * \post this->isAbortOnErrorsEnabled() == true.
+   *****************************************************************************
+   */
+  void enableAbortOnError() { m_abortOnError=true; };
+
+  /*!
+   *****************************************************************************
+   * \brief Disables abort on error messages.
+   * \post this->isAbortOnErrorsEnabled() == false.
+   *****************************************************************************
+   */
+  void disableAbortOnError() { m_abortOnError=false; };
+
+  /*!
+   *****************************************************************************
+   * \brief Checks the status of the abort behavior on error messages.
+   * \return status true if the code will abort on errors, otherwise, false.
+   *****************************************************************************
+   */
+  bool isAbortOnErrorsEnabled() const { return m_abortOnError; };
+
+  /*!
+   *****************************************************************************
+   * \brief Toggles the abort behavior for warning messages. Default is false.
+   * \param [in] status user-supplied flag.
+   *****************************************************************************
+   */
+  void setAbortOnWarning( bool status ) { m_abortOnWarning=status; };
+
+  /*!
+   *****************************************************************************
+   * \brief Enables abort on warning messages.
+   * \post this->isAbortOnWarningsEnabled() == true.
+   *****************************************************************************
+   */
+  void enableAbortOnWarning() { m_abortOnWarning=true; };
+
+  /*!
+   *****************************************************************************
+   * \brief Disables abort on warnings messages.
+   * \post this->isAbortOnWarningsEnabled() == false.
+   *****************************************************************************
+   */
+  void disableAbortOnWarning() { m_abortOnWarning=false; };
+
+  /*!
+   *****************************************************************************
+   * \brief Checks the status of the abort behavior on warning messages.
+   * \return status true if the code will abort on warnings, otherwise, false.
+   *****************************************************************************
+   */
+  bool isAbortOnWarningsEnabled() const { return m_abortOnWarning; };
+
+  /*!
+   *****************************************************************************
    * \brief Returns the name of this logger instance.
    * \return s a string corresponding to the name of this logger instance.
    * \post s.length() > 0
@@ -95,7 +157,7 @@ public:
    *****************************************************************************
    */
   void addStreamToMsgLevel( LogStream* ls, message::Level level,
-                         bool pass_ownership=true );
+                            bool pass_ownership=true );
 
   /*!
    *****************************************************************************
@@ -316,6 +378,8 @@ private:
   ///@{
 
   std::string m_name;
+  bool m_abortOnError;
+  bool m_abortOnWarning;
 
   bool m_isEnabled[ message::Num_Levels ];
   std::map< LogStream*, LogStream* > m_streamObjectsManager;
@@ -332,11 +396,12 @@ private:
   ///@}
 
   DISABLE_COPY_AND_ASSIGNMENT(Logger);
+  DISABLE_MOVE_AND_ASSIGNMENT(Logger);
 
 };
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* LOGGER_HPP_ */

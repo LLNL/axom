@@ -26,6 +26,24 @@ blt_register_library(
     INCLUDES ${HEADER_INCLUDES_DIRECTORY}
     )
 
+set(FMT_FOUND TRUE CACHE INTERNAL "")
+mark_as_advanced(FMT_FOUND)
+
+############################################################
+# Register the sparsehash header-only library for hashed map containers
+############################################################
+
+set(sparsehash_includes
+    ${PROJECT_SOURCE_DIR}/thirdparty/sparsehash)
+ 
+blt_register_library( 
+    NAME sparsehash
+    INCLUDES ${sparsehash_includes}
+    )
+
+set(SPARSEHASH_FOUND TRUE CACHE INTERNAL "")
+mark_as_advanced(SPARSEHASH_FOUND)
+
 
 ################################
 # Add tests

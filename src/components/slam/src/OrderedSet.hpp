@@ -23,11 +23,13 @@
 #include <cstddef>
 #include <vector>
 
+#include "axom/config.hpp"   // for AXOM_USE_BOOST
 
 #ifndef SLAM_USE_COUNTING_ITERATOR
 //=    #define SLAM_USE_COUNTING_ITERATOR
 #endif
 
+#ifdef AXOM_USE_BOOST
 #ifdef SLAM_USE_COUNTING_ITERATOR
     #include <boost/iterator/counting_iterator.hpp>
 #else
@@ -35,8 +37,9 @@
     #include <boost/utility/enable_if.hpp>
     #include <boost/type_traits.hpp>
 #endif
+#endif // AXOM_USE_BOOST
 
-#include "common/CommonTypes.hpp" // for ATK_NULLPTR
+#include "axom/Types.hpp" // for AXOM_NULLPTR
 #include "slic/slic.hpp"
 
 #include "slam/Set.hpp"
@@ -50,7 +53,7 @@
 #include "slam/ModularInt.hpp"
 
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
 
@@ -88,6 +91,7 @@ namespace slam {
 
     struct SetBuilder;
 
+#ifdef AXOM_USE_BOOST
 #ifdef SLAM_USE_COUNTING_ITERATOR
     typedef boost::counting_iterator<ElementType>     iterator;
     typedef std::pair<iterator,iterator>              iterator_pair;
@@ -103,6 +107,7 @@ namespace slam {
     typedef const_iterator                            iterator;
     typedef const_iterator_pair                       iterator_pair;
 #endif
+#endif // AXOM_USE_BOOST
 
   public:
     OrderedSet(PositionType size    = SizePolicyType::DEFAULT_VALUE
@@ -172,6 +177,7 @@ namespace slam {
       SubsettingPolicyType m_parent;
     };
 
+#ifdef AXOM_USE_BOOST
     /**
      * \class
      * \brief An iterator type for an ordered set
@@ -229,6 +235,24 @@ namespace slam {
       const OrderedSet* m_orderedSet;
     };
 
+  public:   // Functions related to iteration
+
+  #ifdef SLAM_USE_COUNTING_ITERATOR
+    const_iterator      begin() const { return iterator( OffsetPolicyType::offset() ); }
+    const_iterator      end()   const { return iterator( size() + OffsetPolicyType::offset() ); }
+    const_iterator_pair range() const { return std::make_pair(begin(), end()); }
+
+    iterator            begin() { return iterator( OffsetPolicyType::offset() ); }
+    iterator            end()   { return iterator( size() + OffsetPolicyType::offset() ); }
+    iterator_pair       range() { return std::make_pair(begin(), end()); }
+
+  #else
+    const_iterator      begin() const { return const_iterator( OffsetPolicyType::offset(), this); }
+    const_iterator      end()   const { return const_iterator( SizePolicyType::size() * StridePolicyType::stride() + OffsetPolicyType::offset(), this); }
+    const_iterator_pair range() const { return std::make_pair(begin(), end()); }
+  #endif
+#endif // AXOM_USE_BOOST
+
   public:
     /**
      * \brief Given a position in the Set, return a position in the larger index space
@@ -244,23 +268,6 @@ namespace slam {
 
     inline PositionType size()  const { return SizePolicyType::size(); }
     inline bool         empty() const { return SizePolicyType::empty(); }
-
-  public:   // Functions related to iteration
-
-#ifdef SLAM_USE_COUNTING_ITERATOR
-    const_iterator      begin() const { return iterator( OffsetPolicyType::offset() ); }
-    const_iterator      end()   const { return iterator( size() + OffsetPolicyType::offset() ); }
-    const_iterator_pair range() const { return std::make_pair(begin(), end()); }
-
-    iterator            begin() { return iterator( OffsetPolicyType::offset() ); }
-    iterator            end()   { return iterator( size() + OffsetPolicyType::offset() ); }
-    iterator_pair       range() { return std::make_pair(begin(), end()); }
-
-#else
-    const_iterator      begin() const { return const_iterator( OffsetPolicyType::offset(), this); }
-    const_iterator      end()   const { return const_iterator( SizePolicyType::size() * StridePolicyType::stride() + OffsetPolicyType::offset(), this); }
-    const_iterator_pair range() const { return std::make_pair(begin(), end()); }
-#endif
 
     bool                isValid(bool verboseOutput = false) const;
 
@@ -283,7 +290,7 @@ namespace slam {
     {
       verifyPositionImpl(pos);
     }
-    inline void verifyPositionImpl(PositionType ATK_DEBUG_PARAM(pos))       const
+    inline void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(pos))       const
     {
       SLIC_ASSERT_MSG( isValidIndex(pos)
           , "SLAM::OrderedSet -- requested out-of-range element at position "
@@ -293,7 +300,6 @@ namespace slam {
   private:
     /// NOTE: All data for OrderedSet is associated with parent policy classes
   };
-
 
   template< typename SizePolicy
   , typename OffsetPolicy
@@ -307,7 +313,9 @@ namespace slam {
         && OffsetPolicyType::isValid(verboseOutput)
         && StridePolicyType::isValid(verboseOutput)
         && IndirectionPolicyType::isValid(size(), OffsetPolicy::offset(), StridePolicy::stride(), verboseOutput)
+#ifdef AXOM_USE_BOOST
         && SubsettingPolicyType::isValid(begin(), end(), verboseOutput)
+#endif
     ;
 
     return bValid;
@@ -315,6 +323,6 @@ namespace slam {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif //  SLAM_ORDERED_SET_H_

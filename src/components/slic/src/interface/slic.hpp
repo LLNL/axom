@@ -25,7 +25,7 @@
 #include "slic/LogStream.hpp"
 #include "slic/MessageLevel.h"
 
-#include "common/CommonTypes.hpp" // for ATK_NULLPTR
+#include "axom/Types.hpp" // for AXOM_NULLPTR
 
 // C/C++ includes
 #include <iostream> // for std::endl, std::ends
@@ -50,11 +50,11 @@
  ******************************************************************************
  */
 #define SLIC_ERROR( msg )                                                     \
-do {                                                                          \
+  do {                                                                        \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);         \
-} while ( 0 )
+    axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);               \
+  } while ( 0 )
 
 /*!
  ******************************************************************************
@@ -73,13 +73,13 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_ERROR_IF( EXP, msg )                                             \
-do {                                                                          \
-  if ( EXP ) {                                                                \
-    std::ostringstream oss;                                                   \
-    oss << msg;                                                               \
-    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__);           \
-  }                                                                           \
-} while( 0 )
+  do {                                                                        \
+    if ( EXP ) {                                                              \
+      std::ostringstream oss;                                                 \
+      oss << msg;                                                             \
+      axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__);               \
+    }                                                                         \
+  } while ( 0 )
 
 /// @}
 
@@ -101,11 +101,11 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_WARNING( msg )                                                   \
-do {                                                                          \
+  do {                                                                        \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__, __LINE__ );       \
-} while ( 0 )
+    axom::slic::logWarningMessage(oss.str(),__FILE__, __LINE__ );             \
+  } while ( 0 )
 
 /*!
  ******************************************************************************
@@ -123,17 +123,17 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_WARNING_IF( EXP, msg )                                           \
-do {                                                                          \
-  if ( EXP ) {                                                                \
-    std::ostringstream oss;                                                   \
-    oss << msg;                                                               \
-    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );        \
-  }                                                                           \
-} while( 0 )
+  do {                                                                        \
+    if ( EXP ) {                                                              \
+      std::ostringstream oss;                                                 \
+      oss << msg;                                                             \
+      axom::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );            \
+    }                                                                         \
+  } while ( 0 )
 
 /// @}
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
 
 //-----------------------------------------------------------------------------
 /// \name ASSERT MACROS
@@ -156,13 +156,13 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_ASSERT( EXP )                                                    \
-do {                                                                          \
-  if ( !(EXP) ) {                                                             \
-    std::ostringstream oss;                                                   \
-    oss << "Failed Assert: " << # EXP << std::ends;                           \
-    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );          \
-  }                                                                           \
-} while ( 0 )
+  do {                                                                        \
+    if ( !(EXP) ) {                                                           \
+      std::ostringstream oss;                                                 \
+      oss << "Failed Assert: " << # EXP << std::ends;                         \
+      axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
+    }                                                                         \
+  } while ( 0 )
 
 /*!
  ******************************************************************************
@@ -182,13 +182,13 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_ASSERT_MSG( EXP, msg )                                           \
-do {                                                                          \
-  if ( !(EXP) ) {                                                             \
-    std::ostringstream oss;                                                   \
-    oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;       \
-    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );          \
-  }                                                                           \
-} while ( 0 )
+  do {                                                                        \
+    if ( !(EXP) ) {                                                           \
+      std::ostringstream oss;                                                 \
+      oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;     \
+      axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
+    }                                                                         \
+  } while ( 0 )
 
 /// @}
 
@@ -213,18 +213,18 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_CHECK( EXP )                                                     \
-do {                                                                          \
-  if ( !(EXP) ) {                                                             \
-    std::ostringstream oss;                                                   \
-    oss << "Failed Check: " << # EXP << std::ends;                            \
-    if (asctoolkit::slic::debug::checksAreErrors) {                           \
-      asctoolkit::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);       \
+  do {                                                                        \
+    if ( !(EXP) ) {                                                           \
+      std::ostringstream oss;                                                 \
+      oss << "Failed Check: " << # EXP << std::ends;                          \
+      if (axom::slic::debug::checksAreErrors) {                               \
+        axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);           \
+      }                                                                       \
+      else {                                                                  \
+        axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
+      }                                                                       \
     }                                                                         \
-    else {                                                                    \
-      asctoolkit::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);     \
-    }                                                                         \
-  }                                                                           \
-} while ( 0 )
+  } while ( 0 )
 
 /*!
  ******************************************************************************
@@ -243,18 +243,18 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_CHECK_MSG( EXP, msg )                                            \
-do {                                                                          \
-  if ( !(EXP) ) {                                                             \
-    std::ostringstream oss;                                                   \
-    oss << "Failed Check: " << # EXP << std::endl << msg <<  std::ends;       \
-    if (asctoolkit::slic::debug::checksAreErrors) {                           \
-      asctoolkit::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);       \
+  do {                                                                        \
+    if ( !(EXP) ) {                                                           \
+      std::ostringstream oss;                                                 \
+      oss << "Failed Check: " << # EXP << std::endl << msg <<  std::ends;     \
+      if (axom::slic::debug::checksAreErrors) {                               \
+        axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);           \
+      }                                                                       \
+      else {                                                                  \
+        axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
+      }                                                                       \
     }                                                                         \
-    else {                                                                    \
-      asctoolkit::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);     \
-    }                                                                         \
-  }                                                                           \
-} while ( 0 )
+  } while ( 0 )
 
 /// @}
 
@@ -265,9 +265,7 @@ do {                                                                          \
 #define SLIC_CHECK( ignore_EXP ) ( (void)0 )
 #define SLIC_CHECK_MSG( ignore_EXP, ignore_msg ) ( (void)0 )
 
-#endif /* END ifdef ATK_DEBUG */
-
-
+#endif /* END ifdef AXOM_DEBUG */
 
 /*!
  ******************************************************************************
@@ -284,17 +282,16 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_INFO( msg )                                                      \
-do {                                                                          \
+  do {                                                                        \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logMessage(asctoolkit::slic::message::Info              \
-                               , oss.str()                                    \
-                               ,__FILE__                                      \
-                               , __LINE__ );                                  \
-} while ( 0 )
+    axom::slic::logMessage(axom::slic::message::Info                          \
+                           , oss.str()                                        \
+                           ,__FILE__                                          \
+                           , __LINE__ );                                      \
+  } while ( 0 )
 
-
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
 
 /*!
  ******************************************************************************
@@ -311,14 +308,14 @@ do {                                                                          \
  ******************************************************************************
  */
 #define SLIC_DEBUG( msg )                                                     \
-do {                                                                          \
+  do {                                                                        \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logMessage(asctoolkit::slic::message::Debug             \
-                               , oss.str()                                    \
-                               ,__FILE__                                      \
-                               , __LINE__ );                                  \
-} while ( 0 )
+    axom::slic::logMessage(axom::slic::message::Debug                         \
+                           , oss.str()                                        \
+                           ,__FILE__                                          \
+                           , __LINE__ );                                      \
+  } while ( 0 )
 
 #else // turn off debug macros
 
@@ -326,17 +323,12 @@ do {                                                                          \
 
 #endif
 
-
-
-
-namespace asctoolkit {
-
-
+namespace axom {
 namespace slic {
 
 struct debug
 {
-   static bool checksAreErrors;
+  static bool checksAreErrors;
 };
 
 /*!
@@ -392,10 +384,84 @@ void setLoggingMsgLevel( message::Level level );
 
 /*!
  *******************************************************************************
+ * \brief Toggles the abort behavior for errors on the current active logger.
+ * \param [in] status user-supplied flag.
+ *******************************************************************************
+ */
+void setAbortOnError( bool status );
+
+/*!
+ *******************************************************************************
+ * \brief Enables aborts on error messages for the current active logger.
+ * \note This is equivalent to calling slic::setAbortOnError( true )
+ * \post slic::isAbortOnErrorsEnabled() == true.
+ * \pre slic::isInitialized() == true
+ *******************************************************************************
+ */
+void enableAbortOnError();
+
+/*!
+ *******************************************************************************
+ * \brief Disables aborts on error messages for the current active logger.
+ * \note this is equivalent to calling slic::setAbortOnError( false )
+ * \post slic::isAbortOnErrorsEnabled() == false.
+ * \pre slic::isInitialized() == true
+ *******************************************************************************
+ */
+void disableAbortOnError();
+
+/*!
+ *******************************************************************************
+ * \brief Checks whether aborts on errors are enabled for the current logger.
+ * \return status true if aborts on errors are enabled, otherwise, false.
+ * \pre slic::isInitialized() == true.
+ *******************************************************************************
+ */
+bool isAbortOnErrorsEnabled();
+
+/*!
+ *******************************************************************************
+ * \brief Toggles the abort behavior for warnings on the current active logger.
+ * \param [in] status user-supplied flag.
+ *******************************************************************************
+ */
+void setAbortOnWarning( bool status );
+
+/*!
+ *******************************************************************************
+ * \brief Enables aborts on warnings messages for the current active logger.
+ * \note This is equivalent to calling slic::setAbortOnWarning( true )
+ * \post slic::isAbortOnWarningsEnabled() == true.
+ * \pre slic::isInitialized() == true.
+ *******************************************************************************
+ */
+void enableAbortOnWarning();
+
+/*!
+ *******************************************************************************
+ * \brief Disables aborts on warnings messages for the curernt active logger.
+ * \note This is equivalent to calling slic::setAbortOnWarnings( false )
+ * \post slic::isAbortOnWarnigsEnabled() == true.
+ * \pre slic::isInitialized() == true.
+ *******************************************************************************
+ */
+void disableAbortOnWarning();
+
+/*!
+ *******************************************************************************
+ * \brief Checks whether aborts on warnings are enabled for the current logger.
+ * \return status true if aborts on warnings are enabled, otherwise, false.
+ * \pre slic::isInitialized() == true.
+ *******************************************************************************
+ */
+bool isAbortOnWarningsEnabled();
+
+/*!
+ *******************************************************************************
  * \brief Adds the given stream to the the given level.
  * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.
- * \pre ls != ATK_NULLPTR
+ * \pre ls != AXOM_NULLPTR
  *******************************************************************************
  */
 void addStreamToMsgLevel( LogStream* ls, message::Level level);
@@ -404,7 +470,7 @@ void addStreamToMsgLevel( LogStream* ls, message::Level level);
  *******************************************************************************
  * \brief Adds the given stream to all levels.
  * \param [in] ls pointer to the log stream.
- * \pre ls != ATK_NULLPTR.
+ * \pre ls != AXOM_NULLPTR.
  *******************************************************************************
  */
 void addStreamToAllMsgLevels( LogStream* ls );
@@ -452,10 +518,10 @@ void logMessage( message::Level level,
  *******************************************************************************
  */
 void logMessage( message::Level level,
-                const std::string& message,
-                const std::string& fileName,
-                int line,
-                bool filter_duplicates=false );
+                 const std::string& message,
+                 const std::string& fileName,
+                 int line,
+                 bool filter_duplicates=false );
 
 /*!
  *******************************************************************************
@@ -534,6 +600,6 @@ std::string stacktrace( );
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* SLIC_HPP_ */

@@ -22,10 +22,10 @@
 #ifndef SIDRE_H_
 #define SIDRE_H_
 
-#include "DataBuffer.hpp"
-#include "DataGroup.hpp"
+#include "Buffer.hpp"
+#include "Group.hpp"
 #include "DataStore.hpp"
-#include "DataView.hpp"
+#include "View.hpp"
 #include "SidreTypes.hpp"
 
 #endif

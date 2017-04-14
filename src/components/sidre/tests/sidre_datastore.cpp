@@ -13,16 +13,16 @@
 #include "sidre/sidre.hpp"
 
 
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::IndexType;
+using axom::sidre::DataStore;
+using axom::sidre::Buffer;
+using axom::sidre::IndexType;
 
 //------------------------------------------------------------------------------
 
 TEST(sidre_datastore,destroy_buffer)
 {
   DataStore * ds = new DataStore();
-  DataBuffer * dbuff = ds->createBuffer();
+  Buffer * dbuff = ds->createBuffer();
 
   IndexType bufferIndex = ds->getFirstValidBufferIndex();
   EXPECT_EQ(dbuff->getIndex(), bufferIndex);
@@ -32,7 +32,7 @@ TEST(sidre_datastore,destroy_buffer)
   EXPECT_TRUE( ds->getFirstValidBufferIndex() == -1 );
 
   // After destroy, that buffer index should be available again, and have been re-used..
-  DataBuffer * dbuff2 = ds->createBuffer();
+  Buffer * dbuff2 = ds->createBuffer();
   (void)dbuff2;
   std::cerr << ds->getFirstValidBufferIndex() << std::endl;
   std::cerr << bufferIndex << std::endl;

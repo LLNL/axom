@@ -1,9 +1,9 @@
 #ifndef SPATIAL_OCTREE__HXX_
 #define SPATIAL_OCTREE__HXX_
 
-#include "quest/BoundingBox.hpp"
-#include "quest/Point.hpp"
-#include "quest/Vector.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/Point.hpp"
+#include "primal/Vector.hpp"
 
 #include "slic/slic.hpp"
 
@@ -11,9 +11,12 @@
 
 #include "quest/OctreeBase.hpp"
 
+using axom::primal::BoundingBox;
+using axom::primal::Point;
+using axom::primal::Vector;
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
 
 
@@ -26,9 +29,9 @@ class SpatialOctree : public OctreeBase<DIM, BlockDataType>
 {
 public:
 
-    typedef quest::BoundingBox<double,DIM> GeometricBoundingBox;
-    typedef quest::Point<double,DIM> SpacePt;
-    typedef quest::Vector<double,DIM> SpaceVector;
+    typedef BoundingBox<double,DIM> GeometricBoundingBox;
+    typedef Point<double,DIM> SpacePt;
+    typedef Vector<double,DIM> SpaceVector;
 
     typedef OctreeBase<DIM, BlockDataType> BaseOctree;
 
@@ -37,7 +40,7 @@ public:
 
     typedef typename BaseOctree::BlockIndex BlockIndex;
 
-    typedef asctoolkit::slam::Map<SpaceVector> SpaceVectorLevelMap;
+    typedef axom::slam::Map<SpaceVector> SpaceVectorLevelMap;
 
 public:
     /**
@@ -184,6 +187,7 @@ public:
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(SpatialOctree);
+  DISABLE_MOVE_AND_ASSIGNMENT(SpatialOctree);
 
 protected:
     SpaceVectorLevelMap     m_deltaLevelMap;    // The width of a cell at each level or resolution
@@ -192,6 +196,7 @@ protected:
 };
 
 
-} // end namespace quest
+} // end namespace quest 
+} // end namespace axom 
 
 #endif  // SPATIAL_OCTREE__HXX_

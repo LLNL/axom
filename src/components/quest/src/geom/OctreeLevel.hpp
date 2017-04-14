@@ -15,22 +15,24 @@
 #define OCTREE_LEVEL__HXX_
 
 
-#include "common/config.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/config.hpp"
+#include "axom/Types.hpp"
 
 #include "slic/slic.hpp"
 
-#include "quest/MortonIndex.hpp"
-#include "quest/NumericArray.hpp"
-#include "quest/Point.hpp"
-#include "quest/Brood.hpp"
+#include "primal/NumericArray.hpp"
+#include "primal/Point.hpp"
 
+#include "quest/Brood.hpp"
+#include "quest/MortonIndex.hpp"
 
 #include <boost/iterator/iterator_facade.hpp>
 
+using axom::primal::Point;
+using axom::primal::NumericArray;
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
     /**
      * \brief Helper enumeration for status of a BlockIndex within an OctreeLevel instance
@@ -62,12 +64,12 @@ namespace quest
          * \brief A type for the grid points of the octree.
          * \note CoordType must be an integral type
          */
-        typedef quest::Point<CoordType,DIM> GridPt;
+        typedef Point<CoordType,DIM> GridPt;
 
         enum { BROOD_SIZE = 1 << DIM };
 
         /** A brood is a collection of sibling blocks that are generated simultaneously */
-        typedef quest::NumericArray< BlockDataType, BROOD_SIZE> BroodData;
+        typedef NumericArray< BlockDataType, BROOD_SIZE> BroodData;
 
         /** Predeclare the BlockIterator type */
         template<typename OctreeLevel, typename IterHelper, typename DataType> class BlockIterator;
@@ -193,16 +195,16 @@ namespace quest
         BlockIterator(OctreeLevel* octLevel, bool begin = false)
             : m_octLevel(octLevel)
         {
-            SLIC_ASSERT(octLevel != ATK_NULLPTR);
+            SLIC_ASSERT(octLevel != AXOM_NULLPTR);
             m_iterHelper = octLevel->getIteratorHelper(begin); // factory function
         }
 
         ~BlockIterator()
         {
-            if(m_iterHelper != ATK_NULLPTR)
+            if(m_iterHelper != AXOM_NULLPTR)
             {
                 delete m_iterHelper;
-                m_iterHelper = ATK_NULLPTR;
+                m_iterHelper = AXOM_NULLPTR;
             }
         }
 
@@ -306,5 +308,6 @@ namespace quest
 
 
 } // end namespace quest
+} // end namespace axom 
 
 #endif  // OCTREE_LEVEL__HXX_

@@ -1,12 +1,16 @@
 {
     "F_module_dependencies": [], 
     "classes": [], 
+    "cpp_header": "strings.hpp", 
     "fmt": {
         "BBB": "BBB", 
-        "C_const": "", 
+        "CPP_template": "", 
+        "CPP_this": "SH_this", 
+        "CPP_this_call": "", 
         "C_header_filename": "wrapstrings.h", 
         "C_impl_filename": "wrapstrings.cpp", 
         "C_prefix": "STR_", 
+        "C_result": "SH_rv", 
         "C_this": "self", 
         "F_C_prefix": "c_", 
         "F_C_pure_clause": "", 
@@ -15,9 +19,10 @@
         "F_impl_filename": "wrapfstrings.f", 
         "F_module_name": "strings_mod", 
         "F_pure_clause": "", 
-        "F_result": "rv", 
+        "F_result": "SH_rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
+        "LUA_result": "rv", 
         "PY_PyObject": "PyObject", 
         "PY_header_filename": "pystringsmodule.hpp", 
         "PY_helper_filename": "pystringshelper.cpp", 
@@ -28,6 +33,7 @@
         "PY_param_kwds": "kwds", 
         "PY_param_self": "self", 
         "PY_prefix": "PY_", 
+        "PY_result": "rv", 
         "PY_used_param_args": false, 
         "PY_used_param_kwds": false, 
         "PY_used_param_self": false, 
@@ -36,9 +42,7 @@
         "library": "strings", 
         "library_lower": "strings", 
         "library_upper": "STRINGS", 
-        "namespace_scope": "", 
-        "overloaded": false, 
-        "rv": "rv"
+        "namespace_scope": ""
     }, 
     "functions": [
         {
@@ -51,6 +55,27 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": "", 
+                        "c_var": "status", 
+                        "c_var_len": "Lstatus", 
+                        "c_var_num": "Nstatus", 
+                        "cpp_type": "char", 
+                        "cpp_var": "status"
+                    }, 
+                    "fmtf": {
+                        "c_var": "status", 
+                        "f_var": "status"
+                    }, 
+                    "fmtpy": {
+                        "c_const": "", 
+                        "c_ptr": "", 
+                        "c_var": "status", 
+                        "cpp_type": "char", 
+                        "cpp_var": "status", 
+                        "py_var": "SH_Py_status"
+                    }, 
                     "name": "status", 
                     "type": "char_scalar"
                 }
@@ -61,12 +86,24 @@
                 "brief": "pass a single char argument as a scalar."
             }, 
             "fmt": {
+                "C_call_list": "status", 
                 "C_name": "STR_pass_char", 
+                "C_object": "", 
+                "C_prototype": "char status", 
+                "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
+                "F_C_call": "c_pass_char", 
                 "F_C_name": "pass_char", 
+                "F_arg_c_call": "status", 
+                "F_arg_c_call_tab": "\tstatus", 
+                "F_arguments": "status", 
                 "F_name_generic": "pass_char", 
                 "F_name_impl": "pass_char", 
                 "F_name_method": "pass_char", 
+                "F_subprogram": "subroutine", 
                 "PY_name_impl": "PY_pass_char", 
+                "c_const": "", 
+                "cpp_var": "SH_rv", 
                 "function_name": "passChar", 
                 "underscore_name": "pass_char"
             }, 
@@ -89,12 +126,25 @@
                 "brief": "return a char argument (non-pointer)"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_return_char", 
+                "C_object": "", 
+                "C_prototype": "", 
+                "C_return_type": "char", 
+                "C_rv_decl": "char SH_rv", 
+                "F_C_call": "c_return_char_bufferify", 
                 "F_C_name": "c_return_char", 
+                "F_arg_c_call": "SH_rv, len(SH_rv, kind=C_INT)", 
+                "F_arg_c_call_tab": "\tSH_rv\tlen(SH_rv, kind=C_INT)", 
+                "F_arguments": "", 
                 "F_name_generic": "return_char", 
                 "F_name_impl": "return_char", 
                 "F_name_method": "return_char", 
+                "F_result_clause": " result(SH_rv)", 
+                "F_subprogram": "function", 
                 "PY_name_impl": "PY_return_char", 
+                "c_const": "", 
+                "cpp_var": "SH_rv", 
                 "function_name": "returnChar", 
                 "underscore_name": "return_char"
             }, 
@@ -124,6 +174,21 @@
                         "ptr": true, 
                         "reference": false
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_rv", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv"
+                    }, 
+                    "fmtf": {
+                        "c_var": "SH_rv", 
+                        "f_var": "SH_rv"
+                    }, 
                     "name": "SH_F_rv", 
                     "type": "char_scalar"
                 }
@@ -134,8 +199,18 @@
                 "brief": "return a char argument (non-pointer)"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_return_char_bufferify", 
+                "C_object": "", 
+                "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
+                "C_return_type": "void", 
+                "C_rv_decl": "char SH_rv", 
                 "F_C_name": "c_return_char_bufferify", 
+                "c_const": "", 
+                "c_string": "SH_rv", 
+                "cpp_var": "SH_rv", 
+                "f_string": "SH_F_rv", 
+                "f_string_len": "LSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -168,6 +243,27 @@
                         "ptr": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "dest", 
+                        "c_var_len": "Ndest", 
+                        "c_var_num": "Ndest", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_dest", 
+                        "cpp_var": "SH_dest", 
+                        "len_arg": "Ndest"
+                    }, 
+                    "fmtpy": {
+                        "PyObject": "PyObject", 
+                        "PyTypeObject": null, 
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "dest", 
+                        "cpp_type": "char", 
+                        "cpp_var": "dest", 
+                        "py_var": "SH_Py_dest"
+                    }, 
                     "name": "dest", 
                     "type": "char"
                 }, 
@@ -177,6 +273,24 @@
                         "intent": "in", 
                         "ptr": true, 
                         "value": false
+                    }, 
+                    "fmtc": {
+                        "c_const": "const ", 
+                        "c_ptr": " *", 
+                        "c_var": "src", 
+                        "c_var_len": "Lsrc", 
+                        "c_var_num": "Nsrc", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_src", 
+                        "cpp_var": "SH_src"
+                    }, 
+                    "fmtpy": {
+                        "c_const": "const ", 
+                        "c_ptr": " *", 
+                        "c_var": "src", 
+                        "cpp_type": "char", 
+                        "cpp_var": "src", 
+                        "py_var": "SH_Py_src"
                     }, 
                     "name": "src", 
                     "type": "char"
@@ -189,12 +303,24 @@
                 "description": "dest is marked intent(OUT) to override the intent(INOUT) default\nThis avoid a copy-in on dest.\n"
             }, 
             "fmt": {
+                "C_call_list": "SH_dest, SH_src", 
                 "C_name": "STR_pass_char_ptr", 
+                "C_object": "", 
+                "C_prototype": "char * dest, int Ndest, const char * src", 
+                "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
+                "F_C_call": "c_pass_char_ptr_bufferify", 
                 "F_C_name": "c_pass_char_ptr", 
+                "F_arg_c_call": "dest, len(dest, kind=C_INT), src, len_trim(src, kind=C_INT)", 
+                "F_arg_c_call_tab": "\tdest\tlen(dest, kind=C_INT)\tsrc\tlen_trim(src, kind=C_INT)", 
+                "F_arguments": "dest, src", 
                 "F_name_generic": "pass_char_ptr", 
                 "F_name_impl": "pass_char_ptr", 
                 "F_name_method": "pass_char_ptr", 
+                "F_subprogram": "subroutine", 
                 "PY_name_impl": "PY_pass_char_ptr", 
+                "c_const": "", 
+                "cpp_var": "SH_rv", 
                 "function_name": "passCharPtr", 
                 "underscore_name": "pass_char_ptr"
             }, 
@@ -220,6 +346,21 @@
                         "ptr": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "dest", 
+                        "c_var_len": "Ndest", 
+                        "c_var_num": "Ndest", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_dest", 
+                        "cpp_var": "SH_dest", 
+                        "len_arg": "Ndest"
+                    }, 
+                    "fmtf": {
+                        "c_var": "dest", 
+                        "f_var": "dest"
+                    }, 
                     "name": "dest", 
                     "type": "char"
                 }, 
@@ -230,6 +371,21 @@
                         "len_trim": "Lsrc", 
                         "ptr": true, 
                         "value": false
+                    }, 
+                    "fmtc": {
+                        "c_const": "const ", 
+                        "c_ptr": " *", 
+                        "c_var": "src", 
+                        "c_var_len": "Lsrc", 
+                        "c_var_num": "Nsrc", 
+                        "c_var_trim": "Lsrc", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_src", 
+                        "cpp_var": "SH_src"
+                    }, 
+                    "fmtf": {
+                        "c_var": "src", 
+                        "f_var": "src"
                     }, 
                     "name": "src", 
                     "type": "char"
@@ -242,8 +398,15 @@
                 "description": "dest is marked intent(OUT) to override the intent(INOUT) default\nThis avoid a copy-in on dest.\n"
             }, 
             "fmt": {
+                "C_call_list": "SH_dest, SH_src", 
                 "C_name": "STR_pass_char_ptr_bufferify", 
+                "C_object": "", 
+                "C_prototype": "char * dest, int Ndest, const char * src, int Lsrc", 
+                "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_pass_char_ptr_bufferify", 
+                "c_const": "", 
+                "cpp_var": "SH_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -271,9 +434,16 @@
                 "brief": "return a 'const char *' as character(*)"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_char1", 
+                "C_object": "", 
+                "C_prototype": "", 
+                "C_return_type": "const char *", 
+                "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char1", 
                 "PY_name_impl": "PY_get_char1", 
+                "c_const": "const ", 
+                "cpp_var": "SH_rv", 
                 "function_name": "getChar1", 
                 "underscore_name": "get_char1"
             }, 
@@ -305,6 +475,17 @@
                         "len": "LSH_F_rv", 
                         "ptr": true
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_rv", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv"
+                    }, 
                     "name": "SH_F_rv", 
                     "type": "char"
                 }
@@ -317,8 +498,18 @@
                 "brief": "return a 'const char *' as character(*)"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_char1_bufferify", 
+                "C_object": "", 
+                "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
+                "C_return_type": "void", 
+                "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char1_bufferify", 
+                "c_const": "", 
+                "c_string": "SH_rv", 
+                "cpp_var": "SH_rv", 
+                "f_string": "SH_F_rv", 
+                "f_string_len": "LSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -351,9 +542,16 @@
                 "brief": "return a 'const char *' as character(*)"
             }, 
             "fmt": {
+                "F_C_call": "c_get_char1", 
+                "F_arg_c_call": "", 
+                "F_arg_c_call_tab": "\t", 
+                "F_arguments": "", 
                 "F_name_generic": "get_char1", 
                 "F_name_impl": "get_char1", 
-                "F_name_method": "get_char1"
+                "F_name_method": "get_char1", 
+                "F_result_clause": " result(SH_rv)", 
+                "F_subprogram": "function", 
+                "rvlen": "strlen_ptr(c_get_char1(\t))"
             }, 
             "options": {
                 "wrap_c": false, 
@@ -382,13 +580,27 @@
                 "brief": "return 'const char *' with fixed size (len=30)"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_char2", 
+                "C_object": "", 
+                "C_prototype": "", 
+                "C_return_type": "const char *", 
+                "C_rv_decl": "const char * SH_rv", 
+                "F_C_call": "c_get_char2_bufferify", 
                 "F_C_name": "c_get_char2", 
+                "F_arg_c_call": "SH_rv, len(SH_rv, kind=C_INT)", 
+                "F_arg_c_call_tab": "\tSH_rv\tlen(SH_rv, kind=C_INT)", 
+                "F_arguments": "", 
                 "F_name_generic": "get_char2", 
                 "F_name_impl": "get_char2", 
                 "F_name_method": "get_char2", 
+                "F_result_clause": " result(SH_rv)", 
+                "F_subprogram": "function", 
                 "PY_name_impl": "PY_get_char2", 
+                "c_const": "const ", 
+                "cpp_var": "SH_rv", 
                 "function_name": "getChar2", 
+                "rvlen": "30", 
                 "underscore_name": "get_char2"
             }, 
             "options": {}, 
@@ -418,6 +630,21 @@
                         "len": "LSH_F_rv", 
                         "ptr": true
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_rv", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv"
+                    }, 
+                    "fmtf": {
+                        "c_var": "SH_rv", 
+                        "f_var": "SH_rv"
+                    }, 
                     "name": "SH_F_rv", 
                     "type": "char"
                 }
@@ -428,8 +655,18 @@
                 "brief": "return 'const char *' with fixed size (len=30)"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_char2_bufferify", 
+                "C_object": "", 
+                "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
+                "C_return_type": "void", 
+                "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char2_bufferify", 
+                "c_const": "", 
+                "c_string": "SH_rv", 
+                "cpp_var": "SH_rv", 
+                "f_string": "SH_F_rv", 
+                "f_string_len": "LSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -460,9 +697,16 @@
                 "brief": "return a 'const char *' as argument"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_char3", 
+                "C_object": "", 
+                "C_prototype": "", 
+                "C_return_type": "const char *", 
+                "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char3", 
                 "PY_name_impl": "PY_get_char3", 
+                "c_const": "const ", 
+                "cpp_var": "SH_rv", 
                 "function_name": "getChar3", 
                 "underscore_name": "get_char3"
             }, 
@@ -495,6 +739,21 @@
                         "len": "Loutput", 
                         "ptr": true
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "output", 
+                        "c_var_len": "Loutput", 
+                        "c_var_num": "Noutput", 
+                        "cpp_type": "char", 
+                        "cpp_val": "SH_rv", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "Loutput"
+                    }, 
+                    "fmtf": {
+                        "c_var": "output", 
+                        "f_var": "output"
+                    }, 
                     "name": "output", 
                     "type": "char"
                 }
@@ -505,8 +764,18 @@
                 "brief": "return a 'const char *' as argument"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_char3_bufferify", 
+                "C_object": "", 
+                "C_prototype": "char * output, int Loutput", 
+                "C_return_type": "void", 
+                "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char3_bufferify", 
+                "c_const": "", 
+                "c_string": "SH_rv", 
+                "cpp_var": "SH_rv", 
+                "f_string": "output", 
+                "f_string_len": "Loutput", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -552,9 +821,14 @@
                 "brief": "return a 'const char *' as argument"
             }, 
             "fmt": {
+                "F_C_call": "c_get_char3_bufferify", 
+                "F_arg_c_call": "output, len(output, kind=C_INT)", 
+                "F_arg_c_call_tab": "\toutput\tlen(output, kind=C_INT)", 
+                "F_arguments": "output", 
                 "F_name_generic": "get_char3", 
                 "F_name_impl": "get_char3", 
                 "F_name_method": "get_char3", 
+                "F_subprogram": "subroutine", 
                 "function_suffix": ""
             }, 
             "options": {
@@ -586,9 +860,16 @@
                 "brief": "return a 'const string&' as character(*)"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_string1", 
+                "C_object": "", 
+                "C_prototype": "", 
+                "C_return_type": "const char *", 
+                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string1", 
                 "PY_name_impl": "PY_get_string1", 
+                "c_const": "const ", 
+                "cpp_var": "SH_rv", 
                 "function_name": "getString1", 
                 "underscore_name": "get_string1"
             }, 
@@ -620,6 +901,17 @@
                         "len": "LSH_F_rv", 
                         "reference": true
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": "", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_rv.c_str()", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv"
+                    }, 
                     "name": "SH_F_rv", 
                     "type": "string"
                 }
@@ -632,8 +924,18 @@
                 "brief": "return a 'const string&' as character(*)"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_string1_bufferify", 
+                "C_object": "", 
+                "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
+                "C_return_type": "void", 
+                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string1_bufferify", 
+                "c_const": "", 
+                "c_string": "SH_rv.c_str()", 
+                "cpp_var": "SH_rv", 
+                "f_string": "SH_F_rv", 
+                "f_string_len": "LSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -666,9 +968,16 @@
                 "brief": "return a 'const string&' as character(*)"
             }, 
             "fmt": {
+                "F_C_call": "c_get_string1", 
+                "F_arg_c_call": "", 
+                "F_arg_c_call_tab": "\t", 
+                "F_arguments": "", 
                 "F_name_generic": "get_string1", 
                 "F_name_impl": "get_string1", 
-                "F_name_method": "get_string1"
+                "F_name_method": "get_string1", 
+                "F_result_clause": " result(SH_rv)", 
+                "F_subprogram": "function", 
+                "rvlen": "strlen_ptr(c_get_string1(\t))"
             }, 
             "options": {
                 "wrap_c": false, 
@@ -698,13 +1007,27 @@
                 "brief": "return 'const string&' with fixed size (len=30)"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_string2", 
+                "C_object": "", 
+                "C_prototype": "", 
+                "C_return_type": "const char *", 
+                "C_rv_decl": "const std::string & SH_rv", 
+                "F_C_call": "c_get_string2_bufferify", 
                 "F_C_name": "c_get_string2", 
+                "F_arg_c_call": "SH_rv, len(SH_rv, kind=C_INT)", 
+                "F_arg_c_call_tab": "\tSH_rv\tlen(SH_rv, kind=C_INT)", 
+                "F_arguments": "", 
                 "F_name_generic": "get_string2", 
                 "F_name_impl": "get_string2", 
                 "F_name_method": "get_string2", 
+                "F_result_clause": " result(SH_rv)", 
+                "F_subprogram": "function", 
                 "PY_name_impl": "PY_get_string2", 
+                "c_const": "const ", 
+                "cpp_var": "SH_rv", 
                 "function_name": "getString2", 
+                "rvlen": "30", 
                 "underscore_name": "get_string2"
             }, 
             "options": {}, 
@@ -735,6 +1058,21 @@
                         "len": "LSH_F_rv", 
                         "reference": true
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": "", 
+                        "c_var": "SH_F_rv", 
+                        "c_var_len": "LSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_rv.c_str()", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "LSH_F_rv"
+                    }, 
+                    "fmtf": {
+                        "c_var": "SH_rv", 
+                        "f_var": "SH_rv"
+                    }, 
                     "name": "SH_F_rv", 
                     "type": "string"
                 }
@@ -745,8 +1083,18 @@
                 "brief": "return 'const string&' with fixed size (len=30)"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_string2_bufferify", 
+                "C_object": "", 
+                "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
+                "C_return_type": "void", 
+                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string2_bufferify", 
+                "c_const": "", 
+                "c_string": "SH_rv.c_str()", 
+                "cpp_var": "SH_rv", 
+                "f_string": "SH_F_rv", 
+                "f_string_len": "LSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -778,9 +1126,16 @@
                 "brief": "return a 'const string&' as argument"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_string3", 
+                "C_object": "", 
+                "C_prototype": "", 
+                "C_return_type": "const char *", 
+                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string3", 
                 "PY_name_impl": "PY_get_string3", 
+                "c_const": "const ", 
+                "cpp_var": "SH_rv", 
                 "function_name": "getString3", 
                 "underscore_name": "get_string3"
             }, 
@@ -814,6 +1169,21 @@
                         "len": "Loutput", 
                         "reference": true
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": "", 
+                        "c_var": "output", 
+                        "c_var_len": "Loutput", 
+                        "c_var_num": "Noutput", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_rv.c_str()", 
+                        "cpp_var": "SH_rv", 
+                        "len_arg": "Loutput"
+                    }, 
+                    "fmtf": {
+                        "c_var": "output", 
+                        "f_var": "output"
+                    }, 
                     "name": "output", 
                     "type": "string"
                 }
@@ -824,8 +1194,18 @@
                 "brief": "return a 'const string&' as argument"
             }, 
             "fmt": {
+                "C_call_list": "", 
                 "C_name": "STR_get_string3_bufferify", 
+                "C_object": "", 
+                "C_prototype": "char * output, int Loutput", 
+                "C_return_type": "void", 
+                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string3_bufferify", 
+                "c_const": "", 
+                "c_string": "SH_rv.c_str()", 
+                "cpp_var": "SH_rv", 
+                "f_string": "output", 
+                "f_string_len": "Loutput", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -872,9 +1252,14 @@
                 "brief": "return a 'const string&' as argument"
             }, 
             "fmt": {
+                "F_C_call": "c_get_string3_bufferify", 
+                "F_arg_c_call": "output, len(output, kind=C_INT)", 
+                "F_arg_c_call_tab": "\toutput\tlen(output, kind=C_INT)", 
+                "F_arguments": "output", 
                 "F_name_generic": "get_string3", 
                 "F_name_impl": "get_string3", 
                 "F_name_method": "get_string3", 
+                "F_subprogram": "subroutine", 
                 "function_suffix": ""
             }, 
             "options": {
@@ -906,6 +1291,23 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "c_const": "const ", 
+                        "c_ptr": "", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1"
+                    }, 
+                    "fmtpy": {
+                        "c_const": "const ", 
+                        "c_ptr": "", 
+                        "c_var": "arg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1", 
+                        "py_var": "SH_Py_arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "std::string"
                 }
@@ -917,12 +1319,24 @@
                 "description": "Save contents of arg1.\narg1 is assumed to be intent(IN) since it is const\nWill copy in.\n"
             }, 
             "fmt": {
+                "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_const_reference", 
+                "C_object": "", 
+                "C_prototype": "const char * arg1", 
+                "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
+                "F_C_call": "c_accept_string_const_reference_bufferify", 
                 "F_C_name": "c_accept_string_const_reference", 
+                "F_arg_c_call": "arg1, len_trim(arg1, kind=C_INT)", 
+                "F_arg_c_call_tab": "\targ1\tlen_trim(arg1, kind=C_INT)", 
+                "F_arguments": "arg1", 
                 "F_name_generic": "accept_string_const_reference", 
                 "F_name_impl": "accept_string_const_reference", 
                 "F_name_method": "accept_string_const_reference", 
+                "F_subprogram": "subroutine", 
                 "PY_name_impl": "PY_accept_string_const_reference", 
+                "c_const": "", 
+                "cpp_var": "SH_rv", 
                 "function_name": "acceptStringConstReference", 
                 "underscore_name": "accept_string_const_reference"
             }, 
@@ -949,6 +1363,20 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "c_const": "const ", 
+                        "c_ptr": "", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "c_var_trim": "Larg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1"
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg1", 
+                        "f_var": "arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "std::string"
                 }
@@ -960,8 +1388,15 @@
                 "description": "Save contents of arg1.\narg1 is assumed to be intent(IN) since it is const\nWill copy in.\n"
             }, 
             "fmt": {
+                "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_const_reference_bufferify", 
+                "C_object": "", 
+                "C_prototype": "const char * arg1, int Larg1", 
+                "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_accept_string_const_reference_bufferify", 
+                "c_const": "", 
+                "cpp_var": "SH_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -989,6 +1424,27 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": "", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Narg1", 
+                        "c_var_num": "Narg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_arg1.c_str()", 
+                        "cpp_var": "SH_arg1", 
+                        "len_arg": "Narg1"
+                    }, 
+                    "fmtpy": {
+                        "PyObject": "PyObject", 
+                        "PyTypeObject": null, 
+                        "c_const": "", 
+                        "c_ptr": "", 
+                        "c_var": "SH_arg1.c_str()", 
+                        "cpp_type": "std::string", 
+                        "cpp_var": "SH_arg1", 
+                        "py_var": "SH_Py_arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "std::string"
                 }
@@ -1000,12 +1456,24 @@
                 "description": "Append \"dog\" to the end of arg1.\narg1 is assumed to be intent(INOUT)\nMust copy in and copy out.\n"
             }, 
             "fmt": {
+                "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_reference", 
+                "C_object": "", 
+                "C_prototype": "char * arg1, int Narg1", 
+                "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
+                "F_C_call": "c_accept_string_reference_bufferify", 
                 "F_C_name": "c_accept_string_reference", 
+                "F_arg_c_call": "arg1, len_trim(arg1, kind=C_INT), len(arg1, kind=C_INT)", 
+                "F_arg_c_call_tab": "\targ1\tlen_trim(arg1, kind=C_INT)\tlen(arg1, kind=C_INT)", 
+                "F_arguments": "arg1", 
                 "F_name_generic": "accept_string_reference", 
                 "F_name_impl": "accept_string_reference", 
                 "F_name_method": "accept_string_reference", 
+                "F_subprogram": "subroutine", 
                 "PY_name_impl": "PY_accept_string_reference", 
+                "c_const": "", 
+                "cpp_var": "SH_rv", 
                 "function_name": "acceptStringReference", 
                 "underscore_name": "accept_string_reference"
             }, 
@@ -1032,6 +1500,22 @@
                         "reference": true, 
                         "value": false
                     }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": "", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Narg1", 
+                        "c_var_num": "Narg1", 
+                        "c_var_trim": "Larg1", 
+                        "cpp_type": "std::string", 
+                        "cpp_val": "SH_arg1.c_str()", 
+                        "cpp_var": "SH_arg1", 
+                        "len_arg": "Narg1"
+                    }, 
+                    "fmtf": {
+                        "c_var": "arg1", 
+                        "f_var": "arg1"
+                    }, 
                     "name": "arg1", 
                     "type": "std::string"
                 }
@@ -1043,8 +1527,15 @@
                 "description": "Append \"dog\" to the end of arg1.\narg1 is assumed to be intent(INOUT)\nMust copy in and copy out.\n"
             }, 
             "fmt": {
+                "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_reference_bufferify", 
+                "C_object": "", 
+                "C_prototype": "char * arg1, int Larg1, int Narg1", 
+                "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_accept_string_reference_bufferify", 
+                "c_const": "", 
+                "cpp_var": "SH_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -1060,6 +1551,8 @@
             }
         }
     ], 
+    "library": "strings", 
+    "namespace": "", 
     "options": {
         "C_header_filename_class_template": "wrap{cpp_class}.h", 
         "C_header_filename_library_template": "wrap{library}.h", 
@@ -1100,11 +1593,8 @@
         "PY_name_impl_template": "{PY_prefix}{class_name}{underscore_name}{function_suffix}", 
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "class_name_template": "{class_lower}_", 
-        "cpp_header": "strings.hpp", 
         "debug": true, 
         "doxygen": true, 
-        "library": "strings", 
-        "namespace": "", 
         "wrap_c": true, 
         "wrap_fortran": true, 
         "wrap_lua": false, 
@@ -1129,7 +1619,7 @@
             "LUA_push": "lua_pushboolean({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TBOOLEAN", 
             "PY_PyTypeObject": "PyBool_Type", 
-            "PY_ctor": "PyBool_FromLong({rv})", 
+            "PY_ctor": "PyBool_FromLong({c_var})", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
@@ -1141,11 +1631,15 @@
             }, 
             "f_statements": {
                 "intent_in": {
-                    "declare": [
-                        "logical(C_BOOL) {c_var}"
-                    ], 
+                    "c_local_var": true, 
                     "pre_call": [
                         "{c_var} = {f_var}  ! coerce to C_BOOL"
+                    ]
+                }, 
+                "intent_out": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "{f_var} = {c_var}  ! coerce to logical"
                     ]
                 }, 
                 "result": {
@@ -1171,12 +1665,13 @@
             "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
+                    "cpp_header": "<cstring>", 
                     "cpp_local_var": true, 
                     "post_call": [
                         "delete [] {cpp_var};"
                     ], 
                     "pre_call": [
-                        "int {c_var_len} = strlen({c_var});", 
+                        "int {c_var_len} = std::strlen({c_var});", 
                         "char * {cpp_var} = new char [{c_var_len} + 1];", 
                         "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
                         "{cpp_var}[{c_var_len}] = '\\0';"
@@ -1191,7 +1686,7 @@
                     "cpp_header": "shroudrt.hpp", 
                     "cpp_local_var": true, 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});", 
                         "delete [] {cpp_var};"
                     ], 
                     "pre_call": [
@@ -1201,7 +1696,7 @@
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -1374,7 +1869,7 @@
             "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
-            "PY_ctor": "PyInt_FromLong({rv})", 
+            "PY_ctor": "PyInt_FromLong({c_var})", 
             "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
             "c_type": "size_t", 
@@ -1400,22 +1895,22 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -1431,7 +1926,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
@@ -1448,22 +1943,22 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -1479,7 +1974,7 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }
@@ -1496,22 +1991,22 @@
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ], 
                     "pre_call_trim": [
-                        "{C_const}std::string {cpp_var}({c_var}, {c_var_trim});"
+                        "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -1527,13 +2022,13 @@
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_return_code": "{F_result} = fstr({F_C_call}({F_arg_c_call_tab}))", 
             "f_type": "character(*)", 
             "py_statements": {
                 "intent_in": {
                     "cpp_local_var": true, 
                     "post_parse": [
-                        "{C_const}std::string {cpp_var}({c_var});"
+                        "{c_const}std::string {cpp_var}({c_var});"
                     ]
                 }
             }

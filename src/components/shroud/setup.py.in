@@ -23,7 +23,7 @@ setup(name='shroud',
       version='0.1.0',
       description='Generate Fortran wrappers for C++ Libraries',
 
-      package_dir={ 'shroud': '${CMAKE_CURRENT_SOURCE_DIR}/src' },
+      package_dir={ 'shroud': '${CMAKE_CURRENT_SOURCE_DIR}/shroud' },
       packages=['shroud'],
       cmdclass={'install_egg_info': SkipEggInfo}
 )

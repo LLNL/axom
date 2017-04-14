@@ -17,12 +17,14 @@
 
 #include "gtest/gtest.h"
 
+#include "slic/slic.hpp"
+
 #include "slam/Set.hpp"
 #include "slam/NullSet.hpp"
 
 TEST(gtest_slam_set,construct_nullset)
 {
-  asctoolkit::slam::Set* s = new asctoolkit::slam::NullSet();
+  axom::slam::Set* s = new axom::slam::NullSet();
 
   EXPECT_TRUE(s->empty());
 
@@ -33,20 +35,41 @@ TEST(gtest_slam_set,construct_nullset)
 
 TEST(gtest_slam_set,subscript_fails_nullset)
 {
-  std::cout << "\n****** Testing subscript access on NullSet -- code is expected to assert and die." << std::endl;
+  SLIC_INFO("Testing subscript access on NullSet -- code is expected to assert and die.");
 
-  typedef asctoolkit::slam::Set::PositionType SetPosition;
-  asctoolkit::slam::NullSet n;
+  typedef axom::slam::Set::PositionType SetPosition;
+  axom::slam::NullSet n;
 
   EXPECT_EQ(n.size(), SetPosition()) << "size of null set is defined to be zero";
 
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH(n[0],"") << "subscript operator on null set asserts";
+  EXPECT_DEATH_IF_SUPPORTED(n[0],"") << "subscript operator on null set asserts";
 #else
-  std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+  SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
+}
+
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using axom::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;  // create & initialize test logger,
+
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

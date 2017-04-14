@@ -12,8 +12,9 @@
  *******************************************************************************
  * \file quest_interface.cpp
  *
- * \date Mar 16, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
+ * \brief Simple example that exercises the quest interface for point
+ *        containment and signed distance queries.
+ * \note This file assumes that MPI is enabled.  MPI usage is not guarded.
  *******************************************************************************
  */
 
@@ -22,7 +23,12 @@
 
 // SLIC includes
 #include "slic/slic.hpp"
-#include "slic/SynchronizedStream.hpp"
+
+#ifdef AXOM_USE_LUMBERJACK
+  #include "slic/LumberjackStream.hpp"
+#else
+  #include "slic/SynchronizedStream.hpp"
+#endif
 
 // C/C++ includes
 #include <cstdlib>   // for std::rand(), RAND_MAX
@@ -32,7 +38,7 @@
 // MPI includes
 #include "mpi.h"
 
-using namespace asctoolkit;
+using namespace axom;
 
 typedef std::vector<double> CoordsVec;
 
@@ -200,14 +206,28 @@ int main( int argc, char**argv )
   MPI_Init( &argc, &argv );
 
   // Initialize Logger
-  slic::initialize();
-  slic::setLoggingMsgLevel( slic::message::Info );
+  axom::slic::initialize();
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
-  std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>";
-  slic::SynchronizedStream* sstream =
-          new slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD);
-  sstream->setFormatString( fmt );
-  slic::addStreamToAllMsgLevels( sstream );
+  axom::slic::LogStream* logStream;
+
+  std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
+  #ifdef AXOM_USE_LUMBERJACK
+    const int RLIMIT = 8;
+    logStream = new axom::slic::LumberjackStream(&std::cout,MPI_COMM_WORLD, RLIMIT, fmt);
+  #else
+    logStream = new axom::slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, fmt);
+  #endif
+
+  axom::slic::addStreamToAllMsgLevels( logStream );
+
+  if(argc != 2)
+  {
+      SLIC_WARNING("Usage: [mpirun -np N] ./quest_interface <stl_file>");
+      axom::slic::finalize();
+      MPI_Finalize();
+      exit(1);
+  }
 
   // Generate the query points
   std::string fileName = std::string(argv[1]);
@@ -234,7 +254,7 @@ int main( int argc, char**argv )
   SLIC_INFO("--");
 
 
-  slic::finalize();
+  axom::slic::finalize();
 
   MPI_Finalize();
 

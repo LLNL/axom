@@ -2,10 +2,14 @@
 # 09-12-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug"
 # 09-16-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug" ""
 # 09-19-2016 chang28, the decider has decided to have a configuration file call a main_script file, this is the main_script file, all environment variables are set up in the configuration file. 
+# 01-20-2017, chang28, use CTEST_OUTPUT_ON_FAILURE=1 for bamboo testing
 
-echo main_script version 0.9.3
+echo main_script version 0.9.9
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
+if [ "$DOC" = false ]; then
+   OPTIONS+=" -DENABLE_DOCS=OFF";
+fi
 echo "Options: $OPTIONS"
 ./scripts/config-build.py $OPTIONS
 if [ $? -ne 0 ]; then
@@ -28,9 +32,9 @@ if [ "$BUILD" = true ]; then
 fi
 
 if [ "$TEST" = true ]; then
-    echo "Running tests..."
+    echo "Running tests env CTEST_OUTPUT_ON_FAILURE=1 ..."
     echo "-----------------------------------------------------------------------"
-    make test ARGS="-T Test -j$JOBS"
+    env CTEST_OUTPUT_ON_FAILURE=1 make test ARGS="-T Test -j$JOBS"
     if [ $? -ne 0 ]; then
         echo "Error: 'make test' failed"
         exit 1
@@ -41,7 +45,7 @@ fi
 if [ "$DOC" = true ]; then
     echo "Making docs..."
     echo "-----------------------------------------------------------------------"
-    make VERBOSE=1 docs
+    make VERBOSE=1 docs "-j$JOBS"
     if [ $? -ne 0 ]; then
         echo "Error: 'make docs' failed"
         exit 1
@@ -52,7 +56,7 @@ fi
 if [ "$INSTALL_FILES" = true ]; then
     echo "Installing files..."
     echo "-----------------------------------------------------------------------"
-    make VERBOSE=1 install
+    make VERBOSE=1 install "-j$JOBS"
     if [ $? -ne 0 ]; then
         echo "Error: 'make install' failed"
         exit 1
@@ -91,7 +95,7 @@ if [ "$INSTALL_DOCS" = true ]; then
     exit 1
    fi
 
-   chgrp -R toolkit ${DOCS_DIR}
+   chgrp -R axom ${DOCS_DIR}
    if [ $? -ne 0 ]; then
     echo "Error: 'chgrp' failed"
     exit 1
