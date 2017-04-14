@@ -1,7 +1,7 @@
 Sidre: Simulation Data Repository {#sidretop}
 =========
 
-The ASC toolkit provides Sidre, a data repository library for flexible, low-overhead organization of buffers in a hierarchical tree.  Four concepts are embodied in Sidre classes:
+Axom provides Sidre, a data repository library for flexible, low-overhead organization of buffers in a hierarchical tree.  Four concepts are embodied in Sidre classes:
 
 * Buffers are linear arrays of data.
 * Views provide access to data in buffers, specifying type, offset, and stride.

@@ -29,8 +29,8 @@
 #include "slam/Map.hpp"
 
 
-using asctoolkit::slam::RangeSet;
-using asctoolkit::slam::StaticVariableRelation;
+using axom::slam::RangeSet;
+using axom::slam::StaticVariableRelation;
 
 typedef RangeSet::ElementType   ElementType;
 typedef RangeSet::PositionType  SetPosition;

@@ -9,7 +9,7 @@
  */
 
 #include <math.h>
-#if USE_MPI
+#ifdef AXOM_USE_MPI
 # include <mpi.h>
 #endif
 #if _OPENMP
@@ -47,8 +47,8 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_dvovmax(Real_t(0.1)),
    m_refdens(Real_t(1.0))
 {
-  m_DataGroup = m_DataStore.getRoot()->createGroup("Domain");
-  m_DataGroup->createView("LuleshDomain",this);
+  m_Group = m_DataStore.getRoot()->createGroup("Domain");
+  m_Group->createView("LuleshDomain",this);
 
    Index_t edgeElems = nx ;
    Index_t edgeNodes = edgeElems+1 ;
@@ -309,7 +309,7 @@ Domain::SetupThreadSupportStructures()
       if ((clv < 0) || (clv > numElem()*8)) {
 	fprintf(stderr,
 		"AllocateNodeElemIndexes(): nodeElemCornerList entry out of range!\n");
-#if USE_MPI
+#ifdef AXOM_USE_MPI
 	MPI_Abort(MPI_COMM_WORLD, -1);
 #else
 	exit(-1);
@@ -344,7 +344,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   m_planeMin = (m_planeLoc == 0)    ? 0 : 1;
   m_planeMax = (m_planeLoc == m_tp-1) ? 0 : 1;
 
-#if USE_MPI   
+#ifdef AXOM_USE_MPI   
   // account for face communication 
   Index_t comBufSize =
     (m_rowMin + m_rowMax + m_colMin + m_colMax + m_planeMin + m_planeMax) *
@@ -380,7 +380,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_colLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmX = m_DataGroup->createViewAndAllocate("m_symmX",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
+    m_symmX = m_Group->createViewAndAllocate("m_symmX",axom::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
 #else
     m_symmX.resize(edgeNodes*edgeNodes);
 #endif
@@ -388,7 +388,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_rowLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmY = m_DataGroup->createViewAndAllocate("m_symmY",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
+    m_symmY = m_Group->createViewAndAllocate("m_symmY",axom::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
 #else
     m_symmY.resize(edgeNodes*edgeNodes);
 #endif
@@ -396,7 +396,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_planeLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmZ = m_DataGroup->createViewAndAllocate("m_symmZ",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
+    m_symmZ = m_Group->createViewAndAllocate("m_symmZ",axom::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
 #else
     m_symmZ.resize(edgeNodes*edgeNodes);
 #endif
@@ -408,7 +408,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
 void
 Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
 {
-#if USE_MPI   
+#ifdef AXOM_USE_MPI   
    Index_t myRank;
    MPI_Comm_rank(MPI_COMM_WORLD, &myRank) ;
    srand(myRank);
@@ -520,9 +520,9 @@ void
 Domain::SetupSymmetryPlanes(Int_t edgeNodes)
 {
 #if USE_SIDRE==1
-  Index_t * const symmX = m_DataGroup->getView("m_symmX")->getData();
-  Index_t * const symmY = m_DataGroup->getView("m_symmY")->getData();
-  Index_t * const symmZ = m_DataGroup->getView("m_symmZ")->getData();
+  Index_t * const symmX = m_symmX;
+  Index_t * const symmY = m_symmY;
+  Index_t * const symmZ = m_symmZ;
 #else
   Index_t * const symmX = m_symmX.data();
   Index_t * const symmY = m_symmY.data();
@@ -699,7 +699,7 @@ void InitMeshDecomp(Int_t numRanks, Int_t myRank,
    testProcs = Int_t(cbrt(Real_t(numRanks))+0.5) ;
    if (testProcs*testProcs*testProcs != numRanks) {
       printf("Num processors must be a cube of an integer (1, 8, 27, ...)\n") ;
-#if USE_MPI      
+#ifdef AXOM_USE_MPI      
       MPI_Abort(MPI_COMM_WORLD, -1) ;
 #else
       exit(-1);
@@ -707,7 +707,7 @@ void InitMeshDecomp(Int_t numRanks, Int_t myRank,
    }
    if (sizeof(Real_t) != 4 && sizeof(Real_t) != 8) {
       printf("MPI operations only support float and double right now...\n");
-#if USE_MPI      
+#ifdef AXOM_USE_MPI      
       MPI_Abort(MPI_COMM_WORLD, -1) ;
 #else
       exit(-1);
@@ -715,7 +715,7 @@ void InitMeshDecomp(Int_t numRanks, Int_t myRank,
    }
    if (MAX_FIELDS_PER_MPI_COMM > CACHE_COHERENCE_PAD_REAL) {
       printf("corner element comm buffers too small.  Fix code.\n") ;
-#if USE_MPI      
+#ifdef AXOM_USE_MPI      
       MPI_Abort(MPI_COMM_WORLD, -1) ;
 #else
       exit(-1);
@@ -729,7 +729,7 @@ void InitMeshDecomp(Int_t numRanks, Int_t myRank,
    // temporary test
    if (dx*dy*dz != numRanks) {
       printf("error -- must have as many domains as procs\n") ;
-#if USE_MPI      
+#ifdef AXOM_USE_MPI      
       MPI_Abort(MPI_COMM_WORLD, -1) ;
 #else
       exit(-1);

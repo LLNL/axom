@@ -24,7 +24,7 @@
 
 #include "lumberjack/Message.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 /*!
@@ -50,6 +50,6 @@ const char* mpiBlockingRecieveMessages(MPI_Comm comm);
 */
 void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank, const char* packedMessagesToBeSent);
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif

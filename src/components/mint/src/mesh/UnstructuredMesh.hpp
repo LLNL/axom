@@ -22,8 +22,8 @@
 
 #include "slic/slic.hpp"
 
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 
 #include <cstring> // for memcpy()
 #include <fstream> // for fstream
@@ -106,7 +106,7 @@ public:
    * \param [out] cell user-supplied buffer to store cell connectivity info.
    * \note cell must have sufficient size to hold the connectivity information.
    * \pre cellIdx >= 0 && cellIdx < this->getMeshNumberOfCells()
-   * \pre cell != ATK_NULLPTR.
+   * \pre cell != AXOM_NULLPTR.
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    *****************************************************************************
@@ -169,7 +169,7 @@ public:
    *****************************************************************************
    * \brief Returns the total number of nodes in the mesh.
    * \return N the total number of nodes in the mesh.
-   * \pre m_node_coordinates != ATK_NULLPTR.
+   * \pre m_node_coordinates != AXOM_NULLPTR.
    * \post N >= 0.
    *****************************************************************************
    */
@@ -180,7 +180,7 @@ public:
    *****************************************************************************
    * \brief Returns the total number cells in the mesh.
    * \return N the total number of cells in the mesh.
-   * \pre m_cell_connectivity != ATK_NULLPTR.
+   * \pre m_cell_connectivity != AXOM_NULLPTR.
    * \post N >= 0.
    *****************************************************************************
    */
@@ -204,7 +204,7 @@ public:
    * \param [in] cell pointer to the connectivity of the cell.
    * \param [in] cell_type the type of cell to insert.
    * \param [in] numNodes number of nodes for the cell.
-   * \pre cell != ATK_NULLPTR.
+   * \pre cell != AXOM_NULLPTR.
    *****************************************************************************
    */
   void insertCell( const int* cell, int cell_type, int numNodes );
@@ -235,9 +235,9 @@ public:
    * \brief Returns pointer to coordinates array for the requested dimension.
    * \param [in] dim the requested dimension.
    * \return ptr pointer to the coordinates array for the given dimension.
-   * \pre m_coordinates != ATK_NULLPTR.
+   * \pre m_coordinates != AXOM_NULLPTR.
    * \pre dim < m_ndims
-   * \post ptr != ATK_NULLPTR.
+   * \post ptr != AXOM_NULLPTR.
    *****************************************************************************
    */
   const double* getMeshCoordinateArray( int dim ) const;
@@ -247,9 +247,9 @@ public:
    * \brief Returns pointer to the connectivity array of the given cell.
    * \param [in] cellIdx the index of the cell in query.
    * \return cell_ptr pointer to the connectivity array of the cell.
-   * \pre m_cell_connectivity != ATK_NULLPTR
+   * \pre m_cell_connectivity != AXOM_NULLPTR
    * \pre cellIdx >= 0 && cellIdx < this->getNumberOfCells()
-   * \post cell_ptr != ATK_NULLPTR.
+   * \post cell_ptr != AXOM_NULLPTR.
    *****************************************************************************
    */
   const int* getCell( int cellIdx ) const;
@@ -293,8 +293,8 @@ namespace mint {
 template < int CellType >
 UnstructuredMesh< CellType >::UnstructuredMesh():
   Mesh(-1,-1,-1,-1),
-  m_node_coordinates( ATK_NULLPTR ),
-  m_cell_connectivity( ATK_NULLPTR )
+  m_node_coordinates( AXOM_NULLPTR ),
+  m_cell_connectivity( AXOM_NULLPTR )
 {}
 
 //------------------------------------------------------------------------------
@@ -328,8 +328,8 @@ inline
 void UnstructuredMesh< CellType >::insertCell(
   const int* cell, int cell_type, int num_nodes )
 {
-  SLIC_ASSERT(  cell != ATK_NULLPTR );
-  SLIC_ASSERT(  m_cell_connectivity != ATK_NULLPTR );
+  SLIC_ASSERT(  cell != AXOM_NULLPTR );
+  SLIC_ASSERT(  m_cell_connectivity != AXOM_NULLPTR );
   SLIC_ASSERT(  cell::num_nodes[ cell_type ] == num_nodes );
 
   m_cell_connectivity->insertCell( cell, cell_type, num_nodes );
@@ -341,7 +341,7 @@ inline
 void UnstructuredMesh< CellType >::insertNode( double x, double y )
 {
   SLIC_ASSERT(  m_ndims==2 );
-  SLIC_ASSERT(  m_node_coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
   m_node_coordinates->insertPoint( x, y );
 }
 
@@ -351,7 +351,7 @@ inline
 void UnstructuredMesh< CellType >::insertNode( double x, double y, double z )
 {
   SLIC_ASSERT(  m_ndims==3 );
-  SLIC_ASSERT(  m_node_coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
   m_node_coordinates->insertPoint( x, y, z );
 }
 
@@ -361,7 +361,7 @@ inline
 const double* UnstructuredMesh< CellType >::getMeshCoordinateArray(int dim)
 const
 {
-  SLIC_ASSERT(  m_node_coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  dim < m_ndims );
   return m_node_coordinates->getCoordinateArray( dim );
 }
@@ -371,7 +371,7 @@ template < int CellType >
 inline
 const int* UnstructuredMesh< CellType >::getCell( int cellIdx ) const
 {
-  SLIC_ASSERT(  m_cell_connectivity != ATK_NULLPTR );
+  SLIC_ASSERT(  m_cell_connectivity != AXOM_NULLPTR );
   SLIC_ASSERT(  cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
   return (*m_cell_connectivity)[ cellIdx ];
 }
@@ -451,7 +451,7 @@ void UnstructuredMesh< CellType >::toVtkFile( const std::string& file )
     if ( field->getType() == DOUBLE_FIELD_TYPE ) {
 
       double* dataPtr = field->getDoublePtr();
-      SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+      SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
       ofs << "double\n";
       ofs << "LOOKUP_TABLE default\n";
@@ -463,7 +463,7 @@ void UnstructuredMesh< CellType >::toVtkFile( const std::string& file )
     else {
 
       int* dataPtr = field->getIntPtr();
-      SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+      SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
       ofs << "int\n";
       ofs << "LOOKUP_TABLE default\n";

@@ -219,7 +219,7 @@ building there.
 Building and Installing Axom
 --------------------------------------
 
-We use a CMake-based system, called `BLT https://github.com/LLNL/blt>`_, to 
+We use a CMake-based system, called `BLT <https://github.com/LLNL/blt>`_, to 
 configure and build Axom. This section provides essential instructions for 
 building the code.
 

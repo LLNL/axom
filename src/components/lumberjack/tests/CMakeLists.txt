@@ -37,6 +37,10 @@ blt_add_executable(NAME lumberjack_speedTest
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                    DEPENDS_ON lumberjack )
 blt_add_test( NAME lumberjack_speedTest_binary
-              COMMAND lumberjack_speedTest b 10 ${lumberjack_SOURCE_DIR}/tests/sampleInput/loremIpsum02)
+              COMMAND lumberjack_speedTest b 10 ${lumberjack_SOURCE_DIR}/tests/sampleInput/loremIpsum02
+              NUM_PROCS 4)
+              
 blt_add_test( NAME lumberjack_speedTest_root
-              COMMAND lumberjack_speedTest r 10 ${lumberjack_SOURCE_DIR}/tests/sampleInput/loremIpsum02)
+              COMMAND lumberjack_speedTest r 10 ${lumberjack_SOURCE_DIR}/tests/sampleInput/loremIpsum02
+              NUM_PROCS 4)
+              

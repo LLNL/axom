@@ -25,7 +25,7 @@
 #include "slic/LogStream.hpp"
 #include "slic/MessageLevel.h"
 
-#include "common/CommonTypes.hpp" // for ATK_NULLPTR
+#include "axom/Types.hpp" // for AXOM_NULLPTR
 
 // C/C++ includes
 #include <iostream> // for std::endl, std::ends
@@ -133,7 +133,7 @@
 
 /// @}
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
 
 //-----------------------------------------------------------------------------
 /// \name ASSERT MACROS
@@ -265,7 +265,7 @@
 #define SLIC_CHECK( ignore_EXP ) ( (void)0 )
 #define SLIC_CHECK_MSG( ignore_EXP, ignore_msg ) ( (void)0 )
 
-#endif /* END ifdef ATK_DEBUG */
+#endif /* END ifdef AXOM_DEBUG */
 
 /*!
  ******************************************************************************
@@ -291,7 +291,7 @@
                            , __LINE__ );                                      \
   } while ( 0 )
 
-#ifdef ATK_DEBUG
+#ifdef AXOM_DEBUG
 
 /*!
  ******************************************************************************
@@ -461,7 +461,7 @@ bool isAbortOnWarningsEnabled();
  * \brief Adds the given stream to the the given level.
  * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.
- * \pre ls != ATK_NULLPTR
+ * \pre ls != AXOM_NULLPTR
  *******************************************************************************
  */
 void addStreamToMsgLevel( LogStream* ls, message::Level level);
@@ -470,7 +470,7 @@ void addStreamToMsgLevel( LogStream* ls, message::Level level);
  *******************************************************************************
  * \brief Adds the given stream to all levels.
  * \param [in] ls pointer to the log stream.
- * \pre ls != ATK_NULLPTR.
+ * \pre ls != AXOM_NULLPTR.
  *******************************************************************************
  */
 void addStreamToAllMsgLevels( LogStream* ls );
@@ -600,6 +600,6 @@ std::string stacktrace( );
 
 } /* namespace slic */
 
-} /* namespace asctoolkit */
+} /* namespace axom */
 
 #endif /* SLIC_HPP_ */

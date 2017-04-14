@@ -40,7 +40,7 @@
 #include "slic/slic.hpp"
 #include "slic/LogStream.hpp"
 
-#ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
   #include "slic/LumberjackStream.hpp"
 #else
   #include "slic/GenericOutputStream.hpp"
@@ -48,9 +48,9 @@
 
 #include "sidre/SidreTypes.hpp"
 #include "sidre/DataStore.hpp"
-#include "sidre/DataGroup.hpp"
-#include "sidre/DataBuffer.hpp"
-#include "sidre/DataView.hpp"
+#include "sidre/Group.hpp"
+#include "sidre/Buffer.hpp"
+#include "sidre/View.hpp"
 
 #include "spio/IOManager.hpp"
 
@@ -63,18 +63,18 @@
 #include <cstdlib>      // for atoi
 
 
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataView;
-using asctoolkit::spio::IOManager;
+using axom::sidre::DataStore;
+using axom::sidre::Group;
+using axom::sidre::Buffer;
+using axom::sidre::View;
+using axom::spio::IOManager;
 
 
-typedef asctoolkit::sidre::IndexType IndexType;
-typedef asctoolkit::slam::policies::RuntimeSizeHolder<IndexType>   SzPol;
-typedef asctoolkit::slam::policies::ZeroOffset<IndexType> OffPol;
-typedef asctoolkit::slam::policies::RuntimeStrideHolder<IndexType> StrPol;
-typedef asctoolkit::slam::OrderedSet<SzPol, OffPol, StrPol> DataViewSet;
+typedef axom::sidre::IndexType IndexType;
+typedef axom::slam::policies::RuntimeSizeHolder<IndexType>   SzPol;
+typedef axom::slam::policies::ZeroOffset<IndexType> OffPol;
+typedef axom::slam::policies::RuntimeStrideHolder<IndexType> StrPol;
+typedef axom::slam::OrderedSet<SzPol, OffPol, StrPol> ViewSet;
 
 void setupLogging();
 void teardownLogging();
@@ -250,16 +250,16 @@ CommandLineArguments parseArguments(int argc, char** argv, int myRank)
  *
  * \note We also set the data in each allocated array to zeros
  */
-void allocateExternalData(DataGroup* grp, std::vector<void*>& extPtrs)
+void allocateExternalData(Group* grp, std::vector<void*>& extPtrs)
 {
-    using namespace asctoolkit;
+    using namespace axom;
 
     // for each view
     for(sidre::IndexType idx =  grp->getFirstValidViewIndex();
         sidre::indexIsValid(idx);
         idx = grp->getNextValidViewIndex(idx) )
     {
-        DataView* view = grp->getView(idx);
+        View* view = grp->getView(idx);
         if(view->isExternal())
         {
             SLIC_INFO("External view " << view->getPathName()
@@ -294,7 +294,7 @@ void allocateExternalData(DataGroup* grp, std::vector<void*>& extPtrs)
  * \param origSize The size of the original array
  */
 template<typename sidre_type>
-void modifyFinalValuesImpl(DataView* view, int origSize)
+void modifyFinalValuesImpl(View* view, int origSize)
 {
     SLIC_DEBUG("Looking at view " << view->getPathName());
 
@@ -302,11 +302,11 @@ void modifyFinalValuesImpl(DataView* view, int origSize)
 
     // Uses a Slam set to help manage the indirection to the view data
     // Note: offset is zero since getData() already accounts for the offset
-    DataViewSet idxSet = DataViewSet::SetBuilder()
+    ViewSet idxSet = ViewSet::SetBuilder()
                         .size(view->getNumElements())
                         .stride(view->getStride());
 
-  #ifdef ATK_DEBUG
+  #ifdef AXOM_DEBUG
     fmt::MemoryWriter out_fwd;
     for(int i=0; i < idxSet.size(); ++i)
     {
@@ -327,7 +327,7 @@ void modifyFinalValuesImpl(DataView* view, int origSize)
     arr[ idxSet[0] ] = static_cast<sidre_type>(origSize);
     arr[ idxSet[1] ] = std::numeric_limits<sidre_type>::quiet_NaN();
 
-  #ifdef ATK_DEBUG
+  #ifdef AXOM_DEBUG
     fmt::MemoryWriter out_rev;
     for(int i=0; i < idxSet.size(); ++i)
     {
@@ -340,11 +340,11 @@ void modifyFinalValuesImpl(DataView* view, int origSize)
 }
 
 
-void modifyFinalValues(DataView* view, int origSize)
+void modifyFinalValues(View* view, int origSize)
 {
     SLIC_DEBUG("Truncating view " << view->getPathName());
 
-    using namespace asctoolkit;
+    using namespace axom;
 
     switch(view->getTypeID())
     {
@@ -390,16 +390,16 @@ void modifyFinalValues(DataView* view, int origSize)
  * be 0 for integers and nan for floating points.
  * This will be followed by (at most) the first maxSize elements of the original array
  */
-void truncateBulkData(DataGroup* grp, int maxSize)
+void truncateBulkData(Group* grp, int maxSize)
 {
-    using namespace asctoolkit;
+    using namespace axom;
 
     // Add two to maxSize
     for(sidre::IndexType idx =  grp->getFirstValidViewIndex();
         sidre::indexIsValid(idx);
         idx = grp->getNextValidViewIndex(idx) )
     {
-        DataView* view = grp->getView(idx);
+        View* view = grp->getView(idx);
         bool isArray = view->hasBuffer() || view->isExternal();
 
         if(isArray)
@@ -442,7 +442,7 @@ void setupLogging()
 
     slic::setLoggingMsgLevel(slic::message::Info);
 
-#ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
     std::string rankStr = "[<RANK>]";
 #else
     std::string rankStr = "";
@@ -462,7 +462,7 @@ void setupLogging()
     slic::LogStream* wefStream;
     slic::LogStream* diStream;
 
-#ifdef ATK_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
     const int ranksLimit = 16;
     wefStream = new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, ranksLimit, wefFormatStr );
     diStream =  new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, ranksLimit, diFormatStr );
@@ -545,7 +545,7 @@ int main(int argc, char * argv[])
           ++it)
   {
       delete [] static_cast<char*>(*it);
-      *it = ATK_NULLPTR;
+      *it = AXOM_NULLPTR;
   }
 
   teardownLogging();

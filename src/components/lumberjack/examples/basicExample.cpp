@@ -37,11 +37,11 @@ int main(int argc, char** argv)
     int ranksLimit = commSize/2;
 
     // Initialize which lumberjack communicator we want
-    asctoolkit::lumberjack::BinaryTreeCommunicator communicator;
+    axom::lumberjack::BinaryTreeCommunicator communicator;
     communicator.initialize(MPI_COMM_WORLD, ranksLimit);
 
     // Initialize lumberjack
-    asctoolkit::lumberjack::Lumberjack lj;
+    axom::lumberjack::Lumberjack lj;
     lj.initialize(&communicator, ranksLimit);
 
     // Queue messages into lumberjack
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
     // Determine if this is an output node
     if (lj.isOutputNode()){
         // Get Messages from Lumberjack
-        std::vector<asctoolkit::lumberjack::Message*> messages = lj.getMessages();
+        std::vector<axom::lumberjack::Message*> messages = lj.getMessages();
         for(int i=0; i<(int)(messages.size()); ++i){
             // Output a single Message at a time to screen
             std::cout << "(" << messages[i]->stringOfRanks() << ") " << messages[i]->ranksCount() <<

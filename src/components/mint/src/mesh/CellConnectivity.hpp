@@ -13,8 +13,8 @@
 
 #include <iostream>
 
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 #include "mint/CellType.hpp"
 #include "slic/slic.hpp"
 
@@ -81,7 +81,7 @@ public:
    * \post nnodes >= 0
    *****************************************************************************
    */
-  int getNumberOfNodes( int ATK_NOT_USED(cellIdx) ) const { return m_stride; };
+  int getNumberOfNodes( int AXOM_NOT_USED(cellIdx) ) const { return m_stride; };
 
   /*!
    *****************************************************************************
@@ -92,7 +92,7 @@ public:
    * \post ctype >= mint::VERTEX && ctype < mint::NUM_CELL_TYPES.
    *****************************************************************************
    */
-  int getCellType( int ATK_NOT_USED(cellIdx) ) const { return cell_type; }
+  int getCellType( int AXOM_NOT_USED(cellIdx) ) const { return cell_type; }
 
   /*!
    *****************************************************************************
@@ -100,7 +100,7 @@ public:
    * \param [in] cellIdx the index of the cell in question.
    * \return cell_ptr pointer to the connectivity of the given cell.
    * \pre cellIdx >= 0 && cellIdx < ncells
-   * \post cell_ptr != ATK_NULLPTR.
+   * \post cell_ptr != AXOM_NULLPTR.
    *****************************************************************************
    */
   const index_type* operator[]( int cellIdx )
@@ -118,10 +118,10 @@ public:
    *****************************************************************************
    */
   void insertCell( const index_type* cell,
-                   int ATK_NOT_USED(type),
-                   int ATK_NOT_USED(nnodes) )
+                   int AXOM_NOT_USED(type),
+                   int AXOM_NOT_USED(nnodes) )
   {
-    SLIC_ASSERT( cell != ATK_NULLPTR );
+    SLIC_ASSERT( cell != AXOM_NULLPTR );
 
     for ( int i=0; i < m_stride; ++i ) {
       m_connectivity.push_back( cell[ i ] );
@@ -135,13 +135,13 @@ public:
    * \param [in] cellIdx the index of the cell to set.
    * \param [in] cell array pointer to the source cell connectivity.
    * \pre cellIdx >= 0 && cellIdx < ncells
-   * \pre cell != ATK_NULLPTR
+   * \pre cell != AXOM_NULLPTR
    *****************************************************************************
    */
   void setCell( int cellIdx, const index_type* cell )
   {
     SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
-    SLIC_ASSERT(  cell != ATK_NULLPTR );
+    SLIC_ASSERT(  cell != AXOM_NULLPTR );
 
     index_type* to         = &m_connectivity[ cellIdx*m_stride ];
     const index_type* from = cell;
@@ -249,7 +249,7 @@ public:
    * \param [in] cellIdx the index of the cell in question.
    * \return cell_ptr pointer to the connectivity of the given cell.
    * \pre cellIdx >= 0 && cellIdx < ncells
-   * \post cell_ptr != ATK_NULLPTR.
+   * \post cell_ptr != AXOM_NULLPTR.
    *****************************************************************************
    */
   const index_type* operator[]( int cellIdx )
@@ -265,12 +265,12 @@ public:
    * \param [in] type the cell type.
    * \param [in] nnodes the number of nodes in the cell.
    * \note type is only used for mixed cell connectivity.
-   * \pre cell != ATK_NULLPTR .
+   * \pre cell != AXOM_NULLPTR .
    *****************************************************************************
    */
   void insertCell( const index_type* cell, int type, int nnodes )
   {
-    SLIC_ASSERT( cell != ATK_NULLPTR );
+    SLIC_ASSERT( cell != AXOM_NULLPTR );
 
     // STEP 0: get the last cell index before inserting the new cell
     int last_cell_id = this->getNumberOfCells()-1;
@@ -300,13 +300,13 @@ public:
    * \param [in] cellIdx the index of the cell to set.
    * \param [in] cell array pointer to the source cell connectivity.
    * \pre cellIdx >= 0 && cellIdx < ncells
-   * \pre cell != ATK_NULLPTR
+   * \pre cell != AXOM_NULLPTR
    *****************************************************************************
    */
   void setCell( int cellIdx, const index_type* cell )
   {
     SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
-    SLIC_ASSERT(  cell != ATK_NULLPTR );
+    SLIC_ASSERT(  cell != AXOM_NULLPTR );
 
     // STEP 0: get the number of nodes for the given cell type
     const int nnodes = this->getNumberOfNodes( cellIdx );

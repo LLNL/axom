@@ -30,9 +30,6 @@ set("HDF5_DIR" "/usr/workspace/wsa/atk/bgq/tpl/asctoolkit/uberenv_libs/spack/opt
 # conduit from uberenv
 set("CONDUIT_DIR" "/usr/workspace/wsa/atk/bgq/tpl/asctoolkit/uberenv_libs/spack/opt/spack/bgqos_0/gcc-4.7.2/conduit-0.2.1-rbwzgejzcjjd2ytt5uujulocx55dgmty" CACHE PATH "")
 
-# sparsehash headers from uberenv
-set("SPARSEHASH_DIR" "/usr/workspace/wsa/atk/bgq/tpl/asctoolkit/uberenv_libs/spack/opt/spack/bgqos_0/gcc-4.7.2/sparsehash-headers-2.0.2-24icetuqyud64fxt3dfx3vxlucy5apk6" CACHE PATH "")
-
 # boost headers from uberenv
 set("ENABLE_BOOST" "ON" CACHE PATH "")
 

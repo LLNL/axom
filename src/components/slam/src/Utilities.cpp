@@ -10,17 +10,17 @@
 
 #include "slam/Utilities.hpp"
 
-#include "common/FileUtilities.hpp"
+#include "axom_utils/FileUtilities.hpp"
 #include "slic/slic.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 namespace util {
 
 
   std::string findFileInAncestorDirs(const std::string& fileName, int numAncestors)
   {
-    using namespace asctoolkit::utilities::filesystem;
+    using namespace axom::utilities::filesystem;
 
     bool fileFound = pathExists( fileName);
     std::string ancestorFileName = fileName;
@@ -55,4 +55,4 @@ namespace util {
 
 } // end namespace util
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom

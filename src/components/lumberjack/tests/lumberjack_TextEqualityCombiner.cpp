@@ -16,19 +16,19 @@ TEST(lumberjack_TextEqualityCombiner, case01)
 {
     //Test most basic case: two equal texts
     std::string text = "I never wanted to do this job in the first place!";
-    asctoolkit::lumberjack::Message m1;
+    axom::lumberjack::Message m1;
     m1.text(text);
     m1.addRank(13, 5);
     m1.fileName("foo.cpp");
     m1.lineNumber(154);
 
-    asctoolkit::lumberjack::Message m2;
+    axom::lumberjack::Message m2;
     m2.text(text);
     m2.addRank(14, 5);
     m2.fileName("foo.cpp");
     m2.lineNumber(154);
 
-    asctoolkit::lumberjack::TextEqualityCombiner c;
+    axom::lumberjack::TextEqualityCombiner c;
 
     bool shouldMessagesBeCombined = c.shouldMessagesBeCombined(m1, m2);
 
@@ -45,20 +45,20 @@ TEST(lumberjack_TextEqualityCombiner, case02)
 {
     //Test most basic negative case: two not-equal texts
     std::string text1 = "I never wanted to do this job in the first place!";
-    asctoolkit::lumberjack::Message m1;
+    axom::lumberjack::Message m1;
     m1.text(text1);
     m1.addRank(13, 5);
     m1.fileName("foo.cpp");
     m1.lineNumber(154);
 
     std::string text2 = "This text is not equal to the first.";
-    asctoolkit::lumberjack::Message m2;
+    axom::lumberjack::Message m2;
     m2.text(text2);
     m2.addRank(14, 5);
     m2.fileName("foo.cpp");
     m2.lineNumber(154);
 
-    asctoolkit::lumberjack::TextEqualityCombiner c;
+    axom::lumberjack::TextEqualityCombiner c;
 
     bool shouldMessagesBeCombined = c.shouldMessagesBeCombined(m1, m2);
 

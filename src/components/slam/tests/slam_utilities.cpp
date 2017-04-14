@@ -23,7 +23,7 @@
 #include "gtest/gtest.h"
 
 
-#include "common/FileUtilities.hpp"
+#include "axom_utils/FileUtilities.hpp"
 #include "slam/Utilities.hpp"
 #include "slic/slic.hpp"
 
@@ -55,8 +55,8 @@ TEST(gtest_slam_utilities,findingAncestorPaths)
 {
   SLIC_INFO("Testing function that recursively finds a valid path in cwd ancestors.");
 
-  using namespace asctoolkit::slam::util;
-  using namespace asctoolkit::utilities::filesystem;
+  using namespace axom::slam::util;
+  using namespace axom::utilities::filesystem;
 
   std::string path1 = joinPath(presentDir, presentFile);
   std::string ps1 = findFileInAncestorDirs(path1);

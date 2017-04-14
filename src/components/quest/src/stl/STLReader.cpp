@@ -11,9 +11,9 @@
 
 #include "STLReader.hpp"
 
-// ATK includes
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp"
+// axom includes
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 #include "slic/slic.hpp"
 
 
@@ -26,7 +26,8 @@
 //------------------------------------------------------------------------------
 //      STLReader Implementation
 //------------------------------------------------------------------------------
-namespace quest
+namespace axom {  
+namespace quest 
 {
 
 STLReader::STLReader() :
@@ -109,11 +110,11 @@ void STLReader::readBinarySTL()
 
   // A local union data structure for triangles in a binary STL
   union BinarySTLTri {
-    asctoolkit::common::int8 raw[BINARY_TRI_SIZE];
+    axom::common::int8 raw[BINARY_TRI_SIZE];
     struct {
       float normal[3];
       float vert[9];
-      asctoolkit::common::uint16 attr;
+      axom::common::uint16 attr;
     };
   } tri;
 
@@ -161,7 +162,7 @@ void STLReader::getMesh(
         axom::mint::UnstructuredMesh< MINT_TRIANGLE >* mesh )
 {
   /* Sanity checks */
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
   SLIC_ASSERT( static_cast<int>(m_nodes.size()) == 3* m_num_nodes );
 
   // Load the vertices into the mesh
@@ -177,5 +178,6 @@ void STLReader::getMesh(
 
 }
 
-} /* namespace quest */
+} // end namespace quest 
+} // end namespace axom 
 

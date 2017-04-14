@@ -19,11 +19,11 @@
 
 #include <iostream>
 #include <iterator>
-#include <sstream>      // for ATK_USE_BOOST
+#include <sstream>      // for AXOM_USE_BOOST
 
 #include "gtest/gtest.h"
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
@@ -33,8 +33,8 @@ using axom::slic::UnitTestLogger;
 #include "slam/Relation.hpp"
 #include "slam/StaticVariableRelation.hpp"
 
-using asctoolkit::slam::RangeSet;
-using asctoolkit::slam::StaticVariableRelation;
+using axom::slam::RangeSet;
+using axom::slam::StaticVariableRelation;
 
 typedef RangeSet::ElementType   ElementType;
 typedef RangeSet::PositionType  PositionType;
@@ -61,10 +61,10 @@ TEST(gtest_slam_static_variable_relation,empty_relation_out_of_bounds)
 
   StaticVariableRelation emptyRel;
 
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( emptyRel[FROMSET_SIZE], "");
+  EXPECT_DEATH_IF_SUPPORTED( emptyRel[FROMSET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -149,7 +149,7 @@ TEST(gtest_slam_static_variable_relation,simple_relation)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                SetIter;
   typedef StaticVariableRelation::RelationVecConstIterator  RelSetConstIter;
 
@@ -202,10 +202,10 @@ TEST(gtest_slam_static_variable_relation,initialized_rel_out_of_bounds)
   generateIncrementingRelations(&begins, &offsets);
   incrementingRel.bindRelationData(begins, offsets);
 
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( incrementingRel[FROMSET_SIZE], "");
+  EXPECT_DEATH_IF_SUPPORTED( incrementingRel[FROMSET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -230,7 +230,7 @@ TEST(gtest_slam_static_variable_relation,test_iterator_range)
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                    SetIter;
   typedef StaticVariableRelation::RelationVecConstIterator      RelSetConstIter;
   typedef StaticVariableRelation::RelationVecConstIteratorPair  RelSetConstIterPair;
@@ -279,7 +279,7 @@ TEST(gtest_slam_static_variable_relation,double_subscript_test)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator SetIter;
 
   SLIC_INFO("\tLooking at relation's stored values...");

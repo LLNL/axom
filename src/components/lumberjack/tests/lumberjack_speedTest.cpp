@@ -20,8 +20,8 @@
 #include "lumberjack/RootCommunicator.hpp"
 #include "lumberjack/Message.hpp"
 
-#include "common/CommonTypes.hpp"
-#include "common/StringUtilities.hpp"
+#include "axom/Types.hpp"
+#include "axom_utils/StringUtilities.hpp"
 
 #include <mpi.h>
 
@@ -37,12 +37,12 @@ int main(int argc, char** argv)
     //Process command line options
     bool commandLineError = false;
     if (argc != 4) {
-        std::cout << "Error: Wrong amount of command line arguments given. Usage:" << std::endl << 
+        std::cout << "Error: Wrong amount of command line arguments given. Usage:" << std::endl <<
                      "   " << argv[0] << " <b|r depending on binary or root communicator> <num messages before push once> <file to be read>" << std::endl;
         return 1;
     }
     std::string communicatorName = "";
-    int cycleLimit = asctoolkit::utilities::string::stringToInt(argv[2]);
+    int cycleLimit = axom::utilities::string::stringToInt(argv[2]);
     char* fileName = argv[3];
 
     if (std::string(argv[1]) == "b") {
@@ -50,8 +50,8 @@ int main(int argc, char** argv)
     } else if (std::string(argv[1]) == "r") {
         communicatorName = "root";
     } else {
-        std::cout << "Error: First parameter must be either 'b' or 'r' for " << 
-                     "BinaryTreeCommunicator or RootCommunicator respectively." << 
+        std::cout << "Error: First parameter must be either 'b' or 'r' for " <<
+                     "BinaryTreeCommunicator or RootCommunicator respectively." <<
                      std::endl;
         commandLineError = true;
     }
@@ -72,16 +72,16 @@ int main(int argc, char** argv)
     int ranksLimit = commSize/2;
 
     // Initialize which lumberjack communicator we want
-    asctoolkit::lumberjack::Communicator* communicator = ATK_NULLPTR;
+    axom::lumberjack::Communicator* communicator = AXOM_NULLPTR;
     if (communicatorName == "binary") {
-        communicator = new asctoolkit::lumberjack::BinaryTreeCommunicator;
+        communicator = new axom::lumberjack::BinaryTreeCommunicator;
     } else if (communicatorName == "root") {
-        communicator = new asctoolkit::lumberjack::RootCommunicator;
+        communicator = new axom::lumberjack::RootCommunicator;
     }
     communicator->initialize(MPI_COMM_WORLD, ranksLimit);
 
     // Initialize lumberjack
-    asctoolkit::lumberjack::Lumberjack lj;
+    axom::lumberjack::Lumberjack lj;
     lj.initialize(communicator, ranksLimit);
 
     // Read lines from file
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 
     // Get messages back out of lumberjack since they have been pushed.
     if (lj.isOutputNode()) {
-        std::vector<asctoolkit::lumberjack::Message*> messages = lj.getMessages();
+        std::vector<axom::lumberjack::Message*> messages = lj.getMessages();
 
        std::ofstream outFile;
        outFile.open("speedTestOutput");
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
        outFile.close();
    }
 
-    // Finalize lumberjack 
+    // Finalize lumberjack
     lj.finalize();
     // Finalize the lumberjack communicator
     communicator->finalize();

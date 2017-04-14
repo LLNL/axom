@@ -15,12 +15,12 @@
 #include "mint/CellType.hpp"
 #include "mint/Extent.hpp"
 
-#include "common/CommonTypes.hpp"
-#include "common/ATKMacros.hpp"
+#include "axom/Types.hpp"
+#include "axom/Macros.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
-#include <cstddef> // for ATK_NULLPTR
+#include <cstddef> // for AXOM_NULLPTR
 
 namespace axom {
 namespace mint {
@@ -68,7 +68,7 @@ public:
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    *****************************************************************************
    */
-  virtual int getMeshNumberOfCellNodes( int ATK_NOT_USED(cellIdx) ) const
+  virtual int getMeshNumberOfCellNodes( int AXOM_NOT_USED(cellIdx) ) const
   { return this->getNumberOfCellNodes(); }
 
   /*!
@@ -78,7 +78,7 @@ public:
    * \param [out] cell user-supplied buffer to store cell connectivity info.
    * \note cell must have sufficient size to hold the connectivity information.
    * \pre cellIdx >= 0 && cellIdx < this->getMeshNumberOfCells()
-   * \pre cell != ATK_NULLPTR.
+   * \pre cell != AXOM_NULLPTR.
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    *****************************************************************************
@@ -93,7 +93,7 @@ public:
    * \return cellType the cell type of the cell at the given index.
    *****************************************************************************
    */
-  virtual int getMeshCellType( int ATK_NOT_USED(cellIdx) ) const
+  virtual int getMeshCellType( int AXOM_NOT_USED(cellIdx) ) const
   { return ( (m_ndims==3) ? MINT_HEX : MINT_QUAD ); };
 
   /*!
@@ -145,7 +145,7 @@ public:
    *****************************************************************************
    * \brief Returns the number of nodes in this mesh instance.
    * \return N the total number of nodes in the mesh.
-   * \pre m_extent != ATK_NULLPTR
+   * \pre m_extent != AXOM_NULLPTR
    * \post N >= 0.
    *****************************************************************************
    */
@@ -156,7 +156,7 @@ public:
    *****************************************************************************
    * \brief Returns the number of cells in this mesh instance.
    * \return N the total number of cells in the mesh.
-   * \pre m_extent != ATK_NULLPTR.
+   * \pre m_extent != AXOM_NULLPTR.
    * \post N >= 0.
    *****************************************************************************
    */
@@ -188,7 +188,7 @@ public:
   /*!
    *****************************************************************************
    * \brief Returns the linear index corresponding to the given logical grid cell
-   *indices.
+   * indices.
    * \param [in] i logical cell index of the first dimension.
    * \param [in] j logical cell index of the second dimension.
    * \param [in] k logical cell index of the third dimension (optional)
@@ -240,7 +240,7 @@ public:
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
-   * \pre coordinates != ATK_NULLPTR.
+   * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
    *****************************************************************************
    */
@@ -360,7 +360,7 @@ namespace mint {
 
 inline void StructuredMesh::getCell(int cellIdx, int* cell) const
 {
-  SLIC_ASSERT(  cell != ATK_NULLPTR );
+  SLIC_ASSERT(  cell != AXOM_NULLPTR );
   SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < this->getNumberOfCells() ) );
 
   const int* offsets_table = m_extent->getCellOffSets();
@@ -412,7 +412,7 @@ inline void StructuredMesh::getCell(int cellIdx, int* cell) const
 inline void StructuredMesh::getCell(int i, int j, int* cell) const
 {
   SLIC_ASSERT(  this->getDimension()==2 );
-  SLIC_ASSERT(  cell != ATK_NULLPTR );
+  SLIC_ASSERT(  cell != AXOM_NULLPTR );
 
   const int num_cell_nodes = this->getNumberOfCellNodes();
   SLIC_ASSERT(  num_cell_nodes == 4 );
@@ -433,7 +433,7 @@ inline void StructuredMesh::getCell(int i, int j, int* cell) const
 inline void StructuredMesh::getCell(int i, int j, int k, int* cell) const
 {
   SLIC_ASSERT(  this->getDimension()==3 );
-  SLIC_ASSERT(  cell != ATK_NULLPTR );
+  SLIC_ASSERT(  cell != AXOM_NULLPTR );
 
   const int num_cell_nodes = this->getNumberOfCellNodes();
   SLIC_ASSERT(  num_cell_nodes == 8 );

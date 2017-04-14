@@ -23,14 +23,14 @@
 #include <sstream>
 #include <iostream>
 
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 #include "slic/slic.hpp"
 
 #include "slam/Set.hpp"
 #include "slam/NullSet.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam    {
 
   class NullSet;
@@ -142,7 +142,7 @@ namespace slam    {
     /// \}
 
   private:
-    inline void verifyPosition(SetPosition ATK_DEBUG_PARAM(setIndex))       const
+    inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(setIndex))       const
     {
       SLIC_ASSERT_MSG( setIndex >= 0 && setIndex < m_set->size(),
           "Attempted to access element "  << setIndex
@@ -241,7 +241,7 @@ namespace slam    {
 
 
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 
 

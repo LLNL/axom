@@ -11,7 +11,7 @@
 /*!
  ******************************************************************************
  *
- * \file
+ * \file IOBaton.hpp
  *
  * \brief   Header file containing definition of IOBaton class.
  *
@@ -23,12 +23,12 @@
 
 #include "mpi.h"
 
-// Other CS Toolkit headers
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp"
+// Other axom headers
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 
 
-namespace asctoolkit
+namespace axom
 {
 namespace spio
 {
@@ -134,6 +134,6 @@ private:
 
 
 } /* end namespace spio */
-} /* end namespace asctoolkit */
+} /* end namespace axom */
 
 #endif /* IOBATON_HPP_ */

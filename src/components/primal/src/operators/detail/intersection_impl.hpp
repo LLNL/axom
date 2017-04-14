@@ -17,7 +17,7 @@
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
 
-#include "common/Utilities.hpp"
+#include "axom_utils/Utilities.hpp"
 
 namespace axom {
 namespace primal {
@@ -688,7 +688,7 @@ inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
  */
 inline bool isGt(double x, double y, double EPS)
 {
-  return ((x > y) && !(asctoolkit::utilities::isNearlyEqual(x, y, EPS)));
+  return ((x > y) && !(axom::utilities::isNearlyEqual(x, y, EPS)));
 }
 
 /*!
@@ -698,7 +698,7 @@ inline bool isGt(double x, double y, double EPS)
  */
 inline bool isLt(double x, double y, double EPS)
 {
-  return ((x < y) && !(asctoolkit::utilities::isNearlyEqual(x, y, EPS)));
+  return ((x < y) && !(axom::utilities::isNearlyEqual(x, y, EPS)));
 }
 
 /*!
@@ -759,7 +759,7 @@ bool intersect_ray_seg( const primal::Ray< T,2 >& R,
   // STEP 2: if denom is zero, the system is singular, which implies that the
   // ray and the segment are parallel
   const double parepsilon = 1.0e-9;
-  if ( asctoolkit::utilities::isNearlyEqual( denom, 0.0, parepsilon ) ) {
+  if ( axom::utilities::isNearlyEqual( denom, 0.0, parepsilon ) ) {
 
     // ray and segment are parallel
     return false;
@@ -814,9 +814,9 @@ bool intersect_ray_bbox(const primal::Ray< T,DIM > & R,
   T tmax = std::numeric_limits< T >::max();
 
   for (int i=0; i<DIM; i++) {
-    if (asctoolkit::utilities::isNearlyEqual(R.direction()[i],
-                                             std::numeric_limits< T >::min(),
-                                             1.0e-9 )) {
+    if (axom::utilities::isNearlyEqual(R.direction()[i],
+                                       std::numeric_limits< T >::min(),
+                                       1.0e-9 )) {
       T pointDim =  R.origin()[i];
       if ((pointDim<bb.getMin()[i]) || (pointDim>bb.getMax()[i])) {
         return false;
@@ -874,9 +874,9 @@ bool intersect_seg_bbox( const primal::Segment< T,DIM > & S,
   tmax = static_cast< T >(1);
 
   for (int i=0; i<DIM; i++) {
-    if (asctoolkit::utilities::isNearlyEqual(R.direction()[i],
-                                             std::numeric_limits< T >::min(),
-                                             1.0e-9 )) {
+    if (axom::utilities::isNearlyEqual(R.direction()[i],
+                                       std::numeric_limits< T >::min(),
+                                       1.0e-9 )) {
       T pointDim =  R.origin()[i];
       if ((pointDim<bb.getMin()[i]) || (pointDim>bb.getMax()[i])) {
         return false;
@@ -916,7 +916,7 @@ bool crossEdgesDisjoint(double d0, double d1, double r);
 /*!
  *******************************************************************************
  * \brief Determines if a triangle and a bounding box intersect
- *        (but does not find the point of intersection)
+ *        (but does not find the intersections)
  * \param [in] tri user-supplied triangle (with three vertices).
  * \param [in] bb user-supplied axis aligned bounding box.
  * \return true iff tri intersects with bb, otherwise, false.
@@ -945,82 +945,32 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
 
   // Make the AABB center the origin by moving the triangle vertices
   PointType center(bb.getMin().array() + e.array());
-  VectorType v[3] = { VectorType(center, tri[0])
-                      , VectorType(center, tri[1])
-                      , VectorType(center, tri[2]) };
+  VectorType v[3] = { VectorType(center, tri[0]),
+                      VectorType(center, tri[1]),
+                      VectorType(center, tri[2]) };
 
   // Create the edge vectors of the triangle
   VectorType f[3] = { v[1] - v[0], v[2] - v[1],  v[0] - v[2] };
 
-  // Test cross products of edges between triangle edge vectors f and cube normals (9
-  // tests)
-  // -- using separating axis theorem on the cross product of edges of triangle and
-  // face normals of AABB
+/* *INDENT-OFF* */
+
+  // Test cross products of edges between triangle edge vectors f and cube normals (9 tests)
+  // -- using separating axis theorem on the cross product of edges of triangle and face normals of AABB
   // Each test involves three cross products, two of which have the same value
   // The commented parameters highlights this symmetry.
-#define XEDGE_R( _E0, _E1, _F0, _F1, _IND ) \
-  e[ _E0 ] * std::abs( f[ _IND ][ _F0 ]) +  \
-  e[ _E1 ] * std::abs(f[ _IND ][ _F1 ])
+#define XEDGE_R( _0, _1, _I )      e[ _0 ] * std::abs( f[ _I ][ _1 ]) + e[ _1 ] * std::abs(f[ _I ][ _0 ])
+#define XEDGE_S( _0, _1, _V, _F ) -v[ _V ][ _0 ] * f[ _F ][ _1 ] + v[ _V ][ _1 ] * f[ _F ][ _0 ]
 
-#define XEDGE_S( _V0, _V1, _F0, _F1, _VIND, _FIND ) \
-  -v[ _VIND ][ _V0 ] * f[ _FIND ][ _F0 ] \
-  +v[ _VIND ][ _V1 ] * f[ _FIND ][ _F1 ]
-
-/* *INDENT-OFF* */
-  if ( crossEdgesDisjoint(/*XEDGE_S(1,2,2,1,0,0),*/
-                            XEDGE_S(1,2,2,1,1,0),
-                            XEDGE_S(1,2,2,1,2,0),
-                            XEDGE_R(1,2,2,1,0) ) ) {
-    return false;
-  }
-  if ( crossEdgesDisjoint(  XEDGE_S(1,2,2,1,0,1),
-                            /* XEDGE_S(1,2,2,1,1,1),*/
-                            XEDGE_S(1,2,2,1,2,1),
-                            XEDGE_R(1,2,2,1,1) ) ) {
-    return false;
-  }
-  if ( crossEdgesDisjoint(  XEDGE_S(1,2,2,1,0,2),
-                            XEDGE_S(1,2,2,1,1,2),
-                            /* XEDGE_S(1,2,2,1,2,2),*/
-                            XEDGE_R(1,2,2,1,2) ) ) {
-    return false;
-  }
-
-  if ( crossEdgesDisjoint( /*XEDGE_S(2,0,0,2,0,0),*/
-                           XEDGE_S(2,0,0,2,1,0),
-                           XEDGE_S(2,0,0,2,2,0),
-                           XEDGE_R(0,2,2,0,0) ) ) {
-    return false;
-  }
-  if ( crossEdgesDisjoint(  XEDGE_S(2,0,0,2,0,1),
-                            /* XEDGE_S(2,0,0,2,1,1),*/
-                            XEDGE_S(2,0,0,2,2,1),
-                            XEDGE_R(0,2,2,0,1) ) ) {
-    return false;
-  }
-  if ( crossEdgesDisjoint(  XEDGE_S(2,0,0,2,0,2),
-                            XEDGE_S(2,0,0,2,1,2),
-                            /* XEDGE_S(2,0,0,2,2,2),*/
-                            XEDGE_R(0,2,2,0,2) ) ) {
-    return false;
-  }
-
-  if ( crossEdgesDisjoint( /*XEDGE_S(0,1,1,0,0,0),*/
-                           XEDGE_S(0,1,1,0,1,0),
-                           XEDGE_S(0,1,1,0,2,0),
-                           XEDGE_R(0,1,1,0,0) ) ) {
-    return false;
-  }
-  if ( crossEdgesDisjoint(  XEDGE_S(0,1,1,0,0,1),
-                            /* XEDGE_S(0,1,1,0,1,1),*/
-                            XEDGE_S(0,1,1,0,2,1),
-                            XEDGE_R(0,1,1,0,1) ) ) {
-    return false;
-  }
-  if ( crossEdgesDisjoint(  XEDGE_S(0,1,1,0,0,2),
-                            XEDGE_S(0,1,1,0,1,2),
-                            /* XEDGE_S(0,1,1,0,2,2),*/
-                            XEDGE_R(0,1,1,0,2) ) ) {
+  if ( crossEdgesDisjoint(/*XEDGE_S(1,2,0,0),*/ XEDGE_S(1,2,1,0),   XEDGE_S(1,2,2,0),   XEDGE_R(1,2,0)) ||
+       crossEdgesDisjoint(  XEDGE_S(1,2,0,1),/* XEDGE_S(1,2,1,1),*/ XEDGE_S(1,2,2,1),   XEDGE_R(1,2,1)) ||
+       crossEdgesDisjoint(  XEDGE_S(1,2,0,2),   XEDGE_S(1,2,1,2),/* XEDGE_S(1,2,2,2),*/ XEDGE_R(1,2,2)) ||
+       crossEdgesDisjoint(/*XEDGE_S(2,0,0,0),*/ XEDGE_S(2,0,1,0),   XEDGE_S(2,0,2,0),   XEDGE_R(0,2,0)) ||
+       crossEdgesDisjoint(  XEDGE_S(2,0,0,1),/* XEDGE_S(2,0,1,1),*/ XEDGE_S(2,0,2,1),   XEDGE_R(0,2,1)) ||
+       crossEdgesDisjoint(  XEDGE_S(2,0,0,2),   XEDGE_S(2,0,1,2),/* XEDGE_S(2,0,2,2),*/ XEDGE_R(0,2,2)) ||
+       crossEdgesDisjoint(/*XEDGE_S(0,1,0,0),*/ XEDGE_S(0,1,1,0),   XEDGE_S(0,1,2,0),   XEDGE_R(0,1,0)) ||
+       crossEdgesDisjoint(  XEDGE_S(0,1,0,1),/* XEDGE_S(0,1,1,1),*/ XEDGE_S(0,1,2,1),   XEDGE_R(0,1,1)) ||
+       crossEdgesDisjoint(  XEDGE_S(0,1,0,2),   XEDGE_S(0,1,1,2),/* XEDGE_S(0,1,2,2),*/ XEDGE_R(0,1,2)) )
+  {
     return false;
   }
 /* *INDENT-ON* */
@@ -1029,13 +979,9 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
 #undef XEDEG_S
 
   /// Test face normals of bounding box (3 tests)
-  if (intervalsDisjoint(v[0][0], v[1][0], v[2][0], e[0])) {
-    return false;
-  }
-  if (intervalsDisjoint(v[0][1], v[1][1], v[2][1], e[1])) {
-    return false;
-  }
-  if (intervalsDisjoint(v[0][2], v[1][2], v[2][2], e[2])) {
+  if ( intervalsDisjoint(v[0][0], v[1][0], v[2][0], e[0]) ||
+       intervalsDisjoint(v[0][1], v[1][1], v[2][1], e[1]) ||
+       intervalsDisjoint(v[0][2], v[1][2], v[2][2], e[2]) ) {
     return false;
   }
 
@@ -1043,7 +989,8 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
   VectorType planeNormal  = VectorType::cross_product(f[0],f[1]);
   double planeDist    = planeNormal.dot(tri[0]);
 
-  double r = e[0]* std::abs( planeNormal[0]) + e[1]* std::abs( planeNormal[1]) +
+  double r = e[0]* std::abs( planeNormal[0]) +
+             e[1]* std::abs( planeNormal[1]) +
              e[2]* std::abs( planeNormal[2]);
   double s = planeNormal.dot(center) - planeDist;
 

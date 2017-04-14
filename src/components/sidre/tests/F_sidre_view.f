@@ -15,30 +15,30 @@ module sidre_view
   implicit none
 
   integer, parameter :: &
-       EMPTY = 1, &
-       BUFFER = 2, &
-       EXTERNAL = 3, &
-       SCALAR = 4, &
-       STRING = 5, &
+       EMPTYVIEW = 1, &
+       BUFFERVIEW = 2, &
+       EXTERNALVIEW = 3, &
+       SCALARVIEW = 4, &
+       STRINGVIEW = 5, &
        NOTYPE = 6
 
 contains
 !------------------------------------------------------------------------------
 
   function get_state(view) result(state)
-    type(dataview), intent(IN) :: view
+    type(SidreView), intent(IN) :: view
     integer state
 
     if (view%is_empty()) then
-       state = EMPTY
+       state = EMPTYVIEW
     else if (view%has_buffer()) then
-       state = BUFFER
+       state = BUFFERVIEW
     else if (view%is_external()) then
-       state = EXTERNAL
+       state = EXTERNALVIEW
     else if (view%is_scalar()) then
-       state = SCALAR
+       state = SCALARVIEW
     else if (view%is_string()) then
-       state = STRING
+       state = STRINGVIEW
     else
        state = NOTYPE
     endif
@@ -47,10 +47,10 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine create_views()
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview) dv_0, dv_1
-    type(databuffer) db_0, db_1
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) dv_0, dv_1
+    type(SidreBuffer) db_0, db_1
 
     call set_case_name("create_views")
 
@@ -71,9 +71,9 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine scalar_view
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview) i0view, i1view, s0view, s1view
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) i0view, i1view, s0view, s1view
     integer(C_INT) i1, i2
     character(80) s1, s2
 
@@ -85,13 +85,13 @@ contains
     i1 = 1
     i0view = root%create_view("i0")
     call i0view%set_scalar(i1)
-    call check_scalar_values(i0view, SCALAR, .true., .true., .true., SIDRE_INT_ID, 1)
+    call check_scalar_values(i0view, SCALARVIEW, .true., .true., .true., SIDRE_INT_ID, 1)
     i2 = i0view%get_data_int()
     call assert_equals(i1, i2)
 
     i1 = 2
     i1view = root%create_view_scalar("i1", i1)
-    call check_scalar_values(i1view, SCALAR, .true., .true., .true., SIDRE_INT_ID, 1)
+    call check_scalar_values(i1view, SCALARVIEW, .true., .true., .true., SIDRE_INT_ID, 1)
     i2 = i1view%get_data_int()
     call assert_equals(i1, i2)
 
@@ -99,14 +99,14 @@ contains
     s1 = "i am a string"
     s0view = root%create_view("s0")
     call s0view%set_string(trim(s1))
-    call check_scalar_values(s0view, STRING, .true., .true., .true., &
+    call check_scalar_values(s0view, STRINGVIEW, .true., .true., .true., &
          SIDRE_CHAR8_STR_ID, len_trim(s1) + 1)
     call s0view%get_string(s2)
     call assert_equals(s1, s2)
 
     s1 = "i too am a string"
     s1view = root%create_view_string("s1", trim(s1))
-    call check_scalar_values(s1view, STRING, .true., .true., .true., &
+    call check_scalar_values(s1view, STRINGVIEW, .true., .true., .true., &
          SIDRE_CHAR8_STR_ID, len_trim(s1) + 1)
     call s1view%get_string(s2)
     call assert_equals(s1, s2)
@@ -120,7 +120,7 @@ contains
 !  call s0view%allocate()
 !  call s0view%deallocate()
 
-!type(dataview) empty
+!type(SidreView) empty
 !empty = root%create_view("empty")
 !#if 0
 !  try
@@ -156,7 +156,7 @@ contains
       subroutine check_scalar_values(view, state, is_described, is_allocated, &
            is_applied, type, length)
 
-        type(dataview), intent(IN) :: view
+        type(SidreView), intent(IN) :: view
         integer, intent(IN) :: state
         logical, intent(IN) :: is_described, is_allocated, is_applied
         integer, intent(IN) :: type
@@ -183,11 +183,11 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine int_buffer_from_view()
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview) dv
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) dv
     integer(C_INT), pointer :: data(:)
-    integer i
+    integer(C_INT) i
     integer int_size, elem_count
 
     int_size = c_sizeof(i)
@@ -218,9 +218,9 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine int_buffer_from_view_conduit_value()
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview) dv
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) dv
     integer(C_INT), pointer :: data(:)
     integer i
 
@@ -238,17 +238,17 @@ contains
 
     call dv%print()
 
-!--    EXPECT_EQ(ATK_dataview_get_total_bytes(dv), sizeof(int) * 10)
+!--    EXPECT_EQ(SIDRE_view_get_total_bytes(dv), sizeof(int) * 10)
     call ds%delete()
   end subroutine int_buffer_from_view_conduit_value
 
 !------------------------------------------------------------------------------
 
   subroutine int_array_multi_view()
-    type(datastore) ds
-    type(datagroup) root
-    type(databuffer) dbuff
-    type(dataview) dv_e, dv_o 
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreBuffer) dbuff
+    type(SidreView) dv_e, dv_o 
     type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
     integer i
@@ -308,10 +308,10 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine init_int_array_multi_view()
-    type(datastore) ds
-    type(datagroup) root
-    type(databuffer) dbuff
-    type(dataview) dv_e, dv_o 
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreBuffer) dbuff
+    type(SidreView) dv_e, dv_o 
     type(C_PTR) data_ptr
     integer, pointer :: data(:)
     integer i
@@ -375,13 +375,13 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine int_array_depth_view()
-    type(datastore) ds
-    type(datagroup) root
-    type(databuffer) dbuff
-    type(dataview) view0
-    type(dataview) view1
-    type(dataview) view2
-    type(dataview) view3
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreBuffer) dbuff
+    type(SidreView) view0
+    type(SidreView) view1
+    type(SidreView) view2
+    type(SidreView) view3
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
@@ -456,11 +456,11 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine int_array_view_attach_buffer()
-    type(datastore) ds
-    type(datagroup) root
-    type(databuffer) dbuff
-    type(dataview) field0
-    type(dataview) field1
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreBuffer) dbuff
+    type(SidreView) field0
+    type(SidreView) field1
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
@@ -541,14 +541,14 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine int_array_offset_stride()
-    type(datastore) ds
-    type(datagroup) root, other
-    type(databuffer) dbuff
-    type(dataview) field0, view1, view2, view3
+    type(SidreDataStore) ds
+    type(SidreGroup) root, other
+    type(SidreBuffer) dbuff
+    type(SidreView) field0, view1, view2, view3
 
     real(C_DOUBLE), pointer :: data(:)
     type(C_PTR) data_ptr
-    integer i
+    integer(C_INT) i
     integer(C_LONG) field_nelems
     integer(C_LONG) v1_nelems, v1_stride, v1_offset
     integer(C_LONG) v2_nelems, v2_stride, v2_offset
@@ -681,9 +681,9 @@ contains
      ! after this we use the old buffers to copy the values
      ! into the new views
      !
-    type(datastore) ds
-    type(datagroup) root, r_old
-    type(dataview) base_old
+    type(SidreDataStore) ds
+    type(SidreGroup) root, r_old
+    type(SidreView) base_old
     integer(C_INT), pointer :: data(:)
     integer i
 
@@ -713,12 +713,12 @@ contains
 
 !--#ifdef XXX
 !--  ! setup our 4 views
-!--  ATK_databuffer * buff_old = ATK_dataview_get_buffer(base_old)
+!--  SIDRE_buffer * buff_old = SIDRE_view_get_buffer(base_old)
 !--  call buff_old%print()
-!--  ATK_dataview * r0_old = ATK_dataview_create_view(r_old, "r0",buff_old)
-!--  ATK_dataview * r1_old = ATK_dataview_create_view(r_old, "r1",buff_old)
-!--  ATK_dataview * r2_old = ATK_dataview_create_view(r_old, "r2",buff_old)
-!--  ATK_dataview * r3_old = ATK_dataview_create_view(r_old, "r3",buff_old)
+!--  SIDRE_view * r0_old = SIDRE_view_create_view(r_old, "r0",buff_old)
+!--  SIDRE_view * r1_old = SIDRE_view_create_view(r_old, "r1",buff_old)
+!--  SIDRE_view * r2_old = SIDRE_view_create_view(r_old, "r2",buff_old)
+!--  SIDRE_view * r3_old = SIDRE_view_create_view(r_old, "r3",buff_old)
 !--
 !--  ! each view is offset by 10 * the # of bytes in a uint32
 !--  ! uint32(num_elems, offset)
@@ -753,27 +753,27 @@ contains
 !--  }
 !--
 !--  ! create a group to hold the "old" or data we want to copy into
-!--  ATK_datagroup * r_new = ATK_datagroup_create_group(root, "r_new")
+!--  SIDRE_group * r_new = SIDRE_group_create_group(root, "r_new")
 !--  ! create a view to hold the base buffer
-!--  ATK_dataview * base_new = ATK_datagroup_create_view_and_buffer(r_new, "base_data")
+!--  SIDRE_view * base_new = SIDRE_group_create_view_and_buffer(r_new, "base_data")
 !--
 !--  ! alloc our buffer
 !--  ! create a buffer to hold larger subarrays
 !--  base_new->allocate(base_new, DataType::uint32(4 * 12))
-!--  int* base_new_data = (int *) ATK_databuffer_det_data(base_new)
+!--  int* base_new_data = (int *) SIDRE_buffer_det_data(base_new)
 !--  for (int i = 0 i < 4 * 12 ++i) 
 !--  {
 !--     base_new_data[i] = 0
 !--  } 
 !--
-!--  ATK_databuffer * buff_new = ATK_dataview_get_buffer(base_new)
+!--  SIDRE_buffer * buff_new = SIDRE_view_get_buffer(base_new)
 !--  call buff_new%print()
 !--
 !--  ! create the 4 sub views of this array
-!--  ATK_dataview * r0_new = ATK_datagroup_create_view(r_new, "r0",buff_new)
-!--  ATK_dataview * r1_new = ATK_datagroup_create_view(r_new, "r1",buff_new)
-!--  ATK_dataview * r2_new = ATK_datagroup_create_view(r_new, "r2",buff_new)
-!--  ATK_dataview * r3_new = ATK_datagroup_create_view(r_new, "r3",buff_new)
+!--  SIDRE_view * r0_new = SIDRE_group_create_view(r_new, "r0",buff_new)
+!--  SIDRE_view * r1_new = SIDRE_group_create_view(r_new, "r1",buff_new)
+!--  SIDRE_view * r2_new = SIDRE_group_create_view(r_new, "r2",buff_new)
+!--  SIDRE_view * r3_new = SIDRE_group_create_view(r_new, "r3",buff_new)
 !--
 !--  ! apply views to r0,r1,r2,r3
 !--  ! each view is offset by 12 * the # of bytes in a uint32
@@ -802,7 +802,7 @@ contains
 !--
 !--
 !--  ! check pointer values
-!--  int * r2_new_ptr = (int *) ATK_dataview_get_data_pointer(r2_new)
+!--  int * r2_new_ptr = (int *) SIDRE_view_get_data_pointer(r2_new)
 !--
 !--  for(int i=0  i<10  i++)
 !--  {
@@ -834,9 +834,9 @@ contains
     !
     ! info
     !
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview) a1, a2
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) a1, a2
 !    type(C_PTR) a1_ptr, a2_ptr
     real(C_FLOAT), pointer :: a1_data(:)
     integer(C_INT), pointer :: a2_data(:)
@@ -862,8 +862,8 @@ contains
     call assert_true(size(a2_data) == 5, &
          "a2_data is incorrect size")
 
-!--  EXPECT_EQ(ATK_dataview_get_total_bytes(a1), sizeof(float)*5)
-!--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*5)
+!--  EXPECT_EQ(SIDRE_view_get_total_bytes(a1), sizeof(float)*5)
+!--  EXPECT_EQ(SIDRE_view_get_total_bytes(a2), sizeof(int)*5)
 
     a1_data(1:5) =  5.0
     a2_data(1:5) = -5
@@ -889,8 +889,8 @@ contains
 
     a2_data(11:15) = -15
 
-!--  EXPECT_EQ(ATK_dataview_get_total_bytes(a1), sizeof(float)*10)
-!--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*15)
+!--  EXPECT_EQ(SIDRE_view_get_total_bytes(a1), sizeof(float)*10)
+!--  EXPECT_EQ(SIDRE_view_get_total_bytes(a2), sizeof(int)*15)
 
     call ds%print()
     call ds%delete()
@@ -900,9 +900,9 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine simple_opaque()
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview) opq_view
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) opq_view
     integer(C_INT), target :: src_data
     integer(C_INT), pointer :: out_data
     type(C_PTR) src_ptr, opq_ptr

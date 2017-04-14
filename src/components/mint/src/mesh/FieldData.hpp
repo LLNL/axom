@@ -11,7 +11,7 @@
 #ifndef FIELDDATA_HPP_
 #define FIELDDATA_HPP_
 
-#include "common/ATKMacros.hpp"
+#include "axom/Macros.hpp"
 
 // C/C++ includes
 #include <map>
@@ -78,7 +78,7 @@ public:
    * \param [in] i the index of the field in query.
    * \return f pointer to the field in query.
    * \pre i >= 0 && i < this->getNumberOfFields()
-   * \post f==ATK_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
+   * \post f==AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
    ****************************************************************************
    */
   Field* getField( int i );
@@ -89,7 +89,7 @@ public:
    * \param [in] name the name of the field in query.
    * \return f pointer to the field in query.
    * \pre this->hasField( name )==true.
-   * \post f==ATK_NULLPTR \iff this->hasField( name )==false.
+   * \post f==AXOM_NULLPTR \iff this->hasField( name )==false.
    ***************************************************************************
    */
   Field* getField( const std::string& name );

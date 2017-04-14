@@ -20,7 +20,7 @@ set("CMAKE_C_COMPILER" "/usr/apps/gnu/4.7.1/bin/gcc" CACHE PATH "")
 set("CMAKE_CXX_COMPILER" "/usr/apps/gnu/4.7.1/bin/g++" CACHE PATH "")
 
 # fortran compiler used by spack
-set("ENABLE_FORTRAN" "OFF" CACHE PATH "")
+set("ENABLE_FORTRAN" "ON" CACHE PATH "")
 
 set("CMAKE_Fortran_COMPILER" "/usr/apps/gnu/4.7.1/bin/gfortran" CACHE PATH "")
 
@@ -29,9 +29,6 @@ set("HDF5_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_06_14_5
 
 # conduit from uberenv
 set("CONDUIT_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_06_14_56_50/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.7.1/conduit-0.2.1-3j42b5cmds7mv3nkrhra2m7uprclz5id" CACHE PATH "")
-
-# sparsehash headers from uberenv
-set("SPARSEHASH_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_06_14_56_50/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.7.1/sparsehash-headers-2.0.2-ebexhuxsncs6fbkmof6djiv3d26rclik" CACHE PATH "")
 
 # boost headers from uberenv
 set("BOOST_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_06_14_56_50/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.7.1/boost-headers-1.58.0-zhkwg3db5a6xbucdytnjq3my52l5jlwu" CACHE PATH "")

@@ -10,8 +10,8 @@
 
 #include "mint/Mesh.hpp"
 
-// ATK includes
-#include "common/CommonTypes.hpp"
+// axom includes
+#include "axom/Types.hpp"
 #include "mint/FieldData.hpp"
 
 // C/C++ includes
@@ -46,15 +46,15 @@ Mesh::~Mesh()
 {
   m_node_data->clear();
   delete m_node_data;
-  m_node_data = ATK_NULLPTR;
+  m_node_data = AXOM_NULLPTR;
 
   m_cell_data->clear();
   delete m_cell_data;
-  m_cell_data = ATK_NULLPTR;
+  m_cell_data = AXOM_NULLPTR;
 
   m_face_data->clear();
   delete m_face_data;
-  m_face_data = ATK_NULLPTR;
+  m_face_data = AXOM_NULLPTR;
 }
 
 } /* namespace mint */

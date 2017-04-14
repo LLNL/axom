@@ -22,8 +22,8 @@
 
 #include <vector>
 
-#include "common/ATKMacros.hpp"
-#include "common/StringUtilities.hpp"
+#include "axom/Macros.hpp"
+#include "axom_utils/StringUtilities.hpp"
 
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 #include "lumberjack/Lumberjack.hpp"
@@ -53,7 +53,7 @@ LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm,
 
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream(std::ostream* stream,
-                                   asctoolkit::lumberjack::Lumberjack* lj):
+                                   axom::lumberjack::Lumberjack* lj):
   m_lj( lj ),
   m_isLJOwnedBySLIC( false ),
   m_stream( stream )
@@ -61,7 +61,7 @@ LumberjackStream::LumberjackStream(std::ostream* stream,
 
 //------------------------------------------------------------------------------
 LumberjackStream::LumberjackStream( std::ostream* stream,
-                                    asctoolkit::lumberjack::Lumberjack* lj,
+                                    axom::lumberjack::Lumberjack* lj,
                                     const std::string& format ):
   m_lj( lj ),
   m_isLJOwnedBySLIC( false ),
@@ -84,9 +84,9 @@ void LumberjackStream::append( message::Level msgLevel,
                                const std::string& tagName,
                                const std::string& fileName,
                                int line,
-                               bool ATK_NOT_USED(filter_duplicates) )
+                               bool AXOM_NOT_USED(filter_duplicates) )
 {
-  if ( m_lj == ATK_NULLPTR ) {
+  if ( m_lj == AXOM_NULLPTR ) {
     std::cerr <<
       "ERROR: NULL Lumberjack instance in LumberjackStream::append!\n";
     return;
@@ -98,7 +98,7 @@ void LumberjackStream::append( message::Level msgLevel,
 //------------------------------------------------------------------------------
 void LumberjackStream::flush()
 {
-  if ( m_lj == ATK_NULLPTR ) {
+  if ( m_lj == AXOM_NULLPTR ) {
     std::cerr <<
       "ERROR: NULL Lumberjack instance in LumberjackStream::flush!\n";
     return;
@@ -111,7 +111,7 @@ void LumberjackStream::flush()
 //------------------------------------------------------------------------------
 void LumberjackStream::push()
 {
-  if ( m_lj == ATK_NULLPTR ) {
+  if ( m_lj == AXOM_NULLPTR ) {
     std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::push!\n";
     return;
   }
@@ -122,7 +122,7 @@ void LumberjackStream::push()
 //------------------------------------------------------------------------------
 void LumberjackStream::write()
 {
-  if ( m_lj == ATK_NULLPTR ) {
+  if ( m_lj == AXOM_NULLPTR ) {
     std::cerr <<
       "ERROR: NULL Lumberjack instance in LumberjackStream::write!\n";
     return;
@@ -130,7 +130,7 @@ void LumberjackStream::write()
 
   if ( m_lj->isOutputNode() ) {
 
-    std::vector< asctoolkit::lumberjack::Message* > messages =
+    std::vector< axom::lumberjack::Message* > messages =
       m_lj->getMessages();
 
     const int nmessages = static_cast< int >( messages.size() );
@@ -153,9 +153,9 @@ void LumberjackStream::write()
 //------------------------------------------------------------------------------
 void LumberjackStream::initializeLumberjack( MPI_Comm comm, int ranksLimit )
 {
-  m_ljComm = new asctoolkit::lumberjack::BinaryTreeCommunicator;
+  m_ljComm = new axom::lumberjack::BinaryTreeCommunicator;
   m_ljComm->initialize(comm, ranksLimit);
-  m_lj = new asctoolkit::lumberjack::Lumberjack;
+  m_lj = new axom::lumberjack::Lumberjack;
   m_lj->initialize(m_ljComm, ranksLimit);
   m_isLJOwnedBySLIC = true;
 }

@@ -33,6 +33,7 @@ set( primal_headers
 
      ## spatial acceleration
      spatial_acceleration/BVHTree.hpp
+     spatial_acceleration/UniformGrid.hpp
    )
 
 ## NOTE: dummy source since BLT does not support header only libraries
@@ -45,5 +46,5 @@ blt_add_library(
     HEADERS               ${primal_headers}
     SOURCES               ${primal_sources}
     HEADERS_OUTPUT_SUBDIR primal
-    DEPENDS_ON            common slic
+    DEPENDS_ON            axom_utils slic
     )

@@ -81,7 +81,7 @@ public:
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
-   * \pre coordinates != ATK_NULLPTR.
+   * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
    *****************************************************************************
    */
@@ -179,21 +179,21 @@ namespace mint {
 
 inline void UniformMesh::getOrigin( double origin[3] ) const
 {
-  SLIC_ASSERT( origin != ATK_NULLPTR );
+  SLIC_ASSERT( origin != AXOM_NULLPTR );
   memcpy( origin, m_origin, 3*sizeof(double) );
 }
 
 //------------------------------------------------------------------------------
 inline void UniformMesh::getSpacing( double h[3] ) const
 {
-  SLIC_ASSERT( h != ATK_NULLPTR );
+  SLIC_ASSERT( h != AXOM_NULLPTR );
   memcpy( h, m_h, 3*sizeof(double) );
 }
 
 //------------------------------------------------------------------------------
 inline void UniformMesh::getNode(int nodeIdx, double* coordinates) const
 {
-  SLIC_ASSERT(  coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
 
   int ijk[3];
@@ -208,7 +208,7 @@ inline void UniformMesh::getNode(int nodeIdx, double* coordinates) const
 //------------------------------------------------------------------------------
 inline void UniformMesh::getNode( int i, int j, double* coordinates ) const
 {
-  SLIC_ASSERT(  coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  this->getDimension()==2 );
 
   int ijk[2] = { i, j };
@@ -222,7 +222,7 @@ inline void UniformMesh::getNode( int i, int j, double* coordinates ) const
 inline
 void UniformMesh::getNode(int i, int j, int k, double* coordinates) const
 {
-  SLIC_ASSERT(  coordinates !=  ATK_NULLPTR );
+  SLIC_ASSERT(  coordinates !=  AXOM_NULLPTR );
   SLIC_ASSERT(  this->getDimension()==3 );
 
   int ijk[3] = { i, j, k };

@@ -11,7 +11,7 @@
 #include "Field.hpp"
 
 #include "mint/FieldTypes.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Types.hpp"
 
 #include <cstddef>
 
@@ -43,13 +43,13 @@ Field::~Field()
 //------------------------------------------------------------------------------
 double* Field::getDoublePtr()
 {
-  return ATK_NULLPTR;
+  return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
 int* Field::getIntPtr()
 {
-  return ATK_NULLPTR;
+  return AXOM_NULLPTR;
 }
 
 } /* namespace mint */

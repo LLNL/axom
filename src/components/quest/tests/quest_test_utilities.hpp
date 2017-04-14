@@ -24,7 +24,8 @@ using axom::primal::Triangle;
  * We may later decide to move some of these into the actual component if they are deemed useful.
  */
 
-namespace quest {
+namespace axom {  
+namespace quest  {
 namespace utilities {
 
 
@@ -172,7 +173,7 @@ axom::mint::Mesh*  make_octahedron_mesh()
  */
 void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 {
-  SLIC_ASSERT( mesh != ATK_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   std::ofstream ofs;
   ofs.open( fileName.c_str() );
@@ -245,7 +246,7 @@ void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
       if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
 
           double* dataPtr = field->getDoublePtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "double\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -256,7 +257,7 @@ void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
       } else {
 
           int* dataPtr = field->getIntPtr();
-          SLIC_ASSERT( dataPtr != ATK_NULLPTR );
+          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
 
           ofs << "int\n";
           ofs << "LOOKUP_TABLE default\n";
@@ -307,8 +308,9 @@ void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
 
 
 
-}   // end namespace utilities
-}   // end namespace quest
+} // end namespace utilities
+} // end namespace quest 
+} // end namespace axom 
 
 
 #endif // QUEST_TEST_UTILITIES_HPP_

@@ -27,9 +27,9 @@
 using axom::slic::UnitTestLogger;
 
 
-typedef asctoolkit::slam::RangeSet    SetType;
-typedef asctoolkit::slam::Map<int>    IntMap;
-typedef asctoolkit::slam::Map<double> RealMap;
+typedef axom::slam::RangeSet    SetType;
+typedef axom::slam::Map<int>    IntMap;
+typedef axom::slam::Map<double> RealMap;
 
 typedef SetType::PositionType         PositionType;
 typedef SetType::ElementType          ElementType;
@@ -53,8 +53,8 @@ bool constructAndTestMap()
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO("\nCreating " << asctoolkit::slam::util::TypeToString<T>::to_string() << " map on the set ");
-  asctoolkit::slam::Map<T> m(&s);
+  SLIC_INFO("\nCreating " << axom::slam::util::TypeToString<T>::to_string() << " map on the set ");
+  axom::slam::Map<T> m(&s);
   EXPECT_TRUE(m.isValid());
 
   SLIC_INFO( "\nSetting the elements.");
@@ -98,12 +98,12 @@ TEST(gtest_slam_map,out_of_bounds)
 
   // Test out of bounds
   SLIC_INFO("Testing Map element access -- out of bounds access; Expecting the test to fail");
-  #ifdef ATK_DEBUG
+  #ifdef AXOM_DEBUG
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( m[-1],      "") << " Accessed element -1 of Map -- out of bounds";
-  ASSERT_DEATH( m[m.size()],"") << " Accessed element " << m.size() << " of Map -- out of bounds";
+  EXPECT_DEATH_IF_SUPPORTED( m[-1],      "") << " Accessed element -1 of Map -- out of bounds";
+  EXPECT_DEATH_IF_SUPPORTED( m[m.size()],"") << " Accessed element " << m.size() << " of Map -- out of bounds";
 
   #else
   SLIC_INFO("Skipped assertion failure check in release mode.");

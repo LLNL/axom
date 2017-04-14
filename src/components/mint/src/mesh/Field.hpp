@@ -11,8 +11,8 @@
 #ifndef FIELD_HPP_
 #define FIELD_HPP_
 
-// ATK includes
-#include "common/ATKMacros.hpp" // for DISABLE_COPY_AND_ASSIGNMENT
+// axom includes
+#include "axom/Macros.hpp" // for DISABLE_COPY_AND_ASSIGNMENT
 
 // C/C++ includes
 #include <string>
@@ -72,7 +72,7 @@ public:
    *****************************************************************************
    * \brief Returns a double pointer to the field data.
    * \return ptr pointer to the field data.
-   * \post ptr==ATK_NULLPTR iff the data is not of type double.
+   * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    *****************************************************************************
    */
   virtual double* getDoublePtr();
@@ -81,7 +81,7 @@ public:
    *****************************************************************************
    * \brief Returns an int pointer to the field data.
    * \return ptr pointer to the field data.
-   * \post ptr==ATK_NULLPTR iff the is not an integer type.
+   * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    *****************************************************************************
    */
   virtual int* getIntPtr();

@@ -8,8 +8,6 @@
 # review from Lawrence Livermore National Laboratory.
 #-------------------------------------------------------------------------------
 
-configure_file(config.hpp.in "${HEADER_INCLUDES_DIRECTORY}/lumberjack/config.hpp")
-
 #
 # Specify all headers
 #
@@ -48,5 +46,5 @@ blt_add_library( NAME
                  HEADERS_OUTPUT_SUBDIR
                      lumberjack
                  DEPENDS_ON
-                     common
+                     axom_utils
                  )

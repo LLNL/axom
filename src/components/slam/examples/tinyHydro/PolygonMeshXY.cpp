@@ -12,7 +12,7 @@
 
 #include "PolygonMeshXY.hpp"
 
-#include "common/Timer.hpp"
+#include "axom_utils/Timer.hpp"
 #include "slic/slic.hpp"
 
 #include <sstream>
@@ -146,7 +146,7 @@ namespace tinyHydro {
   {
     VectorXY ret;
 
-    asctoolkit::utilities::Timer timer;
+    axom::utilities::Timer timer;
 
     timer.start();
 

@@ -15,8 +15,8 @@ using axom::primal::BoundingBox;
 using axom::primal::Point;
 using axom::primal::Vector;
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
 
 
@@ -40,7 +40,7 @@ public:
 
     typedef typename BaseOctree::BlockIndex BlockIndex;
 
-    typedef asctoolkit::slam::Map<SpaceVector> SpaceVectorLevelMap;
+    typedef axom::slam::Map<SpaceVector> SpaceVectorLevelMap;
 
 public:
     /**
@@ -196,6 +196,7 @@ protected:
 };
 
 
-} // end namespace quest
+} // end namespace quest 
+} // end namespace axom 
 
 #endif  // SPATIAL_OCTREE__HXX_

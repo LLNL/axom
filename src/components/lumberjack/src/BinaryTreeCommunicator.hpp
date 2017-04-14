@@ -27,7 +27,7 @@
 #include "lumberjack/Communicator.hpp"
 #include "lumberjack/Message.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace lumberjack {
 
 /*!
@@ -145,6 +145,6 @@ class BinaryTreeCommunicator: public Communicator {
 };
 
 } // end namespace lumberjack
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif

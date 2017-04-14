@@ -22,7 +22,7 @@
 #define LOGSTREAM_HPP_
 
 #include "slic/MessageLevel.h"
-#include "common/ATKMacros.hpp"
+#include "axom/Macros.hpp"
 
 /// \name Wildcards
 /// @{

@@ -23,8 +23,8 @@
 
 #include "slic/LogStream.hpp"
 
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp" // for ATK_NULLPTR
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp" // for AXOM_NULLPTR
 
 // C/C++ includes
 #include <iostream> // for ostream
@@ -91,7 +91,7 @@ private:
    * \note Made private to prevent applications from using it.
    *****************************************************************************
    */
-  GenericOutputStream(): m_stream( static_cast< std::ostream* >( ATK_NULLPTR ) )
+  GenericOutputStream(): m_stream( static_cast< std::ostream* >( AXOM_NULLPTR ) )
   {};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);

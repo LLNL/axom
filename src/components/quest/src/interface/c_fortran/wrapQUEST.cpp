@@ -15,6 +15,7 @@
 #include "quest/quest.hpp"
 
 extern "C" {
+namespace axom {
 namespace quest {
 
 void QUEST_initialize(MPI_Fint comm, const char * fileName, bool requiresDistance, int ndims, int maxElements, int maxLevels)
@@ -46,16 +47,16 @@ void QUEST_finalize()
 double QUEST_distance(double x, double y, double z)
 {
 // splicer begin function.distance
-    double rv = distance(x, y, z);
-    return rv;
+    double SH_rv = distance(x, y, z);
+    return SH_rv;
 // splicer end function.distance
 }
 
 int QUEST_inside(double x, double y, double z)
 {
 // splicer begin function.inside
-    int rv = inside(x, y, z);
-    return rv;
+    int SH_rv = inside(x, y, z);
+    return SH_rv;
 // splicer end function.inside
 }
 
@@ -86,5 +87,6 @@ void QUEST_mesh_center_of_mass(double * coords)
 // splicer begin additional_functions
 // splicer end additional_functions
 
+}  // namespace axom
 }  // namespace quest
 }  // extern "C"

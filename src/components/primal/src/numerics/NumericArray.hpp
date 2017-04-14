@@ -11,7 +11,7 @@
 #ifndef NUMERIC_ARRAY_HPP_
 #define NUMERIC_ARRAY_HPP_
 
-#include "common/ATKMacros.hpp"
+#include "axom/Macros.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
@@ -448,7 +448,7 @@ public:
   int argMin() const;
 
 private:
-  void verifyIndex(int ATK_DEBUG_PARAM(idx)) const
+  void verifyIndex(int AXOM_DEBUG_PARAM(idx)) const
   {
     SLIC_ASSERT(idx >= 0 && idx < SIZE);
   }
@@ -552,7 +552,7 @@ inline T* NumericArray< T,SIZE >::data()
 template < typename T,int SIZE >
 void NumericArray< T,SIZE >::to_array(T* arr) const
 {
-  SLIC_ASSERT( arr != ATK_NULLPTR);
+  SLIC_ASSERT( arr != AXOM_NULLPTR);
   memcpy( arr, m_components, NBYTES );
 }
 

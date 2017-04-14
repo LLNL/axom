@@ -18,8 +18,8 @@
 #ifndef UNITTESTLOGGER_HPP_
 #define UNITTESTLOGGER_HPP_
 
-// Other CS Toolkit headers
-#include "common/config.hpp"    // defines ATK_USE_CXX11
+// Other axom headers
+#include "axom/Macros.hpp"    // defines DISABLE_{COPY,MOVE}_AND_ASSIGNMENT
 
 // slic component headers
 #include "slic.hpp"
@@ -32,7 +32,8 @@ namespace slic {
  * \class UnitTestLogger
  *
  * \brief UnitTestLogger is a simple wrapper around the initialization and
- * finalize operations of the slic::Logger class for CS Toolkit unit tests.
+ * finalize operations of the slic::Logger class that is helpful for
+ * unit tests and simple applications in axom.
  *
  * To use, create an instance of of this class before tests are run. This
  * initializes the slic logger. When the object is destroyed (e.g., goes out

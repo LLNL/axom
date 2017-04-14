@@ -15,7 +15,7 @@
 #include <iostream>
 #include <iterator>
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 
   DynamicVariableRelation::DynamicVariableRelation (Set* fromSet, Set* toSet)
@@ -129,4 +129,4 @@ namespace slam {
   }
 
 } // namespace slam
-} // namespace asctoolkit
+} // namespace axom

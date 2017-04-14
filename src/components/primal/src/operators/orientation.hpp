@@ -28,7 +28,7 @@
 
 #include "slic/slic.hpp"
 
-#include "common/Utilities.hpp"
+#include "axom_utils/Utilities.hpp"
 
 namespace axom {
 namespace primal {
@@ -71,7 +71,7 @@ int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
 
   int orient = -1;
 
-  if ( asctoolkit::utilities::isNearlyEqual( det, 0.0, 1.0e-9 ) ) {
+  if ( axom::utilities::isNearlyEqual( det, 0.0, 1.0e-9 ) ) {
 
     orient = ON_BOUNDARY;
 
@@ -123,7 +123,7 @@ int orientation( const Point< T,2 >& p, const Segment< T,2 >& seg )
 
   int orient = -1;
 
-  if ( asctoolkit::utilities::isNearlyEqual( det, 0.0 ) ) {
+  if ( axom::utilities::isNearlyEqual( det, 0.0 ) ) {
 
     // collinear
     orient = ON_BOUNDARY;

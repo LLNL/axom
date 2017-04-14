@@ -420,7 +420,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
             is_const = None
         # return value
         fmt.rv_decl = self.std_c_decl(
-            'cpp_type', result, name=fmt.rv, const=is_const)
+            'cpp_type', result, name=fmt.LUA_result, const=is_const)
 
         LUA_decl = []  # declare variables and pop values
         LUA_code = []  # call C++ function
@@ -450,10 +450,12 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
         # Only process nargs.
         # Each variation of default-arguments produces a new call.
         fmt_arg = util.Options(fmt)
-        fmt_arg.LUA_index = 1
+        LUA_index = 1
         for iarg in range(luafcn.nargs):
             arg = node['args'][iarg]
             arg_name = arg['name']
+            fmt_arg = arg.setdefault('fmtl', util.Options(fmt))
+            fmt_arg.LUA_index = LUA_index
             fmt_arg.c_var = arg['name']
             fmt_arg.cpp_var = fmt_arg.c_var
             fmt_arg.lua_var = 'SH_Lua_' + fmt_arg.c_var
@@ -471,7 +473,7 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
                 # lua_pop is a C++ expression
                 fmt_arg.c_var = wformat(arg_typedef.LUA_pop, fmt_arg)
                 lua_pop = wformat(arg_typedef.c_to_cpp, fmt_arg)
-                fmt_arg.LUA_index += 1
+                LUA_index += 1
 
             if attrs['intent'] in ['inout', 'out']:
                 # output variable must be a pointer
@@ -552,14 +554,14 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 
 #        if 'LUA_error_pattern' in node:
 #            lfmt = util.Options(fmt)
-#            lfmt.c_var = fmt.rv
-#            lfmt.cpp_var = fmt.rv
+#            lfmt.c_var = fmt.LUA_result
+#            lfmt.cpp_var = fmt.LUA_result
 #            append_format(LUA_code,
 #                 self.patterns[node['PY_error_pattern']], lfmt)
 
         # Compute return value
         if CPP_subprogram == 'function' and not is_ctor:
-            fmt.cpp_var = fmt.rv
+            fmt.cpp_var = fmt.LUA_result
             fmt.c_var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
             fmt.LUA_used_param_state = True
             tmp = wformat(result_typedef.LUA_push, fmt)

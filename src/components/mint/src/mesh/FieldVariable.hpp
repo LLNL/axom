@@ -13,9 +13,9 @@
 
 #include "mint/Field.hpp" // Base class
 
-// ATK includes
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp"
+// axom includes
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 #include "mint/FieldTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -53,7 +53,7 @@ public:
    ****************************************************************************
    * \brief Returns a double pointer to the field data.
    * \return ptr pointer to the field data of type double.
-   * \post ptr==ATK_NULLPTR iff the data is not of type double.
+   * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    ****************************************************************************
    */
   virtual double* getDoublePtr();
@@ -62,7 +62,7 @@ public:
    ****************************************************************************
    * \brief Returns an integer pointer to the field data.
    * \return ptr pointer to the field data of type int.
-   * \post ptr==ATK_NULLPTR iff the data is not of type int.
+   * \post ptr==AXOM_NULLPTR iff the data is not of type int.
    ****************************************************************************
    */
   virtual int* getIntPtr();
@@ -77,7 +77,7 @@ private:
    *  its use in application code.
    ****************************************************************************
    */
-  FieldVariable() { m_data=ATK_NULLPTR; };
+  FieldVariable() { m_data=AXOM_NULLPTR; };
 
   DISABLE_COPY_AND_ASSIGNMENT(FieldVariable);
   DISABLE_MOVE_AND_ASSIGNMENT(FieldVariable);
@@ -108,9 +108,9 @@ FieldVariable< FieldType >::FieldVariable(
 template < typename FieldType >
 FieldVariable< FieldType >::~FieldVariable( )
 {
-  if ( m_data != ATK_NULLPTR ) {
+  if ( m_data != AXOM_NULLPTR ) {
     delete [] m_data;
-    m_data = ATK_NULLPTR;
+    m_data = AXOM_NULLPTR;
   }
 }
 
@@ -121,7 +121,7 @@ double* FieldVariable< FieldType >::getDoublePtr()
   if ( m_type == DOUBLE_FIELD_TYPE ) {
     return reinterpret_cast< double* >( m_data );
   }
-  return ATK_NULLPTR;
+  return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
@@ -131,7 +131,7 @@ int* FieldVariable< FieldType >::getIntPtr()
   if ( m_type == INTEGER_FIELD_TYPE ) {
     return reinterpret_cast< int* >( m_data );
   }
-  return ATK_NULLPTR;
+  return AXOM_NULLPTR;
 }
 
 } /* namespace mint */

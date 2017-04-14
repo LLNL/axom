@@ -54,6 +54,7 @@ set( BLT_SMOKE_TESTS
         compiler_flag_unused_var.cpp
         compiler_flag_omp_pragma.cpp
         compiler_flag_strict_aliasing.cpp
+        compiler_flag_unused_local_typedef.cpp
         )
 if (ENABLE_FORTRAN)                    
     list(APPEND BLT_SMOKE_TESTS compiler_flag_fortran_preprocessor.F)
@@ -77,19 +78,21 @@ endforeach()
 set( ADDL_SMOKE_FLAGS "${BLT_WARNINGS_AS_ERRORS_FLAG} ${BLT_ENABLE_ALL_WARNINGS_FLAG}")
 
 set_target_properties(compiler_flag_uninitialized 
-    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNINITIALIZED_WARNINGS}")
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${AXOM_DISABLE_UNINITIALIZED_WARNINGS}")
 set_target_properties(compiler_flag_unused_param 
-    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_PARAMETER_WARNINGS}")
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 set_target_properties(compiler_flag_unused_var 
-    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_UNUSED_VARIABLE_WARNINGS}")
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS}")
 set_target_properties(compiler_flag_omp_pragma 
-    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${ATK_DISABLE_OMP_PRAGMA_WARNINGS}")
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
+set_target_properties(compiler_flag_unused_local_typedef 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF}")
     
 # the aliasing test requires optimization, set this up as custom compiler flag
 # in case we need more flexibility for this flag (e.g. for MSVC)
 blt_append_custom_compiler_flag(FLAGS_VAR TMP_OPT_FLAG DEFAULT "-O2")
 set_target_properties(compiler_flag_strict_aliasing 
-    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${TMP_OPT_FLAG} ${ATK_DISABLE_ALIASING_WARNINGS}")
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${TMP_OPT_FLAG} ${AXOM_DISABLE_ALIASING_WARNINGS}")
 
 
 # The following test checks that the C preprocessor is invoked on Fortran files with extension *.F 

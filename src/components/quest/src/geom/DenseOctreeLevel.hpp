@@ -2,15 +2,15 @@
 #define DENSE_OCTREE_LEVEL__HXX_
 
 
-#include "common/config.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/config.hpp"
+#include "axom/Types.hpp"
 
 #include "quest/Brood.hpp"
 #include "quest/OctreeLevel.hpp"
 
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
     /**
      * \class
@@ -102,7 +102,7 @@ namespace quest
             {
                 const self* pother = dynamic_cast<const self*>(other);
 
-                return (pother != ATK_NULLPTR)
+                return (pother != AXOM_NULLPTR)
                      && (m_currentIdx == pother->m_currentIdx)   // iterators are the same
                      && (m_offset == pother->m_offset);               // brood indices are the same
             }
@@ -121,7 +121,7 @@ namespace quest
             if(level < 0)
             {
                 m_broodCapacity = 0;
-                m_data = ATK_NULLPTR;
+                m_data = AXOM_NULLPTR;
             }
             else
             {
@@ -144,10 +144,10 @@ namespace quest
 
         ~DenseOctreeLevel()
         {
-            if(m_data != ATK_NULLPTR)
+            if(m_data != AXOM_NULLPTR)
             {
                 delete [] m_data;
-                m_data = ATK_NULLPTR;
+                m_data = AXOM_NULLPTR;
             }
 
             m_broodCapacity = 0;
@@ -303,6 +303,7 @@ namespace quest
       int m_blockCount;
     };
 
-} // end namespace quest
+} // end namespace quest 
+} // end namespace axom 
 
 #endif  // DENSE_OCTREE_LEVEL__HXX_

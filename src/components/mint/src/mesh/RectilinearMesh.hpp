@@ -14,8 +14,8 @@
 #include "mint/StructuredMesh.hpp"
 #include "mint/MeshCoordinates.hpp"
 
-#include "common/ATKMacros.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/Macros.hpp"
+#include "axom/Types.hpp"
 
 namespace axom {
 namespace mint {
@@ -81,7 +81,7 @@ public:
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
-   * \pre coordinates != ATK_NULLPTR.
+   * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
    *****************************************************************************
    */
@@ -188,7 +188,7 @@ inline void RectilinearMesh::setCoordinate( int idim, int i, double coord )
 //------------------------------------------------------------------------------
 inline void RectilinearMesh::getNode( int nodeIdx, double* coordinates ) const
 {
-  SLIC_ASSERT(  coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
 
   int ijk[3];
@@ -204,7 +204,7 @@ inline void RectilinearMesh::getNode( int nodeIdx, double* coordinates ) const
 //------------------------------------------------------------------------------
 inline void RectilinearMesh::getNode( int i, int j, double* coordinates ) const
 {
-  SLIC_ASSERT(  coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  this->getDimension()==2 );
 
   const double* xc = this->getCoordinateArray( 0 );
@@ -217,7 +217,7 @@ inline void RectilinearMesh::getNode( int i, int j, double* coordinates ) const
 inline void RectilinearMesh::getNode(
   int i, int j, int k, double* coordinates ) const
 {
-  SLIC_ASSERT(  coordinates != ATK_NULLPTR );
+  SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  this->getDimension()==3 );
 
   const double* xc = this->getCoordinateArray( 0 );

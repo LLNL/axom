@@ -15,8 +15,8 @@
 #define OCTREE_LEVEL__HXX_
 
 
-#include "common/config.hpp"
-#include "common/CommonTypes.hpp"
+#include "axom/config.hpp"
+#include "axom/Types.hpp"
 
 #include "slic/slic.hpp"
 
@@ -31,8 +31,8 @@
 using axom::primal::Point;
 using axom::primal::NumericArray;
 
-namespace quest
-{
+namespace axom {  
+namespace quest {
 
     /**
      * \brief Helper enumeration for status of a BlockIndex within an OctreeLevel instance
@@ -195,16 +195,16 @@ namespace quest
         BlockIterator(OctreeLevel* octLevel, bool begin = false)
             : m_octLevel(octLevel)
         {
-            SLIC_ASSERT(octLevel != ATK_NULLPTR);
+            SLIC_ASSERT(octLevel != AXOM_NULLPTR);
             m_iterHelper = octLevel->getIteratorHelper(begin); // factory function
         }
 
         ~BlockIterator()
         {
-            if(m_iterHelper != ATK_NULLPTR)
+            if(m_iterHelper != AXOM_NULLPTR)
             {
                 delete m_iterHelper;
-                m_iterHelper = ATK_NULLPTR;
+                m_iterHelper = AXOM_NULLPTR;
             }
         }
 
@@ -308,5 +308,6 @@ namespace quest
 
 
 } // end namespace quest
+} // end namespace axom 
 
 #endif  // OCTREE_LEVEL__HXX_

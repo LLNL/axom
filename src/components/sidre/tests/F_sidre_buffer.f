@@ -18,8 +18,8 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine create_buffers
-    type(datastore) ds
-    type(databuffer) dbuff_0, dbuff_1, dbuff_3
+    type(SidreDataStore) ds
+    type(SidreBuffer) dbuff_0, dbuff_1, dbuff_3
 
     call set_case_name("create_buffers")
 
@@ -42,11 +42,11 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine alloc_buffer_for_int_array
-    type(datastore) ds
-    type(databuffer) dbuff
+    type(SidreDataStore) ds
+    type(SidreBuffer) dbuff
     type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
-    integer i
+    integer(C_INT) i
     integer int_size, elem_count
 
     int_size = c_sizeof(i)
@@ -80,11 +80,11 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine init_buffer_for_int_array
-    type(datastore) ds
-    type(databuffer) dbuff
+    type(SidreDataStore) ds
+    type(SidreBuffer) dbuff
     type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
-    integer i
+    integer(C_INT) i
     integer int_size, elem_count
 
     int_size = c_sizeof(i)
@@ -118,8 +118,8 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine realloc_buffer
-    type(datastore) ds
-    type(databuffer) dbuff
+    type(SidreDataStore) ds
+    type(SidreBuffer) dbuff
     type(C_PTR) data_ptr
     integer(C_LONG), pointer :: data(:)
     integer i

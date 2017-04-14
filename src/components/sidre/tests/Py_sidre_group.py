@@ -136,11 +136,11 @@ class SidreGroup(unittest.TestCase):
         ds = sidre.DataStore()
         root = ds.getRoot()
 
-#  DataGroup * parent = root->createGroup("parent")
-#  DataView * view1 = parent->createView("view1")
-#  DataView * view2 = parent->createView("view2")
+#  Group * parent = root->createGroup("parent")
+#  View * view1 = parent->createView("view1")
+#  View * view2 = parent->createView("view2")
 #
-#  DataGroup * emptyGroup = root->createGroup("emptyGroup")
+#  Group * emptyGroup = root->createGroup("emptyGroup")
 #
 #  EXPECT_EQ(parent->getNumViews(), 2u)
 #
@@ -230,20 +230,20 @@ class SidreGroup(unittest.TestCase):
 
 #  // try api call that specifies specific type and length
 #  group->createViewAndAllocate( "viewWithLength1", 
-#                                asctoolkit::sidre::FLOAT_ID, 50 );
+#                                axom::sidre::FLOAT_ID, 50 );
 #
 #  // error condition check - try again with duplicate name, should be a no-op
 #  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1", 
-#                           asctoolkit::sidre::FLOAT64_ID, 50 ) == ATK_NULLPTR );
+#                           axom::sidre::FLOAT64_ID, 50 ) == AXOM_NULLPTR );
 #  group->destroyViewAndData("viewWithLength1");
 #  EXPECT_FALSE( group->hasView("viewWithLength1") );
 #
 #  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen", 
-#                           asctoolkit::sidre::FLOAT64_ID, -1 ) == ATK_NULLPTR );
+#                           axom::sidre::FLOAT64_ID, -1 ) == AXOM_NULLPTR );
 #
 #  // try api call that specifies data type in another way
 #  group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) );
-#  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) ) == ATK_NULLPTR );
+#  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) ) == AXOM_NULLPTR );
 #  // destroy this view using index
 #  group->destroyViewAndData( group->getFirstValidViewIndex() );
 

@@ -22,7 +22,7 @@
 #include "gtest/gtest.h"
 
 
-#include "common/config.hpp"  // for ATK_USE_BOOST
+#include "axom/config.hpp"  // for AXOM_USE_BOOST
 
 #include "slic/slic.hpp"
 
@@ -30,8 +30,8 @@
 #include "slam/Relation.hpp"
 #include "slam/StaticConstantRelation.hpp"
 
-using asctoolkit::slam::RangeSet;
-using asctoolkit::slam::StaticConstantRelation;
+using axom::slam::RangeSet;
+using axom::slam::StaticConstantRelation;
 
 typedef RangeSet::ElementType   ElementType;
 typedef RangeSet::PositionType  PositionType;
@@ -57,11 +57,11 @@ TEST(gtest_slam_static_constant_relation,empty_relation_out_of_bounds)
 
   StaticConstantRelation<> emptyRel;
 
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( emptyRel[FROMSET_SIZE], "");
+  EXPECT_DEATH_IF_SUPPORTED( emptyRel[FROMSET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure checks in release mode.");
 #endif
@@ -136,7 +136,7 @@ TEST(gtest_slam_static_constant_relation,simple_relation)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                  SetIter;
   typedef StaticConstantRelation<>::RelationVecConstIterator  RelSetConstIter;
 
@@ -190,11 +190,11 @@ TEST(gtest_slam_static_constant_relation,initialized_rel_out_of_bounds)
   generateIncrementingRelations(ELEM_STRIDE, &offsets);
   incrementingRel.bindRelationData(offsets, ELEM_STRIDE);
 
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+#ifdef AXOM_DEBUG
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( incrementingRel[FROMSET_SIZE], "");
+  EXPECT_DEATH_IF_SUPPORTED( incrementingRel[FROMSET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure checks in release mode.");
 #endif
@@ -220,7 +220,7 @@ TEST(gtest_slam_static_constant_relation,test_iterator_range)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator                                      SetIter;
   typedef StaticConstantRelation<>::RelationVecConstIterator      RelSetConstIter;
   typedef StaticConstantRelation<>::RelationVecConstIteratorPair  RelSetConstIterPair;
@@ -267,7 +267,7 @@ TEST(gtest_slam_static_constant_relation,double_subscript_test)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-#ifdef ATK_USE_BOOST
+#ifdef AXOM_USE_BOOST
   typedef RangeSet::iterator SetIter;
 
   SLIC_INFO("Looking at relation's stored values...");

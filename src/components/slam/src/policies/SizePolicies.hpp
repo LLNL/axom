@@ -26,10 +26,10 @@
 #ifndef SLAM_POLICIES_SIZE_H_
 #define SLAM_POLICIES_SIZE_H_
 
-#include "common/ATKMacros.hpp"
+#include "axom/Macros.hpp"
 #include "slic/slic.hpp"
 
-namespace asctoolkit {
+namespace axom {
 namespace slam {
 namespace policies {
 
@@ -73,7 +73,7 @@ namespace policies {
 
     CompileTimeSizeHolder(IntType val = DEFAULT_VALUE)
     {
-      ATK_DEBUG_VAR(val);
+      AXOM_DEBUG_VAR(val);
       SLIC_ASSERT_MSG( val == INT_VAL
           , "SLAM::CompileTimeSizeHolder -- tried to initialize a compile time size policy with value ("
           << val << " ) that differs from the template parameter of " << INT_VAL << ".");
@@ -96,7 +96,7 @@ namespace policies {
 
     ZeroSize(IntType val = DEFAULT_VALUE)
     {
-      ATK_DEBUG_VAR(val);
+      AXOM_DEBUG_VAR(val);
       SLIC_ASSERT_MSG( val == DEFAULT_VALUE
           , "SLAM::ZeroSize policy-- tried to initialize a NoSize set with value with value ("
           << val << " ) but should always be zero.");
@@ -112,6 +112,6 @@ namespace policies {
 
 } // end namespace policies
 } // end namespace slam
-} // end namespace asctoolkit
+} // end namespace axom
 
 #endif // SLAM_POLICIES_SIZE_H_
