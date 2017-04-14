@@ -59,7 +59,6 @@
                     "fmt": {
                         "C_call_list": "arg1", 
                         "C_name": "DEF_class1_method1", 
-                        "C_object": "Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class1 * self, int arg1", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -154,7 +153,6 @@
                     "fmt": {
                         "C_call_list": "MPI_Comm_f2c(comm)", 
                         "C_name": "DEF_class2_method1", 
-                        "C_object": "Class2 *SH_this = static_cast<Class2 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class2 * self, MPI_Fint comm", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -214,7 +212,6 @@
                     "fmt": {
                         "C_call_list": "static_cast<Class1 *>(static_cast<void *>(c2))", 
                         "C_name": "DEF_class2_method2", 
-                        "C_object": "Class2 *SH_this = static_cast<Class2 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class2 * self, DEF_class1 * c2", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -287,7 +284,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "DEF_function1", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 

@@ -88,7 +88,6 @@
             "fmt": {
                 "C_call_list": "status", 
                 "C_name": "STR_pass_char", 
-                "C_object": "", 
                 "C_prototype": "char status", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -128,7 +127,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_return_char", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "char", 
                 "C_rv_decl": "char SH_rv", 
@@ -201,7 +199,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_return_char_bufferify", 
-                "C_object": "", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "char SH_rv", 
@@ -305,7 +302,6 @@
             "fmt": {
                 "C_call_list": "SH_dest, SH_src", 
                 "C_name": "STR_pass_char_ptr", 
-                "C_object": "", 
                 "C_prototype": "char * dest, int Ndest, const char * src", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -400,7 +396,6 @@
             "fmt": {
                 "C_call_list": "SH_dest, SH_src", 
                 "C_name": "STR_pass_char_ptr_bufferify", 
-                "C_object": "", 
                 "C_prototype": "char * dest, int Ndest, const char * src, int Lsrc", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -436,7 +431,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char1", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
                 "C_rv_decl": "const char * SH_rv", 
@@ -500,7 +494,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char1_bufferify", 
-                "C_object": "", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const char * SH_rv", 
@@ -582,7 +575,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char2", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
                 "C_rv_decl": "const char * SH_rv", 
@@ -657,7 +649,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char2_bufferify", 
-                "C_object": "", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const char * SH_rv", 
@@ -699,7 +690,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char3", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
                 "C_rv_decl": "const char * SH_rv", 
@@ -766,7 +756,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char3_bufferify", 
-                "C_object": "", 
                 "C_prototype": "char * output, int Loutput", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const char * SH_rv", 
@@ -862,7 +851,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string1", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -926,7 +914,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string1_bufferify", 
-                "C_object": "", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1009,7 +996,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string2", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1085,7 +1071,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string2_bufferify", 
-                "C_object": "", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1128,7 +1113,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string3", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1196,7 +1180,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string3_bufferify", 
-                "C_object": "", 
                 "C_prototype": "char * output, int Loutput", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1321,7 +1304,6 @@
             "fmt": {
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_const_reference", 
-                "C_object": "", 
                 "C_prototype": "const char * arg1", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1390,7 +1372,6 @@
             "fmt": {
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_const_reference_bufferify", 
-                "C_object": "", 
                 "C_prototype": "const char * arg1, int Larg1", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1458,7 +1439,6 @@
             "fmt": {
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_reference", 
-                "C_object": "", 
                 "C_prototype": "char * arg1, int Narg1", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1529,7 +1509,6 @@
             "fmt": {
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_reference_bufferify", 
-                "C_object": "", 
                 "C_prototype": "char * arg1, int Larg1, int Narg1", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 

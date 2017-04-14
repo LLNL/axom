@@ -145,9 +145,6 @@ Function
 C_call_list
     Comma delimited list of function arguments.
 
-C_object
-    Set from option **C_object**.
-
 C_prototype
     C prototype for the function.
     This will include any arguments required by annotations or options,

@@ -54,7 +54,6 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "TUT_class1_new", 
-                        "C_object": "", 
                         "C_prototype": "", 
                         "C_return_type": "TUT_class1 *", 
                         "C_rv_decl": "Class1 * SH_rv", 
@@ -96,7 +95,6 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "TUT_class1_delete", 
-                        "C_object": "Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));", 
                         "C_prototype": "TUT_class1 * self", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -136,7 +134,6 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "TUT_class1_method1", 
-                        "C_object": "Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));", 
                         "C_prototype": "TUT_class1 * self", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -232,7 +229,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "TUT_function1", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -347,7 +343,6 @@
             "fmt": {
                 "C_call_list": "arg1, arg2", 
                 "C_name": "TUT_function2", 
-                "C_object": "", 
                 "C_prototype": "double arg1, int arg2", 
                 "C_return_type": "double", 
                 "C_rv_decl": "double SH_rv", 
@@ -453,7 +448,6 @@
             "fmt": {
                 "C_call_list": "len, values, result", 
                 "C_name": "TUT_sum", 
-                "C_object": "", 
                 "C_prototype": "int len, int * values, int * result", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -530,7 +524,6 @@
             "fmt": {
                 "C_call_list": "arg", 
                 "C_name": "TUT_function3", 
-                "C_object": "", 
                 "C_prototype": "bool arg", 
                 "C_return_type": "bool", 
                 "C_rv_decl": "bool SH_rv", 
@@ -636,7 +629,6 @@
             "fmt": {
                 "C_call_list": "arg1, arg2, arg3", 
                 "C_name": "TUT_function3b", 
-                "C_object": "", 
                 "C_prototype": "const bool arg1, bool * arg2, bool * arg3", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -847,7 +839,6 @@
             "fmt": {
                 "C_call_list": "SH_arg1, SH_arg2", 
                 "C_name": "TUT_function4a_bufferify", 
-                "C_object": "", 
                 "C_prototype": "const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string SH_rv", 
@@ -959,7 +950,6 @@
             "fmt": {
                 "C_call_list": "SH_arg1, SH_arg2", 
                 "C_name": "TUT_function4b", 
-                "C_object": "", 
                 "C_prototype": "const char * arg1, const char * arg2", 
                 "C_return_type": "const char *", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1075,7 +1065,6 @@
             "fmt": {
                 "C_call_list": "SH_arg1, SH_arg2", 
                 "C_name": "TUT_function4b_bufferify", 
-                "C_object": "", 
                 "C_prototype": "const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1192,7 +1181,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "TUT_function5", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "double", 
                 "C_rv_decl": "double SH_rv", 
@@ -1262,7 +1250,6 @@
             "fmt": {
                 "C_call_list": "arg1", 
                 "C_name": "TUT_function5_arg1", 
-                "C_object": "", 
                 "C_prototype": "double arg1", 
                 "C_return_type": "double", 
                 "C_rv_decl": "double SH_rv", 
@@ -1396,7 +1383,6 @@
             "fmt": {
                 "C_call_list": "arg1, arg2", 
                 "C_name": "TUT_function5_arg1_arg2", 
-                "C_object": "", 
                 "C_prototype": "double arg1, bool arg2", 
                 "C_return_type": "double", 
                 "C_rv_decl": "double SH_rv", 
@@ -1479,7 +1465,6 @@
             "fmt": {
                 "C_call_list": "SH_name", 
                 "C_name": "TUT_function6_from_name", 
-                "C_object": "", 
                 "C_prototype": "const char * name", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1553,7 +1538,6 @@
             "fmt": {
                 "C_call_list": "SH_name", 
                 "C_name": "TUT_function6_from_name_bufferify", 
-                "C_object": "", 
                 "C_prototype": "const char * name, int Lname", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1629,7 +1613,6 @@
             "fmt": {
                 "C_call_list": "indx", 
                 "C_name": "TUT_function6_from_index", 
-                "C_object": "", 
                 "C_prototype": "int indx", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1731,7 +1714,6 @@
                 "CPP_template": "<int>", 
                 "C_call_list": "arg", 
                 "C_name": "TUT_function7_int", 
-                "C_object": "", 
                 "C_prototype": "int arg", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1795,7 +1777,6 @@
                 "CPP_template": "<double>", 
                 "C_call_list": "arg", 
                 "C_name": "TUT_function7_double", 
-                "C_object": "", 
                 "C_prototype": "double arg", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1868,7 +1849,6 @@
                 "CPP_template": "<int>", 
                 "C_call_list": "", 
                 "C_name": "TUT_function8_int", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "int", 
                 "C_rv_decl": "int SH_rv", 
@@ -1912,7 +1892,6 @@
                 "CPP_template": "<double>", 
                 "C_call_list": "", 
                 "C_name": "TUT_function8_double", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "double", 
                 "C_rv_decl": "double SH_rv", 
@@ -1992,7 +1971,6 @@
             "fmt": {
                 "C_call_list": "arg", 
                 "C_name": "TUT_function9", 
-                "C_object": "", 
                 "C_prototype": "double arg", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -2119,7 +2097,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "TUT_function10_0", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -2235,7 +2212,6 @@
             "fmt": {
                 "C_call_list": "SH_name, arg2", 
                 "C_name": "TUT_function10_1", 
-                "C_object": "", 
                 "C_prototype": "const char * name, double arg2", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -2440,7 +2416,6 @@
             "fmt": {
                 "C_call_list": "SH_name, arg2", 
                 "C_name": "TUT_function10_1_bufferify", 
-                "C_object": "", 
                 "C_prototype": "const char * name, int Lname, double arg2", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -2510,7 +2485,6 @@
             "fmt": {
                 "C_call_list": "num", 
                 "C_name": "TUT_overload1_num", 
-                "C_object": "", 
                 "C_prototype": "int num", 
                 "C_return_type": "int", 
                 "C_rv_decl": "int SH_rv", 
@@ -2605,7 +2579,6 @@
             "fmt": {
                 "C_call_list": "num, offset", 
                 "C_name": "TUT_overload1_num_offset", 
-                "C_object": "", 
                 "C_prototype": "int num, int offset", 
                 "C_return_type": "int", 
                 "C_rv_decl": "int SH_rv", 
@@ -2781,7 +2754,6 @@
             "fmt": {
                 "C_call_list": "num, offset, stride", 
                 "C_name": "TUT_overload1_num_offset_stride", 
-                "C_object": "", 
                 "C_prototype": "int num, int offset, int stride", 
                 "C_return_type": "int", 
                 "C_rv_decl": "int SH_rv", 
@@ -2870,7 +2842,6 @@
             "fmt": {
                 "C_call_list": "type, num", 
                 "C_name": "TUT_overload1_3", 
-                "C_object": "", 
                 "C_prototype": "double type, int num", 
                 "C_return_type": "int", 
                 "C_rv_decl": "int SH_rv", 
@@ -2981,7 +2952,6 @@
             "fmt": {
                 "C_call_list": "type, num, offset", 
                 "C_name": "TUT_overload1_4", 
-                "C_object": "", 
                 "C_prototype": "double type, int num, int offset", 
                 "C_return_type": "int", 
                 "C_rv_decl": "int SH_rv", 
@@ -3190,7 +3160,6 @@
             "fmt": {
                 "C_call_list": "type, num, offset, stride", 
                 "C_name": "TUT_overload1_5", 
-                "C_object": "", 
                 "C_prototype": "double type, int num, int offset, int stride", 
                 "C_return_type": "int", 
                 "C_rv_decl": "int SH_rv", 
@@ -3267,7 +3236,6 @@
             "fmt": {
                 "C_call_list": "arg", 
                 "C_name": "TUT_typefunc", 
-                "C_object": "", 
                 "C_prototype": "int arg", 
                 "C_return_type": "int", 
                 "C_rv_decl": "TypeID SH_rv", 
@@ -3345,7 +3313,6 @@
             "fmt": {
                 "C_call_list": "static_cast<EnumTypeID>(arg)", 
                 "C_name": "TUT_enumfunc", 
-                "C_object": "", 
                 "C_prototype": "int arg", 
                 "C_return_type": "int", 
                 "C_rv_decl": "EnumTypeID SH_rv", 
@@ -3416,7 +3383,6 @@
             "fmt": {
                 "C_call_list": "static_cast<const Class1 *>(static_cast<const void *>(arg1))", 
                 "C_name": "TUT_useclass", 
-                "C_object": "", 
                 "C_prototype": "const TUT_class1 * arg1", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -3456,7 +3422,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "TUT_last_function_called", 
-                "C_object": "", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -3519,7 +3484,6 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "TUT_last_function_called_bufferify", 
-                "C_object": "", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 

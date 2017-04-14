@@ -331,16 +331,26 @@ class Wrapc(util.WrapperMixin):
         pre_call = []      # list of temporary variable declarations
         post_call = []
 
-#
+        if cls and not is_ctor:
+            if is_const:
+                fmt_func.c_const = 'const '
+            else:
+                fmt_func.c_const = ''
+            fmt_func.c_ptr = ' *'
+            fmt_func.c_var = fmt_func.C_this
+            # LHS is class' cpp_to_c
+            cls_typedef = self.typedef[cls['name']]
+            append_format(pre_call, 
+                          '{c_const}{cpp_class} *{CPP_this} = ' +
+                          cls_typedef.c_to_cpp + ';', fmt_func)
+
 #    c_var     - argument to C function  (wrapper function)
 #    c_var_len - variable with trimmed length of c_var
 #    c_var_num - variable with length of c_var
 #    cpp_var   - argument to C++ function  (wrapped function).
 #                Usually same as c_var but may be a new local variable
 #                or the funtion result variable.
-#
-#
-#
+
         for arg in node['args']:
             fmt_arg = arg.setdefault('fmtc', util.Options(fmt_func))
             c_attrs = arg['attrs']
@@ -433,8 +443,8 @@ class Wrapc(util.WrapperMixin):
                         'defined for {}'
                         .format(arg_typedef.name))
                 append_format(pre_call,
-                              '{c_const}{cpp_type}{c_ptr} {cpp_var} = '
-                              + arg_typedef.c_to_cpp + ';', fmt_arg)
+                              '{c_const}{cpp_type}{c_ptr} {cpp_var} = ' +
+                              arg_typedef.c_to_cpp + ';', fmt_arg)
 
             if arg_call:
                 if have_cpp_local_var:
@@ -463,24 +473,6 @@ class Wrapc(util.WrapperMixin):
         else:
             fmt_func.C_return_type = options.get(
                 'C_return_type', self._c_type('c_type', result))
-
-        fmt_func.C_object = ''
-        if cls:
-            if 'C_object' in options:
-                fmt_func.C_object = options.C_object
-            elif not is_ctor:
-                if is_const:
-                    fmt_func.c_const = 'const '
-                else:
-                    fmt_func.c_const = ''
-                fmt_func.c_ptr = ' *'
-                fmt_func.c_var = fmt_func.C_this
-                # LHS is class' cpp_to_c
-                cls_typedef = self.typedef[cls['name']]
-                fmt_func.C_object = wformat(
-                    '{c_const}{cpp_class} *{CPP_this} = ' +
-                    cls_typedef.c_to_cpp + ';', fmt_func)
-
 
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.function_name, None)
@@ -565,10 +557,6 @@ class Wrapc(util.WrapperMixin):
             self.write_doxygen(impl, node['doxygen'])
         impl.append(wformat('{C_return_type} {C_name}({C_prototype})', fmt_func))
         impl.append('{')
-        if cls and fmt_func.C_object:
-            impl.append(1)
-            impl.append(fmt_func.C_object)
-            impl.append(-1)
         self._create_splicer(fmt_func.underscore_name +
                              fmt_func.function_suffix, impl, C_code)
         impl.append('}')
