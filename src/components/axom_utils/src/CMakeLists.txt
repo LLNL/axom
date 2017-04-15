@@ -10,6 +10,7 @@ set(axom_utils_headers
     detail/ChronoTimer.hpp
     detail/TimeofdayTimer.hpp
 
+    numerics/LU.hpp
     numerics/Matrix.hpp
     )
 
