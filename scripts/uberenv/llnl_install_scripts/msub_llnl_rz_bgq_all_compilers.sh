@@ -1,10 +1,10 @@
 #!/bin/bash
 #MSUB -l nodes=1
-#MSUB -q pbatch
+#MSUB -q pdebug
 #MSUB -l walltime=8:00:00
-#MSUB -A wbronze
+#MSUB -A science
 #MSUB -j oe
-#MSUB -o m.out.r.uberenv.bgqos.all.compilers.%j.%N.txt
+#MSUB -o m.out.rz.uberenv.bgqos.all.compilers.%j.%N.txt
 #
 # usage: 
 #  cd {to directory with this script}
