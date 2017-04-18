@@ -25,13 +25,13 @@ set("CMAKE_CXX_COMPILER" "/usr/local/bin/bgclang++" CACHE PATH "")
 set("ENABLE_FORTRAN" "OFF" CACHE PATH "")
 
 # hdf5 from uberenv
-set("HDF5_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/clang-3.7.0/hdf5-1.8.16-bosaqxj3xd5fhyovqnda3rgj2kjsj4ah" CACHE PATH "")
+set("HDF5_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_17_21_35_08/spack/opt/spack/bgqos_0/clang-3.7.0/hdf5-1.8.16-bosaqxj3xd5fhyovqnda3rgj2kjsj4ah" CACHE PATH "")
 
 # conduit from uberenv
-set("CONDUIT_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/clang-3.7.0/conduit-0.2.1-oiiieme5mlcpao7pqwrk2mdquxnaguqm" CACHE PATH "")
+set("CONDUIT_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_17_21_35_08/spack/opt/spack/bgqos_0/clang-3.7.0/conduit-0.2.1-oiiieme5mlcpao7pqwrk2mdquxnaguqm" CACHE PATH "")
 
 # boost headers from uberenv
-set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/clang-3.7.0/boost-headers-1.58.0-qddl3bajxtossmhy4mazvjpah4zgx5aj" CACHE PATH "")
+set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_17_21_35_08/spack/opt/spack/bgqos_0/clang-3.7.0/boost-headers-1.58.0-qddl3bajxtossmhy4mazvjpah4zgx5aj" CACHE PATH "")
 
 # python not build by uberenv
 
@@ -63,8 +63,6 @@ set(ENABLE_DOCS OFF CACHE PATH "")
 # MPI - manually added for now
 ##############################################################################
 set(ENABLE_MPI ON CACHE PATH "")
-#set(MPI_C_COMPILER "/usr/apps/gnu/clang/llnl/bin/mpiclang-fastmpi" CACHE PATH "")
-#set(MPI_CXX_COMPILER "/usr/apps/gnu/clang/llnl/bin/mpiclang++11-fastmpi" CACHE PATH "")
 
 set(MPI_C_COMPILER "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3/bin/mpicc" CACHE PATH "")
 set(MPI_CXX_COMPILER "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3/bin/mpicxx" CACHE PATH "")
