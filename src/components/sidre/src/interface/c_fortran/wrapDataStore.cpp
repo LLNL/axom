@@ -33,6 +33,7 @@ void SIDRE_datastore_delete(SIDRE_datastore * self)
 // splicer begin class.DataStore.method.delete
   DataStore * SH_this = static_cast<DataStore *>(static_cast<void *>(self));
   delete SH_this;
+  return;
 // splicer end class.DataStore.method.delete
 }
 

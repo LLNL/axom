@@ -61,6 +61,7 @@ void AA_exclass1_delete(AA_exclass1 * self)
 // splicer begin class.ExClass1.method.delete
     ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));
     delete SH_this;
+    return;
 // splicer end class.ExClass1.method.delete
 }
 
@@ -106,13 +107,15 @@ void AA_exclass1_get_name_bufferify(const AA_exclass1 * self, char * SH_F_rv, in
 // int GetNameLength() const
 // function_index=4
 /**
- * \brief helper function for Fortran
+ * \brief helper function for Fortran to get length of name.
  *
  */
 int AA_exclass1_get_name_length(const AA_exclass1 * self)
 {
 // splicer begin class.ExClass1.method.get_name_length
-return selfobj->getName().length();
+    const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));
+    return SH_this->getName().length();
+
 // splicer end class.ExClass1.method.get_name_length
 }
 

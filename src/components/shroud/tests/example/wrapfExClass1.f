@@ -295,7 +295,7 @@ contains
     ! int GetNameLength() const
     ! function_index=4
     !>
-    !! \brief helper function for Fortran
+    !! \brief helper function for Fortran to get length of name.
     !!
     !<
     function exclass1_get_name_length(obj) result(SH_rv)

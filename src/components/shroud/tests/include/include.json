@@ -59,6 +59,7 @@
                     "fmt": {
                         "C_call_list": "arg1", 
                         "C_name": "DEF_class1_method1", 
+                        "C_pre_call": "Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class1 * self, int arg1", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -153,6 +154,7 @@
                     "fmt": {
                         "C_call_list": "MPI_Comm_f2c(comm)", 
                         "C_name": "DEF_class2_method1", 
+                        "C_pre_call": "Class2 *SH_this = static_cast<Class2 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class2 * self, MPI_Fint comm", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -212,6 +214,7 @@
                     "fmt": {
                         "C_call_list": "static_cast<Class1 *>(static_cast<void *>(c2))", 
                         "C_name": "DEF_class2_method2", 
+                        "C_pre_call": "Class2 *SH_this = static_cast<Class2 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class2 * self, DEF_class1 * c2", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -251,6 +254,8 @@
         "CPP_this_call": "", 
         "C_header_filename": "wrapdefault_library.h", 
         "C_impl_filename": "wrapdefault_library.cpp", 
+        "C_post_call": "", 
+        "C_pre_call": "", 
         "C_prefix": "DEF_", 
         "C_result": "SH_rv", 
         "C_this": "self", 

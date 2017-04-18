@@ -110,9 +110,10 @@ classes:
 
     - decl: int GetNameLength() const
       doxygen:
-        brief: helper function for Fortran
-      helper: True
-      C_code: return selfobj->getName().length();
+        brief: helper function for Fortran to get length of name.
+      C_code: |
+        {C_pre_call}
+        return {CPP_this}->getName().length();
 
     - decl: const string& getNameErrorCheck() const
 
@@ -172,7 +173,9 @@ classes:
          type: int
          attrs:
            const: true
-      C_code: return selfobj->getName().length();
+      C_code: |
+        {C_pre_call}
+        return {CPP_this}->getName().length();
 
     # test forward declarations
     - decl: ExClass1 *get_class1(const ExClass1 *in)

@@ -474,24 +474,29 @@ class Wrapc(util.WrapperMixin):
             fmt_func.C_return_type = options.get(
                 'C_return_type', self._c_type('c_type', result))
 
+        if pre_call:
+            fmt_func.C_pre_call = '\n'.join(pre_call)
+        if post_call:
+            fmt_func.C_post_call = '\n'.join(post_call)
+
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.function_name, None)
         if 'C_code' in node:
-            C_code = [wformat(node['C_code'], fmt_func)]
+            C_code = [1, wformat(node['C_code'], fmt_func), -1]
         elif splicer_code:
             C_code = splicer_code
         else:
             # generate the C body
             C_code = [1]
             C_code.extend(pre_call)
-            return_line = ''
+            return_line = 'return;'
             if is_ctor:
                 line = wformat('{C_rv_decl} = new {cpp_class}'
                                '({C_call_list});', fmt_func)
                 C_code.append(line)
-                C_code.append('return '
-                              + wformat(result_typedef.cpp_to_c, fmt_func)
-                              + ';')
+                return_line = ('return '
+                               + wformat(result_typedef.cpp_to_c, fmt_func)
+                               + ';')
             elif is_dtor:
                 C_code.append('delete %s;' % fmt_func.CPP_this)
             elif CPP_subprogram == 'subroutine':
@@ -500,7 +505,6 @@ class Wrapc(util.WrapperMixin):
                     '{CPP_template}({C_call_list});',
                     fmt_func)
                 C_code.append(line)
-                return_line = 'return;'
             else:
                 line = wformat(
                     '{C_rv_decl} = {CPP_this_call}{function_name}'
@@ -529,18 +533,16 @@ class Wrapc(util.WrapperMixin):
 #                        append_format(C_code, c_post_call, fmt_func)
                     # XXX release rv is necessary
 
-                if subprogram == 'subroutine':
-                    # function result is returned as an argument
-                    return_line = 'return;'
-                else:
+                if subprogram == 'function':
+                    # Note: A C function may be converted into a Fortran subroutine subprogram
+                    # when the result is returned in an argument.
                     return_line = ('return '
                                    + wformat(result_typedef.cpp_to_c, fmt_func)
                                    + ';')
 
             # copy-out values, clean up
             C_code.extend(post_call)
-            if return_line:
-                C_code.append(return_line)
+            C_code.append(return_line)
             C_code.append(-1)
 
         self.header_proto_c.append('')

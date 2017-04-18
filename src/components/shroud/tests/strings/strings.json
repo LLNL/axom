@@ -9,6 +9,8 @@
         "CPP_this_call": "", 
         "C_header_filename": "wrapstrings.h", 
         "C_impl_filename": "wrapstrings.cpp", 
+        "C_post_call": "", 
+        "C_pre_call": "", 
         "C_prefix": "STR_", 
         "C_result": "SH_rv", 
         "C_this": "self", 
@@ -199,6 +201,7 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_return_char_bufferify", 
+                "C_post_call": "// LSH_F_rv is always 1, test to silence warning about unused variable\nif (LSH_F_rv == 1) *SH_F_rv = SH_rv;", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "char SH_rv", 
@@ -302,6 +305,8 @@
             "fmt": {
                 "C_call_list": "SH_dest, SH_src", 
                 "C_name": "STR_pass_char_ptr", 
+                "C_post_call": "shroud_FccCopy(dest, Ndest, SH_dest);\ndelete [] SH_dest;\ndelete [] SH_src;", 
+                "C_pre_call": "char * SH_dest = new char [Ndest + 1];\nint Lsrc = std::strlen(src);\nchar * SH_src = new char [Lsrc + 1];\nstd::strncpy(SH_src, src, Lsrc);\nSH_src[Lsrc] = '\\0';", 
                 "C_prototype": "char * dest, int Ndest, const char * src", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -396,6 +401,8 @@
             "fmt": {
                 "C_call_list": "SH_dest, SH_src", 
                 "C_name": "STR_pass_char_ptr_bufferify", 
+                "C_post_call": "shroud_FccCopy(dest, Ndest, SH_dest);\ndelete [] SH_dest;\ndelete [] SH_src;", 
+                "C_pre_call": "char * SH_dest = new char [Ndest + 1];\nchar * SH_src = new char [Lsrc + 1];\nstd::strncpy(SH_src, src, Lsrc);\nSH_src[Lsrc] = '\\0';", 
                 "C_prototype": "char * dest, int Ndest, const char * src, int Lsrc", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -494,6 +501,7 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char1_bufferify", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv);", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const char * SH_rv", 
@@ -649,6 +657,7 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char2_bufferify", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv);", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const char * SH_rv", 
@@ -756,6 +765,7 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char3_bufferify", 
+                "C_post_call": "shroud_FccCopy(output, Loutput, SH_rv);", 
                 "C_prototype": "char * output, int Loutput", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const char * SH_rv", 
@@ -914,6 +924,7 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string1_bufferify", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1071,6 +1082,7 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string2_bufferify", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1180,6 +1192,7 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string3_bufferify", 
+                "C_post_call": "shroud_FccCopy(output, Loutput, SH_rv.c_str());", 
                 "C_prototype": "char * output, int Loutput", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1304,6 +1317,7 @@
             "fmt": {
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_const_reference", 
+                "C_pre_call": "const std::string SH_arg1(arg1);", 
                 "C_prototype": "const char * arg1", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1372,6 +1386,7 @@
             "fmt": {
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_const_reference_bufferify", 
+                "C_pre_call": "const std::string SH_arg1(arg1, Larg1);", 
                 "C_prototype": "const char * arg1, int Larg1", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1439,6 +1454,8 @@
             "fmt": {
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_reference", 
+                "C_post_call": "shroud_FccCopy(arg1, Narg1, SH_arg1.c_str());", 
+                "C_pre_call": "std::string SH_arg1(arg1);", 
                 "C_prototype": "char * arg1, int Narg1", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1509,6 +1526,8 @@
             "fmt": {
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_reference_bufferify", 
+                "C_post_call": "shroud_FccCopy(arg1, Narg1, SH_arg1.c_str());", 
+                "C_pre_call": "std::string SH_arg1(arg1, Larg1);", 
                 "C_prototype": "char * arg1, int Larg1, int Narg1", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 

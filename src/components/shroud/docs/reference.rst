@@ -145,6 +145,14 @@ Function
 C_call_list
     Comma delimited list of function arguments.
 
+C_post_call
+    Statements added after the call to the function.
+    Used to convert result and/or ``intent(OUT)`` arguments to C types.
+
+C_pre_call
+    Statements added before the call to the function.
+    Used to convert C types to C++ types.
+
 C_prototype
     C prototype for the function.
     This will include any arguments required by annotations or options,
@@ -152,6 +160,7 @@ C_prototype
 
 C_return_type
     Return type of the function.
+    If the **return_this** field is true, then *C_return_type* is set to ``void``.
 
 CPP_template
     The template component of the function declaration.
@@ -333,6 +342,7 @@ C_return_type
 
 C_this
     Name of the C object argument.  Defauls to ``self``.
+    It may be necessary to set this if it conflicts with an argument name.
 
 CPP_this
     Name of the C++ object pointer set from the *C_this* argument.
@@ -887,8 +897,8 @@ function_suffix
 
 return_this
    The method returns a reference to ``this``.  This ideom can be used
-   to chain calls in C++.  This does not translate to C and Fortran.
-   Instead make the return type ``void``.
+   to chain calls in C++.  This ideom does not translate to C and Fortran.
+   Instead the *C_return_type* format is set to ``void``.
 
 
 C_code

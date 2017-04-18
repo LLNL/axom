@@ -95,6 +95,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "TUT_class1_delete", 
+                        "C_pre_call": "Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));", 
                         "C_prototype": "TUT_class1 * self", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -134,6 +135,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "TUT_class1_method1", 
+                        "C_pre_call": "Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));", 
                         "C_prototype": "TUT_class1 * self", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -176,6 +178,8 @@
         "CPP_this_call": "", 
         "C_header_filename": "wrapTutorial.h", 
         "C_impl_filename": "wrapTutorial.cpp", 
+        "C_post_call": "", 
+        "C_pre_call": "", 
         "C_prefix": "TUT_", 
         "C_result": "SH_rv", 
         "C_this": "self", 
@@ -839,6 +843,8 @@
             "fmt": {
                 "C_call_list": "SH_arg1, SH_arg2", 
                 "C_name": "TUT_function4a_bufferify", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                "C_pre_call": "const std::string SH_arg1(arg1, Larg1);\nconst std::string SH_arg2(arg2, Larg2);", 
                 "C_prototype": "const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string SH_rv", 
@@ -950,6 +956,7 @@
             "fmt": {
                 "C_call_list": "SH_arg1, SH_arg2", 
                 "C_name": "TUT_function4b", 
+                "C_pre_call": "const std::string SH_arg1(arg1);\nconst std::string SH_arg2(arg2);", 
                 "C_prototype": "const char * arg1, const char * arg2", 
                 "C_return_type": "const char *", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1065,6 +1072,8 @@
             "fmt": {
                 "C_call_list": "SH_arg1, SH_arg2", 
                 "C_name": "TUT_function4b_bufferify", 
+                "C_post_call": "shroud_FccCopy(output, Loutput, SH_rv.c_str());", 
+                "C_pre_call": "const std::string SH_arg1(arg1, Larg1);\nconst std::string SH_arg2(arg2, Larg2);", 
                 "C_prototype": "const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
@@ -1465,6 +1474,7 @@
             "fmt": {
                 "C_call_list": "SH_name", 
                 "C_name": "TUT_function6_from_name", 
+                "C_pre_call": "const std::string SH_name(name);", 
                 "C_prototype": "const char * name", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1538,6 +1548,7 @@
             "fmt": {
                 "C_call_list": "SH_name", 
                 "C_name": "TUT_function6_from_name_bufferify", 
+                "C_pre_call": "const std::string SH_name(name, Lname);", 
                 "C_prototype": "const char * name, int Lname", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -2212,6 +2223,7 @@
             "fmt": {
                 "C_call_list": "SH_name, arg2", 
                 "C_name": "TUT_function10_1", 
+                "C_pre_call": "const std::string SH_name(name);", 
                 "C_prototype": "const char * name, double arg2", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -2416,6 +2428,7 @@
             "fmt": {
                 "C_call_list": "SH_name, arg2", 
                 "C_name": "TUT_function10_1_bufferify", 
+                "C_pre_call": "const std::string SH_name(name, Lname);", 
                 "C_prototype": "const char * name, int Lname, double arg2", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -3484,6 +3497,7 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "TUT_last_function_called_bufferify", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
                 "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 

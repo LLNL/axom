@@ -86,6 +86,7 @@
                     "fmt": {
                         "C_call_list": "SH_name", 
                         "C_name": "AA_exclass1_new", 
+                        "C_pre_call": "const std::string SH_name(name);", 
                         "C_prototype": "const char * name", 
                         "C_return_type": "AA_exclass1 *", 
                         "C_rv_decl": "ExClass1 * SH_rv", 
@@ -159,6 +160,7 @@
                     "fmt": {
                         "C_call_list": "SH_name", 
                         "C_name": "AA_exclass1_new_bufferify", 
+                        "C_pre_call": "const std::string SH_name(name, Lname);", 
                         "C_prototype": "const char * name, int Lname", 
                         "C_return_type": "AA_exclass1 *", 
                         "C_rv_decl": "ExClass1 * SH_rv", 
@@ -196,6 +198,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_delete", 
+                        "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -263,6 +266,7 @@
                     "fmt": {
                         "C_call_list": "incr", 
                         "C_name": "AA_exclass1_increment_count", 
+                        "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self, int incr", 
                         "C_return_type": "int", 
                         "C_rv_decl": "int SH_rv", 
@@ -306,6 +310,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name", 
+                        "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self", 
                         "C_return_type": "const char *", 
                         "C_rv_decl": "const std::string & SH_rv", 
@@ -383,6 +388,8 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name_bufferify", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "const std::string & SH_rv", 
@@ -414,7 +421,7 @@
                     }
                 }, 
                 {
-                    "C_code": "return selfobj->getName().length();", 
+                    "C_code": "{C_pre_call}\nreturn {CPP_this}->getName().length();\n", 
                     "_decl": "int GetNameLength() const", 
                     "_function_index": 4, 
                     "_subprogram": "function", 
@@ -424,11 +431,12 @@
                     }, 
                     "decl": "int GetNameLength() const", 
                     "doxygen": {
-                        "brief": "helper function for Fortran"
+                        "brief": "helper function for Fortran to get length of name."
                     }, 
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name_length", 
+                        "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self", 
                         "C_return_type": "int", 
                         "C_rv_decl": "int SH_rv", 
@@ -450,7 +458,6 @@
                         "function_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
                     }, 
-                    "helper": true, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -471,6 +478,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name_error_check", 
+                        "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self", 
                         "C_return_type": "const char *", 
                         "C_rv_decl": "const std::string & SH_rv", 
@@ -545,6 +553,8 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name_error_check_bufferify", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "const std::string & SH_rv", 
@@ -586,6 +596,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name_arg", 
+                        "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self", 
                         "C_return_type": "const char *", 
                         "C_rv_decl": "const std::string & SH_rv", 
@@ -653,6 +664,8 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name_arg_bufferify", 
+                        "C_post_call": "shroud_FccCopy(name, Lname, SH_rv.c_str());", 
+                        "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self, char * name, int Lname", 
                         "C_return_type": "void", 
                         "C_rv_decl": "const std::string & SH_rv", 
@@ -744,6 +757,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_root", 
+                        "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self", 
                         "C_return_type": "AA_exclass2 *", 
                         "C_rv_decl": "ExClass2 * SH_rv", 
@@ -819,6 +833,7 @@
                     "fmt": {
                         "C_call_list": "value", 
                         "C_name": "AA_exclass1_get_value_from_int", 
+                        "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self, int value", 
                         "C_return_type": "int", 
                         "C_rv_decl": "int SH_rv", 
@@ -894,6 +909,7 @@
                     "fmt": {
                         "C_call_list": "value", 
                         "C_name": "AA_exclass1_get_value_1", 
+                        "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self, long value", 
                         "C_return_type": "long", 
                         "C_rv_decl": "long SH_rv", 
@@ -933,6 +949,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_addr", 
+                        "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self", 
                         "C_return_type": "void *", 
                         "C_rv_decl": "void * SH_rv", 
@@ -1003,6 +1020,7 @@
                     "fmt": {
                         "C_call_list": "in", 
                         "C_name": "AA_exclass1_has_addr", 
+                        "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self, bool in", 
                         "C_return_type": "bool", 
                         "C_rv_decl": "bool SH_rv", 
@@ -1041,6 +1059,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_splicer_special", 
+                        "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -1160,6 +1179,7 @@
                     "fmt": {
                         "C_call_list": "SH_name", 
                         "C_name": "AA_exclass2_ex_class2", 
+                        "C_pre_call": "const std::string SH_name(name);", 
                         "C_prototype": "const char * name", 
                         "C_return_type": "AA_exclass2 *", 
                         "C_rv_decl": "ExClass2 * SH_rv", 
@@ -1228,6 +1248,7 @@
                     "fmt": {
                         "C_call_list": "SH_name", 
                         "C_name": "AA_exclass2_ex_class2_bufferify", 
+                        "C_pre_call": "const std::string SH_name(name, Lname);", 
                         "C_prototype": "const char * name, int Lname", 
                         "C_return_type": "AA_exclass2 *", 
                         "C_rv_decl": "ExClass2 * SH_rv", 
@@ -1262,6 +1283,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_delete", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -1302,6 +1324,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name", 
+                        "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass2 * self", 
                         "C_return_type": "const char *", 
                         "C_rv_decl": "const std::string & SH_rv", 
@@ -1377,6 +1400,8 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name_bufferify", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "const std::string & SH_rv", 
@@ -1418,6 +1443,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name2", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "const char *", 
                         "C_rv_decl": "const std::string & SH_rv", 
@@ -1490,6 +1516,8 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name2_bufferify", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "const std::string & SH_rv", 
@@ -1532,6 +1560,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name3", 
+                        "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass2 * self", 
                         "C_return_type": "char *", 
                         "C_rv_decl": "std::string & SH_rv", 
@@ -1605,6 +1634,8 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name3_bufferify", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "std::string & SH_rv", 
@@ -1645,6 +1676,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name4", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "char *", 
                         "C_rv_decl": "std::string & SH_rv", 
@@ -1716,6 +1748,8 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name4_bufferify", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "std::string & SH_rv", 
@@ -1746,7 +1780,7 @@
                     }
                 }, 
                 {
-                    "C_code": "return selfobj->getName().length();", 
+                    "C_code": "{C_pre_call}\nreturn {CPP_this}->getName().length();\n", 
                     "_decl": "const int GetNameLength()", 
                     "_function_index": 24, 
                     "_subprogram": "function", 
@@ -1758,6 +1792,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name_length", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "const int", 
                         "C_rv_decl": "const int SH_rv", 
@@ -1830,6 +1865,7 @@
                     "fmt": {
                         "C_call_list": "static_cast<const ExClass1 *>(static_cast<const void *>(in))", 
                         "C_name": "AA_exclass2_get_class1", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, const AA_exclass1 * in", 
                         "C_return_type": "AA_exclass1 *", 
                         "C_rv_decl": "ExClass1 * SH_rv", 
@@ -1894,6 +1930,7 @@
                     "fmt": {
                         "C_call_list": "getTypeID(type)", 
                         "C_name": "AA_exclass2_declare_0", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, int type", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void * SH_rv", 
@@ -2094,6 +2131,7 @@
                     "fmt": {
                         "C_call_list": "getTypeID(type), len", 
                         "C_name": "AA_exclass2_declare_1", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, int type, SIDRE_SidreLength len", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void * SH_rv", 
@@ -2259,6 +2297,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_destroyall", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -2298,6 +2337,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_type_id", 
+                        "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass2 * self", 
                         "C_return_type": "int", 
                         "C_rv_decl": "TypeID SH_rv", 
@@ -2402,6 +2442,7 @@
                         "CPP_template": "<int>", 
                         "C_call_list": "value", 
                         "C_name": "AA_exclass2_set_value_int", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, int value", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -2467,6 +2508,7 @@
                         "CPP_template": "<long>", 
                         "C_call_list": "value", 
                         "C_name": "AA_exclass2_set_value_long", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, long value", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -2532,6 +2574,7 @@
                         "CPP_template": "<float>", 
                         "C_call_list": "value", 
                         "C_name": "AA_exclass2_set_value_float", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, float value", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -2597,6 +2640,7 @@
                         "CPP_template": "<double>", 
                         "C_call_list": "value", 
                         "C_name": "AA_exclass2_set_value_double", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, double value", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -2671,6 +2715,7 @@
                         "CPP_template": "<int>", 
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_value_int", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "int", 
                         "C_rv_decl": "int SH_rv", 
@@ -2716,6 +2761,7 @@
                         "CPP_template": "<double>", 
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_value_double", 
+                        "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "double", 
                         "C_rv_decl": "double SH_rv", 
@@ -2785,6 +2831,8 @@
         "CPP_this_call": "", 
         "C_header_filename": "wrapUserLibrary.h", 
         "C_impl_filename": "wrapUserLibrary.cpp", 
+        "C_post_call": "", 
+        "C_pre_call": "", 
         "C_prefix": "AA_", 
         "C_result": "SH_rv", 
         "C_this": "self", 
@@ -2898,6 +2946,7 @@
             "fmt": {
                 "C_call_list": "SH_name", 
                 "C_name": "AA_is_name_valid", 
+                "C_pre_call": "const std::string SH_name(name);", 
                 "C_prototype": "const char * name", 
                 "C_return_type": "bool", 
                 "C_rv_decl": "bool SH_rv", 
@@ -2965,6 +3014,7 @@
             "fmt": {
                 "C_call_list": "SH_name", 
                 "C_name": "AA_is_name_valid_bufferify", 
+                "C_pre_call": "const std::string SH_name(name, Lname);", 
                 "C_prototype": "const char * name, int Lname", 
                 "C_return_type": "bool", 
                 "C_rv_decl": "bool SH_rv", 
@@ -3065,6 +3115,7 @@
             "fmt": {
                 "C_call_list": "SH_name", 
                 "C_name": "AA_test_names", 
+                "C_pre_call": "const std::string SH_name(name);", 
                 "C_prototype": "const char * name", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -3136,6 +3187,7 @@
             "fmt": {
                 "C_call_list": "SH_name", 
                 "C_name": "AA_test_names_bufferify", 
+                "C_pre_call": "const std::string SH_name(name, Lname);", 
                 "C_prototype": "const char * name, int Lname", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -3226,6 +3278,7 @@
             "fmt": {
                 "C_call_list": "SH_name, flag", 
                 "C_name": "AA_test_names_flag", 
+                "C_pre_call": "const std::string SH_name(name);", 
                 "C_prototype": "const char * name, int flag", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -3318,6 +3371,7 @@
             "fmt": {
                 "C_call_list": "SH_name, flag", 
                 "C_name": "AA_test_names_flag_bufferify", 
+                "C_pre_call": "const std::string SH_name(name, Lname);", 
                 "C_prototype": "const char * name, int Lname, int flag", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -3655,6 +3709,7 @@
             "fmt": {
                 "C_call_list": "SH_grp", 
                 "C_name": "AA_testgroup1", 
+                "C_pre_call": "axom::sidre::DataGroup * SH_grp = static_cast<axom::sidre::DataGroup *>(static_cast<void *>(grp));", 
                 "C_prototype": "SIDRE_datagroup * grp", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -3722,6 +3777,7 @@
             "fmt": {
                 "C_call_list": "SH_grp", 
                 "C_name": "AA_testgroup2", 
+                "C_pre_call": "const axom::sidre::DataGroup * SH_grp = static_cast<const axom::sidre::DataGroup *>(static_cast<const void *>(grp));", 
                 "C_prototype": "const SIDRE_datagroup * grp", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 

@@ -27,7 +27,7 @@ void AA_local_function1()
 bool AA_is_name_valid(const char * name)
 {
 // splicer begin function.is_name_valid
-return name != NULL;
+    return name != NULL;
 // splicer end function.is_name_valid
 }
 
@@ -36,7 +36,7 @@ return name != NULL;
 bool AA_is_name_valid_bufferify(const char * name, int Lname)
 {
 // splicer begin function.is_name_valid_bufferify
-return name != NULL;
+    return name != NULL;
 // splicer end function.is_name_valid_bufferify
 }
 

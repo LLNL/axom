@@ -202,6 +202,8 @@ class Schema(object):
 #        fmt_library.c_const = ''
         fmt_library.CPP_this_call = ''
         fmt_library.CPP_template = ''
+        fmt_library.C_pre_call = ''
+        fmt_library.C_post_call = ''
 
         self.fmt_stack.append(fmt_library)
 

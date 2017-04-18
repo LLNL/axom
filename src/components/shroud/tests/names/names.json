@@ -53,6 +53,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "XXX_TES_names_method1", 
+                        "C_pre_call": "Names *SH_this = static_cast<Names *>(static_cast<void *>(self));", 
                         "C_prototype": "TES_names * self", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -91,6 +92,7 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "XXX_TES_names_method2", 
+                        "C_pre_call": "Names *SH_this = static_cast<Names *>(static_cast<void *>(self));", 
                         "C_prototype": "TES_names * self", 
                         "C_return_type": "void", 
                         "C_rv_decl": "void SH_rv", 
@@ -136,6 +138,8 @@
         "CPP_this_call": "", 
         "C_header_filename": "top.h", 
         "C_impl_filename": "top.cpp", 
+        "C_post_call": "", 
+        "C_pre_call": "", 
         "C_prefix": "TES_", 
         "C_result": "SH_rv", 
         "C_this": "self", 

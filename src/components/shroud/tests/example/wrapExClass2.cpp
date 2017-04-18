@@ -43,6 +43,7 @@ void AA_exclass2_delete(AA_exclass2 * self)
 // splicer begin class.ExClass2.method.delete
     ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));
     delete SH_this;
+    return;
 // splicer end class.ExClass2.method.delete
 }
 
@@ -147,7 +148,9 @@ void AA_exclass2_get_name4_bufferify(AA_exclass2 * self, char * SH_F_rv, int LSH
 const int AA_exclass2_get_name_length(AA_exclass2 * self)
 {
 // splicer begin class.ExClass2.method.get_name_length
-return selfobj->getName().length();
+    ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));
+    return SH_this->getName().length();
+
 // splicer end class.ExClass2.method.get_name_length
 }
 
