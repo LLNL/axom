@@ -375,7 +375,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
     axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, IGNORE, IGNORE);
 
     buildTimer.stop();
-    SLIC_INFO(fmt::format("Construction took {} seconds.", buildTimer.elapsed()));
+    SLIC_INFO(fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
 
     SpacePt bbMin;
     SpacePt bbMax;
@@ -454,7 +454,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
     axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, maxDepth, maxEltsPerBucket);
     buildTimer.stop();
     
-    SLIC_INFO(fmt::format("Construction took {} seconds.", buildTimer.elapsed()));
+    SLIC_INFO(fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
     
     SpacePt bbMin;
     SpacePt bbMax;
@@ -791,26 +791,32 @@ int main( int argc, char**argv )
     // run the containment queries
     if(args.testContainment)
     {
-      SLIC_INFO("About to run containment queries");
+      SLIC_INFO("Running containment queries");
       runContainmentQueries(args);
+      SLIC_INFO("--");
     }
 
     // run the distance queries
     if(args.testDistance)
     {
-      SLIC_INFO("About to run distance queries");
+      SLIC_INFO("Running distance queries");
       runDistanceQueries(args);
+      SLIC_INFO("--");
     }
 
     // Compare signs of current results on SignedDistance and InOutOctree
     bool methodsAgree = true;
     if(args.testContainment && args.testDistance)
     {
+      SLIC_INFO("Comparing results from containment and distance queries");
+      
       methodsAgree = compareDistanceAndContainment(args);
 
       SLIC_INFO("** Methods " << (methodsAgree? "agree" : "do not agree"));
 
       allTestsPassed = allTestsPassed && methodsAgree;
+      
+      SLIC_INFO("--");
     }
 
     // compare current results to baselines or generate new baselines
@@ -828,6 +834,7 @@ int main( int argc, char**argv )
       SLIC_INFO("Saving results as new baseline.");
       saveBaseline(ds.getRoot(), args);
     }
+    SLIC_INFO("--");
   }
 
   // finalize
