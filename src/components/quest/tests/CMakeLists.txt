@@ -34,6 +34,7 @@ foreach(test ${quest_tests})
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends}
+        USE_OPENMP ${ENABLE_OPENMP}
     )
     blt_add_test(
         NAME ${test_name}
@@ -49,10 +50,15 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         NAME quest_regression
         SOURCES quest_regression.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        USE_OPENMP ${ENABLE_OPENMP}
         DEPENDS_ON ${quest_tests_depends} conduit sidre spio hdf5
     )
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 
+    if ( NOT ENABLE_OPENMP )
+        set_property(quest_regression
+            APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
+    endif()
 
     if ( ENV{SYS_TYPE} STREQUAL "bgqos_0" )
 
