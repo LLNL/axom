@@ -197,7 +197,7 @@ CommandLineArguments parseArguments(int argc, char** argv)
             clargs.queryResolution[2] = std::atoi( argv[++i]);
             hasResolution = true;
         }
-        else if(arg == "--boundingBox")
+        else if(arg == "--bounding-box")
         {
             SpacePt bbMin;
             SpacePt bbMax;
@@ -217,6 +217,12 @@ CommandLineArguments parseArguments(int argc, char** argv)
         {
             clargs.usage();
             abort();
+        }
+        else
+        {
+            SLIC_WARNING( fmt::format("Unknown argument: '{}'", arg) );
+            clargs.usage();
+            abort();            
         }
     }
 
@@ -360,14 +366,15 @@ void runContainmentQueries(CommandLineArguments& clargs)
     const bool USE_DISTANCE = false;
     axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, IGNORE, IGNORE);
 
+    SpacePt bbMin;
+    SpacePt bbMax;
+    axom::quest::mesh_min_bounds(bbMin.data());
+    axom::quest::mesh_max_bounds(bbMax.data());
+
     if(!clargs.hasBoundingBox())
     {
-        SpacePt bbMin;
-        SpacePt bbMax;
-        axom::quest::mesh_min_bounds(bbMin.data());
-        axom::quest::mesh_max_bounds(bbMax.data());
         clargs.meshBoundingBox = SpaceBoundingBox(bbMin, bbMax);
-        clargs.meshBoundingBox.expand(1.5);
+        clargs.meshBoundingBox.scale(1.5);
     }
 
     if(!clargs.hasQueryMesh())
@@ -375,6 +382,8 @@ void runContainmentQueries(CommandLineArguments& clargs)
         clargs.queryMesh = createQueryMesh(clargs.meshBoundingBox, clargs.queryResolution);
     }
 
+    SLIC_INFO("Mesh bounding box is: " << SpaceBoundingBox(bbMin, bbMax) );
+    SLIC_INFO("Query bounding box is: " << clargs.meshBoundingBox );
 
     // Add a scalar field for the containment queries
     SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
@@ -413,14 +422,15 @@ void runDistanceQueries(CommandLineArguments& clargs)
     const bool USE_DISTANCE = true;
     axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, maxDepth, maxEltsPerBucket);
 
+    SpacePt bbMin;
+    SpacePt bbMax;
+    axom::quest::mesh_min_bounds(bbMin.data());
+    axom::quest::mesh_max_bounds(bbMax.data());
+
     if(!clargs.hasBoundingBox())
     {
-        SpacePt bbMin;
-        SpacePt bbMax;
-        axom::quest::mesh_min_bounds(bbMin.data());
-        axom::quest::mesh_max_bounds(bbMax.data());
         clargs.meshBoundingBox = SpaceBoundingBox(bbMin, bbMax);
-        clargs.meshBoundingBox.expand(1.5);
+        clargs.meshBoundingBox.scale(1.5);
     }
 
     if(!clargs.hasQueryMesh())
@@ -428,6 +438,8 @@ void runDistanceQueries(CommandLineArguments& clargs)
         clargs.queryMesh = createQueryMesh(clargs.meshBoundingBox, clargs.queryResolution);
     }
 
+    SLIC_INFO("Mesh bounding box is: " << SpaceBoundingBox(bbMin, bbMax) );
+    SLIC_INFO("Query bounding box is: " << clargs.meshBoundingBox );
 
     // Add a scalar field for the containment queries
     SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
