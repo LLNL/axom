@@ -98,9 +98,9 @@ class Wrapf(util.WrapperMixin):
         attrs = arg['attrs']
         intent = attrs.get('intent', None)
 
-        typ = typedef.c_fortran
+        typ = typedef.f_c_type or typedef.f_type
         if typ is None:
-            raise RuntimeError("Type {} has no value for c_fortran".format(arg['type']))
+            raise RuntimeError("Type {} has no value for f_c_type".format(arg['type']))
         t.append(typ)
         if attrs.get('value', False):
             t.append('value')
@@ -747,7 +747,7 @@ class Wrapf(util.WrapperMixin):
                 if have_c_local_var:
                     fmt_arg.c_var = 'SH_' + fmt_arg.f_var
                     arg_f_decl.append('{} {}'.format(
-                        arg_typedef.c_fortran, fmt_arg.c_var))
+                        arg_typedef.f_c_type or arg_typedef.f_type, fmt_arg.c_var))
 
                 for intent in slist:
                     cmd_list = f_statements.get(intent, {}).get('declare', [])

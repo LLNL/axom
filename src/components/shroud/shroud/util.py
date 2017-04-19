@@ -157,7 +157,7 @@ def typedef_wrapped_defaults(typedef):
                       typedef.cpp_type)
 
     typedef.f_type='type(%s)' % typedef.f_derived_type
-    typedef.c_fortran='type(C_PTR)'
+    typedef.f_c_type='type(C_PTR)'
 
     # XXX module name may not conflict with type name
 #    typedef.f_module={fmt_class.F_module_name:[unname]}
@@ -425,7 +425,6 @@ class Typedef(object):
         ('c_type', None),         # Name of type in C
         ('c_header', None),       # Name of C header file required for type
         ('c_to_cpp', '{c_var}'),  # Expression to convert from C to C++
-        ('c_fortran', None),      # Expression to convert from C to Fortran
         ('c_statements', {}),
         ('c_return_code', None),
 
@@ -433,6 +432,7 @@ class Typedef(object):
         ('f_c_argdecl', None),    # List of declarations to F_C routine
 
         ('f_type', None),         # Name of type in Fortran
+        ('f_c_type', None),       # Type for C interface
         ('f_to_c', None),         # Expression to convert from Fortran to C
         ('f_derived_type', None), # Fortran derived type name
         ('f_args', None),         # Argument in Fortran wrapper to call C.

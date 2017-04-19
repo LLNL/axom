@@ -234,7 +234,7 @@ contains
     ! void testgroup1(DataGroup * grp+intent(in)+value)
     ! function_index=54
     subroutine testgroup1(grp)
-        use sidre_mod, only : datagroup
+        use sidre_mod, only : group
         implicit none
         type(datagroup), value, intent(IN) :: grp
         ! splicer begin testgroup1
@@ -245,7 +245,7 @@ contains
     ! void testgroup2(const DataGroup * grp+intent(in)+value)
     ! function_index=55
     subroutine testgroup2(grp)
-        use sidre_mod, only : datagroup
+        use sidre_mod, only : group
         implicit none
         type(datagroup), value, intent(IN) :: grp
         ! splicer begin testgroup2

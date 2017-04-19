@@ -219,7 +219,6 @@ class Schema(object):
                 c_type='void',
                 cpp_type='void',
                 # fortran='subroutine',
-                c_fortran='type(C_PTR)',
                 f_type='type(C_PTR)',
                 PY_ctor='PyCapsule_New({cpp_var}, NULL, NULL)',
                 ),
@@ -229,7 +228,6 @@ class Schema(object):
                 cpp_type='int',
                 f_kind='C_INT',
                 f_cast='int({f_var}, C_INT)',
-                c_fortran='integer(C_INT)',
                 f_type='integer(C_INT)',
                 f_module=dict(iso_c_binding=['C_INT']),
                 PY_format='i',
@@ -243,7 +241,6 @@ class Schema(object):
                 cpp_type='long',
                 f_kind='C_LONG',
                 f_cast='int({f_var}, C_LONG)',
-                c_fortran='integer(C_LONG)',
                 f_type='integer(C_LONG)',
                 f_module=dict(iso_c_binding=['C_LONG']),
                 PY_format='l',
@@ -258,7 +255,6 @@ class Schema(object):
                 c_header='stdlib.h',
                 f_kind='C_SIZE_T',
                 f_cast='int({f_var}, C_SIZE_T)',
-                c_fortran='integer(C_SIZE_T)',
                 f_type='integer(C_SIZE_T)',
                 f_module=dict(iso_c_binding=['C_SIZE_T']),
                 PY_ctor='PyInt_FromLong({c_var})',
@@ -273,7 +269,6 @@ class Schema(object):
                 cpp_type='float',
                 f_kind='C_FLOAT',
                 f_cast='real({f_var}, C_FLOAT)',
-                c_fortran='real(C_FLOAT)',
                 f_type='real(C_FLOAT)',
                 f_module=dict(iso_c_binding=['C_FLOAT']),
                 PY_format='f',
@@ -287,7 +282,6 @@ class Schema(object):
                 cpp_type='double',
                 f_kind='C_DOUBLE',
                 f_cast='real({f_var}, C_DOUBLE)',
-                c_fortran='real(C_DOUBLE)',
                 f_type='real(C_DOUBLE)',
                 f_module=dict(iso_c_binding=['C_DOUBLE']),
                 PY_format='d',
@@ -301,9 +295,9 @@ class Schema(object):
                 c_type='bool',
                 cpp_type='bool',
                 f_kind='C_BOOL',
-                c_fortran='logical(C_BOOL)',
 
                 f_type='logical',
+                f_c_type='logical(C_BOOL)',
                 f_module=dict(iso_c_binding=['C_BOOL']),
                 f_statements=dict(
                     intent_in=dict(
@@ -389,8 +383,8 @@ class Schema(object):
                         ),
                     ),
 
-                c_fortran='character(kind=C_CHAR)',
                 f_type='character(*)',
+                f_c_type='character(kind=C_CHAR)',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
@@ -412,8 +406,8 @@ class Schema(object):
 
                 c_type='char',    # XXX - char *
 
-                c_fortran='character(kind=C_CHAR)',
                 f_type='character',
+                f_c_type='character(kind=C_CHAR)',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
@@ -462,8 +456,8 @@ class Schema(object):
                         ),
                     ),
 
-                c_fortran='character(kind=C_CHAR)',
                 f_type='character(*)',
+                f_c_type='character(kind=C_CHAR)',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module=dict(iso_c_binding=None),
                 # f_return_code='{F_result} =
@@ -491,8 +485,8 @@ class Schema(object):
                 c_header='mpi.h',
                 c_type='MPI_Fint',
                 # usually, MPI_Fint will be equivalent to int
-                c_fortran='integer(C_INT)',
                 f_type='integer',
+                f_c_type='integer(C_INT)',
                 cpp_to_c='MPI_Comm_c2f({cpp_var})',
                 c_to_cpp='MPI_Comm_f2c({c_var})',
                 ),
@@ -1296,7 +1290,7 @@ class VerifyAttrs(object):
             value = attrs.get('value', None)
             if value is None:
                 if is_ptr:
-                    if typedef.c_fortran == 'type(C_PTR)':
+                    if (typedef.f_c_type or typedef.f_type) == 'type(C_PTR)':
                         # This causes Fortran to dereference the C_PTR
                         # Otherwise a void * argument becomes void **
                         attrs['value'] = True
@@ -1336,7 +1330,7 @@ class VerifyAttrs(object):
 
 class Namify(object):
     """Compute names of functions in library.
-    Need to compute F_name and C_F_name since they interact.
+    Need to compute F_name and F_C_name since they interact.
     Compute all C names first, then Fortran.
     A Fortran function may call a generated C function via
     _PTR_F_C_index

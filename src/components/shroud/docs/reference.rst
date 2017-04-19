@@ -597,10 +597,6 @@ c_to_cpp
     Expression to convert from C to C++.
     Defaults to *{c_var}*.  i.e. no conversion required.
 
-c_fortran
-    Type declaration for ``bind(C)`` interface.
-    Defaults to *None*.
-
 c_statements
     A nested dictionary of code template to add.
     The first layer is *intent_in*, *intent_out*, and *result*.
@@ -644,6 +640,10 @@ f_c_argdecl
     List of declarations to F_C routine.
     By default, only a single argument is passed for each dummy argument.
     Defaults to *None*.
+
+f_c_type
+    Type declaration for ``bind(C)`` interface.
+    Defaults to *None* which will then use *f_type*.
 
 f_type
     Name of type in Fortran.

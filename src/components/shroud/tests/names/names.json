@@ -490,12 +490,12 @@
     "patterns": [], 
     "types": {
         "MPI_Comm": {
-            "c_fortran": "integer(C_INT)", 
             "c_header": "mpi.h", 
             "c_to_cpp": "MPI_Comm_f2c({c_var})", 
             "c_type": "MPI_Fint", 
             "cpp_to_c": "MPI_Comm_c2f({cpp_var})", 
             "cpp_type": "MPI_Comm", 
+            "f_c_type": "integer(C_INT)", 
             "f_type": "integer"
         }, 
         "Names": {
@@ -506,11 +506,11 @@
             "PY_from_object": "PP_Names_from_Object", 
             "PY_to_object": "PP_Names_to_Object", 
             "base": "wrapped", 
-            "c_fortran": "type(C_PTR)", 
             "c_to_cpp": "static_cast<{c_const}Names{c_ptr}>(static_cast<{c_const}void *>({c_var}))", 
             "c_type": "TES_names", 
             "cpp_to_c": "static_cast<{c_const}TES_names *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "Names", 
+            "f_c_type": "type(C_PTR)", 
             "f_derived_type": "FNames", 
             "f_module": {
                 "name_module": [
@@ -541,9 +541,9 @@
             "LUA_type": "LUA_TBOOLEAN", 
             "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({c_var})", 
-            "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
+            "f_c_type": "logical(C_BOOL)", 
             "f_kind": "C_BOOL", 
             "f_module": {
                 "iso_c_binding": [
@@ -583,7 +583,6 @@
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
                     "cpp_header": "<cstring>", 
@@ -623,6 +622,7 @@
             }, 
             "c_type": "char", 
             "cpp_type": "char", 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -634,7 +634,6 @@
             "LUA_type": "LUA_TSTRING", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
-            "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "result": {
                     "post_call": [
@@ -645,6 +644,7 @@
             }, 
             "c_type": "char", 
             "cpp_type": "char", 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -655,7 +655,6 @@
             "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "d", 
-            "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
             "cpp_type": "double", 
             "f_cast": "real({f_var}, C_DOUBLE)", 
@@ -672,7 +671,6 @@
             "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "f", 
-            "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
             "cpp_type": "float", 
             "f_cast": "real({f_var}, C_FLOAT)", 
@@ -689,7 +687,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "i", 
-            "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
             "f_cast": "int({f_var}, C_INT)", 
@@ -706,7 +703,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "i", 
-            "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
             "f_cast": "int({f_var}, C_INT)", 
@@ -723,7 +719,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "l", 
-            "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
             "f_cast": "int({f_var}, C_LONG)", 
@@ -740,7 +735,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "l", 
-            "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
             "f_cast": "int({f_var}, C_LONG)", 
@@ -757,7 +751,6 @@
             "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "d", 
-            "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
             "cpp_type": "double", 
             "f_cast": "real({f_var}, C_DOUBLE)", 
@@ -774,7 +767,6 @@
             "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "f", 
-            "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
             "cpp_type": "float", 
             "f_cast": "real({f_var}, C_FLOAT)", 
@@ -791,7 +783,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_ctor": "PyInt_FromLong({c_var})", 
-            "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
             "c_type": "size_t", 
             "cpp_type": "size_t", 
@@ -811,7 +802,6 @@
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
                     "cpp_local_var": true, 
@@ -839,6 +829,7 @@
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -859,7 +850,6 @@
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
                     "cpp_local_var": true, 
@@ -887,6 +877,7 @@
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -907,7 +898,6 @@
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
                     "cpp_local_var": true, 
@@ -935,6 +925,7 @@
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_helper": {
                 "f_return_code": {
                     "fstr": true
@@ -956,7 +947,6 @@
         }, 
         "void": {
             "PY_ctor": "PyCapsule_New({cpp_var}, NULL, NULL)", 
-            "c_fortran": "type(C_PTR)", 
             "c_type": "void", 
             "cpp_type": "void", 
             "f_type": "type(C_PTR)"

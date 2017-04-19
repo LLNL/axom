@@ -3685,7 +3685,7 @@
                         "c_var": "grp", 
                         "c_var_len": "Lgrp", 
                         "c_var_num": "Ngrp", 
-                        "cpp_type": "axom::sidre::DataGroup", 
+                        "cpp_type": "axom::sidre::Group", 
                         "cpp_var": "SH_grp"
                     }, 
                     "fmtf": {
@@ -3696,7 +3696,7 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "grp", 
-                        "cpp_type": "axom::sidre::DataGroup", 
+                        "cpp_type": "axom::sidre::Group", 
                         "cpp_var": "SH_grp", 
                         "py_var": "SH_Py_grp"
                     }, 
@@ -3709,8 +3709,8 @@
             "fmt": {
                 "C_call_list": "SH_grp", 
                 "C_name": "AA_testgroup1", 
-                "C_pre_call": "axom::sidre::DataGroup * SH_grp = static_cast<axom::sidre::DataGroup *>(static_cast<void *>(grp));", 
-                "C_prototype": "SIDRE_datagroup * grp", 
+                "C_pre_call": "axom::sidre::Group * SH_grp = static_cast<axom::sidre::Group *>(static_cast<void *>(grp));", 
+                "C_prototype": "SIDRE_group * grp", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_testgroup1", 
@@ -3753,7 +3753,7 @@
                         "c_var": "grp", 
                         "c_var_len": "Lgrp", 
                         "c_var_num": "Ngrp", 
-                        "cpp_type": "axom::sidre::DataGroup", 
+                        "cpp_type": "axom::sidre::Group", 
                         "cpp_var": "SH_grp"
                     }, 
                     "fmtf": {
@@ -3764,7 +3764,7 @@
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "grp", 
-                        "cpp_type": "axom::sidre::DataGroup", 
+                        "cpp_type": "axom::sidre::Group", 
                         "cpp_var": "SH_grp", 
                         "py_var": "SH_Py_grp"
                     }, 
@@ -3777,8 +3777,8 @@
             "fmt": {
                 "C_call_list": "SH_grp", 
                 "C_name": "AA_testgroup2", 
-                "C_pre_call": "const axom::sidre::DataGroup * SH_grp = static_cast<const axom::sidre::DataGroup *>(static_cast<const void *>(grp));", 
-                "C_prototype": "const SIDRE_datagroup * grp", 
+                "C_pre_call": "const axom::sidre::Group * SH_grp = static_cast<const axom::sidre::Group *>(static_cast<const void *>(grp));", 
+                "C_prototype": "const SIDRE_group * grp", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_testgroup2", 
@@ -3873,16 +3873,16 @@
     "types": {
         "DataGroup": {
             "PY_PyTypeObject": "FillInTypeForGroup", 
-            "c_fortran": "type(C_PTR)", 
-            "c_header": "sidre/wrapDataGroup.h", 
+            "c_header": "sidre/wrapGroup.h", 
             "c_to_cpp": "static_cast<{c_const}{cpp_type}{c_ptr}>(static_cast<{c_const}void *>({c_var}))", 
-            "c_type": "SIDRE_datagroup", 
-            "cpp_header": "sidre/DataGroup.hpp", 
+            "c_type": "SIDRE_group", 
+            "cpp_header": "sidre/Group.hpp", 
             "cpp_local_var": true, 
-            "cpp_type": "axom::sidre::DataGroup", 
+            "cpp_type": "axom::sidre::Group", 
+            "f_c_type": "type(C_PTR)", 
             "f_module": {
                 "sidre_mod": [
-                    "datagroup"
+                    "group"
                 ]
             }, 
             "f_to_c": "{f_var}%get_instance()", 
@@ -3896,11 +3896,11 @@
             "PY_from_object": "PP_ExClass1_from_Object", 
             "PY_to_object": "PP_ExClass1_to_Object", 
             "base": "wrapped", 
-            "c_fortran": "type(C_PTR)", 
             "c_to_cpp": "static_cast<{c_const}ExClass1{c_ptr}>(static_cast<{c_const}void *>({c_var}))", 
             "c_type": "AA_exclass1", 
             "cpp_to_c": "static_cast<{c_const}AA_exclass1 *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "ExClass1", 
+            "f_c_type": "type(C_PTR)", 
             "f_derived_type": "exclass1", 
             "f_module": {
                 "exclass1_mod": [
@@ -3933,11 +3933,11 @@
             "PY_from_object": "PP_ExClass2_from_Object", 
             "PY_to_object": "PP_ExClass2_to_Object", 
             "base": "wrapped", 
-            "c_fortran": "type(C_PTR)", 
             "c_to_cpp": "static_cast<{c_const}ExClass2{c_ptr}>(static_cast<{c_const}void *>({c_var}))", 
             "c_type": "AA_exclass2", 
             "cpp_to_c": "static_cast<{c_const}AA_exclass2 *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "ExClass2", 
+            "f_c_type": "type(C_PTR)", 
             "f_derived_type": "exclass2", 
             "f_module": {
                 "exclass2_mod": [
@@ -3963,12 +3963,12 @@
             }
         }, 
         "MPI_Comm": {
-            "c_fortran": "integer(C_INT)", 
             "c_header": "mpi.h", 
             "c_to_cpp": "MPI_Comm_f2c({c_var})", 
             "c_type": "MPI_Fint", 
             "cpp_to_c": "MPI_Comm_c2f({cpp_var})", 
             "cpp_type": "MPI_Comm", 
+            "f_c_type": "integer(C_INT)", 
             "f_type": "integer"
         }, 
         "SidreLength": {
@@ -3976,7 +3976,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "l", 
-            "c_fortran": "integer(C_LONG)", 
             "c_header": "sidre/SidreTypes.h", 
             "c_type": "SIDRE_SidreLength", 
             "cpp_type": "SidreLength", 
@@ -3995,7 +3994,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "i", 
-            "c_fortran": "integer(C_INT)", 
             "c_header": "sidre/SidreTypes.h", 
             "c_to_cpp": "getTypeID({c_var})", 
             "c_type": "int", 
@@ -4018,9 +4016,9 @@
             "LUA_type": "LUA_TBOOLEAN", 
             "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({c_var})", 
-            "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
+            "f_c_type": "logical(C_BOOL)", 
             "f_kind": "C_BOOL", 
             "f_module": {
                 "iso_c_binding": [
@@ -4060,7 +4058,6 @@
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
                     "cpp_header": "<cstring>", 
@@ -4100,6 +4097,7 @@
             }, 
             "c_type": "char", 
             "cpp_type": "char", 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -4111,7 +4109,6 @@
             "LUA_type": "LUA_TSTRING", 
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
-            "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "result": {
                     "post_call": [
@@ -4122,6 +4119,7 @@
             }, 
             "c_type": "char", 
             "cpp_type": "char", 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -4132,7 +4130,6 @@
             "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "d", 
-            "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
             "cpp_type": "double", 
             "f_cast": "real({f_var}, C_DOUBLE)", 
@@ -4149,7 +4146,6 @@
             "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "f", 
-            "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
             "cpp_type": "float", 
             "f_cast": "real({f_var}, C_FLOAT)", 
@@ -4166,7 +4162,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "i", 
-            "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
             "f_cast": "int({f_var}, C_INT)", 
@@ -4183,7 +4178,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "i", 
-            "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
             "f_cast": "int({f_var}, C_INT)", 
@@ -4200,7 +4194,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "l", 
-            "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
             "f_cast": "int({f_var}, C_LONG)", 
@@ -4217,7 +4210,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "l", 
-            "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
             "f_cast": "int({f_var}, C_LONG)", 
@@ -4237,7 +4229,6 @@
             "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "d", 
-            "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
             "cpp_type": "double", 
             "f_cast": "real({f_var}, C_DOUBLE)", 
@@ -4254,7 +4245,6 @@
             "LUA_push": "lua_pushnumber({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_format": "f", 
-            "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
             "cpp_type": "float", 
             "f_cast": "real({f_var}, C_FLOAT)", 
@@ -4271,7 +4261,6 @@
             "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
             "LUA_type": "LUA_TNUMBER", 
             "PY_ctor": "PyInt_FromLong({c_var})", 
-            "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
             "c_type": "size_t", 
             "cpp_type": "size_t", 
@@ -4291,7 +4280,6 @@
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
                     "cpp_local_var": true, 
@@ -4319,6 +4307,7 @@
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -4339,7 +4328,6 @@
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
                     "cpp_local_var": true, 
@@ -4367,6 +4355,7 @@
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -4387,7 +4376,6 @@
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "base": "string", 
-            "c_fortran": "character(kind=C_CHAR)", 
             "c_statements": {
                 "intent_in": {
                     "cpp_local_var": true, 
@@ -4415,6 +4403,7 @@
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_helper": {
                 "f_return_code": {
                     "fstr": true
@@ -4436,7 +4425,6 @@
         }, 
         "void": {
             "PY_ctor": "PyCapsule_New({cpp_var}, NULL, NULL)", 
-            "c_fortran": "type(C_PTR)", 
             "c_type": "void", 
             "cpp_type": "void", 
             "f_type": "type(C_PTR)"

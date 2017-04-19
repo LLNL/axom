@@ -42,7 +42,6 @@ types:
     c_header : sidre/SidreTypes.h
     c_type   : SIDRE_SidreLength
     cpp_type : SidreLength
-#    c_fortran: integer(C_LONG)
 #    f_type   : integer(C_LONG)
 ##    f_module : iso_c_binding:C_LONG
 #    f_module : 
@@ -61,14 +60,14 @@ types:
   # This example is pulled from spio
   # DataGroup is a type which is provided by another shroud wrapped library
   DataGroup:
-    cpp_header: sidre/DataGroup.hpp
-    cpp_type: axom::sidre::DataGroup
+    cpp_header: sidre/Group.hpp
+    cpp_type: axom::sidre::Group
     f_type: type(datagroup)
+    f_c_type: type(C_PTR)
     f_module:
-      sidre_mod: [ datagroup ]
-    c_type: SIDRE_datagroup
-    c_header: sidre/wrapDataGroup.h
-    c_fortran: type(C_PTR)
+      sidre_mod: [ group ]
+    c_type: SIDRE_group
+    c_header: sidre/wrapGroup.h
     f_to_c: '{f_var}%get_instance()'
     # cpp_local_var uses c_to_cpp to assign a value to a local variable
     cpp_local_var: True

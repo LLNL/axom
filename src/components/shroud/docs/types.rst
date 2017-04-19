@@ -9,6 +9,52 @@ via the iso_c_binding module.
 Other types, such as logical and in particular strings, require additional
 conversions.
 
+Shroud maintains type maps which are used to generate conversion code
+between Fortran, C and C++.  Many of the conversions reference other
+format variables to describe the context.  These variables are
+
+c_var
+    The C name of the argument.
+
+cpp_var
+    Name of the C++ variable.
+
+f_var
+    Fortran variable name for argument.
+
+All of the fields are defined in the references section and will only be used
+by example in this section.
+
+
+Integer and Real
+----------------
+
+The numeric types require no conversion.  In this case the type map is mainly used
+to generate corresponding code::
+
+    types:
+      int:
+        c_type: int 
+        cpp_type: int
+        f_type: integer(C_INT)
+        f_kind: C_INT 
+        f_module:
+          iso_c_binding:
+          - C_INT
+
+        f_cast: int({f_var}, C_INT)
+
+            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
+            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
+            "LUA_type": "LUA_TNUMBER", 
+            "PY_format": "i", 
+            }, 
+
+
+
+
+
+
 
 Logical Type
 ------------
