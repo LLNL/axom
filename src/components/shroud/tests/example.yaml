@@ -60,6 +60,7 @@ types:
   # This example is pulled from spio
   # DataGroup is a type which is provided by another shroud wrapped library
   DataGroup:
+    base: wrapped
     cpp_header: sidre/Group.hpp
     cpp_type: axom::sidre::Group
     f_type: type(datagroup)

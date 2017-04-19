@@ -541,6 +541,7 @@ class Schema(object):
                     def_types[key].update(value)
                 else:
                     def_types[key] = util.Typedef(key, **value)
+#                util.typedef_wrapped_defaults(def_types[key])  # XXX needs work
 
         patterns = node.setdefault('patterns', [])
 

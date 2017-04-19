@@ -113,9 +113,9 @@ def as_yaml(obj, order, indent, output):
             # quote strings which start with { to avoid treating them
             # as a dictionary.
             if value.startswith('{'):
-                output.append('{}{} = "{}"'.format(prefix, key, value))
+                output.append('{}{}: "{}"'.format(prefix, key, value))
             else:
-                output.append('{}{} = {}'.format(prefix, key, value))
+                output.append('{}{}: {}'.format(prefix, key, value))
         elif isinstance(value, collections.Sequence):
             # Keys which are are an array of string (code templates)
             if key in ('declare', 'pre_call', 'pre_call_trim', 'post_call',
@@ -135,7 +135,7 @@ def as_yaml(obj, order, indent, output):
             as_yaml(value, order0, indent + 1, output)
         else:
             # numbers or booleans
-            output.append('{}{} = {}'.format(prefix, key, value))
+            output.append('{}{}: {}'.format(prefix, key, value))
 
 
 def typedef_wrapped_defaults(typedef):
@@ -144,7 +144,7 @@ def typedef_wrapped_defaults(typedef):
     since the rest are boilerplate.  This function restores
     the boilerplate.
     """
-    if typedef.base is not 'wrapped':
+    if typedef.base != 'wrapped':
         return
 
     typedef.cpp_to_c=('static_cast<{c_const}%s *>('
