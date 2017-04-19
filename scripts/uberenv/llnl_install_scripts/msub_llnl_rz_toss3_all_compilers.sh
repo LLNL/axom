@@ -1,10 +1,9 @@
 #!/bin/bash
 #MSUB -l nodes=1
-#MSUB -q pbatch
+#MSUB -q pdebug
 #MSUB -l walltime=8:00:00
-#MSUB -A wbronze
 #MSUB -j oe
-#MSUB -o m.out.cz.uberenv.toss3.all.compilers.%j.%N.txt
+#MSUB -o m.out.rz.uberenv.toss3.all.compilers.%j.%N.txt
 #
 # usage: 
 #  cd {to directory with this script}
