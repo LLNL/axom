@@ -228,6 +228,9 @@ functions:
   # This needs to generate a Fortran wrapper to convert the bool to logical
   -  decl: bool isInitialized()
 
+  # check intent with bool
+  -  decl: void checkBool(bool arg1, bool * arg2+intent(out), bool * arg3+intent(inout))
+
   # overrides which each accept a string.
   # Test the name of generated 'bufferify' functions
   -  decl: void test_names(const std::string &name)

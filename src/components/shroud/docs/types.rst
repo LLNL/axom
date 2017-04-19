@@ -29,8 +29,9 @@ by example in this section.
 Integer and Real
 ----------------
 
-The numeric types require no conversion.  In this case the type map is mainly used
-to generate corresponding code::
+The numeric types usually require no conversion.
+In this case the type map is mainly used to generate declaration code 
+for wrappers::
 
     types:
       int:
@@ -42,36 +43,115 @@ to generate corresponding code::
           - C_INT
         f_cast: int({f_var}, C_INT)
 
+One case where a converstion is required is when the Fortran argument
+is one type and the C++ argument is another. This may happen when an
+overloaded function is generated so that a ``C_INT`` or ``C_LONG``
+argument may be passed to a C++ function function expecting a
+``long``.  The **f_cast** field is used to convert the argument to the
+type expected by the C++ function.
 
 
 
 
 
+Bool Type
+---------
 
-Logical Type
-------------
+C++ functions with a ``bool`` argument generate a Fortran wrapper with
+a ``logical`` argument.  One of the goals of Shroud is to produce an
+ideomatic interface.  Converting the types in the wrapper avoids the
+awkardness of requiring the Fortran user to passing in
+``.true._c_bool`` instead of just ``.true.``.
 
-The f_statements is::
+The type map is defined as::
 
-                f_statements=dict(
-                    intent_in=dict(
-                        c_local_var=True,
-                        pre_call=[
-                            '{c_var} = {f_var}  ! coerce to C_BOOL',
-                            ],
-                        ),
-                    intent_out=dict(
-                        c_local_var=True,
-                        post_call=[
-                            '{f_var} = {c_var}  ! coerce to logical',
-                            ],
-                        ),
-                    result=dict(
-                        # The wrapper is needed to convert bool to logical
-                        need_wrapper=True,
-                        ),
-                    ),
+    types:
+      bool:
+        c_type: bool 
+        cpp_type: bool 
+        f_type: logical 
+        f_c_type: logical(C_BOOL) 
+        f_module:
+            iso_c_binding:
+            -  C_BOOL
+        f_statements:
+           intent_in:
+              c_local_var: true 
+              pre_call:
+              -  {c_var} = {f_var}  ! coerce to C_BOOL
+           intent_out:
+              c_local_var: true 
+              post_call:
+              -  {f_var} = {c_var}  ! coerce to logical
+           result:
+              need_wrapper: true
 
+The first thing to notice is that **f_c_type** is defined.  This is
+the type used in the Fortran interface for the C wrapper.  The type
+is ``logical(C_BOOL)`` while **f_type**, the type of the Fortran
+wrapper argument, is ``logical``.
+
+The **f_statements** section describes code to add into the wrapper to
+perform the converstion.  *c_var* and *f_var* default to the same
+value as the argument name.  By setting **c_local_var**, a local
+variable is generated for the call to the C wrapper.  It will be named
+``SH_{f_var}``.
+
+There is no Fortran intrinsic function to convert between default
+``logical`` and ``logical(C_BOOL)``. The **pre_call** and
+**post_call** sections will insert an assignment statement to allow
+the compiler to do the conversion.
+
+Example of using intent with ``bool`` arguments::
+
+    decl: void checkBool(bool arg1, bool * arg2+intent(out), bool * arg3+intent(inout))
+
+The resulting wrappers are::
+
+    module userlibrary_mod
+        interface
+            subroutine c_check_bool(arg1, arg2, arg3) &
+                    bind(C, name="AA_check_bool")
+                use iso_c_binding
+                implicit none
+                logical(C_BOOL), value, intent(IN) :: arg1
+                logical(C_BOOL), intent(OUT) :: arg2
+                logical(C_BOOL), intent(INOUT) :: arg3
+            end subroutine c_check_bool
+        end interface
+    contains
+        subroutine check_bool(arg1, arg2, arg3)
+            use iso_c_binding, only : C_BOOL
+            implicit none
+            logical, value, intent(IN) :: arg1
+            logical(C_BOOL) SH_arg1
+            logical, intent(OUT) :: arg2
+            logical(C_BOOL) SH_arg2
+            logical, intent(INOUT) :: arg3
+            logical(C_BOOL) SH_arg3
+            SH_arg1 = arg1  ! coerce to C_BOOL
+            SH_arg3 = arg3  ! coerce to C_BOOL
+            ! splicer begin check_bool
+            call c_check_bool(  &
+                SH_arg1,  &
+                SH_arg2,  &
+                SH_arg3)
+            ! splicer end check_bool
+            arg2 = SH_arg2  ! coerce to logical
+            arg3 = SH_arg3  ! coerce to logical
+        end subroutine check_bool
+    end module userlibrary_mod
+
+Since ``arg1`` in the YAML declaration is not a pointer it defaults to
+``intent(IN)``.  The intent of the other two arguments are explicitly
+annotated.
+
+If a function return a ``bool`` result then a wrapper is always needed
+to convert the result.  The **result** section sets **need_wrapper**
+to force the wrapper to be created.  By default a function with no
+argument would not need a wrapper since there will be no **pre_call**
+or **post_call** code blocks.  Only the C interface would be required
+since Fortran could call the C function directly.
 
 
 Character Type

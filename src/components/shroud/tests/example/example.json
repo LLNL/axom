@@ -2908,7 +2908,7 @@
         {
             "C_code": "return name != NULL;", 
             "F_code": "rv = name .ne. \" \"", 
-            "_PTR_F_C_index": 58, 
+            "_PTR_F_C_index": 59, 
             "_decl": "bool isNameValid(const std::string & name+intent(in))", 
             "_function_index": 48, 
             "_subprogram": "function", 
@@ -2979,7 +2979,7 @@
             "_PTR_C_CPP_index": 48, 
             "_decl": "bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 58, 
+            "_function_index": 59, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "function", 
             "args": [
@@ -3072,13 +3072,142 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 59, 
+            "_decl": "void checkBool(bool arg1+intent(in)+value, bool * arg2+intent(out), bool * arg3+intent(inout))", 
+            "_function_index": 50, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": "", 
+                        "c_var": "arg1", 
+                        "c_var_len": "Larg1", 
+                        "c_var_num": "Narg1", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg1"
+                    }, 
+                    "fmtf": {
+                        "c_var": "SH_arg1", 
+                        "f_var": "arg1"
+                    }, 
+                    "fmtpy": {
+                        "c_const": "", 
+                        "c_ptr": "", 
+                        "c_var": "arg1", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg1", 
+                        "py_var": "SH_Py_arg1"
+                    }, 
+                    "name": "arg1", 
+                    "type": "bool"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "out", 
+                        "ptr": true, 
+                        "value": false
+                    }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "arg2", 
+                        "c_var_len": "Larg2", 
+                        "c_var_num": "Narg2", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg2"
+                    }, 
+                    "fmtf": {
+                        "c_var": "SH_arg2", 
+                        "f_var": "arg2"
+                    }, 
+                    "fmtpy": {
+                        "PyObject": "PyObject", 
+                        "PyTypeObject": "PyBool_Type", 
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "arg2", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg2", 
+                        "py_var": "SH_Py_arg2"
+                    }, 
+                    "name": "arg2", 
+                    "type": "bool"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "inout", 
+                        "ptr": true, 
+                        "value": false
+                    }, 
+                    "fmtc": {
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "arg3", 
+                        "c_var_len": "Larg3", 
+                        "c_var_num": "Narg3", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg3"
+                    }, 
+                    "fmtf": {
+                        "c_var": "SH_arg3", 
+                        "f_var": "arg3"
+                    }, 
+                    "fmtpy": {
+                        "PyObject": "PyObject", 
+                        "PyTypeObject": "PyBool_Type", 
+                        "c_const": "", 
+                        "c_ptr": " *", 
+                        "c_var": "arg3", 
+                        "cpp_type": "bool", 
+                        "cpp_var": "arg3", 
+                        "py_var": "SH_Py_arg3"
+                    }, 
+                    "name": "arg3", 
+                    "type": "bool"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void checkBool(bool arg1, bool * arg2+intent(out), bool * arg3+intent(inout))", 
+            "fmt": {
+                "C_call_list": "arg1, arg2, arg3", 
+                "C_name": "AA_check_bool", 
+                "C_prototype": "bool arg1, bool * arg2, bool * arg3", 
+                "C_return_type": "void", 
+                "C_rv_decl": "void SH_rv", 
+                "F_C_call": "c_check_bool", 
+                "F_C_name": "c_check_bool", 
+                "F_arg_c_call": "SH_arg1, SH_arg2, SH_arg3", 
+                "F_arg_c_call_tab": "\tSH_arg1\tSH_arg2\tSH_arg3", 
+                "F_arguments": "arg1, arg2, arg3", 
+                "F_name_generic": "check_bool", 
+                "F_name_impl": "check_bool", 
+                "F_name_method": "check_bool", 
+                "F_subprogram": "subroutine", 
+                "PY_name_impl": "PP_check_bool", 
+                "c_const": "", 
+                "cpp_var": "SH_rv", 
+                "function_name": "checkBool", 
+                "underscore_name": "check_bool"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "checkBool", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 60, 
             "_cpp_overload": [
-                50, 
-                51
+                51, 
+                52
             ], 
             "_decl": "void test_names(const std::string & name+intent(in))", 
-            "_function_index": 50, 
+            "_function_index": 51, 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
             "args": [
@@ -3144,14 +3273,14 @@
             }
         }, 
         {
-            "_PTR_C_CPP_index": 50, 
+            "_PTR_C_CPP_index": 51, 
             "_cpp_overload": [
-                50, 
-                51
+                51, 
+                52
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 59, 
+            "_function_index": 60, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -3210,13 +3339,13 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 60, 
+            "_PTR_F_C_index": 61, 
             "_cpp_overload": [
-                50, 
-                51
+                51, 
+                52
             ], 
             "_decl": "void test_names(const std::string & name+intent(in), int flag+intent(in)+value)", 
-            "_function_index": 51, 
+            "_function_index": 52, 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
             "args": [
@@ -3307,14 +3436,14 @@
             }
         }, 
         {
-            "_PTR_C_CPP_index": 51, 
+            "_PTR_C_CPP_index": 52, 
             "_cpp_overload": [
-                50, 
-                51
+                51, 
+                52
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 60, 
+            "_function_index": 61, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -3395,7 +3524,7 @@
         }, 
         {
             "_decl": "void testoptional()", 
-            "_function_index": 56, 
+            "_function_index": 57, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -3435,7 +3564,7 @@
         }, 
         {
             "_decl": "void testoptional(int i+default(1)+intent(in)+value)", 
-            "_function_index": 57, 
+            "_function_index": 58, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -3499,10 +3628,10 @@
         {
             "_decl": "void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)", 
             "_default_funcs": [
-                56, 
-                57
+                57, 
+                58
             ], 
-            "_function_index": 52, 
+            "_function_index": 53, 
             "_has_default_arg": true, 
             "_nargs": [
                 0, 
@@ -3605,7 +3734,7 @@
         }, 
         {
             "_decl": "void testmpi(MPI_Comm comm+intent(in)+value)", 
-            "_function_index": 53, 
+            "_function_index": 54, 
             "_subprogram": "subroutine", 
             "args": [
                 {
@@ -3670,7 +3799,7 @@
         }, 
         {
             "_decl": "void testgroup1(DataGroup * grp+intent(in)+value)", 
-            "_function_index": 54, 
+            "_function_index": 55, 
             "_subprogram": "subroutine", 
             "args": [
                 {
@@ -3737,7 +3866,7 @@
         }, 
         {
             "_decl": "void testgroup2(const DataGroup * grp+intent(in)+value)", 
-            "_function_index": 55, 
+            "_function_index": 56, 
             "_subprogram": "subroutine", 
             "args": [
                 {

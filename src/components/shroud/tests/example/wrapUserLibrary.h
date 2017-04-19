@@ -32,6 +32,8 @@ bool AA_is_name_valid_bufferify(const char * name, int Lname);
 
 bool AA_is_initialized();
 
+void AA_check_bool(bool arg1, bool * arg2, bool * arg3);
+
 void AA_test_names(const char * name);
 
 void AA_test_names_bufferify(const char * name, int Lname);

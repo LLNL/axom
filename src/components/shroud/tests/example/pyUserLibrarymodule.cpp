@@ -75,6 +75,40 @@ PP_is_initialized(
 // splicer end function.is_initialized
 }
 
+static char PP_check_bool__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_check_bool(
+  PyObject *,  // self unused
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.check_bool
+    bool arg1;
+    PyObject * SH_Py_arg1;
+    bool * arg2;
+    PyObject * SH_Py_arg2;
+    bool * arg3;
+    PyObject * SH_Py_arg3;
+    const char *SH_kwcpp = "arg1\0arg3";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O!:checkBool", SH_kw_list,
+        &PyBool_Type, &SH_Py_arg1, &PyBool_Type, &SH_Py_arg3))
+    {
+        return NULL;
+    }
+    arg1 = PyObject_IsTrue(SH_Py_arg1);
+    arg3 = PyObject_IsTrue(SH_Py_arg3);
+    checkBool(arg1, arg2, arg3);
+    PyObject * SH_Py_arg2 = PyBool_FromLong(arg2);
+    PyObject * SH_Py_arg3 = PyBool_FromLong(arg3);
+    return Py_BuildValue("(OO)", *SH_Py_arg2, *SH_Py_arg3);
+// splicer end function.check_bool
+}
+
 static PyObject *
 PP_test_names(
   PyObject *,  // self unused
@@ -279,6 +313,7 @@ static PyMethodDef PP_methods[] = {
 {"local_function1", (PyCFunction)PP_local_function1, METH_NOARGS, PP_local_function1__doc__},
 {"isNameValid", (PyCFunction)PP_is_name_valid, METH_VARARGS|METH_KEYWORDS, PP_is_name_valid__doc__},
 {"isInitialized", (PyCFunction)PP_is_initialized, METH_NOARGS, PP_is_initialized__doc__},
+{"checkBool", (PyCFunction)PP_check_bool, METH_VARARGS|METH_KEYWORDS, PP_check_bool__doc__},
 {"testoptional", (PyCFunction)PP_testoptional_2, METH_VARARGS|METH_KEYWORDS, PP_testoptional_2__doc__},
 {"testmpi", (PyCFunction)PP_testmpi, METH_VARARGS|METH_KEYWORDS, PP_testmpi__doc__},
 {"testgroup1", (PyCFunction)PP_testgroup1, METH_VARARGS|METH_KEYWORDS, PP_testgroup1__doc__},
