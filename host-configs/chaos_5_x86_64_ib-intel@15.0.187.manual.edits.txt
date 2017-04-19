@@ -19,7 +19,7 @@ set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 ##############################################################################
 # SHROUD - manually added for now. Use a public build add to TPL later
 ##############################################################################
-set(SHROUD_EXECUTABLE "/usr/workspace/wsrzd/axomdev/shroud/public/chaos_5_x86_64_ib/bin/shroud" CACHE PATH "")
+set(SHROUD_EXECUTABLE "/usr/apps/shroud/bin/shroud" CACHE PATH "")
 
 ##############################################################################
 # !---------------------------------------------------------------------------
