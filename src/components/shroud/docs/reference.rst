@@ -673,10 +673,6 @@ f_return_code
     Fortran code used to call function and assign the return value.
     Defaults to *None*.
 
-.. f_kind
-..    Fortran kind of type.
-..    Defaults to *None*.
-
 f_cast
     Expression to convert Fortran type to C type.
     This is used when creating a Fortran generic functions which

@@ -37,18 +37,10 @@ to generate corresponding code::
         c_type: int 
         cpp_type: int
         f_type: integer(C_INT)
-        f_kind: C_INT 
         f_module:
           iso_c_binding:
           - C_INT
-
         f_cast: int({f_var}, C_INT)
-
-            "LUA_pop": "lua_tointeger({LUA_state_var}, {LUA_index})", 
-            "LUA_push": "lua_pushinteger({LUA_state_var}, {c_var})", 
-            "LUA_type": "LUA_TNUMBER", 
-            "PY_format": "i", 
-            }, 
 
 
 
