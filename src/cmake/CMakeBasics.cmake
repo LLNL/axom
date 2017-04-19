@@ -42,18 +42,6 @@
 include(cmake/AxomOptions.cmake)
 
 ################################
-# Setup toolkit generate targets
-################################
-
-if(EXISTS ${SHROUD_EXECUTABLE})
-    execute_process(COMMAND ${SHROUD_EXECUTABLE} --sitedir
-                    OUTPUT_VARIABLE SHROUD_Site
-                    ERROR_VARIABLE SHROUD_Site_Error
-                    OUTPUT_STRIP_TRAILING_WHITESPACE )
-    include(${SHROUD_Site}/cmake/SetupShroud.cmake)
-endif()
-
-################################
 # AXOM's Third party library setup
 ################################
 include(cmake/thirdparty/SetupAxomThirdParty.cmake)
