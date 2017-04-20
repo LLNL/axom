@@ -344,12 +344,12 @@ class Wrapc(util.WrapperMixin):
                           '{c_const}{cpp_class} *{CPP_this} = ' +
                           cls_typedef.c_to_cpp + ';', fmt_func)
 
-#    c_var     - argument to C function  (wrapper function)
-#    c_var_len - variable with trimmed length of c_var
-#    c_var_num - variable with length of c_var
-#    cpp_var   - argument to C++ function  (wrapped function).
-#                Usually same as c_var but may be a new local variable
-#                or the funtion result variable.
+#    c_var      - argument to C function  (wrapper function)
+#    c_var_trim - variable with trimmed length of c_var
+#    c_var_len  - variable with length of c_var
+#    cpp_var    - argument to C++ function  (wrapped function).
+#                 Usually same as c_var but may be a new local variable
+#                 or the funtion result variable.
 
         for arg in node['args']:
             fmt_arg = arg.setdefault('fmtc', util.Options(fmt_func))
@@ -361,7 +361,7 @@ class Wrapc(util.WrapperMixin):
                 fmt_arg.c_var_trim = c_attrs.get('len_trim', 'SH_' +
                                                  options.C_var_trim_template.format(
                                                      c_var=fmt_arg.c_var))
-                fmt_arg.c_var_num = c_attrs.get('len', 'SH_' +
+                fmt_arg.c_var_len = c_attrs.get('len', 'SH_' +
                                                 options.C_var_len_template.format(
                                                     c_var=fmt_arg.c_var))
             if arg['attrs'].get('const', False):
@@ -394,7 +394,7 @@ class Wrapc(util.WrapperMixin):
                 append_format(proto_list, 'int {c_var_trim}', fmt_arg)
             len_arg = arg['attrs'].get('len', False)
             if len_arg:
-                append_format(proto_list, 'int {c_var_num}', fmt_arg)
+                append_format(proto_list, 'int {c_var_len}', fmt_arg)
 
             # Add any code needed for intent(IN).
             # Usually to convert types.

@@ -272,7 +272,7 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "i", 
-                        "c_var_num": "SH_Ni", 
+                        "c_var_len": "SH_Ni", 
                         "c_var_trim": "SH_Li", 
                         "cpp_type": "int", 
                         "cpp_var": "i"
@@ -346,7 +346,7 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "i", 
-                        "c_var_num": "SH_Ni", 
+                        "c_var_len": "SH_Ni", 
                         "c_var_trim": "SH_Li", 
                         "cpp_type": "long", 
                         "cpp_var": "i"
@@ -608,17 +608,17 @@
                     "cpp_header": "shroudrt.hpp", 
                     "cpp_local_var": true, 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});", 
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});", 
                         "delete [] {cpp_var};"
                     ], 
                     "pre_call": [
-                        "char * {cpp_var} = new char [{c_var_num} + 1];"
+                        "char * {cpp_var} = new char [{c_var_len} + 1];"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -639,8 +639,8 @@
             "c_statements": {
                 "result": {
                     "post_call": [
-                        "// {c_var_num} is always 1, test to silence warning about unused variable", 
-                        "if ({c_var_num} == 1) *{c_var} = {cpp_val};"
+                        "// {c_var_len} is always 1, test to silence warning about unused variable", 
+                        "if ({c_var_len} == 1) *{c_var} = {cpp_val};"
                     ]
                 }
             }, 
@@ -808,13 +808,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -856,13 +856,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 
@@ -904,13 +904,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }
             }, 

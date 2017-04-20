@@ -212,20 +212,20 @@ The first is for type ``char``::
                     cpp_local_var: True
                     cpp_header: <cstring>
                     pre_call:
-                      - int {c_var_len} = std::strlen({c_var});
-                      - char * {cpp_var} = new char [{c_var_len} + 1];
-                      - std::strncpy({cpp_var}, {c_var}, {c_var_len});
-                      - {cpp_var}[{c_var_len}] = '\0';
+                      - int {c_var_trim} = std::strlen({c_var});
+                      - char * {cpp_var} = new char [{c_var_trim} + 1];
+                      - std::strncpy({cpp_var}, {c_var}, {c_var_trim});
+                      - {cpp_var}[{c_var_trim}] = '\0';
                     pre_call_trim:
-                      - char * {cpp_var} = new char [{c_var_len} + 1];
-                      - std::strncpy({cpp_var}, {c_var}, {c_var_len});
-                      - {cpp_var}[{c_var_len}] = '\0';
+                      - char * {cpp_var} = new char [{c_var_trim} + 1];
+                      - std::strncpy({cpp_var}, {c_var}, {c_var_trim});
+                      - {cpp_var}[{c_var_trim}] = '\0';
                     post_call:
                       -  delete [] {cpp_var};
                 intent_out:
                     cpp_local_var: True
                     pre_call:
-                      - char * {cpp_var} = new char [{c_var_num} + 1];
+                      - char * {cpp_var} = new char [{c_var_len} + 1];
                     post_call:
                       - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
                       - delete [] {cpp_var};

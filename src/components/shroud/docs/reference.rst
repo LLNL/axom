@@ -238,7 +238,7 @@ C_const
 c_var
     The C name of the argument.
 
-c_var_num
+c_var_len
     Function argument generated from the *len* annotation.
     Set from option **C_var_len_template**.
 
