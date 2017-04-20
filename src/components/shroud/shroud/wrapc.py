@@ -357,11 +357,13 @@ class Wrapc(util.WrapperMixin):
             arg_typedef = self.typedef[arg['type']]
             c_statements = arg_typedef.c_statements
             fmt_arg.c_var = arg['name']
-            if arg_typedef.base == 'string':
-                fmt_arg.c_var_len = c_attrs.get('len_trim', 'SH_' +
-                                                options.C_var_trim_template.format(c_var=fmt_arg.c_var))
+            if True: #arg_typedef.base == 'string':
+                fmt_arg.c_var_trim = c_attrs.get('len_trim', 'SH_' +
+                                                 options.C_var_trim_template.format(
+                                                     c_var=fmt_arg.c_var))
                 fmt_arg.c_var_num = c_attrs.get('len', 'SH_' +
-                                                options.C_var_len_template.format(c_var=fmt_arg.c_var))
+                                                options.C_var_len_template.format(
+                                                    c_var=fmt_arg.c_var))
             if arg['attrs'].get('const', False):
                 fmt_arg.c_const = 'const '
             else:
@@ -389,14 +391,10 @@ class Wrapc(util.WrapperMixin):
 
             len_trim = arg['attrs'].get('len_trim', False)
             if len_trim:
-                fmt_arg.c_var_trim = len_trim
                 append_format(proto_list, 'int {c_var_trim}', fmt_arg)
             len_arg = arg['attrs'].get('len', False)
             if len_arg:
-                fmt_arg.c_var_len = len_arg
-                append_format(proto_list, 'int {c_var_len}', fmt_arg)
-#            else:
-#                fmt_arg.c_var_len = 'NNNN' + fmt_arg.c_var
+                append_format(proto_list, 'int {c_var_num}', fmt_arg)
 
             # Add any code needed for intent(IN).
             # Usually to convert types.

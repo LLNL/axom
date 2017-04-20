@@ -346,15 +346,15 @@ class Schema(object):
                         cpp_local_var=True,
                         cpp_header='<cstring>',
                         pre_call=[
-                            'int {c_var_len} = std::strlen({c_var});',
-                            'char * {cpp_var} = new char [{c_var_len} + 1];',
-                            'std::strncpy({cpp_var}, {c_var}, {c_var_len});',
-                            '{cpp_var}[{c_var_len}] = \'\\0\';'
+                            'int {c_var_trim} = std::strlen({c_var});',
+                            'char * {cpp_var} = new char [{c_var_trim} + 1];',
+                            'std::strncpy({cpp_var}, {c_var}, {c_var_trim});',
+                            '{cpp_var}[{c_var_trim}] = \'\\0\';'
                             ],
                         pre_call_trim=[
-                            'char * {cpp_var} = new char [{c_var_len} + 1];',
-                            'std::strncpy({cpp_var}, {c_var}, {c_var_len});',
-                            '{cpp_var}[{c_var_len}] = \'\\0\';'
+                            'char * {cpp_var} = new char [{c_var_trim} + 1];',
+                            'std::strncpy({cpp_var}, {c_var}, {c_var_trim});',
+                            '{cpp_var}[{c_var_trim}] = \'\\0\';'
                             ],
                         post_call=[
                             'delete [] {cpp_var};'
@@ -367,7 +367,7 @@ class Schema(object):
                             ],
                         post_call=[
                             'shroud_FccCopy'
-                            '({c_var}, {c_var_len}, {cpp_val});',
+                            '({c_var}, {c_var_num}, {cpp_val});',
                             'delete [] {cpp_var};',
                             ],
                         cpp_header='shroudrt.hpp',
@@ -375,7 +375,7 @@ class Schema(object):
                     result=dict(
                         post_call=[
                             ('shroud_FccCopy'
-                             '({c_var}, {c_var_len}, {cpp_val});'),
+                             '({c_var}, {c_var_num}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp',
                         ),
@@ -441,14 +441,14 @@ class Schema(object):
                     intent_out=dict(
                         post_call=[
                             ('shroud_FccCopy'
-                             '({c_var}, {c_var_len}, {cpp_val});'),
+                             '({c_var}, {c_var_num}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp'
                         ),
                     result=dict(
                         post_call=[
                             ('shroud_FccCopy'
-                             '({c_var}, {c_var_len}, {cpp_val});'),
+                             '({c_var}, {c_var_num}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp'
                         ),
@@ -495,9 +495,9 @@ class Schema(object):
             def_types['char_scalar'].c_statements = dict(
                 result=dict(
                     post_call=[
-                        ('// {c_var_len} is always 1,'
+                        ('// {c_var_num} is always 1,'
                          ' test to silence warning about unused variable'),
-                        'if ({c_var_len} == 1) *{c_var} = {cpp_val};',
+                        'if ({c_var_num} == 1) *{c_var} = {cpp_val};',
                         ],
                     ),
                 )

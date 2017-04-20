@@ -41,6 +41,8 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "arg1", 
+                                "c_var_num": "SH_Narg1", 
+                                "c_var_trim": "SH_Larg1", 
                                 "cpp_type": "int", 
                                 "cpp_var": "arg1"
                             }, 
@@ -134,6 +136,8 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "comm", 
+                                "c_var_num": "SH_Ncomm", 
+                                "c_var_trim": "SH_Lcomm", 
                                 "cpp_type": "MPI_Comm", 
                                 "cpp_var": "comm"
                             }, 
@@ -192,6 +196,8 @@
                                 "c_const": "", 
                                 "c_ptr": " *", 
                                 "c_var": "c2", 
+                                "c_var_num": "SH_Nc2", 
+                                "c_var_trim": "SH_Lc2", 
                                 "cpp_type": "Class1", 
                                 "cpp_var": "c2"
                             }, 
@@ -510,22 +516,22 @@
                         "delete [] {cpp_var};"
                     ], 
                     "pre_call": [
-                        "int {c_var_len} = std::strlen({c_var});", 
-                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
-                        "{cpp_var}[{c_var_len}] = '\\0';"
+                        "int {c_var_trim} = std::strlen({c_var});", 
+                        "char * {cpp_var} = new char [{c_var_trim} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_trim});", 
+                        "{cpp_var}[{c_var_trim}] = '\\0';"
                     ], 
                     "pre_call_trim": [
-                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
-                        "{cpp_var}[{c_var_len}] = '\\0';"
+                        "char * {cpp_var} = new char [{c_var_trim} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_trim});", 
+                        "{cpp_var}[{c_var_trim}] = '\\0';"
                     ]
                 }, 
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "cpp_local_var": true, 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});", 
                         "delete [] {cpp_var};"
                     ], 
                     "pre_call": [
@@ -535,7 +541,7 @@
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }
             }, 
@@ -556,8 +562,8 @@
             "c_statements": {
                 "result": {
                     "post_call": [
-                        "// {c_var_len} is always 1, test to silence warning about unused variable", 
-                        "if ({c_var_len} == 1) *{c_var} = {cpp_val};"
+                        "// {c_var_num} is always 1, test to silence warning about unused variable", 
+                        "if ({c_var_num} == 1) *{c_var} = {cpp_val};"
                     ]
                 }
             }, 
@@ -725,13 +731,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }
             }, 
@@ -773,13 +779,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }
             }, 
@@ -821,13 +827,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }
             }, 

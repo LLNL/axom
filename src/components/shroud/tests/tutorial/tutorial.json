@@ -274,6 +274,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
+                        "c_var_num": "SH_Narg1", 
+                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "double", 
                         "cpp_var": "arg1"
                     }, 
@@ -310,6 +312,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
+                        "c_var_num": "SH_Narg2", 
+                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "int", 
                         "cpp_var": "arg2"
                     }, 
@@ -385,6 +389,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "len", 
+                        "c_var_num": "SH_Nlen", 
+                        "c_var_trim": "SH_Llen", 
                         "cpp_type": "int", 
                         "cpp_var": "len"
                     }, 
@@ -406,6 +412,8 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "values", 
+                        "c_var_num": "SH_Nvalues", 
+                        "c_var_trim": "SH_Lvalues", 
                         "cpp_type": "int", 
                         "cpp_var": "values"
                     }, 
@@ -426,6 +434,8 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "result", 
+                        "c_var_num": "SH_Nresult", 
+                        "c_var_trim": "SH_Lresult", 
                         "cpp_type": "int", 
                         "cpp_var": "result"
                     }, 
@@ -483,6 +493,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
+                        "c_var_num": "SH_Narg", 
+                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg"
                     }, 
@@ -559,6 +571,8 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
+                        "c_var_num": "SH_Narg1", 
+                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg1"
                     }, 
@@ -579,6 +593,8 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "arg2", 
+                        "c_var_num": "SH_Narg2", 
+                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg2"
                     }, 
@@ -599,6 +615,8 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "arg3", 
+                        "c_var_num": "SH_Narg3", 
+                        "c_var_trim": "SH_Larg3", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg3"
                     }, 
@@ -754,7 +772,6 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "Larg1", 
                         "c_var_num": "SH_Narg1", 
                         "c_var_trim": "Larg1", 
                         "cpp_type": "std::string", 
@@ -779,7 +796,6 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "Larg2", 
                         "c_var_num": "SH_Narg2", 
                         "c_var_trim": "Larg2", 
                         "cpp_type": "std::string", 
@@ -805,8 +821,8 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "SH_F_rv", 
-                        "c_var_len": "NSH_F_rv", 
                         "c_var_num": "NSH_F_rv", 
+                        "c_var_trim": "SH_LSH_F_rv", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv"
@@ -870,8 +886,8 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "SH_Larg1", 
                         "c_var_num": "SH_Narg1", 
+                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg1"
                     }, 
@@ -906,8 +922,8 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "SH_Larg2", 
                         "c_var_num": "SH_Narg2", 
+                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg2"
                     }, 
@@ -983,7 +999,6 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "Larg1", 
                         "c_var_num": "SH_Narg1", 
                         "c_var_trim": "Larg1", 
                         "cpp_type": "std::string", 
@@ -1008,7 +1023,6 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "Larg2", 
                         "c_var_num": "SH_Narg2", 
                         "c_var_trim": "Larg2", 
                         "cpp_type": "std::string", 
@@ -1033,8 +1047,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "output", 
-                        "c_var_len": "Noutput", 
                         "c_var_num": "Noutput", 
+                        "c_var_trim": "SH_Loutput", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv"
@@ -1216,6 +1230,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
+                        "c_var_num": "SH_Narg1", 
+                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "double", 
                         "cpp_var": "arg1"
                     }, 
@@ -1291,6 +1307,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
+                        "c_var_num": "SH_Narg1", 
+                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "double", 
                         "cpp_var": "arg1"
                     }, 
@@ -1328,6 +1346,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
+                        "c_var_num": "SH_Narg2", 
+                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg2"
                     }, 
@@ -1417,8 +1437,8 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "name", 
-                        "c_var_len": "SH_Lname", 
                         "c_var_num": "SH_Nname", 
+                        "c_var_trim": "SH_Lname", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_name"
                     }, 
@@ -1503,7 +1523,6 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "name", 
-                        "c_var_len": "Lname", 
                         "c_var_num": "SH_Nname", 
                         "c_var_trim": "Lname", 
                         "cpp_type": "std::string", 
@@ -1563,6 +1582,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "indx", 
+                        "c_var_num": "SH_Nindx", 
+                        "c_var_trim": "SH_Lindx", 
                         "cpp_type": "int", 
                         "cpp_var": "indx"
                     }, 
@@ -1678,6 +1699,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
+                        "c_var_num": "SH_Narg", 
+                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "int", 
                         "cpp_var": "arg"
                     }, 
@@ -1739,6 +1762,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
+                        "c_var_num": "SH_Narg", 
+                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "double", 
                         "cpp_var": "arg"
                     }, 
@@ -1915,6 +1940,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
+                        "c_var_num": "SH_Narg", 
+                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "double", 
                         "cpp_var": "arg"
                     }, 
@@ -2124,8 +2151,8 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "name", 
-                        "c_var_len": "SH_Lname", 
                         "c_var_num": "SH_Nname", 
+                        "c_var_trim": "SH_Lname", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_name"
                     }, 
@@ -2158,6 +2185,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
+                        "c_var_num": "SH_Narg2", 
+                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "double", 
                         "cpp_var": "arg2"
                     }, 
@@ -2352,7 +2381,6 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "name", 
-                        "c_var_len": "Lname", 
                         "c_var_num": "SH_Nname", 
                         "c_var_trim": "Lname", 
                         "cpp_type": "std::string", 
@@ -2374,6 +2402,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
+                        "c_var_num": "SH_Narg2", 
+                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "double", 
                         "cpp_var": "arg2"
                     }, 
@@ -2437,6 +2467,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
+                        "c_var_num": "SH_Nnum", 
+                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2507,6 +2539,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
+                        "c_var_num": "SH_Nnum", 
+                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2527,6 +2561,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
+                        "c_var_num": "SH_Noffset", 
+                        "c_var_trim": "SH_Loffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -2605,6 +2641,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
+                        "c_var_num": "SH_Nnum", 
+                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2642,6 +2680,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
+                        "c_var_num": "SH_Noffset", 
+                        "c_var_trim": "SH_Loffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -2679,6 +2719,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "stride", 
+                        "c_var_num": "SH_Nstride", 
+                        "c_var_trim": "SH_Lstride", 
                         "cpp_type": "int", 
                         "cpp_var": "stride"
                     }, 
@@ -2766,6 +2808,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "type", 
+                        "c_var_num": "SH_Ntype", 
+                        "c_var_trim": "SH_Ltype", 
                         "cpp_type": "double", 
                         "cpp_var": "type"
                     }, 
@@ -2785,6 +2829,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
+                        "c_var_num": "SH_Nnum", 
+                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2850,6 +2896,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "type", 
+                        "c_var_num": "SH_Ntype", 
+                        "c_var_trim": "SH_Ltype", 
                         "cpp_type": "double", 
                         "cpp_var": "type"
                     }, 
@@ -2869,6 +2917,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
+                        "c_var_num": "SH_Nnum", 
+                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2889,6 +2939,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
+                        "c_var_num": "SH_Noffset", 
+                        "c_var_trim": "SH_Loffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -2962,6 +3014,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "type", 
+                        "c_var_num": "SH_Ntype", 
+                        "c_var_trim": "SH_Ltype", 
                         "cpp_type": "double", 
                         "cpp_var": "type"
                     }, 
@@ -2998,6 +3052,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
+                        "c_var_num": "SH_Nnum", 
+                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -3035,6 +3091,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
+                        "c_var_num": "SH_Noffset", 
+                        "c_var_trim": "SH_Loffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -3072,6 +3130,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "stride", 
+                        "c_var_num": "SH_Nstride", 
+                        "c_var_trim": "SH_Lstride", 
                         "cpp_type": "int", 
                         "cpp_var": "stride"
                     }, 
@@ -3146,6 +3206,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
+                        "c_var_num": "SH_Narg", 
+                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "TypeID", 
                         "cpp_var": "arg"
                     }, 
@@ -3221,6 +3283,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
+                        "c_var_num": "SH_Narg", 
+                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "EnumTypeID", 
                         "cpp_var": "arg"
                     }, 
@@ -3298,6 +3362,8 @@
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "arg1", 
+                        "c_var_num": "SH_Narg1", 
+                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "Class1", 
                         "cpp_var": "arg1"
                     }, 
@@ -3405,8 +3471,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "SH_F_rv", 
-                        "c_var_len": "NSH_F_rv", 
                         "c_var_num": "NSH_F_rv", 
+                        "c_var_trim": "SH_LSH_F_rv", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv"
@@ -3682,22 +3748,22 @@
                         "delete [] {cpp_var};"
                     ], 
                     "pre_call": [
-                        "int {c_var_len} = std::strlen({c_var});", 
-                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
-                        "{cpp_var}[{c_var_len}] = '\\0';"
+                        "int {c_var_trim} = std::strlen({c_var});", 
+                        "char * {cpp_var} = new char [{c_var_trim} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_trim});", 
+                        "{cpp_var}[{c_var_trim}] = '\\0';"
                     ], 
                     "pre_call_trim": [
-                        "char * {cpp_var} = new char [{c_var_len} + 1];", 
-                        "std::strncpy({cpp_var}, {c_var}, {c_var_len});", 
-                        "{cpp_var}[{c_var_len}] = '\\0';"
+                        "char * {cpp_var} = new char [{c_var_trim} + 1];", 
+                        "std::strncpy({cpp_var}, {c_var}, {c_var_trim});", 
+                        "{cpp_var}[{c_var_trim}] = '\\0';"
                     ]
                 }, 
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "cpp_local_var": true, 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});", 
                         "delete [] {cpp_var};"
                     ], 
                     "pre_call": [
@@ -3707,7 +3773,7 @@
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }
             }, 
@@ -3728,8 +3794,8 @@
             "c_statements": {
                 "result": {
                     "post_call": [
-                        "// {c_var_len} is always 1, test to silence warning about unused variable", 
-                        "if ({c_var_len} == 1) *{c_var} = {cpp_val};"
+                        "// {c_var_num} is always 1, test to silence warning about unused variable", 
+                        "if ({c_var_num} == 1) *{c_var} = {cpp_val};"
                     ]
                 }
             }, 
@@ -3897,13 +3963,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }
             }, 
@@ -3945,13 +4011,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }
             }, 
@@ -3993,13 +4059,13 @@
                 "intent_out": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }, 
                 "result": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "shroud_FccCopy({c_var}, {c_var_num}, {cpp_val});"
                     ]
                 }
             }, 

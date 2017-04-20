@@ -238,16 +238,13 @@ C_const
 c_var
     The C name of the argument.
 
-c_var_len
-    Function argument for the length attribute of the argument.
-    ``L{c_var}``
-
 c_var_num
-    Function argument for the length attribute of the argument.
-    ``N{c_var}``
+    Function argument generated from the *len* annotation.
+    Set from option **C_var_len_template**.
 
 c_var_trim
-    **len_trim** annotation.
+    Function argument generated from the *len_trim* annotation.
+    Set from option **C_var_trim_template**.
 
 cpp_type
     The C++ type of the argument.
