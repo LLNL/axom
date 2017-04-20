@@ -108,13 +108,13 @@ module exclass1_mod
             type(C_PTR) SH_rv
         end function c_exclass1_get_name
 
-        subroutine c_exclass1_get_name_bufferify(self, SH_F_rv, LSH_F_rv) &
+        subroutine c_exclass1_get_name_bufferify(self, SH_F_rv, NSH_F_rv) &
                 bind(C, name="AA_exclass1_get_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_exclass1_get_name_bufferify
 
         pure function c_exclass1_get_name_length(self) &
@@ -135,13 +135,13 @@ module exclass1_mod
             type(C_PTR) SH_rv
         end function c_exclass1_get_name_error_check
 
-        subroutine c_exclass1_get_name_error_check_bufferify(self, SH_F_rv, LSH_F_rv) &
+        subroutine c_exclass1_get_name_error_check_bufferify(self, SH_F_rv, NSH_F_rv) &
                 bind(C, name="AA_exclass1_get_name_error_check_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_exclass1_get_name_error_check_bufferify
 
         pure function c_exclass1_get_name_arg(self) &
@@ -153,13 +153,13 @@ module exclass1_mod
             type(C_PTR) SH_rv
         end function c_exclass1_get_name_arg
 
-        subroutine c_exclass1_get_name_arg_bufferify(self, name, Lname) &
+        subroutine c_exclass1_get_name_arg_bufferify(self, name, Nname) &
                 bind(C, name="AA_exclass1_get_name_arg_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: name(*)
-            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT), value, intent(IN) :: Nname
         end subroutine c_exclass1_get_name_arg_bufferify
 
         function c_exclass1_get_root(self) &
@@ -327,7 +327,7 @@ contains
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
 
-    ! void getNameArg(string & name+intent(out)+len(Lname)) const
+    ! void getNameArg(string & name+intent(out)+len(Nname)) const
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=17
     subroutine exclass1_get_name_arg(obj, name)

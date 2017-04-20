@@ -1,21 +1,21 @@
 Read yaml strings.yaml
 C function void passChar(char_scalar status+intent(in)+value)
 C function char_scalar returnChar()
-C function void returnChar(char_scalar * SH_F_rv+intent(out)+len(LSH_F_rv))
+C function void returnChar(char_scalar * SH_F_rv+intent(out)+len(NSH_F_rv))
 C function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
 C function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in)+len_trim(Lsrc))
 C function const char * getChar1()+pure
-C function void getChar1(char * SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+C function void getChar1(char * SH_F_rv+intent(out)+len(NSH_F_rv))+pure
 C function const char * getChar2()
-C function void getChar2(char * SH_F_rv+intent(out)+len(LSH_F_rv))
+C function void getChar2(char * SH_F_rv+intent(out)+len(NSH_F_rv))
 C function const char * getChar3()
-C function void getChar3(char * output+intent(out)+len(Loutput))
+C function void getChar3(char * output+intent(out)+len(Noutput))
 C function const string & getString1()+pure
-C function void getString1(string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+C function void getString1(string & SH_F_rv+intent(out)+len(NSH_F_rv))+pure
 C function const string & getString2()
-C function void getString2(string & SH_F_rv+intent(out)+len(LSH_F_rv))
+C function void getString2(string & SH_F_rv+intent(out)+len(NSH_F_rv))
 C function const string & getString3()
-C function void getString3(string & output+intent(out)+len(Loutput))
+C function void getString3(string & output+intent(out)+len(Noutput))
 C function void acceptStringConstReference(const std::string & arg1+intent(in))
 C function void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
 C function void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))
@@ -30,25 +30,25 @@ Close shroudrt.hpp
 Close shroudrt.cpp
 C-interface, Fortran function void passChar(char_scalar status+intent(in)+value)
 C-interface, Fortran function char_scalar returnChar()
-C-interface function void returnChar(char_scalar * SH_F_rv+intent(out)+len(LSH_F_rv))
+C-interface function void returnChar(char_scalar * SH_F_rv+intent(out)+len(NSH_F_rv))
 C-interface, Fortran function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
 C-interface function void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in)+len_trim(Lsrc))
 C-interface function const char * getChar1()+pure
-C-interface function void getChar1(char * SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+C-interface function void getChar1(char * SH_F_rv+intent(out)+len(NSH_F_rv))+pure
 Fortran function const string_result_fstr * getChar1()+pure
 C-interface, Fortran function const char * getChar2()
-C-interface function void getChar2(char * SH_F_rv+intent(out)+len(LSH_F_rv))
+C-interface function void getChar2(char * SH_F_rv+intent(out)+len(NSH_F_rv))
 C-interface function const char * getChar3()
-C-interface function void getChar3(char * output+intent(out)+len(Loutput))
-Fortran function void getChar3(char * output+intent(out)+len(Loutput))
+C-interface function void getChar3(char * output+intent(out)+len(Noutput))
+Fortran function void getChar3(char * output+intent(out)+len(Noutput))
 C-interface function const string & getString1()+pure
-C-interface function void getString1(string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+C-interface function void getString1(string & SH_F_rv+intent(out)+len(NSH_F_rv))+pure
 Fortran function const string_result_fstr & getString1()+pure
 C-interface, Fortran function const string & getString2()
-C-interface function void getString2(string & SH_F_rv+intent(out)+len(LSH_F_rv))
+C-interface function void getString2(string & SH_F_rv+intent(out)+len(NSH_F_rv))
 C-interface function const string & getString3()
-C-interface function void getString3(string & output+intent(out)+len(Loutput))
-Fortran function void getString3(string & output+intent(out)+len(Loutput))
+C-interface function void getString3(string & output+intent(out)+len(Noutput))
+Fortran function void getString3(string & output+intent(out)+len(Noutput))
 C-interface, Fortran function void acceptStringConstReference(const std::string & arg1+intent(in))
 C-interface function void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
 C-interface, Fortran function void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))

@@ -151,6 +151,8 @@ class Schema(object):
                 '{C_prefix}{class_prefix}{underscore_name}{function_suffix}'),
 
             C_bufferify_suffix='_bufferify',
+            C_var_len_template = 'N{c_var}',
+            C_var_trim_template = 'L{c_var}',
 
             # Fortran's names for C functions
             F_C_prefix='c_',
@@ -944,7 +946,7 @@ class GenFunctions(object):
                     # can be written to.
                     intent = attrs['intent']
                     if intent in ['out', 'inout'] and 'len' not in attrs:
-                        attrs['len'] = 'N' + arg['name']
+                        attrs['len'] = options.C_var_len_template.format(c_var=arg['name'])
                 else:
                     arg['type'] = 'char_scalar'
 
@@ -1000,9 +1002,9 @@ class GenFunctions(object):
                 attrs = arg['attrs']
                 intent = attrs['intent']
                 if intent in ['in', 'inout'] and 'len_trim' not in attrs:
-                    arg['attrs']['len_trim'] = 'L' + arg['name']
+                    attrs['len_trim'] = options.C_var_trim_template.format(c_var=arg['name'])
                 if intent in ['out', 'inout'] and 'len' not in attrs:
-                    arg['attrs']['len'] = 'N' + arg['name']
+                    attrs['len'] = options.C_var_len_template.format(c_var=arg['name'])
 
         if has_string_result:
             # Add additional argument to hold result
@@ -1010,7 +1012,7 @@ class GenFunctions(object):
             result_as_string['name'] = result_name
             attrs = result_as_string['attrs']
             attrs['const'] = False
-            attrs['len'] = 'L' + result_name
+            attrs['len'] = options.C_var_len_template.format(c_var=result_name)
             attrs['intent'] = 'out'
             attrs['_is_result'] = True
             if not result_is_ptr:
@@ -1321,10 +1323,10 @@ class VerifyAttrs(object):
             # XXX make sure they don't conflict with other names
             len_name = attrs.get('len', False)
             if len_name is True:
-                attrs['len'] = 'N' + argname
+                attrs['len'] = options.C_var_len_template.format(c_var=argname)
             len_name = attrs.get('len_trim', False)
             if len_name is True:
-                attrs['len_trim'] = 'L' + argname
+                attrs['len_trim'] = options.C_var_trim_template.format(c_var=argname)
 #        if typedef.base == 'string':
 
 

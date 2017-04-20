@@ -736,7 +736,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 8, 
-            "_decl": "void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(LSH_F_rv))", 
+            "_decl": "void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(NSH_F_rv))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 34, 
             "_generated": "string_to_buffer_and_len", 
@@ -797,7 +797,7 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "LSH_F_rv", 
+                        "len": "NSH_F_rv", 
                         "ptr": true, 
                         "reference": false
                     }, 
@@ -805,8 +805,8 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "SH_F_rv", 
-                        "c_var_len": "LSH_F_rv", 
-                        "c_var_num": "LSH_F_rv", 
+                        "c_var_len": "NSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv"
@@ -824,9 +824,9 @@
             "fmt": {
                 "C_call_list": "SH_arg1, SH_arg2", 
                 "C_name": "TUT_function4a_bufferify", 
-                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());", 
                 "C_pre_call": "const std::string SH_arg1(arg1, Larg1);\nconst std::string SH_arg2(arg2, Larg2);", 
-                "C_prototype": "const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int LSH_F_rv", 
+                "C_prototype": "const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int NSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string SH_rv", 
                 "F_C_name": "c_function4a_bufferify", 
@@ -834,7 +834,7 @@
                 "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
-                "f_string_len": "LSH_F_rv", 
+                "f_string_len": "NSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -965,7 +965,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 9, 
-            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))", 
+            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Noutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 35, 
             "_generated": "string_to_buffer_and_len", 
@@ -1026,15 +1026,15 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "Loutput", 
+                        "len": "Noutput", 
                         "reference": true
                     }, 
                     "fmtc": {
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "output", 
-                        "c_var_len": "Loutput", 
-                        "c_var_num": "Loutput", 
+                        "c_var_len": "Noutput", 
+                        "c_var_num": "Noutput", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv"
@@ -1052,9 +1052,9 @@
             "fmt": {
                 "C_call_list": "SH_arg1, SH_arg2", 
                 "C_name": "TUT_function4b_bufferify", 
-                "C_post_call": "shroud_FccCopy(output, Loutput, SH_rv.c_str());", 
+                "C_post_call": "shroud_FccCopy(output, Noutput, SH_rv.c_str());", 
                 "C_pre_call": "const std::string SH_arg1(arg1, Larg1);\nconst std::string SH_arg2(arg2, Larg2);", 
-                "C_prototype": "const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput", 
+                "C_prototype": "const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Noutput", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_function4b_bufferify", 
@@ -1062,7 +1062,7 @@
                 "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
                 "f_string": "output", 
-                "f_string_len": "Loutput", 
+                "f_string_len": "Noutput", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -1084,7 +1084,7 @@
         {
             "_PTR_C_CPP_index": 9, 
             "_PTR_F_C_index": 35, 
-            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))", 
+            "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Noutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 36, 
             "_generated": "string_to_buffer_and_len", 
@@ -1117,7 +1117,7 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "Loutput", 
+                        "len": "Noutput", 
                         "reference": true
                     }, 
                     "name": "output", 
@@ -3387,7 +3387,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 23, 
-            "_decl": "void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
+            "_decl": "void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(NSH_F_rv))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 39, 
             "_generated": "string_to_buffer_and_len", 
@@ -3398,15 +3398,15 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "LSH_F_rv", 
+                        "len": "NSH_F_rv", 
                         "reference": true
                     }, 
                     "fmtc": {
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "SH_F_rv", 
-                        "c_var_len": "LSH_F_rv", 
-                        "c_var_num": "LSH_F_rv", 
+                        "c_var_len": "NSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv"
@@ -3422,8 +3422,8 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "TUT_last_function_called_bufferify", 
-                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
-                "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());", 
+                "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_last_function_called_bufferify", 
@@ -3431,7 +3431,7 @@
                 "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
-                "f_string_len": "LSH_F_rv", 
+                "f_string_len": "NSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -3497,6 +3497,8 @@
         "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 
         "C_impl_filename_library_template": "wrap{library}.cpp", 
         "C_name_template": "{C_prefix}{class_prefix}{underscore_name}{function_suffix}", 
+        "C_var_len_template": "N{c_var}", 
+        "C_var_trim_template": "L{c_var}", 
         "F_C_name_template": "{F_C_prefix}{class_prefix}{underscore_name}{function_suffix}", 
         "F_C_prefix": "c_", 
         "F_force_wrapper": false, 

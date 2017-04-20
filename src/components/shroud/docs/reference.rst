@@ -349,6 +349,14 @@ C_this
     Name of the C object argument.  Defauls to ``self``.
     It may be necessary to set this if it conflicts with an argument name.
 
+C_var_len_template
+    Format for variable created with *len* annotation.
+    Default ``N{c_var}``
+
+C_var_trim_template
+    Format for variable created with *len_trim* annotation.
+    Default ``L{c_var}``
+
 CPP_this
     Name of the C++ object pointer set from the *C_this* argument.
     Defauls to ``SH_this``.

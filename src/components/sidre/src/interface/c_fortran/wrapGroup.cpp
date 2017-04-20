@@ -33,13 +33,13 @@ const char * SIDRE_group_get_name(const SIDRE_group * self)
 }
 
 void SIDRE_group_get_name_bufferify(const SIDRE_group * self, char * SH_F_rv,
-                                    int LSH_F_rv)
+                                    int NSH_F_rv)
 {
 // splicer begin class.Group.method.get_name_bufferify
   const Group * SH_this =
     static_cast<const Group *>(static_cast<const void *>(self));
   const std::string & SH_rv = SH_this->getName();
-  shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
   return;
 // splicer end class.Group.method.get_name_bufferify
 }
@@ -228,7 +228,7 @@ const char * SIDRE_group_get_view_name(const SIDRE_group * self,
 
 void SIDRE_group_get_view_name_bufferify(const SIDRE_group * self,
                                          SIDRE_IndexType idx, char * SH_F_rv,
-                                         int LSH_F_rv)
+                                         int NSH_F_rv)
 {
 // splicer begin class.Group.method.get_view_name_bufferify
   const Group * SH_this =
@@ -237,11 +237,11 @@ void SIDRE_group_get_view_name_bufferify(const SIDRE_group * self,
   // check for error
   if (!nameIsValid(SH_rv))
   {
-    std::memset(SH_F_rv, ' ', LSH_F_rv);
+    std::memset(SH_F_rv, ' ', NSH_F_rv);
     return;
   }
 
-  shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
   return;
 // splicer end class.Group.method.get_view_name_bufferify
 }
@@ -876,7 +876,7 @@ const char * SIDRE_group_get_group_name(const SIDRE_group * self,
 
 void SIDRE_group_get_group_name_bufferify(const SIDRE_group * self,
                                           SIDRE_IndexType idx, char * SH_F_rv,
-                                          int LSH_F_rv)
+                                          int NSH_F_rv)
 {
 // splicer begin class.Group.method.get_group_name_bufferify
   const Group * SH_this =
@@ -885,11 +885,11 @@ void SIDRE_group_get_group_name_bufferify(const SIDRE_group * self,
   // check for error
   if (!nameIsValid(SH_rv))
   {
-    std::memset(SH_F_rv, ' ', LSH_F_rv);
+    std::memset(SH_F_rv, ' ', NSH_F_rv);
     return;
   }
 
-  shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
   return;
 // splicer end class.Group.method.get_group_name_bufferify
 }

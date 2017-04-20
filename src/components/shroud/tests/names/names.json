@@ -442,6 +442,8 @@
         "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 
         "C_impl_filename_library_template": "wrap{library}.cpp", 
         "C_name_template": "{C_prefix}{class_prefix}{underscore_name}{function_suffix}", 
+        "C_var_len_template": "N{c_var}", 
+        "C_var_trim_template": "L{c_var}", 
         "F_C_name_template": "{F_C_prefix}{class_prefix}{underscore_name}{function_suffix}", 
         "F_C_prefix": "c_", 
         "F_force_wrapper": true, 

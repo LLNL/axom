@@ -651,13 +651,13 @@ module sidre_mod
             type(C_PTR) SH_rv
         end function c_group_get_name
 
-        subroutine c_group_get_name_bufferify(self, SH_F_rv, LSH_F_rv) &
+        subroutine c_group_get_name_bufferify(self, SH_F_rv, NSH_F_rv) &
                 bind(C, name="SIDRE_group_get_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_group_get_name_bufferify
 
         pure function c_group_get_parent(self) &
@@ -821,14 +821,14 @@ module sidre_mod
             type(C_PTR) SH_rv
         end function c_group_get_view_name
 
-        subroutine c_group_get_view_name_bufferify(self, idx, SH_F_rv, LSH_F_rv) &
+        subroutine c_group_get_view_name_bufferify(self, idx, SH_F_rv, NSH_F_rv) &
                 bind(C, name="SIDRE_group_get_view_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_group_get_view_name_bufferify
 
         pure function c_group_get_first_valid_view_index(self) &
@@ -1405,14 +1405,14 @@ module sidre_mod
             type(C_PTR) SH_rv
         end function c_group_get_group_name
 
-        subroutine c_group_get_group_name_bufferify(self, idx, SH_F_rv, LSH_F_rv) &
+        subroutine c_group_get_group_name_bufferify(self, idx, SH_F_rv, NSH_F_rv) &
                 bind(C, name="SIDRE_group_get_group_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_group_get_group_name_bufferify
 
         pure function c_group_get_first_valid_group_index(self) &
@@ -1890,13 +1890,13 @@ module sidre_mod
             type(C_PTR) SH_rv
         end function c_view_get_name
 
-        subroutine c_view_get_name_bufferify(self, SH_F_rv, LSH_F_rv) &
+        subroutine c_view_get_name_bufferify(self, SH_F_rv, NSH_F_rv) &
                 bind(C, name="SIDRE_view_get_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_view_get_name_bufferify
 
         function c_view_get_buffer(self) &
@@ -2004,13 +2004,13 @@ module sidre_mod
             type(C_PTR) SH_rv
         end function c_view_get_string
 
-        subroutine c_view_get_string_bufferify(self, name, Lname) &
+        subroutine c_view_get_string_bufferify(self, name, Nname) &
                 bind(C, name="SIDRE_view_get_string_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: name(*)
-            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT), value, intent(IN) :: Nname
         end subroutine c_view_get_string_bufferify
 
         function c_view_get_data_int(self) &

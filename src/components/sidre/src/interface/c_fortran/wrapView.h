@@ -102,7 +102,7 @@ bool SIDRE_view_is_string(const SIDRE_view * self);
 const char * SIDRE_view_get_name(const SIDRE_view * self);
 
 void SIDRE_view_get_name_bufferify(const SIDRE_view * self, char * SH_F_rv,
-                                   int LSH_F_rv);
+                                   int NSH_F_rv);
 
 SIDRE_buffer * SIDRE_view_get_buffer(SIDRE_view * self);
 
@@ -135,7 +135,7 @@ void SIDRE_view_set_external_data_ptr_shape(SIDRE_view * self, int type,
 
 const char * SIDRE_view_get_string(SIDRE_view * self);
 
-void SIDRE_view_get_string_bufferify(SIDRE_view * self, char * name, int Lname);
+void SIDRE_view_get_string_bufferify(SIDRE_view * self, char * name, int Nname);
 
 int SIDRE_view_get_data_int(SIDRE_view * self);
 

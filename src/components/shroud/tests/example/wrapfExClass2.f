@@ -111,13 +111,13 @@ module exclass2_mod
             type(C_PTR) SH_rv
         end function c_exclass2_get_name
 
-        subroutine c_exclass2_get_name_bufferify(self, SH_F_rv, LSH_F_rv) &
+        subroutine c_exclass2_get_name_bufferify(self, SH_F_rv, NSH_F_rv) &
                 bind(C, name="AA_exclass2_get_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_exclass2_get_name_bufferify
 
         function c_exclass2_get_name2(self) &
@@ -129,13 +129,13 @@ module exclass2_mod
             type(C_PTR) SH_rv
         end function c_exclass2_get_name2
 
-        subroutine c_exclass2_get_name2_bufferify(self, SH_F_rv, LSH_F_rv) &
+        subroutine c_exclass2_get_name2_bufferify(self, SH_F_rv, NSH_F_rv) &
                 bind(C, name="AA_exclass2_get_name2_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_exclass2_get_name2_bufferify
 
         pure function c_exclass2_get_name3(self) &
@@ -147,13 +147,13 @@ module exclass2_mod
             type(C_PTR) SH_rv
         end function c_exclass2_get_name3
 
-        subroutine c_exclass2_get_name3_bufferify(self, SH_F_rv, LSH_F_rv) &
+        subroutine c_exclass2_get_name3_bufferify(self, SH_F_rv, NSH_F_rv) &
                 bind(C, name="AA_exclass2_get_name3_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_exclass2_get_name3_bufferify
 
         function c_exclass2_get_name4(self) &
@@ -165,13 +165,13 @@ module exclass2_mod
             type(C_PTR) SH_rv
         end function c_exclass2_get_name4
 
-        subroutine c_exclass2_get_name4_bufferify(self, SH_F_rv, LSH_F_rv) &
+        subroutine c_exclass2_get_name4_bufferify(self, SH_F_rv, NSH_F_rv) &
                 bind(C, name="AA_exclass2_get_name4_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_exclass2_get_name4_bufferify
 
         function c_exclass2_get_name_length(self) &

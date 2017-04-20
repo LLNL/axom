@@ -358,8 +358,10 @@ class Wrapc(util.WrapperMixin):
             c_statements = arg_typedef.c_statements
             fmt_arg.c_var = arg['name']
             if arg_typedef.base == 'string':
-                fmt_arg.c_var_len = c_attrs.get('len_trim', 'SH_' + 'L' + fmt_arg.c_var)
-                fmt_arg.c_var_num = c_attrs.get('len', 'SH_' + 'N' + fmt_arg.c_var)
+                fmt_arg.c_var_len = c_attrs.get('len_trim', 'SH_' +
+                                                options.C_var_trim_template.format(c_var=fmt_arg.c_var))
+                fmt_arg.c_var_num = c_attrs.get('len', 'SH_' +
+                                                options.C_var_len_template.format(c_var=fmt_arg.c_var))
             if arg['attrs'].get('const', False):
                 fmt_arg.c_const = 'const '
             else:

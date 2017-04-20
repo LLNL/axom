@@ -113,7 +113,7 @@ module tutorial_mod
             logical(C_BOOL), intent(INOUT) :: arg3
         end subroutine c_function3b
 
-        subroutine c_function4a_bufferify(arg1, Larg1, arg2, Larg2, SH_F_rv, LSH_F_rv) &
+        subroutine c_function4a_bufferify(arg1, Larg1, arg2, Larg2, SH_F_rv, NSH_F_rv) &
                 bind(C, name="TUT_function4a_bufferify")
             use iso_c_binding
             implicit none
@@ -122,7 +122,7 @@ module tutorial_mod
             character(kind=C_CHAR), intent(IN) :: arg2(*)
             integer(C_INT), value, intent(IN) :: Larg2
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_function4a_bufferify
 
         function c_function4b(arg1, arg2) &
@@ -135,7 +135,7 @@ module tutorial_mod
             type(C_PTR) SH_rv
         end function c_function4b
 
-        subroutine c_function4b_bufferify(arg1, Larg1, arg2, Larg2, output, Loutput) &
+        subroutine c_function4b_bufferify(arg1, Larg1, arg2, Larg2, output, Noutput) &
                 bind(C, name="TUT_function4b_bufferify")
             use iso_c_binding
             implicit none
@@ -144,7 +144,7 @@ module tutorial_mod
             character(kind=C_CHAR), intent(IN) :: arg2(*)
             integer(C_INT), value, intent(IN) :: Larg2
             character(kind=C_CHAR), intent(OUT) :: output(*)
-            integer(C_INT), value, intent(IN) :: Loutput
+            integer(C_INT), value, intent(IN) :: Noutput
         end subroutine c_function4b_bufferify
 
         function c_function5() &
@@ -352,12 +352,12 @@ module tutorial_mod
             type(C_PTR) SH_rv
         end function c_last_function_called
 
-        subroutine c_last_function_called_bufferify(SH_F_rv, LSH_F_rv) &
+        subroutine c_last_function_called_bufferify(SH_F_rv, NSH_F_rv) &
                 bind(C, name="TUT_last_function_called_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_last_function_called_bufferify
 
         ! splicer begin additional_interfaces
@@ -536,7 +536,7 @@ contains
         ! splicer end function4a
     end function function4a
 
-    ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))
+    ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Noutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=36
     subroutine function4b(arg1, arg2, output)

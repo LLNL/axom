@@ -30,11 +30,11 @@ bool TUT_function3(bool arg);
 
 void TUT_function3b(const bool arg1, bool * arg2, bool * arg3);
 
-void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int LSH_F_rv);
+void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int NSH_F_rv);
 
 const char * TUT_function4b(const char * arg1, const char * arg2);
 
-void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput);
+void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Noutput);
 
 double TUT_function5();
 
@@ -84,7 +84,7 @@ void TUT_useclass(const TUT_class1 * arg1);
 
 const char * TUT_last_function_called();
 
-void TUT_last_function_called_bufferify(char * SH_F_rv, int LSH_F_rv);
+void TUT_last_function_called_bufferify(char * SH_F_rv, int NSH_F_rv);
 
 #ifdef __cplusplus
 }

@@ -267,13 +267,13 @@ const char * SIDRE_view_get_name(const SIDRE_view * self)
 }
 
 void SIDRE_view_get_name_bufferify(const SIDRE_view * self, char * SH_F_rv,
-                                   int LSH_F_rv)
+                                   int NSH_F_rv)
 {
 // splicer begin class.View.method.get_name_bufferify
   const View * SH_this =
     static_cast<const View *>(static_cast<const void *>(self));
   const std::string & SH_rv = SH_this->getName();
-  shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
   return;
 // splicer end class.View.method.get_name_bufferify
 }
@@ -396,12 +396,12 @@ const char * SIDRE_view_get_string(SIDRE_view * self)
 // splicer end class.View.method.get_string
 }
 
-void SIDRE_view_get_string_bufferify(SIDRE_view * self, char * name, int Lname)
+void SIDRE_view_get_string_bufferify(SIDRE_view * self, char * name, int Nname)
 {
 // splicer begin class.View.method.get_string_bufferify
   View * SH_this = static_cast<View *>(static_cast<void *>(self));
   const char * SH_rv = SH_this->getString();
-  shroud_FccCopy(name, Lname, SH_rv);
+  shroud_FccCopy(name, Nname, SH_rv);
   return;
 // splicer end class.View.method.get_string_bufferify
 }

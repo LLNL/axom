@@ -35,19 +35,19 @@ void AA_exclass2_delete(AA_exclass2 * self);
 
 const char * AA_exclass2_get_name(const AA_exclass2 * self);
 
-void AA_exclass2_get_name_bufferify(const AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass2_get_name_bufferify(const AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv);
 
 const char * AA_exclass2_get_name2(AA_exclass2 * self);
 
-void AA_exclass2_get_name2_bufferify(AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass2_get_name2_bufferify(AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv);
 
 char * AA_exclass2_get_name3(const AA_exclass2 * self);
 
-void AA_exclass2_get_name3_bufferify(const AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass2_get_name3_bufferify(const AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv);
 
 char * AA_exclass2_get_name4(AA_exclass2 * self);
 
-void AA_exclass2_get_name4_bufferify(AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass2_get_name4_bufferify(AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv);
 
 const int AA_exclass2_get_name_length(AA_exclass2 * self);
 

@@ -346,7 +346,7 @@
                     "C_error_pattern": "C_invalid_name", 
                     "PY_error_pattern": "PY_invalid_name", 
                     "_PTR_C_CPP_index": 3, 
-                    "_decl": "void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const", 
+                    "_decl": "void getName(string & SH_F_rv+intent(out)+len(NSH_F_rv)) const", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 14, 
                     "_generated": "string_to_buffer_and_len", 
@@ -357,15 +357,15 @@
                                 "_is_result": true, 
                                 "const": false, 
                                 "intent": "out", 
-                                "len": "LSH_F_rv", 
+                                "len": "NSH_F_rv", 
                                 "reference": true
                             }, 
                             "fmtc": {
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "SH_F_rv", 
-                                "c_var_len": "LSH_F_rv", 
-                                "c_var_num": "LSH_F_rv", 
+                                "c_var_len": "NSH_F_rv", 
+                                "c_var_num": "NSH_F_rv", 
                                 "cpp_type": "std::string", 
                                 "cpp_val": "SH_rv.c_str()", 
                                 "cpp_var": "SH_rv"
@@ -385,9 +385,9 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name_bufferify", 
-                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());", 
                         "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
-                        "C_prototype": "const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv", 
+                        "C_prototype": "const AA_exclass1 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_name": "c_exclass1_get_name_bufferify", 
@@ -397,7 +397,7 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "f_string": "SH_F_rv", 
-                        "f_string_len": "LSH_F_rv", 
+                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -510,7 +510,7 @@
                 }, 
                 {
                     "_PTR_C_CPP_index": 5, 
-                    "_decl": "void getNameErrorCheck(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const", 
+                    "_decl": "void getNameErrorCheck(string & SH_F_rv+intent(out)+len(NSH_F_rv)) const", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 15, 
                     "_generated": "string_to_buffer_and_len", 
@@ -521,15 +521,15 @@
                                 "_is_result": true, 
                                 "const": false, 
                                 "intent": "out", 
-                                "len": "LSH_F_rv", 
+                                "len": "NSH_F_rv", 
                                 "reference": true
                             }, 
                             "fmtc": {
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "SH_F_rv", 
-                                "c_var_len": "LSH_F_rv", 
-                                "c_var_num": "LSH_F_rv", 
+                                "c_var_len": "NSH_F_rv", 
+                                "c_var_num": "NSH_F_rv", 
                                 "cpp_type": "std::string", 
                                 "cpp_val": "SH_rv.c_str()", 
                                 "cpp_var": "SH_rv"
@@ -549,9 +549,9 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name_error_check_bufferify", 
-                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());", 
                         "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
-                        "C_prototype": "const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv", 
+                        "C_prototype": "const AA_exclass1 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_name": "c_exclass1_get_name_error_check_bufferify", 
@@ -561,7 +561,7 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "f_string": "SH_F_rv", 
-                        "f_string_len": "LSH_F_rv", 
+                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -620,7 +620,7 @@
                 }, 
                 {
                     "_PTR_C_CPP_index": 6, 
-                    "_decl": "void getNameArg(string & name+intent(out)+len(Lname)) const", 
+                    "_decl": "void getNameArg(string & name+intent(out)+len(Nname)) const", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 16, 
                     "_generated": "string_to_buffer_and_len", 
@@ -631,15 +631,15 @@
                                 "_is_result": true, 
                                 "const": false, 
                                 "intent": "out", 
-                                "len": "Lname", 
+                                "len": "Nname", 
                                 "reference": true
                             }, 
                             "fmtc": {
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "name", 
-                                "c_var_len": "Lname", 
-                                "c_var_num": "Lname", 
+                                "c_var_len": "Nname", 
+                                "c_var_num": "Nname", 
                                 "cpp_type": "std::string", 
                                 "cpp_val": "SH_rv.c_str()", 
                                 "cpp_var": "SH_rv"
@@ -659,9 +659,9 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name_arg_bufferify", 
-                        "C_post_call": "shroud_FccCopy(name, Lname, SH_rv.c_str());", 
+                        "C_post_call": "shroud_FccCopy(name, Nname, SH_rv.c_str());", 
                         "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
-                        "C_prototype": "const AA_exclass1 * self, char * name, int Lname", 
+                        "C_prototype": "const AA_exclass1 * self, char * name, int Nname", 
                         "C_return_type": "void", 
                         "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_name": "c_exclass1_get_name_arg_bufferify", 
@@ -671,7 +671,7 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "f_string": "name", 
-                        "f_string_len": "Lname", 
+                        "f_string_len": "Nname", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -693,7 +693,7 @@
                 {
                     "_PTR_C_CPP_index": 6, 
                     "_PTR_F_C_index": 16, 
-                    "_decl": "void getNameArg(string & name+intent(out)+len(Lname)) const", 
+                    "_decl": "void getNameArg(string & name+intent(out)+len(Nname)) const", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 17, 
                     "_generated": "string_to_buffer_and_len", 
@@ -704,7 +704,7 @@
                                 "_is_result": true, 
                                 "const": false, 
                                 "intent": "out", 
-                                "len": "Lname", 
+                                "len": "Nname", 
                                 "reference": true
                             }, 
                             "name": "name", 
@@ -1349,7 +1349,7 @@
                 }, 
                 {
                     "_PTR_C_CPP_index": 20, 
-                    "_decl": "void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const", 
+                    "_decl": "void getName(string & SH_F_rv+intent(out)+len(NSH_F_rv)) const", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 39, 
                     "_generated": "string_to_buffer_and_len", 
@@ -1360,15 +1360,15 @@
                                 "_is_result": true, 
                                 "const": false, 
                                 "intent": "out", 
-                                "len": "LSH_F_rv", 
+                                "len": "NSH_F_rv", 
                                 "reference": true
                             }, 
                             "fmtc": {
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "SH_F_rv", 
-                                "c_var_len": "LSH_F_rv", 
-                                "c_var_num": "LSH_F_rv", 
+                                "c_var_len": "NSH_F_rv", 
+                                "c_var_num": "NSH_F_rv", 
                                 "cpp_type": "std::string", 
                                 "cpp_val": "SH_rv.c_str()", 
                                 "cpp_var": "SH_rv"
@@ -1388,9 +1388,9 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name_bufferify", 
-                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());", 
                         "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
-                        "C_prototype": "const AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv", 
+                        "C_prototype": "const AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_name": "c_exclass2_get_name_bufferify", 
@@ -1400,7 +1400,7 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "f_string": "SH_F_rv", 
-                        "f_string_len": "LSH_F_rv", 
+                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1466,7 +1466,7 @@
                 }, 
                 {
                     "_PTR_C_CPP_index": 21, 
-                    "_decl": "void getName2(string & SH_F_rv+intent(out)+len(LSH_F_rv))", 
+                    "_decl": "void getName2(string & SH_F_rv+intent(out)+len(NSH_F_rv))", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 40, 
                     "_generated": "string_to_buffer_and_len", 
@@ -1477,15 +1477,15 @@
                                 "_is_result": true, 
                                 "const": false, 
                                 "intent": "out", 
-                                "len": "LSH_F_rv", 
+                                "len": "NSH_F_rv", 
                                 "reference": true
                             }, 
                             "fmtc": {
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "SH_F_rv", 
-                                "c_var_len": "LSH_F_rv", 
-                                "c_var_num": "LSH_F_rv", 
+                                "c_var_len": "NSH_F_rv", 
+                                "c_var_num": "NSH_F_rv", 
                                 "cpp_type": "std::string", 
                                 "cpp_val": "SH_rv.c_str()", 
                                 "cpp_var": "SH_rv"
@@ -1503,9 +1503,9 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name2_bufferify", 
-                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());", 
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
-                        "C_prototype": "AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv", 
+                        "C_prototype": "AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_name": "c_exclass2_get_name2_bufferify", 
@@ -1515,7 +1515,7 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "f_string": "SH_F_rv", 
-                        "f_string_len": "LSH_F_rv", 
+                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1581,7 +1581,7 @@
                 }, 
                 {
                     "_PTR_C_CPP_index": 22, 
-                    "_decl": "void getName3(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const", 
+                    "_decl": "void getName3(string & SH_F_rv+intent(out)+len(NSH_F_rv)) const", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 41, 
                     "_generated": "string_to_buffer_and_len", 
@@ -1592,15 +1592,15 @@
                                 "_is_result": true, 
                                 "const": false, 
                                 "intent": "out", 
-                                "len": "LSH_F_rv", 
+                                "len": "NSH_F_rv", 
                                 "reference": true
                             }, 
                             "fmtc": {
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "SH_F_rv", 
-                                "c_var_len": "LSH_F_rv", 
-                                "c_var_num": "LSH_F_rv", 
+                                "c_var_len": "NSH_F_rv", 
+                                "c_var_num": "NSH_F_rv", 
                                 "cpp_type": "std::string", 
                                 "cpp_val": "SH_rv.c_str()", 
                                 "cpp_var": "SH_rv"
@@ -1620,9 +1620,9 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name3_bufferify", 
-                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());", 
                         "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
-                        "C_prototype": "const AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv", 
+                        "C_prototype": "const AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "std::string & SH_rv", 
                         "F_C_name": "c_exclass2_get_name3_bufferify", 
@@ -1632,7 +1632,7 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "f_string": "SH_F_rv", 
-                        "f_string_len": "LSH_F_rv", 
+                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1696,7 +1696,7 @@
                 }, 
                 {
                     "_PTR_C_CPP_index": 23, 
-                    "_decl": "void getName4(string & SH_F_rv+intent(out)+len(LSH_F_rv))", 
+                    "_decl": "void getName4(string & SH_F_rv+intent(out)+len(NSH_F_rv))", 
                     "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 42, 
                     "_generated": "string_to_buffer_and_len", 
@@ -1707,15 +1707,15 @@
                                 "_is_result": true, 
                                 "const": false, 
                                 "intent": "out", 
-                                "len": "LSH_F_rv", 
+                                "len": "NSH_F_rv", 
                                 "reference": true
                             }, 
                             "fmtc": {
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "SH_F_rv", 
-                                "c_var_len": "LSH_F_rv", 
-                                "c_var_num": "LSH_F_rv", 
+                                "c_var_len": "NSH_F_rv", 
+                                "c_var_num": "NSH_F_rv", 
                                 "cpp_type": "std::string", 
                                 "cpp_val": "SH_rv.c_str()", 
                                 "cpp_var": "SH_rv"
@@ -1733,9 +1733,9 @@
                     "fmt": {
                         "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name4_bufferify", 
-                        "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
+                        "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());", 
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
-                        "C_prototype": "AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv", 
+                        "C_prototype": "AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
                         "C_rv_decl": "std::string & SH_rv", 
                         "F_C_name": "c_exclass2_get_name4_bufferify", 
@@ -1745,7 +1745,7 @@
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
                         "f_string": "SH_F_rv", 
-                        "f_string_len": "LSH_F_rv", 
+                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -3890,6 +3890,8 @@
         "C_impl_filename_library_template": "wrap{library}.cpp", 
         "C_name_template": "{C_prefix}{class_prefix}{underscore_name}{function_suffix}", 
         "C_prefix": "AA_", 
+        "C_var_len_template": "N{c_var}", 
+        "C_var_trim_template": "L{c_var}", 
         "F_C_name_template": "{F_C_prefix}{class_prefix}{underscore_name}{function_suffix}", 
         "F_C_prefix": "c_", 
         "F_force_wrapper": false, 

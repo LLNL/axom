@@ -157,7 +157,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 1, 
-            "_decl": "void returnChar(char_scalar * SH_F_rv+intent(out)+len(LSH_F_rv))", 
+            "_decl": "void returnChar(char_scalar * SH_F_rv+intent(out)+len(NSH_F_rv))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 13, 
             "_generated": "string_to_buffer_and_len", 
@@ -168,7 +168,7 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "LSH_F_rv", 
+                        "len": "NSH_F_rv", 
                         "ptr": true, 
                         "reference": false
                     }, 
@@ -176,7 +176,7 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "SH_F_rv", 
-                        "c_var_len": "LSH_F_rv", 
+                        "c_var_len": "NSH_F_rv", 
                         "cpp_type": "char", 
                         "cpp_val": "SH_rv", 
                         "cpp_var": "SH_rv"
@@ -197,8 +197,8 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_return_char_bufferify", 
-                "C_post_call": "// LSH_F_rv is always 1, test to silence warning about unused variable\nif (LSH_F_rv == 1) *SH_F_rv = SH_rv;", 
-                "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
+                "C_post_call": "// NSH_F_rv is always 1, test to silence warning about unused variable\nif (NSH_F_rv == 1) *SH_F_rv = SH_rv;", 
+                "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "char SH_rv", 
                 "F_C_name": "c_return_char_bufferify", 
@@ -206,7 +206,7 @@
                 "c_string": "SH_rv", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
-                "f_string_len": "LSH_F_rv", 
+                "f_string_len": "NSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -458,7 +458,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 3, 
-            "_decl": "void getChar1(char * SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
+            "_decl": "void getChar1(char * SH_F_rv+intent(out)+len(NSH_F_rv))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 15, 
             "_generated": "string_to_buffer_and_len", 
@@ -469,15 +469,15 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "LSH_F_rv", 
+                        "len": "NSH_F_rv", 
                         "ptr": true
                     }, 
                     "fmtc": {
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "SH_F_rv", 
-                        "c_var_len": "LSH_F_rv", 
-                        "c_var_num": "LSH_F_rv", 
+                        "c_var_len": "NSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
                         "cpp_type": "char", 
                         "cpp_val": "SH_rv", 
                         "cpp_var": "SH_rv"
@@ -496,8 +496,8 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char1_bufferify", 
-                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv);", 
-                "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv);", 
+                "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char1_bufferify", 
@@ -505,7 +505,7 @@
                 "c_string": "SH_rv", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
-                "f_string_len": "LSH_F_rv", 
+                "f_string_len": "NSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -611,7 +611,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 4, 
-            "_decl": "void getChar2(char * SH_F_rv+intent(out)+len(LSH_F_rv))", 
+            "_decl": "void getChar2(char * SH_F_rv+intent(out)+len(NSH_F_rv))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 17, 
             "_generated": "string_to_buffer_and_len", 
@@ -622,15 +622,15 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "LSH_F_rv", 
+                        "len": "NSH_F_rv", 
                         "ptr": true
                     }, 
                     "fmtc": {
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "SH_F_rv", 
-                        "c_var_len": "LSH_F_rv", 
-                        "c_var_num": "LSH_F_rv", 
+                        "c_var_len": "NSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
                         "cpp_type": "char", 
                         "cpp_val": "SH_rv", 
                         "cpp_var": "SH_rv"
@@ -651,8 +651,8 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char2_bufferify", 
-                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv);", 
-                "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv);", 
+                "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char2_bufferify", 
@@ -660,7 +660,7 @@
                 "c_string": "SH_rv", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
-                "f_string_len": "LSH_F_rv", 
+                "f_string_len": "NSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -718,7 +718,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 5, 
-            "_decl": "void getChar3(char * output+intent(out)+len(Loutput))", 
+            "_decl": "void getChar3(char * output+intent(out)+len(Noutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 18, 
             "_generated": "string_to_buffer_and_len", 
@@ -729,15 +729,15 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "Loutput", 
+                        "len": "Noutput", 
                         "ptr": true
                     }, 
                     "fmtc": {
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "output", 
-                        "c_var_len": "Loutput", 
-                        "c_var_num": "Loutput", 
+                        "c_var_len": "Noutput", 
+                        "c_var_num": "Noutput", 
                         "cpp_type": "char", 
                         "cpp_val": "SH_rv", 
                         "cpp_var": "SH_rv"
@@ -758,8 +758,8 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_char3_bufferify", 
-                "C_post_call": "shroud_FccCopy(output, Loutput, SH_rv);", 
-                "C_prototype": "char * output, int Loutput", 
+                "C_post_call": "shroud_FccCopy(output, Noutput, SH_rv);", 
+                "C_prototype": "char * output, int Noutput", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const char * SH_rv", 
                 "F_C_name": "c_get_char3_bufferify", 
@@ -767,7 +767,7 @@
                 "c_string": "SH_rv", 
                 "cpp_var": "SH_rv", 
                 "f_string": "output", 
-                "f_string_len": "Loutput", 
+                "f_string_len": "Noutput", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -789,7 +789,7 @@
         {
             "_PTR_C_CPP_index": 5, 
             "_PTR_F_C_index": 18, 
-            "_decl": "void getChar3(char * output+intent(out)+len(Loutput))", 
+            "_decl": "void getChar3(char * output+intent(out)+len(Noutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 19, 
             "_generated": "string_to_buffer_and_len", 
@@ -800,7 +800,7 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "Loutput", 
+                        "len": "Noutput", 
                         "ptr": true
                     }, 
                     "name": "output", 
@@ -878,7 +878,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 6, 
-            "_decl": "void getString1(string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure", 
+            "_decl": "void getString1(string & SH_F_rv+intent(out)+len(NSH_F_rv))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 20, 
             "_generated": "string_to_buffer_and_len", 
@@ -889,15 +889,15 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "LSH_F_rv", 
+                        "len": "NSH_F_rv", 
                         "reference": true
                     }, 
                     "fmtc": {
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "SH_F_rv", 
-                        "c_var_len": "LSH_F_rv", 
-                        "c_var_num": "LSH_F_rv", 
+                        "c_var_len": "NSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv"
@@ -916,8 +916,8 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string1_bufferify", 
-                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
-                "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());", 
+                "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string1_bufferify", 
@@ -925,7 +925,7 @@
                 "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
-                "f_string_len": "LSH_F_rv", 
+                "f_string_len": "NSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -1033,7 +1033,7 @@
         {
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 7, 
-            "_decl": "void getString2(string & SH_F_rv+intent(out)+len(LSH_F_rv))", 
+            "_decl": "void getString2(string & SH_F_rv+intent(out)+len(NSH_F_rv))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 22, 
             "_generated": "string_to_buffer_and_len", 
@@ -1044,15 +1044,15 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "LSH_F_rv", 
+                        "len": "NSH_F_rv", 
                         "reference": true
                     }, 
                     "fmtc": {
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "SH_F_rv", 
-                        "c_var_len": "LSH_F_rv", 
-                        "c_var_num": "LSH_F_rv", 
+                        "c_var_len": "NSH_F_rv", 
+                        "c_var_num": "NSH_F_rv", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv"
@@ -1073,8 +1073,8 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string2_bufferify", 
-                "C_post_call": "shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());", 
-                "C_prototype": "char * SH_F_rv, int LSH_F_rv", 
+                "C_post_call": "shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());", 
+                "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string2_bufferify", 
@@ -1082,7 +1082,7 @@
                 "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
                 "f_string": "SH_F_rv", 
-                "f_string_len": "LSH_F_rv", 
+                "f_string_len": "NSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -1142,7 +1142,7 @@
         {
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 8, 
-            "_decl": "void getString3(string & output+intent(out)+len(Loutput))", 
+            "_decl": "void getString3(string & output+intent(out)+len(Noutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 23, 
             "_generated": "string_to_buffer_and_len", 
@@ -1153,15 +1153,15 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "Loutput", 
+                        "len": "Noutput", 
                         "reference": true
                     }, 
                     "fmtc": {
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "output", 
-                        "c_var_len": "Loutput", 
-                        "c_var_num": "Loutput", 
+                        "c_var_len": "Noutput", 
+                        "c_var_num": "Noutput", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
                         "cpp_var": "SH_rv"
@@ -1182,8 +1182,8 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_get_string3_bufferify", 
-                "C_post_call": "shroud_FccCopy(output, Loutput, SH_rv.c_str());", 
-                "C_prototype": "char * output, int Loutput", 
+                "C_post_call": "shroud_FccCopy(output, Noutput, SH_rv.c_str());", 
+                "C_prototype": "char * output, int Noutput", 
                 "C_return_type": "void", 
                 "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_get_string3_bufferify", 
@@ -1191,7 +1191,7 @@
                 "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
                 "f_string": "output", 
-                "f_string_len": "Loutput", 
+                "f_string_len": "Noutput", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -1214,7 +1214,7 @@
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 8, 
             "_PTR_F_C_index": 23, 
-            "_decl": "void getString3(string & output+intent(out)+len(Loutput))", 
+            "_decl": "void getString3(string & output+intent(out)+len(Noutput))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 24, 
             "_generated": "string_to_buffer_and_len", 
@@ -1225,7 +1225,7 @@
                         "_is_result": true, 
                         "const": false, 
                         "intent": "out", 
-                        "len": "Loutput", 
+                        "len": "Noutput", 
                         "reference": true
                     }, 
                     "name": "output", 
@@ -1804,6 +1804,8 @@
         "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 
         "C_impl_filename_library_template": "wrap{library}.cpp", 
         "C_name_template": "{C_prefix}{class_prefix}{underscore_name}{function_suffix}", 
+        "C_var_len_template": "N{c_var}", 
+        "C_var_trim_template": "L{c_var}", 
         "F_C_name_template": "{F_C_prefix}{class_prefix}{underscore_name}{function_suffix}", 
         "F_C_prefix": "c_", 
         "F_force_wrapper": false, 

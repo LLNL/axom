@@ -92,14 +92,14 @@ const char * AA_exclass1_get_name(const AA_exclass1 * self)
 // splicer end class.ExClass1.method.get_name
 }
 
-// void getName(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+// void getName(string & SH_F_rv+intent(out)+len(NSH_F_rv)) const
 // function_index=14
-void AA_exclass1_get_name_bufferify(const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv)
+void AA_exclass1_get_name_bufferify(const AA_exclass1 * self, char * SH_F_rv, int NSH_F_rv)
 {
 // splicer begin class.ExClass1.method.get_name_bufferify
     const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));
     const std::string & SH_rv = SH_this->getName();
-    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
     return;
 // splicer end class.ExClass1.method.get_name_bufferify
 }
@@ -130,14 +130,14 @@ const char * AA_exclass1_get_name_error_check(const AA_exclass1 * self)
 // splicer end class.ExClass1.method.get_name_error_check
 }
 
-// void getNameErrorCheck(string & SH_F_rv+intent(out)+len(LSH_F_rv)) const
+// void getNameErrorCheck(string & SH_F_rv+intent(out)+len(NSH_F_rv)) const
 // function_index=15
-void AA_exclass1_get_name_error_check_bufferify(const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv)
+void AA_exclass1_get_name_error_check_bufferify(const AA_exclass1 * self, char * SH_F_rv, int NSH_F_rv)
 {
 // splicer begin class.ExClass1.method.get_name_error_check_bufferify
     const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));
     const std::string & SH_rv = SH_this->getNameErrorCheck();
-    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
     return;
 // splicer end class.ExClass1.method.get_name_error_check_bufferify
 }
@@ -153,14 +153,14 @@ const char * AA_exclass1_get_name_arg(const AA_exclass1 * self)
 // splicer end class.ExClass1.method.get_name_arg
 }
 
-// void getNameArg(string & name+intent(out)+len(Lname)) const
+// void getNameArg(string & name+intent(out)+len(Nname)) const
 // function_index=16
-void AA_exclass1_get_name_arg_bufferify(const AA_exclass1 * self, char * name, int Lname)
+void AA_exclass1_get_name_arg_bufferify(const AA_exclass1 * self, char * name, int Nname)
 {
 // splicer begin class.ExClass1.method.get_name_arg_bufferify
     const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));
     const std::string & SH_rv = SH_this->getNameArg();
-    shroud_FccCopy(name, Lname, SH_rv.c_str());
+    shroud_FccCopy(name, Nname, SH_rv.c_str());
     return;
 // splicer end class.ExClass1.method.get_name_arg_bufferify
 }

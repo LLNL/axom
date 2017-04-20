@@ -29,12 +29,12 @@ module strings_mod
             character(kind=C_CHAR) :: SH_rv
         end function c_return_char
 
-        subroutine c_return_char_bufferify(SH_F_rv, LSH_F_rv) &
+        subroutine c_return_char_bufferify(SH_F_rv, NSH_F_rv) &
                 bind(C, name="STR_return_char_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_return_char_bufferify
 
         subroutine c_pass_char_ptr(dest, Ndest, src) &
@@ -64,12 +64,12 @@ module strings_mod
             type(C_PTR) SH_rv
         end function c_get_char1
 
-        subroutine c_get_char1_bufferify(SH_F_rv, LSH_F_rv) &
+        subroutine c_get_char1_bufferify(SH_F_rv, NSH_F_rv) &
                 bind(C, name="STR_get_char1_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_get_char1_bufferify
 
         function c_get_char2() &
@@ -80,12 +80,12 @@ module strings_mod
             type(C_PTR) SH_rv
         end function c_get_char2
 
-        subroutine c_get_char2_bufferify(SH_F_rv, LSH_F_rv) &
+        subroutine c_get_char2_bufferify(SH_F_rv, NSH_F_rv) &
                 bind(C, name="STR_get_char2_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_get_char2_bufferify
 
         function c_get_char3() &
@@ -96,12 +96,12 @@ module strings_mod
             type(C_PTR) SH_rv
         end function c_get_char3
 
-        subroutine c_get_char3_bufferify(output, Loutput) &
+        subroutine c_get_char3_bufferify(output, Noutput) &
                 bind(C, name="STR_get_char3_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: output(*)
-            integer(C_INT), value, intent(IN) :: Loutput
+            integer(C_INT), value, intent(IN) :: Noutput
         end subroutine c_get_char3_bufferify
 
         pure function c_get_string1() &
@@ -112,12 +112,12 @@ module strings_mod
             type(C_PTR) SH_rv
         end function c_get_string1
 
-        subroutine c_get_string1_bufferify(SH_F_rv, LSH_F_rv) &
+        subroutine c_get_string1_bufferify(SH_F_rv, NSH_F_rv) &
                 bind(C, name="STR_get_string1_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_get_string1_bufferify
 
         function c_get_string2() &
@@ -128,12 +128,12 @@ module strings_mod
             type(C_PTR) SH_rv
         end function c_get_string2
 
-        subroutine c_get_string2_bufferify(SH_F_rv, LSH_F_rv) &
+        subroutine c_get_string2_bufferify(SH_F_rv, NSH_F_rv) &
                 bind(C, name="STR_get_string2_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: LSH_F_rv
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_get_string2_bufferify
 
         function c_get_string3() &
@@ -144,12 +144,12 @@ module strings_mod
             type(C_PTR) SH_rv
         end function c_get_string3
 
-        subroutine c_get_string3_bufferify(output, Loutput) &
+        subroutine c_get_string3_bufferify(output, Noutput) &
                 bind(C, name="STR_get_string3_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: output(*)
-            integer(C_INT), value, intent(IN) :: Loutput
+            integer(C_INT), value, intent(IN) :: Noutput
         end subroutine c_get_string3_bufferify
 
         subroutine c_accept_string_const_reference(arg1) &
@@ -310,7 +310,7 @@ contains
         ! splicer end get_char2
     end function get_char2
 
-    ! void getChar3(char * output+intent(out)+len(Loutput))
+    ! void getChar3(char * output+intent(out)+len(Noutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=19
     !>
@@ -361,7 +361,7 @@ contains
         ! splicer end get_string2
     end function get_string2
 
-    ! void getString3(string & output+intent(out)+len(Loutput))
+    ! void getString3(string & output+intent(out)+len(Noutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=24
     !>

@@ -79,12 +79,12 @@ module slic_mod
             logical(C_BOOL) :: SH_rv
         end function c_activate_logger_bufferify
 
-        subroutine c_get_active_logger_name_bufferify(name, Lname) &
+        subroutine c_get_active_logger_name_bufferify(name, Nname) &
                 bind(C, name="SLIC_get_active_logger_name_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: name(*)
-            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT), value, intent(IN) :: Nname
         end subroutine c_get_active_logger_name_bufferify
 
         subroutine slic_set_logging_msg_level(level) &

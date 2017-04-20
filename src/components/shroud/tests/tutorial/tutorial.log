@@ -13,9 +13,9 @@ C function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+va
 C function void Sum(int len+intent(in)+value, int * values+dimension((len))+intent(in), int * result+intent(out))
 C function bool Function3(bool arg+intent(in)+value)
 C function void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out), bool * arg3+intent(inout))
-C function void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(LSH_F_rv))
+C function void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(NSH_F_rv))
 C function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
-C function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))
+C function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Noutput))
 C function double Function5()
 C function double Function5(double arg1+default(3.1415)+intent(in)+value)
 C function double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
@@ -40,7 +40,7 @@ C function TypeID typefunc(TypeID arg+intent(in)+value)
 C function EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)
 C function void useclass(const Class1 * arg1+intent(in)+value)
 C function const std::string & LastFunctionCalled()+pure
-C function void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+C function void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(NSH_F_rv))+pure
 Close wrapTutorial.h
 Close wrapTutorial.cpp
 Close shroudrt.hpp
@@ -55,10 +55,10 @@ C-interface, Fortran function void Sum(int len+intent(in)+value, int * values+di
 C-interface, Fortran function bool Function3(bool arg+intent(in)+value)
 C-interface, Fortran function void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out), bool * arg3+intent(inout))
 Fortran function const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
-C-interface function void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(LSH_F_rv))
+C-interface function void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(NSH_F_rv))
 C-interface function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
-C-interface function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))
-Fortran function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))
+C-interface function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Noutput))
+Fortran function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Noutput))
 C-interface, Fortran function double Function5()
 C-interface, Fortran function double Function5(double arg1+default(3.1415)+intent(in)+value)
 C-interface, Fortran function double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
@@ -87,7 +87,7 @@ C-interface, Fortran function TypeID typefunc(TypeID arg+intent(in)+value)
 C-interface, Fortran function EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)
 C-interface, Fortran function void useclass(const Class1 * arg1+intent(in)+value)
 C-interface function const std::string & LastFunctionCalled()+pure
-C-interface function void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+C-interface function void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(NSH_F_rv))+pure
 Fortran function const string_result_fstr & LastFunctionCalled()+pure
 Close wrapftutorial.f
 class Class1
