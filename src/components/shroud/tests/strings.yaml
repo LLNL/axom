@@ -28,6 +28,8 @@ functions:
     description: |
       dest is marked intent(OUT) to override the intent(INOUT) default
       This avoid a copy-in on dest.
+  options:
+    C_bufferify_suffix: _BUFFER
 
 ########################################
 
@@ -93,9 +95,21 @@ functions:
 #  doxygen:
 #    brief: Accept a string instance
 
+########################################
+# explicit annotations
+# Currently explicit len/len_trim conflict with auto generated one and do not compile
+# local declarations shadow parameter
 
+#- decl: void explicit1(char * name+len+intent(in))
+# len_trim is added for free because intent(in)
 
+#- decl: void explicit2(char * name+len_trim+intent(out))
+# len is added for free because intent(out)
 
+#- decl: void explicit3(char * name+len(AAlen)+len_trim(AAtrim))
+# set names for len/len_trim annotations
+
+########################################
 patterns:
     C_invalid_name: >
         if ({cpp_var}.empty()) {{

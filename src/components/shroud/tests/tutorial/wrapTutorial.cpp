@@ -29,7 +29,7 @@ double TUT_function2(double arg1, int arg2)
 // splicer end function.function2
 }
 
-// void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))
+// void Sum(int len+intent(in)+value, int * values+dimension((len))+intent(in), int * result+intent(out))
 // function_index=5
 void TUT_sum(int len, int * values, int * result)
 {

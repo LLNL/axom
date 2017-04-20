@@ -91,7 +91,7 @@ module tutorial_mod
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: len
-            integer(C_INT), intent(IN) :: values(*)
+            integer(C_INT), intent(IN) :: values(len)
             integer(C_INT), intent(OUT) :: result
         end subroutine sum
 
@@ -524,7 +524,7 @@ contains
         implicit none
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
-        character(kind=C_CHAR, len=(30)) :: SH_rv
+        character(kind=C_CHAR, len=30) :: SH_rv
         ! splicer begin function4a
         call c_function4a_bufferify(  &
             arg1,  &

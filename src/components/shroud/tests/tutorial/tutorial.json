@@ -376,7 +376,7 @@
             }
         }, 
         {
-            "_decl": "void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))", 
+            "_decl": "void Sum(int len+intent(in)+value, int * values+dimension((len))+intent(in), int * result+intent(out))", 
             "_function_index": 5, 
             "_subprogram": "subroutine", 
             "args": [
@@ -403,7 +403,7 @@
                 }, 
                 {
                     "attrs": {
-                        "dimension": "(*)", 
+                        "dimension": "(len)", 
                         "intent": "in", 
                         "ptr": true, 
                         "value": false
@@ -448,7 +448,7 @@
                 }
             ], 
             "attrs": {}, 
-            "decl": "void Sum(int len, int *values+dimension+intent(in), int *result+intent(out))", 
+            "decl": "void Sum(int len, int *values+dimension(len)+intent(in), int *result+intent(out))", 
             "fmt": {
                 "C_call_list": "len, values, result", 
                 "C_name": "TUT_sum", 
@@ -737,7 +737,7 @@
                 "LUA_name_impl": "l_function4a", 
                 "PY_name_impl": "PY_function4a", 
                 "function_name": "Function4a", 
-                "rvlen": "(30)", 
+                "rvlen": "30", 
                 "underscore_name": "function4a"
             }, 
             "options": {
@@ -746,7 +746,7 @@
             "result": {
                 "attrs": {
                     "const": true, 
-                    "len": "(30)"
+                    "len": "30"
                 }, 
                 "name": "Function4a", 
                 "type": "std::string"
@@ -865,7 +865,7 @@
             "result": {
                 "attrs": {
                     "const": false, 
-                    "len": "(30)", 
+                    "len": "30", 
                     "ptr": false, 
                     "reference": false
                 }, 
@@ -3566,6 +3566,7 @@
     "library": "Tutorial", 
     "namespace": "tutorial", 
     "options": {
+        "C_bufferify_suffix": "_bufferify", 
         "C_header_filename_class_template": "wrap{cpp_class}.h", 
         "C_header_filename_library_template": "wrap{library}.h", 
         "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 

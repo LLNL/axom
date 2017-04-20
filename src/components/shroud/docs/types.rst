@@ -169,12 +169,108 @@ the Fortran wrappers it is often necessary to copy the values.  This
 is to account for blank filled vs ``NULL`` terminated.  It also helps
 support ``const`` vs non-``const`` strings.
 
+Any C++ function which has a ``char`` or ``std::string`` arguments
+will also create an additional wrapper function which include
+arguments for the length of the strings.  Most Fortran compiler use
+this convention when passing ``CHARACTER`` arguments. Shroud makes
+this convention explicit for two reasons:
+
+* It allows an interface to be used.  Functions with an interface may
+  not pass the hidden, non-standard length argument, depending on compiler.
+* It may pass the result of ``len`` and/or ``len_trim``.
+
+Arguments with the *intent(in)* annotation are also given the
+*len_trim* annotation.  The assumption is that the trailing blanks are
+not needed.  *intent(out)* adds a *len* annotation with the assumption
+that the wrapper will copy the result and blank fill the argument.
+
+The additional function will be named the same as the original function
+with the option **bufferify_suffix** appended to the end.  The default 
+value for the option is *_bufferify*.
+
+
 A C 'bufferify' wrapper is created which accepts the address of the
 Fortran character variable with a ``int`` argument for the declared
-length of the variable (``len``) and/or a ``int`` argument for the
+length of the variable (``len``) and/or an ``int`` argument for the
 length with blanks trimmed off (``len_trim``).
 The wrapper then uses these arguments to create a ``NULL`` terminated string
 or a std::string instance.
+
+Character Type Map
+^^^^^^^^^^^^^^^^^^
+
+There are several different type maps for character arguments.
+The first is for type ``char``::
+
+    types:
+        char:
+            base: string
+            cpp_type: char
+            c_type: char
+            c_statements:
+                intent_in:
+                    cpp_local_var: True
+                    cpp_header: <cstring>
+                    pre_call:
+                      - int {c_var_len} = std::strlen({c_var});
+                      - char * {cpp_var} = new char [{c_var_len} + 1];
+                      - std::strncpy({cpp_var}, {c_var}, {c_var_len});
+                      - {cpp_var}[{c_var_len}] = '\0';
+                    pre_call_trim:
+                      - char * {cpp_var} = new char [{c_var_len} + 1];
+                      - std::strncpy({cpp_var}, {c_var}, {c_var_len});
+                      - {cpp_var}[{c_var_len}] = '\0';
+                    post_call:
+                      -  delete [] {cpp_var};
+                intent_out:
+                    cpp_local_var: True
+                    pre_call:
+                      - char * {cpp_var} = new char [{c_var_num} + 1];
+                    post_call:
+                      - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
+                      - delete [] {cpp_var};
+                    cpp_header: shroudrt.hpp
+                result:
+                    post_call:
+                      - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
+                    cpp_header: shroudrt.hpp
+    
+            f_type: character(*)
+            f_c_type: character(kind=C_CHAR)
+            f_module:
+                iso_c_binding: null
+
+``std::string`` has its own typemap::
+
+    types:
+        string:
+            base: string
+            cpp_type: std::string
+            cpp_header: <string>
+            cpp_to_c: {cpp_var}.c_str()
+            c_type: char
+    
+            c_statements:
+                intent_in:
+                    cpp_local_var: True
+                    pre_call:
+                      - {c_const}std::string {cpp_var}({c_var});
+                    pre_call_trim:
+                      - {c_const}std::string {cpp_var}({c_var}, {c_var_trim});
+                intent_out:
+                    post_call:
+                      - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
+                    cpp_header: shroudrt.hpp'
+                result:
+                    post_call:
+                      - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
+                    cpp_header: shroudrt.hpp'
+    
+            f_type: character(*)
+            f_c_type: character(kind=C_CHAR)
+            f_module:
+                iso_c_binding: none
+
 
 Character Arguments
 ^^^^^^^^^^^^^^^^^^^

@@ -325,6 +325,11 @@ debug
   be useful for debugging.
   Defaults to *false*.
 
+C_bufferify_suffix
+  Suffix appended to generated routine which pass strings as buffers
+  with explicit lengths.
+  Defaults to *_bufferify*
+
 C_prefix
   Prefix added to name of generated C routines.
   The prefix helps to ensure unique global names.
@@ -525,8 +530,8 @@ PY_name_impl
     PY_class1_method1
 
 
-Types Dictionary
-----------------
+Types Map
+---------
 
 Types describe how to handle arguments from Fortran to C to C++.  Then
 how to convert return values from C++ to C to Fortran.

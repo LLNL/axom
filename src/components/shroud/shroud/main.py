@@ -150,6 +150,8 @@ class Schema(object):
             C_name_template=(
                 '{C_prefix}{class_prefix}{underscore_name}{function_suffix}'),
 
+            C_bufferify_suffix='_bufferify',
+
             # Fortran's names for C functions
             F_C_prefix='c_',
             F_C_name_template=(
@@ -941,7 +943,7 @@ class GenFunctions(object):
                     # so the wrapper will know how much space
                     # can be written to.
                     intent = attrs['intent']
-                    if intent in ['out', 'inout']:
+                    if intent in ['out', 'inout'] and 'len' not in attrs:
                         attrs['len'] = 'N' + arg['name']
                 else:
                     arg['type'] = 'char_scalar'
@@ -979,7 +981,7 @@ class GenFunctions(object):
         C_new['_generated'] = 'string_to_buffer_and_len'
         C_new['_error_pattern_suffix'] = '_as_buffer'
         fmt = C_new['fmt']
-        fmt.function_suffix = fmt.function_suffix + '_bufferify'
+        fmt.function_suffix = fmt.function_suffix + options.C_bufferify_suffix
 
         options = C_new['options']
         options.wrap_c = True
@@ -994,10 +996,12 @@ class GenFunctions(object):
             if self.typedef[argtype].base == 'string':
                 # strings passed in need len_trim
                 # strings returned need len
-                intent = arg['attrs']['intent']
-                if intent in ['in', 'inout']:
+                # Add attributes if not already set
+                attrs = arg['attrs']
+                intent = attrs['intent']
+                if intent in ['in', 'inout'] and 'len_trim' not in attrs:
                     arg['attrs']['len_trim'] = 'L' + arg['name']
-                if intent in ['out', 'inout']:
+                if intent in ['out', 'inout'] and 'len' not in attrs:
                     arg['attrs']['len'] = 'N' + arg['name']
 
         if has_string_result:
@@ -1273,8 +1277,6 @@ class VerifyAttrs(object):
                     attrs['intent'] = 'in'  # XXX must coordinate with VALUE
             else:
                 intent = intent.lower()
-                if intent[0] == '(' and intent[-1] == ')':
-                    intent = intent[1:-1]
                 if intent in ['in', 'out', 'inout']:
                     attrs['intent'] = intent
                 else:
@@ -1305,6 +1307,9 @@ class VerifyAttrs(object):
                 if dimension is True:
                     # No value was provided, provide default
                     attrs['dimension'] = '(*)'
+                else:
+                    # Put parens around dimension
+                    attrs['dimension'] = '(' + attrs['dimension'] + ')'
 
             if 'default' in attrs:
                 found_default = True
@@ -1316,10 +1321,10 @@ class VerifyAttrs(object):
             # XXX make sure they don't conflict with other names
             len_name = attrs.get('len', False)
             if len_name is True:
-                attrs['len'] = 'L' + argname
+                attrs['len'] = 'N' + argname
             len_name = attrs.get('len_trim', False)
             if len_name is True:
-                attrs['len'] = 'L' + argname
+                attrs['len_trim'] = 'L' + argname
 #        if typedef.base == 'string':
 
 

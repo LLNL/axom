@@ -440,6 +440,7 @@
     "library": "testnames", 
     "namespace": "", 
     "options": {
+        "C_bufferify_suffix": "_bufferify", 
         "C_header_filename_class_template": "wrap{cpp_class}.h", 
         "C_header_filename_library_template": "wrap{library}.h", 
         "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 

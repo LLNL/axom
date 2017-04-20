@@ -159,7 +159,7 @@ When this function is wrapped it is necessary to give some annotations
 in the YAML file to describe how the variables should be mapped to
 Fortran::
 
-  - decl: void Sum(int len, int *values+dimension+intent(in),
+  - decl: void Sum(int len, int *values+dimension(len)+intent(in),
                    int *result+intent(out))
 
 In the ``BIND(C)`` interface only *len* uses the ``value`` attribute.
@@ -172,7 +172,7 @@ passes a pointer::
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: len
-            integer(C_INT), intent(IN) :: values(*)
+            integer(C_INT), intent(IN) :: values(len)
             integer(C_INT), intent(OUT) :: result
         end subroutine sum
     end interface
@@ -257,10 +257,11 @@ YAML input::
         const std::string& arg1,
         const std::string& arg2 )
 
-This is the C++ prototype with the addition of **+len(30)**.
-This attribute defines the declared length of the returned string.
-Since *Function4a* is returning a ``std::string`` the contents of the
-string must be copied out into a Fortran variable so that the ``std::string`` may be deallocated by C++. Otherwise, it would leak memory. 
+This is the C++ prototype with the addition of **+len(30)**.  This
+attribute defines the declared length of the returned string.  Since
+*Function4a* is returning a ``std::string`` the contents of the string
+must be copied out into a Fortran variable so that the ``std::string``
+may be deallocated by C++. Otherwise, it would leak memory.
 
 Attributes may also be added by assign new fields in **attrs**::
 

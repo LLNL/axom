@@ -310,7 +310,7 @@
                 "C_prototype": "char * dest, int Ndest, const char * src", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
-                "F_C_call": "c_pass_char_ptr_bufferify", 
+                "F_C_call": "c_pass_char_ptr_buffer", 
                 "F_C_name": "c_pass_char_ptr", 
                 "F_arg_c_call": "dest, len(dest, kind=C_INT), src, len_trim(src, kind=C_INT)", 
                 "F_arg_c_call_tab": "\tdest\tlen(dest, kind=C_INT)\tsrc\tlen_trim(src, kind=C_INT)", 
@@ -325,7 +325,9 @@
                 "function_name": "passCharPtr", 
                 "underscore_name": "pass_char_ptr"
             }, 
-            "options": {}, 
+            "options": {
+                "C_bufferify_suffix": "_BUFFER"
+            }, 
             "result": {
                 "attrs": {}, 
                 "name": "passCharPtr", 
@@ -400,16 +402,16 @@
             }, 
             "fmt": {
                 "C_call_list": "SH_dest, SH_src", 
-                "C_name": "STR_pass_char_ptr_bufferify", 
+                "C_name": "STR_pass_char_ptr_BUFFER", 
                 "C_post_call": "shroud_FccCopy(dest, Ndest, SH_dest);\ndelete [] SH_dest;\ndelete [] SH_src;", 
                 "C_pre_call": "char * SH_dest = new char [Ndest + 1];\nchar * SH_src = new char [Lsrc + 1];\nstd::strncpy(SH_src, src, Lsrc);\nSH_src[Lsrc] = '\\0';", 
                 "C_prototype": "char * dest, int Ndest, const char * src, int Lsrc", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
-                "F_C_name": "c_pass_char_ptr_bufferify", 
+                "F_C_name": "c_pass_char_ptr_buffer", 
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
-                "function_suffix": "_bufferify"
+                "function_suffix": "_BUFFER"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -1552,6 +1554,7 @@
     "library": "strings", 
     "namespace": "", 
     "options": {
+        "C_bufferify_suffix": "_bufferify", 
         "C_header_filename_class_template": "wrap{cpp_class}.h", 
         "C_header_filename_library_template": "wrap{library}.h", 
         "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 

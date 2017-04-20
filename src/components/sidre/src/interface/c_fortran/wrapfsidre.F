@@ -2331,7 +2331,7 @@ contains
         use iso_c_binding, only : C_CHAR, C_INT
         implicit none
         class(SidreGroup) :: obj
-        character(kind=C_CHAR, len=(MAXNAMESIZE)) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
         ! splicer begin class.Group.method.get_name
         call c_group_get_name_bufferify(  &
             obj%voidptr,  &
@@ -2466,7 +2466,7 @@ contains
         implicit none
         class(SidreGroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        character(kind=C_CHAR, len=(MAXNAMESIZE)) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
         ! splicer begin class.Group.method.get_view_name
         call c_group_get_view_name_bufferify(  &
             obj%voidptr,  &
@@ -2985,7 +2985,7 @@ contains
         implicit none
         class(SidreGroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        character(kind=C_CHAR, len=(MAXNAMESIZE)) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
         ! splicer begin class.Group.method.get_group_name
         call c_group_get_group_name_bufferify(  &
             obj%voidptr,  &
@@ -5022,7 +5022,7 @@ contains
         use iso_c_binding, only : C_CHAR, C_INT
         implicit none
         class(SidreView) :: obj
-        character(kind=C_CHAR, len=(MAXNAMESIZE)) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
         ! splicer begin class.View.method.get_name
         call c_view_get_name_bufferify(  &
             obj%voidptr,  &

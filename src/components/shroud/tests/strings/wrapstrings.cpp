@@ -85,9 +85,9 @@ void STR_pass_char_ptr(char * dest, int Ndest, const char * src)
  * dest is marked intent(OUT) to override the intent(INOUT) default
  * This avoid a copy-in on dest.
  */
-void STR_pass_char_ptr_bufferify(char * dest, int Ndest, const char * src, int Lsrc)
+void STR_pass_char_ptr_BUFFER(char * dest, int Ndest, const char * src, int Lsrc)
 {
-// splicer begin function.pass_char_ptr_bufferify
+// splicer begin function.pass_char_ptr_BUFFER
     char * SH_dest = new char [Ndest + 1];
     char * SH_src = new char [Lsrc + 1];
     std::strncpy(SH_src, src, Lsrc);
@@ -97,7 +97,7 @@ void STR_pass_char_ptr_bufferify(char * dest, int Ndest, const char * src, int L
     delete [] SH_dest;
     delete [] SH_src;
     return;
-// splicer end function.pass_char_ptr_bufferify
+// splicer end function.pass_char_ptr_BUFFER
 }
 
 // const char * getChar1()+pure

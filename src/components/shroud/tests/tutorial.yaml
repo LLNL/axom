@@ -27,7 +27,7 @@ types:
 functions:
 - decl: void Function1()
 - decl: double Function2(double arg1, int arg2)
-- decl: void Sum(int len, int *values+dimension+intent(in),
+- decl: void Sum(int len, int *values+dimension(len)+intent(in),
                  int *result+intent(out))
   options:
     # unable to deal with dimension

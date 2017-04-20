@@ -26,7 +26,7 @@ void STR_return_char_bufferify(char * SH_F_rv, int LSH_F_rv);
 
 void STR_pass_char_ptr(char * dest, int Ndest, const char * src);
 
-void STR_pass_char_ptr_bufferify(char * dest, int Ndest, const char * src, int Lsrc);
+void STR_pass_char_ptr_BUFFER(char * dest, int Ndest, const char * src, int Lsrc);
 
 const char * STR_get_char1();
 

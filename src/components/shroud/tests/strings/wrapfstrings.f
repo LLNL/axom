@@ -46,15 +46,15 @@ module strings_mod
             character(kind=C_CHAR), intent(IN) :: src(*)
         end subroutine c_pass_char_ptr
 
-        subroutine c_pass_char_ptr_bufferify(dest, Ndest, src, Lsrc) &
-                bind(C, name="STR_pass_char_ptr_bufferify")
+        subroutine c_pass_char_ptr_buffer(dest, Ndest, src, Lsrc) &
+                bind(C, name="STR_pass_char_ptr_BUFFER")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: dest(*)
             integer(C_INT), value, intent(IN) :: Ndest
             character(kind=C_CHAR), intent(IN) :: src(*)
             integer(C_INT), value, intent(IN) :: Lsrc
-        end subroutine c_pass_char_ptr_bufferify
+        end subroutine c_pass_char_ptr_buffer
 
         pure function c_get_char1() &
                 result(SH_rv) &
@@ -237,7 +237,7 @@ contains
         character(*), intent(OUT) :: dest
         character(*), intent(IN) :: src
         ! splicer begin pass_char_ptr
-        call c_pass_char_ptr_bufferify(  &
+        call c_pass_char_ptr_buffer(  &
             dest,  &
             len(dest, kind=C_INT),  &
             src,  &
