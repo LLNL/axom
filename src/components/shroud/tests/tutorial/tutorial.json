@@ -274,8 +274,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "Larg1", 
-                        "c_var_num": "Narg1", 
                         "cpp_type": "double", 
                         "cpp_var": "arg1"
                     }, 
@@ -312,8 +310,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "Larg2", 
-                        "c_var_num": "Narg2", 
                         "cpp_type": "int", 
                         "cpp_var": "arg2"
                     }, 
@@ -389,8 +385,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "len", 
-                        "c_var_len": "Llen", 
-                        "c_var_num": "Nlen", 
                         "cpp_type": "int", 
                         "cpp_var": "len"
                     }, 
@@ -412,8 +406,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "values", 
-                        "c_var_len": "Lvalues", 
-                        "c_var_num": "Nvalues", 
                         "cpp_type": "int", 
                         "cpp_var": "values"
                     }, 
@@ -434,8 +426,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "result", 
-                        "c_var_len": "Lresult", 
-                        "c_var_num": "Nresult", 
                         "cpp_type": "int", 
                         "cpp_var": "result"
                     }, 
@@ -493,8 +483,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "Larg", 
-                        "c_var_num": "Narg", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg"
                     }, 
@@ -571,8 +559,6 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "Larg1", 
-                        "c_var_num": "Narg1", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg1"
                     }, 
@@ -593,8 +579,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "arg2", 
-                        "c_var_len": "Larg2", 
-                        "c_var_num": "Narg2", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg2"
                     }, 
@@ -615,8 +599,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "arg3", 
-                        "c_var_len": "Larg3", 
-                        "c_var_num": "Narg3", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg3"
                     }, 
@@ -773,7 +755,7 @@
                         "c_ptr": "", 
                         "c_var": "arg1", 
                         "c_var_len": "Larg1", 
-                        "c_var_num": "Narg1", 
+                        "c_var_num": "SH_Narg1", 
                         "c_var_trim": "Larg1", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg1"
@@ -798,7 +780,7 @@
                         "c_ptr": "", 
                         "c_var": "arg2", 
                         "c_var_len": "Larg2", 
-                        "c_var_num": "Narg2", 
+                        "c_var_num": "SH_Narg2", 
                         "c_var_trim": "Larg2", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg2"
@@ -824,11 +806,10 @@
                         "c_ptr": " *", 
                         "c_var": "SH_F_rv", 
                         "c_var_len": "LSH_F_rv", 
-                        "c_var_num": "NSH_F_rv", 
+                        "c_var_num": "LSH_F_rv", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
-                        "cpp_var": "SH_rv", 
-                        "len_arg": "LSH_F_rv"
+                        "cpp_var": "SH_rv"
                     }, 
                     "fmtf": {
                         "c_var": "SH_rv", 
@@ -889,8 +870,8 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "Larg1", 
-                        "c_var_num": "Narg1", 
+                        "c_var_len": "SH_Larg1", 
+                        "c_var_num": "SH_Narg1", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg1"
                     }, 
@@ -925,8 +906,8 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "Larg2", 
-                        "c_var_num": "Narg2", 
+                        "c_var_len": "SH_Larg2", 
+                        "c_var_num": "SH_Narg2", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg2"
                     }, 
@@ -1003,7 +984,7 @@
                         "c_ptr": "", 
                         "c_var": "arg1", 
                         "c_var_len": "Larg1", 
-                        "c_var_num": "Narg1", 
+                        "c_var_num": "SH_Narg1", 
                         "c_var_trim": "Larg1", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg1"
@@ -1028,7 +1009,7 @@
                         "c_ptr": "", 
                         "c_var": "arg2", 
                         "c_var_len": "Larg2", 
-                        "c_var_num": "Narg2", 
+                        "c_var_num": "SH_Narg2", 
                         "c_var_trim": "Larg2", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_arg2"
@@ -1053,11 +1034,10 @@
                         "c_ptr": "", 
                         "c_var": "output", 
                         "c_var_len": "Loutput", 
-                        "c_var_num": "Noutput", 
+                        "c_var_num": "Loutput", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
-                        "cpp_var": "SH_rv", 
-                        "len_arg": "Loutput"
+                        "cpp_var": "SH_rv"
                     }, 
                     "fmtf": {
                         "c_var": "output", 
@@ -1236,8 +1216,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "Larg1", 
-                        "c_var_num": "Narg1", 
                         "cpp_type": "double", 
                         "cpp_var": "arg1"
                     }, 
@@ -1313,8 +1291,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "Larg1", 
-                        "c_var_num": "Narg1", 
                         "cpp_type": "double", 
                         "cpp_var": "arg1"
                     }, 
@@ -1352,8 +1328,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "Larg2", 
-                        "c_var_num": "Narg2", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg2"
                     }, 
@@ -1443,8 +1417,8 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "name", 
-                        "c_var_len": "Lname", 
-                        "c_var_num": "Nname", 
+                        "c_var_len": "SH_Lname", 
+                        "c_var_num": "SH_Nname", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_name"
                     }, 
@@ -1530,7 +1504,7 @@
                         "c_ptr": "", 
                         "c_var": "name", 
                         "c_var_len": "Lname", 
-                        "c_var_num": "Nname", 
+                        "c_var_num": "SH_Nname", 
                         "c_var_trim": "Lname", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_name"
@@ -1589,8 +1563,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "indx", 
-                        "c_var_len": "Lindx", 
-                        "c_var_num": "Nindx", 
                         "cpp_type": "int", 
                         "cpp_var": "indx"
                     }, 
@@ -1706,8 +1678,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "Larg", 
-                        "c_var_num": "Narg", 
                         "cpp_type": "int", 
                         "cpp_var": "arg"
                     }, 
@@ -1769,8 +1739,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "Larg", 
-                        "c_var_num": "Narg", 
                         "cpp_type": "double", 
                         "cpp_var": "arg"
                     }, 
@@ -1947,8 +1915,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "Larg", 
-                        "c_var_num": "Narg", 
                         "cpp_type": "double", 
                         "cpp_var": "arg"
                     }, 
@@ -2158,8 +2124,8 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "name", 
-                        "c_var_len": "Lname", 
-                        "c_var_num": "Nname", 
+                        "c_var_len": "SH_Lname", 
+                        "c_var_num": "SH_Nname", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_name"
                     }, 
@@ -2192,8 +2158,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "Larg2", 
-                        "c_var_num": "Narg2", 
                         "cpp_type": "double", 
                         "cpp_var": "arg2"
                     }, 
@@ -2389,7 +2353,7 @@
                         "c_ptr": "", 
                         "c_var": "name", 
                         "c_var_len": "Lname", 
-                        "c_var_num": "Nname", 
+                        "c_var_num": "SH_Nname", 
                         "c_var_trim": "Lname", 
                         "cpp_type": "std::string", 
                         "cpp_var": "SH_name"
@@ -2410,8 +2374,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "Larg2", 
-                        "c_var_num": "Narg2", 
                         "cpp_type": "double", 
                         "cpp_var": "arg2"
                     }, 
@@ -2475,8 +2437,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "Lnum", 
-                        "c_var_num": "Nnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2547,8 +2507,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "Lnum", 
-                        "c_var_num": "Nnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2569,8 +2527,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
-                        "c_var_len": "Loffset", 
-                        "c_var_num": "Noffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -2649,8 +2605,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "Lnum", 
-                        "c_var_num": "Nnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2688,8 +2642,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
-                        "c_var_len": "Loffset", 
-                        "c_var_num": "Noffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -2727,8 +2679,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "stride", 
-                        "c_var_len": "Lstride", 
-                        "c_var_num": "Nstride", 
                         "cpp_type": "int", 
                         "cpp_var": "stride"
                     }, 
@@ -2816,8 +2766,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "type", 
-                        "c_var_len": "Ltype", 
-                        "c_var_num": "Ntype", 
                         "cpp_type": "double", 
                         "cpp_var": "type"
                     }, 
@@ -2837,8 +2785,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "Lnum", 
-                        "c_var_num": "Nnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2904,8 +2850,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "type", 
-                        "c_var_len": "Ltype", 
-                        "c_var_num": "Ntype", 
                         "cpp_type": "double", 
                         "cpp_var": "type"
                     }, 
@@ -2925,8 +2869,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "Lnum", 
-                        "c_var_num": "Nnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2947,8 +2889,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
-                        "c_var_len": "Loffset", 
-                        "c_var_num": "Noffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -3022,8 +2962,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "type", 
-                        "c_var_len": "Ltype", 
-                        "c_var_num": "Ntype", 
                         "cpp_type": "double", 
                         "cpp_var": "type"
                     }, 
@@ -3060,8 +2998,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "Lnum", 
-                        "c_var_num": "Nnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -3099,8 +3035,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
-                        "c_var_len": "Loffset", 
-                        "c_var_num": "Noffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -3138,8 +3072,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "stride", 
-                        "c_var_len": "Lstride", 
-                        "c_var_num": "Nstride", 
                         "cpp_type": "int", 
                         "cpp_var": "stride"
                     }, 
@@ -3214,8 +3146,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "Larg", 
-                        "c_var_num": "Narg", 
                         "cpp_type": "TypeID", 
                         "cpp_var": "arg"
                     }, 
@@ -3291,8 +3221,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "Larg", 
-                        "c_var_num": "Narg", 
                         "cpp_type": "EnumTypeID", 
                         "cpp_var": "arg"
                     }, 
@@ -3370,8 +3298,6 @@
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "arg1", 
-                        "c_var_len": "Larg1", 
-                        "c_var_num": "Narg1", 
                         "cpp_type": "Class1", 
                         "cpp_var": "arg1"
                     }, 
@@ -3480,11 +3406,10 @@
                         "c_ptr": "", 
                         "c_var": "SH_F_rv", 
                         "c_var_len": "LSH_F_rv", 
-                        "c_var_num": "NSH_F_rv", 
+                        "c_var_num": "LSH_F_rv", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_rv.c_str()", 
-                        "cpp_var": "SH_rv", 
-                        "len_arg": "LSH_F_rv"
+                        "cpp_var": "SH_rv"
                     }, 
                     "name": "SH_F_rv", 
                     "type": "std::string"

@@ -60,6 +60,14 @@ void STR_accept_string_reference(char * arg1, int Narg1);
 
 void STR_accept_string_reference_bufferify(char * arg1, int Larg1, int Narg1);
 
+void STR_explicit1(char * name, int AAlen);
+
+void STR_explicit1_bufferify(char * name, int AAlen);
+
+void STR_explicit2(char * name, int AAtrim);
+
+void STR_explicit2_bufferify(char * name, int AAtrim);
+
 #ifdef __cplusplus
 }
 #endif

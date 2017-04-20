@@ -41,8 +41,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "arg1", 
-                                "c_var_len": "Larg1", 
-                                "c_var_num": "Narg1", 
                                 "cpp_type": "int", 
                                 "cpp_var": "arg1"
                             }, 
@@ -136,8 +134,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "comm", 
-                                "c_var_len": "Lcomm", 
-                                "c_var_num": "Ncomm", 
                                 "cpp_type": "MPI_Comm", 
                                 "cpp_var": "comm"
                             }, 
@@ -196,8 +192,6 @@
                                 "c_const": "", 
                                 "c_ptr": " *", 
                                 "c_var": "c2", 
-                                "c_var_len": "Lc2", 
-                                "c_var_num": "Nc2", 
                                 "cpp_type": "Class1", 
                                 "cpp_var": "c2"
                             }, 

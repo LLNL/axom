@@ -184,6 +184,38 @@ module strings_mod
             integer(C_INT), value, intent(IN) :: Narg1
         end subroutine c_accept_string_reference_bufferify
 
+        subroutine c_explicit1(name, AAlen) &
+                bind(C, name="STR_explicit1")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: AAlen
+        end subroutine c_explicit1
+
+        subroutine c_explicit1_bufferify(name, AAlen) &
+                bind(C, name="STR_explicit1_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: AAlen
+        end subroutine c_explicit1_bufferify
+
+        subroutine c_explicit2(name, AAtrim) &
+                bind(C, name="STR_explicit2")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: name(*)
+            integer(C_INT), value, intent(IN) :: AAtrim
+        end subroutine c_explicit2
+
+        subroutine c_explicit2_bufferify(name, AAtrim) &
+                bind(C, name="STR_explicit2_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: name(*)
+            integer(C_INT), value, intent(IN) :: AAtrim
+        end subroutine c_explicit2_bufferify
+
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
     end interface
@@ -246,7 +278,7 @@ contains
     end subroutine pass_char_ptr
 
     ! const string_result_fstr * getChar1()+pure
-    ! function_index=14
+    ! function_index=16
     !>
     !! \brief return a 'const char *' as character(*)
     !!
@@ -280,7 +312,7 @@ contains
 
     ! void getChar3(char * output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=17
+    ! function_index=19
     !>
     !! \brief return a 'const char *' as argument
     !!
@@ -297,7 +329,7 @@ contains
     end subroutine get_char3
 
     ! const string_result_fstr & getString1()+pure
-    ! function_index=19
+    ! function_index=21
     !>
     !! \brief return a 'const string&' as character(*)
     !!
@@ -331,7 +363,7 @@ contains
 
     ! void getString3(string & output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=22
+    ! function_index=24
     !>
     !! \brief return a 'const string&' as argument
     !!
@@ -389,6 +421,34 @@ contains
             len(arg1, kind=C_INT))
         ! splicer end accept_string_reference
     end subroutine accept_string_reference
+
+    ! void explicit1(char * name+intent(in)+len_trim(AAlen))
+    ! string_to_buffer_and_len
+    ! function_index=11
+    subroutine explicit1(name)
+        use iso_c_binding, only : C_INT
+        implicit none
+        character(*), intent(IN) :: name
+        ! splicer begin explicit1
+        call c_explicit1_bufferify(  &
+            name,  &
+            len_trim(name, kind=C_INT))
+        ! splicer end explicit1
+    end subroutine explicit1
+
+    ! void explicit2(char * name+intent(out)+len(AAtrim))
+    ! string_to_buffer_and_len
+    ! function_index=12
+    subroutine explicit2(name)
+        use iso_c_binding, only : C_INT
+        implicit none
+        character(*), intent(OUT) :: name
+        ! splicer begin explicit2
+        call c_explicit2_bufferify(  &
+            name,  &
+            len(name, kind=C_INT))
+        ! splicer end explicit2
+    end subroutine explicit2
 
     ! splicer begin additional_functions
     ! splicer end additional_functions

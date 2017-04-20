@@ -100,10 +100,10 @@ functions:
 # Currently explicit len/len_trim conflict with auto generated one and do not compile
 # local declarations shadow parameter
 
-#- decl: void explicit1(char * name+len+intent(in))
+- decl: void explicit1(char * name+len_trim(AAlen)+intent(in))
 # len_trim is added for free because intent(in)
 
-#- decl: void explicit2(char * name+len_trim+intent(out))
+- decl: void explicit2(char * name+len(AAtrim)+intent(out))
 # len is added for free because intent(out)
 
 #- decl: void explicit3(char * name+len(AAlen)+len_trim(AAtrim))

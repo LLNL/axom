@@ -357,12 +357,9 @@ class Wrapc(util.WrapperMixin):
             arg_typedef = self.typedef[arg['type']]
             c_statements = arg_typedef.c_statements
             fmt_arg.c_var = arg['name']
-#1            fmt_arg.c_var_len = c_attrs.get('len_trim', 'XXXtrim')  # 'L' + fmt_arg.c_var
-#1            fmt_arg.c_var_num = c_attrs.get('len', 'XXXlen') # 'N' + fmt_arg.c_var
-#2            fmt_arg.c_var_len = 'SH_' + 'L' + fmt_arg.c_var
-#2            fmt_arg.c_var_num = 'SH_' + 'N' + fmt_arg.c_var
-            fmt_arg.c_var_len = 'L' + fmt_arg.c_var
-            fmt_arg.c_var_num = 'N' + fmt_arg.c_var
+            if arg_typedef.base == 'string':
+                fmt_arg.c_var_len = c_attrs.get('len_trim', 'SH_' + 'L' + fmt_arg.c_var)
+                fmt_arg.c_var_num = c_attrs.get('len', 'SH_' + 'N' + fmt_arg.c_var)
             if arg['attrs'].get('const', False):
                 fmt_arg.c_const = 'const '
             else:
@@ -394,7 +391,6 @@ class Wrapc(util.WrapperMixin):
                 append_format(proto_list, 'int {c_var_trim}', fmt_arg)
             len_arg = arg['attrs'].get('len', False)
             if len_arg:
-                fmt_arg.len_arg = len_arg
                 fmt_arg.c_var_len = len_arg
                 append_format(proto_list, 'int {c_var_len}', fmt_arg)
 #            else:

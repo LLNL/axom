@@ -85,3 +85,17 @@ void acceptStringPointer(std::string * arg1)
     global_str = *arg1;
 }
 
+//----------------------------------------
+
+char *keep_explicit1;
+void explicit1(char * name)
+{
+  keep_explicit1 = name;
+}
+
+void explicit2(char * name)
+{
+  *name = 'a';
+}
+
+//----------------------------------------

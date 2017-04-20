@@ -20,6 +20,10 @@ C function void acceptStringConstReference(const std::string & arg1+intent(in))
 C function void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
 C function void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))
 C function void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
+C function void explicit1(char * name+intent(in)+len_trim(AAlen))
+C function void explicit1(char * name+intent(in)+len_trim(AAlen))
+C function void explicit2(char * name+intent(out)+len(AAtrim))
+C function void explicit2(char * name+intent(out)+len(AAtrim))
 Close wrapstrings.h
 Close wrapstrings.cpp
 Close shroudrt.hpp
@@ -49,6 +53,10 @@ C-interface, Fortran function void acceptStringConstReference(const std::string 
 C-interface function void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
 C-interface, Fortran function void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))
 C-interface function void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
+C-interface, Fortran function void explicit1(char * name+intent(in)+len_trim(AAlen))
+C-interface function void explicit1(char * name+intent(in)+len_trim(AAlen))
+C-interface, Fortran function void explicit2(char * name+intent(out)+len(AAtrim))
+C-interface function void explicit2(char * name+intent(out)+len(AAtrim))
 Close wrapfstrings.f
 Python function void passChar(char_scalar status+intent(in)+value)
 Python function char_scalar returnChar()
@@ -61,6 +69,8 @@ Python function const string & getString2()
 Python function const string & getString3()
 Python function void acceptStringConstReference(const std::string & arg1+intent(in))
 Python function void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))
+Python function void explicit1(char * name+intent(in)+len_trim(AAlen))
+Python function void explicit2(char * name+intent(out)+len(AAtrim))
 Close pystringsmodule.hpp
 Close pystringsmodule.cpp
 Close pystringshelper.cpp

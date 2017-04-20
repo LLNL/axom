@@ -38,7 +38,7 @@ char STR_return_char()
 }
 
 // void returnChar(char_scalar * SH_F_rv+intent(out)+len(LSH_F_rv))
-// function_index=11
+// function_index=13
 /**
  * \brief return a char argument (non-pointer)
  *
@@ -65,10 +65,10 @@ void STR_pass_char_ptr(char * dest, int Ndest, const char * src)
 {
 // splicer begin function.pass_char_ptr
     char * SH_dest = new char [Ndest + 1];
-    int Lsrc = std::strlen(src);
-    char * SH_src = new char [Lsrc + 1];
-    std::strncpy(SH_src, src, Lsrc);
-    SH_src[Lsrc] = '\0';
+    int SH_Lsrc = std::strlen(src);
+    char * SH_src = new char [SH_Lsrc + 1];
+    std::strncpy(SH_src, src, SH_Lsrc);
+    SH_src[SH_Lsrc] = '\0';
     passCharPtr(SH_dest, SH_src);
     shroud_FccCopy(dest, Ndest, SH_dest);
     delete [] SH_dest;
@@ -78,7 +78,7 @@ void STR_pass_char_ptr(char * dest, int Ndest, const char * src)
 }
 
 // void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in)+len_trim(Lsrc))
-// function_index=12
+// function_index=14
 /**
  * \brief strcpy like behavior
  *
@@ -115,7 +115,7 @@ const char * STR_get_char1()
 }
 
 // void getChar1(char * SH_F_rv+intent(out)+len(LSH_F_rv))+pure
-// function_index=13
+// function_index=15
 /**
  * \brief return a 'const char *' as character(*)
  *
@@ -144,7 +144,7 @@ const char * STR_get_char2()
 }
 
 // void getChar2(char * SH_F_rv+intent(out)+len(LSH_F_rv))
-// function_index=15
+// function_index=17
 /**
  * \brief return 'const char *' with fixed size (len=30)
  *
@@ -173,7 +173,7 @@ const char * STR_get_char3()
 }
 
 // void getChar3(char * output+intent(out)+len(Loutput))
-// function_index=16
+// function_index=18
 /**
  * \brief return a 'const char *' as argument
  *
@@ -202,7 +202,7 @@ const char * STR_get_string1()
 }
 
 // void getString1(string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
-// function_index=18
+// function_index=20
 /**
  * \brief return a 'const string&' as character(*)
  *
@@ -236,7 +236,7 @@ const char * STR_get_string2()
 }
 
 // void getString2(string & SH_F_rv+intent(out)+len(LSH_F_rv))
-// function_index=20
+// function_index=22
 /**
  * \brief return 'const string&' with fixed size (len=30)
  *
@@ -276,7 +276,7 @@ const char * STR_get_string3()
 }
 
 // void getString3(string & output+intent(out)+len(Loutput))
-// function_index=21
+// function_index=23
 /**
  * \brief return a 'const string&' as argument
  *
@@ -315,7 +315,7 @@ void STR_accept_string_const_reference(const char * arg1)
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
-// function_index=23
+// function_index=25
 /**
  * \brief Accept a const string reference
  *
@@ -352,7 +352,7 @@ void STR_accept_string_reference(char * arg1, int Narg1)
 }
 
 // void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
-// function_index=24
+// function_index=26
 /**
  * \brief Accept a string reference
  *
@@ -368,6 +368,60 @@ void STR_accept_string_reference_bufferify(char * arg1, int Larg1, int Narg1)
     shroud_FccCopy(arg1, Narg1, SH_arg1.c_str());
     return;
 // splicer end function.accept_string_reference_bufferify
+}
+
+// void explicit1(char * name+intent(in)+len_trim(AAlen))
+// function_index=11
+void STR_explicit1(char * name, int AAlen)
+{
+// splicer begin function.explicit1
+    char * SH_name = new char [AAlen + 1];
+    std::strncpy(SH_name, name, AAlen);
+    SH_name[AAlen] = '\0';
+    explicit1(SH_name);
+    delete [] SH_name;
+    return;
+// splicer end function.explicit1
+}
+
+// void explicit1(char * name+intent(in)+len_trim(AAlen))
+// function_index=27
+void STR_explicit1_bufferify(char * name, int AAlen)
+{
+// splicer begin function.explicit1_bufferify
+    char * SH_name = new char [AAlen + 1];
+    std::strncpy(SH_name, name, AAlen);
+    SH_name[AAlen] = '\0';
+    explicit1(SH_name);
+    delete [] SH_name;
+    return;
+// splicer end function.explicit1_bufferify
+}
+
+// void explicit2(char * name+intent(out)+len(AAtrim))
+// function_index=12
+void STR_explicit2(char * name, int AAtrim)
+{
+// splicer begin function.explicit2
+    char * SH_name = new char [AAtrim + 1];
+    explicit2(SH_name);
+    shroud_FccCopy(name, AAtrim, SH_name);
+    delete [] SH_name;
+    return;
+// splicer end function.explicit2
+}
+
+// void explicit2(char * name+intent(out)+len(AAtrim))
+// function_index=28
+void STR_explicit2_bufferify(char * name, int AAtrim)
+{
+// splicer begin function.explicit2_bufferify
+    char * SH_name = new char [AAtrim + 1];
+    explicit2(SH_name);
+    shroud_FccCopy(name, AAtrim, SH_name);
+    delete [] SH_name;
+    return;
+// splicer end function.explicit2_bufferify
 }
 
 // splicer begin additional_functions

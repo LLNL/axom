@@ -233,6 +233,57 @@ PY_accept_string_reference(
     return (PyObject *) *SH_Py_arg1;
 // splicer end function.accept_string_reference
 }
+
+static char PY_explicit1__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_explicit1(
+  PyObject *,  // self unused
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.explicit1
+    char * name;
+    const char *SH_kwcpp = "name";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:explicit1", SH_kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    explicit1(name);
+    Py_RETURN_NONE;
+// splicer end function.explicit1
+}
+
+static char PY_explicit2__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_explicit2(
+  PyObject *,  // self unused
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.explicit2
+    char * name;
+    const char *SH_kwcpp = "";
+    char *SH_kw_list[] = { , NULL };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, ":explicit2", SH_kw_list,
+        ))
+    {
+        return NULL;
+    }
+    explicit2(name);
+    PyObject * SH_Py_name = PyString_FromString(name);
+    return (PyObject *) *SH_Py_name;
+// splicer end function.explicit2
+}
 static PyMethodDef PY_methods[] = {
 {"passChar", (PyCFunction)PY_pass_char, METH_VARARGS|METH_KEYWORDS, PY_pass_char__doc__},
 {"returnChar", (PyCFunction)PY_return_char, METH_NOARGS, PY_return_char__doc__},
@@ -245,6 +296,8 @@ static PyMethodDef PY_methods[] = {
 {"getString3", (PyCFunction)PY_get_string3, METH_NOARGS, PY_get_string3__doc__},
 {"acceptStringConstReference", (PyCFunction)PY_accept_string_const_reference, METH_VARARGS|METH_KEYWORDS, PY_accept_string_const_reference__doc__},
 {"acceptStringReference", (PyCFunction)PY_accept_string_reference, METH_VARARGS|METH_KEYWORDS, PY_accept_string_reference__doc__},
+{"explicit1", (PyCFunction)PY_explicit1, METH_VARARGS|METH_KEYWORDS, PY_explicit1__doc__},
+{"explicit2", (PyCFunction)PY_explicit2, METH_VARARGS|METH_KEYWORDS, PY_explicit2__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 
