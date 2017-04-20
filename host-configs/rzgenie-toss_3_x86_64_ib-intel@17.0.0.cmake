@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/cmake-3.3.1-2uuw7ygf74nmfkdbjbwxwwt3oa7yyzht/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/cmake-3.3.1-2uuw7ygf74nmfkdbjbwxwwt3oa7yyzht/bin/cmake
 
 #######
 # using intel@17.0.0 compiler spec
@@ -25,36 +25,33 @@ set("ENABLE_FORTRAN" "ON" CACHE PATH "")
 set("CMAKE_Fortran_COMPILER" "/usr/tce/packages/intel/intel-17.0.0/bin/ifort" CACHE PATH "")
 
 # hdf5 from uberenv
-set("HDF5_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/hdf5-1.8.16-cgyhvn3ggrcy6mmiqfhvbuvjl3ildffp" CACHE PATH "")
+set("HDF5_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/hdf5-1.8.16-cgyhvn3ggrcy6mmiqfhvbuvjl3ildffp" CACHE PATH "")
 
 # conduit from uberenv
-set("CONDUIT_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/conduit-0.2.1-lsl32y6qynlfl3x2qsrovl5bnelun4p2" CACHE PATH "")
-
-# sparsehash headers from uberenv
-set("SPARSEHASH_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/sparsehash-headers-2.0.2-kdirqgdrnp55wwxc6ytoytz2vpwjufjh" CACHE PATH "")
+set("CONDUIT_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/conduit-0.2.1-lsl32y6qynlfl3x2qsrovl5bnelun4p2" CACHE PATH "")
 
 # boost headers from uberenv
-set("BOOST_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/boost-headers-1.58.0-6u7zrofaj4sdmjiodxelsplx7o32ewqz" CACHE PATH "")
+set("BOOST_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/boost-headers-1.58.0-6u7zrofaj4sdmjiodxelsplx7o32ewqz" CACHE PATH "")
 
 # python from uberenv
-set("PYTHON_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/python-2.7.11-qylimm5rmrrg33kovnlorkgwqf4ctzcf/bin/python" CACHE PATH "")
+set("PYTHON_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/python-2.7.11-qylimm5rmrrg33kovnlorkgwqf4ctzcf/bin/python" CACHE PATH "")
 
 # lua from uberenv
-set("LUA_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/lua-5.1.5-bo4m2vndivukyjnocq5kgeirq5amzo6z" CACHE PATH "")
+set("LUA_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/lua-5.1.5-bo4m2vndivukyjnocq5kgeirq5amzo6z" CACHE PATH "")
 
 # doxygen from uberenv
-set("DOXYGEN_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/doxygen-1.8.11-2b5e7xoxrsl5z7mzbefco5outba4zlpb/bin/doxygen" CACHE PATH "")
+set("DOXYGEN_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/doxygen-1.8.11-2b5e7xoxrsl5z7mzbefco5outba4zlpb/bin/doxygen" CACHE PATH "")
 
 # sphinx from uberenv
-set("SPHINX_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/python-2.7.11-qylimm5rmrrg33kovnlorkgwqf4ctzcf/bin/sphinx-build" CACHE PATH "")
+set("SPHINX_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/python-2.7.11-qylimm5rmrrg33kovnlorkgwqf4ctzcf/bin/sphinx-build" CACHE PATH "")
 
 # uncrustify from uberenv
-set("UNCRUSTIFY_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/uncrustify-0.61-soowqg4ifccejpz3dvruzjyajujsgjhr/bin/uncrustify" CACHE PATH "")
+set("UNCRUSTIFY_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/uncrustify-0.61-soowqg4ifccejpz3dvruzjyajujsgjhr/bin/uncrustify" CACHE PATH "")
 
 # lcov and genhtml from uberenv
-set("LCOV_PATH" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/lcov-1.11-5at4wjezbyejj53ou4logab457thepy3/usr/bin/lcov" CACHE PATH "")
+set("LCOV_PATH" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/lcov-1.11-5at4wjezbyejj53ou4logab457thepy3/usr/bin/lcov" CACHE PATH "")
 
-set("GENHTML_PATH" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/lcov-1.11-5at4wjezbyejj53ou4logab457thepy3/usr/bin/genhtml" CACHE PATH "")
+set("GENHTML_PATH" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/lcov-1.11-5at4wjezbyejj53ou4logab457thepy3/usr/bin/genhtml" CACHE PATH "")
 
 # Temporarily disable CXX11 on intel builds until we resolve issue ATK-619
 set("BLT_CXX_STD" "c++98" CACHE PATH "")

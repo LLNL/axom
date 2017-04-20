@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/cmake-3.3.1-h62huv6j45n6zomdy76l23djjsai32yx/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/cmake-3.3.1-h62huv6j45n6zomdy76l23djjsai32yx/bin/cmake
 
 #######
 # using gcc@4.9.3 compiler spec
@@ -25,36 +25,33 @@ set("ENABLE_FORTRAN" "ON" CACHE PATH "")
 set("CMAKE_Fortran_COMPILER" "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE PATH "")
 
 # hdf5 from uberenv
-set("HDF5_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/hdf5-1.8.16-v4jrbjlu2s6vl5a67kv3ydg6ssdsi2tj" CACHE PATH "")
+set("HDF5_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/hdf5-1.8.16-v4jrbjlu2s6vl5a67kv3ydg6ssdsi2tj" CACHE PATH "")
 
 # conduit from uberenv
-set("CONDUIT_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/conduit-0.2.1-aucg4njv6djcvymsftkrzwswblstl7hs" CACHE PATH "")
-
-# sparsehash headers from uberenv
-set("SPARSEHASH_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/sparsehash-headers-2.0.2-czhsx5wtext3b4oipxtlk2bhmfaco7wr" CACHE PATH "")
+set("CONDUIT_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/conduit-0.2.1-aucg4njv6djcvymsftkrzwswblstl7hs" CACHE PATH "")
 
 # boost headers from uberenv
-set("BOOST_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/boost-headers-1.58.0-nvmps5cyz6fnof343goaptduus4n65cz" CACHE PATH "")
+set("BOOST_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/boost-headers-1.58.0-nvmps5cyz6fnof343goaptduus4n65cz" CACHE PATH "")
 
 # python from uberenv
-set("PYTHON_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/python-2.7.11-lea63zrc2ghlbkp23fwqihgaypyaunaa/bin/python" CACHE PATH "")
+set("PYTHON_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/python-2.7.11-lea63zrc2ghlbkp23fwqihgaypyaunaa/bin/python" CACHE PATH "")
 
 # lua from uberenv
-set("LUA_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/lua-5.1.5-esnntgauhb5eur2ftxv4cpxdrxq3wcd4" CACHE PATH "")
+set("LUA_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/lua-5.1.5-esnntgauhb5eur2ftxv4cpxdrxq3wcd4" CACHE PATH "")
 
 # doxygen from uberenv
-set("DOXYGEN_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/doxygen-1.8.11-qvji5uglhzexrf2aocd6woqem5evpwlq/bin/doxygen" CACHE PATH "")
+set("DOXYGEN_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/doxygen-1.8.11-qvji5uglhzexrf2aocd6woqem5evpwlq/bin/doxygen" CACHE PATH "")
 
 # sphinx from uberenv
-set("SPHINX_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/python-2.7.11-lea63zrc2ghlbkp23fwqihgaypyaunaa/bin/sphinx-build" CACHE PATH "")
+set("SPHINX_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/python-2.7.11-lea63zrc2ghlbkp23fwqihgaypyaunaa/bin/sphinx-build" CACHE PATH "")
 
 # uncrustify from uberenv
-set("UNCRUSTIFY_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/uncrustify-0.61-gfugzvve5jxq4p6kpozhysf76qtcwxcc/bin/uncrustify" CACHE PATH "")
+set("UNCRUSTIFY_EXECUTABLE" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/uncrustify-0.61-gfugzvve5jxq4p6kpozhysf76qtcwxcc/bin/uncrustify" CACHE PATH "")
 
 # lcov and genhtml from uberenv
-set("LCOV_PATH" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/lcov-1.11-ms3k744sok6xi4ndnzcmwdxnhcqwpm3i/usr/bin/lcov" CACHE PATH "")
+set("LCOV_PATH" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/lcov-1.11-ms3k744sok6xi4ndnzcmwdxnhcqwpm3i/usr/bin/lcov" CACHE PATH "")
 
-set("GENHTML_PATH" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_30_09_55_10/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/lcov-1.11-ms3k744sok6xi4ndnzcmwdxnhcqwpm3i/usr/bin/genhtml" CACHE PATH "")
+set("GENHTML_PATH" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_19_10_58_35/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/lcov-1.11-ms3k744sok6xi4ndnzcmwdxnhcqwpm3i/usr/bin/genhtml" CACHE PATH "")
 
 ##################################
 # end uberenv host-config
