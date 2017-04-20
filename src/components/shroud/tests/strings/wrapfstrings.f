@@ -29,12 +29,11 @@ module strings_mod
             character(kind=C_CHAR) :: SH_rv
         end function c_return_char
 
-        subroutine c_return_char_bufferify(SH_F_rv, NSH_F_rv) &
+        subroutine c_return_char_bufferify(SH_F_rv) &
                 bind(C, name="STR_return_char_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv
-            integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_return_char_bufferify
 
         subroutine c_pass_char_ptr(dest, Ndest, src) &
@@ -244,13 +243,11 @@ contains
     !!
     !<
     function return_char() result(SH_rv)
-        use iso_c_binding, only : C_INT
+        use iso_c_binding
         implicit none
         character :: SH_rv
         ! splicer begin return_char
-        call c_return_char_bufferify(  &
-            SH_rv,  &
-            len(SH_rv, kind=C_INT))
+        call c_return_char_bufferify(SH_rv)
         ! splicer end return_char
     end function return_char
 

@@ -36,12 +36,6 @@ from . import wrapf
 from . import wrapp
 from . import wrapl
 
-# char functions cannot be wrapped directly in intel 15.
-# Instead the result is passed down
-# as an argument from the Fortran wrapper to the C wrapper.
-# Similar to how char * funtions are handled.
-intel_15_fix = True
-
 wformat = util.wformat
 
 
@@ -404,6 +398,14 @@ class Schema(object):
 
                 c_type='char',    # XXX - char *
 
+                c_statements=dict(
+                    result=dict(
+                        post_call=[
+                            '*{c_var} = {cpp_val};',
+                        ],
+                    ),
+                ),
+
                 f_type='character',
                 f_c_type='character(kind=C_CHAR)',
                 # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
@@ -444,15 +446,15 @@ class Schema(object):
                              '({c_var}, {c_var_len}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp'
-                        ),
+                    ),
                     result=dict(
                         post_call=[
                             ('shroud_FccCopy'
                              '({c_var}, {c_var_len}, {cpp_val});'),
                             ],
                         cpp_header='shroudrt.hpp'
-                        ),
                     ),
+                ),
 
                 f_type='character(*)',
                 f_c_type='character(kind=C_CHAR)',
@@ -489,18 +491,6 @@ class Schema(object):
                 c_to_cpp='MPI_Comm_f2c({c_var})',
                 ),
             )
-
-        if intel_15_fix:
-            # Copy C++ function result into C result argument.
-            def_types['char_scalar'].c_statements = dict(
-                result=dict(
-                    post_call=[
-                        ('// {c_var_len} is always 1,'
-                         ' test to silence warning about unused variable'),
-                        'if ({c_var_len} == 1) *{c_var} = {cpp_val};',
-                        ],
-                    ),
-                )
 
         # aliases
         def_types['std::string'] = def_types['string']
@@ -955,11 +945,10 @@ class GenFunctions(object):
         is_pure = node['attrs'].get('pure', False)
         if result_typedef.base == 'string':
             if result_type == 'char' and not result_is_ptr:
-                if intel_15_fix:
-                    result['attrs']['len'] = 1
-                    has_string_result = True
-                    result_as_arg = options.get('F_string_result_as_arg', '')
-                    result_name = result_as_arg or 'SH_F_rv'
+                # char functions cannot be wrapped directly in intel 15.
+                has_string_result = True
+                result_as_arg = options.get('F_string_result_as_arg', '')
+                result_name = result_as_arg or 'SH_F_rv'
                 result['type'] = 'char_scalar'
             else:
                 has_string_result = True

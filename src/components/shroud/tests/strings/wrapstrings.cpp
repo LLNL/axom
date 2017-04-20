@@ -43,12 +43,11 @@ char STR_return_char()
  * \brief return a char argument (non-pointer)
  *
  */
-void STR_return_char_bufferify(char * SH_F_rv, int NSH_F_rv)
+void STR_return_char_bufferify(char * SH_F_rv)
 {
 // splicer begin function.return_char_bufferify
     char SH_rv = returnChar();
-    // NSH_F_rv is always 1, test to silence warning about unused variable
-    if (NSH_F_rv == 1) *SH_F_rv = SH_rv;
+    *SH_F_rv = SH_rv;
     return;
 // splicer end function.return_char_bufferify
 }

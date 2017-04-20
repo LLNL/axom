@@ -274,8 +274,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "SH_Narg1", 
-                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "double", 
                         "cpp_var": "arg1"
                     }, 
@@ -312,8 +310,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "SH_Narg2", 
-                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "int", 
                         "cpp_var": "arg2"
                     }, 
@@ -389,8 +385,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "len", 
-                        "c_var_len": "SH_Nlen", 
-                        "c_var_trim": "SH_Llen", 
                         "cpp_type": "int", 
                         "cpp_var": "len"
                     }, 
@@ -412,8 +406,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "values", 
-                        "c_var_len": "SH_Nvalues", 
-                        "c_var_trim": "SH_Lvalues", 
                         "cpp_type": "int", 
                         "cpp_var": "values"
                     }, 
@@ -434,8 +426,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "result", 
-                        "c_var_len": "SH_Nresult", 
-                        "c_var_trim": "SH_Lresult", 
                         "cpp_type": "int", 
                         "cpp_var": "result"
                     }, 
@@ -493,8 +483,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "SH_Narg", 
-                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg"
                     }, 
@@ -571,8 +559,6 @@
                         "c_const": "const ", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "SH_Narg1", 
-                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg1"
                     }, 
@@ -593,8 +579,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "arg2", 
-                        "c_var_len": "SH_Narg2", 
-                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg2"
                     }, 
@@ -615,8 +599,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "arg3", 
-                        "c_var_len": "SH_Narg3", 
-                        "c_var_trim": "SH_Larg3", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg3"
                     }, 
@@ -1230,8 +1212,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "SH_Narg1", 
-                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "double", 
                         "cpp_var": "arg1"
                     }, 
@@ -1307,8 +1287,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "SH_Narg1", 
-                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "double", 
                         "cpp_var": "arg1"
                     }, 
@@ -1346,8 +1324,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "SH_Narg2", 
-                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg2"
                     }, 
@@ -1582,8 +1558,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "indx", 
-                        "c_var_len": "SH_Nindx", 
-                        "c_var_trim": "SH_Lindx", 
                         "cpp_type": "int", 
                         "cpp_var": "indx"
                     }, 
@@ -1699,8 +1673,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "SH_Narg", 
-                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "int", 
                         "cpp_var": "arg"
                     }, 
@@ -1762,8 +1734,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "SH_Narg", 
-                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "double", 
                         "cpp_var": "arg"
                     }, 
@@ -1940,8 +1910,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "SH_Narg", 
-                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "double", 
                         "cpp_var": "arg"
                     }, 
@@ -2185,8 +2153,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "SH_Narg2", 
-                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "double", 
                         "cpp_var": "arg2"
                     }, 
@@ -2402,8 +2368,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg2", 
-                        "c_var_len": "SH_Narg2", 
-                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "double", 
                         "cpp_var": "arg2"
                     }, 
@@ -2467,8 +2431,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "SH_Nnum", 
-                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2539,8 +2501,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "SH_Nnum", 
-                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2561,8 +2521,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
-                        "c_var_len": "SH_Noffset", 
-                        "c_var_trim": "SH_Loffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -2641,8 +2599,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "SH_Nnum", 
-                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2680,8 +2636,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
-                        "c_var_len": "SH_Noffset", 
-                        "c_var_trim": "SH_Loffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -2719,8 +2673,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "stride", 
-                        "c_var_len": "SH_Nstride", 
-                        "c_var_trim": "SH_Lstride", 
                         "cpp_type": "int", 
                         "cpp_var": "stride"
                     }, 
@@ -2808,8 +2760,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "type", 
-                        "c_var_len": "SH_Ntype", 
-                        "c_var_trim": "SH_Ltype", 
                         "cpp_type": "double", 
                         "cpp_var": "type"
                     }, 
@@ -2829,8 +2779,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "SH_Nnum", 
-                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2896,8 +2844,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "type", 
-                        "c_var_len": "SH_Ntype", 
-                        "c_var_trim": "SH_Ltype", 
                         "cpp_type": "double", 
                         "cpp_var": "type"
                     }, 
@@ -2917,8 +2863,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "SH_Nnum", 
-                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -2939,8 +2883,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
-                        "c_var_len": "SH_Noffset", 
-                        "c_var_trim": "SH_Loffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -3014,8 +2956,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "type", 
-                        "c_var_len": "SH_Ntype", 
-                        "c_var_trim": "SH_Ltype", 
                         "cpp_type": "double", 
                         "cpp_var": "type"
                     }, 
@@ -3052,8 +2992,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "num", 
-                        "c_var_len": "SH_Nnum", 
-                        "c_var_trim": "SH_Lnum", 
                         "cpp_type": "int", 
                         "cpp_var": "num"
                     }, 
@@ -3091,8 +3029,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "offset", 
-                        "c_var_len": "SH_Noffset", 
-                        "c_var_trim": "SH_Loffset", 
                         "cpp_type": "int", 
                         "cpp_var": "offset"
                     }, 
@@ -3130,8 +3066,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "stride", 
-                        "c_var_len": "SH_Nstride", 
-                        "c_var_trim": "SH_Lstride", 
                         "cpp_type": "int", 
                         "cpp_var": "stride"
                     }, 
@@ -3206,8 +3140,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "SH_Narg", 
-                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "TypeID", 
                         "cpp_var": "arg"
                     }, 
@@ -3283,8 +3215,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg", 
-                        "c_var_len": "SH_Narg", 
-                        "c_var_trim": "SH_Larg", 
                         "cpp_type": "EnumTypeID", 
                         "cpp_var": "arg"
                     }, 
@@ -3362,8 +3292,6 @@
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "arg1", 
-                        "c_var_len": "SH_Narg1", 
-                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "Class1", 
                         "cpp_var": "arg1"
                     }, 
@@ -3794,8 +3722,7 @@
             "c_statements": {
                 "result": {
                     "post_call": [
-                        "// {c_var_len} is always 1, test to silence warning about unused variable", 
-                        "if ({c_var_len} == 1) *{c_var} = {cpp_val};"
+                        "*{c_var} = {cpp_val};"
                     ]
                 }
             }, 

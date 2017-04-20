@@ -573,16 +573,17 @@ class Wrapf(util.WrapperMixin):
             else:
                 arg_c_decl.append(self._c_decl(arg))
 
-            len_trim = attrs.get('len_trim', None)
-            if len_trim:
-                arg_c_names.append(len_trim)
-                arg_c_decl.append(
-                    'integer(C_INT), value, intent(IN) :: %s' % len_trim)
-            len_arg = attrs.get('len', None)
-            if len_arg:
-                arg_c_names.append(len_arg)
-                arg_c_decl.append(
-                    'integer(C_INT), value, intent(IN) :: %s' % len_arg)
+            if arg_typedef.base == 'string':
+                len_trim = attrs.get('len_trim', None)
+                if len_trim:
+                    arg_c_names.append(len_trim)
+                    arg_c_decl.append(
+                        'integer(C_INT), value, intent(IN) :: %s' % len_trim)
+                len_arg = attrs.get('len', None)
+                if len_arg:
+                    arg_c_names.append(len_arg)
+                    arg_c_decl.append(
+                        'integer(C_INT), value, intent(IN) :: %s' % len_arg)
 
         if (subprogram == 'function' and
                 (is_pure or (func_is_const and args_all_in))):
@@ -721,6 +722,7 @@ class Wrapf(util.WrapperMixin):
                     f_arg = False
                     fmt_arg.c_var = fmt_func.F_result
                     fmt_arg.f_var = fmt_func.F_result
+                    need_wrapper = True
 
             if f_arg:
                 f_index += 1
@@ -777,8 +779,6 @@ class Wrapf(util.WrapperMixin):
             arg_typedef = self.typedef[c_arg['type']]
 
             # Attributes   None=skip, True=use default, else use value
-            len_trim = c_arg['attrs'].get('len_trim', None)
-            len_arg = c_arg['attrs'].get('len', None)
             if arg_typedef.f_args:
                 # TODO - Not sure if this is still needed.
                 need_wrapper = True
@@ -793,16 +793,17 @@ class Wrapf(util.WrapperMixin):
             else:
                 append_format(arg_c_call, '{c_var}', fmt_arg)
 
-            len_trim = c_arg['attrs'].get('len_trim', None)
-            if len_trim:
-                need_wrapper = True
-                append_format(arg_c_call, 'len_trim({f_var}, kind=C_INT)', fmt_arg)
-                self.set_f_module(modules, 'iso_c_binding', 'C_INT')
-            len_arg = c_arg['attrs'].get('len', None)
-            if len_arg:
-                need_wrapper = True
-                append_format(arg_c_call, 'len({f_var}, kind=C_INT)', fmt_arg)
-                self.set_f_module(modules, 'iso_c_binding', 'C_INT')
+            if arg_typedef.base == 'string':
+                len_trim = c_arg['attrs'].get('len_trim', None)
+                if len_trim:
+                    need_wrapper = True
+                    append_format(arg_c_call, 'len_trim({f_var}, kind=C_INT)', fmt_arg)
+                    self.set_f_module(modules, 'iso_c_binding', 'C_INT')
+                len_arg = c_arg['attrs'].get('len', None)
+                if len_arg:
+                    need_wrapper = True
+                    append_format(arg_c_call, 'len({f_var}, kind=C_INT)', fmt_arg)
+                    self.set_f_module(modules, 'iso_c_binding', 'C_INT')
 
         fmt_func.F_arg_c_call = ', '.join(arg_c_call)
         # use tabs to insert continuations

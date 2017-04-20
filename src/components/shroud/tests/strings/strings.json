@@ -61,8 +61,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "status", 
-                        "c_var_len": "SH_Nstatus", 
-                        "c_var_trim": "SH_Lstatus", 
                         "cpp_type": "char", 
                         "cpp_var": "status"
                     }, 
@@ -134,8 +132,8 @@
                 "C_rv_decl": "char SH_rv", 
                 "F_C_call": "c_return_char_bufferify", 
                 "F_C_name": "c_return_char", 
-                "F_arg_c_call": "SH_rv, len(SH_rv, kind=C_INT)", 
-                "F_arg_c_call_tab": "\tSH_rv\tlen(SH_rv, kind=C_INT)", 
+                "F_arg_c_call": "SH_rv", 
+                "F_arg_c_call_tab": "\tSH_rv", 
                 "F_arguments": "", 
                 "F_name_generic": "return_char", 
                 "F_name_impl": "return_char", 
@@ -150,9 +148,7 @@
             }, 
             "options": {}, 
             "result": {
-                "attrs": {
-                    "len": 1
-                }, 
+                "attrs": {}, 
                 "name": "returnChar", 
                 "type": "char_scalar"
             }
@@ -178,8 +174,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "SH_F_rv", 
-                        "c_var_len": "NSH_F_rv", 
-                        "c_var_trim": "SH_LSH_F_rv", 
                         "cpp_type": "char", 
                         "cpp_val": "SH_rv", 
                         "cpp_var": "SH_rv"
@@ -200,8 +194,8 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_return_char_bufferify", 
-                "C_post_call": "// NSH_F_rv is always 1, test to silence warning about unused variable\nif (NSH_F_rv == 1) *SH_F_rv = SH_rv;", 
-                "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
+                "C_post_call": "*SH_F_rv = SH_rv;", 
+                "C_prototype": "char * SH_F_rv", 
                 "C_return_type": "void", 
                 "C_rv_decl": "char SH_rv", 
                 "F_C_name": "c_return_char_bufferify", 
@@ -221,7 +215,6 @@
             "result": {
                 "attrs": {
                     "const": false, 
-                    "len": 1, 
                     "ptr": false, 
                     "reference": false
                 }, 
@@ -1960,8 +1953,7 @@
             "c_statements": {
                 "result": {
                     "post_call": [
-                        "// {c_var_len} is always 1, test to silence warning about unused variable", 
-                        "if ({c_var_len} == 1) *{c_var} = {cpp_val};"
+                        "*{c_var} = {cpp_val};"
                     ]
                 }
             }, 

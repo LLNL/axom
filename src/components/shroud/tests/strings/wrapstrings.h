@@ -22,7 +22,7 @@ void STR_pass_char(char status);
 
 char STR_return_char();
 
-void STR_return_char_bufferify(char * SH_F_rv, int NSH_F_rv);
+void STR_return_char_bufferify(char * SH_F_rv);
 
 void STR_pass_char_ptr(char * dest, int Ndest, const char * src);
 

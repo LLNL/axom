@@ -272,8 +272,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "i", 
-                        "c_var_len": "SH_Ni", 
-                        "c_var_trim": "SH_Li", 
                         "cpp_type": "int", 
                         "cpp_var": "i"
                     }, 
@@ -346,8 +344,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "i", 
-                        "c_var_len": "SH_Ni", 
-                        "c_var_trim": "SH_Li", 
                         "cpp_type": "long", 
                         "cpp_var": "i"
                     }, 
@@ -639,8 +635,7 @@
             "c_statements": {
                 "result": {
                     "post_call": [
-                        "// {c_var_len} is always 1, test to silence warning about unused variable", 
-                        "if ({c_var_len} == 1) *{c_var} = {cpp_val};"
+                        "*{c_var} = {cpp_val};"
                     ]
                 }
             }, 

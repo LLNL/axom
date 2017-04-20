@@ -239,8 +239,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "incr", 
-                                "c_var_len": "SH_Nincr", 
-                                "c_var_trim": "SH_Lincr", 
                                 "cpp_type": "int", 
                                 "cpp_var": "incr"
                             }, 
@@ -803,8 +801,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "value", 
-                                "c_var_len": "SH_Nvalue", 
-                                "c_var_trim": "SH_Lvalue", 
                                 "cpp_type": "int", 
                                 "cpp_var": "value"
                             }, 
@@ -879,8 +875,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "value", 
-                                "c_var_len": "SH_Nvalue", 
-                                "c_var_trim": "SH_Lvalue", 
                                 "cpp_type": "long", 
                                 "cpp_var": "value"
                             }, 
@@ -990,8 +984,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "in", 
-                                "c_var_len": "SH_Nin", 
-                                "c_var_trim": "SH_Lin", 
                                 "cpp_type": "bool", 
                                 "cpp_var": "in"
                             }, 
@@ -1830,8 +1822,6 @@
                                 "c_const": "const ", 
                                 "c_ptr": " *", 
                                 "c_var": "in", 
-                                "c_var_len": "SH_Nin", 
-                                "c_var_trim": "SH_Lin", 
                                 "cpp_type": "ExClass1", 
                                 "cpp_var": "in"
                             }, 
@@ -1903,8 +1893,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "type", 
-                                "c_var_len": "SH_Ntype", 
-                                "c_var_trim": "SH_Ltype", 
                                 "cpp_type": "TypeID", 
                                 "cpp_var": "type"
                             }, 
@@ -2066,8 +2054,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "type", 
-                                "c_var_len": "SH_Ntype", 
-                                "c_var_trim": "SH_Ltype", 
                                 "cpp_type": "TypeID", 
                                 "cpp_var": "type"
                             }, 
@@ -2096,8 +2082,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "len", 
-                                "c_var_len": "SH_Nlen", 
-                                "c_var_trim": "SH_Llen", 
                                 "cpp_type": "SidreLength", 
                                 "cpp_var": "len"
                             }, 
@@ -2414,8 +2398,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "value", 
-                                "c_var_len": "SH_Nvalue", 
-                                "c_var_trim": "SH_Lvalue", 
                                 "cpp_type": "int", 
                                 "cpp_var": "value"
                             }, 
@@ -2480,8 +2462,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "value", 
-                                "c_var_len": "SH_Nvalue", 
-                                "c_var_trim": "SH_Lvalue", 
                                 "cpp_type": "long", 
                                 "cpp_var": "value"
                             }, 
@@ -2546,8 +2526,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "value", 
-                                "c_var_len": "SH_Nvalue", 
-                                "c_var_trim": "SH_Lvalue", 
                                 "cpp_type": "float", 
                                 "cpp_var": "value"
                             }, 
@@ -2612,8 +2590,6 @@
                                 "c_const": "", 
                                 "c_ptr": "", 
                                 "c_var": "value", 
-                                "c_var_len": "SH_Nvalue", 
-                                "c_var_trim": "SH_Lvalue", 
                                 "cpp_type": "double", 
                                 "cpp_var": "value"
                             }, 
@@ -3075,8 +3051,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "SH_Narg1", 
-                        "c_var_trim": "SH_Larg1", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg1"
                     }, 
@@ -3105,8 +3079,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "arg2", 
-                        "c_var_len": "SH_Narg2", 
-                        "c_var_trim": "SH_Larg2", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg2"
                     }, 
@@ -3137,8 +3109,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "arg3", 
-                        "c_var_len": "SH_Narg3", 
-                        "c_var_trim": "SH_Larg3", 
                         "cpp_type": "bool", 
                         "cpp_var": "arg3"
                     }, 
@@ -3374,8 +3344,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "flag", 
-                        "c_var_len": "SH_Nflag", 
-                        "c_var_trim": "SH_Lflag", 
                         "cpp_type": "int", 
                         "cpp_var": "flag"
                     }, 
@@ -3470,8 +3438,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "flag", 
-                        "c_var_len": "SH_Nflag", 
-                        "c_var_trim": "SH_Lflag", 
                         "cpp_type": "int", 
                         "cpp_var": "flag"
                     }, 
@@ -3567,8 +3533,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "i", 
-                        "c_var_len": "SH_Ni", 
-                        "c_var_trim": "SH_Li", 
                         "cpp_type": "int", 
                         "cpp_var": "i"
                     }, 
@@ -3638,8 +3602,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "i", 
-                        "c_var_len": "SH_Ni", 
-                        "c_var_trim": "SH_Li", 
                         "cpp_type": "int", 
                         "cpp_var": "i"
                     }, 
@@ -3668,8 +3630,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "j", 
-                        "c_var_len": "SH_Nj", 
-                        "c_var_trim": "SH_Lj", 
                         "cpp_type": "long", 
                         "cpp_var": "j"
                     }, 
@@ -3734,8 +3694,6 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "comm", 
-                        "c_var_len": "SH_Ncomm", 
-                        "c_var_trim": "SH_Lcomm", 
                         "cpp_type": "MPI_Comm", 
                         "cpp_var": "comm"
                     }, 
@@ -3800,8 +3758,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "grp", 
-                        "c_var_len": "SH_Ngrp", 
-                        "c_var_trim": "SH_Lgrp", 
                         "cpp_type": "axom::sidre::Group", 
                         "cpp_var": "SH_grp"
                     }, 
@@ -3868,8 +3824,6 @@
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "grp", 
-                        "c_var_len": "SH_Ngrp", 
-                        "c_var_trim": "SH_Lgrp", 
                         "cpp_type": "axom::sidre::Group", 
                         "cpp_var": "SH_grp"
                     }, 
@@ -4230,8 +4184,7 @@
             "c_statements": {
                 "result": {
                     "post_call": [
-                        "// {c_var_len} is always 1, test to silence warning about unused variable", 
-                        "if ({c_var_len} == 1) *{c_var} = {cpp_val};"
+                        "*{c_var} = {cpp_val};"
                     ]
                 }
             }, 
