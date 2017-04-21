@@ -1,9 +1,8 @@
 #!/bin/bash
 # 10-20-2016 chang28, 
-# 10-20-2016 chang28,  bgq_build_test_uno_compiler.sh "Debug" "" "gcc@4.7.2"
-# 01-13-2017, chang28, turn off testing
+# 10-20-2016 chang28,  toss3_build_test_uno_compiler.sh "Debug" "" "gcc@4.7.2"
 
-echo bgq version 1.0.0
+echo toss3 version 1.0.0
 #BT="Debug"
 BUILD_TYPE=$1
 BUILD_PATH="atk_build"
@@ -13,7 +12,7 @@ BUILD_OPT=$2
 
 BUILD=true
 TEST=true
-DOC=false
+DOC=true
 INSTALL_FILES=true
 INSTALL_DOCS=false
 
