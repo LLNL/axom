@@ -36,12 +36,11 @@ module strings_mod
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv
         end subroutine c_return_char_bufferify
 
-        subroutine c_pass_char_ptr(dest, Ndest, src) &
+        subroutine c_pass_char_ptr(dest, src) &
                 bind(C, name="STR_pass_char_ptr")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: dest(*)
-            integer(C_INT), value, intent(IN) :: Ndest
             character(kind=C_CHAR), intent(IN) :: src(*)
         end subroutine c_pass_char_ptr
 
@@ -166,12 +165,11 @@ module strings_mod
             integer(C_INT), value, intent(IN) :: Larg1
         end subroutine c_accept_string_const_reference_bufferify
 
-        subroutine c_accept_string_reference(arg1, Narg1) &
+        subroutine c_accept_string_reference(arg1) &
                 bind(C, name="STR_accept_string_reference")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(INOUT) :: arg1(*)
-            integer(C_INT), value, intent(IN) :: Narg1
         end subroutine c_accept_string_reference
 
         subroutine c_accept_string_reference_bufferify(arg1, Larg1, Narg1) &
@@ -183,12 +181,11 @@ module strings_mod
             integer(C_INT), value, intent(IN) :: Narg1
         end subroutine c_accept_string_reference_bufferify
 
-        subroutine c_explicit1(name, AAlen) &
+        subroutine c_explicit1(name) &
                 bind(C, name="STR_explicit1")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
-            integer(C_INT), value, intent(IN) :: AAlen
         end subroutine c_explicit1
 
         subroutine c_explicit1_bufferify(name, AAlen) &
@@ -199,12 +196,11 @@ module strings_mod
             integer(C_INT), value, intent(IN) :: AAlen
         end subroutine c_explicit1_bufferify
 
-        subroutine c_explicit2(name, AAtrim) &
+        subroutine c_explicit2(name) &
                 bind(C, name="STR_explicit2")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(OUT) :: name(*)
-            integer(C_INT), value, intent(IN) :: AAtrim
         end subroutine c_explicit2
 
         subroutine c_explicit2_bufferify(name, AAtrim) &

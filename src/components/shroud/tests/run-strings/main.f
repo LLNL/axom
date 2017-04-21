@@ -42,6 +42,13 @@ contains
     call pass_char_ptr(dest=str, src="bird")
     call assert_true( str == "bird")
 
+    ! call C version directly via the interface
+    ! caller is responsible for nulls
+    str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    call c_pass_char_ptr(dest=str, src="mouse" // C_NULL_CHAR)
+    call assert_true( str(1:5) == "mouse")
+    call assert_true( str(6:6) == C_NULL_CHAR)
+
   end subroutine test_charargs
 
 
@@ -92,6 +99,13 @@ contains
     call accept_string_reference(str)
     call assert_true( str == "catdog")
 
+    ! call C version directly via the interface
+    ! caller is responsible for nulls
+    ! str must be long enough for the result from the function
+    str = "cat" // C_NULL_CHAR
+    call c_accept_string_reference(str)
+    call assert_true( str(1:6) == "catdog")
+    call assert_true( str(7:7) == C_NULL_CHAR)
 
   end subroutine test_functions
 

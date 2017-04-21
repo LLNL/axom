@@ -24,7 +24,7 @@ char STR_return_char();
 
 void STR_return_char_bufferify(char * SH_F_rv);
 
-void STR_pass_char_ptr(char * dest, int Ndest, const char * src);
+void STR_pass_char_ptr(char * dest, const char * src);
 
 void STR_pass_char_ptr_BUFFER(char * dest, int Ndest, const char * src, int Lsrc);
 
@@ -56,15 +56,15 @@ void STR_accept_string_const_reference(const char * arg1);
 
 void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1);
 
-void STR_accept_string_reference(char * arg1, int Narg1);
+void STR_accept_string_reference(char * arg1);
 
 void STR_accept_string_reference_bufferify(char * arg1, int Larg1, int Narg1);
 
-void STR_explicit1(char * name, int AAlen);
+void STR_explicit1(char * name);
 
 void STR_explicit1_bufferify(char * name, int AAlen);
 
-void STR_explicit2(char * name, int AAtrim);
+void STR_explicit2(char * name);
 
 void STR_explicit2_bufferify(char * name, int AAtrim);
 

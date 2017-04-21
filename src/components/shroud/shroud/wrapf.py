@@ -519,6 +519,7 @@ class Wrapf(util.WrapperMixin):
         result = node['result']
         result_type = result['type']
         subprogram = node['_subprogram']
+        generator = node.get('_generated', '')
 
         if node.get('return_this', False):
             result_type = 'void'
@@ -573,7 +574,8 @@ class Wrapf(util.WrapperMixin):
             else:
                 arg_c_decl.append(self._c_decl(arg))
 
-            if arg_typedef.base == 'string':
+            if generator == 'string_to_buffer_and_len' and \
+               arg_typedef.base == 'string':
                 len_trim = attrs.get('len_trim', None)
                 if len_trim:
                     arg_c_names.append(len_trim)

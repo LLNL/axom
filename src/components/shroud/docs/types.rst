@@ -208,32 +208,27 @@ The first is for type ``char``::
             cpp_type: char
             c_type: char
             c_statements:
-                intent_in:
+                intent_in_buf:
                     cpp_local_var: True
                     cpp_header: <cstring>
                     pre_call:
-                      - int {c_var_trim} = std::strlen({c_var});
-                      - char * {cpp_var} = new char [{c_var_trim} + 1];
-                      - std::strncpy({cpp_var}, {c_var}, {c_var_trim});
-                      - {cpp_var}[{c_var_trim}] = '\0';
-                    pre_call_buf:
                       - char * {cpp_var} = new char [{c_var_trim} + 1];
                       - std::strncpy({cpp_var}, {c_var}, {c_var_trim});
                       - {cpp_var}[{c_var_trim}] = '\0';
                     post_call:
                       -  delete [] {cpp_var};
-                intent_out:
+                intent_out_buf:
                     cpp_local_var: True
+                    cpp_header: shroudrt.hpp
                     pre_call:
                       - char * {cpp_var} = new char [{c_var_len} + 1];
                     post_call:
                       - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
                       - delete [] {cpp_var};
+                result_buf:
                     cpp_header: shroudrt.hpp
-                result:
                     post_call:
                       - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
-                    cpp_header: shroudrt.hpp
     
             f_type: character(*)
             f_c_type: character(kind=C_CHAR)
@@ -252,19 +247,30 @@ The first is for type ``char``::
     
             c_statements:
                 intent_in:
+                    cpp_local_var=True,
+                    pre_call:
+                      - {c_const}std::string {cpp_var}({c_var});
+                intent_out:
+                    cpp_header='<cstring>'
+                    pre_call:
+                      - int {c_var_trim} = strlen({c_var});
+                    post_call:
+                      - strcpy({c_var}, {cpp_val});
+
+                intent_in_buf:
                     cpp_local_var: True
                     pre_call:
                       - {c_const}std::string {cpp_var}({c_var});
                     pre_call_buf:
                       - {c_const}std::string {cpp_var}({c_var}, {c_var_trim});
-                intent_out:
+                intent_out_buf:
+                    cpp_header: shroudrt.hpp'
                     post_call:
                       - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
+                result_buf:
                     cpp_header: shroudrt.hpp'
-                result:
                     post_call:
                       - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
-                    cpp_header: shroudrt.hpp'
     
             f_type: character(*)
             f_c_type: character(kind=C_CHAR)

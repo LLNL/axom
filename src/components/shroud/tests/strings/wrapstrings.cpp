@@ -60,18 +60,10 @@ void STR_return_char_bufferify(char * SH_F_rv)
  * dest is marked intent(OUT) to override the intent(INOUT) default
  * This avoid a copy-in on dest.
  */
-void STR_pass_char_ptr(char * dest, int Ndest, const char * src)
+void STR_pass_char_ptr(char * dest, const char * src)
 {
 // splicer begin function.pass_char_ptr
-    char * SH_dest = new char [Ndest + 1];
-    int SH_Lsrc = std::strlen(src);
-    char * SH_src = new char [SH_Lsrc + 1];
-    std::strncpy(SH_src, src, SH_Lsrc);
-    SH_src[SH_Lsrc] = '\0';
-    passCharPtr(SH_dest, SH_src);
-    shroud_FccCopy(dest, Ndest, SH_dest);
-    delete [] SH_dest;
-    delete [] SH_src;
+    passCharPtr(dest, src);
     return;
 // splicer end function.pass_char_ptr
 }
@@ -340,12 +332,13 @@ void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1)
  * arg1 is assumed to be intent(INOUT)
  * Must copy in and copy out.
  */
-void STR_accept_string_reference(char * arg1, int Narg1)
+void STR_accept_string_reference(char * arg1)
 {
 // splicer begin function.accept_string_reference
     std::string SH_arg1(arg1);
+    int SH_Larg1 = strlen(arg1);
     acceptStringReference(SH_arg1);
-    shroud_FccCopy(arg1, Narg1, SH_arg1.c_str());
+    strcpy(arg1, SH_arg1.c_str());
     return;
 // splicer end function.accept_string_reference
 }
@@ -371,14 +364,10 @@ void STR_accept_string_reference_bufferify(char * arg1, int Larg1, int Narg1)
 
 // void explicit1(char * name+intent(in)+len_trim(AAlen))
 // function_index=11
-void STR_explicit1(char * name, int AAlen)
+void STR_explicit1(char * name)
 {
 // splicer begin function.explicit1
-    char * SH_name = new char [AAlen + 1];
-    std::strncpy(SH_name, name, AAlen);
-    SH_name[AAlen] = '\0';
-    explicit1(SH_name);
-    delete [] SH_name;
+    explicit1(name);
     return;
 // splicer end function.explicit1
 }
@@ -399,13 +388,10 @@ void STR_explicit1_bufferify(char * name, int AAlen)
 
 // void explicit2(char * name+intent(out)+len(AAtrim))
 // function_index=12
-void STR_explicit2(char * name, int AAtrim)
+void STR_explicit2(char * name)
 {
 // splicer begin function.explicit2
-    char * SH_name = new char [AAtrim + 1];
-    explicit2(SH_name);
-    shroud_FccCopy(name, AAtrim, SH_name);
-    delete [] SH_name;
+    explicit2(name);
     return;
 // splicer end function.explicit2
 }

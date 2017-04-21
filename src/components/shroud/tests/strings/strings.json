@@ -242,8 +242,7 @@
                         "c_var_len": "Ndest", 
                         "c_var_trim": "SH_Ldest", 
                         "cpp_type": "char", 
-                        "cpp_val": "SH_dest", 
-                        "cpp_var": "SH_dest"
+                        "cpp_var": "dest"
                     }, 
                     "fmtpy": {
                         "PyObject": "PyObject", 
@@ -272,8 +271,7 @@
                         "c_var_len": "SH_Nsrc", 
                         "c_var_trim": "SH_Lsrc", 
                         "cpp_type": "char", 
-                        "cpp_val": "SH_src", 
-                        "cpp_var": "SH_src"
+                        "cpp_var": "src"
                     }, 
                     "fmtpy": {
                         "c_const": "const ", 
@@ -294,11 +292,9 @@
                 "description": "dest is marked intent(OUT) to override the intent(INOUT) default\nThis avoid a copy-in on dest.\n"
             }, 
             "fmt": {
-                "C_call_list": "SH_dest, SH_src", 
+                "C_call_list": "dest, src", 
                 "C_name": "STR_pass_char_ptr", 
-                "C_post_call": "shroud_FccCopy(dest, Ndest, SH_dest);\ndelete [] SH_dest;\ndelete [] SH_src;", 
-                "C_pre_call": "char * SH_dest = new char [Ndest + 1];\nint SH_Lsrc = std::strlen(src);\nchar * SH_src = new char [SH_Lsrc + 1];\nstd::strncpy(SH_src, src, SH_Lsrc);\nSH_src[SH_Lsrc] = '\\0';", 
-                "C_prototype": "char * dest, int Ndest, const char * src", 
+                "C_prototype": "char * dest, const char * src", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_pass_char_ptr_buffer", 
@@ -1437,9 +1433,9 @@
             "fmt": {
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_reference", 
-                "C_post_call": "shroud_FccCopy(arg1, Narg1, SH_arg1.c_str());", 
-                "C_pre_call": "std::string SH_arg1(arg1);", 
-                "C_prototype": "char * arg1, int Narg1", 
+                "C_post_call": "strcpy(arg1, SH_arg1.c_str());", 
+                "C_pre_call": "std::string SH_arg1(arg1);\nint SH_Larg1 = strlen(arg1);", 
+                "C_prototype": "char * arg1", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_accept_string_reference_bufferify", 
@@ -1549,8 +1545,7 @@
                         "c_var_len": "SH_Nname", 
                         "c_var_trim": "AAlen", 
                         "cpp_type": "char", 
-                        "cpp_val": "SH_name", 
-                        "cpp_var": "SH_name"
+                        "cpp_var": "name"
                     }, 
                     "fmtpy": {
                         "c_const": "", 
@@ -1567,11 +1562,9 @@
             "attrs": {}, 
             "decl": "void explicit1(char * name+len_trim(AAlen)+intent(in))", 
             "fmt": {
-                "C_call_list": "SH_name", 
+                "C_call_list": "name", 
                 "C_name": "STR_explicit1", 
-                "C_post_call": "delete [] SH_name;", 
-                "C_pre_call": "char * SH_name = new char [AAlen + 1];\nstd::strncpy(SH_name, name, AAlen);\nSH_name[AAlen] = '\\0';", 
-                "C_prototype": "char * name, int AAlen", 
+                "C_prototype": "char * name", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_explicit1_bufferify", 
@@ -1676,8 +1669,7 @@
                         "c_var_len": "AAtrim", 
                         "c_var_trim": "SH_Lname", 
                         "cpp_type": "char", 
-                        "cpp_val": "SH_name", 
-                        "cpp_var": "SH_name"
+                        "cpp_var": "name"
                     }, 
                     "fmtpy": {
                         "PyObject": "PyObject", 
@@ -1696,11 +1688,9 @@
             "attrs": {}, 
             "decl": "void explicit2(char * name+len(AAtrim)+intent(out))", 
             "fmt": {
-                "C_call_list": "SH_name", 
+                "C_call_list": "name", 
                 "C_name": "STR_explicit2", 
-                "C_post_call": "shroud_FccCopy(name, AAtrim, SH_name);\ndelete [] SH_name;", 
-                "C_pre_call": "char * SH_name = new char [AAtrim + 1];", 
-                "C_prototype": "char * name, int AAtrim", 
+                "C_prototype": "char * name", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_explicit2_bufferify", 
@@ -1900,25 +1890,19 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
-                "intent_in": {
+                "intent_in_buf": {
                     "cpp_header": "<cstring>", 
                     "cpp_local_var": true, 
                     "post_call": [
                         "delete [] {cpp_var};"
                     ], 
                     "pre_call": [
-                        "int {c_var_trim} = std::strlen({c_var});", 
-                        "char * {cpp_var} = new char [{c_var_trim} + 1];", 
-                        "std::strncpy({cpp_var}, {c_var}, {c_var_trim});", 
-                        "{cpp_var}[{c_var_trim}] = '\\0';"
-                    ], 
-                    "pre_call_buf": [
                         "char * {cpp_var} = new char [{c_var_trim} + 1];", 
                         "std::strncpy({cpp_var}, {c_var}, {c_var_trim});", 
                         "{cpp_var}[{c_var_trim}] = '\\0';"
                     ]
                 }, 
-                "intent_out": {
+                "intent_out_buf": {
                     "cpp_header": "shroudrt.hpp", 
                     "cpp_local_var": true, 
                     "post_call": [
@@ -1929,7 +1913,7 @@
                         "char * {cpp_var} = new char [{c_var_len} + 1];"
                     ]
                 }, 
-                "result": {
+                "result_buf": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
@@ -2113,18 +2097,30 @@
                     "cpp_local_var": true, 
                     "pre_call": [
                         "{c_const}std::string {cpp_var}({c_var});"
-                    ], 
-                    "pre_call_buf": [
+                    ]
+                }, 
+                "intent_in_buf": {
+                    "cpp_local_var": true, 
+                    "pre_call": [
                         "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "<cstring>", 
+                    "post_call": [
+                        "strcpy({c_var}, {cpp_val});"
+                    ], 
+                    "pre_call": [
+                        "int {c_var_trim} = strlen({c_var});"
+                    ]
+                }, 
+                "intent_out_buf": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
-                "result": {
+                "result_buf": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
@@ -2161,18 +2157,30 @@
                     "cpp_local_var": true, 
                     "pre_call": [
                         "{c_const}std::string {cpp_var}({c_var});"
-                    ], 
-                    "pre_call_buf": [
+                    ]
+                }, 
+                "intent_in_buf": {
+                    "cpp_local_var": true, 
+                    "pre_call": [
                         "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "<cstring>", 
+                    "post_call": [
+                        "strcpy({c_var}, {cpp_val});"
+                    ], 
+                    "pre_call": [
+                        "int {c_var_trim} = strlen({c_var});"
+                    ]
+                }, 
+                "intent_out_buf": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
-                "result": {
+                "result_buf": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
@@ -2209,18 +2217,30 @@
                     "cpp_local_var": true, 
                     "pre_call": [
                         "{c_const}std::string {cpp_var}({c_var});"
-                    ], 
-                    "pre_call_buf": [
+                    ]
+                }, 
+                "intent_in_buf": {
+                    "cpp_local_var": true, 
+                    "pre_call": [
                         "{c_const}std::string {cpp_var}({c_var}, {c_var_trim});"
                     ]
                 }, 
                 "intent_out": {
+                    "cpp_header": "<cstring>", 
+                    "post_call": [
+                        "strcpy({c_var}, {cpp_val});"
+                    ], 
+                    "pre_call": [
+                        "int {c_var_trim} = strlen({c_var});"
+                    ]
+                }, 
+                "intent_out_buf": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
                     ]
                 }, 
-                "result": {
+                "result_buf": {
                     "cpp_header": "shroudrt.hpp", 
                     "post_call": [
                         "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"

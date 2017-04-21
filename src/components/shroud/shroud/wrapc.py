@@ -375,32 +375,32 @@ class Wrapc(util.WrapperMixin):
                 fmt_arg.c_ptr = ''
             fmt_arg.cpp_type = arg_typedef.cpp_type
 
+            proto_list.append(self._c_decl('c_type', arg))
+
+            intent_grp = ''
+            if generator == 'string_to_buffer_and_len' and \
+               arg_typedef.base == 'string':
+                len_trim = c_attrs.get('len_trim', False)
+                if len_trim:
+                    append_format(proto_list, 'int {c_var_trim}', fmt_arg)
+                len_arg = c_attrs.get('len', False)
+                if len_arg:
+                    append_format(proto_list, 'int {c_var_len}', fmt_arg)
+                intent_grp = '_buf'
+
             if c_attrs.get('_is_result', False):
                 arg_call = False
+                fmt_arg.cpp_var = fmt_arg.C_result
                 result_arg = arg
-                slist = ['result']
+                slist = ['result' + intent_grp]
             else:
                 arg_call = arg
                 fmt_arg.cpp_var = fmt_arg.c_var      # name in c++ call.
                 slist = []
                 if c_attrs['intent'] in ['inout', 'in']:
-                    slist.append('intent_in')
+                    slist.append('intent_in' + intent_grp)
                 if c_attrs['intent'] in ['inout', 'out']:
-                    slist.append('intent_out')
-
-            proto_list.append(self._c_decl('c_type', arg))
-
-            # XXX if generator == 'string_to_buffer_and_len' and
-            pre_call_grp = 'pre_call'
-            post_call_grp = 'post_call'
-            if arg_typedef.base == 'string':
-                len_trim = c_attrs.get('len_trim', False)
-                if len_trim:
-                    append_format(proto_list, 'int {c_var_trim}', fmt_arg)
-                    pre_call_grp = 'pre_call_buf'
-                len_arg = c_attrs.get('len', False)
-                if len_arg:
-                    append_format(proto_list, 'int {c_var_len}', fmt_arg)
+                    slist.append('intent_out' + intent_grp)
 
             # Add any code needed for intent(IN).
             # Usually to convert types.
@@ -415,16 +415,14 @@ class Wrapc(util.WrapperMixin):
 
             for intent in slist:
                 # pre_call.append('// intent=%s' % intent)
-                cmd_list = c_statements.get(intent, {}).get(pre_call_grp, [])
+                cmd_list = c_statements.get(intent, {}).get('pre_call', [])
                 if cmd_list:
                     for cmd in cmd_list:
                         append_format(pre_call, cmd, fmt_arg)
 
-                cmd_list = c_statements.get(intent, {}).get(post_call_grp, [])
+                cmd_list = c_statements.get(intent, {}).get('post_call', [])
                 if cmd_list:
                     # pick up c_str() from cpp_to_c
-                    if intent == 'result':
-                        fmt_arg.cpp_var = fmt_arg.C_result
                     fmt_arg.cpp_val = wformat(arg_typedef.cpp_to_c, fmt_arg)
                     # append_format(post_call, '// c_var={c_var}  cpp_var={cpp_var}  cpp_val={cpp_val}', fmt_arg)
                     for cmd in cmd_list:
