@@ -71,16 +71,12 @@ set("GENHTML_PATH" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_10_16
 # MPI - manually added for now
 ##############################################################################
 set(ENABLE_MPI ON CACHE PATH "")
-set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/bin/mpicc" CACHE PATH "")
-set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/bin/mpiccxx" CACHE PATH "")
-set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/bin/mpif90" CACHE PATH "")
+set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/" CACHE PATH "")
+set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
+set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
+set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpifort" CACHE PATH "")
 
-set(MPI_C_LIBRARIES   "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/lib/libmpi.a" CACHE PATH "")
-set(MPI_CXX_LIBRARIES "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/lib/libmpicxx.a" CACHE PATH "")
-set(MPI_CXX_INCLUDE_PATH "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/include" CACHE PATH "")
-set(MPI_Fortran_LIBRARIES   "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/lib/libmpifort.a" CACHE PATH "")
-
-set(PIEXEC "/usr/bin/srun" CACHE PATH "")
+set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
 
