@@ -25,7 +25,7 @@ module quest_mod
 
         subroutine c_initialize(comm, fileName, requiresDistance, ndims, maxElements, maxLevels) &
                 bind(C, name="QUEST_initialize")
-            use iso_c_binding
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
             implicit none
             integer(C_INT), value, intent(IN) :: comm
             character(kind=C_CHAR), intent(IN) :: fileName(*)
@@ -37,7 +37,7 @@ module quest_mod
 
         subroutine c_initialize_bufferify(comm, fileName, LfileName, requiresDistance, ndims, maxElements, maxLevels) &
                 bind(C, name="QUEST_initialize_bufferify")
-            use iso_c_binding
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
             implicit none
             integer(C_INT), value, intent(IN) :: comm
             character(kind=C_CHAR), intent(IN) :: fileName(*)
@@ -50,14 +50,13 @@ module quest_mod
 
         subroutine quest_finalize() &
                 bind(C, name="QUEST_finalize")
-            use iso_c_binding
             implicit none
         end subroutine quest_finalize
 
         function quest_distance(x, y, z) &
                 result(SH_rv) &
                 bind(C, name="QUEST_distance")
-            use iso_c_binding
+            use iso_c_binding, only : C_DOUBLE
             implicit none
             real(C_DOUBLE), value, intent(IN) :: x
             real(C_DOUBLE), value, intent(IN) :: y
@@ -68,7 +67,7 @@ module quest_mod
         function quest_inside(x, y, z) &
                 result(SH_rv) &
                 bind(C, name="QUEST_inside")
-            use iso_c_binding
+            use iso_c_binding, only : C_DOUBLE, C_INT
             implicit none
             real(C_DOUBLE), value, intent(IN) :: x
             real(C_DOUBLE), value, intent(IN) :: y
@@ -78,21 +77,21 @@ module quest_mod
 
         subroutine quest_mesh_min_bounds(coords) &
                 bind(C, name="QUEST_mesh_min_bounds")
-            use iso_c_binding
+            use iso_c_binding, only : C_DOUBLE
             implicit none
             real(C_DOUBLE), intent(OUT) :: coords(*)
         end subroutine quest_mesh_min_bounds
 
         subroutine quest_mesh_max_bounds(coords) &
                 bind(C, name="QUEST_mesh_max_bounds")
-            use iso_c_binding
+            use iso_c_binding, only : C_DOUBLE
             implicit none
             real(C_DOUBLE), intent(OUT) :: coords(*)
         end subroutine quest_mesh_max_bounds
 
         subroutine quest_mesh_center_of_mass(coords) &
                 bind(C, name="QUEST_mesh_center_of_mass")
-            use iso_c_binding
+            use iso_c_binding, only : C_DOUBLE
             implicit none
             real(C_DOUBLE), intent(OUT) :: coords(*)
         end subroutine quest_mesh_center_of_mass
@@ -105,7 +104,6 @@ contains
 
     subroutine quest_initialize(comm, fileName, requiresDistance, ndims, maxElements, maxLevels)
         use iso_c_binding, only : C_BOOL, C_INT
-        implicit none
         integer, value, intent(IN) :: comm
         character(*), intent(IN) :: fileName
         logical, value, intent(IN) :: requiresDistance

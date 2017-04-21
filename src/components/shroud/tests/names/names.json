@@ -509,6 +509,11 @@
             "c_type": "TES_names", 
             "cpp_to_c": "static_cast<{c_const}TES_names *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "Names", 
+            "f_c_module": {
+                "iso_c_binding": [
+                    "C_PTR"
+                ]
+            }, 
             "f_c_type": "type(C_PTR)", 
             "f_derived_type": "FNames", 
             "f_module": {
@@ -614,10 +619,12 @@
             }, 
             "c_type": "char", 
             "cpp_type": "char", 
-            "f_c_type": "character(kind=C_CHAR)", 
-            "f_module": {
-                "iso_c_binding": null
+            "f_c_module": {
+                "iso_c_binding": [
+                    "C_CHAR"
+                ]
             }, 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_type": "character(*)"
         }, 
         "char_scalar": {
@@ -635,10 +642,12 @@
             }, 
             "c_type": "char", 
             "cpp_type": "char", 
-            "f_c_type": "character(kind=C_CHAR)", 
-            "f_module": {
-                "iso_c_binding": null
+            "f_c_module": {
+                "iso_c_binding": [
+                    "C_CHAR"
+                ]
             }, 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_type": "character"
         }, 
         "double": {
@@ -823,10 +832,12 @@
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
-            "f_c_type": "character(kind=C_CHAR)", 
-            "f_module": {
-                "iso_c_binding": null
+            "f_c_module": {
+                "iso_c_binding": [
+                    "C_CHAR"
+                ]
             }, 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_type": "character(*)", 
             "py_statements": {
                 "intent_in": {
@@ -883,10 +894,12 @@
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
-            "f_c_type": "character(kind=C_CHAR)", 
-            "f_module": {
-                "iso_c_binding": null
+            "f_c_module": {
+                "iso_c_binding": [
+                    "C_CHAR"
+                ]
             }, 
+            "f_c_type": "character(kind=C_CHAR)", 
             "f_type": "character(*)", 
             "py_statements": {
                 "intent_in": {
@@ -943,14 +956,16 @@
             "cpp_header": "<string>", 
             "cpp_to_c": "{cpp_var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_c_module": {
+                "iso_c_binding": [
+                    "C_CHAR"
+                ]
+            }, 
             "f_c_type": "character(kind=C_CHAR)", 
             "f_helper": {
                 "f_return_code": {
                     "fstr": true
                 }
-            }, 
-            "f_module": {
-                "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_call}({F_arg_c_call_tab}))", 
             "f_type": "character(*)", 
@@ -967,6 +982,11 @@
             "PY_ctor": "PyCapsule_New({cpp_var}, NULL, NULL)", 
             "c_type": "void", 
             "cpp_type": "void", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_PTR"
+                ]
+            }, 
             "f_type": "type(C_PTR)"
         }
     }

@@ -16,7 +16,6 @@ module default_library_mod
 
         subroutine function1() &
                 bind(C, name="DEF_function1")
-            use iso_c_binding
             implicit none
         end subroutine function1
 

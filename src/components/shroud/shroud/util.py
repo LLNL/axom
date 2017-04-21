@@ -166,6 +166,7 @@ def typedef_wrapped_defaults(typedef):
     # f_c_return_decl='type(CPTR)' % unname,
     typedef.f_return_code=('{F_result}%{F_derived_member} = '
                            '{F_C_call}({F_arg_c_call_tab})')
+    typedef.f_c_module={ 'iso_c_binding': ['C_PTR']}
 
     typedef.py_statements=dict(
         intent_in=dict(
@@ -430,6 +431,7 @@ class Typedef(object):
 
         ('f_c_args', None),       # List of argument names to F_C routine
         ('f_c_argdecl', None),    # List of declarations to F_C routine
+        ('f_c_module', None),     # Fortran modules needed for interface  (dictionary)
 
         ('f_type', None),         # Name of type in Fortran
         ('f_c_type', None),       # Type for C interface

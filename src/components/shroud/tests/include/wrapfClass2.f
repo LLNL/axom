@@ -44,7 +44,7 @@ module class2_mod
 
         subroutine c_class2_method1(self, comm) &
                 bind(C, name="DEF_class2_method1")
-            use iso_c_binding
+            use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: comm
@@ -52,7 +52,7 @@ module class2_mod
 
         subroutine c_class2_method2(self, c2) &
                 bind(C, name="DEF_class2_method2")
-            use iso_c_binding
+            use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: c2
@@ -65,7 +65,6 @@ module class2_mod
 contains
 
     subroutine class2_method1(obj, comm)
-        implicit none
         class(class2) :: obj
         integer, value, intent(IN) :: comm
         ! splicer begin class.Class2.method.method1
@@ -77,7 +76,6 @@ contains
 
     subroutine class2_method2(obj, c2)
         use class1_mod, only : class1
-        implicit none
         class(class2) :: obj
         type(class1), value, intent(IN) :: c2
         ! splicer begin class.Class2.method.method2

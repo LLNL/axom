@@ -494,8 +494,9 @@ class Wrapf(util.WrapperMixin):
                 continue
             only = modules[mname]
             if only:
+                snames = sorted(only.keys())
                 arg_f_use.append('use %s, only : %s' % (
-                        mname, ', '.join(only)))
+                        mname, ', '.join(snames)))
             else:
                 arg_f_use.append('use %s' % mname)
         return arg_f_use
@@ -532,6 +533,7 @@ class Wrapf(util.WrapperMixin):
 
         arg_c_names = []  # argument names for functions
         arg_c_decl = []   # declaraion of argument names
+        modules = {}   # indexed as [module][variable]
 
         # find subprogram type
         # compute first to get order of arguments correct.
@@ -548,6 +550,7 @@ class Wrapf(util.WrapperMixin):
                 arg_c_names.append(fmt.C_this)
                 arg_c_decl.append(
                     'type(C_PTR), value, intent(IN) :: ' + fmt.C_this)
+                self.set_f_module(modules, 'iso_c_binding', 'C_PTR')
 
         args_all_in = True   # assume all arguments are intent(in)
         for arg in node['args']:
@@ -556,6 +559,8 @@ class Wrapf(util.WrapperMixin):
             arg_typedef = self.typedef[arg['type']]
             fmt.c_var = arg['name']
             attrs = arg['attrs']
+            self.update_f_module(modules,
+                                 arg_typedef.f_c_module or arg_typedef.f_module)
 
             if attrs.get('intent', 'inout') != 'in':
                 args_all_in = False
@@ -581,11 +586,13 @@ class Wrapf(util.WrapperMixin):
                     arg_c_names.append(len_trim)
                     arg_c_decl.append(
                         'integer(C_INT), value, intent(IN) :: %s' % len_trim)
+                    self.set_f_module(modules, 'iso_c_binding', 'C_INT')
                 len_arg = attrs.get('len', None)
                 if len_arg:
                     arg_c_names.append(len_arg)
                     arg_c_decl.append(
                         'integer(C_INT), value, intent(IN) :: %s' % len_arg)
+                    self.set_f_module(modules, 'iso_c_binding', 'C_INT')
 
         if (subprogram == 'function' and
                 (is_pure or (func_is_const and args_all_in))):
@@ -597,12 +604,18 @@ class Wrapf(util.WrapperMixin):
         if fmt.F_C_subprogram == 'function':
             if result_typedef.base == 'string':
                 arg_c_decl.append('type(C_PTR) %s' % fmt.F_result)
+                self.set_f_module(modules, 'iso_c_binding', 'C_PTR')
             else:
                 # XXX - make sure ptr is set to avoid VALUE
                 arg_dict = dict(name=fmt.F_result,
                                 type=result_type,
                                 attrs=dict(ptr=True))
                 arg_c_decl.append(self._c_decl(arg_dict))
+                self.update_f_module(modules,
+                                     result_typedef.f_c_module or
+                                     result_typedef.f_module)
+
+        arg_f_use = self.sort_module_info(modules, None)
 
         c_interface = self.c_interface
         c_interface.append('')
@@ -619,7 +632,7 @@ class Wrapf(util.WrapperMixin):
                 'bind(C, name="{C_name}")',
                 fmt))
         c_interface.append(-1)
-        c_interface.append('use iso_c_binding')
+        c_interface.extend(arg_f_use)
         c_interface.append('implicit none')
         c_interface.extend(arg_c_decl)
         c_interface.append(-1)
@@ -912,7 +925,6 @@ class Wrapf(util.WrapperMixin):
                 '({F_arguments}){F_result_clause}', fmt_func))
             impl.append(1)
             impl.extend(arg_f_use)
-            impl.append('implicit none')
             impl.extend(arg_f_decl)
             impl.extend(pre_call)
             self._create_splicer(sname, impl, F_code)

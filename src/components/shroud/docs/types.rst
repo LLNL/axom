@@ -232,8 +232,9 @@ The first is for type ``char``::
     
             f_type: character(*)
             f_c_type: character(kind=C_CHAR)
-            f_module:
-                iso_c_binding: null
+            f_c_module:
+                iso_c_binding:
+                  - C_CHAR
 
 ``std::string`` has its own typemap::
 
@@ -274,8 +275,9 @@ The first is for type ``char``::
     
             f_type: character(*)
             f_c_type: character(kind=C_CHAR)
-            f_module:
-                iso_c_binding: none
+            f_c_module:
+                iso_c_binding:
+                  - C_CHAR
 
 
 Character Arguments

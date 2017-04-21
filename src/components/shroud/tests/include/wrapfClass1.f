@@ -42,7 +42,7 @@ module class1_mod
 
         subroutine c_class1_method1(self, arg1) &
                 bind(C, name="DEF_class1_method1")
-            use iso_c_binding
+            use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: arg1
@@ -56,7 +56,6 @@ contains
 
     subroutine class1_method1(obj, arg1)
         use iso_c_binding, only : C_INT
-        implicit none
         class(class1) :: obj
         integer(C_INT), value, intent(IN) :: arg1
         ! splicer begin class.Class1.method.method1

@@ -609,7 +609,8 @@ c_to_cpp
 
 c_statements
     A nested dictionary of code template to add.
-    The first layer is *intent_in*, *intent_out*, and *result*.
+    The first layer is *intent_in*, *intent_out*, *result*,
+    *intent_in_buf*, *intent_out_buf*, and *result_buf*.
     The second layer is *pre_call*, *pre_call_buf*, *post_call*, *cpp_header*.
     The entries are a list of format strings.
 
@@ -647,6 +648,12 @@ f_c_argdecl
     By default, only a single argument is passed for each dummy argument.
     Defaults to *None*.
 
+f_c_module
+    Fortran modules needed for type in the interface.
+    A dictionary keyed on the module name with the value being a list of symbols.
+    Similar to **f_module**.
+    Defaults to *None*.
+
 f_c_type
     Type declaration for ``bind(C)`` interface.
     Defaults to *None* which will then use *f_type*.
@@ -672,8 +679,13 @@ f_derived_type
     Defaults to *None*  i.e. pass argument unchanged.
 
 f_module
-    Fortran modules needed for type  (dictionary).
-    Defaults to *None*.
+    Fortran modules needed for type in the implementation wrapper.
+    A dictionary keyed on the module name with the value being a list of symbols.
+    Defaults to *None*.::
+
+        f_module:
+           iso_c_binding:
+             - C_INT
 
 f_return_code
     Fortran code used to call function and assign the return value.

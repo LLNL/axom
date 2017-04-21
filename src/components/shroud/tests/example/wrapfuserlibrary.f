@@ -19,14 +19,13 @@ module userlibrary_mod
 
         subroutine local_function1() &
                 bind(C, name="AA_local_function1")
-            use iso_c_binding
             implicit none
         end subroutine local_function1
 
         function c_is_name_valid(name) &
                 result(SH_rv) &
                 bind(C, name="AA_is_name_valid")
-            use iso_c_binding
+            use iso_c_binding, only : C_BOOL, C_CHAR
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: SH_rv
@@ -35,7 +34,7 @@ module userlibrary_mod
         function c_is_name_valid_bufferify(name, Lname) &
                 result(SH_rv) &
                 bind(C, name="AA_is_name_valid_bufferify")
-            use iso_c_binding
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
@@ -45,14 +44,14 @@ module userlibrary_mod
         function c_is_initialized() &
                 result(SH_rv) &
                 bind(C, name="AA_is_initialized")
-            use iso_c_binding
+            use iso_c_binding, only : C_BOOL
             implicit none
             logical(C_BOOL) :: SH_rv
         end function c_is_initialized
 
         subroutine c_check_bool(arg1, arg2, arg3) &
                 bind(C, name="AA_check_bool")
-            use iso_c_binding
+            use iso_c_binding, only : C_BOOL
             implicit none
             logical(C_BOOL), value, intent(IN) :: arg1
             logical(C_BOOL), intent(OUT) :: arg2
@@ -61,14 +60,14 @@ module userlibrary_mod
 
         subroutine c_test_names(name) &
                 bind(C, name="AA_test_names")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
         end subroutine c_test_names
 
         subroutine c_test_names_bufferify(name, Lname) &
                 bind(C, name="AA_test_names_bufferify")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_INT
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
@@ -76,7 +75,7 @@ module userlibrary_mod
 
         subroutine c_test_names_flag(name, flag) &
                 bind(C, name="AA_test_names_flag")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_INT
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: flag
@@ -84,7 +83,7 @@ module userlibrary_mod
 
         subroutine c_test_names_flag_bufferify(name, Lname, flag) &
                 bind(C, name="AA_test_names_flag_bufferify")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_INT
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
@@ -93,20 +92,19 @@ module userlibrary_mod
 
         subroutine c_testoptional_0() &
                 bind(C, name="AA_testoptional_0")
-            use iso_c_binding
             implicit none
         end subroutine c_testoptional_0
 
         subroutine c_testoptional_1(i) &
                 bind(C, name="AA_testoptional_1")
-            use iso_c_binding
+            use iso_c_binding, only : C_INT
             implicit none
             integer(C_INT), value, intent(IN) :: i
         end subroutine c_testoptional_1
 
         subroutine c_testoptional_2(i, j) &
                 bind(C, name="AA_testoptional_2")
-            use iso_c_binding
+            use iso_c_binding, only : C_INT, C_LONG
             implicit none
             integer(C_INT), value, intent(IN) :: i
             integer(C_LONG), value, intent(IN) :: j
@@ -114,21 +112,20 @@ module userlibrary_mod
 
         subroutine testmpi(comm) &
                 bind(C, name="AA_testmpi")
-            use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: comm
         end subroutine testmpi
 
         subroutine c_testgroup1(grp) &
                 bind(C, name="AA_testgroup1")
-            use iso_c_binding
+            use sidre_mod, only : group
             implicit none
             type(C_PTR), value, intent(IN) :: grp
         end subroutine c_testgroup1
 
         subroutine c_testgroup2(grp) &
                 bind(C, name="AA_testgroup2")
-            use iso_c_binding
+            use sidre_mod, only : group
             implicit none
             type(C_PTR), value, intent(IN) :: grp
         end subroutine c_testgroup2
@@ -155,7 +152,6 @@ contains
     ! function_index=48
     function is_name_valid(name) result(SH_rv)
         use iso_c_binding, only : C_BOOL, C_INT
-        implicit none
         character(*), intent(IN) :: name
         logical :: SH_rv
         ! splicer begin is_name_valid
@@ -167,7 +163,6 @@ contains
     ! function_index=49
     function is_initialized() result(SH_rv)
         use iso_c_binding, only : C_BOOL
-        implicit none
         logical :: SH_rv
         ! splicer begin is_initialized
         SH_rv = c_is_initialized()
@@ -178,7 +173,6 @@ contains
     ! function_index=50
     subroutine check_bool(arg1, arg2, arg3)
         use iso_c_binding, only : C_BOOL
-        implicit none
         logical, value, intent(IN) :: arg1
         logical(C_BOOL) SH_arg1
         logical, intent(OUT) :: arg2
@@ -202,7 +196,6 @@ contains
     ! function_index=51
     subroutine test_names(name)
         use iso_c_binding, only : C_INT
-        implicit none
         character(*), intent(IN) :: name
         ! splicer begin test_names
         call c_test_names_bufferify(  &
@@ -216,7 +209,6 @@ contains
     ! function_index=52
     subroutine test_names_flag(name, flag)
         use iso_c_binding, only : C_INT
-        implicit none
         character(*), intent(IN) :: name
         integer(C_INT), value, intent(IN) :: flag
         ! splicer begin test_names_flag
@@ -231,7 +223,6 @@ contains
     ! has_default_arg
     ! function_index=57
     subroutine testoptional_0()
-        implicit none
         ! splicer begin testoptional_0
         call c_testoptional_0()
         ! splicer end testoptional_0
@@ -242,7 +233,6 @@ contains
     ! function_index=58
     subroutine testoptional_1(i)
         use iso_c_binding, only : C_INT
-        implicit none
         integer(C_INT), value, intent(IN) :: i
         ! splicer begin testoptional_1
         call c_testoptional_1(i)
@@ -252,8 +242,7 @@ contains
     ! void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
     ! function_index=53
     subroutine testoptional_2(i, j)
-        use iso_c_binding, only : C_LONG, C_INT
-        implicit none
+        use iso_c_binding, only : C_INT, C_LONG
         integer(C_INT), value, intent(IN) :: i
         integer(C_LONG), value, intent(IN) :: j
         ! splicer begin testoptional_2
@@ -267,7 +256,6 @@ contains
     ! function_index=55
     subroutine testgroup1(grp)
         use sidre_mod, only : group
-        implicit none
         type(datagroup), value, intent(IN) :: grp
         ! splicer begin testgroup1
         call c_testgroup1(grp%get_instance())
@@ -278,7 +266,6 @@ contains
     ! function_index=56
     subroutine testgroup2(grp)
         use sidre_mod, only : group
-        implicit none
         type(datagroup), value, intent(IN) :: grp
         ! splicer begin testgroup2
         call c_testgroup2(grp%get_instance())

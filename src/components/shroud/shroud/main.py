@@ -218,6 +218,7 @@ class Schema(object):
                 cpp_type='void',
                 # fortran='subroutine',
                 f_type='type(C_PTR)',
+                f_module=dict(iso_c_binding=['C_PTR']),
                 PY_ctor='PyCapsule_New({cpp_var}, NULL, NULL)',
                 ),
             int=util.Typedef(
@@ -371,8 +372,7 @@ class Schema(object):
 
                 f_type='character(*)',
                 f_c_type='character(kind=C_CHAR)',
-                # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
-                f_module=dict(iso_c_binding=None),
+                f_c_module=dict(iso_c_binding=['C_CHAR']),
                 # f_return_code='{F_result} =
                 #    fstr({F_C_call}({F_arg_c_call_tab}))',
                 PY_format='s',
@@ -402,8 +402,7 @@ class Schema(object):
 
                 f_type='character',
                 f_c_type='character(kind=C_CHAR)',
-                # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
-                f_module=dict(iso_c_binding=None),
+                f_c_module=dict(iso_c_binding=['C_CHAR']),
                 # f_return_code='{F_result} =
                 #    fstr({F_C_call}({F_arg_c_call_tab}))',
                 PY_format='s',
@@ -468,8 +467,7 @@ class Schema(object):
 
                 f_type='character(*)',
                 f_c_type='character(kind=C_CHAR)',
-                # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
-                f_module=dict(iso_c_binding=None),
+                f_c_module=dict(iso_c_binding=['C_CHAR']),
                 # f_return_code='{F_result} =
                 #    fstr({F_C_call}({F_arg_c_call_tab}))',
 
