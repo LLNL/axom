@@ -14,13 +14,13 @@ BUILD_OPT=$2
 
 BUILD=true
 TEST=true
-DOC=false
+DOC=true
 INSTALL_FILES=true
 INSTALL_DOCS=false
 
 JOBS=16
 
-TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/toolkit"
+TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/axom"
 DOCS_DIR_OLD="${TOOLKIT_WEB_ROOT}/docs_old"
 DOCS_DIR="${TOOLKIT_WEB_ROOT}/docs"
 
