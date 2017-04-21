@@ -25,6 +25,7 @@ blt_add_executable(
     SOURCES     quest_driver.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends}
+    USE_OPENMP  ${ENABLE_OPENMP}
     )
 
 blt_add_executable(
@@ -32,6 +33,7 @@ blt_add_executable(
     SOURCES     sphere.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends}
+    USE_OPENMP  ${ENABLE_OPENMP}
     )
 
 blt_add_executable(
@@ -39,6 +41,7 @@ blt_add_executable(
     SOURCES     octree_driver.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends} fmt
+    USE_OPENMP  ${ENABLE_OPENMP}
     )
 
 if (ENABLE_MPI)
@@ -53,6 +56,7 @@ if (ENABLE_MPI)
     SOURCES     quest_interface.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
+    USE_OPENMP  ${ENABLE_OPENMP}
     )
 
   if (ENABLE_FORTRAN)
@@ -60,6 +64,7 @@ if (ENABLE_MPI)
         NAME        quest_interface_fortran
         SOURCES     quest_interface_fortran.F
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        USE_OPENMP  ${ENABLE_OPENMP}
         DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
         )
 

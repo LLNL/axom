@@ -36,11 +36,13 @@ SIDRE_IndexType SIDRE_buffer_get_index(const SIDRE_buffer * self);
 
 size_t SIDRE_buffer_get_num_views(const SIDRE_buffer * self);
 
-void SIDRE_buffer_describe(SIDRE_buffer * self, int type, SIDRE_SidreLength num_elems);
+void SIDRE_buffer_describe(SIDRE_buffer * self, int type,
+                           SIDRE_SidreLength num_elems);
 
 void SIDRE_buffer_allocate_existing(SIDRE_buffer * self);
 
-void SIDRE_buffer_allocate_from_type(SIDRE_buffer * self, int type, SIDRE_SidreLength num_elems);
+void SIDRE_buffer_allocate_from_type(SIDRE_buffer * self, int type,
+                                     SIDRE_SidreLength num_elems);
 
 void SIDRE_buffer_reallocate(SIDRE_buffer * self, SIDRE_SidreLength num_elems);
 

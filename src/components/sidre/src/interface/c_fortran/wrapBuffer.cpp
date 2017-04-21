@@ -15,114 +15,125 @@
 #include "sidre/SidreTypes.hpp"
 
 extern "C" {
-namespace axom {
-namespace sidre {
+namespace axom
+{
+namespace sidre
+{
 
 SIDRE_IndexType SIDRE_buffer_get_index(const SIDRE_buffer * self)
 {
-const Buffer *selfobj = static_cast<const Buffer *>(static_cast<const void *>(self));
+  const Buffer * SH_this =
+    static_cast<const Buffer *>(static_cast<const void *>(self));
 // splicer begin class.Buffer.method.get_index
-    IndexType rv = selfobj->getIndex();
-    return rv;
+  IndexType SH_rv = SH_this->getIndex();
+  return SH_rv;
 // splicer end class.Buffer.method.get_index
 }
 
 size_t SIDRE_buffer_get_num_views(const SIDRE_buffer * self)
 {
-const Buffer *selfobj = static_cast<const Buffer *>(static_cast<const void *>(self));
+  const Buffer * SH_this =
+    static_cast<const Buffer *>(static_cast<const void *>(self));
 // splicer begin class.Buffer.method.get_num_views
-    size_t rv = selfobj->getNumViews();
-    return rv;
+  size_t SH_rv = SH_this->getNumViews();
+  return SH_rv;
 // splicer end class.Buffer.method.get_num_views
 }
 
-void SIDRE_buffer_describe(SIDRE_buffer * self, int type, SIDRE_SidreLength num_elems)
+void SIDRE_buffer_describe(SIDRE_buffer * self, int type,
+                           SIDRE_SidreLength num_elems)
 {
-Buffer *selfobj = static_cast<Buffer *>(static_cast<void *>(self));
+  Buffer * SH_this = static_cast<Buffer *>(static_cast<void *>(self));
 // splicer begin class.Buffer.method.describe
-    selfobj->describe(getTypeID(type), num_elems);
-    return;
+  SH_this->describe(getTypeID(type), num_elems);
+  return;
 // splicer end class.Buffer.method.describe
 }
 
 void SIDRE_buffer_allocate_existing(SIDRE_buffer * self)
 {
-Buffer *selfobj = static_cast<Buffer *>(static_cast<void *>(self));
+  Buffer * SH_this = static_cast<Buffer *>(static_cast<void *>(self));
 // splicer begin class.Buffer.method.allocate_existing
-    selfobj->allocate();
-    return;
+  SH_this->allocate();
+  return;
 // splicer end class.Buffer.method.allocate_existing
 }
 
-void SIDRE_buffer_allocate_from_type(SIDRE_buffer * self, int type, SIDRE_SidreLength num_elems)
+void SIDRE_buffer_allocate_from_type(SIDRE_buffer * self, int type,
+                                     SIDRE_SidreLength num_elems)
 {
-Buffer *selfobj = static_cast<Buffer *>(static_cast<void *>(self));
+  Buffer * SH_this = static_cast<Buffer *>(static_cast<void *>(self));
 // splicer begin class.Buffer.method.allocate_from_type
-    selfobj->allocate(getTypeID(type), num_elems);
-    return;
+  SH_this->allocate(getTypeID(type), num_elems);
+  return;
 // splicer end class.Buffer.method.allocate_from_type
 }
 
 void SIDRE_buffer_reallocate(SIDRE_buffer * self, SIDRE_SidreLength num_elems)
 {
-Buffer *selfobj = static_cast<Buffer *>(static_cast<void *>(self));
+  Buffer * SH_this = static_cast<Buffer *>(static_cast<void *>(self));
 // splicer begin class.Buffer.method.reallocate
-    selfobj->reallocate(num_elems);
-    return;
+  SH_this->reallocate(num_elems);
+  return;
 // splicer end class.Buffer.method.reallocate
 }
 
 void * SIDRE_buffer_get_void_ptr(SIDRE_buffer * self)
 {
-Buffer *selfobj = static_cast<Buffer *>(static_cast<void *>(self));
+  Buffer * SH_this = static_cast<Buffer *>(static_cast<void *>(self));
 // splicer begin class.Buffer.method.get_void_ptr
-    void * rv = selfobj->getVoidPtr();
-    return rv;
+  void * SH_rv = SH_this->getVoidPtr();
+  return SH_rv;
 // splicer end class.Buffer.method.get_void_ptr
 }
 
 int SIDRE_buffer_get_type_id(const SIDRE_buffer * self)
 {
-const Buffer *selfobj = static_cast<const Buffer *>(static_cast<const void *>(self));
+  const Buffer * SH_this =
+    static_cast<const Buffer *>(static_cast<const void *>(self));
 // splicer begin class.Buffer.method.get_type_id
-    TypeID rv = selfobj->getTypeID();
-    return static_cast<int>(rv);
+  TypeID SH_rv = SH_this->getTypeID();
+  return static_cast<int>(SH_rv);
 // splicer end class.Buffer.method.get_type_id
 }
 
 size_t SIDRE_buffer_get_num_elements(const SIDRE_buffer * self)
 {
-const Buffer *selfobj = static_cast<const Buffer *>(static_cast<const void *>(self));
+  const Buffer * SH_this =
+    static_cast<const Buffer *>(static_cast<const void *>(self));
 // splicer begin class.Buffer.method.get_num_elements
-    size_t rv = selfobj->getNumElements();
-    return rv;
+  size_t SH_rv = SH_this->getNumElements();
+  return SH_rv;
 // splicer end class.Buffer.method.get_num_elements
 }
 
 size_t SIDRE_buffer_get_total_bytes(const SIDRE_buffer * self)
 {
-const Buffer *selfobj = static_cast<const Buffer *>(static_cast<const void *>(self));
+  const Buffer * SH_this =
+    static_cast<const Buffer *>(static_cast<const void *>(self));
 // splicer begin class.Buffer.method.get_total_bytes
-    size_t rv = selfobj->getTotalBytes();
-    return rv;
+  size_t SH_rv = SH_this->getTotalBytes();
+  return SH_rv;
 // splicer end class.Buffer.method.get_total_bytes
 }
 
 size_t SIDRE_buffer_get_bytes_per_element(const SIDRE_buffer * self)
 {
-const Buffer *selfobj = static_cast<const Buffer *>(static_cast<const void *>(self));
+  const Buffer * SH_this =
+    static_cast<const Buffer *>(static_cast<const void *>(self));
 // splicer begin class.Buffer.method.get_bytes_per_element
-    size_t rv = selfobj->getBytesPerElement();
-    return rv;
+  size_t SH_rv = SH_this->getBytesPerElement();
+  return SH_rv;
 // splicer end class.Buffer.method.get_bytes_per_element
 }
 
 void SIDRE_buffer_print(const SIDRE_buffer * self)
 {
-const Buffer *selfobj = static_cast<const Buffer *>(static_cast<const void *>(self));
+  const Buffer * SH_this =
+    static_cast<const Buffer *>(static_cast<const void *>(self));
 // splicer begin class.Buffer.method.print
-    selfobj->print();
-    return;
+  SH_this->print();
+  return;
 // splicer end class.Buffer.method.print
 }
 
