@@ -345,7 +345,7 @@ class Schema(object):
                             'std::strncpy({cpp_var}, {c_var}, {c_var_trim});',
                             '{cpp_var}[{c_var_trim}] = \'\\0\';'
                             ],
-                        pre_call_trim=[
+                        pre_call_buf=[
                             'char * {cpp_var} = new char [{c_var_trim} + 1];',
                             'std::strncpy({cpp_var}, {c_var}, {c_var_trim});',
                             '{cpp_var}[{c_var_trim}] = \'\\0\';'
@@ -435,7 +435,7 @@ class Schema(object):
                         pre_call=[
                             '{c_const}std::string {cpp_var}({c_var});'
                             ],
-                        pre_call_trim=[
+                        pre_call_buf=[
                             ('{c_const}std::string '
                              '{cpp_var}({c_var}, {c_var_trim});')
                             ],

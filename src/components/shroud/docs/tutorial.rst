@@ -306,7 +306,7 @@ The Fortran wrapper::
         implicit none
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
-        character(kind=C_CHAR, len=(30)) :: rv
+        character(kind=C_CHAR, len=30) :: rv
         call c_function4a_bufferify(  &
             arg1, len_trim(arg1, kind=C_INT),  &
             arg2, len_trim(arg2, kind=C_INT),  &

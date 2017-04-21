@@ -263,7 +263,7 @@ class Wrapc(util.WrapperMixin):
         fmt_func = node['fmt']
 
         # Look for C++ routine to wrap
-        # Usually the same node unless it is bufferified
+        # Usually the same node unless it is generated (i.e. bufferified)
         CPP_node = node
         generated = []
         if '_generated' in CPP_node:
@@ -281,6 +281,7 @@ class Wrapc(util.WrapperMixin):
         result = node['result']
         result_type = result['type']
         subprogram = node['_subprogram']
+        generator = node.get('_generated', '')
 
         # C++ functions which return 'this',
         # are easier to call from Fortran if they are subroutines.
@@ -389,15 +390,17 @@ class Wrapc(util.WrapperMixin):
 
             proto_list.append(self._c_decl('c_type', arg))
 
+            # XXX if generator == 'string_to_buffer_and_len' and
+            pre_call_grp = 'pre_call'
+            post_call_grp = 'post_call'
             if arg_typedef.base == 'string':
                 len_trim = c_attrs.get('len_trim', False)
                 if len_trim:
                     append_format(proto_list, 'int {c_var_trim}', fmt_arg)
+                    pre_call_grp = 'pre_call_buf'
                 len_arg = c_attrs.get('len', False)
                 if len_arg:
                     append_format(proto_list, 'int {c_var_len}', fmt_arg)
-            else:
-                len_trim = False
 
             # Add any code needed for intent(IN).
             # Usually to convert types.
@@ -412,17 +415,12 @@ class Wrapc(util.WrapperMixin):
 
             for intent in slist:
                 # pre_call.append('// intent=%s' % intent)
-                if len_trim:
-                    cmd_list = c_statements.get(intent, {}) \
-                                           .get('pre_call_trim', [])
-                else:
-                    cmd_list = c_statements.get(intent, {}) \
-                                           .get('pre_call', [])
+                cmd_list = c_statements.get(intent, {}).get(pre_call_grp, [])
                 if cmd_list:
                     for cmd in cmd_list:
                         append_format(pre_call, cmd, fmt_arg)
 
-                cmd_list = c_statements.get(intent, {}).get('post_call', [])
+                cmd_list = c_statements.get(intent, {}).get(post_call_grp, [])
                 if cmd_list:
                     # pick up c_str() from cpp_to_c
                     if intent == 'result':

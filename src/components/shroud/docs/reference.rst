@@ -610,17 +610,13 @@ c_to_cpp
 c_statements
     A nested dictionary of code template to add.
     The first layer is *intent_in*, *intent_out*, and *result*.
-    The second layer is *pre_call*, *pre_call_trim*, *post_call*, *cpp_header*.
+    The second layer is *pre_call*, *pre_call_buf*, *post_call*, *cpp_header*.
     The entries are a list of format strings.
 
     intent_in
         Code to add for argument with intent(IN).
         Can be used to convert types or copy-in semantics.
         For example, ``char *`` to ``std::string``.
-
-    intent_in_trim
-        Code to add for argument with intent(IN) and len_trim attribute 
-        For example, ``char *, int`` into ``std::string``
 
     intent_out
         Code to add after call when ``intent(OUT)`` or ``intent(INOUT)``.
