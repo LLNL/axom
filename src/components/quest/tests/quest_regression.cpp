@@ -402,7 +402,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
     SLIC_INFO(fmt::format("Querying InOutOctree on uniform grid of resolution {} using {} threads", 
         clargs.queryResolution, omp_get_num_threads()));
   #else
-    SLIC_INFO(fmt::format("Querying InOutOctree on uniform grid of resolution {}", omp_get_num_threads()));  
+    SLIC_INFO(fmt::format("Querying InOutOctree on uniform grid of resolution {}", clargs.queryResolution));  
   #endif
 
     // Add a scalar field for the containment queries
@@ -481,7 +481,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
     SLIC_INFO(fmt::format("Querying BVH tree on uniform grid of resolution {} using {} threads", 
         clargs.queryResolution, omp_get_num_threads()));
   #else
-    SLIC_INFO(fmt::format("Querying BVH tree on uniform grid of resolution {}", omp_get_num_threads()));  
+    SLIC_INFO(fmt::format("Querying BVH tree on uniform grid of resolution {}", clargs.queryResolution));  
   #endif
 
     // Add a scalar field for the containment queries

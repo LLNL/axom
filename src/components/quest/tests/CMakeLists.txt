@@ -56,7 +56,8 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 
     if ( NOT ENABLE_OPENMP )
-        set_property(quest_regression
+        set_property(
+            TARGET quest_regression
             APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
     endif()
 
