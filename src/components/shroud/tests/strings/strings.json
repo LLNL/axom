@@ -561,7 +561,7 @@
             "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
-            "decl": "const char * getChar2+len=30()", 
+            "decl": "const char * getChar2+len(30)()", 
             "doxygen": {
                 "brief": "return 'const char *' with fixed size (len=30)"
             }, 
@@ -592,7 +592,7 @@
             "result": {
                 "attrs": {
                     "const": true, 
-                    "len": 30, 
+                    "len": "30", 
                     "ptr": true
                 }, 
                 "name": "getChar2", 
@@ -634,7 +634,7 @@
                 }
             ], 
             "attrs": {}, 
-            "decl": "const char * getChar2+len=30()", 
+            "decl": "const char * getChar2+len(30)()", 
             "doxygen": {
                 "brief": "return 'const char *' with fixed size (len=30)"
             }, 
@@ -662,7 +662,7 @@
             "result": {
                 "attrs": {
                     "const": false, 
-                    "len": 30, 
+                    "len": "30", 
                     "ptr": false, 
                     "reference": false
                 }, 

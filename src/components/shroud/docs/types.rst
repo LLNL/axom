@@ -460,16 +460,22 @@ And the Fortran wrapper provides the correct values for the *len* and
 Character functions
 ^^^^^^^^^^^^^^^^^^^
 
-Function which return a ``char *`` provide an additional challange::
+Functions which return a ``char *`` provide an additional challenge.
+Taken literally they should return a ``type(C_PTR)``.  And if you call
+the function via the interface, that's what you get.  However,
+Shroud provides several options to provide a more ideomatic usage.
 
+Each of these declaration call identical C++ functions but they are
+wrapped differently::
 
     - decl: const char * getChar1()  +pure
-    - decl: const char * getChar2+len=30()
+    - decl: const char * getChar2+len(30)()
     - decl: const char * getChar3()
       options:
          F_string_result_as_arg: output
 
-Each generates very similar C wrappers::
+All of the generated C wrappers are very similar.  The buffer version
+copies the result into a buffer of known length::
 
     const char * STR_get_char1()
     {
@@ -484,13 +490,37 @@ Each generates very similar C wrappers::
         return;
     }
 
-But the Fortran wrappers work differently::
+``getChar1`` adds the pure annotation.  This annotation is passed to
+the Fortran interface where it declares the function as ``pure``::
+
+        pure function c_get_char1() &
+                result(SH_rv) &
+                bind(C, name="STR_get_char1")
+            use iso_c_binding, only : C_PTR
+            implicit none
+            type(C_PTR) SH_rv
+        end function c_get_char1
+
+The Fortran function calls the C wrapper twice.  Once in a declaration
+to get the length of the string and once to copy the value.  The
+functions ``strlen_ptr`` and ``fstr`` are provided by Shroud to get
+the length of a ``NULL`` terminated string and to copy and blank fill
+a variable.  This creates a Fortran function which returns a string of
+variable length.  The *pure* annotation tells the compiler there are
+no side effects which is important because it will be called twice.
+You'd also want the C++ function to be fast::
 
     function get_char1() result(SH_rv)
         use iso_c_binding, only : C_CHAR
         character(kind=C_CHAR, len=strlen_ptr(c_get_char1())) :: SH_rv
         SH_rv = fstr(c_get_char1())
     end function get_char1
+
+If you know the maximum size of string that you expect the function to
+return, then the *len* attribute is used to declare the length.  The
+advantage is that the C function is only called once.  The downside is
+that any result which is longer than the length will be silently
+truncated::
 
     function get_char2() result(SH_rv)
         use iso_c_binding, only : C_CHAR, C_INT
@@ -500,6 +530,12 @@ But the Fortran wrappers work differently::
             len(SH_rv, kind=C_INT))
     end function get_char2
 
+The third option gives the best of both worlds.  The C wrapper is only
+called once and any size result can be returned. The option
+**F_string_result_as_arg** will return the result of the C function in
+the named Fortran argument.  The potential downside is that a Fortran
+subroutine is generated instead of a function::
+
     subroutine get_char3(output)
         use iso_c_binding, only : C_INT
         character(*), intent(OUT) :: output
@@ -508,84 +544,7 @@ But the Fortran wrappers work differently::
             len(output, kind=C_INT))
     end subroutine get_char3
 
-
-
-
-.. ######################################################################
-
-
-
-Character Function
-^^^^^^^^^^^^^^^^^^
-
-.. This stuff was moved here from the tutorial and should be cleaned up
-
-This attribute marks the routine as Fortran ``pure`` meaning there are
-no side effects.  This is necessary because the function will be
-called twice.  Once to compute the length of the result and once to
-return the result.
-
-The length of result variable ``rv`` is computed by calling the
-function.  Once the result is declared, ``tut_function4a`` is called
-which returns a ``type(C_PTR)``.  This result is dereferenced by
-``fstr`` and copied into ``rv``.
-
-
-.. XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-It is possible to avoid calling the C++ function twice by passing in
-another argument to hold the result.  It would be up to the caller to
-ensure it is long enough.  This is done by setting the option
-**F_string_result_as_arg** to true.  Like all options, it may also be
-set in the global **options** and it will apply to all functions::
-
-.. update code examples from current output
-
-
-
-
-
-
-    - decl: const std::string& Function4b(
-        const std::string& arg1,
-        const std::string& arg2)
-      options:
-        F_string_result_as_arg: output
-
-The generated Fortran wrapper::
-
-    subroutine function4b(arg1, arg2, output)
-        use iso_c_binding, only : C_INT
-        implicit none
-        character(*), intent(IN) :: arg1
-        character(*), intent(IN) :: arg2
-        character(*), intent(OUT) :: output
-        rv = c_function4b_bufferify(  &
-            arg1,  &
-            len_trim(arg1),  &
-            arg2,  &
-            len_trim(arg2),
-            output,  &
-            len(output))
-    end subroutine function4b
-
-The generated C wrapper::
-
-    void TUT_function4b_bufferify(const char * arg1, int Larg1,
-                                  const char * arg2, int Larg2,
-                                  char * output, int Loutput) {
-        const std::string SH_arg1(arg1, Larg1);
-        const std::string SH_arg2(arg2, Larg2);
-        const std::string & rv = Function4b(SH_arg1, SH_arg2);
-        shroud_FccCopy(output, Loutput, rv.c_str());
-        return;
-    }
-
-
- ``FccCopy`` will copy the result into ``output`` and blank fill.
-
-
-.. char **
+.. char ** not supported
 
 
 Complex Type
@@ -597,4 +556,4 @@ Derived Types
 
 
 
-* chained function calls
+..  chained function calls
