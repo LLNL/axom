@@ -125,6 +125,7 @@ class Schema(object):
         for name in ['C_prefix', 'F_C_prefix', 
                      'C_this', 'C_result', 'CPP_this',
                      'F_this', 'F_result', 'F_derived_member',
+                     'C_string_result_as_arg', 'F_string_result_as_arg',
                      'PY_result',
                      'LUA_result']:
             if name in options:
@@ -233,6 +234,9 @@ class Schema(object):
         fmt_library.F_this = 'obj'
         fmt_library.F_result = 'SH_rv'
         fmt_library.F_derived_member = 'voidptr'
+
+        fmt_library.C_string_result_as_arg='SH_F_rv'
+        fmt_library.F_string_result_as_arg=''
 
         # don't have to worry about argument names in Python wrappers
         # so skip the SH_ prefix by default.
@@ -934,6 +938,7 @@ class GenFunctions(object):
         will convert string arguments into a buffer and length.
         """
         options = node['options']
+        fmt = node['fmt']
 
         # If a C++ function returns a std::string instance,
         # the default wrapper will not compile since the wrapper
@@ -984,14 +989,10 @@ class GenFunctions(object):
         if result_typedef.base == 'string':
             if result_type == 'char' and not result_is_ptr:
                 # char functions cannot be wrapped directly in intel 15.
-                has_string_result = True
-                result_as_arg = options.get('F_string_result_as_arg', '')
-                result_name = result_as_arg or 'SH_F_rv'
                 result['type'] = 'char_scalar'
-            else:
-                has_string_result = True
-                result_as_arg = options.get('F_string_result_as_arg', '')
-                result_name = result_as_arg or 'SH_F_rv'
+            has_string_result = True
+            result_as_arg = fmt.F_string_result_as_arg
+            result_name = result_as_arg or fmt.C_string_result_as_arg
 
         if not (has_string_result or has_string_arg):
             return

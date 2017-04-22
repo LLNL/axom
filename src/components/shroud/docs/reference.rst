@@ -335,12 +335,17 @@ C_proto_type
    XXX  override prototype of generated C function
 
 C_result
-    The name of the Fortran wrapper's result variable.
+    The name of the C wrapper's result variable.
     It must not be the same as any of the routines arguments.
     It defaults to *SH_rv*  (Shroud return value).
 
 C_return_type
    XXX   override return type of function
+
+C_string_result_as_arg
+  The name of the output argument for string results.
+  Function which return ``char`` or ``std::string`` values return
+  the result in an additional argument in the C wrapper.
 
 C_this
     Name of the C object argument.  Defauls to ``self``.
